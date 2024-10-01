@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>rc-toolbar</title>
+
+    <script type="module" src="/src/rc-toolbar.ts"></script>
+  </head>
+  <body>
+    <p>
+        Reference: <a href="https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/">https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/</a>
+    </p>
+    
+    <rc-toolbar>
+      <button onclick="testClick(event)">One</button>
+      <button onclick="testClick(event)">Two</button>
+      <button onclick="testClick(event)">Three</button>
+      <button onclick="testClick(event)">Four</button>
+      <button onclick="testClick(event)" disabled>Five</button>
+      <button onclick="testClick(event)">Six</button>
+    </rc-toolbar>
+
+    <script>
+        window.testClick = function(e) {
+            console.log(e.currentTarget);
+        }
+    </script>
+  </body>
+</html>

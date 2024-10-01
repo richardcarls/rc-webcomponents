@@ -1,0 +1,53 @@
+import { css } from 'lit';
+
+export const splitterStyles = css`
+  :host {
+    display: block;
+  }
+
+  #root {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    height: 100%;
+
+    &:has(#separator[aria-orientation='vertical']) {
+      flex-direction: column;
+    }
+
+    /* because :has(:focus-visible) doens't work across slot boundary */
+    &[data-interaction-mode='keyboard']:focus-within {
+      outline: auto;
+    }
+  }
+
+  #separator {
+    flex: 0 0 6px;
+    background-color: lightgray;
+    border-left: 1px solid white;
+    border-right: 1px solid black;
+    cursor: col-resize;
+
+    &[aria-orientation='vertical'] {
+      border-left: unset;
+      border-right: unset;
+      border-top: 1px solid white;
+      border-bottom: 1px solid black;
+    }
+  }
+
+  #primary,
+  #secondary {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #secondary {
+    flex: 1;
+  }
+`;
+
+export default splitterStyles;

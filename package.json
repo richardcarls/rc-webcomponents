@@ -1,0 +1,11 @@
+{
+  "name": "@rcarls/rc-webcomponents",
+  "version": "0.1.0",
+  "description": "A collection of web components.",
+  "author": "Richard Carls <richard.j.carls@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}
