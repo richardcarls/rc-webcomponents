@@ -1,8 +1,26 @@
 {
   "name": "@rcarls/rc-splitter",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/rc-splitter.umd.cjs",
+  "module": "./dist/rc-splitter.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/rc-splitter.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/rc-splitter.umd.cjs"
+      }
+    }
+  },
+  "types": "./dist/types/index.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

@@ -3,6 +3,8 @@ import { css } from 'lit';
 export const splitterStyles = css`
   :host {
     display: block;
+    height: 100%;
+    overflow: hidden;
   }
 
   #root {
@@ -10,9 +12,10 @@ export const splitterStyles = css`
     flex-direction: row;
     align-items: stretch;
     justify-content: center;
+    width: 100%;
     height: 100%;
 
-    &:has(#separator[aria-orientation='vertical']) {
+    &:has([role='separator'][aria-orientation='vertical']) {
       flex-direction: column;
     }
 
@@ -34,11 +37,13 @@ export const splitterStyles = css`
       border-right: unset;
       border-top: 1px solid white;
       border-bottom: 1px solid black;
+      cursor: row-resize;
     }
   }
 
   #primary,
   #secondary {
+    flex: 0 1 auto;
     position: relative;
     min-width: 0;
     min-height: 0;

@@ -60,6 +60,8 @@ export class RCSplitter extends LitElement {
 
   private _step: number = 1.0;
 
+  // TODO: min, max to replace minValue and maxValue
+
   protected _rootClientRect: DOMRect = this.getBoundingClientRect();
 
   protected get maxValue(): number {
@@ -163,7 +165,9 @@ export class RCSplitter extends LitElement {
           aria-label=${this.label}
           style=${this.mode === 'flex'
             ? `flex-basis: ${this.valueText}`
-            : `width: ${this.valueText}`}
+            : this.orientation === 'horizontal'
+            ? `width: ${this.valueText}`
+            : `height: ${this.valueText}`}
           ?hidden=${this.value === 0}
         >
           <slot></slot>

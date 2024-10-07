@@ -3,6 +3,24 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/rc-toolbar.umd.cjs",
+  "module": "./dist/rc-toolbar.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/rc-toolbar.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/rc-toolbar.umd.cjs"
+      }
+    }
+  },
+  "types": "./dist/types/index.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
