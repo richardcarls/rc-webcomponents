@@ -2,27 +2,18 @@ import { css } from 'lit';
 
 export const splitterStyles = css`
   :host {
-    display: block;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  #root {
+    position: relative;
     display: flex;
     flex-direction: row;
-    align-items: stretch;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
+  }
 
-    &:has([role='separator'][aria-orientation='vertical']) {
-      flex-direction: column;
-    }
+  :host([orientation='vertical']) {
+    flex-direction: column;
+  }
 
-    /* because :has(:focus-visible) doens't work across slot boundary */
-    &[data-interaction-mode='keyboard']:focus-within {
-      outline: auto;
-    }
+  /* because :has(:focus-visible) doens't work across slot boundary */
+  :host([data-interaction-mode='keyboard']):focus-within {
+    outline: auto;
   }
 
   #separator {
@@ -32,7 +23,7 @@ export const splitterStyles = css`
     border-right: 1px solid black;
     cursor: col-resize;
 
-    &[aria-orientation='vertical'] {
+    :host([orientation='vertical']) & {
       border-left: unset;
       border-right: unset;
       border-top: 1px solid white;
@@ -43,11 +34,12 @@ export const splitterStyles = css`
 
   #primary,
   #secondary {
-    flex: 0 1 auto;
-    position: relative;
-    min-width: 0;
-    min-height: 0;
+    box-sizing: border-box;
     overflow: hidden;
+  }
+
+  #primary {
+    flex: 0 1 auto;
   }
 
   #secondary {

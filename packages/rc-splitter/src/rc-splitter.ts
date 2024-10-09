@@ -99,9 +99,6 @@ export class RCSplitter extends LitElement {
     return `${this.value}${this.mode === 'length' ? 'px' : '%'}`;
   }
 
-  @query('#root', true)
-  protected _$root!: HTMLDivElement;
-
   protected _onRootResize(entries: ResizeObserverEntry[]) {
     for (const entry of entries) {
       this._rootClientRect = entry.target.getBoundingClientRect();
@@ -121,7 +118,7 @@ export class RCSplitter extends LitElement {
         this.value = 0;
         break;
       case 'end':
-        this.value = 100;
+        this.value = this.maxValue;
         break;
       case 'restore':
         this.value = this._lastValue;
@@ -130,7 +127,7 @@ export class RCSplitter extends LitElement {
   }
 
   protected _onMouseMove(e: MouseEvent) {
-    const clientRect = this._$root.getBoundingClientRect();
+    const clientRect = this.getBoundingClientRect();
 
     if (this.orientation === 'vertical') {
       this.value =
@@ -146,7 +143,7 @@ export class RCSplitter extends LitElement {
 
     await this.updateComplete;
 
-    this._resizeObserver.observe(this._$root);
+    this._resizeObserver.observe(this);
 
     this.value = this.maxValue / 2;
   }
@@ -159,39 +156,37 @@ export class RCSplitter extends LitElement {
 
   render() {
     return html`
-      <div id="root">
-        <section
-          id="primary"
-          aria-label=${this.label}
-          style=${this.mode === 'flex'
-            ? `flex-basis: ${this.valueText}`
-            : this.orientation === 'horizontal'
-            ? `width: ${this.valueText}`
-            : `height: ${this.valueText}`}
-          ?hidden=${this.value === 0}
-        >
-          <slot></slot>
-        </section>
+      <section
+        id="primary"
+        aria-label=${this.label}
+        style=${this.mode === 'flex'
+          ? `flex-basis: ${this.valueText}`
+          : this.orientation === 'horizontal'
+          ? `width: ${this.valueText}`
+          : `height: ${this.valueText}`}
+        ?hidden=${this.value === 0}
+      >
+        <slot></slot>
+      </section>
 
-        <div
-          id="separator"
-          role="separator"
-          tabindex="0"
-          aria-labelledby="primary"
-          aria-controls="primary"
-          aria-orientation=${this.orientation}
-          aria-valuenow=${this.value}
-          aria-valuetext=${this.valueText}
-          aria-valuemin="0"
-          aria-valuemax="100"
-          ${keyNavigation(this._onNavigate)}
-          ${mouseMove(this._onMouseMove)}
-        ></div>
+      <div
+        id="separator"
+        role="separator"
+        tabindex="0"
+        aria-labelledby="primary"
+        aria-controls="primary"
+        aria-orientation=${this.orientation}
+        aria-valuenow=${this.value}
+        aria-valuetext=${this.valueText}
+        aria-valuemin="0"
+        aria-valuemax="100"
+        ${keyNavigation(this._onNavigate)}
+        ${mouseMove(this._onMouseMove)}
+      ></div>
 
-        <aside id="secondary" ?hidden=${this.value === this.maxValue}>
-          <slot name="secondary"></slot>
-        </aside>
-      </div>
+      <aside id="secondary" ?hidden=${this.value === this.maxValue}>
+        <slot name="secondary"></slot>
+      </aside>
     `;
   }
 }
