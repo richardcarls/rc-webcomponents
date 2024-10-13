@@ -1,37 +1,153 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>rc-splitter</title>
 
     <style>
-        article {
-            box-sizing: border-box;
-            padding: 0.5em;
-            height: 100%;
-            border: 2px inset black;
-            overflow: auto;
-        }
+      article {
+        box-sizing: border-box;
+        min-width: 12em;
+        padding: 0.5em;
+        border: 1px solid black;
+        overflow: scroll;
+      }
     </style>
 
     <script type="module" src="/src/rc-splitter.ts"></script>
-</head>
+  </head>
 
-<body>
-    <rc-splitter mode="percent" step="10">
+  <body>
+    <h2>Basic Usage</h2>
+
+    <rc-splitter mode="precent" step="10">
+      <article>
+        <h1>Primary Pane</h1>
+
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+          placeat, corrupti id quas facilis labore dignissimos autem mollitia
+          voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+          error quasi eaque architecto sit necessitatibus quod. Perferendis
+          aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+          quia excepturi ipsa consectetur?
+        </p>
+      </article>
+
+      <article slot="secondary">
+        <h1>Secondary Pane</h1>
+
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+          placeat, corrupti id quas facilis labore dignissimos autem mollitia
+          voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+          error quasi eaque architecto sit necessitatibus quod. Perferendis
+          aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+          quia excepturi ipsa consectetur?
+        </p>
+      </article>
+    </rc-splitter>
+
+    <h2>Vertical</h2>
+
+    <rc-splitter
+      orientation="vertical"
+      mode="percent"
+      step="10"
+      style="height: 350px"
+    >
+      <article>
+        <h1>Primary Pane</h1>
+
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+          placeat, corrupti id quas facilis labore dignissimos autem mollitia
+          voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+          error quasi eaque architecto sit necessitatibus quod. Perferendis
+          aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+          quia excepturi ipsa consectetur?
+        </p>
+      </article>
+
+      <article slot="secondary">
+        <h1>Secondary Pane</h1>
+
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+          placeat, corrupti id quas facilis labore dignissimos autem mollitia
+          voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+          error quasi eaque architecto sit necessitatibus quod. Perferendis
+          aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+          quia excepturi ipsa consectetur?
+        </p>
+      </article>
+    </rc-splitter>
+
+    <h2>Nested</h2>
+
+    <rc-splitter mode="precent" step="10">
+      <rc-splitter orientation="vertical">
         <article>
-            <h1>Primary Pane</h1>
+          <h1>Primary Pane</h1>
 
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis placeat, corrupti id quas facilis labore dignissimos autem mollitia voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est error quasi eaque architecto sit necessitatibus quod. Perferendis aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem quia excepturi ipsa consectetur?</p>
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+            placeat, corrupti id quas facilis labore dignissimos autem mollitia
+            voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+            error quasi eaque architecto sit necessitatibus quod. Perferendis
+            aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+            quia excepturi ipsa consectetur?
+          </p>
         </article>
 
         <article slot="secondary">
-            <h1>Secondary Pane</h1>
+          <h1>Secondary Pane</h1>
 
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis placeat, corrupti id quas facilis labore dignissimos autem mollitia voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est error quasi eaque architecto sit necessitatibus quod. Perferendis aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem quia excepturi ipsa consectetur?</p>
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+            placeat, corrupti id quas facilis labore dignissimos autem mollitia
+            voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+            error quasi eaque architecto sit necessitatibus quod. Perferendis
+            aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+            quia excepturi ipsa consectetur?
+          </p>
         </article>
+      </rc-splitter>
+
+      <rc-splitter
+        orientation="vertical"
+        mode="precent"
+        step="10"
+        slot="secondary"
+      >
+        <article>
+          <h1>Primary Pane</h1>
+
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+            placeat, corrupti id quas facilis labore dignissimos autem mollitia
+            voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+            error quasi eaque architecto sit necessitatibus quod. Perferendis
+            aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+            quia excepturi ipsa consectetur?
+          </p>
+        </article>
+
+        <article slot="secondary">
+          <h1>Secondary Pane</h1>
+
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+            placeat, corrupti id quas facilis labore dignissimos autem mollitia
+            voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+            error quasi eaque architecto sit necessitatibus quod. Perferendis
+            aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+            quia excepturi ipsa consectetur?
+          </p>
+        </article>
+      </rc-splitter>
     </rc-splitter>
-</body>
+  </body>
 </html>
