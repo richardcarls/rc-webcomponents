@@ -5,6 +5,7 @@ export const splitterStyles = css`
     position: relative;
     display: flex;
     flex-direction: row;
+    align-items: stretch;
   }
 
   :host([orientation='vertical']) {
@@ -14,6 +15,11 @@ export const splitterStyles = css`
   /* because :has(:focus-visible) doens't work across slot boundary */
   :host([data-interaction-mode='keyboard']):focus-within {
     outline: auto;
+  }
+
+  ::slotted(*) {
+    width: 100%;
+    height: 100%;
   }
 
   #separator {

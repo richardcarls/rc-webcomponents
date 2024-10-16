@@ -62,22 +62,24 @@ export class RCSplitter extends LitElement {
 
   // TODO: min, max to replace minValue and maxValue
 
-  protected _rootClientRect: DOMRect = this.getBoundingClientRect();
+  protected _clientRect: DOMRect = this.getBoundingClientRect();
 
   protected get maxValue(): number {
     if (this.mode === 'length') {
       return this.orientation === 'horizontal'
-        ? this._rootClientRect.width
-        : this._rootClientRect.height;
+        ? this._clientRect.width
+        : this._clientRect.height ||
+            parseFloat(globalThis.getComputedStyle(this).height) ||
+            parseFloat(globalThis.getComputedStyle(this).minHeight);
     } else {
       return 100.0;
     }
   }
 
-  protected _resizeObserver = new ResizeObserver(this._onRootResize);
+  protected _resizeObserver = new ResizeObserver(this._onResize);
 
   @state()
-  protected _lastValue: number = 50.0;
+  protected _lastValue: number = 0;
 
   @property({ type: Number })
   set value(val: number) {
@@ -93,15 +95,17 @@ export class RCSplitter extends LitElement {
     return this._value;
   }
 
-  private _value: number = this.maxValue / 2;
+  private _value: number = 0;
 
   get valueText() {
     return `${this.value}${this.mode === 'length' ? 'px' : '%'}`;
   }
 
-  protected _onRootResize(entries: ResizeObserverEntry[]) {
+  protected _onResize(entries: ResizeObserverEntry[]) {
     for (const entry of entries) {
-      this._rootClientRect = entry.target.getBoundingClientRect();
+      this._clientRect = entry.target.getBoundingClientRect();
+
+      this.value = this.maxValue / 2;
     }
   }
 
@@ -127,14 +131,14 @@ export class RCSplitter extends LitElement {
   }
 
   protected _onMouseMove(e: MouseEvent) {
-    const clientRect = this.getBoundingClientRect();
-
     if (this.orientation === 'vertical') {
       this.value =
-        ((e.clientY - clientRect.top) / clientRect.height) * this.maxValue;
+        ((e.clientY - this._clientRect.top) / this._clientRect.height) *
+        this.maxValue;
     } else {
       this.value =
-        ((e.clientX - clientRect.left) / clientRect.width) * this.maxValue;
+        ((e.clientX - this._clientRect.left) / this._clientRect.width) *
+        this.maxValue;
     }
   }
 
