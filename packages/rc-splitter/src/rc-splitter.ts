@@ -1,5 +1,11 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, state, query } from 'lit/decorators.js';
+import {
+  customElement,
+  property,
+  state,
+  query,
+  queryAssignedElements,
+} from 'lit/decorators.js';
 
 import {
   keyNavigation,
@@ -12,7 +18,7 @@ import splitterStyles from './rc-splitter.styles';
 type SplitterOrientation = 'horizontal' | 'vertical';
 
 // TODO: flex-basis any different than percent?
-type SplitterMode = 'length' | 'percent' | 'flex';
+type SplitterMode = 'length' | 'percent';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -31,7 +37,6 @@ declare global {
  * @slot secondary - Secondary pane contents (optional)
  *
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/
- * @see https://github.com/orgs/w3c/projects/142/views/1?pane=issue&itemId=80564335&issue=w3c%7Caria-practices%7C130
  */
 @customElement('rc-splitter')
 export class RCSplitter extends LitElement {
@@ -41,75 +46,74 @@ export class RCSplitter extends LitElement {
   @property({ type: String })
   label = 'Splitter';
 
-  /** Toolbar orientation, for keyboard navigation. */
-  @property({ type: String })
+  /** Splitter orientation, for keyboard navigation and initial sizing. */
+  @property({ type: String, useDefault: true })
   orientation: SplitterOrientation = 'horizontal';
 
-  /** Determines length units for min, max and step attributes. */
-  @property({ type: String })
+  /** Determines length units for min, max and step attributes, one of either `length` (default) or `percent` */
+  @property({ type: String, useDefault: true })
   mode: SplitterMode = 'length';
 
-  @property({ type: Number })
-  set step(val: number) {
-    this._step = Math.min(Math.max(val, 0), this.maxValue);
-  }
+  /** The step size for resizing, in either pixels or percentage points depending on `mode`. */
+  @property({ type: Number, useDefault: true })
+  step: number = 1;
 
-  get step() {
-    return this._step;
-  }
-
-  private _step: number = 1.0;
-
-  // TODO: min, max to replace minValue and maxValue
-
-  protected _clientRect: DOMRect = this.getBoundingClientRect();
-
-  protected get maxValue(): number {
-    if (this.mode === 'length') {
-      return this.orientation === 'horizontal'
-        ? this._clientRect.width
-        : this._clientRect.height ||
-            parseFloat(globalThis.getComputedStyle(this).height) ||
-            parseFloat(globalThis.getComputedStyle(this).minHeight);
-    } else {
-      return 100.0;
-    }
-  }
-
-  protected _resizeObserver = new ResizeObserver(this._onResize);
-
-  @state()
-  protected _lastValue: number = 0;
-
-  @property({ type: Number })
+  /** The current splitter value, corresponding to the separator position, in either pixels or percentage points depending on `mode`. */
+  @property({ type: Number, attribute: false })
   set value(val: number) {
     this._lastValue = this._value;
 
     this._value = Math.min(
-      Math.max(Math.round(val / this.step) * this.step, 0),
-      this.maxValue
+      Math.max(Math.round(val / this.step) * this.step, this._minValue),
+      this._maxValue
     );
   }
-
   get value() {
     return this._value;
   }
-
   private _value: number = 0;
 
+  /** Toggles resizing ability */
+  @property({ type: Boolean, useDefault: true })
+  fixed: boolean = false;
+
+  /** A human-readable string representation of the value. */
   get valueText() {
     return `${this.value}${this.mode === 'length' ? 'px' : '%'}`;
   }
 
-  protected _onResize(entries: ResizeObserverEntry[]) {
-    for (const entry of entries) {
-      this._clientRect = entry.target.getBoundingClientRect();
+  protected _defaultValue: number = parseFloat(
+    this.getAttribute('value') ?? '0.0'
+  );
 
-      this.value = this.maxValue / 2;
+  @state()
+  protected _minValue: number = 0;
+
+  @state()
+  protected _maxValue: number = 0;
+
+  /** Last valid value, for collapse functionality. */
+  @state()
+  protected _lastValue: number = 0;
+
+  @query('#primary', true)
+  protected _$primary!: HTMLDivElement;
+
+  @queryAssignedElements()
+  protected _$primaryElements!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'secondary' })
+  protected _$secondaryElements!: Array<HTMLElement>;
+
+  protected _initialMax: number = 0;
+
+  protected _resizeObserver = new ResizeObserver(() => this._onResize());
+
+  protected _onKeyboardResize(action: KeyboardNavigationAction) {
+    if (this.fixed) {
+      return;
     }
-  }
 
-  protected _onNavigate(action: KeyboardNavigationAction) {
     switch (action) {
       case 'next':
         this.value += this.step;
@@ -122,7 +126,7 @@ export class RCSplitter extends LitElement {
         this.value = 0;
         break;
       case 'end':
-        this.value = this.maxValue;
+        this.value = this._maxValue;
         break;
       case 'restore':
         this.value = this._lastValue;
@@ -130,16 +134,74 @@ export class RCSplitter extends LitElement {
     }
   }
 
-  protected _onMouseMove(e: MouseEvent) {
+  protected _onMouseResize(e: MouseEvent) {
+    if (this.fixed) {
+      return;
+    }
+
+    const clientRect = this.getBoundingClientRect();
+
     if (this.orientation === 'vertical') {
       this.value =
-        ((e.clientY - this._clientRect.top) / this._clientRect.height) *
-        this.maxValue;
+        ((e.clientY - clientRect.top) / clientRect.height) * this._maxValue;
     } else {
       this.value =
-        ((e.clientX - this._clientRect.left) / this._clientRect.width) *
-        this.maxValue;
+        ((e.clientX - clientRect.left) / clientRect.width) * this._maxValue;
     }
+  }
+
+  protected _onPrimaryChange(_e: Event) {
+    if (this._$primaryElements.length >= 2) {
+      // Move all additonal elements to secondary slot
+      this._$primaryElements
+        .slice(1)
+        .forEach((el) => el.setAttribute('slot', 'secondary'));
+    }
+  }
+
+  protected _onSecondaryChange(_e: Event) {
+    if (this._$secondaryElements.length && !this._$primaryElements.length) {
+      // Make sure default slot is populated first
+      this._$secondaryElements.at(0)?.removeAttribute('slot');
+    }
+  }
+
+  protected _onResize() {
+    const el = this._$primaryElements.at(0);
+    const prevStyle = this._$primary.style.getPropertyValue('display');
+
+    // Request animation frame to prevent layout piant jank
+    globalThis.requestAnimationFrame(() => {
+      // Temporarily display the first / primary lightDOM element as a direct child, for measurment
+      this._$primary.style.setProperty('display', 'contents');
+
+      const clientRect =
+        el?.getBoundingClientRect() ?? this.getBoundingClientRect();
+
+      if (this.mode === 'length') {
+        this._maxValue =
+          this.orientation === 'horizontal'
+            ? // For horizontal splitters, just take the host width...
+              Math.ceil(this.getBoundingClientRect().width)
+            : // ...otherwise try to use the first lightDOM element's auto height, and cache it
+              this._initialMax || Math.ceil(clientRect.height);
+      } else {
+        // Percentage max is always just 100%
+        this._maxValue = 100.0;
+      }
+
+      if (!this._initialMax) {
+        // console.log(this, this.value);
+
+        this._initialMax = this._maxValue;
+        this.value = this._defaultValue || this._maxValue / 2;
+      }
+
+      // Restore previous display mode
+      prevStyle
+        ? this._$primary.style.setProperty('display', prevStyle)
+        : this._$primary.style.removeProperty('display');
+    });
   }
 
   async connectedCallback() {
@@ -148,8 +210,7 @@ export class RCSplitter extends LitElement {
     await this.updateComplete;
 
     this._resizeObserver.observe(this);
-
-    this.value = this.maxValue / 2;
+    this._onResize();
   }
 
   disconnectedCallback(): void {
@@ -160,36 +221,42 @@ export class RCSplitter extends LitElement {
 
   render() {
     return html`
-      <section
+      <div
         id="primary"
         aria-label=${this.label}
-        style=${this.mode === 'flex'
-          ? `flex-basis: ${this.valueText}`
-          : this.orientation === 'horizontal'
+        style=${this.orientation === 'horizontal'
           ? `width: ${this.valueText}`
           : `height: ${this.valueText}`}
-        ?hidden=${this.value === 0}
+        ?hidden=${this.value === this._minValue}
       >
-        <slot></slot>
-      </section>
+        <slot @slotchange=${this._onPrimaryChange}></slot>
+      </div>
 
-      <div
-        id="separator"
-        role="separator"
-        tabindex="0"
-        aria-labelledby="primary"
-        aria-controls="primary"
-        aria-orientation=${this.orientation}
-        aria-valuenow=${this.value}
-        aria-valuetext=${this.valueText}
-        aria-valuemin="0"
-        aria-valuemax="100"
-        ${keyNavigation(this._onNavigate)}
-        ${mouseMove(this._onMouseMove)}
-      ></div>
+      <div id="separator" part="separator">
+        <div
+          id="separator-handle"
+          role="separator"
+          tabindex="0"
+          part="separator-handle"
+          aria-labelledby="primary"
+          aria-controls="primary"
+          aria-orientation=${this.orientation}
+          aria-valuenow=${this.value}
+          aria-valuetext=${this.valueText}
+          aria-valuemin=${this._minValue}
+          aria-valuemax=${this._maxValue}
+          ${keyNavigation(this._onKeyboardResize)}
+          ${mouseMove(this._onMouseResize)}
+          ?hidden=${!this._$secondaryElements.length}
+        ></div>
+      </div>
 
-      <aside id="secondary" ?hidden=${this.value === this.maxValue}>
-        <slot name="secondary"></slot>
+      <aside
+        id="secondary"
+        ?hidden=${!this._$secondaryElements.length ||
+        this.value === this._maxValue}
+      >
+        <slot name="secondary" @slotchange=${this._onSecondaryChange}></slot>
       </aside>
     `;
   }

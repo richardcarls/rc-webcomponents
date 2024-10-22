@@ -7,13 +7,33 @@
     <title>rc-splitter</title>
 
     <style>
-      article {
-        box-sizing: border-box;
-        min-width: 12em;
-        padding: 0.5em;
-        border: 1px solid black;
-        overflow: scroll;
-      }
+        body {
+            padding: 2rem 1rem;
+        }
+
+        article {
+            box-sizing: border-box;
+            max-height: 50vh;
+            padding: 0.5em;
+            border: 1px solid black;
+            overflow: auto;
+        }
+
+        rc-splitter {
+            --rc-splitter-separator-size: 8px;
+            /* --rc-splitter-separator-handle-size: 40px; */
+
+            &[orientation="vertical"] {
+                height: 300px;
+            }
+
+            /* &::part(separator-handle) {
+                border: 1px solid white;
+                border-radius: 9999rem;
+            } */
+        }
+
+
     </style>
 
     <script type="module" src="/src/rc-splitter.ts"></script>
@@ -22,7 +42,7 @@
   <body>
     <h2>Basic Usage</h2>
 
-    <rc-splitter mode="precent" step="10">
+    <rc-splitter>
       <article>
         <h1>Primary Pane</h1>
 
@@ -36,7 +56,7 @@
         </p>
       </article>
 
-      <article slot="secondary">
+      <article>
         <h1>Secondary Pane</h1>
 
         <p>
@@ -54,9 +74,6 @@
 
     <rc-splitter
       orientation="vertical"
-      mode="percent"
-      step="10"
-      style="height: 350px"
     >
       <article>
         <h1>Primary Pane</h1>
@@ -71,7 +88,7 @@
         </p>
       </article>
 
-      <article slot="secondary">
+      <article>
         <h1>Secondary Pane</h1>
 
         <p>
@@ -87,7 +104,7 @@
 
     <h2>Nested</h2>
 
-    <rc-splitter mode="precent" step="10">
+    <rc-splitter>
       <rc-splitter orientation="vertical">
         <article>
           <h1>Primary Pane</h1>
@@ -102,7 +119,7 @@
           </p>
         </article>
 
-        <article slot="secondary">
+        <article>
           <h1>Secondary Pane</h1>
 
           <p>
@@ -116,12 +133,7 @@
         </article>
       </rc-splitter>
 
-      <rc-splitter
-        orientation="vertical"
-        mode="precent"
-        step="10"
-        slot="secondary"
-      >
+      <rc-splitter orientation="vertical">
         <article>
           <h1>Primary Pane</h1>
 
@@ -135,7 +147,7 @@
           </p>
         </article>
 
-        <article slot="secondary">
+        <article>
           <h1>Secondary Pane</h1>
 
           <p>
@@ -148,6 +160,99 @@
           </p>
         </article>
       </rc-splitter>
+    </rc-splitter>
+
+    <h2>Percentage</h2>
+
+    <rc-splitter mode="precent" step="10">
+      <article>
+        <h1>Primary Pane</h1>
+
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+          placeat, corrupti id quas facilis labore dignissimos autem mollitia
+          voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+          error quasi eaque architecto sit necessitatibus quod. Perferendis
+          aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+          quia excepturi ipsa consectetur?
+        </p>
+      </article>
+
+      <article>
+        <h1>Secondary Pane</h1>
+
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+          placeat, corrupti id quas facilis labore dignissimos autem mollitia
+          voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+          error quasi eaque architecto sit necessitatibus quod. Perferendis
+          aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+          quia excepturi ipsa consectetur?
+        </p>
+      </article>
+    </rc-splitter>
+
+    <h2>Percentage Vertical</h2>
+
+    <rc-splitter
+      orientation="vertical"
+       mode="percent" step="10"
+    >
+      <article>
+        <h1>Primary Pane</h1>
+
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+          placeat, corrupti id quas facilis labore dignissimos autem mollitia
+          voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+          error quasi eaque architecto sit necessitatibus quod. Perferendis
+          aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+          quia excepturi ipsa consectetur?
+        </p>
+      </article>
+
+      <article>
+        <h1>Secondary Pane</h1>
+
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+          placeat, corrupti id quas facilis labore dignissimos autem mollitia
+          voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+          error quasi eaque architecto sit necessitatibus quod. Perferendis
+          aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+          quia excepturi ipsa consectetur?
+        </p>
+      </article>
+    </rc-splitter>
+
+    <h2>Fixed</h2>
+
+    <rc-splitter value="300" fixed>
+      <article>
+        <h1>Primary Pane</h1>
+
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+          placeat, corrupti id quas facilis labore dignissimos autem mollitia
+          voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+          error quasi eaque architecto sit necessitatibus quod. Perferendis
+          aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+          quia excepturi ipsa consectetur?
+        </p>
+      </article>
+
+      <article>
+        <h1>Secondary Pane</h1>
+
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis
+          placeat, corrupti id quas facilis labore dignissimos autem mollitia
+          voluptas quaerat illum rem fugit obcaecati, deserunt et eveniet est
+          error quasi eaque architecto sit necessitatibus quod. Perferendis
+          aliquam, minus dolorum ratione placeat ipsam saepe aliquid aut, rem
+          quia excepturi ipsa consectetur?
+        </p>
+      </article>
     </rc-splitter>
   </body>
 </html>

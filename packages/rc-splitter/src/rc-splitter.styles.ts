@@ -1,7 +1,15 @@
 import { css } from 'lit';
 
 export const splitterStyles = css`
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   :host {
+    --rc-splitter-separator-size: 6px;
+
     position: relative;
     display: flex;
     flex-direction: row;
@@ -23,32 +31,52 @@ export const splitterStyles = css`
   }
 
   #separator {
-    flex: 0 0 6px;
-    background-color: lightgray;
+    grid-column: separator;
+    flex: 0 0 var(--rc-splitter-separator-size, 6px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: var(--rc-splitter-separator-color, lightgray);
     border-left: 1px solid white;
     border-right: 1px solid black;
-    cursor: col-resize;
 
     :host([orientation='vertical']) & {
+      flex-direction: row;
       border-left: unset;
       border-right: unset;
       border-top: 1px solid white;
       border-bottom: 1px solid black;
+    }
+  }
+
+  #separator-handle {
+    width: 100%;
+    height: var(--rc-splitter-separator-handle-size, 100%);
+    cursor: col-resize;
+
+    :host([orientation='vertical']) & {
+      width: var(--rc-splitter-separator-handle-size, 100%);
+      height: 100%;
       cursor: row-resize;
+    }
+
+    :host([fixed]) {
+      pointer-events: none;
     }
   }
 
   #primary,
   #secondary {
-    box-sizing: border-box;
     overflow: hidden;
   }
 
   #primary {
-    flex: 0 1 auto;
+    grid-column: primary;
+    flex: 0 0 auto;
   }
 
   #secondary {
+    grid-column: secondary;
     flex: 1;
   }
 `;
