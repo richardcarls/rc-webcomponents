@@ -29,58 +29,72 @@ this.dispatchEvent(new CustomEvent('rc-splitter-change', {
 
 ## High Priority
 
-### 2. Add delegatesFocus for Focus Management (Rule 6-1)
+### 2. Simplify Lifecycle with firstUpdated (Rule 5-2)
 
-**Issue:** Component has an internal focusable separator handle but doesn't delegate focus. Clicking the host won't focus the handle.
+**Issue:** Current code uses `await this.updateComplete` in `connectedCallback`, which is less idiomatic. The `_onResize()` method requires shadow DOM to be ready.
 
-**Fix:** Add `shadowRootOptions` with `delegatesFocus: true`.
-
-```typescript
-static shadowRootOptions: ShadowRootInit = {
-  ...LitElement.shadowRootOptions,
-  delegatesFocus: true
-};
-```
-
-### 3. Move ResizeObserver Setup to firstUpdated (Rule 5-2)
-
-**Issue:** Current code uses `await this.updateComplete` in `connectedCallback`, which is less idiomatic than using `firstUpdated`.
-
-**Fix:** Move resize observer setup to `firstUpdated()`.
+**Fix:** Split responsibilities:
+- `connectedCallback`: Register observer (no DOM needed, handles reconnection)
+- `firstUpdated`: Initial resize measurement (DOM ready)
 
 ```typescript
-firstUpdated(changedProperties: PropertyValues) {
-  super.firstUpdated(changedProperties);
-  this._resizeObserver.observe(this);
-  this._onResize();
-}
-
 connectedCallback() {
   super.connectedCallback();
-  // Remove the async/await pattern
+  this._resizeObserver.observe(this);  // No await needed - just registers observer
+}
+
+firstUpdated(changedProperties: PropertyValues) {
+  super.firstUpdated(changedProperties);
+  this._onResize();  // Shadow DOM now available
 }
 ```
 
-### 4. Fix _defaultValue Initialization Timing
+**Note:** We keep `connectedCallback` (not remove it) because when the element is disconnected and reconnected, `firstUpdated` won't fire again but we need to re-observe.
+
+### 3. Fix _defaultValue Initialization with Lit Attribute Handling
 
 **Issue:** `_defaultValue` is initialized in a class field using `this.getAttribute('value')`, but attributes may not be available at class instantiation time.
 
-**Fix:** Move default value handling to `connectedCallback` or use Lit's attribute converter.
+**Fix:** Use a separate `initialValue` property that Lit handles automatically:
 
 ```typescript
-connectedCallback() {
-  super.connectedCallback();
-  if (!this._initialMax) {
-    this._defaultValue = parseFloat(this.getAttribute('value') ?? '0.0');
-  }
+/** Initial value from attribute, used before first resize */
+@property({ type: Number, attribute: 'value' })
+initialValue: number | null = null;
+
+// Change _value to @state (remove the @property decorator from value)
+@state()
+private _value: number = 0;
+
+// Keep the getter/setter for value, but it's now state-only
+get value() { return this._value; }
+set value(val: number) {
+  this._lastValue = this._value;
+  this._value = Math.min(
+    Math.max(Math.round(val / this.step) * this.step, this._minValue),
+    this._maxValue
+  );
+}
+
+// Remove _defaultValue field entirely
+
+// In _onResize, update the initialization:
+if (!this._initialMax) {
+  this._initialMax = this._maxValue;
+  this.value = this.initialValue ?? this._maxValue / 2;
 }
 ```
+
+**Benefits:**
+- Lit handles attribute parsing automatically
+- No manual `getAttribute()` calls
+- Clear separation: `initialValue` (from HTML attribute) vs `value` (live state)
 
 ---
 
 ## Medium Priority
 
-### 5. Reflect orientation Property (Rule 1-3)
+### 4. Reflect orientation Property (Rule 1-3)
 
 **Issue:** `orientation` is used in CSS (`:host([orientation='vertical'])`) but isn't reflected to attribute.
 
@@ -91,7 +105,7 @@ connectedCallback() {
 orientation: SplitterOrientation = 'horizontal';
 ```
 
-### 6. Add :host([hidden]) Style (Rule 3-2)
+### 5. Add :host([hidden]) Style (Rule 3-2)
 
 **Issue:** Missing hidden state handling in styles.
 
@@ -103,7 +117,7 @@ orientation: SplitterOrientation = 'horizontal';
 }
 ```
 
-### 7. Remove Invalid `useDefault` Property Option
+### 6. Remove Invalid `useDefault` Property Option
 
 **Issue:** `useDefault` is not a standard Lit decorator option. It appears on multiple properties.
 
@@ -126,5 +140,4 @@ orientation: SplitterOrientation = 'horizontal';
    - Open dev server: `yarn workspace @rcarls/rc-splitter dev`
    - Verify keyboard resize (arrow keys) still works
    - Verify mouse drag resize still works
-   - Verify focus delegation (click host → separator gets focus)
    - Listen for `rc-splitter-change` event in browser console

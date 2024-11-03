@@ -20,6 +20,10 @@ export const splitterStyles = css`
     flex-direction: column;
   }
 
+  :host([hidden]) {
+    display: none;
+  }
+
   /* because :has(:focus-visible) doens't work across slot boundary */
   :host([data-interaction-mode='keyboard']):focus-within {
     outline: auto;

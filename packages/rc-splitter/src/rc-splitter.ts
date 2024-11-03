@@ -47,26 +47,41 @@ export class RCSplitter extends LitElement {
   label = 'Splitter';
 
   /** Splitter orientation, for keyboard navigation and initial sizing. */
-  @property({ type: String, useDefault: true })
+  @property({ type: String, reflect: true })
   orientation: SplitterOrientation = 'horizontal';
 
   /** Determines length units for min, max and step attributes, one of either `length` (default) or `percent` */
-  @property({ type: String, useDefault: true })
+  @property({ type: String })
   mode: SplitterMode = 'length';
 
   /** The step size for resizing, in either pixels or percentage points depending on `mode`. */
-  @property({ type: Number, useDefault: true })
+  @property({ type: Number })
   step: number = 1;
 
+  /** Initial value from attribute, used to set starting position. */
+  @property({ type: Number, attribute: 'value' })
+  initialValue: number | null = null;
+
   /** The current splitter value, corresponding to the separator position, in either pixels or percentage points depending on `mode`. */
-  @property({ type: Number, attribute: false })
   set value(val: number) {
+    const oldValue = this._value;
     this._lastValue = this._value;
 
     this._value = Math.min(
       Math.max(Math.round(val / this.step) * this.step, this._minValue),
       this._maxValue
     );
+
+    // Dispatch change event if value actually changed
+    if (this._value !== oldValue) {
+      this.dispatchEvent(
+        new CustomEvent('rc-splitter-change', {
+          bubbles: true,
+          composed: true,
+          detail: { value: this._value, valueText: this.valueText },
+        })
+      );
+    }
   }
   get value() {
     return this._value;
@@ -74,17 +89,13 @@ export class RCSplitter extends LitElement {
   private _value: number = 0;
 
   /** Toggles resizing ability */
-  @property({ type: Boolean, useDefault: true })
+  @property({ type: Boolean })
   fixed: boolean = false;
 
   /** A human-readable string representation of the value. */
   get valueText() {
     return `${this.value}${this.mode === 'length' ? 'px' : '%'}`;
   }
-
-  protected _defaultValue: number = parseFloat(
-    this.getAttribute('value') ?? '0.0'
-  );
 
   @state()
   protected _minValue: number = 0;
@@ -194,7 +205,7 @@ export class RCSplitter extends LitElement {
         // console.log(this, this.value);
 
         this._initialMax = this._maxValue;
-        this.value = this._defaultValue || this._maxValue / 2;
+        this.value = this.initialValue ?? this._maxValue / 2;
       }
 
       // Restore previous display mode
@@ -204,19 +215,18 @@ export class RCSplitter extends LitElement {
     });
   }
 
-  async connectedCallback() {
+  connectedCallback() {
     super.connectedCallback();
-
-    await this.updateComplete;
-
     this._resizeObserver.observe(this);
-    this._onResize();
   }
 
   disconnectedCallback(): void {
-    super.disconnectedCallback();
-
     this._resizeObserver.disconnect();
+    super.disconnectedCallback();
+  }
+
+  firstUpdated() {
+    this._onResize();
   }
 
   render() {
