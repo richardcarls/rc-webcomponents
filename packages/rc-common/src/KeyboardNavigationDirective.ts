@@ -48,7 +48,7 @@ class KeyboardNavigationDirective extends AsyncDirective {
 
     if (partInfo.type !== PartType.ELEMENT) {
       throw new Error(
-        'The `keyNavigation` directive must be used on an element.'
+        'The `keyNavigation` directive must be used on an element.',
       );
     }
   }
@@ -91,11 +91,13 @@ class KeyboardNavigationDirective extends AsyncDirective {
 
       case 'Home':
         this._callback('start');
+        this._isCollapsed = true;
         isHandled = true;
         break;
 
       case 'End':
         this._callback('end');
+        this._isCollapsed = true;
         isHandled = true;
         break;
 
@@ -152,14 +154,14 @@ class KeyboardNavigationDirective extends AsyncDirective {
 
   render(
     _cb: (action: KeyboardNavigationAction) => void,
-    _useInteractionModeAttr?: boolean
+    _useInteractionModeAttr?: boolean,
   ) {
     return nothing;
   }
 
   update(
     part: ElementPart,
-    [cb, useInteractionModeAttr]: Parameters<this['render']>
+    [cb, useInteractionModeAttr]: Parameters<this['render']>,
   ) {
     if (this.isConnected && this._element?.deref() === undefined) {
       this._element = new WeakRef(part.element);

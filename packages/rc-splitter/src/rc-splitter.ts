@@ -17,7 +17,6 @@ import splitterStyles from './rc-splitter.styles';
 
 type SplitterOrientation = 'horizontal' | 'vertical';
 
-// TODO: flex-basis any different than percent?
 type SplitterMode = 'length' | 'percent';
 
 declare global {
@@ -65,11 +64,11 @@ export class RCSplitter extends LitElement {
   /** The current splitter value, corresponding to the separator position, in either pixels or percentage points depending on `mode`. */
   set value(val: number) {
     const oldValue = this._value;
-    this._lastValue = this._value;
+    this._lastValue = oldValue;
 
     this._value = Math.min(
       Math.max(Math.round(val / this.step) * this.step, this._minValue),
-      this._maxValue
+      this._maxValue,
     );
 
     // Dispatch change event if value actually changed
@@ -79,7 +78,7 @@ export class RCSplitter extends LitElement {
           bubbles: true,
           composed: true,
           detail: { value: this._value, valueText: this.valueText },
-        })
+        }),
       );
     }
   }
