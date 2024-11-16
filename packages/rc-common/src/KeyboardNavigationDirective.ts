@@ -9,15 +9,44 @@ export type KeyboardNavigationAction =
   | 'prev'
   | 'start'
   | 'end'
+  /** @deprecated Use 'toggle' action instead. Will be removed in a future version. */
   | 'collapse'
-  | 'restore';
+  /** @deprecated Use 'toggle' action instead. Will be removed in a future version. */
+  | 'restore'
+  | 'escape'
+  | 'activate'
+  | 'toggle';
+
+/**
+ * Options for the keyNavigation directive.
+ */
+export interface KeyNavigationOptions {
+  /**
+   * Set data-interaction-mode attribute for keyboard vs mouse styling.
+   * @default true
+   */
+  useInteractionModeAttr?: boolean;
+
+  /**
+   * Dispatch 'escape' action on Escape key.
+   * @default false
+   */
+  handleEscape?: boolean;
+
+  /**
+   * Dispatch 'activate' action on Enter/Space.
+   * When enabled, Enter/Space will dispatch 'activate' instead of 'collapse'/'restore'.
+   * @default false
+   */
+  handleActivate?: boolean;
+}
 
 class KeyboardNavigationDirective extends AsyncDirective {
   private _element?: WeakRef<Element>;
   private _keyDownHandle!: (ev: KeyboardEvent) => any;
   private _mouseClickHandle!: (ev: MouseEvent) => any;
   private _callback!: (action: KeyboardNavigationAction) => void;
-  private _useInteractionModeAttr?: boolean;
+  private _options: KeyNavigationOptions = {};
   private _isCollapsed: boolean = false;
 
   protected get orientation() {
@@ -102,14 +131,33 @@ class KeyboardNavigationDirective extends AsyncDirective {
         break;
 
       case 'Enter':
-        this._callback(this._isCollapsed ? 'restore' : 'collapse');
-        this._isCollapsed = !this._isCollapsed;
+        if (this._options.handleActivate) {
+          this._callback('activate');
+        } else {
+          // TODO: Replace 'collapse'/'restore' with single 'toggle' action in future version
+          this._callback(this._isCollapsed ? 'restore' : 'collapse');
+          this._isCollapsed = !this._isCollapsed;
+        }
         isHandled = true;
+        break;
+
+      case ' ':
+        if (this._options.handleActivate) {
+          this._callback('activate');
+          isHandled = true;
+        }
+        break;
+
+      case 'Escape':
+        if (this._options.handleEscape) {
+          this._callback('escape');
+          isHandled = true;
+        }
         break;
 
       // Listen to global Tab navigation events to enable keyboard-only focus styling
       case 'Tab':
-        if (this._useInteractionModeAttr) {
+        if (this._options.useInteractionModeAttr) {
           this._element
             ?.deref()
             ?.setAttribute('data-interaction-mode', 'keyboard');
@@ -123,7 +171,7 @@ class KeyboardNavigationDirective extends AsyncDirective {
     }
 
     if (isHandled) {
-      if (this._useInteractionModeAttr) {
+      if (this._options.useInteractionModeAttr) {
         this._element
           ?.deref()
           ?.setAttribute('data-interaction-mode', 'keyboard');
@@ -135,7 +183,7 @@ class KeyboardNavigationDirective extends AsyncDirective {
   }
 
   protected _onMouseClick(_e: MouseEvent) {
-    if (this._useInteractionModeAttr) {
+    if (this._options.useInteractionModeAttr) {
       // For :focus-within styling only when focused item is :focus-visible
       this._element?.deref()?.removeAttribute('data-interaction-mode');
     }
@@ -152,21 +200,42 @@ class KeyboardNavigationDirective extends AsyncDirective {
     }
   }
 
+  /**
+   * @param _cb - Callback function invoked with the navigation action
+   * @param _options - Options object or deprecated boolean for useInteractionModeAttr
+   * @deprecated Passing a boolean as the second parameter is deprecated.
+   *             Use an options object instead: `{ useInteractionModeAttr: true }`
+   */
   render(
     _cb: (action: KeyboardNavigationAction) => void,
-    _useInteractionModeAttr?: boolean,
+    _options?: KeyNavigationOptions | boolean,
   ) {
     return nothing;
   }
 
   update(
     part: ElementPart,
-    [cb, useInteractionModeAttr]: Parameters<this['render']>,
+    [cb, optionsOrBoolean]: Parameters<this['render']>,
   ) {
     if (this.isConnected && this._element?.deref() === undefined) {
       this._element = new WeakRef(part.element);
       this._callback = cb.bind(part.options?.host ?? part.element);
-      this._useInteractionModeAttr = useInteractionModeAttr ?? true;
+
+      // Handle deprecated boolean parameter
+      if (typeof optionsOrBoolean === 'boolean') {
+        if (import.meta.env?.DEV) {
+          console.warn(
+            '[keyNavigation] Passing a boolean as the second parameter is deprecated. ' +
+              'Use an options object instead: { useInteractionModeAttr: true }',
+          );
+        }
+        this._options = { useInteractionModeAttr: optionsOrBoolean };
+      } else {
+        this._options = {
+          useInteractionModeAttr: true,
+          ...optionsOrBoolean,
+        };
+      }
 
       this._init();
     }
