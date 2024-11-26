@@ -15,6 +15,9 @@ declare global {
   }
 }
 
+// TODO: Add "menu direction" property (similar to orientation but also sets which "side" the menu pops out on). down and up are optionl in the apg spec so this is compliant.
+// TODO: use / polyfill anchor positioning and coordinate with "menu direction"
+
 /**
  * A menu button component that opens/closes a menu popup
  *
@@ -129,6 +132,7 @@ export class RCMenuButton extends LitElement {
   private _handleTriggerKeyDown(e: KeyboardEvent) {
     const key = e.key;
 
+    // TODO: Swap up/down for left/right depending on "menu direction"
     switch (key) {
       case 'Enter':
       case ' ':
@@ -199,7 +203,10 @@ export class RCMenuButton extends LitElement {
           @keydown=${this._handleTriggerKeyDown}
           @click=${this._handleTriggerClick}
         >
-          <slot name="trigger" @slotchange=${this._handleTriggerSlotChange}></slot>
+          <slot
+            name="trigger"
+            @slotchange=${this._handleTriggerSlotChange}
+          ></slot>
         </div>
         <div
           id="popup"
