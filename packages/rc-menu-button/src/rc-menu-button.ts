@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-// TODO: Add "menu direction" property (similar to orientation but also sets which "side" the menu pops out on). down and up are optionl in the apg spec so this is compliant.
+// TODO: Add "menu direction" property to control which side the popup appears on, and coordinate with anchor positioning.
 // TODO: use / polyfill anchor positioning and coordinate with "menu direction"
 
 /**
@@ -35,6 +35,33 @@ export class RCMenuButton extends LitElement {
   /** Whether the menu is currently open */
   @property({ type: Boolean, reflect: true })
   open = false;
+
+  /**
+   * Orientation of this menu button, affects which arrow keys open/close the menu.
+   * If not set, inherits from a parent rc-menubar or element with role="menubar".
+   */
+  @property({ type: String })
+  orientation: 'horizontal' | 'vertical' | undefined;
+
+  /**
+   * Resolved orientation, considering inheritance from parent menubar.
+   * Falls back to 'horizontal' if no orientation is set or inherited.
+   */
+  private get _resolvedOrientation(): 'horizontal' | 'vertical' {
+    if (this.orientation) return this.orientation;
+
+    // Inherit from parent rc-menubar or element with role="menubar"
+    const menubar = this.closest('rc-menubar, [role="menubar"]');
+    if (menubar) {
+      const orientation =
+        menubar.getAttribute('orientation') ??
+        menubar.getAttribute('aria-orientation');
+      if (orientation === 'vertical') return 'vertical';
+      if (orientation === 'horizontal') return 'horizontal';
+    }
+
+    return 'horizontal';
+  }
 
   /** Reference to the trigger button element */
   @state()
@@ -131,16 +158,18 @@ export class RCMenuButton extends LitElement {
 
   private _handleTriggerKeyDown(e: KeyboardEvent) {
     const key = e.key;
+    const vertical = this._resolvedOrientation === 'vertical';
+    const openKey = vertical ? 'ArrowRight' : 'ArrowDown';
+    const openLastKey = vertical ? 'ArrowLeft' : 'ArrowUp';
 
-    // TODO: Swap up/down for left/right depending on "menu direction"
     switch (key) {
       case 'Enter':
       case ' ':
-      case 'ArrowDown':
+      case openKey:
         e.preventDefault();
         this.openMenu();
         break;
-      case 'ArrowUp':
+      case openLastKey:
         e.preventDefault();
         this.open = true;
         this._dispatchToggle();

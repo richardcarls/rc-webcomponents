@@ -308,6 +308,118 @@ test('RCMenuButton exposes open/close methods', async () => {
   await expect.element(trigger).toHaveFocus();
 });
 
+test('RCMenuButton vertical: opens on ArrowRight and focuses first item', async () => {
+  const screen = render(
+    html`
+      <rc-menu-button data-testid="host" orientation="vertical">
+        <button slot="trigger" data-testid="trigger">Options</button>
+        <rc-menu label="Options">
+          <button data-testid="item-one">Cut</button>
+          <button data-testid="item-two">Copy</button>
+        </rc-menu>
+      </rc-menu-button>
+    `,
+  );
+
+  const trigger = screen.getByTestId('trigger');
+  const item1 = screen.getByTestId('item-one');
+
+  // Tab to focus trigger
+  await userEvent.click(document.body);
+  await userEvent.tab();
+  await expect.element(trigger).toHaveFocus();
+
+  await userEvent.keyboard('{ArrowRight}');
+
+  // Menu should be open and first item focused
+  await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
+  await expect.element(item1).toHaveFocus();
+});
+
+test('RCMenuButton vertical: opens on ArrowLeft and focuses last item', async () => {
+  const screen = render(
+    html`
+      <rc-menu-button data-testid="host" orientation="vertical">
+        <button slot="trigger" data-testid="trigger">Options</button>
+        <rc-menu label="Options">
+          <button data-testid="item-one">Cut</button>
+          <button data-testid="item-two">Copy</button>
+        </rc-menu>
+      </rc-menu-button>
+    `,
+  );
+
+  const trigger = screen.getByTestId('trigger');
+  const item2 = screen.getByTestId('item-two');
+
+  // Tab to focus trigger
+  await userEvent.click(document.body);
+  await userEvent.tab();
+  await expect.element(trigger).toHaveFocus();
+
+  await userEvent.keyboard('{ArrowLeft}');
+
+  // Menu should be open and last item focused
+  await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
+  await expect.element(item2).toHaveFocus();
+});
+
+test('RCMenuButton vertical: ArrowDown/ArrowUp do not open menu', async () => {
+  const screen = render(
+    html`
+      <rc-menu-button data-testid="host" orientation="vertical">
+        <button slot="trigger" data-testid="trigger">Options</button>
+        <rc-menu label="Options">
+          <button data-testid="item-one">Cut</button>
+        </rc-menu>
+      </rc-menu-button>
+    `,
+  );
+
+  const trigger = screen.getByTestId('trigger');
+
+  // Tab to focus trigger
+  await userEvent.click(document.body);
+  await userEvent.tab();
+  await expect.element(trigger).toHaveFocus();
+
+  // ArrowDown should not open menu in vertical orientation
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+
+  // ArrowUp should not open menu in vertical orientation
+  await userEvent.keyboard('{ArrowUp}');
+  await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('RCMenuButton inherits orientation from parent with role="menubar"', async () => {
+  const screen = render(
+    html`
+      <div role="menubar" aria-orientation="vertical">
+        <rc-menu-button data-testid="host">
+          <button slot="trigger" data-testid="trigger">Options</button>
+          <rc-menu label="Options">
+            <button data-testid="item-one">Cut</button>
+          </rc-menu>
+        </rc-menu-button>
+      </div>
+    `,
+  );
+
+  const trigger = screen.getByTestId('trigger');
+  const item1 = screen.getByTestId('item-one');
+
+  // Tab to focus trigger
+  await userEvent.click(document.body);
+  await userEvent.tab();
+  await expect.element(trigger).toHaveFocus();
+
+  // ArrowRight should open menu (inherited vertical orientation)
+  await userEvent.keyboard('{ArrowRight}');
+  await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
+  await expect.element(item1).toHaveFocus();
+});
+
 test('RCMenuButton reflects open attribute', async () => {
   const screen = render(
     html`

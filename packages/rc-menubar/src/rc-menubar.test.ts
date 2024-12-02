@@ -286,6 +286,105 @@ test('RCMenubar fires toggle events', async () => {
   expect(toggleSpy.mock.calls[1][0].detail.open).toBe(false);
 });
 
+test('RCMenubar vertical: opens menu with ArrowRight', async () => {
+  const screen = render(html`
+    <rc-menubar data-testid="menubar" label="Test Menu" orientation="vertical">
+      <rc-menu-button data-testid="menu-button-1">
+        <button slot="trigger" data-testid="trigger-1">File</button>
+        <rc-menu label="File">
+          <button data-testid="item-1">New</button>
+        </rc-menu>
+      </rc-menu-button>
+    </rc-menubar>
+  `);
+
+  const trigger1 = screen.getByTestId('trigger-1');
+  const item1 = screen.getByTestId('item-1');
+
+  // Focus trigger
+  await userEvent.click(document.body);
+  await userEvent.tab({ shift: true });
+  await expect.element(trigger1).toHaveFocus();
+
+  // ArrowRight opens menu in vertical orientation
+  await userEvent.keyboard('{ArrowRight}');
+
+  await expect.element(trigger1).toHaveAttribute('aria-expanded', 'true');
+  await expect.element(item1).toHaveFocus();
+});
+
+test('RCMenubar vertical: close menu and navigate to next with ArrowDown', async () => {
+  const screen = render(html`
+    <rc-menubar data-testid="menubar" label="Test Menu" orientation="vertical">
+      <rc-menu-button data-testid="menu-button-1">
+        <button slot="trigger" data-testid="trigger-1">File</button>
+        <rc-menu label="File">
+          <button data-testid="item-1-1">New</button>
+        </rc-menu>
+      </rc-menu-button>
+      <rc-menu-button data-testid="menu-button-2">
+        <button slot="trigger" data-testid="trigger-2">Edit</button>
+        <rc-menu label="Edit">
+          <button data-testid="item-2-1">Undo</button>
+        </rc-menu>
+      </rc-menu-button>
+    </rc-menubar>
+  `);
+
+  const trigger1 = screen.getByTestId('trigger-1');
+  const trigger2 = screen.getByTestId('trigger-2');
+  const item21 = screen.getByTestId('item-2-1');
+
+  // Focus first trigger and open menu with ArrowRight
+  await userEvent.click(document.body);
+  await userEvent.tab({ shift: true });
+  await expect.element(trigger1).toHaveFocus();
+  await userEvent.keyboard('{ArrowRight}');
+  await expect.element(trigger1).toHaveAttribute('aria-expanded', 'true');
+
+  // Close menu with Escape, returning focus to trigger
+  await userEvent.keyboard('{Escape}');
+  await expect.element(trigger1).toHaveAttribute('aria-expanded', 'false');
+  await expect.element(trigger1).toHaveFocus();
+
+  // ArrowDown navigates to next trigger
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.element(trigger2).toHaveFocus();
+
+  // ArrowRight opens the second menu
+  await userEvent.keyboard('{ArrowRight}');
+  await expect.element(trigger2).toHaveAttribute('aria-expanded', 'true');
+  await expect.element(item21).toHaveFocus();
+});
+
+test('RCMenubar vertical: menu-button inherits orientation from menubar', async () => {
+  const screen = render(html`
+    <rc-menubar data-testid="menubar" label="Test Menu" orientation="vertical">
+      <rc-menu-button data-testid="menu-button-1">
+        <button slot="trigger" data-testid="trigger-1">File</button>
+        <rc-menu label="File">
+          <button data-testid="item-1">New</button>
+        </rc-menu>
+      </rc-menu-button>
+    </rc-menubar>
+  `);
+
+  const trigger1 = screen.getByTestId('trigger-1');
+
+  // Focus trigger
+  await userEvent.click(document.body);
+  await userEvent.tab({ shift: true });
+  await expect.element(trigger1).toHaveFocus();
+
+  // ArrowDown should NOT open menu (it's the navigation key in vertical menubar)
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.element(trigger1).toHaveAttribute('aria-expanded', 'false');
+
+  // ArrowRight should open menu (inherited vertical orientation from menubar)
+  await userEvent.keyboard('{ArrowRight}');
+  await expect.element(trigger1).toHaveAttribute('aria-expanded', 'true');
+});
+
 test('RCMenubar vertical orientation uses Up/Down for navigation', async () => {
   const screen = render(html`
     <rc-menubar data-testid="menubar" label="Test Menu" orientation="vertical">
