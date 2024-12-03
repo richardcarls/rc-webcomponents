@@ -243,26 +243,12 @@ export class RCMenubar extends LitElement {
     }
   }
 
-  private _handleKeyDown(e: KeyboardEvent) {
-    // Handle Down arrow to open menu (not handled by keyNavigation for horizontal orientation)
-    if (e.key === 'ArrowDown' && this.orientation === 'horizontal') {
-      if (this._lastFocused) {
-        const menuButton = this._getMenuButtonForTrigger(this._lastFocused);
-        if (menuButton && !menuButton.open) {
-          e.preventDefault();
-          menuButton.openMenu();
-        }
-      }
-    }
-  }
-
   protected render() {
     return html`
       <div
         id="root"
         part="root"
         ${keyNavigation(this._onNavigate, { handleEscape: true })}
-        @keydown=${this._handleKeyDown}
         data-interaction-mode="keyboard"
         role="menubar"
         aria-orientation=${this.orientation}

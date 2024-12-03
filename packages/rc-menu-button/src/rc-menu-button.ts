@@ -1,6 +1,10 @@
 import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
+import {
+  keyNavigation,
+  type KeyboardNavigationAction,
+} from '@rcarls/rc-common';
 import type { RCMenu } from '@rcarls/rc-menu';
 
 import menuButtonStyles from './rc-menu-button.styles';
@@ -84,17 +88,16 @@ export class RCMenuButton extends LitElement {
     document.removeEventListener('click', this._boundHandleDocumentClick, true);
   }
 
-  /** Opens the menu and focuses the first item */
-  openMenu() {
+  /** Opens the menu and focuses the first or last item */
+  openMenu(focusTarget: 'first' | 'last' = 'first') {
     if (this.open) return;
 
     this.open = true;
     this._dispatchToggle();
 
-    // Focus first menu item after render
     this.updateComplete.then(() => {
       const menu = this._menu?.deref();
-      menu?.focusFirst();
+      focusTarget === 'last' ? menu?.focusLast() : menu?.focusFirst();
     });
   }
 
@@ -156,37 +159,20 @@ export class RCMenuButton extends LitElement {
     }
   }
 
-  private _handleTriggerKeyDown(e: KeyboardEvent) {
-    const key = e.key;
-    const vertical = this._resolvedOrientation === 'vertical';
-    const openKey = vertical ? 'ArrowRight' : 'ArrowDown';
-    const openLastKey = vertical ? 'ArrowLeft' : 'ArrowUp';
-
-    switch (key) {
-      case 'Enter':
-      case ' ':
-      case openKey:
-        e.preventDefault();
+  private _onNavigate = (action: KeyboardNavigationAction) => {
+    switch (action) {
+      case 'open-to-first':
+      case 'activate':
         this.openMenu();
         break;
-      case openLastKey:
-        e.preventDefault();
-        this.open = true;
-        this._dispatchToggle();
-        // Focus last item instead of first
-        this.updateComplete.then(() => {
-          const menu = this._menu?.deref();
-          menu?.focusLast();
-        });
+      case 'open-to-last':
+        this.openMenu('last');
         break;
-      case 'Escape':
-        if (this.open) {
-          e.preventDefault();
-          this.closeMenu();
-        }
+      case 'escape':
+        this.closeMenu();
         break;
     }
-  }
+  };
 
   private _handleTriggerClick(e: MouseEvent) {
     e.preventDefault();
@@ -229,7 +215,13 @@ export class RCMenuButton extends LitElement {
       <div id="root" part="root">
         <div
           id="trigger-wrap"
-          @keydown=${this._handleTriggerKeyDown}
+          ${keyNavigation(this._onNavigate, {
+            navigationAxis: this._resolvedOrientation,
+            handleNavAxis: false,
+            handleOpenAxis: true,
+            handleActivate: true,
+            handleEscape: this.open,
+          })}
           @click=${this._handleTriggerClick}
         >
           <slot

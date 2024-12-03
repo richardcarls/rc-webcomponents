@@ -9,6 +9,8 @@ export type KeyboardNavigationAction =
   | 'prev'
   | 'start'
   | 'end'
+  | 'open-to-first'
+  | 'open-to-last'
   /** @deprecated Use 'toggle' action instead. Will be removed in a future version. */
   | 'collapse'
   /** @deprecated Use 'toggle' action instead. Will be removed in a future version. */
@@ -39,6 +41,30 @@ export interface KeyNavigationOptions {
    * @default false
    */
   handleActivate?: boolean;
+
+  /**
+   * Explicitly set the navigation axis, overriding role-based auto-detection.
+   * The navigation axis determines which arrow keys map to 'next'/'prev'.
+   * Required when the element has no ARIA role (e.g. a menu-button trigger wrapper).
+   */
+  navigationAxis?: 'horizontal' | 'vertical';
+
+  /**
+   * Handle navigation-axis arrow keys ('next'/'prev') and Home/End ('start'/'end').
+   * Set to false for elements that don't navigate items themselves (e.g. menu buttons
+   * that let the parent menubar handle navigation).
+   * @default true
+   */
+  handleNavAxis?: boolean;
+
+  /**
+   * Handle open-axis arrow keys (perpendicular to the navigation axis).
+   * Dispatches 'open-to-first' and 'open-to-last' actions.
+   * For horizontal navigation axis: ArrowDown → 'open-to-first', ArrowUp → 'open-to-last'.
+   * For vertical navigation axis: ArrowRight → 'open-to-first', ArrowLeft → 'open-to-last'.
+   * @default false
+   */
+  handleOpenAxis?: boolean;
 }
 
 class KeyboardNavigationDirective extends AsyncDirective {
@@ -49,7 +75,14 @@ class KeyboardNavigationDirective extends AsyncDirective {
   private _options: KeyNavigationOptions = {};
   private _isCollapsed: boolean = false;
 
-  protected get orientation() {
+  /**
+   * The navigation axis determines which arrow keys map to 'next'/'prev'.
+   * Checks the explicit `navigationAxis` option first, then auto-detects
+   * from the element's ARIA role and aria-orientation attribute.
+   */
+  protected get navigationAxis(): 'horizontal' | 'vertical' {
+    if (this._options.navigationAxis) return this._options.navigationAxis;
+
     switch (this._element?.deref()?.role) {
       case 'slider':
       case 'tablist':
@@ -82,95 +115,79 @@ class KeyboardNavigationDirective extends AsyncDirective {
     }
   }
 
-  protected _onKeydown(e: KeyboardEvent) {
-    let isHandled = false;
-
-    switch (e.key) {
-      case 'ArrowUp':
+  private _normalizeKey(key: string): string {
+    switch (key) {
       case 'Up':
-        if (this.orientation === 'vertical') {
-          this._callback('prev');
-          isHandled = true;
-        }
-        break;
-
-      case 'ArrowDown':
+        return 'ArrowUp';
       case 'Down':
-        if (this.orientation === 'vertical') {
-          this._callback('next');
-          isHandled = true;
-        }
-        break;
-
-      case 'ArrowRight':
-      case 'Right':
-        if (this.orientation !== 'vertical') {
-          this._callback('next');
-          isHandled = true;
-        }
-        break;
-
-      case 'ArrowLeft':
+        return 'ArrowDown';
       case 'Left':
-        if (this.orientation !== 'vertical') {
-          this._callback('prev');
-          isHandled = true;
-        }
-        break;
+        return 'ArrowLeft';
+      case 'Right':
+        return 'ArrowRight';
+      default:
+        return key;
+    }
+  }
 
-      case 'Home':
-        this._callback('start');
-        this._isCollapsed = true;
-        isHandled = true;
-        break;
+  protected _onKeydown(e: KeyboardEvent) {
+    const key = this._normalizeKey(e.key);
 
-      case 'End':
-        this._callback('end');
-        this._isCollapsed = true;
-        isHandled = true;
-        break;
+    // Compute axis-based key mappings
+    const axis = this.navigationAxis;
+    const navNext = axis === 'horizontal' ? 'ArrowRight' : 'ArrowDown';
+    const navPrev = axis === 'horizontal' ? 'ArrowLeft' : 'ArrowUp';
+    const openFirst = axis === 'horizontal' ? 'ArrowDown' : 'ArrowRight';
+    const openLast = axis === 'horizontal' ? 'ArrowUp' : 'ArrowLeft';
 
-      case 'Enter':
+    let action: KeyboardNavigationAction | undefined;
+
+    // Navigation axis
+    if (this._options.handleNavAxis !== false) {
+      if (key === navNext) action = 'next';
+      else if (key === navPrev) action = 'prev';
+      else if (key === 'Home') action = 'start';
+      else if (key === 'End') action = 'end';
+    }
+
+    // Open axis (perpendicular to navigation)
+    if (!action && this._options.handleOpenAxis) {
+      if (key === openFirst) action = 'open-to-first';
+      else if (key === openLast) action = 'open-to-last';
+    }
+
+    // Enter / Space / Escape
+    if (!action) {
+      if (key === 'Enter') {
         if (this._options.handleActivate) {
-          this._callback('activate');
+          action = 'activate';
         } else {
           // TODO: Replace 'collapse'/'restore' with single 'toggle' action in future version
-          this._callback(this._isCollapsed ? 'restore' : 'collapse');
+          action = this._isCollapsed ? 'restore' : 'collapse';
           this._isCollapsed = !this._isCollapsed;
         }
-        isHandled = true;
-        break;
-
-      case ' ':
-        if (this._options.handleActivate) {
-          this._callback('activate');
-          isHandled = true;
-        }
-        break;
-
-      case 'Escape':
-        if (this._options.handleEscape) {
-          this._callback('escape');
-          isHandled = true;
-        }
-        break;
-
-      // Listen to global Tab navigation events to enable keyboard-only focus styling
-      case 'Tab':
+      } else if (key === ' ' && this._options.handleActivate) {
+        action = 'activate';
+      } else if (key === 'Escape' && this._options.handleEscape) {
+        action = 'escape';
+      } else if (key === 'Tab') {
+        // Set interaction mode for keyboard-only focus styling, but don't handle
         if (this._options.useInteractionModeAttr) {
           this._element
             ?.deref()
             ?.setAttribute('data-interaction-mode', 'keyboard');
         }
-
-        // Don't mark as handled to let event bubble up
-        break;
-
-      default:
-        break;
+      }
     }
 
-    if (isHandled) {
+    // Update collapsed state for Home/End (legacy behavior)
+    if (action === 'start' || action === 'end') {
+      this._isCollapsed = true;
+    }
+
+    if (action != null) {
+      this._callback(action);
+
       if (this._options.useInteractionModeAttr) {
         this._element
           ?.deref()
@@ -217,27 +234,29 @@ class KeyboardNavigationDirective extends AsyncDirective {
     part: ElementPart,
     [cb, optionsOrBoolean]: Parameters<this['render']>,
   ) {
+    // Init listeners once on first connection
     if (this.isConnected && this._element?.deref() === undefined) {
       this._element = new WeakRef(part.element);
-      this._callback = cb.bind(part.options?.host ?? part.element);
-
-      // Handle deprecated boolean parameter
-      if (typeof optionsOrBoolean === 'boolean') {
-        if (import.meta.env?.DEV) {
-          console.warn(
-            '[keyNavigation] Passing a boolean as the second parameter is deprecated. ' +
-              'Use an options object instead: { useInteractionModeAttr: true }',
-          );
-        }
-        this._options = { useInteractionModeAttr: optionsOrBoolean };
-      } else {
-        this._options = {
-          useInteractionModeAttr: true,
-          ...optionsOrBoolean,
-        };
-      }
-
       this._init();
+    }
+
+    // Always update callback and options (supports reactive property changes)
+    this._callback = cb.bind(part.options?.host ?? part.element);
+
+    // Handle deprecated boolean parameter
+    if (typeof optionsOrBoolean === 'boolean') {
+      if (import.meta.env?.DEV) {
+        console.warn(
+          '[keyNavigation] Passing a boolean as the second parameter is deprecated. ' +
+            'Use an options object instead: { useInteractionModeAttr: true }',
+        );
+      }
+      this._options = { useInteractionModeAttr: optionsOrBoolean };
+    } else {
+      this._options = {
+        useInteractionModeAttr: true,
+        ...optionsOrBoolean,
+      };
     }
   }
 
