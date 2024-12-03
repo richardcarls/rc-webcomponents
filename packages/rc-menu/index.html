@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>rc-menu</title>
+
+    <script type="module" src="/src/rc-menu.ts"></script>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        padding: 2rem;
+      }
+      .demo-section {
+        margin-bottom: 2rem;
+      }
+      h2 {
+        margin-bottom: 0.5rem;
+      }
+      rc-menu button {
+        all: unset;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.5em 1em;
+        cursor: pointer;
+      }
+      rc-menu button:hover {
+        background: color-mix(in srgb, currentColor 10%, transparent);
+      }
+      rc-menu button:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+      }
+      rc-menu button[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>rc-menu</h1>
+    <p>
+      Reference:
+      <a href="https://www.w3.org/WAI/ARIA/apg/patterns/menu/"
+        >WAI-ARIA Menu Pattern</a
+      >
+    </p>
+
+    <div class="demo-section">
+      <h2>Basic Menu</h2>
+      <rc-menu label="Actions">
+        <button onclick="handleAction('cut')">Cut</button>
+        <button onclick="handleAction('copy')">Copy</button>
+        <button onclick="handleAction('paste')">Paste</button>
+      </rc-menu>
+    </div>
+
+    <div class="demo-section">
+      <h2>Menu with Disabled Items</h2>
+      <rc-menu label="File Actions">
+        <button onclick="handleAction('new')">New</button>
+        <button onclick="handleAction('open')">Open</button>
+        <button onclick="handleAction('save')" disabled>Save</button>
+        <button onclick="handleAction('close')">Close</button>
+      </rc-menu>
+    </div>
+
+    <script>
+      window.handleAction = function (action) {
+        console.log('Action:', action);
+      };
+
+      document.querySelectorAll('rc-menu').forEach((menu) => {
+        menu.addEventListener('rc-menu-activate', (e) => {
+          console.log('rc-menu-activate:', e.detail.item.textContent);
+        });
+
+        menu.addEventListener('rc-menu-close', () => {
+          console.log('rc-menu-close: Escape pressed');
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -9,18 +9,80 @@ export type KeyboardNavigationAction =
   | 'prev'
   | 'start'
   | 'end'
+  | 'open-to-first'
+  | 'open-to-last'
+  /** @deprecated Use 'toggle' action instead. Will be removed in a future version. */
   | 'collapse'
-  | 'restore';
+  /** @deprecated Use 'toggle' action instead. Will be removed in a future version. */
+  | 'restore'
+  | 'escape'
+  | 'activate'
+  | 'toggle';
+
+/**
+ * Options for the keyNavigation directive.
+ */
+export interface KeyNavigationOptions {
+  /**
+   * Set data-interaction-mode attribute for keyboard vs mouse styling.
+   * @default true
+   */
+  useInteractionModeAttr?: boolean;
+
+  /**
+   * Dispatch 'escape' action on Escape key.
+   * @default false
+   */
+  handleEscape?: boolean;
+
+  /**
+   * Dispatch 'activate' action on Enter/Space.
+   * When enabled, Enter/Space will dispatch 'activate' instead of 'collapse'/'restore'.
+   * @default false
+   */
+  handleActivate?: boolean;
+
+  /**
+   * Explicitly set the navigation axis, overriding role-based auto-detection.
+   * The navigation axis determines which arrow keys map to 'next'/'prev'.
+   * Required when the element has no ARIA role (e.g. a menu-button trigger wrapper).
+   */
+  navigationAxis?: 'horizontal' | 'vertical';
+
+  /**
+   * Handle navigation-axis arrow keys ('next'/'prev') and Home/End ('start'/'end').
+   * Set to false for elements that don't navigate items themselves (e.g. menu buttons
+   * that let the parent menubar handle navigation).
+   * @default true
+   */
+  handleNavAxis?: boolean;
+
+  /**
+   * Handle open-axis arrow keys (perpendicular to the navigation axis).
+   * Dispatches 'open-to-first' and 'open-to-last' actions.
+   * For horizontal navigation axis: ArrowDown → 'open-to-first', ArrowUp → 'open-to-last'.
+   * For vertical navigation axis: ArrowRight → 'open-to-first', ArrowLeft → 'open-to-last'.
+   * @default false
+   */
+  handleOpenAxis?: boolean;
+}
 
 class KeyboardNavigationDirective extends AsyncDirective {
   private _element?: WeakRef<Element>;
   private _keyDownHandle!: (ev: KeyboardEvent) => any;
   private _mouseClickHandle!: (ev: MouseEvent) => any;
   private _callback!: (action: KeyboardNavigationAction) => void;
-  private _useInteractionModeAttr?: boolean;
+  private _options: KeyNavigationOptions = {};
   private _isCollapsed: boolean = false;
 
-  protected get orientation() {
+  /**
+   * The navigation axis determines which arrow keys map to 'next'/'prev'.
+   * Checks the explicit `navigationAxis` option first, then auto-detects
+   * from the element's ARIA role and aria-orientation attribute.
+   */
+  protected get navigationAxis(): 'horizontal' | 'vertical' {
+    if (this._options.navigationAxis) return this._options.navigationAxis;
+
     switch (this._element?.deref()?.role) {
       case 'slider':
       case 'tablist':
@@ -53,77 +115,80 @@ class KeyboardNavigationDirective extends AsyncDirective {
     }
   }
 
-  protected _onKeydown(e: KeyboardEvent) {
-    let isHandled = false;
-
-    switch (e.key) {
-      case 'ArrowUp':
+  private _normalizeKey(key: string): string {
+    switch (key) {
       case 'Up':
-        if (this.orientation === 'vertical') {
-          this._callback('prev');
-          isHandled = true;
-        }
-        break;
-
-      case 'ArrowDown':
+        return 'ArrowUp';
       case 'Down':
-        if (this.orientation === 'vertical') {
-          this._callback('next');
-          isHandled = true;
-        }
-        break;
-
-      case 'ArrowRight':
-      case 'Right':
-        if (this.orientation !== 'vertical') {
-          this._callback('next');
-          isHandled = true;
-        }
-        break;
-
-      case 'ArrowLeft':
+        return 'ArrowDown';
       case 'Left':
-        if (this.orientation !== 'vertical') {
-          this._callback('prev');
-          isHandled = true;
+        return 'ArrowLeft';
+      case 'Right':
+        return 'ArrowRight';
+      default:
+        return key;
+    }
+  }
+
+  protected _onKeydown(e: KeyboardEvent) {
+    const key = this._normalizeKey(e.key);
+
+    // Compute axis-based key mappings
+    const axis = this.navigationAxis;
+    const navNext = axis === 'horizontal' ? 'ArrowRight' : 'ArrowDown';
+    const navPrev = axis === 'horizontal' ? 'ArrowLeft' : 'ArrowUp';
+    const openFirst = axis === 'horizontal' ? 'ArrowDown' : 'ArrowRight';
+    const openLast = axis === 'horizontal' ? 'ArrowUp' : 'ArrowLeft';
+
+    let action: KeyboardNavigationAction | undefined;
+
+    // Navigation axis
+    if (this._options.handleNavAxis !== false) {
+      if (key === navNext) action = 'next';
+      else if (key === navPrev) action = 'prev';
+      else if (key === 'Home') action = 'start';
+      else if (key === 'End') action = 'end';
+    }
+
+    // Open axis (perpendicular to navigation)
+    if (!action && this._options.handleOpenAxis) {
+      if (key === openFirst) action = 'open-to-first';
+      else if (key === openLast) action = 'open-to-last';
+    }
+
+    // Enter / Space / Escape
+    if (!action) {
+      if (key === 'Enter') {
+        if (this._options.handleActivate) {
+          action = 'activate';
+        } else {
+          // TODO: Replace 'collapse'/'restore' with single 'toggle' action in future version
+          action = this._isCollapsed ? 'restore' : 'collapse';
+          this._isCollapsed = !this._isCollapsed;
         }
-        break;
-
-      case 'Home':
-        this._callback('start');
-        this._isCollapsed = true;
-        isHandled = true;
-        break;
-
-      case 'End':
-        this._callback('end');
-        this._isCollapsed = true;
-        isHandled = true;
-        break;
-
-      case 'Enter':
-        this._callback(this._isCollapsed ? 'restore' : 'collapse');
-        this._isCollapsed = !this._isCollapsed;
-        isHandled = true;
-        break;
-
-      // Listen to global Tab navigation events to enable keyboard-only focus styling
-      case 'Tab':
-        if (this._useInteractionModeAttr) {
+      } else if (key === ' ' && this._options.handleActivate) {
+        action = 'activate';
+      } else if (key === 'Escape' && this._options.handleEscape) {
+        action = 'escape';
+      } else if (key === 'Tab') {
+        // Set interaction mode for keyboard-only focus styling, but don't handle
+        if (this._options.useInteractionModeAttr) {
           this._element
             ?.deref()
             ?.setAttribute('data-interaction-mode', 'keyboard');
         }
-
-        // Don't mark as handled to let event bubble up
-        break;
-
-      default:
-        break;
+      }
     }
 
-    if (isHandled) {
-      if (this._useInteractionModeAttr) {
+    // Update collapsed state for Home/End (legacy behavior)
+    if (action === 'start' || action === 'end') {
+      this._isCollapsed = true;
+    }
+
+    if (action != null) {
+      this._callback(action);
+
+      if (this._options.useInteractionModeAttr) {
         this._element
           ?.deref()
           ?.setAttribute('data-interaction-mode', 'keyboard');
@@ -135,7 +200,7 @@ class KeyboardNavigationDirective extends AsyncDirective {
   }
 
   protected _onMouseClick(_e: MouseEvent) {
-    if (this._useInteractionModeAttr) {
+    if (this._options.useInteractionModeAttr) {
       // For :focus-within styling only when focused item is :focus-visible
       this._element?.deref()?.removeAttribute('data-interaction-mode');
     }
@@ -152,23 +217,46 @@ class KeyboardNavigationDirective extends AsyncDirective {
     }
   }
 
+  /**
+   * @param _cb - Callback function invoked with the navigation action
+   * @param _options - Options object or deprecated boolean for useInteractionModeAttr
+   * @deprecated Passing a boolean as the second parameter is deprecated.
+   *             Use an options object instead: `{ useInteractionModeAttr: true }`
+   */
   render(
     _cb: (action: KeyboardNavigationAction) => void,
-    _useInteractionModeAttr?: boolean,
+    _options?: KeyNavigationOptions | boolean,
   ) {
     return nothing;
   }
 
   update(
     part: ElementPart,
-    [cb, useInteractionModeAttr]: Parameters<this['render']>,
+    [cb, optionsOrBoolean]: Parameters<this['render']>,
   ) {
+    // Init listeners once on first connection
     if (this.isConnected && this._element?.deref() === undefined) {
       this._element = new WeakRef(part.element);
-      this._callback = cb.bind(part.options?.host ?? part.element);
-      this._useInteractionModeAttr = useInteractionModeAttr ?? true;
-
       this._init();
+    }
+
+    // Always update callback and options (supports reactive property changes)
+    this._callback = cb.bind(part.options?.host ?? part.element);
+
+    // Handle deprecated boolean parameter
+    if (typeof optionsOrBoolean === 'boolean') {
+      if (import.meta.env?.DEV) {
+        console.warn(
+          '[keyNavigation] Passing a boolean as the second parameter is deprecated. ' +
+            'Use an options object instead: { useInteractionModeAttr: true }',
+        );
+      }
+      this._options = { useInteractionModeAttr: optionsOrBoolean };
+    } else {
+      this._options = {
+        useInteractionModeAttr: true,
+        ...optionsOrBoolean,
+      };
     }
   }
 
