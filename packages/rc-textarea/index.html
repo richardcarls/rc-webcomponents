@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc-textarea demo</title>
+    <style>
+      body {
+        padding: 2rem 1rem;
+        font-family: system-ui, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        background: #f5f5f5;
+      }
+
+      h2 {
+        margin-top: 2rem;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 0.25em;
+      }
+
+      p.note {
+        font-size: 0.875em;
+        color: #555;
+        margin-bottom: 0.5em;
+      }
+
+      /* rc-textarea requires explicit dimensions or a sized flex/grid parent. */
+      rc-textarea {
+        border-radius: 4px;
+      }
+
+      .fixed-size {
+        width: 600px;
+        height: 200px;
+      }
+
+      /* Dark theme example */
+      .dark-theme {
+        --rc-textarea-background: #282c34;
+        --rc-textarea-color: #abb2bf;
+        --rc-textarea-gutter-bg: #21252b;
+        --rc-textarea-gutter-color: #636d83;
+        --rc-textarea-gutter-border: #181a1f;
+        --rc-textarea-caret-color: #528bff;
+      }
+    </style>
+    <script type="module" src="/src/rc-textarea.ts"></script>
+    <script type="module">
+      customElements.whenDefined('rc-textarea').then(() => {
+        // ── Mark Decorations + Diagnostics demo ──────────────────────────────
+        const demo = document.getElementById('demo-decorations');
+
+        // Decoration CSS must be injected into the shadow root — light-DOM
+        // stylesheets don't pierce the shadow boundary.
+        demo.setDecorationStyles(`
+          .kw { color: #c678dd; }
+          .fn-name { color: #61afef; }
+          .highlight-line { background: rgba(97, 175, 239, 0.1); }
+        `);
+
+        // Highlight "function" keyword
+        demo.addDecoration({
+          type: 'mark',
+          range: { from: 0, to: 8 },
+          className: 'kw',
+        });
+        // Highlight "add"
+        demo.addDecoration({
+          type: 'mark',
+          range: { from: 9, to: 12 },
+          className: 'fn-name',
+        });
+        // Line decoration on line 2
+        demo.addDecoration({
+          type: 'line',
+          line: 2,
+          className: 'highlight-line',
+        });
+        // Diagnostics
+        demo.setDiagnostics([
+          {
+            line: 2,
+            severity: 'warning',
+            message: "Parameter 'a' is implicitly 'any'",
+          },
+          {
+            line: 3,
+            severity: 'error',
+            message: "Cannot find name 'result'",
+          },
+        ]);
+
+        // ── Pattern matching demo ─────────────────────────────────────────────
+        const patterns = document.getElementById('demo-patterns');
+
+        patterns.setDecorationStyles(`
+          .url-mark { color: #98c379; border-bottom: 1px solid #98c379; }
+          .num-mark { color: #d19a66; }
+        `);
+
+        // Highlight URLs
+        patterns.addPattern({
+          pattern: /https?:\/\/[^\s]+/g,
+          className: 'url-mark',
+        });
+        // Highlight numbers
+        patterns.addPattern({
+          pattern: /\b\d+(\.\d+)?\b/g,
+          className: 'num-mark',
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>rc-textarea</h1>
+    <p>
+      A progressive enhancement component that adds line numbers, word wrap,
+      range highlighting, Error Lens-style diagnostics, and pattern-based
+      decoration to a native <code>&lt;textarea&gt;</code>.
+    </p>
+    <p class="note">
+      <strong>Note:</strong> The host element requires explicit
+      <code>width</code> + <code>height</code> (or use <code>auto-grow</code>
+      for height). Without dimensions, the absolutely-positioned mirror and
+      textarea have nothing to fill.
+    </p>
+
+    <h2>Basic</h2>
+    <rc-textarea class="fixed-size">
+      <textarea>Hello, world!</textarea>
+    </rc-textarea>
+
+    <h2>Line Numbers</h2>
+    <rc-textarea class="fixed-size" lineNumbers>
+      <textarea>Line one
+Line two
+Line three
+Line four
+Line five</textarea>
+    </rc-textarea>
+
+    <h2>Word Wrap</h2>
+    <rc-textarea class="fixed-size" lineNumbers wordWrap>
+      <textarea>This is a very long line that will wrap inside the editor when word wrap is enabled, keeping text visible without horizontal scrolling.
+Short line.
+Another long line: lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</textarea>
+    </rc-textarea>
+
+    <h2>Auto-Grow</h2>
+    <p class="note">
+      Height grows with content. Width comes from the textarea's
+      <code>cols</code> attribute (or set <code>width</code> on the host).
+    </p>
+    <rc-textarea style="width: 600px;" autoGrow lineNumbers>
+      <textarea rows="3">Type here and the editor will grow...
+Add more lines to see it expand.</textarea>
+    </rc-textarea>
+
+    <h2>Mark Decorations + Diagnostics</h2>
+    <p class="note">
+      Decoration CSS classes must not alter inline layout dimensions (no
+      <code>padding</code>, <code>margin</code>, <code>letter-spacing</code>).
+      Use <code>background-color</code>, <code>color</code>,
+      <code>text-decoration</code>, or <code>box-shadow</code> instead.
+    </p>
+    <rc-textarea id="demo-decorations" class="fixed-size" lineNumbers>
+      <textarea>function add(a, b) {
+  return a + b;
+}</textarea>
+    </rc-textarea>
+
+    <h2>Pattern Matching</h2>
+    <rc-textarea id="demo-patterns" class="fixed-size" lineNumbers>
+      <textarea>Visit https://example.com or https://test.org for details.
+The answer is 42 and Pi is approximately 3.14159.
+Another URL: https://github.com/microsoft/vscode</textarea>
+    </rc-textarea>
+
+    <h2>Dark Theme</h2>
+    <rc-textarea class="fixed-size dark-theme" lineNumbers wordWrap>
+      <textarea>const greeting = "Hello, world!";
+const x = 42;
+// This is a comment
+console.log(greeting);</textarea>
+    </rc-textarea>
+  </body>
+</html>

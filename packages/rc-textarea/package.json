@@ -1,0 +1,42 @@
+{
+  "name": "@rcarls/rc-textarea",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/rc-textarea.umd.cjs",
+  "module": "./dist/rc-textarea.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/rc-textarea.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/rc-textarea.umd.cjs"
+      }
+    }
+  },
+  "types": "./dist/types/index.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test:browser": "vitest"
+  },
+  "devDependencies": {
+    "@vitest/browser-webdriverio": "^4.0.6",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.6",
+    "vitest-browser-lit": "^1.0.1",
+    "webdriverio": "^9.20.0"
+  },
+  "peerDependencies": {
+    "lit": "^3.0.0"
+  }
+}
