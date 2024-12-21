@@ -5,184 +5,638 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>rc-textarea demo</title>
     <style>
-      body {
-        padding: 2rem 1rem;
-        font-family: system-ui, sans-serif;
-        max-width: 800px;
-        margin: 0 auto;
-        background: #f5f5f5;
+      /* ── Page tokens ─────────────────────────────────────────────────────── */
+      :root {
+        --page-bg: #f6f8fa;
+        --page-fg: #24292f;
+        --page-subtle: #6e7781;
+        --page-border: #d0d7de;
+        --page-card-bg: #ffffff;
+        --page-hr: #d0d7de;
+
+        /* Decoration colour tokens — pierced into shadow DOM via CSS custom props.
+           Sections 2 & 5 use these so they adapt when the page theme changes. */
+        --demo-kw:     #a626a4;
+        --demo-fn:     #4078f2;
+        --demo-str:    #50a14f;
+        --demo-num:    #986801;
+        --demo-var:    #e45649;
+        --demo-url:    #22863a;
+        --demo-email:  #005cc5;
+        --demo-active-line: rgba(0, 0, 0, 0.04);
+        --demo-added-line:  rgba(40, 167, 69, 0.08);
       }
+
+      [data-theme="dark"] {
+        --page-bg: #0d1117;
+        --page-fg: #e6edf3;
+        --page-subtle: #8b949e;
+        --page-border: #30363d;
+        --page-card-bg: #161b22;
+        --page-hr: #21262d;
+
+        --demo-kw:     #c678dd;
+        --demo-fn:     #61afef;
+        --demo-str:    #98c379;
+        --demo-num:    #d19a66;
+        --demo-var:    #e06c75;
+        --demo-url:    #7ee787;
+        --demo-email:  #79c0ff;
+        --demo-active-line: rgba(255, 255, 255, 0.05);
+        --demo-added-line:  rgba(46, 160, 67, 0.15);
+      }
+
+      /* ── Base ────────────────────────────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        padding: 2.5rem 1.5rem 5rem;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        background: var(--page-bg);
+        color: var(--page-fg);
+        transition: background 0.2s, color 0.2s;
+      }
+
+      .page { max-width: 900px; margin: 0 auto; }
+
+      code {
+        font-family: monospace;
+        font-size: 0.88em;
+        background: color-mix(in srgb, currentColor 8%, transparent);
+        padding: 0.1em 0.3em;
+        border-radius: 3px;
+      }
+
+      /* ── Header ──────────────────────────────────────────────────────────── */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.2rem;
+      }
+
+      h1 { margin: 0; font-size: 1.75rem; }
+
+      .subtitle {
+        margin: 0.2rem 0 2.5rem;
+        color: var(--page-subtle);
+        font-size: 0.9rem;
+      }
+
+      #theme-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4em;
+        padding: 0.4em 0.85em;
+        font: inherit;
+        font-size: 0.85rem;
+        cursor: pointer;
+        border: 1px solid var(--page-border);
+        border-radius: 6px;
+        background: var(--page-card-bg);
+        color: var(--page-fg);
+        transition: background 0.15s, border-color 0.15s;
+        white-space: nowrap;
+      }
+      #theme-toggle:hover { background: color-mix(in srgb, currentColor 6%, var(--page-card-bg)); }
+
+      /* ── Sections ────────────────────────────────────────────────────────── */
+      .section { margin-bottom: 2.5rem; }
 
       h2 {
-        margin-top: 2rem;
-        border-bottom: 1px solid #ccc;
-        padding-bottom: 0.25em;
+        margin: 0 0 0.25rem;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
       }
 
-      p.note {
-        font-size: 0.875em;
-        color: #555;
-        margin-bottom: 0.5em;
+      .note {
+        margin: 0 0 0.9rem;
+        font-size: 0.82rem;
+        color: var(--page-subtle);
+        line-height: 1.6;
       }
 
-      /* rc-textarea requires explicit dimensions or a sized flex/grid parent. */
+      hr {
+        border: none;
+        border-top: 1px solid var(--page-hr);
+        margin: 2.5rem 0;
+      }
+
+      /* ── Editor sizing ───────────────────────────────────────────────────── */
       rc-textarea {
-        border-radius: 4px;
+        border-radius: 6px;
+        width: 100%;
       }
 
-      .fixed-size {
-        width: 600px;
-        height: 200px;
+      .h-sm  { height: 100px; }
+      .h-md  { height: 180px; }
+      .h-lg  { height: 220px; }
+
+      /* ── Theme grid ──────────────────────────────────────────────────────── */
+      .theme-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.25rem;
       }
 
-      /* Dark theme example */
-      .dark-theme {
-        --rc-textarea-background: #282c34;
-        --rc-textarea-color: #abb2bf;
-        --rc-textarea-gutter-bg: #21252b;
-        --rc-textarea-gutter-color: #636d83;
+      .theme-card { display: flex; flex-direction: column; gap: 0.4rem; }
+
+      .theme-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--page-subtle);
+      }
+
+      /* ── Theme: One Dark ─────────────────────────────────────────────────── */
+      .t-onedark {
+        --rc-textarea-background:    #282c34;
+        --rc-textarea-color:         #abb2bf;
+        --rc-textarea-caret-color:   #528bff;
+        --rc-textarea-gutter-bg:     #21252b;
+        --rc-textarea-gutter-color:  #4b5263;
         --rc-textarea-gutter-border: #181a1f;
-        --rc-textarea-caret-color: #528bff;
+        --rc-textarea-border:        1px solid #181a1f;
+        --rc-textarea-focus-outline: 2px solid #528bff;
+        --rc-textarea-mark-error-color:   #e06c75;
+        --rc-textarea-mark-warning-color: #e5c07b;
+      }
+
+      /* ── Theme: GitHub Light ─────────────────────────────────────────────── */
+      .t-github {
+        --rc-textarea-background:    #ffffff;
+        --rc-textarea-color:         #24292f;
+        --rc-textarea-gutter-bg:     #f6f8fa;
+        --rc-textarea-gutter-color:  #8c959f;
+        --rc-textarea-gutter-border: #d0d7de;
+        --rc-textarea-border:        1px solid #d0d7de;
+        --rc-textarea-focus-outline: 2px solid #0969da;
+        --rc-textarea-mark-error-color:   #cf222e;
+        --rc-textarea-mark-warning-color: #9a6700;
+      }
+
+      /* ── Theme: Solarized Dark ───────────────────────────────────────────── */
+      .t-solarized {
+        --rc-textarea-background:    #002b36;
+        --rc-textarea-color:         #839496;
+        --rc-textarea-caret-color:   #93a1a1;
+        --rc-textarea-gutter-bg:     #073642;
+        --rc-textarea-gutter-color:  #586e75;
+        --rc-textarea-gutter-border: #073642;
+        --rc-textarea-border:        1px solid #073642;
+        --rc-textarea-focus-outline: 2px solid #268bd2;
+        --rc-textarea-mark-error-color:   #dc322f;
+        --rc-textarea-mark-warning-color: #cb4b16;
+      }
+
+      /* ── Generic editors: explicit dark mode ─────────────────────────────── */
+      /* Editors without a hard-coded theme follow the page's dark/light state. */
+      [data-theme="dark"] .auto-theme {
+        --rc-textarea-background:    #1e1e2e;
+        --rc-textarea-color:         #cdd6f4;
+        --rc-textarea-gutter-bg:     #181825;
+        --rc-textarea-gutter-color:  #585b70;
+        --rc-textarea-gutter-border: #313244;
+        --rc-textarea-border:        1px solid #313244;
+        --rc-textarea-focus-outline: 2px solid #89b4fa;
+        --rc-textarea-mark-error-color:   #f38ba8;
+        --rc-textarea-mark-warning-color: #f9e2af;
+        --rc-textarea-mark-info-color:    #89b4fa;
+        --rc-textarea-mark-hint-color:    #a6e3a1;
       }
     </style>
     <script type="module" src="/src/rc-textarea.ts"></script>
     <script type="module">
       customElements.whenDefined('rc-textarea').then(() => {
-        // ── Mark Decorations + Diagnostics demo ──────────────────────────────
-        const demo = document.getElementById('demo-decorations');
+        setupThemes();
+        setupMarkDecorations();
+        setupDiagnostics();
+        setupWidgets();
+        setupPatterns();
+      });
 
-        // Decoration CSS must be injected into the shadow root — light-DOM
-        // stylesheets don't pierce the shadow boundary.
-        demo.setDecorationStyles(`
-          .kw { color: #c678dd; }
-          .fn-name { color: #61afef; }
-          .highlight-line { background: rgba(97, 175, 239, 0.1); }
+      // ── Dark mode toggle ──────────────────────────────────────────────────
+      const toggleBtn = document.getElementById('theme-toggle');
+      toggleBtn.addEventListener('click', () => {
+        const isDark = document.documentElement.dataset.theme === 'dark';
+        document.documentElement.dataset.theme = isDark ? 'light' : 'dark';
+        toggleBtn.setAttribute('aria-pressed', String(!isDark));
+        toggleBtn.innerHTML = isDark
+          ? '<span aria-hidden="true">🌙</span> Dark mode'
+          : '<span aria-hidden="true">☀️</span> Light mode';
+      });
+
+      // ── Section 1: Themes ─────────────────────────────────────────────────
+      //
+      // The same text and the same character-level decorations are applied to
+      // three editors with different --rc-textarea-* custom properties.
+      // Each editor also gets its own decoration colour palette injected via
+      // setDecorationStyles(), so class names like .kw can be shared.
+      //
+      // Text (0-indexed character offsets for the snippet below):
+      //   Line 1 "function greet(name) {" — 22 chars, newline at 22
+      //   Line 2 "  return "Hello, " + name;" — starts at 23
+      //     return     : local 2–8   → absolute 25–31
+      //     "Hello, "  : local 9–18  → absolute 32–41
+      //   Line 3 "}" — starts at 50
+
+      function setupThemes() {
+        const decorations = [
+          { type: 'mark', range: { from:  0, to:  8 }, className: 'kw'  }, // function
+          { type: 'mark', range: { from:  9, to: 14 }, className: 'fn'  }, // greet
+          { type: 'mark', range: { from: 25, to: 31 }, className: 'kw'  }, // return
+          { type: 'mark', range: { from: 32, to: 41 }, className: 'str' }, // "Hello, "
+          { type: 'line', line: 2, className: 'active-line' },
+        ];
+
+        // Decoration class rules are the same for all three; only the colour
+        // values differ, defined via custom properties in the sheet's :host rule.
+        const makeCSS = (kw, fn, str, activeBg) => `
+          :host { --t-kw:${kw}; --t-fn:${fn}; --t-str:${str}; --t-active:${activeBg}; }
+          .kw          { color: var(--t-kw);  font-weight: 600; }
+          .fn          { color: var(--t-fn);  }
+          .str         { color: var(--t-str); }
+          .active-line { background: var(--t-active); }
+        `;
+
+        const oneDark   = document.getElementById('theme-onedark');
+        const github    = document.getElementById('theme-github');
+        const solarized = document.getElementById('theme-solarized');
+
+        oneDark.setDecorationStyles(makeCSS('#c678dd', '#61afef', '#98c379', 'rgba(255,255,255,0.05)'));
+        oneDark.setDecorations(decorations);
+
+        github.setDecorationStyles(makeCSS('#d73a49', '#6f42c1', '#032f62', 'rgba(0,0,0,0.04)'));
+        github.setDecorations(decorations);
+
+        solarized.setDecorationStyles(makeCSS('#859900', '#268bd2', '#2aa198', 'rgba(255,255,255,0.05)'));
+        solarized.setDecorations(decorations);
+      }
+
+      // ── Section 2: Mark + Line Decorations ───────────────────────────────
+      //
+      // Text (offsets for the snippet in #demo-marks):
+      //   Line 1 "function add(a, b) {" — 20 chars, newline at 20
+      //     function : 0–8
+      //     add      : 9–12
+      //   Line 2 "  return a + b;" — starts at 21
+      //     return   : absolute 23–29
+      //   Line 3 "}" — starts at 37, newline at 38
+      //   Line 4 ""  — starts at 39 (empty), newline at 39
+      //   Line 5 "const result = add(10, 20);" — starts at 40
+      //     const    : 40–45
+      //     result   : 46–52
+      //     add      : 55–58
+      //     10       : 59–61
+      //     20       : 63–65
+
+      function setupMarkDecorations() {
+        const ed = document.getElementById('demo-marks');
+
+        // Decoration colours reference page-level CSS vars so they automatically
+        // adapt when the page dark-mode toggle fires — no re-injection needed.
+        ed.setDecorationStyles(`
+          .kw          { color: var(--demo-kw);  font-weight: 600; }
+          .fn          { color: var(--demo-fn);  }
+          .var         { color: var(--demo-var); }
+          .num         { color: var(--demo-num); }
+          .active-line { background: var(--demo-active-line); }
+          .added-line  { background: var(--demo-added-line);  }
         `);
 
-        // Highlight "function" keyword
-        demo.addDecoration({
-          type: 'mark',
-          range: { from: 0, to: 8 },
-          className: 'kw',
-        });
-        // Highlight "add"
-        demo.addDecoration({
-          type: 'mark',
-          range: { from: 9, to: 12 },
-          className: 'fn-name',
-        });
-        // Line decoration on line 2
-        demo.addDecoration({
-          type: 'line',
-          line: 2,
-          className: 'highlight-line',
-        });
-        // Diagnostics
-        demo.setDiagnostics([
+        ed.setDecorations([
+          // ── mark decorations ────────────────────────────────────────────
+          { type: 'mark', range: { from:  0, to:  8 }, className: 'kw'  }, // function
+          { type: 'mark', range: { from:  9, to: 12 }, className: 'fn'  }, // add (def)
+          { type: 'mark', range: { from: 23, to: 29 }, className: 'kw'  }, // return
+          { type: 'mark', range: { from: 40, to: 45 }, className: 'kw'  }, // const
+          { type: 'mark', range: { from: 46, to: 52 }, className: 'var' }, // result
+          { type: 'mark', range: { from: 55, to: 58 }, className: 'fn'  }, // add (call)
+          { type: 'mark', range: { from: 59, to: 61 }, className: 'num' }, // 10
+          { type: 'mark', range: { from: 63, to: 65 }, className: 'num' }, // 20
+          // ── line decorations ────────────────────────────────────────────
+          { type: 'line', line: 2, className: 'active-line' }, // current line bg
+          { type: 'line', line: 5, className: 'added-line'  }, // new/added line bg
+        ]);
+      }
+
+      // ── Section 3: Diagnostics ────────────────────────────────────────────
+      //
+      // Text (offsets for the snippet in #demo-diagnostics):
+      //   Line 1 "const x = undeclaredVar;" — 24 chars, newline at 24
+      //     undeclaredVar : 10–23
+      //   Line 2 "let y = parseInt("nope");" — starts at 25
+      //     parseInt      : absolute 33–41
+      //     "nope"        : absolute 42–48
+      //   Line 3 "// TODO: handle edge cases" — starts at 51
+      //   Line 4 "function render() { return; }" — starts at 78
+
+      function setupDiagnostics() {
+        const ed = document.getElementById('demo-diagnostics');
+
+        // Wavy underlines via box-shadow (padding/margin are not safe — they
+        // shift character positions in the mirror vs the textarea).
+        ed.setDecorationStyles(`
+          .dec-err  { box-shadow: 0 2px 0 0 var(--rc-textarea-mark-error-color);   }
+          .dec-warn { box-shadow: 0 2px 0 0 var(--rc-textarea-mark-warning-color); }
+        `);
+
+        ed.setDecorations([
+          { type: 'mark', range: { from: 10, to: 23 }, className: 'dec-err'  }, // undeclaredVar
+          { type: 'mark', range: { from: 33, to: 41 }, className: 'dec-warn' }, // parseInt
+          { type: 'mark', range: { from: 42, to: 48 }, className: 'dec-warn' }, // "nope"
+        ]);
+
+        ed.setDiagnostics([
+          {
+            line: 1,
+            severity: 'error',
+            message: "'undeclaredVar' is not defined",
+            // createIcon() returns any HTMLElement — here a small SVG ✕ circle
+            createIcon: () => {
+              const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+              svg.setAttribute('width', '12');
+              svg.setAttribute('height', '12');
+              svg.setAttribute('viewBox', '0 0 12 12');
+              svg.innerHTML =
+                '<circle cx="6" cy="6" r="5.5" fill="currentColor" opacity="0.85"/>' +
+                '<path d="M3.5 3.5l5 5M8.5 3.5l-5 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>';
+              return svg;
+            },
+          },
           {
             line: 2,
             severity: 'warning',
-            message: "Parameter 'a' is implicitly 'any'",
+            message: "parseInt('nope') always returns NaN",
           },
           {
             line: 3,
-            severity: 'error',
-            message: "Cannot find name 'result'",
+            severity: 'info',
+            message: "TODO comment — consider opening a tracking issue",
+          },
+          {
+            line: 4,
+            severity: 'hint',
+            message: "Early return with no value; consider returning a default",
           },
         ]);
+      }
 
-        // ── Pattern matching demo ─────────────────────────────────────────────
-        const patterns = document.getElementById('demo-patterns');
+      // ── Section 4: Inline Widgets ─────────────────────────────────────────
+      //
+      // Text (offsets for the snippet in #demo-widgets):
+      //   Line 1 "background: #e74c3c;" — 20 chars, newline at 20
+      //     #e74c3c : 12–19
+      //   Line 2 "border-color: #3498db;" — starts at 21, 22 chars
+      //     #3498db : absolute 35–42
+      //   Line 3 "icon: [✓] all checks passed" — starts at 44
+      //     [✓]     : absolute 50–53  (✓ is U+2713, 1 UTF-16 code unit)
 
-        patterns.setDecorationStyles(`
-          .url-mark { color: #98c379; border-bottom: 1px solid #98c379; }
-          .num-mark { color: #d19a66; }
+      function setupWidgets() {
+        const ed = document.getElementById('demo-widgets');
+
+        function colorSwatch(hex) {
+          const el = document.createElement('span');
+          el.style.cssText = [
+            'display:inline-block',
+            'width:10px', 'height:10px',
+            `background:${hex}`,
+            'border-radius:2px',
+            'outline:1px solid rgba(0,0,0,0.2)',
+            'vertical-align:middle',
+            'margin-right:3px',
+          ].join(';');
+          return el;
+        }
+
+        function badge(text, bg) {
+          const el = document.createElement('span');
+          el.textContent = text;
+          el.style.cssText = [
+            'display:inline-block',
+            'padding:1px 5px',
+            'margin-left:5px',
+            'font-size:0.72em', 'font-weight:700',
+            `background:${bg}`,
+            'color:white',
+            'border-radius:3px',
+            'vertical-align:middle',
+            'letter-spacing:0.02em',
+          ].join(';');
+          return el;
+        }
+
+        function checkmarkIcon() {
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('width', '14');
+          svg.setAttribute('height', '14');
+          svg.setAttribute('viewBox', '0 0 14 14');
+          svg.style.verticalAlign = 'middle';
+          svg.innerHTML =
+            '<circle cx="7" cy="7" r="6" fill="#2ecc71"/>' +
+            '<path d="M4 7l2.5 2.5L10 4.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
+          return svg;
+        }
+
+        ed.setDecorations([
+          // 'before' — swatch floats to the left of #e74c3c with no layout shift
+          {
+            type: 'mark',
+            range: { from: 12, to: 19 },
+            widgetPlacement: 'before',
+            createWidget: () => colorSwatch('#e74c3c'),
+          },
+          // 'after' — colour badge appended after #3498db
+          {
+            type: 'mark',
+            range: { from: 35, to: 42 },
+            widgetPlacement: 'after',
+            createWidget: () => badge('ocean blue', '#3498db'),
+          },
+          // 'replace' — [✓] text is hidden; SVG checkmark rendered in its place
+          {
+            type: 'mark',
+            range: { from: 50, to: 53 },
+            widgetPlacement: 'replace',
+            createWidget: checkmarkIcon,
+          },
+        ]);
+      }
+
+      // ── Section 5: Pattern Matching ───────────────────────────────────────
+      //
+      // Patterns re-match on every keystroke automatically. Colour classes
+      // reference page-level CSS vars so they respond to dark-mode toggling.
+
+      function setupPatterns() {
+        const ed = document.getElementById('demo-patterns');
+
+        ed.setDecorationStyles(`
+          .url   { color: var(--demo-url);   border-bottom: 1px solid var(--demo-url);   }
+          .num   { color: var(--demo-num);   }
+          .email { color: var(--demo-email); border-bottom: 1px solid var(--demo-email); }
         `);
 
-        // Highlight URLs
-        patterns.addPattern({
-          pattern: /https?:\/\/[^\s]+/g,
-          className: 'url-mark',
-        });
-        // Highlight numbers
-        patterns.addPattern({
-          pattern: /\b\d+(\.\d+)?\b/g,
-          className: 'num-mark',
-        });
-      });
+        ed.addPattern({ pattern: /https?:\/\/\S+/g,  className: 'url'   });
+        ed.addPattern({ pattern: /\b\d+(\.\d+)?\b/g, className: 'num'   });
+        ed.addPattern({ pattern: /\S+@\S+\.\w+/g,    className: 'email' });
+      }
     </script>
   </head>
   <body>
-    <h1>rc-textarea</h1>
-    <p>
-      A progressive enhancement component that adds line numbers, word wrap,
-      range highlighting, Error Lens-style diagnostics, and pattern-based
-      decoration to a native <code>&lt;textarea&gt;</code>.
-    </p>
-    <p class="note">
-      <strong>Note:</strong> The host element requires explicit
-      <code>width</code> + <code>height</code> (or use <code>auto-grow</code>
-      for height). Without dimensions, the absolutely-positioned mirror and
-      textarea have nothing to fill.
-    </p>
+    <div class="page">
 
-    <h2>Basic</h2>
-    <rc-textarea class="fixed-size">
-      <textarea>Hello, world!</textarea>
-    </rc-textarea>
+      <div class="header">
+        <h1>rc-textarea</h1>
+        <button id="theme-toggle" aria-pressed="false">
+          <span aria-hidden="true">🌙</span> Dark mode
+        </button>
+      </div>
+      <p class="subtitle">
+        Line numbers · word wrap · mark &amp; line decorations · diagnostics ·
+        inline widgets · pattern matching · CSS custom property theming.
+      </p>
 
-    <h2>Line Numbers</h2>
-    <rc-textarea class="fixed-size" lineNumbers>
-      <textarea>Line one
-Line two
-Line three
-Line four
-Line five</textarea>
-    </rc-textarea>
-
-    <h2>Word Wrap</h2>
-    <rc-textarea class="fixed-size" lineNumbers wordWrap>
-      <textarea>This is a very long line that will wrap inside the editor when word wrap is enabled, keeping text visible without horizontal scrolling.
-Short line.
-Another long line: lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</textarea>
-    </rc-textarea>
-
-    <h2>Auto-Grow</h2>
-    <p class="note">
-      Height grows with content. Width comes from the textarea's
-      <code>cols</code> attribute (or set <code>width</code> on the host).
-    </p>
-    <rc-textarea style="width: 600px;" autoGrow lineNumbers>
-      <textarea rows="3">Type here and the editor will grow...
-Add more lines to see it expand.</textarea>
-    </rc-textarea>
-
-    <h2>Mark Decorations + Diagnostics</h2>
-    <p class="note">
-      Decoration CSS classes must not alter inline layout dimensions (no
-      <code>padding</code>, <code>margin</code>, <code>letter-spacing</code>).
-      Use <code>background-color</code>, <code>color</code>,
-      <code>text-decoration</code>, or <code>box-shadow</code> instead.
-    </p>
-    <rc-textarea id="demo-decorations" class="fixed-size" lineNumbers>
-      <textarea>function add(a, b) {
-  return a + b;
+      <!-- ── 1. Themes ─────────────────────────────────────────────────────── -->
+      <div class="section">
+        <h2>Themes</h2>
+        <p class="note">
+          All visual styling flows through CSS custom properties on the host
+          element. Decoration colour palettes are injected per-editor via
+          <code>setDecorationStyles()</code> — no shadow-piercing selectors needed.
+        </p>
+        <div class="theme-grid">
+          <div class="theme-card">
+            <span class="theme-label">One Dark</span>
+            <rc-textarea id="theme-onedark" class="h-md t-onedark" lineNumbers readonly>
+              <textarea>function greet(name) {
+  return "Hello, " + name;
 }</textarea>
-    </rc-textarea>
+            </rc-textarea>
+          </div>
+          <div class="theme-card">
+            <span class="theme-label">GitHub Light</span>
+            <rc-textarea id="theme-github" class="h-md t-github" lineNumbers readonly>
+              <textarea>function greet(name) {
+  return "Hello, " + name;
+}</textarea>
+            </rc-textarea>
+          </div>
+          <div class="theme-card">
+            <span class="theme-label">Solarized Dark</span>
+            <rc-textarea id="theme-solarized" class="h-md t-solarized" lineNumbers readonly>
+              <textarea>function greet(name) {
+  return "Hello, " + name;
+}</textarea>
+            </rc-textarea>
+          </div>
+        </div>
+      </div>
 
-    <h2>Pattern Matching</h2>
-    <rc-textarea id="demo-patterns" class="fixed-size" lineNumbers>
-      <textarea>Visit https://example.com or https://test.org for details.
-The answer is 42 and Pi is approximately 3.14159.
-Another URL: https://github.com/microsoft/vscode</textarea>
-    </rc-textarea>
+      <hr>
 
-    <h2>Dark Theme</h2>
-    <rc-textarea class="fixed-size dark-theme" lineNumbers wordWrap>
-      <textarea>const greeting = "Hello, world!";
-const x = 42;
-// This is a comment
-console.log(greeting);</textarea>
-    </rc-textarea>
+      <!-- ── 2. Mark + Line Decorations ────────────────────────────────────── -->
+      <div class="section">
+        <h2>Mark &amp; Line Decorations</h2>
+        <p class="note">
+          <code>type: 'mark'</code> wraps a character range in a
+          <code>&lt;span&gt;</code> with the given class.
+          <code>type: 'line'</code> adds a class to the mirror's per-line
+          <code>&lt;div&gt;</code>. Decoration colours reference page-level CSS
+          variables, so they adapt automatically when the dark-mode toggle fires.
+          Try editing the text — decorations are mapped through small edits and
+          cleared on large changes (select-all + type, paste).
+        </p>
+        <rc-textarea id="demo-marks" class="h-lg auto-theme" lineNumbers>
+          <textarea>function add(a, b) {
+  return a + b;
+}
+
+const result = add(10, 20);</textarea>
+        </rc-textarea>
+      </div>
+
+      <hr>
+
+      <!-- ── 3. Diagnostics ─────────────────────────────────────────────────── -->
+      <div class="section">
+        <h2>Diagnostics — All Severities</h2>
+        <p class="note">
+          Diagnostics render Error Lens–style, inline at the end of their line.
+          <code>createIcon()</code> returns any <code>HTMLElement</code> to
+          prepend as a leading icon. Wavy underlines on the error and warning
+          tokens use <code>box-shadow</code> on mark decorations — never
+          <code>padding</code> or <code>margin</code>, which would shift character
+          positions in the mirror relative to the textarea.
+        </p>
+        <rc-textarea id="demo-diagnostics" class="h-md auto-theme" lineNumbers readonly>
+          <textarea>const x = undeclaredVar;
+let y = parseInt("nope");
+// TODO: handle edge cases
+function render() { return; }</textarea>
+        </rc-textarea>
+      </div>
+
+      <hr>
+
+      <!-- ── 4. Inline Widgets ───────────────────────────────────────────────── -->
+      <div class="section">
+        <h2>Inline Widgets</h2>
+        <p class="note">
+          <code>createWidget()</code> returns an <code>HTMLElement</code> attached
+          inside a zero-width absolutely-positioned host, so it floats without
+          shifting character positions.
+          <code>widgetPlacement: 'before'</code> injects before the matched span;
+          <code>'after'</code> injects after it;
+          <code>'replace'</code> hides the matched text entirely and shows the
+          widget in its place.
+        </p>
+        <rc-textarea id="demo-widgets" class="h-sm auto-theme" lineNumbers readonly>
+          <textarea>background: #e74c3c;
+border-color: #3498db;
+icon: [✓] all checks passed</textarea>
+        </rc-textarea>
+      </div>
+
+      <hr>
+
+      <!-- ── 5. Pattern Matching ─────────────────────────────────────────────── -->
+      <div class="section">
+        <h2>Pattern Matching</h2>
+        <p class="note">
+          <code>addPattern()</code> registers a regex that re-matches on every
+          keystroke — no manual update needed. Multiple patterns can be active
+          simultaneously. Try editing the text below.
+        </p>
+        <rc-textarea id="demo-patterns" class="h-md auto-theme" lineNumbers wordWrap>
+          <textarea>Visit https://example.com/docs for the guide.
+The answer is 42 and Pi ≈ 3.14159.
+Email us at hello@example.org for support.
+Error at line 99, column 12 of the source file.</textarea>
+        </rc-textarea>
+      </div>
+
+      <hr>
+
+      <!-- ── 6. Auto-Grow ────────────────────────────────────────────────────── -->
+      <div class="section">
+        <h2>Auto-Grow</h2>
+        <p class="note">
+          <code>autoGrow</code> makes the editor expand to fit content — the
+          mirror drives the host height, so no explicit height is needed.
+        </p>
+        <rc-textarea class="auto-theme" autoGrow lineNumbers wordWrap>
+          <textarea rows="3">Type here and the editor grows with your content.
+Add more lines to see it expand vertically.</textarea>
+        </rc-textarea>
+      </div>
+
+    </div>
   </body>
 </html>

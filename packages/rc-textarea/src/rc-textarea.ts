@@ -334,9 +334,36 @@ export class RCTextarea extends LitElement {
 
   // ─── Initial size adoption ─────────────────────────────────────────────────
 
+  /**
+   * Returns true if the given CSS dimension property has been explicitly set on
+   * this host element, either via an inline `style` attribute or an author
+   * stylesheet rule.
+   *
+   * `getComputedStyle()` always resolves 'auto' to a used pixel value, making
+   * it impossible to distinguish an explicitly-sized element from one that
+   * merely inherits its size from the layout context. The CSS Typed OM
+   * (`computedStyleMap()`) is used instead where available because it preserves
+   * the computed value as the keyword 'auto' when no author rule sets the
+   * property; any other type (CSSUnitValue, CSSMathValue, etc.) indicates an
+   * explicit rule.
+   */
+  private _hasAuthorDimension(prop: 'width' | 'height'): boolean {
+    if (this.style[prop] !== '') return true;
+    type WithTypedOM = { computedStyleMap(): StylePropertyMapReadOnly };
+    const el = this as unknown as Partial<WithTypedOM>;
+    if (typeof el.computedStyleMap === 'function') {
+      const val = el.computedStyleMap().get(prop);
+      return val !== null && !(val instanceof CSSKeywordValue && val.value === 'auto');
+    }
+    return false;
+  }
+
   private _adoptTextareaSize(textarea: HTMLTextAreaElement) {
-    // Only adopt if the host has no explicit inline width/height
-    if (this.style.width !== '' || this.style.height !== '') return;
+    // Skip size adoption if the host already has an explicit dimension set via
+    // an inline style or an author stylesheet rule. Matching the original
+    // all-or-nothing behaviour: a partially-specified element implies the caller
+    // is managing layout and we should not interfere with either axis.
+    if (this._hasAuthorDimension('width') || this._hasAuthorDimension('height')) return;
 
     // 1. Prefer inline styles on the textarea itself (unaffected by ::slotted() CSS)
     if (textarea.style.width) this.style.width = textarea.style.width;
@@ -347,7 +374,10 @@ export class RCTextarea extends LitElement {
     const rows = textarea.getAttribute('rows');
     const cols = textarea.getAttribute('cols');
 
-    if (rows && !this.style.height) {
+    // Never stamp a fixed height when autoGrow is active — the mirror drives
+    // the host height by expanding in normal flow. This is a belt-and-suspenders
+    // guard for browsers that do not yet support computedStyleMap().
+    if (rows && !this.style.height && !this.autoGrow) {
       const r = parseInt(rows, 10);
       if (r > 0) {
         this.style.height = `calc(${r} * var(--rc-textarea-line-height, 1.5) * var(--rc-textarea-font-size, 1em) + 2 * var(--rc-textarea-padding, 0.5em))`;
