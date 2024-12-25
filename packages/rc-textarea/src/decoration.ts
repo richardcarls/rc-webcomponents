@@ -10,17 +10,22 @@ export interface MarkDecoration {
   className?: string;
   attributes?: Record<string, string>;
   /**
-   * Factory that creates an inline widget element. The widget will be wrapped
-   * in a zero-width absolutely-positioned host so it does not affect character
-   * positions in the mirror.
+   * Factory that creates an inline widget element. Requires the decoration
+   * range to include a U+2007 FIGURE SPACE character in the textarea value as
+   * a placeholder; the widget renders as a 1ch-wide inline-block in the mirror,
+   * visually replacing the figure-space. Figure-spaces are stripped from all
+   * external output (host.value, rc-textarea-change, clipboard, FormData).
    *
-   * NOTE: decoration CSS classes must not alter inline layout dimensions
-   * (no padding, margin, letter-spacing, etc.) — doing so causes the mirror
-   * and textarea character positions to diverge, breaking click-to-caret.
-   * Use background-color, color, text-decoration, box-shadow, or outline.
+   * Range contract:
+   * - `'before'`: figure-space is the **first** character of the range. The
+   *   widget is emitted before the remaining text, which is wrapped in a span.
+   * - `'after'`: figure-space is the **last** character of the range. The
+   *   preceding text is wrapped in a styled span, then the widget is emitted.
+   * - A 1-char range (figure-space only, no adjacent text) works with either
+   *   placement and acts as a standalone widget.
    */
   createWidget?: () => HTMLElement;
-  widgetPlacement?: 'before' | 'after' | 'replace';
+  widgetPlacement?: 'before' | 'after';
 }
 
 export interface LineDecoration {
@@ -42,6 +47,24 @@ export interface Diagnostic {
   message: string;
   /** Optional factory for a leading icon element (e.g. SVG). */
   createIcon?: () => HTMLElement;
+  /**
+   * Character range for an automatic mark decoration (e.g. wavy underline).
+   * When present, the component creates an internal MarkDecoration covering
+   * this range styled with `markClassName` (or the built-in default class).
+   */
+  range?: TextRange;
+  /**
+   * CSS class for the auto-generated mark span.
+   * Defaults to `diagnostic-mark diagnostic-mark--{severity}`, which uses the
+   * built-in wavy-underline style driven by `--rc-textarea-mark-{severity}-color`.
+   */
+  markClassName?: string;
+  /**
+   * CSS class for an auto-generated line decoration.
+   * When set, the whole `.line` div receives this class.
+   * Use `diagnostic-line--{severity}` for the built-in tinted background.
+   */
+  lineClassName?: string;
 }
 
 /**
@@ -159,13 +182,24 @@ export function mapDecorationsThroughChange(
 
   const mappedDiagnostics: Diagnostic[] = [];
   for (const diag of diagnostics) {
+    let mappedLine: number;
     if (diag.line < editStartLine) {
-      mappedDiagnostics.push(diag);
+      mappedLine = diag.line;
     } else if (diag.line <= editEndLine) {
-      // Dropped
+      // Within removed region — drop entirely
+      continue;
     } else {
-      mappedDiagnostics.push({ ...diag, line: diag.line + lineDelta });
+      mappedLine = diag.line + lineDelta;
     }
+
+    // Also map the optional range through the edit
+    let mappedRange: TextRange | undefined;
+    if (diag.range) {
+      const newRange = mapMarkRange(diag.range, edit);
+      mappedRange = newRange ?? undefined; // edit overlapped range → clear mark, keep message
+    }
+
+    mappedDiagnostics.push({ ...diag, line: mappedLine, range: mappedRange });
   }
 
   return { decorations: mappedDecorations, diagnostics: mappedDiagnostics };

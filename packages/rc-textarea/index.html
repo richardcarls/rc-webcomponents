@@ -15,16 +15,10 @@
         --page-hr: #d0d7de;
 
         /* Decoration colour tokens — pierced into shadow DOM via CSS custom props.
-           Sections 2 & 5 use these so they adapt when the page theme changes. */
-        --demo-kw:     #a626a4;
-        --demo-fn:     #4078f2;
-        --demo-str:    #50a14f;
-        --demo-num:    #986801;
-        --demo-var:    #e45649;
+           Section 5 uses these so they adapt when the page theme changes. */
         --demo-url:    #22863a;
         --demo-email:  #005cc5;
-        --demo-active-line: rgba(0, 0, 0, 0.04);
-        --demo-added-line:  rgba(40, 167, 69, 0.08);
+        --demo-num:    #986801;
       }
 
       [data-theme="dark"] {
@@ -35,15 +29,9 @@
         --page-card-bg: #161b22;
         --page-hr: #21262d;
 
-        --demo-kw:     #c678dd;
-        --demo-fn:     #61afef;
-        --demo-str:    #98c379;
-        --demo-num:    #d19a66;
-        --demo-var:    #e06c75;
         --demo-url:    #7ee787;
         --demo-email:  #79c0ff;
-        --demo-active-line: rgba(255, 255, 255, 0.05);
-        --demo-added-line:  rgba(46, 160, 67, 0.15);
+        --demo-num:    #d19a66;
       }
 
       /* ── Base ────────────────────────────────────────────────────────────── */
@@ -213,9 +201,13 @@
     </style>
     <script type="module" src="/src/rc-textarea.ts"></script>
     <script type="module">
+      import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/es/highlight.min.js';
+      import typescript from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/es/languages/typescript.min.js';
+      hljs.registerLanguage('typescript', typescript);
+
       customElements.whenDefined('rc-textarea').then(() => {
         setupThemes();
-        setupMarkDecorations();
+        setupHighlightJs();
         setupDiagnostics();
         setupWidgets();
         setupPatterns();
@@ -279,51 +271,42 @@
         solarized.setDecorations(decorations);
       }
 
-      // ── Section 2: Mark + Line Decorations ───────────────────────────────
+      // ── Section 2: Syntax Highlighting Plugin ────────────────────────────
       //
-      // Text (offsets for the snippet in #demo-marks):
-      //   Line 1 "function add(a, b) {" — 20 chars, newline at 20
-      //     function : 0–8
-      //     add      : 9–12
-      //   Line 2 "  return a + b;" — starts at 21
-      //     return   : absolute 23–29
-      //   Line 3 "}" — starts at 37, newline at 38
-      //   Line 4 ""  — starts at 39 (empty), newline at 39
-      //   Line 5 "const result = add(10, 20);" — starts at 40
-      //     const    : 40–45
-      //     result   : 46–52
-      //     add      : 55–58
-      //     10       : 59–61
-      //     20       : 63–65
+      // usePlugin() hands mirror rendering to highlight.js. Its theme CSS is
+      // adopted into the shadow root via adoptStyleSheet() so .hljs-* classes
+      // resolve correctly. Theme swaps on the page dark-mode toggle.
 
-      function setupMarkDecorations() {
-        const ed = document.getElementById('demo-marks');
+      async function setupHighlightJs() {
+        const HLJS = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/';
+        const ed = document.getElementById('demo-hljs');
 
-        // Decoration colours reference page-level CSS vars so they automatically
-        // adapt when the page dark-mode toggle fires — no re-injection needed.
-        ed.setDecorationStyles(`
-          .kw          { color: var(--demo-kw);  font-weight: 600; }
-          .fn          { color: var(--demo-fn);  }
-          .var         { color: var(--demo-var); }
-          .num         { color: var(--demo-num); }
-          .active-line { background: var(--demo-active-line); }
-          .added-line  { background: var(--demo-added-line);  }
-        `);
+        async function fetchSheet(url) {
+          const css = await fetch(url).then((r) => r.text());
+          const sheet = new CSSStyleSheet();
+          await sheet.replace(css);
+          return sheet;
+        }
 
-        ed.setDecorations([
-          // ── mark decorations ────────────────────────────────────────────
-          { type: 'mark', range: { from:  0, to:  8 }, className: 'kw'  }, // function
-          { type: 'mark', range: { from:  9, to: 12 }, className: 'fn'  }, // add (def)
-          { type: 'mark', range: { from: 23, to: 29 }, className: 'kw'  }, // return
-          { type: 'mark', range: { from: 40, to: 45 }, className: 'kw'  }, // const
-          { type: 'mark', range: { from: 46, to: 52 }, className: 'var' }, // result
-          { type: 'mark', range: { from: 55, to: 58 }, className: 'fn'  }, // add (call)
-          { type: 'mark', range: { from: 59, to: 61 }, className: 'num' }, // 10
-          { type: 'mark', range: { from: 63, to: 65 }, className: 'num' }, // 20
-          // ── line decorations ────────────────────────────────────────────
-          { type: 'line', line: 2, className: 'active-line' }, // current line bg
-          { type: 'line', line: 5, className: 'added-line'  }, // new/added line bg
+        const [lightSheet, darkSheet] = await Promise.all([
+          fetchSheet(HLJS + 'github.min.css'),
+          fetchSheet(HLJS + 'github-dark.min.css'),
         ]);
+
+        let currentSheet = null;
+        function applyTheme() {
+          const isDark = document.documentElement.dataset.theme === 'dark';
+          const next = isDark ? darkSheet : lightSheet;
+          if (currentSheet) ed.removeStyleSheet(currentSheet);
+          ed.adoptStyleSheet(next);
+          currentSheet = next;
+        }
+        applyTheme();
+        document.getElementById('theme-toggle').addEventListener('click', applyTheme);
+
+        ed.usePlugin({
+          highlight: (value) => hljs.highlight(value, { language: 'typescript' }).value,
+        });
       }
 
       // ── Section 3: Diagnostics ────────────────────────────────────────────
@@ -390,13 +373,23 @@
 
       // ── Section 4: Inline Widgets ─────────────────────────────────────────
       //
+      // Widgets use the U+2007 FIGURE SPACE convention: one figure-space character
+      // is embedded in the textarea value as a placeholder. The widget renders as
+      // a 1ch inline-block in the mirror, matching the visual width of the
+      // figure-space in the textarea so selection highlights stay aligned.
+      //
       // Text (offsets for the snippet in #demo-widgets):
-      //   Line 1 "background: #e74c3c;" — 20 chars, newline at 20
-      //     #e74c3c : 12–19
-      //   Line 2 "border-color: #3498db;" — starts at 21, 22 chars
-      //     #3498db : absolute 35–42
-      //   Line 3 "icon: [✓] all checks passed" — starts at 44
-      //     [✓]     : absolute 50–53  (✓ is U+2713, 1 UTF-16 code unit)
+      //   Line 1 "background: \u2007#e74c3c;" — 21 chars + \n
+      //     figure-space : 12       ← 'before' range start
+      //     #e74c3c  : 13–19    ← text content of the range
+      //     range    : {12, 20}
+      //   Line 2 "border-color: #3498db\u2007;" — starts at 22, 23 chars + \n
+      //     #3498db  : 36–42    ← text content of the range
+      //     figure-space : 43       ← 'after' range end (exclusive: 44)
+      //     range    : {36, 44}
+      //   Line 3 "icon: \u2007 all checks passed" — starts at 46
+      //     figure-space : 52       ← standalone 1-char widget range
+      //     range    : {52, 53}
 
       function setupWidgets() {
         const ed = document.getElementById('demo-widgets');
@@ -405,12 +398,11 @@
           const el = document.createElement('span');
           el.style.cssText = [
             'display:inline-block',
-            'width:10px', 'height:10px',
+            'width:0.8ch', 'height:0.8ch',
             `background:${hex}`,
             'border-radius:2px',
             'outline:1px solid rgba(0,0,0,0.2)',
             'vertical-align:middle',
-            'margin-right:3px',
           ].join(';');
           return el;
         }
@@ -421,13 +413,13 @@
           el.style.cssText = [
             'display:inline-block',
             'padding:1px 5px',
-            'margin-left:5px',
             'font-size:0.72em', 'font-weight:700',
             `background:${bg}`,
             'color:white',
             'border-radius:3px',
             'vertical-align:middle',
             'letter-spacing:0.02em',
+            'white-space:nowrap',
           ].join(';');
           return el;
         }
@@ -445,25 +437,25 @@
         }
 
         ed.setDecorations([
-          // 'before' — swatch floats to the left of #e74c3c with no layout shift
+          // 'before' — figure-space at offset 12, then #e74c3c at 13–19; swatch before the colour value
           {
             type: 'mark',
-            range: { from: 12, to: 19 },
+            range: { from: 12, to: 20 },
             widgetPlacement: 'before',
             createWidget: () => colorSwatch('#e74c3c'),
           },
-          // 'after' — colour badge appended after #3498db
+          // 'after' — #3498db at 36–42, then figure-space at 43; badge trails the colour value
           {
             type: 'mark',
-            range: { from: 35, to: 42 },
+            range: { from: 36, to: 44 },
             widgetPlacement: 'after',
             createWidget: () => badge('ocean blue', '#3498db'),
           },
-          // 'replace' — [✓] text is hidden; SVG checkmark rendered in its place
+          // standalone — figure-space only at 52; checkmark icon with no adjacent text
           {
             type: 'mark',
-            range: { from: 50, to: 53 },
-            widgetPlacement: 'replace',
+            range: { from: 52, to: 53 },
+            widgetPlacement: 'before',
             createWidget: checkmarkIcon,
           },
         ]);
@@ -541,24 +533,31 @@
 
       <hr>
 
-      <!-- ── 2. Mark + Line Decorations ────────────────────────────────────── -->
+      <!-- ── 2. Syntax Highlighting Plugin ─────────────────────────────────── -->
       <div class="section">
-        <h2>Mark &amp; Line Decorations</h2>
+        <h2>Syntax Highlighting — Plugin API</h2>
         <p class="note">
-          <code>type: 'mark'</code> wraps a character range in a
-          <code>&lt;span&gt;</code> with the given class.
-          <code>type: 'line'</code> adds a class to the mirror's per-line
-          <code>&lt;div&gt;</code>. Decoration colours reference page-level CSS
-          variables, so they adapt automatically when the dark-mode toggle fires.
-          Try editing the text — decorations are mapped through small edits and
-          cleared on large changes (select-all + type, paste).
+          <code>usePlugin()</code> hands mirror rendering to any external parser or
+          highlighting library. Here highlight.js runs on every keystroke via the
+          plugin's <code>highlight()</code> callback. Its theme stylesheet is injected
+          into the shadow root with <code>adoptStyleSheet()</code> — necessary because
+          light-DOM stylesheets don't pierce the shadow boundary. Try editing the code.
         </p>
-        <rc-textarea id="demo-marks" class="h-lg auto-theme" lineNumbers>
-          <textarea>function add(a, b) {
-  return a + b;
+        <rc-textarea id="demo-hljs" class="h-lg t-github" lineNumbers>
+          <textarea>interface User {
+  id: number;
+  name: string;
+  email: string;
 }
 
-const result = add(10, 20);</textarea>
+async function fetchUser(id: number): Promise<User> {
+  const res = await fetch(`/api/users/${id}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json() as Promise<User>;
+}
+
+const user = await fetchUser(42);
+console.log(`Hello, ${user.name}!`);</textarea>
         </rc-textarea>
       </div>
 
@@ -589,18 +588,18 @@ function render() { return; }</textarea>
       <div class="section">
         <h2>Inline Widgets</h2>
         <p class="note">
-          <code>createWidget()</code> returns an <code>HTMLElement</code> attached
-          inside a zero-width absolutely-positioned host, so it floats without
-          shifting character positions.
-          <code>widgetPlacement: 'before'</code> injects before the matched span;
-          <code>'after'</code> injects after it;
-          <code>'replace'</code> hides the matched text entirely and shows the
-          widget in its place.
+          Widgets occupy exactly 1ch — matching a U+2007 FIGURE SPACE character
+          embedded in the textarea value at each widget position. This keeps selection
+          highlights and cursor positions aligned between the textarea and the mirror.
+          <code>widgetPlacement: 'before'</code> places the widget before the remaining
+          text in the range; <code>'after'</code> places it after. Figure-spaces are
+          stripped from <code>host.value</code>, clipboard copy, paste, and
+          form submission so consumers never see them.
         </p>
         <rc-textarea id="demo-widgets" class="h-sm auto-theme" lineNumbers readonly>
-          <textarea>background: #e74c3c;
-border-color: #3498db;
-icon: [✓] all checks passed</textarea>
+          <textarea>background: &#x2007;#e74c3c;
+border-color: #3498db&#x2007;;
+icon: &#x2007; all checks passed</textarea>
         </rc-textarea>
       </div>
 

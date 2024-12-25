@@ -4,33 +4,7 @@ import { html } from 'lit';
 
 import './rc-textarea.ts';
 import type { RCTextarea } from './rc-textarea.ts';
-
-// ─── Shadow DOM helpers ────────────────────────────────────────────────────────
-
-function getMirror(host: RCTextarea): HTMLDivElement {
-  return host.shadowRoot!.querySelector('#mirror') as HTMLDivElement;
-}
-
-function getGutter(host: RCTextarea): HTMLDivElement {
-  return host.shadowRoot!.querySelector('#gutter') as HTMLDivElement;
-}
-
-function getLineNumbers(host: RCTextarea): HTMLDivElement {
-  return host.shadowRoot!.querySelector('#line-numbers') as HTMLDivElement;
-}
-
-function getDiagnosticStatus(host: RCTextarea): HTMLDivElement {
-  return host.shadowRoot!.querySelector('#diagnostic-status') as HTMLDivElement;
-}
-
-function getSlottedTextarea(host: RCTextarea): HTMLTextAreaElement {
-  return host.querySelector('textarea') as HTMLTextAreaElement;
-}
-
-/** Wait one animation frame for _performUpdate to run. */
-function waitRAF(): Promise<void> {
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
-}
+import { getMirror, getGutter, getLineNumbers, getDiagnosticStatus, getSlottedTextarea, waitRAF } from './test-helpers.ts';
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
@@ -210,98 +184,6 @@ describe('RCTextarea', () => {
 
       const items = getLineNumbers(host).querySelectorAll('.line-number');
       expect(items.length).toBe(4);
-    });
-  });
-
-  describe('decorations', () => {
-    test('addDecoration returns an id', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-
-      const id = host.addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 5 },
-        className: 'test-mark',
-      });
-
-      expect(typeof id).toBe('string');
-      expect(id.length).toBeGreaterThan(0);
-    });
-
-    test('mark decoration renders span in mirror', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      host.addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 5 },
-        className: 'test-mark',
-      });
-      await waitRAF();
-
-      const mirror = getMirror(host);
-      const span = mirror.querySelector('.test-mark');
-      expect(span).not.toBeNull();
-      expect(span?.textContent).toBe('hello');
-    });
-
-    test('removeDecoration removes span from mirror', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      const id = host.addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 5 },
-        className: 'test-mark',
-      });
-      await waitRAF();
-
-      host.removeDecoration(id);
-      await waitRAF();
-
-      expect(getMirror(host).querySelector('.test-mark')).toBeNull();
-    });
-
-    test('clearDecorations removes all spans', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world foo</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      host.addDecoration({ type: 'mark', range: { from: 0, to: 5 }, className: 'a' });
-      host.addDecoration({ type: 'mark', range: { from: 6, to: 11 }, className: 'b' });
-      await waitRAF();
-
-      host.clearDecorations();
-      await waitRAF();
-
-      expect(getMirror(host).querySelector('.a')).toBeNull();
-      expect(getMirror(host).querySelector('.b')).toBeNull();
     });
   });
 
@@ -594,36 +476,6 @@ describe('RCTextarea', () => {
     });
   });
 
-  describe('large-change decoration clearing', () => {
-    test('decorations are cleared on paste-scale input changes', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>short text</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      host.addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 5 },
-        className: 'test-mark',
-      });
-      await waitRAF();
-
-      // Simulate a large paste replacing most content
-      const textarea = getSlottedTextarea(host);
-      textarea.value = 'A'.repeat(500); // Large replacement
-      textarea.dispatchEvent(new InputEvent('input'));
-      await waitRAF();
-
-      // Decoration should have been cleared
-      expect(getMirror(host).querySelector('.test-mark')).toBeNull();
-    });
-  });
-
   describe('font and typography sync', () => {
     test('mirror receives font-family from slotted textarea with non-monospace font', async () => {
       const screen = render(html`
@@ -794,113 +646,6 @@ Another very long line: Lorem ipsum dolor sit amet consectetur adipiscing elit s
     });
   });
 
-  // ─── Public API methods (previously untested) ──────────────────────────────
-
-  describe('updateDecoration', () => {
-    test('updateDecoration changes the className of an existing mark', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      const id = host.addDecoration({ type: 'mark', range: { from: 0, to: 5 }, className: 'old-class' });
-      await waitRAF();
-      expect(getMirror(host).querySelector('.old-class')).not.toBeNull();
-
-      host.updateDecoration(id, { className: 'new-class' });
-      await waitRAF();
-
-      expect(getMirror(host).querySelector('.old-class')).toBeNull();
-      expect(getMirror(host).querySelector('.new-class')).not.toBeNull();
-    });
-
-    test('updateDecoration changes the range of an existing mark', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      const id = host.addDecoration({ type: 'mark', range: { from: 0, to: 5 }, className: 'mark' });
-      await waitRAF();
-      expect(getMirror(host).querySelector('.mark')?.textContent).toBe('hello');
-
-      host.updateDecoration(id, { range: { from: 6, to: 11 } });
-      await waitRAF();
-      expect(getMirror(host).querySelector('.mark')?.textContent).toBe('world');
-    });
-
-    test('updateDecoration on unknown id is a no-op', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      // Should not throw
-      host.updateDecoration('nonexistent', { className: 'noop' });
-    });
-  });
-
-  describe('setDecorations', () => {
-    test('setDecorations replaces all existing decorations atomically', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world foo</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      host.addDecoration({ type: 'mark', range: { from: 0, to: 5 }, className: 'old' });
-      await waitRAF();
-      expect(getMirror(host).querySelector('.old')).not.toBeNull();
-
-      host.setDecorations([
-        { type: 'mark', range: { from: 6, to: 11 }, className: 'new1' },
-        { type: 'mark', range: { from: 12, to: 15 }, className: 'new2' },
-      ]);
-      await waitRAF();
-
-      expect(getMirror(host).querySelector('.old')).toBeNull();
-      expect(getMirror(host).querySelector('.new1')).not.toBeNull();
-      expect(getMirror(host).querySelector('.new2')).not.toBeNull();
-    });
-
-    test('setDecorations with empty array clears all decorations', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      host.addDecoration({ type: 'mark', range: { from: 0, to: 5 }, className: 'mark' });
-      await waitRAF();
-
-      host.setDecorations([]);
-      await waitRAF();
-
-      expect(getMirror(host).querySelector('.mark')).toBeNull();
-    });
-  });
-
   describe('removeDiagnostic', () => {
     test('removeDiagnostic removes the inline diagnostic span', async () => {
       const screen = render(html`
@@ -1061,265 +806,121 @@ Another very long line: Lorem ipsum dolor sit amet consectetur adipiscing elit s
     });
   });
 
-  // ─── Line decorations ──────────────────────────────────────────────────────
+  // ─── adoptStyleSheet / removeStyleSheet ────────────────────────────────────
 
-  describe('line decorations', () => {
-    test('line decoration applies className to the correct line div', async () => {
+  describe('adoptStyleSheet / removeStyleSheet', () => {
+    test('adoptStyleSheet adds a sheet to adoptedStyleSheets', async () => {
       const screen = render(html`
         <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea></textarea>
+          <textarea>hello</textarea>
         </rc-textarea>
       `);
 
       const host = screen.getByTestId('host').element() as RCTextarea;
       await host.updateComplete;
 
-      host.value = 'first\nsecond\nthird';
-      await waitRAF();
-
-      host.addDecoration({ type: 'line', line: 2, className: 'highlighted' });
-      await waitRAF();
-
-      const lines = getMirror(host).querySelectorAll('.line');
-      expect(lines[1].classList.contains('highlighted')).toBe(true);
-      expect(lines[0].classList.contains('highlighted')).toBe(false);
-      expect(lines[2].classList.contains('highlighted')).toBe(false);
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync('.x { color: red }');
+      const before = host.shadowRoot!.adoptedStyleSheets.length;
+      host.adoptStyleSheet(sheet);
+      expect(host.shadowRoot!.adoptedStyleSheets.length).toBe(before + 1);
+      expect(host.shadowRoot!.adoptedStyleSheets).toContain(sheet);
     });
 
-    test('line decoration renders attributes onto the line div', async () => {
+    test('adoptStyleSheet is a no-op if sheet already adopted', async () => {
       const screen = render(html`
         <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea></textarea>
+          <textarea>hello</textarea>
         </rc-textarea>
       `);
 
       const host = screen.getByTestId('host').element() as RCTextarea;
       await host.updateComplete;
-      host.value = 'line one\nline two';
-      await waitRAF();
 
-      host.addDecoration({
-        type: 'line',
-        line: 1,
-        attributes: { 'data-testattr': 'abc' },
-      });
-      await waitRAF();
-
-      const firstLine = getMirror(host).querySelectorAll('.line')[0];
-      expect(firstLine.getAttribute('data-testattr')).toBe('abc');
+      const sheet = new CSSStyleSheet();
+      host.adoptStyleSheet(sheet);
+      const afterFirst = host.shadowRoot!.adoptedStyleSheets.length;
+      host.adoptStyleSheet(sheet);
+      expect(host.shadowRoot!.adoptedStyleSheets.length).toBe(afterFirst);
     });
 
-    test('out-of-bounds line decoration does not crash', async () => {
+    test('removeStyleSheet removes a previously adopted sheet', async () => {
       const screen = render(html`
         <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>just one line</textarea>
+          <textarea>hello</textarea>
         </rc-textarea>
       `);
 
       const host = screen.getByTestId('host').element() as RCTextarea;
       await host.updateComplete;
-      await waitRAF();
 
-      // Line 99 does not exist — should not throw
-      host.addDecoration({ type: 'line', line: 99, className: 'ghost' });
-      await waitRAF();
+      const sheet = new CSSStyleSheet();
+      host.adoptStyleSheet(sheet);
+      expect(host.shadowRoot!.adoptedStyleSheets).toContain(sheet);
 
-      expect(getMirror(host).querySelector('.ghost')).toBeNull();
+      host.removeStyleSheet(sheet);
+      expect(host.shadowRoot!.adoptedStyleSheets).not.toContain(sheet);
     });
 
-    test('line decoration can be combined with a mark decoration on the same line', async () => {
+    test('removeStyleSheet is a no-op for unknown sheets', async () => {
       const screen = render(html`
         <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea></textarea>
+          <textarea>hello</textarea>
         </rc-textarea>
       `);
 
       const host = screen.getByTestId('host').element() as RCTextarea;
       await host.updateComplete;
-      host.value = 'hello world';
-      await waitRAF();
 
-      host.addDecoration({ type: 'line', line: 1, className: 'line-hl' });
-      host.addDecoration({ type: 'mark', range: { from: 0, to: 5 }, className: 'word-hl' });
-      await waitRAF();
-
-      const mirror = getMirror(host);
-      const line1 = mirror.querySelector('.line');
-      expect(line1!.classList.contains('line-hl')).toBe(true);
-      expect(line1!.querySelector('.word-hl')).not.toBeNull();
+      const before = host.shadowRoot!.adoptedStyleSheets.length;
+      const unknownSheet = new CSSStyleSheet();
+      host.removeStyleSheet(unknownSheet); // not previously adopted
+      expect(host.shadowRoot!.adoptedStyleSheets.length).toBe(before);
     });
 
-    test('removeDecoration removes a line decoration', async () => {
+    test('multiple sheets can be adopted and independently removed', async () => {
       const screen = render(html`
         <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>line one\nline two</textarea>
+          <textarea>hello</textarea>
         </rc-textarea>
       `);
 
       const host = screen.getByTestId('host').element() as RCTextarea;
       await host.updateComplete;
-      host.value = 'line one\nline two';
-      await waitRAF();
 
-      const id = host.addDecoration({ type: 'line', line: 1, className: 'to-remove' });
-      await waitRAF();
-      expect(getMirror(host).querySelector('.to-remove')).not.toBeNull();
+      const a = new CSSStyleSheet();
+      const b = new CSSStyleSheet();
+      host.adoptStyleSheet(a);
+      host.adoptStyleSheet(b);
+      expect(host.shadowRoot!.adoptedStyleSheets).toContain(a);
+      expect(host.shadowRoot!.adoptedStyleSheets).toContain(b);
 
-      host.removeDecoration(id);
-      await waitRAF();
-      expect(getMirror(host).querySelector('.to-remove')).toBeNull();
-    });
-
-    test('updateDecoration changes the line number of a line decoration', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea></textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      host.value = 'first\nsecond\nthird';
-      await waitRAF();
-
-      const id = host.addDecoration({ type: 'line', line: 1, className: 'movable' });
-      await waitRAF();
-
-      let lines = getMirror(host).querySelectorAll('.line');
-      expect(lines[0].classList.contains('movable')).toBe(true);
-
-      host.updateDecoration(id, { line: 3 });
-      await waitRAF();
-
-      lines = getMirror(host).querySelectorAll('.line');
-      expect(lines[0].classList.contains('movable')).toBe(false);
-      expect(lines[2].classList.contains('movable')).toBe(true);
+      host.removeStyleSheet(a);
+      expect(host.shadowRoot!.adoptedStyleSheets).not.toContain(a);
+      expect(host.shadowRoot!.adoptedStyleSheets).toContain(b);
     });
   });
 
-  // ─── Widget decorations ────────────────────────────────────────────────────
+  // ─── Plugin API ────────────────────────────────────────────────────────────
 
-  describe('widget decorations', () => {
-    test('widgetPlacement "before" inserts widget element before the marked text', async () => {
+  describe('plugin API', () => {
+    test('highlight() return value is used as mirror innerHTML', async () => {
       const screen = render(html`
         <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      host.addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 5 },
-        className: 'marked',
-        widgetPlacement: 'before',
-        createWidget: () => {
-          const el = document.createElement('span');
-          el.className = 'my-widget';
-          el.textContent = '→';
-          return el;
-        },
-      });
-      await waitRAF();
-
-      const mirror = getMirror(host);
-      const widgetHost = mirror.querySelector('.rc-widget-host');
-      expect(widgetHost).not.toBeNull();
-      expect(widgetHost!.querySelector('.my-widget')).not.toBeNull();
-    });
-
-    test('widgetPlacement "after" inserts widget element after the marked text', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      host.addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 5 },
-        widgetPlacement: 'after',
-        createWidget: () => {
-          const el = document.createElement('span');
-          el.className = 'after-widget';
-          return el;
-        },
-      });
-      await waitRAF();
-
-      expect(getMirror(host).querySelector('.rc-widget-host')).not.toBeNull();
-      expect(getMirror(host).querySelector('.after-widget')).not.toBeNull();
-    });
-
-    test('widgetPlacement "replace" inserts widget at open position', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      host.addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 5 },
-        widgetPlacement: 'replace',
-        createWidget: () => {
-          const el = document.createElement('span');
-          el.className = 'replacement';
-          el.textContent = '[REPLACED]';
-          return el;
-        },
-      });
-      await waitRAF();
-
-      expect(getMirror(host).querySelector('.rc-widget-host')).not.toBeNull();
-      expect(getMirror(host).querySelector('.replacement')).not.toBeNull();
-    });
-
-    test('pattern createWidget is called with the RegExpMatchArray', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea></textarea>
+          <textarea>hello</textarea>
         </rc-textarea>
       `);
 
       const host = screen.getByTestId('host').element() as RCTextarea;
       await host.updateComplete;
 
-      host.value = 'user@example.com';
+      host.usePlugin({ highlight: () => '<span class="tok">hi</span>' });
       await waitRAF();
 
-      let capturedMatch: RegExpMatchArray | null = null;
-      host.addPattern({
-        pattern: /\w+@\w+\.\w+/g,
-        widgetPlacement: 'before',
-        createWidget: (match) => {
-          capturedMatch = match;
-          const el = document.createElement('span');
-          return el;
-        },
-      });
-      await waitRAF();
-
-      expect(capturedMatch).not.toBeNull();
-      expect(capturedMatch![0]).toBe('user@example.com');
+      expect(getMirror(host).querySelector('.tok')).not.toBeNull();
     });
-  });
 
-  // ─── Decoration edge cases ─────────────────────────────────────────────────
-
-  describe('decoration edge cases', () => {
-    test('overlapping marks both apply their classNames', async () => {
+    test('returning null falls through to default rendering', async () => {
       const screen = render(html`
         <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
           <textarea>hello</textarea>
@@ -1330,16 +931,14 @@ Another very long line: Lorem ipsum dolor sit amet consectetur adipiscing elit s
       await host.updateComplete;
       await waitRAF();
 
-      host.addDecoration({ type: 'mark', range: { from: 0, to: 5 }, className: 'a' });
-      host.addDecoration({ type: 'mark', range: { from: 0, to: 5 }, className: 'b' });
+      host.usePlugin({ highlight: () => null });
       await waitRAF();
 
-      const mirror = getMirror(host);
-      expect(mirror.querySelector('.a')).not.toBeNull();
-      expect(mirror.querySelector('.b')).not.toBeNull();
+      // Default rendering still puts text in the mirror
+      expect(getMirror(host).textContent).toContain('hello');
     });
 
-    test('mark attributes are rendered onto the span element', async () => {
+    test('mount() is called with the plugin API on registration', async () => {
       const screen = render(html`
         <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
           <textarea>hello</textarea>
@@ -1348,23 +947,116 @@ Another very long line: Lorem ipsum dolor sit amet consectetur adipiscing elit s
 
       const host = screen.getByTestId('host').element() as RCTextarea;
       await host.updateComplete;
-      await waitRAF();
 
-      host.addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 5 },
-        className: 'attr-mark',
-        attributes: { 'data-kind': 'keyword', title: 'built-in' },
+      let capturedApi: any;
+      host.usePlugin({
+        mount(api) { capturedApi = api; },
+        highlight: () => null,
+      });
+
+      expect(capturedApi).toBeDefined();
+      expect(capturedApi.host).toBe(host);
+      expect(capturedApi.mirror).toBe(getMirror(host));
+      expect(typeof capturedApi.escapeHtml).toBe('function');
+      expect(typeof capturedApi.renderDefault).toBe('function');
+      expect(typeof capturedApi.scheduleUpdate).toBe('function');
+    });
+
+    test('api.escapeHtml escapes HTML special characters', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea>hello</textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      let api: any;
+      host.usePlugin({ mount(a) { api = a; }, highlight: () => null });
+
+      expect(api.escapeHtml('<b>&amp;</b>')).toBe('&lt;b&gt;&amp;amp;&lt;/b&gt;');
+    });
+
+    test('api.renderDefault() returns the standard pipeline HTML', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea>hello</textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      host.addDiagnostic({ line: 1, severity: 'error', message: 'oops' });
+
+      let api: any;
+      host.usePlugin({ mount(a) { api = a; }, highlight: () => null });
+
+      const html_ = api.renderDefault(host.value);
+      expect(html_).toContain('diagnostic');
+      expect(html_).toContain('oops');
+    });
+
+    test('api.diagnostics reflects addDiagnostic calls', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea>hello</textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      host.addDiagnostic({ line: 1, severity: 'warning', message: 'watch out' });
+
+      let api: any;
+      host.usePlugin({ mount(a) { api = a; }, highlight: () => null });
+
+      expect(api.diagnostics.length).toBe(1);
+      expect(api.diagnostics[0].message).toBe('watch out');
+    });
+
+    test('highlight() is called again on each value change', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea>hello</textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      const spy = vi.fn(() => null);
+      host.usePlugin({ highlight: spy });
+      await waitRAF(); // called once on registration
+
+      host.value = 'changed';
+      await waitRAF(); // called again on value change
+
+      expect(spy).toHaveBeenCalledTimes(2);
+    });
+
+    test('async highlight() result is applied to mirror', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea>hello</textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      host.usePlugin({
+        highlight: () => Promise.resolve('<em class="async-tok">hi</em>'),
       });
       await waitRAF();
+      await new Promise((r) => setTimeout(r, 0)); // flush microtasks
 
-      const span = getMirror(host).querySelector('.attr-mark');
-      expect(span).not.toBeNull();
-      expect(span!.getAttribute('data-kind')).toBe('keyword');
-      expect(span!.getAttribute('title')).toBe('built-in');
+      expect(getMirror(host).querySelector('.async-tok')).not.toBeNull();
     });
 
-    test('out-of-range mark decoration does not crash', async () => {
+    test('stale async results are discarded when a newer update arrives', async () => {
       const screen = render(html`
         <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
           <textarea>hello</textarea>
@@ -1373,13 +1065,83 @@ Another very long line: Lorem ipsum dolor sit amet consectetur adipiscing elit s
 
       const host = screen.getByTestId('host').element() as RCTextarea;
       await host.updateComplete;
-      await waitRAF();
 
-      // Range beyond document length
-      host.addDecoration({ type: 'mark', range: { from: 100, to: 200 }, className: 'oob' });
-      await waitRAF();
+      const resolvers: ((v: string) => void)[] = [];
+      host.usePlugin({
+        highlight: () => new Promise<string>((res) => resolvers.push(res)),
+      });
 
-      expect(getMirror(host).querySelector('.oob')).toBeNull();
+      await waitRAF(); // first render queued (resolvers[0])
+
+      host.value = 'changed';
+      await waitRAF(); // second render queued (resolvers[1])
+
+      // Resolve first (stale) — should be discarded
+      resolvers[0]('<span class="stale">stale</span>');
+      await new Promise((r) => setTimeout(r, 0));
+      expect(getMirror(host).querySelector('.stale')).toBeNull();
+
+      // Resolve second (current) — should apply
+      resolvers[1]('<span class="current">current</span>');
+      await new Promise((r) => setTimeout(r, 0));
+      expect(getMirror(host).querySelector('.current')).not.toBeNull();
+    });
+
+    test('usePlugin() replaces previous plugin and calls destroy() on old one', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea>hello</textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      const destroy = vi.fn();
+      host.usePlugin({ highlight: () => null, destroy });
+      host.usePlugin({ highlight: () => null });
+
+      expect(destroy).toHaveBeenCalledOnce();
+    });
+
+    test('removePlugin() calls destroy() and restores default rendering', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea>hello</textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      const destroy = vi.fn();
+      host.usePlugin({ highlight: () => '<b class="plugin-b">x</b>', destroy });
+      await waitRAF();
+      expect(getMirror(host).querySelector('.plugin-b')).not.toBeNull();
+
+      host.removePlugin();
+      expect(destroy).toHaveBeenCalledOnce();
+      await waitRAF();
+      expect(getMirror(host).querySelector('.plugin-b')).toBeNull();
+      // Default rendering still shows text
+      expect(getMirror(host).textContent).toContain('hello');
+    });
+
+    test('destroy() is called when the element disconnects', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea>hello</textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      const destroy = vi.fn();
+      host.usePlugin({ highlight: () => null, destroy });
+      host.remove();
+
+      expect(destroy).toHaveBeenCalledOnce();
     });
   });
 
@@ -2038,76 +1800,6 @@ Another very long line: Lorem ipsum dolor sit amet consectetur adipiscing elit s
     });
   });
 
-  // ─── Additional edge cases ─────────────────────────────────────────────────
-
-  describe('additional decoration edge cases', () => {
-    test('createWidget returning null does not crash', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      // createWidget returning null — renderer must not crash
-      host.addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 5 },
-        className: 'marked',
-        widgetPlacement: 'before',
-        createWidget: () => null as unknown as HTMLElement,
-      });
-      await waitRAF();
-
-      // No crash and the mark span is still rendered
-      expect(getMirror(host).querySelector('.marked')).not.toBeNull();
-    });
-
-    test('adjacent (touching but non-overlapping) marks both render', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea>hello world</textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      await waitRAF();
-
-      // [0,5) = "hello"  [5,11) = " world"
-      host.addDecoration({ type: 'mark', range: { from: 0, to: 5 }, className: 'word-a' });
-      host.addDecoration({ type: 'mark', range: { from: 5, to: 11 }, className: 'word-b' });
-      await waitRAF();
-
-      const mirror = getMirror(host);
-      expect(mirror.querySelector('.word-a')?.textContent).toBe('hello');
-      expect(mirror.querySelector('.word-b')?.textContent).toBe(' world');
-    });
-
-    test('cross-line mark range does not crash', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea></textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      host.value = 'line one\nline two';
-      await waitRAF();
-
-      // Range spans across the newline boundary (offset 4 on line 1, offset 4 on line 2)
-      host.addDecoration({ type: 'mark', range: { from: 4, to: 13 }, className: 'cross' });
-      await waitRAF();
-
-      // Must not crash; some span(s) with the class should appear
-      expect(getMirror(host).querySelector('.cross')).not.toBeNull();
-    });
-  });
-
   describe('additional pattern edge cases', () => {
     test('pattern matches across multi-line content', async () => {
       const screen = render(html`
@@ -2156,6 +1848,156 @@ Another very long line: Lorem ipsum dolor sit amet consectetur adipiscing elit s
       textarea.dispatchEvent(new InputEvent('input'));
       await waitRAF();
       expect(getMirror(host).querySelector('.foo-match')).toBeNull();
+    });
+  });
+
+  // ─── Figure-space stripping (widget placeholder convention) ──────────────────
+
+  describe('figure-space stripping (widget convention)', () => {
+    test('value getter strips U+2007 figure-space characters', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea></textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      // Directly set the raw textarea value to include em-spaces
+      const textarea = getSlottedTextarea(host);
+      const nativeSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
+      nativeSetter?.call(textarea, 'hello\u2007world');
+
+      expect(host.value).toBe('helloworld');
+      // The underlying textarea still holds the raw value
+      expect(textarea.value).toBe('hello\u2007world');
+    });
+
+    test('rc-textarea-change event detail strips figure-spaces', async () => {
+      const handleChange = vi.fn() as unknown as EventListener;
+      const screen = render(html`
+        <rc-textarea
+          data-testid="host"
+          style="width: 400px; height: 200px;"
+          @rc-textarea-change=${handleChange}
+        >
+          <textarea></textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      const textarea = getSlottedTextarea(host);
+      const nativeSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
+      nativeSetter?.call(textarea, 'foo\u2007bar');
+      textarea.dispatchEvent(new InputEvent('input'));
+
+      expect(handleChange).toHaveBeenCalledOnce();
+      const evt = (handleChange as ReturnType<typeof vi.fn>).mock.calls[0][0] as CustomEvent<{ value: string }>;
+      expect(evt.detail.value).toBe('foobar');
+    });
+
+    test('copy event strips figure-spaces from clipboard text', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea></textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      const textarea = getSlottedTextarea(host);
+      const nativeSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
+      nativeSetter?.call(textarea, 'foo\u2007bar');
+      textarea.setSelectionRange(0, 8); // select all 8 chars including em-space
+
+      // Firefox's ClipboardEvent constructor silently ignores the clipboardData
+      // option, so inject it directly on the event instance instead.
+      const dt = new DataTransfer();
+      const copyEvent = new ClipboardEvent('copy', { bubbles: true, cancelable: true });
+      Object.defineProperty(copyEvent, 'clipboardData', { value: dt, configurable: true });
+      textarea.dispatchEvent(copyEvent);
+
+      expect(dt.getData('text/plain')).toBe('foobar');
+    });
+
+    test('copy event is a no-op when selection has no figure-spaces', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea></textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      const textarea = getSlottedTextarea(host);
+      textarea.value = 'plain text';
+      textarea.setSelectionRange(0, 10);
+
+      const dt = new DataTransfer();
+      const copyEvent = new ClipboardEvent('copy', { bubbles: true, cancelable: true });
+      Object.defineProperty(copyEvent, 'clipboardData', { value: dt, configurable: true });
+      // Should not call preventDefault / setData — browser handles it natively.
+      // We verify by checking that our handler didn't write to the DataTransfer.
+      textarea.dispatchEvent(copyEvent);
+      expect(dt.getData('text/plain')).toBe('');
+    });
+
+    test('paste event strips figure-spaces from pasted content', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea></textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      const textarea = getSlottedTextarea(host);
+      textarea.value = 'start end';
+      textarea.setSelectionRange(6, 6); // cursor before "end"
+
+      const dt = new DataTransfer();
+      dt.setData('text/plain', 'in\u2007sert ');
+      // Inject clipboardData directly — Firefox's ClipboardEvent constructor ignores it.
+      const pasteEvent = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+      Object.defineProperty(pasteEvent, 'clipboardData', { value: dt, configurable: true });
+      textarea.dispatchEvent(pasteEvent);
+
+      // em-space stripped → "start insert end"
+      expect(textarea.value).toBe('start insert end');
+    });
+
+    test('paste event is a no-op when pasted text has no figure-spaces', async () => {
+      const screen = render(html`
+        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
+          <textarea></textarea>
+        </rc-textarea>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCTextarea;
+      await host.updateComplete;
+
+      const textarea = getSlottedTextarea(host);
+      textarea.value = 'before after';
+      textarea.setSelectionRange(7, 7);
+
+      const dt = new DataTransfer();
+      dt.setData('text/plain', 'normal ');
+      const pasteEvent = new ClipboardEvent('paste', {
+        bubbles: true,
+        cancelable: true,
+        clipboardData: dt,
+      });
+      // Handler should not intervene — native paste proceeds (event not cancelled).
+      textarea.dispatchEvent(pasteEvent);
+      // Native paste isn't simulated in unit tests, but the value should be unchanged
+      // since we didn't cancel + rewrite it.
+      expect(textarea.value).toBe('before after');
     });
   });
 });

@@ -199,14 +199,16 @@ export const textareaStyles = css`
     min-height: calc(var(--rc-textarea-line-height) * 1em);
   }
 
-  /* Inline widget host — zero-width so it does not shift character positions */
+  /* Inline widget host — occupies exactly 1ch to match the U+2007 FIGURE SPACE
+     placeholder. U+2007 is defined to have digit-equivalent advance width, which
+     equals 1ch, so the widget aligns precisely with the textarea cursor. */
   .rc-widget-host {
-    position: absolute;
-    width: 0;
-    overflow: visible;
-    pointer-events: none;
     display: inline-block;
+    width: 1ch;
+    height: calc(var(--rc-textarea-line-height) * 1em);
+    overflow: visible;
     vertical-align: top;
+    pointer-events: none;
   }
 
   /* Error Lens-style diagnostics: inline after line text */
@@ -239,6 +241,26 @@ export const textareaStyles = css`
     display: inline;
     margin-right: 0.25em;
   }
+
+  /* Built-in diagnostic mark decoration — wavy underline driven by CSS vars.
+     Applied automatically when a Diagnostic includes a range. */
+  .diagnostic-mark {
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: var(--rc-textarea-mark-diagnostic-color, currentColor);
+    text-decoration-thickness: 1.5px;
+  }
+  .diagnostic-mark--error   { --rc-textarea-mark-diagnostic-color: var(--rc-textarea-mark-error-color);   }
+  .diagnostic-mark--warning { --rc-textarea-mark-diagnostic-color: var(--rc-textarea-mark-warning-color); }
+  .diagnostic-mark--info    { --rc-textarea-mark-diagnostic-color: var(--rc-textarea-mark-info-color);    }
+  .diagnostic-mark--hint    { --rc-textarea-mark-diagnostic-color: var(--rc-textarea-mark-hint-color);    }
+
+  /* Built-in diagnostic line decoration — tinted background driven by CSS vars.
+     Applied when lineClassName is set to diagnostic-line--{severity}. */
+  .diagnostic-line--error   { background-color: color-mix(in srgb, var(--rc-textarea-mark-error-color)   8%, transparent); }
+  .diagnostic-line--warning { background-color: color-mix(in srgb, var(--rc-textarea-mark-warning-color) 8%, transparent); }
+  .diagnostic-line--info    { background-color: color-mix(in srgb, var(--rc-textarea-mark-info-color)    8%, transparent); }
+  .diagnostic-line--hint    { background-color: color-mix(in srgb, var(--rc-textarea-mark-hint-color)    8%, transparent); }
 
   /* Visually hidden ARIA live region for diagnostics */
   #diagnostic-status {

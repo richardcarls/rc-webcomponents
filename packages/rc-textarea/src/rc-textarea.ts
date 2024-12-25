@@ -11,9 +11,10 @@ import {
   isLargeChange,
   findEdit,
 } from './decoration.ts';
-import { type TextPattern, matchPatterns } from './pattern-matcher.ts';
-import { renderMirror, renderGutter } from './renderer.ts';
+import { type TextPattern, matchPatternResults } from './pattern-matcher.ts';
+import { renderMirror, renderGutter, escapeHtml } from './renderer.ts';
 import textareaStyles from './rc-textarea.styles.ts';
+import type { RCTextareaPlugin, RCTextareaPluginAPI } from './plugin.ts';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -59,6 +60,7 @@ declare global {
  * @cssprop --rc-textarea-mark-warning-color
  * @cssprop --rc-textarea-mark-info-color
  * @cssprop --rc-textarea-mark-hint-color
+ * @cssprop --rc-textarea-mark-diagnostic-color - Override for the diagnostic mark underline color (set per-severity by the built-in `.diagnostic-mark--*` classes)
  *
  * @fires {CustomEvent<{value: string}>} rc-textarea-change
  * @fires {CustomEvent<void>} rc-textarea-focus
@@ -106,9 +108,16 @@ export class RCTextarea extends LitElement {
   private _diagnostics: Map<string, Diagnostic> = new Map();
   private _patterns: Map<string, TextPattern> = new Map();
   private _patternDecorations: MarkDecoration[] = [];
+  private _patternDiagnostics: Diagnostic[] = [];
+  private _patternStyleSheets: Map<string, CSSStyleSheet> = new Map();
   private _prevValue = '';
   private _rafHandle: number | null = null;
   private _intersectionObserver: IntersectionObserver | null = null;
+  private _adoptedStyleSheets: CSSStyleSheet[] = [];
+  private _plugin: RCTextareaPlugin | null = null;
+  private _pluginApi: RCTextareaPluginAPI | null = null;
+  private _pluginSeq = 0;
+  private _form: HTMLFormElement | null = null;
   private _resizeObserver = new ResizeObserver(() => {
     const textarea = this._textareaRef?.deref();
     if (textarea) {
@@ -154,6 +163,7 @@ export class RCTextarea extends LitElement {
       cancelAnimationFrame(this._rafHandle);
       this._rafHandle = null;
     }
+    this._plugin?.destroy?.();
     super.disconnectedCallback();
   }
 
@@ -163,6 +173,13 @@ export class RCTextarea extends LitElement {
     if (textarea) {
       this._syncTypography(textarea);
       this._scheduleUpdate();
+    }
+    // Apply any stylesheets adopted before the shadow root was available
+    if (this._adoptedStyleSheets.length && this.shadowRoot) {
+      this.shadowRoot.adoptedStyleSheets = [
+        ...this.shadowRoot.adoptedStyleSheets,
+        ...this._adoptedStyleSheets,
+      ];
     }
   }
 
@@ -261,6 +278,13 @@ export class RCTextarea extends LitElement {
     textarea.addEventListener('blur', this._onBlur);
     textarea.addEventListener('select', this._onSelect);
     textarea.addEventListener('invalid', this._onInvalid);
+    textarea.addEventListener('copy', this._onCopy);
+    textarea.addEventListener('paste', this._onPaste);
+    const form = textarea.form;
+    if (form) {
+      this._form = form;
+      form.addEventListener('formdata', this._onFormData);
+    }
   }
 
   private _removeTextareaListeners(textarea: HTMLTextAreaElement) {
@@ -270,6 +294,10 @@ export class RCTextarea extends LitElement {
     textarea.removeEventListener('blur', this._onBlur);
     textarea.removeEventListener('select', this._onSelect);
     textarea.removeEventListener('invalid', this._onInvalid);
+    textarea.removeEventListener('copy', this._onCopy);
+    textarea.removeEventListener('paste', this._onPaste);
+    this._form?.removeEventListener('formdata', this._onFormData);
+    this._form = null;
   }
 
   /**
@@ -419,17 +447,54 @@ export class RCTextarea extends LitElement {
     }
 
     this._prevValue = newValue;
-    this._patternDecorations = matchPatterns(newValue, [...this._patterns.values()]);
+    ({ decorations: this._patternDecorations, diagnostics: this._patternDiagnostics } =
+      matchPatternResults(newValue, [...this._patterns.values()]));
     this._scheduleUpdate();
 
     this.dispatchEvent(
       new CustomEvent<{ value: string }>('rc-textarea-change', {
         bubbles: true,
         composed: true,
-        detail: { value: newValue },
+        detail: { value: newValue.replaceAll('\u2007', '') },
       }),
     );
     this._updateAriaInvalid(textarea);
+  };
+
+  private _onCopy = (e: ClipboardEvent) => {
+    const textarea = this._textareaRef?.deref();
+    if (!textarea || !e.clipboardData) return;
+    const start = textarea.selectionStart ?? 0;
+    const end = textarea.selectionEnd ?? textarea.value.length;
+    const selected = textarea.value.substring(start, end);
+    if (!selected.includes('\u2007')) return;
+    e.preventDefault();
+    e.clipboardData.setData('text/plain', selected.replaceAll('\u2007', ''));
+  };
+
+  private _onPaste = (e: ClipboardEvent) => {
+    const pasted = e.clipboardData?.getData('text/plain') ?? '';
+    if (!pasted.includes('\u2007')) return;
+    e.preventDefault();
+    const textarea = this._textareaRef?.deref();
+    if (!textarea) return;
+    const start = textarea.selectionStart ?? 0;
+    const end = textarea.selectionEnd ?? 0;
+    const stripped = pasted.replaceAll('\u2007', '');
+    const newValue = textarea.value.slice(0, start) + stripped + textarea.value.slice(end);
+    const nativeSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
+    nativeSetter?.call(textarea, newValue);
+    textarea.setSelectionRange(start + stripped.length, start + stripped.length);
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+
+  private _onFormData = (e: FormDataEvent) => {
+    const name = this._textareaRef?.deref()?.name;
+    if (!name) return;
+    const raw = e.formData.get(name);
+    if (typeof raw === 'string' && raw.includes('\u2007')) {
+      e.formData.set(name, raw.replaceAll('\u2007', ''));
+    }
   };
 
   private _onScroll = () => {
@@ -489,11 +554,35 @@ export class RCTextarea extends LitElement {
     if (this._rafHandle !== null) return;
     this._rafHandle = requestAnimationFrame(() => {
       this._rafHandle = null;
-      this._performUpdate();
+      void this._performUpdate();
     });
   }
 
-  private _performUpdate() {
+  private _deriveDiagnosticDecorations(): Decoration[] {
+    const result: Decoration[] = [];
+    const allDiags = [...this._diagnostics.values(), ...this._patternDiagnostics];
+    for (const diag of allDiags) {
+      if (diag.range) {
+        result.push({
+          id: `diag-mark:${diag.id}`,
+          type: 'mark',
+          range: diag.range,
+          className: diag.markClassName ?? `diagnostic-mark diagnostic-mark--${diag.severity}`,
+        });
+      }
+      if (diag.lineClassName) {
+        result.push({
+          id: `diag-line:${diag.id}`,
+          type: 'line',
+          line: diag.line,
+          className: diag.lineClassName,
+        });
+      }
+    }
+    return result;
+  }
+
+  private async _performUpdate() {
     const textarea = this._textareaRef?.deref();
     const value = textarea?.value ?? '';
     const lineCount = value.split('\n').length;
@@ -501,15 +590,23 @@ export class RCTextarea extends LitElement {
     const allDecorations: Decoration[] = [
       ...this._decorations.values(),
       ...this._patternDecorations,
+      ...this._deriveDiagnosticDecorations(),
     ];
+
+    const allDiagnostics = [...this._diagnostics.values(), ...this._patternDiagnostics];
 
     const mirror = this._$mirror;
     if (mirror) {
-      mirror.innerHTML = renderMirror(
-        value,
-        allDecorations,
-        [...this._diagnostics.values()],
-      );
+      if (this._plugin && this._pluginApi) {
+        const seq = ++this._pluginSeq;
+        const result = await Promise.resolve(
+          this._plugin.highlight(value, this._pluginApi),
+        );
+        if (this._pluginSeq !== seq) return;
+        mirror.innerHTML = result ?? renderMirror(value, allDecorations, allDiagnostics);
+      } else {
+        mirror.innerHTML = renderMirror(value, allDecorations, allDiagnostics);
+      }
     }
 
     const lineNumbers = this._$lineNumbers;
@@ -532,7 +629,7 @@ export class RCTextarea extends LitElement {
     const el = this._$diagnosticStatus;
     if (!el) return;
 
-    const diags = [...this._diagnostics.values()];
+    const diags = [...this._diagnostics.values(), ...this._patternDiagnostics];
     if (diags.length === 0) {
       el.textContent = '';
       return;
@@ -550,7 +647,7 @@ export class RCTextarea extends LitElement {
    * textarea's native constraint validation is failing; removes it otherwise.
    */
   private _updateAriaInvalid(textarea: HTMLTextAreaElement): void {
-    const hasErrors = [...this._diagnostics.values()].some(
+    const hasErrors = [...this._diagnostics.values(), ...this._patternDiagnostics].some(
       (d) => d.severity === 'error',
     );
     if (hasErrors || !textarea.validity.valid) {
@@ -558,6 +655,63 @@ export class RCTextarea extends LitElement {
     } else {
       textarea.removeAttribute('aria-invalid');
     }
+  }
+
+  // ─── Plugin API ────────────────────────────────────────────────────────────
+
+  /**
+   * Register a rendering plugin. The plugin's `highlight()` method is called
+   * on every render cycle and can return HTML to use as the mirror content,
+   * replacing the default rendering pipeline.
+   *
+   * Only one plugin can be active at a time. Calling `usePlugin()` again
+   * replaces the existing plugin (calling `destroy()` on the previous one first).
+   */
+  usePlugin(plugin: RCTextareaPlugin): void {
+    this._plugin?.destroy?.();
+    this._plugin = plugin;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    this._pluginApi = {
+      get host() {
+        return self;
+      },
+      get mirror() {
+        return self._$mirror;
+      },
+      get diagnostics() {
+        return [...self._diagnostics.values(), ...self._patternDiagnostics] as const;
+      },
+      get decorations() {
+        return [...self._decorations.values(), ...self._patternDecorations] as const;
+      },
+      escapeHtml,
+      renderDefault(value: string) {
+        const decs: Decoration[] = [
+          ...self._decorations.values(),
+          ...self._patternDecorations,
+          ...self._deriveDiagnosticDecorations(),
+        ];
+        const diags = [...self._diagnostics.values(), ...self._patternDiagnostics];
+        return renderMirror(value, decs, diags);
+      },
+      scheduleUpdate() {
+        self._scheduleUpdate();
+      },
+    };
+    plugin.mount?.(this._pluginApi);
+    this._scheduleUpdate();
+  }
+
+  /**
+   * Remove the active plugin and restore the default rendering pipeline.
+   * Calls `destroy()` on the plugin before removing it.
+   */
+  removePlugin(): void {
+    this._plugin?.destroy?.();
+    this._plugin = null;
+    this._pluginApi = null;
+    this._scheduleUpdate();
   }
 
   // ─── Decoration style injection ────────────────────────────────────────────
@@ -585,11 +739,47 @@ export class RCTextarea extends LitElement {
     }
   }
 
+  /**
+   * Adopt an external `CSSStyleSheet` into the shadow root.
+   *
+   * Use this to make library theme CSS (highlight.js, Prism, etc.) visible to
+   * elements inside the shadow DOM. Light-DOM `<link>` and `<style>` elements
+   * do not pierce the shadow boundary, so external stylesheets must be adopted
+   * via this method.
+   *
+   * No-op if the sheet is already adopted. If called before the element has
+   * rendered, the sheet is queued and applied on first update.
+   */
+  adoptStyleSheet(sheet: CSSStyleSheet): void {
+    if (this._adoptedStyleSheets.includes(sheet)) return;
+    this._adoptedStyleSheets.push(sheet);
+    if (this.shadowRoot) {
+      this.shadowRoot.adoptedStyleSheets = [...this.shadowRoot.adoptedStyleSheets, sheet];
+    }
+  }
+
+  /**
+   * Remove a previously adopted stylesheet from the shadow root.
+   * Use this to swap themes, e.g. swapping a highlight.js light theme for a
+   * dark theme when the page colour scheme changes.
+   * No-op if the sheet was not adopted via `adoptStyleSheet`.
+   */
+  removeStyleSheet(sheet: CSSStyleSheet): void {
+    const idx = this._adoptedStyleSheets.indexOf(sheet);
+    if (idx === -1) return;
+    this._adoptedStyleSheets.splice(idx, 1);
+    if (this.shadowRoot) {
+      this.shadowRoot.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets.filter(
+        (s) => s !== sheet,
+      );
+    }
+  }
+
   // ─── Public value API ──────────────────────────────────────────────────────
 
-  /** Get or set the textarea value. */
+  /** Get or set the textarea value. Figure-space (U+2007) widget placeholders are stripped. */
   get value(): string {
-    return this._textareaRef?.deref()?.value ?? '';
+    return (this._textareaRef?.deref()?.value ?? '').replaceAll('\u2007', '');
   }
 
   set value(v: string) {
@@ -616,37 +806,40 @@ export class RCTextarea extends LitElement {
     }
 
     this._prevValue = v;
-    this._patternDecorations = matchPatterns(v, [...this._patterns.values()]);
+    ({ decorations: this._patternDecorations, diagnostics: this._patternDiagnostics } =
+      matchPatternResults(v, [...this._patterns.values()]));
     this._scheduleUpdate();
   }
 
-  // ─── Decoration API ────────────────────────────────────────────────────────
+  // ─── Decoration API (internal) ─────────────────────────────────────────────
+  // Not part of the public consumer API. Use the Diagnostic or Pattern APIs
+  // instead. Reserved for internal subsystems (e.g. future highlight integration).
 
-  addDecoration(decoration: DecorationInput): string {
+  protected addDecoration(decoration: DecorationInput): string {
     const id = generateId();
     this._decorations.set(id, { ...decoration, id } as Decoration);
     this._scheduleUpdate();
     return id;
   }
 
-  removeDecoration(id: string): void {
+  protected removeDecoration(id: string): void {
     this._decorations.delete(id);
     this._scheduleUpdate();
   }
 
-  updateDecoration(id: string, patch: Partial<DecorationInput>): void {
+  protected updateDecoration(id: string, patch: Partial<DecorationInput>): void {
     const existing = this._decorations.get(id);
     if (!existing) return;
     this._decorations.set(id, { ...existing, ...patch } as Decoration);
     this._scheduleUpdate();
   }
 
-  clearDecorations(): void {
+  protected clearDecorations(): void {
     this._decorations.clear();
     this._scheduleUpdate();
   }
 
-  setDecorations(decorations: DecorationInput[]): void {
+  protected setDecorations(decorations: DecorationInput[]): void {
     this._decorations.clear();
     for (const d of decorations) {
       const id = generateId();
@@ -700,20 +893,43 @@ export class RCTextarea extends LitElement {
   addPattern(pattern: Omit<TextPattern, 'id'>): string {
     const id = generateId();
     this._patterns.set(id, { ...pattern, id });
-    this._patternDecorations = matchPatterns(this.value, [...this._patterns.values()]);
+    if (pattern.cssText && this.shadowRoot) {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(pattern.cssText);
+      this._patternStyleSheets.set(id, sheet);
+      this.shadowRoot.adoptedStyleSheets = [...this.shadowRoot.adoptedStyleSheets, sheet];
+    }
+    ({ decorations: this._patternDecorations, diagnostics: this._patternDiagnostics } =
+      matchPatternResults(this.value, [...this._patterns.values()]));
     this._scheduleUpdate();
     return id;
   }
 
   removePattern(id: string): void {
     this._patterns.delete(id);
-    this._patternDecorations = matchPatterns(this.value, [...this._patterns.values()]);
+    const sheet = this._patternStyleSheets.get(id);
+    if (sheet && this.shadowRoot) {
+      this.shadowRoot.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets.filter(
+        (s) => s !== sheet,
+      );
+      this._patternStyleSheets.delete(id);
+    }
+    ({ decorations: this._patternDecorations, diagnostics: this._patternDiagnostics } =
+      matchPatternResults(this.value, [...this._patterns.values()]));
     this._scheduleUpdate();
   }
 
   clearPatterns(): void {
+    if (this.shadowRoot && this._patternStyleSheets.size > 0) {
+      const patternSheets = new Set(this._patternStyleSheets.values());
+      this.shadowRoot.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets.filter(
+        (s) => !patternSheets.has(s),
+      );
+    }
+    this._patternStyleSheets.clear();
     this._patterns.clear();
     this._patternDecorations = [];
+    this._patternDiagnostics = [];
     this._scheduleUpdate();
   }
 

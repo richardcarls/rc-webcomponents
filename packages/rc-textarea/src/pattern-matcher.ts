@@ -1,4 +1,4 @@
-import type { MarkDecoration } from './decoration.ts';
+import { generateId, type Diagnostic, type MarkDecoration } from './decoration.ts';
 
 export interface TextPattern {
   id: string;
@@ -6,14 +6,34 @@ export interface TextPattern {
   className?: string;
   attributes?: Record<string, string>;
   createWidget?: (match: RegExpMatchArray) => HTMLElement | null;
-  widgetPlacement?: 'before' | 'after' | 'replace';
+  widgetPlacement?: 'before' | 'after';
+  /**
+   * CSS text adopted into the shadow root as a dedicated CSSStyleSheet for
+   * this pattern. Removed automatically when the pattern is removed.
+   */
+  cssText?: string;
+  /**
+   * Factory called for each regex match. Return a partial Diagnostic
+   * (severity + message, optionally markClassName / lineClassName / createIcon).
+   * The component automatically sets `id`, `line` (from match position in the
+   * text), and `range` (the match bounds). Both a mark decoration (from
+   * `className`) and a diagnostic can be produced by the same match.
+   */
+  createDiagnostic?: (match: RegExpMatchArray) => {
+    severity: 'error' | 'warning' | 'info' | 'hint';
+    message: string;
+    createIcon?: () => HTMLElement;
+    markClassName?: string;
+    lineClassName?: string;
+  } | null;
 }
 
-export function matchPatterns(
+export function matchPatternResults(
   value: string,
   patterns: TextPattern[],
-): MarkDecoration[] {
-  const result: MarkDecoration[] = [];
+): { decorations: MarkDecoration[]; diagnostics: Diagnostic[] } {
+  const decorations: MarkDecoration[] = [];
+  const diagnostics: Diagnostic[] = [];
 
   for (const pattern of patterns) {
     // Always clone with the global flag to avoid stateful lastIndex issues
@@ -34,7 +54,8 @@ export function matchPatterns(
       const to = match.index + match[0].length;
       const capturedMatch = match;
 
-      result.push({
+      // Mark decoration for the pattern's visual style
+      decorations.push({
         id: `pattern:${pattern.id}:${from}:${to}`,
         type: 'mark',
         range: { from, to },
@@ -45,8 +66,22 @@ export function matchPatterns(
           : undefined,
         widgetPlacement: pattern.widgetPlacement,
       });
+
+      // Optional diagnostic produced by this match
+      if (pattern.createDiagnostic) {
+        const diagInput = pattern.createDiagnostic(capturedMatch);
+        if (diagInput) {
+          const line = value.slice(0, from).split('\n').length; // 1-based
+          diagnostics.push({
+            id: generateId(),
+            line,
+            range: { from, to },
+            ...diagInput,
+          });
+        }
+      }
     }
   }
 
-  return result;
+  return { decorations, diagnostics };
 }
