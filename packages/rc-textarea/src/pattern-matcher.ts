@@ -5,8 +5,6 @@ export interface TextPattern {
   pattern: RegExp;
   className?: string;
   attributes?: Record<string, string>;
-  createWidget?: (match: RegExpMatchArray) => HTMLElement | null;
-  widgetPlacement?: 'before' | 'after';
   /**
    * CSS text adopted into the shadow root as a dedicated CSSStyleSheet for
    * this pattern. Removed automatically when the pattern is removed.
@@ -61,10 +59,6 @@ export function matchPatternResults(
         range: { from, to },
         className: pattern.className,
         attributes: pattern.attributes,
-        createWidget: pattern.createWidget
-          ? () => pattern.createWidget!(capturedMatch) ?? document.createElement('span')
-          : undefined,
-        widgetPlacement: pattern.widgetPlacement,
       });
 
       // Optional diagnostic produced by this match

@@ -36,13 +36,7 @@ function renderLine(
     const to = Math.min(dec.range.to, lineEnd);
     if (from >= to) continue;
     events.push({ pos: from, kind: 'open', decoration: dec });
-    // For 'after' widgets: close event fires at to-1 so closeSpan can consume the
-    // trailing figure-space before flushText would emit it as visible text.
-    const closeAt =
-      dec.widgetPlacement === 'after' && dec.createWidget
-        ? Math.max(from, to - 1)
-        : to;
-    events.push({ pos: closeAt, kind: 'close', decoration: dec });
+    events.push({ pos: to, kind: 'close', decoration: dec });
   }
 
   // Sort: by position, then closes before opens at the same position
@@ -65,64 +59,11 @@ function renderLine(
   }
 
   function openSpan(dec: MarkDecoration) {
-    if (dec.widgetPlacement === 'before' && dec.createWidget) {
-      // Skip the leading figure-space, emit widget, then open a text span for the rest.
-      cursor = Math.min(dec.range.from + 1, lineEnd);
-      const el = dec.createWidget();
-      if (el) {
-        html += `<span class="rc-widget-host" aria-hidden="true">${el.outerHTML}</span>`;
-      }
-      // Only open a text span if there is remaining content in the range.
-      if (cursor >= Math.min(dec.range.to, lineEnd)) return;
-      html += `<span${buildAttrs(dec)}>`;
-      return;
-    }
-
-    if (dec.widgetPlacement === 'after' && dec.createWidget) {
-      const effectiveTo = Math.min(dec.range.to, lineEnd);
-      if (dec.range.from + 1 >= effectiveTo) {
-        // Standalone widget — 1-char figure-space range. Advance cursor and emit widget.
-        cursor = effectiveTo;
-        const el = dec.createWidget();
-        if (el) {
-          html += `<span class="rc-widget-host" aria-hidden="true">${el.outerHTML}</span>`;
-        }
-        return;
-      }
-      // Multi-char range: open text span; closeSpan handles the trailing figure-space.
-      html += `<span${buildAttrs(dec)}>`;
-      return;
-    }
-
-    // Plain mark decoration — no widget.
     html += `<span${buildAttrs(dec)}>`;
   }
 
-  function closeSpan(dec: MarkDecoration) {
-    if (dec.widgetPlacement === 'after' && dec.createWidget) {
-      // Close the text span, then advance cursor past the trailing figure-space and emit widget.
-      html += '</span>';
-      cursor = Math.min(dec.range.to, lineEnd);
-      const el = dec.createWidget();
-      if (el) {
-        html += `<span class="rc-widget-host" aria-hidden="true">${el.outerHTML}</span>`;
-      }
-      return;
-    }
+  function closeSpan(_dec: MarkDecoration) {
     html += '</span>';
-  }
-
-  /** True when openSpan did NOT open a text span (standalone widget or replace). */
-  function isStandaloneWidget(dec: MarkDecoration): boolean {
-    if (!dec.createWidget) return false;
-    const effectiveTo = Math.min(dec.range.to, lineEnd);
-    if (dec.widgetPlacement === 'before') {
-      return dec.range.from + 1 >= effectiveTo;
-    }
-    if (dec.widgetPlacement === 'after') {
-      return dec.range.from + 1 >= effectiveTo;
-    }
-    return false;
   }
 
   for (const evt of events) {
@@ -130,9 +71,7 @@ function renderLine(
 
     if (evt.kind === 'open') {
       openSpan(evt.decoration);
-      if (!isStandaloneWidget(evt.decoration)) {
-        openStack.push(evt.decoration);
-      }
+      openStack.push(evt.decoration);
     } else {
       // Close: pop from stack and emit closing tag
       const idx = openStack.lastIndexOf(evt.decoration);

@@ -357,146 +357,6 @@ describe('RCTextarea internal decoration API', () => {
     });
   });
 
-  // ─── Widget decorations ────────────────────────────────────────────────────
-
-  describe('widget decorations', () => {
-    // Convention: the decoration range must include a U+2007 FIGURE SPACE character.
-    // 'before': figure-space is range[0]; widget renders before remaining text.
-    // 'after':  figure-space is range[to-1]; widget renders after preceding text.
-
-    test('widgetPlacement "before" renders widget before text, figure-space not in textContent', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea></textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      // value: figure-space then "hello world"
-      host.value = '\u2007hello world';
-      await waitRAF();
-
-      deco(host).addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 6 }, // '\u2007hello'
-        className: 'marked',
-        widgetPlacement: 'before',
-        createWidget: () => {
-          const el = document.createElement('span');
-          el.className = 'my-widget';
-          el.textContent = '→';
-          return el;
-        },
-      });
-      await waitRAF();
-
-      const mirror = getMirror(host);
-      // Widget host must be present
-      const widgetHost = mirror.querySelector('.rc-widget-host');
-      expect(widgetHost).not.toBeNull();
-      expect(widgetHost!.querySelector('.my-widget')).not.toBeNull();
-      // The figure-space must NOT appear as text in the mirror
-      expect(mirror.textContent).not.toContain('\u2007');
-      // The text after the figure-space is in a styled span
-      expect(mirror.querySelector('.marked')?.textContent).toBe('hello');
-    });
-
-    test('widgetPlacement "after" renders widget after text, figure-space not in textContent', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea></textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      // value: "hello" then figure-space
-      host.value = 'hello\u2007 world';
-      await waitRAF();
-
-      deco(host).addDecoration({
-        type: 'mark',
-        range: { from: 0, to: 6 }, // 'hello\u2007'
-        className: 'marked',
-        widgetPlacement: 'after',
-        createWidget: () => {
-          const el = document.createElement('span');
-          el.className = 'after-widget';
-          return el;
-        },
-      });
-      await waitRAF();
-
-      const mirror = getMirror(host);
-      expect(mirror.querySelector('.rc-widget-host')).not.toBeNull();
-      expect(mirror.querySelector('.after-widget')).not.toBeNull();
-      // The figure-space must NOT appear as text in the mirror
-      expect(mirror.textContent).not.toContain('\u2007');
-      // The text before the figure-space is in a styled span
-      expect(mirror.querySelector('.marked')?.textContent).toBe('hello');
-    });
-
-    test('standalone widget (1-char figure-space range) renders widget without text span', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea></textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-      host.value = 'foo\u2007bar';
-      await waitRAF();
-
-      deco(host).addDecoration({
-        type: 'mark',
-        range: { from: 3, to: 4 }, // just the figure-space
-        widgetPlacement: 'before',
-        createWidget: () => {
-          const el = document.createElement('span');
-          el.className = 'solo-widget';
-          return el;
-        },
-      });
-      await waitRAF();
-
-      const mirror = getMirror(host);
-      expect(mirror.querySelector('.rc-widget-host')).not.toBeNull();
-      expect(mirror.querySelector('.solo-widget')).not.toBeNull();
-      expect(mirror.textContent).not.toContain('\u2007');
-    });
-
-    test('pattern createWidget is called with the RegExpMatchArray', async () => {
-      const screen = render(html`
-        <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
-          <textarea></textarea>
-        </rc-textarea>
-      `);
-
-      const host = screen.getByTestId('host').element() as RCTextarea;
-      await host.updateComplete;
-
-      host.value = 'user@example.com';
-      await waitRAF();
-
-      let capturedMatch: RegExpMatchArray | null = null;
-      host.addPattern({
-        pattern: /\w+@\w+\.\w+/g,
-        widgetPlacement: 'before',
-        createWidget: (match) => {
-          capturedMatch = match;
-          const el = document.createElement('span');
-          return el;
-        },
-      });
-      await waitRAF();
-
-      expect(capturedMatch).not.toBeNull();
-      expect(capturedMatch![0]).toBe('user@example.com');
-    });
-  });
-
   // ─── Decoration edge cases ─────────────────────────────────────────────────
 
   describe('decoration edge cases', () => {
@@ -597,7 +457,7 @@ describe('RCTextarea internal decoration API', () => {
   // ─── Additional edge cases ─────────────────────────────────────────────────
 
   describe('additional decoration edge cases', () => {
-    test('createWidget returning null does not crash and text still renders', async () => {
+    test('mark decoration on partial range renders span without affecting surrounding text', async () => {
       const screen = render(html`
         <rc-textarea data-testid="host" style="width: 400px; height: 200px;">
           <textarea></textarea>
@@ -606,25 +466,19 @@ describe('RCTextarea internal decoration API', () => {
 
       const host = screen.getByTestId('host').element() as RCTextarea;
       await host.updateComplete;
-      // figure-space then "hello world"
-      host.value = '\u2007hello world';
+      host.value = 'hello world';
       await waitRAF();
 
-      // createWidget returning null — renderer must not crash
       deco(host).addDecoration({
         type: 'mark',
-        range: { from: 0, to: 6 }, // '\u2007hello'
+        range: { from: 0, to: 5 }, // 'hello'
         className: 'marked',
-        widgetPlacement: 'before',
-        createWidget: () => null as unknown as HTMLElement,
       });
       await waitRAF();
 
-      // No crash, no widget host (null factory)
-      expect(getMirror(host).querySelector('.rc-widget-host')).toBeNull();
-      // The text span is still rendered for the content after the figure-space
       expect(getMirror(host).querySelector('.marked')).not.toBeNull();
       expect(getMirror(host).querySelector('.marked')?.textContent).toBe('hello');
+      expect(getMirror(host).textContent).toContain('world');
     });
 
     test('adjacent (touching but non-overlapping) marks both render', async () => {

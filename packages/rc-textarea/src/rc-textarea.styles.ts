@@ -199,18 +199,6 @@ export const textareaStyles = css`
     min-height: calc(var(--rc-textarea-line-height) * 1em);
   }
 
-  /* Inline widget host — occupies exactly 1ch to match the U+2007 FIGURE SPACE
-     placeholder. U+2007 is defined to have digit-equivalent advance width, which
-     equals 1ch, so the widget aligns precisely with the textarea cursor. */
-  .rc-widget-host {
-    display: inline-block;
-    width: 1ch;
-    height: calc(var(--rc-textarea-line-height) * 1em);
-    overflow: visible;
-    vertical-align: top;
-    pointer-events: none;
-  }
-
   /* Error Lens-style diagnostics: inline after line text */
   .diagnostic {
     display: inline;

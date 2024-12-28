@@ -117,7 +117,6 @@ export class RCTextarea extends LitElement {
   private _plugin: RCTextareaPlugin | null = null;
   private _pluginApi: RCTextareaPluginAPI | null = null;
   private _pluginSeq = 0;
-  private _form: HTMLFormElement | null = null;
   private _resizeObserver = new ResizeObserver(() => {
     const textarea = this._textareaRef?.deref();
     if (textarea) {
@@ -278,13 +277,6 @@ export class RCTextarea extends LitElement {
     textarea.addEventListener('blur', this._onBlur);
     textarea.addEventListener('select', this._onSelect);
     textarea.addEventListener('invalid', this._onInvalid);
-    textarea.addEventListener('copy', this._onCopy);
-    textarea.addEventListener('paste', this._onPaste);
-    const form = textarea.form;
-    if (form) {
-      this._form = form;
-      form.addEventListener('formdata', this._onFormData);
-    }
   }
 
   private _removeTextareaListeners(textarea: HTMLTextAreaElement) {
@@ -294,10 +286,6 @@ export class RCTextarea extends LitElement {
     textarea.removeEventListener('blur', this._onBlur);
     textarea.removeEventListener('select', this._onSelect);
     textarea.removeEventListener('invalid', this._onInvalid);
-    textarea.removeEventListener('copy', this._onCopy);
-    textarea.removeEventListener('paste', this._onPaste);
-    this._form?.removeEventListener('formdata', this._onFormData);
-    this._form = null;
   }
 
   /**
@@ -455,46 +443,10 @@ export class RCTextarea extends LitElement {
       new CustomEvent<{ value: string }>('rc-textarea-change', {
         bubbles: true,
         composed: true,
-        detail: { value: newValue.replaceAll('\u2007', '') },
+        detail: { value: newValue },
       }),
     );
     this._updateAriaInvalid(textarea);
-  };
-
-  private _onCopy = (e: ClipboardEvent) => {
-    const textarea = this._textareaRef?.deref();
-    if (!textarea || !e.clipboardData) return;
-    const start = textarea.selectionStart ?? 0;
-    const end = textarea.selectionEnd ?? textarea.value.length;
-    const selected = textarea.value.substring(start, end);
-    if (!selected.includes('\u2007')) return;
-    e.preventDefault();
-    e.clipboardData.setData('text/plain', selected.replaceAll('\u2007', ''));
-  };
-
-  private _onPaste = (e: ClipboardEvent) => {
-    const pasted = e.clipboardData?.getData('text/plain') ?? '';
-    if (!pasted.includes('\u2007')) return;
-    e.preventDefault();
-    const textarea = this._textareaRef?.deref();
-    if (!textarea) return;
-    const start = textarea.selectionStart ?? 0;
-    const end = textarea.selectionEnd ?? 0;
-    const stripped = pasted.replaceAll('\u2007', '');
-    const newValue = textarea.value.slice(0, start) + stripped + textarea.value.slice(end);
-    const nativeSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
-    nativeSetter?.call(textarea, newValue);
-    textarea.setSelectionRange(start + stripped.length, start + stripped.length);
-    textarea.dispatchEvent(new Event('input', { bubbles: true }));
-  };
-
-  private _onFormData = (e: FormDataEvent) => {
-    const name = this._textareaRef?.deref()?.name;
-    if (!name) return;
-    const raw = e.formData.get(name);
-    if (typeof raw === 'string' && raw.includes('\u2007')) {
-      e.formData.set(name, raw.replaceAll('\u2007', ''));
-    }
   };
 
   private _onScroll = () => {
@@ -777,9 +729,9 @@ export class RCTextarea extends LitElement {
 
   // ─── Public value API ──────────────────────────────────────────────────────
 
-  /** Get or set the textarea value. Figure-space (U+2007) widget placeholders are stripped. */
+  /** Get or set the textarea value. */
   get value(): string {
-    return (this._textareaRef?.deref()?.value ?? '').replaceAll('\u2007', '');
+    return this._textareaRef?.deref()?.value ?? '';
   }
 
   set value(v: string) {

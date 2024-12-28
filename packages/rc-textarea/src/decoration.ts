@@ -9,23 +9,6 @@ export interface MarkDecoration {
   range: TextRange;
   className?: string;
   attributes?: Record<string, string>;
-  /**
-   * Factory that creates an inline widget element. Requires the decoration
-   * range to include a U+2007 FIGURE SPACE character in the textarea value as
-   * a placeholder; the widget renders as a 1ch-wide inline-block in the mirror,
-   * visually replacing the figure-space. Figure-spaces are stripped from all
-   * external output (host.value, rc-textarea-change, clipboard, FormData).
-   *
-   * Range contract:
-   * - `'before'`: figure-space is the **first** character of the range. The
-   *   widget is emitted before the remaining text, which is wrapped in a span.
-   * - `'after'`: figure-space is the **last** character of the range. The
-   *   preceding text is wrapped in a styled span, then the widget is emitted.
-   * - A 1-char range (figure-space only, no adjacent text) works with either
-   *   placement and acts as a standalone widget.
-   */
-  createWidget?: () => HTMLElement;
-  widgetPlacement?: 'before' | 'after';
 }
 
 export interface LineDecoration {

@@ -15,7 +15,7 @@
         --page-hr: #d0d7de;
 
         /* Decoration colour tokens — pierced into shadow DOM via CSS custom props.
-           Section 5 uses these so they adapt when the page theme changes. */
+           The pattern matching section uses these so colours adapt to dark mode. */
         --demo-url:    #22863a;
         --demo-email:  #005cc5;
         --demo-num:    #986801;
@@ -125,23 +125,6 @@
       .h-md  { height: 180px; }
       .h-lg  { height: 220px; }
 
-      /* ── Theme grid ──────────────────────────────────────────────────────── */
-      .theme-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1.25rem;
-      }
-
-      .theme-card { display: flex; flex-direction: column; gap: 0.4rem; }
-
-      .theme-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.07em;
-        text-transform: uppercase;
-        color: var(--page-subtle);
-      }
-
       /* ── Theme: One Dark ─────────────────────────────────────────────────── */
       .t-onedark {
         --rc-textarea-background:    #282c34;
@@ -169,18 +152,18 @@
         --rc-textarea-mark-warning-color: #9a6700;
       }
 
-      /* ── Theme: Solarized Dark ───────────────────────────────────────────── */
-      .t-solarized {
-        --rc-textarea-background:    #002b36;
-        --rc-textarea-color:         #839496;
-        --rc-textarea-caret-color:   #93a1a1;
-        --rc-textarea-gutter-bg:     #073642;
-        --rc-textarea-gutter-color:  #586e75;
-        --rc-textarea-gutter-border: #073642;
-        --rc-textarea-border:        1px solid #073642;
-        --rc-textarea-focus-outline: 2px solid #268bd2;
-        --rc-textarea-mark-error-color:   #dc322f;
-        --rc-textarea-mark-warning-color: #cb4b16;
+      /* ── Theme: GitHub Dark ──────────────────────────────────────────────── */
+      /* Mirrors the github-dark.min.css colour palette for consistent chrome. */
+      .t-github-dark {
+        --rc-textarea-background:    #0d1117;
+        --rc-textarea-color:         #c9d1d9;
+        --rc-textarea-gutter-bg:     #161b22;
+        --rc-textarea-gutter-color:  #6e7681;
+        --rc-textarea-gutter-border: #21262d;
+        --rc-textarea-border:        1px solid #21262d;
+        --rc-textarea-focus-outline: 2px solid #388bfd;
+        --rc-textarea-mark-error-color:   #ff7b72;
+        --rc-textarea-mark-warning-color: #e3b341;
       }
 
       /* ── Generic editors: explicit dark mode ─────────────────────────────── */
@@ -198,6 +181,26 @@
         --rc-textarea-mark-info-color:    #89b4fa;
         --rc-textarea-mark-hint-color:    #a6e3a1;
       }
+
+      /* ── Typography variants ─────────────────────────────────────────────── */
+      /* Compose with a theme class to show independent font customisation. */
+      .f-cascadia {
+        --rc-textarea-font-family: ui-monospace, 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+        --rc-textarea-font-size: 13px;
+        --rc-textarea-line-height: 1.6;
+      }
+
+      .f-courier {
+        --rc-textarea-font-family: 'Courier New', Courier, monospace;
+        --rc-textarea-font-size: 14px;
+        --rc-textarea-line-height: 1.65;
+      }
+
+      .f-compact {
+        --rc-textarea-font-size: 12px;
+        --rc-textarea-line-height: 1.45;
+        --rc-textarea-padding: 0.35em;
+      }
     </style>
     <script type="module" src="/src/rc-textarea.ts"></script>
     <script type="module">
@@ -206,10 +209,8 @@
       hljs.registerLanguage('typescript', typescript);
 
       customElements.whenDefined('rc-textarea').then(() => {
-        setupThemes();
         setupHighlightJs();
         setupDiagnostics();
-        setupWidgets();
         setupPatterns();
       });
 
@@ -224,58 +225,12 @@
           : '<span aria-hidden="true">☀️</span> Light mode';
       });
 
-      // ── Section 1: Themes ─────────────────────────────────────────────────
-      //
-      // The same text and the same character-level decorations are applied to
-      // three editors with different --rc-textarea-* custom properties.
-      // Each editor also gets its own decoration colour palette injected via
-      // setDecorationStyles(), so class names like .kw can be shared.
-      //
-      // Text (0-indexed character offsets for the snippet below):
-      //   Line 1 "function greet(name) {" — 22 chars, newline at 22
-      //   Line 2 "  return "Hello, " + name;" — starts at 23
-      //     return     : local 2–8   → absolute 25–31
-      //     "Hello, "  : local 9–18  → absolute 32–41
-      //   Line 3 "}" — starts at 50
-
-      function setupThemes() {
-        const decorations = [
-          { type: 'mark', range: { from:  0, to:  8 }, className: 'kw'  }, // function
-          { type: 'mark', range: { from:  9, to: 14 }, className: 'fn'  }, // greet
-          { type: 'mark', range: { from: 25, to: 31 }, className: 'kw'  }, // return
-          { type: 'mark', range: { from: 32, to: 41 }, className: 'str' }, // "Hello, "
-          { type: 'line', line: 2, className: 'active-line' },
-        ];
-
-        // Decoration class rules are the same for all three; only the colour
-        // values differ, defined via custom properties in the sheet's :host rule.
-        const makeCSS = (kw, fn, str, activeBg) => `
-          :host { --t-kw:${kw}; --t-fn:${fn}; --t-str:${str}; --t-active:${activeBg}; }
-          .kw          { color: var(--t-kw);  font-weight: 600; }
-          .fn          { color: var(--t-fn);  }
-          .str         { color: var(--t-str); }
-          .active-line { background: var(--t-active); }
-        `;
-
-        const oneDark   = document.getElementById('theme-onedark');
-        const github    = document.getElementById('theme-github');
-        const solarized = document.getElementById('theme-solarized');
-
-        oneDark.setDecorationStyles(makeCSS('#c678dd', '#61afef', '#98c379', 'rgba(255,255,255,0.05)'));
-        oneDark.setDecorations(decorations);
-
-        github.setDecorationStyles(makeCSS('#d73a49', '#6f42c1', '#032f62', 'rgba(0,0,0,0.04)'));
-        github.setDecorations(decorations);
-
-        solarized.setDecorationStyles(makeCSS('#859900', '#268bd2', '#2aa198', 'rgba(255,255,255,0.05)'));
-        solarized.setDecorations(decorations);
-      }
-
-      // ── Section 2: Syntax Highlighting Plugin ────────────────────────────
+      // ── Section 1: Syntax Highlighting Plugin ─────────────────────────────
       //
       // usePlugin() hands mirror rendering to highlight.js. Its theme CSS is
       // adopted into the shadow root via adoptStyleSheet() so .hljs-* classes
-      // resolve correctly. Theme swaps on the page dark-mode toggle.
+      // resolve correctly. Both the hljs CSS and the editor chrome swap
+      // together on the page dark-mode toggle.
 
       async function setupHighlightJs() {
         const HLJS = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/';
@@ -300,6 +255,8 @@
           if (currentSheet) ed.removeStyleSheet(currentSheet);
           ed.adoptStyleSheet(next);
           currentSheet = next;
+          ed.classList.toggle('t-github', !isDark);
+          ed.classList.toggle('t-github-dark', isDark);
         }
         applyTheme();
         document.getElementById('theme-toggle').addEventListener('click', applyTheme);
@@ -309,7 +266,7 @@
         });
       }
 
-      // ── Section 3: Diagnostics ────────────────────────────────────────────
+      // ── Section 2: Diagnostics ────────────────────────────────────────────
       //
       // Text (offsets for the snippet in #demo-diagnostics):
       //   Line 1 "const x = undeclaredVar;" — 24 chars, newline at 24
@@ -371,97 +328,7 @@
         ]);
       }
 
-      // ── Section 4: Inline Widgets ─────────────────────────────────────────
-      //
-      // Widgets use the U+2007 FIGURE SPACE convention: one figure-space character
-      // is embedded in the textarea value as a placeholder. The widget renders as
-      // a 1ch inline-block in the mirror, matching the visual width of the
-      // figure-space in the textarea so selection highlights stay aligned.
-      //
-      // Text (offsets for the snippet in #demo-widgets):
-      //   Line 1 "background: \u2007#e74c3c;" — 21 chars + \n
-      //     figure-space : 12       ← 'before' range start
-      //     #e74c3c  : 13–19    ← text content of the range
-      //     range    : {12, 20}
-      //   Line 2 "border-color: #3498db\u2007;" — starts at 22, 23 chars + \n
-      //     #3498db  : 36–42    ← text content of the range
-      //     figure-space : 43       ← 'after' range end (exclusive: 44)
-      //     range    : {36, 44}
-      //   Line 3 "icon: \u2007 all checks passed" — starts at 46
-      //     figure-space : 52       ← standalone 1-char widget range
-      //     range    : {52, 53}
-
-      function setupWidgets() {
-        const ed = document.getElementById('demo-widgets');
-
-        function colorSwatch(hex) {
-          const el = document.createElement('span');
-          el.style.cssText = [
-            'display:inline-block',
-            'width:0.8ch', 'height:0.8ch',
-            `background:${hex}`,
-            'border-radius:2px',
-            'outline:1px solid rgba(0,0,0,0.2)',
-            'vertical-align:middle',
-          ].join(';');
-          return el;
-        }
-
-        function badge(text, bg) {
-          const el = document.createElement('span');
-          el.textContent = text;
-          el.style.cssText = [
-            'display:inline-block',
-            'padding:1px 5px',
-            'font-size:0.72em', 'font-weight:700',
-            `background:${bg}`,
-            'color:white',
-            'border-radius:3px',
-            'vertical-align:middle',
-            'letter-spacing:0.02em',
-            'white-space:nowrap',
-          ].join(';');
-          return el;
-        }
-
-        function checkmarkIcon() {
-          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-          svg.setAttribute('width', '14');
-          svg.setAttribute('height', '14');
-          svg.setAttribute('viewBox', '0 0 14 14');
-          svg.style.verticalAlign = 'middle';
-          svg.innerHTML =
-            '<circle cx="7" cy="7" r="6" fill="#2ecc71"/>' +
-            '<path d="M4 7l2.5 2.5L10 4.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
-          return svg;
-        }
-
-        ed.setDecorations([
-          // 'before' — figure-space at offset 12, then #e74c3c at 13–19; swatch before the colour value
-          {
-            type: 'mark',
-            range: { from: 12, to: 20 },
-            widgetPlacement: 'before',
-            createWidget: () => colorSwatch('#e74c3c'),
-          },
-          // 'after' — #3498db at 36–42, then figure-space at 43; badge trails the colour value
-          {
-            type: 'mark',
-            range: { from: 36, to: 44 },
-            widgetPlacement: 'after',
-            createWidget: () => badge('ocean blue', '#3498db'),
-          },
-          // standalone — figure-space only at 52; checkmark icon with no adjacent text
-          {
-            type: 'mark',
-            range: { from: 52, to: 53 },
-            widgetPlacement: 'before',
-            createWidget: checkmarkIcon,
-          },
-        ]);
-      }
-
-      // ── Section 5: Pattern Matching ───────────────────────────────────────
+      // ── Section 3: Pattern Matching ───────────────────────────────────────
       //
       // Patterns re-match on every keystroke automatically. Colour classes
       // reference page-level CSS vars so they respond to dark-mode toggling.
@@ -492,48 +359,10 @@
       </div>
       <p class="subtitle">
         Line numbers · word wrap · mark &amp; line decorations · diagnostics ·
-        inline widgets · pattern matching · CSS custom property theming.
+        pattern matching · CSS custom property theming.
       </p>
 
-      <!-- ── 1. Themes ─────────────────────────────────────────────────────── -->
-      <div class="section">
-        <h2>Themes</h2>
-        <p class="note">
-          All visual styling flows through CSS custom properties on the host
-          element. Decoration colour palettes are injected per-editor via
-          <code>setDecorationStyles()</code> — no shadow-piercing selectors needed.
-        </p>
-        <div class="theme-grid">
-          <div class="theme-card">
-            <span class="theme-label">One Dark</span>
-            <rc-textarea id="theme-onedark" class="h-md t-onedark" lineNumbers readonly>
-              <textarea>function greet(name) {
-  return "Hello, " + name;
-}</textarea>
-            </rc-textarea>
-          </div>
-          <div class="theme-card">
-            <span class="theme-label">GitHub Light</span>
-            <rc-textarea id="theme-github" class="h-md t-github" lineNumbers readonly>
-              <textarea>function greet(name) {
-  return "Hello, " + name;
-}</textarea>
-            </rc-textarea>
-          </div>
-          <div class="theme-card">
-            <span class="theme-label">Solarized Dark</span>
-            <rc-textarea id="theme-solarized" class="h-md t-solarized" lineNumbers readonly>
-              <textarea>function greet(name) {
-  return "Hello, " + name;
-}</textarea>
-            </rc-textarea>
-          </div>
-        </div>
-      </div>
-
-      <hr>
-
-      <!-- ── 2. Syntax Highlighting Plugin ─────────────────────────────────── -->
+      <!-- ── 1. Syntax Highlighting Plugin ──────────────────────────────────── -->
       <div class="section">
         <h2>Syntax Highlighting — Plugin API</h2>
         <p class="note">
@@ -541,9 +370,12 @@
           highlighting library. Here highlight.js runs on every keystroke via the
           plugin's <code>highlight()</code> callback. Its theme stylesheet is injected
           into the shadow root with <code>adoptStyleSheet()</code> — necessary because
-          light-DOM stylesheets don't pierce the shadow boundary. Try editing the code.
+          light-DOM stylesheets don't pierce the shadow boundary. Both the hljs CSS and
+          the editor chrome (<code>--rc-textarea-*</code> custom properties) swap
+          together on dark-mode toggle. Try editing the code.
+          Theme: GitHub Light/Dark · font: <code>ui-monospace / Cascadia Code</code>, 13 px.
         </p>
-        <rc-textarea id="demo-hljs" class="h-lg t-github" lineNumbers>
+        <rc-textarea id="demo-hljs" class="h-lg t-github f-cascadia" lineNumbers>
           <textarea>interface User {
   id: number;
   name: string;
@@ -563,18 +395,18 @@ console.log(`Hello, ${user.name}!`);</textarea>
 
       <hr>
 
-      <!-- ── 3. Diagnostics ─────────────────────────────────────────────────── -->
+      <!-- ── 2. Diagnostics ─────────────────────────────────────────────────── -->
       <div class="section">
         <h2>Diagnostics — All Severities</h2>
         <p class="note">
           Diagnostics render Error Lens–style, inline at the end of their line.
-          <code>createIcon()</code> returns any <code>HTMLElement</code> to
-          prepend as a leading icon. Wavy underlines on the error and warning
-          tokens use <code>box-shadow</code> on mark decorations — never
-          <code>padding</code> or <code>margin</code>, which would shift character
+          <code>createIcon()</code> returns any <code>HTMLElement</code> to prepend as a
+          leading icon. Wavy underlines use <code>box-shadow</code> on mark decorations —
+          never <code>padding</code> or <code>margin</code>, which would shift character
           positions in the mirror relative to the textarea.
+          Theme: One Dark (fixed) · font: <code>Courier New</code>, 14 px / 1.65.
         </p>
-        <rc-textarea id="demo-diagnostics" class="h-md auto-theme" lineNumbers readonly>
+        <rc-textarea id="demo-diagnostics" class="h-md t-onedark f-courier" lineNumbers readonly>
           <textarea>const x = undeclaredVar;
 let y = parseInt("nope");
 // TODO: handle edge cases
@@ -584,36 +416,17 @@ function render() { return; }</textarea>
 
       <hr>
 
-      <!-- ── 4. Inline Widgets ───────────────────────────────────────────────── -->
-      <div class="section">
-        <h2>Inline Widgets</h2>
-        <p class="note">
-          Widgets occupy exactly 1ch — matching a U+2007 FIGURE SPACE character
-          embedded in the textarea value at each widget position. This keeps selection
-          highlights and cursor positions aligned between the textarea and the mirror.
-          <code>widgetPlacement: 'before'</code> places the widget before the remaining
-          text in the range; <code>'after'</code> places it after. Figure-spaces are
-          stripped from <code>host.value</code>, clipboard copy, paste, and
-          form submission so consumers never see them.
-        </p>
-        <rc-textarea id="demo-widgets" class="h-sm auto-theme" lineNumbers readonly>
-          <textarea>background: &#x2007;#e74c3c;
-border-color: #3498db&#x2007;;
-icon: &#x2007; all checks passed</textarea>
-        </rc-textarea>
-      </div>
-
-      <hr>
-
-      <!-- ── 5. Pattern Matching ─────────────────────────────────────────────── -->
+      <!-- ── 3. Pattern Matching ─────────────────────────────────────────────── -->
       <div class="section">
         <h2>Pattern Matching</h2>
         <p class="note">
           <code>addPattern()</code> registers a regex that re-matches on every
           keystroke — no manual update needed. Multiple patterns can be active
-          simultaneously. Try editing the text below.
+          simultaneously. Colour classes reference page-level CSS custom properties
+          so they adapt automatically when dark mode is toggled. Try editing the text.
+          Theme: auto (follows page) · font: system mono, 12 px / 1.45.
         </p>
-        <rc-textarea id="demo-patterns" class="h-md auto-theme" lineNumbers wordWrap>
+        <rc-textarea id="demo-patterns" class="h-md auto-theme f-compact" lineNumbers wordWrap>
           <textarea>Visit https://example.com/docs for the guide.
 The answer is 42 and Pi ≈ 3.14159.
 Email us at hello@example.org for support.
@@ -623,12 +436,13 @@ Error at line 99, column 12 of the source file.</textarea>
 
       <hr>
 
-      <!-- ── 6. Auto-Grow ────────────────────────────────────────────────────── -->
+      <!-- ── 4. Auto-Grow ────────────────────────────────────────────────────── -->
       <div class="section">
         <h2>Auto-Grow</h2>
         <p class="note">
-          <code>autoGrow</code> makes the editor expand to fit content — the
+          <code>autoGrow</code> makes the editor expand to fit its content — the
           mirror drives the host height, so no explicit height is needed.
+          Theme: auto (follows page).
         </p>
         <rc-textarea class="auto-theme" autoGrow lineNumbers wordWrap>
           <textarea rows="3">Type here and the editor grows with your content.
