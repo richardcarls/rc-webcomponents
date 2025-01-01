@@ -1,5 +1,5 @@
 import { test, expect, describe } from 'vitest';
-import { findEdit, mapDecorationsThroughChange, isLargeChange } from './decoration.ts';
+import { type MarkDecoration, type LineDecoration, findEdit, mapDecorationsThroughChange, isLargeChange } from './decoration.ts';
 
 describe('findEdit', () => {
   test('insertion at start', () => {
@@ -48,7 +48,7 @@ describe('mapDecorationsThroughChange', () => {
       'hello world',
       'hello Xworld', // insert X at offset 6
     );
-    expect(decorations[0].range).toEqual({ from: 0, to: 3 });
+    expect((decorations[0] as MarkDecoration).range).toEqual({ from: 0, to: 3 });
   });
 
   test('mark after the edit is shifted by the delta', () => {
@@ -58,7 +58,7 @@ describe('mapDecorationsThroughChange', () => {
       'hello world',
       'hello Xworld', // insert X at offset 6, delta = +1
     );
-    expect(decorations[0].range).toEqual({ from: 7, to: 12 });
+    expect((decorations[0] as MarkDecoration).range).toEqual({ from: 7, to: 12 });
   });
 
   test('mark entirely inside a deletion is removed', () => {
@@ -81,7 +81,7 @@ describe('mapDecorationsThroughChange', () => {
       'a\nb\nc\nd\ne',
       'a\nc\nd\ne', // delete line 2 (b\n)
     );
-    expect(decorations[0].line).toBe(3);
+    expect((decorations[0] as LineDecoration).line).toBe(3);
   });
 
   test('line decoration after inserted lines shifts down', () => {
@@ -93,7 +93,7 @@ describe('mapDecorationsThroughChange', () => {
       'a\nb\nc',
       'a\nnew\nb\nc', // insert line before b
     );
-    expect(decorations[0].line).toBe(4);
+    expect((decorations[0] as LineDecoration).line).toBe(4);
   });
 
   test('diagnostic line shifts with inserted lines', () => {

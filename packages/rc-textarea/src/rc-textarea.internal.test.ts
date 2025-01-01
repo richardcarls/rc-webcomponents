@@ -4,7 +4,7 @@ import { html } from 'lit';
 
 import './rc-textarea.ts';
 import type { RCTextarea } from './rc-textarea.ts';
-import { getMirror, getGutter, getLineNumbers, getSlottedTextarea, waitRAF } from './test-helpers.ts';
+import { getMirror, getSlottedTextarea, waitRAF } from './test-helpers.ts';
 
 /**
  * Cast helper for accessing the internal Decoration API in tests.

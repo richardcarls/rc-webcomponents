@@ -162,9 +162,11 @@ export const textareaStyles = css`
     /* border-box so width:100% means the same total box as the mirror's
        left:0;right:0 expansion — content areas are then identical */
     box-sizing: border-box;
-    /* Text is transparent so the mirror shows through; caret remains visible */
-    color: transparent;
-    background: transparent;
+    /* Text is transparent so the mirror shows through; caret remains visible.
+       !important guards against host-app global textarea rules (e.g. design
+       system resets) which win over ::slotted() at equal specificity. */
+    color: transparent !important;
+    background: transparent !important;
     caret-color: var(--rc-textarea-caret-color);
     /* 1px transparent border matches the mirror's border so content areas align */
     border: 1px solid transparent;
