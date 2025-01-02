@@ -112,6 +112,7 @@ export class RCTextarea extends LitElement {
   private _patternStyleSheets: Map<string, CSSStyleSheet> = new Map();
   private _prevValue = '';
   private _rafHandle: number | null = null;
+  private _isRendering = false;
   private _intersectionObserver: IntersectionObserver | null = null;
   private _adoptedStyleSheets: CSSStyleSheet[] = [];
   private _plugin: RCTextareaPlugin | null = null;
@@ -390,13 +391,18 @@ export class RCTextarea extends LitElement {
     const rows = textarea.getAttribute('rows');
     const cols = textarea.getAttribute('cols');
 
-    // Never stamp a fixed height when autoGrow is active — the mirror drives
-    // the host height by expanding in normal flow. This is a belt-and-suspenders
-    // guard for browsers that do not yet support computedStyleMap().
-    if (rows && !this.style.height && !this.autoGrow) {
+    // In auto-grow mode, use min-height from rows so the component has a
+    // sensible initial size while still being able to expand beyond it.
+    // Never stamp a fixed height when autoGrow is active.
+    if (rows && !this.style.height) {
       const r = parseInt(rows, 10);
       if (r > 0) {
-        this.style.height = `calc(${r} * var(--rc-textarea-line-height, 1.5) * var(--rc-textarea-font-size, 1em) + 2 * var(--rc-textarea-padding, 0.5em))`;
+        const calc = `calc(${r} * var(--rc-textarea-line-height, 1.5) * var(--rc-textarea-font-size, 1em) + 2 * var(--rc-textarea-padding, 0.5em))`;
+        if (this.autoGrow) {
+          if (!this.style.minHeight) this.style.minHeight = calc;
+        } else {
+          this.style.height = calc;
+        }
       }
     }
     if (cols && !this.style.width) {
@@ -535,46 +541,75 @@ export class RCTextarea extends LitElement {
   }
 
   private async _performUpdate() {
-    const textarea = this._textareaRef?.deref();
-    const value = textarea?.value ?? '';
-    const lineCount = value.split('\n').length;
+    this._isRendering = true;
+    try {
+      const textarea = this._textareaRef?.deref();
+      const value = textarea?.value ?? '';
+      const lineCount = value.split('\n').length;
 
-    const allDecorations: Decoration[] = [
-      ...this._decorations.values(),
-      ...this._patternDecorations,
-      ...this._deriveDiagnosticDecorations(),
-    ];
+      const allDecorations: Decoration[] = [
+        ...this._decorations.values(),
+        ...this._patternDecorations,
+        ...this._deriveDiagnosticDecorations(),
+      ];
 
-    const allDiagnostics = [...this._diagnostics.values(), ...this._patternDiagnostics];
+      const allDiagnostics = [...this._diagnostics.values(), ...this._patternDiagnostics];
 
-    const mirror = this._$mirror;
-    if (mirror) {
-      if (this._plugin && this._pluginApi) {
-        const seq = ++this._pluginSeq;
-        const result = await Promise.resolve(
-          this._plugin.highlight(value, this._pluginApi),
-        );
-        if (this._pluginSeq !== seq) return;
-        mirror.innerHTML = result ?? renderMirror(value, allDecorations, allDiagnostics);
-      } else {
-        mirror.innerHTML = renderMirror(value, allDecorations, allDiagnostics);
+      const mirror = this._$mirror;
+      if (mirror) {
+        if (this._plugin && this._pluginApi) {
+          const seq = ++this._pluginSeq;
+          const result = await Promise.resolve(
+            this._plugin.highlight(value, this._pluginApi),
+          );
+          if (this._pluginSeq !== seq) return;
+          if (result != null) {
+            mirror.innerHTML = result;
+            this._appendDiagnosticMessages(mirror, allDiagnostics);
+          } else {
+            mirror.innerHTML = renderMirror(value, allDecorations, allDiagnostics);
+          }
+        } else {
+          mirror.innerHTML = renderMirror(value, allDecorations, allDiagnostics);
+        }
       }
-    }
 
-    const lineNumbers = this._$lineNumbers;
-    if (lineNumbers) {
-      // In word-wrap mode, mirror lines can span multiple visual rows. Measure
-      // each line's actual offsetHeight so gutter numbers stay aligned.
-      let lineHeights: number[] | undefined;
-      if (this.wordWrap && mirror) {
-        lineHeights = [...mirror.querySelectorAll<HTMLElement>('.line')].map(
-          (el) => el.offsetHeight,
-        );
+      const lineNumbers = this._$lineNumbers;
+      if (lineNumbers) {
+        // In word-wrap mode, mirror lines can span multiple visual rows. Measure
+        // each line's actual offsetHeight so gutter numbers stay aligned.
+        let lineHeights: number[] | undefined;
+        if (this.wordWrap && mirror) {
+          lineHeights = [...mirror.querySelectorAll<HTMLElement>('.line')].map(
+            (el) => el.offsetHeight,
+          );
+        }
+        lineNumbers.innerHTML = renderGutter(lineCount, lineHeights);
       }
-      lineNumbers.innerHTML = renderGutter(lineCount, lineHeights);
-    }
 
-    this._updateDiagnosticStatus();
+      this._updateDiagnosticStatus();
+    } finally {
+      this._isRendering = false;
+    }
+  }
+
+  private _appendDiagnosticMessages(mirror: HTMLDivElement, diagnostics: Diagnostic[]): void {
+    const lineEls = mirror.querySelectorAll<HTMLElement>('.line');
+    for (const diag of diagnostics) {
+      const lineEl = lineEls[diag.line - 1]; // diag.line is 1-based
+      if (!lineEl) continue;
+      const span = document.createElement('span');
+      span.className = `diagnostic diagnostic--${diag.severity}`;
+      if (diag.createIcon) {
+        const icon = Object.assign(document.createElement('span'), {
+          className: 'diagnostic-icon',
+        });
+        icon.append(diag.createIcon());
+        span.prepend(icon);
+      }
+      span.append(` ${diag.message}`);
+      lineEl.append(span);
+    }
   }
 
   private _updateDiagnosticStatus() {
@@ -805,7 +840,7 @@ export class RCTextarea extends LitElement {
   addDiagnostic(diagnostic: Omit<Diagnostic, 'id'>): string {
     const id = generateId();
     this._diagnostics.set(id, { ...diagnostic, id });
-    this._scheduleUpdate();
+    if (!this._isRendering) this._scheduleUpdate();
     this._updateDiagnosticStatus();
     const textarea = this._textareaRef?.deref();
     if (textarea) this._updateAriaInvalid(textarea);
@@ -814,7 +849,7 @@ export class RCTextarea extends LitElement {
 
   removeDiagnostic(id: string): void {
     this._diagnostics.delete(id);
-    this._scheduleUpdate();
+    if (!this._isRendering) this._scheduleUpdate();
     this._updateDiagnosticStatus();
     const textarea = this._textareaRef?.deref();
     if (textarea) this._updateAriaInvalid(textarea);
@@ -822,7 +857,7 @@ export class RCTextarea extends LitElement {
 
   clearDiagnostics(): void {
     this._diagnostics.clear();
-    this._scheduleUpdate();
+    if (!this._isRendering) this._scheduleUpdate();
     this._updateDiagnosticStatus();
     const textarea = this._textareaRef?.deref();
     if (textarea) this._updateAriaInvalid(textarea);
@@ -834,7 +869,7 @@ export class RCTextarea extends LitElement {
       const id = generateId();
       this._diagnostics.set(id, { ...d, id });
     }
-    this._scheduleUpdate();
+    if (!this._isRendering) this._scheduleUpdate();
     this._updateDiagnosticStatus();
     const textarea = this._textareaRef?.deref();
     if (textarea) this._updateAriaInvalid(textarea);
