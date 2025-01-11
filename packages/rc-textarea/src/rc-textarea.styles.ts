@@ -17,8 +17,6 @@ export const textareaStyles = css`
     --rc-textarea-gutter-border: ButtonBorder;
     --rc-textarea-background: Field;
     --rc-textarea-color: FieldText;
-    /* currentColor resolves at point of use; since ::slotted(textarea) has
-       color:transparent, we must reference --rc-textarea-color explicitly */
     --rc-textarea-caret-color: var(--rc-textarea-color);
     --rc-textarea-border: 1px solid ButtonBorder;
     --rc-textarea-border-radius: 2px;
@@ -51,9 +49,6 @@ export const textareaStyles = css`
     display: none;
   }
 
-  /* Root flex container — must be a flex row so #gutter and #editor-area
-     can use their flex properties. Without this, #editor-area has no height
-     and the absolutely-positioned textarea/mirror collapse to zero. */
   #root {
     display: flex;
     flex-direction: row;
@@ -91,38 +86,17 @@ export const textareaStyles = css`
     white-space: nowrap;
   }
 
-  /* Editor area: contains mirror + slotted textarea */
+  /* Editor area: contains the overlay + contenteditable */
   #editor-area {
     flex: 1;
     position: relative;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     min-width: 0;
-  }
-
-  /* Mirror div: visually behind the textarea */
-  #mirror {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
     overflow: hidden;
-    white-space: pre;
-    word-break: normal;
-    overflow-wrap: normal;
-    font-family: inherit;
-    font-size: inherit;
-    line-height: inherit;
-    /* Typography is further synced via inline styles from getComputedStyle(textarea) */
-    /* 1px transparent border matches the textarea's border; with box-sizing:border-box
-       on both (textarea via ::slotted rule, mirror via * rule + syncTypography),
-       content areas are exactly equal */
-    border: 1px solid transparent;
   }
 
-  /* Auto-grow mode: mirror drives height via static flow.
-     Host and root must not clip the growing content. */
+  /* Auto-grow: let the editor area grow with its content */
   :host([autogrow]) {
     overflow: visible;
     resize: none;
@@ -136,69 +110,73 @@ export const textareaStyles = css`
     overflow: visible;
   }
 
-  :host([autogrow]) #mirror {
-    position: static;
-    width: 100%;
+  /*
+   * Absolutely-positioned line overlay — sits behind the contenteditable.
+   * Rendered content: one .overlay-line div per logical line.
+   * Carries line-highlight backgrounds and inline diagnostic annotations.
+   * Scroll-synced via JS: transform: translate(-scrollLeft, -scrollTop).
+   */
+  #line-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     overflow: visible;
-    min-height: calc(var(--rc-textarea-line-height) * 1em);
+    pointer-events: none;
+    padding: var(--rc-textarea-padding);
+    font-family: var(--rc-textarea-font-family);
+    font-size: var(--rc-textarea-font-size);
+    line-height: var(--rc-textarea-line-height);
+    tab-size: 4;
   }
 
-  /* Word wrap */
-  :host([wordwrap]) #mirror,
-  :host([wordwrap][autogrow]) #mirror {
+  /* One overlay row per logical line */
+  .overlay-line {
+    display: block;
+    min-height: calc(var(--rc-textarea-line-height) * 1em);
+    text-align: right;
+  }
+
+  /* The contenteditable editing surface */
+  #editor {
+    flex: 1;
+    outline: none;
+    overflow: auto;
+    white-space: pre;
+    word-break: normal;
+    overflow-wrap: normal;
+    padding: var(--rc-textarea-padding);
+    font-family: var(--rc-textarea-font-family);
+    font-size: var(--rc-textarea-font-size);
+    line-height: var(--rc-textarea-line-height);
+    color: var(--rc-textarea-color);
+    caret-color: var(--rc-textarea-caret-color);
+    tab-size: 4;
+    min-height: calc(var(--rc-textarea-line-height) * 1em + 2 * var(--rc-textarea-padding));
+  }
+
+  :host([autogrow]) #editor {
+    overflow: visible;
+    min-height: calc(var(--rc-textarea-line-height) * 1em + 2 * var(--rc-textarea-padding));
+  }
+
+  :host([wordwrap]) #editor {
     white-space: pre-wrap;
     overflow-wrap: break-word;
     word-break: normal;
   }
 
-  /* Slotted textarea sits on top of the mirror */
-  ::slotted(textarea) {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    /* border-box so width:100% means the same total box as the mirror's
-       left:0;right:0 expansion — content areas are then identical */
-    box-sizing: border-box;
-    /* Text is transparent so the mirror shows through; caret remains visible.
-       !important guards against host-app global textarea rules (e.g. design
-       system resets) which win over ::slotted() at equal specificity. */
-    color: transparent !important;
-    background: transparent !important;
-    caret-color: var(--rc-textarea-caret-color);
-    /* 1px transparent border matches the mirror's border so content areas align */
-    border: 1px solid transparent;
-    outline: none;
-    resize: none;
-    overflow: auto;
-    white-space: pre;
-    overflow-wrap: normal;
-    /* Typography properties are synced via inline styles on the mirror;
-       these custom properties apply to the textarea itself */
-    font-family: var(--rc-textarea-font-family);
-    font-size: var(--rc-textarea-font-size);
-    line-height: var(--rc-textarea-line-height);
-    padding: var(--rc-textarea-padding);
-    tab-size: 4;
-  }
-
-  :host([autogrow]) ::slotted(textarea) {
-    /* No scrolling in auto-grow mode — the textarea fills the mirror height */
-    overflow: hidden;
-  }
-
-  :host([wordwrap]) ::slotted(textarea) {
+  :host([wordwrap]) #line-overlay {
     white-space: pre-wrap;
     overflow-wrap: break-word;
+    word-break: normal;
   }
 
-  /* Lines in the mirror */
-  .line {
-    display: block;
-    position: relative;
-    min-height: calc(var(--rc-textarea-line-height) * 1em);
+  /* Widget spans: non-editable, atomic inline-block elements */
+  [contenteditable='false']:not(.diagnostic) {
+    display: inline-block;
+    cursor: default;
+    /* Selected as a unit by the browser */
   }
 
   /* Error Lens-style diagnostics: inline after line text */
@@ -209,6 +187,8 @@ export const textareaStyles = css`
     font-style: italic;
     pointer-events: none;
     white-space: nowrap;
+    user-select: none;
+    cursor: default;
   }
 
   .diagnostic--error {
@@ -232,8 +212,7 @@ export const textareaStyles = css`
     margin-right: 0.25em;
   }
 
-  /* Built-in diagnostic mark decoration — wavy underline driven by CSS vars.
-     Applied automatically when a Diagnostic includes a range. */
+  /* Built-in diagnostic mark decoration — wavy underline */
   .diagnostic-mark {
     text-decoration-line: underline;
     text-decoration-style: wavy;
@@ -245,12 +224,27 @@ export const textareaStyles = css`
   .diagnostic-mark--info    { --rc-textarea-mark-diagnostic-color: var(--rc-textarea-mark-info-color);    }
   .diagnostic-mark--hint    { --rc-textarea-mark-diagnostic-color: var(--rc-textarea-mark-hint-color);    }
 
-  /* Built-in diagnostic line decoration — tinted background driven by CSS vars.
-     Applied when lineClassName is set to diagnostic-line--{severity}. */
+  /* Built-in diagnostic line decoration — tinted background */
   .diagnostic-line--error   { background-color: color-mix(in srgb, var(--rc-textarea-mark-error-color)   8%, transparent); }
   .diagnostic-line--warning { background-color: color-mix(in srgb, var(--rc-textarea-mark-warning-color) 8%, transparent); }
   .diagnostic-line--info    { background-color: color-mix(in srgb, var(--rc-textarea-mark-info-color)    8%, transparent); }
   .diagnostic-line--hint    { background-color: color-mix(in srgb, var(--rc-textarea-mark-hint-color)    8%, transparent); }
+
+  /* Hidden light-DOM textarea: kept for form association fallback and
+     progressive enhancement (visible before JS hydrates). */
+  ::slotted(textarea) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
 
   /* Visually hidden ARIA live region for diagnostics */
   #diagnostic-status {

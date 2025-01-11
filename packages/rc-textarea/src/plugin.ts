@@ -3,42 +3,49 @@ import type { RCTextarea } from './rc-textarea.ts';
 
 /**
  * Contextual API passed to plugin lifecycle callbacks.
- * Provides access to the host element, mirror div, and rendering utilities.
+ * Provides access to the host element, the contenteditable editor div, and
+ * rendering utilities.
  */
 export interface RCTextareaPluginAPI {
   /** The host rc-textarea element. */
   readonly host: RCTextarea;
   /**
-   * The mirror div. Set `mirror.innerHTML` directly for full rendering control.
-   * The mirror is absolutely-positioned behind the transparent textarea and
-   * handles all visible text and decoration rendering.
+   * The contenteditable editor div. Set `editor.innerHTML` directly for full
+   * rendering control. Call `scheduleUpdate()` after any direct DOM mutation
+   * so that the gutter and ARIA live region stay in sync.
+   *
+   * When setting innerHTML, structure content as flat `.line` divs (one per
+   * logical line) so that:
+   *   - The line-number gutter aligns correctly in word-wrap mode.
+   *   - Diagnostics added via `addDiagnostic()` render inline after line text.
+   *   - The cursor can be restored correctly across re-renders.
    */
-  readonly mirror: HTMLDivElement;
+  readonly editor: HTMLDivElement;
   /**
    * All active diagnostics — both user-added (via `addDiagnostic`) and
    * pattern-generated (via `addPattern` with `createDiagnostic`).
    */
   readonly diagnostics: ReadonlyArray<Diagnostic>;
   /**
-   * User-added mark/line decorations plus pattern-matched decorations.
+   * User-added mark/line/widget decorations plus pattern-matched decorations.
    * Does not include decorations derived internally from diagnostics.
    */
   readonly decorations: ReadonlyArray<Decoration>;
   /**
-   * HTML-escape a string for safe inline insertion into the mirror.
+   * HTML-escape a string for safe inline insertion into the editor.
    * Always escape raw user text before placing it in the returned HTML.
    */
   escapeHtml(text: string): string;
   /**
-   * Render mirror HTML using the standard pipeline (patterns + decorations + diagnostics).
-   * Returns the HTML that would be placed in the mirror without a plugin active.
+   * Render editor HTML using the standard pipeline (patterns + decorations + diagnostics).
+   * Returns the HTML that would be placed in the editor without a plugin active.
    * Useful for post-processing — e.g. apply syntax highlighting to the default output,
    * or keep the standard rendering while modifying a small part of it.
    */
   renderDefault(value: string): string;
   /**
    * Schedule a re-render outside of normal text input events.
-   * Call this when plugin state changes independently of the textarea content,
+   * Call this when plugin state changes independently of the editor content,
    * for example when the language changes, a theme is applied, or an async
    * parse completes after returning `null` from a previous `highlight()` call.
    */
@@ -46,7 +53,7 @@ export interface RCTextareaPluginAPI {
 }
 
 /**
- * A plugin that takes over mirror rendering for rc-textarea.
+ * A plugin that takes over editor rendering for rc-textarea.
  *
  * Register a plugin with `element.usePlugin(plugin)`. Only one plugin can be
  * active at a time; registering a new one replaces the existing plugin.
@@ -97,18 +104,19 @@ export interface RCTextareaPlugin {
    */
   destroy?(): void;
   /**
-   * Transform the textarea value into mirror HTML.
+   * Transform the editor value into HTML for the contenteditable surface.
    *
-   * Return an HTML string to use as `mirror.innerHTML`, replacing the default
+   * Return an HTML string to use as `editor.innerHTML`, replacing the default
    * rendering. Return `null`, `undefined`, or `void` to fall through to the
    * standard pipeline (patterns + decorations + diagnostics).
    *
    * Async return values are fully supported. If a newer render cycle starts
    * before the promise resolves, the stale result is automatically discarded.
    *
-   * Note: If your plugin HTML does not preserve `.line` div structure,
-   * the line number gutter will not align correctly in word-wrap mode, and
-   * diagnostics added via `addDiagnostic()` will not be rendered inline.
+   * Note: Structure content as flat `.line` divs (one per logical line).
+   * If your plugin HTML does not preserve this structure, the line-number
+   * gutter will not align correctly in word-wrap mode, and diagnostics added
+   * via `addDiagnostic()` will not be rendered inline.
    * Use `api.renderDefault()` as a base if you need those features.
    */
   highlight(

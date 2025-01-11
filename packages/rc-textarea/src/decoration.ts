@@ -20,7 +20,22 @@ export interface LineDecoration {
   attributes?: Record<string, string>;
 }
 
-export type Decoration = MarkDecoration | LineDecoration;
+export interface WidgetDecoration {
+  id: string;
+  type: 'widget';
+  /** Character range in the plain-text value that this widget replaces. */
+  range: TextRange;
+  /**
+   * Factory that returns the HTMLElement to display inside the widget span.
+   * Called once per render; the element's `outerHTML` is injected into the
+   * contenteditable surface inside a `contenteditable="false"` wrapper span.
+   */
+  createElement: () => HTMLElement;
+  className?: string;
+  attributes?: Record<string, string>;
+}
+
+export type Decoration = MarkDecoration | LineDecoration | WidgetDecoration;
 
 export interface Diagnostic {
   id: string;
@@ -54,7 +69,10 @@ export interface Diagnostic {
  * Input type for addDecoration / setDecorations — the discriminated union
  * of each decoration type without the auto-generated `id` field.
  */
-export type DecorationInput = Omit<MarkDecoration, 'id'> | Omit<LineDecoration, 'id'>;
+export type DecorationInput =
+  | Omit<MarkDecoration, 'id'>
+  | Omit<LineDecoration, 'id'>
+  | Omit<WidgetDecoration, 'id'>;
 
 export function generateId(): string {
   return crypto.randomUUID();
@@ -144,7 +162,7 @@ export function mapDecorationsThroughChange(
 
   const mappedDecorations: Decoration[] = [];
   for (const dec of decorations) {
-    if (dec.type === 'mark') {
+    if (dec.type === 'mark' || dec.type === 'widget') {
       const newRange = mapMarkRange(dec.range, edit);
       if (newRange !== null) {
         mappedDecorations.push({ ...dec, range: newRange });
