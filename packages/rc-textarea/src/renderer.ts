@@ -203,7 +203,15 @@ export function extractEditorText(editor: HTMLElement): string {
 }
 
 function extractNodeText(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return (node as Text).data;
+  }
   if (node instanceof Element) {
+    // <br> elements represent a newline in the plain-text model.  Browsers
+    // occasionally insert them in contenteditable (e.g. during paste or IME)
+    // even in white-space:pre mode; treating them as '\n' keeps the value
+    // consistent with what the user sees.
+    if ((node as Element).tagName === 'BR') return '\n';
     if (node.getAttribute('contenteditable') === 'false') {
       const el = node as HTMLElement;
       return el.dataset.widgetText !== undefined ? el.dataset.widgetText : '';
@@ -213,9 +221,6 @@ function extractNodeText(node: Node): string {
       text += extractNodeText(child);
     }
     return text;
-  }
-  if (node.nodeType === Node.TEXT_NODE) {
-    return (node as Text).data;
   }
   return '';
 }

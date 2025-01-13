@@ -86,7 +86,24 @@ function walkFromOffset(
   remaining: number,
 ): { node: Node; offset: number } | null {
   if (node.nodeType === Node.TEXT_NODE) {
-    if (remaining <= (node as Text).length) return { node, offset: remaining };
+    const text = node as Text;
+    // Special case: the target offset is exactly at the end of a text node
+    // whose last character is '\n'.  Returning the element-boundary position
+    // (AFTER the text node inside its parent) instead of offset=text.length
+    // inside the text node lets browsers correctly render the cursor on the
+    // new empty line rather than ambiguously at the tail of the previous line.
+    if (
+      remaining === text.length &&
+      text.length > 0 &&
+      text.data[text.length - 1] === '\n' &&
+      node.parentNode
+    ) {
+      let idx = 0;
+      let sib = node.previousSibling;
+      while (sib !== null) { idx++; sib = sib.previousSibling; }
+      return { node: node.parentNode, offset: idx + 1 };
+    }
+    if (remaining <= text.length) return { node, offset: remaining };
     return null;
   }
 
