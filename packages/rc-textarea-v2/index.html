@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc-textarea-v2 dev</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        background: #1e1e2e;
+        color: #cdd6f4;
+      }
+      h2 { color: #89b4fa; margin-bottom: 0.5rem; }
+      p { color: #a6adc8; font-size: 0.875rem; margin: 0 0 1rem; }
+      .demo { margin-bottom: 3rem; }
+      rc-textarea-v2 {
+        display: block;
+        --rc-textarea-v2-font-family: 'Cascadia Code', 'Fira Code', monospace;
+        --rc-textarea-v2-font-size: 14px;
+        --rc-textarea-v2-line-height: 1.6;
+        --rc-textarea-v2-background: #1e1e2e;
+        --rc-textarea-v2-color: #cdd6f4;
+        --rc-textarea-v2-border: 1px solid #45475a;
+        --rc-textarea-v2-border-radius: 6px;
+        --rc-textarea-v2-padding: 0.75em 1em;
+        --rc-textarea-v2-focus-outline: 2px solid #89b4fa;
+        --rc-textarea-v2-gutter-bg: #181825;
+        --rc-textarea-v2-gutter-color: #585b70;
+        --rc-textarea-v2-gutter-border: 1px solid #45475a;
+        --rc-textarea-v2-caret-color: #f5c2e7;
+      }
+      pre { background: #313244; padding: 0.75rem; border-radius: 4px; font-size: 12px; color: #cdd6f4; }
+    </style>
+  </head>
+  <body>
+    <h1>rc-textarea-v2 demos</h1>
+
+    <div class="demo">
+      <h2>1. Basic editor (no decorations)</h2>
+      <p>Plain contenteditable textarea with form integration.</p>
+      <rc-textarea-v2 id="basic" line-numbers>
+        <textarea name="basic" rows="5" placeholder="Type something…"></textarea>
+      </rc-textarea-v2>
+      <p>Value: <code id="basic-out"></code></p>
+    </div>
+
+    <div class="demo">
+      <h2>2. Mark decorations (bold + color)</h2>
+      <p>Words matching /TODO/ are highlighted bold orange.</p>
+      <rc-textarea-v2 id="pattern-demo" line-numbers>
+        <textarea name="pattern" rows="6" placeholder="Type TODO anywhere…">// TODO: fix this
+function greet(name) {
+  return 'Hello ' + name;
+  // TODO: add validation
+}</textarea>
+      </rc-textarea-v2>
+    </div>
+
+    <div class="demo">
+      <h2>3. Plugin — highlight.js compatibility</h2>
+      <p>Plugin uses <code>decorationsFromHtml()</code> to convert hljs output to decorations.</p>
+      <rc-textarea-v2 id="hljs-demo" line-numbers auto-grow>
+        <textarea name="hljs" rows="8" placeholder="JavaScript code…">const greeting = (name) => {
+  if (!name) throw new Error('name required');
+  return `Hello, ${name}!`;
+};
+
+// Call it
+console.log(greeting('World'));
+</textarea>
+      </rc-textarea-v2>
+    </div>
+
+    <div class="demo">
+      <h2>4. Error-lens style line decorations</h2>
+      <p>LineDecoration with <code>message</code> shows annotation at end of line.</p>
+      <rc-textarea-v2 id="lens-demo" line-numbers>
+        <textarea name="lens" rows="5">line one — this line is fine
+line two — error here
+line three — warning here
+line four — fine
+</textarea>
+      </rc-textarea-v2>
+    </div>
+
+    <div class="demo">
+      <h2>5. Inline widgets</h2>
+      <p>WidgetDecoration inserts a non-editable DOM element at a character offset.</p>
+      <rc-textarea-v2 id="widget-demo" line-numbers>
+        <textarea name="widget" rows="3">color: #ff0000 — widget shows swatch
+color: #00ff88 — another swatch
+</textarea>
+      </rc-textarea-v2>
+    </div>
+
+    <div class="demo">
+      <h2>6. Word wrap + auto-grow</h2>
+      <rc-textarea-v2 id="wrap-demo" word-wrap auto-grow>
+        <textarea name="wrap" rows="3" placeholder="Long lines will wrap…">This is a very long line that should wrap automatically when the editor is narrower than the content, demonstrating the word-wrap and auto-grow features working together.</textarea>
+      </rc-textarea-v2>
+    </div>
+
+    <script type="module">
+      import { RCTextareaV2 } from './src/index.ts';
+
+      // ── 1. Basic value display ───────────────────────────────────────
+      const basic = document.getElementById('basic');
+      const basicOut = document.getElementById('basic-out');
+      basic.addEventListener('rc-textarea-v2-change', (e) => {
+        basicOut.textContent = JSON.stringify(e.detail.value);
+      });
+
+      // ── 2. Pattern demo — /TODO/ bold orange ─────────────────────────
+      const patternDemo = document.getElementById('pattern-demo');
+      patternDemo.addPattern({
+        pattern: /\bTODO\b/,
+        bold: true,
+        color: '#fab387',
+        background: 'rgba(250,179,135,0.1)',
+      });
+
+      // ── 3. highlight.js compat demo ──────────────────────────────────
+      // Dynamically load hljs from CDN; if unavailable, skip gracefully
+      const hljsDemo = document.getElementById('hljs-demo');
+      let hljsApi = null;
+      hljsDemo.usePlugin({
+        mount(api) { hljsApi = api; },
+        async highlight(value, api) {
+          try {
+            if (!window.hljs) return null;
+            const result = window.hljs.highlight(value, { language: 'javascript' });
+            api.setDecorations(api.decorationsFromHtml(result.value));
+          } catch {
+            return null;
+          }
+        },
+      });
+
+      // ── 4. Error-lens line decorations ───────────────────────────────
+      const lensDemo = document.getElementById('lens-demo');
+      let lensApi = null;
+      lensDemo.usePlugin({
+        mount(api) {
+          lensApi = api;
+          api.setDecorations([
+            {
+              type: 'line',
+              line: 2,
+              className: 'error-line',
+              message: 'unexpected token',
+              messageClassName: 'error-message',
+            },
+            {
+              type: 'line',
+              line: 3,
+              className: 'warning-line',
+              message: 'possible null dereference',
+              messageClassName: 'warning-message',
+            },
+            {
+              type: 'mark',
+              from: 28, // "error here"
+              to: 38,
+              underline: 'wavy',
+              underlineColor: '#f38ba8',
+            },
+          ]);
+        },
+        update() {},
+      });
+
+      // ── 5. Inline widget (color swatch) ──────────────────────────────
+      const widgetDemo = document.getElementById('widget-demo');
+      let widgetApi = null;
+      widgetDemo.usePlugin({
+        mount(api) {
+          widgetApi = api;
+          applyColorWidgets(api, api.value);
+        },
+        update(value, api) {
+          applyColorWidgets(api, value);
+        },
+      });
+
+      function applyColorWidgets(api, value) {
+        const hexPattern = /#([0-9a-fA-F]{3,6})\b/g;
+        const decs = [];
+        let match;
+        while ((match = hexPattern.exec(value)) !== null) {
+          const color = match[0];
+          const offset = match.index;
+          decs.push({
+            type: 'widget',
+            offset,
+            side: 'before',
+            create() {
+              const swatch = document.createElement('span');
+              swatch.style.cssText = `
+                display:inline-block;width:10px;height:10px;
+                background:${color};border:1px solid rgba(255,255,255,0.3);
+                border-radius:2px;margin-right:3px;vertical-align:middle;
+              `;
+              return swatch;
+            },
+          });
+        }
+        api.setDecorations(decs);
+      }
+    </script>
+
+    <style>
+      /* Demo-specific decoration styles */
+      .error-line { background: rgba(243, 139, 168, 0.08); }
+      .warning-line { background: rgba(249, 226, 175, 0.08); }
+      .error-message { color: #f38ba8; opacity: 0.8; font-size: 0.85em; }
+      .warning-message { color: #f9e2af; opacity: 0.8; font-size: 0.85em; }
+    </style>
+  </body>
+</html>
