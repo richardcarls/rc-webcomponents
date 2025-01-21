@@ -138,8 +138,12 @@ export const styles = css`
     min-height: var(--rc-textarea-v2-line-height, 1.5em);
   }
 
-  /* Error-lens style end-of-line message */
-  .v2-line-message {
+  /* Error-lens style end-of-line message via ::after pseudo-element.
+     content: attr(data-message) is set when V2Document assigns data-message.
+     Using ::after keeps the annotation completely outside the DOM selection
+     and clipboard path — no user-select tricks needed. */
+  .v2-line[data-message]::after {
+    content: attr(data-message);
     position: absolute;
     right: 0.5em;
     top: 0;

@@ -110,6 +110,8 @@ export class RCTextareaV2 extends LitElement {
   private _pluginApi: RCTextareaV2PluginAPI | null = null;
   /** Sequence counter for async plugin safety (discard stale results). */
   private _pluginSeq = 0;
+  /** Stylesheets adopted into the shadow root by the active plugin. */
+  private _pluginSheets = new Set<CSSStyleSheet>();
 
   private _savedSelection: SavedSelection | null = null;
   private _rafHandle: number | null = null;
@@ -146,6 +148,7 @@ export class RCTextareaV2 extends LitElement {
     this._plugin?.destroy?.();
     this._plugin = null;
     this._pluginApi = null;
+    this._clearPluginSheets();
     this._resizeObserver?.disconnect();
     if (this._rafHandle !== null) {
       cancelAnimationFrame(this._rafHandle);
@@ -260,7 +263,6 @@ export class RCTextareaV2 extends LitElement {
   // ── Editor event binding ──────────────────────────────────────────────
 
   private _bindEditorEvents(editorEl: HTMLElement): void {
-    editorEl.addEventListener('beforeinput', this._onBeforeInput);
     editorEl.addEventListener('compositionstart', () => { this._composing = true; });
     editorEl.addEventListener('compositionend', () => {
       this._composing = false;
@@ -278,11 +280,6 @@ export class RCTextareaV2 extends LitElement {
     editorEl.addEventListener('mouseup', this._onSelectionChange);
     editorEl.addEventListener('keyup', this._onSelectionChange);
   }
-
-  private _onBeforeInput = (): void => {
-    const editorEl = this._getEditorEl();
-    if (editorEl) this._savedSelection = saveSelection(editorEl);
-  };
 
   private _onInputEvent = (): void => {
     if (!this._composing) this._onInput();
@@ -304,6 +301,9 @@ export class RCTextareaV2 extends LitElement {
 
     this._value = newValue;
     this._syncTextareaValue();
+
+    // Save cursor position AFTER the browser has processed the input
+    this._savedSelection = saveSelection(editorEl);
 
     // Push to undo stack
     this._pushUndo(this._savedSelection);
@@ -362,7 +362,6 @@ export class RCTextareaV2 extends LitElement {
   private _insertText(text: string): void {
     const editorEl = this._getEditorEl();
     if (!editorEl) return;
-    this._savedSelection = saveSelection(editorEl);
     // Use execCommand for simple insertions — maintains a minimal undo step
     // until our full rebuild fires on the next RAF.
     document.execCommand('insertText', false, text);
@@ -425,6 +424,7 @@ export class RCTextareaV2 extends LitElement {
 
   usePlugin(plugin: RCTextareaV2Plugin): void {
     this._plugin?.destroy?.();
+    this._clearPluginSheets();
     this._pluginDecorations.clear();
     this._pluginSeq++;
 
@@ -437,6 +437,7 @@ export class RCTextareaV2 extends LitElement {
 
   removePlugin(): void {
     this._plugin?.destroy?.();
+    this._clearPluginSheets();
     this._plugin = null;
     this._pluginApi = null;
     this._pluginDecorations.clear();
@@ -466,10 +467,43 @@ export class RCTextareaV2 extends LitElement {
       scheduleUpdate(): void {
         if (!component._isRendering) component._scheduleRender();
       },
+      adoptStyleSheet(sheetOrCssText: CSSStyleSheet | string): CSSStyleSheet {
+        let sheet: CSSStyleSheet;
+        if (typeof sheetOrCssText === 'string') {
+          sheet = new CSSStyleSheet();
+          sheet.replaceSync(sheetOrCssText);
+        } else {
+          sheet = sheetOrCssText;
+        }
+        const sr = component.shadowRoot;
+        if (sr && !sr.adoptedStyleSheets.includes(sheet)) {
+          sr.adoptedStyleSheets = [...sr.adoptedStyleSheets, sheet];
+        }
+        component._pluginSheets.add(sheet);
+        return sheet;
+      },
+      removeStyleSheet(sheet: CSSStyleSheet): void {
+        const sr = component.shadowRoot;
+        if (sr) {
+          sr.adoptedStyleSheets = sr.adoptedStyleSheets.filter(s => s !== sheet);
+        }
+        component._pluginSheets.delete(sheet);
+      },
       decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
         return decorationsFromHtml(html);
       },
     };
+  }
+
+  private _clearPluginSheets(): void {
+    if (this._pluginSheets.size === 0) return;
+    const sr = this.shadowRoot;
+    if (sr) {
+      sr.adoptedStyleSheets = sr.adoptedStyleSheets.filter(
+        s => !this._pluginSheets.has(s),
+      );
+    }
+    this._pluginSheets.clear();
   }
 
   // ── Pattern API ───────────────────────────────────────────────────────

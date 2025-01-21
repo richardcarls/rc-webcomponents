@@ -29,15 +29,15 @@ rc-textarea-v2 (LitElement shadow host)
 │       │       ├── text nodes (plain text)
 │       │       ├── .v2-mark spans (V2InlineBlot — mark decorations)
 │       │       ├── .v2-widget spans (V2WidgetBlot — inline widgets, contenteditable=false)
-│       │       └── .v2-line-message spans (error-lens annotations, aria-hidden)
+│       │       └── [data-message] attr → ::after pseudo-element (error-lens annotations)
 │       └── <slot> (lightDOM textarea — hidden, form-only)
 ```
 
 **Parchment usage**: `V2ScrollBlot` wraps `#editor` and suppresses Parchment's MutationObserver. Parchment blot classes (`V2BlockBlot`, `V2InlineBlot`, `V2WidgetBlot`) provide structured DOM creation via their static `create()` methods. `V2Document.build()` tears down and fully rebuilds the blot tree on every render frame (RAF-batched).
 
-**Editing loop**: `beforeinput` saves cursor position → browser handles edit → `input` extracts plain text → maps decorations through change → dispatches events → schedules RAF → `_performRender()` rebuilds DOM → restores cursor.
+**Editing loop**: browser handles edit → `input` saves cursor position + extracts plain text → maps decorations through change → dispatches events → schedules RAF → `_performRender()` rebuilds DOM → restores cursor.
 
-**Cursor management** (`selection.ts`): `saveSelection()` converts a DOM selection to plain-text character offsets (skipping widget spans and message spans). `restoreSelection()` converts back after DOM rebuild.
+**Cursor management** (`selection.ts`): `saveSelection()` converts a DOM selection to plain-text character offsets (skipping widget spans). `restoreSelection()` converts back after DOM rebuild.
 
 **Source files**:
 
@@ -231,6 +231,12 @@ interface RCTextareaV2PluginAPI {
 
   scheduleUpdate(): void;             // Trigger render outside of input events
 
+  // Inject a stylesheet into the component's shadow root.
+  // Pass a CSSStyleSheet or a raw CSS text string.
+  // Returns the adopted sheet. Automatically removed on plugin unmount.
+  adoptStyleSheet(sheetOrCssText: CSSStyleSheet | string): CSSStyleSheet;
+  removeStyleSheet(sheet: CSSStyleSheet): void;
+
   // Parse highlight.js / prism.js HTML output into MarkDecoration objects
   decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
 }
@@ -279,6 +285,19 @@ import javascript from 'highlight.js/lib/languages/javascript';
 hljs.registerLanguage('javascript', javascript);
 
 editor.usePlugin({
+  mount(api) {
+    // hljs token class spans live inside the shadow root — page CSS cannot
+    // pierce the shadow boundary. Inject token colors via adoptStyleSheet().
+    // The sheet is automatically removed when the plugin is unmounted.
+    api.adoptStyleSheet(`
+      .hljs-keyword { color: #cba6f7; }
+      .hljs-string  { color: #a6e3a1; }
+      .hljs-number  { color: #fab387; }
+      .hljs-comment { color: #6c7086; font-style: italic; }
+      .hljs-title   { color: #89b4fa; }
+      .hljs-built_in { color: #89dceb; }
+    `);
+  },
   highlight(value, api) {
     // hljs.highlight() returns HTML — decorationsFromHtml() converts it to decorations
     const { value: html } = hljs.highlight(value, { language: 'javascript' });
@@ -287,9 +306,7 @@ editor.usePlugin({
 });
 ```
 
-Add highlight.js theme CSS to your page (light DOM); the `hljs-*` class names will be applied to `.v2-mark` spans in the editor shadow root via a separate stylesheet adoption (see below).
-
-> **Note**: Shadow DOM doesn't inherit light-DOM stylesheets. Adopt the hljs theme into the shadow root using `document.adoptedStyleSheets` on the component's `shadowRoot`, or add inline styles via `color`/`bold`/etc. properties on `MarkDecoration` instead of relying on CSS classes.
+> **Shadow DOM note**: `decorationsFromHtml()` applies `hljs-*` class names to `.v2-mark` spans inside the shadow root. Light-DOM stylesheets do not pierce the shadow boundary, so the theme CSS must be injected via `api.adoptStyleSheet()` as shown above.
 
 ### Example — Prism.js
 
@@ -348,10 +365,20 @@ interface LineDecoration {
   type: 'line';
   line: number;              // 1-based logical line number
   className?: string;        // Added to the .v2-line div
-  message?: string;          // Error-lens text at end of line (aria-hidden)
-  messageClassName?: string; // Extra class on the message span
+  message?: string;          // Error-lens text — rendered via ::after pseudo-element,
+                             // so it is fully excluded from selection and clipboard
+  messageClassName?: string; // Space-separated class(es) set as data-message-class on
+                             // the line div; target with [data-message-class~="cls"]::after
   attributes?: Record<string, string>;
 }
+```
+
+Error-lens messages are rendered via a CSS `::after` pseudo-element (not a real DOM node), keeping them completely outside the selection and clipboard path. Style them in your adopted stylesheet:
+
+```css
+/* inside a sheet adopted via api.adoptStyleSheet() or the component's own CSS */
+.v2-line[data-message-class~="error"]::after  { color: #f38ba8; }
+.v2-line[data-message-class~="warning"]::after { color: #f9e2af; }
 ```
 
 ### `WidgetDecoration` — non-editable inline element
@@ -525,17 +552,26 @@ api.scheduleUpdate();
 
 ### hljs/prism CSS classes require shadow root stylesheet adoption
 
-`decorationsFromHtml()` applies className from `<span class="hljs-keyword">` etc. to `.v2-mark` spans. The corresponding CSS rules (e.g. from an hljs theme file) live in the light DOM and do not automatically pierce the shadow boundary.
+`decorationsFromHtml()` applies class names from `<span class="hljs-keyword">` etc. to `.v2-mark` spans inside the shadow root. Light-DOM stylesheets (including linked hljs theme files) do not pierce the shadow boundary.
 
-To apply them, adopt the stylesheet into the shadow root:
+Use `api.adoptStyleSheet()` inside `mount()` to inject the token colors into the shadow root. The sheet is removed automatically when the plugin is unmounted:
 
 ```ts
-// After the element is connected:
-const sheet = document.styleSheets[0]; // your hljs theme sheet
-editor.shadowRoot.adoptedStyleSheets = [...editor.shadowRoot.adoptedStyleSheets, sheet];
+editor.usePlugin({
+  mount(api) {
+    api.adoptStyleSheet(`
+      .hljs-keyword { color: #cba6f7; }
+      .hljs-string  { color: #a6e3a1; }
+      /* ... */
+    `);
+    // Or adopt a pre-built CSSStyleSheet shared across multiple editors:
+    // api.adoptStyleSheet(sharedThemeSheet);
+  },
+  highlight(value, api) { /* ... */ },
+});
 ```
 
-Or use `MarkDecoration.color`, `bold`, etc. instead of class-based styling.
+Alternatively, skip class-based styling entirely and use `MarkDecoration.color`, `bold`, etc. to apply formatting as inline styles.
 
 ### One plugin at a time
 

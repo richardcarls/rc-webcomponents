@@ -199,16 +199,20 @@ export class V2Document {
 
       buildLineContent(blockDomNode, lineText, lineStart, lineMarkDecs, lineWidgetDecs);
 
-      // Append error-lens messages after all content
-      for (const ld of lineDecs) {
-        if (ld.message) {
-          const msgEl = document.createElement('span');
-          msgEl.className =
-            'v2-line-message' + (ld.messageClassName ? ' ' + ld.messageClassName : '');
-          msgEl.textContent = '\u00a0\u00a0' + ld.message;
-          msgEl.setAttribute('aria-hidden', 'true');
-          blockDomNode.appendChild(msgEl);
-        }
+      // Set error-lens message via data attribute — rendered by ::after pseudo-element
+      // so it is completely outside the DOM selection and clipboard path.
+      const msgLineDecs = lineDecs.filter(ld => ld.message);
+      if (msgLineDecs.length > 0) {
+        const text = '\u00a0\u00a0' + msgLineDecs.map(ld => ld.message).join(' \u00b7 ');
+        blockDomNode.dataset.message = text;
+        const classes = [
+          ...new Set(
+            msgLineDecs.flatMap(ld =>
+              ld.messageClassName ? ld.messageClassName.split(/\s+/).filter(Boolean) : [],
+            ),
+          ),
+        ];
+        if (classes.length > 0) blockDomNode.dataset.messageClass = classes.join(' ');
       }
 
       editorEl.appendChild(blockDomNode);

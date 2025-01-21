@@ -35,9 +35,18 @@ export interface LineDecoration {
   className?: string;
   /**
    * Error-lens style annotation text shown at the end of the line.
-   * Rendered as an aria-hidden span after all line content.
+   * Rendered via `::after` pseudo-element on the line div (not a real DOM node),
+   * so it is completely excluded from selection and clipboard operations.
    */
   message?: string;
+  /**
+   * Space-separated CSS class name(s) applied to the `data-message-class` attribute
+   * on the line div. Use attribute selectors in CSS to style the message:
+   *
+   * ```css
+   * .v2-line[data-message-class~="error"][data-message]::after { color: red; }
+   * ```
+   */
   messageClassName?: string;
   attributes?: Record<string, string>;
 }
@@ -94,6 +103,48 @@ export interface RCTextareaV2PluginAPI {
 
   /** Trigger a render pass outside of normal text input events. */
   scheduleUpdate(): void;
+
+  /**
+   * Inject a stylesheet into the component's shadow root via `adoptedStyleSheets`.
+   *
+   * Pass a `CSSStyleSheet` object to share an already-constructed sheet (zero
+   * extra parsing cost), or a raw CSS text string to compile and adopt a new one.
+   * Returns the adopted `CSSStyleSheet` so it can be passed to `removeStyleSheet`
+   * if explicit removal is needed before the plugin is unmounted.
+   *
+   * Adopted sheets are **automatically removed** when the plugin is unmounted
+   * (via `removePlugin()` or `usePlugin()` with a replacement).
+   *
+   * @example CSS text string
+   * ```ts
+   * editor.usePlugin({
+   *   mount(api) {
+   *     api.adoptStyleSheet(`
+   *       .hljs-keyword { color: #cba6f7; }
+   *       .hljs-string  { color: #a6e3a1; }
+   *     `);
+   *   },
+   * });
+   * ```
+   *
+   * @example Shared CSSStyleSheet (constructed once, adopted by many)
+   * ```ts
+   * const sharedSheet = new CSSStyleSheet();
+   * sharedSheet.replaceSync('.hljs-keyword { color: #cba6f7; }');
+   *
+   * editor.usePlugin({
+   *   mount(api) { api.adoptStyleSheet(sharedSheet); },
+   * });
+   * ```
+   */
+  adoptStyleSheet(sheetOrCssText: CSSStyleSheet | string): CSSStyleSheet;
+
+  /**
+   * Remove a previously adopted stylesheet from the shadow root.
+   * The sheet does not need to have been adopted via `adoptStyleSheet` —
+   * any sheet already present in `adoptedStyleSheets` may be removed.
+   */
+  removeStyleSheet(sheet: CSSStyleSheet): void;
 
   /**
    * Compatibility bridge for highlight.js / prism.js.

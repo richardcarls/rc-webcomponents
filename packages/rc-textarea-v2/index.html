@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>rc-textarea-v2 dev</title>
+    <!-- highlight.js UMD — sets window.hljs; must load before the module script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
       body {
         font-family: sans-serif;
@@ -123,11 +125,33 @@ color: #00ff88 — another swatch
       });
 
       // ── 3. highlight.js compat demo ──────────────────────────────────
-      // Dynamically load hljs from CDN; if unavailable, skip gracefully
       const hljsDemo = document.getElementById('hljs-demo');
       let hljsApi = null;
       hljsDemo.usePlugin({
-        mount(api) { hljsApi = api; },
+        mount(api) {
+          hljsApi = api;
+          // hljs token class spans live inside the shadow root —
+          // page CSS cannot pierce the shadow boundary.
+          // adoptStyleSheet() compiles the CSS once and injects it
+          // via adoptedStyleSheets; it is removed automatically on unmount.
+          api.adoptStyleSheet(`
+            .hljs-keyword                { color: #cba6f7; }
+            .hljs-string                 { color: #a6e3a1; }
+            .hljs-number                 { color: #fab387; }
+            .hljs-comment                { color: #6c7086; font-style: italic; }
+            .hljs-title                  { color: #89b4fa; }
+            .hljs-title.function_        { color: #89b4fa; }
+            .hljs-title.class_           { color: #f9e2af; }
+            .hljs-params                 { color: #cdd6f4; }
+            .hljs-built_in               { color: #89dceb; }
+            .hljs-literal                { color: #fab387; }
+            .hljs-subst                  { color: #cdd6f4; }
+            .hljs-regexp                 { color: #f38ba8; }
+            .hljs-operator               { color: #89dceb; }
+            .hljs-attr, .hljs-property   { color: #89dceb; }
+            .hljs-variable               { color: #cdd6f4; }
+          `);
+        },
         async highlight(value, api) {
           try {
             if (!window.hljs) return null;
