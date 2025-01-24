@@ -138,6 +138,22 @@ export const styles = css`
     min-height: var(--rc-textarea-v2-line-height, 1.5em);
   }
 
+  /* Active line highlight — opt-in via CSS custom property. */
+  .v2-line--active {
+    background: var(--rc-textarea-v2-active-line-bg, transparent);
+  }
+
+  /* Show a figure-space-sized selection indicator on empty lines included in a
+     selection. The invisible ::before takes layout space so the browser's native
+     selection highlight renders over it — matching Monaco/VSCode UX. Pseudo-element
+     content is excluded from clipboard copy operations. */
+  .v2-line:has(> br:only-child)::before {
+    content: '\\2007'; /* figure space — same width as a digit */
+    display: inline;
+    pointer-events: none;
+    opacity: 0;
+  }
+
   /* Error-lens style end-of-line message via ::after pseudo-element.
      content: attr(data-message) is set when V2Document assigns data-message.
      Using ::after keeps the annotation completely outside the DOM selection

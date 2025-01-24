@@ -96,6 +96,45 @@ export interface RCTextareaV2PluginAPI {
   readonly host: HTMLElement;
   readonly value: string;
 
+  /** Normalized selection start offset (always ≤ selectionEnd). */
+  readonly selectionStart: number;
+  /** Normalized selection end offset (always ≥ selectionStart). Equals selectionStart when the cursor is collapsed. */
+  readonly selectionEnd: number;
+
+  /**
+   * Returns the bounding rect of the cursor (caret) in viewport coordinates,
+   * or `null` if the editor is not focused or the cursor is outside the editor.
+   * Useful for anchoring autocomplete popups or hover tooltips to the cursor.
+   */
+  getCursorRect(): DOMRect | null;
+
+  /**
+   * Returns the word at the current cursor position, or `null` if the cursor is
+   * not on a word character (`\w` — alphanumeric + underscore).
+   */
+  getWordAtCursor(): { word: string; from: number; to: number } | null;
+
+  /**
+   * Subscribe to cursor/selection changes. The callback fires on every cursor
+   * move (arrow keys, mouse clicks, selection changes) while the editor is focused.
+   * Returns an unsubscribe function — call it in your plugin's `destroy()`.
+   *
+   * @example
+   * ```ts
+   * let unsub: () => void;
+   * editor.usePlugin({
+   *   mount(api) {
+   *     unsub = api.onCursorMove((start, end) => {
+   *       const word = api.getWordAtCursor();
+   *       if (word) showTooltip(word, api.getCursorRect());
+   *     });
+   *   },
+   *   destroy() { unsub?.(); },
+   * });
+   * ```
+   */
+  onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void;
+
   addDecoration(d: DecorationInput): string;
   removeDecoration(id: string): void;
   clearDecorations(): void;

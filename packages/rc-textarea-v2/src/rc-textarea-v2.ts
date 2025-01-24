@@ -118,6 +118,16 @@ export class RCTextareaV2 extends LitElement {
   private _composing = false;
   private _isRendering = false;
 
+  /** The currently highlighted `.v2-line` element (active line). */
+  private _activeLine: HTMLElement | null = null;
+  /** Callbacks registered via PluginAPI.onCursorMove(). */
+  private _cursorCallbacks = new Set<(start: number, end: number) => void>();
+
+  private _docSelectionChangeHandler = (): void => {
+    if (document.activeElement !== this) return;
+    this._onSelectionChange();
+  };
+
   /** Undo/redo stack — necessary because DOM rebuilds invalidate browser's native undo. */
   private _undoStack: UndoEntry[] = [];
   private _undoIndex = -1;
@@ -134,6 +144,11 @@ export class RCTextareaV2 extends LitElement {
     if (v === this._value) return;
     this._value = v;
     this._syncTextareaValue();
+    this.dispatchEvent(new CustomEvent('rc-textarea-v2-change', {
+      bubbles: true,
+      composed: true,
+      detail: { value: v },
+    }));
     this._scheduleRender();
   }
 
@@ -141,14 +156,17 @@ export class RCTextareaV2 extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    document.addEventListener('selectionchange', this._docSelectionChangeHandler);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    document.removeEventListener('selectionchange', this._docSelectionChangeHandler);
     this._plugin?.destroy?.();
     this._plugin = null;
     this._pluginApi = null;
     this._clearPluginSheets();
+    this._cursorCallbacks.clear();
     this._resizeObserver?.disconnect();
     if (this._rafHandle !== null) {
       cancelAnimationFrame(this._rafHandle);
@@ -276,9 +294,12 @@ export class RCTextareaV2 extends LitElement {
     });
     editorEl.addEventListener('blur', () => {
       this.dispatchEvent(new CustomEvent('rc-textarea-v2-blur', { bubbles: true, composed: true }));
+      // Clear active line when editor loses focus
+      this._activeLine?.classList.remove('v2-line--active');
+      this._activeLine = null;
     });
-    editorEl.addEventListener('mouseup', this._onSelectionChange);
-    editorEl.addEventListener('keyup', this._onSelectionChange);
+    // Selection tracking is handled by the document-level selectionchange listener
+    // added in connectedCallback — covers arrow keys, mouse, touch, and programmatic changes.
   }
 
   private _onInputEvent = (): void => {
@@ -293,6 +314,7 @@ export class RCTextareaV2 extends LitElement {
     if (newValue === this._value) return;
 
     const oldValue = this._value;
+    const preEditSel = this._savedSelection; // capture before saveSelection() overwrites it
 
     // Map existing plugin decorations through the text change
     const mappedDecs = mapOrClear([...this._pluginDecorations.values()], oldValue, newValue);
@@ -304,6 +326,20 @@ export class RCTextareaV2 extends LitElement {
 
     // Save cursor position AFTER the browser has processed the input
     this._savedSelection = saveSelection(editorEl);
+
+    // On the very first edit, capture the pre-edit state as the undo baseline so
+    // that the first Ctrl+Z can restore it. Without this, _undoIndex would be 0
+    // after the first push and _undo()'s `<= 0` guard would prevent any undo.
+    // Note: selectionchange fires AFTER input, so _savedSelection still holds the
+    // pre-edit cursor at this point (before saveSelection() overwrites it above).
+    if (this._undoStack.length === 0) {
+      this._undoStack.push({
+        value: oldValue,
+        anchorOffset: preEditSel?.anchorOffset ?? 0,
+        focusOffset: preEditSel?.focusOffset ?? 0,
+      });
+      this._undoIndex = 0;
+    }
 
     // Push to undo stack
     this._pushUndo(this._savedSelection);
@@ -324,6 +360,7 @@ export class RCTextareaV2 extends LitElement {
     if (!editorEl) return;
     const sel = saveSelection(editorEl);
     if (sel) {
+      this._savedSelection = sel;
       this.dispatchEvent(
         new CustomEvent('rc-textarea-v2-select', {
           bubbles: true,
@@ -331,8 +368,33 @@ export class RCTextareaV2 extends LitElement {
           detail: { selectionStart: sel.anchorOffset, selectionEnd: sel.focusOffset },
         }),
       );
+      this._updateActiveLine();
+      const start = Math.min(sel.anchorOffset, sel.focusOffset);
+      const end = Math.max(sel.anchorOffset, sel.focusOffset);
+      for (const cb of this._cursorCallbacks) cb(start, end);
     }
   };
+
+  private _updateActiveLine(): void {
+    const editorEl = this._getEditorEl();
+    if (!editorEl) return;
+    const sel = window.getSelection();
+    let newActive: HTMLElement | null = null;
+    if (sel?.focusNode && editorEl.contains(sel.focusNode)) {
+      let node: Node | null = sel.focusNode;
+      while (node && node !== editorEl) {
+        if (node instanceof HTMLElement && node.classList.contains('v2-line')) {
+          newActive = node;
+          break;
+        }
+        node = node.parentNode;
+      }
+    }
+    if (newActive === this._activeLine) return;
+    this._activeLine?.classList.remove('v2-line--active');
+    this._activeLine = newActive;
+    this._activeLine?.classList.add('v2-line--active');
+  }
 
   // ── Keyboard handling ─────────────────────────────────────────────────
 
@@ -362,8 +424,45 @@ export class RCTextareaV2 extends LitElement {
   private _insertText(text: string): void {
     const editorEl = this._getEditorEl();
     if (!editorEl) return;
-    // Use execCommand for simple insertions — maintains a minimal undo step
-    // until our full rebuild fires on the next RAF.
+
+    // execCommand('insertText') does not handle \n — browsers create new divs
+    // that lack the 'v2-line' class, so extractEditorText() loses all content
+    // after the first newline. Apply multi-line inserts directly to the value model.
+    if (text.includes('\n')) {
+      const sel = saveSelection(editorEl) ?? this._savedSelection;
+      const anchor = Math.min(sel?.anchorOffset ?? 0, sel?.focusOffset ?? 0);
+      const focus = Math.max(sel?.anchorOffset ?? 0, sel?.focusOffset ?? 0);
+      const oldValue = this._value;
+      const newValue = oldValue.slice(0, anchor) + text + oldValue.slice(focus);
+      const newCursorOffset = anchor + text.length;
+
+      const mappedDecs = mapOrClear([...this._pluginDecorations.values()], oldValue, newValue);
+      this._pluginDecorations.clear();
+      for (const dec of mappedDecs) this._pluginDecorations.set(dec.id, dec);
+
+      this._value = newValue;
+      this._syncTextareaValue();
+      this._savedSelection = { anchorOffset: newCursorOffset, focusOffset: newCursorOffset };
+      if (this._undoStack.length === 0) {
+        this._undoStack.push({
+          value: oldValue,
+          anchorOffset: sel?.anchorOffset ?? 0,
+          focusOffset: sel?.focusOffset ?? 0,
+        });
+        this._undoIndex = 0;
+      }
+      this._pushUndo(this._savedSelection);
+      this.dispatchEvent(new CustomEvent('rc-textarea-v2-change', {
+        bubbles: true,
+        composed: true,
+        detail: { value: newValue },
+      }));
+      this._scheduleRender();
+      return;
+    }
+
+    // Use execCommand for simple (single-line) insertions — maintains a minimal
+    // undo step until our full rebuild fires on the next RAF.
     document.execCommand('insertText', false, text);
     this._onInput();
   }
@@ -426,6 +525,7 @@ export class RCTextareaV2 extends LitElement {
     this._plugin?.destroy?.();
     this._clearPluginSheets();
     this._pluginDecorations.clear();
+    this._cursorCallbacks.clear();
     this._pluginSeq++;
 
     this._plugin = plugin;
@@ -441,6 +541,7 @@ export class RCTextareaV2 extends LitElement {
     this._plugin = null;
     this._pluginApi = null;
     this._pluginDecorations.clear();
+    this._cursorCallbacks.clear();
     this._pluginSeq++;
     this._scheduleRender();
   }
@@ -451,6 +552,44 @@ export class RCTextareaV2 extends LitElement {
     return {
       get host() { return component; },
       get value() { return component._value; },
+      get selectionStart() {
+        const s = component._savedSelection;
+        return s ? Math.min(s.anchorOffset, s.focusOffset) : 0;
+      },
+      get selectionEnd() {
+        const s = component._savedSelection;
+        return s ? Math.max(s.anchorOffset, s.focusOffset) : 0;
+      },
+      getCursorRect(): DOMRect | null {
+        const sel = window.getSelection();
+        if (!sel?.focusNode) return null;
+        const editorEl = component._getEditorEl();
+        if (!editorEl || !editorEl.contains(sel.focusNode)) return null;
+        try {
+          const range = document.createRange();
+          range.setStart(sel.focusNode, sel.focusOffset);
+          range.collapse(true);
+          const rect = range.getBoundingClientRect();
+          return rect.height > 0 ? rect : null;
+        } catch {
+          return null;
+        }
+      },
+      getWordAtCursor(): { word: string; from: number; to: number } | null {
+        const offset = component._savedSelection?.focusOffset ?? 0;
+        const text = component._value;
+        if (!text) return null;
+        let start = offset;
+        while (start > 0 && /\w/.test(text[start - 1]!)) start--;
+        let end = offset;
+        while (end < text.length && /\w/.test(text[end]!)) end++;
+        if (start === end) return null;
+        return { word: text.slice(start, end), from: start, to: end };
+      },
+      onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void {
+        component._cursorCallbacks.add(callback);
+        return () => { component._cursorCallbacks.delete(callback); };
+      },
 
       addDecoration(d: DecorationInput): string {
         return addDecoration(component._pluginDecorations, d);
@@ -588,6 +727,10 @@ export class RCTextareaV2 extends LitElement {
       if (this._savedSelection) {
         restoreSelection(editorEl, this._savedSelection);
       }
+
+      // Re-apply active line (DOM was rebuilt; old reference is stale)
+      this._activeLine = null;
+      this._updateActiveLine();
 
       // Update gutter
       this._syncGutter();

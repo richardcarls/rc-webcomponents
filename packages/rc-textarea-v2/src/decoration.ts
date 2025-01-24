@@ -105,6 +105,7 @@ export function mapDecorationsThroughChange(
  * If so, decorations should be cleared rather than mapped through an invalid diff.
  */
 export function isLargeChange(oldValue: string, edit: Edit): boolean {
+  if (oldValue.length === 0) return false; // inserting into empty doc is never "large"
   const changeSize = Math.max(edit.removed, edit.inserted);
   return changeSize > 50 && changeSize > oldValue.length * 0.5;
 }
