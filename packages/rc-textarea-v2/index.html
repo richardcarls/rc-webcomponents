@@ -164,16 +164,13 @@
       <p class="demo-desc">
         Active line highlighted via <code>--rc-textarea-v2-active-line-bg</code>.
         Status bar reads <code>api.selectionStart</code> / <code>api.selectionEnd</code>
-        via <code>api.onCursorMove()</code>. Blank lines inside a selection show a
-        Monaco-style figure-space indicator.
+        via <code>api.onCursorMove()</code>.
       </p>
       <rc-textarea-v2 id="active-demo" line-numbers>
         <textarea name="active" rows="8">Move the cursor around to see the active line highlight.
 Use Shift+Arrow to extend the selection.
 
-Blank lines like the one above show a small selection
-indicator when included in a multi-line selection —
-matching Monaco / VS Code behaviour.
+Blank lines are fully editable.
 
 End of section.</textarea>
       </rc-textarea-v2>
