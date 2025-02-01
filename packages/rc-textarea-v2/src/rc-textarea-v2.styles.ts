@@ -54,6 +54,10 @@ export const styles = css`
     white-space: pre;
   }
 
+  .line-number--active {
+    color: var(--rc-textarea-v2-color, FieldText);
+  }
+
   /* ── Editor area ──────────────────────────────────────────────────────── */
 
   #editor-area {

@@ -3,12 +3,12 @@ import { property } from 'lit/decorators.js';
 
 import { styles } from './rc-textarea-v2.styles.ts';
 import { V2Document, extractEditorText } from './document.ts';
-import { saveSelection, restoreSelection, type SavedSelection } from './selection.ts';
 import {
-  mapOrClear,
-  addDecoration,
-  setDecorations,
-} from './decoration.ts';
+  saveSelection,
+  restoreSelection,
+  type SavedSelection,
+} from './selection.ts';
+import { mapOrClear, addDecoration, setDecorations } from './decoration.ts';
 import { matchPatternResults } from './pattern-matcher.ts';
 import type {
   Decoration,
@@ -144,11 +144,13 @@ export class RCTextareaV2 extends LitElement {
     if (v === this._value) return;
     this._value = v;
     this._syncTextareaValue();
-    this.dispatchEvent(new CustomEvent('rc-textarea-v2-change', {
-      bubbles: true,
-      composed: true,
-      detail: { value: v },
-    }));
+    this.dispatchEvent(
+      new CustomEvent('rc-textarea-v2-change', {
+        bubbles: true,
+        composed: true,
+        detail: { value: v },
+      }),
+    );
     this._scheduleRender();
   }
 
@@ -156,12 +158,18 @@ export class RCTextareaV2 extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
-    document.addEventListener('selectionchange', this._docSelectionChangeHandler);
+    document.addEventListener(
+      'selectionchange',
+      this._docSelectionChangeHandler,
+    );
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    document.removeEventListener('selectionchange', this._docSelectionChangeHandler);
+    document.removeEventListener(
+      'selectionchange',
+      this._docSelectionChangeHandler,
+    );
     this._plugin?.destroy?.();
     this._plugin = null;
     this._pluginApi = null;
@@ -191,7 +199,8 @@ export class RCTextareaV2 extends LitElement {
     }
     if (changed.has('label')) {
       const editorEl = this._getEditorEl();
-      if (editorEl && this.label) editorEl.setAttribute('aria-label', this.label);
+      if (editorEl && this.label)
+        editorEl.setAttribute('aria-label', this.label);
     }
   }
 
@@ -224,12 +233,16 @@ export class RCTextareaV2 extends LitElement {
   // ── Slot change — lightDOM textarea wiring ────────────────────────────
 
   private _onSlotChange(): void {
-    const slot = this.shadowRoot?.querySelector('slot') as HTMLSlotElement | null;
+    const slot = this.shadowRoot?.querySelector(
+      'slot',
+    ) as HTMLSlotElement | null;
     if (!slot) return;
 
     const textarea = slot
       .assignedElements({ flatten: true })
-      .find((el): el is HTMLTextAreaElement => el instanceof HTMLTextAreaElement);
+      .find(
+        (el): el is HTMLTextAreaElement => el instanceof HTMLTextAreaElement,
+      );
 
     if (!textarea) return;
     this._textareaRef = new WeakRef(textarea);
@@ -255,7 +268,10 @@ export class RCTextareaV2 extends LitElement {
     const editorEl = this._getEditorEl();
     if (editorEl) {
       if (!this.label && textarea.getAttribute('aria-label')) {
-        editorEl.setAttribute('aria-label', textarea.getAttribute('aria-label')!);
+        editorEl.setAttribute(
+          'aria-label',
+          textarea.getAttribute('aria-label')!,
+        );
       }
       const placeholder = textarea.getAttribute('placeholder');
       if (placeholder) editorEl.setAttribute('aria-placeholder', placeholder);
@@ -281,7 +297,9 @@ export class RCTextareaV2 extends LitElement {
   // ── Editor event binding ──────────────────────────────────────────────
 
   private _bindEditorEvents(editorEl: HTMLElement): void {
-    editorEl.addEventListener('compositionstart', () => { this._composing = true; });
+    editorEl.addEventListener('compositionstart', () => {
+      this._composing = true;
+    });
     editorEl.addEventListener('compositionend', () => {
       this._composing = false;
       this._onInput();
@@ -290,10 +308,20 @@ export class RCTextareaV2 extends LitElement {
     editorEl.addEventListener('keydown', this._onKeyDown);
     editorEl.addEventListener('paste', this._onPaste);
     editorEl.addEventListener('focus', () => {
-      this.dispatchEvent(new CustomEvent('rc-textarea-v2-focus', { bubbles: true, composed: true }));
+      this.dispatchEvent(
+        new CustomEvent('rc-textarea-v2-focus', {
+          bubbles: true,
+          composed: true,
+        }),
+      );
     });
     editorEl.addEventListener('blur', () => {
-      this.dispatchEvent(new CustomEvent('rc-textarea-v2-blur', { bubbles: true, composed: true }));
+      this.dispatchEvent(
+        new CustomEvent('rc-textarea-v2-blur', {
+          bubbles: true,
+          composed: true,
+        }),
+      );
       // Clear active line when editor loses focus
       this._activeLine?.classList.remove('v2-line--active');
       this._activeLine = null;
@@ -317,7 +345,11 @@ export class RCTextareaV2 extends LitElement {
     const preEditSel = this._savedSelection; // capture before saveSelection() overwrites it
 
     // Map existing plugin decorations through the text change
-    const mappedDecs = mapOrClear([...this._pluginDecorations.values()], oldValue, newValue);
+    const mappedDecs = mapOrClear(
+      [...this._pluginDecorations.values()],
+      oldValue,
+      newValue,
+    );
     this._pluginDecorations.clear();
     for (const dec of mappedDecs) this._pluginDecorations.set(dec.id, dec);
 
@@ -365,7 +397,10 @@ export class RCTextareaV2 extends LitElement {
         new CustomEvent('rc-textarea-v2-select', {
           bubbles: true,
           composed: true,
-          detail: { selectionStart: sel.anchorOffset, selectionEnd: sel.focusOffset },
+          detail: {
+            selectionStart: sel.anchorOffset,
+            selectionEnd: sel.focusOffset,
+          },
         }),
       );
       this._updateActiveLine();
@@ -394,6 +429,35 @@ export class RCTextareaV2 extends LitElement {
     this._activeLine?.classList.remove('v2-line--active');
     this._activeLine = newActive;
     this._activeLine?.classList.add('v2-line--active');
+
+    // Update active line number highlight
+    this._updateActiveLineNumber();
+  }
+
+  private _updateActiveLineNumber(): void {
+    const gutterEl = this.shadowRoot?.getElementById('line-numbers');
+    if (!gutterEl) return;
+
+    // Find and remove previous active state
+    const prevActive = gutterEl.querySelector('.line-number--active');
+    if (prevActive) prevActive.classList.remove('line-number--active');
+
+    // Find line index and highlight corresponding line number
+    if (this._activeLine) {
+      const editorEl = this._getEditorEl();
+      if (!editorEl) return;
+
+      const allLines = editorEl.querySelectorAll('.v2-line');
+      for (let i = 0; i < allLines.length; i++) {
+        if (allLines[i] === this._activeLine) {
+          const lineNumberEl = gutterEl.children[i];
+          if (lineNumberEl) {
+            lineNumberEl.classList.add('line-number--active');
+          }
+          break;
+        }
+      }
+    }
   }
 
   // ── Keyboard handling ─────────────────────────────────────────────────
@@ -436,13 +500,20 @@ export class RCTextareaV2 extends LitElement {
       const newValue = oldValue.slice(0, anchor) + text + oldValue.slice(focus);
       const newCursorOffset = anchor + text.length;
 
-      const mappedDecs = mapOrClear([...this._pluginDecorations.values()], oldValue, newValue);
+      const mappedDecs = mapOrClear(
+        [...this._pluginDecorations.values()],
+        oldValue,
+        newValue,
+      );
       this._pluginDecorations.clear();
       for (const dec of mappedDecs) this._pluginDecorations.set(dec.id, dec);
 
       this._value = newValue;
       this._syncTextareaValue();
-      this._savedSelection = { anchorOffset: newCursorOffset, focusOffset: newCursorOffset };
+      this._savedSelection = {
+        anchorOffset: newCursorOffset,
+        focusOffset: newCursorOffset,
+      };
       if (this._undoStack.length === 0) {
         this._undoStack.push({
           value: oldValue,
@@ -452,11 +523,13 @@ export class RCTextareaV2 extends LitElement {
         this._undoIndex = 0;
       }
       this._pushUndo(this._savedSelection);
-      this.dispatchEvent(new CustomEvent('rc-textarea-v2-change', {
-        bubbles: true,
-        composed: true,
-        detail: { value: newValue },
-      }));
+      this.dispatchEvent(
+        new CustomEvent('rc-textarea-v2-change', {
+          bubbles: true,
+          composed: true,
+          detail: { value: newValue },
+        }),
+      );
       this._scheduleRender();
       return;
     }
@@ -507,7 +580,10 @@ export class RCTextareaV2 extends LitElement {
 
   private _applyUndoEntry(entry: UndoEntry): void {
     this._value = entry.value;
-    this._savedSelection = { anchorOffset: entry.anchorOffset, focusOffset: entry.focusOffset };
+    this._savedSelection = {
+      anchorOffset: entry.anchorOffset,
+      focusOffset: entry.focusOffset,
+    };
     this._syncTextareaValue();
     this.dispatchEvent(
       new CustomEvent('rc-textarea-v2-change', {
@@ -550,8 +626,12 @@ export class RCTextareaV2 extends LitElement {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const component = this;
     return {
-      get host() { return component; },
-      get value() { return component._value; },
+      get host() {
+        return component;
+      },
+      get value() {
+        return component._value;
+      },
       get selectionStart() {
         const s = component._savedSelection;
         return s ? Math.min(s.anchorOffset, s.focusOffset) : 0;
@@ -586,9 +666,13 @@ export class RCTextareaV2 extends LitElement {
         if (start === end) return null;
         return { word: text.slice(start, end), from: start, to: end };
       },
-      onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void {
+      onCursorMove(
+        callback: (selectionStart: number, selectionEnd: number) => void,
+      ): () => void {
         component._cursorCallbacks.add(callback);
-        return () => { component._cursorCallbacks.delete(callback); };
+        return () => {
+          component._cursorCallbacks.delete(callback);
+        };
       },
 
       addDecoration(d: DecorationInput): string {
@@ -624,7 +708,9 @@ export class RCTextareaV2 extends LitElement {
       removeStyleSheet(sheet: CSSStyleSheet): void {
         const sr = component.shadowRoot;
         if (sr) {
-          sr.adoptedStyleSheets = sr.adoptedStyleSheets.filter(s => s !== sheet);
+          sr.adoptedStyleSheets = sr.adoptedStyleSheets.filter(
+            (s) => s !== sheet,
+          );
         }
         component._pluginSheets.delete(sheet);
       },
@@ -639,7 +725,7 @@ export class RCTextareaV2 extends LitElement {
     const sr = this.shadowRoot;
     if (sr) {
       sr.adoptedStyleSheets = sr.adoptedStyleSheets.filter(
-        s => !this._pluginSheets.has(s),
+        (s) => !this._pluginSheets.has(s),
       );
     }
     this._pluginSheets.clear();
@@ -685,8 +771,8 @@ export class RCTextareaV2 extends LitElement {
       const { markDecorations: patMarkDecs, lineDecorations: patLineDecs } =
         matchPatternResults(this._value, [...this._patterns.values()]);
       this._patternDecorations = [
-        ...patMarkDecs.map(d => ({ ...d, id: generateId() })),
-        ...patLineDecs.map(d => ({ ...d, id: generateId() })),
+        ...patMarkDecs.map((d) => ({ ...d, id: generateId() })),
+        ...patLineDecs.map((d) => ({ ...d, id: generateId() })),
       ];
 
       // Run plugin (update + highlight)
@@ -791,7 +877,9 @@ export class RCTextareaV2 extends LitElement {
       for (const prop of props) {
         const value = cs[prop];
         if (value && typeof value === 'string') {
-          (editorEl.style as unknown as Record<string, string>)[prop as string] = value;
+          (editorEl.style as unknown as Record<string, string>)[
+            prop as string
+          ] = value;
         }
       }
     }

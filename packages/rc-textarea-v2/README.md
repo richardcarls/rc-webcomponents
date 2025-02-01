@@ -4,53 +4,125 @@ A WAI-ARIA compliant enhanced textarea web component built with [Lit 3](https://
 
 **rc-textarea-v2 is not a rich text editor.** The underlying value is always plain text. Decorations are applied visually only — entirely through the JavaScript API, not through user action.
 
-Key capabilities:
+---
+
+## Table of Contents
+
+1. [Key Capabilities](#key-capabilities)
+2. [Architecture](#architecture)
+3. [Installation](#installation)
+4. [Basic Usage](#basic-usage)
+5. [Attributes & Properties](#attributes--properties)
+6. [Value Property](#value-property)
+7. [Events](#events)
+8. [CSS Customization](#css-customization)
+9. [Plugin API](#plugin-api)
+10. [Decoration Types](#decoration-types)
+11. [Pattern API](#pattern-api)
+12. [Selection API](#selection-api)
+13. [Decoration Lifecycle](#decoration-lifecycle)
+14. [Undo / Redo](#undo--redo)
+15. [Keyboard Behavior](#keyboard-behavior)
+16. [Form Integration](#form-integration)
+17. [Accessibility](#accessibility)
+18. [Performance Considerations](#performance-considerations)
+19. [Troubleshooting](#troubleshooting)
+
+---
+
+## Key Capabilities
 
 - **Mixed inline formatting** — bold, italic, color, background, underline styles on arbitrary character ranges
 - **Error-lens style line annotations** — end-of-line messages (like VS Code's error lens)
 - **Inline widgets** — non-editable DOM elements inserted at any character offset
 - **Regex pattern decorations** — auto-decorate text matching regular expressions
 - **Plugin API** — imperative decoration control + highlight.js / prism.js HTML compatibility bridge
-- **Line numbers**, **word wrap**, **auto-grow**
+- **Line numbers, word wrap, auto-grow** — feature flags for common use cases
 - **Progressive enhancement** — wraps a native `<textarea>` for form submission; the textarea is hidden, the `contenteditable` div is the interaction surface
 - **Custom undo/redo** — DOM rebuilds invalidate the browser's native undo stack; the component maintains its own
+- **Accessible by default** — `role="textbox"`, `aria-multiline="true"`, spellcheck disabled, focus management
 
 ---
 
-## Architecture (for AI agents)
+## Architecture
+
+### DOM Structure
+
+### DOM Structure
 
 ```
-rc-textarea-v2 (LitElement shadow host)
+rc-textarea-v2 (LitElement shadow host, delegatesFocus=true)
 ├── #root (flex container)
-│   ├── #gutter (line numbers, optional)
-│   └── #editor-area
+│   ├── #gutter (line numbers gutter, optional)
+│   │   └── #line-numbers (line number list)
+│   └── #editor-area (flex item, grows to fill)
 │       ├── #editor (contenteditable div — Parchment ScrollBlot root)
-│       │   └── .v2-line divs (V2BlockBlot per line)
-│       │       ├── text nodes (plain text)
+│       │   └── .v2-line divs (one per logical line, V2BlockBlot)
+│       │       ├── text nodes (plain text content)
 │       │       ├── .v2-mark spans (V2InlineBlot — mark decorations)
 │       │       ├── .v2-widget spans (V2WidgetBlot — inline widgets, contenteditable=false)
-│       │       └── [data-message] attr → ::after pseudo-element (error-lens annotations)
+│       │       └── [data-message] attr (error-lens: used by ::after pseudo-element)
 │       └── <slot> (lightDOM textarea — hidden, form-only)
 ```
 
-**Parchment usage**: `V2ScrollBlot` wraps `#editor` and suppresses Parchment's MutationObserver. Parchment blot classes (`V2BlockBlot`, `V2InlineBlot`, `V2WidgetBlot`) provide structured DOM creation via their static `create()` methods. `V2Document.build()` tears down and fully rebuilds the blot tree on every render frame (RAF-batched).
+**Shadow DOM usage**: `delegatesFocus=true` ensures focus management works correctly. Line numbers are in the shadow DOM but read-only.
 
-**Editing loop**: browser handles edit → `input` saves cursor position + extracts plain text → maps decorations through change → dispatches events → schedules RAF → `_performRender()` rebuilds DOM → restores cursor.
+### Editing Loop (Data Flow)
 
-**Cursor management** (`selection.ts`): `saveSelection()` converts a DOM selection to plain-text character offsets (skipping widget spans). `restoreSelection()` converts back after DOM rebuild.
+1. **Browser handles edit** — User types/pastes/deletes text in the contenteditable div
+2. **`input` event fires** → `_onInput()` handler:
+   - Save DOM selection to plain-text offsets via `saveSelection()`
+   - Extract plain text via `extractEditorText()`
+   - Update `this._value`
+   - Dispatch `rc-textarea-v2-change` event
+   - Map existing decorations through the text change via `mapDecorationsThroughChange()`
+   - Schedule RAF render pass
+3. **RAF render pass** → `_performRender()`:
+   - Extract plugin decorations
+   - Re-run patterns (rebuild all pattern decorations from regex)
+   - Ask plugin for new decorations (call `plugin.update()` or `plugin.highlight()`)
+   - Build `V2Document` from text + all decorations
+   - Tear down and fully rebuild the blot tree
+   - Restore DOM selection via `restoreSelection()`
+   - Update line number gutter if `lineNumbers=true`
+4. **Decorations stay in sync** — All existing decorations persist through edits (mapped to new offsets)
 
-**Source files**:
+**Key insight for LLM agents**: The blot tree is **rebuilt on every render frame**. This is necessary because decoration changes require DOM restructuring. The undo stack stores plain-text values, not DOM snapshots.
 
-| File | Role |
-|------|------|
-| `src/rc-textarea-v2.ts` | Main Lit element — editing loop, plugin/pattern management, form wiring |
-| `src/document.ts` | `V2Document` — builds Parchment tree from text + decorations; `extractEditorText()` |
-| `src/blots.ts` | Parchment blot subclasses + registry |
-| `src/selection.ts` | `saveSelection()` / `restoreSelection()` for contenteditable |
-| `src/decoration.ts` | `mapDecorationsThroughChange()`, `isLargeChange()`, `findEdit()` |
-| `src/pattern-matcher.ts` | Regex patterns → mark/line decorations |
-| `src/types.ts` | All exported types |
-| `src/rc-textarea-v2.styles.ts` | Component CSS and custom properties |
+### Parchment Integration
+
+- **`V2ScrollBlot`** wraps the `#editor` div and suppresses Parchment's `MutationObserver` (which would fight with our render loop)
+- **`V2BlockBlot`** represents a single line (`.v2-line` div)
+- **`V2InlineBlot`** represents a mark decoration (`.v2-mark` span)
+- **`V2WidgetBlot`** represents an inline widget (`.v2-widget` span, `contenteditable=false`)
+- **`V2Document`** class contains the build logic: `build(text, decorations) → BlotTree`
+
+The blot tree is **immutable** — each render creates a new tree from scratch, then the DOM is replaced.
+
+### Cursor Management
+
+Plain-text offsets are essential for:
+- Storing selection state across DOM rebuilds
+- Decoration `from`/`to` ranges
+- Plugin API (selection, cursor position)
+- Undo/redo stack
+
+**`selection.ts` module**:
+- `saveSelection()` — convert DOM range to plain-text offsets, skipping widget spans
+- `restoreSelection()` — convert plain-text offsets back to DOM range after rebuild
+
+### File Organization
+
+| File | Purpose |
+|------|---------|
+| `src/rc-textarea-v2.ts` | Main LitElement: editing loop, plugin/pattern management, form wiring, undo/redo stack, gutter, event dispatch |
+| `src/document.ts` | `V2Document` class — builds Parchment tree from text + decorations; `extractEditorText()` reverse operation |
+| `src/blots.ts` | Parchment blot subclasses (`V2ScrollBlot`, `V2BlockBlot`, `V2InlineBlot`, `V2WidgetBlot`) + blot registry |
+| `src/selection.ts` | `saveSelection()` / `restoreSelection()` for plain-text ↔ DOM range conversion |
+| `src/decoration.ts` | `mapDecorationsThroughChange()` — map existing decorations through text edits; `isLargeChange()` — heuristic for clearing stale decorations |
+| `src/pattern-matcher.ts` | `matchPatternResults()` — compile regex patterns and collect all matches from text |
+| `src/types.ts` | All exported TypeScript interfaces and utility functions |
+| `src/rc-textarea-v2.styles.ts` | Component CSS (custom properties, parts, internal layout) |
 
 ---
 
@@ -88,22 +160,55 @@ Slot a native `<textarea>` as the direct child. It is hidden from view and used 
 
 The component adopts the textarea's `name`, `required`, `disabled`, `maxlength`, `placeholder`, and initial `value`. Form submission reads the textarea's value, which is kept in sync by the component.
 
+### JavaScript access
+
+```ts
+const editor = document.querySelector('rc-textarea-v2');
+
+// Read current plain text
+console.log(editor.value);
+
+// Set programmatically
+editor.value = 'new content';
+
+// Track changes
+editor.addEventListener('rc-textarea-v2-change', (e) => {
+  console.log('New value:', e.detail.value);
+});
+```
+
 ---
 
-## Attributes / Properties
+## Attributes & Properties
+
+All attributes reflect to properties. Use attributes in HTML or properties in JS.
 
 | Attribute | Property | Type | Default | Description |
 |-----------|----------|------|---------|-------------|
-| `line-numbers` | `lineNumbers` | `boolean` | `false` | Show line number gutter |
-| `word-wrap` | `wordWrap` | `boolean` | `false` | Enable word wrap |
-| `auto-grow` | `autoGrow` | `boolean` | `false` | Grow to fit content |
-| `read-only` | `readOnly` | `boolean` | `false` | Disable editing |
-| `label` | `label` | `string\|null` | `null` | Sets `aria-label` on the editor div |
+| `line-numbers` | `lineNumbers` | `boolean` | `false` | Display line number gutter on the left |
+| `word-wrap` | `wordWrap` | `boolean` | `false` | Enable word wrapping (default: scroll horizontally) |
+| `auto-grow` | `autoGrow` | `boolean` | `false` | Grow container height to fit content |
+| `read-only` | `readOnly` | `boolean` | `false` | Disable text editing; still selectable |
+| `label` | `label` | `string \| null` | `null` | Sets `aria-label` on the editor div |
+
+### Example
 
 ```html
-<rc-textarea-v2 line-numbers word-wrap auto-grow>
-  <textarea name="notes" rows="8"></textarea>
+<rc-textarea-v2 
+  id="code-editor" 
+  line-numbers 
+  word-wrap 
+  auto-grow
+  label="Code editor"
+>
+  <textarea name="code" rows="20"></textarea>
 </rc-textarea-v2>
+```
+
+```ts
+const editor = document.querySelector('#code-editor');
+console.log(editor.lineNumbers);  // true
+console.log(editor.wordWrap);     // true
 ```
 
 ---
@@ -111,14 +216,25 @@ The component adopts the textarea's `name`, `required`, `disabled`, `maxlength`,
 ## Value Property
 
 ```ts
-const el = document.querySelector('rc-textarea-v2');
+const editor = document.querySelector('rc-textarea-v2');
 
-// Read current plain text
-console.log(el.value);
+// Read
+const plainText = editor.value;
 
-// Set programmatically — maps existing decorations through the change
-el.value = 'new content here';
+// Write — decorations are mapped through the change
+editor.value = 'hello world';
+
+// Write via textarea (if slotted)
+const textarea = editor.querySelector('textarea');
+textarea.value = 'test';
+editor.value = textarea.value;  // sync if needed
 ```
+
+Setting `value` programmatically:
+1. Updates `this._value` and the slotted textarea
+2. Dispatches `rc-textarea-v2-change` event
+3. Schedules a RAF render pass
+4. Existing decorations are **mapped through the change** (shifted, clamped, or cleared)
 
 ---
 
@@ -128,126 +244,198 @@ All events bubble and are composed (cross shadow boundary).
 
 | Event | Detail | Fires when |
 |-------|--------|------------|
-| `rc-textarea-v2-change` | `{ value: string }` | Text changes |
-| `rc-textarea-v2-focus` | — | Editor receives focus |
-| `rc-textarea-v2-blur` | — | Editor loses focus |
-| `rc-textarea-v2-select` | `{ selectionStart: number, selectionEnd: number }` | Selection changes |
+| `rc-textarea-v2-change` | `{ value: string }` | Text changes (input, paste, undo/redo, programmatic `value` set) |
+| `rc-textarea-v2-focus` | (empty) | Editor receives focus |
+| `rc-textarea-v2-blur` | (empty) | Editor loses focus |
+| `rc-textarea-v2-select` | `{ selectionStart: number, selectionEnd: number }` | Selection changes (cursor move, click, keyboard nav) |
+
+### Example
 
 ```ts
-el.addEventListener('rc-textarea-v2-change', (e) => {
-  console.log(e.detail.value);
+const editor = document.querySelector('rc-textarea-v2');
+
+editor.addEventListener('rc-textarea-v2-change', (e) => {
+  console.log('Text changed to:', e.detail.value);
+});
+
+editor.addEventListener('rc-textarea-v2-select', (e) => {
+  const { selectionStart, selectionEnd } = e.detail;
+  console.log(`Selection: ${selectionStart}–${selectionEnd}`);
+});
+
+editor.addEventListener('rc-textarea-v2-focus', () => {
+  console.log('Editor focused');
 });
 ```
 
 ---
 
-## CSS Custom Properties
+## CSS Customization
 
-Set on the host element or any ancestor.
+### Custom Properties
+
+Set on the host element or any ancestor to style the editor.
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `--rc-textarea-v2-font-family` | `monospace` | Font family |
-| `--rc-textarea-v2-font-size` | `1em` | Font size |
-| `--rc-textarea-v2-line-height` | `1.5` | Line height |
-| `--rc-textarea-v2-padding` | `0.5em` | Inner padding |
-| `--rc-textarea-v2-background` | `Field` | Editor background |
-| `--rc-textarea-v2-color` | `FieldText` | Text color |
-| `--rc-textarea-v2-caret-color` | (color) | Caret/cursor color |
-| `--rc-textarea-v2-border` | `1px solid ButtonBorder` | Border |
-| `--rc-textarea-v2-border-radius` | `2px` | Border radius |
-| `--rc-textarea-v2-focus-outline` | `2px solid AccentColor` | Focus ring |
+| `--rc-textarea-v2-font-family` | `monospace` | Font family for text and line numbers |
+| `--rc-textarea-v2-font-size` | `1em` | Base font size |
+| `--rc-textarea-v2-line-height` | `1.5` | Line height affects gutter alignment |
+| `--rc-textarea-v2-padding` | `0.5em` | Inner padding of editor area |
+| `--rc-textarea-v2-background` | `Field` | Editor background color (system color keyword) |
+| `--rc-textarea-v2-color` | `FieldText` | Text color (system color keyword) |
+| `--rc-textarea-v2-caret-color` | (auto) | Cursor/caret color |
+| `--rc-textarea-v2-border` | `1px solid ButtonBorder` | Editor border (system color keyword) |
+| `--rc-textarea-v2-border-radius` | `2px` | Corner rounding |
+| `--rc-textarea-v2-focus-outline` | `2px solid AccentColor` | Focus ring (system color keyword) |
 | `--rc-textarea-v2-gutter-color` | `GrayText` | Line number text color |
 | `--rc-textarea-v2-gutter-bg` | `Canvas` | Gutter background |
 | `--rc-textarea-v2-gutter-border` | `1px solid ButtonBorder` | Gutter right border |
 
----
-
-## CSS Parts
-
-| Part | Element |
-|------|---------|
-| `root` | Outer flex container |
-| `gutter` | Line number gutter |
-| `line-numbers` | Line number elements container |
-| `editor-area` | Container for editor + slot |
-| `editor` | The contenteditable div |
+### Example
 
 ```css
-rc-textarea-v2::part(editor) { border-radius: 4px; }
-rc-textarea-v2::part(gutter) { font-size: 0.8em; }
+rc-textarea-v2 {
+  --rc-textarea-v2-font-family: 'Fira Code', monospace;
+  --rc-textarea-v2-font-size: 13px;
+  --rc-textarea-v2-line-height: 1.6;
+  --rc-textarea-v2-background: #1e1e2e;
+  --rc-textarea-v2-color: #cdd6f4;
+  --rc-textarea-v2-caret-color: #89b4fa;
+  --rc-textarea-v2-border: 1px solid #313244;
+  --rc-textarea-v2-border-radius: 4px;
+}
+```
+
+### CSS Parts
+
+Use `::part()` pseudo-element for advanced styling.
+
+| Part | Element | Supports |
+|------|---------|----------|
+| `root` | Outer flex container | All CSS |
+| `gutter` | Line number gutter div | All CSS |
+| `line-numbers` | Line numbers list container | All CSS |
+| `editor-area` | Container wrapping editor + slot | All CSS |
+| `editor` | The `contenteditable` div | All CSS |
+
+### Example
+
+```css
+rc-textarea-v2::part(editor) {
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+rc-textarea-v2::part(gutter) {
+  background: #f5f5f5;
+  font-size: 0.9em;
+}
+```
+
+### Mark decoration styling
+
+Inline decorations are applied to `.v2-mark` spans. Inline styles handle standard properties (bold, italic, color, etc.). For custom classes:
+
+```ts
+let api: RCTextareaV2PluginAPI;
+editor.usePlugin({
+  mount(a) { api = a; },
+  update() {},
+});
+
+// Add decorations with a custom class
+api.setDecorations([
+  { type: 'mark', from: 5, to: 10, className: 'my-highlight' }
+]);
+
+// Style it in an adopted stylesheet
+api.adoptStyleSheet(`
+  .v2-mark.my-highlight { background: yellow; }
+`);
 ```
 
 ---
 
 ## Plugin API
 
-Plugins are the primary mechanism for applying decorations. Plugins receive a `RCTextareaV2PluginAPI` object through `mount()` — **save this reference** to set decorations from outside the plugin:
+Plugins are the primary mechanism for applying decorations. A plugin receives a `RCTextareaV2PluginAPI` during `mount()` — **save this reference** to set decorations from outside the plugin lifecycle.
 
-```ts
-let pluginApi: RCTextareaV2PluginAPI;
-
-editor.usePlugin({
-  mount(api) { pluginApi = api; },
-  update() {/* nothing required */},
-});
-
-// From anywhere — set decorations imperatively:
-pluginApi.setDecorations([
-  { type: 'mark', from: 0, to: 5, bold: true, color: '#ff0000' },
-]);
-pluginApi.scheduleUpdate();
-```
-
-### `RCTextareaV2Plugin` interface
-
-At least one of `update` or `highlight` must be provided.
+### Interface Overview
 
 ```ts
 interface RCTextareaV2Plugin {
-  mount?(api: RCTextareaV2PluginAPI): void;   // Called when plugin is registered
-  destroy?(): void;                            // Called on removePlugin() or disconnect
-
-  // Imperative API — called on each value change
+  mount?(api: RCTextareaV2PluginAPI): void;
+  destroy?(): void;
   update?(value: string, api: RCTextareaV2PluginAPI): void | Promise<void>;
-
-  // HTML-based compat — return HTML (e.g. from hljs/prism), parsed to mark decorations
-  highlight?(value: string, api: RCTextareaV2PluginAPI):
+  highlight?(value: string, api: RCTextareaV2PluginAPI): 
     string | null | void | Promise<string | null | void>;
 }
 ```
 
-### `RCTextareaV2PluginAPI` interface
+At least one of `update` or `highlight` must be provided.
+
+### PluginAPI Methods
 
 ```ts
 interface RCTextareaV2PluginAPI {
-  readonly host: HTMLElement;         // The rc-textarea-v2 element
-  readonly value: string;             // Current plain text value
+  readonly host: HTMLElement;           // rc-textarea-v2 element
+  readonly value: string;               // Current plain text
+  readonly selectionStart: number;      // Normalized selection start (≤ selectionEnd)
+  readonly selectionEnd: number;        // Normalized selection end (≥ selectionStart)
 
-  addDecoration(d: DecorationInput): string;
-  removeDecoration(id: string): void;
-  clearDecorations(): void;
-  setDecorations(decorations: DecorationInput[]): void;
+  getCursorRect(): DOMRect | null;      // Cursor position in viewport coords (or null if not focused)
+  getWordAtCursor(): { word: string; from: number; to: number } | null;
+  onCursorMove(cb: (start: number, end: number) => void): () => void;
 
-  scheduleUpdate(): void;             // Trigger render outside of input events
+  addDecoration(d: DecorationInput): string;        // Add single decoration, return ID
+  removeDecoration(id: string): void;               // Remove by ID
+  clearDecorations(): void;                         // Remove all plugin decorations
+  setDecorations(decorations: DecorationInput[]): void;  // Replace all with new set
 
-  // Inject a stylesheet into the component's shadow root.
-  // Pass a CSSStyleSheet or a raw CSS text string.
-  // Returns the adopted sheet. Automatically removed on plugin unmount.
+  scheduleUpdate(): void;               // Trigger render outside input events
+
   adoptStyleSheet(sheetOrCssText: CSSStyleSheet | string): CSSStyleSheet;
   removeStyleSheet(sheet: CSSStyleSheet): void;
-
-  // Parse highlight.js / prism.js HTML output into MarkDecoration objects
   decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
 }
 ```
 
-### Example — synchronous imperative plugin
+### Mounting and Lifecycle
 
 ```ts
-import { RCTextareaV2Plugin } from '@rcarls/rc-textarea-v2';
+const editor = document.querySelector('rc-textarea-v2');
 
-const markdownLitePlugin: RCTextareaV2Plugin = {
+let api: RCTextareaV2PluginAPI;
+
+editor.usePlugin({
+  mount(a) {
+    api = a;  // Save reference for external use
+    console.log('Plugin mounted');
+  },
+  update(value, a) {
+    // Called on each value change
+    const decorations = parseText(value);
+    a.setDecorations(decorations);
+  },
+  destroy() {
+    console.log('Plugin unmounting');
+  },
+});
+
+// From outside plugin lifecycle, using saved reference
+api.setDecorations([
+  { type: 'mark', from: 0, to: 5, bold: true }
+]);
+api.scheduleUpdate();
+```
+
+### Example 1: Synchronous Imperative Plugin
+
+Manually find patterns and apply decorations:
+
+```ts
+const markdownLitePlugin = {
   update(value, api) {
     const decorations = [];
 
@@ -255,7 +443,23 @@ const markdownLitePlugin: RCTextareaV2Plugin = {
     const boldRe = /\*\*(.+?)\*\*/g;
     let m;
     while ((m = boldRe.exec(value)) !== null) {
-      decorations.push({ type: 'mark', from: m.index, to: m.index + m[0].length, bold: true });
+      decorations.push({
+        type: 'mark',
+        from: m.index,
+        to: m.index + m[0].length,
+        bold: true
+      });
+    }
+
+    // Italic: *text*
+    const italicRe = /\*([^*]+)\*/g;
+    while ((m = italicRe.exec(value)) !== null) {
+      decorations.push({
+        type: 'mark',
+        from: m.index,
+        to: m.index + m[0].length,
+        italic: true
+      });
     }
 
     api.setDecorations(decorations);
@@ -265,19 +469,20 @@ const markdownLitePlugin: RCTextareaV2Plugin = {
 editor.usePlugin(markdownLitePlugin);
 ```
 
-### Example — async plugin (WASM / web worker)
+### Example 2: Asynchronous Plugin (WASM / Web Worker)
 
 ```ts
 editor.usePlugin({
   async update(value, api) {
-    // Stale results are automatically discarded if a newer render starts
     const decorations = await myWasmParser.tokenize(value);
     api.setDecorations(decorations);
   },
 });
 ```
 
-### Example — highlight.js
+Stale results are automatically discarded if a newer render starts before the promise resolves.
+
+### Example 3: highlight.js Integration
 
 ```ts
 import hljs from 'highlight.js/lib/core';
@@ -286,144 +491,204 @@ hljs.registerLanguage('javascript', javascript);
 
 editor.usePlugin({
   mount(api) {
-    // hljs token class spans live inside the shadow root — page CSS cannot
-    // pierce the shadow boundary. Inject token colors via adoptStyleSheet().
-    // The sheet is automatically removed when the plugin is unmounted.
+    // Inject theme CSS into shadow root (hljs classes live inside)
     api.adoptStyleSheet(`
       .hljs-keyword { color: #cba6f7; }
       .hljs-string  { color: #a6e3a1; }
       .hljs-number  { color: #fab387; }
       .hljs-comment { color: #6c7086; font-style: italic; }
-      .hljs-title   { color: #89b4fa; }
+      .hljs-title   { color: #89b4fa; font-weight: bold; }
       .hljs-built_in { color: #89dceb; }
+      .hljs-literal { color: #f5c2e7; }
     `);
   },
   highlight(value, api) {
-    // hljs.highlight() returns HTML — decorationsFromHtml() converts it to decorations
+    // hljs.highlight returns HTML with span wrapping syntax tokens
     const { value: html } = hljs.highlight(value, { language: 'javascript' });
+    // Convert HTML token markup to decorations
     api.setDecorations(api.decorationsFromHtml(html));
   },
 });
 ```
 
-> **Shadow DOM note**: `decorationsFromHtml()` applies `hljs-*` class names to `.v2-mark` spans inside the shadow root. Light-DOM stylesheets do not pierce the shadow boundary, so the theme CSS must be injected via `api.adoptStyleSheet()` as shown above.
+**Important**: hljs token class spans live inside the shadow root. Light-DOM stylesheets cannot pierce the shadow boundary, so theme CSS must be injected via `api.adoptStyleSheet()`.
 
-### Example — Prism.js
+### Example 4: Prism.js Integration
 
 ```ts
 import Prism from 'prismjs';
+import 'prismjs/components/prism-python';
 
 editor.usePlugin({
+  mount(api) {
+    api.adoptStyleSheet(`
+      .token.keyword { color: #66d9ef; font-weight: bold; }
+      .token.string  { color: #e6db74; }
+      .token.number  { color: #ae81ff; }
+      .token.comment { color: #75715e; font-style: italic; }
+      .token.function { color: #a1efe4; }
+    `);
+  },
   highlight(value, api) {
-    const html = Prism.highlight(value, Prism.languages.javascript, 'javascript');
+    const html = Prism.highlight(value, Prism.languages.python, 'python');
     api.setDecorations(api.decorationsFromHtml(html));
   },
 });
 ```
 
-### Replacing the plugin
+### Switching / Removing Plugins
 
-Only one plugin can be active at a time. `usePlugin()` calls `destroy()` on the previous plugin before mounting the new one.
+Only one plugin can be active at a time. Calling `usePlugin()` with a new plugin calls `destroy()` on the previous one.
 
 ```ts
-editor.usePlugin(newPlugin);  // replaces old plugin
-editor.removePlugin();        // removes plugin, clears all plugin decorations
+editor.usePlugin(newPlugin);   // previous plugin is destroyed
+editor.removePlugin();         // current plugin destroyed, decorations cleared
+```
+
+### Accessing Slotted Textarea
+
+Plugins can read the textarea to access its attributes:
+
+```ts
+editor.usePlugin({
+  mount(api) {
+    const textarea = api.host.querySelector('textarea');
+    if (textarea) {
+      console.log('Form name:', textarea.name);
+      console.log('Max length:', textarea.maxLength);
+    }
+  },
+});
 ```
 
 ---
 
 ## Decoration Types
 
-```ts
-import type { MarkDecoration, LineDecoration, WidgetDecoration, DecorationInput } from '@rcarls/rc-textarea-v2';
-```
+Decorations are objects describing visual changes. All decorations are immutable after creation (API methods return new IDs or replace entire sets).
 
-### `MarkDecoration` — styled character range
+### MarkDecoration — styled character range
+
+A visual style applied to a contiguous range of characters. Inline styles are rendered directly; `className` adds an extra CSS class for complex styling.
 
 ```ts
 interface MarkDecoration {
-  id: string;           // Auto-assigned — omit when passing to API
+  id: string;              // Auto-assigned — omit when passing to API
   type: 'mark';
-  from: number;         // Inclusive start (0-based char offset into plain text)
-  to: number;           // Exclusive end
-  className?: string;   // Extra CSS class on the span
-  bold?: boolean;
-  italic?: boolean;
-  color?: string;       // CSS color value
-  background?: string;  // CSS color value
-  underline?: 'solid' | 'wavy' | 'dotted' | 'dashed';
-  underlineColor?: string;
-  attributes?: Record<string, string>;  // Extra HTML attributes
+  from: number;            // Inclusive start (0-based character offset into plain text)
+  to: number;              // Exclusive end
+  className?: string;      // CSS class added to the span
+  bold?: boolean;          // Inline: font-weight: bold
+  italic?: boolean;        // Inline: font-style: italic
+  color?: string;          // Inline: color (CSS color value)
+  background?: string;     // Inline: background-color
+  underline?: 'solid' | 'wavy' | 'dotted' | 'dashed';  // text-decoration-style
+  underlineColor?: string; // text-decoration-color
+  attributes?: Record<string, string>;  // Extra HTML attributes (data-*, title, etc.)
 }
 ```
 
-### `LineDecoration` — whole-line styling + error-lens annotation
+### LineDecoration — whole-line styling + error-lens annotation
+
+Applied to an entire logical line. Adds a CSS class to the line div and optionally renders an error-lens message at the end.
 
 ```ts
 interface LineDecoration {
   id: string;
   type: 'line';
-  line: number;              // 1-based logical line number
-  className?: string;        // Added to the .v2-line div
-  message?: string;          // Error-lens text — rendered via ::after pseudo-element,
-                             // so it is fully excluded from selection and clipboard
-  messageClassName?: string; // Space-separated class(es) set as data-message-class on
-                             // the line div; target with [data-message-class~="cls"]::after
+  line: number;                    // 1-based logical line number
+  className?: string;              // CSS class on the .v2-line div
+  message?: string;                // Error-lens text (rendered via ::after, not selectable)
+  messageClassName?: string;       // Space-separated class(es) set as data-message-class
   attributes?: Record<string, string>;
 }
 ```
 
-Error-lens messages are rendered via a CSS `::after` pseudo-element (not a real DOM node), keeping them completely outside the selection and clipboard path. Style them in your adopted stylesheet:
+Error-lens messages are rendered via CSS `::after` pseudo-element — they do not appear in selection or clipboard.
 
 ```css
-/* inside a sheet adopted via api.adoptStyleSheet() or the component's own CSS */
-.v2-line[data-message-class~="error"]::after  { color: #f38ba8; }
-.v2-line[data-message-class~="warning"]::after { color: #f9e2af; }
+/* in an adopted stylesheet */
+.v2-line[data-message]::after {
+  content: attr(data-message);
+  margin-left: 1em;
+  color: #f38ba8;
+  font-style: italic;
+}
 ```
 
-### `WidgetDecoration` — non-editable inline element
+### WidgetDecoration — non-editable inline element
 
-Widgets are purely visual and do not appear in the value string.
+A DOM element inserted at a character offset. Widgets are purely visual and do not appear in the plain text value.
 
 ```ts
 interface WidgetDecoration {
   id: string;
   type: 'widget';
-  offset: number;          // Char offset — widget placed before/after this position
-  create(): HTMLElement;   // Factory called each render — must return a new element
-  side?: 'before' | 'after';  // Default: 'before'
+  offset: number;           // Character offset — widget placed before/after this position
+  create(): HTMLElement;    // Factory called each render — must return a **new** element
+  side?: 'before' | 'after';  // Placement relative to character. Default: 'before'
 }
+```
+
+**Important**: `create()` is called on every render frame. Return a new element each time; do not reuse the same DOM node.
+
+```ts
+api.setDecorations([
+  {
+    type: 'widget',
+    offset: 5,
+    create() {
+      const el = document.createElement('span');
+      el.textContent = '👉';
+      el.style.color = '#fab387';
+      return el;
+    },
+  },
+]);
+```
+
+### DecorationInput (for API calls)
+
+When calling `api.addDecoration()`, `api.setDecorations()`, etc., omit the `id` field:
+
+```ts
+type DecorationInput = 
+  | Omit<MarkDecoration, 'id'>
+  | Omit<LineDecoration, 'id'>
+  | Omit<WidgetDecoration, 'id'>;
 ```
 
 ---
 
 ## Pattern API
 
-Patterns automatically apply decorations to all regex matches on every value change, without any event handling code.
+Patterns automatically apply decorations to all regex matches on every value change, without manual event handling.
+
+### Adding and Removing Patterns
 
 ```ts
-// Bold + orange all occurrences of "TODO"
-const id = editor.addPattern({
-  pattern: /\bTODO\b/,
+const editor = document.querySelector('rc-textarea-v2');
+
+// Boolean pattern — bold + orange all "TODO" occurrences
+const patternId = editor.addPattern({
+  pattern: /\bTODO\b/g,
   bold: true,
   color: '#fab387',
 });
 
 // Remove a specific pattern
-editor.removePattern(id);
+editor.removePattern(patternId);
 
 // Remove all patterns
 editor.clearPatterns();
 ```
 
-### `TextPattern` interface
-
-All `MarkDecoration` formatting properties are supported as top-level pattern fields.
+### TextPattern Interface
 
 ```ts
 interface TextPattern {
   id: string;               // Auto-assigned — omit when calling addPattern()
-  pattern: RegExp;          // Global flag is added automatically
+  pattern: RegExp;          // Global flag is added automatically if missing
   className?: string;
   bold?: boolean;
   italic?: boolean;
@@ -432,26 +697,127 @@ interface TextPattern {
   underline?: 'solid' | 'wavy' | 'dotted' | 'dashed';
   underlineColor?: string;
   attributes?: Record<string, string>;
-  // Error-lens annotation for matching lines:
+  
+  // Callback to generate a LineDecoration for matching lines
   createLineDecoration?: (match: RegExpMatchArray) =>
     | Omit<LineDecoration, 'id' | 'type' | 'line'>
     | null;
 }
 ```
 
-### Example — pattern with error-lens annotation
+### Example: Simple Pattern
 
 ```ts
+// Red wavy underline for "FIXME"
 editor.addPattern({
-  pattern: /\bFIXME\b/,
+  pattern: /\bFIXME\b/g,
   color: '#f38ba8',
   underline: 'wavy',
   underlineColor: '#f38ba8',
+});
+```
+
+### Example: Pattern with Error-Lens Annotation
+
+```ts
+ editor.addPattern({
+  pattern: /\bFIXME\b/g,
+  bold: true,
+  color: '#f38ba8',
+  underline: 'wavy',
   createLineDecoration: (match) => ({
     className: 'fixme-line',
-    message: 'Needs fixing before release',
+    message: 'Review before release',
     messageClassName: 'fixme-message',
   }),
+});
+```
+
+Then style the message:
+
+```ts
+api.adoptStyleSheet(`
+  .v2-line[data-message-class~="fixme-message"]::after {
+    color: #f38ba8;
+    font-weight: bold;
+  }
+`);
+```
+
+### Example: Multi-line Regex (JavaScript comments)
+
+```ts
+editor.addPattern({
+  pattern: /\/\*[\s\S]*?\*\//g,
+  italic: true,
+  color: '#6c7086',
+  createLineDecoration: () => ({
+    message: '(comment)',
+    messageClassName: 'comment-marker',
+  }),
+});
+```
+
+---
+
+## Selection API
+
+The component tracks the current selection as plain-text offsets (not DOM nodes or ranges).
+
+### Getting Selection
+
+```ts
+interface RCTextareaV2PluginAPI {
+  readonly selectionStart: number;
+  readonly selectionEnd: number;
+  
+  getCursorRect(): DOMRect | null;
+  getWordAtCursor(): { word: string; from: number; to: number } | null;
+  onCursorMove(callback: (start: number, end: number) => void): () => void;
+}
+```
+
+### Example: Tracking Cursor Moves
+
+```ts
+let unsub: () => void;
+
+editor.usePlugin({
+  mount(api) {
+    unsub = api.onCursorMove((start, end) => {
+      if (start === end) {
+        // Cursor is collapsed (no selection)
+        const word = api.getWordAtCursor();
+        if (word) {
+          console.log(`Cursor on word: "${word.word}" at ${word.from}–${word.to}`);
+        }
+      } else {
+        // Selection active
+        console.log(`Selection: ${start}–${end}`);
+      }
+    });
+  },
+  destroy() {
+    unsub?.();
+  },
+});
+```
+
+### Example: Anchoring Autocomplete Popup
+
+```ts
+editor.usePlugin({
+  mount(api) {
+    const unsub = api.onCursorMove(() => {
+      const rect = api.getCursorRect();
+      if (rect) {
+        const popup = document.querySelector('#autocomplete');
+        popup.style.left = rect.left + 'px';
+        popup.style.top = (rect.top + rect.height) + 'px';
+      }
+    });
+    return () => unsub?.();
+  },
 });
 ```
 
@@ -459,124 +825,284 @@ editor.addPattern({
 
 ## Decoration Lifecycle
 
-Decorations (set via `pluginApi.setDecorations()`) are mapped through text edits automatically:
+Decorations undergo transformation as the text changes:
 
-- **Before the edit region**: unchanged
-- **After the edit region**: shifted by the character delta
-- **Overlapping the edit**: clamped to edit boundaries or dropped if zero-width
-- **Large changes** (paste, select-all+type — heuristic: > 50 chars AND > 50% of document): all plugin decorations are cleared to avoid mapping errors
+### Mapping Decorations Through Changes
 
-Pattern decorations are always fully recomputed on each change.
+When text is edited, existing plugin decorations are automatically adjusted:
+
+- **Before the edit region**: start/end offsets unchanged
+- **After the edit region**: start/end offsets shifted by the character delta
+- **Overlapping the edit region**: start/end clamped to edit boundaries
+- **Zero-width after clamping**: decoration is dropped
+
+### Large Change Heuristic
+
+If a change is detected as **"large"** (heuristic: `changeSize > 50 chars AND changeSize > 50% of document`), all plugin decorations are cleared to avoid mapping errors. This handles:
+
+- Paste of large text blocks
+- Select-all + type
+- Programmatic `value` set with very different content
+
+Pattern decorations are **always** fully recomputed on each change (regex is re-run).
+
+### Architecture Note for Agents
+
+Decoration mapping occurs in `mapDecorationsThroughChange()` (in `decoration.ts`). The function:
+1. Calls `findEdit()` to locate insertion/deletion boundaries
+2. Applies geometry transformation to each decoration
+3. Returns a new decoration map (old map is not mutated)
 
 ---
 
 ## Undo / Redo
 
-The component manages its own undo stack because DOM rebuilds (which happen on every render frame) invalidate the browser's native contenteditable undo history.
+The component maintains its own undo/redo stack because DOM rebuilds (which happen on every render frame) invalidate the browser's native contenteditable undo history.
 
-- **Ctrl+Z** / **Cmd+Z**: undo
-- **Ctrl+Y** / **Cmd+Y** / **Ctrl+Shift+Z**: redo
-- Stack depth: 100 entries
+### Keyboard Shortcuts
 
-The undo stack stores plain text values + cursor positions. Decorations are not part of the undo state — they are recomputed from the restored value.
+| Key | Action |
+|-----|--------|
+| `Ctrl+Z` / `Cmd+Z` | Undo |
+| `Ctrl+Y` / `Cmd+Y` / `Ctrl+Shift+Z` | Redo |
+
+### Stack Details
+
+- **Capacity**: 100 entries (MAX_UNDO)
+- **Stored per entry**: plain text value + cursor position (anchorOffset, focusOffset)
+- **Decorations**: not stored; recomputed from the restored value
+- **Granularity**: one entry per input event (or scheduled update)
+
+### Architecture
+
+The undo stack is stored in:
+```ts
+private _undoStack: UndoEntry[] = [];
+private _undoIndex = -1;  // Current position in stack
+```
+
+Each entry is created when text changes via input event. The stack is pruned to MAX_UNDO when full.
 
 ---
 
-## Keyboard Behaviour
+## Keyboard Behavior
 
-| Key | Behaviour |
-|-----|-----------|
-| `Tab` | Inserts a `\t` character (does not move focus) |
+| Key | Behavior |
+|-----|----------|
+| `Tab` | Insert `\t` character (does not move focus) |
 | `Ctrl/Cmd+Z` | Undo |
 | `Ctrl/Cmd+Y` / `Ctrl/Cmd+Shift+Z` | Redo |
-| `Paste` | Strips HTML/rich text — only plain text is inserted |
+| `Paste` | HTML/rich text is stripped; only plain text is inserted |
+| `Enter` | Insert line break (`\n`) |
+
+### Paste Handling
+
+The component uses `input` event to detect and normalize pasted content. HTML markup is discarded; only plain text characters are inserted.
 
 ---
 
 ## Form Integration
 
-The lightDOM `<textarea>` participates in form submission normally. The component:
+The slotted `<textarea>` participates in form submission normally:
 
-1. Hides the textarea visually (inline styles: `position:absolute; clip; opacity:0`)
-2. Removes it from tab order (`tabindex=-1`)
-3. Keeps its `value` in sync on every edit
-4. Forwards `invalid` events to set `aria-invalid` on the editor
+1. **Hidden visually** — inline styles: `position: absolute; left: -9999px; opacity: 0; clip: rect(0 0 0 0)`
+2. **DOM remains** — slotted at the light DOM so form traversal finds it
+3. **Value synced** — component keeps textarea's value in sync with `this._value`
+4. **Attributes adopted** — `name`, `required`, `disabled`, `maxlength`, `placeholder` are read from textarea on mount
+5. **Submission** — form submission reads textarea's value directly
+
+### Example
 
 ```html
-<form>
+<form id="myform">
   <rc-textarea-v2>
-    <textarea name="content" required></textarea>
+    <textarea 
+      name="body" 
+      required 
+      maxlength="5000"
+      placeholder="Enter your message…"
+    ></textarea>
   </rc-textarea-v2>
-  <button type="submit">Submit</button>
+  <button type="submit">Send</button>
 </form>
 ```
 
----
-
-## Differences from rc-textarea
-
-| Feature | rc-textarea | rc-textarea-v2 |
-|---------|-------------|----------------|
-| Editing surface | Native `<textarea>` | `contenteditable` div |
-| Decoration rendering | Mirror div (innerHTML) | Parchment blot tree |
-| Mixed font formatting | Not supported | ✓ (bold, italic, color…) |
-| Decoration API | `protected` (internal) | On `PluginAPI` (via `mount()`) |
-| Plugin API | `highlight()` → HTML string | `update()` (imperative) + `highlight()` (HTML compat) |
-| Diagnostics API | Built-in (`addDiagnostic` etc.) | Not built-in — use `LineDecoration.message` |
-| Inline widgets | Not supported | ✓ (`WidgetDecoration`) |
-| Undo/redo | Browser native | Custom stack |
-| Document model | Line-oriented text | Parchment blot tree |
-
----
-
-## Common Pitfalls
-
-### Decorations must be set via the PluginAPI
-
-There is no `addDecoration()` on the element itself. All imperative decoration control goes through `api` received in `mount()`:
-
 ```ts
-// Wrong — no such method on the element
-editor.addDecoration({ type: 'mark', from: 0, to: 5, bold: true });
-
-// Correct
-let api;
-editor.usePlugin({ mount(a) { api = a; }, update() {} });
-api.setDecorations([{ type: 'mark', from: 0, to: 5, bold: true }]);
-api.scheduleUpdate();
-```
-
-### Widget factories must return a new element each render
-
-`WidgetDecoration.create()` is called on every render cycle. Do not return a cached element — the previous element will have been detached from the DOM.
-
-### hljs/prism CSS classes require shadow root stylesheet adoption
-
-`decorationsFromHtml()` applies class names from `<span class="hljs-keyword">` etc. to `.v2-mark` spans inside the shadow root. Light-DOM stylesheets (including linked hljs theme files) do not pierce the shadow boundary.
-
-Use `api.adoptStyleSheet()` inside `mount()` to inject the token colors into the shadow root. The sheet is removed automatically when the plugin is unmounted:
-
-```ts
-editor.usePlugin({
-  mount(api) {
-    api.adoptStyleSheet(`
-      .hljs-keyword { color: #cba6f7; }
-      .hljs-string  { color: #a6e3a1; }
-      /* ... */
-    `);
-    // Or adopt a pre-built CSSStyleSheet shared across multiple editors:
-    // api.adoptStyleSheet(sharedThemeSheet);
-  },
-  highlight(value, api) { /* ... */ },
+document.getElementById('myform').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  console.log(formData.get('body'));  // Plain text value
 });
 ```
 
-Alternatively, skip class-based styling entirely and use `MarkDecoration.color`, `bold`, etc. to apply formatting as inline styles.
+---
 
-### One plugin at a time
+## Accessibility
 
-`usePlugin()` replaces the active plugin (calling `destroy()` on the previous one). Combine logic into one plugin rather than registering multiple.
+The component is designed with accessibility in mind:
 
-### `value` setter replaces the full document
+### ARIA Roles & Attributes
 
-Setting `el.value = '...'` programmatically replaces the entire content and triggers a full render. Plugin decorations are not automatically remapped across this operation — call `api.clearDecorations()` before or after if needed.
+- **`role="textbox"`** — identifies the editor as a text input
+- **`aria-multiline="true"`** — indicates multiline text support
+- **`aria-label`** — set via the `label` attribute (optional)
+- **`delegatesFocus=true`** — shadow DOM focus is delegated to the editable region
+
+### Keyboard Navigation
+
+- Tab and Shift+Tab focus/blur the editor normally
+- Arrow keys, Home/End, Ctrl+Arrow, etc. work natively
+- Screen readers can read selected text and cursor position
+
+### Visual Accessibility
+
+- High contrast by default (system colors)
+- `:focus-visible` indicator (can be styled via CSS custom property)
+- Line numbers are `aria-hidden="true"` (not part of screen reader navigation)
+
+### Spellcheck Disabled
+
+Spell checking is disabled to prevent vendor-specific squiggles from interfering with custom decorations. Set explicitly in the editor:
+
+```ts
+editor.spellcheck = false;
+editor.autocorrect = 'off';
+editor.autocapitalize = 'off';
+```
+
+---
+
+## Performance Considerations
+
+### DOM Rebuild on Every Render
+
+The blot tree is **completely rebuilt** on each render frame (RAF-batched). This is necessary because:
+- Decoration changes require DOM restructuring
+- Plain-text ↔ DOM offset conversion requires a stable tree
+- Cursor restoration requires rebuilding after changes
+
+For documents **< 10,000 characters**, this is imperceptible. For very large documents, consider:
+- Truncating visible content (virtual scrolling)
+- Debouncing plugin updates
+- Using pattern decorations instead of plugin updates (patterns are optimized)
+
+### Decoration Density
+
+Large numbers of overlapping decorations (e.g., 1000+ marks on a single line) will impact performance. Keep decoration counts reasonable:
+- Syntax highlighting: typically 10–100 marks per line
+- Error markers: typically 1–5 per line
+- Patterns: typically < 50 matches per line
+
+If density is high, profile with DevTools to identify bottlenecks.
+
+### Memory
+
+The undo/redo stack stores 100 entries of `{ value, anchorOffset, focusOffset }`. For a 10 KB document, this is ~1 MB. For very large documents, consider limiting undo depth or using an external undo manager.
+
+---
+
+## Troubleshooting
+
+### Selection is lost after edit
+
+Normal behavior — selection is saved before render and restored after. If you're updating text and immediately reading `selectionStart`, use `onCursorMove()` or `setTimeout()` to wait for the next render frame.
+
+```ts
+editor.value = 'new text';
+// DON'T do this:
+console.log(editor.selectionStart);  // May be stale
+
+// DO this:
+await editor.updateComplete;
+const start = editor.value === 'new text' ? api.selectionStart : null;
+```
+
+### Decorations disappear after large paste
+
+If you paste a large block of text (> 50 chars and > 50% of document), plugin decorations are cleared by the "large change heuristic" to avoid mapping errors. Pattern decorations are reapplied. To preserve plugin decorations, update them in the plugin's `update()` method:
+
+```ts
+editor.usePlugin({
+  update(value, api) {
+    // Recompute decorations from the new value
+    const decs = parseText(value);
+    api.setDecorations(decs);
+  },
+});
+```
+
+### Other's DOM change events fire inside editor
+
+The component does not suppress mutation events on the editor. If you're listening for `MutationObserver` events on the editor element, you'll observe all blot tree rebuilds. To avoid this, listen outside the editor or throttle updates.
+
+### cursor doesn't stay at expected position
+
+Cursor restoration uses plain-text offsets. If decorations change (especially widgets, which take up no space in the value), the visual cursor position may shift. This is expected. Use `getCursorRect()` to anchor UI elements if precise positioning is critical.
+
+### Text is very long (> 100 KB), editor is slow
+
+The entire blot tree is rebuilt on each character input. For very large documents:
+- Profile with DevTools Performance tab to identify bottleneck
+- Consider truncating visible content (virtual scrolling)
+- Use `word-wrap: false` to reduce line breaks (fewer blots)
+- Limit undo depth: only keep last 10 entries instead of 100
+
+### Plugin's `highlight()` result is overwritten immediately
+
+If both `update()` and `highlight()` are provided, only one runs per render. The component runs `highlight()` if it returns a truthy value; otherwise, `update()` is called.
+
+---
+
+## API Reference Summary
+
+### Properties
+
+| Property | Type | Default | Reflects |
+|----------|------|---------|----------|
+| `value` | `string` | `''` | N/A |
+| `lineNumbers` | `boolean` | `false` | Yes (*line-numbers* attr) |
+| `wordWrap` | `boolean` | `false` | Yes (*word-wrap* attr) |
+| `autoGrow` | `boolean` | `false` | Yes (*auto-grow* attr) |
+| `readOnly` | `boolean` | `false` | Yes (*read-only* attr) |
+| `label` | `string \| null` | `null` | No |
+| `selectionStart` | `number` | `0` | No (readonly) |
+| `selectionEnd` | `number` | `0` | No (readonly) |
+
+### Methods
+
+| Method | Signature | Returns |
+|--------|-----------|---------|
+| `usePlugin()` | `(plugin: RCTextareaV2Plugin) => void` | — |
+| `removePlugin()` | `() => void` | — |
+| `addPattern()` | `(pattern: Omit<TextPattern, 'id'>) => string` | Pattern ID |
+| `removePattern()` | `(id: string) => void` | — |
+| `clearPatterns()` | `() => void` | — |
+
+### Events
+
+| Event | Bubbles | Composed | Detail |
+|-------|---------|----------|--------|
+| `rc-textarea-v2-change` | Yes | Yes | `{ value: string }` |
+| `rc-textarea-v2-focus` | Yes | Yes | — |
+| `rc-textarea-v2-blur` | Yes | Yes | — |
+| `rc-textarea-v2-select` | Yes | Yes | `{ selectionStart: number, selectionEnd: number }` |
+
+### CSS Custom Properties
+
+All custom properties are listed in [CSS Customization](#css-customization).
+
+### CSS Parts
+
+All parts are listed in [CSS Customization](#css-customization).
+
+---
+
+## Support & Contributing
+
+For issues, feature requests, or contributions, visit the [rc-webcomponents repository](https://github.com/richardcarls/rc-webcomponents).
+
+---
+
+## License
+
+[MIT](LICENSE) © Richard Carls
