@@ -13,7 +13,7 @@ export default defineConfig({
       fileName: 'rc-textarea',
     },
     rollupOptions: {
-      // Exclude lit packages from bundling
+      // Exclude lit packages from bundling; bundle parchment
       external: [/^@?lit(-\w+)?($|\/.+)/],
     },
   },

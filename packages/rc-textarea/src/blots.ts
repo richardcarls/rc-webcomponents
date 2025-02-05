@@ -1,11 +1,17 @@
 /**
- * Parchment blot definitions for rc-textarea-v2.
+ * Parchment blot definitions for rc-textarea.
  *
  * Uses named imports from parchment (BlockBlot, InlineBlot, EmbedBlot, ScrollBlot).
  * Parchment's MutationObserver integration is suppressed — DOM updates are
  * managed entirely by V2Document.build() on each render frame.
  */
-import { Registry, ScrollBlot, BlockBlot, InlineBlot, EmbedBlot } from 'parchment';
+import {
+  Registry,
+  ScrollBlot,
+  BlockBlot,
+  InlineBlot,
+  EmbedBlot,
+} from 'parchment';
 import type { MarkDecoration } from './types.ts';
 
 export { Registry };
@@ -22,10 +28,16 @@ export class V2ScrollBlot extends ScrollBlot {
   }
 
   // Suppress Parchment's automatic DOM reconciliation
-  override update(_mutations: MutationRecord[], _context: Record<string, unknown>): void {}
+  override update(
+    _mutations: MutationRecord[],
+    _context: Record<string, unknown>,
+  ): void {}
   // Match ScrollBlot's two optimize overloads
   override optimize(context: { [key: string]: unknown }): void;
-  override optimize(mutations: MutationRecord[], context: { [key: string]: unknown }): void;
+  override optimize(
+    mutations: MutationRecord[],
+    context: { [key: string]: unknown },
+  ): void;
   override optimize(
     _contextOrMutations?: MutationRecord[] | { [key: string]: unknown },
     _context?: { [key: string]: unknown },
@@ -44,7 +56,13 @@ export class V2BlockBlot extends BlockBlot {
 
 type InlineFormats = Pick<
   MarkDecoration,
-  'className' | 'bold' | 'italic' | 'color' | 'background' | 'underline' | 'underlineColor'
+  | 'className'
+  | 'bold'
+  | 'italic'
+  | 'color'
+  | 'background'
+  | 'underline'
+  | 'underlineColor'
 >;
 
 export class V2InlineBlot extends InlineBlot {
@@ -59,7 +77,10 @@ export class V2InlineBlot extends InlineBlot {
   }
 }
 
-export function applyInlineFormats(el: HTMLSpanElement, formats: InlineFormats): void {
+export function applyInlineFormats(
+  el: HTMLSpanElement,
+  formats: InlineFormats,
+): void {
   if (formats.className) {
     for (const cls of formats.className.split(/\s+/).filter(Boolean)) {
       el.classList.add(cls);
@@ -71,7 +92,8 @@ export function applyInlineFormats(el: HTMLSpanElement, formats: InlineFormats):
   if (formats.background) el.style.backgroundColor = formats.background;
   if (formats.underline) {
     el.style.textDecoration = `${formats.underline} underline`;
-    if (formats.underlineColor) el.style.textDecorationColor = formats.underlineColor;
+    if (formats.underlineColor)
+      el.style.textDecorationColor = formats.underlineColor;
   }
 }
 

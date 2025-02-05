@@ -1,64 +1,7 @@
-export interface TextRange {
-  from: number;
-  to: number;
-}
+import type { Decoration, MarkDecoration, LineDecoration, DecorationInput } from './types.ts';
+export { generateId } from './types.ts';
 
-export interface MarkDecoration {
-  id: string;
-  type: 'mark';
-  range: TextRange;
-  className?: string;
-  attributes?: Record<string, string>;
-}
-
-export interface LineDecoration {
-  id: string;
-  type: 'line';
-  /** 1-based logical line number */
-  line: number;
-  className?: string;
-  attributes?: Record<string, string>;
-}
-
-export type Decoration = MarkDecoration | LineDecoration;
-
-export interface Diagnostic {
-  id: string;
-  /** 1-based logical line number */
-  line: number;
-  severity: 'error' | 'warning' | 'info' | 'hint';
-  message: string;
-  /** Optional factory for a leading icon element (e.g. SVG). */
-  createIcon?: () => HTMLElement;
-  /**
-   * Character range for an automatic mark decoration (e.g. wavy underline).
-   * When present, the component creates an internal MarkDecoration covering
-   * this range styled with `markClassName` (or the built-in default class).
-   */
-  range?: TextRange;
-  /**
-   * CSS class for the auto-generated mark span.
-   * Defaults to `diagnostic-mark diagnostic-mark--{severity}`, which uses the
-   * built-in wavy-underline style driven by `--rc-textarea-mark-{severity}-color`.
-   */
-  markClassName?: string;
-  /**
-   * CSS class for an auto-generated line decoration.
-   * When set, the whole `.line` div receives this class.
-   * Use `diagnostic-line--{severity}` for the built-in tinted background.
-   */
-  lineClassName?: string;
-}
-
-/**
- * Input type for addDecoration / setDecorations — the discriminated union
- * of each decoration type without the auto-generated `id` field.
- */
-export type DecorationInput = Omit<MarkDecoration, 'id'> | Omit<LineDecoration, 'id'>;
-
-export function generateId(): string {
-  return crypto.randomUUID();
-}
+// ── Edit detection ────────────────────────────────────────────────────────────
 
 interface Edit {
   start: number;
@@ -66,7 +9,7 @@ interface Edit {
   inserted: number;
 }
 
-function findEdit(oldVal: string, newVal: string): Edit {
+export function findEdit(oldVal: string, newVal: string): Edit {
   let start = 0;
   while (
     start < oldVal.length &&
@@ -89,24 +32,19 @@ function findEdit(oldVal: string, newVal: string): Edit {
 }
 
 function mapMarkRange(
-  range: TextRange,
+  from: number,
+  to: number,
   edit: Edit,
-): TextRange | null {
+): { from: number; to: number } | null {
   const editEnd = edit.start + edit.removed;
   const delta = edit.inserted - edit.removed;
 
-  if (range.to <= edit.start) {
-    // Entirely before the edit — unchanged
-    return range;
-  }
-  if (range.from >= editEnd) {
-    // Entirely after the edit — shift
-    return { from: range.from + delta, to: range.to + delta };
-  }
-  // Overlapping — clamp to edit boundaries
-  const newFrom = Math.min(range.from, edit.start);
+  if (to <= edit.start) return { from, to };
+  if (from >= editEnd) return { from: from + delta, to: to + delta };
+
+  const newFrom = Math.min(from, edit.start);
   const newTo = Math.max(
-    range.to > editEnd ? range.to + delta : edit.start + edit.inserted,
+    to > editEnd ? to + delta : edit.start + edit.inserted,
     edit.start + edit.inserted,
   );
   if (newFrom >= newTo) return null;
@@ -123,82 +61,86 @@ function countNewlinesBefore(text: string, offset: number): number {
 
 export function mapDecorationsThroughChange(
   decorations: Decoration[],
-  diagnostics: Diagnostic[],
   oldValue: string,
   newValue: string,
-): { decorations: Decoration[]; diagnostics: Diagnostic[] } {
+): Decoration[] {
   const edit = findEdit(oldValue, newValue);
   const editEnd = edit.start + edit.removed;
 
-  // Count newlines in removed and inserted regions to compute line delta
   const removedText = oldValue.slice(edit.start, editEnd);
   const insertedText = newValue.slice(edit.start, edit.start + edit.inserted);
   const linesRemoved = (removedText.match(/\n/g) ?? []).length;
   const linesInserted = (insertedText.match(/\n/g) ?? []).length;
   const lineDelta = linesInserted - linesRemoved;
 
-  // 1-based line number of the edit start
   const editStartLine = countNewlinesBefore(oldValue, edit.start) + 1;
-  // Last 1-based line covered by the removed region
   const editEndLine = editStartLine + linesRemoved;
 
-  const mappedDecorations: Decoration[] = [];
+  const mapped: Decoration[] = [];
+
   for (const dec of decorations) {
     if (dec.type === 'mark') {
-      const newRange = mapMarkRange(dec.range, edit);
-      if (newRange !== null) {
-        mappedDecorations.push({ ...dec, range: newRange });
-      }
-    } else {
-      // LineDecoration
+      const result = mapMarkRange(dec.from, dec.to, edit);
+      if (result) mapped.push({ ...dec, from: result.from, to: result.to });
+    } else if (dec.type === 'line') {
       if (dec.line < editStartLine) {
-        // Before the edit — unchanged
-        mappedDecorations.push(dec);
+        mapped.push(dec);
       } else if (dec.line <= editEndLine) {
-        // Within the removed region — drop it
+        // Within removed region — drop
       } else {
-        // After the removed region — shift by line delta
-        mappedDecorations.push({ ...dec, line: dec.line + lineDelta });
+        mapped.push({ ...dec, line: dec.line + lineDelta });
       }
-    }
-  }
-
-  const mappedDiagnostics: Diagnostic[] = [];
-  for (const diag of diagnostics) {
-    let mappedLine: number;
-    if (diag.line < editStartLine) {
-      mappedLine = diag.line;
-    } else if (diag.line <= editEndLine) {
-      // Within removed region — drop entirely
-      continue;
     } else {
-      mappedLine = diag.line + lineDelta;
+      // WidgetDecoration — treat offset like a mark's 'from'
+      const result = mapMarkRange(dec.offset, dec.offset + 1, edit);
+      if (result) mapped.push({ ...dec, offset: result.from });
     }
-
-    // Also map the optional range through the edit
-    let mappedRange: TextRange | undefined;
-    if (diag.range) {
-      const newRange = mapMarkRange(diag.range, edit);
-      mappedRange = newRange ?? undefined; // edit overlapped range → clear mark, keep message
-    }
-
-    mappedDiagnostics.push({ ...diag, line: mappedLine, range: mappedRange });
   }
 
-  return { decorations: mappedDecorations, diagnostics: mappedDiagnostics };
+  return mapped;
 }
 
 /**
  * Heuristic: is this edit a "large change" (e.g. paste, select-all+type)?
  * If so, decorations should be cleared rather than mapped through an invalid diff.
- *
- * A change qualifies when the larger of removed/inserted exceeds 50 chars AND
- * exceeds half the previous document length. This catches both "select-all + type"
- * (large removal) and "paste into short document" (large insertion).
  */
 export function isLargeChange(oldValue: string, edit: Edit): boolean {
+  if (oldValue.length === 0) return false; // inserting into empty doc is never "large"
   const changeSize = Math.max(edit.removed, edit.inserted);
   return changeSize > 50 && changeSize > oldValue.length * 0.5;
 }
 
-export { findEdit };
+export function mapOrClear(
+  decorations: Decoration[],
+  oldValue: string,
+  newValue: string,
+): Decoration[] {
+  const edit = findEdit(oldValue, newValue);
+  if (isLargeChange(oldValue, edit)) return [];
+  return mapDecorationsThroughChange(decorations, oldValue, newValue);
+}
+
+// ── Decoration ID management ──────────────────────────────────────────────────
+
+export function addDecoration(
+  map: Map<string, Decoration>,
+  input: DecorationInput,
+): string {
+  const id = crypto.randomUUID();
+  map.set(id, { ...input, id } as Decoration);
+  return id;
+}
+
+export function setDecorations(
+  map: Map<string, Decoration>,
+  inputs: DecorationInput[],
+): void {
+  map.clear();
+  for (const input of inputs) {
+    const id = crypto.randomUUID();
+    map.set(id, { ...input, id } as Decoration);
+  }
+}
+
+// Type helpers for extracting subtypes from Decoration union
+export type { MarkDecoration, LineDecoration };

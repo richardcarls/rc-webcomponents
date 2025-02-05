@@ -26,5 +26,5 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-toolbar**: Toolbar → rc-common
 - **rc-splitter**: Window splitter → rc-common
 - **rc-textarea**: Enhanced textarea (standalone)
-- **rc-textarea-v2**: Enhanced textarea v2 (standalone)
+- **rc-textarea**: Enhanced textarea (standalone)
 - **rc-virtual-canvas**: Virtual canvas (standalone)

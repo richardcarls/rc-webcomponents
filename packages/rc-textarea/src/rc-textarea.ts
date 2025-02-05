@@ -1,946 +1,908 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 
+import { styles } from './rc-textarea.styles.ts';
+import { V2Document, extractEditorText } from './document.ts';
 import {
-  type Decoration,
-  type DecorationInput,
-  type MarkDecoration,
-  type Diagnostic,
-  generateId,
-  mapDecorationsThroughChange,
-  isLargeChange,
-  findEdit,
-} from './decoration.ts';
-import { type TextPattern, matchPatternResults } from './pattern-matcher.ts';
-import { renderMirror, renderGutter, escapeHtml } from './renderer.ts';
-import textareaStyles from './rc-textarea.styles.ts';
-import type { RCTextareaPlugin, RCTextareaPluginAPI } from './plugin.ts';
+  saveSelection,
+  restoreSelection,
+  type SavedSelection,
+} from './selection.ts';
+import { mapOrClear, addDecoration, setDecorations } from './decoration.ts';
+import { matchPatternResults } from './pattern-matcher.ts';
+import type {
+  Decoration,
+  DecorationInput,
+  RCTextareaPlugin,
+  RCTextareaPluginAPI,
+  TextPattern,
+  MarkDecoration,
+} from './types.ts';
+import { generateId } from './types.ts';
+
+// ── Undo entry ────────────────────────────────────────────────────────────────
+
+interface UndoEntry {
+  value: string;
+  anchorOffset: number;
+  focusOffset: number;
+}
+
+const MAX_UNDO = 100;
+
+// ── decorationsFromHtml utility ───────────────────────────────────────────────
+
+function decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+
+  const result: Omit<MarkDecoration, 'id'>[] = [];
+  let charOffset = 0;
+
+  function walk(node: Node): void {
+    if (node.nodeType === Node.TEXT_NODE) {
+      charOffset += (node as Text).length;
+      return;
+    }
+    if (!(node instanceof HTMLElement)) return;
+
+    const isSpan = node.tagName === 'SPAN' && node.className;
+    const startOffset = charOffset;
+
+    for (const child of node.childNodes) {
+      walk(child);
+    }
+
+    if (isSpan && charOffset > startOffset) {
+      result.push({
+        type: 'mark',
+        from: startOffset,
+        to: charOffset,
+        className: node.className,
+      });
+    }
+  }
+
+  for (const child of tmp.childNodes) walk(child);
+  return result;
+}
+
+// ── RCTextarea ─────────────────────────────────────────────────────────────
+
+export class RCTextarea extends LitElement {
+  static override styles = styles;
+  static override shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
+  // ── Observed properties ───────────────────────────────────────────────
+
+  @property({ type: Boolean, attribute: 'line-numbers', reflect: true })
+  lineNumbers = false;
+
+  @property({ type: Boolean, attribute: 'word-wrap', reflect: true })
+  wordWrap = false;
+
+  @property({ type: Boolean, attribute: 'auto-grow', reflect: true })
+  autoGrow = false;
+
+  @property({ type: Boolean, attribute: 'read-only', reflect: true })
+  readOnly = false;
+
+  @property({ type: String })
+  label: string | null = null;
+
+  // ── Internal state ────────────────────────────────────────────────────
+
+  private _value = '';
+  private _document: V2Document | null = null;
+  private _textareaRef: WeakRef<HTMLTextAreaElement> | null = null;
+
+  /** Plugin-owned decorations (set via PluginAPI.setDecorations / addDecoration). */
+  private _pluginDecorations = new Map<string, Decoration>();
+  /** Pattern-generated decorations (rebuilt on each value change). */
+  private _patternDecorations: Decoration[] = [];
+  /** Registered patterns. */
+  private _patterns = new Map<string, TextPattern>();
+
+  private _plugin: RCTextareaPlugin | null = null;
+  private _pluginApi: RCTextareaPluginAPI | null = null;
+  /** Sequence counter for async plugin safety (discard stale results). */
+  private _pluginSeq = 0;
+  /** Stylesheets adopted into the shadow root by the active plugin. */
+  private _pluginSheets = new Set<CSSStyleSheet>();
+
+  private _savedSelection: SavedSelection | null = null;
+  private _rafHandle: number | null = null;
+  private _composing = false;
+  private _isRendering = false;
+
+  /** The currently highlighted `.v2-line` element (active line). */
+  private _activeLine: HTMLElement | null = null;
+  /** Callbacks registered via PluginAPI.onCursorMove(). */
+  private _cursorCallbacks = new Set<(start: number, end: number) => void>();
+
+  private _docSelectionChangeHandler = (): void => {
+    if (document.activeElement !== this) return;
+    this._onSelectionChange();
+  };
+
+  /** Undo/redo stack — necessary because DOM rebuilds invalidate browser's native undo. */
+  private _undoStack: UndoEntry[] = [];
+  private _undoIndex = -1;
+
+  private _resizeObserver: ResizeObserver | null = null;
+
+  // ── Public value property ─────────────────────────────────────────────
+
+  get value(): string {
+    return this._value;
+  }
+
+  set value(v: string) {
+    if (v === this._value) return;
+    this._value = v;
+    this._syncTextareaValue();
+    this.dispatchEvent(
+      new CustomEvent('rc-textarea-change', {
+        bubbles: true,
+        composed: true,
+        detail: { value: v },
+      }),
+    );
+    this._scheduleRender();
+  }
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    document.addEventListener(
+      'selectionchange',
+      this._docSelectionChangeHandler,
+    );
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    document.removeEventListener(
+      'selectionchange',
+      this._docSelectionChangeHandler,
+    );
+    this._plugin?.destroy?.();
+    this._plugin = null;
+    this._pluginApi = null;
+    this._clearPluginSheets();
+    this._cursorCallbacks.clear();
+    this._resizeObserver?.disconnect();
+    if (this._rafHandle !== null) {
+      cancelAnimationFrame(this._rafHandle);
+      this._rafHandle = null;
+    }
+  }
+
+  override firstUpdated(): void {
+    const editorEl = this._getEditorEl();
+    if (editorEl) {
+      this._document = new V2Document(editorEl as HTMLDivElement);
+      this._bindEditorEvents(editorEl);
+    }
+    this._resizeObserver = new ResizeObserver(() => this._syncGutter());
+    this._resizeObserver.observe(this);
+  }
+
+  override updated(changed: Map<string, unknown>): void {
+    if (changed.has('readOnly')) {
+      const editorEl = this._getEditorEl();
+      if (editorEl) editorEl.contentEditable = this.readOnly ? 'false' : 'true';
+    }
+    if (changed.has('label')) {
+      const editorEl = this._getEditorEl();
+      if (editorEl && this.label)
+        editorEl.setAttribute('aria-label', this.label);
+    }
+  }
+
+  // ── Template ──────────────────────────────────────────────────────────
+
+  override render() {
+    return html`
+      <div id="root" part="root">
+        <div id="gutter" part="gutter" aria-hidden="true">
+          <div id="line-numbers" part="line-numbers"></div>
+        </div>
+        <div id="editor-area" part="editor-area">
+          <div
+            id="editor"
+            part="editor"
+            contenteditable=${this.readOnly ? 'false' : 'true'}
+            role="textbox"
+            aria-multiline="true"
+            spellcheck="false"
+            autocorrect="off"
+            autocapitalize="off"
+            aria-label=${this.label ?? ''}
+          ></div>
+          <slot @slotchange=${this._onSlotChange}></slot>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Slot change — lightDOM textarea wiring ────────────────────────────
+
+  private _onSlotChange(): void {
+    const slot = this.shadowRoot?.querySelector(
+      'slot',
+    ) as HTMLSlotElement | null;
+    if (!slot) return;
+
+    const textarea = slot
+      .assignedElements({ flatten: true })
+      .find(
+        (el): el is HTMLTextAreaElement => el instanceof HTMLTextAreaElement,
+      );
+
+    if (!textarea) return;
+    this._textareaRef = new WeakRef(textarea);
+
+    // Visually hide — keep in DOM for form submission
+    Object.assign(textarea.style, {
+      position: 'absolute',
+      width: '1px',
+      height: '1px',
+      padding: '0',
+      margin: '-1px',
+      overflow: 'hidden',
+      clip: 'rect(0,0,0,0)',
+      border: '0',
+      opacity: '0',
+      pointerEvents: 'none',
+      tabIndex: '-1',
+    });
+    textarea.setAttribute('aria-hidden', 'true');
+    textarea.tabIndex = -1;
+
+    // Sync attributes from textarea → editor ARIA / state
+    const editorEl = this._getEditorEl();
+    if (editorEl) {
+      if (!this.label && textarea.getAttribute('aria-label')) {
+        editorEl.setAttribute(
+          'aria-label',
+          textarea.getAttribute('aria-label')!,
+        );
+      }
+      const placeholder = textarea.getAttribute('placeholder');
+      if (placeholder) editorEl.setAttribute('aria-placeholder', placeholder);
+    }
+
+    // Adopt initial value from textarea
+    if (textarea.value && !this._value) {
+      this._value = textarea.value;
+    }
+
+    // Wire up form validation feedback
+    textarea.addEventListener('invalid', () => {
+      const editorEl = this._getEditorEl();
+      if (editorEl) editorEl.setAttribute('aria-invalid', 'true');
+    });
+
+    // Sync typography from textarea's computed style to editor
+    this._syncTypography(textarea);
+
+    this._scheduleRender();
+  }
+
+  // ── Editor event binding ──────────────────────────────────────────────
+
+  private _bindEditorEvents(editorEl: HTMLElement): void {
+    editorEl.addEventListener('compositionstart', () => {
+      this._composing = true;
+    });
+    editorEl.addEventListener('compositionend', () => {
+      this._composing = false;
+      this._onInput();
+    });
+    editorEl.addEventListener('input', this._onInputEvent);
+    editorEl.addEventListener('keydown', this._onKeyDown);
+    editorEl.addEventListener('paste', this._onPaste);
+    editorEl.addEventListener('focus', () => {
+      this.dispatchEvent(
+        new CustomEvent('rc-textarea-focus', {
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    });
+    editorEl.addEventListener('blur', () => {
+      this.dispatchEvent(
+        new CustomEvent('rc-textarea-blur', {
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      // Clear active line when editor loses focus
+      this._activeLine?.classList.remove('v2-line--active');
+      this._activeLine = null;
+    });
+    // Selection tracking is handled by the document-level selectionchange listener
+    // added in connectedCallback — covers arrow keys, mouse, touch, and programmatic changes.
+  }
+
+  private _onInputEvent = (): void => {
+    if (!this._composing) this._onInput();
+  };
+
+  private _onInput(): void {
+    const editorEl = this._getEditorEl();
+    if (!editorEl) return;
+
+    const newValue = extractEditorText(editorEl);
+    if (newValue === this._value) return;
+
+    const oldValue = this._value;
+    const preEditSel = this._savedSelection; // capture before saveSelection() overwrites it
+
+    // Map existing plugin decorations through the text change
+    const mappedDecs = mapOrClear(
+      [...this._pluginDecorations.values()],
+      oldValue,
+      newValue,
+    );
+    this._pluginDecorations.clear();
+    for (const dec of mappedDecs) this._pluginDecorations.set(dec.id, dec);
+
+    this._value = newValue;
+    this._syncTextareaValue();
+
+    // Save cursor position AFTER the browser has processed the input
+    this._savedSelection = saveSelection(editorEl);
+
+    // On the very first edit, capture the pre-edit state as the undo baseline so
+    // that the first Ctrl+Z can restore it. Without this, _undoIndex would be 0
+    // after the first push and _undo()'s `<= 0` guard would prevent any undo.
+    // Note: selectionchange fires AFTER input, so _savedSelection still holds the
+    // pre-edit cursor at this point (before saveSelection() overwrites it above).
+    if (this._undoStack.length === 0) {
+      this._undoStack.push({
+        value: oldValue,
+        anchorOffset: preEditSel?.anchorOffset ?? 0,
+        focusOffset: preEditSel?.focusOffset ?? 0,
+      });
+      this._undoIndex = 0;
+    }
+
+    // Push to undo stack
+    this._pushUndo(this._savedSelection);
+
+    this.dispatchEvent(
+      new CustomEvent('rc-textarea-change', {
+        bubbles: true,
+        composed: true,
+        detail: { value: newValue },
+      }),
+    );
+
+    this._scheduleRender();
+  }
+
+  private _onSelectionChange = (): void => {
+    const editorEl = this._getEditorEl();
+    if (!editorEl) return;
+    const sel = saveSelection(editorEl);
+    if (sel) {
+      this._savedSelection = sel;
+      this.dispatchEvent(
+        new CustomEvent('rc-textarea-select', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            selectionStart: sel.anchorOffset,
+            selectionEnd: sel.focusOffset,
+          },
+        }),
+      );
+      this._updateActiveLine();
+      const start = Math.min(sel.anchorOffset, sel.focusOffset);
+      const end = Math.max(sel.anchorOffset, sel.focusOffset);
+      for (const cb of this._cursorCallbacks) cb(start, end);
+    }
+  };
+
+  private _updateActiveLine(): void {
+    const editorEl = this._getEditorEl();
+    if (!editorEl) return;
+    const sel = window.getSelection();
+    let newActive: HTMLElement | null = null;
+    if (sel?.focusNode && editorEl.contains(sel.focusNode)) {
+      let node: Node | null = sel.focusNode;
+      while (node && node !== editorEl) {
+        if (node instanceof HTMLElement && node.classList.contains('v2-line')) {
+          newActive = node;
+          break;
+        }
+        node = node.parentNode;
+      }
+    }
+    if (newActive === this._activeLine) return;
+    this._activeLine?.classList.remove('v2-line--active');
+    this._activeLine = newActive;
+    this._activeLine?.classList.add('v2-line--active');
+
+    // Update active line number highlight
+    this._updateActiveLineNumber();
+  }
+
+  private _updateActiveLineNumber(): void {
+    const gutterEl = this.shadowRoot?.getElementById('line-numbers');
+    if (!gutterEl) return;
+
+    // Find and remove previous active state
+    const prevActive = gutterEl.querySelector('.line-number--active');
+    if (prevActive) prevActive.classList.remove('line-number--active');
+
+    // Find line index and highlight corresponding line number
+    if (this._activeLine) {
+      const editorEl = this._getEditorEl();
+      if (!editorEl) return;
+
+      const allLines = editorEl.querySelectorAll('.v2-line');
+      for (let i = 0; i < allLines.length; i++) {
+        if (allLines[i] === this._activeLine) {
+          const lineNumberEl = gutterEl.children[i];
+          if (lineNumberEl) {
+            lineNumberEl.classList.add('line-number--active');
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  // ── Keyboard handling ─────────────────────────────────────────────────
+
+  private _onKeyDown = (e: KeyboardEvent): void => {
+    if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      this._insertText('\t');
+      return;
+    }
+
+    const isUndo = (e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey;
+    const isRedo =
+      ((e.ctrlKey || e.metaKey) && e.key === 'y') ||
+      ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z');
+
+    if (isUndo) {
+      e.preventDefault();
+      this._undo();
+      return;
+    }
+    if (isRedo) {
+      e.preventDefault();
+      this._redo();
+    }
+  };
+
+  private _insertText(text: string): void {
+    const editorEl = this._getEditorEl();
+    if (!editorEl) return;
+
+    // execCommand('insertText') does not handle \n — browsers create new divs
+    // that lack the 'v2-line' class, so extractEditorText() loses all content
+    // after the first newline. Apply multi-line inserts directly to the value model.
+    if (text.includes('\n')) {
+      const sel = saveSelection(editorEl) ?? this._savedSelection;
+      const anchor = Math.min(sel?.anchorOffset ?? 0, sel?.focusOffset ?? 0);
+      const focus = Math.max(sel?.anchorOffset ?? 0, sel?.focusOffset ?? 0);
+      const oldValue = this._value;
+      const newValue = oldValue.slice(0, anchor) + text + oldValue.slice(focus);
+      const newCursorOffset = anchor + text.length;
+
+      const mappedDecs = mapOrClear(
+        [...this._pluginDecorations.values()],
+        oldValue,
+        newValue,
+      );
+      this._pluginDecorations.clear();
+      for (const dec of mappedDecs) this._pluginDecorations.set(dec.id, dec);
+
+      this._value = newValue;
+      this._syncTextareaValue();
+      this._savedSelection = {
+        anchorOffset: newCursorOffset,
+        focusOffset: newCursorOffset,
+      };
+      if (this._undoStack.length === 0) {
+        this._undoStack.push({
+          value: oldValue,
+          anchorOffset: sel?.anchorOffset ?? 0,
+          focusOffset: sel?.focusOffset ?? 0,
+        });
+        this._undoIndex = 0;
+      }
+      this._pushUndo(this._savedSelection);
+      this.dispatchEvent(
+        new CustomEvent('rc-textarea-change', {
+          bubbles: true,
+          composed: true,
+          detail: { value: newValue },
+        }),
+      );
+      this._scheduleRender();
+      return;
+    }
+
+    // Use execCommand for simple (single-line) insertions — maintains a minimal
+    // undo step until our full rebuild fires on the next RAF.
+    document.execCommand('insertText', false, text);
+    this._onInput();
+  }
+
+  // ── Paste handling ────────────────────────────────────────────────────
+
+  private _onPaste = (e: ClipboardEvent): void => {
+    e.preventDefault();
+    const text = e.clipboardData?.getData('text/plain') ?? '';
+    if (!text) return;
+    // Normalize line endings
+    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    this._insertText(normalized);
+  };
+
+  // ── Undo/Redo ─────────────────────────────────────────────────────────
+
+  private _pushUndo(sel: SavedSelection | null): void {
+    const entry: UndoEntry = {
+      value: this._value,
+      anchorOffset: sel?.anchorOffset ?? 0,
+      focusOffset: sel?.focusOffset ?? 0,
+    };
+    // Truncate redo branch
+    this._undoStack = this._undoStack.slice(0, this._undoIndex + 1);
+    this._undoStack.push(entry);
+    if (this._undoStack.length > MAX_UNDO) this._undoStack.shift();
+    this._undoIndex = this._undoStack.length - 1;
+  }
+
+  private _undo(): void {
+    if (this._undoIndex <= 0) return;
+    this._undoIndex--;
+    this._applyUndoEntry(this._undoStack[this._undoIndex]!);
+  }
+
+  private _redo(): void {
+    if (this._undoIndex >= this._undoStack.length - 1) return;
+    this._undoIndex++;
+    this._applyUndoEntry(this._undoStack[this._undoIndex]!);
+  }
+
+  private _applyUndoEntry(entry: UndoEntry): void {
+    this._value = entry.value;
+    this._savedSelection = {
+      anchorOffset: entry.anchorOffset,
+      focusOffset: entry.focusOffset,
+    };
+    this._syncTextareaValue();
+    this.dispatchEvent(
+      new CustomEvent('rc-textarea-change', {
+        bubbles: true,
+        composed: true,
+        detail: { value: this._value },
+      }),
+    );
+    this._scheduleRender();
+  }
+
+  // ── Plugin API ────────────────────────────────────────────────────────
+
+  usePlugin(plugin: RCTextareaPlugin): void {
+    this._plugin?.destroy?.();
+    this._clearPluginSheets();
+    this._pluginDecorations.clear();
+    this._cursorCallbacks.clear();
+    this._pluginSeq++;
+
+    this._plugin = plugin;
+    this._pluginApi = this._buildPluginApi();
+    plugin.mount?.(this._pluginApi);
+
+    this._scheduleRender();
+  }
+
+  removePlugin(): void {
+    this._plugin?.destroy?.();
+    this._clearPluginSheets();
+    this._plugin = null;
+    this._pluginApi = null;
+    this._pluginDecorations.clear();
+    this._cursorCallbacks.clear();
+    this._pluginSeq++;
+    this._scheduleRender();
+  }
+
+  private _buildPluginApi(): RCTextareaPluginAPI {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const component = this;
+    return {
+      get host() {
+        return component;
+      },
+      get value() {
+        return component._value;
+      },
+      get selectionStart() {
+        const s = component._savedSelection;
+        return s ? Math.min(s.anchorOffset, s.focusOffset) : 0;
+      },
+      get selectionEnd() {
+        const s = component._savedSelection;
+        return s ? Math.max(s.anchorOffset, s.focusOffset) : 0;
+      },
+      getCursorRect(): DOMRect | null {
+        const sel = window.getSelection();
+        if (!sel?.focusNode) return null;
+        const editorEl = component._getEditorEl();
+        if (!editorEl || !editorEl.contains(sel.focusNode)) return null;
+        try {
+          const range = document.createRange();
+          range.setStart(sel.focusNode, sel.focusOffset);
+          range.collapse(true);
+          const rect = range.getBoundingClientRect();
+          return rect.height > 0 ? rect : null;
+        } catch {
+          return null;
+        }
+      },
+      getWordAtCursor(): { word: string; from: number; to: number } | null {
+        const offset = component._savedSelection?.focusOffset ?? 0;
+        const text = component._value;
+        if (!text) return null;
+        let start = offset;
+        while (start > 0 && /\w/.test(text[start - 1]!)) start--;
+        let end = offset;
+        while (end < text.length && /\w/.test(text[end]!)) end++;
+        if (start === end) return null;
+        return { word: text.slice(start, end), from: start, to: end };
+      },
+      onCursorMove(
+        callback: (selectionStart: number, selectionEnd: number) => void,
+      ): () => void {
+        component._cursorCallbacks.add(callback);
+        return () => {
+          component._cursorCallbacks.delete(callback);
+        };
+      },
+
+      addDecoration(d: DecorationInput): string {
+        return addDecoration(component._pluginDecorations, d);
+      },
+      removeDecoration(id: string): void {
+        component._pluginDecorations.delete(id);
+      },
+      clearDecorations(): void {
+        component._pluginDecorations.clear();
+      },
+      setDecorations(decorations: DecorationInput[]): void {
+        setDecorations(component._pluginDecorations, decorations);
+      },
+      scheduleUpdate(): void {
+        if (!component._isRendering) component._scheduleRender();
+      },
+      adoptStyleSheet(sheetOrCssText: CSSStyleSheet | string): CSSStyleSheet {
+        let sheet: CSSStyleSheet;
+        if (typeof sheetOrCssText === 'string') {
+          sheet = new CSSStyleSheet();
+          sheet.replaceSync(sheetOrCssText);
+        } else {
+          sheet = sheetOrCssText;
+        }
+        const sr = component.shadowRoot;
+        if (sr && !sr.adoptedStyleSheets.includes(sheet)) {
+          sr.adoptedStyleSheets = [...sr.adoptedStyleSheets, sheet];
+        }
+        component._pluginSheets.add(sheet);
+        return sheet;
+      },
+      removeStyleSheet(sheet: CSSStyleSheet): void {
+        const sr = component.shadowRoot;
+        if (sr) {
+          sr.adoptedStyleSheets = sr.adoptedStyleSheets.filter(
+            (s) => s !== sheet,
+          );
+        }
+        component._pluginSheets.delete(sheet);
+      },
+      decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
+        return decorationsFromHtml(html);
+      },
+    };
+  }
+
+  private _clearPluginSheets(): void {
+    if (this._pluginSheets.size === 0) return;
+    const sr = this.shadowRoot;
+    if (sr) {
+      sr.adoptedStyleSheets = sr.adoptedStyleSheets.filter(
+        (s) => !this._pluginSheets.has(s),
+      );
+    }
+    this._pluginSheets.clear();
+  }
+
+  // ── Pattern API ───────────────────────────────────────────────────────
+
+  addPattern(pattern: Omit<TextPattern, 'id'>): string {
+    const id = generateId();
+    this._patterns.set(id, { ...pattern, id });
+    this._scheduleRender();
+    return id;
+  }
+
+  removePattern(id: string): void {
+    this._patterns.delete(id);
+    this._scheduleRender();
+  }
+
+  clearPatterns(): void {
+    this._patterns.clear();
+    this._scheduleRender();
+  }
+
+  // ── Render pipeline ───────────────────────────────────────────────────
+
+  private _scheduleRender(): void {
+    if (this._rafHandle !== null) return;
+    this._rafHandle = requestAnimationFrame(() => {
+      this._rafHandle = null;
+      void this._performRender();
+    });
+  }
+
+  private async _performRender(): Promise<void> {
+    if (!this._document) return;
+
+    this._isRendering = true;
+    const seq = ++this._pluginSeq;
+
+    try {
+      // Run pattern matcher
+      const { markDecorations: patMarkDecs, lineDecorations: patLineDecs } =
+        matchPatternResults(this._value, [...this._patterns.values()]);
+      this._patternDecorations = [
+        ...patMarkDecs.map((d) => ({ ...d, id: generateId() })),
+        ...patLineDecs.map((d) => ({ ...d, id: generateId() })),
+      ];
+
+      // Run plugin (update + highlight)
+      if (this._plugin && this._pluginApi) {
+        const api = this._pluginApi;
+
+        if (this._plugin.update) {
+          await this._plugin.update(this._value, api);
+          if (seq !== this._pluginSeq) return; // stale — newer render started
+        }
+
+        if (this._plugin.highlight) {
+          const html = await this._plugin.highlight(this._value, api);
+          if (seq !== this._pluginSeq) return;
+          if (typeof html === 'string') {
+            const decs = decorationsFromHtml(html);
+            // Add parsed decorations on top of existing plugin decorations
+            for (const d of decs) {
+              addDecoration(this._pluginDecorations, d);
+            }
+          }
+        }
+      }
+
+      // Merge all decoration sources
+      const allDecorations: Decoration[] = [
+        ...this._pluginDecorations.values(),
+        ...this._patternDecorations,
+      ];
+
+      // Rebuild the Parchment tree
+      const editorEl = this._getEditorEl();
+      if (!editorEl) return;
+
+      this._document.build(this._value, allDecorations);
+
+      // Restore cursor
+      if (this._savedSelection) {
+        restoreSelection(editorEl, this._savedSelection);
+      }
+
+      // Re-apply active line (DOM was rebuilt; old reference is stale)
+      this._activeLine = null;
+      this._updateActiveLine();
+
+      // Update gutter
+      this._syncGutter();
+    } finally {
+      this._isRendering = false;
+    }
+  }
+
+  // ── Gutter ────────────────────────────────────────────────────────────
+
+  private _syncGutter(): void {
+    if (!this.lineNumbers) return;
+    const gutterEl = this.shadowRoot?.getElementById('line-numbers');
+    if (!gutterEl) return;
+
+    const lineCount = this._value.split('\n').length;
+    const existing = gutterEl.children.length;
+
+    if (existing === lineCount) return; // nothing to do
+
+    if (lineCount > existing) {
+      for (let i = existing + 1; i <= lineCount; i++) {
+        const span = document.createElement('span');
+        span.className = 'line-number';
+        span.textContent = String(i);
+        gutterEl.appendChild(span);
+      }
+    } else {
+      while (gutterEl.children.length > lineCount) {
+        gutterEl.removeChild(gutterEl.lastChild!);
+      }
+    }
+  }
+
+  // ── Typography sync ───────────────────────────────────────────────────
+
+  private _syncTypography(textarea: HTMLTextAreaElement): void {
+    const editorEl = this._getEditorEl();
+    if (!editorEl) return;
+
+    const cs = window.getComputedStyle(textarea);
+    const props: (keyof CSSStyleDeclaration)[] = [
+      'fontFamily',
+      'fontSize',
+      'fontWeight',
+      'fontStyle',
+      'fontVariant',
+      'lineHeight',
+      'letterSpacing',
+      'wordSpacing',
+      'textIndent',
+      'tabSize',
+    ];
+
+    // Only copy if the host hasn't set custom properties for these
+    const hostCs = window.getComputedStyle(this);
+    if (!hostCs.getPropertyValue('--rc-textarea-font-family')) {
+      for (const prop of props) {
+        const value = cs[prop];
+        if (value && typeof value === 'string') {
+          (editorEl.style as unknown as Record<string, string>)[
+            prop as string
+          ] = value;
+        }
+      }
+    }
+  }
+
+  // ── Form integration ──────────────────────────────────────────────────
+
+  private _syncTextareaValue(): void {
+    const textarea = this._textareaRef?.deref();
+    if (textarea) textarea.value = this._value;
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+
+  private _getEditorEl(): HTMLElement | null {
+    return this.shadowRoot?.getElementById('editor') as HTMLElement | null;
+  }
+}
+
+customElements.define('rc-textarea', RCTextarea);
 
 declare global {
   interface HTMLElementTagNameMap {
     'rc-textarea': RCTextarea;
   }
 }
-
-/**
- * A textarea progressive enhancement component providing line numbers,
- * word wrap, range highlighting, Error Lens-style inline diagnostics,
- * and pattern-based decoration.
- *
- * @slot - The native `<textarea>` element to enhance. The textarea remains
- *   the accessible interaction surface; the component adds a visual layer.
- *
- * @attr {boolean} line-numbers - Show line number gutter
- * @attr {boolean} word-wrap    - Enable word wrap
- * @attr {boolean} auto-grow   - Grow to fit content instead of scrolling
- * @attr {boolean} read-only   - Make the textarea read-only
- * @attr {string}  label       - Sets aria-label on the textarea if not already set
- *
- * @csspart root              - Outer flex container
- * @csspart gutter            - Line number gutter
- * @csspart line-numbers      - Line number elements container
- * @csspart editor-area       - Editor area (mirror + textarea)
- * @csspart mirror            - The decoration mirror div
- * @csspart diagnostic-status - ARIA live region for diagnostics
- *
- * @cssprop --rc-textarea-font-family
- * @cssprop --rc-textarea-font-size
- * @cssprop --rc-textarea-line-height
- * @cssprop --rc-textarea-padding
- * @cssprop --rc-textarea-gutter-color
- * @cssprop --rc-textarea-gutter-bg
- * @cssprop --rc-textarea-gutter-border
- * @cssprop --rc-textarea-background
- * @cssprop --rc-textarea-color
- * @cssprop --rc-textarea-caret-color     - Defaults to --rc-textarea-color (not currentColor, which would be transparent)
- * @cssprop --rc-textarea-border          - Default: 1px solid ButtonBorder
- * @cssprop --rc-textarea-border-radius   - Default: 2px
- * @cssprop --rc-textarea-focus-outline   - Default: 2px solid AccentColor
- * @cssprop --rc-textarea-mark-error-color
- * @cssprop --rc-textarea-mark-warning-color
- * @cssprop --rc-textarea-mark-info-color
- * @cssprop --rc-textarea-mark-hint-color
- * @cssprop --rc-textarea-mark-diagnostic-color - Override for the diagnostic mark underline color (set per-severity by the built-in `.diagnostic-mark--*` classes)
- *
- * @fires {CustomEvent<{value: string}>} rc-textarea-change
- * @fires {CustomEvent<void>} rc-textarea-focus
- * @fires {CustomEvent<void>} rc-textarea-blur
- * @fires {CustomEvent<{selectionStart: number, selectionEnd: number}>} rc-textarea-select
- */
-@customElement('rc-textarea')
-export class RCTextarea extends LitElement {
-  static styles = [textareaStyles];
-
-  /** Show line number gutter */
-  @property({ type: Boolean, reflect: true })
-  lineNumbers = false;
-
-  /** Enable word wrap */
-  @property({ type: Boolean, reflect: true })
-  wordWrap = false;
-
-  /** Grow to fit content (no scroll) */
-  @property({ type: Boolean, reflect: true })
-  autoGrow = false;
-
-  /** Make the textarea read-only */
-  @property({ type: Boolean, reflect: true })
-  readOnly = false;
-
-  /**
-   * Sets aria-label on the slotted textarea if it does not already have one.
-   */
-  @property({ type: String })
-  label = '';
-
-  @query('#mirror')
-  private _$mirror!: HTMLDivElement;
-
-  @query('#line-numbers')
-  private _$lineNumbers!: HTMLDivElement;
-
-  @query('#diagnostic-status')
-  private _$diagnosticStatus!: HTMLDivElement;
-
-  private _textareaRef: WeakRef<HTMLTextAreaElement> | null = null;
-  private _decorationStyleSheet: CSSStyleSheet | null = null;
-  private _decorations: Map<string, Decoration> = new Map();
-  private _diagnostics: Map<string, Diagnostic> = new Map();
-  private _patterns: Map<string, TextPattern> = new Map();
-  private _patternDecorations: MarkDecoration[] = [];
-  private _patternDiagnostics: Diagnostic[] = [];
-  private _patternStyleSheets: Map<string, CSSStyleSheet> = new Map();
-  private _prevValue = '';
-  private _rafHandle: number | null = null;
-  private _isRendering = false;
-  private _intersectionObserver: IntersectionObserver | null = null;
-  private _adoptedStyleSheets: CSSStyleSheet[] = [];
-  private _plugin: RCTextareaPlugin | null = null;
-  private _pluginApi: RCTextareaPluginAPI | null = null;
-  private _pluginSeq = 0;
-  private _resizeObserver = new ResizeObserver(() => {
-    const textarea = this._textareaRef?.deref();
-    if (textarea) {
-      this._syncTypography(textarea);
-      this._scheduleUpdate();
-    }
-  });
-
-  // ─── Lifecycle ─────────────────────────────────────────────────────────────
-
-  connectedCallback() {
-    super.connectedCallback();
-    this._resizeObserver.observe(this);
-    this._intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const textarea = this._textareaRef?.deref();
-            if (textarea) {
-              this._syncTypography(textarea);
-              this._adoptTextareaSize(textarea);
-              this._scheduleUpdate();
-            }
-            break;
-          }
-        }
-      },
-      { threshold: 0 },
-    );
-    this._intersectionObserver.observe(this);
-  }
-
-  disconnectedCallback() {
-    this._resizeObserver.disconnect();
-    this._intersectionObserver?.disconnect();
-    this._intersectionObserver = null;
-    const textarea = this._textareaRef?.deref();
-    if (textarea) {
-      this._removeTextareaListeners(textarea);
-      this._unlinkDescribedBy(textarea);
-    }
-    if (this._rafHandle !== null) {
-      cancelAnimationFrame(this._rafHandle);
-      this._rafHandle = null;
-    }
-    this._plugin?.destroy?.();
-    super.disconnectedCallback();
-  }
-
-  firstUpdated() {
-    // Shadow DOM is ready; sync typography and render if textarea was already slotted
-    const textarea = this._textareaRef?.deref();
-    if (textarea) {
-      this._syncTypography(textarea);
-      this._scheduleUpdate();
-    }
-    // Apply any stylesheets adopted before the shadow root was available
-    if (this._adoptedStyleSheets.length && this.shadowRoot) {
-      this.shadowRoot.adoptedStyleSheets = [
-        ...this.shadowRoot.adoptedStyleSheets,
-        ...this._adoptedStyleSheets,
-      ];
-    }
-  }
-
-  protected updated(changedProperties: Map<PropertyKey, unknown>) {
-    super.updated(changedProperties);
-
-    const textarea = this._textareaRef?.deref();
-
-    if (changedProperties.has('label') && textarea) {
-      if (this.label && !textarea.hasAttribute('aria-label')) {
-        textarea.setAttribute('aria-label', this.label);
-      }
-    }
-
-    if (changedProperties.has('readOnly') && textarea) {
-      textarea.readOnly = this.readOnly;
-    }
-
-    if (changedProperties.has('wordWrap') || changedProperties.has('autoGrow')) {
-      this._scheduleUpdate();
-    }
-  }
-
-  // ─── Render ────────────────────────────────────────────────────────────────
-
-  protected render() {
-    return html`
-      <div id="root" part="root">
-        <div id="gutter" part="gutter">
-          <div id="line-numbers" part="line-numbers" aria-hidden="true"></div>
-        </div>
-        <div id="editor-area" part="editor-area">
-          <div id="mirror" part="mirror" aria-hidden="true"></div>
-          <slot @slotchange=${this._onSlotChange}></slot>
-        </div>
-      </div>
-      <div
-        id="diagnostic-status"
-        part="diagnostic-status"
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-      ></div>
-    `;
-  }
-
-  // ─── Slot handling ─────────────────────────────────────────────────────────
-
-  private _onSlotChange = (e: Event) => {
-    const slot = e.currentTarget as HTMLSlotElement;
-
-    // Clean up previous textarea
-    const oldTextarea = this._textareaRef?.deref();
-    if (oldTextarea) {
-      this._removeTextareaListeners(oldTextarea);
-      this._unlinkDescribedBy(oldTextarea);
-    }
-
-    const textarea = slot
-      .assignedElements()
-      .find((el): el is HTMLTextAreaElement => el instanceof HTMLTextAreaElement);
-
-    if (!textarea) {
-      this._textareaRef = null;
-      return;
-    }
-
-    this._textareaRef = new WeakRef(textarea);
-    this._prevValue = textarea.value;
-    this._addTextareaListeners(textarea);
-    this._linkDescribedBy(textarea);
-
-    // Adopt size from textarea if the host has no explicit inline dimensions
-    this._adoptTextareaSize(textarea);
-
-    // Typography sync (shadow DOM may not be ready yet on first call)
-    if (this._$mirror) {
-      this._syncTypography(textarea);
-    }
-
-    // Apply label and readOnly
-    if (this.label && !textarea.hasAttribute('aria-label')) {
-      textarea.setAttribute('aria-label', this.label);
-    }
-    if (this.readOnly) {
-      textarea.readOnly = true;
-    }
-
-    this._scheduleUpdate();
-  };
-
-  private _addTextareaListeners(textarea: HTMLTextAreaElement) {
-    textarea.addEventListener('input', this._onInput);
-    textarea.addEventListener('scroll', this._onScroll);
-    textarea.addEventListener('focus', this._onFocus);
-    textarea.addEventListener('blur', this._onBlur);
-    textarea.addEventListener('select', this._onSelect);
-    textarea.addEventListener('invalid', this._onInvalid);
-  }
-
-  private _removeTextareaListeners(textarea: HTMLTextAreaElement) {
-    textarea.removeEventListener('input', this._onInput);
-    textarea.removeEventListener('scroll', this._onScroll);
-    textarea.removeEventListener('focus', this._onFocus);
-    textarea.removeEventListener('blur', this._onBlur);
-    textarea.removeEventListener('select', this._onSelect);
-    textarea.removeEventListener('invalid', this._onInvalid);
-  }
-
-  /**
-   * Appends the diagnostic-status live region's ID to the textarea's
-   * `aria-describedby`, merging with any existing consumer-provided value.
-   * This is a best-effort enhancement: browsers that resolve cross-shadow
-   * ARIA IDrefs will associate the live region with the field.
-   */
-  private _linkDescribedBy(textarea: HTMLTextAreaElement): void {
-    const existing = textarea.getAttribute('aria-describedby') ?? '';
-    const ids = existing ? existing.split(/\s+/).filter(Boolean) : [];
-    if (!ids.includes('diagnostic-status')) {
-      ids.push('diagnostic-status');
-      textarea.setAttribute('aria-describedby', ids.join(' '));
-    }
-  }
-
-  private _unlinkDescribedBy(textarea: HTMLTextAreaElement): void {
-    const existing = textarea.getAttribute('aria-describedby') ?? '';
-    const ids = existing.split(/\s+/).filter((id) => id !== 'diagnostic-status');
-    if (ids.length > 0) {
-      textarea.setAttribute('aria-describedby', ids.join(' '));
-    } else {
-      textarea.removeAttribute('aria-describedby');
-    }
-  }
-
-  // ─── Typography sync ───────────────────────────────────────────────────────
-
-  private _syncTypography(textarea: HTMLTextAreaElement) {
-    const mirror = this._$mirror;
-    if (!mirror) return;
-
-    const cs = getComputedStyle(textarea);
-    const props = [
-      'font-family',
-      'font-size',
-      'font-weight',
-      'font-style',
-      'font-variant',
-      'line-height',
-      'letter-spacing',
-      'word-spacing',
-      'text-indent',
-      'padding-top',
-      'padding-right',
-      'padding-bottom',
-      'padding-left',
-      'border-top-width',
-      'border-right-width',
-      'border-bottom-width',
-      'border-left-width',
-      'box-sizing',
-      'tab-size',
-    ] as const;
-
-    for (const prop of props) {
-      mirror.style.setProperty(prop, cs.getPropertyValue(prop));
-    }
-    // Do NOT copy white-space or overflow — those are CSS-controlled by host attributes
-  }
-
-  // ─── Initial size adoption ─────────────────────────────────────────────────
-
-  /**
-   * Returns true if the given CSS dimension property has been explicitly set on
-   * this host element, either via an inline `style` attribute or an author
-   * stylesheet rule.
-   *
-   * `getComputedStyle()` always resolves 'auto' to a used pixel value, making
-   * it impossible to distinguish an explicitly-sized element from one that
-   * merely inherits its size from the layout context. The CSS Typed OM
-   * (`computedStyleMap()`) is used instead where available because it preserves
-   * the computed value as the keyword 'auto' when no author rule sets the
-   * property; any other type (CSSUnitValue, CSSMathValue, etc.) indicates an
-   * explicit rule.
-   */
-  private _hasAuthorDimension(prop: 'width' | 'height'): boolean {
-    if (this.style[prop] !== '') return true;
-    type WithTypedOM = { computedStyleMap(): StylePropertyMapReadOnly };
-    const el = this as unknown as Partial<WithTypedOM>;
-    if (typeof el.computedStyleMap === 'function') {
-      const val = el.computedStyleMap().get(prop);
-      return val !== null && !(val instanceof CSSKeywordValue && val.value === 'auto');
-    }
-    return false;
-  }
-
-  private _adoptTextareaSize(textarea: HTMLTextAreaElement) {
-    // Skip size adoption if the host already has an explicit dimension set via
-    // an inline style or an author stylesheet rule. Matching the original
-    // all-or-nothing behaviour: a partially-specified element implies the caller
-    // is managing layout and we should not interfere with either axis.
-    if (this._hasAuthorDimension('width') || this._hasAuthorDimension('height')) return;
-
-    // 1. Prefer inline styles on the textarea itself (unaffected by ::slotted() CSS)
-    if (textarea.style.width) this.style.width = textarea.style.width;
-    if (textarea.style.height) this.style.height = textarea.style.height;
-    if (this.style.width && this.style.height) return;
-
-    // 2. Fall back to rows/cols attributes
-    const rows = textarea.getAttribute('rows');
-    const cols = textarea.getAttribute('cols');
-
-    // In auto-grow mode, use min-height from rows so the component has a
-    // sensible initial size while still being able to expand beyond it.
-    // Never stamp a fixed height when autoGrow is active.
-    if (rows && !this.style.height) {
-      const r = parseInt(rows, 10);
-      if (r > 0) {
-        const calc = `calc(${r} * var(--rc-textarea-line-height, 1.5) * var(--rc-textarea-font-size, 1em) + 2 * var(--rc-textarea-padding, 0.5em))`;
-        if (this.autoGrow) {
-          if (!this.style.minHeight) this.style.minHeight = calc;
-        } else {
-          this.style.height = calc;
-        }
-      }
-    }
-    if (cols && !this.style.width) {
-      const c = parseInt(cols, 10);
-      if (c > 0) {
-        // 0.6em is a reasonable approximation for monospace character width
-        this.style.width = `calc(${c} * 0.6em + 2 * var(--rc-textarea-padding, 0.5em))`;
-      }
-    }
-  }
-
-  // ─── Event handlers ────────────────────────────────────────────────────────
-
-  private _onInput = () => {
-    const textarea = this._textareaRef?.deref();
-    if (!textarea) return;
-
-    const newValue = textarea.value;
-    const oldValue = this._prevValue;
-
-    // Detect large changes (paste, select-all+type) and clear decorations
-    const edit = findEdit(oldValue, newValue);
-    if (isLargeChange(oldValue, edit)) {
-      this._decorations.clear();
-      this._diagnostics.clear();
-    } else {
-      const { decorations: mapped, diagnostics: mappedDiags } =
-        mapDecorationsThroughChange(
-          [...this._decorations.values()],
-          [...this._diagnostics.values()],
-          oldValue,
-          newValue,
-        );
-      this._decorations = new Map(mapped.map((d) => [d.id, d]));
-      this._diagnostics = new Map(mappedDiags.map((d) => [d.id, d]));
-    }
-
-    this._prevValue = newValue;
-    ({ decorations: this._patternDecorations, diagnostics: this._patternDiagnostics } =
-      matchPatternResults(newValue, [...this._patterns.values()]));
-    this._scheduleUpdate();
-
-    this.dispatchEvent(
-      new CustomEvent<{ value: string }>('rc-textarea-change', {
-        bubbles: true,
-        composed: true,
-        detail: { value: newValue },
-      }),
-    );
-    this._updateAriaInvalid(textarea);
-  };
-
-  private _onScroll = () => {
-    const textarea = this._textareaRef?.deref();
-    if (!textarea) return;
-
-    const mirror = this._$mirror;
-    if (mirror) {
-      mirror.scrollTop = textarea.scrollTop;
-      mirror.scrollLeft = textarea.scrollLeft;
-    }
-
-    const lineNumbers = this._$lineNumbers;
-    if (lineNumbers) {
-      lineNumbers.scrollTop = textarea.scrollTop;
-    }
-  };
-
-  private _onFocus = () => {
-    this.dispatchEvent(
-      new CustomEvent('rc-textarea-focus', { bubbles: true, composed: true }),
-    );
-  };
-
-  private _onBlur = () => {
-    this.dispatchEvent(
-      new CustomEvent('rc-textarea-blur', { bubbles: true, composed: true }),
-    );
-  };
-
-  private _onSelect = () => {
-    const textarea = this._textareaRef?.deref();
-    if (!textarea) return;
-    this.dispatchEvent(
-      new CustomEvent<{ selectionStart: number; selectionEnd: number }>(
-        'rc-textarea-select',
-        {
-          bubbles: true,
-          composed: true,
-          detail: {
-            selectionStart: textarea.selectionStart ?? 0,
-            selectionEnd: textarea.selectionEnd ?? 0,
-          },
-        },
-      ),
-    );
-  };
-
-  private _onInvalid = () => {
-    const textarea = this._textareaRef?.deref();
-    if (textarea) this._updateAriaInvalid(textarea);
-  };
-
-  // ─── Batched rendering ─────────────────────────────────────────────────────
-
-  private _scheduleUpdate() {
-    if (this._rafHandle !== null) return;
-    this._rafHandle = requestAnimationFrame(() => {
-      this._rafHandle = null;
-      void this._performUpdate();
-    });
-  }
-
-  private _deriveDiagnosticDecorations(): Decoration[] {
-    const result: Decoration[] = [];
-    const allDiags = [...this._diagnostics.values(), ...this._patternDiagnostics];
-    for (const diag of allDiags) {
-      if (diag.range) {
-        result.push({
-          id: `diag-mark:${diag.id}`,
-          type: 'mark',
-          range: diag.range,
-          className: diag.markClassName ?? `diagnostic-mark diagnostic-mark--${diag.severity}`,
-        });
-      }
-      if (diag.lineClassName) {
-        result.push({
-          id: `diag-line:${diag.id}`,
-          type: 'line',
-          line: diag.line,
-          className: diag.lineClassName,
-        });
-      }
-    }
-    return result;
-  }
-
-  private async _performUpdate() {
-    this._isRendering = true;
-    try {
-      const textarea = this._textareaRef?.deref();
-      const value = textarea?.value ?? '';
-      const lineCount = value.split('\n').length;
-
-      const allDecorations: Decoration[] = [
-        ...this._decorations.values(),
-        ...this._patternDecorations,
-        ...this._deriveDiagnosticDecorations(),
-      ];
-
-      const allDiagnostics = [...this._diagnostics.values(), ...this._patternDiagnostics];
-
-      const mirror = this._$mirror;
-      if (mirror) {
-        if (this._plugin && this._pluginApi) {
-          const seq = ++this._pluginSeq;
-          const result = await Promise.resolve(
-            this._plugin.highlight(value, this._pluginApi),
-          );
-          if (this._pluginSeq !== seq) return;
-          if (result != null) {
-            mirror.innerHTML = result;
-            this._appendDiagnosticMessages(mirror, allDiagnostics);
-          } else {
-            mirror.innerHTML = renderMirror(value, allDecorations, allDiagnostics);
-          }
-        } else {
-          mirror.innerHTML = renderMirror(value, allDecorations, allDiagnostics);
-        }
-      }
-
-      const lineNumbers = this._$lineNumbers;
-      if (lineNumbers) {
-        // In word-wrap mode, mirror lines can span multiple visual rows. Measure
-        // each line's actual offsetHeight so gutter numbers stay aligned.
-        let lineHeights: number[] | undefined;
-        if (this.wordWrap && mirror) {
-          lineHeights = [...mirror.querySelectorAll<HTMLElement>('.line')].map(
-            (el) => el.offsetHeight,
-          );
-        }
-        lineNumbers.innerHTML = renderGutter(lineCount, lineHeights);
-      }
-
-      this._updateDiagnosticStatus();
-    } finally {
-      this._isRendering = false;
-    }
-  }
-
-  private _appendDiagnosticMessages(mirror: HTMLDivElement, diagnostics: Diagnostic[]): void {
-    const lineEls = mirror.querySelectorAll<HTMLElement>('.line');
-    for (const diag of diagnostics) {
-      const lineEl = lineEls[diag.line - 1]; // diag.line is 1-based
-      if (!lineEl) continue;
-      const span = document.createElement('span');
-      span.className = `diagnostic diagnostic--${diag.severity}`;
-      if (diag.createIcon) {
-        const icon = Object.assign(document.createElement('span'), {
-          className: 'diagnostic-icon',
-        });
-        icon.append(diag.createIcon());
-        span.prepend(icon);
-      }
-      span.append(` ${diag.message}`);
-      lineEl.append(span);
-    }
-  }
-
-  private _updateDiagnosticStatus() {
-    const el = this._$diagnosticStatus;
-    if (!el) return;
-
-    const diags = [...this._diagnostics.values(), ...this._patternDiagnostics];
-    if (diags.length === 0) {
-      el.textContent = '';
-      return;
-    }
-
-    const summary = diags
-      .map((d) => `Line ${d.line} ${d.severity}: ${d.message}`)
-      .join('; ');
-    el.textContent = `${diags.length} diagnostic${diags.length !== 1 ? 's' : ''}: ${summary}`;
-  }
-
-  /**
-   * Reflects validation state onto the slotted textarea's `aria-invalid`
-   * attribute. Sets it when there are error-severity diagnostics or when the
-   * textarea's native constraint validation is failing; removes it otherwise.
-   */
-  private _updateAriaInvalid(textarea: HTMLTextAreaElement): void {
-    const hasErrors = [...this._diagnostics.values(), ...this._patternDiagnostics].some(
-      (d) => d.severity === 'error',
-    );
-    if (hasErrors || !textarea.validity.valid) {
-      textarea.setAttribute('aria-invalid', 'true');
-    } else {
-      textarea.removeAttribute('aria-invalid');
-    }
-  }
-
-  // ─── Plugin API ────────────────────────────────────────────────────────────
-
-  /**
-   * Register a rendering plugin. The plugin's `highlight()` method is called
-   * on every render cycle and can return HTML to use as the mirror content,
-   * replacing the default rendering pipeline.
-   *
-   * Only one plugin can be active at a time. Calling `usePlugin()` again
-   * replaces the existing plugin (calling `destroy()` on the previous one first).
-   */
-  usePlugin(plugin: RCTextareaPlugin): void {
-    this._plugin?.destroy?.();
-    this._plugin = plugin;
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-    this._pluginApi = {
-      get host() {
-        return self;
-      },
-      get mirror() {
-        return self._$mirror;
-      },
-      get diagnostics() {
-        return [...self._diagnostics.values(), ...self._patternDiagnostics] as const;
-      },
-      get decorations() {
-        return [...self._decorations.values(), ...self._patternDecorations] as const;
-      },
-      escapeHtml,
-      renderDefault(value: string) {
-        const decs: Decoration[] = [
-          ...self._decorations.values(),
-          ...self._patternDecorations,
-          ...self._deriveDiagnosticDecorations(),
-        ];
-        const diags = [...self._diagnostics.values(), ...self._patternDiagnostics];
-        return renderMirror(value, decs, diags);
-      },
-      scheduleUpdate() {
-        self._scheduleUpdate();
-      },
-    };
-    plugin.mount?.(this._pluginApi);
-    this._scheduleUpdate();
-  }
-
-  /**
-   * Remove the active plugin and restore the default rendering pipeline.
-   * Calls `destroy()` on the plugin before removing it.
-   */
-  removePlugin(): void {
-    this._plugin?.destroy?.();
-    this._plugin = null;
-    this._pluginApi = null;
-    this._scheduleUpdate();
-  }
-
-  // ─── Decoration style injection ────────────────────────────────────────────
-
-  /**
-   * Inject CSS text into the component's shadow root so that class-based
-   * decoration rules (e.g. `.kw { color: purple }`) apply to the mirror.
-   *
-   * Light-DOM stylesheets do not pierce the shadow boundary, so decoration
-   * classes must be registered via this method rather than a page `<style>`.
-   * Call it again with updated CSS to replace the previous sheet.
-   */
-  setDecorationStyles(cssText: string): void {
-    if (!this.shadowRoot) return;
-    if (this._decorationStyleSheet) {
-      this._decorationStyleSheet.replaceSync(cssText);
-    } else {
-      const sheet = new CSSStyleSheet();
-      sheet.replaceSync(cssText);
-      this._decorationStyleSheet = sheet;
-      this.shadowRoot.adoptedStyleSheets = [
-        ...this.shadowRoot.adoptedStyleSheets,
-        sheet,
-      ];
-    }
-  }
-
-  /**
-   * Adopt an external `CSSStyleSheet` into the shadow root.
-   *
-   * Use this to make library theme CSS (highlight.js, Prism, etc.) visible to
-   * elements inside the shadow DOM. Light-DOM `<link>` and `<style>` elements
-   * do not pierce the shadow boundary, so external stylesheets must be adopted
-   * via this method.
-   *
-   * No-op if the sheet is already adopted. If called before the element has
-   * rendered, the sheet is queued and applied on first update.
-   */
-  adoptStyleSheet(sheet: CSSStyleSheet): void {
-    if (this._adoptedStyleSheets.includes(sheet)) return;
-    this._adoptedStyleSheets.push(sheet);
-    if (this.shadowRoot) {
-      this.shadowRoot.adoptedStyleSheets = [...this.shadowRoot.adoptedStyleSheets, sheet];
-    }
-  }
-
-  /**
-   * Remove a previously adopted stylesheet from the shadow root.
-   * Use this to swap themes, e.g. swapping a highlight.js light theme for a
-   * dark theme when the page colour scheme changes.
-   * No-op if the sheet was not adopted via `adoptStyleSheet`.
-   */
-  removeStyleSheet(sheet: CSSStyleSheet): void {
-    const idx = this._adoptedStyleSheets.indexOf(sheet);
-    if (idx === -1) return;
-    this._adoptedStyleSheets.splice(idx, 1);
-    if (this.shadowRoot) {
-      this.shadowRoot.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets.filter(
-        (s) => s !== sheet,
-      );
-    }
-  }
-
-  // ─── Public value API ──────────────────────────────────────────────────────
-
-  /** Get or set the textarea value. */
-  get value(): string {
-    return this._textareaRef?.deref()?.value ?? '';
-  }
-
-  set value(v: string) {
-    const textarea = this._textareaRef?.deref();
-    if (!textarea) return;
-
-    const oldValue = textarea.value;
-    textarea.value = v;
-
-    const edit = findEdit(oldValue, v);
-    if (isLargeChange(oldValue, edit)) {
-      this._decorations.clear();
-      this._diagnostics.clear();
-    } else {
-      const { decorations: mapped, diagnostics: mappedDiags } =
-        mapDecorationsThroughChange(
-          [...this._decorations.values()],
-          [...this._diagnostics.values()],
-          oldValue,
-          v,
-        );
-      this._decorations = new Map(mapped.map((d) => [d.id, d]));
-      this._diagnostics = new Map(mappedDiags.map((d) => [d.id, d]));
-    }
-
-    this._prevValue = v;
-    ({ decorations: this._patternDecorations, diagnostics: this._patternDiagnostics } =
-      matchPatternResults(v, [...this._patterns.values()]));
-    this._scheduleUpdate();
-  }
-
-  // ─── Decoration API (internal) ─────────────────────────────────────────────
-  // Not part of the public consumer API. Use the Diagnostic or Pattern APIs
-  // instead. Reserved for internal subsystems (e.g. future highlight integration).
-
-  protected addDecoration(decoration: DecorationInput): string {
-    const id = generateId();
-    this._decorations.set(id, { ...decoration, id } as Decoration);
-    this._scheduleUpdate();
-    return id;
-  }
-
-  protected removeDecoration(id: string): void {
-    this._decorations.delete(id);
-    this._scheduleUpdate();
-  }
-
-  protected updateDecoration(id: string, patch: Partial<DecorationInput>): void {
-    const existing = this._decorations.get(id);
-    if (!existing) return;
-    this._decorations.set(id, { ...existing, ...patch } as Decoration);
-    this._scheduleUpdate();
-  }
-
-  protected clearDecorations(): void {
-    this._decorations.clear();
-    this._scheduleUpdate();
-  }
-
-  protected setDecorations(decorations: DecorationInput[]): void {
-    this._decorations.clear();
-    for (const d of decorations) {
-      const id = generateId();
-      this._decorations.set(id, { ...d, id } as Decoration);
-    }
-    this._scheduleUpdate();
-  }
-
-  // ─── Diagnostic API ────────────────────────────────────────────────────────
-
-  addDiagnostic(diagnostic: Omit<Diagnostic, 'id'>): string {
-    const id = generateId();
-    this._diagnostics.set(id, { ...diagnostic, id });
-    if (!this._isRendering) this._scheduleUpdate();
-    this._updateDiagnosticStatus();
-    const textarea = this._textareaRef?.deref();
-    if (textarea) this._updateAriaInvalid(textarea);
-    return id;
-  }
-
-  removeDiagnostic(id: string): void {
-    this._diagnostics.delete(id);
-    if (!this._isRendering) this._scheduleUpdate();
-    this._updateDiagnosticStatus();
-    const textarea = this._textareaRef?.deref();
-    if (textarea) this._updateAriaInvalid(textarea);
-  }
-
-  clearDiagnostics(): void {
-    this._diagnostics.clear();
-    if (!this._isRendering) this._scheduleUpdate();
-    this._updateDiagnosticStatus();
-    const textarea = this._textareaRef?.deref();
-    if (textarea) this._updateAriaInvalid(textarea);
-  }
-
-  setDiagnostics(diagnostics: Omit<Diagnostic, 'id'>[]): void {
-    this._diagnostics.clear();
-    for (const d of diagnostics) {
-      const id = generateId();
-      this._diagnostics.set(id, { ...d, id });
-    }
-    if (!this._isRendering) this._scheduleUpdate();
-    this._updateDiagnosticStatus();
-    const textarea = this._textareaRef?.deref();
-    if (textarea) this._updateAriaInvalid(textarea);
-  }
-
-  // ─── Pattern API ───────────────────────────────────────────────────────────
-
-  addPattern(pattern: Omit<TextPattern, 'id'>): string {
-    const id = generateId();
-    this._patterns.set(id, { ...pattern, id });
-    if (pattern.cssText && this.shadowRoot) {
-      const sheet = new CSSStyleSheet();
-      sheet.replaceSync(pattern.cssText);
-      this._patternStyleSheets.set(id, sheet);
-      this.shadowRoot.adoptedStyleSheets = [...this.shadowRoot.adoptedStyleSheets, sheet];
-    }
-    ({ decorations: this._patternDecorations, diagnostics: this._patternDiagnostics } =
-      matchPatternResults(this.value, [...this._patterns.values()]));
-    this._scheduleUpdate();
-    return id;
-  }
-
-  removePattern(id: string): void {
-    this._patterns.delete(id);
-    const sheet = this._patternStyleSheets.get(id);
-    if (sheet && this.shadowRoot) {
-      this.shadowRoot.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets.filter(
-        (s) => s !== sheet,
-      );
-      this._patternStyleSheets.delete(id);
-    }
-    ({ decorations: this._patternDecorations, diagnostics: this._patternDiagnostics } =
-      matchPatternResults(this.value, [...this._patterns.values()]));
-    this._scheduleUpdate();
-  }
-
-  clearPatterns(): void {
-    if (this.shadowRoot && this._patternStyleSheets.size > 0) {
-      const patternSheets = new Set(this._patternStyleSheets.values());
-      this.shadowRoot.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets.filter(
-        (s) => !patternSheets.has(s),
-      );
-    }
-    this._patternStyleSheets.clear();
-    this._patterns.clear();
-    this._patternDecorations = [];
-    this._patternDiagnostics = [];
-    this._scheduleUpdate();
-  }
-
-  // ─── Navigation API ────────────────────────────────────────────────────────
-
-  /**
-   * Scrolls the editor to make the given 1-based logical line number visible.
-   */
-  revealLine(lineNumber: number): void {
-    const textarea = this._textareaRef?.deref();
-    if (!textarea) return;
-
-    const cs = getComputedStyle(textarea);
-    const lineHeightStr = cs.lineHeight;
-    const lineHeight =
-      lineHeightStr === 'normal'
-        ? parseFloat(cs.fontSize) * 1.2
-        : parseFloat(lineHeightStr);
-    const paddingTop = parseFloat(cs.paddingTop);
-
-    textarea.scrollTop = paddingTop + (lineNumber - 1) * lineHeight;
-    // Sync mirror and gutter immediately
-    this._onScroll();
-  }
-}
-
-export default RCTextarea;

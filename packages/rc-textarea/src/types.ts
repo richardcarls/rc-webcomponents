@@ -81,7 +81,7 @@ export type DecorationInput =
  * to set decorations from outside the plugin lifecycle:
  *
  * ```ts
- * let api: RCTextareaV2PluginAPI;
+ * let api: RCTextareaPluginAPI;
  * editor.usePlugin({
  *   mount(a) { api = a; },
  *   update() {},
@@ -91,8 +91,8 @@ export type DecorationInput =
  * api.scheduleUpdate();
  * ```
  */
-export interface RCTextareaV2PluginAPI {
-  /** The host rc-textarea-v2 element. */
+export interface RCTextareaPluginAPI {
+  /** The host rc-textarea element. */
   readonly host: HTMLElement;
   readonly value: string;
 
@@ -133,7 +133,9 @@ export interface RCTextareaV2PluginAPI {
    * });
    * ```
    */
-  onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void;
+  onCursorMove(
+    callback: (selectionStart: number, selectionEnd: number) => void,
+  ): () => void;
 
   addDecoration(d: DecorationInput): string;
   removeDecoration(id: string): void;
@@ -206,7 +208,7 @@ export interface RCTextareaV2PluginAPI {
 }
 
 /**
- * Plugin interface for rc-textarea-v2.
+ * Plugin interface for rc-textarea.
  *
  * At least one of `update` or `highlight` must be provided.
  *
@@ -234,16 +236,16 @@ export interface RCTextareaV2PluginAPI {
  * });
  * ```
  */
-export interface RCTextareaV2Plugin {
+export interface RCTextareaPlugin {
   /** Called when the plugin is registered. Store `api` here for external use. */
-  mount?(api: RCTextareaV2PluginAPI): void;
+  mount?(api: RCTextareaPluginAPI): void;
   /** Called when the plugin is replaced or the element disconnects. */
   destroy?(): void;
   /**
    * Imperative decoration API — called on each value change.
    * Use `api.setDecorations()` to apply decorations.
    */
-  update?(value: string, api: RCTextareaV2PluginAPI): void | Promise<void>;
+  update?(value: string, api: RCTextareaPluginAPI): void | Promise<void>;
   /**
    * HTML-based compat — called on each value change.
    * Return an HTML string (e.g. from hljs/prism); it will be parsed via
@@ -252,7 +254,7 @@ export interface RCTextareaV2Plugin {
    */
   highlight?(
     value: string,
-    api: RCTextareaV2PluginAPI,
+    api: RCTextareaPluginAPI,
   ): string | null | void | Promise<string | null | void>;
 }
 
@@ -274,9 +276,9 @@ export interface TextPattern {
    * (message, messageClassName, className, attributes) to add an error-lens
    * annotation on the matched line, or `null` to skip.
    */
-  createLineDecoration?: (match: RegExpMatchArray) =>
-    | Omit<LineDecoration, 'id' | 'type' | 'line'>
-    | null;
+  createLineDecoration?: (
+    match: RegExpMatchArray,
+  ) => Omit<LineDecoration, 'id' | 'type' | 'line'> | null;
 }
 
 export function generateId(): string {

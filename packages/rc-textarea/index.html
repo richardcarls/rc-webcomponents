@@ -3,453 +3,535 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>rc-textarea demo</title>
+    <title>rc-textarea</title>
+    <!-- highlight.js UMD — must load before the module script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-      /* ── Page tokens ─────────────────────────────────────────────────────── */
       :root {
-        --page-bg: #f6f8fa;
-        --page-fg: #24292f;
-        --page-subtle: #6e7781;
-        --page-border: #d0d7de;
-        --page-card-bg: #ffffff;
-        --page-hr: #d0d7de;
-
-        /* Decoration colour tokens — pierced into shadow DOM via CSS custom props.
-           The pattern matching section uses these so colours adapt to dark mode. */
-        --demo-url:    #22863a;
-        --demo-email:  #005cc5;
-        --demo-num:    #986801;
+        --base:     #1e1e2e;
+        --mantle:   #181825;
+        --crust:    #11111b;
+        --surface0: #313244;
+        --surface1: #45475a;
+        --surface2: #585b70;
+        --overlay0: #6c7086;
+        --text:     #cdd6f4;
+        --subtext0: #a6adc8;
+        --blue:     #89b4fa;
+        --mauve:    #cba6f7;
+        --red:      #f38ba8;
+        --peach:    #fab387;
+        --yellow:   #f9e2af;
+        --green:    #a6e3a1;
+        --sky:      #89dceb;
+        --pink:     #f5c2e7;
       }
 
-      [data-theme="dark"] {
-        --page-bg: #0d1117;
-        --page-fg: #e6edf3;
-        --page-subtle: #8b949e;
-        --page-border: #30363d;
-        --page-card-bg: #161b22;
-        --page-hr: #21262d;
-
-        --demo-url:    #7ee787;
-        --demo-email:  #79c0ff;
-        --demo-num:    #d19a66;
-      }
-
-      /* ── Base ────────────────────────────────────────────────────────────── */
       *, *::before, *::after { box-sizing: border-box; }
 
       body {
-        margin: 0;
-        padding: 2.5rem 1.5rem 5rem;
-        font-family: system-ui, -apple-system, sans-serif;
-        font-size: 15px;
-        line-height: 1.5;
-        background: var(--page-bg);
-        color: var(--page-fg);
-        transition: background 0.2s, color 0.2s;
-      }
-
-      .page { max-width: 900px; margin: 0 auto; }
-
-      code {
-        font-family: monospace;
-        font-size: 0.88em;
-        background: color-mix(in srgb, currentColor 8%, transparent);
-        padding: 0.1em 0.3em;
-        border-radius: 3px;
-      }
-
-      /* ── Header ──────────────────────────────────────────────────────────── */
-      .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 0.2rem;
-      }
-
-      h1 { margin: 0; font-size: 1.75rem; }
-
-      .subtitle {
-        margin: 0.2rem 0 2.5rem;
-        color: var(--page-subtle);
-        font-size: 0.9rem;
-      }
-
-      #theme-toggle {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4em;
-        padding: 0.4em 0.85em;
-        font: inherit;
-        font-size: 0.85rem;
-        cursor: pointer;
-        border: 1px solid var(--page-border);
-        border-radius: 6px;
-        background: var(--page-card-bg);
-        color: var(--page-fg);
-        transition: background 0.15s, border-color 0.15s;
-        white-space: nowrap;
-      }
-      #theme-toggle:hover { background: color-mix(in srgb, currentColor 6%, var(--page-card-bg)); }
-
-      /* ── Sections ────────────────────────────────────────────────────────── */
-      .section { margin-bottom: 2.5rem; }
-
-      h2 {
-        margin: 0 0 0.25rem;
-        font-size: 1rem;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-      }
-
-      .note {
-        margin: 0 0 0.9rem;
-        font-size: 0.82rem;
-        color: var(--page-subtle);
+        font-family: system-ui, sans-serif;
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 5rem;
+        background: var(--base);
+        color: var(--text);
         line-height: 1.6;
       }
 
-      hr {
-        border: none;
-        border-top: 1px solid var(--page-hr);
-        margin: 2.5rem 0;
+      header {
+        margin-bottom: 3rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--surface0);
+      }
+      header h1 { margin: 0 0 0.25rem; font-size: 1.75rem; font-weight: 700; }
+      header p  { margin: 0; font-size: 0.875rem; color: var(--subtext0); }
+
+      .demo { margin-bottom: 3.5rem; }
+
+      .demo-header {
+        display: flex;
+        align-items: baseline;
+        gap: 0.6rem;
+        margin-bottom: 0.35rem;
+      }
+      h2 { margin: 0; font-size: 1.05rem; font-weight: 600; color: var(--blue); }
+
+      .badge {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.15em 0.5em;
+        border-radius: 4px;
+        background: rgba(166,227,161,.15);
+        color: var(--green);
+        border: 1px solid rgba(166,227,161,.3);
       }
 
-      /* ── Editor sizing ───────────────────────────────────────────────────── */
+      .demo-desc {
+        margin: 0 0 0.8rem;
+        font-size: 0.875rem;
+        color: var(--subtext0);
+      }
+      .demo-desc code {
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-size: 0.8125rem;
+        background: var(--surface0);
+        padding: 0.1em 0.35em;
+        border-radius: 3px;
+        color: var(--sky);
+      }
+
+      /* ── Editor theming ──────────────────────────────────────────────────── */
+
       rc-textarea {
-        border-radius: 6px;
-        width: 100%;
-      }
-
-      .h-sm  { height: 100px; }
-      .h-md  { height: 180px; }
-      .h-lg  { height: 220px; }
-
-      /* ── Theme: One Dark ─────────────────────────────────────────────────── */
-      .t-onedark {
-        --rc-textarea-background:    #282c34;
-        --rc-textarea-color:         #abb2bf;
-        --rc-textarea-caret-color:   #528bff;
-        --rc-textarea-gutter-bg:     #21252b;
-        --rc-textarea-gutter-color:  #4b5263;
-        --rc-textarea-gutter-border: #181a1f;
-        --rc-textarea-border:        1px solid #181a1f;
-        --rc-textarea-focus-outline: 2px solid #528bff;
-        --rc-textarea-mark-error-color:   #e06c75;
-        --rc-textarea-mark-warning-color: #e5c07b;
-      }
-
-      /* ── Theme: GitHub Light ─────────────────────────────────────────────── */
-      .t-github {
-        --rc-textarea-background:    #ffffff;
-        --rc-textarea-color:         #24292f;
-        --rc-textarea-gutter-bg:     #f6f8fa;
-        --rc-textarea-gutter-color:  #8c959f;
-        --rc-textarea-gutter-border: #d0d7de;
-        --rc-textarea-border:        1px solid #d0d7de;
-        --rc-textarea-focus-outline: 2px solid #0969da;
-        --rc-textarea-mark-error-color:   #cf222e;
-        --rc-textarea-mark-warning-color: #9a6700;
-      }
-
-      /* ── Theme: GitHub Dark ──────────────────────────────────────────────── */
-      /* Mirrors the github-dark.min.css colour palette for consistent chrome. */
-      .t-github-dark {
-        --rc-textarea-background:    #0d1117;
-        --rc-textarea-color:         #c9d1d9;
-        --rc-textarea-gutter-bg:     #161b22;
-        --rc-textarea-gutter-color:  #6e7681;
-        --rc-textarea-gutter-border: #21262d;
-        --rc-textarea-border:        1px solid #21262d;
-        --rc-textarea-focus-outline: 2px solid #388bfd;
-        --rc-textarea-mark-error-color:   #ff7b72;
-        --rc-textarea-mark-warning-color: #e3b341;
-      }
-
-      /* ── Generic editors: explicit dark mode ─────────────────────────────── */
-      /* Editors without a hard-coded theme follow the page's dark/light state. */
-      [data-theme="dark"] .auto-theme {
-        --rc-textarea-background:    #1e1e2e;
-        --rc-textarea-color:         #cdd6f4;
-        --rc-textarea-gutter-bg:     #181825;
-        --rc-textarea-gutter-color:  #585b70;
-        --rc-textarea-gutter-border: #313244;
-        --rc-textarea-border:        1px solid #313244;
-        --rc-textarea-focus-outline: 2px solid #89b4fa;
-        --rc-textarea-mark-error-color:   #f38ba8;
-        --rc-textarea-mark-warning-color: #f9e2af;
-        --rc-textarea-mark-info-color:    #89b4fa;
-        --rc-textarea-mark-hint-color:    #a6e3a1;
-      }
-
-      /* ── Typography variants ─────────────────────────────────────────────── */
-      /* Compose with a theme class to show independent font customisation. */
-      .f-cascadia {
-        --rc-textarea-font-family: ui-monospace, 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
-        --rc-textarea-font-size: 13px;
-        --rc-textarea-line-height: 1.6;
-      }
-
-      .f-courier {
-        --rc-textarea-font-family: 'Courier New', Courier, monospace;
-        --rc-textarea-font-size: 14px;
+        display: block;
+        --rc-textarea-font-family: 'Cascadia Code', 'Fira Code', monospace;
+        --rc-textarea-font-size: 13.5px;
         --rc-textarea-line-height: 1.65;
+        --rc-textarea-background: var(--mantle);
+        --rc-textarea-color: var(--text);
+        --rc-textarea-border: 1px solid var(--surface1);
+        --rc-textarea-border-radius: 6px 6px 0 0;
+        --rc-textarea-padding: 0.75em 1em;
+        --rc-textarea-focus-outline: 2px solid var(--blue);
+        --rc-textarea-gutter-bg: var(--crust);
+        --rc-textarea-gutter-color: var(--overlay0);
+        --rc-textarea-gutter-border: 1px solid var(--surface1);
+        --rc-textarea-caret-color: var(--pink);
+        --rc-textarea-active-line-bg: rgba(137,180,250,.055);
       }
 
-      .f-compact {
-        --rc-textarea-font-size: 12px;
-        --rc-textarea-line-height: 1.45;
-        --rc-textarea-padding: 0.35em;
+      /* Standalone (no status bar) gets full rounded corners */
+      rc-textarea.standalone {
+        --rc-textarea-border-radius: 6px;
       }
+
+      /* ── Status bar ──────────────────────────────────────────────────────── */
+
+      .status-bar {
+        display: flex;
+        gap: 1.25rem;
+        padding: 0.3rem 0.85rem;
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-size: 0.72rem;
+        color: var(--subtext0);
+        background: var(--surface0);
+        border: 1px solid var(--surface1);
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+      }
+      .status-bar span { color: var(--text); }
+
+      /* ── Floating word tooltip ───────────────────────────────────────────── */
+
+      #word-tooltip {
+        position: fixed;
+        z-index: 9999;
+        display: none;
+        padding: 0.4rem 0.65rem;
+        background: var(--surface0);
+        border: 1px solid var(--surface1);
+        border-radius: 6px;
+        box-shadow: 0 6px 16px rgba(0,0,0,.45);
+        font-size: 0.75rem;
+        pointer-events: none;
+        max-width: 280px;
+      }
+      #word-tooltip .tw-word {
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        color: var(--sky);
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+      }
+      #word-tooltip .tw-def { color: var(--subtext0); }
     </style>
-    <script type="module" src="/src/rc-textarea.ts"></script>
-    <script type="module">
-      import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/es/highlight.min.js';
-      import typescript from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/es/languages/typescript.min.js';
-      hljs.registerLanguage('typescript', typescript);
-
-      customElements.whenDefined('rc-textarea').then(() => {
-        setupHighlightJs();
-        setupDiagnostics();
-        setupPatterns();
-      });
-
-      // ── Dark mode toggle ──────────────────────────────────────────────────
-      const toggleBtn = document.getElementById('theme-toggle');
-      toggleBtn.addEventListener('click', () => {
-        const isDark = document.documentElement.dataset.theme === 'dark';
-        document.documentElement.dataset.theme = isDark ? 'light' : 'dark';
-        toggleBtn.setAttribute('aria-pressed', String(!isDark));
-        toggleBtn.innerHTML = isDark
-          ? '<span aria-hidden="true">🌙</span> Dark mode'
-          : '<span aria-hidden="true">☀️</span> Light mode';
-      });
-
-      // ── Section 1: Syntax Highlighting Plugin ─────────────────────────────
-      //
-      // usePlugin() hands mirror rendering to highlight.js. Its theme CSS is
-      // adopted into the shadow root via adoptStyleSheet() so .hljs-* classes
-      // resolve correctly. Both the hljs CSS and the editor chrome swap
-      // together on the page dark-mode toggle.
-
-      async function setupHighlightJs() {
-        const HLJS = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/';
-        const ed = document.getElementById('demo-hljs');
-
-        async function fetchSheet(url) {
-          const css = await fetch(url).then((r) => r.text());
-          const sheet = new CSSStyleSheet();
-          await sheet.replace(css);
-          return sheet;
-        }
-
-        const [lightSheet, darkSheet] = await Promise.all([
-          fetchSheet(HLJS + 'github.min.css'),
-          fetchSheet(HLJS + 'github-dark.min.css'),
-        ]);
-
-        let currentSheet = null;
-        function applyTheme() {
-          const isDark = document.documentElement.dataset.theme === 'dark';
-          const next = isDark ? darkSheet : lightSheet;
-          if (currentSheet) ed.removeStyleSheet(currentSheet);
-          ed.adoptStyleSheet(next);
-          currentSheet = next;
-          ed.classList.toggle('t-github', !isDark);
-          ed.classList.toggle('t-github-dark', isDark);
-        }
-        applyTheme();
-        document.getElementById('theme-toggle').addEventListener('click', applyTheme);
-
-        ed.usePlugin({
-          highlight: (value) => hljs.highlight(value, { language: 'typescript' }).value,
-        });
-      }
-
-      // ── Section 2: Diagnostics ────────────────────────────────────────────
-      //
-      // Text (offsets for the snippet in #demo-diagnostics):
-      //   Line 1 "const x = undeclaredVar;" — 24 chars, newline at 24
-      //     undeclaredVar : 10–23
-      //   Line 2 "let y = parseInt("nope");" — starts at 25
-      //     parseInt      : absolute 33–41
-      //     "nope"        : absolute 42–48
-      //   Line 3 "// TODO: handle edge cases" — starts at 51
-      //   Line 4 "function render() { return; }" — starts at 78
-
-      function setupDiagnostics() {
-        const ed = document.getElementById('demo-diagnostics');
-
-        // Wavy underlines via box-shadow (padding/margin are not safe — they
-        // shift character positions in the mirror vs the textarea).
-        ed.setDecorationStyles(`
-          .dec-err  { box-shadow: 0 2px 0 0 var(--rc-textarea-mark-error-color);   }
-          .dec-warn { box-shadow: 0 2px 0 0 var(--rc-textarea-mark-warning-color); }
-        `);
-
-        ed.setDecorations([
-          { type: 'mark', range: { from: 10, to: 23 }, className: 'dec-err'  }, // undeclaredVar
-          { type: 'mark', range: { from: 33, to: 41 }, className: 'dec-warn' }, // parseInt
-          { type: 'mark', range: { from: 42, to: 48 }, className: 'dec-warn' }, // "nope"
-        ]);
-
-        ed.setDiagnostics([
-          {
-            line: 1,
-            severity: 'error',
-            message: "'undeclaredVar' is not defined",
-            // createIcon() returns any HTMLElement — here a small SVG ✕ circle
-            createIcon: () => {
-              const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-              svg.setAttribute('width', '12');
-              svg.setAttribute('height', '12');
-              svg.setAttribute('viewBox', '0 0 12 12');
-              svg.innerHTML =
-                '<circle cx="6" cy="6" r="5.5" fill="currentColor" opacity="0.85"/>' +
-                '<path d="M3.5 3.5l5 5M8.5 3.5l-5 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>';
-              return svg;
-            },
-          },
-          {
-            line: 2,
-            severity: 'warning',
-            message: "parseInt('nope') always returns NaN",
-          },
-          {
-            line: 3,
-            severity: 'info',
-            message: "TODO comment — consider opening a tracking issue",
-          },
-          {
-            line: 4,
-            severity: 'hint',
-            message: "Early return with no value; consider returning a default",
-          },
-        ]);
-      }
-
-      // ── Section 3: Pattern Matching ───────────────────────────────────────
-      //
-      // Patterns re-match on every keystroke automatically. Colour classes
-      // reference page-level CSS vars so they respond to dark-mode toggling.
-
-      function setupPatterns() {
-        const ed = document.getElementById('demo-patterns');
-
-        ed.setDecorationStyles(`
-          .url   { color: var(--demo-url);   border-bottom: 1px solid var(--demo-url);   }
-          .num   { color: var(--demo-num);   }
-          .email { color: var(--demo-email); border-bottom: 1px solid var(--demo-email); }
-        `);
-
-        ed.addPattern({ pattern: /https?:\/\/\S+/g,  className: 'url'   });
-        ed.addPattern({ pattern: /\b\d+(\.\d+)?\b/g, className: 'num'   });
-        ed.addPattern({ pattern: /\S+@\S+\.\w+/g,    className: 'email' });
-      }
-    </script>
   </head>
   <body>
-    <div class="page">
 
-      <div class="header">
-        <h1>rc-textarea</h1>
-        <button id="theme-toggle" aria-pressed="false">
-          <span aria-hidden="true">🌙</span> Dark mode
-        </button>
+    <header>
+      <h1>rc-textarea</h1>
+      <p>WAI-ARIA contenteditable editor · Parchment document model · Plugin &amp; decoration API</p>
+    </header>
+
+    <!-- ── 1. Active line + cursor state ─────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header">
+        <h2>Active line + cursor state</h2>
+        <span class="badge">New</span>
       </div>
-      <p class="subtitle">
-        Line numbers · word wrap · mark &amp; line decorations · diagnostics ·
-        pattern matching · CSS custom property theming.
+      <p class="demo-desc">
+        Active line highlighted via <code>--rc-textarea-active-line-bg</code>.
+        Status bar reads <code>api.selectionStart</code> / <code>api.selectionEnd</code>
+        via <code>api.onCursorMove()</code>.
       </p>
+      <rc-textarea id="active-demo" line-numbers>
+        <textarea name="active" rows="8">Move the cursor around to see the active line highlight.
+Use Shift+Arrow to extend the selection.
 
-      <!-- ── 1. Syntax Highlighting Plugin ──────────────────────────────────── -->
-      <div class="section">
-        <h2>Syntax Highlighting — Plugin API</h2>
-        <p class="note">
-          <code>usePlugin()</code> hands mirror rendering to any external parser or
-          highlighting library. Here highlight.js runs on every keystroke via the
-          plugin's <code>highlight()</code> callback. Its theme stylesheet is injected
-          into the shadow root with <code>adoptStyleSheet()</code> — necessary because
-          light-DOM stylesheets don't pierce the shadow boundary. Both the hljs CSS and
-          the editor chrome (<code>--rc-textarea-*</code> custom properties) swap
-          together on dark-mode toggle. Try editing the code.
-          Theme: GitHub Light/Dark · font: <code>ui-monospace / Cascadia Code</code>, 13 px.
-        </p>
-        <rc-textarea id="demo-hljs" class="h-lg t-github f-cascadia" lineNumbers>
-          <textarea>interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+Blank lines are fully editable.
 
-async function fetchUser(id: number): Promise<User> {
-  const res = await fetch(`/api/users/${id}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json() as Promise<User>;
-}
-
-const user = await fetchUser(42);
-console.log(`Hello, ${user.name}!`);</textarea>
-        </rc-textarea>
+End of section.</textarea>
+      </rc-textarea>
+      <div class="status-bar">
+        Ln <span id="al-line">–</span>,
+        Col <span id="al-col">–</span>
+        &ensp;·&ensp;
+        Sel <span id="al-sel">0–0</span>
+        (<span id="al-chars">collapsed</span>)
       </div>
-
-      <hr>
-
-      <!-- ── 2. Diagnostics ─────────────────────────────────────────────────── -->
-      <div class="section">
-        <h2>Diagnostics — All Severities</h2>
-        <p class="note">
-          Diagnostics render Error Lens–style, inline at the end of their line.
-          <code>createIcon()</code> returns any <code>HTMLElement</code> to prepend as a
-          leading icon. Wavy underlines use <code>box-shadow</code> on mark decorations —
-          never <code>padding</code> or <code>margin</code>, which would shift character
-          positions in the mirror relative to the textarea.
-          Theme: One Dark (fixed) · font: <code>Courier New</code>, 14 px / 1.65.
-        </p>
-        <rc-textarea id="demo-diagnostics" class="h-md t-onedark f-courier" lineNumbers readonly>
-          <textarea>const x = undeclaredVar;
-let y = parseInt("nope");
-// TODO: handle edge cases
-function render() { return; }</textarea>
-        </rc-textarea>
-      </div>
-
-      <hr>
-
-      <!-- ── 3. Pattern Matching ─────────────────────────────────────────────── -->
-      <div class="section">
-        <h2>Pattern Matching</h2>
-        <p class="note">
-          <code>addPattern()</code> registers a regex that re-matches on every
-          keystroke — no manual update needed. Multiple patterns can be active
-          simultaneously. Colour classes reference page-level CSS custom properties
-          so they adapt automatically when dark mode is toggled. Try editing the text.
-          Theme: auto (follows page) · font: system mono, 12 px / 1.45.
-        </p>
-        <rc-textarea id="demo-patterns" class="h-md auto-theme f-compact" lineNumbers wordWrap>
-          <textarea>Visit https://example.com/docs for the guide.
-The answer is 42 and Pi ≈ 3.14159.
-Email us at hello@example.org for support.
-Error at line 99, column 12 of the source file.</textarea>
-        </rc-textarea>
-      </div>
-
-      <hr>
-
-      <!-- ── 4. Auto-Grow ────────────────────────────────────────────────────── -->
-      <div class="section">
-        <h2>Auto-Grow</h2>
-        <p class="note">
-          <code>autoGrow</code> makes the editor expand to fit its content — the
-          mirror drives the host height, so no explicit height is needed.
-          Theme: auto (follows page).
-        </p>
-        <rc-textarea class="auto-theme" autoGrow lineNumbers wordWrap>
-          <textarea rows="3">Type here and the editor grows with your content.
-Add more lines to see it expand vertically.</textarea>
-        </rc-textarea>
-      </div>
-
     </div>
+
+    <!-- ── 2. Pattern matching ────────────────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header"><h2>Pattern matching</h2></div>
+      <p class="demo-desc">
+        Regex patterns with inline mark decorations via <code>addPattern()</code>.
+        Type <code>TODO</code>, <code>FIXME</code>, or <code>HACK</code> anywhere.
+      </p>
+      <rc-textarea id="pattern-demo" class="standalone" line-numbers>
+        <textarea name="pattern" rows="6" placeholder="Type TODO, FIXME, or HACK…">function processData(input) {
+  // TODO: validate input before processing
+  const result = transform(input);
+  // FIXME: breaks when input is null
+  if (!result) HACK_return_default();
+  return result;
+}</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 3. Syntax highlighting (hljs) ─────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header"><h2>Syntax highlighting — highlight.js</h2></div>
+      <p class="demo-desc">
+        <code>plugin.highlight()</code> converts hljs HTML to mark decorations via
+        <code>api.decorationsFromHtml()</code>. Theme CSS injected with
+        <code>api.adoptStyleSheet()</code> — scoped to the shadow root, no leakage.
+      </p>
+      <rc-textarea id="hljs-demo" class="standalone" line-numbers auto-grow>
+        <textarea name="hljs" rows="10">const greeting = (name) => {
+  if (!name) throw new Error('name required');
+  return `Hello, ${name}!`;
+};
+
+class EventEmitter {
+  #listeners = new Map();
+
+  on(event, fn) {
+    const list = this.#listeners.get(event) ?? [];
+    this.#listeners.set(event, [...list, fn]);
+    return () => this.off(event, fn);
+  }
+
+  emit(event, ...args) {
+    this.#listeners.get(event)?.forEach(fn => fn(...args));
+  }
+}
+</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 4. Diagnostics (line + mark decorations) ───────────────────────── -->
+    <div class="demo">
+      <div class="demo-header"><h2>Diagnostics — line &amp; mark decorations</h2></div>
+      <p class="demo-desc">
+        <code>LineDecoration</code> with <code>message</code> renders an error-lens annotation via
+        <code>::after</code> (excluded from clipboard). Wavy underlines from <code>MarkDecoration</code>.
+        Decorations are recomputed on each edit by <code>plugin.update()</code>.
+      </p>
+      <rc-textarea id="lens-demo" class="standalone" line-numbers>
+        <textarea name="lens" rows="6">import fs from 'fs';
+const raw = fs.readFileSync('data.json');
+const parsed = JSON.parse(raw);
+let unusedVar = true;
+export default parsed;
+</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 5. Widget decorations (color swatches) ─────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header"><h2>Widget decorations — inline color swatches</h2></div>
+      <p class="demo-desc">
+        <code>WidgetDecoration</code> inserts a non-editable DOM element at a character offset.
+        Edit the hex values and watch swatches update live.
+      </p>
+      <rc-textarea id="widget-demo" class="standalone" line-numbers>
+        <textarea name="widget" rows="6">:root {
+  --primary:   #89b4fa;
+  --success:   #a6e3a1;
+  --danger:    #f38ba8;
+  --warning:   #f9e2af;
+  --accent:    #cba6f7;
+}</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 6. Cursor-aware tooltip ────────────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header">
+        <h2>Cursor-aware tooltip</h2>
+        <span class="badge">New</span>
+      </div>
+      <p class="demo-desc">
+        Plugin uses <code>api.onCursorMove()</code> to track cursor changes,
+        <code>api.getWordAtCursor()</code> to read the current word, and
+        <code>api.getCursorRect()</code> to anchor a floating tooltip below the caret.
+        Move the cursor over any keyword to see its definition.
+      </p>
+      <rc-textarea id="tooltip-demo" class="standalone" line-numbers>
+        <textarea name="tooltip" rows="11">async function fetchUser(id) {
+  const response = await fetch(`/api/users/${id}`);
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+const result = await fetchUser(42);
+console.log(result);
+</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 7. Word wrap + auto-grow ──────────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header"><h2>Word wrap + auto-grow</h2></div>
+      <p class="demo-desc">
+        <code>word-wrap</code> enables soft wrapping. <code>auto-grow</code> expands the editor
+        to fit content with no scrollbar.
+      </p>
+      <rc-textarea id="wrap-demo" class="standalone" word-wrap auto-grow>
+        <textarea name="wrap" rows="3" placeholder="Long lines will wrap…">This is a very long line that demonstrates word-wrap and auto-grow working together. The editor expands as you type, and long lines wrap at the container boundary instead of producing a horizontal scrollbar.</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- Floating tooltip element (shared across demos) -->
+    <div id="word-tooltip">
+      <div class="tw-word"></div>
+      <div class="tw-def"></div>
+    </div>
+
+    <script type="module">
+      import { RCTextarea } from './src/index.ts';
+
+      // ── Shared hljs theme (compiled once, adopted into each shadow root) ──
+      const hljsSheet = new CSSStyleSheet();
+      hljsSheet.replaceSync(`
+        .hljs-keyword                       { color: #cba6f7; }
+        .hljs-string                        { color: #a6e3a1; }
+        .hljs-number                        { color: #fab387; }
+        .hljs-comment                       { color: #6c7086; font-style: italic; }
+        .hljs-title, .hljs-title.function_  { color: #89b4fa; }
+        .hljs-title.class_                  { color: #f9e2af; }
+        .hljs-params                        { color: #cdd6f4; }
+        .hljs-built_in                      { color: #89dceb; }
+        .hljs-literal                       { color: #fab387; }
+        .hljs-subst                         { color: #cdd6f4; }
+        .hljs-regexp                        { color: #f38ba8; }
+        .hljs-operator                      { color: #89dceb; }
+        .hljs-attr, .hljs-property          { color: #89dceb; }
+        .hljs-variable.language_            { color: #cba6f7; }
+        .hljs-punctuation                   { color: #cdd6f4; }
+        .hljs-meta                          { color: #6c7086; }
+        .hljs-template-curly                { color: #cdd6f4; }
+      `);
+
+      // ── 1. Active line + cursor state ─────────────────────────────────────
+      const activeDemo = document.getElementById('active-demo');
+      const alLine  = document.getElementById('al-line');
+      const alCol   = document.getElementById('al-col');
+      const alSel   = document.getElementById('al-sel');
+      const alChars = document.getElementById('al-chars');
+
+      let alUnsub;
+      activeDemo.usePlugin({
+        mount(api) {
+          alUnsub = api.onCursorMove((start, end) => {
+            const before = api.value.slice(0, start);
+            const ln = before.split('\n').length;
+            const col = before.length - before.lastIndexOf('\n'); // 1-based
+            alLine.textContent = ln;
+            alCol.textContent = col;
+            alSel.textContent = `${start}–${end}`;
+            alChars.textContent = start === end ? 'collapsed' : `${end - start} chars`;
+          });
+        },
+        destroy() { alUnsub?.(); },
+      });
+
+      // ── 2. Pattern matching ───────────────────────────────────────────────
+      const patternDemo = document.getElementById('pattern-demo');
+      patternDemo.addPattern({ pattern: /\bTODO\b/g,  bold: true, color: '#fab387', background: 'rgba(250,179,135,.12)' });
+      patternDemo.addPattern({ pattern: /\bFIXME\b/g, bold: true, color: '#f38ba8', background: 'rgba(243,139,168,.12)' });
+      patternDemo.addPattern({ pattern: /\bHACK\b/g,  bold: true, color: '#f9e2af', background: 'rgba(249,226,175,.12)' });
+
+      // ── 3. highlight.js ───────────────────────────────────────────────────
+      document.getElementById('hljs-demo').usePlugin({
+        mount(api) { api.adoptStyleSheet(hljsSheet); },
+        async highlight(value, api) {
+          if (!window.hljs) return null;
+          try {
+            const { value: html } = window.hljs.highlight(value, { language: 'javascript' });
+            api.setDecorations(api.decorationsFromHtml(html));
+          } catch { /* ignore parse errors */ }
+        },
+      });
+
+      // ── 4. Diagnostics ────────────────────────────────────────────────────
+      const diagSheet = new CSSStyleSheet();
+      diagSheet.replaceSync(`
+        .v2-error   { background: rgba(243,139,168,.07); }
+        .v2-warning { background: rgba(249,226,175,.07); }
+        .v2-info    { background: rgba(137,180,250,.07); }
+        .v2-line[data-message-class~="error"][data-message]::after
+                    { color: #f38ba8; }
+        .v2-line[data-message-class~="warning"][data-message]::after
+                    { color: #f9e2af; }
+        .v2-line[data-message-class~="info"][data-message]::after
+                    { color: #89b4fa; }
+      `);
+
+      document.getElementById('lens-demo').usePlugin({
+        mount(api) { api.adoptStyleSheet(diagSheet); },
+        update(value, api) {
+          const lines = value.split('\n');
+          const decs = [];
+
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const ln = i + 1;
+            if (/^import /.test(line)) {
+              decs.push({ type: 'line', line: ln, className: 'v2-info',
+                message: 'CommonJS — consider import() for ESM', messageClassName: 'info' });
+            }
+            if (/readFileSync/.test(line)) {
+              decs.push({ type: 'line', line: ln, className: 'v2-error',
+                message: 'Synchronous I/O blocks the event loop', messageClassName: 'error' });
+            }
+            if (/JSON\.parse/.test(line)) {
+              decs.push({ type: 'line', line: ln, className: 'v2-warning',
+                message: 'Missing try/catch — may throw SyntaxError', messageClassName: 'warning' });
+            }
+            if (/^let /.test(line)) {
+              const m = line.match(/^let (\w+)/);
+              if (m) decs.push({ type: 'line', line: ln, className: 'v2-warning',
+                message: `'${m[1]}' is assigned but never used`, messageClassName: 'warning' });
+            }
+          }
+
+          // Wavy underlines computed from regex matches
+          for (const { rx, color } of [
+            { rx: /readFileSync/g, color: '#f38ba8' },
+            { rx: /JSON\.parse/g,  color: '#f9e2af' },
+            { rx: /\bunusedVar\b/g, color: '#f9e2af' },
+          ]) {
+            let m;
+            rx.lastIndex = 0;
+            while ((m = rx.exec(value)) !== null) {
+              decs.push({ type: 'mark', from: m.index, to: m.index + m[0].length,
+                underline: 'wavy', underlineColor: color });
+            }
+          }
+
+          api.setDecorations(decs);
+        },
+      });
+
+      // ── 5. Widget decorations (color swatches) ────────────────────────────
+      document.getElementById('widget-demo').usePlugin({
+        mount(api) { buildSwatches(api); },
+        update(_, api) { buildSwatches(api); },
+      });
+
+      function buildSwatches(api) {
+        const pat = /#([0-9a-fA-F]{3,6})\b/g;
+        const decs = [];
+        let m;
+        while ((m = pat.exec(api.value)) !== null) {
+          const color = m[0];
+          const offset = m.index;
+          decs.push({
+            type: 'widget', offset, side: 'before',
+            create() {
+              const el = document.createElement('span');
+              el.style.cssText = `
+                display:inline-block;width:10px;height:10px;
+                background:${color};border:1px solid rgba(255,255,255,.2);
+                border-radius:2px;margin-right:4px;vertical-align:middle;
+              `;
+              return el;
+            },
+          });
+        }
+        api.setDecorations(decs);
+      }
+
+      // ── 6. Cursor-aware tooltip ───────────────────────────────────────────
+      const tooltipEl   = document.getElementById('word-tooltip');
+      const tooltipWord = tooltipEl.querySelector('.tw-word');
+      const tooltipDef  = tooltipEl.querySelector('.tw-def');
+
+      // Mini keyword dictionary for the demo
+      const kwDefs = {
+        async:    'Marks a function as asynchronous; it always returns a Promise.',
+        await:    'Suspends execution until the awaited Promise settles.',
+        function: 'Defines a function; creates its own this and arguments.',
+        const:    'Block-scoped binding — reference cannot be reassigned.',
+        let:      'Block-scoped binding — reference can be reassigned.',
+        if:       'Conditional branch — body runs when condition is truthy.',
+        throw:    'Throws an exception and unwinds the call stack.',
+        return:   'Exits the current function, optionally yielding a value.',
+        fetch:    'Web API — initiates an HTTP request, returns Promise<Response>.',
+        console:  'Web API — exposes debug output methods (log, warn, error…).',
+        new:      'Invokes a constructor and allocates a new object instance.',
+        Error:    'Built-in exception class; wraps a message and stack trace.',
+      };
+
+      let ttUnsub;
+      document.getElementById('tooltip-demo').usePlugin({
+        mount(api) {
+          api.adoptStyleSheet(hljsSheet);
+          ttUnsub = api.onCursorMove(() => {
+            const w = api.getWordAtCursor();
+            const def = w ? kwDefs[w.word] : undefined;
+            if (!w || !def) { tooltipEl.style.display = 'none'; return; }
+            const rect = api.getCursorRect();
+            if (!rect) { tooltipEl.style.display = 'none'; return; }
+            tooltipWord.textContent = w.word;
+            tooltipDef.textContent = def;
+            tooltipEl.style.display = 'block';
+            // Position below cursor, clamp to viewport edges
+            const gap = 7;
+            let left = rect.left;
+            const top  = rect.bottom + gap;
+            const tw = tooltipEl.offsetWidth;
+            if (left + tw > window.innerWidth - 12) left = window.innerWidth - tw - 12;
+            tooltipEl.style.left = `${Math.max(8, left)}px`;
+            tooltipEl.style.top  = `${top}px`;
+          });
+        },
+        async highlight(value, api) {
+          if (!window.hljs) return null;
+          try {
+            const { value: html } = window.hljs.highlight(value, { language: 'javascript' });
+            api.setDecorations(api.decorationsFromHtml(html));
+          } catch { /* ignore */ }
+        },
+        destroy() {
+          ttUnsub?.();
+          tooltipEl.style.display = 'none';
+        },
+      });
+
+      // Hide tooltip when focus leaves any editor
+      document.addEventListener('rc-textarea-blur', () => {
+        tooltipEl.style.display = 'none';
+      }, { capture: true });
+    </script>
   </body>
 </html>

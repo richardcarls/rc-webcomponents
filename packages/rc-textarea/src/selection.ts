@@ -1,5 +1,5 @@
 /**
- * Cursor save/restore for rc-textarea-v2's contenteditable editor.
+ * Cursor save/restore for rc-textarea's contenteditable editor.
  *
  * The text model is a plain string with \n line separators.
  * WidgetDecoration spans (.v2-widget) are skipped — they are zero-width in
@@ -45,7 +45,12 @@ export function domToTextOffset(
     if (lineIdx > 0) totalOffset++; // \n between lines
 
     const line = lines[lineIdx]!;
-    const result = walkForOffset(line, targetNode, targetNodeOffset, totalOffset);
+    const result = walkForOffset(
+      line,
+      targetNode,
+      targetNodeOffset,
+      totalOffset,
+    );
 
     if (result.found) return result.offset;
     totalOffset += textModelLength(line);
@@ -115,7 +120,10 @@ interface DomPosition {
  * Converts a plain-text offset to a (node, nodeOffset) DOM position inside `root`.
  * Returns null if offset is out of range.
  */
-export function textOffsetToDom(root: Element, targetOffset: number): DomPosition | null {
+export function textOffsetToDom(
+  root: Element,
+  targetOffset: number,
+): DomPosition | null {
   const lines = Array.from(root.querySelectorAll<HTMLElement>('.v2-line'));
   let remaining = targetOffset;
 
@@ -151,7 +159,8 @@ export function textOffsetToDom(root: Element, targetOffset: number): DomPositio
 function walkToOffset(node: Node, remaining: number): DomPosition | null {
   if (node.nodeType === Node.TEXT_NODE) {
     const textNode = node as Text;
-    if (remaining <= textNode.length) return { node: textNode, offset: remaining };
+    if (remaining <= textNode.length)
+      return { node: textNode, offset: remaining };
     return null;
   }
 
@@ -189,8 +198,16 @@ export function saveSelection(root: Element): SavedSelection | null {
   const range = sel.getRangeAt(0);
   if (!root.contains(range.commonAncestorContainer)) return null;
 
-  const anchorOffset = domToTextOffset(root, range.startContainer, range.startOffset);
-  const focusOffset = domToTextOffset(root, range.endContainer, range.endOffset);
+  const anchorOffset = domToTextOffset(
+    root,
+    range.startContainer,
+    range.startOffset,
+  );
+  const focusOffset = domToTextOffset(
+    root,
+    range.endContainer,
+    range.endOffset,
+  );
 
   return { anchorOffset, focusOffset };
 }
