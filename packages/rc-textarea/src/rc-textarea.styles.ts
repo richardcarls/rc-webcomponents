@@ -1,263 +1,189 @@
 import { css } from 'lit';
 
-export const textareaStyles = css`
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-  }
-
+export const styles = css`
   :host {
-    --rc-textarea-font-family: monospace;
-    --rc-textarea-font-size: 1em;
-    --rc-textarea-line-height: 1.5;
-    --rc-textarea-padding: 0.5em;
-    --rc-textarea-gutter-color: GrayText;
-    --rc-textarea-gutter-bg: Canvas;
-    --rc-textarea-gutter-border: ButtonBorder;
-    --rc-textarea-background: Field;
-    --rc-textarea-color: FieldText;
-    --rc-textarea-caret-color: var(--rc-textarea-color);
-    --rc-textarea-border: 1px solid ButtonBorder;
-    --rc-textarea-border-radius: 2px;
-    --rc-textarea-focus-outline: 2px solid AccentColor;
-    --rc-textarea-mark-error-color: #e06c75;
-    --rc-textarea-mark-warning-color: #e5c07b;
-    --rc-textarea-mark-info-color: #61afef;
-    --rc-textarea-mark-hint-color: #98c379;
-
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    overflow: hidden;
-    background: var(--rc-textarea-background);
-    color: var(--rc-textarea-color);
-    font-family: var(--rc-textarea-font-family);
-    font-size: var(--rc-textarea-font-size);
-    line-height: var(--rc-textarea-line-height);
-    border: var(--rc-textarea-border);
-    border-radius: var(--rc-textarea-border-radius);
-    resize: both;
-  }
-
-  :host(:focus-within) {
-    outline: var(--rc-textarea-focus-outline);
-    outline-offset: -1px;
+    display: block;
+    box-sizing: border-box;
   }
 
   :host([hidden]) {
     display: none;
   }
 
+  /* ── Root layout ──────────────────────────────────────────────────────── */
+
   #root {
     display: flex;
-    flex-direction: row;
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
+    align-items: stretch;
+    border: var(--rc-textarea-border, 1px solid ButtonBorder);
+    border-radius: var(--rc-textarea-border-radius, 2px);
+    background: var(--rc-textarea-background, Field);
+    color: var(--rc-textarea-color, FieldText);
+    overflow: hidden;
+    min-height: var(--_rc-textarea-min-height, auto);
   }
 
-  /* Gutter (line numbers) */
+  /* ── Gutter ───────────────────────────────────────────────────────────── */
+
   #gutter {
-    flex: 0 0 auto;
-    min-width: 3ch;
+    display: none;
+    flex-shrink: 0;
+    background: var(--rc-textarea-gutter-bg, Canvas);
+    color: var(--rc-textarea-gutter-color, GrayText);
+    border-right: var(--rc-textarea-gutter-border, 1px solid ButtonBorder);
     overflow: hidden;
     user-select: none;
-    text-align: right;
-    color: var(--rc-textarea-gutter-color);
-    background: var(--rc-textarea-gutter-bg);
-    border-right: 1px solid var(--rc-textarea-gutter-border);
-    font-family: inherit;
-    font-size: inherit;
-    line-height: inherit;
   }
 
-  :host(:not([linenumbers])) #gutter {
-    display: none;
+  :host([line-numbers]) #gutter {
+    display: block;
   }
 
   #line-numbers {
-    padding: var(--rc-textarea-padding) 0.5em;
+    padding: var(--rc-textarea-padding, 0.5em);
+    padding-right: 0.75em;
+    font-family: var(--rc-textarea-font-family, monospace);
+    font-size: var(--rc-textarea-font-size, 1em);
+    line-height: var(--rc-textarea-line-height, 1.5);
+    text-align: right;
+    min-width: 2.5ch;
   }
 
   .line-number {
     display: block;
-    line-height: var(--rc-textarea-line-height);
-    white-space: nowrap;
+    white-space: pre;
   }
 
-  /* Editor area: contains the overlay + contenteditable */
+  .line-number--active {
+    color: var(--rc-textarea-color, FieldText);
+  }
+
+  /* ── Editor area ──────────────────────────────────────────────────────── */
+
   #editor-area {
-    flex: 1;
     position: relative;
-    display: flex;
-    flex-direction: column;
+    flex: 1;
     min-width: 0;
     overflow: hidden;
   }
 
-  /* Auto-grow: let the editor area grow with its content */
-  :host([autogrow]) {
-    overflow: visible;
-    resize: none;
-  }
-
-  :host([autogrow]) #root {
-    overflow: visible;
-  }
-
-  :host([autogrow]) #editor-area {
-    overflow: visible;
-  }
-
-  /*
-   * Absolutely-positioned line overlay — sits behind the contenteditable.
-   * Rendered content: one .overlay-line div per logical line.
-   * Carries line-highlight backgrounds and inline diagnostic annotations.
-   * Scroll-synced via JS: transform: translate(-scrollLeft, -scrollTop).
-   */
-  #line-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    overflow: visible;
-    pointer-events: none;
-    padding: var(--rc-textarea-padding);
-    font-family: var(--rc-textarea-font-family);
-    font-size: var(--rc-textarea-font-size);
-    line-height: var(--rc-textarea-line-height);
-    tab-size: 4;
-  }
-
-  /* One overlay row per logical line */
-  .overlay-line {
-    display: block;
-    min-height: calc(var(--rc-textarea-line-height) * 1em);
-    text-align: right;
-  }
-
-  /* The contenteditable editing surface */
   #editor {
-    flex: 1;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+    padding: var(--rc-textarea-padding, 0.5em);
+    font-family: var(--rc-textarea-font-family, monospace);
+    font-size: var(--rc-textarea-font-size, 1em);
+    line-height: var(--rc-textarea-line-height, 1.5);
+    color: var(--rc-textarea-color, FieldText);
+    caret-color: var(
+      --rc-textarea-caret-color,
+      var(--rc-textarea-color, FieldText)
+    );
+    background: transparent;
     outline: none;
     overflow: auto;
+    resize: none;
     white-space: pre;
     word-break: normal;
     overflow-wrap: normal;
-    padding: var(--rc-textarea-padding);
-    font-family: var(--rc-textarea-font-family);
-    font-size: var(--rc-textarea-font-size);
-    line-height: var(--rc-textarea-line-height);
-    color: var(--rc-textarea-color);
-    caret-color: var(--rc-textarea-caret-color);
     tab-size: 4;
-    min-height: calc(var(--rc-textarea-line-height) * 1em + 2 * var(--rc-textarea-padding));
+    word-break: normal;
+    /* Prevent contenteditable from injecting <div> wrappers on Enter in some browsers */
+    -webkit-user-modify: read-write-plaintext-only;
   }
 
-  :host([autogrow]) #editor {
+  :host([word-wrap]) #editor {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  :host([auto-grow]) #editor {
     overflow: visible;
-    min-height: calc(var(--rc-textarea-line-height) * 1em + 2 * var(--rc-textarea-padding));
+    height: auto;
   }
 
-  :host([wordwrap]) #editor {
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-    word-break: normal;
+  :host([auto-grow]) #root {
+    height: auto;
   }
 
-  :host([wordwrap]) #line-overlay {
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-    word-break: normal;
-  }
-
-  /* Widget spans: non-editable, atomic inline-block elements */
-  [contenteditable='false']:not(.diagnostic) {
-    display: inline-block;
+  :host([read-only]) #editor {
     cursor: default;
-    /* Selected as a unit by the browser */
+    -webkit-user-modify: read-only;
   }
 
-  /* Error Lens-style diagnostics: inline after line text */
-  .diagnostic {
-    display: inline;
-    margin-left: 2em;
-    opacity: 0.85;
-    font-style: italic;
-    pointer-events: none;
+  /* Focus ring on the root when editor is focused */
+  #root:has(#editor:focus) {
+    outline: var(--rc-textarea-focus-outline, 2px solid AccentColor);
+    outline-offset: -1px;
+  }
+
+  /* ── Slot (hidden lightDOM textarea) ──────────────────────────────────── */
+
+  ::slotted(textarea) {
+    /* Visually hidden but accessible to form submission.
+       Inline styles applied via JS take precedence and are more reliable,
+       but this provides a baseline in case of timing issues. */
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    border: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* ── Line structure ───────────────────────────────────────────────────── */
+
+  .v2-line {
+    position: relative;
+    display: block;
+    min-height: var(--rc-textarea-line-height, 1.5em);
+  }
+
+  /* Active line highlight — opt-in via CSS custom property. */
+  .v2-line--active {
+    background: var(--rc-textarea-active-line-bg, transparent);
+  }
+
+  /* Error-lens style end-of-line message via ::after pseudo-element.
+     content: attr(data-message) is set when V2Document assigns data-message.
+     Using ::after keeps the annotation completely outside the DOM selection
+     and clipboard path — no user-select tricks needed. */
+  .v2-line[data-message]::after {
+    content: attr(data-message);
+    position: absolute;
+    right: 0.5em;
+    top: 0;
     white-space: nowrap;
+    pointer-events: none;
+    font-size: 0.875em;
+    opacity: 0.8;
+    font-style: italic;
+  }
+
+  /* ── Inline decoration spans ──────────────────────────────────────────── */
+
+  .v2-mark {
+    /* Base class; formatting applied via inline style by V2InlineBlot */
+    border-radius: 2px;
+  }
+
+  /* ── Widget spans ─────────────────────────────────────────────────────── */
+
+  .v2-widget {
+    display: inline-block;
     user-select: none;
     cursor: default;
+    vertical-align: middle;
   }
 
-  .diagnostic--error {
-    color: var(--rc-textarea-mark-error-color);
-  }
-
-  .diagnostic--warning {
-    color: var(--rc-textarea-mark-warning-color);
-  }
-
-  .diagnostic--info {
-    color: var(--rc-textarea-mark-info-color);
-  }
-
-  .diagnostic--hint {
-    color: var(--rc-textarea-mark-hint-color);
-  }
-
-  .diagnostic-icon {
-    display: inline;
-    margin-right: 0.25em;
-  }
-
-  /* Built-in diagnostic mark decoration — wavy underline */
-  .diagnostic-mark {
-    text-decoration-line: underline;
-    text-decoration-style: wavy;
-    text-decoration-color: var(--rc-textarea-mark-diagnostic-color, currentColor);
-    text-decoration-thickness: 1.5px;
-  }
-  .diagnostic-mark--error   { --rc-textarea-mark-diagnostic-color: var(--rc-textarea-mark-error-color);   }
-  .diagnostic-mark--warning { --rc-textarea-mark-diagnostic-color: var(--rc-textarea-mark-warning-color); }
-  .diagnostic-mark--info    { --rc-textarea-mark-diagnostic-color: var(--rc-textarea-mark-info-color);    }
-  .diagnostic-mark--hint    { --rc-textarea-mark-diagnostic-color: var(--rc-textarea-mark-hint-color);    }
-
-  /* Built-in diagnostic line decoration — tinted background */
-  .diagnostic-line--error   { background-color: color-mix(in srgb, var(--rc-textarea-mark-error-color)   8%, transparent); }
-  .diagnostic-line--warning { background-color: color-mix(in srgb, var(--rc-textarea-mark-warning-color) 8%, transparent); }
-  .diagnostic-line--info    { background-color: color-mix(in srgb, var(--rc-textarea-mark-info-color)    8%, transparent); }
-  .diagnostic-line--hint    { background-color: color-mix(in srgb, var(--rc-textarea-mark-hint-color)    8%, transparent); }
-
-  /* Hidden light-DOM textarea: kept for form association fallback and
-     progressive enhancement (visible before JS hydrates). */
-  ::slotted(textarea) {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  /* Visually hidden ARIA live region for diagnostics */
-  #diagnostic-status {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
-  }
+  /* ── Scrollbar sync between editor and gutter ─────────────────────────── */
+  /* Gutter doesn't scroll independently; editor scroll is handled in JS */
 `;
-
-export default textareaStyles;

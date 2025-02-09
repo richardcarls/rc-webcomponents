@@ -1,207 +1,235 @@
 /**
- * Selection preservation for the contenteditable editor.
+ * Cursor save/restore for rc-textarea's contenteditable editor.
  *
- * The editor renders flat HTML: text nodes (with '\n' as line separators),
- * mark decoration spans (transparent to the text model), widget spans
- * (contenteditable="false" data-widget-text="..."), and optionally inline
- * diagnostic spans (contenteditable="false" without data-widget-text, skipped).
- * No .line wrapper divs.
- *
- * Character offsets are plain-text positions:
- *   - Every text character (including '\n') counts as 1
- *   - Widget spans contribute their data-widget-text.length
- *   - All other contenteditable="false" elements (diagnostics etc.) contribute 0
- *   - Mark spans are transparent — only their text content is counted
+ * The text model is a plain string with \n line separators.
+ * WidgetDecoration spans (.v2-widget) are skipped — they are zero-width in
+ * the text model (not part of the value string).
+ * <br> elements (used to make empty lines editable) count as 0 characters.
  */
 
-/** True if `node` is a widget span. */
-function isWidget(node: Node): node is HTMLElement {
-  return node instanceof HTMLElement && node.dataset.widgetText !== undefined;
+export interface SavedSelection {
+  /** Anchor position as a character offset into the plain text value. */
+  anchorOffset: number;
+  /** Focus position as a character offset into the plain text value. */
+  focusOffset: number;
 }
 
-/**
- * Total character length contributed by `node` to the plain-text model.
- * Used to advance the accumulator when a subtree does not contain the target.
- */
-function charLen(node: Node): number {
+// ── Text length helpers ───────────────────────────────────────────────────────
+
+/** Returns the text-model length of a DOM node and its descendants. */
+function textModelLength(node: Node): number {
   if (node.nodeType === Node.TEXT_NODE) return (node as Text).length;
-  if (isWidget(node)) return (node as HTMLElement).dataset.widgetText!.length;
-  if (node instanceof Element && node.getAttribute('contenteditable') === 'false') return 0;
+  if (!(node instanceof Element)) return 0;
+  if (node.classList.contains('v2-widget')) return 0;
+  if (node.tagName === 'BR') return 0;
   let len = 0;
-  for (const child of node.childNodes) len += charLen(child);
+  for (const child of node.childNodes) len += textModelLength(child);
   return len;
 }
 
+// ── DOM → text offset ─────────────────────────────────────────────────────────
+
 /**
- * Search the subtree rooted at `node` for `targetNode`/`targetOffset`.
- * `base` is the number of plain-text characters before the start of this subtree.
- * Returns the absolute character offset if found, null otherwise.
+ * Converts a DOM (node, nodeOffset) pair inside `root` to a plain-text offset.
+ * Returns -1 if the target was not found inside root.
  */
-function walkToOffset(
+export function domToTextOffset(
+  root: Element,
+  targetNode: Node,
+  targetNodeOffset: number,
+): number {
+  const lines = Array.from(root.querySelectorAll<HTMLElement>('.v2-line'));
+  let totalOffset = 0;
+
+  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+    if (lineIdx > 0) totalOffset++; // \n between lines
+
+    const line = lines[lineIdx]!;
+    const result = walkForOffset(
+      line,
+      targetNode,
+      targetNodeOffset,
+      totalOffset,
+    );
+
+    if (result.found) return result.offset;
+    totalOffset += textModelLength(line);
+  }
+
+  // Target not found — fall back to end of content
+  return totalOffset;
+}
+
+interface WalkResult {
+  found: boolean;
+  offset: number;
+}
+
+function walkForOffset(
   node: Node,
   targetNode: Node,
-  targetOffset: number,
-  base: number,
-): number | null {
+  targetNodeOffset: number,
+  currentOffset: number,
+): WalkResult {
   if (node === targetNode) {
-    if (node.nodeType === Node.TEXT_NODE) return base + targetOffset;
-    if (isWidget(node)) {
-      const wlen = (node as HTMLElement).dataset.widgetText!.length;
-      return base + (targetOffset === 0 ? 0 : wlen);
+    // Found the target node
+    if (node.nodeType === Node.TEXT_NODE) {
+      return { found: true, offset: currentOffset + targetNodeOffset };
     }
-    // Element boundary: cursor is at child index targetOffset within this element
-    let acc = base;
-    let i = 0;
+    // Element node — targetNodeOffset is a child index
+    let off = currentOffset;
+    const children = Array.from(node.childNodes);
+    for (let i = 0; i < targetNodeOffset && i < children.length; i++) {
+      off += textModelLength(children[i]!);
+    }
+    return { found: true, offset: off };
+  }
+
+  if (node.nodeType === Node.TEXT_NODE) {
+    return { found: false, offset: currentOffset + (node as Text).length };
+  }
+
+  if (node instanceof Element) {
+    if (node.classList.contains('v2-widget')) {
+      return { found: false, offset: currentOffset };
+    }
+    if (node.tagName === 'BR') {
+      return { found: false, offset: currentOffset };
+    }
+
+    let off = currentOffset;
     for (const child of node.childNodes) {
-      if (i++ === targetOffset) return acc;
-      acc += charLen(child);
+      const result = walkForOffset(child, targetNode, targetNodeOffset, off);
+      if (result.found) return result;
+      off = result.offset;
     }
-    return acc;
+    return { found: false, offset: off };
   }
 
-  // Leaf nodes that are not the target
-  if (node.nodeType === Node.TEXT_NODE) return null;
-  if (isWidget(node)) return null;
-  if (node instanceof Element && node.getAttribute('contenteditable') === 'false') return null;
+  return { found: false, offset: currentOffset };
+}
 
-  // Transparent element (mark span, or the editor root): recurse into children
-  let acc = base;
-  for (const child of node.childNodes) {
-    const found = walkToOffset(child, targetNode, targetOffset, acc);
-    if (found !== null) return found;
-    acc += charLen(child);
+// ── Text offset → DOM position ────────────────────────────────────────────────
+
+interface DomPosition {
+  node: Node;
+  offset: number;
+}
+
+/**
+ * Converts a plain-text offset to a (node, nodeOffset) DOM position inside `root`.
+ * Returns null if offset is out of range.
+ */
+export function textOffsetToDom(
+  root: Element,
+  targetOffset: number,
+): DomPosition | null {
+  const lines = Array.from(root.querySelectorAll<HTMLElement>('.v2-line'));
+  let remaining = targetOffset;
+
+  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+    if (lineIdx > 0) {
+      if (remaining === 0) {
+        // Position at boundary between lines — place at start of this line
+        const line = lines[lineIdx]!;
+        return { node: line, offset: 0 };
+      }
+      remaining--; // consume the \n
+    }
+
+    const line = lines[lineIdx]!;
+    const lineLen = textModelLength(line);
+
+    if (remaining <= lineLen) {
+      const pos = walkToOffset(line, remaining);
+      if (pos) return pos;
+      // Cursor at end of line element
+      return { node: line, offset: line.childNodes.length };
+    }
+
+    remaining -= lineLen;
   }
+
+  // Beyond end of content — place at end of last line
+  const lastLine = lines[lines.length - 1];
+  if (lastLine) return { node: lastLine, offset: lastLine.childNodes.length };
+  return { node: root, offset: root.childNodes.length };
+}
+
+function walkToOffset(node: Node, remaining: number): DomPosition | null {
+  if (node.nodeType === Node.TEXT_NODE) {
+    const textNode = node as Text;
+    if (remaining <= textNode.length)
+      return { node: textNode, offset: remaining };
+    return null;
+  }
+
+  if (node instanceof Element) {
+    if (node.classList.contains('v2-widget')) return null;
+    if (node.tagName === 'BR') return null;
+
+    let childOffset = 0;
+    for (const child of node.childNodes) {
+      const childLen = textModelLength(child);
+      if (remaining <= childLen) {
+        const result = walkToOffset(child, remaining);
+        if (result) return result;
+        // Target is at boundary inside this child
+        return { node: node, offset: childOffset + 1 };
+      }
+      remaining -= childLen;
+      childOffset++;
+    }
+  }
+
   return null;
 }
 
-/**
- * Search the subtree rooted at `node` for the DOM position corresponding to
- * `remaining` plain-text characters from the start of this subtree.
- * Returns `{ node, offset }` for `Range.setStart`/`setEnd`, or null if the
- * position falls after this subtree (caller should subtract this subtree's
- * charLen and continue).
- */
-function walkFromOffset(
-  node: Node,
-  remaining: number,
-): { node: Node; offset: number } | null {
-  if (node.nodeType === Node.TEXT_NODE) {
-    const text = node as Text;
-    // Special case: the target offset is exactly at the end of a text node
-    // whose last character is '\n'.  Returning the element-boundary position
-    // (AFTER the text node inside its parent) instead of offset=text.length
-    // inside the text node lets browsers correctly render the cursor on the
-    // new empty line rather than ambiguously at the tail of the previous line.
-    if (
-      remaining === text.length &&
-      text.length > 0 &&
-      text.data[text.length - 1] === '\n' &&
-      node.parentNode
-    ) {
-      let idx = 0;
-      let sib = node.previousSibling;
-      while (sib !== null) { idx++; sib = sib.previousSibling; }
-      return { node: node.parentNode, offset: idx + 1 };
-    }
-    if (remaining <= text.length) return { node, offset: remaining };
-    return null;
-  }
-
-  if (isWidget(node)) {
-    const len = (node as HTMLElement).dataset.widgetText!.length;
-    if (remaining <= len) {
-      // Widget is atomic: position before (remaining===0) or after (remaining>0)
-      const parent = node.parentNode!;
-      const idx = Array.from(parent.childNodes).indexOf(node as ChildNode);
-      return { node: parent, offset: remaining === 0 ? idx : idx + 1 };
-    }
-    return null;
-  }
-
-  if (node instanceof Element && node.getAttribute('contenteditable') === 'false') return null;
-
-  // Transparent element: iterate children
-  for (const child of node.childNodes) {
-    const childLen = charLen(child);
-    if (remaining <= childLen) return walkFromOffset(child, remaining);
-    remaining -= childLen;
-  }
-
-  // Position is at or past the end of this element
-  return { node, offset: node.childNodes.length };
-}
+// ── Save / Restore ────────────────────────────────────────────────────────────
 
 /**
- * Convert a DOM position (node + offset) inside the editor to an absolute
- * character offset in the plain-text model.
+ * Captures the current browser selection as plain-text offsets relative to `root`.
+ * Returns null if there is no selection or the selection is outside `root`.
  */
-export function getEditorOffset(
-  editor: HTMLElement,
-  node: Node,
-  nodeOffset: number,
-): number {
-  return walkToOffset(editor, node, nodeOffset, 0) ?? 0;
-}
-
-/**
- * Convert an absolute character offset back to a DOM position
- * `{ node, offset }` suitable for `Range.setStart` / `Range.setEnd`.
- */
-export function setEditorOffset(
-  editor: HTMLElement,
-  targetOffset: number,
-): { node: Node; offset: number } {
-  return (
-    walkFromOffset(editor, targetOffset) ?? {
-      node: editor,
-      offset: editor.childNodes.length,
-    }
-  );
-}
-
-/**
- * Save the current selection inside `editor` as plain-text character offsets.
- * Returns null if there is no selection or the selection is outside the editor.
- */
-export function saveSelection(
-  editor: HTMLElement,
-): { start: number; end: number } | null {
+export function saveSelection(root: Element): SavedSelection | null {
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return null;
 
   const range = sel.getRangeAt(0);
-  if (!editor.contains(range.commonAncestorContainer)) return null;
+  if (!root.contains(range.commonAncestorContainer)) return null;
 
-  const start = getEditorOffset(editor, range.startContainer, range.startOffset);
-  const end = range.collapsed
-    ? start
-    : getEditorOffset(editor, range.endContainer, range.endOffset);
+  const anchorOffset = domToTextOffset(
+    root,
+    range.startContainer,
+    range.startOffset,
+  );
+  const focusOffset = domToTextOffset(
+    root,
+    range.endContainer,
+    range.endOffset,
+  );
 
-  return { start, end };
+  return { anchorOffset, focusOffset };
 }
 
 /**
- * Restore a selection from saved plain-text character offsets.
- * No-ops if the editor is empty (e.g. before first render).
+ * Restores a previously saved selection inside `root`.
+ * Silently does nothing if the saved offsets are out of range.
  */
-export function restoreSelection(
-  editor: HTMLElement,
-  saved: { start: number; end: number },
-): void {
-  const sel = window.getSelection();
-  if (!sel) return;
-
-  const startPos = setEditorOffset(editor, saved.start);
-  const endPos =
-    saved.end === saved.start ? startPos : setEditorOffset(editor, saved.end);
+export function restoreSelection(root: Element, saved: SavedSelection): void {
+  const anchor = textOffsetToDom(root, saved.anchorOffset);
+  const focus = textOffsetToDom(root, saved.focusOffset);
+  if (!anchor || !focus) return;
 
   try {
+    const sel = window.getSelection();
+    if (!sel) return;
     const range = document.createRange();
-    range.setStart(startPos.node, startPos.offset);
-    range.setEnd(endPos.node, endPos.offset);
+    range.setStart(anchor.node, anchor.offset);
+    range.setEnd(focus.node, focus.offset);
     sel.removeAllRanges();
     sel.addRange(range);
   } catch {
-    // DOM may have changed; silently ignore
+    // setStart/setEnd can throw on invalid offsets — ignore gracefully
   }
 }

@@ -27,6 +27,9 @@
     "preview": "vite preview",
     "test:browser": "vitest"
   },
+  "dependencies": {
+    "parchment": "^3.0.0"
+  },
   "devDependencies": {
     "@vitest/browser-webdriverio": "^4.0.6",
     "typescript": "~5.9.3",

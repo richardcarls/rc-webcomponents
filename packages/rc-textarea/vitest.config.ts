@@ -8,7 +8,7 @@ export default defineConfig({
       provider: webdriverio(),
       // https://vitest.dev/guide/browser/webdriverio
       instances: [
-        // { browser: 'chrome' },
+        { browser: 'chrome' },
         { browser: 'firefox' },
         // { browser: 'edge' },
       ],
