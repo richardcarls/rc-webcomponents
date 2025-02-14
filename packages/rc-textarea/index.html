@@ -7,7 +7,9 @@
     <!-- highlight.js UMD — must load before the module script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
+      /* ── Catppuccin Mocha (dark, default) ────────────────────────────────── */
       :root {
+        color-scheme: dark;
         --base:     #1e1e2e;
         --mantle:   #181825;
         --crust:    #11111b;
@@ -25,6 +27,30 @@
         --green:    #a6e3a1;
         --sky:      #89dceb;
         --pink:     #f5c2e7;
+        --rc-active-line-bg: rgba(137,180,250,.055);
+      }
+
+      /* ── Catppuccin Latte (light) ────────────────────────────────────────── */
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --base:     #eff1f5;
+        --mantle:   #e6e9ef;
+        --crust:    #dce0e8;
+        --surface0: #ccd0da;
+        --surface1: #bcc0cc;
+        --surface2: #acb0be;
+        --overlay0: #9ca0b0;
+        --text:     #4c4f69;
+        --subtext0: #6c6f85;
+        --blue:     #1e66f5;
+        --mauve:    #8839ef;
+        --red:      #d20f39;
+        --peach:    #fe640b;
+        --yellow:   #df8e1d;
+        --green:    #40a02b;
+        --sky:      #04a5e5;
+        --pink:     #ea76cb;
+        --rc-active-line-bg: rgba(30,102,245,.06);
       }
 
       *, *::before, *::after { box-sizing: border-box; }
@@ -37,15 +63,40 @@
         background: var(--base);
         color: var(--text);
         line-height: 1.6;
+        transition: background 0.15s, color 0.15s;
       }
 
       header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
         margin-bottom: 3rem;
         padding-bottom: 1.5rem;
         border-bottom: 1px solid var(--surface0);
       }
-      header h1 { margin: 0 0 0.25rem; font-size: 1.75rem; font-weight: 700; }
-      header p  { margin: 0; font-size: 0.875rem; color: var(--subtext0); }
+      .header-text h1 { margin: 0 0 0.25rem; font-size: 1.75rem; font-weight: 700; }
+      .header-text p  { margin: 0; font-size: 0.875rem; color: var(--subtext0); }
+
+      /* ── Theme toggle ──────────────────────────────────────────────────────── */
+      #theme-toggle {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.35em 0.8em;
+        margin-top: 0.2rem;
+        border: 1px solid var(--surface1);
+        border-radius: 6px;
+        background: var(--mantle);
+        color: var(--subtext0);
+        font-family: inherit;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+      }
+      #theme-toggle:hover { border-color: var(--surface2); color: var(--text); }
+      #theme-toggle .icon { font-size: 1rem; line-height: 1; }
 
       .demo { margin-bottom: 3.5rem; }
 
@@ -100,7 +151,7 @@
         --rc-textarea-gutter-color: var(--overlay0);
         --rc-textarea-gutter-border: 1px solid var(--surface1);
         --rc-textarea-caret-color: var(--pink);
-        --rc-textarea-active-line-bg: rgba(137,180,250,.055);
+        --rc-textarea-active-line-bg: var(--rc-active-line-bg);
       }
 
       /* Standalone (no status bar) gets full rounded corners */
@@ -151,8 +202,14 @@
   <body>
 
     <header>
-      <h1>rc-textarea</h1>
-      <p>WAI-ARIA contenteditable editor · Parchment document model · Plugin &amp; decoration API</p>
+      <div class="header-text">
+        <h1>rc-textarea</h1>
+        <p>WAI-ARIA contenteditable editor · Parchment document model · Plugin &amp; decoration API</p>
+      </div>
+      <button id="theme-toggle" type="button" aria-label="Toggle color scheme">
+        <span class="icon" aria-hidden="true">☀</span>
+        <span class="label">Light</span>
+      </button>
     </header>
 
     <!-- ── 1. Active line + cursor state ─────────────────────────────────── -->
@@ -183,7 +240,35 @@ End of section.</textarea>
       </div>
     </div>
 
-    <!-- ── 2. Pattern matching ────────────────────────────────────────────── -->
+    <!-- ── 2. List-numbers gutter ─────────────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header">
+        <h2>List-numbers gutter</h2>
+        <span class="badge">New</span>
+      </div>
+      <p class="demo-desc">
+        <code>list-numbers</code> attribute — a sequential counter that increments only on
+        non-blank lines. Blank separator lines get an empty gutter cell. Edit the text to
+        add or remove steps and watch the numbering update live.
+      </p>
+      <rc-textarea id="list-demo" class="standalone" list-numbers word-wrap auto-grow>
+        <textarea name="list" rows="12">Install the dependencies with your package manager.
+
+Copy the example configuration file to your project root.
+
+Open the config and set your API key and base URL.
+
+Run the development server.
+
+Open http://localhost:5173 in your browser.
+
+Edit any source file — changes reload instantly.
+
+When ready, run the build command to produce an optimised bundle.</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 3. Pattern matching ────────────────────────────────────────────── -->
     <div class="demo">
       <div class="demo-header"><h2>Pattern matching</h2></div>
       <p class="demo-desc">
@@ -201,7 +286,7 @@ End of section.</textarea>
       </rc-textarea>
     </div>
 
-    <!-- ── 3. Syntax highlighting (hljs) ─────────────────────────────────── -->
+    <!-- ── 4. Syntax highlighting (hljs) ─────────────────────────────────── -->
     <div class="demo">
       <div class="demo-header"><h2>Syntax highlighting — highlight.js</h2></div>
       <p class="demo-desc">
@@ -232,7 +317,7 @@ class EventEmitter {
       </rc-textarea>
     </div>
 
-    <!-- ── 4. Diagnostics (line + mark decorations) ───────────────────────── -->
+    <!-- ── 5. Diagnostics (line + mark decorations) ───────────────────────── -->
     <div class="demo">
       <div class="demo-header"><h2>Diagnostics — line &amp; mark decorations</h2></div>
       <p class="demo-desc">
@@ -250,7 +335,7 @@ export default parsed;
       </rc-textarea>
     </div>
 
-    <!-- ── 5. Widget decorations (color swatches) ─────────────────────────── -->
+    <!-- ── 6. Widget decorations (color swatches) ─────────────────────────── -->
     <div class="demo">
       <div class="demo-header"><h2>Widget decorations — inline color swatches</h2></div>
       <p class="demo-desc">
@@ -268,7 +353,7 @@ export default parsed;
       </rc-textarea>
     </div>
 
-    <!-- ── 6. Cursor-aware tooltip ────────────────────────────────────────── -->
+    <!-- ── 7. Cursor-aware tooltip ────────────────────────────────────────── -->
     <div class="demo">
       <div class="demo-header">
         <h2>Cursor-aware tooltip</h2>
@@ -298,7 +383,7 @@ console.log(result);
       </rc-textarea>
     </div>
 
-    <!-- ── 7. Word wrap + auto-grow ──────────────────────────────────────── -->
+    <!-- ── 8. Word wrap + auto-grow ──────────────────────────────────────── -->
     <div class="demo">
       <div class="demo-header"><h2>Word wrap + auto-grow</h2></div>
       <p class="demo-desc">
@@ -318,6 +403,25 @@ console.log(result);
 
     <script type="module">
       import { RCTextarea } from './src/index.ts';
+
+      // ── Theme toggle ──────────────────────────────────────────────────────
+      const root = document.documentElement;
+      const toggleBtn = document.getElementById('theme-toggle');
+      const toggleIcon = toggleBtn.querySelector('.icon');
+      const toggleLabel = toggleBtn.querySelector('.label');
+
+      toggleBtn.addEventListener('click', () => {
+        const isLight = root.dataset.theme === 'light';
+        if (isLight) {
+          delete root.dataset.theme;
+          toggleIcon.textContent = '☀';
+          toggleLabel.textContent = 'Light';
+        } else {
+          root.dataset.theme = 'light';
+          toggleIcon.textContent = '☾';
+          toggleLabel.textContent = 'Dark';
+        }
+      });
 
       // ── Shared hljs theme (compiled once, adopted into each shadow root) ──
       const hljsSheet = new CSSStyleSheet();
@@ -364,13 +468,13 @@ console.log(result);
         destroy() { alUnsub?.(); },
       });
 
-      // ── 2. Pattern matching ───────────────────────────────────────────────
+      // ── 3. Pattern matching ───────────────────────────────────────────────
       const patternDemo = document.getElementById('pattern-demo');
       patternDemo.addPattern({ pattern: /\bTODO\b/g,  bold: true, color: '#fab387', background: 'rgba(250,179,135,.12)' });
       patternDemo.addPattern({ pattern: /\bFIXME\b/g, bold: true, color: '#f38ba8', background: 'rgba(243,139,168,.12)' });
       patternDemo.addPattern({ pattern: /\bHACK\b/g,  bold: true, color: '#f9e2af', background: 'rgba(249,226,175,.12)' });
 
-      // ── 3. highlight.js ───────────────────────────────────────────────────
+      // ── 4. highlight.js ───────────────────────────────────────────────────
       document.getElementById('hljs-demo').usePlugin({
         mount(api) { api.adoptStyleSheet(hljsSheet); },
         async highlight(value, api) {
@@ -382,7 +486,7 @@ console.log(result);
         },
       });
 
-      // ── 4. Diagnostics ────────────────────────────────────────────────────
+      // ── 5. Diagnostics ────────────────────────────────────────────────────
       const diagSheet = new CSSStyleSheet();
       diagSheet.replaceSync(`
         .v2-error   { background: rgba(243,139,168,.07); }
@@ -442,7 +546,7 @@ console.log(result);
         },
       });
 
-      // ── 5. Widget decorations (color swatches) ────────────────────────────
+      // ── 6. Widget decorations (color swatches) ────────────────────────────
       document.getElementById('widget-demo').usePlugin({
         mount(api) { buildSwatches(api); },
         update(_, api) { buildSwatches(api); },
@@ -471,7 +575,7 @@ console.log(result);
         api.setDecorations(decs);
       }
 
-      // ── 6. Cursor-aware tooltip ───────────────────────────────────────────
+      // ── 7. Cursor-aware tooltip ───────────────────────────────────────────
       const tooltipEl   = document.getElementById('word-tooltip');
       const tooltipWord = tooltipEl.querySelector('.tw-word');
       const tooltipDef  = tooltipEl.querySelector('.tw-def');

@@ -81,6 +81,12 @@ export class RCTextarea extends LitElement {
   @property({ type: Boolean, attribute: 'line-numbers', reflect: true })
   lineNumbers = false;
 
+  @property({ type: Boolean, attribute: 'list-numbers', reflect: true })
+  listNumbers = false;
+
+  @property({ type: Boolean, attribute: 'gutter', reflect: true })
+  gutter = false;
+
   @property({ type: Boolean, attribute: 'word-wrap', reflect: true })
   wordWrap = false;
 
@@ -133,6 +139,8 @@ export class RCTextarea extends LitElement {
   private _undoIndex = -1;
 
   private _resizeObserver: ResizeObserver | null = null;
+  /** Cached per-line gutter labels from the last render — reused by ResizeObserver. */
+  private _gutterLabels: (string | null)[] = [];
 
   // ── Public value property ─────────────────────────────────────────────
 
@@ -188,7 +196,10 @@ export class RCTextarea extends LitElement {
       this._document = new V2Document(editorEl as HTMLDivElement);
       this._bindEditorEvents(editorEl);
     }
-    this._resizeObserver = new ResizeObserver(() => this._syncGutter());
+    this._resizeObserver = new ResizeObserver(() => {
+      this._syncGutter();
+      this._syncGutterHeights();
+    });
     this._resizeObserver.observe(this);
   }
 
@@ -354,7 +365,7 @@ export class RCTextarea extends LitElement {
     for (const dec of mappedDecs) this._pluginDecorations.set(dec.id, dec);
 
     this._value = newValue;
-    this._syncTextareaValue();
+    this._syncTextareaValue(true);
 
     // Save cursor position AFTER the browser has processed the input
     this._savedSelection = saveSelection(editorEl);
@@ -509,7 +520,7 @@ export class RCTextarea extends LitElement {
       for (const dec of mappedDecs) this._pluginDecorations.set(dec.id, dec);
 
       this._value = newValue;
-      this._syncTextareaValue();
+      this._syncTextareaValue(true);
       this._savedSelection = {
         anchorOffset: newCursorOffset,
         focusOffset: newCursorOffset,
@@ -584,7 +595,7 @@ export class RCTextarea extends LitElement {
       anchorOffset: entry.anchorOffset,
       focusOffset: entry.focusOffset,
     };
-    this._syncTextareaValue();
+    this._syncTextareaValue(true);
     this.dispatchEvent(
       new CustomEvent('rc-textarea-change', {
         bubbles: true,
@@ -819,7 +830,8 @@ export class RCTextarea extends LitElement {
       this._updateActiveLine();
 
       // Update gutter
-      this._syncGutter();
+      this._syncGutter(this._computeGutterLabels(allDecorations));
+      this._syncGutterHeights();
     } finally {
       this._isRendering = false;
     }
@@ -827,27 +839,80 @@ export class RCTextarea extends LitElement {
 
   // ── Gutter ────────────────────────────────────────────────────────────
 
-  private _syncGutter(): void {
-    if (!this.lineNumbers) return;
+  private _computeGutterLabels(allDecorations: Decoration[]): (string | null)[] {
+    const lines = this._value.split('\n');
+
+    const overrides = new Map<number, string | null>();
+    for (const dec of allDecorations) {
+      if (dec.type === 'line' && dec.gutterContent !== undefined) {
+        overrides.set(dec.line, dec.gutterContent);
+      }
+    }
+
+    let counter = 0;
+    return lines.map((lineText, i) => {
+      const lineNum = i + 1;
+
+      if (overrides.has(lineNum)) return overrides.get(lineNum)!;
+
+      if (this.lineNumbers) return String(lineNum);
+
+      if (this.listNumbers) {
+        if (lineText.trim() === '') return null;
+        counter++;
+        return `${counter}.`;
+      }
+
+      return null; // `gutter` mode — empty by default, plugins fill via overrides
+    });
+  }
+
+  private _syncGutterHeights(): void {
+    const gutterEl = this.shadowRoot?.getElementById('line-numbers');
+    const editorEl = this._getEditorEl();
+    if (!gutterEl || !editorEl) return;
+
+    const lineEls = editorEl.querySelectorAll<HTMLElement>('.v2-line');
+    const spans = gutterEl.children;
+
+    if (!this.wordWrap) {
+      for (let i = 0; i < spans.length; i++) {
+        (spans[i] as HTMLElement).style.height = '';
+      }
+      return;
+    }
+
+    for (let i = 0; i < lineEls.length && i < spans.length; i++) {
+      const h = lineEls[i]!.offsetHeight;
+      const span = spans[i] as HTMLElement;
+      if (span.style.height !== `${h}px`) span.style.height = `${h}px`;
+    }
+  }
+
+  private _syncGutter(labels?: (string | null)[]): void {
+    if (!this.lineNumbers && !this.listNumbers && !this.gutter) return;
+
     const gutterEl = this.shadowRoot?.getElementById('line-numbers');
     if (!gutterEl) return;
 
-    const lineCount = this._value.split('\n').length;
-    const existing = gutterEl.children.length;
+    if (labels !== undefined) this._gutterLabels = labels;
+    const current = this._gutterLabels;
 
-    if (existing === lineCount) return; // nothing to do
+    // Sync count
+    while (gutterEl.children.length < current.length) {
+      const span = document.createElement('span');
+      span.className = 'line-number';
+      gutterEl.appendChild(span);
+    }
+    while (gutterEl.children.length > current.length) {
+      gutterEl.removeChild(gutterEl.lastChild!);
+    }
 
-    if (lineCount > existing) {
-      for (let i = existing + 1; i <= lineCount; i++) {
-        const span = document.createElement('span');
-        span.className = 'line-number';
-        span.textContent = String(i);
-        gutterEl.appendChild(span);
-      }
-    } else {
-      while (gutterEl.children.length > lineCount) {
-        gutterEl.removeChild(gutterEl.lastChild!);
-      }
+    // Sync content (only write when changed)
+    for (let i = 0; i < current.length; i++) {
+      const label = current[i] ?? '';
+      const span = gutterEl.children[i] as HTMLElement;
+      if (span.textContent !== label) span.textContent = label;
     }
   }
 
@@ -887,9 +952,14 @@ export class RCTextarea extends LitElement {
 
   // ── Form integration ──────────────────────────────────────────────────
 
-  private _syncTextareaValue(): void {
+  private _syncTextareaValue(fromUser = false): void {
     const textarea = this._textareaRef?.deref();
-    if (textarea) textarea.value = this._value;
+    if (textarea) {
+      textarea.value = this._value;
+      if (fromUser) {
+        textarea.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      }
+    }
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────

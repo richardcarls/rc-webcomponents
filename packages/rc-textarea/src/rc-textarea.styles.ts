@@ -4,6 +4,7 @@ export const styles = css`
   :host {
     display: block;
     box-sizing: border-box;
+    color-scheme: inherit;
   }
 
   :host([hidden]) {
@@ -35,7 +36,9 @@ export const styles = css`
     user-select: none;
   }
 
-  :host([line-numbers]) #gutter {
+  :host([line-numbers]) #gutter,
+  :host([list-numbers]) #gutter,
+  :host([gutter]) #gutter {
     display: block;
   }
 
@@ -110,8 +113,15 @@ export const styles = css`
     height: auto;
   }
 
+  :host([read-only]) #root {
+    border: none;
+    background: transparent;
+    border-radius: 0;
+  }
+
   :host([read-only]) #editor {
     cursor: default;
+    padding: 0;
     -webkit-user-modify: read-only;
   }
 

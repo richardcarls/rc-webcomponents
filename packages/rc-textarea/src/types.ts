@@ -49,6 +49,13 @@ export interface LineDecoration {
    */
   messageClassName?: string;
   attributes?: Record<string, string>;
+  /**
+   * Override the built-in gutter cell text for this line.
+   * - `string`    — custom label (e.g. `"!"`, `"▶"`)
+   * - `null`      — force empty cell (suppress built-in content)
+   * - `undefined` — use the built-in mode default (`line-numbers`, `list-numbers`, etc.)
+   */
+  gutterContent?: string | null;
 }
 
 /**
