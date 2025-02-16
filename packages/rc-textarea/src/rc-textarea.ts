@@ -424,7 +424,12 @@ export class RCTextarea extends LitElement {
   private _updateActiveLine(): void {
     const editorEl = this._getEditorEl();
     if (!editorEl) return;
-    const sel = window.getSelection();
+    // Chrome does not expose shadow-DOM selections via window.getSelection() —
+    // use shadowRoot.getSelection() when available (Chrome 53+), falling back to
+    // window.getSelection() for Firefox and other browsers.
+    const sel =
+      (this.shadowRoot as unknown as { getSelection?: () => Selection | null })
+        .getSelection?.() ?? window.getSelection();
     let newActive: HTMLElement | null = null;
     if (sel?.focusNode && editorEl.contains(sel.focusNode)) {
       let node: Node | null = sel.focusNode;

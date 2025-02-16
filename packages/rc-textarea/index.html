@@ -136,7 +136,7 @@
 
       /* ── Editor theming ──────────────────────────────────────────────────── */
 
-      rc-textarea {
+      rc-textarea:not(.no-theme) {
         display: block;
         --rc-textarea-font-family: 'Cascadia Code', 'Fira Code', monospace;
         --rc-textarea-font-size: 13.5px;
@@ -211,6 +211,24 @@
         <span class="label">Light</span>
       </button>
     </header>
+
+    <!-- ── 0. Basic Unstyled ─────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header">
+        <h2>Basic Unstyled</h2>
+      </div>
+      <p class="demo-desc">
+        Basic example with no theme or styling applied.
+      </p>
+
+      <rc-textarea class="no-theme" line-numbers word-wrap>
+        <textarea rows="8">Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo quaerat exercitationem, voluptatum inventore impedit omnis magnam maiores cupiditate veniam ad.
+
+Lorem ipsum dolor sit amet.
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti, totam.</textarea>
+      </rc-textarea>
+    </div>
 
     <!-- ── 1. Active line + cursor state ─────────────────────────────────── -->
     <div class="demo">

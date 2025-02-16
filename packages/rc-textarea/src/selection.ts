@@ -192,7 +192,12 @@ function walkToOffset(node: Node, remaining: number): DomPosition | null {
  * Returns null if there is no selection or the selection is outside `root`.
  */
 export function saveSelection(root: Element): SavedSelection | null {
-  const sel = window.getSelection();
+  // Chrome does not expose shadow-DOM selections via window.getSelection().
+  // Use shadowRoot.getSelection() when available, falling back to window.getSelection().
+  const rootNode = root.getRootNode();
+  const sel =
+    (rootNode as unknown as { getSelection?: () => Selection | null })
+      .getSelection?.() ?? window.getSelection();
   if (!sel || sel.rangeCount === 0) return null;
 
   const range = sel.getRangeAt(0);
