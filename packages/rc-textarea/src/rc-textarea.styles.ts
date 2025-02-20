@@ -42,7 +42,7 @@ export const styles = css`
     display: block;
   }
 
-  #line-numbers {
+  #gutter-cells {
     padding: var(--rc-textarea-padding, 0.5em);
     padding-right: 0.75em;
     font-family: var(--rc-textarea-font-family, monospace);
@@ -52,12 +52,12 @@ export const styles = css`
     min-width: 2.5ch;
   }
 
-  .line-number {
+  .gutter-cell {
     display: block;
     white-space: pre;
   }
 
-  .line-number--active {
+  .gutter-cell--active {
     color: var(--rc-textarea-color, FieldText);
   }
 
@@ -154,7 +154,6 @@ export const styles = css`
   .v2-line {
     position: relative;
     display: block;
-    min-height: var(--rc-textarea-line-height, 1.5em);
   }
 
   /* Active line highlight — opt-in via CSS custom property. */

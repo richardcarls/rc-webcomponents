@@ -7,7 +7,7 @@ import type { RCTextarea } from './rc-textarea.ts';
 import type { RCTextareaPluginAPI } from './types.ts';
 import {
   getEditor,
-  getLineNumbers,
+  getGutterCells,
   getSlottedTextarea,
   waitRender,
   simulatePaste,
@@ -237,7 +237,7 @@ describe('RCTextarea — lineNumbers', () => {
     host.value = 'a\nb\nc';
     await waitRender();
 
-    expect(getLineNumbers(host).children.length).toBe(0);
+    expect(getGutterCells(host).children.length).toBe(0);
   });
 
   test('lineNumbers=true: gutter gets one span per line', async () => {
@@ -250,7 +250,7 @@ describe('RCTextarea — lineNumbers', () => {
     host.value = 'line1\nline2\nline3';
     await waitRender();
 
-    const lineNums = getLineNumbers(host);
+    const lineNums = getGutterCells(host);
     expect(lineNums.children.length).toBe(3);
     expect(lineNums.children[0].textContent).toBe('1');
     expect(lineNums.children[1].textContent).toBe('2');
@@ -266,11 +266,11 @@ describe('RCTextarea — lineNumbers', () => {
 
     host.value = 'line1\nline2';
     await waitRender();
-    expect(getLineNumbers(host).children.length).toBe(2);
+    expect(getGutterCells(host).children.length).toBe(2);
 
     host.value = 'line1\nline2\nline3';
     await waitRender();
-    expect(getLineNumbers(host).children.length).toBe(3);
+    expect(getGutterCells(host).children.length).toBe(3);
   });
 });
 

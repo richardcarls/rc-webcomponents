@@ -207,6 +207,7 @@ export class RCTextarea extends LitElement {
     if (changed.has('readOnly')) {
       const editorEl = this._getEditorEl();
       if (editorEl) editorEl.contentEditable = this.readOnly ? 'false' : 'true';
+      this._syncGutterHeights(); // re-sync gutter padding (#editor padding: 0 in read-only)
     }
     if (changed.has('label')) {
       const editorEl = this._getEditorEl();
@@ -221,7 +222,7 @@ export class RCTextarea extends LitElement {
     return html`
       <div id="root" part="root">
         <div id="gutter" part="gutter" aria-hidden="true">
-          <div id="line-numbers" part="line-numbers"></div>
+          <div id="gutter-cells" part="gutter-cells"></div>
         </div>
         <div id="editor-area" part="editor-area">
           <div
@@ -447,16 +448,16 @@ export class RCTextarea extends LitElement {
     this._activeLine?.classList.add('v2-line--active');
 
     // Update active line number highlight
-    this._updateActiveLineNumber();
+    this._updateActiveGutterCell();
   }
 
-  private _updateActiveLineNumber(): void {
-    const gutterEl = this.shadowRoot?.getElementById('line-numbers');
+  private _updateActiveGutterCell(): void {
+    const gutterEl = this.shadowRoot?.getElementById('gutter-cells');
     if (!gutterEl) return;
 
     // Find and remove previous active state
-    const prevActive = gutterEl.querySelector('.line-number--active');
-    if (prevActive) prevActive.classList.remove('line-number--active');
+    const prevActive = gutterEl.querySelector('.gutter-cell--active');
+    if (prevActive) prevActive.classList.remove('gutter-cell--active');
 
     // Find line index and highlight corresponding line number
     if (this._activeLine) {
@@ -468,7 +469,7 @@ export class RCTextarea extends LitElement {
         if (allLines[i] === this._activeLine) {
           const lineNumberEl = gutterEl.children[i];
           if (lineNumberEl) {
-            lineNumberEl.classList.add('line-number--active');
+            lineNumberEl.classList.add('gutter-cell--active');
           }
           break;
         }
@@ -873,31 +874,52 @@ export class RCTextarea extends LitElement {
   }
 
   private _syncGutterHeights(): void {
-    const gutterEl = this.shadowRoot?.getElementById('line-numbers');
+    const gutterEl = this.shadowRoot?.getElementById('gutter-cells');
     const editorEl = this._getEditorEl();
     if (!gutterEl || !editorEl) return;
+
+    // Sync vertical padding from the editor's computed values.
+    // Browser UA overrides (Chrome/Firefox on contenteditable) cause 0.5em to
+    // resolve to different pixel values on the gutter vs the editor, producing
+    // a constant vertical offset. The read-only rule (padding: 0 on #editor)
+    // also needs the gutter to match — this one call covers both cases.
+    const cs = getComputedStyle(editorEl);
+    const pt = cs.paddingTop;
+    const pb = cs.paddingBottom;
+    if (gutterEl.style.paddingTop !== pt) gutterEl.style.paddingTop = pt;
+    if (gutterEl.style.paddingBottom !== pb) gutterEl.style.paddingBottom = pb;
 
     const lineEls = editorEl.querySelectorAll<HTMLElement>('.v2-line');
     const spans = gutterEl.children;
 
     if (!this.wordWrap) {
+      // Chrome UA overrides line-height on contenteditable (even via var() fallback,
+      // but not inline styles), giving the editor a different natural cell height
+      // than the gutter's CSS 1.5× value. Mirror the first line's actual height.
+      if (lineEls.length > 0) {
+        const lhPx = `${lineEls[0].getBoundingClientRect().height}px`;
+        if (gutterEl.style.lineHeight !== lhPx) gutterEl.style.lineHeight = lhPx;
+      }
       for (let i = 0; i < spans.length; i++) {
         (spans[i] as HTMLElement).style.height = '';
       }
       return;
     }
 
+    // word-wrap: per-span explicit heights drive alignment; clear any forced line-height.
+    if (gutterEl.style.lineHeight) gutterEl.style.lineHeight = '';
     for (let i = 0; i < lineEls.length && i < spans.length; i++) {
-      const h = lineEls[i]!.offsetHeight;
+      const h = lineEls[i]!.getBoundingClientRect().height;
+      const hStr = `${h}px`;
       const span = spans[i] as HTMLElement;
-      if (span.style.height !== `${h}px`) span.style.height = `${h}px`;
+      if (span.style.height !== hStr) span.style.height = hStr;
     }
   }
 
   private _syncGutter(labels?: (string | null)[]): void {
     if (!this.lineNumbers && !this.listNumbers && !this.gutter) return;
 
-    const gutterEl = this.shadowRoot?.getElementById('line-numbers');
+    const gutterEl = this.shadowRoot?.getElementById('gutter-cells');
     if (!gutterEl) return;
 
     if (labels !== undefined) this._gutterLabels = labels;
@@ -906,7 +928,7 @@ export class RCTextarea extends LitElement {
     // Sync count
     while (gutterEl.children.length < current.length) {
       const span = document.createElement('span');
-      span.className = 'line-number';
+      span.className = 'gutter-cell';
       gutterEl.appendChild(span);
     }
     while (gutterEl.children.length > current.length) {

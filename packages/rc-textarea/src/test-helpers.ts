@@ -6,8 +6,8 @@ export function getEditor(host: RCTextarea): HTMLDivElement {
   return host.shadowRoot!.querySelector('#editor') as HTMLDivElement;
 }
 
-export function getLineNumbers(host: RCTextarea): HTMLDivElement {
-  return host.shadowRoot!.querySelector('#line-numbers') as HTMLDivElement;
+export function getGutterCells(host: RCTextarea): HTMLDivElement {
+  return host.shadowRoot!.querySelector('#gutter-cells') as HTMLDivElement;
 }
 
 export function getSlottedTextarea(host: RCTextarea): HTMLTextAreaElement {
