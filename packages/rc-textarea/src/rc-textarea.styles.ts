@@ -44,7 +44,7 @@ export const styles = css`
 
   #gutter-cells {
     padding: var(--rc-textarea-padding, 0.5em);
-    padding-right: 0.75em;
+    padding-inline-end: var(--rc-textarea-gutter-padding-inline-end, 0.75em);
     font-family: var(--rc-textarea-font-family, monospace);
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);

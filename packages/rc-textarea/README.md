@@ -48,13 +48,11 @@ A WAI-ARIA compliant enhanced textarea web component built with [Lit 3](https://
 
 ### DOM Structure
 
-### DOM Structure
-
 ```
 rc-textarea (LitElement shadow host, delegatesFocus=true)
 ├── #root (flex container)
-│   ├── #gutter (line numbers gutter, optional)
-│   │   └── #line-numbers (line number list)
+│   ├── #gutter (line/list/custom gutter, optional)
+│   │   └── #gutter-cells (container for .gutter-cell spans, one per line)
 │   └── #editor-area (flex item, grows to fill)
 │       ├── #editor (contenteditable div — Parchment ScrollBlot root)
 │       │   └── .v2-line divs (one per logical line, V2BlockBlot)
@@ -186,6 +184,8 @@ All attributes reflect to properties. Use attributes in HTML or properties in JS
 | Attribute | Property | Type | Default | Description |
 |-----------|----------|------|---------|-------------|
 | `line-numbers` | `lineNumbers` | `boolean` | `false` | Display line number gutter on the left |
+| `list-numbers` | `listNumbers` | `boolean` | `false` | Display a numbered list gutter (skips blank lines, resets counter) |
+| `gutter` | `gutter` | `boolean` | `false` | Show a gutter column without built-in content (plugins fill cells via `LineDecoration.gutterContent`) |
 | `word-wrap` | `wordWrap` | `boolean` | `false` | Enable word wrapping (default: scroll horizontally) |
 | `auto-grow` | `autoGrow` | `boolean` | `false` | Grow container height to fit content |
 | `read-only` | `readOnly` | `boolean` | `false` | Disable text editing; still selectable |
@@ -288,9 +288,11 @@ Set on the host element or any ancestor to style the editor.
 | `--rc-textarea-border` | `1px solid ButtonBorder` | Editor border (system color keyword) |
 | `--rc-textarea-border-radius` | `2px` | Corner rounding |
 | `--rc-textarea-focus-outline` | `2px solid AccentColor` | Focus ring (system color keyword) |
+| `--rc-textarea-active-line-bg` | `transparent` | Background of the line containing the cursor |
 | `--rc-textarea-gutter-color` | `GrayText` | Line number text color |
 | `--rc-textarea-gutter-bg` | `Canvas` | Gutter background |
 | `--rc-textarea-gutter-border` | `1px solid ButtonBorder` | Gutter right border |
+| `--rc-textarea-gutter-padding-inline-end` | `0.75em` | Gap between gutter numbers and editor content |
 
 ### Example
 
@@ -314,8 +316,8 @@ Use `::part()` pseudo-element for advanced styling.
 | Part | Element | Supports |
 |------|---------|----------|
 | `root` | Outer flex container | All CSS |
-| `gutter` | Line number gutter div | All CSS |
-| `line-numbers` | Line numbers list container | All CSS |
+| `gutter` | Gutter outer div | All CSS |
+| `gutter-cells` | Inner container holding `.gutter-cell` spans | All CSS |
 | `editor-area` | Container wrapping editor + slot | All CSS |
 | `editor` | The `contenteditable` div | All CSS |
 
@@ -601,6 +603,10 @@ interface LineDecoration {
   message?: string;                // Error-lens text (rendered via ::after, not selectable)
   messageClassName?: string;       // Space-separated class(es) set as data-message-class
   attributes?: Record<string, string>;
+  gutterContent?: string | null;   // Override gutter cell text for this line:
+                                   //   string  — custom label (e.g. "!", "▶")
+                                   //   null    — force empty (suppress built-in content)
+                                   //   omitted — use the built-in mode default
 }
 ```
 
@@ -1061,6 +1067,8 @@ If both `update()` and `highlight()` are provided, only one runs per render. The
 |----------|------|---------|----------|
 | `value` | `string` | `''` | N/A |
 | `lineNumbers` | `boolean` | `false` | Yes (*line-numbers* attr) |
+| `listNumbers` | `boolean` | `false` | Yes (*list-numbers* attr) |
+| `gutter` | `boolean` | `false` | Yes (*gutter* attr) |
 | `wordWrap` | `boolean` | `false` | Yes (*word-wrap* attr) |
 | `autoGrow` | `boolean` | `false` | Yes (*auto-grow* attr) |
 | `readOnly` | `boolean` | `false` | Yes (*read-only* attr) |
