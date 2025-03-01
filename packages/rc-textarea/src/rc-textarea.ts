@@ -784,9 +784,16 @@ export class RCTextarea extends LitElement {
     const seq = ++this._pluginSeq;
 
     try {
+      // Resolve display value: apply transform hook (read-only only) before everything else
+      let renderValue = this._value;
+      if (this._plugin && this._pluginApi && this._plugin.transform && this.readOnly) {
+        const transformed = this._plugin.transform(this._value, this._pluginApi);
+        if (typeof transformed === 'string') renderValue = transformed;
+      }
+
       // Run pattern matcher
       const { markDecorations: patMarkDecs, lineDecorations: patLineDecs } =
-        matchPatternResults(this._value, [...this._patterns.values()]);
+        matchPatternResults(renderValue, [...this._patterns.values()]);
       this._patternDecorations = [
         ...patMarkDecs.map((d) => ({ ...d, id: generateId() })),
         ...patLineDecs.map((d) => ({ ...d, id: generateId() })),
@@ -797,12 +804,12 @@ export class RCTextarea extends LitElement {
         const api = this._pluginApi;
 
         if (this._plugin.update) {
-          await this._plugin.update(this._value, api);
+          await this._plugin.update(renderValue, api);
           if (seq !== this._pluginSeq) return; // stale — newer render started
         }
 
         if (this._plugin.highlight) {
-          const html = await this._plugin.highlight(this._value, api);
+          const html = await this._plugin.highlight(renderValue, api);
           if (seq !== this._pluginSeq) return;
           if (typeof html === 'string') {
             const decs = decorationsFromHtml(html);
@@ -824,7 +831,7 @@ export class RCTextarea extends LitElement {
       const editorEl = this._getEditorEl();
       if (!editorEl) return;
 
-      this._document.build(this._value, allDecorations);
+      this._document.build(renderValue, allDecorations);
 
       // Restore cursor
       if (this._savedSelection) {
@@ -836,7 +843,7 @@ export class RCTextarea extends LitElement {
       this._updateActiveLine();
 
       // Update gutter
-      this._syncGutter(this._computeGutterLabels(allDecorations));
+      this._syncGutter(this._computeGutterLabels(allDecorations, renderValue));
       this._syncGutterHeights();
     } finally {
       this._isRendering = false;
@@ -845,8 +852,8 @@ export class RCTextarea extends LitElement {
 
   // ── Gutter ────────────────────────────────────────────────────────────
 
-  private _computeGutterLabels(allDecorations: Decoration[]): (string | null)[] {
-    const lines = this._value.split('\n');
+  private _computeGutterLabels(allDecorations: Decoration[], value = this._value): (string | null)[] {
+    const lines = value.split('\n');
 
     const overrides = new Map<number, string | null>();
     for (const dec of allDecorations) {

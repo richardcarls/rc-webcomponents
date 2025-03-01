@@ -249,6 +249,15 @@ export interface RCTextareaPlugin {
   /** Called when the plugin is replaced or the element disconnects. */
   destroy?(): void;
   /**
+   * Display-layer value transform — called before `update`/`highlight` in
+   * read-only mode. Return a non-null string to substitute it as the rendered
+   * text passed to all subsequent hooks and to the document builder.
+   * The underlying `element.value` is **never** modified; only the display
+   * layer sees the transformed text.
+   * Return `null` or `void` to leave the value unchanged.
+   */
+  transform?(value: string, api: RCTextareaPluginAPI): string | null | void;
+  /**
    * Imperative decoration API — called on each value change.
    * Use `api.setDecorations()` to apply decorations.
    */
