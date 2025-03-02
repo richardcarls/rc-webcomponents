@@ -203,8 +203,9 @@ export class V2Document {
       // so it is completely outside the DOM selection and clipboard path.
       const msgLineDecs = lineDecs.filter(ld => ld.message);
       if (msgLineDecs.length > 0) {
-        const text = '\u00a0\u00a0' + msgLineDecs.map(ld => ld.message).join(' \u00b7 ');
+        const text = msgLineDecs.map(ld => ld.message).join(' \u00b7 ');
         blockDomNode.dataset.message = text;
+        blockDomNode.title = text;
         const classes = [
           ...new Set(
             msgLineDecs.flatMap(ld =>

@@ -167,9 +167,8 @@ export const styles = css`
      and clipboard path — no user-select tricks needed. */
   .v2-line[data-message]::after {
     content: attr(data-message);
-    position: absolute;
-    right: 0.5em;
-    top: 0;
+    display: inline;
+    margin-left: 4ch;
     white-space: nowrap;
     pointer-events: none;
     font-size: 0.875em;
