@@ -77,6 +77,11 @@ export class V2InlineBlot extends InlineBlot {
   }
 }
 
+/**
+ * Apply `MarkDecoration` style properties to a `.v2-mark` span element as
+ * inline styles and extra CSS classes. Called by `V2InlineBlot.create()` and
+ * by external code that needs to style a span to match a decoration.
+ */
 export function applyInlineFormats(
   el: HTMLSpanElement,
   formats: InlineFormats,

@@ -276,6 +276,22 @@ export interface RCTextareaPlugin {
 
 // ── Pattern types ─────────────────────────────────────────────────────────────
 
+/**
+ * The subset of `MarkDecoration` properties used for styling.
+ * Used in `TextPattern.captureGroups` to assign a style to each named capture group.
+ */
+export type MarkDecorationStyle = Pick<
+  MarkDecoration,
+  | 'className'
+  | 'bold'
+  | 'italic'
+  | 'color'
+  | 'background'
+  | 'underline'
+  | 'underlineColor'
+  | 'attributes'
+>;
+
 export interface TextPattern {
   id: string;
   pattern: RegExp;
@@ -295,8 +311,69 @@ export interface TextPattern {
   createLineDecoration?: (
     match: RegExpMatchArray,
   ) => Omit<LineDecoration, 'id' | 'type' | 'line'> | null;
+  /**
+   * Per-named-capture-group decoration styles. When provided, one
+   * `MarkDecoration` is emitted per captured group (unmatched optional groups
+   * are skipped) instead of one decoration for the whole match.
+   *
+   * The `pattern` must use named capture groups (`(?<name>...)`). The `d`
+   * flag (indices) is added automatically when `captureGroups` is set.
+   *
+   * @example
+   * ```ts
+   * {
+   *   id: 'kv',
+   *   pattern: /^(?<key>\w+):\s*(?<value>.+)$/gm,
+   *   captureGroups: {
+   *     key:   { bold: true, color: '#c792ea' },
+   *     value: { color: '#c3e88d' },
+   *   },
+   * }
+   * ```
+   */
+  captureGroups?: Record<string, MarkDecorationStyle>;
 }
 
+// ── Line decorator types ──────────────────────────────────────────────────────
+
+/**
+ * A simplified plugin variant for per-line decoration.
+ *
+ * Return mark/line decorations with offsets **relative to the start of the
+ * line** — `createLineDecoratorPlugin()` converts them to absolute document
+ * offsets automatically, so no `lineStart` bookkeeping is needed.
+ *
+ * @example
+ * ```ts
+ * const myDecorator: LineDecoratorPlugin = {
+ *   styles: '.kw { font-weight: bold; color: #cba6f7; }',
+ *   decorateLine(line) {
+ *     const results: Omit<MarkDecoration | LineDecoration, 'id'>[] = [];
+ *     const m = /\bfunction\b/.exec(line);
+ *     if (m) results.push({ type: 'mark', from: m.index, to: m.index + m[0].length, className: 'kw' });
+ *     return results;
+ *   },
+ * };
+ * editor.usePlugin(createLineDecoratorPlugin(myDecorator));
+ * ```
+ */
+export interface LineDecoratorPlugin {
+  /**
+   * Called for each line of text (including empty lines, which can be skipped
+   * by returning `[]`). `lineIndex` is 0-based.
+   *
+   * Offsets in returned `MarkDecoration` objects must be **line-relative**
+   * (0 = start of the line). `LineDecoration.line` should be 1-based as usual.
+   */
+  decorateLine(
+    line: string,
+    lineIndex: number,
+  ): (Omit<MarkDecoration, 'id'> | Omit<LineDecoration, 'id'>)[];
+  /** CSS text to inject into the component's shadow root once on mount. */
+  styles?: string;
+}
+
+/** Generate a unique decoration ID (UUID v4). */
 export function generateId(): string {
   return crypto.randomUUID();
 }
