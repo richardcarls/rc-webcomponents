@@ -1,0 +1,374 @@
+import type { RCTextareaPluginAPI, DecorationInput } from './types.ts';
+
+// ── Public types ──────────────────────────────────────────────────────────────
+
+export interface LineAction {
+  id: string;
+  label: string;
+  /** data-icon attribute — host renders via iconify or similar */
+  icon?: string;
+  onClick: () => void;
+}
+
+export interface LineActionsOptions {
+  /** Where to place the inline widget. Default: 'append'. */
+  position?: 'append';
+  /**
+   * Create and return a DOM element for the given icon name (e.g. 'mdi-lock-outline').
+   * Called when `action.icon` is set. Return `null` to fall back to text label.
+   *
+   * @example — iconify web component
+   * ```ts
+   * createIcon: (name) => {
+   *   const el = document.createElement('iconify-icon');
+   *   el.setAttribute('icon', name);
+   *   return el;
+   * }
+   * ```
+   */
+  createIcon?: (iconName: string) => HTMLElement | null;
+  /**
+   * Full control over button content. Called instead of the default icon/label
+   * logic. Use `createIcon` when you only need to swap the icon renderer —
+   * `renderButton` is for cases that require full button customisation.
+   */
+  renderButton?: (action: LineAction, btn: HTMLButtonElement) => void;
+}
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+
+// Constructed once at module level and shared across all controller instances —
+// zero extra parsing cost per instantiation (Lit adoptedStyleSheets pattern).
+const WIDGET_SHEET = new CSSStyleSheet();
+WIDGET_SHEET.replaceSync(`
+  .rc-line-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--rc-line-actions-gap, 2px);
+    margin-left: var(--rc-line-actions-margin-start, 6px);
+    vertical-align: middle;
+  }
+  .rc-line-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--rc-line-action-padding, 1px);
+    border: var(--rc-line-action-border, none);
+    border-radius: var(--rc-line-action-border-radius, 3px);
+    background: var(--rc-line-action-bg, transparent);
+    color: var(--rc-line-action-color, inherit);
+    font-size: var(--rc-line-action-font-size, 1em);
+    cursor: pointer;
+    user-select: none;
+    line-height: 1;
+    opacity: var(--rc-line-action-opacity, 0.4);
+    transition: opacity 0.1s;
+  }
+  .rc-line-action-btn:hover {
+    opacity: var(--rc-line-action-hover-opacity, 1);
+    background: var(--rc-line-action-hover-bg, transparent);
+    color: var(--rc-line-action-hover-color, inherit);
+  }
+`);
+
+const POPOVER_STYLE_ID = 'rc-line-actions-popover-style';
+
+const POPOVER_STYLES = `
+  .rc-line-actions-popover {
+    position: fixed;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: var(--rc-line-actions-gap, 4px);
+    padding: 4px 8px;
+    background: var(--rc-line-action-bg, #fff);
+    border: var(--rc-line-action-border, 1px solid #ccc);
+    border-radius: var(--rc-line-action-border-radius, 4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  .rc-line-actions-popover .rc-line-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: var(--rc-line-action-padding, 4px 6px);
+    border: var(--rc-line-action-border, none);
+    border-radius: var(--rc-line-action-border-radius, 3px);
+    background: transparent;
+    color: var(--rc-line-action-color, inherit);
+    font-size: var(--rc-line-action-font-size, 0.85em);
+    cursor: pointer;
+    user-select: none;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .rc-line-actions-popover .rc-line-action-btn:hover {
+    background: var(--rc-line-action-hover-bg, rgba(0, 0, 0, 0.08));
+  }
+`;
+
+// ── LineActionsController ─────────────────────────────────────────────────────
+
+/**
+ * Helper class for plugins that need to show inline action buttons next to a
+ * line, or a floating popover panel anchored to the active line.
+ *
+ * Instantiate in `mount()`, call `getDecorations()` / `getDecorationsForLines()`
+ * from `update()`, and call `destroy()` from the plugin's `destroy()`.
+ *
+ * @example
+ * ```ts
+ * editor.usePlugin({
+ *   mount(api) {
+ *     this._controller = new LineActionsController(api);
+ *   },
+ *   update(value, api) {
+ *     const lineIndex = LineActionsController.getActiveLineIndex(value, api.selectionStart);
+ *     const decs = this._controller.getDecorations(lineIndex, myActions, value, 'inline');
+ *     api.setDecorations(decs);
+ *   },
+ *   destroy() { this._controller.destroy(); },
+ * });
+ * ```
+ */
+export class LineActionsController {
+  private readonly _api: RCTextareaPluginAPI;
+  private readonly _options: LineActionsOptions;
+  private _popover: HTMLDivElement | null = null;
+  private _lastActionsKey = '';
+  private readonly _blurHandler: () => void;
+
+  constructor(api: RCTextareaPluginAPI, options?: LineActionsOptions) {
+    this._api = api;
+    this._options = options ?? {};
+
+    api.adoptStyleSheet(WIDGET_SHEET);
+
+    this._blurHandler = () => this._hidePopover();
+    api.host.addEventListener('rc-textarea-blur', this._blurHandler);
+  }
+
+  /**
+   * Call from plugin's `update()`. Pass the line index, its actions, the full
+   * value, and the current render mode.
+   *
+   * - `'inline'`: returns a `WidgetDecoration[]` to merge into `setDecorations()`.
+   * - `'popover'`: returns `[]` and manages a floating panel as a side effect.
+   *
+   * Passing an empty actions array hides the popover and returns `[]`.
+   */
+  getDecorations(
+    lineIndex: number,
+    actions: LineAction[],
+    value: string,
+    renderMode: 'inline' | 'popover',
+  ): DecorationInput[] {
+    if (renderMode === 'popover') {
+      if (actions.length === 0) {
+        this._hidePopover();
+      } else {
+        this._showPopover(actions);
+      }
+      return [];
+    }
+
+    // inline mode — always hide any lingering popover
+    this._hidePopover();
+
+    if (actions.length === 0) return [];
+
+    const offset = LineActionsController._lineEndOffset(value, lineIndex);
+    const actionsSnapshot = [...actions];
+    const buttonOptions = { renderButton: this._options.renderButton, createIcon: this._options.createIcon };
+
+    return [
+      {
+        type: 'widget',
+        offset,
+        side: 'after',
+        create(): HTMLElement {
+          return buildWidgetContainer(actionsSnapshot, buttonOptions);
+        },
+      },
+    ];
+  }
+
+  /**
+   * Variant for `showOn: 'always'` — one entry per line with actions.
+   *
+   * In popover mode only the `activeLineIndex` line is shown; in inline mode
+   * every line with non-empty actions gets a widget.
+   */
+  getDecorationsForLines(
+    lineActions: Map<number, LineAction[]>,
+    value: string,
+    renderMode: 'inline' | 'popover',
+    activeLineIndex?: number,
+  ): DecorationInput[] {
+    if (renderMode === 'popover') {
+      if (activeLineIndex === undefined) {
+        this._hidePopover();
+        return [];
+      }
+      const actions = lineActions.get(activeLineIndex) ?? [];
+      return this.getDecorations(activeLineIndex, actions, value, 'popover');
+    }
+
+    // inline mode — emit widget for each line that has actions
+    this._hidePopover();
+    const result: DecorationInput[] = [];
+    for (const [lineIndex, actions] of lineActions) {
+      if (actions.length > 0) {
+        result.push(...this.getDecorations(lineIndex, actions, value, 'inline'));
+      }
+    }
+    return result;
+  }
+
+  /** Remove the floating panel and detach all listeners. Call from plugin `destroy()`. */
+  destroy(): void {
+    this._hidePopover();
+    this._api.host.removeEventListener('rc-textarea-blur', this._blurHandler);
+  }
+
+  /** Derive the 0-based line index from a plain-text character offset. */
+  static getActiveLineIndex(value: string, selectionStart: number): number {
+    return value.slice(0, selectionStart).split('\n').length - 1;
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  /**
+   * Character offset of the end of the given 0-based line (points at the
+   * newline character, or end-of-string for the last line).
+   */
+  private static _lineEndOffset(value: string, lineIndex: number): number {
+    const lines = value.split('\n');
+    let offset = 0;
+    for (let i = 0; i < lineIndex && i < lines.length; i++) {
+      offset += lines[i]!.length + 1; // +1 for the '\n'
+    }
+    if (lineIndex < lines.length) {
+      offset += lines[lineIndex]!.length;
+    }
+    return offset;
+  }
+
+  private _showPopover(actions: LineAction[]): void {
+    const actionsKey = actions.map((a) => a.id).join(',');
+
+    // Inject global popover styles once per document
+    if (!document.getElementById(POPOVER_STYLE_ID)) {
+      const style = document.createElement('style');
+      style.id = POPOVER_STYLE_ID;
+      style.textContent = POPOVER_STYLES;
+      document.head.appendChild(style);
+    }
+
+    // Create the panel element if it does not exist yet
+    if (!this._popover) {
+      this._popover = document.createElement('div');
+      this._popover.className = 'rc-line-actions-popover';
+      this._popover.addEventListener('mousedown', (e) => e.preventDefault());
+      document.body.appendChild(this._popover);
+    }
+
+    // Rebuild button contents only when the set of actions changes
+    if (actionsKey !== this._lastActionsKey) {
+      this._lastActionsKey = actionsKey;
+      this._popover.innerHTML = '';
+      buildPopoverButtons(this._popover, actions, this._options);
+    }
+
+    this._positionPopover();
+  }
+
+  private _positionPopover(): void {
+    if (!this._popover) return;
+
+    const cursorRect = this._api.getCursorRect();
+    const hostRect = this._api.host.getBoundingClientRect();
+
+    let top: number;
+    const panelHeight = this._popover.offsetHeight || 32;
+
+    if (cursorRect) {
+      top = cursorRect.bottom + 4;
+      if (top + panelHeight > window.innerHeight) {
+        top = cursorRect.top - panelHeight - 4;
+      }
+    } else {
+      top = hostRect.bottom + 4;
+    }
+
+    const panelWidth = this._popover.offsetWidth || 120;
+    let left = hostRect.left;
+    left = Math.min(left, window.innerWidth - panelWidth - 8);
+    left = Math.max(left, 8);
+
+    this._popover.style.top = `${top}px`;
+    this._popover.style.left = `${left}px`;
+  }
+
+  private _hidePopover(): void {
+    if (this._popover) {
+      this._popover.remove();
+      this._popover = null;
+      this._lastActionsKey = '';
+    }
+  }
+}
+
+// ── DOM helpers (module-level so they can be used inside widget create() closures) ──
+
+function buildButton(
+  action: LineAction,
+  options: Pick<LineActionsOptions, 'renderButton' | 'createIcon'>,
+): HTMLButtonElement {
+  const btn = document.createElement('button');
+  btn.className = 'rc-line-action-btn';
+  btn.type = 'button';
+  btn.setAttribute('title', action.label);
+
+  if (options.renderButton) {
+    options.renderButton(action, btn);
+  } else if (action.icon) {
+    const iconEl = options.createIcon?.(action.icon) ?? null;
+    if (iconEl) {
+      btn.setAttribute('aria-label', action.label);
+      btn.appendChild(iconEl);
+    } else {
+      // Fallback: data-icon attribute for hosts that process it externally
+      btn.dataset['icon'] = action.icon;
+      btn.setAttribute('aria-label', action.label);
+    }
+  } else {
+    btn.textContent = action.label;
+  }
+
+  btn.addEventListener('mousedown', (e) => e.preventDefault());
+  btn.addEventListener('click', () => action.onClick());
+  return btn;
+}
+
+function buildWidgetContainer(
+  actions: LineAction[],
+  options: Pick<LineActionsOptions, 'renderButton' | 'createIcon'>,
+): HTMLElement {
+  const container = document.createElement('span');
+  container.className = 'rc-line-actions';
+  for (const action of actions) {
+    container.appendChild(buildButton(action, options));
+  }
+  return container;
+}
+
+function buildPopoverButtons(
+  panel: HTMLDivElement,
+  actions: LineAction[],
+  options: Pick<LineActionsOptions, 'renderButton' | 'createIcon'>,
+): void {
+  for (const action of actions) {
+    panel.appendChild(buildButton(action, options));
+  }
+}
