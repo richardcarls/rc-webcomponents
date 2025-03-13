@@ -65,6 +65,14 @@ interface WalkResult {
   offset: number;
 }
 
+/**
+ * Recursively walk the subtree rooted at `node`, accumulating character
+ * offsets until `targetNode` / `targetNodeOffset` is found.
+ *
+ * Returns `{ found: true, offset }` when the target is located, or
+ * `{ found: false, offset }` where `offset` is the cumulative length of all
+ * text visited so far (allowing the caller to continue from where we left off).
+ */
 function walkForOffset(
   node: Node,
   targetNode: Node,
@@ -156,6 +164,13 @@ export function textOffsetToDom(
   return { node: root, offset: root.childNodes.length };
 }
 
+/**
+ * Walk `node`'s subtree to find the DOM position corresponding to
+ * `remaining` text-model characters from the start of `node`.
+ *
+ * Returns a `{ node, offset }` pair suitable for a `Range` endpoint, or
+ * `null` if the target falls beyond this subtree (caller must keep going).
+ */
 function walkToOffset(node: Node, remaining: number): DomPosition | null {
   if (node.nodeType === Node.TEXT_NODE) {
     const textNode = node as Text;

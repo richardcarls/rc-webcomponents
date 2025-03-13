@@ -201,4 +201,103 @@ describe('matchPatternResults', () => {
     ]);
     expect(lineDecorations[0].messageClassName).toBe('error-class');
   });
+
+  // ── captureGroups ─────────────────────────────────────────────────────
+
+  test('captureGroups emits one mark per named group instead of one for the whole match', () => {
+    const { markDecorations } = matchPatternResults('key: value', [
+      {
+        id: 'p1',
+        pattern: /(?<key>\w+):\s*(?<val>\w+)/,
+        captureGroups: {
+          key: { className: 'k' },
+          val: { className: 'v' },
+        },
+      },
+    ]);
+    expect(markDecorations).toHaveLength(2);
+    const key = markDecorations.find(d => d.className === 'k')!;
+    const val = markDecorations.find(d => d.className === 'v')!;
+    expect(key.from).toBe(0);
+    expect(key.to).toBe(3);
+    expect(val.from).toBe(5);
+    expect(val.to).toBe(10);
+  });
+
+  test('captureGroups: unmatched optional group is skipped', () => {
+    const { markDecorations } = matchPatternResults('hello', [
+      {
+        id: 'p1',
+        pattern: /(?<word>\w+)(?<punc>[!?])?/,
+        captureGroups: {
+          word: { className: 'w' },
+          punc: { className: 'p' },
+        },
+      },
+    ]);
+    expect(markDecorations).toHaveLength(1);
+    expect(markDecorations[0].className).toBe('w');
+  });
+
+  test('captureGroups: all style properties are applied to group decorations', () => {
+    const { markDecorations } = matchPatternResults('hello world', [
+      {
+        id: 'p1',
+        pattern: /(?<w>\w+)/g,
+        captureGroups: {
+          w: {
+            className: 'cls',
+            bold: true,
+            italic: true,
+            color: 'red',
+            background: 'blue',
+            underline: 'wavy' as const,
+            underlineColor: 'green',
+            attributes: { 'data-x': '1' },
+          },
+        },
+      },
+    ]);
+    const d = markDecorations[0];
+    expect(d.className).toBe('cls');
+    expect(d.bold).toBe(true);
+    expect(d.italic).toBe(true);
+    expect(d.color).toBe('red');
+    expect(d.background).toBe('blue');
+    expect(d.underline).toBe('wavy');
+    expect(d.underlineColor).toBe('green');
+    expect(d.attributes).toEqual({ 'data-x': '1' });
+  });
+
+  test('captureGroups: multiple matches each produce group decorations', () => {
+    const { markDecorations } = matchPatternResults('a=1 b=2', [
+      {
+        id: 'p1',
+        pattern: /(?<name>[a-z])=(?<num>\d)/g,
+        captureGroups: {
+          name: { className: 'n' },
+          num: { className: 'v' },
+        },
+      },
+    ]);
+    expect(markDecorations).toHaveLength(4);
+    const names = markDecorations.filter(d => d.className === 'n');
+    const vals = markDecorations.filter(d => d.className === 'v');
+    expect(names[0].from).toBe(0);
+    expect(names[1].from).toBe(4);
+    expect(vals[0].from).toBe(2);
+    expect(vals[1].from).toBe(6);
+  });
+
+  test('captureGroups: d flag is added automatically even if absent from pattern', () => {
+    // The pattern has no flags — matchPatternResults must add both g and d
+    const { markDecorations } = matchPatternResults('foo bar', [
+      {
+        id: 'p1',
+        pattern: /(?<w>\w+)/,
+        captureGroups: { w: { className: 'w' } },
+      },
+    ]);
+    expect(markDecorations).toHaveLength(2);
+  });
 });

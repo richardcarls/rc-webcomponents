@@ -32,6 +32,17 @@ const MAX_UNDO = 100;
 
 // ── decorationsFromHtml utility ───────────────────────────────────────────────
 
+/**
+ * Parse a highlight.js / prism.js HTML string (a flat tree of
+ * `<span class="token ...">text</span>` elements) into `MarkDecoration`
+ * objects covering the corresponding plain-text character ranges.
+ *
+ * Only `<span>` elements with a non-empty `className` generate decorations;
+ * all other nodes (text, non-span elements) are walked for offset accounting
+ * only. Nested spans produce decorations for every nesting level, so the
+ * outermost span wins at render time via the "smallest decoration" rule in
+ * `buildLineContent`.
+ */
 function decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
@@ -639,6 +650,11 @@ export class RCTextarea extends LitElement {
     this._scheduleRender();
   }
 
+  /**
+   * Build the `RCTextareaPluginAPI` object passed to the active plugin's
+   * `mount()` call. Each getter delegates to the component's live state so the
+   * API stays accurate across render frames without needing to be rebuilt.
+   */
   private _buildPluginApi(): RCTextareaPluginAPI {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const component = this;
@@ -781,12 +797,22 @@ export class RCTextarea extends LitElement {
     if (!this._document) return;
 
     this._isRendering = true;
-    const seq = ++this._pluginSeq;
+    // Snapshot the sequence counter so we can detect if a newer render was
+    // scheduled while we were awaiting an async plugin. If the counters
+    // diverge on resume, discard this render's results.
+    const renderSeq = ++this._pluginSeq;
 
     try {
+      // Resolve display value: apply transform hook (read-only only) before everything else
+      let renderValue = this._value;
+      if (this._plugin && this._pluginApi && this._plugin.transform && this.readOnly) {
+        const transformed = this._plugin.transform(this._value, this._pluginApi);
+        if (typeof transformed === 'string') renderValue = transformed;
+      }
+
       // Run pattern matcher
       const { markDecorations: patMarkDecs, lineDecorations: patLineDecs } =
-        matchPatternResults(this._value, [...this._patterns.values()]);
+        matchPatternResults(renderValue, [...this._patterns.values()]);
       this._patternDecorations = [
         ...patMarkDecs.map((d) => ({ ...d, id: generateId() })),
         ...patLineDecs.map((d) => ({ ...d, id: generateId() })),
@@ -797,13 +823,13 @@ export class RCTextarea extends LitElement {
         const api = this._pluginApi;
 
         if (this._plugin.update) {
-          await this._plugin.update(this._value, api);
-          if (seq !== this._pluginSeq) return; // stale — newer render started
+          await this._plugin.update(renderValue, api);
+          if (renderSeq !== this._pluginSeq) return; // stale — newer render started
         }
 
         if (this._plugin.highlight) {
-          const html = await this._plugin.highlight(this._value, api);
-          if (seq !== this._pluginSeq) return;
+          const html = await this._plugin.highlight(renderValue, api);
+          if (renderSeq !== this._pluginSeq) return;
           if (typeof html === 'string') {
             const decs = decorationsFromHtml(html);
             // Add parsed decorations on top of existing plugin decorations
@@ -824,7 +850,7 @@ export class RCTextarea extends LitElement {
       const editorEl = this._getEditorEl();
       if (!editorEl) return;
 
-      this._document.build(this._value, allDecorations);
+      this._document.build(renderValue, allDecorations);
 
       // Restore cursor
       if (this._savedSelection) {
@@ -836,7 +862,7 @@ export class RCTextarea extends LitElement {
       this._updateActiveLine();
 
       // Update gutter
-      this._syncGutter(this._computeGutterLabels(allDecorations));
+      this._syncGutter(this._computeGutterLabels(allDecorations, renderValue));
       this._syncGutterHeights();
     } finally {
       this._isRendering = false;
@@ -845,8 +871,17 @@ export class RCTextarea extends LitElement {
 
   // ── Gutter ────────────────────────────────────────────────────────────
 
-  private _computeGutterLabels(allDecorations: Decoration[]): (string | null)[] {
-    const lines = this._value.split('\n');
+  /**
+   * Compute the label string for each gutter cell based on the current gutter
+   * mode (`lineNumbers`, `listNumbers`, `gutter`) and any
+   * `LineDecoration.gutterContent` overrides in `allDecorations`.
+   *
+   * Returns one entry per line (same length as `value.split('\n')`):
+   * - `string` — the label to display
+   * - `null`   — render an empty cell
+   */
+  private _computeGutterLabels(allDecorations: Decoration[], value = this._value): (string | null)[] {
+    const lines = value.split('\n');
 
     const overrides = new Map<number, string | null>();
     for (const dec of allDecorations) {
@@ -873,6 +908,16 @@ export class RCTextarea extends LitElement {
     });
   }
 
+  /**
+   * Synchronize the pixel height of each gutter cell to match the
+   * corresponding `.v2-line` element in the editor.
+   *
+   * In non-word-wrap mode the gutter uses a uniform `line-height` mirrored
+   * from the editor's first line. In word-wrap mode each cell gets an explicit
+   * `height` so wrapped lines stay vertically aligned with their gutter label.
+   * Also copies the editor's computed `paddingTop`/`paddingBottom` to the
+   * gutter to compensate for browser UA overrides on contenteditable.
+   */
   private _syncGutterHeights(): void {
     const gutterEl = this.shadowRoot?.getElementById('gutter-cells');
     const editorEl = this._getEditorEl();
@@ -916,6 +961,12 @@ export class RCTextarea extends LitElement {
     }
   }
 
+  /**
+   * Add, remove, or update `.gutter-cell` spans so their count and text
+   * content match `labels`. When `labels` is provided the cached
+   * `_gutterLabels` is updated first; otherwise the cached labels are reused
+   * (called by the `ResizeObserver` without a new render pass).
+   */
   private _syncGutter(labels?: (string | null)[]): void {
     if (!this.lineNumbers && !this.listNumbers && !this.gutter) return;
 

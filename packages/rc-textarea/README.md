@@ -19,14 +19,15 @@ A WAI-ARIA compliant enhanced textarea web component built with [Lit 3](https://
 9. [Plugin API](#plugin-api)
 10. [Decoration Types](#decoration-types)
 11. [Pattern API](#pattern-api)
-12. [Selection API](#selection-api)
-13. [Decoration Lifecycle](#decoration-lifecycle)
-14. [Undo / Redo](#undo--redo)
-15. [Keyboard Behavior](#keyboard-behavior)
-16. [Form Integration](#form-integration)
-17. [Accessibility](#accessibility)
-18. [Performance Considerations](#performance-considerations)
-19. [Troubleshooting](#troubleshooting)
+12. [Plugin Helpers](#plugin-helpers)
+13. [Selection API](#selection-api)
+14. [Decoration Lifecycle](#decoration-lifecycle)
+15. [Undo / Redo](#undo--redo)
+16. [Keyboard Behavior](#keyboard-behavior)
+17. [Form Integration](#form-integration)
+18. [Accessibility](#accessibility)
+19. [Performance Considerations](#performance-considerations)
+20. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -48,13 +49,11 @@ A WAI-ARIA compliant enhanced textarea web component built with [Lit 3](https://
 
 ### DOM Structure
 
-### DOM Structure
-
 ```
 rc-textarea (LitElement shadow host, delegatesFocus=true)
 ├── #root (flex container)
-│   ├── #gutter (line numbers gutter, optional)
-│   │   └── #line-numbers (line number list)
+│   ├── #gutter (line/list/custom gutter, optional)
+│   │   └── #gutter-cells (container for .gutter-cell spans, one per line)
 │   └── #editor-area (flex item, grows to fill)
 │       ├── #editor (contenteditable div — Parchment ScrollBlot root)
 │       │   └── .v2-line divs (one per logical line, V2BlockBlot)
@@ -119,9 +118,10 @@ Plain-text offsets are essential for:
 | `src/document.ts` | `V2Document` class — builds Parchment tree from text + decorations; `extractEditorText()` reverse operation |
 | `src/blots.ts` | Parchment blot subclasses (`V2ScrollBlot`, `V2BlockBlot`, `V2InlineBlot`, `V2WidgetBlot`) + blot registry |
 | `src/selection.ts` | `saveSelection()` / `restoreSelection()` for plain-text ↔ DOM range conversion |
-| `src/decoration.ts` | `mapDecorationsThroughChange()` — map existing decorations through text edits; `isLargeChange()` — heuristic for clearing stale decorations |
-| `src/pattern-matcher.ts` | `matchPatternResults()` — compile regex patterns and collect all matches from text |
-| `src/types.ts` | All exported TypeScript interfaces and utility functions |
+| `src/decoration.ts` | `mapDecorationsThroughChange()` — map existing decorations through text edits; `isLargeChange()` heuristic |
+| `src/pattern-matcher.ts` | `matchPatternResults()` — run `TextPattern` array against text, return mark + line decorations |
+| `src/line-decorator.ts` | `createLineDecoratorPlugin()` factory — wraps per-line decoration logic in a full `RCTextareaPlugin` |
+| `src/types.ts` | All exported TypeScript interfaces and utility types |
 | `src/rc-textarea.styles.ts` | Component CSS (custom properties, parts, internal layout) |
 
 ---
@@ -186,6 +186,8 @@ All attributes reflect to properties. Use attributes in HTML or properties in JS
 | Attribute | Property | Type | Default | Description |
 |-----------|----------|------|---------|-------------|
 | `line-numbers` | `lineNumbers` | `boolean` | `false` | Display line number gutter on the left |
+| `list-numbers` | `listNumbers` | `boolean` | `false` | Display a numbered list gutter (skips blank lines, resets counter) |
+| `gutter` | `gutter` | `boolean` | `false` | Show a gutter column without built-in content (plugins fill cells via `LineDecoration.gutterContent`) |
 | `word-wrap` | `wordWrap` | `boolean` | `false` | Enable word wrapping (default: scroll horizontally) |
 | `auto-grow` | `autoGrow` | `boolean` | `false` | Grow container height to fit content |
 | `read-only` | `readOnly` | `boolean` | `false` | Disable text editing; still selectable |
@@ -288,9 +290,11 @@ Set on the host element or any ancestor to style the editor.
 | `--rc-textarea-border` | `1px solid ButtonBorder` | Editor border (system color keyword) |
 | `--rc-textarea-border-radius` | `2px` | Corner rounding |
 | `--rc-textarea-focus-outline` | `2px solid AccentColor` | Focus ring (system color keyword) |
+| `--rc-textarea-active-line-bg` | `transparent` | Background of the line containing the cursor |
 | `--rc-textarea-gutter-color` | `GrayText` | Line number text color |
 | `--rc-textarea-gutter-bg` | `Canvas` | Gutter background |
 | `--rc-textarea-gutter-border` | `1px solid ButtonBorder` | Gutter right border |
+| `--rc-textarea-gutter-padding-inline-end` | `0.75em` | Gap between gutter numbers and editor content |
 
 ### Example
 
@@ -314,8 +318,8 @@ Use `::part()` pseudo-element for advanced styling.
 | Part | Element | Supports |
 |------|---------|----------|
 | `root` | Outer flex container | All CSS |
-| `gutter` | Line number gutter div | All CSS |
-| `line-numbers` | Line numbers list container | All CSS |
+| `gutter` | Gutter outer div | All CSS |
+| `gutter-cells` | Inner container holding `.gutter-cell` spans | All CSS |
 | `editor-area` | Container wrapping editor + slot | All CSS |
 | `editor` | The `contenteditable` div | All CSS |
 
@@ -365,15 +369,31 @@ Plugins are the primary mechanism for applying decorations. A plugin receives a 
 
 ```ts
 interface RCTextareaPlugin {
+  /** Called once when the plugin is registered. Store `api` here for external use. */
   mount?(api: RCTextareaPluginAPI): void;
+  /** Called when the plugin is replaced or the element disconnects. */
   destroy?(): void;
+  /**
+   * Display-layer value transform — called before `update`/`highlight` in
+   * read-only mode. Return a non-null string to substitute it as the rendered
+   * text. The underlying `element.value` is never modified.
+   */
+  transform?(value: string, api: RCTextareaPluginAPI): string | null | void;
+  /** Imperative decoration API — called on each value change. */
   update?(value: string, api: RCTextareaPluginAPI): void | Promise<void>;
-  highlight?(value: string, api: RCTextareaPluginAPI): 
+  /**
+   * HTML-based compat — called on each value change.
+   * Return an HTML string (e.g. from hljs/prism); it will be parsed into
+   * mark decorations via `api.decorationsFromHtml()`.
+   */
+  highlight?(value: string, api: RCTextareaPluginAPI):
     string | null | void | Promise<string | null | void>;
 }
 ```
 
-At least one of `update` or `highlight` must be provided.
+At least one of `update` or `highlight` must be provided. `transform` is only
+called in read-only mode and is typically used to substitute scaled or formatted
+display text while preserving the raw underlying value.
 
 ### PluginAPI Methods
 
@@ -601,6 +621,10 @@ interface LineDecoration {
   message?: string;                // Error-lens text (rendered via ::after, not selectable)
   messageClassName?: string;       // Space-separated class(es) set as data-message-class
   attributes?: Record<string, string>;
+  gutterContent?: string | null;   // Override gutter cell text for this line:
+                                   //   string  — custom label (e.g. "!", "▶")
+                                   //   null    — force empty (suppress built-in content)
+                                   //   omitted — use the built-in mode default
 }
 ```
 
@@ -697,12 +721,26 @@ interface TextPattern {
   underline?: 'solid' | 'wavy' | 'dotted' | 'dashed';
   underlineColor?: string;
   attributes?: Record<string, string>;
-  
+
+  /**
+   * Per-named-capture-group styles. When set, one MarkDecoration is emitted
+   * per named group instead of one for the whole match. The 'd' flag
+   * (indices) is added to the pattern automatically.
+   * Unmatched optional groups are silently skipped.
+   */
+  captureGroups?: Record<string, MarkDecorationStyle>;
+
   // Callback to generate a LineDecoration for matching lines
   createLineDecoration?: (match: RegExpMatchArray) =>
     | Omit<LineDecoration, 'id' | 'type' | 'line'>
     | null;
 }
+
+/** Subset of MarkDecoration properties used for styling (no id / from / to). */
+type MarkDecorationStyle = Pick<MarkDecoration,
+  'className' | 'bold' | 'italic' | 'color' | 'background' |
+  'underline' | 'underlineColor' | 'attributes'
+>;
 ```
 
 ### Example: Simple Pattern
@@ -756,6 +794,159 @@ editor.addPattern({
     messageClassName: 'comment-marker',
   }),
 });
+```
+
+### Example: Named Capture Groups (`captureGroups`)
+
+Use `captureGroups` to style different parts of a match independently without
+manual offset arithmetic. One `MarkDecoration` is emitted per named group;
+unmatched optional groups are skipped.
+
+```ts
+// key: value lines — key in purple, value in green
+editor.addPattern({
+  pattern: /^(?<key>\w[\w-]*):\s*(?<value>.+)$/gm,
+  captureGroups: {
+    key:   { bold: true, color: '#c792ea' },
+    value: { color: '#c3e88d' },
+  },
+});
+```
+
+```ts
+// Ingredient lines — quantity/measure bold, prep text muted
+editor.addPattern({
+  pattern: /^(?<qty>[\d\s\/\u215B-\u215E]+\s+\w+)\s+(?<name>[^,]+?)(?<prep>,\s+.+)?$/gm,
+  captureGroups: {
+    qty:  { bold: true },
+    name: { bold: true, color: 'var(--color-primary)' },
+    prep: { italic: true, color: 'var(--color-text-muted)' },
+  },
+});
+```
+
+---
+
+## Plugin Helpers
+
+Two utilities are exported from the package to reduce plugin boilerplate.
+
+### `matchPatternResults(value, patterns)`
+
+Run a `TextPattern` array against `value` and return all matches as
+decoration objects — without registering the patterns on the editor element.
+Useful when a plugin needs to combine pattern-matched decorations with custom
+decorations in a single `api.setDecorations()` call.
+
+```ts
+import { matchPatternResults } from '@rcarls/rc-textarea';
+
+const KEYWORD_PATTERNS = [
+  { id: 'kw-function', pattern: /\bfunction\b/g, bold: true, color: '#c792ea' },
+  { id: 'kw-return',   pattern: /\breturn\b/g,   bold: true, color: '#89ddff' },
+];
+
+editor.usePlugin({
+  update(value, api) {
+    const { markDecorations, lineDecorations } =
+      matchPatternResults(value, KEYWORD_PATTERNS);
+
+    // Merge with custom diagnostics from a parser
+    const diagnostics = myParser.lint(value);
+
+    api.setDecorations([
+      ...markDecorations,
+      ...lineDecorations,
+      ...diagnostics,
+    ]);
+  },
+});
+```
+
+### `createLineDecoratorPlugin(decorator, options?)`
+
+Factory that wraps a `LineDecoratorPlugin` in a full `RCTextareaPlugin`. It handles:
+
+- CSS injection via `api.adoptStyleSheet` on `mount()`
+- `lineStart` offset bookkeeping — `decorateLine()` works with **line-relative** offsets (0 = start of the line), not absolute document offsets
+- Optional `watch` subscriptions that call `api.scheduleUpdate()` when external values change (framework-agnostic)
+- Cleanup of subscribers on `destroy()`
+
+```ts
+import { createLineDecoratorPlugin } from '@rcarls/rc-textarea';
+import type { LineDecoratorPlugin } from '@rcarls/rc-textarea';
+
+const KEYWORD_CSS = '.kw { font-weight: bold; color: #c792ea; }';
+
+const keywordDecorator: LineDecoratorPlugin = {
+  styles: KEYWORD_CSS,
+  decorateLine(line) {
+    const results = [];
+    for (const m of line.matchAll(/\bfunction\b/g)) {
+      results.push({
+        type: 'mark' as const,
+        from: m.index!,
+        to: m.index! + m[0].length,
+        className: 'kw',
+      });
+    }
+    return results;
+  },
+};
+
+editor.usePlugin(createLineDecoratorPlugin(keywordDecorator));
+```
+
+#### With `extraDecorations` (merging whole-document results)
+
+```ts
+editor.usePlugin(createLineDecoratorPlugin(
+  myLineDecorator,
+  {
+    extraDecorations: (value) => {
+      // e.g. whole-document diagnostics from a parser
+      return myParser.lint(value).map(d => ({
+        type: 'line' as const,
+        line: d.line,
+        message: d.message,
+        messageClassName: 'diagnostic-error',
+      }));
+    },
+  },
+));
+```
+
+#### With `watch` (react to external signal changes)
+
+`watch` is an array of subscriber setup functions — each receives an `onChange`
+callback and may return an optional cleanup function. This is
+intentionally framework-agnostic.
+
+```ts
+// Vanilla JS: subscribe to a custom event
+editor.usePlugin(createLineDecoratorPlugin(
+  myDecorator,
+  {
+    watch: [
+      (onChange) => {
+        window.addEventListener('theme-change', onChange);
+        return () => window.removeEventListener('theme-change', onChange);
+      },
+    ],
+  },
+));
+
+// Solid.js: pass reactive signals
+import { createEffect, on } from 'solid-js';
+
+editor.usePlugin(createLineDecoratorPlugin(
+  myDecorator,
+  {
+    watch: [
+      (cb) => createEffect(on(mySignal, cb, { defer: true })),
+    ],
+  },
+));
 ```
 
 ---
@@ -1061,6 +1252,8 @@ If both `update()` and `highlight()` are provided, only one runs per render. The
 |----------|------|---------|----------|
 | `value` | `string` | `''` | N/A |
 | `lineNumbers` | `boolean` | `false` | Yes (*line-numbers* attr) |
+| `listNumbers` | `boolean` | `false` | Yes (*list-numbers* attr) |
+| `gutter` | `boolean` | `false` | Yes (*gutter* attr) |
 | `wordWrap` | `boolean` | `false` | Yes (*word-wrap* attr) |
 | `autoGrow` | `boolean` | `false` | Yes (*auto-grow* attr) |
 | `readOnly` | `boolean` | `false` | Yes (*read-only* attr) |
@@ -1077,6 +1270,16 @@ If both `update()` and `highlight()` are provided, only one runs per render. The
 | `addPattern()` | `(pattern: Omit<TextPattern, 'id'>) => string` | Pattern ID |
 | `removePattern()` | `(id: string) => void` | — |
 | `clearPatterns()` | `() => void` | — |
+
+### Exported Helpers
+
+| Export | Kind | Description |
+| ------ | ---- | ----------- |
+| `matchPatternResults` | function | Run `TextPattern[]` against a string; returns `{ markDecorations, lineDecorations }` |
+| `createLineDecoratorPlugin` | function | Wrap a `LineDecoratorPlugin` in a full `RCTextareaPlugin` |
+| `MarkDecorationStyle` | type | Styling-only subset of `MarkDecoration` (used in `TextPattern.captureGroups`) |
+| `LineDecoratorPlugin` | interface | Per-line decorator with line-relative offsets |
+| `LineDecoratorPluginOptions` | interface | Options for `createLineDecoratorPlugin` |
 
 ### Events
 

@@ -115,6 +115,7 @@ function buildLineContent(
   }
 }
 
+/** Create the `.v2-widget` span wrapper for a `WidgetDecoration`. */
 function createWidgetEl(dec: WidgetDecoration): HTMLSpanElement {
   const spanEl = V2WidgetBlot.create() as HTMLSpanElement;
   spanEl.appendChild(dec.create());
@@ -145,16 +146,16 @@ export class V2Document {
 
     const lines = value.split('\n');
 
-    // Index decorations by type
-    const lineDecMap = new Map<number, LineDecoration[]>();
+    // Index decorations by type for fast per-line lookup
+    const lineDecsByLine = new Map<number, LineDecoration[]>();
     const markDecs: MarkDecoration[] = [];
     const widgetDecs: WidgetDecoration[] = [];
 
     for (const dec of decorations) {
       if (dec.type === 'line') {
-        const arr = lineDecMap.get(dec.line) ?? [];
+        const arr = lineDecsByLine.get(dec.line) ?? [];
         arr.push(dec);
-        lineDecMap.set(dec.line, arr);
+        lineDecsByLine.set(dec.line, arr);
       } else if (dec.type === 'mark') {
         markDecs.push(dec);
       } else {
@@ -165,19 +166,20 @@ export class V2Document {
     markDecs.sort((a, b) => a.from - b.from || a.to - b.to);
     widgetDecs.sort((a, b) => a.offset - b.offset);
 
-    let charOffset = 0;
+    // Absolute character offset of the first character on the current line
+    let lineStartOffset = 0;
 
     for (let i = 0; i < lines.length; i++) {
       const lineText = lines[i]!;
       const lineNum = i + 1;
-      const lineStart = charOffset;
+      const lineStart = lineStartOffset;
       const lineEnd = lineStart + lineText.length;
 
       // Create block element via Parchment's static create()
       const blockDomNode = V2BlockBlot.create() as HTMLElement;
 
       // Apply line decorations
-      const lineDecs = lineDecMap.get(lineNum) ?? [];
+      const lineDecs = lineDecsByLine.get(lineNum) ?? [];
       for (const ld of lineDecs) {
         if (ld.className) {
           for (const cls of ld.className.split(/\s+/).filter(Boolean)) {
@@ -203,8 +205,9 @@ export class V2Document {
       // so it is completely outside the DOM selection and clipboard path.
       const msgLineDecs = lineDecs.filter(ld => ld.message);
       if (msgLineDecs.length > 0) {
-        const text = '\u00a0\u00a0' + msgLineDecs.map(ld => ld.message).join(' \u00b7 ');
+        const text = msgLineDecs.map(ld => ld.message).join(' \u00b7 ');
         blockDomNode.dataset.message = text;
+        blockDomNode.title = text;
         const classes = [
           ...new Set(
             msgLineDecs.flatMap(ld =>
@@ -216,7 +219,7 @@ export class V2Document {
       }
 
       editorEl.appendChild(blockDomNode);
-      charOffset += lineText.length + 1; // +1 for \n separator
+      lineStartOffset += lineText.length + 1; // +1 for the '\n' separator
     }
   }
 
