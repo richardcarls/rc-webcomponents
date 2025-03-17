@@ -14,7 +14,7 @@ export default defineConfig({
     },
     rollupOptions: {
       // Exclude lit packages from bundling
-      external: [/^@?lit(-\w+)?($|\/.+)/],
+      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
 });
