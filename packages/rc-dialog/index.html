@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>rc-dialog</title>
+
+    <script type="module" src="/src/rc-dialog.ts"></script>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        padding: 2rem;
+      }
+      .demo-section {
+        margin-bottom: 2rem;
+      }
+      h2 {
+        margin-bottom: 0.5rem;
+      }
+
+      /* --- Basic dialog chrome for demo purposes --- */
+      dialog {
+        padding: 0;
+        border: 1px solid ButtonBorder;
+        border-radius: 4px;
+        box-shadow: 0 4px 24px rgba(0 0 0 / 0.2);
+        min-width: 20rem;
+      }
+      dialog::backdrop {
+        background: rgba(0 0 0 / 0.4);
+      }
+      .dlg-titlebar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: Canvas;
+        border-bottom: 1px solid ButtonBorder;
+        cursor: default;
+        user-select: none;
+      }
+      .dlg-titlebar span {
+        flex: 1;
+        font-weight: 600;
+      }
+      .dlg-titlebar button {
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        line-height: 1;
+        padding: 0 0.25rem;
+      }
+      .dlg-body {
+        padding: 1rem;
+      }
+      .dlg-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-top: 1px solid ButtonBorder;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>rc-dialog</h1>
+    <p>
+      Reference:
+      <a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"
+        >WAI-ARIA Dialog (Modal) Pattern</a
+      >
+    </p>
+
+    <div class="demo-section">
+      <h2>Basic modal dialog</h2>
+      <button onclick="document.querySelector('#basic').showModal()">Open dialog</button>
+
+      <rc-dialog id="basic">
+        <dialog aria-labelledby="basic-title">
+          <div class="dlg-titlebar">
+            <span id="basic-title">Basic Dialog</span>
+            <button onclick="document.querySelector('#basic').close()">✕</button>
+          </div>
+          <div class="dlg-body">
+            <p>This is a basic modal dialog. Press <kbd>Escape</kbd> or click the button to close.</p>
+          </div>
+          <div class="dlg-footer">
+            <button onclick="document.querySelector('#basic').close('cancel')">Cancel</button>
+            <button onclick="document.querySelector('#basic').close('ok')">OK</button>
+          </div>
+        </dialog>
+      </rc-dialog>
+    </div>
+
+    <div class="demo-section">
+      <h2>Movable dialog (drag by titlebar)</h2>
+      <button onclick="document.querySelector('#movable').showModal()">Open movable dialog</button>
+
+      <rc-dialog id="movable" movable move-handle=".dlg-titlebar">
+        <dialog aria-labelledby="movable-title">
+          <div class="dlg-titlebar">
+            <span id="movable-title">Movable Dialog</span>
+            <button onclick="document.querySelector('#movable').close()">✕</button>
+          </div>
+          <div class="dlg-body">
+            <p>Drag the titlebar to move. Tab to the titlebar and use arrow keys for keyboard movement (Shift+Arrow = 10× step).</p>
+          </div>
+          <div class="dlg-footer">
+            <button onclick="document.querySelector('#movable').close('ok')">OK</button>
+          </div>
+        </dialog>
+      </rc-dialog>
+    </div>
+
+    <div class="demo-section">
+      <h2>Movable + resizable dialog</h2>
+      <button onclick="document.querySelector('#resizable').showModal()">Open resizable dialog</button>
+
+      <rc-dialog id="resizable" movable move-handle=".dlg-titlebar" resize="both">
+        <dialog aria-labelledby="resizable-title" style="min-width: 20rem; min-height: 10rem;">
+          <div class="dlg-titlebar">
+            <span id="resizable-title">Resizable Dialog</span>
+            <button onclick="document.querySelector('#resizable').close()">✕</button>
+          </div>
+          <div class="dlg-body" style="overflow: auto; height: calc(100% - 80px);">
+            <p>Drag edges/corners to resize. Tab to the resize handle button (bottom-right) and use arrow keys (Shift+Arrow = 10× step).</p>
+          </div>
+          <div class="dlg-footer">
+            <button onclick="document.querySelector('#resizable').close('ok')">OK</button>
+          </div>
+        </dialog>
+      </rc-dialog>
+    </div>
+
+    <div class="demo-section">
+      <h2>Events</h2>
+      <p>Open any dialog above and close it to see events logged here.</p>
+      <pre id="event-log" style="background: Canvas; border: 1px solid ButtonBorder; padding: 0.5rem; min-height: 3rem;"></pre>
+    </div>
+
+    <script>
+      const log = document.querySelector('#event-log');
+
+      document.querySelectorAll('rc-dialog').forEach((d) => {
+        d.addEventListener('rc-dialog-close', (e) => {
+          log.textContent += `rc-dialog-close (returnValue: "${e.detail.returnValue}")\n`;
+        });
+        d.addEventListener('rc-dialog-cancel', () => {
+          log.textContent += 'rc-dialog-cancel (Escape pressed)\n';
+        });
+      });
+    </script>
+  </body>
+</html>
