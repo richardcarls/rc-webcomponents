@@ -27,6 +27,13 @@
         box-shadow: 0 4px 24px rgba(0 0 0 / 0.2);
         min-width: 20rem;
       }
+      /* display:flex must be scoped to [open] — author styles override the UA
+         dialog:not([open]){display:none} rule, making all dialogs visible. */
+      dialog[open] {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
       dialog::backdrop {
         background: rgba(0 0 0 / 0.4);
       }
@@ -52,8 +59,16 @@
         line-height: 1;
         padding: 0 0.25rem;
       }
+      .dlg-titlebar,
+      .dlg-footer {
+        flex-shrink: 0;
+      }
       .dlg-body {
         padding: 1rem;
+        flex: 1;
+        overflow: auto;
+        /* Allow body to shrink below content size when dialog is resized small. */
+        min-height: 0;
       }
       .dlg-footer {
         display: flex;
@@ -124,7 +139,7 @@
             <span id="resizable-title">Resizable Dialog</span>
             <button onclick="document.querySelector('#resizable').close()">✕</button>
           </div>
-          <div class="dlg-body" style="overflow: auto; height: calc(100% - 80px);">
+          <div class="dlg-body">
             <p>Drag edges/corners to resize. Tab to the resize handle button (bottom-right) and use arrow keys (Shift+Arrow = 10× step).</p>
           </div>
           <div class="dlg-footer">

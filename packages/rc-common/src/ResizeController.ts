@@ -2,16 +2,16 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 export type ResizeDirection = 'none' | 'both' | 'horizontal' | 'vertical';
 
-type ResizeEdge = 'e' | 's' | 'se';
+type ResizeEdge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 export interface ResizeOptions {
-  /** The element to resize. Its `width` / `height` styles are updated. */
+  /** The element to resize. Its `width` / `height` (and `left` / `top` for opposite edges) styles are updated. */
   target: Element;
   /** Which edges are resizable, mirroring CSS `resize` values. Defaults to `'none'`. */
   direction?: ResizeDirection;
   /** Custom resize handle element. If omitted, edge detection on `target` is used. */
   handle?: Element | null;
-  /** Edge hit-test thickness in px. Defaults to `8`. */
+  /** Edge hit-test thickness in px (straddles the edge, inside + outside). Defaults to `8`. */
   threshold?: number;
   /** Bounds constraint. Defaults to `'viewport'`. */
   bounds?: 'viewport' | 'parent' | Element;
@@ -27,10 +27,14 @@ export interface ResizeOptions {
 /**
  * Makes an element resizable via pointer (edge detection) and keyboard.
  *
- * When no custom `handle` is provided, the controller detects pointer proximity
- * to active edges and updates the cursor. A small transparent `<button>` is
- * injected at the bottom-right corner for keyboard-accessible resizing via
- * Arrow keys.
+ * Supports all 8 resize handles (n, s, e, w, ne, nw, se, sw) depending on
+ * the configured `direction`. Opposite-edge resizes (w / n / nw / ne / sw)
+ * anchor the far corner and mutate `left` / `top` accordingly, mirroring
+ * OS-windowed resize semantics.
+ *
+ * On resize start the element's position and size are pinned as explicit
+ * `border-box` pixel values so UA centering styles (e.g. `inset:0; margin:auto`
+ * on `<dialog>`) cannot fight the resize calculations.
  */
 export class ResizeController implements ReactiveController {
   private _opts: Required<Omit<ResizeOptions, 'handle' | 'bounds' | 'maxWidth' | 'maxHeight'>>
@@ -41,6 +45,8 @@ export class ResizeController implements ReactiveController {
   private _startY = 0;
   private _startW = 0;
   private _startH = 0;
+  private _startLeft = 0;
+  private _startTop = 0;
 
   private _cornerBtn: HTMLButtonElement | null = null;
 
@@ -69,7 +75,6 @@ export class ResizeController implements ReactiveController {
     this._onPointerLeave = this._handlePointerLeave.bind(this);
     this._onKeyDown = this._handleKeyDown.bind(this);
 
-    // Must be last: if host is already connected, addController calls hostConnected() synchronously.
     host.addController(this);
   }
 
@@ -103,7 +108,6 @@ export class ResizeController implements ReactiveController {
   private _injectCornerButton(): void {
     if (this._opts.handle) return;
 
-    // Ensure target is a positioned ancestor for absolute children
     const target = this._target();
     if (getComputedStyle(target).position === 'static') {
       target.style.position = 'relative';
@@ -140,10 +144,18 @@ export class ResizeController implements ReactiveController {
   private _cornerCursor(): string {
     switch (this._opts.direction) {
       case 'both':       return 'se-resize';
-      case 'horizontal': return 'e-resize';
-      case 'vertical':   return 's-resize';
+      case 'horizontal': return 'ew-resize';
+      case 'vertical':   return 'ns-resize';
       default:           return 'default';
     }
+  }
+
+  private _edgeCursor(edge: ResizeEdge): string {
+    const map: Record<ResizeEdge, string> = {
+      n: 'n-resize', s: 's-resize', e: 'e-resize', w: 'w-resize',
+      ne: 'ne-resize', nw: 'nw-resize', se: 'se-resize', sw: 'sw-resize',
+    };
+    return map[edge];
   }
 
   private _detectEdge(e: PointerEvent): ResizeEdge | null {
@@ -151,43 +163,66 @@ export class ResizeController implements ReactiveController {
     if (direction === 'none') return null;
 
     const rect = this._target().getBoundingClientRect();
-    const nearE = direction !== 'vertical'   && e.clientX >= rect.right  - threshold;
-    const nearS = direction !== 'horizontal' && e.clientY >= rect.bottom - threshold;
+    const x = e.clientX;
+    const y = e.clientY;
 
-    if (nearE && nearS && direction === 'both') return 'se';
-    if (nearE) return 'e';
-    if (nearS) return 's';
+    // Each "near" flag straddles the edge: threshold px inside AND outside.
+    // Perpendicular extent guards prevent the modal <dialog> backdrop (which
+    // routes all pointermove events to the dialog) from triggering resize
+    // anywhere in the viewport below/right/above/left of the dialog.
+    const nearRight  = x >= rect.right  - threshold && x <= rect.right  + threshold;
+    const nearLeft   = x >= rect.left   - threshold && x <= rect.left   + threshold;
+    const nearBottom = y >= rect.bottom - threshold && y <= rect.bottom + threshold;
+    const nearTop    = y >= rect.top    - threshold && y <= rect.top    + threshold;
+    const inHoriz    = x >= rect.left && x <= rect.right;
+    const inVert     = y >= rect.top  && y <= rect.bottom;
+
+    if (direction === 'both') {
+      // Corners take priority; their two-axis proximity is self-constraining.
+      if (nearRight  && nearBottom) return 'se';
+      if (nearLeft   && nearBottom) return 'sw';
+      if (nearRight  && nearTop)    return 'ne';
+      if (nearLeft   && nearTop)    return 'nw';
+      if (nearRight  && inVert)     return 'e';
+      if (nearLeft   && inVert)     return 'w';
+      if (nearBottom && inHoriz)    return 's';
+      if (nearTop    && inHoriz)    return 'n';
+    }
+    if (direction === 'horizontal') {
+      if (nearRight && inVert) return 'e';
+      if (nearLeft  && inVert) return 'w';
+    }
+    if (direction === 'vertical') {
+      if (nearBottom && inHoriz) return 's';
+      if (nearTop    && inHoriz) return 'n';
+    }
     return null;
   }
 
-  private _handlePointerMove(e: PointerEvent): void {
-    if (this._resizing) {
-      const target = this._target();
-      const [, , maxR, maxB] = this._boundsRect();
-      const rect = target.getBoundingClientRect();
-      const { minWidth = 100, maxWidth, minHeight = 60, maxHeight } = this._opts;
-
-      if (this._resizing === 'e' || this._resizing === 'se') {
-        const newW = Math.max(this._startW + (e.clientX - this._startX), minWidth);
-        target.style.width = `${maxWidth !== undefined ? Math.min(newW, maxWidth, maxR - rect.left) : Math.min(newW, maxR - rect.left)}px`;
-      }
-      if (this._resizing === 's' || this._resizing === 'se') {
-        const newH = Math.max(this._startH + (e.clientY - this._startY), minHeight);
-        target.style.height = `${maxHeight !== undefined ? Math.min(newH, maxHeight, maxB - rect.top) : Math.min(newH, maxB - rect.top)}px`;
-      }
-      return;
+  /**
+   * Pins position and size as explicit border-box pixel values.
+   *
+   * Required before any resize so that:
+   * - UA centering styles (`inset:0; margin:auto` on `<dialog>`) don't fight
+   *   explicit left/top changes on n/w edges.
+   * - Changing width/height alone doesn't redistribute auto-margins and shift
+   *   the element for e/s edges.
+   * - box-sizing is known, so `style.width = rect.width` is a no-op visually.
+   */
+  private _pinPosition(target: HTMLElement): DOMRect {
+    const rect = target.getBoundingClientRect();
+    if (getComputedStyle(target).position === 'static') {
+      target.style.position = 'fixed';
     }
-
-    // Cursor detection when not actively resizing
-    if (this._opts.handle) return;
-    const edge = this._detectEdge(e);
-    const target = this._target();
-    switch (edge) {
-      case 'se': target.style.cursor = 'se-resize'; break;
-      case 'e':  target.style.cursor = 'e-resize';  break;
-      case 's':  target.style.cursor = 's-resize';  break;
-      default:   target.style.cursor = '';
-    }
+    target.style.translate  = 'none';
+    target.style.inset      = 'auto';
+    target.style.margin     = '0';
+    target.style.boxSizing  = 'border-box';
+    target.style.left       = `${rect.left}px`;
+    target.style.top        = `${rect.top}px`;
+    target.style.width      = `${rect.width}px`;
+    target.style.height     = `${rect.height}px`;
+    return rect;
   }
 
   private _handlePointerDown(e: PointerEvent): void {
@@ -196,14 +231,71 @@ export class ResizeController implements ReactiveController {
     if (!edge) return;
 
     const target = this._target();
-    this._startX = e.clientX;
-    this._startY = e.clientY;
-    this._startW = target.offsetWidth;
-    this._startH = target.offsetHeight;
-    this._resizing = edge;
+    const rect = this._pinPosition(target);
+
+    this._startX    = e.clientX;
+    this._startY    = e.clientY;
+    this._startW    = rect.width;
+    this._startH    = rect.height;
+    this._startLeft = rect.left;
+    this._startTop  = rect.top;
+    this._resizing  = edge;
 
     target.setPointerCapture(e.pointerId);
     e.preventDefault();
+  }
+
+  private _handlePointerMove(e: PointerEvent): void {
+    if (this._resizing) {
+      const target = this._target();
+      const [minL, minT, maxR, maxB] = this._boundsRect();
+      const { minWidth, maxWidth, minHeight, maxHeight } = this._opts;
+      const dx = e.clientX - this._startX;
+      const dy = e.clientY - this._startY;
+      const edge = this._resizing;
+
+      // Right side extends; left stays fixed.
+      if (edge === 'e' || edge === 'se' || edge === 'ne') {
+        const maxW = Math.min(maxWidth ?? Infinity, maxR - this._startLeft);
+        target.style.width = `${Math.min(Math.max(this._startW + dx, minWidth), maxW)}px`;
+      }
+
+      // Left side moves; right stays fixed at startLeft + startW.
+      if (edge === 'w' || edge === 'sw' || edge === 'nw') {
+        const rightFixed = this._startLeft + this._startW;
+        const newLeft = Math.min(
+          Math.max(this._startLeft + dx, minL, maxWidth !== undefined ? rightFixed - maxWidth : -Infinity),
+          rightFixed - minWidth,
+        );
+        target.style.left  = `${newLeft}px`;
+        target.style.width = `${rightFixed - newLeft}px`;
+      }
+
+      // Bottom side extends; top stays fixed.
+      if (edge === 's' || edge === 'se' || edge === 'sw') {
+        const maxH = Math.min(maxHeight ?? Infinity, maxB - this._startTop);
+        target.style.height = `${Math.min(Math.max(this._startH + dy, minHeight), maxH)}px`;
+      }
+
+      // Top side moves; bottom stays fixed at startTop + startH.
+      if (edge === 'n' || edge === 'ne' || edge === 'nw') {
+        const bottomFixed = this._startTop + this._startH;
+        const newTop = Math.min(
+          Math.max(this._startTop + dy, minT, maxHeight !== undefined ? bottomFixed - maxHeight : -Infinity),
+          bottomFixed - minHeight,
+        );
+        target.style.top    = `${newTop}px`;
+        target.style.height = `${bottomFixed - newTop}px`;
+      }
+
+      return;
+    }
+
+    // Cursor hint when not actively resizing.
+    if (this._opts.handle) return;
+    const edge = this._detectEdge(e);
+    const target = this._target();
+    target.style.cursor = edge ? this._edgeCursor(edge) : '';
   }
 
   private _handlePointerUp(_e: PointerEvent): void {
@@ -219,40 +311,39 @@ export class ResizeController implements ReactiveController {
   private _handleKeyDown(e: KeyboardEvent): void {
     if (this._opts.disabled) return;
 
-    const step = e.shiftKey ? this._opts.step * 10 : this._opts.step;
-    const target = this._target();
-    const [, , maxR, maxB] = this._boundsRect();
-    const rect = target.getBoundingClientRect();
-    const { minWidth = 100, maxWidth, minHeight = 60, maxHeight, direction } = this._opts;
+    const { direction } = this._opts;
+    const isHoriz = e.key === 'ArrowRight' || e.key === 'ArrowLeft';
+    const isVert  = e.key === 'ArrowDown'  || e.key === 'ArrowUp';
 
-    switch (e.key) {
-      case 'ArrowRight': {
-        if (direction === 'vertical') return;
-        const max = maxWidth !== undefined ? Math.min(maxWidth, maxR - rect.left) : maxR - rect.left;
-        target.style.width = `${Math.min(Math.max(target.offsetWidth + step, minWidth), max)}px`;
-        break;
-      }
-      case 'ArrowLeft': {
-        if (direction === 'vertical') return;
-        target.style.width = `${Math.max(target.offsetWidth - step, minWidth)}px`;
-        break;
-      }
-      case 'ArrowDown': {
-        if (direction === 'horizontal') return;
-        const max = maxHeight !== undefined ? Math.min(maxHeight, maxB - rect.top) : maxB - rect.top;
-        target.style.height = `${Math.min(Math.max(target.offsetHeight + step, minHeight), max)}px`;
-        break;
-      }
-      case 'ArrowUp': {
-        if (direction === 'horizontal') return;
-        target.style.height = `${Math.max(target.offsetHeight - step, minHeight)}px`;
-        break;
-      }
-      default: return;
-    }
+    if (isHoriz && direction === 'vertical')   return;
+    if (isVert  && direction === 'horizontal') return;
+    if (!isHoriz && !isVert) return;
 
     e.preventDefault();
     e.stopPropagation();
+
+    const target = this._target();
+    // Pin on first keyboard resize so auto-margins don't fight explicit sizes.
+    const rect = this._pinPosition(target);
+
+    const step = e.shiftKey ? this._opts.step * 10 : this._opts.step;
+    const [, , maxR, maxB] = this._boundsRect();
+    const { minWidth, maxWidth, minHeight, maxHeight } = this._opts;
+
+    if (e.key === 'ArrowRight') {
+      const max = Math.min(maxWidth ?? Infinity, maxR - rect.left);
+      target.style.width = `${Math.min(Math.max(target.offsetWidth + step, minWidth), max)}px`;
+    }
+    if (e.key === 'ArrowLeft') {
+      target.style.width = `${Math.max(target.offsetWidth - step, minWidth)}px`;
+    }
+    if (e.key === 'ArrowDown') {
+      const max = Math.min(maxHeight ?? Infinity, maxB - rect.top);
+      target.style.height = `${Math.min(Math.max(target.offsetHeight + step, minHeight), max)}px`;
+    }
+    if (e.key === 'ArrowUp') {
+      target.style.height = `${Math.max(target.offsetHeight - step, minHeight)}px`;
+    }
   }
 
   private _boundsRect(): [number, number, number, number] {

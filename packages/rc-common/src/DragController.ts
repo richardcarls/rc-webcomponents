@@ -102,8 +102,12 @@ export class DragController implements ReactiveController {
     if (getComputedStyle(target).position === 'static') {
       target.style.position = 'fixed';
     }
-    // Clear transform-based centering so left/top take full control
+    // Clear all competing positioning constraints (UA <dialog> uses inset:0 +
+    // margin:auto to center; those fight explicit left/top values and cause a
+    // jump + coordinate mismatch on drag start).
     target.style.translate = 'none';
+    target.style.inset = 'auto';
+    target.style.margin = '0';
     target.style.left = `${rect.left}px`;
     target.style.top = `${rect.top}px`;
 
