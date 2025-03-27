@@ -102,6 +102,51 @@ test('rc-dialog dispatches rc-dialog-cancel then rc-dialog-close on Escape', asy
   if (rcDialog.open) rcDialog.close();
 });
 
+test('rc-dialog-request-close fires and is cancelable', async () => {
+  const requestCloseSpy = vi.fn();
+  const cancelSpy = vi.fn();
+
+  const screen = render(html`
+    <rc-dialog
+      data-testid="host"
+      @rc-dialog-request-close=${requestCloseSpy}
+      @rc-dialog-cancel=${cancelSpy}
+    >
+      <dialog aria-labelledby="t">
+        <span id="t">Title</span>
+      </dialog>
+    </rc-dialog>
+  `);
+
+  const host = screen.getByTestId('host');
+  const rcDialog = await host.element() as any;
+  await rcDialog.updateComplete;
+
+  rcDialog.showModal();
+
+  // Dispatch cancel without preventing rc-dialog-request-close → both events fire.
+  const dlg = rcDialog.querySelector('dialog') as HTMLDialogElement;
+  dlg.dispatchEvent(new Event('cancel', { cancelable: true, bubbles: false }));
+
+  expect(requestCloseSpy).toHaveBeenCalledTimes(1);
+  expect(cancelSpy).toHaveBeenCalledTimes(1);
+
+  // Now add a listener that prevents the close.
+  requestCloseSpy.mockReset();
+  cancelSpy.mockReset();
+  rcDialog.addEventListener('rc-dialog-request-close', (e: Event) => e.preventDefault(), { once: true });
+
+  dlg.dispatchEvent(new Event('cancel', { cancelable: true, bubbles: false }));
+
+  expect(requestCloseSpy).toHaveBeenCalledTimes(1);
+  // rc-dialog-cancel must NOT fire when the close was prevented.
+  expect(cancelSpy).toHaveBeenCalledTimes(0);
+  // Dialog must still be open.
+  expect(rcDialog.open).toBe(true);
+
+  if (rcDialog.open) rcDialog.close();
+});
+
 test('rc-dialog open getter reflects inner dialog state', async () => {
   const screen = renderDialog();
   const host = screen.getByTestId('host');
