@@ -36,6 +36,8 @@ export class DragController implements ReactiveController {
   private readonly _onPointerDown: (e: PointerEvent) => void;
   private readonly _onPointerMove: (e: PointerEvent) => void;
   private readonly _onPointerUp: (e: PointerEvent) => void;
+  private readonly _onPointerCancel: (e: PointerEvent) => void;
+  private readonly _onLostPointerCapture: (e: PointerEvent) => void;
   private readonly _onKeyDown: (e: KeyboardEvent) => void;
 
   constructor(host: ReactiveControllerHost, options: DragOptions) {
@@ -44,6 +46,8 @@ export class DragController implements ReactiveController {
     this._onPointerDown = this._handlePointerDown.bind(this);
     this._onPointerMove = this._handlePointerMove.bind(this);
     this._onPointerUp = this._handlePointerUp.bind(this);
+    this._onPointerCancel = this._cancelDrag.bind(this);
+    this._onLostPointerCapture = this._handleLostPointerCapture.bind(this);
     this._onKeyDown = this._handleKeyDown.bind(this);
 
     // Must be last: if host is already connected, addController calls hostConnected() synchronously.
@@ -89,6 +93,8 @@ export class DragController implements ReactiveController {
     handle.removeEventListener('keydown', this._onKeyDown as EventListener);
     handle.removeEventListener('pointermove', this._onPointerMove as EventListener);
     handle.removeEventListener('pointerup', this._onPointerUp as EventListener);
+    handle.removeEventListener('pointercancel', this._onPointerCancel as EventListener);
+    handle.removeEventListener('lostpointercapture', this._onLostPointerCapture as EventListener);
   }
 
   private _handlePointerDown(e: PointerEvent): void {
@@ -121,6 +127,11 @@ export class DragController implements ReactiveController {
     handle.setPointerCapture(e.pointerId);
     handle.addEventListener('pointermove', this._onPointerMove as EventListener);
     handle.addEventListener('pointerup', this._onPointerUp as EventListener);
+    handle.addEventListener('pointercancel', this._onPointerCancel as EventListener);
+    // If another controller steals pointer capture, lostpointercapture fires on
+    // the handle and we abort — belt-and-suspenders alongside ResizeController's
+    // capture-phase stopPropagation.
+    handle.addEventListener('lostpointercapture', this._onLostPointerCapture as EventListener);
 
     e.preventDefault();
   }
@@ -144,11 +155,23 @@ export class DragController implements ReactiveController {
   }
 
   private _handlePointerUp(_e: PointerEvent): void {
+    this._cancelDrag();
+  }
+
+  private _handleLostPointerCapture(_e: PointerEvent): void {
+    this._cancelDrag();
+  }
+
+  private _cancelDrag(): void {
     if (!this._dragging) return;
+
     this._dragging = false;
+
     const handle = this._handle();
     handle.removeEventListener('pointermove', this._onPointerMove as EventListener);
     handle.removeEventListener('pointerup', this._onPointerUp as EventListener);
+    handle.removeEventListener('pointercancel', this._onPointerCancel as EventListener);
+    handle.removeEventListener('lostpointercapture', this._onLostPointerCapture as EventListener);
   }
 
   private _handleKeyDown(e: KeyboardEvent): void {

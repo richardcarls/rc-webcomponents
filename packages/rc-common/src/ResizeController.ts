@@ -86,7 +86,10 @@ export class ResizeController implements ReactiveController {
     if (this._opts.direction === 'none') return;
     const target = this._target();
     target.addEventListener('pointermove', this._onPointerMove as EventListener);
-    target.addEventListener('pointerdown', this._onPointerDown as EventListener);
+    // Capture phase so this fires before any descendant handler (e.g. DragController
+    // listening on a child handle). When an edge is detected we stopPropagation,
+    // which prevents drag from starting on the same pointerdown.
+    target.addEventListener('pointerdown', this._onPointerDown as EventListener, { capture: true });
     target.addEventListener('pointerup', this._onPointerUp as EventListener);
     target.addEventListener('pointerleave', this._onPointerLeave as EventListener);
     this._injectCornerButton();
@@ -95,7 +98,7 @@ export class ResizeController implements ReactiveController {
   hostDisconnected(): void {
     const target = this._target();
     target.removeEventListener('pointermove', this._onPointerMove as EventListener);
-    target.removeEventListener('pointerdown', this._onPointerDown as EventListener);
+    target.removeEventListener('pointerdown', this._onPointerDown as EventListener, { capture: true });
     target.removeEventListener('pointerup', this._onPointerUp as EventListener);
     target.removeEventListener('pointerleave', this._onPointerLeave as EventListener);
     this._removeCornerButton();
@@ -229,6 +232,11 @@ export class ResizeController implements ReactiveController {
     if (this._opts.disabled) return;
     const edge = this._detectEdge(e);
     if (!edge) return;
+
+    // We have capture-phase priority over any descendant handler (e.g. a drag
+    // handle inside this element). Claiming the event here ensures only one
+    // controller owns this pointer — no lostpointercapture race needed.
+    e.stopPropagation();
 
     const target = this._target();
     const rect = this._pinPosition(target);
