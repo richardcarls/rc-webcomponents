@@ -26,3 +26,6 @@ dist-ssr
 # AI Agents
 .agents
 .claude
+
+# author files
+rick-todo.md

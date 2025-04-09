@@ -1,22 +1,22 @@
 {
-  "name": "@rcarls/rc-common",
+  "name": "@rcarls/rc-dialog",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "files": [
     "dist"
   ],
-  "main": "./dist/rc-common.umd.cjs",
-  "module": "./dist/rc-common.js",
+  "main": "./dist/rc-dialog.umd.cjs",
+  "module": "./dist/rc-dialog.js",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/rc-common.js"
+        "default": "./dist/rc-dialog.js"
       },
       "require": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/rc-common.umd.cjs"
+        "default": "./dist/rc-dialog.umd.cjs"
       }
     }
   },
@@ -25,16 +25,20 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:browser": "vitest"
   },
   "dependencies": {
-    "@oddbird/css-anchor-positioning": "^0.7.0"
+    "@rcarls/rc-common": "^0.1.0"
   },
   "devDependencies": {
+    "@vitest/browser-webdriverio": "^4.0.6",
     "typescript": "~5.9.3",
-    "vite": "^7.2.4",
+    "vite": "^7.1.7",
     "vite-plugin-dts": "^4.5.4",
-    "lit": "^3.0.0"
+    "vitest": "^4.0.6",
+    "vitest-browser-lit": "^1.0.1",
+    "webdriverio": "^9.20.0"
   },
   "peerDependencies": {
     "lit": "^3.0.0"
