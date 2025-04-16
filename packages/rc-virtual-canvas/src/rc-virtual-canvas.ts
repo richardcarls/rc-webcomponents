@@ -25,6 +25,13 @@ declare global {
 export class RCVirtualCanvas extends LitElement {
   static styles = [virtualCanvasStyles];
 
+  private _rafHandle: number = 0;
+
+  // Stored bound reference so the same closure is used for scheduling and
+  // cancellation — `bind()` returns a new function every call.
+  private readonly _boundUpdate = (time: DOMHighResTimeStamp) =>
+    this._update(time);
+
   /** Pixel width of the virtual content */
   @property({ type: Number })
   set contentWidth(val: number) {
@@ -128,13 +135,23 @@ export class RCVirtualCanvas extends LitElement {
       }),
     );
 
-    window.requestAnimationFrame(this._update.bind(this));
+    this._rafHandle = window.requestAnimationFrame(this._boundUpdate);
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
-    window.requestAnimationFrame(this._update.bind(this));
+    if (this._rafHandle) cancelAnimationFrame(this._rafHandle);
+
+    this._rafHandle = window.requestAnimationFrame(this._boundUpdate);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+
+    cancelAnimationFrame(this._rafHandle);
+    this._rafHandle = 0;
+    this._resizeObserver.disconnect();
   }
 
   render() {
