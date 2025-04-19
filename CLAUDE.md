@@ -41,6 +41,28 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-dialog**: Draggable/resizable `<dialog>` wrapper with event forwarding → rc-common
 - **rc-virtual-canvas**: Virtualized canvas (standalone)
 
+## Browser test notes
+
+Tests run in a real Firefox browser via WebDriverIO. Import pattern:
+
+```ts
+import { test, expect, vi } from 'vitest';
+import { render } from 'vitest-browser-lit';
+import { html } from 'lit';
+import { userEvent } from 'vitest/browser';
+```
+
+**Locator `.click()` vs. `dispatchEvent`** — The WebDriverIO locator's `.click()` method (e.g. `screen.getByRole('menu').click()`) simulates a user gesture and works correctly for most cases. However, it does **not** reliably reach native `addEventListener('click', ...)` handlers registered directly on the same element by a Lit directive. When testing directive-level click handlers, dispatch the event explicitly:
+
+```ts
+const node = await el.element();
+node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+```
+
+Clicking an inner child and letting the event bubble to a directive-decorated ancestor works fine with the locator's `.click()`.
+
+**Programmatic focus** — Use `(await el.element()).focus()` to move focus without triggering click handlers. Avoid `el.click()` when the goal is only to focus, since it will also fire the directive's click listener.
+
 ## Architecture notes
 
 - All components use `LitElement` with `createRenderRoot() { return this; }` (light DOM) where slotted consumer markup must remain in the document — e.g. `<dialog>` for AT access, `<textarea>` for form wiring.
