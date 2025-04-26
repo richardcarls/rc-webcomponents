@@ -24,8 +24,8 @@ dist-ssr
 *.sw?
 
 # AI Agents
-.agents
-.claude
+.agents/*
+.claude/*
 
 # author files
 rick-todo.md
