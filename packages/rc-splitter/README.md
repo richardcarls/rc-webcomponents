@@ -60,7 +60,7 @@ Vertical orientation:
 |---|---|---|
 | `--rc-splitter-separator-size` | `6px` | Thickness of the separator bar |
 | `--rc-splitter-separator-handle-size` | `100%` | Length of the drag handle within the separator (set to a smaller value to create a centred grab handle) |
-| `--rc-splitter-separator-color` | `lightgray` | Background color of the separator bar |
+| `--rc-splitter-separator-color` | `ButtonFace` | Background color of the separator bar |
 | `--rc-splitter-separator-border-inline-start` | `1px solid ButtonBorder` | Inline-start (left in LTR) border of the separator |
 | `--rc-splitter-separator-border-inline-end` | `1px solid ButtonBorder` | Inline-end (right in LTR) border of the separator |
 | `--rc-splitter-separator-border-block-start` | `1px solid ButtonBorder` | Block-start (top) border when `orientation="vertical"` |

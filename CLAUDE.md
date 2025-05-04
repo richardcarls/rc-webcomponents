@@ -68,3 +68,4 @@ Clicking an inner child and letting the event bubble to a directive-decorated an
 - All components use `LitElement` with `createRenderRoot() { return this; }` (light DOM) where slotted consumer markup must remain in the document — e.g. `<dialog>` for AT access, `<textarea>` for form wiring.
 - Shared interaction behaviors live in `rc-common` as `ReactiveController` subclasses so they compose cleanly onto any `LitElement` host.
 - Each package builds to ESM + UMD with declaration files. `sideEffects: false` enables tree-shaking when consumers import individual elements.
+- `rc-dialog` intentionally exposes no CSS custom properties or parts. It wraps a native `<dialog>` with no shadow root — the consuming document has full unrestricted CSS access. Adding custom properties would add indirection without benefit.

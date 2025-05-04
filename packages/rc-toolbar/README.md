@@ -66,7 +66,9 @@ Vertical orientation:
 
 ### CSS parts
 
-None declared. Style slotted children directly or via `::slotted()` from the consumer.
+| Part   | Element               | Description                   |
+|--------|-----------------------|-------------------------------|
+| `root` | `div[role="toolbar"]` | The toolbar container element |
 
 ### Slots
 

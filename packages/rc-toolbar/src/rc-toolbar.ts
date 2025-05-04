@@ -64,6 +64,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     return html`
       <div
         id="root"
+        part="root"
         ${keyNavigation(this._onNavigate)}
         data-interaction-mode="keyboard"
         role="toolbar"

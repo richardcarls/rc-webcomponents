@@ -40,7 +40,7 @@ export const splitterStyles = css`
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background-color: var(--rc-splitter-separator-color, lightgray);
+    background-color: var(--rc-splitter-separator-color, var(--rc-surface, ButtonFace));
     border-left: var(--rc-splitter-separator-border-inline-start, 1px solid ButtonBorder);
     border-right: var(--rc-splitter-separator-border-inline-end, 1px solid ButtonBorder);
 

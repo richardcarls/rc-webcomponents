@@ -10,9 +10,9 @@ export const menuStyles = css`
     flex-direction: column;
     min-width: var(--rc-menu-min-width, 10em);
     padding-block: var(--rc-menu-padding-block, 0.25em);
-    background: var(--rc-menu-background, Canvas);
-    border: var(--rc-menu-border, 1px solid ButtonBorder);
-    box-shadow: var(--rc-menu-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
+    background: var(--rc-menu-background, var(--rc-surface, Canvas));
+    border: var(--rc-menu-border, var(--rc-border, 1px solid ButtonBorder));
+    box-shadow: var(--rc-menu-shadow, var(--rc-shadow, 0 2px 8px rgba(0, 0, 0, 0.15)));
 
     /* Focus styling for keyboard navigation */
     &[data-interaction-mode='keyboard']:focus-within {
