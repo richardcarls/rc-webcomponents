@@ -3,29 +3,103 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>rc-toolbar</title>
-
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
     <script type="module" src="/src/rc-toolbar.ts"></script>
+    <style>
+      rc-toolbar {
+        border: 1px solid ButtonBorder;
+        border-radius: 4px;
+        display: inline-flex;
+      }
+
+      rc-toolbar button {
+        padding: 0.4em 0.8em;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      rc-toolbar button:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+      rc-toolbar button:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
+      rc-toolbar button[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+      rc-toolbar hr {
+        margin: 0 0.25em;
+        border: none;
+        border-left: 1px solid ButtonBorder;
+        height: 1.5em;
+        align-self: center;
+      }
+
+      rc-toolbar[orientation="vertical"] {
+        display: inline-flex;
+        flex-direction: column;
+      }
+
+      rc-toolbar[orientation="vertical"] hr {
+        border-left: none;
+        border-top: 1px solid ButtonBorder;
+        width: 1.5em;
+        height: auto;
+        margin: 0.25em 0;
+      }
+    </style>
   </head>
   <body>
-    <p>
-        Reference: <a href="https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/">https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/</a>
-    </p>
-    
-    <rc-toolbar>
-      <button onclick="testClick(event)">One</button>
-      <button onclick="testClick(event)">Two</button>
-      <button onclick="testClick(event)">Three</button>
-      <button onclick="testClick(event)">Four</button>
-      <button onclick="testClick(event)" disabled>Five</button>
-      <button onclick="testClick(event)">Six</button>
-    </rc-toolbar>
+    <main class="demo-page">
+      <div class="demo-controls">
+        <div class="demo-title">
+          <h1>rc-toolbar</h1>
+          <a href="https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/">WAI-ARIA Toolbar Pattern</a>
+        </div>
+        <button class="theme-picker" type="button">Auto</button>
+      </div>
+
+      <div class="demo-section">
+        <h2>Basic Toolbar</h2>
+        <rc-toolbar label="Formatting">
+          <button onclick="log(event)">Bold</button>
+          <button onclick="log(event)">Italic</button>
+          <button onclick="log(event)">Underline</button>
+          <button onclick="log(event)" disabled>Strike</button>
+        </rc-toolbar>
+      </div>
+
+      <div class="demo-section">
+        <h2>Mixed Items with Separator</h2>
+        <p>Non-focusable elements like <code>&lt;hr&gt;</code> render between items but are skipped during keyboard navigation.</p>
+        <rc-toolbar label="Text formatting">
+          <button onclick="log(event)">Bold</button>
+          <button onclick="log(event)">Italic</button>
+          <button onclick="log(event)">Underline</button>
+          <hr aria-hidden="true" />
+          <button onclick="log(event)">Align left</button>
+          <button onclick="log(event)">Align center</button>
+          <button onclick="log(event)">Align right</button>
+          <hr aria-hidden="true" />
+          <button onclick="log(event)" disabled>Insert table</button>
+        </rc-toolbar>
+      </div>
+
+      <div class="demo-section">
+        <h2>Vertical Orientation</h2>
+        <rc-toolbar orientation="vertical" label="Actions" style="display: inline-flex;">
+          <button onclick="log(event)">Cut</button>
+          <button onclick="log(event)">Copy</button>
+          <button onclick="log(event)">Paste</button>
+          <hr aria-hidden="true" />
+          <button onclick="log(event)">Undo</button>
+          <button onclick="log(event)">Redo</button>
+        </rc-toolbar>
+      </div>
+    </main>
 
     <script>
-        window.testClick = function(e) {
-            console.log(e.currentTarget);
-        }
+      window.log = function (e) {
+        console.log('toolbar item clicked:', e.currentTarget.textContent.trim());
+      };
     </script>
   </body>
 </html>

@@ -3,28 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>rc-dialog</title>
-
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
     <script type="module" src="/src/rc-dialog.ts"></script>
     <style>
-      body {
-        font-family: system-ui, sans-serif;
-        padding: 2rem;
-        max-width: 60rem;
-      }
-      .demo-section {
-        margin-bottom: 2rem;
-      }
-      h2 {
-        margin-bottom: 0.25rem;
-      }
-      .demo-section > p {
-        margin: 0 0 0.5rem;
-        color: #555;
-        font-size: 0.9rem;
-      }
-
       /* --- Shared dialog chrome ------------------------------------------- */
       dialog {
         padding: 0;
@@ -33,16 +16,13 @@
         box-shadow: 0 4px 24px rgba(0 0 0 / 0.2);
         min-width: 20rem;
       }
-      /* display:flex must be scoped to [open] — author styles override the UA
-         dialog:not([open]){display:none} rule, making all dialogs visible. */
       dialog[open] {
         display: flex;
         flex-direction: column;
         overflow: hidden;
       }
-      dialog::backdrop {
-        background: rgba(0 0 0 / 0.4);
-      }
+      dialog::backdrop { background: rgba(0 0 0 / 0.4); }
+
       .dlg-titlebar {
         display: flex;
         align-items: center;
@@ -53,62 +33,29 @@
         cursor: default;
         user-select: none;
       }
-      .dlg-titlebar span {
-        flex: 1;
-        font-weight: 600;
-      }
+      .dlg-titlebar span { flex: 1; font-weight: 600; }
       .dlg-titlebar button {
-        border: none;
-        background: none;
-        cursor: pointer;
-        font-size: 1.1rem;
-        line-height: 1;
-        padding: 0 0.25rem;
+        border: none; background: none; cursor: pointer;
+        font-size: 1.1rem; line-height: 1; padding: 0 0.25rem;
       }
-      .dlg-titlebar,
+      .dlg-titlebar, .dlg-footer { flex-shrink: 0; }
+      .dlg-body { padding: 1rem; flex: 1; overflow: auto; min-height: 0; }
       .dlg-footer {
-        flex-shrink: 0;
-      }
-      .dlg-body {
-        padding: 1rem;
-        flex: 1;
-        overflow: auto;
-        min-height: 0;
-      }
-      .dlg-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.5rem;
-        padding: 0.75rem 1rem;
-        border-top: 1px solid ButtonBorder;
+        display: flex; justify-content: flex-end; gap: 0.5rem;
+        padding: 0.75rem 1rem; border-top: 1px solid ButtonBorder;
       }
 
       /* --- Minimal / no-header (section 4) -------------------------------- */
       dialog.dlg-card {
-        min-width: 22rem;
-        max-width: 32rem;
-        border-radius: 12px;
-        border: none;
-        padding: 0;
-        box-shadow: 0 8px 40px rgba(0 0 0 / 0.18);
+        min-width: 22rem; max-width: 32rem; border-radius: 12px;
+        border: none; padding: 0; box-shadow: 0 8px 40px rgba(0 0 0 / 0.18);
       }
-      dialog.dlg-card[open] {
-        display: block;
-        padding: 2rem;
-        position: relative;
-      }
+      dialog.dlg-card[open] { display: block; padding: 2rem; position: relative; }
       .dlg-close-overlay {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-        border: none;
-        background: none;
-        cursor: pointer;
-        font-size: 1.25rem;
-        line-height: 1;
-        padding: 0.25rem;
-        border-radius: 50%;
-        color: #666;
+        position: absolute; top: 0.5rem; right: 0.5rem;
+        border: none; background: none; cursor: pointer;
+        font-size: 1.25rem; line-height: 1; padding: 0.25rem;
+        border-radius: 50%; color: #666;
       }
       .dlg-close-overlay:hover { background: rgba(0 0 0 / 0.08); }
 
@@ -116,383 +63,247 @@
       .dlg-alert-icon { font-size: 2.5rem; text-align: center; margin-bottom: 0.5rem; }
       .dlg-alert-msg  { text-align: center; margin-bottom: 1.25rem; color: #333; }
       .dlg-btn-danger {
-        background: #c0392b;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        padding: 0.5rem 1.25rem;
-        cursor: pointer;
-        font-size: 1rem;
+        background: #c0392b; color: #fff; border: none; border-radius: 4px;
+        padding: 0.5rem 1.25rem; cursor: pointer; font-size: 1rem;
       }
       .dlg-btn-danger:hover { background: #a93226; }
       .dlg-btn-secondary {
-        background: none;
-        border: 1px solid ButtonBorder;
-        border-radius: 4px;
-        padding: 0.5rem 1.25rem;
-        cursor: pointer;
-        font-size: 1rem;
+        background: none; border: 1px solid ButtonBorder; border-radius: 4px;
+        padding: 0.5rem 1.25rem; cursor: pointer; font-size: 1rem;
       }
 
       /* --- Form dialog (section 6) ---------------------------------------- */
-      .dlg-form-field {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        margin-bottom: 1rem;
-      }
+      .dlg-form-field { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1rem; }
       .dlg-form-field label { font-weight: 600; font-size: 0.875rem; }
       .dlg-form-field input,
       .dlg-form-field select,
       .dlg-form-field textarea {
-        padding: 0.375rem 0.5rem;
-        border: 1px solid ButtonBorder;
-        border-radius: 4px;
-        font-size: 1rem;
-        font-family: inherit;
+        padding: 0.375rem 0.5rem; border: 1px solid ButtonBorder;
+        border-radius: 4px; font-size: 1rem; font-family: inherit;
       }
 
       /* --- Close-guard (section 7) ---------------------------------------- */
-      .guard-warning {
-        font-size: 0.8rem;
-        color: #c0392b;
-        margin-top: 0.25rem;
-        display: none;
-      }
+      .guard-warning { font-size: 0.8rem; color: #c0392b; margin-top: 0.25rem; display: none; }
       .guard-warning.visible { display: block; }
 
       /* --- Light-dismiss info panel (section 8) --------------------------- */
-      dialog.dlg-info-panel {
-        min-width: 26rem;
-        border: none;
-        border-radius: 8px;
-        padding: 0;
-        box-shadow: 0 4px 32px rgba(0 0 0 / 0.22);
-      }
-      dialog.dlg-info-panel[open] {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
+      dialog.dlg-info-panel { min-width: 26rem; border: none; border-radius: 8px; padding: 0; box-shadow: 0 4px 32px rgba(0 0 0 / 0.22); }
+      dialog.dlg-info-panel[open] { display: flex; flex-direction: column; overflow: hidden; }
       .dlg-info-header {
-        background: #1a73e8;
-        color: #fff;
-        padding: 1rem 1.25rem;
-        font-weight: 600;
-        font-size: 1.1rem;
-        border-radius: 8px 8px 0 0;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-shrink: 0;
+        background: #1a73e8; color: #fff; padding: 1rem 1.25rem;
+        font-weight: 600; font-size: 1.1rem; border-radius: 8px 8px 0 0;
+        display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;
       }
-      .dlg-info-body {
-        background: #f8faff;
-        padding: 1.25rem;
-        flex: 1;
-        line-height: 1.7;
-        color: #2c3e50;
-      }
-      .dlg-info-body kbd {
-        background: #e8eaf0;
-        border: 1px solid #c5cae9;
-        border-radius: 3px;
-        padding: 0.1em 0.4em;
-        font-size: 0.85em;
-      }
-      .dlg-info-hint {
-        font-size: 0.8rem;
-        color: #888;
-        text-align: center;
-        padding: 0.5rem;
-        border-top: 1px solid #e0e6f0;
-        flex-shrink: 0;
-      }
+      .dlg-info-body { background: #f8faff; padding: 1.25rem; flex: 1; line-height: 1.7; color: #2c3e50; }
+      .dlg-info-body kbd { background: #e8eaf0; border: 1px solid #c5cae9; border-radius: 3px; padding: 0.1em 0.4em; font-size: 0.85em; }
+      .dlg-info-hint { font-size: 0.8rem; color: #888; text-align: center; padding: 0.5rem; border-top: 1px solid #e0e6f0; flex-shrink: 0; }
 
       /* --- Event log ------------------------------------------------------ */
       #event-log {
-        font-size: 0.8rem;
-        max-height: 10rem;
-        overflow-y: auto;
-        font-family: monospace;
-        background: Canvas;
-        border: 1px solid ButtonBorder;
-        padding: 0.5rem;
-        min-height: 3rem;
+        font-size: 0.8rem; max-height: 10rem; overflow-y: auto;
+        font-family: monospace; background: Canvas; border: 1px solid ButtonBorder;
+        padding: 0.5rem; min-height: 3rem;
       }
     </style>
   </head>
   <body>
-    <h1>rc-dialog</h1>
-    <p>
-      Reference:
-      <a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"
-        >WAI-ARIA Dialog (Modal) Pattern</a
-      >
-    </p>
+    <main class="demo-page">
+      <div class="demo-controls">
+        <div class="demo-title">
+          <h1>rc-dialog</h1>
+          <a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/">WAI-ARIA Dialog (Modal) Pattern</a>
+        </div>
+        <button class="theme-picker" type="button">Auto</button>
+      </div>
 
-    <!-- ================================================================== -->
-    <!-- 1. Basic modal dialog                                               -->
-    <!-- ================================================================== -->
-    <div class="demo-section">
-      <h2>1. Basic modal dialog</h2>
-      <p>Native <code>showModal()</code>, Escape closes. Events logged below.</p>
-      <button onclick="document.querySelector('#basic').showModal()">Open dialog</button>
-
-      <rc-dialog id="basic">
-        <dialog aria-labelledby="basic-title">
-          <div class="dlg-titlebar">
-            <span id="basic-title">Basic Dialog</span>
-            <button onclick="document.querySelector('#basic').close()">✕</button>
-          </div>
-          <div class="dlg-body">
-            <p>This is a basic modal dialog. Press <kbd>Escape</kbd> or click a button to close.</p>
-          </div>
-          <div class="dlg-footer">
-            <button onclick="document.querySelector('#basic').close('cancel')">Cancel</button>
-            <button onclick="document.querySelector('#basic').close('ok')">OK</button>
-          </div>
-        </dialog>
-      </rc-dialog>
-    </div>
-
-    <!-- ================================================================== -->
-    <!-- 2. Movable dialog                                                   -->
-    <!-- ================================================================== -->
-    <div class="demo-section">
-      <h2>2. Movable dialog</h2>
-      <p>Drag the titlebar to move. Tab to the titlebar; arrow keys move it (Shift = 10× step).</p>
-      <button onclick="document.querySelector('#movable').showModal()">Open movable dialog</button>
-
-      <rc-dialog id="movable" movable move-handle=".dlg-titlebar">
-        <dialog aria-labelledby="movable-title">
-          <div class="dlg-titlebar">
-            <span id="movable-title">Movable Dialog</span>
-            <button onclick="document.querySelector('#movable').close()">✕</button>
-          </div>
-          <div class="dlg-body">
-            <p>Drag the titlebar or use arrow keys (while titlebar is focused) to reposition.</p>
-          </div>
-          <div class="dlg-footer">
-            <button onclick="document.querySelector('#movable').close('ok')">OK</button>
-          </div>
-        </dialog>
-      </rc-dialog>
-    </div>
-
-    <!-- ================================================================== -->
-    <!-- 3. Movable + resizable dialog                                       -->
-    <!-- ================================================================== -->
-    <div class="demo-section">
-      <h2>3. Movable + resizable dialog</h2>
-      <p>Drag any edge or corner to resize. Tab to the resize button (bottom-right); arrow keys resize (Shift = 10× step).</p>
-      <button onclick="document.querySelector('#resizable').showModal()">Open resizable dialog</button>
-
-      <rc-dialog id="resizable" movable move-handle=".dlg-titlebar" resize="both">
-        <dialog aria-labelledby="resizable-title" style="min-width: 20rem; min-height: 10rem;">
-          <div class="dlg-titlebar">
-            <span id="resizable-title">Resizable Dialog</span>
-            <button onclick="document.querySelector('#resizable').close()">✕</button>
-          </div>
-          <div class="dlg-body">
-            <p>Drag any edge or corner to resize. Opposite edges move position while anchoring the far side.</p>
-          </div>
-          <div class="dlg-footer">
-            <button onclick="document.querySelector('#resizable').close('ok')">OK</button>
-          </div>
-        </dialog>
-      </rc-dialog>
-    </div>
-
-    <!-- ================================================================== -->
-    <!-- 4. Minimal / no-header dialog                                       -->
-    <!-- ================================================================== -->
-    <div class="demo-section">
-      <h2>4. Minimal dialog (no titlebar or footer)</h2>
-      <p>A card-style dialog with an overlaid ✕. No structural titlebar or footer divs required.</p>
-      <button onclick="document.querySelector('#minimal').showModal()">Open minimal dialog</button>
-
-      <rc-dialog id="minimal">
-        <dialog class="dlg-card" aria-labelledby="minimal-title" aria-describedby="minimal-desc">
-          <button
-            class="dlg-close-overlay"
-            onclick="document.querySelector('#minimal').close()"
-            aria-label="Close"
-          >✕</button>
-          <h3 id="minimal-title" style="margin: 0 0 0.75rem;">Quick note</h3>
-          <p id="minimal-desc">
-            No structural titlebar or footer here — just content and an overlaid ✕ button.
-            Any layout is valid inside a <code>&lt;dialog&gt;</code>.
-          </p>
-          <p>Press <kbd>Escape</kbd> or ✕ to close.</p>
-        </dialog>
-      </rc-dialog>
-    </div>
-
-    <!-- ================================================================== -->
-    <!-- 5. Alert / Confirm dialog                                           -->
-    <!-- ================================================================== -->
-    <div class="demo-section">
-      <h2>5. Alert / Confirm dialog</h2>
-      <p>Uses <code>role="alertdialog"</code> and <code>aria-describedby</code> for the alert message. Assistive tech may announce this with higher urgency.</p>
-      <button onclick="document.querySelector('#alert-dlg').showModal()">Delete item…</button>
-
-      <rc-dialog id="alert-dlg">
-        <dialog
-          role="alertdialog"
-          aria-labelledby="alert-title"
-          aria-describedby="alert-desc"
-          style="min-width: 20rem;"
-        >
-          <div class="dlg-titlebar">
-            <span id="alert-title">Delete item?</span>
-          </div>
-          <div class="dlg-body">
-            <div class="dlg-alert-icon" aria-hidden="true">⚠️</div>
-            <p id="alert-desc" class="dlg-alert-msg">
-              This will permanently delete the item and cannot be undone.
-            </p>
-          </div>
-          <div class="dlg-footer">
-            <button class="dlg-btn-secondary" onclick="document.querySelector('#alert-dlg').close('cancel')">Cancel</button>
-            <button class="dlg-btn-danger"    onclick="document.querySelector('#alert-dlg').close('delete')">Delete</button>
-          </div>
-        </dialog>
-      </rc-dialog>
-    </div>
-
-    <!-- ================================================================== -->
-    <!-- 6. Form dialog (native <form method="dialog">)                     -->
-    <!-- ================================================================== -->
-    <div class="demo-section">
-      <h2>6. Form dialog</h2>
-      <p>
-        Uses <code>&lt;form method="dialog"&gt;</code>. Submitting the form closes the dialog and
-        sets <code>returnValue</code> to the submit button's <code>value</code> — no JS close
-        handler needed.
-      </p>
-      <button onclick="document.querySelector('#formdlg').showModal()">Open form dialog</button>
-
-      <rc-dialog id="formdlg">
-        <dialog aria-labelledby="form-title" style="min-width: 24rem;">
-          <div class="dlg-titlebar">
-            <span id="form-title">New contact</span>
-            <!-- formmethod="dialog" on a button associated with the form submits it as dialog -->
-            <button formmethod="dialog" form="contact-form" value="cancel" aria-label="Close">✕</button>
-          </div>
-          <div class="dlg-body">
-            <form id="contact-form" method="dialog">
-              <div class="dlg-form-field">
-                <label for="contact-name">Name</label>
-                <input id="contact-name" name="name" type="text" placeholder="Jane Smith" />
-              </div>
-              <div class="dlg-form-field">
-                <label for="contact-email">Email</label>
-                <input id="contact-email" name="email" type="email" placeholder="jane@example.com" />
-              </div>
-              <div class="dlg-form-field">
-                <label for="contact-role">Role</label>
-                <select id="contact-role" name="role">
-                  <option value="">— select —</option>
-                  <option value="admin">Admin</option>
-                  <option value="editor">Editor</option>
-                  <option value="viewer">Viewer</option>
-                </select>
-              </div>
-            </form>
-          </div>
-          <div class="dlg-footer">
-            <button formmethod="dialog" form="contact-form" value="cancel">Cancel</button>
-            <button type="submit"       form="contact-form" value="save">Save contact</button>
-          </div>
-        </dialog>
-      </rc-dialog>
-    </div>
-
-    <!-- ================================================================== -->
-    <!-- 7. Close-guard (rc-dialog-request-close)                           -->
-    <!-- ================================================================== -->
-    <div class="demo-section">
-      <h2>7. Close-guard (unsaved changes)</h2>
-      <p>
-        Listens for <code>rc-dialog-request-close</code> (cancelable). When the textarea has
-        content, <code>preventDefault()</code> blocks the close and shows an inline warning.
-        Works for Escape, the ✕ button, and any <code>requestClose()</code> call.
-      </p>
-      <button onclick="document.querySelector('#guard').showModal()">Open with guard</button>
-
-      <rc-dialog id="guard" movable move-handle=".dlg-titlebar">
-        <dialog aria-labelledby="guard-title" style="min-width: 22rem;">
-          <div class="dlg-titlebar">
-            <span id="guard-title">Edit note</span>
-            <!-- requestClose fires rc-dialog-request-close; close() bypasses it -->
-            <button onclick="document.querySelector('#guard').requestClose('cancel')">✕</button>
-          </div>
-          <div class="dlg-body">
-            <div class="dlg-form-field">
-              <label for="guard-note">Note</label>
-              <textarea
-                id="guard-note"
-                rows="5"
-                placeholder="Type something to trigger the guard…"
-                style="resize: vertical;"
-              ></textarea>
+      <!-- 1 -->
+      <div class="demo-section">
+        <h2>1. Basic modal dialog</h2>
+        <p>Native <code>showModal()</code>, Escape closes. Events logged below.</p>
+        <button onclick="document.querySelector('#basic').showModal()">Open dialog</button>
+        <rc-dialog id="basic">
+          <dialog aria-labelledby="basic-title">
+            <div class="dlg-titlebar">
+              <span id="basic-title">Basic Dialog</span>
+              <button onclick="document.querySelector('#basic').close()">✕</button>
             </div>
-            <p class="guard-warning" id="guard-warning" role="alert">
-              You have unsaved changes. Save or discard before closing.
-            </p>
-          </div>
-          <div class="dlg-footer">
-            <button
-              onclick="document.getElementById('guard-note').value = ''; document.querySelector('#guard').close('discard')"
-            >Discard</button>
-            <button onclick="document.querySelector('#guard').close('save')">Save</button>
-          </div>
-        </dialog>
-      </rc-dialog>
-    </div>
+            <div class="dlg-body"><p>Press <kbd>Escape</kbd> or click a button to close.</p></div>
+            <div class="dlg-footer">
+              <button onclick="document.querySelector('#basic').close('cancel')">Cancel</button>
+              <button onclick="document.querySelector('#basic').close('ok')">OK</button>
+            </div>
+          </dialog>
+        </rc-dialog>
+      </div>
 
-    <!-- ================================================================== -->
-    <!-- 8. Light-dismiss info panel                                         -->
-    <!-- ================================================================== -->
-    <div class="demo-section">
-      <h2>8. Light-dismiss info panel</h2>
-      <p>
-        <code>closed-by="any"</code> (native, Chrome 134+ / Safari 18.4+ / Firefox 139+) plus
-        <code>light-dismiss</code> (JS fallback for all browsers). Click the backdrop or press
-        <kbd>Escape</kbd> to dismiss — no close button needed.
-      </p>
-      <button onclick="document.querySelector('#infopanel').showModal()">Open info panel</button>
+      <!-- 2 -->
+      <div class="demo-section">
+        <h2>2. Movable dialog</h2>
+        <p>Drag the titlebar to move. Tab to the titlebar; arrow keys move it (Shift = 10× step).</p>
+        <button onclick="document.querySelector('#movable').showModal()">Open movable dialog</button>
+        <rc-dialog id="movable" movable move-handle=".dlg-titlebar">
+          <dialog aria-labelledby="movable-title">
+            <div class="dlg-titlebar">
+              <span id="movable-title">Movable Dialog</span>
+              <button onclick="document.querySelector('#movable').close()">✕</button>
+            </div>
+            <div class="dlg-body"><p>Drag the titlebar or use arrow keys (while titlebar is focused) to reposition.</p></div>
+            <div class="dlg-footer">
+              <button onclick="document.querySelector('#movable').close('ok')">OK</button>
+            </div>
+          </dialog>
+        </rc-dialog>
+      </div>
 
-      <rc-dialog id="infopanel" closed-by="any" light-dismiss>
-        <dialog
-          class="dlg-info-panel"
-          aria-labelledby="info-title"
-          aria-describedby="info-body"
-        >
-          <div class="dlg-info-header">
-            <span aria-hidden="true">ℹ️</span>
-            <span id="info-title">Keyboard shortcuts</span>
-          </div>
-          <div class="dlg-info-body" id="info-body">
-            <p><kbd>Ctrl+K</kbd> — Open command palette</p>
-            <p><kbd>Ctrl+/</kbd> — Toggle sidebar</p>
-            <p><kbd>Ctrl+Shift+P</kbd> — Open settings</p>
-            <p><kbd>?</kbd> — Show all shortcuts</p>
-          </div>
-          <div class="dlg-info-hint">Click anywhere outside to dismiss</div>
-        </dialog>
-      </rc-dialog>
-    </div>
+      <!-- 3 -->
+      <div class="demo-section">
+        <h2>3. Movable + resizable dialog</h2>
+        <p>Drag any edge or corner to resize. Tab to the resize button (bottom-right); arrow keys resize (Shift = 10× step).</p>
+        <button onclick="document.querySelector('#resizable').showModal()">Open resizable dialog</button>
+        <rc-dialog id="resizable" movable move-handle=".dlg-titlebar" resize="both">
+          <dialog aria-labelledby="resizable-title" style="min-width: 20rem; min-height: 10rem;">
+            <div class="dlg-titlebar">
+              <span id="resizable-title">Resizable Dialog</span>
+              <button onclick="document.querySelector('#resizable').close()">✕</button>
+            </div>
+            <div class="dlg-body"><p>Drag any edge or corner to resize.</p></div>
+            <div class="dlg-footer">
+              <button onclick="document.querySelector('#resizable').close('ok')">OK</button>
+            </div>
+          </dialog>
+        </rc-dialog>
+      </div>
 
-    <!-- ================================================================== -->
-    <!-- Event log                                                           -->
-    <!-- ================================================================== -->
-    <div class="demo-section">
-      <h2>Events</h2>
-      <p>All <code>rc-dialog-*</code> events from all dialogs above are logged here (newest first).</p>
-      <pre id="event-log"></pre>
-    </div>
+      <!-- 4 -->
+      <div class="demo-section">
+        <h2>4. Minimal dialog (no titlebar or footer)</h2>
+        <p>A card-style dialog with an overlaid ✕. No structural titlebar or footer divs required.</p>
+        <button onclick="document.querySelector('#minimal').showModal()">Open minimal dialog</button>
+        <rc-dialog id="minimal">
+          <dialog class="dlg-card" aria-labelledby="minimal-title" aria-describedby="minimal-desc">
+            <button class="dlg-close-overlay" onclick="document.querySelector('#minimal').close()" aria-label="Close">✕</button>
+            <h3 id="minimal-title" style="margin: 0 0 0.75rem;">Quick note</h3>
+            <p id="minimal-desc">No structural titlebar or footer here — just content and an overlaid ✕ button.</p>
+            <p>Press <kbd>Escape</kbd> or ✕ to close.</p>
+          </dialog>
+        </rc-dialog>
+      </div>
+
+      <!-- 5 -->
+      <div class="demo-section">
+        <h2>5. Alert / Confirm dialog</h2>
+        <p>Uses <code>role="alertdialog"</code> and <code>aria-describedby</code> for the alert message.</p>
+        <button onclick="document.querySelector('#alert-dlg').showModal()">Delete item…</button>
+        <rc-dialog id="alert-dlg">
+          <dialog role="alertdialog" aria-labelledby="alert-title" aria-describedby="alert-desc" style="min-width: 20rem;">
+            <div class="dlg-titlebar"><span id="alert-title">Delete item?</span></div>
+            <div class="dlg-body">
+              <div class="dlg-alert-icon" aria-hidden="true">⚠️</div>
+              <p id="alert-desc" class="dlg-alert-msg">This will permanently delete the item and cannot be undone.</p>
+            </div>
+            <div class="dlg-footer">
+              <button class="dlg-btn-secondary" onclick="document.querySelector('#alert-dlg').close('cancel')">Cancel</button>
+              <button class="dlg-btn-danger" onclick="document.querySelector('#alert-dlg').close('delete')">Delete</button>
+            </div>
+          </dialog>
+        </rc-dialog>
+      </div>
+
+      <!-- 6 -->
+      <div class="demo-section">
+        <h2>6. Form dialog</h2>
+        <p>Uses <code>&lt;form method="dialog"&gt;</code>. Submitting closes the dialog and sets <code>returnValue</code>.</p>
+        <button onclick="document.querySelector('#formdlg').showModal()">Open form dialog</button>
+        <rc-dialog id="formdlg">
+          <dialog aria-labelledby="form-title" style="min-width: 24rem;">
+            <div class="dlg-titlebar">
+              <span id="form-title">New contact</span>
+              <button formmethod="dialog" form="contact-form" value="cancel" aria-label="Close">✕</button>
+            </div>
+            <div class="dlg-body">
+              <form id="contact-form" method="dialog">
+                <div class="dlg-form-field">
+                  <label for="contact-name">Name</label>
+                  <input id="contact-name" name="name" type="text" placeholder="Jane Smith" />
+                </div>
+                <div class="dlg-form-field">
+                  <label for="contact-email">Email</label>
+                  <input id="contact-email" name="email" type="email" placeholder="jane@example.com" />
+                </div>
+                <div class="dlg-form-field">
+                  <label for="contact-role">Role</label>
+                  <select id="contact-role" name="role">
+                    <option value="">— select —</option>
+                    <option value="admin">Admin</option>
+                    <option value="editor">Editor</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="dlg-footer">
+              <button formmethod="dialog" form="contact-form" value="cancel">Cancel</button>
+              <button type="submit" form="contact-form" value="save">Save contact</button>
+            </div>
+          </dialog>
+        </rc-dialog>
+      </div>
+
+      <!-- 7 -->
+      <div class="demo-section">
+        <h2>7. Close-guard (unsaved changes)</h2>
+        <p>Listens for <code>rc-dialog-request-close</code> (cancelable). When the textarea has content, <code>preventDefault()</code> blocks the close.</p>
+        <button onclick="document.querySelector('#guard').showModal()">Open with guard</button>
+        <rc-dialog id="guard" movable move-handle=".dlg-titlebar">
+          <dialog aria-labelledby="guard-title" style="min-width: 22rem;">
+            <div class="dlg-titlebar">
+              <span id="guard-title">Edit note</span>
+              <button onclick="document.querySelector('#guard').requestClose('cancel')">✕</button>
+            </div>
+            <div class="dlg-body">
+              <div class="dlg-form-field">
+                <label for="guard-note">Note</label>
+                <textarea id="guard-note" rows="5" placeholder="Type something to trigger the guard…" style="resize: vertical;"></textarea>
+              </div>
+              <p class="guard-warning" id="guard-warning" role="alert">You have unsaved changes. Save or discard before closing.</p>
+            </div>
+            <div class="dlg-footer">
+              <button onclick="document.getElementById('guard-note').value = ''; document.querySelector('#guard').close('discard')">Discard</button>
+              <button onclick="document.querySelector('#guard').close('save')">Save</button>
+            </div>
+          </dialog>
+        </rc-dialog>
+      </div>
+
+      <!-- 8 -->
+      <div class="demo-section">
+        <h2>8. Light-dismiss info panel</h2>
+        <p><code>closed-by="any"</code> (Chrome 134+/Safari 18.4+/Firefox 139+) plus <code>light-dismiss</code> JS fallback. Click the backdrop or press <kbd>Escape</kbd> to dismiss.</p>
+        <button onclick="document.querySelector('#infopanel').showModal()">Open info panel</button>
+        <rc-dialog id="infopanel" closed-by="any" light-dismiss>
+          <dialog class="dlg-info-panel" aria-labelledby="info-title" aria-describedby="info-body">
+            <div class="dlg-info-header">
+              <span aria-hidden="true">ℹ️</span>
+              <span id="info-title">Keyboard shortcuts</span>
+            </div>
+            <div class="dlg-info-body" id="info-body">
+              <p><kbd>Ctrl+K</kbd> — Open command palette</p>
+              <p><kbd>Ctrl+/</kbd> — Toggle sidebar</p>
+              <p><kbd>Ctrl+Shift+P</kbd> — Open settings</p>
+              <p><kbd>?</kbd> — Show all shortcuts</p>
+            </div>
+            <div class="dlg-info-hint">Click anywhere outside to dismiss</div>
+          </dialog>
+        </rc-dialog>
+      </div>
+
+      <!-- Event log -->
+      <div class="demo-section">
+        <h2>Events</h2>
+        <p>All <code>rc-dialog-*</code> events from all dialogs above (newest first).</p>
+        <pre id="event-log"></pre>
+      </div>
+    </main>
 
     <script>
       const log = document.querySelector('#event-log');
@@ -500,8 +311,6 @@
         log.textContent = `${new Date().toLocaleTimeString()} ${msg}\n` + log.textContent;
       }
 
-      // Close-guard must run in capture phase so preventDefault() fires before
-      // the bubble-phase generic log listener sees the event.
       document.querySelector('#guard').addEventListener('rc-dialog-request-close', (e) => {
         const ta = document.getElementById('guard-note');
         if (ta.value.trim()) {
@@ -513,7 +322,6 @@
         }
       }, true);
 
-      // Generic event log for all dialogs.
       document.querySelectorAll('rc-dialog').forEach((d) => {
         d.addEventListener('rc-dialog-close', (e) => {
           logEvent(`close         [#${d.id}]  returnValue="${e.detail.returnValue}"`);

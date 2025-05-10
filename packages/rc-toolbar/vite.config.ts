@@ -5,6 +5,7 @@ import dts from 'vite-plugin-dts';
 
 export default defineConfig({
   plugins: [dts({ outDir: 'dist/types' })],
+  publicDir: resolve(__dirname, '../../demo-shared'),
   build: {
     sourcemap: true,
     lib: {
