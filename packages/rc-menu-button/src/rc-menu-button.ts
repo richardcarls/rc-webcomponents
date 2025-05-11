@@ -29,6 +29,7 @@ declare global {
  * @slot trigger - The button element that triggers the menu
  * @slot default - The rc-menu element to display as popup
  * @fires rc-menu-button-toggle - Fired when the menu opens or closes
+ * @cssprop [--rc-menu-button-popup-z-index=1000] - Z-index of the popup overlay
  * @csspart root - The root container element
  * @csspart popup - The popup container element
  */

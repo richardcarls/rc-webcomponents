@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+custom-elements.json
 *.local
 
 # Editor directories and files

@@ -26,6 +26,11 @@ declare global {
  * @slot Takes any number of child elements to display in the menu. Only focusable elements are navigable.
  * @fires rc-menu-activate - Fired when a menu item is activated via Enter or Space
  * @fires rc-menu-close - Fired when Escape is pressed
+ * @cssprop [--rc-menu-min-width=10em] - Minimum width of the menu panel
+ * @cssprop [--rc-menu-padding-block=0.25em] - Block (top/bottom) padding inside the panel
+ * @cssprop [--rc-menu-background=Canvas] - Background color; falls back through --rc-surface
+ * @cssprop [--rc-menu-border=1px solid ButtonBorder] - Border; falls back through --rc-border
+ * @cssprop [--rc-menu-shadow=0 2px 8px rgba(0,0,0,.15)] - Box shadow; falls back through --rc-shadow
  * @csspart root - The root container element
  */
 @customElement('rc-menu')
