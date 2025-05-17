@@ -27,6 +27,7 @@ custom-elements.json
 # AI Agents
 .agents/*
 .claude/*
+.skills-lock.json
 
 # author files
 rick-todo.md
