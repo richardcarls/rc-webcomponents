@@ -12,10 +12,13 @@
     "build": "yarn workspace @rcarls/rc-common run build && yarn workspace @rcarls/rc-menu run build && yarn workspace @rcarls/rc-menu-button run build && yarn workspace @rcarls/rc-menubar run build && yarn workspace @rcarls/rc-toolbar run build && yarn workspace @rcarls/rc-splitter run build && yarn workspace @rcarls/rc-dialog run build && yarn workspace @rcarls/rc-textarea run build && yarn workspace @rcarls/rc-virtual-canvas run build",
     "test": "yarn workspaces run test:browser",
     "dev": "yarn workspaces run dev",
-    "cem:analyze": "cem analyze"
+    "cem:analyze": "cem analyze",
+    "docs": "yarn build && yarn cem:analyze && vite --config docs/vite.config.ts docs/"
   },
-  "customElements": "custom-elements.json",
+  "customElements": "dist/custom-elements.json",
   "devDependencies": {
-    "@custom-elements-manifest/analyzer": "^0.11.0"
+    "@custom-elements-manifest/analyzer": "0.11.0",
+    "api-viewer-element": "^1.0.0-pre.10",
+    "lit": "^3.0.0"
   }
 }
