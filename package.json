@@ -9,7 +9,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "yarn workspace @rcarls/rc-common run build && yarn workspace @rcarls/rc-menu run build && yarn workspace @rcarls/rc-menu-button run build && yarn workspace @rcarls/rc-menubar run build && yarn workspace @rcarls/rc-toolbar run build && yarn workspace @rcarls/rc-splitter run build && yarn workspace @rcarls/rc-dialog run build && yarn workspace @rcarls/rc-textarea run build && yarn workspace @rcarls/rc-virtual-canvas run build",
+    "build": "yarn workspace @rcarls/rc-common run build && yarn workspace @rcarls/rc-menu run build && yarn workspace @rcarls/rc-menu-button run build && yarn workspace @rcarls/rc-menubar run build && yarn workspace @rcarls/rc-toolbar run build && yarn workspace @rcarls/rc-splitter run build && yarn workspace @rcarls/rc-dialog run build && yarn workspace @rcarls/rc-textarea run build && yarn workspace @rcarls/rc-virtual-canvas run build && yarn workspace @rcarls/rc-listbox run build && yarn workspace @rcarls/rc-select run build && yarn workspace @rcarls/rc-combobox run build",
     "test": "yarn workspaces run test:browser",
     "dev": "yarn workspaces run dev",
     "cem:analyze": "cem analyze",

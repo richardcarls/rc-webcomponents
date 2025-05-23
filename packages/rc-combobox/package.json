@@ -1,0 +1,49 @@
+{
+  "name": "@rcarls/rc-combobox",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/rc-combobox.umd.cjs",
+  "module": "./dist/rc-combobox.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/rc-combobox.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/rc-combobox.umd.cjs"
+      }
+    }
+  },
+  "types": "./dist/types/index.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test:browser": "vitest",
+    "link": "yarn link"
+  },
+  "dependencies": {
+    "@rcarls/rc-common": "^0.1.0",
+    "@rcarls/rc-listbox": "^0.1.0",
+    "@rcarls/rc-select": "^0.1.0"
+  },
+  "devDependencies": {
+    "@vitest/browser-webdriverio": "^4.0.6",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.6",
+    "vitest-browser-lit": "^1.0.1",
+    "webdriverio": "^9.20.0"
+  },
+  "peerDependencies": {
+    "lit": "^3.0.0"
+  }
+}

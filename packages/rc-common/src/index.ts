@@ -1,3 +1,4 @@
+export * from './ActiveDescendantController';
 export * from './KeyboardNavigationDirective';
 export * from './MouseMoveDirective';
 export * from './DragController';
