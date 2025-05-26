@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc-combobox</title>
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
+    <script type="module" src="/src/rc-combobox.ts"></script>
+    <script type="module">
+      import '@rcarls/rc-listbox';
+      import '@rcarls/rc-select';
+    </script>
+    <style>
+      rc-combobox {
+        font-size: 1rem;
+      }
+
+      rc-combobox::part(anchor) {
+        min-width: 18em;
+      }
+
+      /* Style the popup options */
+      rc-combobox::part(option) {
+        padding: 0.35em 0.75em;
+      }
+
+      /* Style chips */
+      rc-combobox::part(chip) {
+        font-size: 0.875em;
+      }
+
+      .demo-row {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      .demo-col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .demo-col label {
+        font-size: 0.875rem;
+        color: GrayText;
+      }
+
+      .event-log {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: Canvas;
+        border: 1px solid ButtonBorder;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.85rem;
+        min-height: 2em;
+        max-height: 8em;
+        overflow-y: auto;
+      }
+
+      .event-log p {
+        margin: 0.1em 0;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-width: 28em;
+      }
+
+      form .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      form label {
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+
+      form input[type="text"] {
+        padding: 0.35em 0.5em;
+        border: 1px solid ButtonBorder;
+        border-radius: 0.125em;
+        background: Field;
+        color: FieldText;
+        font: inherit;
+      }
+
+      form button[type="submit"] {
+        align-self: flex-start;
+        padding: 0.4em 1em;
+        border: 1px solid ButtonBorder;
+        border-radius: 0.125em;
+        background: ButtonFace;
+        color: ButtonText;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      form button[type="submit"]:hover {
+        background: color-mix(in srgb, ButtonFace 85%, ButtonText);
+      }
+
+      #form-output {
+        margin-top: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        background: Canvas;
+        border: 1px solid ButtonBorder;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.85rem;
+        white-space: pre;
+      }
+
+      .kbd-table {
+        border-collapse: collapse;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+
+      .kbd-table th,
+      .kbd-table td {
+        padding: 0.3em 0.75em;
+        border: 1px solid ButtonBorder;
+        text-align: left;
+      }
+
+      .kbd-table th {
+        background: ButtonFace;
+        color: ButtonText;
+      }
+
+      kbd {
+        display: inline-block;
+        padding: 0.1em 0.4em;
+        border: 1px solid ButtonBorder;
+        border-radius: 0.2em;
+        background: ButtonFace;
+        color: ButtonText;
+        font-family: inherit;
+        font-size: 0.85em;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-page">
+      <div class="demo-controls">
+        <div class="demo-title">
+          <h1>rc-combobox</h1>
+          <a href="https://www.w3.org/WAI/ARIA/apg/patterns/combobox/">WAI-ARIA Combobox Pattern (editable)</a>
+        </div>
+        <button class="theme-picker" type="button">Auto</button>
+      </div>
+
+      <div class="demo-section">
+        <h2>Basic autocomplete</h2>
+        <p>Type to filter the list. <kbd>↓</kbd> opens the popup and moves the virtual cursor. <kbd>Enter</kbd> or <kbd>Tab</kbd> selects. <kbd>Escape</kbd> clears the input and closes.</p>
+        <div class="demo-row">
+          <div class="demo-col">
+            <label>Country</label>
+            <rc-combobox id="country-cb" placeholder="Search countries…">
+              <select slot="select" name="country">
+                <option value="us">United States</option>
+                <option value="ca">Canada</option>
+                <option value="mx">Mexico</option>
+                <option value="gb">United Kingdom</option>
+                <option value="fr">France</option>
+                <option value="de">Germany</option>
+                <option value="jp">Japan</option>
+                <option value="au">Australia</option>
+                <option value="br">Brazil</option>
+                <option value="in">India</option>
+                <option value="it">Italy</option>
+                <option value="es">Spain</option>
+                <option value="kr">South Korea</option>
+                <option value="se">Sweden</option>
+                <option value="nl">Netherlands</option>
+              </select>
+            </rc-combobox>
+          </div>
+          <div class="demo-col">
+            <label>Priority (with disabled)</label>
+            <rc-combobox placeholder="Search…">
+              <select slot="select" name="priority">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical" disabled>Critical (unavailable)</option>
+              </select>
+            </rc-combobox>
+          </div>
+        </div>
+        <div class="event-log" id="basic-log"><p>Events will appear here…</p></div>
+      </div>
+
+      <div class="demo-section">
+        <h2>Allow-create</h2>
+        <p>When <code>allowcreate</code> is set and the typed text has no exact match, a <em>Create "X"</em> option appears at the bottom of the list. The <code>rc-combobox-create</code> event is fired (cancelable).</p>
+        <div class="demo-row">
+          <div class="demo-col">
+            <label>Ingredient (type a new one to create)</label>
+            <rc-combobox id="create-cb" allowcreate placeholder="Search or create…">
+              <select slot="select" name="ingredient">
+                <option value="flour">Flour</option>
+                <option value="sugar">Sugar</option>
+                <option value="butter">Butter</option>
+                <option value="eggs">Eggs</option>
+                <option value="milk">Milk</option>
+                <option value="vanilla">Vanilla extract</option>
+                <option value="salt">Salt</option>
+                <option value="baking-powder">Baking powder</option>
+              </select>
+            </rc-combobox>
+          </div>
+        </div>
+        <div class="event-log" id="create-log"><p>Events will appear here…</p></div>
+      </div>
+
+      <div class="demo-section">
+        <h2>Multi-select with chips</h2>
+        <p>Select multiple items. Each selection becomes a chip in the input area. <kbd>Backspace</kbd> on empty input or <kbd>←</kbd> at cursor start enters chip navigation mode.</p>
+        <div class="demo-row">
+          <div class="demo-col">
+            <label>Tags</label>
+            <rc-combobox id="multi-cb" placeholder="Add tags…">
+              <select slot="select" name="tags" multiple>
+                <option value="bug">Bug</option>
+                <option value="feature">Feature</option>
+                <option value="docs">Documentation</option>
+                <option value="design">Design</option>
+                <option value="performance">Performance</option>
+                <option value="security">Security</option>
+                <option value="accessibility">Accessibility</option>
+                <option value="testing">Testing</option>
+                <option value="refactor">Refactor</option>
+                <option value="ci">CI/CD</option>
+              </select>
+            </rc-combobox>
+          </div>
+        </div>
+        <div class="event-log" id="multi-log"><p>Events will appear here…</p></div>
+      </div>
+
+      <div class="demo-section">
+        <h2>Multi-select + Allow-create</h2>
+        <p>Combine multi-select with <code>allowcreate</code> to build a fully dynamic tag input.</p>
+        <div class="demo-row">
+          <div class="demo-col">
+            <label>Labels (add your own)</label>
+            <rc-combobox id="tag-creator-cb" allowcreate placeholder="Search or create labels…">
+              <select slot="select" name="labels" multiple>
+                <option value="backend">Backend</option>
+                <option value="frontend">Frontend</option>
+                <option value="mobile">Mobile</option>
+                <option value="infra">Infrastructure</option>
+                <option value="data">Data</option>
+              </select>
+            </rc-combobox>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2>Form integration</h2>
+        <p>The native <code>&lt;select slot="select"&gt;</code> is the form control. <code>FormData</code> reads its value on submit.</p>
+        <form id="demo-form">
+          <div class="field">
+            <label for="form-name">Name</label>
+            <input id="form-name" type="text" name="name" placeholder="Your name" />
+          </div>
+          <div class="field">
+            <label>Role</label>
+            <rc-combobox placeholder="Search a role…">
+              <select slot="select" name="role">
+                <option value="admin">Administrator</option>
+                <option value="editor">Editor</option>
+                <option value="viewer">Viewer</option>
+                <option value="guest">Guest</option>
+              </select>
+            </rc-combobox>
+          </div>
+          <div class="field">
+            <label>Interests (multi)</label>
+            <rc-combobox placeholder="Add interests…">
+              <select slot="select" name="interests" multiple>
+                <option value="ux">UX</option>
+                <option value="dev">Development</option>
+                <option value="design">Design</option>
+                <option value="data">Data science</option>
+                <option value="ops">DevOps</option>
+              </select>
+            </rc-combobox>
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+        <pre id="form-output">FormData will appear here after submit.</pre>
+      </div>
+
+      <div class="demo-section">
+        <h2>Keyboard reference</h2>
+        <table class="kbd-table">
+          <thead>
+            <tr><th>Key</th><th>Popup closed</th><th>Popup open</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><kbd>↓</kbd></td><td>Open popup, move to first item</td><td>Move virtual cursor down</td></tr>
+            <tr><td><kbd>↑</kbd></td><td>—</td><td>Move virtual cursor up</td></tr>
+            <tr><td><kbd>Enter</kbd></td><td>—</td><td>Select active item (or activate Create)</td></tr>
+            <tr><td><kbd>Tab</kbd></td><td>—</td><td>Select first visible item, close popup</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>—</td><td>Clear input, close popup</td></tr>
+            <tr><td><kbd>Backspace</kbd> (empty input)</td><td>Enter chip nav</td><td>—</td></tr>
+            <tr><td><kbd>←</kbd> (at cursor start)</td><td>Enter chip nav</td><td>—</td></tr>
+            <tr><td>Printable chars</td><td>Filter options, open popup</td><td>Continue filtering</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <script>
+      // Basic combobox log
+      const basicLog = document.getElementById('basic-log');
+      document.getElementById('country-cb').addEventListener('rc-select-change', (e) => {
+        const p = document.createElement('p');
+        p.textContent = `rc-select-change → value: "${e.detail.value}"`;
+        basicLog.prepend(p);
+      });
+
+      // Allow-create log
+      const createLog = document.getElementById('create-log');
+      const createCb = document.getElementById('create-cb');
+      createCb.addEventListener('rc-combobox-create', (e) => {
+        const p = document.createElement('p');
+        p.textContent = `rc-combobox-create → text: "${e.detail.text}"`;
+        createLog.prepend(p);
+      });
+      createCb.addEventListener('rc-select-change', (e) => {
+        const p = document.createElement('p');
+        p.textContent = `rc-select-change → value: "${e.detail.value}"`;
+        createLog.prepend(p);
+      });
+
+      // Multi-select log
+      const multiLog = document.getElementById('multi-log');
+      document.getElementById('multi-cb').addEventListener('rc-select-change', (e) => {
+        const p = document.createElement('p');
+        p.textContent = `rc-select-change → value: [${e.detail.value.join(', ')}]`;
+        multiLog.prepend(p);
+      });
+
+      // Form submit
+      document.getElementById('demo-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = new FormData(e.target);
+        const lines = [];
+        for (const [key, value] of data.entries()) {
+          lines.push(`${key}: ${value}`);
+        }
+        document.getElementById('form-output').textContent = lines.join('\n') || '(empty)';
+      });
+    </script>
+  </body>
+</html>
