@@ -45,7 +45,7 @@ export const selectStyles = css`
     font-size: 0.75em;
   }
 
-  /* Chips */
+  /* Chips — the whole chip is the remove button for a larger touch target */
   [part='chip'] {
     display: inline-flex;
     align-items: center;
@@ -57,24 +57,11 @@ export const selectStyles = css`
     color: ButtonText;
     font: inherit;
     font-size: 0.875em;
-  }
-
-  [part='chip-remove'] {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    width: 1em;
-    height: 1em;
-    border: none;
-    border-radius: 50%;
-    background: transparent;
-    color: inherit;
     cursor: pointer;
-    font: inherit;
 
     &:hover {
-      background: ButtonBorder;
+      background: Highlight;
+      color: HighlightText;
     }
 
     &:focus-visible {
@@ -82,41 +69,41 @@ export const selectStyles = css`
     }
   }
 
+  /* Decorative × icon inside the chip — no interaction, aria-hidden */
+  [part='chip-remove'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    font-size: 0.85em;
+    pointer-events: none;
+  }
+
   /* Hidden native select slot */
   slot[name='select'] {
     display: none;
   }
 
-  /* Listbox (rc-listbox element inside shadow DOM) */
+  /* Listbox popup — positioned by AnchorController via adoptedStyleSheets */
   rc-listbox {
-    /* JS anchor positioning applies top/left. Shadow root styles provide the rest. */
-    position: fixed;
-    top: anchor(bottom);
-    left: anchor(left);
-    min-width: anchor-size(width);
-    margin-top: 2px;
-
-    /* Scrollable container */
     max-height: var(--rc-select-max-height, 20em);
     overflow-y: auto;
-
-    /* Visual style (UA colors only) */
     background: Canvas;
     border: 1px solid ButtonBorder;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     color: ButtonText;
     padding-block: 0.25em;
 
-    /* When not open */
     &:not(:popover-open) {
       display: none;
     }
   }
 
-  /* Options within the listbox (via part targeting) */
-  ::slotted([part~='option']),
+  /* Options within the listbox */
   rc-listbox [part~='option'] {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
     padding: 0.3em 0.75em;
     cursor: default;
 
@@ -125,14 +112,23 @@ export const selectStyles = css`
       color: HighlightText;
     }
 
-    &[aria-selected='true'] {
-      font-weight: bold;
-    }
-
     &[aria-disabled='true'] {
       opacity: 0.5;
       cursor: not-allowed;
     }
+  }
+
+  /* Selection checkmark — reserves space whether visible or not */
+  rc-listbox [part~='option-checkmark'] {
+    flex-shrink: 0;
+    width: 1em;
+    text-align: center;
+    font-size: 0.85em;
+    visibility: hidden;
+  }
+
+  rc-listbox [part~='option'][aria-selected='true'] [part~='option-checkmark'] {
+    visibility: visible;
   }
 
   rc-listbox [part~='create-option'] {

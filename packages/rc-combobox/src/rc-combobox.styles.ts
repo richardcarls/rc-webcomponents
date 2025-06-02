@@ -18,7 +18,7 @@ export const comboboxStyles = css`
     cursor: text;
   }
 
-  /* Chips */
+  /* Chips — the whole chip is the remove button for a larger touch target */
   [part='chip'] {
     display: inline-flex;
     align-items: center;
@@ -30,29 +30,26 @@ export const comboboxStyles = css`
     color: ButtonText;
     font: inherit;
     font-size: 0.875em;
-  }
-
-  [part='chip-remove'] {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    width: 1em;
-    height: 1em;
-    border: none;
-    border-radius: 50%;
-    background: transparent;
-    color: inherit;
     cursor: pointer;
-    font: inherit;
 
     &:hover {
-      background: ButtonBorder;
+      background: Highlight;
+      color: HighlightText;
     }
 
     &:focus-visible {
       outline: auto;
     }
+  }
+
+  /* Decorative × icon inside the chip — no interaction, aria-hidden */
+  [part='chip-remove'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    font-size: 0.85em;
+    pointer-events: none;
   }
 
   #trigger {
@@ -94,17 +91,10 @@ export const comboboxStyles = css`
     display: none;
   }
 
-  /* Listbox popup */
+  /* Listbox popup — positioned by AnchorController via adoptedStyleSheets */
   rc-listbox {
-    position: fixed;
-    top: anchor(bottom);
-    left: anchor(left);
-    min-width: anchor-size(width);
-    margin-top: 2px;
-
     max-height: var(--rc-combobox-max-height, 20em);
     overflow-y: auto;
-
     background: Canvas;
     border: 1px solid ButtonBorder;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -117,7 +107,9 @@ export const comboboxStyles = css`
   }
 
   rc-listbox [part~='option'] {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
     padding: 0.3em 0.75em;
     cursor: default;
 
@@ -126,14 +118,22 @@ export const comboboxStyles = css`
       color: HighlightText;
     }
 
-    &[aria-selected='true'] {
-      font-weight: bold;
-    }
-
     &[aria-disabled='true'] {
       opacity: 0.5;
       cursor: not-allowed;
     }
+  }
+
+  rc-listbox [part~='option-checkmark'] {
+    flex-shrink: 0;
+    width: 1em;
+    text-align: center;
+    font-size: 0.85em;
+    visibility: hidden;
+  }
+
+  rc-listbox [part~='option'][aria-selected='true'] [part~='option-checkmark'] {
+    visibility: visible;
   }
 
   rc-listbox [part~='create-option'] {

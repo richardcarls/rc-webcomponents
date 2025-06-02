@@ -1,7 +1,8 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 
 import {
+  AnchorController,
   keyNavigation,
   type KeyboardNavigationAction,
 } from '@rcarls/rc-common';
@@ -68,6 +69,9 @@ export class RCMenuButton extends LitElement {
     return 'horizontal';
   }
 
+  @query('#root') private _$root!: HTMLElement;
+  @query('#popup') private _$popup!: HTMLElement;
+
   /** Reference to the trigger button element */
   @state()
   private _trigger: WeakRef<HTMLElement> | undefined;
@@ -75,6 +79,14 @@ export class RCMenuButton extends LitElement {
   /** Reference to the menu element */
   @state()
   private _menu: WeakRef<RCMenu> | undefined;
+
+  private _anchorCtrl = new AnchorController(this, {
+    anchor: () => this._$root ?? null,
+    floating: () => this._$popup ?? null,
+    shadowHost: () => this,
+    placement: 'bottom-start',
+    offset: 2,
+  });
 
   /** Bound handler for document click (light dismiss) */
   private _boundHandleDocumentClick = this._handleDocumentClick.bind(this);
@@ -95,6 +107,7 @@ export class RCMenuButton extends LitElement {
 
     this.open = true;
     this._dispatchToggle();
+    this._anchorCtrl.update();
 
     this.updateComplete.then(() => {
       const menu = this._menu?.deref();

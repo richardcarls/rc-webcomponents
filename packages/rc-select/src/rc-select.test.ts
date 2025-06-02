@@ -274,7 +274,7 @@ test('multiple: chip remove button click removes the value', async () => {
   listbox.querySelector<HTMLElement>('[data-value="apple"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
   await host.updateComplete;
-  const removeBtn = host.renderRoot.querySelector<HTMLElement>('[part~="chip-remove"]')!;
+  const removeBtn = host.renderRoot.querySelector<HTMLElement>('button[part~="chip"]')!;
   removeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
   await host.updateComplete;
   expect(host['_selectedValues'].has('apple')).toBe(false);

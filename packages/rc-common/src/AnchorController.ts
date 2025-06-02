@@ -15,18 +15,20 @@ export interface AnchorOptions {
   placement?: AnchorPlacement;
   /** Gap between anchor and floating in px. Defaults to `4`. */
   offset?: number;
-  /** Flip to opposite side when clipped by viewport. Defaults to `true`. Native only. */
+  /** Flip to opposite side when clipped by viewport. Defaults to `true`. */
   flip?: boolean;
   disabled?: boolean;
+  /**
+   * The LitElement shadow host. When provided, positioning CSS is injected into
+   * the shadow root's adoptedStyleSheets so it reaches shadow-DOM floating elements,
+   * including those promoted to the popover top layer. The polyfill is invoked
+   * with roots: [shadowHost] to scope its traversal to this shadow root.
+   */
+  shadowHost?: HTMLElement | (() => HTMLElement | null);
 }
 
 // ---- CSS placement helpers -----------------------------------------------
 
-/**
- * Returns inline CSS for the floating element's inset properties.
- * Center placements use `position-area` for simplicity; edge-aligned
- * (`-start` / `-end`) variants use explicit `anchor()` function values.
- */
 function placementCSS(placement: AnchorPlacement, offset: number): string {
   const o = `${offset}px`;
   switch (placement) {
@@ -64,22 +66,31 @@ const FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
   'right': 'left',         'right-start': 'left-start',   'right-end': 'left-end',
 };
 
+// ---- Native detection -------------------------------------------------------
+
+// Chrome 125+ only — full correct implementation including shadow DOM + popover top layer.
+// Firefox reports 'anchor-name' support but has broken rendering for shadow DOM + popover top layer.
+const _hasNativeAnchor = CSS.supports('position-try-fallbacks: flip-block');
+
 // ---- Polyfill ---------------------------------------------------------------
 
-const _nativeSupported = CSS.supports('anchor-name: --a');
-let _polyfillPending = false;
+type PolyfillFn = (opts?: {
+  roots?: (Document | HTMLElement)[];
+  useAnimationFrame?: boolean;
+  [key: string]: unknown;
+}) => Promise<unknown>;
 
-async function _loadPolyfill(): Promise<void> {
-  if (_nativeSupported || _polyfillPending) return;
-  _polyfillPending = true;
-  try {
-    // Auto-applies once imported; only loads once due to module caching.
-    await import('@oddbird/css-anchor-positioning');
-  } catch (err) {
-    if (import.meta.env?.DEV) {
-      console.warn('[AnchorController] Failed to load CSS anchor-positioning polyfill:', err);
-    }
+let _polyfillFn: PolyfillFn | null = null;
+let _polyfillPromise: Promise<PolyfillFn | null> | null = null;
+
+function _loadPolyfill(): Promise<PolyfillFn | null> {
+  if (_hasNativeAnchor) return Promise.resolve(null);
+  if (!_polyfillPromise) {
+    _polyfillPromise = import('@oddbird/css-anchor-positioning/fn')
+      .then((mod) => { _polyfillFn = mod.default as unknown as PolyfillFn; return _polyfillFn; })
+      .catch(() => null);
   }
+  return _polyfillPromise;
 }
 
 // ---- Controller -------------------------------------------------------------
@@ -91,12 +102,10 @@ let _uid = 0;
  * Anchor Positioning (native-first, polyfill on unsupported browsers via
  * `@oddbird/css-anchor-positioning`).
  *
- * Positioning is applied by injecting a `<style>` element into `<head>` so
- * that both native browsers and the polyfill (which reads stylesheets) see
- * identical CSS.
- *
- * `flip: true` uses `@position-try` (native browsers only). The polyfill
- * will apply the initial `placement` without flipping.
+ * For shadow DOM components (pass `shadowHost`), positioning CSS is injected
+ * into the shadow root's `adoptedStyleSheets` so it reaches floating elements
+ * including those promoted to the popover top layer. The polyfill is invoked
+ * with `roots: [shadowHost]` to scope its stylesheet traversal correctly.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning
  */
@@ -104,28 +113,26 @@ export class AnchorController implements ReactiveController {
   private _opts: AnchorOptions;
   private readonly _uid: string;
   private _styleEl: HTMLStyleElement | null = null;
+  private _adoptedSheet: CSSStyleSheet | null = null;
 
   constructor(host: ReactiveControllerHost, options: AnchorOptions) {
     this._opts = options;
     this._uid = `rc-anchor-${++_uid}`;
-
-    // Must be last: if host is already connected, addController calls hostConnected() synchronously.
     host.addController(this);
   }
 
   setOptions(next: Partial<AnchorOptions>): void {
     Object.assign(this._opts, next);
-    this._apply();
+    this._applyAndPolyfill();
   }
 
-  /** Re-apply positioning — call when anchor or floating become visible. */
+  /** Re-apply positioning — call when the popup opens or the anchor moves. */
   update(): void {
-    this._apply();
+    this._applyAndPolyfill();
   }
 
   hostConnected(): void {
-    this._apply();
-    void _loadPolyfill();
+    this._applyAndPolyfill();
   }
 
   hostDisconnected(): void {
@@ -142,6 +149,28 @@ export class AnchorController implements ReactiveController {
     return typeof floating === 'function' ? floating() : floating;
   }
 
+  private _shadowHost(): HTMLElement | null {
+    const { shadowHost } = this._opts;
+    return typeof shadowHost === 'function' ? shadowHost() : (shadowHost ?? null);
+  }
+
+  private _applyAndPolyfill(): void {
+    this._apply();
+    if (!_hasNativeAnchor) {
+      void this._applyPolyfillOrFallback();
+    }
+  }
+
+  private async _applyPolyfillOrFallback(): Promise<void> {
+    const fn = await _loadPolyfill();
+    const host = this._shadowHost();
+    if (fn) {
+      await fn({ roots: host ? [host] : undefined, useAnimationFrame: false });
+    } else {
+      this._positionFallback();
+    }
+  }
+
   private _apply(): void {
     if (this._opts.disabled) { this._cleanup(); return; }
 
@@ -155,32 +184,70 @@ export class AnchorController implements ReactiveController {
     const anchorName = `--${this._uid}`;
     const uid = this._uid;
 
-    // Set anchor-name on trigger element
     (anchor as HTMLElement).style.setProperty('anchor-name', anchorName);
-
-    // Mark floating element for stylesheet selector
     floating.setAttribute('data-rc-anchor', uid);
 
-    // Build @position-try block for flip (native browsers only)
     const flipPlacement = FLIP_PLACEMENT[placement];
     const flipBlock = flip
       ? `@position-try --${uid}-flip { ${placementCSS(flipPlacement, offset)} }`
       : '';
     const positionTry = flip ? `position-try-fallbacks: --${uid}-flip;` : '';
 
-    this._styleEl?.remove();
-    this._styleEl = document.createElement('style');
-    this._styleEl.setAttribute('data-rc-anchor-style', uid);
-    this._styleEl.textContent = `
+    const css = `
       ${flipBlock}
       [data-rc-anchor="${uid}"] {
         position: fixed;
         position-anchor: ${anchorName};
+        min-width: anchor-size(width);
         ${placementCSS(placement, offset)}
         ${positionTry}
       }
     `;
-    document.head.appendChild(this._styleEl);
+
+    this._injectStyles(css);
+  }
+
+  private _injectStyles(css: string): void {
+    const host = this._shadowHost();
+    if (host?.shadowRoot) {
+      if (!this._adoptedSheet) {
+        this._adoptedSheet = new CSSStyleSheet();
+        host.shadowRoot.adoptedStyleSheets = [
+          ...host.shadowRoot.adoptedStyleSheets,
+          this._adoptedSheet,
+        ];
+      }
+      this._adoptedSheet.replaceSync(css);
+    } else {
+      this._styleEl?.remove();
+      this._styleEl = document.createElement('style');
+      this._styleEl.setAttribute('data-rc-anchor-style', this._uid);
+      this._styleEl.textContent = css;
+      document.head.appendChild(this._styleEl);
+    }
+  }
+
+  private _positionFallback(): void {
+    const anchor = this._anchor() as HTMLElement | null;
+    const floating = this._floating() as HTMLElement | null;
+    if (!anchor || !floating) return;
+    const placement = this._opts.placement ?? 'bottom-start';
+    const offset = this._opts.offset ?? 4;
+    const rect = anchor.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const isBottom = placement.startsWith('bottom') || placement === 'bottom';
+    const spaceBelow = vh - rect.bottom;
+    const flipToAbove = isBottom && spaceBelow < 120 && rect.top > spaceBelow;
+    floating.style.position = 'fixed';
+    floating.style.minWidth = `${rect.width}px`;
+    floating.style.left = `${rect.left}px`;
+    if (flipToAbove) {
+      floating.style.top = '';
+      floating.style.bottom = `${vh - rect.top + offset}px`;
+    } else {
+      floating.style.bottom = '';
+      floating.style.top = `${rect.bottom + offset}px`;
+    }
   }
 
   private _cleanup(): void {
@@ -190,5 +257,12 @@ export class AnchorController implements ReactiveController {
     if (floating) floating.removeAttribute('data-rc-anchor');
     this._styleEl?.remove();
     this._styleEl = null;
+    const host = this._shadowHost();
+    if (host?.shadowRoot && this._adoptedSheet) {
+      host.shadowRoot.adoptedStyleSheets = host.shadowRoot.adoptedStyleSheets.filter(
+        (s) => s !== this._adoptedSheet,
+      );
+      this._adoptedSheet = null;
+    }
   }
 }

@@ -199,7 +199,7 @@ export class RCListbox extends LitElement {
               e.preventDefault();
               this.toggleOption(opt.value);
             }}
-          >${opt.label}</div>
+          ><span part="option-checkmark" aria-hidden="true">&#x2713;</span>${opt.label}</div>
         `,
       )}
       ${this._createLabel !== null
@@ -220,7 +220,7 @@ export class RCListbox extends LitElement {
                   }),
                 );
               }}
-            >Create "${this._createLabel}"</div>
+            ><span part="option-checkmark" aria-hidden="true">&#x2713;</span>Create "${this._createLabel}"</div>
           `
         : nothing}
     `;

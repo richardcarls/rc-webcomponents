@@ -1,6 +1,6 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { ActiveDescendantController } from '@rcarls/rc-common';
+import { ActiveDescendantController, AnchorController } from '@rcarls/rc-common';
 import type { RCListbox, ListboxOption } from '@rcarls/rc-listbox';
 import '@rcarls/rc-listbox';
 import { selectStyles } from './rc-select.styles.js';
@@ -15,15 +15,13 @@ declare global {
   }
 }
 
-let _uid = 0;
-
 /**
  * A fully-accessible, form-associated select/combobox component.
  *
  * Wraps a native `<select slot="select">` as the form value reflector while
  * rendering a custom trigger and popup listbox. Follows the WAI-ARIA APG
- * Combobox pattern (select-only variant) with CSS Anchor Positioning for popup
- * placement and `aria-activedescendant` for virtual keyboard navigation.
+ * Combobox pattern (select-only variant) with JS-computed popup placement
+ * and `aria-activedescendant` for virtual keyboard navigation.
  *
  * @slot select - Required. A native `<select>` element used for form submission
  *   and as the source of truth for options, multiple, and disabled state.
@@ -62,16 +60,22 @@ export class RCSelect extends LitElement {
   @state() protected _selectedValues: Set<string> = new Set();
   @state() private _chipNavIndex = -1;
 
-  private readonly _uid = `rc-sel-${++_uid}`;
   protected _selectRef: WeakRef<HTMLSelectElement> | null = null;
   private _mutationObserver: MutationObserver | null = null;
   private _typeAheadBuffer = '';
   private _typeAheadTimer = 0;
-  protected _hasAnchorPositioning = CSS.supports('anchor-name: --x');
 
   protected _adc = new ActiveDescendantController(this, {
     host: () => this._$trigger ?? null,
     items: () => this._$listbox?.navigableItems ?? [],
+  });
+
+  protected _anchorCtrl = new AnchorController(this, {
+    anchor: () => this._$anchor ?? null,
+    floating: () => this._$listbox ?? null,
+    shadowHost: () => this,
+    placement: 'bottom-start',
+    offset: 2,
   });
 
   override connectedCallback() {
@@ -87,25 +91,13 @@ export class RCSelect extends LitElement {
     this._mutationObserver?.disconnect();
   }
 
-  override firstUpdated() {
-    this._applyAnchorPositioning();
-  }
-
-  private _applyAnchorPositioning() {
-    const anchorName = `--${this._uid}`;
-    if (this._hasAnchorPositioning) {
-      this._$anchor.style.setProperty('anchor-name', anchorName);
-      this._$listbox.style.setProperty('position-anchor', anchorName);
-    }
-  }
-
   // ── Popup ────────────────────────────────────────────────────────────────────
 
   openPopup() {
     if (this.open || this.disabled) return;
     this.open = true;
     this._$listbox.showPopover();
-    if (!this._hasAnchorPositioning) this._positionFallback();
+    this._anchorCtrl.update();
     this.dispatchEvent(new CustomEvent('rc-select-open', { bubbles: true, composed: true }));
     this.requestUpdate();
   }
@@ -117,13 +109,6 @@ export class RCSelect extends LitElement {
     this._adc.clear();
     if (returnFocus) this._$trigger?.focus();
     this.dispatchEvent(new CustomEvent('rc-select-close', { bubbles: true, composed: true }));
-  }
-
-  private _positionFallback() {
-    const rect = this._$anchor.getBoundingClientRect();
-    this._$listbox.style.top = `${rect.bottom + 2}px`;
-    this._$listbox.style.left = `${rect.left}px`;
-    this._$listbox.style.minWidth = `${rect.width}px`;
   }
 
   // ── Document-level listeners ─────────────────────────────────────────────────
@@ -341,20 +326,20 @@ export class RCSelect extends LitElement {
   // ── Chip keyboard navigation ─────────────────────────────────────────────────
 
   private _enterChipNav() {
-    const buttons = this._getChipRemoveButtons();
+    const buttons = this._getChipButtons();
     if (buttons.length === 0) return;
     this._chipNavIndex = buttons.length - 1;
     buttons[this._chipNavIndex].focus();
   }
 
-  private _getChipRemoveButtons(): HTMLButtonElement[] {
+  private _getChipButtons(): HTMLButtonElement[] {
     return Array.from(
-      this.renderRoot.querySelectorAll<HTMLButtonElement>('[part~="chip-remove"]')
+      this.renderRoot.querySelectorAll<HTMLButtonElement>('button[part~="chip"]')
     );
   }
 
-  protected _handleChipRemoveKeyDown(e: KeyboardEvent, value: string) {
-    const buttons = this._getChipRemoveButtons();
+  protected _handleChipKeyDown(e: KeyboardEvent, value: string) {
+    const buttons = this._getChipButtons();
     switch (e.key) {
       case 'ArrowLeft':
         e.preventDefault();
@@ -445,17 +430,15 @@ export class RCSelect extends LitElement {
         ${[...this._selectedValues].map((value) => {
           const label = this._labelFor(value);
           return html`
-            <span part="chip" data-value=${value}>
-              <span part="chip-label">${label}</span>
-              <button
-                type="button"
-                part="chip-remove"
-                tabindex="-1"
-                aria-label=${`Remove ${label}`}
-                @click=${(e: MouseEvent) => { e.stopPropagation(); this._removeValue(value); }}
-                @keydown=${(e: KeyboardEvent) => this._handleChipRemoveKeyDown(e, value)}
-              >&#215;</button>
-            </span>
+            <button
+              type="button"
+              part="chip"
+              data-value=${value}
+              tabindex="-1"
+              aria-label=${`Remove ${label}`}
+              @click=${(e: MouseEvent) => { e.stopPropagation(); this._removeValue(value); }}
+              @keydown=${(e: KeyboardEvent) => this._handleChipKeyDown(e, value)}
+            ><span part="chip-label">${label}</span><span part="chip-remove" aria-hidden="true">&#215;</span></button>
           `;
         })}
       </span>

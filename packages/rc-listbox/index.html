@@ -20,7 +20,9 @@
       }
 
       [role="option"] {
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 0.4em;
         padding: 0.3em 0.75em;
         cursor: default;
       }
@@ -30,13 +32,21 @@
         color: HighlightText;
       }
 
-      [role="option"][aria-selected="true"] {
-        font-weight: bold;
-      }
-
       [role="option"][aria-disabled="true"] {
         opacity: 0.5;
         cursor: not-allowed;
+      }
+
+      [part~="option-checkmark"] {
+        flex-shrink: 0;
+        width: 1em;
+        text-align: center;
+        font-size: 0.85em;
+        visibility: hidden;
+      }
+
+      [aria-selected="true"] [part~="option-checkmark"] {
+        visibility: visible;
       }
 
       [part~="create-option"] {
