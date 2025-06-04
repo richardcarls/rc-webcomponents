@@ -90,7 +90,7 @@ export const selectStyles = css`
     overflow-y: auto;
     background: Canvas;
     border: 1px solid ButtonBorder;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--rc-select-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
     color: ButtonText;
     padding-block: 0.25em;
 

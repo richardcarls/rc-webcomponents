@@ -10,7 +10,7 @@ Four constraints guide every component. Not all packages fully satisfy all four 
 
 **2. Accessible by default** — Implement the WAI-ARIA APG pattern where one exists: correct `role`, `aria-*` states, full keyboard navigation, proper focus management (trap in modals, restore on close). Screen reader behavior is part of acceptance.
 
-**3. Headless / UA styles** — Ship no color, font, or layout opinions. Where defaults are needed, use CSS system color keywords (`Canvas`, `ButtonText`, `ButtonBorder`, etc.) so light/dark mode comes for free via `color-scheme`. Components must drop into any design system without fighting it.
+**3. Headless / UA styles, WCAG 2.1 by default** — Ship no color, font, or layout opinions. Where defaults are needed, use only [CSS System Colors](https://www.w3.org/TR/css-color-4/#css-system-colors) (`Canvas`, `CanvasText`, `ButtonFace`, `ButtonText`, `ButtonBorder`, `Field`, `FieldText`, `Highlight`, `HighlightText`, `AccentColor`, `AccentColorText`, `GrayText`, etc.) so light/dark mode and OS-level high-contrast themes come for free. Never use raw hex, `rgb()`, `hsl()`, or named colors (e.g. `black`, `white`) for foreground/background/border — wrap any unavoidable decorative values (drop shadows) in a CSS custom property with a system-color-compatible default. Components must also behave correctly under `forced-colors: active` (Windows High Contrast): rely on system colors rather than overriding them, and ensure interactive state is communicated via ARIA attributes and `outline` rather than color alone.
 
 **4. Responsive and touch-friendly** — Use Pointer Events API (not mouse-only). No hardcoded breakpoints inside component logic. Keyboard step sizes are configurable (Shift = 10×). Set minimum dimensions conservatively.
 
