@@ -198,6 +198,7 @@ export class AnchorController implements ReactiveController {
       [data-rc-anchor="${uid}"] {
         position: fixed;
         position-anchor: ${anchorName};
+        box-sizing: border-box;
         min-width: anchor-size(width);
         ${placementCSS(placement, offset)}
         ${positionTry}
@@ -239,6 +240,7 @@ export class AnchorController implements ReactiveController {
     const spaceBelow = vh - rect.bottom;
     const flipToAbove = isBottom && spaceBelow < 120 && rect.top > spaceBelow;
     floating.style.position = 'fixed';
+    floating.style.boxSizing = 'border-box';
     floating.style.minWidth = `${rect.width}px`;
     floating.style.left = `${rect.left}px`;
     if (flipToAbove) {
