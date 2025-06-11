@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-WAI-ARIA compliant web components library built with Lit 3.x. Monorepo using Yarn workspaces with packages in `packages/`.
+WAI-ARIA compliant web components library built with Lit 3.x. Monorepo using Yarn 4.x Berry (PnP mode) with packages in `packages/`.
 
 ## Design principles
 
@@ -14,17 +14,13 @@ Four constraints guide every component. Not all packages fully satisfy all four 
 
 **4. Responsive and touch-friendly** — Use Pointer Events API (not mouse-only). No hardcoded breakpoints inside component logic. Keyboard step sizes are configurable (Shift = 10×). Set minimum dimensions conservatively.
 
-## Environment (Windows)
-
-**Always use `yarn.cmd` instead of `yarn`** (and `npx.cmd` instead of `npx`). The Unix shim in `%APPDATA%\npm` is broken.
-
 ## Commands
 
 ```bash
-yarn.cmd workspace @rcarls/<package> run dev           # Dev server with hot reload
-yarn.cmd workspace @rcarls/<package> run build         # TypeScript check + Vite build
-yarn.cmd workspace @rcarls/<package> run test:browser  # Run browser tests
-yarn.cmd workspaces run build                          # Build all packages
+yarn workspace @rcarls/<package> run dev           # Dev server with hot reload
+yarn workspace @rcarls/<package> run build         # TypeScript check + Vite build
+yarn workspace @rcarls/<package> run test:browser  # Run browser tests
+yarn workspaces run build                          # Build all packages
 ```
 
 ## Packages

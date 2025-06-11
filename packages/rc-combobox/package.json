@@ -30,12 +30,13 @@
     "link": "yarn link"
   },
   "dependencies": {
-    "@rcarls/rc-common": "^0.1.0",
-    "@rcarls/rc-listbox": "^0.1.0",
-    "@rcarls/rc-select": "^0.1.0"
+    "@rcarls/rc-common": "workspace:^",
+    "@rcarls/rc-listbox": "workspace:^",
+    "@rcarls/rc-select": "workspace:^"
   },
   "devDependencies": {
     "@vitest/browser-webdriverio": "^4.0.6",
+    "lit": "^3.0.0",
     "typescript": "~5.9.3",
     "vite": "^7.1.7",
     "vite-plugin-dts": "^4.5.4",

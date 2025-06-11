@@ -1,10 +1,11 @@
 {
+  "private": true,
   "name": "@rcarls/rc-webcomponents",
   "version": "0.1.0",
   "description": "A collection of web components.",
   "author": "Richard Carls <richard.j.carls@gmail.com>",
   "license": "MIT",
-  "private": true,
+  "packageManager": "yarn@4.14.1",
   "workspaces": [
     "packages/*"
   ],
@@ -13,12 +14,20 @@
     "test": "yarn workspaces run test:browser",
     "dev": "yarn workspaces run dev",
     "cem:analyze": "cem analyze",
-    "docs": "yarn build && yarn cem:analyze && vite --config docs/vite.config.ts docs/"
+    "docs": "yarn cem:analyze && vite --config docs/vite.config.ts docs/"
   },
   "customElements": "dist/custom-elements.json",
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "0.11.0",
+    "@vitest/browser-webdriverio": "^4.0.6",
+    "@yarnpkg/types": "^4.0.1",
     "api-viewer-element": "^1.0.0-pre.10",
-    "lit": "^3.0.0"
+    "lit": "^3.0.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.6",
+    "vitest-browser-lit": "^1.0.1",
+    "webdriverio": "^9.20.0"
   }
 }

@@ -37,7 +37,7 @@ The goal: drop a component into any design system and it fits without fighting.
 ## Packages
 
 | Package | Description | Depends on |
-|---|---|---|
+| --- | --- | --- |
 | [`rc-common`](packages/rc-common/) | Shared controllers and directives: `DragController`, `ResizeController`, `AnchorController`, `KeyboardNavigationDirective`, `MouseMoveDirective` | — |
 | [`rc-menu`](packages/rc-menu/) | ARIA `menu` / `menuitem` popup | rc-common |
 | [`rc-menu-button`](packages/rc-menu-button/) | Button that opens an ARIA menu | rc-common, rc-menu |
@@ -55,13 +55,13 @@ Workspace dependency arrows show which packages must be **rebuilt** before depen
 ## Stack
 
 | Concern | Tool |
-|---|---|
+| --- | --- |
 | Component model | Lit 3.x (web components, `LitElement`, reactive controllers) |
 | Language | TypeScript — `strict: true`, `noUnusedLocals`, `noUnusedParameters` |
 | Build | Vite — ESM + UMD outputs, declaration files via `vite-plugin-dts` |
 | Dev server | Vite dev server with HMR per package |
 | Testing | Vitest + WebdriverIO (real browser) |
-| Package manager | Yarn workspaces (classic) |
+| Package manager | Yarn 4.x Berry (workspaces + PnP) |
 
 ---
 
