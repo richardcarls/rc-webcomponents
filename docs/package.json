@@ -1,0 +1,26 @@
+{
+  "name": "@rcarls/docs",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@rcarls/rc-combobox": "workspace:^",
+    "@rcarls/rc-dialog": "workspace:^",
+    "@rcarls/rc-listbox": "workspace:^",
+    "@rcarls/rc-menu": "workspace:^",
+    "@rcarls/rc-menu-button": "workspace:^",
+    "@rcarls/rc-menubar": "workspace:^",
+    "@rcarls/rc-select": "workspace:^",
+    "@rcarls/rc-splitter": "workspace:^",
+    "@rcarls/rc-textarea": "workspace:^",
+    "@rcarls/rc-toolbar": "workspace:^",
+    "@rcarls/rc-virtual-canvas": "workspace:^",
+    "api-viewer-element": "^1.0.0-pre.10",
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  }
+}

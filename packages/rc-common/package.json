@@ -26,8 +26,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test:browser": "vitest",
-    "link": "yarn link"
+    "test:browser": "vitest"
   },
   "dependencies": {
     "@oddbird/css-anchor-positioning": "^0.7.0"
@@ -36,7 +35,7 @@
     "@vitest/browser-webdriverio": "^4.0.6",
     "lit": "^3.0.0",
     "typescript": "~5.9.3",
-    "vite": "^7.2.4",
+    "vite": "^7.1.7",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.6",
     "vitest-browser-lit": "^1.0.1",

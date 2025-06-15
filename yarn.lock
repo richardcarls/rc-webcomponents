@@ -725,7 +725,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rcarls/rc-combobox@workspace:packages/rc-combobox":
+"@rcarls/docs@workspace:docs":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/docs@workspace:docs"
+  dependencies:
+    "@rcarls/rc-combobox": "workspace:^"
+    "@rcarls/rc-dialog": "workspace:^"
+    "@rcarls/rc-listbox": "workspace:^"
+    "@rcarls/rc-menu": "workspace:^"
+    "@rcarls/rc-menu-button": "workspace:^"
+    "@rcarls/rc-menubar": "workspace:^"
+    "@rcarls/rc-select": "workspace:^"
+    "@rcarls/rc-splitter": "workspace:^"
+    "@rcarls/rc-textarea": "workspace:^"
+    "@rcarls/rc-toolbar": "workspace:^"
+    "@rcarls/rc-virtual-canvas": "workspace:^"
+    api-viewer-element: "npm:^1.0.0-pre.10"
+    lit: "npm:^3.0.0"
+    vite: "npm:^7.1.7"
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-combobox@workspace:^, @rcarls/rc-combobox@workspace:packages/rc-combobox":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-combobox@workspace:packages/rc-combobox"
   dependencies:
@@ -763,7 +784,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-dialog@workspace:packages/rc-dialog":
+"@rcarls/rc-dialog@workspace:^, @rcarls/rc-dialog@workspace:packages/rc-dialog":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-dialog@workspace:packages/rc-dialog"
   dependencies:
@@ -836,7 +857,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-menubar@workspace:packages/rc-menubar":
+"@rcarls/rc-menubar@workspace:^, @rcarls/rc-menubar@workspace:packages/rc-menubar":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-menubar@workspace:packages/rc-menubar"
   dependencies:
@@ -875,7 +896,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-splitter@workspace:packages/rc-splitter":
+"@rcarls/rc-splitter@workspace:^, @rcarls/rc-splitter@workspace:packages/rc-splitter":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-splitter@workspace:packages/rc-splitter"
   dependencies:
@@ -893,7 +914,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-textarea@workspace:packages/rc-textarea":
+"@rcarls/rc-textarea@workspace:^, @rcarls/rc-textarea@workspace:packages/rc-textarea":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-textarea@workspace:packages/rc-textarea"
   dependencies:
@@ -911,7 +932,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-toolbar@workspace:packages/rc-toolbar":
+"@rcarls/rc-toolbar@workspace:^, @rcarls/rc-toolbar@workspace:packages/rc-toolbar":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-toolbar@workspace:packages/rc-toolbar"
   dependencies:
@@ -929,7 +950,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-virtual-canvas@workspace:packages/rc-virtual-canvas":
+"@rcarls/rc-virtual-canvas@workspace:^, @rcarls/rc-virtual-canvas@workspace:packages/rc-virtual-canvas":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-virtual-canvas@workspace:packages/rc-virtual-canvas"
   dependencies:
