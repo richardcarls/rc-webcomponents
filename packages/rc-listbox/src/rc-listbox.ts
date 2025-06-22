@@ -7,6 +7,18 @@ export interface ListboxOption {
   disabled?: boolean;
 }
 
+/**
+ * Determines how `filterOptions()` matches option labels against the query string.
+ *
+ * - `'prefix'` — label must start with the query (default, matches native `<select>` type-ahead).
+ * - `'contains'` — label must contain the query anywhere.
+ * - `function` — custom predicate; receives lowercased label and query, return `true` to show the option.
+ */
+export type FilterStrategy =
+  | 'prefix'
+  | 'contains'
+  | ((label: string, query: string) => boolean);
+
 export interface RCListboxChangeEvent {
   /** The option value that was activated. `'__create__'` for the create option. */
   value: string;
@@ -51,6 +63,15 @@ export class RCListbox extends LitElement {
   /** Allow multiple selection. Reflected as `aria-multiselectable` on the host. */
   @property({ type: Boolean, reflect: true })
   multiple = false;
+
+  /**
+   * How option labels are matched against the active filter text.
+   * Defaults to `'prefix'` (starts-with). Set to `'contains'` for substring
+   * matching, or pass a custom predicate for full control.
+   * Not reflected as an attribute — set via JS property.
+   */
+  @property({ attribute: false })
+  filterStrategy: FilterStrategy = 'prefix';
 
   @state() private _options: ListboxOption[] = [];
   @state() private _selectedValues: Set<string> = new Set();
@@ -232,7 +253,14 @@ export class RCListbox extends LitElement {
 
   private _isVisible(opt: ListboxOption): boolean {
     if (!this._filterText) return true;
-    return opt.label.toLowerCase().startsWith(this._filterText.toLowerCase());
+
+    const label = opt.label.toLowerCase();
+    const query = this._filterText.toLowerCase();
+
+    if (typeof this.filterStrategy === 'function') return this.filterStrategy(label, query);
+    if (this.filterStrategy === 'contains') return label.includes(query);
+
+    return label.startsWith(query); // 'prefix' default
   }
 }
 

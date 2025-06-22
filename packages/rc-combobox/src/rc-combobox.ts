@@ -1,6 +1,7 @@
 import { html, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { RCSelect } from '@rcarls/rc-select';
+import type { FilterStrategy } from '@rcarls/rc-listbox';
 import '@rcarls/rc-listbox';
 import { comboboxStyles } from './rc-combobox.styles.js';
 
@@ -46,6 +47,14 @@ export class RCCombobox extends RCSelect {
 
   /** When set, shows a "Create '{text}'" option for text that has no exact match. */
   @property({ type: Boolean, attribute: 'allowcreate' }) allowCreate = false;
+
+  /**
+   * How option labels are matched against typed input. Forwarded to the internal `rc-listbox`.
+   * Defaults to `'prefix'` (starts-with). Set to `'contains'` for substring matching,
+   * or pass a custom `(label, query) => boolean` predicate.
+   * Not reflected as an attribute — set via JS property.
+   */
+  @property({ attribute: false }) filterStrategy: FilterStrategy = 'prefix';
 
   @query('#trigger') protected override _$trigger!: HTMLInputElement;
 
@@ -189,6 +198,12 @@ export class RCCombobox extends RCSelect {
         e.preventDefault();
         if (this.open) this._adc.navigate(-1);
         break;
+      case 'Home':
+        if (this.open) { e.preventDefault(); this._adc.navigateToFirst(); }
+        break;
+      case 'End':
+        if (this.open) { e.preventDefault(); this._adc.navigateToLast(); }
+        break;
       case 'Enter': {
         e.preventDefault();
         const active = this._adc.activeItem;
@@ -288,6 +303,7 @@ export class RCCombobox extends RCSelect {
         part="listbox"
         popover="manual"
         ?multiple=${this.multiple}
+        .filterStrategy=${this.filterStrategy}
         @rc-listbox-change=${this._handleListboxChange}
       ></rc-listbox>
 

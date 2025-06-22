@@ -113,9 +113,19 @@ export const comboboxStyles = css`
     padding: 0.3em 0.75em;
     cursor: default;
 
+    /* display: flex overrides [hidden]'s browser-default display:none — restore it explicitly */
+    &[hidden] { display: none; }
+
     &:not([hidden]):not([aria-disabled='true']):hover {
       background: Highlight;
       color: HighlightText;
+    }
+
+    &[data-active]:not([aria-disabled='true']) {
+      background: Highlight;
+      color: HighlightText;
+      outline: 2px solid AccentColor;
+      outline-offset: -2px;
     }
 
     &[aria-disabled='true'] {
