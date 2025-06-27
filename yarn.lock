@@ -370,6 +370,55 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@guanghechen/chalk.types@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@guanghechen/chalk.types@npm:1.0.4"
+  checksum: 10c0/3d9f0d0076fd2b42091f72e3ad09529428b9ad0e6549dae6f2675b1335b10729aa4eab79cc10ae2516c31f8c911e85e8d257e780e6333e01efd997e59297908f
+  languageName: node
+  linkType: hard
+
+"@guanghechen/chalk@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@guanghechen/chalk@npm:1.0.4"
+  dependencies:
+    "@guanghechen/chalk.types": "npm:^1.0.4"
+  checksum: 10c0/917c252f5063ce44ab0e74c409990f9bf983989b34a8edab6523369d39edfd739992f5fd18f755b8fba18d09fc4dfdd80ef8ab8733ef5a6821c8bc0b5f2a658f
+  languageName: node
+  linkType: hard
+
+"@guanghechen/globby@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "@guanghechen/globby@npm:1.0.6"
+  dependencies:
+    fast-glob: "npm:^3.3.3"
+    ignore: "npm:^7.0.5"
+  checksum: 10c0/b196104ef8afbc413cbbbee983e8aece66c308b44555670268a700aa69850eee5e9ced622cc87bb47653edfcc60f8feab7123c6e7530fd2dc6ad075ce490bd2b
+  languageName: node
+  linkType: hard
+
+"@guanghechen/rollup-plugin-copy@npm:^6.0.9":
+  version: 6.0.9
+  resolution: "@guanghechen/rollup-plugin-copy@npm:6.0.9"
+  dependencies:
+    "@guanghechen/chalk": "npm:^1.0.4"
+    "@guanghechen/globby": "npm:^1.0.6"
+    "@guanghechen/std": "npm:^1.0.4"
+    chokidar: "npm:4.0.3"
+    dir-glob: "npm:3.0.1"
+    micromatch: "npm:4.0.8"
+  peerDependencies:
+    rollup: ^2.0.0 || ^3.0.0 || ^4.0.0
+  checksum: 10c0/72f655cd159a210b756c8becc45d30bc94fa58b22c417926fe83d8097e20574c488e4c847df81973382776d1b2a10791a6f21e80516996280426d858eaffb24a
+  languageName: node
+  linkType: hard
+
+"@guanghechen/std@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@guanghechen/std@npm:1.0.4"
+  checksum: 10c0/6ae003e044b4128242a210d68198e9bc89a8f1dad3e5bd0ac5a87e93edbf19902d1bcf706d978f7058d444b16116cf41a1f2d3b5ddab3a645f4194089eb5e900
+  languageName: node
+  linkType: hard
+
 "@isaacs/cliui@npm:^8.0.2":
   version: 8.0.2
   resolution: "@isaacs/cliui@npm:8.0.2"
@@ -740,8 +789,10 @@ __metadata:
     "@rcarls/rc-textarea": "workspace:^"
     "@rcarls/rc-toolbar": "workspace:^"
     "@rcarls/rc-virtual-canvas": "workspace:^"
+    "@types/node": "npm:^25.6.0"
     api-viewer-element: "npm:^1.0.0-pre.10"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     vite: "npm:^7.1.7"
   languageName: unknown
   linkType: soft
@@ -750,14 +801,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-combobox@workspace:packages/rc-combobox"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@rcarls/rc-listbox": "workspace:^"
     "@rcarls/rc-select": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
+    vite-plugin-static-copy: "npm:^4.1.0"
     vitest: "npm:^4.0.6"
     vitest-browser-lit: "npm:^1.0.1"
     webdriverio: "npm:^9.20.0"
@@ -771,10 +825,12 @@ __metadata:
   resolution: "@rcarls/rc-common@workspace:packages/rc-common"
   dependencies:
     "@oddbird/css-anchor-positioning": "npm:^0.7.0"
+    "@types/node": "npm:^25.6.0"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
-    vite: "npm:^7.2.4"
+    vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
     vitest: "npm:^4.0.6"
     vitest-browser-lit: "npm:^1.0.1"
@@ -788,9 +844,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-dialog@workspace:packages/rc-dialog"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -806,9 +864,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-listbox@workspace:packages/rc-listbox"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -824,10 +884,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-menu-button@workspace:packages/rc-menu-button"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@rcarls/rc-menu": "workspace:^"
+    "@types/node": "npm:^25.6.0"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -843,9 +906,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-menu@workspace:packages/rc-menu"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -861,11 +926,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-menubar@workspace:packages/rc-menubar"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@rcarls/rc-menu": "workspace:^"
     "@rcarls/rc-menu-button": "workspace:^"
+    "@types/node": "npm:^25.6.0"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -881,10 +949,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-select@workspace:packages/rc-select"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@rcarls/rc-listbox": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -900,9 +970,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-splitter@workspace:packages/rc-splitter"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -918,9 +990,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-textarea@workspace:packages/rc-textarea"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
+    "@types/node": "npm:^25.6.0"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
     parchment: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -936,9 +1011,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-toolbar@workspace:packages/rc-toolbar"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -954,8 +1031,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-virtual-canvas@workspace:packages/rc-virtual-canvas"
   dependencies:
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
+    "@types/node": "npm:^25.6.0"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -972,16 +1052,21 @@ __metadata:
   resolution: "@rcarls/rc-webcomponents@workspace:."
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
+    "@types/node": "npm:^25.6.0"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     "@yarnpkg/types": "npm:^4.0.1"
     api-viewer-element: "npm:^1.0.0-pre.10"
     lit: "npm:^3.0.0"
+    rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
     vitest: "npm:^4.0.6"
     vitest-browser-lit: "npm:^1.0.1"
     webdriverio: "npm:^9.20.0"
+  peerDependencies:
+    lit: ^3.0.0
   languageName: unknown
   linkType: soft
 
@@ -1440,7 +1525,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
+"@types/node@npm:*, @types/node@npm:^25.6.0":
   version: 25.6.0
   resolution: "@types/node@npm:25.6.0"
   dependencies:
@@ -2352,6 +2437,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chokidar@npm:4.0.3":
+  version: 4.0.3
+  resolution: "chokidar@npm:4.0.3"
+  dependencies:
+    readdirp: "npm:^4.0.1"
+  checksum: 10c0/a58b9df05bb452f7d105d9e7229ac82fa873741c0c40ddcc7bb82f8a909fbe3f7814c9ebe9bc9a2bef9b737c0ec6e2d699d179048ef06ad3ec46315df0ebe6ad
+  languageName: node
+  linkType: hard
+
+"chokidar@npm:^3.6.0":
+  version: 3.6.0
+  resolution: "chokidar@npm:3.6.0"
+  dependencies:
+    anymatch: "npm:~3.1.2"
+    braces: "npm:~3.0.2"
+    fsevents: "npm:~2.3.2"
+    glob-parent: "npm:~5.1.2"
+    is-binary-path: "npm:~2.1.0"
+    is-glob: "npm:~4.0.1"
+    normalize-path: "npm:~3.0.0"
+    readdirp: "npm:~3.6.0"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  checksum: 10c0/8361dcd013f2ddbe260eacb1f3cb2f2c6f2b0ad118708a343a5ed8158941a39cb8fb1d272e0f389712e74ee90ce8ba864eece9e0e62b9705cb468a2f6d917462
+  languageName: node
+  linkType: hard
+
 "chownr@npm:^3.0.0":
   version: 3.0.0
   resolution: "chownr@npm:3.0.0"
@@ -2620,7 +2733,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dir-glob@npm:^3.0.1":
+"dir-glob@npm:3.0.1, dir-glob@npm:^3.0.1":
   version: 3.0.1
   resolution: "dir-glob@npm:3.0.1"
   dependencies:
@@ -3020,7 +3133,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-glob@npm:^3.1.1":
+"fast-glob@npm:^3.1.1, fast-glob@npm:^3.3.3":
   version: 3.3.3
   resolution: "fast-glob@npm:3.3.3"
   dependencies:
@@ -3354,6 +3467,13 @@ __metadata:
   version: 5.3.2
   resolution: "ignore@npm:5.3.2"
   checksum: 10c0/f9f652c957983634ded1e7f02da3b559a0d4cc210fca3792cb67f1b153623c9c42efdc1c4121af171e295444459fc4a9201101fb041b1104a3c000bccb188337
+  languageName: node
+  linkType: hard
+
+"ignore@npm:^7.0.5":
+  version: 7.0.5
+  resolution: "ignore@npm:7.0.5"
+  checksum: 10c0/ae00db89fe873064a093b8999fe4cc284b13ef2a178636211842cceb650b9c3e390d3339191acb145d81ed5379d2074840cf0c33a20bdbd6f32821f79eb4ad5d
   languageName: node
   linkType: hard
 
@@ -3853,7 +3973,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromatch@npm:^4.0.8":
+"micromatch@npm:4.0.8, micromatch@npm:^4.0.8":
   version: 4.0.8
   resolution: "micromatch@npm:4.0.8"
   dependencies:
@@ -4107,6 +4227,13 @@ __metadata:
     "@oxc-resolver/binding-win32-x64-msvc":
       optional: true
   checksum: 10c0/8ac4eaffa9c0bcbb9f4f4a2b43786457ec5a68684d8776cb78b5a15ce3d1a79d3e67262aa3c635f98a0c1cd6cd56a31fcb05bffb9a286100056e4ab06b928833
+  languageName: node
+  linkType: hard
+
+"p-map@npm:^7.0.4":
+  version: 7.0.4
+  resolution: "p-map@npm:7.0.4"
+  checksum: 10c0/a5030935d3cb2919d7e89454d1ce82141e6f9955413658b8c9403cfe379283770ed3048146b44cde168aa9e8c716505f196d5689db0ae3ce9a71521a2fef3abd
   languageName: node
   linkType: hard
 
@@ -4424,6 +4551,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"readdirp@npm:^4.0.1":
+  version: 4.1.2
+  resolution: "readdirp@npm:4.1.2"
+  checksum: 10c0/60a14f7619dec48c9c850255cd523e2717001b0e179dc7037cfa0895da7b9e9ab07532d324bfb118d73a710887d1e35f79c495fa91582784493e085d18c72c62
+  languageName: node
+  linkType: hard
+
 "readdirp@npm:~3.6.0":
   version: 3.6.0
   resolution: "readdirp@npm:3.6.0"
@@ -4563,7 +4697,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^4.43.0":
+"rollup@npm:^4.43.0, rollup@npm:^4.60.2":
   version: 4.60.2
   resolution: "rollup@npm:4.60.2"
   dependencies:
@@ -5263,6 +5397,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"vite-plugin-static-copy@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "vite-plugin-static-copy@npm:4.1.0"
+  dependencies:
+    chokidar: "npm:^3.6.0"
+    p-map: "npm:^7.0.4"
+    picocolors: "npm:^1.1.1"
+    tinyglobby: "npm:^0.2.15"
+  peerDependencies:
+    vite: ^6.0.0 || ^7.0.0 || ^8.0.0
+  checksum: 10c0/60b7cb1dfe24eff3a262849ca886129f20641edd5e27425f61acf7e405140ba172b5a7e15bfc6177768446be2cfa13899e519e386b1bd78116ab9c037ada3b9d
+  languageName: node
+  linkType: hard
+
 "vite@npm:^6.0.0 || ^7.0.0 || ^8.0.0":
   version: 8.0.10
   resolution: "vite@npm:8.0.10"
@@ -5320,7 +5468,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^7.1.7, vite@npm:^7.2.4":
+"vite@npm:^7.1.7":
   version: 7.3.2
   resolution: "vite@npm:7.3.2"
   dependencies:
