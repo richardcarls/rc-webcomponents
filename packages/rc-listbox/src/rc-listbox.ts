@@ -1,5 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 
 export interface ListboxOption {
   value: string;
@@ -53,7 +53,6 @@ let _uid = 0;
  * @csspart option - Individual option elements
  * @csspart create-option - The "Create" option when allow-create is active
  */
-@customElement('rc-listbox')
 export class RCListbox extends LitElement {
   /** Renders into the host element — no shadow root — so option IDs resolve in the parent shadow root. */
   override createRenderRoot() {
@@ -66,12 +65,13 @@ export class RCListbox extends LitElement {
 
   /**
    * How option labels are matched against the active filter text.
-   * Defaults to `'prefix'` (starts-with). Set to `'contains'` for substring
+   * Defaults to `'contains'` (substring). Set to `'prefix'` for starts-with
    * matching, or pass a custom predicate for full control.
-   * Not reflected as an attribute — set via JS property.
+   * Function values are JS-only; string values may be set via the
+   * `filter-strategy` attribute.
    */
-  @property({ attribute: false })
-  filterStrategy: FilterStrategy = 'prefix';
+  @property({ attribute: 'filter-strategy', reflect: false })
+  filterStrategy: FilterStrategy = 'contains';
 
   @state() private _options: ListboxOption[] = [];
   @state() private _selectedValues: Set<string> = new Set();
@@ -263,5 +263,7 @@ export class RCListbox extends LitElement {
     return label.startsWith(query); // 'prefix' default
   }
 }
+
+customElements.get('rc-listbox') || customElements.define('rc-listbox', RCListbox);
 
 export default RCListbox;

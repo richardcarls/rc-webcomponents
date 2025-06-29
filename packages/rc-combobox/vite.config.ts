@@ -26,7 +26,7 @@ export default defineConfig({
       fileName: "rc-combobox",
     },
     rollupOptions: {
-      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
+      external: [/^@?lit(-\w+)?($|\/.+)/],
     },
   },
 });

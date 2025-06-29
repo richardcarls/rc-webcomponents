@@ -26,7 +26,7 @@ export default defineConfig({
       fileName: "rc-select",
     },
     rollupOptions: {
-      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
+      external: [/^@?lit(-\w+)?($|\/.+)/],
     },
   },
 });

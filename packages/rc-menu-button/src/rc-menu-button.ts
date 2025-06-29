@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 
 import {
   AnchorController,
@@ -34,7 +34,6 @@ declare global {
  * @csspart root - The root container element
  * @csspart popup - The popup container element
  */
-@customElement('rc-menu-button')
 export class RCMenuButton extends LitElement {
   static styles = [menuButtonStyles];
 
@@ -256,5 +255,7 @@ export class RCMenuButton extends LitElement {
     `;
   }
 }
+
+customElements.get('rc-menu-button') || customElements.define('rc-menu-button', RCMenuButton);
 
 export default RCMenuButton;

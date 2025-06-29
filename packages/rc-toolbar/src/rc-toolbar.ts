@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 
 import {
   keyNavigation,
@@ -25,7 +25,6 @@ declare global {
  * @cssprop [--rc-toolbar-padding-block=0.125em] - Vertical padding on the toolbar container
  * @csspart root - The toolbar container element
  */
-@customElement('rc-toolbar')
 export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   static styles = [toolbarStyles];
 
@@ -82,5 +81,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     `;
   }
 }
+
+customElements.get('rc-toolbar') || customElements.define('rc-toolbar', RCToolbar);
 
 export default RCToolbar;

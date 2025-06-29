@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 
 import {
   keyNavigation,
@@ -31,7 +31,6 @@ declare global {
  * @cssprop --rc-menubar-padding-inline - Horizontal padding
  * @cssprop --rc-menubar-padding-block - Vertical padding
  */
-@customElement('rc-menubar')
 export class RCMenubar extends LitElement {
   static styles = [menubarStyles];
 
@@ -269,5 +268,7 @@ export class RCMenubar extends LitElement {
     this._handleNavigate(action);
   };
 }
+
+customElements.get('rc-menubar') || customElements.define('rc-menubar', RCMenubar);
 
 export default RCMenubar;

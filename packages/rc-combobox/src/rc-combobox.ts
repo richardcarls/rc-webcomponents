@@ -1,5 +1,5 @@
 import { html, nothing } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { RCSelect } from '@rcarls/rc-select';
 import type { FilterStrategy } from '@rcarls/rc-listbox';
 import '@rcarls/rc-listbox';
@@ -41,7 +41,6 @@ declare global {
  * @cssprop [--rc-combobox-max-height=20em] - Maximum popup height.
  * @attr [allowcreate] - When present, shows a "Create 'X'" option for unmatched input.
  */
-@customElement('rc-combobox')
 export class RCCombobox extends RCSelect {
   static override styles = comboboxStyles;
 
@@ -50,11 +49,11 @@ export class RCCombobox extends RCSelect {
 
   /**
    * How option labels are matched against typed input. Forwarded to the internal `rc-listbox`.
-   * Defaults to `'prefix'` (starts-with). Set to `'contains'` for substring matching,
+   * Defaults to `'contains'` (substring). Set to `'prefix'` for starts-with matching,
    * or pass a custom `(label, query) => boolean` predicate.
-   * Not reflected as an attribute — set via JS property.
+   * Function values are JS-only; string values may be set via the `filter-strategy` attribute.
    */
-  @property({ attribute: false }) filterStrategy: FilterStrategy = 'prefix';
+  @property({ attribute: 'filter-strategy', reflect: false }) filterStrategy: FilterStrategy = 'contains';
 
   @query('#trigger') protected override _$trigger!: HTMLInputElement;
 
@@ -311,5 +310,7 @@ export class RCCombobox extends RCSelect {
     `;
   }
 }
+
+customElements.get('rc-combobox') || customElements.define('rc-combobox', RCCombobox);
 
 export default RCCombobox;

@@ -1,6 +1,5 @@
 import { LitElement, html } from 'lit';
 import {
-  customElement,
   property,
   state,
   query,
@@ -46,7 +45,6 @@ declare global {
  * @csspart separator - The separator bar
  * @csspart separator-handle - The focusable drag handle
  */
-@customElement('rc-splitter')
 export class RCSplitter extends LitElement {
   static styles = [splitterStyles];
 
@@ -279,5 +277,7 @@ export class RCSplitter extends LitElement {
     `;
   }
 }
+
+customElements.get('rc-splitter') || customElements.define('rc-splitter', RCSplitter);
 
 export default RCSplitter;

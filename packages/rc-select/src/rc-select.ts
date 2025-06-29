@@ -1,5 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import {
   ActiveDescendantController,
   AnchorController,
@@ -46,7 +46,6 @@ declare global {
  *
  * @cssprop [--rc-select-max-height=20em] - Maximum popup height.
  */
-@customElement('rc-select')
 export class RCSelect extends LitElement {
   static override styles = selectStyles;
 
@@ -120,6 +119,18 @@ export class RCSelect extends LitElement {
     );
   }
 
+  /**
+   * Programmatically replace the current selection without triggering
+   * MutationObserver — use from reactive framework wrappers (SolidJS createEffect,
+   * React useEffect) instead of setting `option.selected` directly.
+   */
+  setSelected(values: string[]): void {
+    this._selectedValues = new Set(values);
+    this._$listbox.setSelectedValues(values);
+    this._syncNativeSelect();
+    this.requestUpdate();
+  }
+
   // ── Document-level listeners ─────────────────────────────────────────────────
 
   private _onDocClick = (e: MouseEvent) => {
@@ -168,6 +179,8 @@ export class RCSelect extends LitElement {
       subtree: true,
       attributes: true,
     });
+
+    this._syncAccessibleName(sel);
   }
 
   protected _syncOptionsFromSelect(sel: HTMLSelectElement) {
@@ -185,6 +198,20 @@ export class RCSelect extends LitElement {
     }
     this._selectedValues = new Set(selected);
     this._$listbox.setSelectedValues(selected);
+    this._syncAccessibleName(sel);
+  }
+
+  private _syncAccessibleName(sel: HTMLSelectElement): void {
+    if (!this._$trigger) return;
+    if (this._$trigger.hasAttribute('aria-label')) return; // don't clobber explicit
+
+    const name =
+      sel.getAttribute('aria-label') ??
+      sel.labels?.[0]?.textContent?.trim() ??
+      null;
+
+    if (name) this._$trigger.setAttribute('aria-label', name);
+    else this._$trigger.removeAttribute('aria-label');
   }
 
   // ── Selection ────────────────────────────────────────────────────────────────
@@ -509,5 +536,7 @@ export class RCSelect extends LitElement {
     `;
   }
 }
+
+customElements.get('rc-select') || customElements.define('rc-select', RCSelect);
 
 export default RCSelect;
