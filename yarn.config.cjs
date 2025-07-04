@@ -27,7 +27,7 @@ const enforcePrivateFlag = async ({ Yarn }) => {
  * @param {Context} ctx
  */
 function enforceSharedDepVersions({ Yarn }) {
-  const root = Yarn.workspace({ ident: "@rcarls/rc-webcomponents" }) ?? undefined;
+  const root = Yarn.workspace({ ident: "@rcarls/workspace-root" }) ?? undefined;
 
   for (const dependency of Yarn.dependencies()) {
     if (dependency.type === `peerDependencies`) continue;
