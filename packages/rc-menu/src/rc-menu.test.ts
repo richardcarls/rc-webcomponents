@@ -2,7 +2,7 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './rc-menu';
+import './define';
 import { userEvent } from 'vitest/browser';
 
 test('RCMenu is an accessible menu', async () => {

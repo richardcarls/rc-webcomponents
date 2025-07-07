@@ -301,6 +301,4 @@ export class RCDialog extends LitElement {
   };
 }
 
-customElements.get('rc-dialog') || customElements.define('rc-dialog', RCDialog);
-
 export default RCDialog;

@@ -264,6 +264,4 @@ export class RCListbox extends LitElement {
   }
 }
 
-customElements.get('rc-listbox') || customElements.define('rc-listbox', RCListbox);
-
 export default RCListbox;

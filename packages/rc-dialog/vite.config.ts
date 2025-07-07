@@ -21,12 +21,14 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
-      name: "rc-dialog",
-      fileName: "rc-dialog",
+      entry: {
+        "rc-dialog": resolve(__dirname, "src/index.ts"),
+        "rc-dialog-define": resolve(__dirname, "src/define.ts"),
+      },
+      formats: ["es"],
     },
     rollupOptions: {
-      external: [/^@?lit(-\w+)?($|\/.+)/],
+      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
 });

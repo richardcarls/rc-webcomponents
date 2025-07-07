@@ -2,29 +2,40 @@
   "name": "@rcarls/rc-menubar",
   "private": true,
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-menubar"
+  },
+  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
   "type": "module",
   "files": [
     "dist"
   ],
-  "main": "./dist/rc-menubar.umd.cjs",
   "module": "./dist/rc-menubar.js",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/types/index.d.ts",
         "default": "./dist/rc-menubar.js"
-      },
-      "require": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/rc-menubar.umd.cjs"
+      }
+    },
+    "./define": {
+      "import": {
+        "types": "./dist/types/define.d.ts",
+        "default": "./dist/rc-menubar-define.js"
       }
     }
   },
   "types": "./dist/types/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/rc-menubar-define.js"
+  ],
+  "customElements": "dist/custom-elements.json",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && cem analyze",
+    "cem:analyze": "cem analyze",
     "preview": "vite preview",
     "test:browser": "vitest",
     "yalc:publish": "yalc publish --push"
@@ -36,6 +47,7 @@
     "@types/node": "^25.6.0"
   },
   "devDependencies": {
+    "@custom-elements-manifest/analyzer": "0.11.0",
     "@guanghechen/rollup-plugin-copy": "^6.0.9",
     "@vitest/browser-webdriverio": "^4.0.6",
     "lit": "^3.0.0",

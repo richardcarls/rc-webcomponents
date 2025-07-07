@@ -269,6 +269,4 @@ export class RCMenubar extends LitElement {
   };
 }
 
-customElements.get('rc-menubar') || customElements.define('rc-menubar', RCMenubar);
-
 export default RCMenubar;

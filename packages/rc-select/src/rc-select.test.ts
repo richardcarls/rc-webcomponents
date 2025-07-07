@@ -2,7 +2,7 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './rc-select';
+import './define';
 import type { RCSelect } from './rc-select';
 
 function makeSelect(opts?: { multiple?: boolean; disabled?: boolean; placeholder?: string }) {

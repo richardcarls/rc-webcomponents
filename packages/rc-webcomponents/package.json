@@ -2,22 +2,29 @@
   "name": "@rcarls/rc-webcomponents",
   "private": true,
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-webcomponents"
+  },
+  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
   "type": "module",
   "files": [
     "dist",
     "src/solid.d.ts"
   ],
-  "main": "./dist/rc-webcomponents.umd.cjs",
   "module": "./dist/rc-webcomponents.js",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/types/index.d.ts",
         "default": "./dist/rc-webcomponents.js"
-      },
-      "require": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/rc-webcomponents.umd.cjs"
+      }
+    },
+    "./define": {
+      "import": {
+        "types": "./dist/types/define.d.ts",
+        "default": "./dist/rc-webcomponents-define.js"
       }
     },
     "./solid": {
@@ -26,7 +33,9 @@
     "./themes/base.css": "../../themes/base.css"
   },
   "types": "./dist/types/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/rc-webcomponents-define.js"
+  ],
   "scripts": {
     "build": "tsc && vite build",
     "yalc:publish": "yalc publish --push"

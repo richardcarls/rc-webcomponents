@@ -7,12 +7,14 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'rc-webcomponents',
-      fileName: 'rc-webcomponents',
+      entry: {
+        'rc-webcomponents': resolve(__dirname, 'src/index.ts'),
+        'rc-webcomponents-define': resolve(__dirname, 'src/define.ts'),
+      },
+      formats: ['es'],
     },
     rollupOptions: {
-      external: [/^@?lit(-\w+)?($|\/.+)/],
+      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
   plugins: [dts({ outDir: 'dist/types' })],

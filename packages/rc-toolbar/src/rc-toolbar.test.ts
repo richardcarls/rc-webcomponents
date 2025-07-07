@@ -2,7 +2,7 @@ import { test, expect } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './rc-toolbar';
+import './define';
 import { userEvent } from 'vitest/browser';
 
 // TODO: see https://github.com/jakelazaroff/roving-tabindex/blob/main/roving-tabindex.js

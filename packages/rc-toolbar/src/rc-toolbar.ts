@@ -82,6 +82,4 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   }
 }
 
-customElements.get('rc-toolbar') || customElements.define('rc-toolbar', RCToolbar);
-
 export default RCToolbar;

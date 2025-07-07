@@ -21,13 +21,15 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
-      name: "rc-textarea",
-      fileName: "rc-textarea",
+      entry: {
+        "rc-textarea": resolve(__dirname, "src/index.ts"),
+        "rc-textarea-define": resolve(__dirname, "src/define.ts"),
+      },
+      formats: ["es"],
     },
     rollupOptions: {
-      // Exclude lit packages from bundling; bundle parchment
-      external: [/^@?lit(-\w+)?($|\/.+)/],
+      // externalize lit and sibling packages; parchment is bundled
+      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
 });

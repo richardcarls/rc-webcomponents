@@ -21,12 +21,14 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
-      name: "rc-combobox",
-      fileName: "rc-combobox",
+      entry: {
+        "rc-combobox": resolve(__dirname, "src/index.ts"),
+        "rc-combobox-define": resolve(__dirname, "src/define.ts"),
+      },
+      formats: ["es"],
     },
     rollupOptions: {
-      external: [/^@?lit(-\w+)?($|\/.+)/],
+      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
 });

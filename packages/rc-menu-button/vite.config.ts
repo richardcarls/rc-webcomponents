@@ -21,13 +21,14 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
-      name: "rc-menu-button",
-      fileName: "rc-menu-button",
+      entry: {
+        "rc-menu-button": resolve(__dirname, "src/index.ts"),
+        "rc-menu-button-define": resolve(__dirname, "src/define.ts"),
+      },
+      formats: ["es"],
     },
     rollupOptions: {
-      // Exclude lit packages from bundling
-      external: [/^@?lit(-\w+)?($|\/.+)/],
+      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
 });

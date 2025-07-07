@@ -789,6 +789,7 @@ __metadata:
     "@rcarls/rc-textarea": "workspace:^"
     "@rcarls/rc-toolbar": "workspace:^"
     "@rcarls/rc-virtual-canvas": "workspace:^"
+    "@rcarls/rc-webcomponents": "workspace:^"
     "@types/node": "npm:^25.6.0"
     api-viewer-element: "npm:^1.0.0-pre.10"
     lit: "npm:^3.0.0"
@@ -801,6 +802,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-combobox@workspace:packages/rc-combobox"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@rcarls/rc-listbox": "workspace:^"
@@ -844,6 +846,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-dialog@workspace:packages/rc-dialog"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
@@ -864,6 +867,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-listbox@workspace:packages/rc-listbox"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
@@ -884,6 +888,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-menu-button@workspace:packages/rc-menu-button"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@rcarls/rc-menu": "workspace:^"
@@ -906,6 +911,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-menu@workspace:packages/rc-menu"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
@@ -926,6 +932,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-menubar@workspace:packages/rc-menubar"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@rcarls/rc-menu": "workspace:^"
@@ -949,6 +956,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-select@workspace:packages/rc-select"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@rcarls/rc-listbox": "workspace:^"
@@ -970,6 +978,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-splitter@workspace:packages/rc-splitter"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
@@ -990,6 +999,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-textarea@workspace:packages/rc-textarea"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@types/node": "npm:^25.6.0"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
@@ -1011,6 +1021,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-toolbar@workspace:packages/rc-toolbar"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
@@ -1031,6 +1042,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-virtual-canvas@workspace:packages/rc-virtual-canvas"
   dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
     "@types/node": "npm:^25.6.0"
     "@vitest/browser-webdriverio": "npm:^4.0.6"
@@ -1047,7 +1059,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-webcomponents@workspace:packages/rc-webcomponents":
+"@rcarls/rc-webcomponents@workspace:^, @rcarls/rc-webcomponents@workspace:packages/rc-webcomponents":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-webcomponents@workspace:packages/rc-webcomponents"
   dependencies:

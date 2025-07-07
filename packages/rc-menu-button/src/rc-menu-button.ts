@@ -256,6 +256,4 @@ export class RCMenuButton extends LitElement {
   }
 }
 
-customElements.get('rc-menu-button') || customElements.define('rc-menu-button', RCMenuButton);
-
 export default RCMenuButton;

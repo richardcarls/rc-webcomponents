@@ -21,13 +21,14 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
-      name: "rc-menubar",
-      fileName: "rc-menubar",
+      entry: {
+        "rc-menubar": resolve(__dirname, "src/index.ts"),
+        "rc-menubar-define": resolve(__dirname, "src/define.ts"),
+      },
+      formats: ["es"],
     },
     rollupOptions: {
-      // Exclude lit packages from bundling
-      external: [/^@?lit(-\w+)?($|\/.+)/],
+      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
 });

@@ -2,7 +2,7 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './rc-listbox';
+import './define';
 import type { RCListbox } from './rc-listbox';
 
 const OPTIONS = [

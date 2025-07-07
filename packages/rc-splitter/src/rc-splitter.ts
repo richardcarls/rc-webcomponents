@@ -278,6 +278,4 @@ export class RCSplitter extends LitElement {
   }
 }
 
-customElements.get('rc-splitter') || customElements.define('rc-splitter', RCSplitter);
-
 export default RCSplitter;

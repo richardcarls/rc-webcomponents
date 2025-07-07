@@ -5,7 +5,6 @@ import {
   AnchorController,
 } from '@rcarls/rc-common';
 import type { RCListbox, ListboxOption } from '@rcarls/rc-listbox';
-import '@rcarls/rc-listbox';
 import { selectStyles } from './rc-select.styles.js';
 
 export interface RCSelectChangeEvent {
@@ -536,7 +535,5 @@ export class RCSelect extends LitElement {
     `;
   }
 }
-
-customElements.get('rc-select') || customElements.define('rc-select', RCSelect);
 
 export default RCSelect;

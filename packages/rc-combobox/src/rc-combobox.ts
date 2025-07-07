@@ -2,7 +2,6 @@ import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { RCSelect } from '@rcarls/rc-select';
 import type { FilterStrategy } from '@rcarls/rc-listbox';
-import '@rcarls/rc-listbox';
 import { comboboxStyles } from './rc-combobox.styles.js';
 
 export interface RCComboboxCreateEvent {
@@ -310,7 +309,5 @@ export class RCCombobox extends RCSelect {
     `;
   }
 }
-
-customElements.get('rc-combobox') || customElements.define('rc-combobox', RCCombobox);
 
 export default RCCombobox;

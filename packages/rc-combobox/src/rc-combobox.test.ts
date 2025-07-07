@@ -2,7 +2,7 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './rc-combobox';
+import './define';
 import type { RCCombobox } from './rc-combobox';
 
 function makeCombobox(opts?: {

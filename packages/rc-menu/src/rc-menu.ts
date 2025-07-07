@@ -107,6 +107,4 @@ export class RCMenu extends RovingTabIndexMixin(LitElement) {
   }
 }
 
-customElements.get('rc-menu') || customElements.define('rc-menu', RCMenu);
-
 export default RCMenu;

@@ -21,13 +21,14 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
-      name: "rc-virtual-canvas",
-      fileName: "rc-virtual-canvas",
+      entry: {
+        "rc-virtual-canvas": resolve(__dirname, "src/index.ts"),
+        "rc-virtual-canvas-define": resolve(__dirname, "src/define.ts"),
+      },
+      formats: ["es"],
     },
     rollupOptions: {
-      // Exclude lit packages from bundling
-      external: [/^@?lit(-\w+)?($|\/.+)/],
+      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
 });
