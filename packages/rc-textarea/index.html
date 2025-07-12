@@ -6,6 +6,7 @@
     <title>rc-textarea</title>
     <link rel="stylesheet" href="/demo.css" />
     <script type="module" src="/demo.js"></script>
+    <script type="module" src="/src/define.ts"></script>
     <!-- highlight.js UMD — must load before the module script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
@@ -423,8 +424,6 @@ console.log(result);
     </div>
 
     <script type="module">
-      import { RCTextarea } from './src/index.ts';
-
       // ── Theme toggle ──────────────────────────────────────────────────────
       const root = document.documentElement;
       const toggleBtn = document.getElementById('theme-toggle');
