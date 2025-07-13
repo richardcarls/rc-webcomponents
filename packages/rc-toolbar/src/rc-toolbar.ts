@@ -40,10 +40,13 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   protected _$root!: HTMLDivElement;
 
   protected override _initItems() {
-    // Toolbar moves real focus on slot change rather than setting tabindex
-    // statically — the focusin handler updates tabindex when focus lands.
-    // TODO: Restore original tabindex attribute on removed items?
-    this.focusItem(this._lastFocused ?? this.firstItem);
+    // Defer focus past the current microtask queue. Calling item.focus()
+    // synchronously during slotchange can fire focusin/focusout inside a
+    // framework reactive update cycle (e.g. SolidJS Transition), causing
+    // the update to hang. The tabindex is set synchronously by the base
+    // class; focus lands correctly on the next microtask.
+    const target = this._lastFocused ?? this.firstItem;
+    queueMicrotask(() => this.focusItem(target));
   }
 
   protected _onNavigate(action: KeyboardNavigationAction) {
