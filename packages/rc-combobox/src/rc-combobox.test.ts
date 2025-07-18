@@ -12,6 +12,7 @@ function makeCombobox(opts?: {
 }) {
   return html`
     <rc-combobox
+      ?multiple=${opts?.multiple ?? false}
       ?allowcreate=${opts?.allowCreate ?? false}
       placeholder=${opts?.placeholder ?? 'Search...'}
     >
@@ -24,17 +25,25 @@ function makeCombobox(opts?: {
   `;
 }
 
+// getByRole('combobox') times out in Firefox when rc-listbox[popover="manual"] is
+// a sibling in the same shadow root — access the shadow DOM directly instead.
 async function getHost(screen: ReturnType<typeof render>): Promise<RCCombobox> {
-  const input = await screen.getByRole('combobox').element() as HTMLElement;
-  return input.closest('rc-combobox') as RCCombobox;
+  const host = screen.container.querySelector('rc-combobox') as RCCombobox;
+  await host.updateComplete;
+  // Flush the queueMicrotask inside _handleSelectSlotChange so options are
+  // populated before any test interaction begins.
+  await new Promise((r) => setTimeout(r, 0));
+  return host;
 }
 
 // ── Structure & ARIA ──────────────────────────────────────────────────────────
 
 test('input has role="combobox", aria-haspopup="listbox", aria-autocomplete="list"', async () => {
   const screen = render(makeCombobox());
-  const input = await screen.getByRole('combobox').element() as HTMLInputElement;
+  const host = await getHost(screen);
+  const input = host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
   expect(input.tagName).toBe('INPUT');
+  expect(input.getAttribute('role')).toBe('combobox');
   expect(input.getAttribute('aria-haspopup')).toBe('listbox');
   expect(input.getAttribute('aria-autocomplete')).toBe('list');
   expect(input.getAttribute('aria-controls')).toBe('listbox');
@@ -97,14 +106,14 @@ test('Enter selects active option, closes popup, sets input value', async () => 
   const input = host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
   const changeHandler = vi.fn();
   host.addEventListener('rc-select-change', changeHandler);
-  host.openPopup();
+  input.focus(); // open popup via real focus so hidePopover() restores focus correctly
   await host.updateComplete;
   input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
   await host.updateComplete;
   input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
   await host.updateComplete;
-  expect(host.open).toBe(false);
   expect(changeHandler).toHaveBeenCalledOnce();
+  expect(host.open).toBe(false);
   expect(input.value).toBe('Apple');
 });
 
@@ -240,12 +249,14 @@ test('multiple: popup stays open after selecting an option', async () => {
 test('multiple: chips render for selected values', async () => {
   const screen = render(makeCombobox({ multiple: true }));
   const host = await getHost(screen);
+  expect(host.multiple).toBe(true);
   host.openPopup();
   await host.updateComplete;
   host.renderRoot.querySelector('rc-listbox')!
     .querySelector<HTMLElement>('[data-value="apple"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
   await host.updateComplete;
+  expect((host as any)._selectedValues.has('apple')).toBe(true);
   const chips = host.renderRoot.querySelectorAll('[part~="chip"]');
   expect(chips).toHaveLength(1);
   expect(chips[0].textContent).toContain('Apple');

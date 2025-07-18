@@ -19,9 +19,9 @@ test('renders options from options property', async () => {
 
   const options = el.querySelectorAll('[role="option"]');
   expect(options).toHaveLength(3);
-  expect(options[0].textContent).toBe('Apple');
-  expect(options[1].textContent).toBe('Banana');
-  expect(options[2].textContent).toBe('Cherry');
+  expect(options[0].querySelector('[part="option-label"]')?.textContent).toBe('Apple');
+  expect(options[1].querySelector('[part="option-label"]')?.textContent).toBe('Banana');
+  expect(options[2].querySelector('[part="option-label"]')?.textContent).toBe('Cherry');
 });
 
 test('has role=listbox on host element', async () => {
@@ -149,7 +149,7 @@ test('appendOption adds new option to end of list', async () => {
 
   const opts = el.querySelectorAll('[role="option"]');
   expect(opts).toHaveLength(2);
-  expect(opts[1].textContent).toBe('B');
+  expect(opts[1].querySelector('[part="option-label"]')?.textContent).toBe('B');
 });
 
 test('setCreateOption shows Create option in navigableItems', async () => {

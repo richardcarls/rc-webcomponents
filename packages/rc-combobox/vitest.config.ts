@@ -8,6 +8,7 @@ export default defineConfig({
       provider: webdriverio(),
       instances: [
         { browser: 'firefox' },
+        { browser: 'chrome' },
       ],
     },
   },

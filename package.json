@@ -41,5 +41,10 @@
   },
   "peerDependencies": {
     "lit": "^3.0.0"
+  },
+  "dependenciesMeta": {
+    "vitest-browser-lit": {
+      "unplugged": true
+    }
   }
 }

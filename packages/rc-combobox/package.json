@@ -37,7 +37,9 @@
     "build": "tsc && vite build && cem analyze",
     "cem:analyze": "cem analyze",
     "preview": "vite preview",
-    "test:browser": "vitest",
+    "test:browser": "vitest --project=firefox",
+    "test:browser:chrome": "vitest --project=chrome",
+    "test:browser:all": "vitest",
     "yalc:publish": "yalc publish --push"
   },
   "dependencies": {

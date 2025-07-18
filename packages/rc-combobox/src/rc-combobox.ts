@@ -58,6 +58,11 @@ export class RCCombobox extends RCSelect {
 
   @state() private _filterText = '';
 
+  // Guard against _handleInputFocus re-opening the popup immediately after close.
+  // hidePopover() can trigger a browser-native focus-return to the input in Firefox,
+  // so we use setTimeout(0) to defer the reset past any such focus events.
+  private _closingPopup = false;
+
   // ── Override popup lifecycle ──────────────────────────────────────────────────
 
   override openPopup() {
@@ -65,13 +70,14 @@ export class RCCombobox extends RCSelect {
     this._$listbox?.filterOptions(this._filterText);
   }
 
-  override closePopup(returnFocus = true) {
+  override closePopup(_returnFocus = true) {
     this._filterText = '';
     this._$listbox?.clearFilter();
     this._$listbox?.setCreateOption(null);
-    super.closePopup(returnFocus);
-    // super.closePopup calls _$trigger.focus() too, but we need input focus
-    if (returnFocus && this._$trigger) this._$trigger.focus();
+    this._closingPopup = true;
+    super.closePopup(false);
+    // Reset after any native focus-return from hidePopover() fires
+    setTimeout(() => { this._closingPopup = false; }, 0);
   }
 
   // ── Input events ──────────────────────────────────────────────────────────────
@@ -89,7 +95,7 @@ export class RCCombobox extends RCSelect {
   }
 
   private _handleInputFocus() {
-    if (!this.open) this.openPopup();
+    if (!this.open && !this._closingPopup) this.openPopup();
   }
 
   private _handleToggleClick(e: MouseEvent) {

@@ -9144,14 +9144,14 @@ const RAW_RUNTIME_STATE =
     ]],\
     ["vitest-browser-lit", [\
       ["npm:1.0.1", {\
-        "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-1fd5d5fe05/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["vitest-browser-lit", "npm:1.0.1"]\
         ],\
         "linkType": "SOFT"\
       }],\
       ["virtual:02d3817ef30f7d97259a7b9b41e4e3d9ef9c7016f68bdb6446746c849cf7e6516b3e0b299884e4a8ea0a98b338ed110a5808c43eb841103713714d4c2c53b572#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-293d233bb9/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-293d233bb9/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9168,7 +9168,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:4112c8a1a922fcc8123ea1aa3f6df22c23a115c0a7113de968b4174b1169a259071dfcc34bd40f17885f852d3b21f0ddbf713fa7fed29e6e7a1b4846cb68122b#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-cc51625176/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-cc51625176/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9185,7 +9185,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:4c47b2a59cb43d8675031edcb0b9b18b5173a91df9dab1ab391da42290394cb092b15da0dd53a717613be341dfb82c00bab2022c685b24442eeb2ae037d468fb#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-23b5ae138d/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-23b5ae138d/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9202,7 +9202,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:5a371180a0b21fefcac5fe18c724213fde8605444476c71b8e76b800394db0fabe935ee775c1c65556fa36a14569095aefc9f4cd2599dcbe2cb38e67e2947095#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-bafe50b0fc/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-bafe50b0fc/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9219,7 +9219,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:620b187e4039e7ccba7858c035c05478bfc494ccecfcd781372b473a271a4bf9a4d90920955d085c54b0394ade1eb0fde260eb05f1688c896025db0a93f9b048#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-753cf928a1/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-753cf928a1/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9236,7 +9236,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:6a378eea7fce9d7138aebac763942b0592246bf678c2244bddd57db4f40053bee4d0db19c72325e68d2902dfced70d97489d943e28d53d9ff06445dbc16518b4#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-a51238b25d/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-a51238b25d/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9253,7 +9253,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:6f72997121c10f1421a24da6039e6d929ed874f47386175a440d9c5b56e2021f3cd7130725eef25728786787d9f8f66ac059a3197215fac24f442354af08855c#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-7b78eba395/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-7b78eba395/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9270,7 +9270,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:739aece5a1edbe16ffcda30775c7638a58d6f830198609780e07010d8e7bc23eee37a0cc2892b8cbabc2d74f8ca74d9529859fff9223e49f3c5c32f39da974d9#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-7d57dafb96/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-7d57dafb96/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9287,7 +9287,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:79423438f5616e19146b425db724e4c36028bb6a4997133cadb74f3b7c5fba731086928cda35e454e4a227ea24d52e58cf4c4a304673ea89034ff62636e1fadc#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-1dc82b8d69/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-1dc82b8d69/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9304,7 +9304,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:8c12bcd4882e5f872a3e02990f5bf3c8af9658995ca9a54b43a59b39a167dac98f940eeadae3073bab8ded7eeacc70f225ba9af3bdec2f96477c9aa0d4bf5fa1#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-1126c7ceab/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-1126c7ceab/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9321,7 +9321,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:9eee6581b687d7a427e19bafb50b2c35930ce884ae88188898f1db6cb1ee5cefdaaa90a64b50edac28fc8ae759786edff599c3413b26ebc5cc1d240ee021ce7f#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-b0061d01a7/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-b0061d01a7/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9338,7 +9338,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:bc088f6e61a692eeee37e82a2136297675737277bb53daefa6b0c5725b8f0aabdcf32fd49d2c3a7f2f4e312c4e36fb2fd4fcefa5ca987badc546d57f4b9c4ee9#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-1fd5d5fe05/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-1fd5d5fe05/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9355,7 +9355,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:c91d13d677ce9ffedd79d892ff00669c38243f4aead2961175de0cb8ec6068d65e3cbb193c0b2047fbd26cac5e1ec8c492d2d3ab3d3a3aa6cfd885dccbc2a8a6#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-e41ae2aca0/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-e41ae2aca0/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9372,7 +9372,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:cf01d8aa3fc841364430c2ba2603d5e94d617bec6baf746d5521faf7222b7922ccc45b71a13c3713fffb312732b041b1e57d1a2b2e80fb8efa2eb430ab045317#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-c39fe68219/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-c39fe68219/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9389,7 +9389,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:d26eec96d46019b94c19323cca45edc76118bdc1d7bd398dbf64abc8aace8b760b9d909ea15dbc5301819702963bd9cf27a738a6ff70f4a3c54d29c4266af163#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-990e32d623/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-990e32d623/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9406,7 +9406,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:d6cf12061229b75fdc203ba0c0c6bcd2772b05f9afa849c21c51f7104015a18a1bd7922e2202333c400915bde597ca27bbf96a504976ff618982e1f086c8e8d2#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-5d6c646e04/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-5d6c646e04/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9423,7 +9423,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:dc2757e2176a7a13fd4c226d608a2788be67442201d3a9f4dc39111338e4c74ac2dff2aefbc63b2964a25041bbdcd5c9d13e2b360b895d695436d4ec2cdd2d99#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-045541216d/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-045541216d/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9440,7 +9440,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:de8e590c8b04ab0edd96740ee08e2cafb0845b475261b26008614403b4d6b1a37d4f76fcaab6313ad208437e30c8621f4432afb4d351e86f78f335847aeadf0f#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-be1829b884/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-be1829b884/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9457,7 +9457,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:e74d3923dd5d455677649b86fa63369c1bdeae85988d91da4257e2298985fa80410440dfbc12ef8b3a8aab1321510830e0938bfa7009ad667058d98d96612c30#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-a37238302f/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-a37238302f/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9474,7 +9474,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:e9261e8f796336b3242b6fde9f9157be22f13c21022a3aad20988d8418181ea2c74941437582b920d1299a32a5670bdf24c6cb1b8e35bd5687324d5089cd9a8c#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-59b3d55a38/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-59b3d55a38/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9491,7 +9491,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:e9e188fd220a526fd27bdc87ac2a7795757cc768aba631fca32a39afae3a19e8d2184290373e531a7907ee32a52daf14654a39eb9cafc6862017ad97c62c036a#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-36f885d1b5/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-36f885d1b5/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9508,7 +9508,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:ec43839e600e3e526bf26fd0da73616edc16de5638aa6cc12fee22d759f47f331459c798311c2000e87ccde7fab4ba9d69582e161582e0dfb26753e4393f7ffc#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-f1308b613a/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-f1308b613a/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9525,7 +9525,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:ece0d880cd5ca9e0e3060211c828c0d7ccdc11a692637bb103627f591b0050414d919e30484dc220b3ebcc2b27311e1f0f76eed6177a74c73f05b70f7fa1e836#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-77e1b7eb94/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-77e1b7eb94/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9542,7 +9542,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:ed53c02dfd0d80b4423380c90af42b57d0decc7faeaa54a1297d249220c275465c3ea9872dd67b3c2b83afe117edbe45f860dff5599da2b62c62e691e61b765f#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-f0e04ec732/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-f0e04ec732/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\
@@ -9559,7 +9559,7 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }],\
       ["virtual:f317f426f9e9f9257e78db8cbe24406663af31a8ce25d910f2f7c012d4a2a72259d2d885c9eb014343aa7780be747f986ae8bffc93c71a876423a48dae2f341f#npm:1.0.1", {\
-        "packageLocation": "./.yarn/__virtual__/vitest-browser-lit-virtual-b018a9269a/5/C:/Users/rick/AppData/Local/Yarn/Berry/cache/vitest-browser-lit-npm-1.0.1-e8c260797d-10c0.zip/node_modules/vitest-browser-lit/",\
+        "packageLocation": "./.yarn/unplugged/vitest-browser-lit-virtual-b018a9269a/node_modules/vitest-browser-lit/",\
         "packageDependencies": [\
           ["@types/lit", null],\
           ["@types/vitest", null],\

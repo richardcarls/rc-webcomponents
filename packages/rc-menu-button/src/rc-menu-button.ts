@@ -148,15 +148,18 @@ export class RCMenuButton extends LitElement {
 
   private _handleTriggerSlotChange(e: Event) {
     const slot = e.currentTarget as HTMLSlotElement;
-    const elements = slot.assignedElements();
-    const trigger = elements[0] as HTMLElement | undefined;
+    const trigger = slot.assignedElements()[0] as HTMLElement | undefined;
 
     if (trigger) {
+      // Cache reference synchronously; defer ARIA mutations so this handler
+      // is instantaneous when slotchange fires inside a framework reactive pass.
       this._trigger = new WeakRef(trigger);
 
-      // Set ARIA attributes on trigger
-      trigger.setAttribute('aria-haspopup', 'menu');
-      trigger.setAttribute('aria-expanded', String(this.open));
+      queueMicrotask(() => {
+        if (!trigger.isConnected) return;
+        trigger.setAttribute('aria-haspopup', 'menu');
+        trigger.setAttribute('aria-expanded', String(this.open));
+      });
     }
   }
 

@@ -1102,6 +1102,9 @@ __metadata:
     webdriverio: "npm:^9.20.0"
   peerDependencies:
     lit: ^3.0.0
+  dependenciesMeta:
+    vitest-browser-lit:
+      unplugged: true
   languageName: unknown
   linkType: soft
 

@@ -156,30 +156,32 @@ export class RCSelect extends LitElement {
           (el): el is HTMLSelectElement => el instanceof HTMLSelectElement,
         ) ?? null;
 
+    // Disconnect synchronously so the old observer stops immediately.
     this._mutationObserver?.disconnect();
     this._mutationObserver = null;
+    this._selectRef = sel ? new WeakRef(sel) : null;
 
-    if (!sel) {
-      this._selectRef = null;
-      return;
-    }
+    if (!sel) return;
 
-    this._selectRef = new WeakRef(sel);
-    this.multiple = sel.multiple;
-    this.disabled = sel.disabled;
-    this._syncOptionsFromSelect(sel);
-
-    this._mutationObserver = new MutationObserver(() => {
-      const s = this._selectRef?.deref();
-      if (s) this._syncOptionsFromSelect(s);
+    // Defer all DOM reads/mutations so this handler is instantaneous when
+    // slotchange fires synchronously inside a framework reactive update pass
+    // (e.g. SolidJS runUpdates on second+ mount, when shadow DOM already exists).
+    queueMicrotask(() => {
+      if (!sel.isConnected) return;
+      this.multiple = sel.multiple;
+      this.disabled = sel.disabled;
+      this._syncOptionsFromSelect(sel);
+      this._mutationObserver = new MutationObserver(() => {
+        const s = this._selectRef?.deref();
+        if (s) this._syncOptionsFromSelect(s);
+      });
+      this._mutationObserver.observe(sel, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+      });
+      this._syncAccessibleName(sel);
     });
-    this._mutationObserver.observe(sel, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-    });
-
-    this._syncAccessibleName(sel);
   }
 
   protected _syncOptionsFromSelect(sel: HTMLSelectElement) {
@@ -190,10 +192,12 @@ export class RCSelect extends LitElement {
     }
     this._$listbox.options = opts;
 
-    // Sync current selection from native select
+    // Sync from the HTML selected *attribute* (defaultSelected), not the IDL property,
+    // so browser auto-selection of the first option in a briefly-single-mode <select>
+    // does not bleed into the component state.
     const selected: string[] = [];
     for (const opt of sel.options) {
-      if (opt.selected && opt.value) selected.push(opt.value);
+      if (opt.defaultSelected && opt.value) selected.push(opt.value);
     }
     this._selectedValues = new Set(selected);
     this._$listbox.setSelectedValues(selected);

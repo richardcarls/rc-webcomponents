@@ -51,6 +51,8 @@ let _uid = 0;
  * @slot — No slots; options are rendered programmatically from the `options` property.
  * @fires rc-listbox-change - Fired when an option is activated (clicked or Enter/Space)
  * @csspart option - Individual option elements
+ * @csspart option-checkmark - The checkmark indicator inside each option
+ * @csspart option-label - The label text span inside each option
  * @csspart create-option - The "Create" option when allow-create is active
  */
 export class RCListbox extends LitElement {
@@ -220,7 +222,7 @@ export class RCListbox extends LitElement {
               e.preventDefault();
               this.toggleOption(opt.value);
             }}
-          ><span part="option-checkmark" aria-hidden="true">&#x2713;</span>${opt.label}</div>
+          ><span part="option-checkmark" aria-hidden="true">&#x2713;</span><span part="option-label">${opt.label}</span></div>
         `,
       )}
       ${this._createLabel !== null
@@ -241,7 +243,7 @@ export class RCListbox extends LitElement {
                   }),
                 );
               }}
-            ><span part="option-checkmark" aria-hidden="true">&#x2713;</span>Create "${this._createLabel}"</div>
+            ><span part="option-checkmark" aria-hidden="true">&#x2713;</span><span part="option-label">Create "${this._createLabel}"</span></div>
           `
         : nothing}
     `;
