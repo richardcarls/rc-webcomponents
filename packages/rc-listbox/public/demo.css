@@ -1,0 +1,78 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+[data-theme="light"] { color-scheme: light; }
+[data-theme="dark"]  { color-scheme: dark;  }
+
+[data-theme="solarized-light"] {
+  color-scheme: light;
+  --rc-surface: #fdf6e3;
+  --rc-text:    #657b83;
+  --rc-border:  1px solid #93a1a1;
+  --rc-shadow:  0 2px 8px rgba(0, 0, 0, .12);
+}
+
+[data-theme="solarized-dark"] {
+  color-scheme: dark;
+  --rc-surface: #002b36;
+  --rc-text:    #839496;
+  --rc-border:  1px solid #586e75;
+  --rc-shadow:  0 2px 8px rgba(0, 0, 0, .3);
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+}
+
+.demo-page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid ButtonBorder;
+}
+
+.demo-controls .demo-title {
+  flex: 1;
+}
+
+.demo-controls h1 {
+  margin: 0 0 0.15rem;
+  font-size: 1.5rem;
+}
+
+.demo-controls a {
+  font-size: 0.8rem;
+}
+
+.demo-section {
+  margin-bottom: 2rem;
+}
+
+.demo-section h2 {
+  margin: 0 0 0.5rem;
+}
+
+.theme-picker {
+  padding: 0.35em 0.75em;
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid ButtonBorder;
+  border-radius: 4px;
+  background: Canvas;
+  color: CanvasText;
+}

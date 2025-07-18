@@ -3,83 +3,226 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>rc-virtual-canvas</title>
-
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
+    <script type="module" src="/src/define.ts"></script>
     <style>
-        body {
-            padding: 2rem 1rem;
-        }
+      rc-virtual-canvas {
+        width: 100%;
+        border: 1px solid ButtonBorder;
+        background-color: #000;
+        display: block;
+      }
 
-        rc-virtual-canvas {
-            width: 100%;
-            border: 1px solid black;
-            background-color: black;
-        }
+      #tilemap-canvas, #draw-canvas-el {
+        display: block;
+        width: 100%;
+        aspect-ratio: 4/3;
+      }
 
-        #canvas {
-            display: block;
-            width: 100%;
-            aspect-ratio: 4/3;
-        }
+      #draw-surface {
+        background-color: #fff;
+        cursor: crosshair;
+        touch-action: none;
+      }
+
+      .draw-toolbar {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .draw-toolbar input[type="color"] {
+        width: 2.5rem;
+        height: 2rem;
+        padding: 0.1rem;
+        border: 1px solid ButtonBorder;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .draw-toolbar input[type="range"] {
+        width: 6rem;
+      }
     </style>
-
-    <script type="module" src="/src/rc-virtual-canvas.ts"></script>
   </head>
-
   <body>
-    <h2>Example: Tilemap</h2>
+    <main class="demo-page">
+      <div class="demo-controls">
+        <div class="demo-title">
+          <h1>rc-virtual-canvas</h1>
+          <a href="https://github.com/rcarls/rc-webcomponents">Virtualized canvas viewport</a>
+        </div>
+        <button class="theme-picker" type="button">Auto</button>
+      </div>
 
-    <rc-virtual-canvas id="rc-canvas" contentWidth="1600" contentHeight="1600">
-        <canvas id="canvas"></canvas>
-    </rc-virtual-canvas>
+      <div class="demo-section">
+        <h2>Tilemap</h2>
+        <p>Virtualized rendering — only tiles visible in the viewport are drawn each frame.</p>
+        <rc-virtual-canvas id="rc-tilemap" contentWidth="1600" contentHeight="1600">
+          <canvas id="tilemap-canvas"></canvas>
+        </rc-virtual-canvas>
+      </div>
+
+      <div class="demo-section">
+        <h2>Drawing Surface</h2>
+        <p>Pointer-event drawing on a virtualized canvas. Pan by scrolling; draw by dragging.</p>
+        <div class="draw-toolbar">
+          <label>
+            Color
+            <input type="color" id="draw-color" value="#e33" />
+          </label>
+          <label>
+            Size
+            <input type="range" id="draw-size" min="1" max="20" value="4" />
+            <span id="draw-size-label">4px</span>
+          </label>
+          <button onclick="clearDrawing()">Clear</button>
+        </div>
+        <rc-virtual-canvas id="draw-surface" contentWidth="1600" contentHeight="1200">
+          <canvas id="draw-canvas-el"></canvas>
+        </rc-virtual-canvas>
+      </div>
+    </main>
 
     <script>
-        const NUM_ROWS = 50;
-        const NUM_COLS = 50;
+      // ── Tilemap demo ──────────────────────────────────────────────────────
 
-        const $rcCanvas = document.getElementById('rc-canvas');
-        const $canvas = document.getElementById('canvas');
+      const NUM_ROWS = 50;
+      const NUM_COLS = 50;
 
-        $rcCanvas.setAttribute('contentWidth', NUM_COLS * 32);
-        $rcCanvas.setAttribute('contentHeight', NUM_ROWS * 32);
+      const $rcTilemap = document.getElementById('rc-tilemap');
+      const $tilemapCanvas = document.getElementById('tilemap-canvas');
 
-        const tileset = new Image();
-        tileset.src = 'default_tiles.png';
+      $rcTilemap.setAttribute('contentWidth', NUM_COLS * 32);
+      $rcTilemap.setAttribute('contentHeight', NUM_ROWS * 32);
 
-        const tiles = [];
-        for (let r = 0; r < NUM_ROWS; r++) {
-            for (let c = 0; c < NUM_COLS; c++) {
-                tiles.push({ x: c * 32, y: r * 32, tileX: Math.floor(Math.random() * 9) * 32, tileY: Math.floor(Math.random() * 2) * 32 });
-            }
+      const tileset = new Image();
+      tileset.src = 'default_tiles.png';
+
+      const tiles = [];
+      for (let r = 0; r < NUM_ROWS; r++) {
+        for (let c = 0; c < NUM_COLS; c++) {
+          tiles.push({
+            x: c * 32, y: r * 32,
+            tileX: Math.floor(Math.random() * 9) * 32,
+            tileY: Math.floor(Math.random() * 2) * 32,
+          });
         }
+      }
 
-        document.getElementById('rc-canvas').addEventListener('render', (e) => {
-            const { time, viewRect, contentRect } = e.detail;
-
-            $canvas.width = viewRect.width;
-            $canvas.height = viewRect.height;
-
-            const ctx = $canvas.getContext('2d');
-            
-            ctx.clearRect(0, 0, viewRect.width, viewRect.height);
-
-            // Tiles
-            tiles.forEach(({ x, y, tileX, tileY }) => {
-                if (x + 32 >= viewRect.x && x <= viewRect.x + viewRect.width) {
-                    if (y + 32 >= viewRect.y && y <= viewRect.y + viewRect.height) {
-                        ctx.drawImage(tileset, tileX, tileY, 32, 32, x - viewRect.x, y - viewRect.y, 32, 32);
-                    }
-                }
-            });
-            
-            // Debug Info
-            ctx.fillStyle = 'white';
-            ctx.font = '16px serif';
-            ctx.fillText(`time: ${time}`, 4, 16);
-            ctx.fillText(`viewRect: ${viewRect.x}, ${viewRect.y}, ${viewRect.width}, ${viewRect.height}`, 4, 32);
-            ctx.fillText(`contentRect: ${contentRect.x}, ${contentRect.y}, ${contentRect.width}, ${contentRect.height}`, 4, 48);
+      $rcTilemap.addEventListener('render', (e) => {
+        const { time, viewRect, contentRect } = e.detail;
+        $tilemapCanvas.width = viewRect.width;
+        $tilemapCanvas.height = viewRect.height;
+        const ctx = $tilemapCanvas.getContext('2d');
+        ctx.clearRect(0, 0, viewRect.width, viewRect.height);
+        tiles.forEach(({ x, y, tileX, tileY }) => {
+          if (x + 32 >= viewRect.x && x <= viewRect.x + viewRect.width &&
+              y + 32 >= viewRect.y && y <= viewRect.y + viewRect.height) {
+            ctx.drawImage(tileset, tileX, tileY, 32, 32, x - viewRect.x, y - viewRect.y, 32, 32);
+          }
         });
+        ctx.fillStyle = 'white';
+        ctx.font = '16px serif';
+        ctx.fillText(`time: ${time}`, 4, 16);
+        ctx.fillText(`view: ${viewRect.x}, ${viewRect.y}, ${viewRect.width}×${viewRect.height}`, 4, 32);
+        ctx.fillText(`content: ${contentRect.width}×${contentRect.height}`, 4, 48);
+      });
+
+      // ── Drawing surface demo ──────────────────────────────────────────────
+
+      const DRAW_W = 1600;
+      const DRAW_H = 1200;
+
+      const $rcDraw = document.getElementById('draw-surface');
+      const $drawCanvas = document.getElementById('draw-canvas-el');
+      const offscreen = new OffscreenCanvas(DRAW_W, DRAW_H);
+      const offCtx = offscreen.getContext('2d');
+      offCtx.fillStyle = '#ffffff';
+      offCtx.fillRect(0, 0, DRAW_W, DRAW_H);
+
+      const colorPicker = document.getElementById('draw-color');
+      const sizeSlider = document.getElementById('draw-size');
+      const sizeLabel = document.getElementById('draw-size-label');
+
+      sizeSlider.addEventListener('input', () => {
+        sizeLabel.textContent = `${sizeSlider.value}px`;
+      });
+
+      window.clearDrawing = function () {
+        offCtx.fillStyle = '#ffffff';
+        offCtx.fillRect(0, 0, DRAW_W, DRAW_H);
+      };
+
+      let isDrawing = false;
+      let lastContent = { x: 0, y: 0 };
+      let lastViewport = { x: 0, y: 0 };
+      let currentViewRect = { x: 0, y: 0, width: 0, height: 0 };
+
+      $rcDraw.addEventListener('render', (e) => {
+        const { viewRect } = e.detail;
+        currentViewRect = viewRect;
+        $drawCanvas.width = viewRect.width;
+        $drawCanvas.height = viewRect.height;
+        const ctx = $drawCanvas.getContext('2d');
+        ctx.drawImage(
+          offscreen,
+          viewRect.x, viewRect.y, viewRect.width, viewRect.height,
+          0, 0, viewRect.width, viewRect.height,
+        );
+      });
+
+      $rcDraw.addEventListener('pointerdown', (e) => {
+        isDrawing = true;
+        const rect = $rcDraw.getBoundingClientRect();
+        lastViewport = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        lastContent = {
+          x: lastViewport.x + currentViewRect.x,
+          y: lastViewport.y + currentViewRect.y,
+        };
+        $rcDraw.setPointerCapture(e.pointerId);
+      });
+
+      $rcDraw.addEventListener('pointermove', (e) => {
+        if (!isDrawing) return;
+        const rect = $rcDraw.getBoundingClientRect();
+        const vx = e.clientX - rect.left;
+        const vy = e.clientY - rect.top;
+        const cx = vx + currentViewRect.x;
+        const cy = vy + currentViewRect.y;
+        const size = Number(sizeSlider.value);
+        const color = colorPicker.value;
+
+        // Draw to offscreen (persisted in content coords)
+        offCtx.beginPath();
+        offCtx.moveTo(lastContent.x, lastContent.y);
+        offCtx.lineTo(cx, cy);
+        offCtx.strokeStyle = color;
+        offCtx.lineWidth = size;
+        offCtx.lineCap = 'round';
+        offCtx.lineJoin = 'round';
+        offCtx.stroke();
+
+        // Draw to visible canvas immediately (in viewport coords)
+        const ctx = $drawCanvas.getContext('2d');
+        ctx.beginPath();
+        ctx.moveTo(lastViewport.x, lastViewport.y);
+        ctx.lineTo(vx, vy);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = size;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        lastContent = { x: cx, y: cy };
+        lastViewport = { x: vx, y: vy };
+      });
+
+      $rcDraw.addEventListener('pointerup', () => { isDrawing = false; });
+      $rcDraw.addEventListener('pointercancel', () => { isDrawing = false; });
     </script>
   </body>
 </html>

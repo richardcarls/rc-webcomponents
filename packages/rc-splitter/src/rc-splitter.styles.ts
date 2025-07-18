@@ -40,16 +40,16 @@ export const splitterStyles = css`
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background-color: var(--rc-splitter-separator-color, lightgray);
-    border-left: 1px solid white;
-    border-right: 1px solid black;
+    background-color: var(--rc-splitter-separator-color, var(--rc-surface, ButtonFace));
+    border-left: var(--rc-splitter-separator-border-inline-start, 1px solid ButtonBorder);
+    border-right: var(--rc-splitter-separator-border-inline-end, 1px solid ButtonBorder);
 
     :host([orientation='vertical']) & {
       flex-direction: row;
       border-left: unset;
       border-right: unset;
-      border-top: 1px solid white;
-      border-bottom: 1px solid black;
+      border-top: var(--rc-splitter-separator-border-block-start, 1px solid ButtonBorder);
+      border-bottom: var(--rc-splitter-separator-border-block-end, 1px solid ButtonBorder);
     }
   }
 

@@ -2,7 +2,7 @@ import { test, expect, describe } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './rc-textarea.ts';
+import './define';
 import type { RCTextarea } from './rc-textarea.ts';
 import type { RCTextareaPluginAPI } from './types.ts';
 import {

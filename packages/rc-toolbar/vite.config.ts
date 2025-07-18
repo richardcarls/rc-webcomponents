@@ -1,20 +1,34 @@
-import { resolve } from 'path';
+import { resolve } from "path";
 
-import { defineConfig } from 'vite';
-import dts from 'vite-plugin-dts';
+import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
+import { copy } from "@guanghechen/rollup-plugin-copy";
 
 export default defineConfig({
-  plugins: [dts({ outDir: 'dist/types' })],
+  plugins: [
+    dts({ outDir: "dist/types" }),
+    copy({
+      targets: [
+        {
+          src: "../../demo-shared/**/*",
+          dest: "public",
+        },
+      ],
+      copyOnce: true,
+    }),
+  ],
+  publicDir: resolve(__dirname, "public"),
   build: {
     sourcemap: true,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'rc-toolbar',
-      fileName: 'rc-toolbar',
+      entry: {
+        "rc-toolbar": resolve(__dirname, "src/index.ts"),
+        "rc-toolbar-define": resolve(__dirname, "src/define.ts"),
+      },
+      formats: ["es"],
     },
     rollupOptions: {
-      // Exclude lit packages from bundling
-      external: [/^@?lit(-\w+)?($|\/.+)/],
+      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
 });

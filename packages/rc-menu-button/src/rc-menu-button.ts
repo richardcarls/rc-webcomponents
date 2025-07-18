@@ -1,7 +1,8 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 
 import {
+  AnchorController,
   keyNavigation,
   type KeyboardNavigationAction,
 } from '@rcarls/rc-common';
@@ -29,10 +30,10 @@ declare global {
  * @slot trigger - The button element that triggers the menu
  * @slot default - The rc-menu element to display as popup
  * @fires rc-menu-button-toggle - Fired when the menu opens or closes
+ * @cssprop [--rc-menu-button-popup-z-index=1000] - Z-index of the popup overlay
  * @csspart root - The root container element
  * @csspart popup - The popup container element
  */
-@customElement('rc-menu-button')
 export class RCMenuButton extends LitElement {
   static styles = [menuButtonStyles];
 
@@ -67,6 +68,9 @@ export class RCMenuButton extends LitElement {
     return 'horizontal';
   }
 
+  @query('#root') private _$root!: HTMLElement;
+  @query('#popup') private _$popup!: HTMLElement;
+
   /** Reference to the trigger button element */
   @state()
   private _trigger: WeakRef<HTMLElement> | undefined;
@@ -74,6 +78,14 @@ export class RCMenuButton extends LitElement {
   /** Reference to the menu element */
   @state()
   private _menu: WeakRef<RCMenu> | undefined;
+
+  private _anchorCtrl = new AnchorController(this, {
+    anchor: () => this._$root ?? null,
+    floating: () => this._$popup ?? null,
+    shadowHost: () => this,
+    placement: 'bottom-start',
+    offset: 2,
+  });
 
   /** Bound handler for document click (light dismiss) */
   private _boundHandleDocumentClick = this._handleDocumentClick.bind(this);
@@ -94,6 +106,7 @@ export class RCMenuButton extends LitElement {
 
     this.open = true;
     this._dispatchToggle();
+    this._anchorCtrl.update();
 
     this.updateComplete.then(() => {
       const menu = this._menu?.deref();
@@ -135,15 +148,18 @@ export class RCMenuButton extends LitElement {
 
   private _handleTriggerSlotChange(e: Event) {
     const slot = e.currentTarget as HTMLSlotElement;
-    const elements = slot.assignedElements();
-    const trigger = elements[0] as HTMLElement | undefined;
+    const trigger = slot.assignedElements()[0] as HTMLElement | undefined;
 
     if (trigger) {
+      // Cache reference synchronously; defer ARIA mutations so this handler
+      // is instantaneous when slotchange fires inside a framework reactive pass.
       this._trigger = new WeakRef(trigger);
 
-      // Set ARIA attributes on trigger
-      trigger.setAttribute('aria-haspopup', 'menu');
-      trigger.setAttribute('aria-expanded', String(this.open));
+      queueMicrotask(() => {
+        if (!trigger.isConnected) return;
+        trigger.setAttribute('aria-haspopup', 'menu');
+        trigger.setAttribute('aria-expanded', String(this.open));
+      });
     }
   }
 

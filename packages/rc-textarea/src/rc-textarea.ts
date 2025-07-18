@@ -80,6 +80,27 @@ function decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
 
 // ── RCTextarea ─────────────────────────────────────────────────────────────
 
+/**
+ * Enhanced textarea with line decorations, gutter, and plugin API.
+ *
+ * @slot - Accepts a native `<textarea>` element for form wiring and progressive enhancement.
+ * @fires rc-textarea-change - Fired when the editor value changes
+ * @fires rc-textarea-blur - Fired when the editor loses focus
+ * @cssprop [--rc-textarea-border=1px solid ButtonBorder] - Border around the editor
+ * @cssprop [--rc-textarea-border-radius=2px] - Border radius of the editor
+ * @cssprop [--rc-textarea-background=Field] - Background color of the editor
+ * @cssprop [--rc-textarea-color=FieldText] - Text color; falls back through --rc-text
+ * @cssprop [--rc-textarea-font-family=monospace] - Font family
+ * @cssprop [--rc-textarea-font-size=1em] - Font size
+ * @cssprop [--rc-textarea-line-height=1.5] - Line height
+ * @cssprop [--rc-textarea-padding=0.5em] - Padding inside the editor area
+ * @cssprop [--rc-textarea-focus-outline=2px solid AccentColor] - Focus ring outline
+ * @cssprop [--rc-textarea-caret-color=FieldText] - Caret color
+ * @cssprop [--rc-textarea-active-line-bg=transparent] - Active line highlight color
+ * @cssprop [--rc-textarea-gutter-bg=Canvas] - Gutter background color
+ * @cssprop [--rc-textarea-gutter-color=GrayText] - Gutter text color
+ * @cssprop [--rc-textarea-gutter-border=1px solid ButtonBorder] - Gutter right border
+ */
 export class RCTextarea extends LitElement {
   static override styles = styles;
   static override shadowRootOptions = {
@@ -1046,8 +1067,6 @@ export class RCTextarea extends LitElement {
     return this.shadowRoot?.getElementById('editor') as HTMLElement | null;
   }
 }
-
-customElements.define('rc-textarea', RCTextarea);
 
 declare global {
   interface HTMLElementTagNameMap {

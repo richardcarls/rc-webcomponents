@@ -97,7 +97,7 @@ class MouseMoveDirective extends AsyncDirective {
     const el = this._element?.deref();
 
     if (el != null && el instanceof HTMLElement) {
-      el.removeEventListener('click', this._mouseDownHandle);
+      el.removeEventListener('mousedown', this._mouseDownHandle);
     }
   }
 

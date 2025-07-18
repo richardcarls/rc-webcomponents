@@ -1,6 +1,5 @@
 import { LitElement, html } from 'lit';
 import {
-  customElement,
   property,
   state,
   query,
@@ -36,8 +35,16 @@ declare global {
  * @slot secondary - Secondary pane contents (optional)
  *
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/
+ * @cssprop [--rc-splitter-separator-size=6px] - Thickness of the separator bar
+ * @cssprop [--rc-splitter-separator-handle-size=100%] - Length of the drag handle within the separator
+ * @cssprop [--rc-splitter-separator-color=ButtonFace] - Background color; falls back through --rc-surface
+ * @cssprop [--rc-splitter-separator-border-inline-start=1px solid ButtonBorder] - Inline-start border
+ * @cssprop [--rc-splitter-separator-border-inline-end=1px solid ButtonBorder] - Inline-end border
+ * @cssprop [--rc-splitter-separator-border-block-start=1px solid ButtonBorder] - Block-start border (vertical orientation)
+ * @cssprop [--rc-splitter-separator-border-block-end=1px solid ButtonBorder] - Block-end border (vertical orientation)
+ * @csspart separator - The separator bar
+ * @csspart separator-handle - The focusable drag handle
  */
-@customElement('rc-splitter')
 export class RCSplitter extends LitElement {
   static styles = [splitterStyles];
 

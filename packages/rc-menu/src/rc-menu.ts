@@ -1,53 +1,13 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, state, query } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 
 import {
   keyNavigation,
   type KeyboardNavigationAction,
+  RovingTabIndexMixin,
 } from '@rcarls/rc-common';
 
 import menuStyles from './rc-menu.styles';
-
-type FocusableElement =
-  | HTMLAnchorElement
-  | HTMLAreaElement
-  | HTMLButtonElement
-  | HTMLInputElement
-  | HTMLTextAreaElement
-  | HTMLSelectElement;
-
-/** Returns true for focusable Elements */
-function isFocusable(el?: Element | null): el is FocusableElement {
-  if (el == null) {
-    return false;
-  }
-
-  if (el.hasAttribute('disabled')) {
-    return false;
-  }
-
-  if (
-    (el instanceof HTMLAnchorElement || el instanceof HTMLAreaElement) &&
-    el.hasAttribute('href')
-  ) {
-    return true;
-  }
-
-  if (
-    el instanceof HTMLButtonElement ||
-    el instanceof HTMLInputElement ||
-    el instanceof HTMLTextAreaElement ||
-    el instanceof HTMLSelectElement
-  ) {
-    return true;
-  }
-
-  if (el.hasAttribute('tabindex')) {
-    return true;
-  }
-
-  return false;
-}
 
 export interface RCMenuActivateEvent {
   item: HTMLElement;
@@ -66,104 +26,26 @@ declare global {
  * @slot Takes any number of child elements to display in the menu. Only focusable elements are navigable.
  * @fires rc-menu-activate - Fired when a menu item is activated via Enter or Space
  * @fires rc-menu-close - Fired when Escape is pressed
+ * @cssprop [--rc-menu-min-width=10em] - Minimum width of the menu panel
+ * @cssprop [--rc-menu-padding-block=0.25em] - Block (top/bottom) padding inside the panel
+ * @cssprop [--rc-menu-background=Canvas] - Background color; falls back through --rc-surface
+ * @cssprop [--rc-menu-border=1px solid ButtonBorder] - Border; falls back through --rc-border
+ * @cssprop [--rc-menu-shadow=0 2px 8px rgba(0,0,0,.15)] - Box shadow; falls back through --rc-shadow
  * @csspart root - The root container element
  */
-@customElement('rc-menu')
-export class RCMenu extends LitElement {
+export class RCMenu extends RovingTabIndexMixin(LitElement) {
   static styles = [menuStyles];
 
   /** Accessible label for this menu. */
   @property({ type: String })
   label = '';
 
-  /** The last item to have focus. */
-  @state()
-  protected _lastFocused: FocusableElement | undefined;
-
   @query('#root', true)
   protected _$root!: HTMLDivElement;
 
-  /** Array of focusable slotted HTMLElements */
-  get items(): FocusableElement[] {
-    return this._items.map((ref) => ref.deref()).filter((el) => el != null);
-  }
-
-  private _items: WeakRef<FocusableElement>[] = [];
-
-  /** First focusable slotted HTMLElement */
-  get firstItem(): FocusableElement | undefined {
-    return this.items.at(0);
-  }
-
-  /** Last focusable slotted HTMLElement */
-  get lastItem(): FocusableElement | undefined {
-    return this.items.at(-1);
-  }
-
-  /** Next focusable slotted HTMLElement, in tab-order */
-  get nextItem(): FocusableElement | undefined {
-    const index = this._lastFocused ? this.items.indexOf(this._lastFocused) : 0;
-
-    return this.items.at((index + 1) % this.items.length);
-  }
-
-  /** Previous focusable slotted HTMLElement, in tab-order */
-  get previousItem(): FocusableElement | undefined {
-    const index = this._lastFocused ? this.items.indexOf(this._lastFocused) : 0;
-
-    return this.items.at((index - 1) % this.items.length);
-  }
-
-  /** Set focus to a specific slotted HTMLElement */
-  focusItem(item?: FocusableElement | null) {
-    if (item != null) {
-      item.focus();
-    }
-  }
-
-  /** Set focus to a specific slotted HTMLElement by index */
-  focusItemAt(index: number) {
-    this.focusItem(this.items.at(index));
-  }
-
-  /** Focus the first item in the menu */
-  focusFirst() {
-    this.focusItem(this.firstItem);
-  }
-
-  /** Focus the last item in the menu */
-  focusLast() {
-    this.focusItem(this.lastItem);
-  }
-
-  protected _handleItemFocus(e: FocusEvent) {
-    const $self = e.composedPath()[0] as FocusableElement;
-
-    this._lastFocused = $self;
-
-    // Set roving tab index
-    this.items.forEach((el) => el.setAttribute('tabindex', '-1'));
-    $self.setAttribute('tabindex', '0');
-  }
-
-  protected _onSlotChange(e: Event) {
-    // Reset tabindex on old items
-    this._items.forEach((ref) => {
-      const el = ref.deref();
-
-      el?.removeAttribute('tabindex');
-    });
-
-    this._items = (e.currentTarget as HTMLSlotElement)
-      .assignedElements()
-      .filter((el) => isFocusable(el))
-      .map((el) => new WeakRef(el));
-
-    // Set initial tabindex on items
-    this.items.forEach((el, index) => {
-      el.setAttribute('tabindex', index === 0 ? '0' : '-1');
-      el.setAttribute('role', 'menuitem');
-    });
+  protected override _initItems() {
+    super._initItems(); // sets tabindex 0/−1
+    this.items.forEach((el) => el.setAttribute('role', 'menuitem'));
   }
 
   protected _onNavigate(action: KeyboardNavigationAction) {

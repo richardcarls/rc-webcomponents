@@ -2,33 +2,53 @@
   "name": "@rcarls/rc-splitter",
   "private": true,
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-splitter"
+  },
+  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
   "type": "module",
   "files": [
     "dist"
   ],
-  "main": "./dist/rc-splitter.umd.cjs",
   "module": "./dist/rc-splitter.js",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/types/index.d.ts",
         "default": "./dist/rc-splitter.js"
-      },
-      "require": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/rc-splitter.umd.cjs"
+      }
+    },
+    "./define": {
+      "import": {
+        "types": "./dist/types/define.d.ts",
+        "default": "./dist/rc-splitter-define.js"
       }
     }
   },
   "types": "./dist/types/index.d.ts",
+  "sideEffects": [
+    "./dist/rc-splitter-define.js"
+  ],
+  "customElements": "dist/custom-elements.json",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && cem analyze",
+    "cem:analyze": "cem analyze",
     "preview": "vite preview",
-    "test:browser": "vitest"
+    "test:browser": "vitest",
+    "yalc:publish": "yalc publish --push"
+  },
+  "dependencies": {
+    "@rcarls/rc-common": "workspace:^"
   },
   "devDependencies": {
+    "@custom-elements-manifest/analyzer": "0.11.0",
+    "@guanghechen/rollup-plugin-copy": "^6.0.9",
     "@vitest/browser-webdriverio": "^4.0.6",
+    "lit": "^3.0.0",
+    "rollup": "^4.60.2",
     "typescript": "~5.9.3",
     "vite": "^7.1.7",
     "vite-plugin-dts": "^4.5.4",
