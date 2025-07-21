@@ -1068,8 +1068,6 @@ export class RCTextarea extends LitElement {
   }
 }
 
-customElements.define('rc-textarea', RCTextarea);
-
 declare global {
   interface HTMLElementTagNameMap {
     'rc-textarea': RCTextarea;

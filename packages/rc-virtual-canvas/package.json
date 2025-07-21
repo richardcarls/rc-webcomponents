@@ -2,35 +2,50 @@
   "name": "@rcarls/rc-virtual-canvas",
   "private": true,
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-virtual-canvas"
+  },
+  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
   "type": "module",
   "files": [
     "dist"
   ],
-  "main": "./dist/rc-virtual-canvas.umd.cjs",
   "module": "./dist/rc-virtual-canvas.js",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/types/index.d.ts",
         "default": "./dist/rc-virtual-canvas.js"
-      },
-      "require": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/rc-virtual-canvas.umd.cjs"
+      }
+    },
+    "./define": {
+      "import": {
+        "types": "./dist/types/define.d.ts",
+        "default": "./dist/rc-virtual-canvas-define.js"
       }
     }
   },
   "types": "./dist/types/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/rc-virtual-canvas-define.js"
+  ],
+  "customElements": "dist/custom-elements.json",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && cem analyze",
+    "cem:analyze": "cem analyze",
     "preview": "vite preview",
     "test:browser": "vitest"
   },
   "devDependencies": {
+    "@custom-elements-manifest/analyzer": "0.11.0",
+    "@guanghechen/rollup-plugin-copy": "^6.0.9",
+    "@types/node": "^25.6.0",
     "@vitest/browser-webdriverio": "^4.0.6",
     "lit": "^3.0.0",
+    "rollup": "^4.60.2",
     "typescript": "~5.9.3",
     "vite": "^7.1.7",
     "vite-plugin-dts": "^4.5.4",

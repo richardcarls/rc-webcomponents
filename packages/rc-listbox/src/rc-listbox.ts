@@ -1,11 +1,23 @@
 import { LitElement, html, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 
 export interface ListboxOption {
   value: string;
   label: string;
   disabled?: boolean;
 }
+
+/**
+ * Determines how `filterOptions()` matches option labels against the query string.
+ *
+ * - `'prefix'` — label must start with the query (default, matches native `<select>` type-ahead).
+ * - `'contains'` — label must contain the query anywhere.
+ * - `function` — custom predicate; receives lowercased label and query, return `true` to show the option.
+ */
+export type FilterStrategy =
+  | 'prefix'
+  | 'contains'
+  | ((label: string, query: string) => boolean);
 
 export interface RCListboxChangeEvent {
   /** The option value that was activated. `'__create__'` for the create option. */
@@ -39,9 +51,10 @@ let _uid = 0;
  * @slot — No slots; options are rendered programmatically from the `options` property.
  * @fires rc-listbox-change - Fired when an option is activated (clicked or Enter/Space)
  * @csspart option - Individual option elements
+ * @csspart option-checkmark - The checkmark indicator inside each option
+ * @csspart option-label - The label text span inside each option
  * @csspart create-option - The "Create" option when allow-create is active
  */
-@customElement('rc-listbox')
 export class RCListbox extends LitElement {
   /** Renders into the host element — no shadow root — so option IDs resolve in the parent shadow root. */
   override createRenderRoot() {
@@ -51,6 +64,16 @@ export class RCListbox extends LitElement {
   /** Allow multiple selection. Reflected as `aria-multiselectable` on the host. */
   @property({ type: Boolean, reflect: true })
   multiple = false;
+
+  /**
+   * How option labels are matched against the active filter text.
+   * Defaults to `'contains'` (substring). Set to `'prefix'` for starts-with
+   * matching, or pass a custom predicate for full control.
+   * Function values are JS-only; string values may be set via the
+   * `filter-strategy` attribute.
+   */
+  @property({ attribute: 'filter-strategy', reflect: false })
+  filterStrategy: FilterStrategy = 'contains';
 
   @state() private _options: ListboxOption[] = [];
   @state() private _selectedValues: Set<string> = new Set();
@@ -199,7 +222,7 @@ export class RCListbox extends LitElement {
               e.preventDefault();
               this.toggleOption(opt.value);
             }}
-          ><span part="option-checkmark" aria-hidden="true">&#x2713;</span>${opt.label}</div>
+          ><span part="option-checkmark" aria-hidden="true">&#x2713;</span><span part="option-label">${opt.label}</span></div>
         `,
       )}
       ${this._createLabel !== null
@@ -220,7 +243,7 @@ export class RCListbox extends LitElement {
                   }),
                 );
               }}
-            ><span part="option-checkmark" aria-hidden="true">&#x2713;</span>Create "${this._createLabel}"</div>
+            ><span part="option-checkmark" aria-hidden="true">&#x2713;</span><span part="option-label">Create "${this._createLabel}"</span></div>
           `
         : nothing}
     `;
@@ -232,7 +255,14 @@ export class RCListbox extends LitElement {
 
   private _isVisible(opt: ListboxOption): boolean {
     if (!this._filterText) return true;
-    return opt.label.toLowerCase().startsWith(this._filterText.toLowerCase());
+
+    const label = opt.label.toLowerCase();
+    const query = this._filterText.toLowerCase();
+
+    if (typeof this.filterStrategy === 'function') return this.filterStrategy(label, query);
+    if (this.filterStrategy === 'contains') return label.includes(query);
+
+    return label.startsWith(query); // 'prefix' default
   }
 }
 

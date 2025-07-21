@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 
 import {
   keyNavigation,
@@ -31,7 +31,6 @@ declare global {
  * @cssprop --rc-menubar-padding-inline - Horizontal padding
  * @cssprop --rc-menubar-padding-block - Vertical padding
  */
-@customElement('rc-menubar')
 export class RCMenubar extends LitElement {
   static styles = [menubarStyles];
 
@@ -137,34 +136,34 @@ export class RCMenubar extends LitElement {
     const slot = e.currentTarget as HTMLSlotElement;
     const elements = slot.assignedElements();
 
-    // Reset tabindex on old items
-    this._menuButtons.forEach((ref) => {
-      const mb = ref.deref();
-      if (mb) {
-        const trigger = this._getTrigger(mb);
-        trigger?.removeAttribute('tabindex');
-      }
-    });
+    const prevButtons = this._menuButtons;
 
-    // Get menu buttons from slotted elements
+    // Cache element references synchronously — defer all DOM mutations.
+    // slotchange fires synchronously inside a framework reactive update pass
+    // on second+ mount (shadow DOM already exists), so the handler must be
+    // instantaneous to avoid interacting with the reactive system.
     this._menuButtons = elements
       .filter((el): el is RCMenuButton => el.tagName === 'RC-MENU-BUTTON')
       .map((el) => new WeakRef(el));
 
-    // Initialize tabindex for triggers
-    const items = this.items;
-    items.forEach((trigger, index) => {
-      if (index === 0) {
-        trigger.setAttribute('tabindex', '0');
-      } else {
-        trigger.setAttribute('tabindex', '-1');
+    queueMicrotask(() => {
+      if (!this.isConnected) return;
+
+      prevButtons.forEach((ref) => {
+        const trigger = this._getTrigger(ref.deref()!);
+        trigger?.removeAttribute('tabindex');
+      });
+
+      const items = this.items;
+
+      items.forEach((trigger, index) => {
+        trigger.setAttribute('tabindex', index === 0 ? '0' : '-1');
+      });
+
+      if (items.length > 0 && !this._lastFocused) {
+        this._lastFocused = items[0];
       }
     });
-
-    // Set initial focus reference
-    if (items.length > 0 && !this._lastFocused) {
-      this._lastFocused = items[0];
-    }
   }
 
   private _handleMenuButtonToggle(e: CustomEvent<RCMenuButtonToggleEvent>) {

@@ -21,10 +21,10 @@ export const selectStyles = css`
     min-width: 8em;
     cursor: default;
     user-select: none;
-    border: 1px solid ButtonBorder;
-    border-radius: 0.125em;
-    background: Field;
-    color: FieldText;
+    border: 1px solid var(--rc-border-color, ButtonBorder);
+    border-radius: var(--rc-radius-sm, 0.125em);
+    background: var(--rc-field, Field);
+    color: var(--rc-field-text, FieldText);
 
     /* Keyboard focus indicator */
     outline: none;
@@ -51,17 +51,17 @@ export const selectStyles = css`
     align-items: center;
     gap: 0.2em;
     padding: 0.1em 0.3em;
-    border: 1px solid ButtonBorder;
-    border-radius: 0.25em;
-    background: ButtonFace;
-    color: ButtonText;
+    border: 1px solid var(--rc-border-color, ButtonBorder);
+    border-radius: var(--rc-radius-md, 0.25em);
+    background: var(--rc-button-bg, ButtonFace);
+    color: var(--rc-button-text, ButtonText);
     font: inherit;
     font-size: 0.875em;
     cursor: pointer;
 
     &:hover {
-      background: Highlight;
-      color: HighlightText;
+      background: var(--rc-highlight, Highlight);
+      color: var(--rc-highlight-text, HighlightText);
     }
 
     &:focus-visible {
@@ -88,10 +88,10 @@ export const selectStyles = css`
   rc-listbox {
     max-height: var(--rc-select-max-height, 20em);
     overflow-y: auto;
-    background: Canvas;
-    border: 1px solid ButtonBorder;
-    box-shadow: var(--rc-select-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
-    color: ButtonText;
+    background: var(--rc-surface, Canvas);
+    border: 1px solid var(--rc-border-color, ButtonBorder);
+    box-shadow: var(--rc-select-shadow, var(--rc-shadow, 0 2px 8px rgba(0,0,0,.15)));
+    color: var(--rc-button-text, ButtonText);
     padding-block: 0.25em;
 
     &:not(:popover-open) {
@@ -107,9 +107,19 @@ export const selectStyles = css`
     padding: 0.3em 0.75em;
     cursor: default;
 
+    /* display: flex overrides [hidden]'s browser-default display:none — restore it explicitly */
+    &[hidden] { display: none; }
+
     &:not([hidden]):not([aria-disabled='true']):hover {
-      background: Highlight;
-      color: HighlightText;
+      background: var(--rc-highlight, Highlight);
+      color: var(--rc-highlight-text, HighlightText);
+    }
+
+    &[data-active]:not([aria-disabled='true']) {
+      background: var(--rc-highlight, Highlight);
+      color: var(--rc-highlight-text, HighlightText);
+      outline: 2px solid var(--rc-accent, AccentColor);
+      outline-offset: -2px;
     }
 
     &[aria-disabled='true'] {
@@ -133,7 +143,7 @@ export const selectStyles = css`
 
   rc-listbox [part~='create-option'] {
     font-style: italic;
-    border-top: 1px solid ButtonBorder;
+    border-top: 1px solid var(--rc-border-color, ButtonBorder);
     margin-top: 0.25em;
     padding-top: 0.3em;
   }

@@ -3,8 +3,7 @@ import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 import { userEvent } from 'vitest/browser';
 
-import '@rcarls/rc-menu';
-import './rc-menu-button';
+import './define';
 
 test('RCMenuButton renders with correct ARIA attributes', async () => {
   const screen = render(

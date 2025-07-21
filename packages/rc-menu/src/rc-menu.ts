@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 
 import {
   keyNavigation,
@@ -33,7 +33,6 @@ declare global {
  * @cssprop [--rc-menu-shadow=0 2px 8px rgba(0,0,0,.15)] - Box shadow; falls back through --rc-shadow
  * @csspart root - The root container element
  */
-@customElement('rc-menu')
 export class RCMenu extends RovingTabIndexMixin(LitElement) {
   static styles = [menuStyles];
 

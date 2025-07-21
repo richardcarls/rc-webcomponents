@@ -1,0 +1,36 @@
+/**
+ * themes/base.css
+ *
+ * Defines the rc-webcomponents semantic token set. All tokens fall back to
+ * CSS System Colors, so this file is optional — components work without it.
+ * Import this file (or override these tokens in :root) to integrate with
+ * your design system.
+ */
+:root {
+  /* Backgrounds */
+  --rc-surface:        Canvas;
+  --rc-field:          Field;
+  --rc-button-bg:      ButtonFace;
+
+  /* Text */
+  --rc-field-text:      FieldText;
+  --rc-button-text:     ButtonText;
+  --rc-highlight-text:  HighlightText;
+  --rc-text-disabled:   GrayText;
+
+  /* Interactive states */
+  --rc-highlight:      Highlight;
+  --rc-accent:         AccentColor;
+
+  /* Borders & decoration */
+  --rc-border-color:   ButtonBorder;
+  --rc-shadow:         0 2px 8px rgba(0, 0, 0, .15);
+
+  /* Shape */
+  --rc-radius-sm:      0.125em;
+  --rc-radius-md:      0.25em;
+
+  /* rc-menu / rc-splitter compat — these components already use --rc-border
+     as an intermediate token; this ensures it resolves to the same source. */
+  --rc-border:         1px solid ButtonBorder;
+}

@@ -2,7 +2,7 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './rc-dialog.js';
+import './define';
 
 // Helper: render an rc-dialog wrapping a <dialog> with a label
 function renderDialog(extraAttrs = '') {

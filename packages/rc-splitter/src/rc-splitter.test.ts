@@ -2,7 +2,7 @@ import { test, expect, describe, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './rc-splitter';
+import './define';
 import type { RCSplitter } from './rc-splitter';
 import { userEvent } from 'vitest/browser';
 

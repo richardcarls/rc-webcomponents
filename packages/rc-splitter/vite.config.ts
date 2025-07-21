@@ -1,21 +1,34 @@
-import { resolve } from 'path';
+import { resolve } from "path";
 
-import { defineConfig } from 'vite';
-import dts from 'vite-plugin-dts';
+import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
+import { copy } from "@guanghechen/rollup-plugin-copy";
 
 export default defineConfig({
-  plugins: [dts({ outDir: 'dist/types' })],
-  publicDir: resolve(__dirname, '../../demo-shared'),
+  plugins: [
+    dts({ outDir: "dist/types" }),
+    copy({
+      targets: [
+        {
+          src: "../../demo-shared/**/*",
+          dest: "public",
+        },
+      ],
+      copyOnce: true,
+    }),
+  ],
+  publicDir: resolve(__dirname, "public"),
   build: {
     sourcemap: true,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'rc-splitter',
-      fileName: 'rc-splitter',
+      entry: {
+        "rc-splitter": resolve(__dirname, "src/index.ts"),
+        "rc-splitter-define": resolve(__dirname, "src/define.ts"),
+      },
+      formats: ["es"],
     },
     rollupOptions: {
-      // Exclude lit packages from bundling
-      external: [/^@?lit(-\w+)?($|\/.+)/],
+      external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
 });

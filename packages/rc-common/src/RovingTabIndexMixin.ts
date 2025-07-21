@@ -120,14 +120,21 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
     }
 
     protected _onSlotChange(e: Event) {
-      this._items.forEach((ref) => ref.deref()?.removeAttribute('tabindex'));
+      const prevItems = this._items;
 
       this._items = (e.currentTarget as HTMLSlotElement)
         .assignedElements()
         .filter(isFocusable)
         .map((el) => new WeakRef(el));
 
-      this._initItems();
+      // Defer DOM mutations so this handler is instantaneous when slotchange
+      // fires synchronously inside a framework reactive update pass (e.g.
+      // SolidJS runUpdates on second+ mount, when the shadow DOM already exists).
+      queueMicrotask(() => {
+        if (!this.isConnected) return;
+        prevItems.forEach((ref) => ref.deref()?.removeAttribute('tabindex'));
+        this._initItems();
+      });
     }
 
     /**

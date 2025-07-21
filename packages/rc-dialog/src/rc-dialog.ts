@@ -1,5 +1,5 @@
 import { LitElement, nothing, type PropertyValues } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { DragController, ResizeController } from '@rcarls/rc-common';
 
 declare global {
@@ -15,6 +15,8 @@ declare global {
  *
  * @slot - Place a `<dialog>` element with your content here.
  *
+ * @fires rc-dialog-open - Fired when the dialog opens via `showModal()` or `show()`.
+ *
  * @fires rc-dialog-request-close - Fired before the dialog closes (Escape key,
  *   backdrop click when `light-dismiss` is set, or a call to `requestClose()`).
  *   **Cancelable** — call `preventDefault()` to block the close (e.g. unsaved-
@@ -28,7 +30,6 @@ declare global {
  *
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/
  */
-@customElement('rc-dialog')
 export class RCDialog extends LitElement {
   override createRenderRoot() { return this; }
 
@@ -88,17 +89,36 @@ export class RCDialog extends LitElement {
 
   // ---- Native <dialog> delegation ----------------------------------------
 
-  /** Whether the inner `<dialog>` is currently open. */
+  private _pendingOpen: boolean | undefined = undefined;
+
+  /** Whether the inner `<dialog>` is currently open. Setting this is equivalent to calling `showModal()` / `close()`. */
+  @property({ type: Boolean, attribute: 'open', reflect: false })
   get open(): boolean { return this._dlg()?.open ?? false; }
+  set open(value: boolean) {
+    const dlg = this._dlg();
+    if (dlg) {
+      if (value) this.showModal();
+      else this.close();
+    } else {
+      this._pendingOpen = value; // dialog child not rendered yet — apply in firstUpdated
+      this.requestUpdate();
+    }
+  }
 
   /** The return value set when the dialog was closed. */
   get returnValue(): string { return this._dlg()?.returnValue ?? ''; }
 
-  /** Opens the inner `<dialog>` as a modal. */
-  showModal(): void { this._dlg()?.showModal(); }
+  /** Opens the inner `<dialog>` as a modal and fires `rc-dialog-open`. */
+  showModal(): void {
+    this._dlg()?.showModal();
+    this.dispatchEvent(new CustomEvent('rc-dialog-open', { bubbles: true, composed: true }));
+  }
 
-  /** Opens the inner `<dialog>` as a non-modal. */
-  show(): void { this._dlg()?.show(); }
+  /** Opens the inner `<dialog>` as a non-modal and fires `rc-dialog-open`. */
+  show(): void {
+    this._dlg()?.show();
+    this.dispatchEvent(new CustomEvent('rc-dialog-open', { bubbles: true, composed: true }));
+  }
 
   /** Closes the inner `<dialog>`, optionally setting a return value. */
   close(returnValue?: string): void { this._dlg()?.close(returnValue); }
@@ -163,13 +183,21 @@ export class RCDialog extends LitElement {
       }
     }
 
+    if (this._pendingOpen !== undefined) {
+      this._pendingOpen ? this.showModal() : this.close();
+      this._pendingOpen = undefined;
+    }
+
     dlg.addEventListener('close', this._onClose);
     dlg.addEventListener('cancel', this._onCancel);
-    if (this.lightDismiss) dlg.addEventListener('click', this._onBackdropClick);
 
-    // Sync closedBy attribute immediately (updated() runs after firstUpdated
-    // but the attribute should be set before the dialog is first opened).
-    if (this.closedBy) dlg.setAttribute('closedby', this.closedBy);
+    if (this.lightDismiss && 'closedBy' in HTMLDialogElement.prototype) {
+      dlg.setAttribute('closedby', 'any');
+    } else if (this.lightDismiss) {
+      dlg.addEventListener('click', this._onBackdropClick);
+    } else {
+      if (this.closedBy) dlg.setAttribute('closedby', this.closedBy);
+    }
 
     if (this.movable || this.moveHandle) {
       const handle = this.moveHandle
@@ -204,8 +232,17 @@ export class RCDialog extends LitElement {
     }
 
     if (changed.has('lightDismiss')) {
-      if (this.lightDismiss) dlg.addEventListener('click', this._onBackdropClick);
-      else dlg.removeEventListener('click', this._onBackdropClick);
+      if (this.lightDismiss && 'closedBy' in HTMLDialogElement.prototype) {
+        // native support available — delegate to closedby="any" instead of JS handler
+        dlg.setAttribute('closedby', 'any');
+        dlg.removeEventListener('click', this._onBackdropClick);
+      } else if (this.lightDismiss) {
+        dlg.addEventListener('click', this._onBackdropClick);
+      } else {
+        dlg.removeEventListener('click', this._onBackdropClick);
+        if (this.closedBy) dlg.setAttribute('closedby', this.closedBy);
+        else dlg.removeAttribute('closedby');
+      }
     }
   }
 

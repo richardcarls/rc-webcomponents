@@ -1,0 +1,64 @@
+{
+  "name": "@rcarls/rc-webcomponents",
+  "private": true,
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-webcomponents"
+  },
+  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "type": "module",
+  "files": [
+    "dist",
+    "src/solid.d.ts"
+  ],
+  "module": "./dist/rc-webcomponents.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/rc-webcomponents.js"
+      }
+    },
+    "./define": {
+      "import": {
+        "types": "./dist/types/define.d.ts",
+        "default": "./dist/rc-webcomponents-define.js"
+      }
+    },
+    "./solid": {
+      "types": "./src/solid.d.ts"
+    },
+    "./themes/base.css": "../../themes/base.css"
+  },
+  "types": "./dist/types/index.d.ts",
+  "sideEffects": [
+    "./dist/rc-webcomponents-define.js"
+  ],
+  "scripts": {
+    "build": "tsc && vite build",
+    "yalc:publish": "yalc publish --push"
+  },
+  "dependencies": {
+    "@rcarls/rc-combobox": "workspace:^",
+    "@rcarls/rc-dialog": "workspace:^",
+    "@rcarls/rc-listbox": "workspace:^",
+    "@rcarls/rc-menu": "workspace:^",
+    "@rcarls/rc-menu-button": "workspace:^",
+    "@rcarls/rc-menubar": "workspace:^",
+    "@rcarls/rc-select": "workspace:^",
+    "@rcarls/rc-splitter": "workspace:^",
+    "@rcarls/rc-textarea": "workspace:^",
+    "@rcarls/rc-toolbar": "workspace:^"
+  },
+  "peerDependencies": {
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "lit": "^3.0.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4"
+  }
+}

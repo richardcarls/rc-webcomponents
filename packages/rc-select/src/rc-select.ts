@@ -1,11 +1,10 @@
 import { LitElement, html, nothing } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import {
   ActiveDescendantController,
   AnchorController,
 } from '@rcarls/rc-common';
 import type { RCListbox, ListboxOption } from '@rcarls/rc-listbox';
-import '@rcarls/rc-listbox';
 import { selectStyles } from './rc-select.styles.js';
 
 export interface RCSelectChangeEvent {
@@ -46,7 +45,6 @@ declare global {
  *
  * @cssprop [--rc-select-max-height=20em] - Maximum popup height.
  */
-@customElement('rc-select')
 export class RCSelect extends LitElement {
   static override styles = selectStyles;
 
@@ -120,6 +118,18 @@ export class RCSelect extends LitElement {
     );
   }
 
+  /**
+   * Programmatically replace the current selection without triggering
+   * MutationObserver — use from reactive framework wrappers (SolidJS createEffect,
+   * React useEffect) instead of setting `option.selected` directly.
+   */
+  setSelected(values: string[]): void {
+    this._selectedValues = new Set(values);
+    this._$listbox.setSelectedValues(values);
+    this._syncNativeSelect();
+    this.requestUpdate();
+  }
+
   // ── Document-level listeners ─────────────────────────────────────────────────
 
   private _onDocClick = (e: MouseEvent) => {
@@ -146,27 +156,31 @@ export class RCSelect extends LitElement {
           (el): el is HTMLSelectElement => el instanceof HTMLSelectElement,
         ) ?? null;
 
+    // Disconnect synchronously so the old observer stops immediately.
     this._mutationObserver?.disconnect();
     this._mutationObserver = null;
+    this._selectRef = sel ? new WeakRef(sel) : null;
 
-    if (!sel) {
-      this._selectRef = null;
-      return;
-    }
+    if (!sel) return;
 
-    this._selectRef = new WeakRef(sel);
-    this.multiple = sel.multiple;
-    this.disabled = sel.disabled;
-    this._syncOptionsFromSelect(sel);
-
-    this._mutationObserver = new MutationObserver(() => {
-      const s = this._selectRef?.deref();
-      if (s) this._syncOptionsFromSelect(s);
-    });
-    this._mutationObserver.observe(sel, {
-      childList: true,
-      subtree: true,
-      attributes: true,
+    // Defer all DOM reads/mutations so this handler is instantaneous when
+    // slotchange fires synchronously inside a framework reactive update pass
+    // (e.g. SolidJS runUpdates on second+ mount, when shadow DOM already exists).
+    queueMicrotask(() => {
+      if (!sel.isConnected) return;
+      this.multiple = sel.multiple;
+      this.disabled = sel.disabled;
+      this._syncOptionsFromSelect(sel);
+      this._mutationObserver = new MutationObserver(() => {
+        const s = this._selectRef?.deref();
+        if (s) this._syncOptionsFromSelect(s);
+      });
+      this._mutationObserver.observe(sel, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+      });
+      this._syncAccessibleName(sel);
     });
   }
 
@@ -178,13 +192,29 @@ export class RCSelect extends LitElement {
     }
     this._$listbox.options = opts;
 
-    // Sync current selection from native select
+    // Sync from the HTML selected *attribute* (defaultSelected), not the IDL property,
+    // so browser auto-selection of the first option in a briefly-single-mode <select>
+    // does not bleed into the component state.
     const selected: string[] = [];
     for (const opt of sel.options) {
-      if (opt.selected && opt.value) selected.push(opt.value);
+      if (opt.defaultSelected && opt.value) selected.push(opt.value);
     }
     this._selectedValues = new Set(selected);
     this._$listbox.setSelectedValues(selected);
+    this._syncAccessibleName(sel);
+  }
+
+  private _syncAccessibleName(sel: HTMLSelectElement): void {
+    if (!this._$trigger) return;
+    if (this._$trigger.hasAttribute('aria-label')) return; // don't clobber explicit
+
+    const name =
+      sel.getAttribute('aria-label') ??
+      sel.labels?.[0]?.textContent?.trim() ??
+      null;
+
+    if (name) this._$trigger.setAttribute('aria-label', name);
+    else this._$trigger.removeAttribute('aria-label');
   }
 
   // ── Selection ────────────────────────────────────────────────────────────────

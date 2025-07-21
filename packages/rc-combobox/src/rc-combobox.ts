@@ -1,7 +1,7 @@
 import { html, nothing } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { RCSelect } from '@rcarls/rc-select';
-import '@rcarls/rc-listbox';
+import type { FilterStrategy } from '@rcarls/rc-listbox';
 import { comboboxStyles } from './rc-combobox.styles.js';
 
 export interface RCComboboxCreateEvent {
@@ -40,16 +40,28 @@ declare global {
  * @cssprop [--rc-combobox-max-height=20em] - Maximum popup height.
  * @attr [allowcreate] - When present, shows a "Create 'X'" option for unmatched input.
  */
-@customElement('rc-combobox')
 export class RCCombobox extends RCSelect {
   static override styles = comboboxStyles;
 
   /** When set, shows a "Create '{text}'" option for text that has no exact match. */
   @property({ type: Boolean, attribute: 'allowcreate' }) allowCreate = false;
 
+  /**
+   * How option labels are matched against typed input. Forwarded to the internal `rc-listbox`.
+   * Defaults to `'contains'` (substring). Set to `'prefix'` for starts-with matching,
+   * or pass a custom `(label, query) => boolean` predicate.
+   * Function values are JS-only; string values may be set via the `filter-strategy` attribute.
+   */
+  @property({ attribute: 'filter-strategy', reflect: false }) filterStrategy: FilterStrategy = 'contains';
+
   @query('#trigger') protected override _$trigger!: HTMLInputElement;
 
   @state() private _filterText = '';
+
+  // Guard against _handleInputFocus re-opening the popup immediately after close.
+  // hidePopover() can trigger a browser-native focus-return to the input in Firefox,
+  // so we use setTimeout(0) to defer the reset past any such focus events.
+  private _closingPopup = false;
 
   // ── Override popup lifecycle ──────────────────────────────────────────────────
 
@@ -58,13 +70,14 @@ export class RCCombobox extends RCSelect {
     this._$listbox?.filterOptions(this._filterText);
   }
 
-  override closePopup(returnFocus = true) {
+  override closePopup(_returnFocus = true) {
     this._filterText = '';
     this._$listbox?.clearFilter();
     this._$listbox?.setCreateOption(null);
-    super.closePopup(returnFocus);
-    // super.closePopup calls _$trigger.focus() too, but we need input focus
-    if (returnFocus && this._$trigger) this._$trigger.focus();
+    this._closingPopup = true;
+    super.closePopup(false);
+    // Reset after any native focus-return from hidePopover() fires
+    setTimeout(() => { this._closingPopup = false; }, 0);
   }
 
   // ── Input events ──────────────────────────────────────────────────────────────
@@ -82,7 +95,7 @@ export class RCCombobox extends RCSelect {
   }
 
   private _handleInputFocus() {
-    if (!this.open) this.openPopup();
+    if (!this.open && !this._closingPopup) this.openPopup();
   }
 
   private _handleToggleClick(e: MouseEvent) {
@@ -189,6 +202,12 @@ export class RCCombobox extends RCSelect {
         e.preventDefault();
         if (this.open) this._adc.navigate(-1);
         break;
+      case 'Home':
+        if (this.open) { e.preventDefault(); this._adc.navigateToFirst(); }
+        break;
+      case 'End':
+        if (this.open) { e.preventDefault(); this._adc.navigateToLast(); }
+        break;
       case 'Enter': {
         e.preventDefault();
         const active = this._adc.activeItem;
@@ -288,6 +307,7 @@ export class RCCombobox extends RCSelect {
         part="listbox"
         popover="manual"
         ?multiple=${this.multiple}
+        .filterStrategy=${this.filterStrategy}
         @rc-listbox-change=${this._handleListboxChange}
       ></rc-listbox>
 

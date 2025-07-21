@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import virtualCanvasStyles from './rc-virtual-canvas.styles';
@@ -21,7 +21,6 @@ declare global {
  *
  * @slot - The HTMLCanvasElement
  */
-@customElement('rc-virtual-canvas')
 export class RCVirtualCanvas extends LitElement {
   static styles = [virtualCanvasStyles];
 
