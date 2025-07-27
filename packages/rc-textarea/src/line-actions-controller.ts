@@ -81,10 +81,13 @@ const POPOVER_STYLES = `
     align-items: center;
     gap: var(--rc-line-actions-gap, 4px);
     padding: 4px 8px;
-    background: var(--rc-line-action-bg, #fff);
-    border: var(--rc-line-action-border, 1px solid #ccc);
+    background: var(--rc-line-action-bg, Canvas);
+    border: var(--rc-line-action-border, 1px solid ButtonBorder);
     border-radius: var(--rc-line-action-border-radius, 4px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: var(
+      --rc-line-action-shadow,
+      0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)
+    );
   }
   .rc-line-actions-popover .rc-line-action-btn {
     display: inline-flex;
@@ -94,8 +97,8 @@ const POPOVER_STYLES = `
     padding: var(--rc-line-action-padding, 4px 6px);
     border: var(--rc-line-action-border, none);
     border-radius: var(--rc-line-action-border-radius, 3px);
-    background: transparent;
-    color: var(--rc-line-action-color, inherit);
+    background: var(--rc-line-action-bg, transparent);
+    color: var(--rc-line-action-color, ButtonText);
     font-size: var(--rc-line-action-font-size, 0.85em);
     cursor: pointer;
     user-select: none;
@@ -103,7 +106,7 @@ const POPOVER_STYLES = `
     white-space: nowrap;
   }
   .rc-line-actions-popover .rc-line-action-btn:hover {
-    background: var(--rc-line-action-hover-bg, rgba(0, 0, 0, 0.08));
+    background: var(--rc-line-action-hover-bg, ButtonFace);
   }
 `;
 

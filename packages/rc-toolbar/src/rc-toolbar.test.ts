@@ -4,6 +4,7 @@ import { html } from 'lit';
 
 import './define';
 import { userEvent } from 'vitest/browser';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 // TODO: see https://github.com/jakelazaroff/roving-tabindex/blob/main/roving-tabindex.js
 
@@ -117,4 +118,18 @@ test('RCToolbar is an accessible toolbar', async () => {
   await expect.element(item1).toHaveFocus();
 
   // TODO: Test with bidi
+});
+
+test('RCToolbar has no automated accessibility violations', async () => {
+  const screen = render(html`
+    <rc-toolbar data-testid="host" label="Formatting">
+      <button>Bold</button>
+      <button>Italic</button>
+      <button>Underline</button>
+    </rc-toolbar>
+  `);
+
+  const host = await screen.getByTestId('host').element();
+
+  await expectNoA11yViolations(host);
 });

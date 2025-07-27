@@ -4,6 +4,7 @@ import { html } from 'lit';
 import { userEvent } from 'vitest/browser';
 
 import './define';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 test('RCMenuButton renders with correct ARIA attributes', async () => {
   const screen = render(
@@ -28,6 +29,24 @@ test('RCMenuButton renders with correct ARIA attributes', async () => {
 
   // Menu element should exist
   await expect.element(menu).toBeInTheDocument();
+});
+
+test('RCMenuButton has no automated accessibility violations', async () => {
+  const screen = render(
+    html`
+      <rc-menu-button data-testid="host">
+        <button slot="trigger">Options</button>
+        <rc-menu label="Options">
+          <button>Cut</button>
+          <button>Copy</button>
+        </rc-menu>
+      </rc-menu-button>
+    `,
+  );
+
+  const host = await screen.getByTestId('host').element();
+
+  await expectNoA11yViolations(host);
 });
 
 test('RCMenuButton opens on Enter key', async () => {

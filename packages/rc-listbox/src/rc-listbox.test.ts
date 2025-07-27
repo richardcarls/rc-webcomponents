@@ -4,6 +4,7 @@ import { html } from 'lit';
 
 import './define';
 import type { RCListbox } from './rc-listbox';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 const OPTIONS = [
   { value: 'apple', label: 'Apple' },
@@ -27,6 +28,15 @@ test('renders options from options property', async () => {
 test('has role=listbox on host element', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
   await expect.element(screen.getByRole('listbox')).toBeInTheDocument();
+});
+
+test('has no automated accessibility violations', async () => {
+  const screen = render(html`<rc-listbox aria-label="Fruit"></rc-listbox>`);
+  const el = (await screen.getByRole('listbox').element()) as RCListbox;
+  el.options = OPTIONS;
+  await el.updateComplete;
+
+  await expectNoA11yViolations(el);
 });
 
 test('aria-selected reflects setSelectedValues', async () => {

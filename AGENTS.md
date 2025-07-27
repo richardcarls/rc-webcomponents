@@ -8,11 +8,12 @@ WAI-ARIA compliant web components library built with Lit 3.x. Monorepo using Yar
 
 ## Commands
 
-```bash
+```powershell
 yarn.cmd workspace @rcarls/<package> run dev           # Dev server with hot reload
 yarn.cmd workspace @rcarls/<package> run build         # TypeScript check + Vite build
 yarn.cmd workspace @rcarls/<package> run test:browser  # Run browser tests
-yarn.cmd workspaces run build                          # Build all packages
+yarn.cmd build                                         # Build all packages using the dependency graph
+yarn.cmd test                                          # Test all packages
 ```
 
 ## Browser test notes
@@ -42,11 +43,15 @@ Clicking an inner child and letting the event bubble to a directive-decorated an
 Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output). **Rebuild a package before running tests in packages that depend on it.**
 
 - **rc-common**: Shared directives (`KeyboardNavigationDirective`, `MouseMoveDirective`)
+- **rc-listbox**: Light-DOM ARIA listbox → rc-common
 - **rc-menu**: Menu popup → rc-common
+- **rc-select**: Select-only combobox backed by native `<select>` → rc-common, rc-listbox
+- **rc-combobox**: Editable combobox with filtering and allow-create → rc-common, rc-listbox, rc-select
 - **rc-menu-button**: Menu button → rc-common, rc-menu
 - **rc-menubar**: Menubar → rc-common, rc-menu-button
 - **rc-toolbar**: Toolbar → rc-common
 - **rc-splitter**: Window splitter → rc-common
 - **rc-textarea**: Enhanced textarea (standalone)
-- **rc-textarea**: Enhanced textarea (standalone)
 - **rc-virtual-canvas**: Virtual canvas (standalone)
+- **rc-dialog**: Draggable/resizable `<dialog>` wrapper → rc-common
+- **rc-webcomponents**: Aggregate package → all component packages

@@ -1,30 +1,28 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html } from "lit";
 import {
   property,
   state,
   query,
   queryAssignedElements,
-} from 'lit/decorators.js';
+} from "lit/decorators.js";
 
 import {
   keyNavigation,
   type KeyboardNavigationAction,
   mouseMove,
-} from '@rcarls/rc-common';
+} from "@rcarls/rc-common";
 
-import splitterStyles from './rc-splitter.styles';
+import splitterStyles from "./rc-splitter.styles";
 
-type SplitterOrientation = 'horizontal' | 'vertical';
+type SplitterOrientation = "horizontal" | "vertical";
 
-type SplitterMode = 'length' | 'percent';
+type SplitterMode = "length" | "percent";
 
 declare global {
   interface HTMLElementTagNameMap {
-    'rc-splitter': RCSplitter;
+    "rc-splitter": RCSplitter;
   }
 }
-
-// TODO: CSS Parts
 
 /**
  * An accessible splitter layout component.
@@ -50,22 +48,22 @@ export class RCSplitter extends LitElement {
 
   /** Accessible label for this splitter. Default label is 'Splitter'. */
   @property({ type: String })
-  label = 'Splitter';
+  label = "Splitter";
 
   /** Splitter orientation, for keyboard navigation and initial sizing. */
   @property({ type: String, reflect: true })
-  orientation: SplitterOrientation = 'horizontal';
+  orientation: SplitterOrientation = "horizontal";
 
   /** Determines length units for min, max and step attributes, one of either `length` (default) or `percent` */
   @property({ type: String })
-  mode: SplitterMode = 'length';
+  mode: SplitterMode = "length";
 
   /** The step size for resizing, in either pixels or percentage points depending on `mode`. */
   @property({ type: Number })
   step: number = 1;
 
   /** Initial value from attribute, used to set starting position. */
-  @property({ type: Number, attribute: 'value' })
+  @property({ type: Number, attribute: "value" })
   initialValue: number | null = null;
 
   /** The current splitter value, corresponding to the separator position, in either pixels or percentage points depending on `mode`. */
@@ -81,7 +79,7 @@ export class RCSplitter extends LitElement {
     // Dispatch change event if value actually changed
     if (this._value !== oldValue) {
       this.dispatchEvent(
-        new CustomEvent('rc-splitter-change', {
+        new CustomEvent("rc-splitter-change", {
           bubbles: true,
           composed: true,
           detail: { value: this._value, valueText: this.valueText },
@@ -100,7 +98,7 @@ export class RCSplitter extends LitElement {
 
   /** A human-readable string representation of the value. */
   get valueText() {
-    return `${this.value}${this.mode === 'length' ? 'px' : '%'}`;
+    return `${this.value}${this.mode === "length" ? "px" : "%"}`;
   }
 
   @state()
@@ -113,13 +111,13 @@ export class RCSplitter extends LitElement {
   @state()
   protected _lastValue: number = 0;
 
-  @query('#primary', true)
+  @query("#primary", true)
   protected _$primary!: HTMLDivElement;
 
   @queryAssignedElements()
   protected _$primaryElements!: Array<HTMLElement>;
 
-  @queryAssignedElements({ slot: 'secondary' })
+  @queryAssignedElements({ slot: "secondary" })
   protected _$secondaryElements!: Array<HTMLElement>;
 
   protected _initialMax: number = 0;
@@ -132,33 +130,33 @@ export class RCSplitter extends LitElement {
     }
 
     switch (action) {
-      case 'next':
+      case "next":
         this.value += this.step;
         break;
-      case 'prev':
+      case "prev":
         this.value -= this.step;
         break;
-      case 'collapse':
-      case 'start':
+      case "collapse":
+      case "start":
         this.value = 0;
         break;
-      case 'end':
+      case "end":
         this.value = this._maxValue;
         break;
-      case 'restore':
+      case "restore":
         this.value = this._lastValue;
         break;
     }
   }
 
-  protected _onMouseResize(e: MouseEvent) {
+  protected _onPointerResize(e: MouseEvent) {
     if (this.fixed) {
       return;
     }
 
     const clientRect = this.getBoundingClientRect();
 
-    if (this.orientation === 'vertical') {
+    if (this.orientation === "vertical") {
       this.value =
         ((e.clientY - clientRect.top) / clientRect.height) * this._maxValue;
     } else {
@@ -168,36 +166,40 @@ export class RCSplitter extends LitElement {
   }
 
   protected _onPrimaryChange(_e: Event) {
-    if (this._$primaryElements.length >= 2) {
-      // Move all additonal elements to secondary slot
+    queueMicrotask(() => {
+      if (this._$primaryElements.length < 2) return;
+
       this._$primaryElements
         .slice(1)
-        .forEach((el) => el.setAttribute('slot', 'secondary'));
-    }
+        .forEach((el) => el.setAttribute("slot", "secondary"));
+    });
   }
 
   protected _onSecondaryChange(_e: Event) {
-    if (this._$secondaryElements.length && !this._$primaryElements.length) {
-      // Make sure default slot is populated first
-      this._$secondaryElements.at(0)?.removeAttribute('slot');
-    }
+    queueMicrotask(() => {
+      if (!this._$secondaryElements.length || this._$primaryElements.length) {
+        return;
+      }
+
+      this._$secondaryElements.at(0)?.removeAttribute("slot");
+    });
   }
 
   protected _onResize() {
     const el = this._$primaryElements.at(0);
-    const prevStyle = this._$primary.style.getPropertyValue('display');
+    const prevStyle = this._$primary.style.getPropertyValue("display");
 
-    // Request animation frame to prevent layout piant jank
+    // Request animation frame to prevent layout paint jank.
     globalThis.requestAnimationFrame(() => {
-      // Temporarily display the first / primary lightDOM element as a direct child, for measurment
-      this._$primary.style.setProperty('display', 'contents');
+      // Temporarily display the first light DOM element as a direct child for measurement.
+      this._$primary.style.setProperty("display", "contents");
 
       const clientRect =
         el?.getBoundingClientRect() ?? this.getBoundingClientRect();
 
-      if (this.mode === 'length') {
+      if (this.mode === "length") {
         this._maxValue =
-          this.orientation === 'horizontal'
+          this.orientation === "horizontal"
             ? // For horizontal splitters, just take the host width...
               Math.ceil(this.getBoundingClientRect().width)
             : // ...otherwise try to use the first lightDOM element's auto height, and cache it
@@ -216,8 +218,8 @@ export class RCSplitter extends LitElement {
 
       // Restore previous display mode
       prevStyle
-        ? this._$primary.style.setProperty('display', prevStyle)
-        : this._$primary.style.removeProperty('display');
+        ? this._$primary.style.setProperty("display", prevStyle)
+        : this._$primary.style.removeProperty("display");
     });
   }
 
@@ -240,7 +242,7 @@ export class RCSplitter extends LitElement {
       <div
         id="primary"
         aria-label=${this.label}
-        style=${this.orientation === 'horizontal'
+        style=${this.orientation === "horizontal"
           ? `width: ${this.valueText}`
           : `height: ${this.valueText}`}
         ?hidden=${this.value === this._minValue}
@@ -262,7 +264,7 @@ export class RCSplitter extends LitElement {
           aria-valuemin=${this._minValue}
           aria-valuemax=${this._maxValue}
           ${keyNavigation(this._onKeyboardResize)}
-          ${mouseMove(this._onMouseResize)}
+          ${mouseMove(this._onPointerResize)}
           ?hidden=${!this._$secondaryElements.length}
         ></div>
       </div>

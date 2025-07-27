@@ -23,6 +23,8 @@ Every component implements the corresponding [WAI-ARIA Authoring Practices Guide
 
 Components ship with **no imposed visual styling** beyond what is structurally necessary for correct layout or behavior. Colors, fonts, borders, and spacing are left to the consumer. Where a default value is needed (e.g. a resize cursor, a minimum size), it defers to the browser UA stylesheet or CSS system color keywords (`Canvas`, `ButtonText`, `ButtonBorder`, etc.) so that light and dark mode come for free via `color-scheme`.
 
+Runtime geometry is the narrow exception: values derived from measurement or user interaction (for example splitter pane size or virtual-canvas scroll extents) may be written as inline styles. Decorative styles still belong in static CSS or CSS custom properties.
+
 The goal: drop a component into any design system and it fits without fighting.
 
 ### 4. Responsive and touch-friendly
@@ -39,7 +41,10 @@ The goal: drop a component into any design system and it fits without fighting.
 | Package | Description | Depends on |
 | --- | --- | --- |
 | [`rc-common`](packages/rc-common/) | Shared controllers and directives: `DragController`, `ResizeController`, `AnchorController`, `KeyboardNavigationDirective`, `MouseMoveDirective` | — |
+| [`rc-listbox`](packages/rc-listbox/) | Light-DOM ARIA `listbox` used by select and combobox | rc-common |
 | [`rc-menu`](packages/rc-menu/) | ARIA `menu` / `menuitem` popup | rc-common |
+| [`rc-select`](packages/rc-select/) | Select-only ARIA combobox backed by a native `<select>` | rc-common, rc-listbox |
+| [`rc-combobox`](packages/rc-combobox/) | Editable ARIA combobox with filtering and allow-create | rc-common, rc-listbox, rc-select |
 | [`rc-menu-button`](packages/rc-menu-button/) | Button that opens an ARIA menu | rc-common, rc-menu |
 | [`rc-menubar`](packages/rc-menubar/) | ARIA `menubar` with roving tabindex | rc-common, rc-menu-button |
 | [`rc-toolbar`](packages/rc-toolbar/) | ARIA `toolbar` with roving tabindex | rc-common |
@@ -47,6 +52,7 @@ The goal: drop a component into any design system and it fits without fighting.
 | [`rc-textarea`](packages/rc-textarea/) | Enhanced `<textarea>` — line decorations, gutter, plugin API | — |
 | [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable `<dialog>` wrapper with accessible event forwarding | rc-common |
 | [`rc-virtual-canvas`](packages/rc-virtual-canvas/) | Virtualized canvas for large datasets | — |
+| [`rc-webcomponents`](packages/rc-webcomponents/) | Aggregate package exporting the component collection | all component packages |
 
 Workspace dependency arrows show which packages must be **rebuilt** before dependent packages will pick up changes (they resolve to each dep's `dist/` output, not source).
 
@@ -67,18 +73,21 @@ Workspace dependency arrows show which packages must be **rebuilt** before depen
 
 ## Commands
 
-```bash
+```powershell
 # Dev server for a single package (hot reload)
 yarn.cmd workspace @rcarls/<package> run dev
 
 # TypeScript check + Vite build for a single package
 yarn.cmd workspace @rcarls/<package> run build
 
-# Build all packages (respects dependency order manually — see below)
-yarn.cmd workspaces run build
+# Build all packages using the workspace dependency graph
+yarn.cmd build
 
 # Browser tests for a single package
 yarn.cmd workspace @rcarls/<package> run test:browser
+
+# Browser tests for all packages
+yarn.cmd test
 ```
 
-> **Dependency rebuild order:** `rc-common` → `rc-menu` → `rc-menu-button` → `rc-menubar` / `rc-toolbar` / `rc-splitter` / `rc-dialog`. Rebuild a dep before running tests in packages that consume it; Vite's HMR does not watch `node_modules` for dist changes.
+> **Dependency graph:** the root `build` script runs `yarn workspaces foreach --topological`, so Yarn enforces package order from the workspace dependency declarations. For targeted package work, rebuild affected dependencies first: `rc-common` → `rc-listbox` / `rc-menu` → `rc-select` / `rc-menu-button` → `rc-combobox` / `rc-menubar` / `rc-toolbar` / `rc-splitter` / `rc-dialog` → `rc-webcomponents`. Rebuild a dep before running tests in packages that consume it; Vite's HMR does not watch `node_modules` for dist changes.

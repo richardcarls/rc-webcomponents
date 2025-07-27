@@ -164,7 +164,7 @@ Navigation axis is inferred automatically from the element's `role`:
 
 ### `mouseMove` directive
 
-An `AsyncDirective` that fires a callback on mousemove while the mouse button is held down. Designed for drag-to-resize handles that need continuous delta tracking.
+An `AsyncDirective` that fires a callback on pointer movement while a pointer drag is active. Designed for drag-to-resize handles that need continuous delta tracking while preserving the historical `mouseMove` export name.
 
 ```ts
 import { mouseMove } from '@rcarls/rc-common';
@@ -179,7 +179,7 @@ private _onDrag(e: MouseEvent) {
 }
 ```
 
-Attaches `mousedown` on the element; on press, attaches `mousemove`/`mouseup`/`mouseleave` to `window` so the drag continues even if the cursor leaves the handle. Focuses the handle element on mousedown.
+Attaches `pointerdown` on the element, captures that pointer, then listens for `pointermove`, `pointerup`, `pointercancel`, and `lostpointercapture` on the same element for the active drag cycle. Focuses the handle element on pointerdown.
 
 ---
 

@@ -30,6 +30,7 @@
     "@vitest/browser-webdriverio": "^4.0.6",
     "@yarnpkg/types": "^4.0.1",
     "api-viewer-element": "^1.0.0-pre.10",
+    "axe-core": "^4.11.4",
     "lit": "^3.0.0",
     "rollup": "^4.60.2",
     "typescript": "~5.9.3",

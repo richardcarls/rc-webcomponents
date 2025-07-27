@@ -47,7 +47,7 @@ Vertical orientation:
 
 | Property | Attribute | Type | Default | Description |
 |---|---|---|---|---|
-| `label` | `label` | `string` | `'Splitter'` | Accessible label for the separator handle (`aria-label`). |
+| `label` | `label` | `string` | `'Splitter'` | Accessible label applied to the primary pane and used by the separator handle via `aria-labelledby`. |
 | `orientation` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Layout direction. `horizontal` = left/right panes; `vertical` = top/bottom panes. Reflects to attribute. |
 | `mode` | `mode` | `'length' \| 'percent'` | `'length'` | Unit for `value`. `length` = pixels of the primary pane; `percent` = percentage of total container size. |
 | `step` | `step` | `number` | `1` | Keyboard step size in the current unit (px or %). Shift multiplies by 10×. |
@@ -72,8 +72,8 @@ All color defaults use CSS system color keywords so they adapt automatically to 
 
 | Part | Element | Description |
 |---|---|---|
-| `separator` | `div[role="separator"]` | The separator bar |
-| `separator-handle` | `div` inside separator | The focusable drag handle (narrower than the bar if `--rc-splitter-separator-handle-size` is set) |
+| `separator` | `div#separator` | The separator bar |
+| `separator-handle` | `div[role="separator"]` inside separator | The focusable drag handle (narrower than the bar if `--rc-splitter-separator-handle-size` is set) |
 
 ### Slots
 
@@ -119,7 +119,7 @@ The separator handle implements the WAI-ARIA slider role pattern:
 | Attribute | Where | Value |
 |---|---|---|
 | `role="separator"` | Separator handle `div` | — |
-| `aria-label` | Separator handle | Value of `label` property |
+| `aria-label` | Primary pane | Value of `label` property |
 | `aria-orientation` | Separator handle | `"horizontal"` or `"vertical"` |
 | `aria-valuenow` | Separator handle | Current numeric value |
 | `aria-valuemin` | Separator handle | `0` |
@@ -140,7 +140,7 @@ The separator handle implements the WAI-ARIA slider role pattern:
     width: 100%;
     height: 500px;
     --rc-splitter-separator-size: 4px;
-    --rc-splitter-separator-color: #e0e0e0;
+    --rc-splitter-separator-color: ButtonFace;
     --rc-splitter-separator-border-inline-start: none;
     --rc-splitter-separator-border-inline-end: none;
   "

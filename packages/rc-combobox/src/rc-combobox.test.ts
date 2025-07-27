@@ -4,6 +4,7 @@ import { html } from 'lit';
 
 import './define';
 import type { RCCombobox } from './rc-combobox';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 function makeCombobox(opts?: {
   multiple?: boolean;
@@ -16,7 +17,11 @@ function makeCombobox(opts?: {
       ?allowcreate=${opts?.allowCreate ?? false}
       placeholder=${opts?.placeholder ?? 'Search...'}
     >
-      <select slot="select" ?multiple=${opts?.multiple ?? false}>
+      <select
+        slot="select"
+        aria-label="Fruit"
+        ?multiple=${opts?.multiple ?? false}
+      >
         <option value="apple">Apple</option>
         <option value="banana">Banana</option>
         <option value="cherry" disabled>Cherry</option>
@@ -48,6 +53,13 @@ test('input has role="combobox", aria-haspopup="listbox", aria-autocomplete="lis
   expect(input.getAttribute('aria-autocomplete')).toBe('list');
   expect(input.getAttribute('aria-controls')).toBe('listbox');
   expect(input.getAttribute('aria-expanded')).toBe('false');
+});
+
+test('rc-combobox has no automated accessibility violations', async () => {
+  const screen = render(makeCombobox());
+  const host = await getHost(screen);
+
+  await expectNoA11yViolations(host);
 });
 
 test('options appear in listbox from slotted <select>', async () => {

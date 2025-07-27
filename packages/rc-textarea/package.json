@@ -16,18 +16,18 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/types/index.d.ts",
+        "types": "./dist/types/packages/rc-textarea/src/index.d.ts",
         "default": "./dist/rc-textarea.js"
       }
     },
     "./define": {
       "import": {
-        "types": "./dist/types/define.d.ts",
+        "types": "./dist/types/packages/rc-textarea/src/define.d.ts",
         "default": "./dist/rc-textarea-define.js"
       }
     }
   },
-  "types": "./dist/types/index.d.ts",
+  "types": "./dist/types/packages/rc-textarea/src/index.d.ts",
   "sideEffects": [
     "./dist/rc-textarea-define.js"
   ],

@@ -12,7 +12,7 @@ export const menuStyles = css`
     padding-block: var(--rc-menu-padding-block, 0.25em);
     background: var(--rc-menu-background, var(--rc-surface, Canvas));
     border: var(--rc-menu-border, var(--rc-border, 1px solid ButtonBorder));
-    box-shadow: var(--rc-menu-shadow, var(--rc-shadow, 0 2px 8px rgba(0, 0, 0, 0.15)));
+    box-shadow: var(--rc-menu-shadow, var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)));
 
     /* Focus styling for keyboard navigation */
     &[data-interaction-mode='keyboard']:focus-within {

@@ -1092,6 +1092,7 @@ __metadata:
     "@vitest/browser-webdriverio": "npm:^4.0.6"
     "@yarnpkg/types": "npm:^4.0.1"
     api-viewer-element: "npm:^1.0.0-pre.10"
+    axe-core: "npm:^4.11.4"
     lit: "npm:^3.0.0"
     rollup: "npm:^4.60.2"
     typescript: "npm:~5.9.3"
@@ -2215,6 +2216,13 @@ __metadata:
   version: 3.2.6
   resolution: "async@npm:3.2.6"
   checksum: 10c0/36484bb15ceddf07078688d95e27076379cc2f87b10c03b6dd8a83e89475a3c8df5848859dd06a4c95af1e4c16fc973de0171a77f18ea00be899aca2a4f85e70
+  languageName: node
+  linkType: hard
+
+"axe-core@npm:^4.11.4":
+  version: 4.11.4
+  resolution: "axe-core@npm:4.11.4"
+  checksum: 10c0/c4aa83fc3eac5f7a0d0cb1a28f9d073acf0c06ce8daacc38608faa278c57ce084c028c850746b98817ae4c101c30c1a32e95ea34748c4b4c7419b9b81221ef84
   languageName: node
   linkType: hard
 

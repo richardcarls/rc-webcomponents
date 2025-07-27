@@ -30,7 +30,7 @@ declare global {
  * @cssprop [--rc-menu-padding-block=0.25em] - Block (top/bottom) padding inside the panel
  * @cssprop [--rc-menu-background=Canvas] - Background color; falls back through --rc-surface
  * @cssprop [--rc-menu-border=1px solid ButtonBorder] - Border; falls back through --rc-border
- * @cssprop [--rc-menu-shadow=0 2px 8px rgba(0,0,0,.15)] - Box shadow; falls back through --rc-shadow
+ * @cssprop [--rc-menu-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Box shadow; falls back through --rc-shadow
  * @csspart root - The root container element
  */
 export class RCMenu extends RovingTabIndexMixin(LitElement) {

@@ -105,6 +105,7 @@ const RAW_RUNTIME_STATE =
           ["@vitest/browser-webdriverio", "virtual:79423438f5616e19146b425db724e4c36028bb6a4997133cadb74f3b7c5fba731086928cda35e454e4a227ea24d52e58cf4c4a304673ea89034ff62636e1fadc#npm:4.1.5"],\
           ["@yarnpkg/types", "npm:4.0.1"],\
           ["api-viewer-element", "npm:1.0.0-pre.10"],\
+          ["axe-core", "npm:4.11.4"],\
           ["lit", "npm:3.3.2"],\
           ["rollup", "npm:4.60.2"],\
           ["typescript", "patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"],\
@@ -1663,6 +1664,7 @@ const RAW_RUNTIME_STATE =
           ["@vitest/browser-webdriverio", "virtual:79423438f5616e19146b425db724e4c36028bb6a4997133cadb74f3b7c5fba731086928cda35e454e4a227ea24d52e58cf4c4a304673ea89034ff62636e1fadc#npm:4.1.5"],\
           ["@yarnpkg/types", "npm:4.0.1"],\
           ["api-viewer-element", "npm:1.0.0-pre.10"],\
+          ["axe-core", "npm:4.11.4"],\
           ["lit", "npm:3.3.2"],\
           ["rollup", "npm:4.60.2"],\
           ["typescript", "patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"],\
@@ -3870,6 +3872,15 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/async-npm-3.2.6-aa4f5aa081-10c0.zip/node_modules/async/",\
         "packageDependencies": [\
           ["async", "npm:3.2.6"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["axe-core", [\
+      ["npm:4.11.4", {\
+        "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/axe-core-npm-4.11.4-4d6cf56d11-10c0.zip/node_modules/axe-core/",\
+        "packageDependencies": [\
+          ["axe-core", "npm:4.11.4"]\
         ],\
         "linkType": "HARD"\
       }]\

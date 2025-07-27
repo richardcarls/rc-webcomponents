@@ -5,6 +5,7 @@ import { html } from 'lit';
 import './define';
 import type { RCTextarea } from './rc-textarea.ts';
 import type { RCTextareaPluginAPI } from './types.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 import {
   getEditor,
   getGutterCells,
@@ -40,6 +41,16 @@ describe('RCTextarea — basic rendering', () => {
     const editor = getEditor(host);
     expect(editor.getAttribute('role')).toBe('textbox');
     expect(editor.getAttribute('aria-multiline')).toBe('true');
+  });
+
+  test('has no automated accessibility violations', async () => {
+    const screen = render(html`
+      <rc-textarea data-testid="host" label="Notes"></rc-textarea>
+    `);
+    const host = screen.getByTestId('host').element() as RCTextarea;
+    await host.updateComplete;
+
+    await expectNoA11yViolations(host);
   });
 
   test('editor is contenteditable by default', async () => {

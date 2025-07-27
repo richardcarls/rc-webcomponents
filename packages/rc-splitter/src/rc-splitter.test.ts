@@ -5,6 +5,7 @@ import { html } from 'lit';
 import './define';
 import type { RCSplitter } from './rc-splitter';
 import { userEvent } from 'vitest/browser';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 // Helper to get elements from shadow DOM
 function getSeparator(host: RCSplitter): HTMLElement {
@@ -13,6 +14,22 @@ function getSeparator(host: RCSplitter): HTMLElement {
 
 function getPrimary(host: RCSplitter): HTMLElement {
   return host.shadowRoot!.querySelector('#primary') as HTMLElement;
+}
+
+function firePointerEvent(
+  target: EventTarget,
+  type: string,
+  init?: PointerEventInit,
+): void {
+  target.dispatchEvent(
+    new PointerEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      pointerId: 1,
+      pointerType: 'mouse',
+      ...init,
+    }),
+  );
 }
 
 describe('RCSplitter', () => {
@@ -36,6 +53,25 @@ describe('RCSplitter', () => {
       expect(separator.getAttribute('aria-orientation')).toBe('horizontal');
       expect(separator.getAttribute('aria-controls')).toBe('primary');
       expect(separator.getAttribute('aria-labelledby')).toBe('primary');
+    });
+
+    test('has no automated accessibility violations', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          label="Resize panels"
+          style="width: 400px; height: 300px;"
+        >
+          <section>Primary</section>
+          <section slot="secondary">Secondary</section>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await new Promise((r) => setTimeout(r, 50));
+
+      await expectNoA11yViolations(host);
     });
 
     test('renders with custom label', async () => {
@@ -606,8 +642,8 @@ describe('RCSplitter', () => {
     });
   });
 
-  describe('mouse drag resizing - horizontal', () => {
-    test('mouse drag changes value', async () => {
+  describe('pointer drag resizing - horizontal', () => {
+    test('pointer drag changes value', async () => {
       const screen = render(html`
         <rc-splitter data-testid="host" style="width: 400px; height: 300px;">
           <div>Primary</div>
@@ -622,32 +658,20 @@ describe('RCSplitter', () => {
       const separator = getSeparator(host);
       const initialValue = host.value;
 
-      // Simulate mouse drag
-      separator.dispatchEvent(
-        new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
-      );
+      firePointerEvent(separator, 'pointerdown');
 
-      // Get the host's bounding rect for position calculations
       const hostRect = host.getBoundingClientRect();
 
-      // Dispatch mousemove on window (where the directive listens)
-      globalThis.window.dispatchEvent(
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          clientX: hostRect.left + 300,
-          clientY: hostRect.top + 150,
-        }),
-      );
-
-      globalThis.window.dispatchEvent(
-        new MouseEvent('mouseup', { bubbles: true, cancelable: true }),
-      );
+      firePointerEvent(separator, 'pointermove', {
+        clientX: hostRect.left + 300,
+        clientY: hostRect.top + 150,
+      });
+      firePointerEvent(separator, 'pointerup');
 
       expect(host.value).not.toBe(initialValue);
     });
 
-    test('mouse drag is prevented when fixed', async () => {
+    test('pointer drag is prevented when fixed', async () => {
       const screen = render(html`
         <rc-splitter
           data-testid="host"
@@ -668,31 +692,22 @@ describe('RCSplitter', () => {
 
       const separator = getSeparator(host);
 
-      separator.dispatchEvent(
-        new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
-      );
+      firePointerEvent(separator, 'pointerdown');
 
       const hostRect = host.getBoundingClientRect();
 
-      globalThis.window.dispatchEvent(
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          clientX: hostRect.left + 300,
-          clientY: hostRect.top + 150,
-        }),
-      );
-
-      globalThis.window.dispatchEvent(
-        new MouseEvent('mouseup', { bubbles: true, cancelable: true }),
-      );
+      firePointerEvent(separator, 'pointermove', {
+        clientX: hostRect.left + 300,
+        clientY: hostRect.top + 150,
+      });
+      firePointerEvent(separator, 'pointerup');
 
       expect(host.value).toBe(initialValue);
     });
   });
 
-  describe('mouse drag resizing - vertical', () => {
-    test('mouse drag changes value vertically', async () => {
+  describe('pointer drag resizing - vertical', () => {
+    test('pointer drag changes value vertically', async () => {
       const screen = render(html`
         <rc-splitter
           data-testid="host"
@@ -711,24 +726,15 @@ describe('RCSplitter', () => {
       const separator = getSeparator(host);
       const initialValue = host.value;
 
-      separator.dispatchEvent(
-        new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
-      );
+      firePointerEvent(separator, 'pointerdown');
 
       const hostRect = host.getBoundingClientRect();
 
-      globalThis.window.dispatchEvent(
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          clientX: hostRect.left + 200,
-          clientY: hostRect.top + 200,
-        }),
-      );
-
-      globalThis.window.dispatchEvent(
-        new MouseEvent('mouseup', { bubbles: true, cancelable: true }),
-      );
+      firePointerEvent(separator, 'pointermove', {
+        clientX: hostRect.left + 200,
+        clientY: hostRect.top + 200,
+      });
+      firePointerEvent(separator, 'pointerup');
 
       expect(host.value).not.toBe(initialValue);
     });

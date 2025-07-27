@@ -3,6 +3,7 @@ import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
 import './define';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 // Helper: render an rc-dialog wrapping a <dialog> with a label
 function renderDialog(extraAttrs = '') {
@@ -28,6 +29,13 @@ test('rc-dialog delegates showModal() to inner <dialog>', async () => {
   expect(rcDialog.open).toBe(true);
 
   rcDialog.close();
+});
+
+test('rc-dialog has no automated accessibility violations', async () => {
+  const screen = renderDialog();
+  const host = await screen.getByTestId('host').element();
+
+  await expectNoA11yViolations(host);
 });
 
 test('rc-dialog delegates close() and exposes returnValue', async () => {

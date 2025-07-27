@@ -1,167 +1,161 @@
-import { test, expect, vi } from "vitest";
-import { render } from "vitest-browser-lit";
-import { html } from "lit";
-import { userEvent } from "vitest/browser";
+import { html } from 'lit';
+import { test, expect, vi } from 'vitest';
+import { userEvent } from 'vitest/browser';
+import { render } from 'vitest-browser-lit';
 
-import { mouseMove } from "./MouseMoveDirective";
+import { mouseMove } from './MouseMoveDirective';
 
-function fireMouseEvent(
+function firePointerEvent(
   target: EventTarget,
   type: string,
-  init?: MouseEventInit,
-) {
+  init?: PointerEventInit,
+): void {
   target.dispatchEvent(
-    new MouseEvent(type, { bubbles: true, cancelable: true, ...init }),
+    new PointerEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      pointerId: 1,
+      pointerType: 'mouse',
+      ...init,
+    }),
   );
 }
 
-// ─── Callback invocation ──────────────────────────────────────────────────────
-
-test("mouseMove: callback fires on mousemove after mousedown", async () => {
+test('mouseMove: callback fires on pointermove after pointerdown', async () => {
   const cb = vi.fn();
   const screen = render(
     html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
   );
-  const el = screen.getByTestId("handle");
+  const el = screen.getByTestId('handle');
   const node = await el.element();
 
-  fireMouseEvent(node, "mousedown");
-  fireMouseEvent(window, "mousemove");
-  fireMouseEvent(window, "mousemove");
+  firePointerEvent(node, 'pointerdown');
+  firePointerEvent(node, 'pointermove');
+  firePointerEvent(node, 'pointermove');
 
   expect(cb).toHaveBeenCalledTimes(2);
 });
 
-test("mouseMove: callback does not fire before mousedown", async () => {
+test('mouseMove: callback does not fire before pointerdown', async () => {
   const cb = vi.fn();
-  const _screen = render(
+  const screen = render(
     html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
   );
+  const node = await screen.getByTestId('handle').element();
 
-  // Directly fire mousemove on window without a prior mousedown
-  fireMouseEvent(window, "mousemove");
+  firePointerEvent(node, 'pointermove');
 
   expect(cb).not.toHaveBeenCalled();
 });
 
-test("mouseMove: callback receives the mousemove event", async () => {
+test('mouseMove: callback receives the pointermove event', async () => {
   const cb = vi.fn();
   const screen = render(
     html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
   );
-  const el = screen.getByTestId("handle");
-  const node = await el.element();
+  const node = await screen.getByTestId('handle').element();
 
-  fireMouseEvent(node, "mousedown");
-  fireMouseEvent(window, "mousemove", { clientX: 42, clientY: 99 });
+  firePointerEvent(node, 'pointerdown');
+  firePointerEvent(node, 'pointermove', { clientX: 42, clientY: 99 });
 
   expect(cb).toHaveBeenCalledOnce();
-  const evt = cb.mock.calls[0][0] as MouseEvent;
+  const evt = cb.mock.calls[0][0] as PointerEvent;
   expect(evt.clientX).toBe(42);
   expect(evt.clientY).toBe(99);
+  expect(evt.pointerType).toBe('mouse');
 });
 
-// ─── Cleanup on mouseup / mouseleave ─────────────────────────────────────────
-
-test("mouseMove: mousemove stops firing after mouseup", async () => {
+test('mouseMove: pointermove stops firing after pointerup', async () => {
   const cb = vi.fn();
   const screen = render(
     html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
   );
-  const el = screen.getByTestId("handle");
-  const node = await el.element();
+  const node = await screen.getByTestId('handle').element();
 
-  fireMouseEvent(node, "mousedown");
-  fireMouseEvent(window, "mousemove");
+  firePointerEvent(node, 'pointerdown');
+  firePointerEvent(node, 'pointermove');
   expect(cb).toHaveBeenCalledTimes(1);
 
-  fireMouseEvent(window, "mouseup");
-  fireMouseEvent(window, "mousemove");
-  fireMouseEvent(window, "mousemove");
-
-  // Only the one move before mouseup counts
-  expect(cb).toHaveBeenCalledTimes(1);
-});
-
-test("mouseMove: mousemove stops firing after mouseleave on window", async () => {
-  const cb = vi.fn();
-  const screen = render(
-    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
-  );
-  const el = screen.getByTestId("handle");
-  const node = await el.element();
-
-  fireMouseEvent(node, "mousedown");
-  fireMouseEvent(window, "mousemove");
-
-  fireMouseEvent(window, "mouseleave");
-  fireMouseEvent(window, "mousemove");
+  firePointerEvent(node, 'pointerup');
+  firePointerEvent(node, 'pointermove');
+  firePointerEvent(node, 'pointermove');
 
   expect(cb).toHaveBeenCalledTimes(1);
 });
 
-test("mouseMove: new mousedown re-arms after mouseup", async () => {
+test('mouseMove: pointermove stops firing after pointercancel', async () => {
   const cb = vi.fn();
   const screen = render(
     html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
   );
-  const el = screen.getByTestId("handle");
-  const node = await el.element();
+  const node = await screen.getByTestId('handle').element();
 
-  fireMouseEvent(node, "mousedown");
-  fireMouseEvent(window, "mousemove");
-  fireMouseEvent(window, "mouseup");
+  firePointerEvent(node, 'pointerdown');
+  firePointerEvent(node, 'pointermove');
+  firePointerEvent(node, 'pointercancel');
+  firePointerEvent(node, 'pointermove');
 
-  // Second drag cycle
-  fireMouseEvent(node, "mousedown");
-  fireMouseEvent(window, "mousemove");
-  fireMouseEvent(window, "mousemove");
+  expect(cb).toHaveBeenCalledTimes(1);
+});
+
+test('mouseMove: lostpointercapture ends the active drag cycle', async () => {
+  const cb = vi.fn();
+  const screen = render(
+    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
+  );
+  const node = await screen.getByTestId('handle').element();
+
+  firePointerEvent(node, 'pointerdown');
+  firePointerEvent(node, 'pointermove');
+  firePointerEvent(node, 'lostpointercapture');
+  firePointerEvent(node, 'pointermove');
+
+  expect(cb).toHaveBeenCalledTimes(1);
+});
+
+test('mouseMove: new pointerdown re-arms after pointerup', async () => {
+  const cb = vi.fn();
+  const screen = render(
+    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
+  );
+  const node = await screen.getByTestId('handle').element();
+
+  firePointerEvent(node, 'pointerdown');
+  firePointerEvent(node, 'pointermove');
+  firePointerEvent(node, 'pointerup');
+
+  firePointerEvent(node, 'pointerdown');
+  firePointerEvent(node, 'pointermove');
+  firePointerEvent(node, 'pointermove');
 
   expect(cb).toHaveBeenCalledTimes(3);
 });
 
-// ─── Disconnect / reconnect ───────────────────────────────────────────────────
-
-test("mouseMove: mousedown listener is removed on disconnect (not click)", async () => {
-  // Regression: the original bug removed 'click' instead of 'mousedown'.
-  // Verify that after a simulated disconnect, mousedown no longer triggers moves.
+test('mouseMove: click does not arm pointer movement', async () => {
   const cb = vi.fn();
-
-  // We can't disconnect the directive directly in tests, but we can verify
-  // the correct event name is used by confirming mousedown (not click) triggers the flow.
   const screen = render(
     html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
   );
-  const el = screen.getByTestId("handle");
-  const node = await el.element();
+  const node = await screen.getByTestId('handle').element();
 
-  // A click event should NOT arm the move listener
-  fireMouseEvent(node, "click");
-  fireMouseEvent(window, "mousemove");
+  node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  firePointerEvent(node, 'pointermove');
 
   expect(cb).not.toHaveBeenCalled();
-
-  // Only mousedown arms it
-  fireMouseEvent(node, "mousedown");
-  fireMouseEvent(window, "mousemove");
-
-  expect(cb).toHaveBeenCalledTimes(1);
 });
 
-// ─── mousedown focuses element ────────────────────────────────────────────────
-
-test("mouseMove: mousedown focuses the element", async () => {
+test('mouseMove: pointerdown focuses the element', async () => {
   const cb = vi.fn();
   const screen = render(
     html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
   );
-  const el = screen.getByTestId("handle");
+  const el = screen.getByTestId('handle');
   const node = await el.element();
 
   await userEvent.click(document.body);
   await expect.element(el).not.toHaveFocus();
 
-  fireMouseEvent(node, "mousedown");
+  firePointerEvent(node, 'pointerdown');
 
   await expect.element(el).toHaveFocus();
 });

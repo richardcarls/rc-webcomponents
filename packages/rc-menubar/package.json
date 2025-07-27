@@ -16,18 +16,18 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/types/index.d.ts",
+        "types": "./dist/types/packages/rc-menubar/src/index.d.ts",
         "default": "./dist/rc-menubar.js"
       }
     },
     "./define": {
       "import": {
-        "types": "./dist/types/define.d.ts",
+        "types": "./dist/types/packages/rc-menubar/src/define.d.ts",
         "default": "./dist/rc-menubar-define.js"
       }
     }
   },
-  "types": "./dist/types/index.d.ts",
+  "types": "./dist/types/packages/rc-menubar/src/index.d.ts",
   "sideEffects": [
     "./dist/rc-menubar-define.js"
   ],

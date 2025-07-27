@@ -4,6 +4,7 @@ import { html } from 'lit';
 import { userEvent } from 'vitest/browser';
 
 import './define';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 test('RCMenubar renders with correct ARIA attributes', async () => {
   const screen = render(html`
@@ -29,6 +30,29 @@ test('RCMenubar renders with correct ARIA attributes', async () => {
   await expect.element(menubar).toBeInTheDocument();
   await expect.element(root).toHaveAttribute('aria-label', 'Test Menu');
   await expect.element(root).toHaveAttribute('aria-orientation', 'horizontal');
+});
+
+test('RCMenubar has no automated accessibility violations', async () => {
+  const screen = render(html`
+    <rc-menubar data-testid="menubar" label="Application">
+      <rc-menu-button>
+        <button slot="trigger">File</button>
+        <rc-menu label="File">
+          <button>New</button>
+        </rc-menu>
+      </rc-menu-button>
+      <rc-menu-button>
+        <button slot="trigger">Edit</button>
+        <rc-menu label="Edit">
+          <button>Undo</button>
+        </rc-menu>
+      </rc-menu-button>
+    </rc-menubar>
+  `);
+
+  const menubar = await screen.getByTestId('menubar').element();
+
+  await expectNoA11yViolations(menubar);
 });
 
 test('RCMenubar sets roving tabindex on triggers', async () => {

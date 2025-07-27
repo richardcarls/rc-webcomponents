@@ -4,11 +4,17 @@ import { html } from 'lit';
 
 import './define';
 import type { RCSelect } from './rc-select';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 function makeSelect(opts?: { multiple?: boolean; disabled?: boolean; placeholder?: string }) {
   return html`
     <rc-select placeholder=${opts?.placeholder ?? 'Choose...'}>
-      <select slot="select" ?multiple=${opts?.multiple ?? false} ?disabled=${opts?.disabled ?? false}>
+      <select
+        slot="select"
+        aria-label="Fruit"
+        ?multiple=${opts?.multiple ?? false}
+        ?disabled=${opts?.disabled ?? false}
+      >
         <option value="">Choose...</option>
         <option value="apple">Apple</option>
         <option value="banana">Banana</option>
@@ -43,6 +49,13 @@ test('trigger has role="combobox", aria-haspopup="listbox", aria-expanded="false
   expect(el.getAttribute('aria-haspopup')).toBe('listbox');
   expect(el.getAttribute('aria-expanded')).toBe('false');
   expect(el.getAttribute('aria-controls')).toBe('listbox');
+});
+
+test('rc-select has no automated accessibility violations', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+
+  await expectNoA11yViolations(host);
 });
 
 test('popup is initially closed', async () => {

@@ -97,7 +97,7 @@ export const comboboxStyles = css`
     overflow-y: auto;
     background: var(--rc-surface, Canvas);
     border: 1px solid var(--rc-border-color, ButtonBorder);
-    box-shadow: var(--rc-combobox-shadow, var(--rc-shadow, 0 2px 8px rgba(0,0,0,.15)));
+    box-shadow: var(--rc-combobox-shadow, var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)));
     color: var(--rc-button-text, ButtonText);
     padding-block: 0.25em;
 
