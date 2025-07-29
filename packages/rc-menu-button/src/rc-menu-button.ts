@@ -37,9 +37,43 @@ declare global {
 export class RCMenuButton extends LitElement {
   static styles = [menuButtonStyles];
 
-  /** Whether the menu is currently open */
+  private _defaultOpen = false;
+  private _open = false;
+
+  /** Whether the menu is currently open. Host writes update silently. */
   @property({ type: Boolean, reflect: true })
-  open = false;
+  get open(): boolean {
+    return this._open;
+  }
+
+  /** Whether the menu is currently open. Host writes update silently. */
+  set open(value: boolean | undefined) {
+    const oldValue = this._open;
+
+    if (value === undefined) return;
+
+    this._setOpen(value, false);
+    this.requestUpdate('open', oldValue);
+  }
+
+  /** Initial uncontrolled open state. */
+  @property({ type: Boolean, attribute: 'default-open' })
+  get defaultOpen(): boolean {
+    return this._defaultOpen;
+  }
+
+  /** Initial uncontrolled open state. */
+  set defaultOpen(value: boolean) {
+    const oldValue = this._defaultOpen;
+
+    this._defaultOpen = value;
+
+    if (value && !this._open) {
+      this._setOpen(true, false);
+    }
+
+    this.requestUpdate('defaultOpen', oldValue);
+  }
 
   /**
    * Orientation of this menu button, affects which arrow keys open/close the menu.
@@ -93,6 +127,10 @@ export class RCMenuButton extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('click', this._boundHandleDocumentClick, true);
+
+    if (this.defaultOpen) {
+      this._setOpen(true, false);
+    }
   }
 
   disconnectedCallback() {
@@ -104,8 +142,7 @@ export class RCMenuButton extends LitElement {
   openMenu(focusTarget: 'first' | 'last' = 'first') {
     if (this.open) return;
 
-    this.open = true;
-    this._dispatchToggle();
+    this._setOpen(true, true);
     this._anchorCtrl.update();
 
     this.updateComplete.then(() => {
@@ -118,8 +155,7 @@ export class RCMenuButton extends LitElement {
   closeMenu(returnFocus = true) {
     if (!this.open) return;
 
-    this.open = false;
-    this._dispatchToggle();
+    this._setOpen(false, true);
 
     if (returnFocus) {
       const trigger = this._trigger?.deref();
@@ -151,15 +187,8 @@ export class RCMenuButton extends LitElement {
     const trigger = slot.assignedElements()[0] as HTMLElement | undefined;
 
     if (trigger) {
-      // Cache reference synchronously; defer ARIA mutations so this handler
-      // is instantaneous when slotchange fires inside a framework reactive pass.
       this._trigger = new WeakRef(trigger);
-
-      queueMicrotask(() => {
-        if (!trigger.isConnected) return;
-        trigger.setAttribute('aria-haspopup', 'menu');
-        trigger.setAttribute('aria-expanded', String(this.open));
-      });
+      this._syncTriggerAria();
     }
   }
 
@@ -221,9 +250,28 @@ export class RCMenuButton extends LitElement {
 
     // Keep aria-expanded in sync
     if (changedProperties.has('open')) {
-      const trigger = this._trigger?.deref();
-      trigger?.setAttribute('aria-expanded', String(this.open));
+      this._syncTriggerAria();
     }
+  }
+
+  private _setOpen(open: boolean, dispatch: boolean): void {
+    if (this._open === open) return;
+
+    const oldValue = this._open;
+
+    this._open = open;
+    this.requestUpdate('open', oldValue);
+    this._syncTriggerAria();
+
+    if (dispatch) this._dispatchToggle();
+  }
+
+  private _syncTriggerAria(): void {
+    const trigger = this._trigger?.deref();
+    if (!trigger?.isConnected) return;
+
+    trigger.setAttribute('aria-haspopup', 'menu');
+    trigger.setAttribute('aria-expanded', String(this.open));
   }
 
   protected render() {

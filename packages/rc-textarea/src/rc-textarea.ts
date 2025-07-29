@@ -131,9 +131,31 @@ export class RCTextarea extends LitElement {
   @property({ type: String })
   label: string | null = null;
 
+  /** Declarative plugin hook for framework integrations. */
+  @property({ attribute: false })
+  get plugin(): RCTextareaPlugin | null {
+    return this._pluginProperty;
+  }
+
+  /** Declarative plugin hook for framework integrations. */
+  set plugin(plugin: RCTextareaPlugin | null) {
+    const oldPlugin = this._pluginProperty;
+    if (plugin === oldPlugin) return;
+
+    this._pluginProperty = plugin;
+
+    if (plugin) this.usePlugin(plugin);
+    else this.removePlugin();
+
+    this.requestUpdate('plugin', oldPlugin);
+  }
+
   // ── Internal state ────────────────────────────────────────────────────
 
   private _value = '';
+  private _defaultValue: string | undefined;
+  private _initialValueResolved = false;
+  private _valueSetByHost = false;
   private _document: V2Document | null = null;
   private _textareaRef: WeakRef<HTMLTextAreaElement> | null = null;
 
@@ -145,6 +167,7 @@ export class RCTextarea extends LitElement {
   private _patterns = new Map<string, TextPattern>();
 
   private _plugin: RCTextareaPlugin | null = null;
+  private _pluginProperty: RCTextareaPlugin | null = null;
   private _pluginApi: RCTextareaPluginAPI | null = null;
   /** Sequence counter for async plugin safety (discard stale results). */
   private _pluginSeq = 0;
@@ -176,22 +199,44 @@ export class RCTextarea extends LitElement {
 
   // ── Public value property ─────────────────────────────────────────────
 
+  @property({ type: String })
   get value(): string {
     return this._value;
   }
 
   set value(v: string) {
+    const oldValue = this._value;
+
     if (v === this._value) return;
+
+    this._valueSetByHost = true;
+    this._initialValueResolved = true;
     this._value = v;
     this._syncTextareaValue();
-    this.dispatchEvent(
-      new CustomEvent('rc-textarea-change', {
-        bubbles: true,
-        composed: true,
-        detail: { value: v },
-      }),
-    );
     this._scheduleRender();
+    this.requestUpdate('value', oldValue);
+  }
+
+  /** Initial uncontrolled editor value. */
+  @property({ type: String })
+  get defaultValue(): string | undefined {
+    return this._defaultValue;
+  }
+
+  /** Initial uncontrolled editor value. */
+  set defaultValue(v: string | undefined) {
+    const oldValue = this._defaultValue;
+
+    this._defaultValue = v;
+
+    if (!this._valueSetByHost && !this._initialValueResolved && v !== undefined) {
+      this._value = v;
+      this._initialValueResolved = true;
+      this._syncTextareaValue();
+      this._scheduleRender();
+    }
+
+    this.requestUpdate('defaultValue', oldValue);
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────
@@ -321,9 +366,12 @@ export class RCTextarea extends LitElement {
       if (placeholder) editorEl.setAttribute('aria-placeholder', placeholder);
     }
 
-    // Adopt initial value from textarea
-    if (textarea.value && !this._value) {
+    // Adopt initial value from textarea after value/defaultValue precedence.
+    if (!this._initialValueResolved) {
       this._value = textarea.value;
+      this._initialValueResolved = true;
+    } else {
+      textarea.value = this._value;
     }
 
     // Wire up form validation feedback
@@ -420,13 +468,7 @@ export class RCTextarea extends LitElement {
     // Push to undo stack
     this._pushUndo(this._savedSelection);
 
-    this.dispatchEvent(
-      new CustomEvent('rc-textarea-change', {
-        bubbles: true,
-        composed: true,
-        detail: { value: newValue },
-      }),
-    );
+    this._dispatchChange(newValue);
 
     this._scheduleRender();
   }
@@ -572,13 +614,7 @@ export class RCTextarea extends LitElement {
         this._undoIndex = 0;
       }
       this._pushUndo(this._savedSelection);
-      this.dispatchEvent(
-        new CustomEvent('rc-textarea-change', {
-          bubbles: true,
-          composed: true,
-          detail: { value: newValue },
-        }),
-      );
+      this._dispatchChange(newValue);
       this._scheduleRender();
       return;
     }
@@ -634,13 +670,7 @@ export class RCTextarea extends LitElement {
       focusOffset: entry.focusOffset,
     };
     this._syncTextareaValue(true);
-    this.dispatchEvent(
-      new CustomEvent('rc-textarea-change', {
-        bubbles: true,
-        composed: true,
-        detail: { value: this._value },
-      }),
-    );
+    this._dispatchChange(this._value);
     this._scheduleRender();
   }
 
@@ -1059,6 +1089,16 @@ export class RCTextarea extends LitElement {
         textarea.dispatchEvent(new InputEvent('input', { bubbles: true }));
       }
     }
+  }
+
+  private _dispatchChange(value: string): void {
+    this.dispatchEvent(
+      new CustomEvent('rc-textarea-change', {
+        bubbles: true,
+        composed: true,
+        detail: { value },
+      }),
+    );
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────

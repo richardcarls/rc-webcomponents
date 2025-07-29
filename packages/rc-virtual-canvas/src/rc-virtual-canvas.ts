@@ -83,8 +83,16 @@ export class RCVirtualCanvas extends LitElement {
   protected _resizeObserver = new ResizeObserver(
     (entries: ResizeObserverEntry[]) => {
       for (const entry of entries) {
-        this._viewRect.width = entry.devicePixelContentBoxSize[0].inlineSize;
-        this._viewRect.height = entry.devicePixelContentBoxSize[0].blockSize;
+        const devicePixelBoxSize = Array.isArray(
+          entry.devicePixelContentBoxSize,
+        )
+          ? entry.devicePixelContentBoxSize[0]
+          : entry.devicePixelContentBoxSize;
+
+        this._viewRect.width =
+          devicePixelBoxSize?.inlineSize ?? entry.contentRect.width;
+        this._viewRect.height =
+          devicePixelBoxSize?.blockSize ?? entry.contentRect.height;
       }
     },
   );
@@ -123,7 +131,7 @@ export class RCVirtualCanvas extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent<RCVirtualCanvasRenderInit>('render', {
+      new CustomEvent<RCVirtualCanvasRenderInit>('rc-virtual-canvas-render', {
         bubbles: true,
         composed: true,
         detail: {

@@ -11,6 +11,8 @@ import menuStyles from './rc-menu.styles';
 
 export interface RCMenuActivateEvent {
   item: HTMLElement;
+  value: string;
+  text: string;
 }
 
 declare global {
@@ -69,7 +71,11 @@ export class RCMenu extends RovingTabIndexMixin(LitElement) {
             new CustomEvent<RCMenuActivateEvent>('rc-menu-activate', {
               bubbles: true,
               composed: true,
-              detail: { item: this._lastFocused },
+              detail: {
+                item: this._lastFocused,
+                value: this._lastFocused.dataset.value ?? this._lastFocused.getAttribute('value') ?? '',
+                text: this._lastFocused.textContent?.trim() ?? '',
+              },
             }),
           );
         }
@@ -79,6 +85,7 @@ export class RCMenu extends RovingTabIndexMixin(LitElement) {
           new CustomEvent('rc-menu-close', {
             bubbles: true,
             composed: true,
+            detail: { reason: 'escape' },
           }),
         );
         break;

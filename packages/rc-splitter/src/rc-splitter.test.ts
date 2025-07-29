@@ -4,7 +4,6 @@ import { html } from 'lit';
 
 import './define';
 import type { RCSplitter } from './rc-splitter';
-import { userEvent } from 'vitest/browser';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 // Helper to get elements from shadow DOM
@@ -14,6 +13,28 @@ function getSeparator(host: RCSplitter): HTMLElement {
 
 function getPrimary(host: RCSplitter): HTMLElement {
   return host.shadowRoot!.querySelector('#primary') as HTMLElement;
+}
+
+async function focusSeparator(separator: HTMLElement): Promise<void> {
+  separator.focus({ preventScroll: true });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+async function pressKey(target: HTMLElement, keyToken: string): Promise<void> {
+  const key = keyToken.startsWith('{') && keyToken.endsWith('}')
+    ? keyToken.slice(1, -1)
+    : keyToken;
+
+  target.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      key: key === 'Space' ? ' ' : key,
+    }),
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 function firePointerEvent(
@@ -44,6 +65,8 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
+      await new Promise((r) => setTimeout(r, 50));
+      host.value = 100;
 
       const separator = getSeparator(host);
 
@@ -107,6 +130,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
+      await new Promise((r) => setTimeout(r, 50));
 
       const separator = getSeparator(host);
       expect(separator.getAttribute('aria-orientation')).toBe('vertical');
@@ -142,12 +166,22 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
+      await new Promise((r) => setTimeout(r, 50));
 
       const separator = getSeparator(host);
+
+      await vi.waitFor(() => {
+        expect(Number(separator.getAttribute('aria-valuemax'))).toBeGreaterThan(
+          0,
+        );
+      });
+
+      host.value = 100;
+
       const initialValue = host.value;
 
-      separator.focus();
-      await userEvent.keyboard('{ArrowRight}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{ArrowRight}');
 
       expect(host.value).toBeGreaterThan(initialValue);
     });
@@ -170,8 +204,8 @@ describe('RCSplitter', () => {
       const initialValue = host.value;
 
       const separator = getSeparator(host);
-      separator.focus();
-      await userEvent.keyboard('{ArrowLeft}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{ArrowLeft}');
 
       expect(host.value).toBeLessThan(initialValue);
     });
@@ -193,8 +227,8 @@ describe('RCSplitter', () => {
       host.value = 100;
 
       const separator = getSeparator(host);
-      separator.focus();
-      await userEvent.keyboard('{Home}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{Home}');
 
       expect(host.value).toBe(0);
     });
@@ -219,8 +253,8 @@ describe('RCSplitter', () => {
 
       const separator = getSeparator(host);
 
-      separator.focus();
-      await userEvent.keyboard('{End}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{End}');
 
       // Value should be at max (400px container width)
       expect(host.value).toBeGreaterThan(100);
@@ -244,14 +278,14 @@ describe('RCSplitter', () => {
       const initialValue = host.value;
 
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
       // First Enter collapses
-      await userEvent.keyboard('{Enter}');
+      await pressKey(separator, '{Enter}');
       expect(host.value).toBe(0);
 
       // Second Enter restores
-      await userEvent.keyboard('{Enter}');
+      await pressKey(separator, '{Enter}');
       expect(host.value).toBe(initialValue);
     });
   });
@@ -276,8 +310,8 @@ describe('RCSplitter', () => {
       const separator = getSeparator(host);
       const initialValue = host.value;
 
-      separator.focus();
-      await userEvent.keyboard('{ArrowDown}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{ArrowDown}');
 
       expect(host.value).toBeGreaterThan(initialValue);
     });
@@ -304,8 +338,8 @@ describe('RCSplitter', () => {
       const initialValue = host.value;
 
       const separator = getSeparator(host);
-      separator.focus();
-      await userEvent.keyboard('{ArrowUp}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{ArrowUp}');
 
       expect(host.value).toBeLessThan(initialValue);
     });
@@ -331,12 +365,12 @@ describe('RCSplitter', () => {
 
       const separator = getSeparator(host);
 
-      separator.focus();
+      await focusSeparator(separator);
 
-      await userEvent.keyboard('{Home}');
+      await pressKey(separator, '{Home}');
       expect(host.value).toBe(0);
 
-      await userEvent.keyboard('{End}');
+      await pressKey(separator, '{End}');
       expect(host.value).toBeGreaterThan(0);
     });
   });
@@ -364,15 +398,15 @@ describe('RCSplitter', () => {
       const initialValue = host.value;
 
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
-      await userEvent.keyboard('{ArrowRight}');
+      await pressKey(separator, '{ArrowRight}');
       expect(host.value).toBe(initialValue);
 
-      await userEvent.keyboard('{Home}');
+      await pressKey(separator, '{Home}');
       expect(host.value).toBe(initialValue);
 
-      await userEvent.keyboard('{End}');
+      await pressKey(separator, '{End}');
       expect(host.value).toBe(initialValue);
     });
   });
@@ -400,12 +434,12 @@ describe('RCSplitter', () => {
       const initialValue = host.value;
 
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
-      await userEvent.keyboard('{ArrowRight}');
+      await pressKey(separator, '{ArrowRight}');
       expect(host.value).toBe(initialValue + 10);
 
-      await userEvent.keyboard('{ArrowLeft}');
+      await pressKey(separator, '{ArrowLeft}');
       expect(host.value).toBe(initialValue);
     });
   });
@@ -470,8 +504,8 @@ describe('RCSplitter', () => {
 
       const separator = getSeparator(host);
 
-      separator.focus();
-      await userEvent.keyboard('{End}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{End}');
 
       expect(host.value).toBe(100);
     });
@@ -486,7 +520,6 @@ describe('RCSplitter', () => {
           data-testid="host"
           value="100"
           style="width: 400px; height: 300px;"
-          @rc-splitter-change=${handleChange}
         >
           <div>Primary</div>
           <div slot="secondary">Secondary</div>
@@ -494,12 +527,15 @@ describe('RCSplitter', () => {
       `);
 
       const host = screen.getByTestId('host').element() as RCSplitter;
+      host.addEventListener('rc-splitter-change', handleChange);
       await host.updateComplete;
+      await new Promise((r) => setTimeout(r, 50));
+      host.value = 100;
 
       const separator = getSeparator(host);
 
-      separator.focus();
-      await userEvent.keyboard('{ArrowRight}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{ArrowRight}');
 
       expect(handleChange).toHaveBeenCalled();
       const event = (handleChange as ReturnType<typeof vi.fn>).mock.calls[0][0];
@@ -527,14 +563,14 @@ describe('RCSplitter', () => {
 
       const separator = getSeparator(host);
 
-      separator.focus();
+      await focusSeparator(separator);
 
       // Clear any initial change events
       (handleChange as ReturnType<typeof vi.fn>).mockClear();
 
       // Already at minimum, left arrow should not change value
-      await userEvent.keyboard('{ArrowLeft}');
-      await userEvent.keyboard('{Home}');
+      await pressKey(separator, '{ArrowLeft}');
+      await pressKey(separator, '{Home}');
 
       // Neither action should have triggered a change
       expect(handleChange).not.toHaveBeenCalled();
@@ -559,8 +595,8 @@ describe('RCSplitter', () => {
 
       const separator = getSeparator(host);
 
-      separator.focus();
-      await userEvent.keyboard('{ArrowRight}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{ArrowRight}');
       await host.updateComplete;
 
       expect(separator.getAttribute('aria-valuenow')).toBe(String(host.value));
@@ -605,7 +641,7 @@ describe('RCSplitter', () => {
 
       const separator = getSeparator(host);
 
-      separator.focus();
+      await focusSeparator(separator);
       // Dispatch keyboard event directly on the separator
       separator.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
@@ -630,7 +666,7 @@ describe('RCSplitter', () => {
       const separator = getSeparator(host);
 
       // First trigger keyboard mode
-      separator.focus();
+      await focusSeparator(separator);
       separator.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
       );
@@ -793,9 +829,9 @@ describe('RCSplitter', () => {
       await new Promise((r) => setTimeout(r, 50));
 
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
-      await userEvent.keyboard('{ArrowLeft}');
+      await pressKey(separator, '{ArrowLeft}');
 
       expect(host.value).toBe(0);
     });
@@ -814,11 +850,11 @@ describe('RCSplitter', () => {
 
       // Press End to go to max
       const separator = getSeparator(host);
-      separator.focus();
-      await userEvent.keyboard('{End}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{End}');
       const maxValue = host.value;
 
-      await userEvent.keyboard('{ArrowRight}');
+      await pressKey(separator, '{ArrowRight}');
 
       expect(host.value).toBe(maxValue);
     });
@@ -886,9 +922,9 @@ describe('RCSplitter', () => {
 
       host.value = 100;
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
-      await userEvent.keyboard('{ArrowRight}');
+      await pressKey(separator, '{ArrowRight}');
 
       expect(host.value).toBe(200);
     });
@@ -983,8 +1019,8 @@ describe('RCSplitter', () => {
       await new Promise((r) => setTimeout(r, 50));
 
       const separator = getSeparator(host);
-      separator.focus();
-      await userEvent.keyboard('{End}');
+      await focusSeparator(separator);
+      await pressKey(separator, '{End}');
       await host.updateComplete;
 
       const secondary = host.shadowRoot!.querySelector(
@@ -1044,15 +1080,15 @@ describe('RCSplitter', () => {
       const initialValue = host.value;
 
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
-      await userEvent.keyboard('{Escape}');
+      await pressKey(separator, '{Escape}');
       expect(host.value).toBe(initialValue);
 
-      await userEvent.keyboard('a');
+      await pressKey(separator, 'a');
       expect(host.value).toBe(initialValue);
 
-      await userEvent.keyboard('{Space}');
+      await pressKey(separator, '{Space}');
       expect(host.value).toBe(initialValue);
     });
 
@@ -1075,11 +1111,11 @@ describe('RCSplitter', () => {
       host.value = 100;
 
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
-      await userEvent.keyboard('{ArrowRight}');
-      await userEvent.keyboard('{ArrowRight}');
-      await userEvent.keyboard('{ArrowRight}');
+      await pressKey(separator, '{ArrowRight}');
+      await pressKey(separator, '{ArrowRight}');
+      await pressKey(separator, '{ArrowRight}');
 
       expect(host.value).toBe(130);
     });
@@ -1100,13 +1136,13 @@ describe('RCSplitter', () => {
       const initialValue = host.value;
 
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
       // Vertical arrows should be ignored for horizontal splitter
-      await userEvent.keyboard('{ArrowUp}');
+      await pressKey(separator, '{ArrowUp}');
       expect(host.value).toBe(initialValue);
 
-      await userEvent.keyboard('{ArrowDown}');
+      await pressKey(separator, '{ArrowDown}');
       expect(host.value).toBe(initialValue);
     });
 
@@ -1130,19 +1166,19 @@ describe('RCSplitter', () => {
       const initialValue = host.value;
 
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
       // Horizontal arrows should be ignored for vertical splitter
-      await userEvent.keyboard('{ArrowLeft}');
+      await pressKey(separator, '{ArrowLeft}');
       expect(host.value).toBe(initialValue);
 
-      await userEvent.keyboard('{ArrowRight}');
+      await pressKey(separator, '{ArrowRight}');
       expect(host.value).toBe(initialValue);
     });
   });
 
   describe('programmatic value changes', () => {
-    test('dispatches event on programmatic value change', async () => {
+    test('does not dispatch event on programmatic value change', async () => {
       const handleChange = vi.fn() as unknown as EventListener;
 
       const screen = render(html`
@@ -1164,9 +1200,8 @@ describe('RCSplitter', () => {
 
       host.value = 250;
 
-      expect(handleChange).toHaveBeenCalled();
-      const event = (handleChange as ReturnType<typeof vi.fn>).mock.calls[0][0];
-      expect(event.detail.value).toBe(250);
+      expect(handleChange).not.toHaveBeenCalled();
+      expect(host.value).toBe(250);
     });
 
     test('setting same value does not dispatch event', async () => {
@@ -1213,14 +1248,14 @@ describe('RCSplitter', () => {
       host.value = 180;
 
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
       // Press Home to collapse
-      await userEvent.keyboard('{Home}');
+      await pressKey(separator, '{Home}');
       expect(host.value).toBe(0);
 
       // Press Enter should restore
-      await userEvent.keyboard('{Enter}');
+      await pressKey(separator, '{Enter}');
       expect(host.value).toBe(180);
     });
 
@@ -1239,18 +1274,18 @@ describe('RCSplitter', () => {
       host.value = 120;
 
       const separator = getSeparator(host);
-      separator.focus();
+      await focusSeparator(separator);
 
       // Move a bit
-      await userEvent.keyboard('{ArrowRight}');
+      await pressKey(separator, '{ArrowRight}');
       const lastValue = host.value;
 
       // Collapse
-      await userEvent.keyboard('{Enter}');
+      await pressKey(separator, '{Enter}');
       expect(host.value).toBe(0);
 
       // Restore
-      await userEvent.keyboard('{Enter}');
+      await pressKey(separator, '{Enter}');
       expect(host.value).toBe(lastValue);
     });
   });

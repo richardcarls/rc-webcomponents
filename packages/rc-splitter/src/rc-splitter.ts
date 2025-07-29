@@ -62,12 +62,48 @@ export class RCSplitter extends LitElement {
   @property({ type: Number })
   step: number = 1;
 
-  /** Initial value from attribute, used to set starting position. */
-  @property({ type: Number, attribute: "value" })
-  initialValue: number | null = null;
+  private _defaultValue: number | undefined;
+  private _hostValue: number | undefined;
+
+  /** The current splitter value. Host writes update silently. */
+  @property({ type: Number })
+  set value(val: number) {
+    const oldValue = this._hostValue;
+
+    this._hostValue = val;
+
+    if (this._initialMax) {
+      this._setValue(val, false);
+    }
+
+    this.requestUpdate("value", oldValue);
+  }
 
   /** The current splitter value, corresponding to the separator position, in either pixels or percentage points depending on `mode`. */
-  set value(val: number) {
+  get value() {
+    return this._value;
+  }
+
+  /** Initial uncontrolled splitter value. */
+  @property({ type: Number, attribute: "default-value" })
+  set defaultValue(val: number | undefined) {
+    const oldValue = this._defaultValue;
+
+    this._defaultValue = val;
+
+    if (!this._initialMax && this._hostValue === undefined && val !== undefined) {
+      this._setValue(val, false);
+    }
+
+    this.requestUpdate("defaultValue", oldValue);
+  }
+
+  /** Initial uncontrolled splitter value. */
+  get defaultValue() {
+    return this._defaultValue;
+  }
+
+  private _setValue(val: number, dispatch: boolean): void {
     const oldValue = this._value;
     this._lastValue = oldValue;
 
@@ -76,8 +112,7 @@ export class RCSplitter extends LitElement {
       this._maxValue,
     );
 
-    // Dispatch change event if value actually changed
-    if (this._value !== oldValue) {
+    if (dispatch && this._value !== oldValue) {
       this.dispatchEvent(
         new CustomEvent("rc-splitter-change", {
           bubbles: true,
@@ -87,9 +122,13 @@ export class RCSplitter extends LitElement {
       );
     }
   }
-  get value() {
-    return this._value;
+
+  private _setUserValue(val: number): void {
+    this._hostValue = undefined;
+    this._setValue(val, true);
   }
+
+  @state()
   private _value: number = 0;
 
   /** Toggles resizing ability */
@@ -131,20 +170,20 @@ export class RCSplitter extends LitElement {
 
     switch (action) {
       case "next":
-        this.value += this.step;
+        this._setUserValue(this.value + this.step);
         break;
       case "prev":
-        this.value -= this.step;
+        this._setUserValue(this.value - this.step);
         break;
       case "collapse":
       case "start":
-        this.value = 0;
+        this._setUserValue(0);
         break;
       case "end":
-        this.value = this._maxValue;
+        this._setUserValue(this._maxValue);
         break;
       case "restore":
-        this.value = this._lastValue;
+        this._setUserValue(this._lastValue);
         break;
     }
   }
@@ -157,11 +196,13 @@ export class RCSplitter extends LitElement {
     const clientRect = this.getBoundingClientRect();
 
     if (this.orientation === "vertical") {
-      this.value =
-        ((e.clientY - clientRect.top) / clientRect.height) * this._maxValue;
+      this._setUserValue(
+        ((e.clientY - clientRect.top) / clientRect.height) * this._maxValue,
+      );
     } else {
-      this.value =
-        ((e.clientX - clientRect.left) / clientRect.width) * this._maxValue;
+      this._setUserValue(
+        ((e.clientX - clientRect.left) / clientRect.width) * this._maxValue,
+      );
     }
   }
 
@@ -185,6 +226,24 @@ export class RCSplitter extends LitElement {
     });
   }
 
+  private _measureHostSize(axis: "inline" | "block"): number {
+    const clientRect = this.getBoundingClientRect();
+    const measuredSize = axis === "inline" ? clientRect.width : clientRect.height;
+
+    if (measuredSize > 0) {
+      return Math.ceil(measuredSize);
+    }
+
+    const computedStyle = getComputedStyle(this);
+    const fallbackSize =
+      axis === "inline" ? computedStyle.width : computedStyle.height;
+    const parsedFallbackSize = Number.parseFloat(fallbackSize);
+
+    return Number.isFinite(parsedFallbackSize)
+      ? Math.ceil(parsedFallbackSize)
+      : 0;
+  }
+
   protected _onResize() {
     const el = this._$primaryElements.at(0);
     const prevStyle = this._$primary.style.getPropertyValue("display");
@@ -201,19 +260,26 @@ export class RCSplitter extends LitElement {
         this._maxValue =
           this.orientation === "horizontal"
             ? // For horizontal splitters, just take the host width...
-              Math.ceil(this.getBoundingClientRect().width)
+              this._measureHostSize("inline")
             : // ...otherwise try to use the first lightDOM element's auto height, and cache it
-              this._initialMax || Math.ceil(clientRect.height);
+              this._initialMax ||
+              Math.ceil(clientRect.height) ||
+              this._measureHostSize("block");
       } else {
         // Percentage max is always just 100%
         this._maxValue = 100.0;
       }
 
       if (!this._initialMax) {
-        // console.log(this, this.value);
-
         this._initialMax = this._maxValue;
-        this.value = this.initialValue ?? this._maxValue / 2;
+        this._setValue(
+          this._hostValue ?? this.defaultValue ?? this._maxValue / 2,
+          false,
+        );
+      } else if (this._hostValue !== undefined) {
+        this._setValue(this._hostValue, false);
+      } else {
+        this._setValue(this.value, false);
       }
 
       // Restore previous display mode

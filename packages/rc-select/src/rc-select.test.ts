@@ -24,6 +24,18 @@ function makeSelect(opts?: { multiple?: boolean; disabled?: boolean; placeholder
   `;
 }
 
+function makeSelectedSelect() {
+  return html`
+    <rc-select placeholder="Choose...">
+      <select slot="select" aria-label="Fruit" multiple>
+        <option value="apple">Apple</option>
+        <option value="banana" selected>Banana</option>
+        <option value="cherry" selected>Cherry</option>
+      </select>
+    </rc-select>
+  `;
+}
+
 // getByRole('combobox') times out in Firefox when rc-listbox[popover="manual"] is
 // a sibling in the same shadow root — access the shadow DOM directly instead.
 async function getHost(screen: ReturnType<typeof render>): Promise<RCSelect> {
@@ -171,6 +183,10 @@ test('Enter selects active option, closes popup, fires rc-select-change', async 
   expect(host.open).toBe(false);
   expect(changeHandler).toHaveBeenCalledOnce();
   expect(changeHandler.mock.calls[0][0].detail.value).toBe('apple');
+  expect(changeHandler.mock.calls[0][0].detail.selectedValues).toEqual(['apple']);
+  expect(changeHandler.mock.calls[0][0].detail.selectedOptions).toEqual([
+    { value: 'apple', label: 'Apple', disabled: false },
+  ]);
 });
 
 test('Escape closes popup without changing selection', async () => {
@@ -199,6 +215,80 @@ test('clicking an option selects it and closes popup', async () => {
   await host.updateComplete;
   expect(host['_selectedValues'].has('apple')).toBe(true);
   expect(host.open).toBe(false);
+});
+
+test('initial value property wins over defaultValue and light-DOM selection', async () => {
+  const screen = render(makeSelectedSelect());
+  const host = screen.container.querySelector('rc-select') as RCSelect;
+
+  host.defaultValue = ['apple'];
+  host.value = ['banana'];
+
+  await getHost(screen);
+
+  expect(host.selectedValues).toEqual(['banana']);
+});
+
+test('defaultValue initializes uncontrolled selection', async () => {
+  const screen = render(makeSelect({ multiple: true }));
+  const host = screen.container.querySelector('rc-select') as RCSelect;
+
+  host.defaultValue = ['apple', 'banana'];
+
+  await getHost(screen);
+
+  expect(host.selectedValues).toEqual(['apple', 'banana']);
+});
+
+test('light-DOM selected options initialize selection', async () => {
+  const screen = render(makeSelectedSelect());
+  const host = await getHost(screen);
+
+  expect(host.selectedValues).toEqual(['banana', 'cherry']);
+});
+
+test('controlled value updates after initialization', async () => {
+  const screen = render(makeSelect({ multiple: true }));
+  const host = await getHost(screen);
+
+  host.value = ['apple', 'banana'];
+  await host.updateComplete;
+
+  expect(host.selectedValues).toEqual(['apple', 'banana']);
+});
+
+test('host value writes do not dispatch rc-select-change', async () => {
+  const screen = render(makeSelect({ multiple: true }));
+  const host = await getHost(screen);
+  const handler = vi.fn();
+
+  host.addEventListener('rc-select-change', handler);
+  host.value = ['apple'];
+  await host.updateComplete;
+
+  expect(handler).not.toHaveBeenCalled();
+});
+
+test('options property populates listbox and native select', async () => {
+  const screen = render(html`
+    <rc-select>
+      <select slot="select" multiple></select>
+    </rc-select>
+  `);
+  const host = screen.container.querySelector('rc-select') as RCSelect;
+
+  host.options = [
+    { value: 'apple', label: 'Apple' },
+    { value: 'banana', label: 'Banana' },
+  ];
+  host.value = ['banana'];
+
+  await getHost(screen);
+
+  const nativeSel = host.querySelector('select')!;
+
+  expect(Array.from(nativeSel.options).map((opt) => opt.value)).toEqual(['apple', 'banana']);
+  expect(host.selectedValues).toEqual(['banana']);
 });
 
 test('native <select> value syncs after selection', async () => {
@@ -357,4 +447,22 @@ test('adding <option> to slotted <select> updates listbox', async () => {
   const listbox = host.renderRoot.querySelector('rc-listbox')!;
   const opts = listbox.querySelectorAll('[role="option"]');
   expect(opts).toHaveLength(4); // apple, banana, cherry, date
+});
+
+test('adding <option> preserves current selection', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const nativeSel = host.querySelector('select')!;
+
+  host.value = 'banana';
+
+  const newOpt = document.createElement('option');
+  newOpt.value = 'date';
+  newOpt.text = 'Date';
+  nativeSel.add(newOpt);
+
+  await new Promise((r) => setTimeout(r, 10));
+  await host.updateComplete;
+
+  expect(host.selectedValues).toEqual(['banana']);
 });

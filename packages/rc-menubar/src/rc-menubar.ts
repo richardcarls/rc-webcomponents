@@ -1,10 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
-import {
-  keyNavigation,
-  type KeyboardNavigationAction,
-} from '@rcarls/rc-common';
+import { type KeyboardNavigationAction } from '@rcarls/rc-common';
 
 import type {
   RCMenuButton,
@@ -52,6 +49,43 @@ export class RCMenubar extends LitElement {
 
   /** Array of menu button elements */
   private _menuButtons: WeakRef<RCMenuButton>[] = [];
+
+  private _boundHandleKeydown = this._handleKeydown.bind(this);
+
+  private _boundHandleClick = this._handleClick.bind(this);
+
+  override connectedCallback() {
+    super.connectedCallback();
+
+    this._syncHostAria();
+    this.addEventListener('keydown', this._boundHandleKeydown);
+    this.addEventListener('click', this._boundHandleClick);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+
+    this.removeEventListener('keydown', this._boundHandleKeydown);
+    this.removeEventListener('click', this._boundHandleClick);
+  }
+
+  protected override updated(changedProperties: Map<PropertyKey, unknown>) {
+    super.updated(changedProperties);
+
+    if (
+      changedProperties.has('label') ||
+      changedProperties.has('orientation')
+    ) {
+      this._syncHostAria();
+    }
+  }
+
+  /** Keep ARIA semantics on the custom element host for slotted children. */
+  private _syncHostAria(): void {
+    this.setAttribute('role', 'menubar');
+    this.setAttribute('aria-label', this.label);
+    this.setAttribute('aria-orientation', this.orientation);
+  }
 
   /** Get the trigger element from a menu button */
   private _getTrigger(menuButton: RCMenuButton): HTMLElement | null {
@@ -150,8 +184,21 @@ export class RCMenubar extends LitElement {
       if (!this.isConnected) return;
 
       prevButtons.forEach((ref) => {
-        const trigger = this._getTrigger(ref.deref()!);
+        const menuButton = ref.deref();
+        if (!menuButton) return;
+
+        menuButton.removeAttribute('role');
+
+        const trigger = this._getTrigger(menuButton);
         trigger?.removeAttribute('tabindex');
+        trigger?.removeAttribute('role');
+      });
+
+      this.menuButtons.forEach((menuButton) => {
+        menuButton.removeAttribute('role');
+
+        const trigger = this._getTrigger(menuButton);
+        trigger?.setAttribute('role', 'menuitem');
       });
 
       const items = this.items;
@@ -242,16 +289,59 @@ export class RCMenubar extends LitElement {
     }
   }
 
+  private _handleKeydown(e: KeyboardEvent): void {
+    const key = this._normalizeKey(e.key);
+    const navNext = this.orientation === 'horizontal' ? 'ArrowRight' : 'ArrowDown';
+    const navPrev = this.orientation === 'horizontal' ? 'ArrowLeft' : 'ArrowUp';
+
+    let action: KeyboardNavigationAction | undefined;
+
+    if (key === navNext) {
+      action = 'next';
+    } else if (key === navPrev) {
+      action = 'prev';
+    } else if (key === 'Home') {
+      action = 'start';
+    } else if (key === 'End') {
+      action = 'end';
+    } else if (key === 'Escape') {
+      action = 'escape';
+    } else if (key === 'Tab') {
+      this.setAttribute('data-interaction-mode', 'keyboard');
+    }
+
+    if (!action) return;
+
+    this._handleNavigate(action);
+    this.setAttribute('data-interaction-mode', 'keyboard');
+    e.stopPropagation();
+    e.preventDefault();
+  }
+
+  private _handleClick(): void {
+    this.removeAttribute('data-interaction-mode');
+  }
+
+  private _normalizeKey(key: string): string {
+    switch (key) {
+      case 'Up':
+        return 'ArrowUp';
+      case 'Down':
+        return 'ArrowDown';
+      case 'Left':
+        return 'ArrowLeft';
+      case 'Right':
+        return 'ArrowRight';
+      default:
+        return key;
+    }
+  }
+
   protected render() {
     return html`
       <div
         id="root"
         part="root"
-        ${keyNavigation(this._onNavigate, { handleEscape: true })}
-        data-interaction-mode="keyboard"
-        role="menubar"
-        aria-orientation=${this.orientation}
-        aria-label=${this.label}
       >
         <div
           id="slot-wrap"
@@ -263,10 +353,6 @@ export class RCMenubar extends LitElement {
       </div>
     `;
   }
-
-  private _onNavigate = (action: KeyboardNavigationAction) => {
-    this._handleNavigate(action);
-  };
 }
 
 export default RCMenubar;

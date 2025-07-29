@@ -6,6 +6,22 @@ import { userEvent } from 'vitest/browser';
 import './define';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
+async function focusTrigger(trigger: Element): Promise<void> {
+  if (!(trigger instanceof HTMLElement)) {
+    throw new Error('Expected trigger to be an HTMLElement.');
+  }
+
+  await vi.waitFor(() => {
+    expect(trigger.getAttribute('tabindex')).toBe('0');
+  });
+
+  trigger.focus({ preventScroll: true });
+
+  await vi.waitFor(() => {
+    expect(document.activeElement).toBe(trigger);
+  });
+}
+
 test('RCMenubar renders with correct ARIA attributes', async () => {
   const screen = render(html`
     <rc-menubar data-testid="menubar" label="Test Menu">
@@ -25,11 +41,11 @@ test('RCMenubar renders with correct ARIA attributes', async () => {
   `);
 
   const menubar = screen.getByTestId('menubar');
-  const root = menubar.getByRole('menubar');
 
   await expect.element(menubar).toBeInTheDocument();
-  await expect.element(root).toHaveAttribute('aria-label', 'Test Menu');
-  await expect.element(root).toHaveAttribute('aria-orientation', 'horizontal');
+  await expect.element(menubar).toHaveAttribute('role', 'menubar');
+  await expect.element(menubar).toHaveAttribute('aria-label', 'Test Menu');
+  await expect.element(menubar).toHaveAttribute('aria-orientation', 'horizontal');
 });
 
 test('RCMenubar has no automated accessibility violations', async () => {
@@ -51,6 +67,9 @@ test('RCMenubar has no automated accessibility violations', async () => {
   `);
 
   const menubar = await screen.getByTestId('menubar').element();
+  const trigger = screen.getByRole('menuitem', { name: 'File' });
+
+  await expect.element(trigger).toBeInTheDocument();
 
   await expectNoA11yViolations(menubar);
 });
@@ -110,9 +129,7 @@ test('RCMenubar navigates with arrow keys', async () => {
   const trigger3 = screen.getByTestId('trigger-3');
 
   // Focus first trigger
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-  await expect.element(trigger1).toHaveFocus();
+  await focusTrigger(trigger1.element());
 
   // Arrow right to second
   await userEvent.keyboard('{ArrowRight}');
@@ -161,9 +178,7 @@ test('RCMenubar navigates with Home/End keys', async () => {
   const trigger3 = screen.getByTestId('trigger-3');
 
   // Focus first trigger
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-  await expect.element(trigger1).toHaveFocus();
+  await focusTrigger(trigger1.element());
 
   // End key goes to last
   await userEvent.keyboard('{End}');
@@ -190,9 +205,7 @@ test('RCMenubar opens menu with Down arrow', async () => {
   const item1 = screen.getByTestId('item-1');
 
   // Focus trigger
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-  await expect.element(trigger1).toHaveFocus();
+  await focusTrigger(trigger1.element());
 
   // Down arrow opens menu
   await userEvent.keyboard('{ArrowDown}');
@@ -225,9 +238,7 @@ test('RCMenubar cascade behavior - arrow navigation opens adjacent menus', async
   const item21 = screen.getByTestId('item-2-1');
 
   // Focus first trigger and open menu
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-  await expect.element(trigger1).toHaveFocus();
+  await focusTrigger(trigger1.element());
   await userEvent.keyboard('{ArrowDown}');
   await expect.element(trigger1).toHaveAttribute('aria-expanded', 'true');
 
@@ -265,8 +276,7 @@ test('RCMenubar closes menu on Escape', async () => {
   const trigger1 = screen.getByTestId('trigger-1');
 
   // Focus trigger and open menu
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
+  await focusTrigger(trigger1.element());
   await userEvent.keyboard('{ArrowDown}');
   await expect.element(trigger1).toHaveAttribute('aria-expanded', 'true');
 
@@ -278,7 +288,7 @@ test('RCMenubar closes menu on Escape', async () => {
 test('RCMenubar fires toggle events', async () => {
   const toggleSpy = vi.fn();
 
-  render(html`
+  const screen = render(html`
     <rc-menubar
       data-testid="menubar"
       label="Test Menu"
@@ -294,8 +304,9 @@ test('RCMenubar fires toggle events', async () => {
   `);
 
   // Focus and open menu
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
+  const trigger1 = screen.getByTestId('trigger-1');
+
+  await focusTrigger(trigger1.element());
   await userEvent.keyboard('{ArrowDown}');
 
   expect(toggleSpy).toHaveBeenCalledTimes(1);
@@ -324,9 +335,7 @@ test('RCMenubar vertical: opens menu with ArrowRight', async () => {
   const item1 = screen.getByTestId('item-1');
 
   // Focus trigger
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-  await expect.element(trigger1).toHaveFocus();
+  await focusTrigger(trigger1.element());
 
   // ArrowRight opens menu in vertical orientation
   await userEvent.keyboard('{ArrowRight}');
@@ -358,9 +367,7 @@ test('RCMenubar vertical: close menu and navigate to next with ArrowDown', async
   const item21 = screen.getByTestId('item-2-1');
 
   // Focus first trigger and open menu with ArrowRight
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-  await expect.element(trigger1).toHaveFocus();
+  await focusTrigger(trigger1.element());
   await userEvent.keyboard('{ArrowRight}');
   await expect.element(trigger1).toHaveAttribute('aria-expanded', 'true');
 
@@ -394,9 +401,7 @@ test('RCMenubar vertical: menu-button inherits orientation from menubar', async 
   const trigger1 = screen.getByTestId('trigger-1');
 
   // Focus trigger
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-  await expect.element(trigger1).toHaveFocus();
+  await focusTrigger(trigger1.element());
 
   // ArrowDown should NOT open menu (it's the navigation key in vertical menubar)
   await userEvent.keyboard('{ArrowDown}');
@@ -426,16 +431,13 @@ test('RCMenubar vertical orientation uses Up/Down for navigation', async () => {
   `);
 
   const menubar = screen.getByTestId('menubar');
-  const root = menubar.getByRole('menubar');
   const trigger1 = screen.getByTestId('trigger-1');
   const trigger2 = screen.getByTestId('trigger-2');
 
-  await expect.element(root).toHaveAttribute('aria-orientation', 'vertical');
+  await expect.element(menubar).toHaveAttribute('aria-orientation', 'vertical');
 
   // Focus first trigger
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-  await expect.element(trigger1).toHaveFocus();
+  await focusTrigger(trigger1.element());
 
   // Down arrow navigates to next in vertical orientation
   await userEvent.keyboard('{ArrowDown}');

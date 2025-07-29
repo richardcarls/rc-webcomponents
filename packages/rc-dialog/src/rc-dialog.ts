@@ -16,6 +16,7 @@ declare global {
  * @slot - Place a `<dialog>` element with your content here.
  *
  * @fires rc-dialog-open - Fired when the dialog opens via `showModal()` or `show()`.
+ * @fires rc-dialog-toggle - Fired when user/native interaction changes open state.
  *
  * @fires rc-dialog-request-close - Fired before the dialog closes (Escape key,
  *   backdrop click when `light-dismiss` is set, or a call to `requestClose()`).
@@ -89,20 +90,40 @@ export class RCDialog extends LitElement {
 
   // ---- Native <dialog> delegation ----------------------------------------
 
-  private _pendingOpen: boolean | undefined = undefined;
+  private _controlledOpen: boolean | undefined = undefined;
+  private _defaultOpen = false;
+  private _dialogRef: WeakRef<HTMLDialogElement> | null = null;
+  private _observer = new MutationObserver(() => this._setupDialog());
+  private _suppressNextCloseToggle = false;
 
-  /** Whether the inner `<dialog>` is currently open. Setting this is equivalent to calling `showModal()` / `close()`. */
-  @property({ type: Boolean, attribute: 'open', reflect: false })
+  /** Whether the inner `<dialog>` is currently open. Host writes update silently. */
+  @property({ type: Boolean, attribute: 'open', reflect: true })
   get open(): boolean { return this._dlg()?.open ?? false; }
-  set open(value: boolean) {
-    const dlg = this._dlg();
-    if (dlg) {
-      if (value) this.showModal();
-      else this.close();
-    } else {
-      this._pendingOpen = value; // dialog child not rendered yet — apply in firstUpdated
-      this.requestUpdate();
+  set open(value: boolean | undefined) {
+    const oldValue = this._controlledOpen;
+
+    this._controlledOpen = value;
+
+    if (value !== undefined) {
+      this._applyOpen(value, true);
     }
+
+    this.requestUpdate('open', oldValue);
+  }
+
+  /** Initial uncontrolled open state. */
+  @property({ type: Boolean, attribute: 'default-open' })
+  get defaultOpen(): boolean { return this._defaultOpen; }
+  set defaultOpen(value: boolean) {
+    const oldValue = this._defaultOpen;
+
+    this._defaultOpen = value;
+
+    if (this._controlledOpen === undefined && value) {
+      this._applyOpen(true, true);
+    }
+
+    this.requestUpdate('defaultOpen', oldValue);
   }
 
   /** The return value set when the dialog was closed. */
@@ -110,14 +131,18 @@ export class RCDialog extends LitElement {
 
   /** Opens the inner `<dialog>` as a modal and fires `rc-dialog-open`. */
   showModal(): void {
-    this._dlg()?.showModal();
-    this.dispatchEvent(new CustomEvent('rc-dialog-open', { bubbles: true, composed: true }));
+    if (this._applyOpen(true, false, true)) {
+      this.dispatchEvent(new CustomEvent('rc-dialog-open', { bubbles: true, composed: true }));
+      this._dispatchToggle(true);
+    }
   }
 
   /** Opens the inner `<dialog>` as a non-modal and fires `rc-dialog-open`. */
   show(): void {
-    this._dlg()?.show();
-    this.dispatchEvent(new CustomEvent('rc-dialog-open', { bubbles: true, composed: true }));
+    if (this._applyOpen(true, false, false)) {
+      this.dispatchEvent(new CustomEvent('rc-dialog-open', { bubbles: true, composed: true }));
+      this._dispatchToggle(true);
+    }
   }
 
   /** Closes the inner `<dialog>`, optionally setting a return value. */
@@ -146,12 +171,21 @@ export class RCDialog extends LitElement {
   // ---- Internals ----------------------------------------------------------
 
   private _dlg(): HTMLDialogElement | null {
-    return this.querySelector<HTMLDialogElement>(':scope > dialog');
+    return this._dialogRef?.deref() ?? this.querySelector<HTMLDialogElement>(':scope > dialog');
   }
 
   override render() { return nothing; }
 
+  override connectedCallback() {
+    super.connectedCallback();
+    this._observer.observe(this, { childList: true });
+  }
+
   override firstUpdated() {
+    this._setupDialog();
+  }
+
+  private _setupDialog() {
     const dlg = this._dlg();
     if (!dlg) {
       if (import.meta.env.DEV) {
@@ -163,6 +197,11 @@ export class RCDialog extends LitElement {
       }
       return;
     }
+
+    if (this._dialogRef?.deref() === dlg) return;
+
+    this._teardownDialog();
+    this._dialogRef = new WeakRef(dlg);
 
     if (import.meta.env.DEV) {
       const hasLabel =
@@ -181,11 +220,6 @@ export class RCDialog extends LitElement {
           dlg,
         );
       }
-    }
-
-    if (this._pendingOpen !== undefined) {
-      this._pendingOpen ? this.showModal() : this.close();
-      this._pendingOpen = undefined;
     }
 
     dlg.addEventListener('close', this._onClose);
@@ -220,6 +254,12 @@ export class RCDialog extends LitElement {
         bounds: this.moveBounds,
       });
     }
+
+    if (this._controlledOpen !== undefined) {
+      this._applyOpen(this._controlledOpen, true);
+    } else if (this.defaultOpen) {
+      this._applyOpen(true, true);
+    }
   }
 
   override updated(changed: PropertyValues) {
@@ -247,12 +287,19 @@ export class RCDialog extends LitElement {
   }
 
   override disconnectedCallback() {
+    this._observer.disconnect();
+    this._teardownDialog();
     super.disconnectedCallback();
-    const dlg = this._dlg();
+  }
+
+  private _teardownDialog(): void {
+    const dlg = this._dialogRef?.deref();
     if (!dlg) return;
+
     dlg.removeEventListener('close', this._onClose);
     dlg.removeEventListener('cancel', this._onCancel);
     dlg.removeEventListener('click', this._onBackdropClick);
+    this._dialogRef = null;
   }
 
   private _onClose = () => {
@@ -263,6 +310,13 @@ export class RCDialog extends LitElement {
         detail: { returnValue: this.returnValue },
       }),
     );
+
+    if (!this._suppressNextCloseToggle) {
+      this._dispatchToggle(false);
+    }
+
+    this._suppressNextCloseToggle = false;
+    this.requestUpdate('open');
   };
 
   /**
@@ -299,6 +353,36 @@ export class RCDialog extends LitElement {
   private _onBackdropClick = (e: MouseEvent) => {
     if (e.target === this._dlg()) this.requestClose();
   };
+
+  private _applyOpen(open: boolean, silent: boolean, modal = true): boolean {
+    const dlg = this._dlg();
+    if (!dlg) return false;
+
+    if (open) {
+      if (dlg.open) return false;
+      modal ? dlg.showModal() : dlg.show();
+      this.requestUpdate('open');
+      return true;
+    }
+
+    if (!dlg.open) return false;
+
+    this._suppressNextCloseToggle = silent;
+    dlg.close();
+    this.requestUpdate('open');
+
+    return true;
+  }
+
+  private _dispatchToggle(open: boolean): void {
+    this.dispatchEvent(
+      new CustomEvent('rc-dialog-toggle', {
+        bubbles: true,
+        composed: true,
+        detail: { open, returnValue: this.returnValue },
+      }),
+    );
+  }
 }
 
 export default RCDialog;

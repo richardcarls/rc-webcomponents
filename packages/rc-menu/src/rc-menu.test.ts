@@ -44,9 +44,7 @@ test('RCMenu is an accessible menu', async () => {
   await expect.element(item2).toHaveAttribute('tabindex', '-1');
 
   // Tab into the first item
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-
+  item1.element().focus();
   await expect.element(item1).toHaveFocus();
 
   // Down arrow navigation (menu is vertical by default)

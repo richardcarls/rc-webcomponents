@@ -713,7 +713,7 @@ describe('RCTextarea — pattern API', () => {
 // ── Events ────────────────────────────────────────────────────────────────────
 
 describe('RCTextarea — events', () => {
-  test('rc-textarea-change fires on value setter', async () => {
+  test('rc-textarea-change does not fire on value setter', async () => {
     const screen = render(html`
       <rc-textarea data-testid="host"></rc-textarea>
     `);
@@ -727,11 +727,11 @@ describe('RCTextarea — events', () => {
 
     host.value = 'new content';
 
-    expect(events).toHaveLength(1);
-    expect(events[0].detail.value).toBe('new content');
+    expect(events).toHaveLength(0);
+    expect(host.value).toBe('new content');
   });
 
-  test('rc-textarea-change bubbles and is composed', async () => {
+  test('rc-textarea-change bubbles and is composed for user edits', async () => {
     const screen = render(html`
       <rc-textarea data-testid="host"></rc-textarea>
     `);
@@ -743,7 +743,9 @@ describe('RCTextarea — events', () => {
       events.push(e as CustomEvent),
     );
 
-    host.value = 'bubbling';
+    const editor = getEditor(host);
+    editor.textContent = 'bubbling';
+    editor.dispatchEvent(new InputEvent('input', { bubbles: true }));
 
     document.removeEventListener('rc-textarea-change', (e) =>
       events.push(e as CustomEvent),

@@ -7,8 +7,12 @@ import {
 import type { RCListbox, ListboxOption } from '@rcarls/rc-listbox';
 import { selectStyles } from './rc-select.styles.js';
 
+export type RCSelectValue = string | string[];
+
 export interface RCSelectChangeEvent {
-  value: string | string[];
+  value: RCSelectValue;
+  selectedValues: string[];
+  selectedOptions: ListboxOption[];
 }
 
 declare global {
@@ -30,7 +34,8 @@ declare global {
  * @slot display - Optional. Replaces the default value label in the trigger.
  * @slot toggle-icon - Optional. Replaces the default chevron icon.
  *
- * @fires rc-select-change - When the selection changes. `detail: { value: string | string[] }`
+ * @fires rc-select-change - When user interaction changes selection.
+ *   `detail: { value, selectedValues, selectedOptions }`
  * @fires rc-select-open - When the popup opens.
  * @fires rc-select-close - When the popup closes.
  *
@@ -60,9 +65,14 @@ export class RCSelect extends LitElement {
 
   @state() protected _selectedValues: Set<string> = new Set();
   @state() private _chipNavIndex = -1;
+  @state() private _options: ListboxOption[] = [];
 
   protected _selectRef: WeakRef<HTMLSelectElement> | null = null;
   private _mutationObserver: MutationObserver | null = null;
+  private _defaultValue: RCSelectValue | undefined;
+  private _propertyOptions: ListboxOption[] | undefined;
+  private _value: RCSelectValue | undefined;
+  private _selectionInitialized = false;
   private _typeAheadBuffer = '';
   private _typeAheadTimer = 0;
 
@@ -119,13 +129,75 @@ export class RCSelect extends LitElement {
   }
 
   /**
-   * Programmatically replace the current selection without triggering
-   * MutationObserver — use from reactive framework wrappers (SolidJS createEffect,
-   * React useEffect) instead of setting `option.selected` directly.
+   * Current selection. Host writes update selection silently; user interaction
+   * emits `rc-select-change`.
    */
-  setSelected(values: string[]): void {
-    this._selectedValues = new Set(values);
-    this._$listbox.setSelectedValues(values);
+  get value(): RCSelectValue {
+    return this.multiple
+      ? this.selectedValues
+      : (this.selectedValues[0] ?? '');
+  }
+
+  set value(value: RCSelectValue | undefined) {
+    const oldValue = this._value;
+
+    this._value = value;
+
+    if (value === undefined) {
+      this.requestUpdate('value', oldValue);
+      return;
+    }
+
+    this._selectionInitialized = true;
+    this._applySelection(this._normalizeValue(value));
+    this.requestUpdate('value', oldValue);
+  }
+
+  /** Initial uncontrolled selection, applied before user or native state owns the value. */
+  get defaultValue(): RCSelectValue | undefined {
+    return this._defaultValue;
+  }
+
+  set defaultValue(value: RCSelectValue | undefined) {
+    const oldValue = this._defaultValue;
+
+    this._defaultValue = value;
+
+    if (!this._selectionInitialized && this._value === undefined && value !== undefined) {
+      this._applySelection(this._normalizeValue(value));
+    }
+
+    this.requestUpdate('defaultValue', oldValue);
+  }
+
+  /** Programmatic option source. Omit to derive options from the slotted `<select>`. */
+  get options(): ListboxOption[] | undefined {
+    return this._propertyOptions ? [...this._propertyOptions] : undefined;
+  }
+
+  set options(options: ListboxOption[] | undefined) {
+    const oldValue = this._propertyOptions;
+
+    this._propertyOptions = options ? [...options] : undefined;
+    this._syncOptions(this._currentOptions());
+    this._mirrorOptionsToNativeSelect();
+    this.requestUpdate('options', oldValue);
+  }
+
+  /** Selected values as a consistently-array-shaped convenience getter. */
+  get selectedValues(): string[] {
+    return [...this._selectedValues];
+  }
+
+  protected get selectedOptions(): ListboxOption[] {
+    return this._selectedOptionsFor(this.selectedValues);
+  }
+
+  protected _applySelection(values: string[]): void {
+    const selectedValues = this.multiple ? values : values.slice(0, 1);
+
+    this._selectedValues = new Set(selectedValues);
+    this._$listbox?.setSelectedValues(selectedValues);
     this._syncNativeSelect();
     this.requestUpdate();
   }
@@ -173,7 +245,17 @@ export class RCSelect extends LitElement {
       this._syncOptionsFromSelect(sel);
       this._mutationObserver = new MutationObserver(() => {
         const s = this._selectRef?.deref();
-        if (s) this._syncOptionsFromSelect(s);
+        if (!s) return;
+
+        this.multiple = s.multiple;
+        this.disabled = s.disabled;
+
+        if (this._propertyOptions !== undefined) {
+          this._applySelectionFromCurrentSource();
+          return;
+        }
+
+        this._syncOptionsFromSelect(s);
       });
       this._mutationObserver.observe(sel, {
         childList: true,
@@ -185,23 +267,139 @@ export class RCSelect extends LitElement {
   }
 
   protected _syncOptionsFromSelect(sel: HTMLSelectElement) {
-    const opts: ListboxOption[] = [];
-    for (const opt of sel.options) {
-      if (!opt.value) continue; // skip placeholder <option value="">
-      opts.push({ value: opt.value, label: opt.text, disabled: opt.disabled });
+    if (this._propertyOptions !== undefined) {
+      this._syncOptions(this._propertyOptions);
+      this._mirrorOptionsToNativeSelect();
+      this._applySelectionFromCurrentSource();
+      return;
     }
-    this._$listbox.options = opts;
 
-    // Sync from the HTML selected *attribute* (defaultSelected), not the IDL property,
-    // so browser auto-selection of the first option in a briefly-single-mode <select>
-    // does not bleed into the component state.
-    const selected: string[] = [];
-    for (const opt of sel.options) {
-      if (opt.defaultSelected && opt.value) selected.push(opt.value);
-    }
-    this._selectedValues = new Set(selected);
-    this._$listbox.setSelectedValues(selected);
+    const options = this._optionsFromSelect(sel);
+
+    this._syncOptions(options);
+    this._applySelectionFromCurrentSource();
     this._syncAccessibleName(sel);
+  }
+
+  private _applySelectionFromCurrentSource(): void {
+    if (this._value !== undefined) {
+      this._applySelection(this._normalizeValue(this._value));
+      return;
+    }
+
+    if (!this._selectionInitialized && this._defaultValue !== undefined) {
+      this._selectionInitialized = true;
+      this._applySelection(this._normalizeValue(this._defaultValue));
+      return;
+    }
+
+    const selected = this._selectionInitialized
+      ? this._selectedValuesFromNativeSelect()
+      : this._defaultSelectedValuesFromNativeSelect();
+
+    this._selectionInitialized = true;
+    this._applySelection(selected);
+  }
+
+  private _syncOptions(options: ListboxOption[]): void {
+    this._options = [...options];
+    if (this._$listbox) this._$listbox.options = this._options;
+  }
+
+  private _currentOptions(): ListboxOption[] {
+    if (this._propertyOptions !== undefined) return this._propertyOptions;
+
+    const sel = this._selectRef?.deref();
+
+    return sel ? this._optionsFromSelect(sel) : [];
+  }
+
+  private _optionsFromSelect(sel: HTMLSelectElement): ListboxOption[] {
+    const options: ListboxOption[] = [];
+
+    for (const opt of sel.options) {
+      if (!opt.value) continue;
+
+      options.push({
+        value: opt.value,
+        label: opt.text,
+        disabled: opt.disabled,
+      });
+    }
+
+    return options;
+  }
+
+  private _selectedValuesFromNativeSelect(): string[] {
+    const sel = this._selectRef?.deref();
+    if (!sel) return this.selectedValues;
+
+    return Array.from(sel.selectedOptions)
+      .map((opt) => opt.value)
+      .filter(Boolean);
+  }
+
+  private _defaultSelectedValuesFromNativeSelect(): string[] {
+    const sel = this._selectRef?.deref();
+    if (!sel) return this.selectedValues;
+
+    return Array.from(sel.options)
+      .filter((opt) => opt.defaultSelected)
+      .map((opt) => opt.value)
+      .filter(Boolean);
+  }
+
+  private _mirrorOptionsToNativeSelect(): void {
+    const sel = this._selectRef?.deref();
+    if (!sel || this._propertyOptions === undefined) return;
+
+    this._mutationObserver?.disconnect();
+    sel.replaceChildren();
+
+    for (const opt of this._propertyOptions) {
+      const optionEl = document.createElement('option');
+
+      optionEl.value = opt.value;
+      optionEl.text = opt.label;
+      optionEl.disabled = opt.disabled ?? false;
+      optionEl.selected = this._selectedValues.has(opt.value);
+
+      sel.add(optionEl);
+    }
+
+    this._mutationObserver?.observe(sel, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    });
+  }
+
+  protected _addOption(option: ListboxOption): void {
+    const options = this._options.some((opt) => opt.value === option.value)
+      ? this._options.map((opt) => (opt.value === option.value ? option : opt))
+      : [...this._options, option];
+
+    if (this._propertyOptions !== undefined) {
+      this._propertyOptions = options;
+    }
+
+    this._syncOptions(options);
+
+    const sel = this._selectRef?.deref();
+    if (!sel || Array.from(sel.options).some((opt) => opt.value === option.value)) return;
+
+    const optionEl = document.createElement('option');
+
+    optionEl.value = option.value;
+    optionEl.text = option.label;
+    optionEl.disabled = option.disabled ?? false;
+    optionEl.selected = this._selectedValues.has(option.value);
+
+    sel.add(optionEl);
+  }
+
+  private _normalizeValue(value: RCSelectValue): string[] {
+    return Array.isArray(value) ? value : value ? [value] : [];
   }
 
   private _syncAccessibleName(sel: HTMLSelectElement): void {
@@ -220,49 +418,42 @@ export class RCSelect extends LitElement {
   // ── Selection ────────────────────────────────────────────────────────────────
 
   protected _handleListboxChange(e: CustomEvent) {
-    const { value, selected } = e.detail as {
-      value: string;
+    const { optionValue, value, selected } = e.detail as {
+      optionValue?: string;
+      value: string | string[];
       selected: boolean;
     };
+    const activatedValue = optionValue ?? (Array.isArray(value) ? value.at(-1) : value);
+    if (!activatedValue) return;
+
     e.stopPropagation();
 
     if (this.multiple) {
       const next = new Set(this._selectedValues);
-      if (selected) next.add(value);
-      else next.delete(value);
+      if (selected) next.add(activatedValue);
+      else next.delete(activatedValue);
       this._selectedValues = next;
     } else {
-      this._selectedValues = selected ? new Set([value]) : new Set();
+      this._selectedValues = selected ? new Set([activatedValue]) : new Set();
       if (selected) this.closePopup();
     }
 
+    this._selectionInitialized = true;
     this._syncNativeSelect();
-    this.dispatchEvent(
-      new CustomEvent<RCSelectChangeEvent>('rc-select-change', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          value: this.multiple
-            ? [...this._selectedValues]
-            : (this._selectedValues.values().next().value ?? ''),
-        },
-      }),
-    );
+    this._$listbox.setSelectedValues(this.selectedValues);
+    this._dispatchChange();
   }
 
   protected _removeValue(value: string) {
     const next = new Set(this._selectedValues);
+
     next.delete(value);
+
     this._selectedValues = next;
     this._$listbox.setSelectedValues([...next]);
+    this._selectionInitialized = true;
     this._syncNativeSelect();
-    this.dispatchEvent(
-      new CustomEvent<RCSelectChangeEvent>('rc-select-change', {
-        bubbles: true,
-        composed: true,
-        detail: { value: [...this._selectedValues] },
-      }),
-    );
+    this._dispatchChange();
   }
 
   protected _syncNativeSelect() {
@@ -271,6 +462,31 @@ export class RCSelect extends LitElement {
     for (const opt of sel.options) {
       opt.selected = this._selectedValues.has(opt.value);
     }
+  }
+
+  protected _dispatchChange(): void {
+    this.dispatchEvent(
+      new CustomEvent<RCSelectChangeEvent>('rc-select-change', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          value: this.value,
+          selectedValues: this.selectedValues,
+          selectedOptions: this.selectedOptions,
+        },
+      }),
+    );
+  }
+
+  private _selectedOptionsFor(values: string[]): ListboxOption[] {
+    return values.map((value) => {
+      return (
+        this._options.find((opt) => opt.value === value) ?? {
+          value,
+          label: value,
+        }
+      );
+    });
   }
 
   // ── Display helpers ──────────────────────────────────────────────────────────
@@ -386,16 +602,9 @@ export class RCSelect extends LitElement {
     if (!this.open) {
       // Select-only type-ahead: immediately select the match
       if (!this.multiple) {
-        this._selectedValues = new Set([match.value]);
-        this._$listbox.setSelectedValues([match.value]);
-        this._syncNativeSelect();
-        this.dispatchEvent(
-          new CustomEvent<RCSelectChangeEvent>('rc-select-change', {
-            bubbles: true,
-            composed: true,
-            detail: { value: match.value },
-          }),
-        );
+        this._selectionInitialized = true;
+        this._applySelection([match.value]);
+        this._dispatchChange();
       }
     } else {
       // Open popup: move virtual cursor to match

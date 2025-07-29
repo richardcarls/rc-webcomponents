@@ -20,10 +20,18 @@ export type FilterStrategy =
   | ((label: string, query: string) => boolean);
 
 export interface RCListboxChangeEvent {
-  /** The option value that was activated. `'__create__'` for the create option. */
-  value: string;
+  /** Canonical selected value for single mode, or selected values for multi mode. */
+  value: string | string[];
   /** Whether the option was selected (false means it was deselected). */
   selected: boolean;
+  /** The option value that was activated. `'__create__'` for the create option. */
+  optionValue: string;
+  /** The option that was activated. */
+  option: ListboxOption | null;
+  /** Selected values as a consistently-array-shaped convenience value. */
+  selectedValues: string[];
+  /** Selected option objects. */
+  selectedOptions: ListboxOption[];
 }
 
 declare global {
@@ -44,7 +52,8 @@ let _uid = 0;
  *
  * Consumers drive this component via its JS API:
  *   - Set `options` to populate the list
- *   - Call `setSelectedValues()`, `toggleOption()` to manage selection
+ *   - Set `value` / `defaultValue` to manage selection
+ *   - Call `toggleOption()` for internal keyboard/pointer activation
  *   - Call `filterOptions()` to filter visible options
  *   - Read `navigableItems` to feed `ActiveDescendantController`
  *
@@ -79,6 +88,9 @@ export class RCListbox extends LitElement {
   @state() private _selectedValues: Set<string> = new Set();
   @state() private _filterText = '';
   @state() private _createLabel: string | null = null;
+  private _defaultValue: string | string[] | undefined;
+  private _value: string | string[] | undefined;
+  private _selectionInitialized = false;
 
   private readonly _uid = `rc-lb-${++_uid}`;
 
@@ -108,8 +120,14 @@ export class RCListbox extends LitElement {
   }
 
   /** Replace the full options list. Triggers a re-render. */
+  get options(): ListboxOption[] {
+    return [...this._options];
+  }
+
+  /** Replace the full options list. Triggers a re-render. */
   set options(opts: ListboxOption[]) {
     this._options = [...opts];
+    this._applySelectionFromSource();
   }
 
   /** Append a single option without replacing the list. */
@@ -123,9 +141,50 @@ export class RCListbox extends LitElement {
     return [...this._selectedValues];
   }
 
+  /** Current selection. Host writes update silently. */
+  get value(): string | string[] {
+    return this.multiple
+      ? this.selectedValues
+      : (this.selectedValues[0] ?? '');
+  }
+
+  /** Current selection. Host writes update silently. */
+  set value(value: string | string[] | undefined) {
+    const oldValue = this._value;
+
+    this._value = value;
+
+    if (value === undefined) {
+      this.requestUpdate('value', oldValue);
+      return;
+    }
+
+    this._selectionInitialized = true;
+    this._applySelection(this._normalizeValue(value));
+    this.requestUpdate('value', oldValue);
+  }
+
+  /** Initial uncontrolled selection. */
+  get defaultValue(): string | string[] | undefined {
+    return this._defaultValue;
+  }
+
+  /** Initial uncontrolled selection. */
+  set defaultValue(value: string | string[] | undefined) {
+    const oldValue = this._defaultValue;
+
+    this._defaultValue = value;
+
+    if (!this._selectionInitialized && this._value === undefined && value !== undefined) {
+      this._applySelection(this._normalizeValue(value));
+    }
+
+    this.requestUpdate('defaultValue', oldValue);
+  }
+
   /** Replace the selection set without firing `rc-listbox-change`. */
   setSelectedValues(values: string[]): void {
-    this._selectedValues = new Set(values);
+    this._applySelection(values);
   }
 
   /**
@@ -147,17 +206,12 @@ export class RCListbox extends LitElement {
       this._selectedValues = wasSelected ? new Set() : new Set([value]);
     }
 
-    this.dispatchEvent(
-      new CustomEvent<RCListboxChangeEvent>('rc-listbox-change', {
-        bubbles: true,
-        composed: true,
-        detail: { value, selected: !wasSelected },
-      }),
-    );
+    this._selectionInitialized = true;
+    this._dispatchChange(opt, !wasSelected);
   }
 
   clearSelection(): void {
-    this._selectedValues = new Set();
+    this._applySelection([]);
   }
 
   // ── Filtering ────────────────────────────────────────────────────────────────
@@ -239,7 +293,14 @@ export class RCListbox extends LitElement {
                   new CustomEvent<RCListboxChangeEvent>('rc-listbox-change', {
                     bubbles: true,
                     composed: true,
-                    detail: { value: '__create__', selected: true },
+                    detail: {
+                      value: this.value,
+                      selected: true,
+                      optionValue: '__create__',
+                      option: null,
+                      selectedValues: this.selectedValues,
+                      selectedOptions: this._selectedOptionsFor(this.selectedValues),
+                    },
                   }),
                 );
               }}
@@ -263,6 +324,54 @@ export class RCListbox extends LitElement {
     if (this.filterStrategy === 'contains') return label.includes(query);
 
     return label.startsWith(query); // 'prefix' default
+  }
+
+  private _applySelection(values: string[]): void {
+    this._selectedValues = new Set(this.multiple ? values : values.slice(0, 1));
+  }
+
+  private _applySelectionFromSource(): void {
+    if (this._value !== undefined) {
+      this._applySelection(this._normalizeValue(this._value));
+      return;
+    }
+
+    if (!this._selectionInitialized && this._defaultValue !== undefined) {
+      this._selectionInitialized = true;
+      this._applySelection(this._normalizeValue(this._defaultValue));
+    }
+  }
+
+  private _normalizeValue(value: string | string[]): string[] {
+    return Array.isArray(value) ? value : value ? [value] : [];
+  }
+
+  private _dispatchChange(option: ListboxOption, selected: boolean): void {
+    this.dispatchEvent(
+      new CustomEvent<RCListboxChangeEvent>('rc-listbox-change', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          value: this.value,
+          selected,
+          optionValue: option.value,
+          option,
+          selectedValues: this.selectedValues,
+          selectedOptions: this._selectedOptionsFor(this.selectedValues),
+        },
+      }),
+    );
+  }
+
+  private _selectedOptionsFor(values: string[]): ListboxOption[] {
+    return values.map((value) => {
+      return (
+        this._options.find((opt) => opt.value === value) ?? {
+          value,
+          label: value,
+        }
+      );
+    });
   }
 }
 

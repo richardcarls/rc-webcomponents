@@ -30,6 +30,18 @@ function makeCombobox(opts?: {
   `;
 }
 
+function makeSelectedCombobox() {
+  return html`
+    <rc-combobox multiple>
+      <select slot="select" aria-label="Fruit" multiple>
+        <option value="apple">Apple</option>
+        <option value="banana" selected>Banana</option>
+        <option value="cherry" selected>Cherry</option>
+      </select>
+    </rc-combobox>
+  `;
+}
+
 // getByRole('combobox') times out in Firefox when rc-listbox[popover="manual"] is
 // a sibling in the same shadow root — access the shadow DOM directly instead.
 async function getHost(screen: ReturnType<typeof render>): Promise<RCCombobox> {
@@ -127,6 +139,10 @@ test('Enter selects active option, closes popup, sets input value', async () => 
   expect(changeHandler).toHaveBeenCalledOnce();
   expect(host.open).toBe(false);
   expect(input.value).toBe('Apple');
+  expect(changeHandler.mock.calls[0][0].detail.selectedValues).toEqual(['apple']);
+  expect(changeHandler.mock.calls[0][0].detail.selectedOptions).toEqual([
+    { value: 'apple', label: 'Apple', disabled: false },
+  ]);
 });
 
 test('Escape clears filter and closes popup', async () => {
@@ -242,6 +258,7 @@ test('allowcreate: new option also added to native <select>', async () => {
 
   const nativeValues = Array.from(nativeSel.options).map((o) => o.value);
   expect(nativeValues).toContain('mango');
+  expect(host.selectedValues).toEqual(['mango']);
 });
 
 // ── Multi-select ──────────────────────────────────────────────────────────────
@@ -268,10 +285,47 @@ test('multiple: chips render for selected values', async () => {
     .querySelector<HTMLElement>('[data-value="apple"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
   await host.updateComplete;
-  expect((host as any)._selectedValues.has('apple')).toBe(true);
+  expect(host['_selectedValues'].has('apple')).toBe(true);
   const chips = host.renderRoot.querySelectorAll('[part~="chip"]');
   expect(chips).toHaveLength(1);
   expect(chips[0].textContent).toContain('Apple');
+});
+
+test('multiple: chips render from value property', async () => {
+  const screen = render(makeCombobox({ multiple: true }));
+  const host = screen.container.querySelector('rc-combobox') as RCCombobox;
+
+  host.value = ['apple', 'banana'];
+
+  await getHost(screen);
+
+  const chips = host.renderRoot.querySelectorAll('[part~="chip"]');
+
+  expect(host.selectedValues).toEqual(['apple', 'banana']);
+  expect(chips).toHaveLength(2);
+});
+
+test('multiple: chips render from defaultValue property', async () => {
+  const screen = render(makeCombobox({ multiple: true }));
+  const host = screen.container.querySelector('rc-combobox') as RCCombobox;
+
+  host.defaultValue = ['banana'];
+
+  await getHost(screen);
+
+  const chips = host.renderRoot.querySelectorAll('[part~="chip"]');
+
+  expect(host.selectedValues).toEqual(['banana']);
+  expect(chips).toHaveLength(1);
+});
+
+test('multiple: chips render from light-DOM selected options', async () => {
+  const screen = render(makeSelectedCombobox());
+  const host = await getHost(screen);
+  const chips = host.renderRoot.querySelectorAll('[part~="chip"]');
+
+  expect(host.selectedValues).toEqual(['banana', 'cherry']);
+  expect(chips).toHaveLength(2);
 });
 
 test('multiple: input clears after each selection', async () => {
@@ -300,6 +354,7 @@ test('multiple: rc-select-change detail.value is an array', async () => {
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
   await host.updateComplete;
   expect(Array.isArray(handler.mock.calls[0][0].detail.value)).toBe(true);
+  expect(handler.mock.calls[0][0].detail.selectedValues).toEqual(['apple']);
 });
 
 // ── Toggle button ─────────────────────────────────────────────────────────────

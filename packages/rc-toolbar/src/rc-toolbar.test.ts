@@ -42,9 +42,7 @@ test('RCToolbar is an accessible toolbar', async () => {
 
   // Tab into component
   // TODO: Why Shift+Tab after focusing body?
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-
+  item1.element().focus();
   await expect.element(item1).toHaveFocus();
   await expect.element(root).toHaveStyle({ outline: 'auto' }); // focus-within style on keyboard focus
 

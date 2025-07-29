@@ -64,7 +64,13 @@ test('toggleOption selects in single mode and fires rc-listbox-change', async ()
 
   expect(el.selectedValues).toEqual(['banana']);
   expect(handler).toHaveBeenCalledOnce();
-  expect(handler.mock.calls[0][0].detail).toEqual({ value: 'banana', selected: true });
+  expect(handler.mock.calls[0][0].detail).toMatchObject({
+    value: 'banana',
+    selected: true,
+    optionValue: 'banana',
+    selectedValues: ['banana'],
+    selectedOptions: [{ value: 'banana', label: 'Banana' }],
+  });
 });
 
 test('toggleOption deselects in single mode', async () => {
@@ -201,5 +207,6 @@ test('Create option fires rc-listbox-change with value __create__', async () => 
   createEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
 
   expect(handler).toHaveBeenCalledOnce();
-  expect(handler.mock.calls[0][0].detail.value).toBe('__create__');
+  expect(handler.mock.calls[0][0].detail.optionValue).toBe('__create__');
+  expect(handler.mock.calls[0][0].detail.selectedValues).toEqual([]);
 });

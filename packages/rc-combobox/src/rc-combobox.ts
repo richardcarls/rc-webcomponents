@@ -128,17 +128,20 @@ export class RCCombobox extends RCSelect {
   }
 
   protected override _handleListboxChange(e: CustomEvent) {
-    const { value } = e.detail as { value: string; selected: boolean };
-    if (value === '__create__') {
+    const { optionValue, value } = e.detail as {
+      optionValue?: string;
+      value: string | string[];
+      selected: boolean;
+    };
+    const activatedValue = optionValue ?? (Array.isArray(value) ? value.at(-1) : value);
+    if (activatedValue === '__create__') {
       e.stopPropagation();
       void this._activateCreate(this._filterText.trim());
       return;
     }
     super._handleListboxChange(e);
     if (!this.multiple) {
-      const label = this._labelFor(value);
-      this._filterText = label;
-      if (this._$trigger) this._$trigger.value = label;
+      this._syncInputToSelection();
     } else {
       this._filterText = '';
       if (this._$trigger) this._$trigger.value = '';
@@ -157,15 +160,7 @@ export class RCCombobox extends RCSelect {
     });
     if (!this.dispatchEvent(createEvent)) return;
 
-    const sel = this._selectRef?.deref();
-    if (sel) {
-      const opt = document.createElement('option');
-      opt.value = text;
-      opt.text = text;
-      sel.add(opt);
-    }
-
-    this._$listbox?.appendOption({ value: text, label: text });
+    this._addOption({ value: text, label: text });
 
     if (this.multiple) {
       this._$listbox?.toggleOption(text);
@@ -173,20 +168,32 @@ export class RCCombobox extends RCSelect {
       if (this._$trigger) this._$trigger.value = '';
       this._$listbox?.clearFilter();
       this._$listbox?.setCreateOption(null);
-    } else {
-      this._filterText = text;
-      if (this._$trigger) this._$trigger.value = text;
-      this._$listbox?.setSelectedValues([text]);
-      this._selectedValues = new Set([text]);
-      this._syncNativeSelect();
-      this.closePopup(true);
+      return;
     }
 
-    this.dispatchEvent(new CustomEvent('rc-select-change', {
-      bubbles: true,
-      composed: true,
-      detail: { value: this.multiple ? [...this._selectedValues] : text },
-    }));
+    this._applySelection([text]);
+    this._syncInputToSelection();
+    this.closePopup(true);
+    this._dispatchChange();
+  }
+
+  override set value(value: string | string[] | undefined) {
+    super.value = value;
+    this._syncInputToSelection();
+  }
+
+  override get value(): string | string[] {
+    return super.value;
+  }
+
+  private _syncInputToSelection(): void {
+    if (this.multiple) return;
+
+    const value = this.selectedValues[0];
+    const label = value ? this._labelFor(value) : '';
+
+    this._filterText = label;
+    if (this._$trigger) this._$trigger.value = label;
   }
 
   // ── Keyboard ──────────────────────────────────────────────────────────────────

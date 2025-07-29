@@ -1,16 +1,15 @@
 import { defineConfig } from 'vitest/config';
-import { webdriverio } from '@vitest/browser-webdriverio';
+import { playwright } from '@vitest/browser-playwright';
 
 export default defineConfig({
   test: {
     browser: {
       enabled: true,
-      provider: webdriverio(),
+      provider: playwright(),
       // https://vitest.dev/guide/browser/webdriverio
       instances: [
-        { browser: 'chrome' },
+        { browser: 'chromium' },
         { browser: 'firefox' },
-        // { browser: 'edge' },
       ],
     },
   },
