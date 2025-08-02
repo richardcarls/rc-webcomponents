@@ -37,6 +37,17 @@ declare global {
 export class RCMenuButton extends LitElement {
   static styles = [menuButtonStyles];
 
+  /**
+   * Enables delegatesFocus so the browser routes focus() on the host element
+   * to the slotted trigger button. This lets the host participate in a
+   * roving-tabindex group (e.g. rc-toolbar) as a single tab stop while the
+   * trigger remains the visible focus target.
+   */
+  static override shadowRootOptions: ShadowRootInit = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   private _defaultOpen = false;
   private _open = false;
 
@@ -124,8 +135,22 @@ export class RCMenuButton extends LitElement {
   /** Bound handler for document click (light dismiss) */
   private _boundHandleDocumentClick = this._handleDocumentClick.bind(this);
 
+  /**
+   * Watches the host's own `tabindex` attribute so the trigger button's
+   * tabindex can be kept in sync. When a parent (e.g. rc-toolbar) places the
+   * host under roving-tabindex management it sets/removes tabindex on the
+   * host; we mirror that to the trigger so it doesn't become an independent
+   * tab stop. When the host has no tabindex the trigger keeps its natural
+   * tabindex=0 for standalone usage.
+   */
+  private _tabObserver?: MutationObserver;
+
   connectedCallback() {
     super.connectedCallback();
+
+    this._tabObserver = new MutationObserver(() => this._syncTriggerTabindex());
+    this._tabObserver.observe(this, { attributes: true, attributeFilter: ['tabindex'] });
+
     document.addEventListener('click', this._boundHandleDocumentClick, true);
 
     if (this.defaultOpen) {
@@ -134,6 +159,9 @@ export class RCMenuButton extends LitElement {
   }
 
   disconnectedCallback() {
+    this._tabObserver?.disconnect();
+    this._tabObserver = undefined;
+
     super.disconnectedCallback();
     document.removeEventListener('click', this._boundHandleDocumentClick, true);
   }
@@ -189,6 +217,29 @@ export class RCMenuButton extends LitElement {
     if (trigger) {
       this._trigger = new WeakRef(trigger);
       this._syncTriggerAria();
+      this._syncTriggerTabindex();
+    }
+  }
+
+  /**
+   * Mirrors the host's `tabindex` attribute to the trigger button.
+   *
+   * When a roving-tabindex parent (e.g. rc-toolbar) sets tabindex on this
+   * host, the trigger would otherwise remain an independent tab stop. Setting
+   * tabindex="-1" on the trigger removes it from the tab order while keeping
+   * it reachable via delegatesFocus when the host is focused. Removing the
+   * host's tabindex restores the trigger's natural focusability for standalone
+   * usage.
+   */
+  private _syncTriggerTabindex() {
+    const trigger = this._trigger?.deref();
+
+    if (!trigger) return;
+
+    if (this.hasAttribute('tabindex')) {
+      trigger.setAttribute('tabindex', '-1');
+    } else {
+      trigger.removeAttribute('tabindex');
     }
   }
 

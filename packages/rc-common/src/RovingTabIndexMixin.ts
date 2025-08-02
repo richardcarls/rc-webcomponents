@@ -26,6 +26,7 @@ export declare class RovingTabIndexMixinBase {
   focusFirst(): void;
   focusLast(): void;
 
+  protected _collectItems(slot: HTMLSlotElement): FocusableElement[];
   protected _handleItemFocus(e: FocusEvent): void;
   protected _onSlotChange(e: Event): void;
   protected _initItems(): void;
@@ -35,8 +36,8 @@ export declare class RovingTabIndexMixinBase {
  * Mixin that adds WAI-ARIA roving-tabindex focus management to a LitElement.
  *
  * Provides item registration from a named slot, focus navigation helpers,
- * tabindex synchronisation on focusin, and an `_initItems()` hook for
- * subclass-specific item configuration (setting roles, moving focus, etc.).
+ * tabindex synchronisation on focusin, and hook methods for subclass-specific
+ * item configuration (setting roles, collecting items from group containers, etc.).
  *
  * Wire the two event handlers in the subclass `render()`:
  *
@@ -110,8 +111,28 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
     }
 
 
+    /**
+     * Returns the focusable items to register from a slot.
+     *
+     * Override in subclasses to customise item collection — for example, to
+     * traverse into `role="group"` containers or to skip `role="separator"`
+     * elements. The default collects direct assigned elements that pass
+     * `isFocusable`.
+     */
+    protected _collectItems(slot: HTMLSlotElement): FocusableElement[] {
+      return slot.assignedElements().filter(isFocusable) as FocusableElement[];
+    }
+
     protected _handleItemFocus(e: FocusEvent) {
-      const $self = e.composedPath()[0] as FocusableElement;
+      // Walk the composed path to find the registered item. A direct match is
+      // found immediately for plain elements; for custom elements with
+      // delegatesFocus the first composedPath entry is the deep shadow target,
+      // not the host, so we search upward until we hit a registered item.
+      const $self = e.composedPath().find(
+        (el) => this.items.includes(el as FocusableElement),
+      ) as FocusableElement | undefined;
+
+      if ($self == null) return; // focus landed outside registered items
 
       this._lastFocused = $self;
 
@@ -122,9 +143,7 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
     protected _onSlotChange(e: Event) {
       const prevItems = this._items;
 
-      this._items = (e.currentTarget as HTMLSlotElement)
-        .assignedElements()
-        .filter(isFocusable)
+      this._items = this._collectItems(e.currentTarget as HTMLSlotElement)
         .map((el) => new WeakRef(el));
 
       // Defer DOM mutations so this handler is instantaneous when slotchange

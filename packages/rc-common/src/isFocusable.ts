@@ -37,5 +37,10 @@ export function isFocusable(el?: Element | null): el is FocusableElement {
 
   if (el.hasAttribute('tabindex')) return true;
 
+  // Custom elements that declare delegatesFocus on their shadow root are
+  // focusable — the browser delegates focus() to their first focusable
+  // shadow/slotted descendant, making the host a valid roving-tabindex item.
+  if (el.shadowRoot?.delegatesFocus === true) return true;
+
   return false;
 }

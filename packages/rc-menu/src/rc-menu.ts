@@ -2,7 +2,9 @@ import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
 import {
+  isFocusable,
   keyNavigation,
+  type FocusableElement,
   type KeyboardNavigationAction,
   RovingTabIndexMixin,
 } from '@rcarls/rc-common';
@@ -20,6 +22,9 @@ declare global {
     'rc-menu': RCMenu;
   }
 }
+
+/** WAI-ARIA roles that are valid direct children of `role="menu"`. */
+const MENU_ITEM_ROLES = ['menuitem', 'menuitemcheckbox', 'menuitemradio'] as const;
 
 /**
  * A menu component, as defined in WAI-ARIA
@@ -45,9 +50,48 @@ export class RCMenu extends RovingTabIndexMixin(LitElement) {
   @query('#root', true)
   protected _$root!: HTMLDivElement;
 
+  /**
+   * Collects navigable menu items from the slot, supporting `role="group"`
+   * containers and skipping `role="separator"` elements.
+   *
+   * Direct focusable children are included as-is. Elements with
+   * `role="group"` are traversed one level deep so their focusable children
+   * participate in arrow-key navigation. Separators and non-focusable
+   * container elements are excluded.
+   */
+  protected override _collectItems(slot: HTMLSlotElement): FocusableElement[] {
+    const items: FocusableElement[] = [];
+
+    for (const el of slot.assignedElements()) {
+      const role = el.getAttribute('role');
+
+      if (role === 'separator') continue;
+
+      if (role === 'group') {
+        for (const child of el.children) {
+          if (isFocusable(child)) items.push(child as FocusableElement);
+        }
+        continue;
+      }
+
+      if (isFocusable(el)) items.push(el as FocusableElement);
+    }
+
+    return items;
+  }
+
   protected override _initItems() {
     super._initItems(); // sets tabindex 0/−1
-    this.items.forEach((el) => el.setAttribute('role', 'menuitem'));
+
+    this.items.forEach((el) => {
+      const existingRole = el.getAttribute('role');
+
+      // Preserve explicit WAI-ARIA menu item roles set by the consumer.
+      // Only assign the menuitem default when no valid role is present.
+      if (!existingRole || !MENU_ITEM_ROLES.includes(existingRole as typeof MENU_ITEM_ROLES[number])) {
+        el.setAttribute('role', 'menuitem');
+      }
+    });
   }
 
   protected _onNavigate(action: KeyboardNavigationAction) {
