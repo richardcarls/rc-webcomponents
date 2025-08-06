@@ -25,10 +25,26 @@ export const menuStyles = css`
   }
 
   ::slotted(button),
-  ::slotted([role='menuitem']) {
+  ::slotted([role='menuitem']),
+  ::slotted([role='menuitemradio']),
+  ::slotted([role='menuitemcheckbox']) {
     display: block;
     width: 100%;
     text-align: start;
+  }
+
+  /* Groups stack their children vertically and stretch them to full width. */
+  ::slotted([role='group']) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  ::slotted([role='separator']),
+  ::slotted(hr) {
+    border: none;
+    border-block-start: 1px solid ButtonBorder;
+    margin-block: 0.25em;
   }
 `;
 

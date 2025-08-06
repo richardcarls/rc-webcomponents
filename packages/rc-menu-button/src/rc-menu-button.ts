@@ -224,24 +224,47 @@ export class RCMenuButton extends LitElement {
   /**
    * Mirrors the host's `tabindex` attribute to the trigger button.
    *
-   * When a roving-tabindex parent (e.g. rc-toolbar) sets tabindex on this
-   * host, the trigger would otherwise remain an independent tab stop. Setting
-   * tabindex="-1" on the trigger removes it from the tab order while keeping
-   * it reachable via delegatesFocus when the host is focused. Removing the
-   * host's tabindex restores the trigger's natural focusability for standalone
-   * usage.
+   * When a roving-tabindex parent (e.g. rc-toolbar) marks this host inactive
+   * with `tabindex="-1"`, the trigger must also be suppressed so it does not
+   * become an independent tab stop. When the host is the active item
+   * (`tabindex="0"`) or standalone (no tabindex), the trigger retains its
+   * natural focusability so that Chrome's delegatesFocus can route sequential
+   * Tab navigation through the host to the trigger.
    */
   private _syncTriggerTabindex() {
     const trigger = this._trigger?.deref();
 
     if (!trigger) return;
 
-    if (this.hasAttribute('tabindex')) {
+    if (this.getAttribute('tabindex') === '-1') {
       trigger.setAttribute('tabindex', '-1');
     } else {
       trigger.removeAttribute('tabindex');
     }
   }
+
+  /**
+   * Overrides the default focus() so that programmatic focus calls (e.g. from
+   * a roving-tabindex parent navigating back to this element via arrow keys)
+   * always reach the trigger.
+   *
+   * Chrome's delegatesFocus will not delegate to a tabindex="-1" element, so
+   * when the toolbar marks this host inactive it suppresses the trigger — and
+   * the next focusItem() call silently fails. Lifting the suppression here and
+   * directly calling trigger.focus() bypasses that restriction.
+   */
+  override focus(options?: FocusOptions) {
+    const trigger = this._trigger?.deref();
+
+    if (!trigger) {
+      super.focus(options);
+      return;
+    }
+
+    trigger.removeAttribute('tabindex');
+    trigger.focus(options);
+  }
+
 
   private _handleMenuSlotChange(e: Event) {
     const slot = e.currentTarget as HTMLSlotElement;
