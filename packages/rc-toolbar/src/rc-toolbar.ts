@@ -40,11 +40,12 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   protected _$root!: HTMLDivElement;
 
   protected override _initItems() {
-    // Defer focus past the current microtask queue. Calling item.focus()
-    // synchronously during slotchange can fire focusin/focusout inside a
-    // framework reactive update cycle (e.g. SolidJS Transition), causing
-    // the update to hang. The tabindex is set synchronously by the base
-    // class; focus lands correctly on the next microtask.
+    // Set tabindex synchronously so items are in the tab order immediately,
+    // even if the document has no focus yet (focus() would be a no-op).
+    super._initItems();
+
+    // Defer focus to avoid firing focusin/focusout inside a SolidJS reactive
+    // update cycle, which can cause the update to hang.
     const target = this._lastFocused ?? this.firstItem;
     queueMicrotask(() => this.focusItem(target));
   }
