@@ -84,6 +84,43 @@ test('rc-disclosure opens matching fragment targets', async () => {
   expect(host.open).toBe(true);
 });
 
+test('rc-disclosure injects aria-controls linking summary to details', async () => {
+  const screen = render(html`
+    <rc-disclosure data-testid="host">
+      <details>
+        <summary>Status</summary>
+        <p>Body</p>
+      </details>
+    </rc-disclosure>
+  `);
+  const host = screen.getByTestId('host').element() as RCDisclosure;
+  const details = host.querySelector('details') as HTMLDetailsElement;
+  const summary = host.querySelector('summary') as HTMLElement;
+
+  expect(details.id).toBeTruthy();
+  expect(summary.getAttribute('aria-controls')).toBe(details.id);
+});
+
+test('rc-accordion ArrowDown moves focus to next summary', async () => {
+  const screen = render(html`
+    <rc-accordion data-testid="accordion">
+      <rc-disclosure>
+        <details><summary>One</summary><p>Body one</p></details>
+      </rc-disclosure>
+      <rc-disclosure>
+        <details><summary>Two</summary><p>Body two</p></details>
+      </rc-disclosure>
+    </rc-accordion>
+  `);
+  const accordion = screen.getByTestId('accordion').element() as HTMLElement;
+  const summaries = Array.from(accordion.querySelectorAll('summary')) as HTMLElement[];
+
+  summaries[0].focus();
+  accordion.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+
+  expect(document.activeElement).toBe(summaries[1]);
+});
+
 test('rc-disclosure has no automated accessibility violations', async () => {
   const screen = render(html`
     <rc-disclosure data-testid="host" open>
