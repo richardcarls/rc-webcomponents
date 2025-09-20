@@ -29,8 +29,22 @@ custom-elements.json
 *.sw?
 
 # AI Agents
-.agents/*
-.claude/*
+.mcp.json
+.mcp.*.json
+!.mcp.example.json
+.codex/
+.agents/skills/
+.agents/local/
+.agents/private/
+.agents/memory/
+.claude/
+.claude/settings.local.json
+.cursor/mcp.json
+AGENTS.local.md
+CLAUDE.local.md
+GEMINI.local.md
+TODO.local.md
+todo.local.md
 .skills-lock.json
 
 # author files
