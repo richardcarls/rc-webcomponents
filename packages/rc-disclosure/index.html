@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc-disclosure</title>
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
+    <script type="module" src="/src/define.ts"></script>
+    <style>
+      details {
+        border: 1px solid ButtonBorder;
+        border-radius: 4px;
+        padding: 0;
+        max-width: 480px;
+      }
+
+      summary {
+        padding: 0.6em 1em;
+        cursor: pointer;
+        font-weight: 500;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        user-select: none;
+      }
+
+      summary::-webkit-details-marker { display: none; }
+
+      summary::after {
+        content: '▸';
+        transition: transform 0.15s;
+        font-size: 0.8em;
+      }
+
+      details[open] > summary::after {
+        transform: rotate(90deg);
+      }
+
+      .details-body {
+        padding: 0.75em 1em;
+        border-top: 1px solid ButtonBorder;
+      }
+
+      rc-accordion {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-width: 480px;
+      }
+
+      rc-accordion details {
+        max-width: none;
+      }
+
+      .demo-controls-row {
+        display: flex;
+        gap: 0.5em;
+        margin-block-start: 0.75em;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-page">
+      <div class="demo-controls">
+        <div class="demo-title">
+          <h1>rc-disclosure</h1>
+          <a href="https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/">WAI-ARIA Disclosure Pattern</a>
+        </div>
+        <button class="theme-picker" type="button">Auto</button>
+      </div>
+
+      <div class="demo-section">
+        <h2>Basic Disclosure</h2>
+        <p>Wraps a native <code>&lt;details&gt;</code> element and fires <code>rc-disclosure-toggle</code> on open/close.</p>
+        <rc-disclosure id="basic-disclosure">
+          <details>
+            <summary>What is rc-disclosure?</summary>
+            <div class="details-body">
+              <p>A lightweight behavioral wrapper around the native <code>&lt;details&gt;</code> element.
+              The browser owns open/close behavior and accessibility; this element adds a consistent custom event
+              and optional fragment-hash targeting.</p>
+            </div>
+          </details>
+        </rc-disclosure>
+        <div class="demo-controls-row">
+          <button type="button" onclick="document.getElementById('basic-disclosure').open = true">Open</button>
+          <button type="button" onclick="document.getElementById('basic-disclosure').open = false">Close</button>
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2>Accordion</h2>
+        <p><code>&lt;rc-accordion&gt;</code> coordinates child disclosures so only one stays open at a time.
+        Arrow keys move focus between summaries.</p>
+        <rc-accordion>
+          <rc-disclosure>
+            <details>
+              <summary>Section One</summary>
+              <div class="details-body">Content for section one. Only one section stays open at a time.</div>
+            </details>
+          </rc-disclosure>
+          <rc-disclosure>
+            <details>
+              <summary>Section Two</summary>
+              <div class="details-body">Content for section two. Opening this closes any other open section.</div>
+            </details>
+          </rc-disclosure>
+          <rc-disclosure>
+            <details>
+              <summary>Section Three</summary>
+              <div class="details-body">Content for section three.</div>
+            </details>
+          </rc-disclosure>
+        </rc-accordion>
+      </div>
+
+      <div class="demo-section">
+        <h2>Fragment Targeting</h2>
+        <p>Set the <code>fragment</code> attribute to automatically open when the URL hash matches
+        the <code>id</code> of the inner <code>&lt;details&gt;</code>.</p>
+        <rc-disclosure fragment>
+          <details id="fragment-target">
+            <summary>Opens via #fragment-target in URL</summary>
+            <div class="details-body">This disclosure opens automatically when the page loads with
+            <code>#fragment-target</code> in the URL, or when the hash changes to match.</div>
+          </details>
+        </rc-disclosure>
+        <div class="demo-controls-row">
+          <a href="#fragment-target">Navigate to #fragment-target</a>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      document.addEventListener('rc-disclosure-toggle', (e) => {
+        console.log('rc-disclosure-toggle:', e.detail);
+      });
+    </script>
+  </body>
+</html>

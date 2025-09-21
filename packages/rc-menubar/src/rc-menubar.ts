@@ -16,7 +16,8 @@ declare global {
   }
 }
 
-// TODO: consider using aria-activedescendent instead, read expected tab behavior in a menubar
+// Roving tabindex (not aria-activedescendant): trigger buttons need real focus
+// for submenu handoff and screen reader announcements.
 
 /**
  * A menubar component containing menu buttons, as defined in WAI-ARIA

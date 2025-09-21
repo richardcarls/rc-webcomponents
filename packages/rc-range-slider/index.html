@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc-range-slider</title>
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
+    <script type="module" src="/src/define.ts"></script>
+    <style>
+      rc-range-slider {
+        display: block;
+        max-width: 400px;
+      }
+
+      .rc-range-slider-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-block-end: 0.4em;
+      }
+
+      .rc-range-slider-group {
+        position: relative;
+        height: 24px;
+        display: flex;
+        align-items: center;
+      }
+
+      .rc-range-slider-track {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        pointer-events: none;
+      }
+
+      .rc-range-slider-track::before {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 6px;
+        background: ButtonBorder;
+        border-radius: 3px;
+      }
+
+      .rc-range-slider-range {
+        position: absolute;
+        height: 6px;
+        background: AccentColor;
+        border-radius: 3px;
+        pointer-events: none;
+      }
+
+      .rc-range-slider-thumb {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        background: Canvas;
+        border: 2px solid AccentColor;
+        border-radius: 50%;
+        cursor: ew-resize;
+        top: 50%;
+        transform: translateY(-50%) translateX(-50%);
+        touch-action: none;
+      }
+
+      .rc-range-slider-thumb:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+      }
+
+      [aria-disabled="true"] .rc-range-slider-thumb {
+        border-color: GrayText;
+        cursor: not-allowed;
+      }
+
+      [aria-disabled="true"] .rc-range-slider-range {
+        background: GrayText;
+      }
+
+      .rc-range-slider-value {
+        font-size: 0.75rem;
+        font-variant-numeric: tabular-nums;
+        position: absolute;
+        top: -1.4em;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        color: GrayText;
+      }
+
+      /* Vertical orientation */
+      rc-range-slider[orientation="vertical"] {
+        max-width: none;
+        display: inline-block;
+      }
+
+      rc-range-slider[orientation="vertical"] .rc-range-slider-group {
+        width: 24px;
+        height: 200px;
+        flex-direction: column;
+      }
+
+      rc-range-slider[orientation="vertical"] .rc-range-slider-track::before {
+        width: 6px;
+        height: 100%;
+      }
+
+      rc-range-slider[orientation="vertical"] .rc-range-slider-range {
+        width: 6px;
+        height: auto;
+      }
+
+      rc-range-slider[orientation="vertical"] .rc-range-slider-thumb {
+        left: 50%;
+        top: auto;
+        cursor: ns-resize;
+        transform: translateX(-50%) translateY(50%);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-page">
+      <div class="demo-controls">
+        <div class="demo-title">
+          <h1>rc-range-slider</h1>
+          <a href="https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/">WAI-ARIA Multi-Thumb Slider Pattern</a>
+        </div>
+        <button class="theme-picker" type="button">Auto</button>
+      </div>
+
+      <div class="demo-section">
+        <h2>Basic</h2>
+        <p>Two thumbs define a low/high range. Use arrow keys on a focused thumb to adjust its value.</p>
+        <rc-range-slider
+          id="basic-range"
+          label="Price range"
+          low-label="Minimum price"
+          high-label="Maximum price"
+        ></rc-range-slider>
+        <p id="basic-range-output" style="font-size: 0.875rem; color: GrayText;">$0 – $100</p>
+      </div>
+
+      <div class="demo-section">
+        <h2>With Value Display</h2>
+        <rc-range-slider
+          id="display-range"
+          label="Year range"
+          low-label="Start year"
+          high-label="End year"
+          min="2000"
+          max="2030"
+          display="overlay"
+        ></rc-range-slider>
+      </div>
+
+      <div class="demo-section">
+        <h2>Disabled</h2>
+        <rc-range-slider
+          label="Disabled range"
+          disabled
+        ></rc-range-slider>
+      </div>
+    </main>
+
+    <script>
+      customElements.whenDefined('rc-range-slider').then(() => {
+        // Position thumbs at their initial values and update on input
+        document.querySelectorAll('rc-range-slider').forEach((el) => {
+          positionThumbs(el);
+
+          el.addEventListener('rc-range-slider-input', () => positionThumbs(el));
+          el.addEventListener('rc-range-slider-change', () => positionThumbs(el));
+        });
+
+        // Wire value display to the basic example
+        const basic = document.getElementById('basic-range');
+        const output = document.getElementById('basic-range-output');
+        basic.addEventListener('rc-range-slider-input', (e) => {
+          output.textContent = `$${e.detail.value[0]} – $${e.detail.value[1]}`;
+        });
+      });
+
+      /** Position thumb elements at the correct percentage along the track. */
+      function positionThumbs(el) {
+        const [low, high] = el.value;
+        const span = el.max - el.min;
+        if (span <= 0) return;
+
+        const lowPct  = ((low  - el.min) / span) * 100;
+        const highPct = ((high - el.min) / span) * 100;
+
+        const thumbs = el.querySelectorAll('.rc-range-slider-thumb');
+        if (thumbs[0]) thumbs[0].style.left = `${lowPct}%`;
+        if (thumbs[1]) thumbs[1].style.left = `${highPct}%`;
+      }
+    </script>
+  </body>
+</html>

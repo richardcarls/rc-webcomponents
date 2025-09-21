@@ -58,7 +58,8 @@ export class RCDisclosure extends HTMLElement {
     this._teardownDetails();
   }
 
-  attributeChangedCallback(name: string): void {
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+    if (oldValue === newValue) return;
     if (name === 'open') this._syncDetailsOpen();
     if (name === 'fragment') this._openForCurrentHash();
   }
@@ -81,6 +82,11 @@ export class RCDisclosure extends HTMLElement {
       return;
     }
 
+    if (!details.id) details.id = crypto.randomUUID();
+
+    const summary = details.querySelector<HTMLElement>(':scope > summary');
+    if (summary) summary.setAttribute('aria-controls', details.id);
+
     details.addEventListener('toggle', this._onToggle);
     this._syncDetailsOpen();
     this._reflectOpen(details.open);
@@ -88,6 +94,9 @@ export class RCDisclosure extends HTMLElement {
   }
 
   private _teardownDetails(): void {
+    const summary = this._details?.querySelector<HTMLElement>(':scope > summary');
+    summary?.removeAttribute('aria-controls');
+
     this._details?.removeEventListener('toggle', this._onToggle);
     this._details = null;
   }
@@ -103,6 +112,9 @@ export class RCDisclosure extends HTMLElement {
   private _setOpen(value: boolean, reflect: boolean): void {
     const details = this._details;
     if (details && details.open !== value) details.open = value;
+    // _reflectOpen is called here for programmatic opens because the <details>
+    // toggle event is async (queued task per HTML spec). _onToggle also calls
+    // _reflectOpen for user-initiated clicks, but that arrives after a tick.
     if (reflect) this._reflectOpen(value);
   }
 
@@ -152,11 +164,41 @@ export class RCDisclosure extends HTMLElement {
 export class RCAccordion extends HTMLElement {
   connectedCallback(): void {
     this.addEventListener('rc-disclosure-toggle', this._onDisclosureToggle as EventListener);
+    this.addEventListener('keydown', this._onKeydown);
   }
 
   disconnectedCallback(): void {
     this.removeEventListener('rc-disclosure-toggle', this._onDisclosureToggle as EventListener);
+    this.removeEventListener('keydown', this._onKeydown);
   }
+
+  private _summaries(): HTMLElement[] {
+    return Array.from(
+      this.querySelectorAll<HTMLElement>('rc-disclosure > details > summary'),
+    );
+  }
+
+  private _onKeydown = (e: KeyboardEvent): void => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+
+    const summaries = this._summaries();
+    if (summaries.length === 0) return;
+
+    const active = document.activeElement as HTMLElement;
+    const idx = summaries.indexOf(active);
+    if (idx === -1) return;
+
+    e.preventDefault();
+
+    if (e.key === 'Home') { summaries[0].focus(); return; }
+    if (e.key === 'End') { summaries[summaries.length - 1].focus(); return; }
+
+    const next = e.key === 'ArrowDown'
+      ? (idx + 1) % summaries.length
+      : (idx - 1 + summaries.length) % summaries.length;
+
+    summaries[next].focus();
+  };
 
   private _onDisclosureToggle = (e: CustomEvent<RCDisclosureToggleEvent>): void => {
     if (!e.detail.open) return;

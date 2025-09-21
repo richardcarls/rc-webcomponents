@@ -1,5 +1,6 @@
 import { LitElement, html, nothing } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 export interface RCSliderRange {
   /** Lower value included in the styled range. */
@@ -53,25 +54,34 @@ export class RCSlider extends LitElement {
   /** Prevent user edits while preserving normal display. */
   @property({ type: Boolean, reflect: true }) readonly = false;
 
-  /** Accessible label copied to the underlying range input. */
+  /** Accessible label provided by the wrapping `<label>` element. */
   @property() label = '';
+
+  /** `name` forwarded to the underlying range input for form participation. */
+  @property() name = '';
 
   /** Controls where the value display renders. */
   @property() display: 'none' | 'inline' | 'overlay' | 'end' = 'none';
 
-  /** Optional formatted value text. Defaults to `value`. */
+  /** Optional formatted value text. Defaults to `value`. Exposed to screen readers via `aria-valuetext`. */
   @property({ attribute: 'value-text' }) valueText = '';
 
-  @state() private _ranges: RCSliderRange[] = [];
+  /** Slider orientation. Controls layout and `aria-orientation` on the underlying input. */
+  @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
 
-  /** Styled ranges painted on top of the track. */
-  get ranges(): RCSliderRange[] {
-    return [...this._ranges];
-  }
-
-  set ranges(value: RCSliderRange[]) {
-    this._ranges = [...value];
-  }
+  /**
+   * Styled ranges painted on top of the track.
+   *
+   * Assign a new array reference to trigger a re-render; mutating the existing
+   * array in place will not schedule an update.
+   */
+  @property({
+    attribute: false,
+    hasChanged(newVal: RCSliderRange[], oldVal: RCSliderRange[]) {
+      return newVal !== oldVal;
+    },
+  })
+  ranges: RCSliderRange[] = [];
 
   override render() {
     const showValue = this.display !== 'none';
@@ -82,14 +92,18 @@ export class RCSlider extends LitElement {
 
         <span part="control" class="rc-slider-control">
           <span part="track" class="rc-slider-track" aria-hidden="true">
-            ${this._ranges.map((range) => html`
-              <span
-                part=${`range ${range.part ?? ''}`.trim()}
-                class="rc-slider-range"
-                title=${range.label ?? nothing}
-                style=${this._rangeStyle(range)}
-              ></span>
-            `)}
+            ${repeat(
+              this.ranges,
+              (range) => `${range.from}-${range.to}-${range.part ?? ''}`,
+              (range) => html`
+                <span
+                  part=${`range ${range.part ?? ''}`.trim()}
+                  class="rc-slider-range"
+                  aria-label=${range.label || nothing}
+                  style=${this._rangeStyle(range)}
+                ></span>
+              `,
+            )}
           </span>
 
           <input
@@ -98,12 +112,15 @@ export class RCSlider extends LitElement {
             min=${this.min}
             max=${this.max}
             step=${this.step}
+            name=${this.name || nothing}
             .value=${String(this.value)}
-            aria-label=${this.label || nothing}
-            aria-readonly=${this.readonly ? 'true' : nothing}
             ?disabled=${this.disabled}
+            aria-readonly=${this.readonly ? 'true' : nothing}
+            aria-valuetext=${this.valueText || nothing}
+            aria-orientation=${this.orientation === 'vertical' ? 'vertical' : nothing}
             @input=${this._onInput}
             @change=${this._onChange}
+            @keydown=${this._onKeydown}
           >
 
           ${showValue ? html`
@@ -121,18 +138,14 @@ export class RCSlider extends LitElement {
   }
 
   private _onInput(e: Event): void {
-    const input = e.currentTarget as HTMLInputElement;
-
-    if (this.readonly) {
-      input.value = String(this.value);
-      return;
-    }
-
-    this.value = input.valueAsNumber;
-    this._dispatchValue('rc-slider-input');
+    this._handleRangeEvent(e, 'rc-slider-input');
   }
 
   private _onChange(e: Event): void {
+    this._handleRangeEvent(e, 'rc-slider-change');
+  }
+
+  private _handleRangeEvent(e: Event, type: 'rc-slider-input' | 'rc-slider-change'): void {
     const input = e.currentTarget as HTMLInputElement;
 
     if (this.readonly) {
@@ -141,12 +154,29 @@ export class RCSlider extends LitElement {
     }
 
     this.value = input.valueAsNumber;
-    this._dispatchValue('rc-slider-change');
-  }
 
-  private _dispatchValue(type: 'rc-slider-input' | 'rc-slider-change'): void {
     this.dispatchEvent(
       new CustomEvent<RCSliderValueEvent>(type, {
+        bubbles: true,
+        composed: true,
+        detail: { value: this.value },
+      }),
+    );
+  }
+
+  private _onKeydown(e: KeyboardEvent): void {
+    if (this.disabled || this.readonly) return;
+    if (e.key !== 'PageUp' && e.key !== 'PageDown') return;
+
+    e.preventDefault();
+    const input = e.currentTarget as HTMLInputElement;
+
+    if (e.key === 'PageUp') input.stepUp(10);
+    else input.stepDown(10);
+
+    this.value = input.valueAsNumber;
+    this.dispatchEvent(
+      new CustomEvent<RCSliderValueEvent>('rc-slider-input', {
         bubbles: true,
         composed: true,
         detail: { value: this.value },

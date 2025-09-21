@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc-slider</title>
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
+    <script type="module" src="/src/define.ts"></script>
+    <style>
+      rc-slider {
+        display: block;
+        max-width: 400px;
+      }
+
+      .rc-slider-root {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.4em;
+      }
+
+      .rc-slider-root[data-display="end"] {
+        grid-template-columns: 1fr auto;
+        align-items: center;
+      }
+
+      .rc-slider-root[data-display="end"] .rc-slider-control {
+        grid-column: 1;
+      }
+
+      .rc-slider-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .rc-slider-control {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 24px;
+      }
+
+      .rc-slider-track {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        pointer-events: none;
+      }
+
+      .rc-slider-track::before {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 6px;
+        background: ButtonBorder;
+        border-radius: 3px;
+      }
+
+      .rc-slider-range {
+        position: absolute;
+        height: 6px;
+        border-radius: 3px;
+        background: AccentColor;
+      }
+
+      .rc-slider-control input[type="range"] {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        margin: 0;
+        opacity: 0;
+        cursor: pointer;
+        height: 100%;
+      }
+
+      .rc-slider-control input[type="range"]:disabled { cursor: not-allowed; }
+
+      .rc-slider-value {
+        font-variant-numeric: tabular-nums;
+        font-size: 0.875rem;
+        min-width: 2.5em;
+        text-align: right;
+        color: GrayText;
+      }
+
+      /* Vertical orientation */
+      rc-slider[orientation="vertical"] {
+        max-width: none;
+        display: inline-block;
+      }
+
+      rc-slider[orientation="vertical"] .rc-slider-root {
+        height: 200px;
+      }
+
+      rc-slider[orientation="vertical"] .rc-slider-control {
+        width: 24px;
+        height: 100%;
+        flex-direction: column;
+      }
+
+      rc-slider[orientation="vertical"] .rc-slider-track::before {
+        width: 6px;
+        height: 100%;
+      }
+
+      rc-slider[orientation="vertical"] .rc-slider-range {
+        width: 6px;
+        height: auto;
+      }
+
+      rc-slider[orientation="vertical"] .rc-slider-control input[type="range"] {
+        writing-mode: vertical-lr;
+        direction: rtl;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-page">
+      <div class="demo-controls">
+        <div class="demo-title">
+          <h1>rc-slider</h1>
+          <a href="https://www.w3.org/WAI/ARIA/apg/patterns/slider/">WAI-ARIA Slider Pattern</a>
+        </div>
+        <button class="theme-picker" type="button">Auto</button>
+      </div>
+
+      <div class="demo-section">
+        <h2>Basic</h2>
+        <rc-slider label="Volume" value="40" display="end"
+          @rc-slider-input=${(e) => console.log('input', e.detail)}
+          @rc-slider-change=${(e) => console.log('change', e.detail)}
+        ></rc-slider>
+      </div>
+
+      <div class="demo-section">
+        <h2>With Styled Ranges</h2>
+        <p>Assign the <code>ranges</code> property in JS to paint labelled segments on the track.</p>
+        <rc-slider id="ranged-slider" label="Temperature" value="22" min="0" max="40" display="end"></rc-slider>
+      </div>
+
+      <div class="demo-section">
+        <h2>Vertical</h2>
+        <rc-slider label="Level" value="60" orientation="vertical" display="end"></rc-slider>
+      </div>
+
+      <div class="demo-section">
+        <h2>Disabled</h2>
+        <rc-slider label="Disabled" value="50" display="end" disabled></rc-slider>
+      </div>
+    </main>
+
+    <script>
+      customElements.whenDefined('rc-slider').then(() => {
+        const slider = document.getElementById('ranged-slider');
+        slider.ranges = [
+          { from: 0,  to: 10, part: 'cold',   label: 'Cold' },
+          { from: 10, to: 25, part: 'comfort', label: 'Comfortable' },
+          { from: 25, to: 40, part: 'hot',     label: 'Hot' },
+        ];
+      });
+
+      document.addEventListener('rc-slider-change', (e) => {
+        console.log('rc-slider-change:', e.detail);
+      });
+    </script>
+
+    <style>
+      rc-slider#ranged-slider .rc-slider-range[part~="cold"]    { background: #6ab4f5; }
+      rc-slider#ranged-slider .rc-slider-range[part~="comfort"] { background: AccentColor; }
+      rc-slider#ranged-slider .rc-slider-range[part~="hot"]     { background: #f5886a; }
+    </style>
+  </body>
+</html>
