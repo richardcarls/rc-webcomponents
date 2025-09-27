@@ -48,6 +48,13 @@ export class ResizeController implements ReactiveController {
   private _startLeft = 0;
   private _startTop = 0;
 
+  // Effective minimums for the current resize gesture — the larger of the JS
+  // option and the element's computed CSS min-width/min-height. Computed once
+  // at pointer-down so the browser's enforcement of CSS min-width doesn't
+  // cause the opposite edge (left/top) to drift when the JS minimum is smaller.
+  private _effectiveMinW = 0;
+  private _effectiveMinH = 0;
+
   private _cornerBtn: HTMLButtonElement | null = null;
 
   private readonly _onPointerMove: (e: PointerEvent) => void;
@@ -249,6 +256,12 @@ export class ResizeController implements ReactiveController {
     this._startTop  = rect.top;
     this._resizing  = edge;
 
+    // Compute effective minimums once per gesture so CSS min-width/min-height
+    // cannot cause the opposite edge to drift when the JS minimum is smaller.
+    const cs = getComputedStyle(target);
+    this._effectiveMinW = Math.max(this._opts.minWidth, parseFloat(cs.minWidth) || 0);
+    this._effectiveMinH = Math.max(this._opts.minHeight, parseFloat(cs.minHeight) || 0);
+
     target.setPointerCapture(e.pointerId);
     e.preventDefault();
   }
@@ -257,7 +270,9 @@ export class ResizeController implements ReactiveController {
     if (this._resizing) {
       const target = this._target();
       const [minL, minT, maxR, maxB] = this._boundsRect();
-      const { minWidth, maxWidth, minHeight, maxHeight } = this._opts;
+      const { maxWidth, maxHeight } = this._opts;
+      const minW = this._effectiveMinW;
+      const minH = this._effectiveMinH;
       const dx = e.clientX - this._startX;
       const dy = e.clientY - this._startY;
       const edge = this._resizing;
@@ -265,7 +280,7 @@ export class ResizeController implements ReactiveController {
       // Right side extends; left stays fixed.
       if (edge === 'e' || edge === 'se' || edge === 'ne') {
         const maxW = Math.min(maxWidth ?? Infinity, maxR - this._startLeft);
-        target.style.width = `${Math.min(Math.max(this._startW + dx, minWidth), maxW)}px`;
+        target.style.width = `${Math.min(Math.max(this._startW + dx, minW), maxW)}px`;
       }
 
       // Left side moves; right stays fixed at startLeft + startW.
@@ -273,7 +288,7 @@ export class ResizeController implements ReactiveController {
         const rightFixed = this._startLeft + this._startW;
         const newLeft = Math.min(
           Math.max(this._startLeft + dx, minL, maxWidth !== undefined ? rightFixed - maxWidth : -Infinity),
-          rightFixed - minWidth,
+          rightFixed - minW,
         );
         target.style.left  = `${newLeft}px`;
         target.style.width = `${rightFixed - newLeft}px`;
@@ -282,7 +297,7 @@ export class ResizeController implements ReactiveController {
       // Bottom side extends; top stays fixed.
       if (edge === 's' || edge === 'se' || edge === 'sw') {
         const maxH = Math.min(maxHeight ?? Infinity, maxB - this._startTop);
-        target.style.height = `${Math.min(Math.max(this._startH + dy, minHeight), maxH)}px`;
+        target.style.height = `${Math.min(Math.max(this._startH + dy, minH), maxH)}px`;
       }
 
       // Top side moves; bottom stays fixed at startTop + startH.
@@ -290,7 +305,7 @@ export class ResizeController implements ReactiveController {
         const bottomFixed = this._startTop + this._startH;
         const newTop = Math.min(
           Math.max(this._startTop + dy, minT, maxHeight !== undefined ? bottomFixed - maxHeight : -Infinity),
-          bottomFixed - minHeight,
+          bottomFixed - minH,
         );
         target.style.top    = `${newTop}px`;
         target.style.height = `${bottomFixed - newTop}px`;
@@ -336,21 +351,25 @@ export class ResizeController implements ReactiveController {
 
     const step = e.shiftKey ? this._opts.step * 10 : this._opts.step;
     const [, , maxR, maxB] = this._boundsRect();
-    const { minWidth, maxWidth, minHeight, maxHeight } = this._opts;
+    const { maxWidth, maxHeight } = this._opts;
+
+    const cs = getComputedStyle(target);
+    const minW = Math.max(this._opts.minWidth, parseFloat(cs.minWidth) || 0);
+    const minH = Math.max(this._opts.minHeight, parseFloat(cs.minHeight) || 0);
 
     if (e.key === 'ArrowRight') {
       const max = Math.min(maxWidth ?? Infinity, maxR - rect.left);
-      target.style.width = `${Math.min(Math.max(target.offsetWidth + step, minWidth), max)}px`;
+      target.style.width = `${Math.min(Math.max(target.offsetWidth + step, minW), max)}px`;
     }
     if (e.key === 'ArrowLeft') {
-      target.style.width = `${Math.max(target.offsetWidth - step, minWidth)}px`;
+      target.style.width = `${Math.max(target.offsetWidth - step, minW)}px`;
     }
     if (e.key === 'ArrowDown') {
       const max = Math.min(maxHeight ?? Infinity, maxB - rect.top);
-      target.style.height = `${Math.min(Math.max(target.offsetHeight + step, minHeight), max)}px`;
+      target.style.height = `${Math.min(Math.max(target.offsetHeight + step, minH), max)}px`;
     }
     if (e.key === 'ArrowUp') {
-      target.style.height = `${Math.max(target.offsetHeight - step, minHeight)}px`;
+      target.style.height = `${Math.max(target.offsetHeight - step, minH)}px`;
     }
   }
 
