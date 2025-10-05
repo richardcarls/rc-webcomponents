@@ -1,8 +1,8 @@
 import '@rcarls/rc-listbox/define';
 
 import { LitElement, html } from 'lit';
-import { property, query } from 'lit/decorators.js';
-import type { ListboxOption, RCListbox } from '@rcarls/rc-listbox';
+import { property, query, state } from 'lit/decorators.js';
+import type { ListboxOption, RCListbox, RCListboxChangeEvent } from '@rcarls/rc-listbox';
 
 export interface RCTransferListChangeEvent {
   /** Ordered selected/right-hand list options. */
@@ -44,6 +44,12 @@ export class RCTransferList extends LitElement {
 
   @query('#available-list') private _$availableList?: RCListbox;
   @query('#selected-list') private _$selectedList?: RCListbox;
+
+  /** Values currently highlighted in the available list. Drives the "Add →" button disable state. */
+  @state() private _availableSelection: string[] = [];
+
+  /** Values currently highlighted in the selected list. Drives Remove/reorder button disable states. */
+  @state() private _selectedSelection: string[] = [];
 
   private _select: HTMLSelectElement | null = null;
 
@@ -131,6 +137,7 @@ export class RCTransferList extends LitElement {
     super.connectedCallback();
     this._hostObserver.observe(this, { childList: true });
     this.addEventListener('keydown', this._onKeydown);
+    this.addEventListener('rc-listbox-change', this._onListboxChange);
     this._setupSelect();
   }
 
@@ -139,15 +146,15 @@ export class RCTransferList extends LitElement {
     this._hostObserver.disconnect();
     this._teardownSelect();
     this.removeEventListener('keydown', this._onKeydown);
+    this.removeEventListener('rc-listbox-change', this._onListboxChange);
   }
 
   override render() {
     const noAvailable = this.available.length === 0;
     const noSelected = this.selected.length === 0;
     const cannotReorder = this.selected.length < 2;
-
-    // TODO: disable "Add →" and move buttons based on actual listbox selection,
-    // not just list length. Requires listening to rc-listbox selection-change events.
+    const noAvailableSelection = this._availableSelection.length === 0;
+    const noSelectedSelection = this._selectedSelection.length === 0;
 
     return html`
       <div part="root" class="rc-transfer-list-root">
@@ -170,7 +177,7 @@ export class RCTransferList extends LitElement {
           <button
             type="button"
             part="button add-button"
-            ?disabled=${noAvailable}
+            ?disabled=${noAvailable || noAvailableSelection}
             @click=${this.addSelected}
           >Add &#x2192;</button>
           <button
@@ -182,7 +189,7 @@ export class RCTransferList extends LitElement {
           <button
             type="button"
             part="button remove-button"
-            ?disabled=${noSelected}
+            ?disabled=${noSelected || noSelectedSelection}
             @click=${this.removeSelected}
           >&#x2190; Remove</button>
           <button
@@ -194,13 +201,13 @@ export class RCTransferList extends LitElement {
           <button
             type="button"
             part="button move-up-button"
-            ?disabled=${cannotReorder}
+            ?disabled=${cannotReorder || noSelectedSelection}
             @click=${this._onMoveUp}
           >Move up</button>
           <button
             type="button"
             part="button move-down-button"
-            ?disabled=${cannotReorder}
+            ?disabled=${cannotReorder || noSelectedSelection}
             @click=${this._onMoveDown}
           >Move down</button>
         </div>
@@ -237,6 +244,7 @@ export class RCTransferList extends LitElement {
     }
 
     this._syncing = false;
+    this._availableSelection = [];
     this.requestUpdate();
     this._dispatchChange();
   }
@@ -249,6 +257,7 @@ export class RCTransferList extends LitElement {
     for (const opt of Array.from(this._select.options)) opt.selected = true;
     this._syncing = false;
 
+    this._availableSelection = [];
     this.requestUpdate();
     this._dispatchChange();
   }
@@ -267,6 +276,7 @@ export class RCTransferList extends LitElement {
     }
 
     this._syncing = false;
+    this._selectedSelection = [];
     this.requestUpdate();
     this._dispatchChange();
   }
@@ -279,6 +289,7 @@ export class RCTransferList extends LitElement {
     for (const opt of Array.from(this._select.options)) opt.selected = false;
     this._syncing = false;
 
+    this._selectedSelection = [];
     this.requestUpdate();
     this._dispatchChange();
   }
@@ -311,6 +322,15 @@ export class RCTransferList extends LitElement {
       case 'ArrowUp':    e.preventDefault(); this.moveSelected(-1); break;
       case 'ArrowDown':  e.preventDefault(); this.moveSelected(1); break;
     }
+  };
+
+  private _onListboxChange = (e: Event): void => {
+    const ev = e as CustomEvent<RCListboxChangeEvent>;
+    const raw = ev.detail.value;
+    const values = Array.isArray(raw) ? raw : raw ? [raw] : [];
+    const targetId = (e.target as Element | null)?.id;
+    if (targetId === 'available-list') this._availableSelection = values;
+    else if (targetId === 'selected-list') this._selectedSelection = values;
   };
 
   private _setupSelect(): void {
