@@ -4,6 +4,7 @@ import { property, query, state } from 'lit/decorators.js';
 import {
   AnchorController,
   keyNavigation,
+  type AnchorPlacement,
   type KeyboardNavigationAction,
 } from '@rcarls/rc-common';
 import type { RCMenu } from '@rcarls/rc-menu';
@@ -20,9 +21,6 @@ declare global {
   }
 }
 
-// TODO: Add "menu direction" property to control which side the popup appears on, and coordinate with anchor positioning.
-// TODO: use / polyfill anchor positioning and coordinate with "menu direction"
-
 /**
  * A menu button component that opens/closes a menu popup
  *
@@ -33,6 +31,7 @@ declare global {
  * @cssprop [--rc-menu-button-popup-z-index=1000] - Z-index of the popup overlay
  * @csspart root - The root container element
  * @csspart popup - The popup container element
+ * @attr placement - Preferred placement of the popup relative to the trigger.
  */
 export class RCMenuButton extends LitElement {
   static styles = [menuButtonStyles];
@@ -92,6 +91,10 @@ export class RCMenuButton extends LitElement {
    */
   @property({ type: String })
   orientation: 'horizontal' | 'vertical' | undefined;
+
+  /** Preferred placement of the popup relative to the trigger button. */
+  @property({ reflect: true })
+  placement: AnchorPlacement = 'bottom-start';
 
   /**
    * Resolved orientation, considering inheritance from parent menubar.
@@ -325,6 +328,10 @@ export class RCMenuButton extends LitElement {
     // Keep aria-expanded in sync
     if (changedProperties.has('open')) {
       this._syncTriggerAria();
+    }
+
+    if (changedProperties.has('placement')) {
+      this._anchorCtrl.setOptions({ placement: this.placement });
     }
   }
 
