@@ -11,10 +11,6 @@ export type KeyboardNavigationAction =
   | 'end'
   | 'open-to-first'
   | 'open-to-last'
-  /** @deprecated Use 'toggle' action instead. Will be removed in a future version. */
-  | 'collapse'
-  /** @deprecated Use 'toggle' action instead. Will be removed in a future version. */
-  | 'restore'
   | 'escape'
   | 'activate'
   | 'toggle';
@@ -37,7 +33,7 @@ export interface KeyNavigationOptions {
 
   /**
    * Dispatch 'activate' action on Enter/Space.
-   * When enabled, Enter/Space will dispatch 'activate' instead of 'collapse'/'restore'.
+   * When enabled, Enter/Space will dispatch 'activate' instead of 'toggle'.
    * @default false
    */
   handleActivate?: boolean;
@@ -73,8 +69,6 @@ class KeyboardNavigationDirective extends AsyncDirective {
   private _mouseClickHandle!: (ev: MouseEvent) => any;
   private _callback!: (action: KeyboardNavigationAction) => void;
   private _options: KeyNavigationOptions = {};
-  private _isCollapsed: boolean = false;
-
   /**
    * The navigation axis determines which arrow keys map to 'next'/'prev'.
    * Checks the explicit `navigationAxis` option first, then auto-detects
@@ -159,13 +153,7 @@ class KeyboardNavigationDirective extends AsyncDirective {
     // Enter / Space / Escape
     if (!action) {
       if (key === 'Enter') {
-        if (this._options.handleActivate) {
-          action = 'activate';
-        } else {
-          // TODO: Replace 'collapse'/'restore' with single 'toggle' action in future version
-          action = this._isCollapsed ? 'restore' : 'collapse';
-          this._isCollapsed = !this._isCollapsed;
-        }
+        action = this._options.handleActivate ? 'activate' : 'toggle';
       } else if (key === ' ' && this._options.handleActivate) {
         action = 'activate';
       } else if (key === 'Escape' && this._options.handleEscape) {
@@ -178,11 +166,6 @@ class KeyboardNavigationDirective extends AsyncDirective {
             ?.setAttribute('data-interaction-mode', 'keyboard');
         }
       }
-    }
-
-    // Update collapsed state for Home/End (legacy behavior)
-    if (action === 'start' || action === 'end') {
-      this._isCollapsed = true;
     }
 
     if (action != null) {

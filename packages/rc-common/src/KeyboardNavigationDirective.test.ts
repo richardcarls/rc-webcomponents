@@ -144,17 +144,17 @@ test('keyNavigation: handleEscape dispatches escape action', async () => {
 
 // ─── Activate handling ────────────────────────────────────────────────────────
 
-test('keyNavigation: Enter dispatches collapse/restore without handleActivate', async () => {
+test('keyNavigation: Enter dispatches toggle without handleActivate', async () => {
   const cb = vi.fn();
   const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
   const el = screen.getByRole('menu');
 
   (await el.element()).focus();
   await userEvent.keyboard('{Enter}');
-  expect(cb).toHaveBeenNthCalledWith(1, 'collapse');
+  expect(cb).toHaveBeenNthCalledWith(1, 'toggle');
 
   await userEvent.keyboard('{Enter}');
-  expect(cb).toHaveBeenNthCalledWith(2, 'restore');
+  expect(cb).toHaveBeenNthCalledWith(2, 'toggle');
 });
 
 test('keyNavigation: handleActivate maps Enter → activate', async () => {

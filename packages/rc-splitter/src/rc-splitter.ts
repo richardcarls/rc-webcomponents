@@ -175,15 +175,14 @@ export class RCSplitter extends LitElement {
       case "prev":
         this._setUserValue(this.value - this.step);
         break;
-      case "collapse":
       case "start":
         this._setUserValue(0);
         break;
       case "end":
         this._setUserValue(this._maxValue);
         break;
-      case "restore":
-        this._setUserValue(this._lastValue);
+      case "toggle":
+        this._setUserValue(this.value === 0 ? this._lastValue : 0);
         break;
     }
   }
