@@ -127,10 +127,12 @@ class KeyboardNavigationDirective extends AsyncDirective {
   protected _onKeydown(e: KeyboardEvent) {
     const key = this._normalizeKey(e.key);
 
-    // Compute axis-based key mappings
+    // Compute axis-based key mappings, flipping horizontal arrows for RTL reading direction.
     const axis = this.navigationAxis;
-    const navNext = axis === 'horizontal' ? 'ArrowRight' : 'ArrowDown';
-    const navPrev = axis === 'horizontal' ? 'ArrowLeft' : 'ArrowUp';
+    const el = this._element?.deref();
+    const rtl = axis === 'horizontal' && el != null && getComputedStyle(el).direction === 'rtl';
+    const navNext = axis === 'horizontal' ? (rtl ? 'ArrowLeft' : 'ArrowRight') : 'ArrowDown';
+    const navPrev = axis === 'horizontal' ? (rtl ? 'ArrowRight' : 'ArrowLeft') : 'ArrowUp';
     const openFirst = axis === 'horizontal' ? 'ArrowDown' : 'ArrowRight';
     const openLast = axis === 'horizontal' ? 'ArrowUp' : 'ArrowLeft';
 
