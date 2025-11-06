@@ -314,6 +314,7 @@ export class RCCombobox extends RCSelect {
         part="listbox"
         popover="manual"
         ?multiple=${this.multiple}
+        checkmark
         .filterStrategy=${this.filterStrategy}
         @rc-listbox-change=${this._handleListboxChange}
       ></rc-listbox>

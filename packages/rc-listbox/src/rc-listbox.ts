@@ -1,5 +1,6 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { ActiveDescendantController } from '@rcarls/rc-common';
 
 export interface ListboxOption {
   value: string;
@@ -75,6 +76,14 @@ export class RCListbox extends LitElement {
   multiple = false;
 
   /**
+   * Render a checkmark indicator inside each option element.
+   * Hidden by default; enable for combobox / select patterns where the
+   * consumer's CSS shows it conditionally via `[aria-selected='true']`.
+   */
+  @property({ type: Boolean, reflect: true })
+  checkmark = false;
+
+  /**
    * How option labels are matched against the active filter text.
    * Defaults to `'contains'` (substring). Set to `'prefix'` for starts-with
    * matching, or pass a custom predicate for full control.
@@ -94,9 +103,22 @@ export class RCListbox extends LitElement {
 
   private readonly _uid = `rc-lb-${++_uid}`;
 
+  private readonly _adc = new ActiveDescendantController(this, {
+    host: () => this,
+    items: () => this.navigableItems,
+  });
+
   override connectedCallback() {
     super.connectedCallback();
     if (!this.hasAttribute('role')) this.setAttribute('role', 'listbox');
+    this.addEventListener('keydown', this._onKeydown);
+    this.addEventListener('blur', this._onBlur);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('keydown', this._onKeydown);
+    this.removeEventListener('blur', this._onBlur);
   }
 
   override updated() {
@@ -276,7 +298,7 @@ export class RCListbox extends LitElement {
               e.preventDefault();
               this.toggleOption(opt.value);
             }}
-          ><span part="option-checkmark" aria-hidden="true">&#x2713;</span><span part="option-label">${opt.label}</span></div>
+          >${this.checkmark ? html`<span part="option-checkmark" aria-hidden="true">&#x2713;</span>` : nothing}<span part="option-label">${opt.label}</span></div>
         `,
       )}
       ${this._createLabel !== null
@@ -304,10 +326,78 @@ export class RCListbox extends LitElement {
                   }),
                 );
               }}
-            ><span part="option-checkmark" aria-hidden="true">&#x2713;</span><span part="option-label">Create "${this._createLabel}"</span></div>
+            >${this.checkmark ? html`<span part="option-checkmark" aria-hidden="true">&#x2713;</span>` : nothing}<span part="option-label">Create "${this._createLabel}"</span></div>
           `
         : nothing}
     `;
+  }
+
+  private _onBlur = (): void => {
+    this._adc.clear();
+  };
+
+  private _onKeydown = (e: KeyboardEvent): void => {
+    // Pass modifier-key combos to parent handlers (e.g. Alt+Arrow in rc-transfer-list).
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault();
+        if (this._adc.activeItem) this._adc.navigate(1);
+        else this._adc.navigateToFirst();
+        if (!this.multiple) this._selectActiveItem();
+        break;
+      }
+      case 'ArrowUp': {
+        e.preventDefault();
+        if (this._adc.activeItem) this._adc.navigate(-1);
+        else this._adc.navigateToLast();
+        if (!this.multiple) this._selectActiveItem();
+        break;
+      }
+      case 'Home': {
+        e.preventDefault();
+        this._adc.navigateToFirst();
+        if (!this.multiple) this._selectActiveItem();
+        break;
+      }
+      case 'End': {
+        e.preventDefault();
+        this._adc.navigateToLast();
+        if (!this.multiple) this._selectActiveItem();
+        break;
+      }
+      case ' ':
+      case 'Enter': {
+        e.preventDefault();
+        const value = this._adc.activeItem?.getAttribute('data-value');
+        if (value == null) break;
+        if (this.multiple) {
+          this.toggleOption(value);
+        } else {
+          this._selectActiveItem();
+        }
+        break;
+      }
+    }
+  };
+
+  /**
+   * Selects the active-descendant item without toggling (single-select safe).
+   * Used by arrow-key navigation so the item under the cursor is always selected.
+   */
+  private _selectActiveItem(): void {
+    const value = this._adc.activeItem?.getAttribute('data-value');
+    if (value == null) return;
+
+    const opt = this._options.find((o) => o.value === value);
+    if (!opt || opt.disabled) return;
+
+    if (this._selectedValues.has(value) && this._selectedValues.size === 1) return;
+
+    this._selectedValues = new Set([value]);
+    this._selectionInitialized = true;
+    this._dispatchChange(opt, true);
   }
 
   private _optId(index: number): string {
