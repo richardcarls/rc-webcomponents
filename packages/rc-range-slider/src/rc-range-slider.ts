@@ -1,4 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
+import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
 export interface RCRangeSliderValueEvent {
@@ -70,6 +71,18 @@ export class RCRangeSlider extends LitElement {
   /** Slider orientation. Controls layout and `aria-orientation` on each thumb. */
   @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
 
+  override willUpdate(changed: PropertyValues): void {
+    if (changed.has('min') || changed.has('max')) {
+      const [low, high] = this.value;
+      const clampedLow  = this._clamp(low, this.min, this.max);
+      const clampedHigh = this._clamp(high, clampedLow, this.max);
+
+      if (clampedLow !== low || clampedHigh !== high) {
+        this.value = [clampedLow, clampedHigh];
+      }
+    }
+  }
+
   override render() {
     const [low, high] = this.value;
     const showValue = this.display !== 'none';
@@ -112,6 +125,7 @@ export class RCRangeSlider extends LitElement {
             aria-valuetext=${this.lowValueText || nothing}
             aria-orientation=${this.orientation === 'vertical' ? 'vertical' : nothing}
             ?aria-disabled=${this.disabled}
+            style=${this._thumbStyle(low)}
             @keydown=${this._onLowKeydown}
             @pointerdown=${this._onLowPointerdown}
           >
@@ -134,6 +148,7 @@ export class RCRangeSlider extends LitElement {
             aria-valuetext=${this.highValueText || nothing}
             aria-orientation=${this.orientation === 'vertical' ? 'vertical' : nothing}
             ?aria-disabled=${this.disabled}
+            style=${this._thumbStyle(high)}
             @keydown=${this._onHighKeydown}
             @pointerdown=${this._onHighPointerdown}
           >
@@ -295,6 +310,15 @@ export class RCRangeSlider extends LitElement {
 
   private _clamp(value: number, min: number, max: number): number {
     return Math.min(Math.max(value, min), max);
+  }
+
+  private _thumbStyle(value: number): string {
+    const span = this.max - this.min;
+    if (span <= 0) return this.orientation === 'vertical' ? 'bottom:0%' : 'left:0%';
+
+    const pct = ((this._clamp(value, this.min, this.max) - this.min) / span) * 100;
+
+    return this.orientation === 'vertical' ? `bottom:${pct}%` : `left:${pct}%`;
   }
 
   private _rangeStyle(low: number, high: number): string {
