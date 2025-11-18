@@ -151,7 +151,7 @@ export class RCTransferList extends LitElement {
   }
 
   override render() {
-    const noAvailable = this.available.length === 0;
+    const noAvailable = this.available.length === 0; // reads <select> directly; requestUpdate() always precedes render
     const noSelected = this.selected.length === 0;
     const cannotReorder = this.selected.length < 2;
     const noAvailableSelection = this._availableSelection.length === 0;
@@ -432,15 +432,17 @@ export class RCTransferList extends LitElement {
   }
 
   private _dispatchChange(selectedValues?: Set<string>): void {
-    this.updateComplete.then(() => this._syncSelection(selectedValues));
+    this.updateComplete.then(() => {
+      this._syncSelection(selectedValues);
 
-    this.dispatchEvent(
-      new CustomEvent<RCTransferListChangeEvent>('rc-transfer-list-change', {
-        bubbles: true,
-        composed: true,
-        detail: { selected: [...this.selected] },
-      }),
-    );
+      this.dispatchEvent(
+        new CustomEvent<RCTransferListChangeEvent>('rc-transfer-list-change', {
+          bubbles: true,
+          composed: true,
+          detail: { selected: [...this.selected] },
+        }),
+      );
+    });
   }
 }
 
