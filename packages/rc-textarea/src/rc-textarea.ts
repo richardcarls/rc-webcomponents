@@ -94,7 +94,7 @@ function decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-font-size=1em] - Font size
  * @cssprop [--rc-textarea-line-height=1.5] - Line height
  * @cssprop [--rc-textarea-padding=0.5em] - Padding inside the editor area
- * @cssprop [--rc-textarea-focus-outline=2px solid AccentColor] - Focus ring outline
+ * @cssprop [--rc-textarea-focus-outline=2px solid Highlight] - Focus ring outline
  * @cssprop [--rc-textarea-caret-color=FieldText] - Caret color
  * @cssprop [--rc-textarea-active-line-bg=transparent] - Active line highlight color
  * @cssprop [--rc-textarea-gutter-bg=Canvas] - Gutter background color

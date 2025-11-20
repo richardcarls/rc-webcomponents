@@ -18,7 +18,7 @@
   --rc-text-disabled:   var(--color-gray-400, GrayText);
 
   --rc-highlight:       var(--color-blue-600, Highlight);
-  --rc-accent:          var(--color-blue-500, AccentColor);
+  --rc-accent:          var(--color-blue-500, Highlight);
 
   --rc-border-color:    var(--color-gray-200, ButtonBorder);
   --rc-border:          1px solid var(--color-gray-200, ButtonBorder);

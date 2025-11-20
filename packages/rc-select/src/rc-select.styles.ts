@@ -118,7 +118,7 @@ export const selectStyles = css`
     &[data-active]:not([aria-disabled='true']) {
       background: var(--rc-highlight, Highlight);
       color: var(--rc-highlight-text, HighlightText);
-      outline: 2px solid var(--rc-accent, AccentColor);
+      outline: 2px solid var(--rc-accent, Highlight);
       outline-offset: -2px;
     }
 
