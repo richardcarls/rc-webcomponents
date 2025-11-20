@@ -155,3 +155,39 @@ test('rc-range-slider has no automated accessibility violations', async () => {
   `);
   await expectNoA11yViolations(screen.getByTestId('host').element());
 });
+
+test('rc-range-slider willUpdate clamps default value to [min, max]', async () => {
+  const screen = render(html`
+    <rc-range-slider
+      data-testid="host"
+      label="Year range"
+      min="2000"
+      max="2030"
+    ></rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  expect(host.value[0]).toBeGreaterThanOrEqual(2000);
+  expect(host.value[1]).toBeLessThanOrEqual(2030);
+});
+
+test('rc-range-slider thumb elements are positioned via inline style', async () => {
+  const screen = render(html`
+    <rc-range-slider
+      data-testid="host"
+      label="Price range"
+      .value=${[25, 75] as [number, number]}
+      min="0"
+      max="100"
+    ></rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  const [lowThumb, highThumb] = Array.from(
+    host.querySelectorAll<HTMLElement>('.rc-range-slider-thumb'),
+  );
+  expect(lowThumb.getAttribute('style')).toBe('left:25%');
+  expect(highThumb.getAttribute('style')).toBe('left:75%');
+});

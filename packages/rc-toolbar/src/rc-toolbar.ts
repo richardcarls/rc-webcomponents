@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
 import {
+  isFocusable,
   keyNavigation,
   type KeyboardNavigationAction,
   RovingTabIndexMixin,
@@ -39,6 +40,24 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   @query('#root', true)
   protected _$root!: HTMLDivElement;
 
+  private readonly _disabledObserver = new MutationObserver(() => this._syncTabStop());
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this._disabledObserver.observe(this, { attributeFilter: ['disabled'], subtree: true });
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._disabledObserver.disconnect();
+  }
+
+  private _syncTabStop(): void {
+    if (!this._lastFocused || isFocusable(this._lastFocused)) return;
+    this._lastFocused = undefined;
+    this._initItems();
+  }
+
   protected override _initItems() {
     // Set tabindex synchronously so items are in the tab order immediately,
     // even if the document has no focus yet (focus() would be a no-op).
@@ -46,8 +65,12 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
 
     // Defer focus to avoid firing focusin/focusout inside a SolidJS reactive
     // update cycle, which can cause the update to hang.
+    // Guard: only restore focus when the toolbar already contains it — prevents
+    // focus-stealing when a toolbar mounts inside a larger component (e.g. rc-transfer-list).
     const target = this._lastFocused ?? this.firstItem;
-    queueMicrotask(() => this.focusItem(target));
+    queueMicrotask(() => {
+      if (this.matches(':focus-within')) this.focusItem(target);
+    });
   }
 
   protected _onNavigate(action: KeyboardNavigationAction) {

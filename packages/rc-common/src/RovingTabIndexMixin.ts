@@ -26,7 +26,13 @@ export declare class RovingTabIndexMixinBase {
   focusFirst(): void;
   focusLast(): void;
 
-  protected _collectItems(slot: HTMLSlotElement): FocusableElement[];
+  /**
+   * Returns the elements to register from a slot. The default collects ALL
+   * direct assigned elements; focusability is checked dynamically by the
+   * `items` getter so that elements toggling `disabled` are included or
+   * excluded without requiring a new `slotchange`.
+   */
+  protected _collectItems(slot: HTMLSlotElement): Element[];
   protected _handleItemFocus(e: FocusEvent): void;
   protected _onSlotChange(e: Event): void;
   protected _initItems(): void;
@@ -64,11 +70,15 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
     @state()
     protected _lastFocused: FocusableElement | undefined;
 
-    private _items: WeakRef<FocusableElement>[] = [];
+    // Stores ALL assigned elements (not just currently-focusable ones) so that
+    // items toggling `disabled` appear in the live `items` getter without a new slotchange.
+    private _items: WeakRef<Element>[] = [];
 
 
     get items(): FocusableElement[] {
-      return this._items.map((ref) => ref.deref()).filter((el) => el != null);
+      return this._items
+        .map((ref) => ref.deref())
+        .filter((el): el is FocusableElement => isFocusable(el));
     }
 
     get firstItem(): FocusableElement | undefined {
@@ -112,15 +122,16 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
 
 
     /**
-     * Returns the focusable items to register from a slot.
+     * Returns the elements to register from a slot.
      *
      * Override in subclasses to customise item collection — for example, to
      * traverse into `role="group"` containers or to skip `role="separator"`
-     * elements. The default collects direct assigned elements that pass
-     * `isFocusable`.
+     * elements. The default collects ALL direct assigned elements; the `items`
+     * getter then filters by `isFocusable` at access time so that elements
+     * toggling `disabled` are reflected without a new `slotchange`.
      */
-    protected _collectItems(slot: HTMLSlotElement): FocusableElement[] {
-      return slot.assignedElements().filter(isFocusable) as FocusableElement[];
+    protected _collectItems(slot: HTMLSlotElement): Element[] {
+      return slot.assignedElements();
     }
 
     protected _handleItemFocus(e: FocusEvent) {
@@ -144,7 +155,7 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
       const prevItems = this._items;
 
       this._items = this._collectItems(e.currentTarget as HTMLSlotElement)
-        .map((el) => new WeakRef(el));
+        .map((el) => new WeakRef<Element>(el));
 
       // Defer DOM mutations so this handler is instantaneous when slotchange
       // fires synchronously inside a framework reactive update pass (e.g.
@@ -160,13 +171,18 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
      * Called after slot contents change and the item list is rebuilt.
      * Override to configure items (set ARIA roles, move focus, etc.).
      *
-     * Default implementation sets `tabindex="0"` on the first item and
-     * `tabindex="-1"` on all others so the component is a single tab stop.
+     * Default implementation sets `tabindex="-1"` on all collected elements
+     * (including currently-disabled ones, so they don't enter the tab order
+     * if re-enabled before the next slotchange) and `tabindex="0"` on the
+     * first currently-focusable item.
      */
     protected _initItems() {
-      this.items.forEach((el, i) => {
-        el.setAttribute('tabindex', i === 0 ? '0' : '-1');
-      });
+      // Exclude all collected elements from the tab order first.
+      this._items.forEach((ref) => ref.deref()?.setAttribute('tabindex', '-1'));
+
+      // Restore the single tab stop on the first currently-focusable item.
+      const first = this.items[0];
+      if (first) first.setAttribute('tabindex', '0');
     }
   }
 

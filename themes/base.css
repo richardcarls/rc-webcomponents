@@ -20,7 +20,7 @@
 
   /* Interactive states */
   --rc-highlight:      Highlight;
-  --rc-accent:         AccentColor;
+  --rc-accent:         Highlight; /* Chrome doesn't support AccentColor on the open web */
 
   /* Borders & decoration */
   --rc-border-color:   ButtonBorder;
@@ -33,4 +33,10 @@
   /* rc-menu / rc-splitter compat — these components already use --rc-border
      as an intermediate token; this ensures it resolves to the same source. */
   --rc-border:         1px solid ButtonBorder;
+}
+
+@supports (color: AccentColor) {
+  :root {
+    --rc-accent: AccentColor;
+  }
 }

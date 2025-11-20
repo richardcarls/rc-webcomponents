@@ -43,10 +43,8 @@
       }
 
       .rc-transfer-list-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 0.375em;
         padding-block-start: 1.5em;
+        --rc-toolbar-gap-inline: 0.375em;
       }
 
       rc-transfer-list button {
@@ -67,6 +65,22 @@
       rc-transfer-list button:disabled {
         opacity: 0.45;
         cursor: not-allowed;
+      }
+
+      rc-listbox [part~="option"] {
+        padding: 0.3em 0.6em;
+        cursor: default;
+        user-select: none;
+      }
+
+      rc-listbox [part~="option"][aria-selected="true"] {
+        background: Highlight;
+        color: HighlightText;
+      }
+
+      rc-listbox [part~="option"][data-active] {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
       }
     </style>
   </head>

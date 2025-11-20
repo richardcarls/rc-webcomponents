@@ -127,7 +127,7 @@ export const styles = css`
 
   /* Focus ring on the root when editor is focused */
   #root:has(#editor:focus) {
-    outline: var(--rc-textarea-focus-outline, 2px solid AccentColor);
+    outline: var(--rc-textarea-focus-outline, 2px solid Highlight);
     outline-offset: -1px;
   }
 

@@ -713,6 +713,7 @@ export class RCSelect extends LitElement {
         part="listbox"
         popover="manual"
         ?multiple=${this.multiple}
+        checkmark
         @rc-listbox-change=${this._handleListboxChange}
       ></rc-listbox>
 

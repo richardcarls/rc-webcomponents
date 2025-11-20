@@ -1,4 +1,5 @@
 import '@rcarls/rc-listbox/define';
+import '@rcarls/rc-toolbar/define';
 
 import { LitElement, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
@@ -150,7 +151,7 @@ export class RCTransferList extends LitElement {
   }
 
   override render() {
-    const noAvailable = this.available.length === 0;
+    const noAvailable = this.available.length === 0; // reads <select> directly; requestUpdate() always precedes render
     const noSelected = this.selected.length === 0;
     const cannotReorder = this.selected.length < 2;
     const noAvailableSelection = this._availableSelection.length === 0;
@@ -168,12 +169,18 @@ export class RCTransferList extends LitElement {
             id="available-list"
             part="listbox available-listbox"
             aria-labelledby="available-label"
+            tabindex="0"
             .options=${this.available}
             .multiple=${this.multiple}
           ></rc-listbox>
         </section>
 
-        <div part="actions" class="rc-transfer-list-actions">
+        <rc-toolbar
+          orientation="vertical"
+          label="Transfer actions"
+          part="actions"
+          class="rc-transfer-list-actions"
+        >
           <button
             type="button"
             part="button add-button"
@@ -210,7 +217,7 @@ export class RCTransferList extends LitElement {
             ?disabled=${cannotReorder || noSelectedSelection}
             @click=${this._onMoveDown}
           >Move down</button>
-        </div>
+        </rc-toolbar>
 
         <section
           part="panel selected-panel"
@@ -222,6 +229,7 @@ export class RCTransferList extends LitElement {
             id="selected-list"
             part="listbox selected-listbox"
             aria-labelledby="selected-label"
+            tabindex="0"
             .options=${this.selected}
             .multiple=${this.multiple}
           ></rc-listbox>
@@ -314,13 +322,32 @@ export class RCTransferList extends LitElement {
   private _onMoveDown = (): void => { this.moveSelected(1); };
 
   private _onKeydown = (e: KeyboardEvent): void => {
-    if (!e.altKey) return;
+    if (e.altKey) {
+      switch (e.key) {
+        case 'ArrowRight': e.preventDefault(); this.addSelected(); break;
+        case 'ArrowLeft':  e.preventDefault(); this.removeSelected(); break;
+        case 'ArrowUp':    e.preventDefault(); this.moveSelected(-1); break;
+        case 'ArrowDown':  e.preventDefault(); this.moveSelected(1); break;
+      }
+      return;
+    }
 
-    switch (e.key) {
-      case 'ArrowRight': e.preventDefault(); this.addSelected(); break;
-      case 'ArrowLeft':  e.preventDefault(); this.removeSelected(); break;
-      case 'ArrowUp':    e.preventDefault(); this.moveSelected(-1); break;
-      case 'ArrowDown':  e.preventDefault(); this.moveSelected(1); break;
+    const targetId = (e.target as Element).id;
+
+    // APG shortcut: Enter in the available list adds the active item.
+    // Restricted to single-select: in multi mode Enter toggles selection in rc-listbox
+    // first, so triggering addSelected() here would immediately transfer a single item
+    // and discard any multi-item selection the user was building.
+    if (targetId === 'available-list' && !this.multiple && e.key === 'Enter') {
+      e.preventDefault();
+      this.addSelected();
+      return;
+    }
+
+    // APG shortcut: Delete in the selected list removes the highlighted items.
+    if (targetId === 'selected-list' && e.key === 'Delete') {
+      e.preventDefault();
+      this.removeSelected();
     }
   };
 
@@ -352,8 +379,9 @@ export class RCTransferList extends LitElement {
       return;
     }
 
-    // Hide from AT and tab order — the rc-listbox UI is the accessible interface;
-    // the <select> is only present for form serialisation.
+    // Remove from visual display, AT, and tab order — the rc-listbox UI is the
+    // accessible interface; the <select> is only present for form serialisation.
+    select.style.display = 'none';
     select.setAttribute('aria-hidden', 'true');
     select.tabIndex = -1;
 
@@ -365,6 +393,7 @@ export class RCTransferList extends LitElement {
 
   private _teardownSelect(): void {
     if (this._select) {
+      this._select.style.display = '';
       this._select.removeAttribute('aria-hidden');
       this._select.removeAttribute('tabindex');
     }
@@ -403,15 +432,17 @@ export class RCTransferList extends LitElement {
   }
 
   private _dispatchChange(selectedValues?: Set<string>): void {
-    this.updateComplete.then(() => this._syncSelection(selectedValues));
+    this.updateComplete.then(() => {
+      this._syncSelection(selectedValues);
 
-    this.dispatchEvent(
-      new CustomEvent<RCTransferListChangeEvent>('rc-transfer-list-change', {
-        bubbles: true,
-        composed: true,
-        detail: { selected: [...this.selected] },
-      }),
-    );
+      this.dispatchEvent(
+        new CustomEvent<RCTransferListChangeEvent>('rc-transfer-list-change', {
+          bubbles: true,
+          composed: true,
+          detail: { selected: [...this.selected] },
+        }),
+      );
+    });
   }
 }
 
