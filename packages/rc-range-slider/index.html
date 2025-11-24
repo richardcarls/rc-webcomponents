@@ -20,11 +20,10 @@
         margin-block-end: 0.4em;
       }
 
+      /* Group: stacking context for the two native inputs */
       .rc-range-slider-group {
         position: relative;
         height: 24px;
-        display: flex;
-        align-items: center;
       }
 
       .rc-range-slider-track {
@@ -40,7 +39,7 @@
         display: block;
         width: 100%;
         height: 6px;
-        background: ButtonBorder;
+        background: var(--rc-track-bg, light-dark(rgba(0,0,0,0.18), rgba(255,255,255,0.22)));
         border-radius: 3px;
       }
 
@@ -49,36 +48,101 @@
         top: 50%;
         transform: translateY(-50%);
         height: 6px;
-        background: AccentColor;
+        background: var(--rc-accent, Highlight);
         border-radius: 3px;
         pointer-events: none;
       }
 
-      .rc-range-slider-thumb {
+      /* Stacked native inputs — z-index is managed by the component */
+      .rc-range-slider-input {
         position: absolute;
-        width: 18px;
-        height: 18px;
-        background: ButtonFace;
-        border: 2px solid AccentColor;
-        border-radius: 50%;
-        cursor: ew-resize;
-        top: 50%;
-        transform: translateY(-50%) translateX(-50%);
-        touch-action: none;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
       }
 
-      .rc-range-slider-thumb:focus-visible {
+      /* Hide native track — .rc-range-slider-track provides the visual */
+      .rc-range-slider-input::-webkit-slider-runnable-track {
+        height: 6px;
+        background: transparent;
+        border: none;
+      }
+
+      .rc-range-slider-input::-moz-range-track {
+        height: 6px;
+        background: transparent;
+        border: none;
+      }
+
+      /* Thumb */
+      .rc-range-slider-input::-webkit-slider-thumb {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: ButtonFace;
+        border: 2px solid var(--rc-accent, Highlight);
+        cursor: ew-resize;
+        margin-top: -6px;
+      }
+
+      .rc-range-slider-input::-moz-range-thumb {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: ButtonFace;
+        border: 2px solid var(--rc-accent, Highlight);
+        cursor: ew-resize;
+      }
+
+      /* Hover state */
+      .rc-range-slider-input:not(:disabled):hover::-webkit-slider-thumb {
+        background: var(--rc-accent, Highlight);
+      }
+
+      .rc-range-slider-input:not(:disabled):hover::-moz-range-thumb {
+        background: var(--rc-accent, Highlight);
+      }
+
+      /* Focus ring on thumb */
+      .rc-range-slider-input:focus-visible {
+        outline: none;
+      }
+
+      .rc-range-slider-input:focus-visible::-webkit-slider-thumb {
         outline: 2px solid Highlight;
         outline-offset: 2px;
       }
 
+      .rc-range-slider-input:focus-visible::-moz-range-thumb {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+      }
+
+      /* Disabled state */
       rc-range-slider[disabled] .rc-range-slider-group {
         opacity: 0.6;
         cursor: not-allowed;
       }
 
-      rc-range-slider[disabled] .rc-range-slider-thumb {
+      rc-range-slider[disabled] .rc-range-slider-input {
+        cursor: not-allowed;
+      }
+
+      rc-range-slider[disabled] .rc-range-slider-input::-webkit-slider-thumb {
         border-color: GrayText;
+        background: ButtonFace;
+        cursor: not-allowed;
+      }
+
+      rc-range-slider[disabled] .rc-range-slider-input::-moz-range-thumb {
+        border-color: GrayText;
+        background: ButtonFace;
         cursor: not-allowed;
       }
 
@@ -106,7 +170,12 @@
       rc-range-slider[orientation="vertical"] .rc-range-slider-group {
         width: 24px;
         height: 200px;
+      }
+
+      rc-range-slider[orientation="vertical"] .rc-range-slider-track {
         flex-direction: column;
+        justify-content: center;
+        align-items: center;
       }
 
       rc-range-slider[orientation="vertical"] .rc-range-slider-track::before {
@@ -121,11 +190,24 @@
         height: auto;
       }
 
-      rc-range-slider[orientation="vertical"] .rc-range-slider-thumb {
-        left: 50%;
-        top: auto;
+      rc-range-slider[orientation="vertical"] .rc-range-slider-input {
+        writing-mode: vertical-lr;
+        direction: rtl;
+      }
+
+      rc-range-slider[orientation="vertical"] .rc-range-slider-input::-webkit-slider-runnable-track {
+        width: 6px;
+        height: auto;
+      }
+
+      rc-range-slider[orientation="vertical"] .rc-range-slider-input::-webkit-slider-thumb {
         cursor: ns-resize;
-        transform: translateX(-50%) translateY(50%);
+        margin-top: 0;
+        margin-left: -6px;
+      }
+
+      rc-range-slider[orientation="vertical"] .rc-range-slider-input::-moz-range-thumb {
+        cursor: ns-resize;
       }
     </style>
   </head>
@@ -169,6 +251,16 @@
         <rc-range-slider
           label="Disabled range"
           disabled
+        ></rc-range-slider>
+      </div>
+
+      <div class="demo-section">
+        <h2>Vertical</h2>
+        <rc-range-slider
+          label="Vertical range"
+          orientation="vertical"
+          min="0"
+          max="100"
         ></rc-range-slider>
       </div>
     </main>

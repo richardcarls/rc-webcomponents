@@ -55,6 +55,9 @@
     "vitest": "^4.0.6",
     "vitest-browser-lit": "^1.0.1"
   },
+  "dependencies": {
+    "@rcarls/rc-common": "workspace:^"
+  },
   "peerDependencies": {
     "lit": "^3.0.0"
   }
