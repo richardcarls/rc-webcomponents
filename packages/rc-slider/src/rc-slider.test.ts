@@ -6,15 +6,13 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 import './define.js';
 import type { RCSlider } from './rc-slider.js';
 
-test('rc-slider renders ranges and value display', async () => {
-  const screen = render(html`<rc-slider data-testid="host" label="Fuel" display="overlay" value="25" value-text="25 of 100"></rc-slider>`);
+test('rc-slider renders progress fill and float value display', async () => {
+  const screen = render(html`<rc-slider data-testid="host" label="Fuel" display="float" value="25" value-text="25 of 100"></rc-slider>`);
   const host = screen.getByTestId('host').element() as RCSlider;
-
-  host.ranges = [{ from: 0, to: 50, part: 'low', label: 'Low range' }];
   await host.updateComplete;
 
   await expect.element(screen.getByText('25 of 100')).toBeInTheDocument();
-  expect(host.querySelectorAll('[part~="range"]')).toHaveLength(1);
+  expect(host.querySelector('[part="progress"]')).toBeTruthy();
 });
 
 test('rc-slider fires input and change events', async () => {

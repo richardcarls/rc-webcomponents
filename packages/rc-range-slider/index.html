@@ -150,15 +150,52 @@
         background: GrayText;
       }
 
+      /* Value display: float — each span is absolutely positioned within the group */
+      .rc-range-slider-values {
+        pointer-events: none;
+      }
+
+      rc-range-slider[display="float"] .rc-range-slider-values {
+        position: absolute;
+        inset: 0;
+      }
+
       .rc-range-slider-value {
         font-size: 0.75rem;
         font-variant-numeric: tabular-nums;
-        position: absolute;
-        top: -1.4em;
-        left: 50%;
-        transform: translateX(-50%);
         white-space: nowrap;
         color: GrayText;
+      }
+
+      rc-range-slider[display="float"] .rc-range-slider-value {
+        position: absolute;
+        top: -1.4em;
+        transform: translateX(-50%);
+      }
+
+      /* Value display: inline-start / inline-end */
+      rc-range-slider[display="inline-start"] .rc-range-slider-values,
+      rc-range-slider[display="inline-end"] .rc-range-slider-values {
+        display: flex;
+        gap: 0.25em;
+        align-items: center;
+        font-size: 0.875rem;
+        font-variant-numeric: tabular-nums;
+        color: GrayText;
+        white-space: nowrap;
+      }
+
+      rc-range-slider[display="inline-start"] .rc-range-slider-value::after {
+        content: ' –';
+      }
+
+      rc-range-slider[display="inline-start"] .rc-range-slider-value:last-child::after,
+      rc-range-slider[display="inline-end"] .rc-range-slider-value::after {
+        content: none;
+      }
+
+      rc-range-slider[display="inline-end"] .rc-range-slider-value:first-child::after {
+        content: ' –';
       }
 
       /* Vertical orientation */
@@ -234,7 +271,8 @@
       </div>
 
       <div class="demo-section">
-        <h2>With Value Display</h2>
+        <h2>Float Value Display</h2>
+        <p>The <code>display="float"</code> mode (or bare <code>display</code>) floats each value above its thumb.</p>
         <rc-range-slider
           id="display-range"
           label="Year range"
@@ -242,7 +280,29 @@
           high-label="End year"
           min="2000"
           max="2030"
-          display="overlay"
+          display="float"
+        ></rc-range-slider>
+      </div>
+
+      <div class="demo-section">
+        <h2>Inline-End Value Display</h2>
+        <p><code>display="inline-end"</code> renders the low – high values after the track.</p>
+        <rc-range-slider
+          label="Budget range"
+          low-label="Minimum budget"
+          high-label="Maximum budget"
+          min="0"
+          max="1000"
+          display="inline-end"
+        ></rc-range-slider>
+      </div>
+
+      <div class="demo-section">
+        <h2>Readonly</h2>
+        <p>Thumbs are visible and focusable but values cannot be changed by the user.</p>
+        <rc-range-slider
+          label="Read-only range"
+          readonly
         ></rc-range-slider>
       </div>
 

@@ -1,21 +1,7 @@
 import { LitElement, html, nothing } from 'lit';
+import type { ComplexAttributeConverter } from 'lit';
 import { property } from 'lit/decorators.js';
-import { repeat } from 'lit/directives/repeat.js';
 import { valueToPercent } from '@rcarls/rc-common';
-
-export interface RCSliderRange {
-  /** Lower bound of the styled range segment (inclusive). */
-  from: number;
-
-  /** Upper bound of the styled range segment (inclusive). */
-  to: number;
-
-  /** Optional CSS part token added to the rendered range span. */
-  part?: string;
-
-  /** Optional accessible label for the rendered segment. */
-  label?: string;
-}
 
 export interface RCSliderValueEvent {
   /** Current numeric slider value. */
@@ -28,9 +14,29 @@ declare global {
   }
 }
 
+type DisplayValue = 'float' | 'inline-start' | 'inline-end' | null;
+
 /**
- * Enhancement wrapper around `<input type="range">` with styled track segments,
- * live value display, and vertical orientation support.
+ * Normalises the `display` attribute.
+ * A bare boolean attribute (`display` with no value) maps to `'float'` so
+ * the reflected attribute is always an explicit string, never an empty string.
+ */
+const displayConverter: ComplexAttributeConverter<DisplayValue> = {
+  fromAttribute(v: string | null): DisplayValue {
+    if (v === null) return null;
+    if (v === '' || v === 'float') return 'float';
+    if (v === 'inline-start') return 'inline-start';
+    if (v === 'inline-end') return 'inline-end';
+    return null;
+  },
+  toAttribute(v: DisplayValue): string | null {
+    return v;
+  },
+};
+
+/**
+ * Enhancement wrapper around `<input type="range">` with a styled progress
+ * fill, live value display, and vertical orientation support.
  *
  * Progressive enhancement: if a child `<input type="range">` is present in the
  * HTML before upgrade, the component reads `min`, `max`, `step`, `value`, and
@@ -39,7 +45,7 @@ declare global {
  * @fires rc-slider-input  - Fires continuously while the value changes. Detail: `{ value }`.
  * @fires rc-slider-change - Fires when the committed value changes (on release). Detail: `{ value }`.
  *
- * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to align overlay value displays.
+ * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to align the float value display.
  */
 export class RCSlider extends LitElement {
   override createRenderRoot() { return this; }
@@ -59,7 +65,7 @@ export class RCSlider extends LitElement {
   /** Disables the underlying input. */
   @property({ type: Boolean, reflect: true }) disabled = false;
 
-  /** Prevents edits while preserving normal display. */
+  /** Prevents edits while preserving normal display. Not a native range attribute. */
   @property({ type: Boolean, reflect: true }) readonly = false;
 
   /** Accessible label text rendered above the control. */
@@ -69,11 +75,21 @@ export class RCSlider extends LitElement {
   @property() name = '';
 
   /**
-   * Where to render the live value.
-   * `none` hides it; `end` places it after the control; `overlay` places it
-   * above the thumb; `inline` is a consumer-positioned slot.
+   * Associates the underlying input with a `<form>` element by its `id`.
+   * Forwarded directly to the native input's `form` attribute.
    */
-  @property() display: 'none' | 'inline' | 'overlay' | 'end' = 'none';
+  @property() form = '';
+
+  /**
+   * Controls the live value display.
+   *
+   * - Absent (default) — no value shown.
+   * - `display` or `display="float"` — floats above the thumb.
+   * - `display="inline-start"` — rendered before the track, inline in the grid.
+   * - `display="inline-end"` — rendered after the track, inline in the grid.
+   */
+  @property({ reflect: true, converter: displayConverter })
+  display: DisplayValue = null;
 
   /** Optional screen-reader value text. When set, forwarded as `aria-valuetext`. */
   @property({ attribute: 'value-text' }) valueText = '';
@@ -81,50 +97,45 @@ export class RCSlider extends LitElement {
   /** Orientation; reflected as an attribute and forwarded to `aria-orientation`. */
   @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
 
-  /**
-   * Styled track segments. Assign a new array reference to trigger a re-render;
-   * mutating in place will not schedule an update.
-   */
-  @property({
-    attribute: false,
-    hasChanged(n: RCSliderRange[], o: RCSliderRange[]) { return n !== o; },
-  })
-  ranges: RCSliderRange[] = [];
-
   override connectedCallback(): void {
     this._absorbChildInput();
     super.connectedCallback();
   }
 
   override render() {
-    const showValue = this.display !== 'none';
     const isVertical = this.orientation === 'vertical';
+
+    const valueDisplay = html`
+      <span
+        part="value-display"
+        class="rc-slider-value"
+        style=${this.display === 'float' ? this._floatStyle() : nothing}
+        aria-hidden="true"
+      >
+        <slot name="value-display">${this._displayText}</slot>
+      </span>
+    `;
 
     return html`
       <label
         part="root"
         class="rc-slider-root"
-        data-display=${this.display}
+        data-display=${this.display ?? nothing}
         data-orientation=${this.orientation}
       >
         ${this.label
           ? html`<span part="label" class="rc-slider-label">${this.label}</span>`
           : nothing}
 
+        ${this.display === 'inline-start' ? valueDisplay : nothing}
+
         <span part="control" class="rc-slider-control">
           <span part="track" class="rc-slider-track" aria-hidden="true">
-            ${repeat(
-              this.ranges,
-              (r) => `${r.from}-${r.to}-${r.part ?? ''}`,
-              (r) => html`
-                <span
-                  part=${`range ${r.part ?? ''}`.trim()}
-                  class="rc-slider-range"
-                  aria-label=${r.label || nothing}
-                  style=${this._rangeStyle(r)}
-                ></span>
-              `,
-            )}
+            <span
+              part="progress"
+              class="rc-slider-progress"
+              style=${this._progressStyle()}
+            ></span>
           </span>
 
           <input
@@ -134,6 +145,7 @@ export class RCSlider extends LitElement {
             max=${this.max}
             step=${this.step}
             name=${this.name || nothing}
+            form=${this.form || nothing}
             .value=${String(this.value)}
             ?disabled=${this.disabled}
             aria-readonly=${this.readonly ? 'true' : nothing}
@@ -144,17 +156,10 @@ export class RCSlider extends LitElement {
             @keydown=${this._onKeydown}
           >
 
-          ${showValue ? html`
-            <span
-              part="value-display"
-              class="rc-slider-value"
-              style=${this.display === 'overlay' ? this._overlayStyle() : nothing}
-              aria-hidden="true"
-            >
-              <slot name="value-display">${this._displayText}</slot>
-            </span>
-          ` : nothing}
+          ${this.display === 'float' ? valueDisplay : nothing}
         </span>
+
+        ${this.display === 'inline-end' ? valueDisplay : nothing}
       </label>
     `;
   }
@@ -211,28 +216,20 @@ export class RCSlider extends LitElement {
     );
   }
 
-  private _rangeStyle(range: RCSliderRange): string {
-    const from = Math.min(Math.max(range.from, this.min), this.max);
-    const to   = Math.min(Math.max(range.to,   this.min), this.max);
-
-    const lo  = valueToPercent(Math.min(from, to), this.min, this.max) * 100;
-    const len = Math.abs(
-      valueToPercent(to, this.min, this.max) - valueToPercent(from, this.min, this.max),
-    ) * 100;
+  private _progressStyle(): string {
+    const pct = valueToPercent(this.value, this.min, this.max) * 100;
 
     if (this.orientation === 'vertical') {
-      return `bottom:${lo.toFixed(3)}%;height:${len.toFixed(3)}%`;
+      return `bottom:0%;height:${pct.toFixed(3)}%`;
     }
 
-    return `left:${lo.toFixed(3)}%;width:${len.toFixed(3)}%`;
+    return `left:0%;width:${pct.toFixed(3)}%`;
   }
 
-  private _overlayStyle(): string {
+  private _floatStyle(): string {
     const pct = valueToPercent(this.value, this.min, this.max);
     const k   = (1 - pct * 2).toFixed(4);
 
-    // Aligns the display to the native thumb's center regardless of thumb size.
-    // Requires --rc-thumb-radius to match the consumer's thumb CSS.
     if (this.orientation === 'vertical') {
       return `bottom:calc(${(pct * 100).toFixed(3)}% + ${k} * var(--rc-thumb-radius, 9px))`;
     }
@@ -243,7 +240,8 @@ export class RCSlider extends LitElement {
   /**
    * Reads `min`, `max`, `step`, `value`, and `name` from the first child
    * `<input type="range">` and uses them as defaults for any component
-   * attribute not explicitly set. Called before Lit's first render.
+   * attribute not explicitly set. The child input is removed after absorption
+   * since Lit's render supplies the managed input.
    */
   private _absorbChildInput(): void {
     const input = this.querySelector<HTMLInputElement>('input[type="range"]');
@@ -254,6 +252,9 @@ export class RCSlider extends LitElement {
     if (!this.hasAttribute('step')  && input.hasAttribute('step'))  this.step  = +input.step;
     if (!this.hasAttribute('value') && input.hasAttribute('value')) this.value = +input.value;
     if (!this.name && input.name) this.name = input.name;
+
+    // TODO: support `list` attribute (datalist) for tick marks on the native input
+    input.remove();
   }
 }
 

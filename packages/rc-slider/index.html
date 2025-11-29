@@ -19,13 +19,20 @@
         gap: 0.4em;
       }
 
-      .rc-slider-root[data-display="end"] {
+      /* inline-end: control left, value right */
+      .rc-slider-root[data-display="inline-end"] {
         grid-template-columns: 1fr auto;
         align-items: center;
       }
 
-      .rc-slider-root[data-display="end"] .rc-slider-control {
+      .rc-slider-root[data-display="inline-end"] .rc-slider-control {
         grid-column: 1;
+      }
+
+      /* inline-start: value left, control right */
+      .rc-slider-root[data-display="inline-start"] {
+        grid-template-columns: auto 1fr;
+        align-items: center;
       }
 
       .rc-slider-label {
@@ -57,11 +64,12 @@
         border-radius: 3px;
       }
 
-      .rc-slider-range {
+      .rc-slider-progress {
         position: absolute;
         height: 6px;
         border-radius: 3px;
         background: var(--rc-accent, Highlight);
+        pointer-events: none;
       }
 
       /* Native input: fills the control, styled via pseudo-elements */
@@ -140,22 +148,48 @@
       /* Disabled thumb */
       .rc-slider-control input[type="range"]:disabled::-webkit-slider-thumb {
         border-color: GrayText;
-        background: GrayText;
+        background: ButtonFace;
         cursor: not-allowed;
       }
 
       .rc-slider-control input[type="range"]:disabled::-moz-range-thumb {
         border-color: GrayText;
-        background: GrayText;
+        background: ButtonFace;
         cursor: not-allowed;
       }
 
+      /* Disabled component */
+      rc-slider[disabled] .rc-slider-control {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      rc-slider[disabled] .rc-slider-progress {
+        background: GrayText;
+      }
+
+      /* Value display: inline-start / inline-end */
       .rc-slider-value {
         font-variant-numeric: tabular-nums;
         font-size: 0.875rem;
         min-width: 2.5em;
         text-align: right;
         color: GrayText;
+      }
+
+      .rc-slider-root[data-display="inline-start"] .rc-slider-value {
+        text-align: left;
+      }
+
+      /* Value display: float */
+      .rc-slider-root[data-display="float"] .rc-slider-value {
+        position: absolute;
+        top: -1.4em;
+        font-size: 0.75rem;
+        min-width: 0;
+        text-align: start;
+        transform: translateX(-50%);
+        white-space: nowrap;
       }
 
       /* Vertical orientation */
@@ -185,7 +219,7 @@
         height: 100%;
       }
 
-      rc-slider[orientation="vertical"] .rc-slider-range {
+      rc-slider[orientation="vertical"] .rc-slider-progress {
         width: 6px;
         height: auto;
       }
@@ -223,48 +257,49 @@
 
       <div class="demo-section">
         <h2>Basic</h2>
-        <rc-slider label="Volume" value="40" display="end"
-          @rc-slider-input=${(e) => console.log('input', e.detail)}
-          @rc-slider-change=${(e) => console.log('change', e.detail)}
-        ></rc-slider>
+        <p>Single thumb slider. Arrow keys adjust by one step; Page Up/Down by 10.</p>
+        <rc-slider id="volume-slider" label="Volume" value="40" display="inline-end"></rc-slider>
+        <p id="volume-output" style="font-size: 0.875rem; color: GrayText;">Volume: 40</p>
       </div>
 
       <div class="demo-section">
-        <h2>With Styled Ranges</h2>
-        <p>Assign the <code>ranges</code> property in JS to paint labelled segments on the track.</p>
-        <rc-slider id="ranged-slider" label="Temperature" value="22" min="0" max="40" display="end"></rc-slider>
+        <h2>Float Value Display</h2>
+        <p>The <code>display="float"</code> mode (or bare <code>display</code>) floats the current value above the thumb.</p>
+        <rc-slider label="Playback speed" value="50" display="float"></rc-slider>
+      </div>
+
+      <div class="demo-section">
+        <h2>Inline-Start Value Display</h2>
+        <p><code>display="inline-start"</code> renders the value before the track in the grid.</p>
+        <rc-slider label="Balance" value="30" display="inline-start"></rc-slider>
+      </div>
+
+      <div class="demo-section">
+        <h2>Readonly</h2>
+        <p>The thumb is visible and focusable but the value cannot be changed by the user.</p>
+        <rc-slider label="Read-only level" value="65" display="inline-end" readonly></rc-slider>
       </div>
 
       <div class="demo-section">
         <h2>Vertical</h2>
-        <rc-slider label="Level" value="60" orientation="vertical" display="end"></rc-slider>
+        <rc-slider label="Level" value="60" orientation="vertical" display="inline-end"></rc-slider>
       </div>
 
       <div class="demo-section">
         <h2>Disabled</h2>
-        <rc-slider label="Disabled" value="50" display="end" disabled></rc-slider>
+        <rc-slider label="Disabled" value="50" display="inline-end" disabled></rc-slider>
       </div>
     </main>
 
     <script>
       customElements.whenDefined('rc-slider').then(() => {
-        const slider = document.getElementById('ranged-slider');
-        slider.ranges = [
-          { from: 0,  to: 10, part: 'cold',   label: 'Cold' },
-          { from: 10, to: 25, part: 'comfort', label: 'Comfortable' },
-          { from: 25, to: 40, part: 'hot',     label: 'Hot' },
-        ];
-      });
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeOutput = document.getElementById('volume-output');
 
-      document.addEventListener('rc-slider-change', (e) => {
-        console.log('rc-slider-change:', e.detail);
+        volumeSlider.addEventListener('rc-slider-input', (e) => {
+          volumeOutput.textContent = `Volume: ${e.detail.value}`;
+        });
       });
     </script>
-
-    <style>
-      rc-slider#ranged-slider .rc-slider-range[part~="cold"]    { background: #6ab4f5; }
-      rc-slider#ranged-slider .rc-slider-range[part~="comfort"] { background: var(--rc-accent, Highlight); }
-      rc-slider#ranged-slider .rc-slider-range[part~="hot"]     { background: #f5886a; }
-    </style>
   </body>
 </html>
