@@ -1,7 +1,7 @@
 import { LitElement, html, nothing } from 'lit';
-import type { ComplexAttributeConverter, PropertyValues } from 'lit';
+import type { ComplexAttributeConverter } from 'lit';
 import { property, state, query } from 'lit/decorators.js';
-import { snapToStep, valueToPercent } from '@rcarls/rc-common';
+import { valueToPercent } from '@rcarls/rc-common';
 
 export interface RCRangeSliderValueEvent {
   /** Current [low, high] value tuple. */
@@ -35,44 +35,46 @@ const displayConverter: ComplexAttributeConverter<DisplayValue> = {
 };
 
 /**
- * Dual-thumb range slider built on two stacked `<input type="range">` elements,
- * implementing the WAI-ARIA APG Slider (Multi-Thumb) pattern.
+ * Returns the numeric value of a range input's `min`, `max`, or `step`
+ * attribute string, falling back to `defaultVal` when the attribute is absent
+ * (empty string) or not a valid number.
+ */
+function parseAttr(s: string, defaultVal: number): number {
+  if (s === '') return defaultVal;
+  const n = parseFloat(s);
+  return isNaN(n) ? defaultVal : n;
+}
+
+/**
+ * Dual-thumb range slider built on two consumer-provided `<input type="range">`
+ * elements, implementing the WAI-ARIA APG Slider (Multi-Thumb) pattern.
  *
- * Each native input provides keyboard navigation, form participation, and ARIA
- * semantics. Dynamic `aria-valuemin`/`aria-valuemax` cross-constraints keep both
- * inputs aware of each other's position.
+ * Both native inputs must be supplied as direct children. The component keeps
+ * them in the DOM permanently — it enhances rather than replaces them. Each
+ * input handles its own keyboard navigation and form participation natively.
  *
- * Progressive enhancement: if two child `<input type="range">` elements are
- * present before upgrade, their `min`, `max`, `step`, `value`, and `name`
- * attributes seed the component. The first child becomes the low input, the
- * second becomes the high input.
+ * Dynamic `aria-valuemax`/`aria-valuemin` cross-constraints are applied
+ * imperatively in `updated()` to keep each thumb aware of the other.
+ *
+ * Label association for the group:
+ * - Component `label` attribute: `<rc-range-slider label="Price range">` — sets
+ *   `aria-label` on the ARIA group container.
+ * - Consumer `<fieldset>`/`<legend>` or `aria-labelledby` on the element itself.
+ *
+ * Per-thumb labels:
+ * - `low-label` / `high-label` attributes (defaults: "Minimum" / "Maximum") set
+ *   `aria-label` on each input only when the consumer has not already provided one.
+ * - Consumer may set `aria-label` or `aria-labelledby` directly on their inputs.
+ *
+ * Form participation is handled natively by each input's `name` attribute.
  *
  * @fires rc-range-slider-input  - Fires while either thumb moves. Detail: `{ value }`.
  * @fires rc-range-slider-change - Fires when a thumb commits a new value. Detail: `{ value }`.
  *
- * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to align the float value displays.
+ * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to align float value displays.
  */
 export class RCRangeSlider extends LitElement {
   override createRenderRoot() { return this; }
-
-  /** Minimum value. */
-  @property({ type: Number }) min = 0;
-
-  /** Maximum value. */
-  @property({ type: Number }) max = 100;
-
-  /** Step size. */
-  @property({ type: Number }) step = 1;
-
-  /**
-   * Current [low, high] value. Assign a new tuple reference to trigger a
-   * re-render; mutating the existing tuple in place will not schedule an update.
-   */
-  @property({
-    attribute: false,
-    hasChanged(n: [number, number], o: [number, number]) { return n !== o; },
-  })
-  value: [number, number] = [0, 100];
 
   /** Disables both inputs. */
   @property({ type: Boolean, reflect: true }) disabled = false;
@@ -83,10 +85,16 @@ export class RCRangeSlider extends LitElement {
   /** Accessible label for the group element. */
   @property() label = '';
 
-  /** Accessible label for the low (min) thumb. */
+  /**
+   * Accessible label for the low (min) thumb. Applied to the native input via
+   * `aria-label` only when the consumer has not already set `aria-label` on it.
+   */
   @property({ attribute: 'low-label' }) lowLabel = 'Minimum';
 
-  /** Accessible label for the high (max) thumb. */
+  /**
+   * Accessible label for the high (max) thumb. Applied to the native input via
+   * `aria-label` only when the consumer has not already set `aria-label` on it.
+   */
   @property({ attribute: 'high-label' }) highLabel = 'Maximum';
 
   /** Formatted screen-reader text for the low value. Falls back to the raw number. */
@@ -110,74 +118,78 @@ export class RCRangeSlider extends LitElement {
   @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
 
   /**
-   * Convenience: sets a shared name base. Creates inputs named `${name}-low`
-   * and `${name}-high`. Individual `low-name` / `high-name` attributes override
-   * the derived names when set.
+   * Current [low, high] value tuple; reflects the native inputs' last committed
+   * values. Read-only from the outside.
    */
-  @property() name = '';
+  get value(): [number, number] {
+    return [this._lowValue, this._highValue];
+  }
 
-  /** Explicit `name` for the low input. Overrides the value derived from `name`. */
-  @property({ attribute: 'low-name' }) lowName = '';
-
-  /** Explicit `name` for the high input. Overrides the value derived from `name`. */
-  @property({ attribute: 'high-name' }) highName = '';
-
-  /**
-   * Associates both underlying inputs with a `<form>` element by its `id`.
-   * Forwarded directly to each native input's `form` attribute.
-   */
-  @property() form = '';
+  @state() private _lowValue  = 0;
+  @state() private _highValue = 100;
 
   /** Which input is currently on top (receives pointer events). Updated on `pointermove`. */
   @state() private _topThumb: 'low' | 'high' = 'high';
 
   @query('.rc-range-slider-group') private _groupEl!: HTMLElement;
 
+  private _lowInput:  HTMLInputElement | null = null;
+  private _highInput: HTMLInputElement | null = null;
+
   override connectedCallback(): void {
-    this._absorbChildInputs();
+    this._findInputs();
     super.connectedCallback();
   }
 
-  override willUpdate(changed: PropertyValues): void {
-    if (changed.has('min') || changed.has('max') || changed.has('step')) {
-      const [low, high] = this.value;
-      const clampedLow  = snapToStep(low,  this.min, this.max,  this.step);
-      const clampedHigh = snapToStep(high, clampedLow, this.max, this.step);
+  override disconnectedCallback(): void {
+    this._unwireInputs();
+    super.disconnectedCallback();
+  }
 
-      if (clampedLow !== low || clampedHigh !== high) {
-        this.value = [clampedLow, clampedHigh];
-      }
+  override firstUpdated(): void {
+    if (this._lowInput && this._highInput) {
+      this._lowValue  = this._lowInput.valueAsNumber  || 0;
+      this._highValue = this._highInput.valueAsNumber || 100;
     }
   }
 
-  override render() {
-    const [low, high] = this.value;
-    const isVertical  = this.orientation === 'vertical';
+  override updated(): void {
+    this._syncAriaAttributes();
+  }
 
-    const lowText  = this.lowValueText  || String(low);
-    const highText = this.highValueText || String(high);
+  override render() {
+    const lo = this._lowInput;
+    const hi = this._highInput;
+    if (!lo || !hi) return nothing;
+
+    // Read current values directly from the native inputs for accurate first render.
+    // _lowValue / _highValue are @state() properties that trigger re-renders; they
+    // lag behind by one cycle on the initial mount because firstUpdated() seeds them.
+    const lowVal  = isNaN(lo.valueAsNumber) ? this._lowValue  : lo.valueAsNumber;
+    const highVal = isNaN(hi.valueAsNumber) ? this._highValue : hi.valueAsNumber;
+
+    const lowText  = this.lowValueText  || String(lowVal);
+    const highText = this.highValueText || String(highVal);
 
     const valuesContainer = html`
       <span class="rc-range-slider-values" aria-hidden="true">
         <span
           part="value-display low-value-display"
           class="rc-range-slider-value"
-          style=${this.display === 'float' ? this._floatStyle(low) : nothing}
+          style=${this.display === 'float' ? this._floatStyle(lowVal) : nothing}
         >${lowText}</span>
         <span
           part="value-display high-value-display"
           class="rc-range-slider-value"
-          style=${this.display === 'float' ? this._floatStyle(high) : nothing}
+          style=${this.display === 'float' ? this._floatStyle(highVal) : nothing}
         >${highText}</span>
       </span>
     `;
 
     // Both inputs span the full [min, max] so the browser positions each thumb
     // as a fraction of the full range. Cross-constraints (low ≤ high) are
-    // enforced via explicit aria-valuemax / aria-valuemin and clamping in the
-    // input/change handlers; keyboard nav is already clamped in the keydown
-    // handlers. Using a constrained max/min here causes the browser to map the
-    // thumb across a shorter range than the track, producing a positional offset
+    // enforced via aria-valuemax / aria-valuemin and clamping in the event
+    // handlers. Using a constrained native max/min produces a positional offset
     // that grows worst when both thumbs are near the centre.
     return html`
       <div
@@ -203,53 +215,13 @@ export class RCRangeSlider extends LitElement {
             <span
               part="range"
               class="rc-range-slider-range"
-              style=${this._rangeStyle(low, high)}
+              style=${this._rangeStyle()}
             ></span>
           </span>
 
-          <input
-            type="range"
-            part="low-input"
-            class="rc-range-slider-input"
-            min=${this.min}
-            max=${this.max}
-            step=${this.step}
-            name=${this._lowInputName || nothing}
-            form=${this.form || nothing}
-            .value=${String(low)}
-            ?disabled=${this.disabled}
-            aria-label=${this.lowLabel}
-            aria-valuemax=${high}
-            aria-readonly=${this.readonly ? 'true' : nothing}
-            aria-valuetext=${this.lowValueText || nothing}
-            aria-orientation=${isVertical ? 'vertical' : nothing}
-            style=${this._inputStyle('low')}
-            @input=${this._onLowInput}
-            @change=${this._onLowChange}
-            @keydown=${this._onLowKeydown}
-          >
+          ${lo}
 
-          <input
-            type="range"
-            part="high-input"
-            class="rc-range-slider-input"
-            min=${this.min}
-            max=${this.max}
-            step=${this.step}
-            name=${this._highInputName || nothing}
-            form=${this.form || nothing}
-            .value=${String(high)}
-            ?disabled=${this.disabled}
-            aria-label=${this.highLabel}
-            aria-valuemin=${low}
-            aria-readonly=${this.readonly ? 'true' : nothing}
-            aria-valuetext=${this.highValueText || nothing}
-            aria-orientation=${isVertical ? 'vertical' : nothing}
-            style=${this._inputStyle('high')}
-            @input=${this._onHighInput}
-            @change=${this._onHighChange}
-            @keydown=${this._onHighKeydown}
-          >
+          ${hi}
 
           ${this.display === 'float' ? valuesContainer : nothing}
         </div>
@@ -259,84 +231,176 @@ export class RCRangeSlider extends LitElement {
     `;
   }
 
-  private get _lowInputName(): string {
-    return this.lowName || (this.name ? `${this.name}-low` : '');
-  }
+  /**
+   * Finds the first two child `<input type="range">` elements and wires them.
+   * Inputs remain in the DOM permanently; the component enhances rather than
+   * replaces them.
+   */
+  private _findInputs(): void {
+    const inputs = Array.from(
+      this.querySelectorAll<HTMLInputElement>('input[type="range"]'),
+    ).slice(0, 2);
 
-  private get _highInputName(): string {
-    return this.highName || (this.name ? `${this.name}-high` : '');
-  }
-
-  private _onLowInput(e: Event): void {
-    const input = e.currentTarget as HTMLInputElement;
-    const [, high] = this.value;
-
-    if (this.readonly) {
-      input.value = String(this.value[0]);
+    if (inputs.length < 2) {
+      console.warn('[rc-range-slider] Requires two child <input type="range"> elements.');
       return;
     }
 
-    const clamped = Math.min(input.valueAsNumber, high);
+    const [lo, hi] = inputs as [HTMLInputElement, HTMLInputElement];
+
+    // Mirror disabled state from the native inputs if not explicitly set on the host.
+    if (!this.hasAttribute('disabled') && (lo.disabled || hi.disabled)) {
+      this.disabled = true;
+    }
+
+    // Add CSS class required by the component's styling rules.
+    lo.classList.add('rc-range-slider-input');
+    hi.classList.add('rc-range-slider-input');
+
+    this._lowInput  = lo;
+    this._highInput = hi;
+
+    this._wireInput(lo, this._onLowInput, this._onLowChange, this._onLowKeydown);
+    this._wireInput(hi, this._onHighInput, this._onHighChange, this._onHighKeydown);
+  }
+
+  private _wireInput(
+    input: HTMLInputElement,
+    onInput:   (e: Event) => void,
+    onChange:  (e: Event) => void,
+    onKeydown: (e: KeyboardEvent) => void,
+  ): void {
+    input.addEventListener('input',   onInput);
+    input.addEventListener('change',  onChange);
+    input.addEventListener('keydown', onKeydown);
+  }
+
+  private _unwireInputs(): void {
+    this._lowInput?.removeEventListener('input',   this._onLowInput);
+    this._lowInput?.removeEventListener('change',  this._onLowChange);
+    this._lowInput?.removeEventListener('keydown', this._onLowKeydown);
+
+    this._highInput?.removeEventListener('input',   this._onHighInput);
+    this._highInput?.removeEventListener('change',  this._onHighChange);
+    this._highInput?.removeEventListener('keydown', this._onHighKeydown);
+  }
+
+  private _syncAriaAttributes(): void {
+    const lo = this._lowInput;
+    const hi = this._highInput;
+    if (!lo || !hi) return;
+
+    // Cross-constraints: each thumb's aria-valuemax/min reflects the other's position.
+    lo.setAttribute('aria-valuemax', String(this._highValue));
+    hi.setAttribute('aria-valuemin', String(this._lowValue));
+
+    // Per-thumb labels — only set when the consumer hasn't provided their own.
+    if (!lo.hasAttribute('aria-label') && this.lowLabel) {
+      lo.setAttribute('aria-label', this.lowLabel);
+    }
+    if (!hi.hasAttribute('aria-label') && this.highLabel) {
+      hi.setAttribute('aria-label', this.highLabel);
+    }
+
+    if (this.lowValueText) {
+      lo.setAttribute('aria-valuetext', this.lowValueText);
+    } else {
+      lo.removeAttribute('aria-valuetext');
+    }
+
+    if (this.highValueText) {
+      hi.setAttribute('aria-valuetext', this.highValueText);
+    } else {
+      hi.removeAttribute('aria-valuetext');
+    }
+
+    if (this.readonly) {
+      lo.setAttribute('aria-readonly', 'true');
+      hi.setAttribute('aria-readonly', 'true');
+    } else {
+      lo.removeAttribute('aria-readonly');
+      hi.removeAttribute('aria-readonly');
+    }
+
+    if (this.orientation === 'vertical') {
+      lo.setAttribute('aria-orientation', 'vertical');
+      hi.setAttribute('aria-orientation', 'vertical');
+    } else {
+      lo.removeAttribute('aria-orientation');
+      hi.removeAttribute('aria-orientation');
+    }
+
+    lo.disabled = this.disabled;
+    hi.disabled = this.disabled;
+
+    // z-index controls which input receives pointer events when the thumbs overlap.
+    lo.style.zIndex = this._topThumb === 'low'  ? '2' : '1';
+    hi.style.zIndex = this._topThumb === 'high' ? '2' : '1';
+  }
+
+  private readonly _onLowInput = (e: Event): void => {
+    const input = e.currentTarget as HTMLInputElement;
+
+    if (this.readonly) {
+      input.value = String(this._lowValue);
+      return;
+    }
+
+    const clamped = Math.min(input.valueAsNumber, this._highValue);
 
     // Imperatively reset so the browser snaps the thumb back before Lit's async
     // re-render catches up; without this the thumb drifts past the high thumb
     // during a fast drag even though the emitted value is correctly clamped.
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
-    this.value = [clamped, high];
+    this._lowValue = clamped;
     this._dispatch('rc-range-slider-input', this.value);
-  }
+  };
 
-  private _onLowChange(e: Event): void {
+  private readonly _onLowChange = (e: Event): void => {
     const input = e.currentTarget as HTMLInputElement;
-    const [, high] = this.value;
 
     if (this.readonly) {
-      input.value = String(this.value[0]);
+      input.value = String(this._lowValue);
       return;
     }
 
-    const clamped = Math.min(input.valueAsNumber, high);
-
+    const clamped = Math.min(input.valueAsNumber, this._highValue);
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
-    this.value = [clamped, high];
+    this._lowValue = clamped;
     this._dispatch('rc-range-slider-change', this.value);
-  }
+  };
 
-  private _onHighInput(e: Event): void {
+  private readonly _onHighInput = (e: Event): void => {
     const input = e.currentTarget as HTMLInputElement;
-    const [low] = this.value;
 
     if (this.readonly) {
-      input.value = String(this.value[1]);
+      input.value = String(this._highValue);
       return;
     }
 
-    const clamped = Math.max(input.valueAsNumber, low);
-
+    const clamped = Math.max(input.valueAsNumber, this._lowValue);
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
-    this.value = [low, clamped];
+    this._highValue = clamped;
     this._dispatch('rc-range-slider-input', this.value);
-  }
+  };
 
-  private _onHighChange(e: Event): void {
+  private readonly _onHighChange = (e: Event): void => {
     const input = e.currentTarget as HTMLInputElement;
-    const [low] = this.value;
 
     if (this.readonly) {
-      input.value = String(this.value[1]);
+      input.value = String(this._highValue);
       return;
     }
 
-    const clamped = Math.max(input.valueAsNumber, low);
-
+    const clamped = Math.max(input.valueAsNumber, this._lowValue);
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
-    this.value = [low, clamped];
+    this._highValue = clamped;
     this._dispatch('rc-range-slider-change', this.value);
-  }
+  };
 
   /**
    * APG keyboard contract for the low thumb.
@@ -345,69 +409,70 @@ export class RCRangeSlider extends LitElement {
    * process the event, then sets `input.value` immediately for visual feedback
    * before Lit's async re-render catches up.
    */
-  private _onLowKeydown(e: KeyboardEvent): void {
+  private readonly _onLowKeydown = (e: KeyboardEvent): void => {
     if (this.disabled || this.readonly) return;
 
-    const input = e.currentTarget as HTMLInputElement;
-    const [low, high] = this.value;
-    const bigStep = this.step * 10;
+    const input  = e.currentTarget as HTMLInputElement;
+    const step   = parseAttr(input.step, 1);
+    const min    = parseAttr(input.min, 0);
+    const bigStep = step * 10;
+    const low    = this._lowValue;
+    const high   = this._highValue;
 
     let newLow: number | null = null;
 
     switch (e.key) {
       case 'ArrowRight':
-      case 'ArrowUp':   newLow = Math.min(low + this.step, high); break;
+      case 'ArrowUp':   newLow = Math.min(low + step,    high); break;
       case 'ArrowLeft':
-      case 'ArrowDown': newLow = Math.max(low - this.step, this.min); break;
-      case 'PageUp':    newLow = Math.min(low + bigStep,   high); break;
-      case 'PageDown':  newLow = Math.max(low - bigStep,   this.min); break;
-      case 'Home':      newLow = this.min; break;
+      case 'ArrowDown': newLow = Math.max(low - step,    min);  break;
+      case 'PageUp':    newLow = Math.min(low + bigStep,  high); break;
+      case 'PageDown':  newLow = Math.max(low - bigStep,  min);  break;
+      case 'Home':      newLow = min;  break;
       case 'End':       newLow = high; break; // low's effective max is high
       default:          return;
     }
 
     e.preventDefault();
-
     if (newLow === low) return;
 
     input.value = String(newLow);
-
-    this.value = [newLow, high];
+    this._lowValue = newLow;
     this._dispatch('rc-range-slider-input', this.value);
-  }
+  };
 
   /** APG keyboard contract for the high thumb. */
-  private _onHighKeydown(e: KeyboardEvent): void {
+  private readonly _onHighKeydown = (e: KeyboardEvent): void => {
     if (this.disabled || this.readonly) return;
 
-    const input = e.currentTarget as HTMLInputElement;
-    const [low, high] = this.value;
-    const bigStep = this.step * 10;
+    const input   = e.currentTarget as HTMLInputElement;
+    const step    = parseAttr(input.step, 1);
+    const max     = parseAttr(input.max, 100);
+    const bigStep = step * 10;
+    const low     = this._lowValue;
+    const high    = this._highValue;
 
     let newHigh: number | null = null;
 
     switch (e.key) {
       case 'ArrowRight':
-      case 'ArrowUp':   newHigh = Math.min(high + this.step, this.max); break;
+      case 'ArrowUp':   newHigh = Math.min(high + step,    max);  break;
       case 'ArrowLeft':
-      case 'ArrowDown': newHigh = Math.max(high - this.step, low); break;
-      case 'PageUp':    newHigh = Math.min(high + bigStep,   this.max); break;
-      case 'PageDown':  newHigh = Math.max(high - bigStep,   low); break;
+      case 'ArrowDown': newHigh = Math.max(high - step,    low);  break;
+      case 'PageUp':    newHigh = Math.min(high + bigStep,  max);  break;
+      case 'PageDown':  newHigh = Math.max(high - bigStep,  low);  break;
       case 'Home':      newHigh = low; break; // high's effective min is low
-      case 'End':       newHigh = this.max; break;
+      case 'End':       newHigh = max; break;
       default:          return;
     }
 
     e.preventDefault();
-
     if (newHigh === high) return;
 
     input.value = String(newHigh);
-
-    this.value = [low, newHigh];
+    this._highValue = newHigh;
     this._dispatch('rc-range-slider-input', this.value);
-  }
-
+  };
 
   /**
    * Updates which input is on top based on pointer position relative to the
@@ -419,16 +484,20 @@ export class RCRangeSlider extends LitElement {
     const rect = this._groupEl?.getBoundingClientRect();
     if (!rect) return;
 
-    const [low, high] = this.value;
-    const span = this.max - this.min;
+    const lo  = this._lowInput;
+    if (!lo) return;
+
+    const min  = parseAttr(lo.min, 0);
+    const max  = parseAttr(lo.max, 100);
+    const span = max - min;
     if (span <= 0) return;
 
     const pct = this.orientation === 'vertical'
       ? 1 - (e.clientY - rect.top)  / rect.height
       : (e.clientX  - rect.left) / rect.width;
 
-    const val    = pct * span + this.min;
-    const midVal = (low + high) / 2;
+    const val    = pct * span + min;
+    const midVal = (this._lowValue + this._highValue) / 2;
 
     // Split on the midpoint between the two thumbs. When separated, this is
     // equivalent to proximity. When overlapping, the midpoint is the centre of
@@ -437,26 +506,30 @@ export class RCRangeSlider extends LitElement {
     this._topThumb = val <= midVal ? 'low' : 'high';
   }
 
-  private _inputStyle(thumb: 'low' | 'high'): string {
-    const onTop = this._topThumb === thumb;
-    // Both inputs cover the full group via position:absolute in consumer CSS.
-    // z-index determines which receives pointer events.
-    return `z-index:${onTop ? 2 : 1}`;
-  }
+  private _rangeStyle(): string {
+    const lo = this._lowInput;
+    const hi = this._highInput;
+    if (!lo || !hi) return '';
 
-  private _rangeStyle(low: number, high: number): string {
-    const lo  = valueToPercent(low,  this.min, this.max) * 100;
-    const hi  = valueToPercent(high, this.min, this.max) * 100;
+    const min = parseAttr(lo.min, 0);
+    const max = parseAttr(lo.max, 100);
+    const loP = valueToPercent(lo.valueAsNumber, min, max) * 100;
+    const hiP = valueToPercent(hi.valueAsNumber, min, max) * 100;
 
     if (this.orientation === 'vertical') {
-      return `bottom:${lo.toFixed(3)}%;height:${(hi - lo).toFixed(3)}%`;
+      return `bottom:${loP.toFixed(3)}%;height:${(hiP - loP).toFixed(3)}%`;
     }
 
-    return `left:${lo.toFixed(3)}%;width:${(hi - lo).toFixed(3)}%`;
+    return `left:${loP.toFixed(3)}%;width:${(hiP - loP).toFixed(3)}%`;
   }
 
   private _floatStyle(value: number): string {
-    const pct = valueToPercent(value, this.min, this.max);
+    const lo = this._lowInput;
+    if (!lo) return '';
+
+    const min = parseAttr(lo.min, 0);
+    const max = parseAttr(lo.max, 100);
+    const pct = valueToPercent(value, min, max);
     const k   = (1 - pct * 2).toFixed(4);
 
     if (this.orientation === 'vertical') {
@@ -477,36 +550,6 @@ export class RCRangeSlider extends LitElement {
         detail: { value },
       }),
     );
-  }
-
-  /**
-   * Reads config from the first two child `<input type="range">` elements
-   * present before upgrade. Component attributes take precedence. The child
-   * inputs are removed after absorption since Lit's render supplies the managed inputs.
-   */
-  private _absorbChildInputs(): void {
-    const inputs = Array.from(
-      this.querySelectorAll<HTMLInputElement>('input[type="range"]'),
-    ).slice(0, 2);
-
-    if (inputs.length === 0) return;
-
-    const [lo, hi] = inputs;
-
-    if (!this.hasAttribute('min')   && lo?.hasAttribute('min'))   this.min   = +lo.min;
-    if (!this.hasAttribute('max')   && (hi ?? lo)?.hasAttribute('max')) this.max = +(hi ?? lo).max;
-    if (!this.hasAttribute('step')  && lo?.hasAttribute('step'))  this.step  = +lo.step;
-
-    const initLow  = lo  && lo.hasAttribute('value')  ? +lo.value  : this.min;
-    const initHigh = hi  && hi.hasAttribute('value')  ? +hi.value  : this.max;
-
-    if (!this.lowName  && lo?.name)  this.lowName  = lo.name;
-    if (!this.highName && hi?.name)  this.highName = hi.name;
-
-    this.value = [initLow, initHigh];
-
-    // TODO: support `list` attribute (datalist) for tick marks on the native inputs
-    for (const input of inputs) input.remove();
   }
 }
 

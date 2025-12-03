@@ -258,36 +258,57 @@
       <div class="demo-section">
         <h2>Basic</h2>
         <p>Single thumb slider. Arrow keys adjust by one step; Page Up/Down by 10.</p>
-        <rc-slider id="volume-slider" label="Volume" value="40" display="inline-end"></rc-slider>
+        <rc-slider id="volume-slider" label="Volume" display="inline-end">
+          <input type="range" name="volume" min="0" max="100" value="40">
+        </rc-slider>
         <p id="volume-output" style="font-size: 0.875rem; color: GrayText;">Volume: 40</p>
       </div>
 
       <div class="demo-section">
         <h2>Float Value Display</h2>
         <p>The <code>display="float"</code> mode (or bare <code>display</code>) floats the current value above the thumb.</p>
-        <rc-slider label="Playback speed" value="50" display="float"></rc-slider>
+        <rc-slider label="Playback speed" display="float">
+          <input type="range" name="speed" min="0" max="100" value="50">
+        </rc-slider>
       </div>
 
       <div class="demo-section">
         <h2>Inline-Start Value Display</h2>
         <p><code>display="inline-start"</code> renders the value before the track in the grid.</p>
-        <rc-slider label="Balance" value="30" display="inline-start"></rc-slider>
+        <rc-slider label="Balance" display="inline-start">
+          <input type="range" name="balance" min="0" max="100" value="30">
+        </rc-slider>
+      </div>
+
+      <div class="demo-section">
+        <h2>External label (<code>for</code>/<code>id</code>)</h2>
+        <p>Consumer provides a standard <code>&lt;label for="…"&gt;</code> — works because the input lives in light DOM.</p>
+        <label for="brightness-input" style="font-size: 0.875rem; font-weight: 500;">Brightness</label>
+        <rc-slider display="inline-end">
+          <input id="brightness-input" type="range" name="brightness" min="0" max="100" value="70">
+        </rc-slider>
       </div>
 
       <div class="demo-section">
         <h2>Readonly</h2>
         <p>The thumb is visible and focusable but the value cannot be changed by the user.</p>
-        <rc-slider label="Read-only level" value="65" display="inline-end" readonly></rc-slider>
+        <rc-slider label="Read-only level" display="inline-end" readonly>
+          <input type="range" min="0" max="100" value="65">
+        </rc-slider>
       </div>
 
       <div class="demo-section">
         <h2>Vertical</h2>
-        <rc-slider label="Level" value="60" orientation="vertical" display="inline-end"></rc-slider>
+        <rc-slider label="Level" orientation="vertical" display="inline-end">
+          <input type="range" name="level" min="0" max="100" value="60">
+        </rc-slider>
       </div>
 
       <div class="demo-section">
         <h2>Disabled</h2>
-        <rc-slider label="Disabled" value="50" display="inline-end" disabled></rc-slider>
+        <rc-slider label="Disabled" display="inline-end" disabled>
+          <input type="range" min="0" max="100" value="50">
+        </rc-slider>
       </div>
     </main>
 

@@ -261,75 +261,59 @@
       <div class="demo-section">
         <h2>Basic</h2>
         <p>Two thumbs define a low/high range. Use arrow keys on a focused thumb to adjust its value.</p>
-        <rc-range-slider
-          id="basic-range"
-          label="Price range"
-          low-label="Minimum price"
-          high-label="Maximum price"
-        ></rc-range-slider>
-        <p id="basic-range-output" style="font-size: 0.875rem; color: GrayText;">$0 – $100</p>
+        <rc-range-slider id="basic-range" label="Price range">
+          <input type="range" name="price-min" min="0" max="100" value="20" aria-label="Minimum price">
+          <input type="range" name="price-max" min="0" max="100" value="80" aria-label="Maximum price">
+        </rc-range-slider>
+        <p id="basic-range-output" style="font-size: 0.875rem; color: GrayText;">$20 – $80</p>
       </div>
 
       <div class="demo-section">
         <h2>Float Value Display</h2>
         <p>The <code>display="float"</code> mode (or bare <code>display</code>) floats each value above its thumb.</p>
-        <rc-range-slider
-          id="display-range"
-          label="Year range"
-          low-label="Start year"
-          high-label="End year"
-          min="2000"
-          max="2030"
-          display="float"
-        ></rc-range-slider>
+        <rc-range-slider label="Year range" display="float">
+          <input type="range" name="year-start" min="2000" max="2030" value="2010" aria-label="Start year">
+          <input type="range" name="year-end"   min="2000" max="2030" value="2025" aria-label="End year">
+        </rc-range-slider>
       </div>
 
       <div class="demo-section">
         <h2>Inline-End Value Display</h2>
         <p><code>display="inline-end"</code> renders the low – high values after the track.</p>
-        <rc-range-slider
-          label="Budget range"
-          low-label="Minimum budget"
-          high-label="Maximum budget"
-          min="0"
-          max="1000"
-          display="inline-end"
-        ></rc-range-slider>
+        <rc-range-slider label="Budget range" display="inline-end">
+          <input type="range" name="budget-min" min="0" max="1000" value="100" aria-label="Minimum budget">
+          <input type="range" name="budget-max" min="0" max="1000" value="800" aria-label="Maximum budget">
+        </rc-range-slider>
       </div>
 
       <div class="demo-section">
         <h2>Readonly</h2>
         <p>Thumbs are visible and focusable but values cannot be changed by the user.</p>
-        <rc-range-slider
-          label="Read-only range"
-          readonly
-        ></rc-range-slider>
+        <rc-range-slider label="Read-only range" readonly>
+          <input type="range" min="0" max="100" value="30" aria-label="Minimum">
+          <input type="range" min="0" max="100" value="70" aria-label="Maximum">
+        </rc-range-slider>
       </div>
 
       <div class="demo-section">
         <h2>Disabled</h2>
-        <rc-range-slider
-          label="Disabled range"
-          disabled
-        ></rc-range-slider>
+        <rc-range-slider label="Disabled range" disabled>
+          <input type="range" min="0" max="100" value="20" aria-label="Minimum">
+          <input type="range" min="0" max="100" value="60" aria-label="Maximum">
+        </rc-range-slider>
       </div>
 
       <div class="demo-section">
         <h2>Vertical</h2>
-        <rc-range-slider
-          label="Vertical range"
-          orientation="vertical"
-          min="0"
-          max="100"
-        ></rc-range-slider>
+        <rc-range-slider label="Vertical range" orientation="vertical">
+          <input type="range" min="0" max="100" value="25" aria-label="Minimum">
+          <input type="range" min="0" max="100" value="75" aria-label="Maximum">
+        </rc-range-slider>
       </div>
     </main>
 
     <script>
       customElements.whenDefined('rc-range-slider').then(() => {
-        // Set a meaningful initial spread for the year-range example
-        document.getElementById('display-range').value = [2010, 2025];
-
         // Wire value display to the basic example
         const basic = document.getElementById('basic-range');
         const output = document.getElementById('basic-range-output');

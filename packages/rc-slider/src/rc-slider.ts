@@ -1,6 +1,6 @@
 import { LitElement, html, nothing } from 'lit';
 import type { ComplexAttributeConverter } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { valueToPercent } from '@rcarls/rc-common';
 
 export interface RCSliderValueEvent {
@@ -35,32 +35,39 @@ const displayConverter: ComplexAttributeConverter<DisplayValue> = {
 };
 
 /**
- * Enhancement wrapper around `<input type="range">` with a styled progress
- * fill, live value display, and vertical orientation support.
+ * Returns the numeric value of a range input's `min`, `max`, or `step`
+ * attribute string, falling back to `defaultVal` when the attribute is absent
+ * (empty string) or not a valid number.
+ */
+function parseAttr(s: string, defaultVal: number): number {
+  if (s === '') return defaultVal;
+  const n = parseFloat(s);
+  return isNaN(n) ? defaultVal : n;
+}
+
+/**
+ * Progressive enhancement wrapper for a consumer-provided `<input type="range">`.
+ * The native input must be supplied as a direct child element — the component
+ * adds a styled track, optional live value display, and the APG keyboard
+ * enhancement (Page Up/Down, ±10 steps).
  *
- * Progressive enhancement: if a child `<input type="range">` is present in the
- * HTML before upgrade, the component reads `min`, `max`, `step`, `value`, and
- * `name` from it. Component attributes take precedence over child input attributes.
+ * Label association — all three native patterns work because there is no
+ * shadow DOM boundary:
+ * - Wrapping `<label>`: `<label>Volume<rc-slider><input …></rc-slider></label>`
+ * - Explicit `for`/`id`: `<label for="vol">Volume</label><rc-slider><input id="vol" …></rc-slider>`
+ * - Component `label` attribute: `<rc-slider label="Volume"><input …></rc-slider>` —
+ *   renders a `<span>` and wires it to the input via `aria-labelledby`.
+ *
+ * Form participation is handled natively by the consumer-provided input's `name`
+ * attribute; no `ElementInternals` setup is required.
  *
  * @fires rc-slider-input  - Fires continuously while the value changes. Detail: `{ value }`.
  * @fires rc-slider-change - Fires when the committed value changes (on release). Detail: `{ value }`.
  *
- * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to align the float value display.
+ * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to position the float value display.
  */
 export class RCSlider extends LitElement {
   override createRenderRoot() { return this; }
-
-  /** Minimum value. */
-  @property({ type: Number }) min = 0;
-
-  /** Maximum value. */
-  @property({ type: Number }) max = 100;
-
-  /** Step size. */
-  @property({ type: Number }) step = 1;
-
-  /** Current value. */
-  @property({ type: Number }) value = 0;
 
   /** Disables the underlying input. */
   @property({ type: Boolean, reflect: true }) disabled = false;
@@ -68,17 +75,15 @@ export class RCSlider extends LitElement {
   /** Prevents edits while preserving normal display. Not a native range attribute. */
   @property({ type: Boolean, reflect: true }) readonly = false;
 
-  /** Accessible label text rendered above the control. */
-  @property() label = '';
-
-  /** `name` forwarded to the underlying range input for form participation. */
-  @property() name = '';
-
   /**
-   * Associates the underlying input with a `<form>` element by its `id`.
-   * Forwarded directly to the native input's `form` attribute.
+   * Optional label text. When set, renders a `<span>` and wires it to the
+   * native input via `aria-labelledby`. Consumers who supply their own `<label>`
+   * element (wrapping or via `for`/`id`) do not need this attribute.
+   *
+   * TODO: internals.labels could replace the _labelId approach if formAssociated
+   * is added in a future revision.
    */
-  @property() form = '';
+  @property() label = '';
 
   /**
    * Controls the live value display.
@@ -91,19 +96,49 @@ export class RCSlider extends LitElement {
   @property({ reflect: true, converter: displayConverter })
   display: DisplayValue = null;
 
-  /** Optional screen-reader value text. When set, forwarded as `aria-valuetext`. */
+  /** Screen-reader value text. When set, forwarded as `aria-valuetext` on the native input. */
   @property({ attribute: 'value-text' }) valueText = '';
 
   /** Orientation; reflected as an attribute and forwarded to `aria-orientation`. */
   @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
 
+  /** Current value; reflects the native input's last committed value. Read-only from the outside. */
+  get value(): number {
+    return this._value;
+  }
+
+  @state() private _value = 0;
+
+  private _nativeInput: HTMLInputElement | null = null;
+  private readonly _labelId = `rc-slider-label-${Math.random().toString(36).slice(2, 10)}`;
+
   override connectedCallback(): void {
-    this._absorbChildInput();
+    this._findInput();
     super.connectedCallback();
   }
 
+  override disconnectedCallback(): void {
+    this._unwireInput();
+    super.disconnectedCallback();
+  }
+
+  override firstUpdated(): void {
+    if (this._nativeInput) {
+      this._value = this._nativeInput.valueAsNumber || 0;
+    }
+  }
+
+  override updated(): void {
+    const input = this._nativeInput;
+    if (!input) return;
+
+    input.disabled = this.disabled;
+    this._syncAriaAttributes(input);
+  }
+
   override render() {
-    const isVertical = this.orientation === 'vertical';
+    const input = this._nativeInput;
+    if (!input) return nothing;
 
     const valueDisplay = html`
       <span
@@ -117,14 +152,14 @@ export class RCSlider extends LitElement {
     `;
 
     return html`
-      <label
+      <div
         part="root"
         class="rc-slider-root"
         data-display=${this.display ?? nothing}
         data-orientation=${this.orientation}
       >
         ${this.label
-          ? html`<span part="label" class="rc-slider-label">${this.label}</span>`
+          ? html`<span part="label" class="rc-slider-label" id=${this._labelId}>${this.label}</span>`
           : nothing}
 
         ${this.display === 'inline-start' ? valueDisplay : nothing}
@@ -138,64 +173,106 @@ export class RCSlider extends LitElement {
             ></span>
           </span>
 
-          <input
-            part="input"
-            type="range"
-            min=${this.min}
-            max=${this.max}
-            step=${this.step}
-            name=${this.name || nothing}
-            form=${this.form || nothing}
-            .value=${String(this.value)}
-            ?disabled=${this.disabled}
-            aria-readonly=${this.readonly ? 'true' : nothing}
-            aria-valuetext=${this.valueText || nothing}
-            aria-orientation=${isVertical ? 'vertical' : nothing}
-            @input=${this._onInput}
-            @change=${this._onChange}
-            @keydown=${this._onKeydown}
-          >
+          ${input}
 
           ${this.display === 'float' ? valueDisplay : nothing}
         </span>
 
         ${this.display === 'inline-end' ? valueDisplay : nothing}
-      </label>
+      </div>
     `;
   }
 
   private get _displayText(): string {
-    return this.valueText || String(this.value);
+    return this.valueText || String(this._value);
   }
 
-  private _onInput(e: Event): void {
+  /**
+   * Finds the consumer-provided native input and wires event listeners.
+   * The input remains in the DOM permanently; the component enhances it
+   * rather than replacing it.
+   */
+  private _findInput(): void {
+    const input = this.querySelector<HTMLInputElement>('input[type="range"]');
+    if (!input) {
+      console.warn('[rc-slider] Requires a child <input type="range"> element.');
+      return;
+    }
+
+    // Mirror disabled state from the native input if not explicitly set on the host.
+    // Pre-upgrade markup may carry <input disabled> before the component upgrades.
+    if (!this.hasAttribute('disabled') && input.disabled) {
+      this.disabled = true;
+    }
+
+    this._nativeInput = input;
+    this._wireInput(input);
+  }
+
+  private _wireInput(input: HTMLInputElement): void {
+    input.addEventListener('input', this._onInput);
+    input.addEventListener('change', this._onChange);
+    input.addEventListener('keydown', this._onKeydown);
+  }
+
+  private _unwireInput(): void {
+    this._nativeInput?.removeEventListener('input', this._onInput);
+    this._nativeInput?.removeEventListener('change', this._onChange);
+    this._nativeInput?.removeEventListener('keydown', this._onKeydown);
+  }
+
+  private _syncAriaAttributes(input: HTMLInputElement): void {
+    if (this.valueText) {
+      input.setAttribute('aria-valuetext', this.valueText);
+    } else {
+      input.removeAttribute('aria-valuetext');
+    }
+
+    if (this.orientation === 'vertical') {
+      input.setAttribute('aria-orientation', 'vertical');
+    } else {
+      input.removeAttribute('aria-orientation');
+    }
+
+    if (this.readonly) {
+      input.setAttribute('aria-readonly', 'true');
+    } else {
+      input.removeAttribute('aria-readonly');
+    }
+
+    if (this.label) {
+      input.setAttribute('aria-labelledby', this._labelId);
+    }
+  }
+
+  private readonly _onInput = (e: Event): void => {
     this._handleRangeEvent(e, 'rc-slider-input');
-  }
+  };
 
-  private _onChange(e: Event): void {
+  private readonly _onChange = (e: Event): void => {
     this._handleRangeEvent(e, 'rc-slider-change');
-  }
+  };
 
   private _handleRangeEvent(e: Event, type: 'rc-slider-input' | 'rc-slider-change'): void {
     const input = e.currentTarget as HTMLInputElement;
 
     if (this.readonly) {
-      input.value = String(this.value);
+      input.value = String(this._value);
       return;
     }
 
-    this.value = input.valueAsNumber;
+    this._value = input.valueAsNumber;
 
     this.dispatchEvent(
       new CustomEvent<RCSliderValueEvent>(type, {
         bubbles: true,
         composed: true,
-        detail: { value: this.value },
+        detail: { value: this._value },
       }),
     );
   }
 
-  private _onKeydown(e: KeyboardEvent): void {
+  private readonly _onKeydown = (e: KeyboardEvent): void => {
     if (this.disabled || this.readonly) return;
     if (e.key !== 'PageUp' && e.key !== 'PageDown') return;
 
@@ -205,19 +282,24 @@ export class RCSlider extends LitElement {
     if (e.key === 'PageUp') input.stepUp(10);
     else input.stepDown(10);
 
-    this.value = input.valueAsNumber;
+    this._value = input.valueAsNumber;
 
     this.dispatchEvent(
       new CustomEvent<RCSliderValueEvent>('rc-slider-input', {
         bubbles: true,
         composed: true,
-        detail: { value: this.value },
+        detail: { value: this._value },
       }),
     );
-  }
+  };
 
   private _progressStyle(): string {
-    const pct = valueToPercent(this.value, this.min, this.max) * 100;
+    const input = this._nativeInput;
+    if (!input) return '';
+
+    const min = parseAttr(input.min, 0);
+    const max = parseAttr(input.max, 100);
+    const pct = valueToPercent(input.valueAsNumber, min, max) * 100;
 
     if (this.orientation === 'vertical') {
       return `bottom:0%;height:${pct.toFixed(3)}%`;
@@ -227,7 +309,12 @@ export class RCSlider extends LitElement {
   }
 
   private _floatStyle(): string {
-    const pct = valueToPercent(this.value, this.min, this.max);
+    const input = this._nativeInput;
+    if (!input) return '';
+
+    const min = parseAttr(input.min, 0);
+    const max = parseAttr(input.max, 100);
+    const pct = valueToPercent(input.valueAsNumber, min, max);
     const k   = (1 - pct * 2).toFixed(4);
 
     if (this.orientation === 'vertical') {
@@ -235,26 +322,6 @@ export class RCSlider extends LitElement {
     }
 
     return `left:calc(${(pct * 100).toFixed(3)}% + ${k} * var(--rc-thumb-radius, 9px))`;
-  }
-
-  /**
-   * Reads `min`, `max`, `step`, `value`, and `name` from the first child
-   * `<input type="range">` and uses them as defaults for any component
-   * attribute not explicitly set. The child input is removed after absorption
-   * since Lit's render supplies the managed input.
-   */
-  private _absorbChildInput(): void {
-    const input = this.querySelector<HTMLInputElement>('input[type="range"]');
-    if (!input) return;
-
-    if (!this.hasAttribute('min')   && input.hasAttribute('min'))   this.min   = +input.min;
-    if (!this.hasAttribute('max')   && input.hasAttribute('max'))   this.max   = +input.max;
-    if (!this.hasAttribute('step')  && input.hasAttribute('step'))  this.step  = +input.step;
-    if (!this.hasAttribute('value') && input.hasAttribute('value')) this.value = +input.value;
-    if (!this.name && input.name) this.name = input.name;
-
-    // TODO: support `list` attribute (datalist) for tick marks on the native input
-    input.remove();
   }
 }
 
