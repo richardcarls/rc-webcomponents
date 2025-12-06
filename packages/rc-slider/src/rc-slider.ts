@@ -51,12 +51,13 @@ function parseAttr(s: string, defaultVal: number): number {
  * adds a styled track, optional live value display, and the APG keyboard
  * enhancement (Page Up/Down, ±10 steps).
  *
- * Label association — all three native patterns work because there is no
- * shadow DOM boundary:
+ * Label association — all native patterns work because there is no shadow DOM boundary:
  * - Wrapping `<label>`: `<label>Volume<rc-slider><input …></rc-slider></label>`
  * - Explicit `for`/`id`: `<label for="vol">Volume</label><rc-slider><input id="vol" …></rc-slider>`
- * - Component `label` attribute: `<rc-slider label="Volume"><input …></rc-slider>` —
- *   renders a `<span>` and wires it to the input via `aria-labelledby`.
+ * - Direct `aria-label` on the input: `<input aria-label="Volume" …>`
+ *
+ * These patterns all work without JavaScript. The component does not render a
+ * label element itself — the consumer is responsible for accessible naming.
  *
  * Form participation is handled natively by the consumer-provided input's `name`
  * attribute; no `ElementInternals` setup is required.
@@ -74,16 +75,6 @@ export class RCSlider extends LitElement {
 
   /** Prevents edits while preserving normal display. Not a native range attribute. */
   @property({ type: Boolean, reflect: true }) readonly = false;
-
-  /**
-   * Optional label text. When set, renders a `<span>` and wires it to the
-   * native input via `aria-labelledby`. Consumers who supply their own `<label>`
-   * element (wrapping or via `for`/`id`) do not need this attribute.
-   *
-   * TODO: internals.labels could replace the _labelId approach if formAssociated
-   * is added in a future revision.
-   */
-  @property() label = '';
 
   /**
    * Controls the live value display.
@@ -110,7 +101,6 @@ export class RCSlider extends LitElement {
   @state() private _value = 0;
 
   private _nativeInput: HTMLInputElement | null = null;
-  private readonly _labelId = `rc-slider-label-${Math.random().toString(36).slice(2, 10)}`;
 
   override connectedCallback(): void {
     this._findInput();
@@ -158,10 +148,6 @@ export class RCSlider extends LitElement {
         data-display=${this.display ?? nothing}
         data-orientation=${this.orientation}
       >
-        ${this.label
-          ? html`<span part="label" class="rc-slider-label" id=${this._labelId}>${this.label}</span>`
-          : nothing}
-
         ${this.display === 'inline-start' ? valueDisplay : nothing}
 
         <span part="control" class="rc-slider-control">
@@ -238,10 +224,6 @@ export class RCSlider extends LitElement {
       input.setAttribute('aria-readonly', 'true');
     } else {
       input.removeAttribute('aria-readonly');
-    }
-
-    if (this.label) {
-      input.setAttribute('aria-labelledby', this._labelId);
     }
   }
 

@@ -56,10 +56,9 @@ function parseAttr(s: string, defaultVal: number): number {
  * Dynamic `aria-valuemax`/`aria-valuemin` cross-constraints are applied
  * imperatively in `updated()` to keep each thumb aware of the other.
  *
- * Label association for the group:
- * - Component `label` attribute: `<rc-range-slider label="Price range">` — sets
- *   `aria-label` on the ARIA group container.
- * - Consumer `<fieldset>`/`<legend>` or `aria-labelledby` on the element itself.
+ * Label association for the group (all patterns work without JavaScript):
+ * - `<fieldset><legend>Price range</legend><rc-range-slider>…</rc-range-slider></fieldset>`
+ * - `aria-labelledby` on the element itself pointing to an external heading or label.
  *
  * Per-thumb labels:
  * - `low-label` / `high-label` attributes (defaults: "Minimum" / "Maximum") set
@@ -81,9 +80,6 @@ export class RCRangeSlider extends LitElement {
 
   /** Prevents edits while preserving normal display. Not a native range attribute. */
   @property({ type: Boolean, reflect: true }) readonly = false;
-
-  /** Accessible label for the group element. */
-  @property() label = '';
 
   /**
    * Accessible label for the low (min) thumb. Applied to the native input via
@@ -198,17 +194,12 @@ export class RCRangeSlider extends LitElement {
         data-display=${this.display ?? nothing}
         data-orientation=${this.orientation}
       >
-        ${this.label
-          ? html`<span part="label" class="rc-range-slider-label">${this.label}</span>`
-          : nothing}
-
         ${this.display === 'inline-start' ? valuesContainer : nothing}
 
         <div
           part="group"
           class="rc-range-slider-group"
           role="group"
-          aria-label=${this.label || nothing}
           @pointermove=${this._onGroupPointerMove}
         >
           <span part="track" class="rc-range-slider-track" aria-hidden="true">

@@ -8,8 +8,8 @@ import type { RCSlider } from './rc-slider.js';
 
 test('rc-slider renders progress fill', async () => {
   const screen = render(html`
-    <rc-slider data-testid="host" label="Fuel" display="float">
-      <input type="range" min="0" max="100" value="25">
+    <rc-slider data-testid="host" display="float">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -20,8 +20,8 @@ test('rc-slider renders progress fill', async () => {
 
 test('rc-slider renders float value display using value-text', async () => {
   const screen = render(html`
-    <rc-slider data-testid="host" label="Fuel" display="float" value-text="25 of 100">
-      <input type="range" min="0" max="100" value="25">
+    <rc-slider data-testid="host" display="float" value-text="25 of 100">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -32,8 +32,8 @@ test('rc-slider renders float value display using value-text', async () => {
 
 test('rc-slider keeps the native input in the DOM after upgrade', async () => {
   const screen = render(html`
-    <rc-slider data-testid="host" label="Fuel">
-      <input type="range" name="fuel" min="0" max="100" value="40">
+    <rc-slider data-testid="host">
+      <input type="range" name="fuel" min="0" max="100" value="40" aria-label="Fuel">
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -51,11 +51,10 @@ test('rc-slider fires input and change events', async () => {
   const screen = render(html`
     <rc-slider
       data-testid="host"
-      label="Fuel"
       @rc-slider-input=${inputSpy}
       @rc-slider-change=${changeSpy}
     >
-      <input type="range" value="5">
+      <input type="range" value="5" aria-label="Fuel">
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -72,8 +71,8 @@ test('rc-slider fires input and change events', async () => {
 
 test('rc-slider readonly suppresses value updates', async () => {
   const screen = render(html`
-    <rc-slider data-testid="host" label="Fuel" readonly>
-      <input type="range" value="5">
+    <rc-slider data-testid="host" readonly>
+      <input type="range" value="5" aria-label="Fuel">
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -89,8 +88,8 @@ test('rc-slider readonly suppresses value updates', async () => {
 
 test('rc-slider exposes aria-valuetext and aria-orientation via updated()', async () => {
   const screen = render(html`
-    <rc-slider data-testid="host" label="Volume" value-text="Low" orientation="vertical">
-      <input type="range" value="25">
+    <rc-slider data-testid="host" value-text="Low" orientation="vertical">
+      <input type="range" value="25" aria-label="Volume">
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -101,26 +100,32 @@ test('rc-slider exposes aria-valuetext and aria-orientation via updated()', asyn
   expect(input.getAttribute('aria-orientation')).toBe('vertical');
 });
 
-test('rc-slider label property wires aria-labelledby to the native input', async () => {
+test('rc-slider native for/id label association survives component upgrade', async () => {
   const screen = render(html`
-    <rc-slider data-testid="host" label="Volume">
-      <input type="range" value="50">
-    </rc-slider>
+    <div data-testid="wrapper">
+      <label for="test-slider-input">Volume</label>
+      <rc-slider data-testid="host">
+        <input id="test-slider-input" type="range" value="50">
+      </rc-slider>
+    </div>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
 
-  const labelSpan = host.querySelector<HTMLElement>('[part="label"]');
   const input = host.querySelector<HTMLInputElement>('input');
-  expect(labelSpan).toBeTruthy();
-  expect(input?.getAttribute('aria-labelledby')).toBe(labelSpan?.id);
+  expect(input?.isConnected).toBe(true);
+  expect(input?.id).toBe('test-slider-input');
+  // The label element resolves to the input via the document label registry.
+  const wrapper = screen.getByTestId('wrapper').element();
+  const labelEl = wrapper.querySelector<HTMLLabelElement>('label[for="test-slider-input"]');
+  expect(labelEl?.control).toBe(input);
 });
 
 test('rc-slider Page Down adjusts value by 10 and fires rc-slider-input', async () => {
   const inputSpy = vi.fn();
   const screen = render(html`
-    <rc-slider data-testid="host" label="Volume" @rc-slider-input=${inputSpy}>
-      <input type="range" min="0" max="100" value="50">
+    <rc-slider data-testid="host" @rc-slider-input=${inputSpy}>
+      <input type="range" min="0" max="100" value="50" aria-label="Volume">
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -135,12 +140,11 @@ test('rc-slider Page Down adjusts value by 10 and fires rc-slider-input', async 
 
 test('rc-slider has no automated accessibility violations', async () => {
   const screen = render(html`
-    <rc-slider data-testid="host" label="Fuel">
-      <input type="range" value="5">
+    <rc-slider data-testid="host">
+      <input type="range" value="5" aria-label="Fuel">
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
-  // Wait for updated() to run so aria-labelledby is applied to the native input.
   await host.updateComplete;
   await expectNoA11yViolations(host);
 });

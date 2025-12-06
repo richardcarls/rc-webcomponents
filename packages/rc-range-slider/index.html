@@ -13,13 +13,6 @@
         max-width: 400px;
       }
 
-      .rc-range-slider-label {
-        display: block;
-        font-size: 0.875rem;
-        font-weight: 500;
-        margin-block-end: 0.4em;
-      }
-
       /* Group: stacking context for the two native inputs */
       .rc-range-slider-group {
         position: relative;
@@ -259,56 +252,74 @@
       </div>
 
       <div class="demo-section">
-        <h2>Basic</h2>
-        <p>Two thumbs define a low/high range. Use arrow keys on a focused thumb to adjust its value.</p>
-        <rc-range-slider id="basic-range" label="Price range">
-          <input type="range" name="price-min" min="0" max="100" value="20" aria-label="Minimum price">
-          <input type="range" name="price-max" min="0" max="100" value="80" aria-label="Maximum price">
-        </rc-range-slider>
+        <h2>Basic — <code>fieldset</code>/<code>legend</code></h2>
+        <p>Two thumbs define a low/high range. Use arrow keys on a focused thumb to adjust its value. A <code>&lt;fieldset&gt;</code>/<code>&lt;legend&gt;</code> names the group without JavaScript.</p>
+        <fieldset style="border: none; padding: 0; margin: 0;">
+          <legend style="font-size: 0.875rem; font-weight: 500; padding: 0; margin-block-end: 0.4em;">Price range</legend>
+          <rc-range-slider id="basic-range">
+            <input type="range" name="price-min" min="0" max="100" value="20" aria-label="Minimum price">
+            <input type="range" name="price-max" min="0" max="100" value="80" aria-label="Maximum price">
+          </rc-range-slider>
+        </fieldset>
         <p id="basic-range-output" style="font-size: 0.875rem; color: GrayText;">$20 – $80</p>
       </div>
 
       <div class="demo-section">
         <h2>Float Value Display</h2>
         <p>The <code>display="float"</code> mode (or bare <code>display</code>) floats each value above its thumb.</p>
-        <rc-range-slider label="Year range" display="float">
-          <input type="range" name="year-start" min="2000" max="2030" value="2010" aria-label="Start year">
-          <input type="range" name="year-end"   min="2000" max="2030" value="2025" aria-label="End year">
-        </rc-range-slider>
+        <fieldset style="border: none; padding: 0; margin: 0;">
+          <legend style="font-size: 0.875rem; font-weight: 500; padding: 0; margin-block-end: 0.4em;">Year range</legend>
+          <rc-range-slider display="float">
+            <input type="range" name="year-start" min="2000" max="2030" value="2010" aria-label="Start year">
+            <input type="range" name="year-end"   min="2000" max="2030" value="2025" aria-label="End year">
+          </rc-range-slider>
+        </fieldset>
       </div>
 
       <div class="demo-section">
         <h2>Inline-End Value Display</h2>
         <p><code>display="inline-end"</code> renders the low – high values after the track.</p>
-        <rc-range-slider label="Budget range" display="inline-end">
-          <input type="range" name="budget-min" min="0" max="1000" value="100" aria-label="Minimum budget">
-          <input type="range" name="budget-max" min="0" max="1000" value="800" aria-label="Maximum budget">
-        </rc-range-slider>
+        <fieldset style="border: none; padding: 0; margin: 0;">
+          <legend style="font-size: 0.875rem; font-weight: 500; padding: 0; margin-block-end: 0.4em;">Budget range</legend>
+          <rc-range-slider display="inline-end">
+            <input type="range" name="budget-min" min="0" max="1000" value="100" aria-label="Minimum budget">
+            <input type="range" name="budget-max" min="0" max="1000" value="800" aria-label="Maximum budget">
+          </rc-range-slider>
+        </fieldset>
       </div>
 
       <div class="demo-section">
         <h2>Readonly</h2>
         <p>Thumbs are visible and focusable but values cannot be changed by the user.</p>
-        <rc-range-slider label="Read-only range" readonly>
-          <input type="range" min="0" max="100" value="30" aria-label="Minimum">
-          <input type="range" min="0" max="100" value="70" aria-label="Maximum">
-        </rc-range-slider>
+        <fieldset style="border: none; padding: 0; margin: 0;">
+          <legend style="font-size: 0.875rem; font-weight: 500; padding: 0; margin-block-end: 0.4em;">Read-only range</legend>
+          <rc-range-slider readonly>
+            <input type="range" min="0" max="100" value="30" aria-label="Minimum">
+            <input type="range" min="0" max="100" value="70" aria-label="Maximum">
+          </rc-range-slider>
+        </fieldset>
       </div>
 
       <div class="demo-section">
         <h2>Disabled</h2>
-        <rc-range-slider label="Disabled range" disabled>
-          <input type="range" min="0" max="100" value="20" aria-label="Minimum">
-          <input type="range" min="0" max="100" value="60" aria-label="Maximum">
-        </rc-range-slider>
+        <fieldset style="border: none; padding: 0; margin: 0;">
+          <legend style="font-size: 0.875rem; font-weight: 500; padding: 0; margin-block-end: 0.4em;">Disabled range</legend>
+          <rc-range-slider disabled>
+            <input type="range" min="0" max="100" value="20" aria-label="Minimum">
+            <input type="range" min="0" max="100" value="60" aria-label="Maximum">
+          </rc-range-slider>
+        </fieldset>
       </div>
 
       <div class="demo-section">
         <h2>Vertical</h2>
-        <rc-range-slider label="Vertical range" orientation="vertical">
-          <input type="range" min="0" max="100" value="25" aria-label="Minimum">
-          <input type="range" min="0" max="100" value="75" aria-label="Maximum">
-        </rc-range-slider>
+        <fieldset style="border: none; padding: 0; margin: 0;">
+          <legend style="font-size: 0.875rem; font-weight: 500; padding: 0; margin-block-end: 0.4em;">Vertical range</legend>
+          <rc-range-slider orientation="vertical">
+            <input type="range" min="0" max="100" value="25" aria-label="Minimum">
+            <input type="range" min="0" max="100" value="75" aria-label="Maximum">
+          </rc-range-slider>
+        </fieldset>
       </div>
     </main>
 

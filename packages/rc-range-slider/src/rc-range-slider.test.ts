@@ -14,7 +14,7 @@ function getInputs(host: RCRangeSlider): [HTMLInputElement, HTMLInputElement] {
 
 test('rc-range-slider renders two inputs with correct cross-constraint ARIA attributes', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range">
+    <rc-range-slider data-testid="host">
       <input type="range" min="0" max="100" value="20" aria-label="Minimum price">
       <input type="range" min="0" max="100" value="80" aria-label="Maximum price">
     </rc-range-slider>
@@ -34,7 +34,7 @@ test('rc-range-slider renders two inputs with correct cross-constraint ARIA attr
 
 test('rc-range-slider keeps both native inputs in the DOM after upgrade', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price">
+    <rc-range-slider data-testid="host">
       <input type="range" name="price-min" min="10" max="500" value="50" aria-label="Minimum">
       <input type="range" name="price-max" min="10" max="500" value="400" aria-label="Maximum">
     </rc-range-slider>
@@ -55,7 +55,6 @@ test('rc-range-slider low thumb ArrowRight increments low value', async () => {
   const screen = render(html`
     <rc-range-slider
       data-testid="host"
-      label="Price range"
       @rc-range-slider-input=${inputSpy}
     >
       <input type="range" min="0" max="100" value="20" aria-label="Minimum">
@@ -78,7 +77,6 @@ test('rc-range-slider high thumb ArrowLeft decrements high value', async () => {
   const screen = render(html`
     <rc-range-slider
       data-testid="host"
-      label="Price range"
       @rc-range-slider-input=${inputSpy}
     >
       <input type="range" min="0" max="100" value="20" aria-label="Minimum">
@@ -98,7 +96,7 @@ test('rc-range-slider high thumb ArrowLeft decrements high value', async () => {
 
 test('rc-range-slider low thumb cannot exceed high thumb value', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range">
+    <rc-range-slider data-testid="host">
       <input type="range" min="0" max="100" value="79" aria-label="Minimum">
       <input type="range" min="0" max="100" value="80" aria-label="Maximum">
     </rc-range-slider>
@@ -116,7 +114,7 @@ test('rc-range-slider low thumb cannot exceed high thumb value', async () => {
 
 test('rc-range-slider high thumb cannot go below low thumb value', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range">
+    <rc-range-slider data-testid="host">
       <input type="range" min="0" max="100" value="20" aria-label="Minimum">
       <input type="range" min="0" max="100" value="21" aria-label="Maximum">
     </rc-range-slider>
@@ -134,7 +132,7 @@ test('rc-range-slider high thumb cannot go below low thumb value', async () => {
 
 test('rc-range-slider Page Down moves low thumb by 10 steps', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range">
+    <rc-range-slider data-testid="host">
       <input type="range" min="0" max="100" value="30" aria-label="Minimum">
       <input type="range" min="0" max="100" value="70" aria-label="Maximum">
     </rc-range-slider>
@@ -150,7 +148,7 @@ test('rc-range-slider Page Down moves low thumb by 10 steps', async () => {
 
 test('rc-range-slider Page Up moves high thumb by 10 steps', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range">
+    <rc-range-slider data-testid="host">
       <input type="range" min="0" max="100" value="30" aria-label="Minimum">
       <input type="range" min="0" max="100" value="70" aria-label="Maximum">
     </rc-range-slider>
@@ -166,7 +164,7 @@ test('rc-range-slider Page Up moves high thumb by 10 steps', async () => {
 
 test('rc-range-slider Home/End jump low thumb to bounds', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range">
+    <rc-range-slider data-testid="host">
       <input type="range" min="0" max="100" value="30" aria-label="Minimum">
       <input type="range" min="0" max="100" value="70" aria-label="Maximum">
     </rc-range-slider>
@@ -185,7 +183,7 @@ test('rc-range-slider Home/End jump low thumb to bounds', async () => {
 
 test('rc-range-slider Home/End jump high thumb to bounds', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range">
+    <rc-range-slider data-testid="host">
       <input type="range" min="0" max="100" value="30" aria-label="Minimum">
       <input type="range" min="0" max="100" value="70" aria-label="Maximum">
     </rc-range-slider>
@@ -209,7 +207,6 @@ test('rc-range-slider fires input and change events via native input', async () 
   const screen = render(html`
     <rc-range-slider
       data-testid="host"
-      label="Price range"
       @rc-range-slider-input=${inputSpy}
       @rc-range-slider-change=${changeSpy}
     >
@@ -235,7 +232,6 @@ test('rc-range-slider exposes aria-valuetext on each input', async () => {
   const screen = render(html`
     <rc-range-slider
       data-testid="host"
-      label="Price range"
       low-value-text="$20"
       high-value-text="$80"
     >
@@ -253,7 +249,7 @@ test('rc-range-slider exposes aria-valuetext on each input', async () => {
 
 test('rc-range-slider range fill style reflects current values', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range">
+    <rc-range-slider data-testid="host">
       <input type="range" min="0" max="100" value="25" aria-label="Minimum">
       <input type="range" min="0" max="100" value="75" aria-label="Maximum">
     </rc-range-slider>
@@ -270,7 +266,6 @@ test('rc-range-slider consumer-provided aria-label is not overwritten by low-lab
   const screen = render(html`
     <rc-range-slider
       data-testid="host"
-      label="Budget"
       low-label="Minimum budget"
       high-label="Maximum budget"
     >
@@ -288,11 +283,15 @@ test('rc-range-slider consumer-provided aria-label is not overwritten by low-lab
 });
 
 test('rc-range-slider has no automated accessibility violations', async () => {
+  // Wrap in a fieldset/legend to provide an accessible group name without JavaScript.
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range">
-      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
-    </rc-range-slider>
+    <fieldset data-testid="wrapper">
+      <legend>Price range</legend>
+      <rc-range-slider data-testid="host">
+        <input type="range" min="0" max="100" value="20" aria-label="Minimum">
+        <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+      </rc-range-slider>
+    </fieldset>
   `);
-  await expectNoA11yViolations(screen.getByTestId('host').element());
+  await expectNoA11yViolations(screen.getByTestId('wrapper').element());
 });
