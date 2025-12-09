@@ -10,6 +10,14 @@ These are the guiding constraints for every component in the collection. Not eve
 
 Components build on top of native HTML elements and browser-provided behavior. A `<dialog>` is still a `<dialog>`; an `<rc-dialog>` adds drag, resize, and event forwarding on top of it without replacing it. When JavaScript is absent, blocked, or slow, the underlying markup remains meaningful. Feature detection gates enhanced behaviors — nothing throws if a browser API is unsupported.
 
+Components that wrap form controls require the consumer to supply the native element as a direct child. That element stays in the DOM permanently so that:
+
+- **Form association** — `name` and `value` submit correctly in any `<form>` without any `ElementInternals` setup.
+- **Label association** — `<label for="id">`, a wrapping `<label>`, or `aria-label` on the native input all work natively, because there is no shadow DOM boundary to cross.
+- **Pre-upgrade usability** — the native control is fully interactive before the custom element registers, and remains so if registration never occurs.
+
+The component's job is to enhance: keyboard shortcuts, ARIA state, visual chrome. Not to reproduce what the browser already provides for free.
+
 ### 2. Accessible by default
 
 Every component implements the corresponding [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/) pattern where one exists. This means:
@@ -19,13 +27,15 @@ Every component implements the corresponding [WAI-ARIA Authoring Practices Guide
 - Focus management: trap focus in modals, restore focus on close, never lose focus to `<body>` unexpectedly.
 - Screen reader testing is part of acceptance, not an afterthought.
 
-### 3. Headless — UA styles, light/dark mode
+### 3. Headless — fits anywhere
 
-Components ship with **no imposed visual styling** beyond what is structurally necessary for correct layout or behavior. Colors, fonts, borders, and spacing are left to the consumer. Where a default value is needed (e.g. a resize cursor, a minimum size), it defers to the browser UA stylesheet or CSS system color keywords (`Canvas`, `ButtonText`, `ButtonBorder`, etc.) so that light and dark mode come for free via `color-scheme`.
+Components ship with **no imposed visual styling** beyond what is structurally necessary for correct layout or behavior. Colors, fonts, borders, and spacing are left entirely to the consumer.
 
-Runtime geometry is the narrow exception: values derived from measurement or user interaction (for example splitter pane size or virtual-canvas scroll extents) may be written as inline styles. Decorative styles still belong in static CSS or CSS custom properties.
+Where defaults are unavoidable, they defer to browser UA styles and CSS system color keywords — `Canvas`, `CanvasText`, `ButtonFace`, `ButtonText`, `ButtonBorder`, `Field`, `FieldText`, `Highlight`, `HighlightText`, `AccentColor`, `AccentColorText`, and `GrayText`. These keywords track the operating system color scheme automatically, so components support light and dark mode through `color-scheme` with no per-component code. They also behave correctly under `forced-colors: active` (Windows High Contrast) because interactive state is always communicated via ARIA attributes, focus, and outlines — never by color alone.
 
-The goal: drop a component into any design system and it fits without fighting.
+Runtime geometry is the narrow exception: values derived from measurement or user interaction (splitter pane sizes, virtual-canvas scroll extents) may be written as inline styles. Decorative styles still belong in static CSS or CSS custom properties.
+
+The goal is not only to slot into a design system without fighting. It is to drop a component into a **plain, unstyled HTML page** alongside native `<input>`, `<select>`, and `<button>` elements and have it look and feel like it belongs there.
 
 ### 4. Responsive and touch-friendly
 

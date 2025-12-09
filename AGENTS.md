@@ -41,6 +41,18 @@ Build on native HTML and browser behavior. A component wraps or enhances a nativ
 element; it does not replace it. Feature-detect newer browser APIs before using
 them, and do not throw when a feature is absent.
 
+Components that wrap form controls require the consumer to supply the native
+element as a direct child. Keep that element in the DOM permanently so that:
+
+- **Form association** — `name`/`value` submit correctly without `ElementInternals`.
+- **Label association** — `<label for="id">`, wrapping `<label>`, and `aria-label`
+  directly on the native input all work without a shadow DOM boundary to cross.
+- **Pre-upgrade usability** — the native control is interactive before the custom
+  element registers, and remains so if registration never occurs.
+
+Do not break these associations during upgrade. Do not remove or replace the
+consumer-provided element.
+
 ### Accessible by default
 
 Implement the WAI-ARIA Authoring Practices Guide pattern where one exists:
@@ -51,22 +63,27 @@ Implement the WAI-ARIA Authoring Practices Guide pattern where one exists:
   close, and avoiding accidental focus loss to `<body>`.
 - Screen reader behavior is part of acceptance.
 
-### Headless and UA-styled
+### Headless
 
 Ship no visual design opinions beyond what is structurally necessary for correct
 layout or behavior. Colors, fonts, borders, and spacing belong to the consumer.
 
-Where defaults are needed, prefer browser UA styles and CSS system colors such
-as `Canvas`, `CanvasText`, `ButtonFace`, `ButtonText`, `ButtonBorder`, `Field`,
+Where defaults are needed, prefer browser UA styles and CSS system colors:
+`Canvas`, `CanvasText`, `ButtonFace`, `ButtonText`, `ButtonBorder`, `Field`,
 `FieldText`, `Highlight`, `HighlightText`, `AccentColor`, `AccentColorText`,
-and `GrayText`. Components must behave correctly under `forced-colors: active`;
-interactive state must be communicated through ARIA attributes, focus, and
-outlines rather than color alone.
+and `GrayText`. Using system colors means components support light and dark mode
+automatically via `color-scheme` with no per-component code. Components must also
+behave correctly under `forced-colors: active`; interactive state must be
+communicated through ARIA attributes, focus, and outlines rather than color alone.
 
 Runtime geometry is the narrow exception: values derived from measurement or
 user interaction, such as splitter pane sizes or virtual-canvas placeholder
 dimensions, may be written as inline styles. Decorative styles belong in static
 CSS or CSS custom properties.
+
+The goal is not only to slot into a design system. A component should be droppable
+into a plain, unstyled HTML page alongside native `<input>`, `<select>`, and
+`<button>` elements and look and feel like it belongs there.
 
 ### Responsive and touch-friendly
 
