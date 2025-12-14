@@ -31,9 +31,9 @@ adapter mechanism changes.
 
 ## Design principles
 
-Four constraints guide every component. Not all packages fully satisfy all four
-today; treat them as the acceptance bar for new work and the lens for reviewing
-existing work.
+These constraints guide every component. Not all packages fully satisfy all of
+them today; treat them as the acceptance bar for new work and the lens for
+reviewing existing work.
 
 ### Progressive enhancement
 
@@ -91,6 +91,44 @@ into a plain, unstyled HTML page alongside native `<input>`, `<select>`, and
 - Avoid hardcoded breakpoints inside component logic.
 - Set minimum dimensions conservatively.
 - Make keyboard step sizes configurable; Shift multiplies movement by 10 for coarse control.
+
+### Performance
+
+Minimize the cost of including and running each component.
+
+- Every package sets `sideEffects: false` so bundlers can tree-shake unused
+  components. Each package is independently importable; the aggregate
+  `rc-webcomponents` package is a convenience, not a requirement.
+- Keep per-component bundle footprint small. Avoid heavy runtime dependencies;
+  prefer platform APIs over polyfills or third-party utility libraries.
+- Do not block the main thread. Expensive work (large dataset processing, complex
+  geometry calculation) belongs in async tasks or web workers, not synchronous
+  lifecycle methods.
+- Mark high-frequency event listeners (`pointermove`, `scroll`, `wheel`) passive
+  when `preventDefault()` is not needed, so the browser can schedule scrolling
+  without waiting for JavaScript.
+- Let Lit's reactive system batch updates. Avoid triggering extra render cycles
+  inside `updated()` or event handlers unless genuinely required.
+
+### Interoperable and well-typed
+
+Custom elements work in any JavaScript environment — framework or none. Follow
+the standard web component data and event contract:
+
+- **Properties for rich data, attributes for initial configuration.** Boolean,
+  array, and object values are set programmatically via properties. Attributes are
+  reflected only where CSS selectors genuinely need them.
+- **`CustomEvent` for output.** Events are `bubbles: true, composed: true` so
+  they cross shadow DOM boundaries in consuming documents. Names follow the
+  `<element-name>-<verb>` convention (`rc-slider-input`, `rc-dialog-close`) to
+  avoid collisions in mixed-component trees.
+- **TypeScript-first public API.** Every property, method, and event detail type
+  is declared. Tag names are registered in `HTMLElementTagNameMap` so
+  `querySelector` calls and framework template types resolve to the correct class.
+  JSDoc covers all public properties and events.
+- **No framework coupling in component code.** Reactive framework adapters,
+  wrappers, and directives are a consuming-application concern, not a library
+  concern.
 
 ## Architecture notes
 

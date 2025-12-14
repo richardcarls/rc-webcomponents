@@ -44,6 +44,25 @@ The goal is not only to slot into a design system without fighting. It is to dro
 - Minimum dimensions are set conservatively so components don't collapse on narrow viewports.
 - Keyboard step sizes (arrow keys) are configurable; Shift multiplies by 10× for coarse control.
 
+### 5. Performance
+
+Every package sets `sideEffects: false` so bundlers tree-shake unused components at zero cost. Each package is independently importable — the aggregate `rc-webcomponents` package is a convenience, not a mandate.
+
+Beyond bundle size:
+
+- No heavy synchronous work in component lifecycle methods. Anything expensive — large dataset processing, complex layout calculation — is deferred, async, or delegated to a web worker. The main thread handles only rendering and interaction.
+- High-frequency event listeners (`pointermove`, `scroll`, `wheel`) are marked passive when `preventDefault()` is not needed, keeping scroll jank-free.
+- Lit's reactive update system batches property changes into a single render pass. Components do not trigger unnecessary extra cycles inside `updated()` or event handlers.
+
+### 6. Interoperable and well-typed
+
+Custom elements are framework-agnostic by definition. Components follow the standard web component data and event contract so they work correctly with React, Vue, Solid, Angular, or no framework at all.
+
+- **Properties for rich data, attributes for initial configuration.** Boolean, array, and object values are set programmatically via properties. Attributes are reflected only where CSS selectors need them — not as a serialization mechanism.
+- **`CustomEvent` for output.** Events are `bubbles: true, composed: true` so they cross shadow DOM boundaries in consuming documents. Names follow the `<element-name>-<verb>` convention (`rc-slider-input`, `rc-dialog-close`) to avoid collisions in mixed-component trees.
+- **TypeScript-first public API.** Every property, method, and event detail type is declared. Tag names are registered in `HTMLElementTagNameMap` so `querySelector('rc-slider')` and framework template types resolve to the correct class without a cast. JSDoc covers all public properties and events.
+- **No framework coupling.** Components contain no React, Vue, or Solid imports. Adapters and reactive-framework wrappers are a consuming-application concern.
+
 ---
 
 ## Packages
