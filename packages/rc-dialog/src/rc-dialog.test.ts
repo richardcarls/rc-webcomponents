@@ -3,6 +3,7 @@ import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
 import './define';
+import type { RCDialog } from './rc-dialog.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 // Helper: render an rc-dialog wrapping a <dialog> with a label
@@ -19,37 +20,42 @@ function renderDialog(extraAttrs = '') {
 
 test('rc-dialog delegates showModal() to inner <dialog>', async () => {
   const screen = renderDialog();
-  const host = screen.getByTestId('host');
-  const rcDialog = await host.element() as any;
+  const host = await screen.getByTestId('host').element() as RCDialog;
 
-  await rcDialog.updateComplete;
+  await host.updateComplete;
 
-  expect(rcDialog.open).toBe(false);
-  rcDialog.showModal();
-  expect(rcDialog.open).toBe(true);
+  expect(host.open).toBe(false);
+  host.showModal();
+  expect(host.open).toBe(true);
 
-  rcDialog.close();
+  host.close();
 });
 
 test('rc-dialog has no automated accessibility violations', async () => {
   const screen = renderDialog();
-  const host = await screen.getByTestId('host').element();
+  const host = await screen.getByTestId('host').element() as RCDialog;
+  await host.updateComplete;
+
+  // Open the dialog before auditing — axe must see the live modal state.
+  host.showModal();
+  await host.updateComplete;
 
   await expectNoA11yViolations(host);
+
+  host.close();
 });
 
 test('rc-dialog delegates close() and exposes returnValue', async () => {
   const screen = renderDialog();
-  const host = screen.getByTestId('host');
-  const rcDialog = await host.element() as any;
+  const host = await screen.getByTestId('host').element() as RCDialog;
 
-  await rcDialog.updateComplete;
+  await host.updateComplete;
 
-  rcDialog.showModal();
-  rcDialog.close('confirmed');
+  host.showModal();
+  host.close('confirmed');
 
-  expect(rcDialog.open).toBe(false);
-  expect(rcDialog.returnValue).toBe('confirmed');
+  expect(host.open).toBe(false);
+  expect(host.returnValue).toBe('confirmed');
 });
 
 test('rc-dialog dispatches rc-dialog-close with returnValue detail', async () => {
@@ -63,12 +69,11 @@ test('rc-dialog dispatches rc-dialog-close with returnValue detail', async () =>
     </rc-dialog>
   `);
 
-  const host = screen.getByTestId('host');
-  const rcDialog = await host.element() as any;
-  await rcDialog.updateComplete;
+  const host = await screen.getByTestId('host').element() as RCDialog;
+  await host.updateComplete;
 
-  rcDialog.showModal();
-  rcDialog.close('ok');
+  host.showModal();
+  host.close('ok');
 
   // The native <dialog> close event fires in a queued task (HTML spec step 8),
   // not synchronously, so we poll until the spy is called.
@@ -93,21 +98,20 @@ test('rc-dialog dispatches rc-dialog-cancel then rc-dialog-close on Escape', asy
     </rc-dialog>
   `);
 
-  const host = screen.getByTestId('host');
-  const rcDialog = await host.element() as any;
-  await rcDialog.updateComplete;
+  const host = await screen.getByTestId('host').element() as RCDialog;
+  await host.updateComplete;
 
-  rcDialog.showModal();
+  host.showModal();
 
   // Simulate native <dialog> cancel + close sequence (fired by browser on Escape)
-  const dlg = rcDialog.querySelector('dialog') as HTMLDialogElement;
+  const dlg = host.querySelector('dialog') as HTMLDialogElement;
   dlg.dispatchEvent(new Event('cancel', { bubbles: false }));
   dlg.dispatchEvent(new Event('close', { bubbles: false }));
 
   expect(cancelSpy).toHaveBeenCalledTimes(1);
   expect(closeSpy).toHaveBeenCalledTimes(1);
 
-  if (rcDialog.open) rcDialog.close();
+  if (host.open) host.close();
 });
 
 test('rc-dialog-request-close fires and is cancelable', async () => {
@@ -126,14 +130,13 @@ test('rc-dialog-request-close fires and is cancelable', async () => {
     </rc-dialog>
   `);
 
-  const host = screen.getByTestId('host');
-  const rcDialog = await host.element() as any;
-  await rcDialog.updateComplete;
+  const host = await screen.getByTestId('host').element() as RCDialog;
+  await host.updateComplete;
 
-  rcDialog.showModal();
+  host.showModal();
 
   // Dispatch cancel without preventing rc-dialog-request-close → both events fire.
-  const dlg = rcDialog.querySelector('dialog') as HTMLDialogElement;
+  const dlg = host.querySelector('dialog') as HTMLDialogElement;
   dlg.dispatchEvent(new Event('cancel', { cancelable: true, bubbles: false }));
 
   expect(requestCloseSpy).toHaveBeenCalledTimes(1);
@@ -142,7 +145,7 @@ test('rc-dialog-request-close fires and is cancelable', async () => {
   // Now add a listener that prevents the close.
   requestCloseSpy.mockReset();
   cancelSpy.mockReset();
-  rcDialog.addEventListener('rc-dialog-request-close', (e: Event) => e.preventDefault(), { once: true });
+  host.addEventListener('rc-dialog-request-close', (e: Event) => e.preventDefault(), { once: true });
 
   dlg.dispatchEvent(new Event('cancel', { cancelable: true, bubbles: false }));
 
@@ -150,22 +153,47 @@ test('rc-dialog-request-close fires and is cancelable', async () => {
   // rc-dialog-cancel must NOT fire when the close was prevented.
   expect(cancelSpy).toHaveBeenCalledTimes(0);
   // Dialog must still be open.
-  expect(rcDialog.open).toBe(true);
+  expect(host.open).toBe(true);
 
-  if (rcDialog.open) rcDialog.close();
+  if (host.open) host.close();
 });
 
 test('rc-dialog open getter reflects inner dialog state', async () => {
   const screen = renderDialog();
-  const host = screen.getByTestId('host');
-  const rcDialog = await host.element() as any;
-  await rcDialog.updateComplete;
+  const host = await screen.getByTestId('host').element() as RCDialog;
+  await host.updateComplete;
 
-  expect(rcDialog.open).toBe(false);
+  expect(host.open).toBe(false);
 
-  rcDialog.showModal();
-  expect(rcDialog.open).toBe(true);
+  host.showModal();
+  expect(host.open).toBe(true);
 
-  rcDialog.close();
-  expect(rcDialog.open).toBe(false);
+  host.close();
+  expect(host.open).toBe(false);
+});
+
+test('rc-dialog restores focus to the opener on close', async () => {
+  const screen = render(html`
+    <div>
+      <button data-testid="opener">Open</button>
+      <rc-dialog data-testid="host">
+        <dialog aria-labelledby="t">
+          <span id="t">Title</span>
+          <button id="close-btn">Close</button>
+        </dialog>
+      </rc-dialog>
+    </div>
+  `);
+
+  const host = await screen.getByTestId('host').element() as RCDialog;
+  await host.updateComplete;
+
+  const opener = await screen.getByTestId('opener').element() as HTMLButtonElement;
+  opener.focus();
+
+  host.showModal();
+  host.close();
+
+  // Native dialog close fires asynchronously; wait for the handler.
+  await vi.waitFor(() => expect(document.activeElement).toBe(opener));
 });

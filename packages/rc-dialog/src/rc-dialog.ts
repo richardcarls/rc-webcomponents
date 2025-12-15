@@ -2,9 +2,28 @@ import { LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { DragController, ResizeController } from '@rcarls/rc-common';
 
+/** Detail shape for `rc-dialog-close` and `rc-dialog-request-close`. */
+export interface RCDialogCloseEvent {
+  returnValue: string;
+}
+
+/** Detail shape for `rc-dialog-toggle`. */
+export interface RCDialogToggleEvent {
+  open: boolean;
+  returnValue: string;
+}
+
 declare global {
   interface HTMLElementTagNameMap {
     'rc-dialog': RCDialog;
+  }
+
+  interface HTMLElementEventMap {
+    'rc-dialog-open':          CustomEvent<Record<string, never>>;
+    'rc-dialog-close':         CustomEvent<RCDialogCloseEvent>;
+    'rc-dialog-request-close': CustomEvent<RCDialogCloseEvent>;
+    'rc-dialog-cancel':        CustomEvent<Record<string, never>>;
+    'rc-dialog-toggle':        CustomEvent<RCDialogToggleEvent>;
   }
 }
 
@@ -93,8 +112,11 @@ export class RCDialog extends LitElement {
   private _controlledOpen: boolean | undefined = undefined;
   private _defaultOpen = false;
   private _dialogRef: WeakRef<HTMLDialogElement> | null = null;
-  private _observer = new MutationObserver(() => this._setupDialog());
+  // Initialized in connectedCallback — MutationObserver is browser-only.
+  private _observer: MutationObserver | null = null;
   private _suppressNextCloseToggle = false;
+  /** The element that had focus when the dialog was opened; restored on close. */
+  private _openerEl: Element | null = null;
 
   /** Whether the inner `<dialog>` is currently open. Host writes update silently. */
   @property({ type: Boolean, attribute: 'open', reflect: true })
@@ -178,6 +200,7 @@ export class RCDialog extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
+    this._observer = new MutationObserver(() => this._setupDialog());
     this._observer.observe(this, { childList: true });
   }
 
@@ -246,6 +269,7 @@ export class RCDialog extends LitElement {
     }
 
     if (this.resize !== 'none') {
+      // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
       new ResizeController(this, {
         target: dlg,
         direction: this.resize,
@@ -287,7 +311,8 @@ export class RCDialog extends LitElement {
   }
 
   override disconnectedCallback() {
-    this._observer.disconnect();
+    this._observer?.disconnect();
+    this._observer = null;
     this._teardownDialog();
     super.disconnectedCallback();
   }
@@ -300,9 +325,16 @@ export class RCDialog extends LitElement {
     dlg.removeEventListener('cancel', this._onCancel);
     dlg.removeEventListener('click', this._onBackdropClick);
     this._dialogRef = null;
+    this._openerEl = null;
   }
 
   private _onClose = () => {
+    // Restore focus to the element that triggered the open, per APG focus management.
+    if (this._openerEl instanceof HTMLElement && this._openerEl.isConnected) {
+      this._openerEl.focus();
+    }
+    this._openerEl = null;
+
     this.dispatchEvent(
       new CustomEvent('rc-dialog-close', {
         bubbles: true,
@@ -360,6 +392,8 @@ export class RCDialog extends LitElement {
 
     if (open) {
       if (dlg.open) return false;
+      // Capture focus owner before the dialog steals it, so we can restore on close.
+      this._openerEl = document.activeElement;
       modal ? dlg.showModal() : dlg.show();
       this.requestUpdate('open');
       return true;
