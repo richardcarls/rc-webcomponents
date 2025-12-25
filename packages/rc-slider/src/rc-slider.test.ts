@@ -138,6 +138,63 @@ test('rc-slider Page Down adjusts value by 10 and fires rc-slider-input', async 
   expect(inputSpy).toHaveBeenCalledOnce();
 });
 
+test('rc-slider progress fill reflects initial value at first render', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const progress = host.querySelector<HTMLElement>('[part="progress"]');
+  expect(progress?.getAttribute('style')).toContain('width:25');
+});
+
+test('rc-slider disabled syncs to native input', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host" .disabled=${true}>
+      <input type="range" aria-label="Fuel">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const input = host.querySelector('input') as HTMLInputElement;
+  expect(input.disabled).toBe(true);
+});
+
+test('rc-slider Page Up adjusts value by 10 and fires rc-slider-input', async () => {
+  const inputSpy = vi.fn();
+  const screen = render(html`
+    <rc-slider data-testid="host" @rc-slider-input=${inputSpy}>
+      <input type="range" min="0" max="100" value="50" aria-label="Volume">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+  const input = host.querySelector('input') as HTMLInputElement;
+
+  input.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageUp', bubbles: true }));
+
+  expect(host.value).toBe(60);
+  expect(inputSpy).toHaveBeenCalledOnce();
+});
+
+test('rc-slider display="inline-end" renders value display', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host" display="inline-end">
+      <input type="range" min="0" max="100" value="75" aria-label="Volume">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const display = host.querySelector('[part="value-display"]');
+  expect(display).toBeTruthy();
+  await expect.element(screen.getByText('75')).toBeInTheDocument();
+});
+
 test('rc-slider has no automated accessibility violations', async () => {
   const screen = render(html`
     <rc-slider data-testid="host">

@@ -12,6 +12,11 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-range-slider': RCRangeSlider;
   }
+
+  interface HTMLElementEventMap {
+    'rc-range-slider-input':  CustomEvent<RCRangeSliderValueEvent>;
+    'rc-range-slider-change': CustomEvent<RCRangeSliderValueEvent>;
+  }
 }
 
 type DisplayValue = 'float' | 'inline-start' | 'inline-end' | null;

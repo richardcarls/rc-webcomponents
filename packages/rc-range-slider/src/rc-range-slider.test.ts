@@ -282,6 +282,70 @@ test('rc-range-slider consumer-provided aria-label is not overwritten by low-lab
   expect(highInput.getAttribute('aria-label')).toBe('To');
 });
 
+test('rc-range-slider disabled syncs to both native inputs', async () => {
+  const screen = render(html`
+    <rc-range-slider data-testid="host" .disabled=${true}>
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+    </rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  const [lowInput, highInput] = getInputs(host);
+  expect(lowInput.disabled).toBe(true);
+  expect(highInput.disabled).toBe(true);
+});
+
+test('rc-range-slider readonly suppresses value updates on low thumb', async () => {
+  const screen = render(html`
+    <rc-range-slider data-testid="host" readonly>
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+    </rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  const [lowInput] = getInputs(host);
+  lowInput.value = '50';
+  lowInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+  expect(host.value[0]).toBe(20);
+  expect(lowInput.value).toBe('20'); // reset by readonly handler
+});
+
+test('rc-range-slider applies default low-label and high-label when no aria-label', async () => {
+  const screen = render(html`
+    <rc-range-slider data-testid="host">
+      <input type="range" min="0" max="100" value="20">
+      <input type="range" min="0" max="100" value="80">
+    </rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  const [lowInput, highInput] = getInputs(host);
+  expect(lowInput.getAttribute('aria-label')).toBe('Minimum');
+  expect(highInput.getAttribute('aria-label')).toBe('Maximum');
+});
+
+test('rc-range-slider display="float" renders value displays for both thumbs', async () => {
+  const screen = render(html`
+    <rc-range-slider data-testid="host" display="float">
+      <input type="range" min="0" max="100" value="25" aria-label="Minimum">
+      <input type="range" min="0" max="100" value="75" aria-label="Maximum">
+    </rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  const displays = host.querySelectorAll('[part~="value-display"]');
+  expect(displays.length).toBe(2);
+  await expect.element(screen.getByText('25')).toBeInTheDocument();
+  await expect.element(screen.getByText('75')).toBeInTheDocument();
+});
+
 test('rc-range-slider has no automated accessibility violations', async () => {
   // Wrap in a fieldset/legend to provide an accessible group name without JavaScript.
   const screen = render(html`

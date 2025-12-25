@@ -181,9 +181,12 @@ rebuild affected dependencies before running tests in packages that consume
 them. Vite HMR does not watch dependency `dist/` output through `node_modules`;
 restart the consuming package dev server after rebuilding a dependency.
 
-## Browser test notes
+## Testing
 
-Tests run in a real Firefox browser via WebDriverIO. Import pattern:
+### Test stack
+
+Tests run in a real Firefox browser via WebDriverIO using Vitest in browser
+mode. Every test exercises live DOM; there is no jsdom.
 
 ```ts
 import { test, expect, vi } from 'vitest';
@@ -192,12 +195,71 @@ import { html } from 'lit';
 import { userEvent } from 'vitest/browser';
 ```
 
-**Locator `.click()` vs. `dispatchEvent`** — The WebDriverIO locator's
-`.click()` method (e.g. `screen.getByRole('menu').click()`) simulates a user
-gesture and works correctly for most cases. However, it does **not** reliably
-reach native `addEventListener('click', ...)` handlers registered directly on
-the same element by a Lit directive. When testing directive-level click
-handlers, dispatch the event explicitly:
+Accessibility violations use the shared helper:
+
+```ts
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+```
+
+### Async assertions
+
+Always `await host.updateComplete` before asserting DOM state. When
+`firstUpdated()` mutates `@state()` properties it schedules a second render
+cycle; if assertions still race, use `vi.waitFor`:
+
+```ts
+await vi.waitFor(() => expect(document.activeElement).toBe(opener));
+```
+
+### What to test in every component
+
+**Progressive enhancement** — verify the consumer-provided native element stays
+in the DOM with its original `name`, `id`, and any other author attributes intact
+after upgrade:
+
+```ts
+const input = host.querySelector<HTMLInputElement>('input[type="range"]');
+expect(input?.isConnected).toBe(true);
+expect(input?.getAttribute('name')).toBe('price-min');
+```
+
+**Label association** — for wrapper components test the three native labeling
+strategies, at minimum the `for`/`id` form:
+
+```ts
+const labelEl = wrapper.querySelector<HTMLLabelElement>('label[for="my-input"]');
+expect(labelEl?.control).toBe(input); // native label registry resolves correctly
+```
+
+**ARIA attributes** — assert that `aria-*` attributes are written to the native
+element after `updateComplete`, not to the host element unless intentional.
+
+**Events** — fire events on native child elements, not on the component host, so
+the delegation path is exercised:
+
+```ts
+input.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }));
+```
+
+**Accessibility audit** — every component must have an `expectNoA11yViolations`
+test. For stateful components (dialog, disclosure, popover, combobox) axe must
+audit the **live open/active state** — auditing the resting state passes
+vacuously because the ARIA requirements only appear when the content is visible:
+
+```ts
+host.showModal();          // put the component in the state that has requirements
+await host.updateComplete;
+await expectNoA11yViolations(host);
+host.close();              // clean up
+```
+
+### Locator `.click()` vs. `dispatchEvent`
+
+The WebDriverIO locator's `.click()` method simulates a user gesture and works
+correctly for most cases. However, it does **not** reliably reach native
+`addEventListener('click', ...)` handlers registered directly on the same
+element by a Lit directive. When testing directive-level click handlers, dispatch
+the event explicitly:
 
 ```ts
 const node = await el.element();
@@ -207,9 +269,11 @@ node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
 Clicking an inner child and letting the event bubble to a directive-decorated
 ancestor works fine with the locator's `.click()`.
 
-**Programmatic focus** — Use `(await el.element()).focus()` to move focus
-without triggering click handlers. Avoid `el.click()` when the goal is only to
-focus, since it will also fire the directive's click listener.
+### Programmatic focus
+
+Use `(await el.element()).focus()` to move focus without triggering click
+handlers. Avoid `el.click()` when the goal is only to focus, since it will also
+fire the directive's click listener.
 
 ## Packages
 

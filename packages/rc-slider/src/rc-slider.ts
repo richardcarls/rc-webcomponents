@@ -12,6 +12,11 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-slider': RCSlider;
   }
+
+  interface HTMLElementEventMap {
+    'rc-slider-input':  CustomEvent<RCSliderValueEvent>;
+    'rc-slider-change': CustomEvent<RCSliderValueEvent>;
+  }
 }
 
 type DisplayValue = 'float' | 'inline-start' | 'inline-end' | null;
