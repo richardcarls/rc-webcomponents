@@ -6,3 +6,4 @@ export * from './ResizeController';
 export * from './AnchorController';
 export * from './isFocusable';
 export * from './RovingTabIndexMixin';
+export * from './sliderUtils';

@@ -6,15 +6,43 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 import './define.js';
 import type { RCSlider } from './rc-slider.js';
 
-test('rc-slider renders ranges and value display', async () => {
-  const screen = render(html`<rc-slider data-testid="host" label="Fuel" display="overlay" value="25" value-text="25 of 100"></rc-slider>`);
+test('rc-slider renders progress fill', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host" display="float">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
+    </rc-slider>
+  `);
   const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
 
-  host.ranges = [{ from: 0, to: 50, part: 'low', label: 'Low range' }];
+  expect(host.querySelector('[part="progress"]')).toBeTruthy();
+});
+
+test('rc-slider renders float value display using value-text', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host" display="float" value-text="25 of 100">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
 
   await expect.element(screen.getByText('25 of 100')).toBeInTheDocument();
-  expect(host.querySelectorAll('[part~="range"]')).toHaveLength(1);
+});
+
+test('rc-slider keeps the native input in the DOM after upgrade', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host">
+      <input type="range" name="fuel" min="0" max="100" value="40" aria-label="Fuel">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const input = host.querySelector<HTMLInputElement>('input[type="range"]');
+  expect(input).toBeTruthy();
+  expect(input?.isConnected).toBe(true);
+  expect(input?.getAttribute('name')).toBe('fuel');
 });
 
 test('rc-slider fires input and change events', async () => {
@@ -23,11 +51,11 @@ test('rc-slider fires input and change events', async () => {
   const screen = render(html`
     <rc-slider
       data-testid="host"
-      label="Fuel"
-      value="5"
       @rc-slider-input=${inputSpy}
       @rc-slider-change=${changeSpy}
-    ></rc-slider>
+    >
+      <input type="range" value="5" aria-label="Fuel">
+    </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
@@ -42,7 +70,11 @@ test('rc-slider fires input and change events', async () => {
 });
 
 test('rc-slider readonly suppresses value updates', async () => {
-  const screen = render(html`<rc-slider data-testid="host" label="Fuel" value="5" readonly></rc-slider>`);
+  const screen = render(html`
+    <rc-slider data-testid="host" readonly>
+      <input type="range" value="5" aria-label="Fuel">
+    </rc-slider>
+  `);
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
   const input = host.querySelector('input') as HTMLInputElement;
@@ -54,9 +86,11 @@ test('rc-slider readonly suppresses value updates', async () => {
   expect(input.value).toBe('5');
 });
 
-test('rc-slider exposes aria-valuetext and aria-orientation', async () => {
+test('rc-slider exposes aria-valuetext and aria-orientation via updated()', async () => {
   const screen = render(html`
-    <rc-slider data-testid="host" label="Volume" value="25" value-text="Low" orientation="vertical"></rc-slider>
+    <rc-slider data-testid="host" value-text="Low" orientation="vertical">
+      <input type="range" value="25" aria-label="Volume">
+    </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
@@ -66,10 +100,33 @@ test('rc-slider exposes aria-valuetext and aria-orientation', async () => {
   expect(input.getAttribute('aria-orientation')).toBe('vertical');
 });
 
+test('rc-slider native for/id label association survives component upgrade', async () => {
+  const screen = render(html`
+    <div data-testid="wrapper">
+      <label for="test-slider-input">Volume</label>
+      <rc-slider data-testid="host">
+        <input id="test-slider-input" type="range" value="50">
+      </rc-slider>
+    </div>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const input = host.querySelector<HTMLInputElement>('input');
+  expect(input?.isConnected).toBe(true);
+  expect(input?.id).toBe('test-slider-input');
+  // The label element resolves to the input via the document label registry.
+  const wrapper = screen.getByTestId('wrapper').element();
+  const labelEl = wrapper.querySelector<HTMLLabelElement>('label[for="test-slider-input"]');
+  expect(labelEl?.control).toBe(input);
+});
+
 test('rc-slider Page Down adjusts value by 10 and fires rc-slider-input', async () => {
   const inputSpy = vi.fn();
   const screen = render(html`
-    <rc-slider data-testid="host" label="Volume" value="50" @rc-slider-input=${inputSpy}></rc-slider>
+    <rc-slider data-testid="host" @rc-slider-input=${inputSpy}>
+      <input type="range" min="0" max="100" value="50" aria-label="Volume">
+    </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
@@ -81,7 +138,70 @@ test('rc-slider Page Down adjusts value by 10 and fires rc-slider-input', async 
   expect(inputSpy).toHaveBeenCalledOnce();
 });
 
+test('rc-slider progress fill reflects initial value at first render', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const progress = host.querySelector<HTMLElement>('[part="progress"]');
+  expect(progress?.getAttribute('style')).toContain('width:25');
+});
+
+test('rc-slider disabled syncs to native input', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host" .disabled=${true}>
+      <input type="range" aria-label="Fuel">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const input = host.querySelector('input') as HTMLInputElement;
+  expect(input.disabled).toBe(true);
+});
+
+test('rc-slider Page Up adjusts value by 10 and fires rc-slider-input', async () => {
+  const inputSpy = vi.fn();
+  const screen = render(html`
+    <rc-slider data-testid="host" @rc-slider-input=${inputSpy}>
+      <input type="range" min="0" max="100" value="50" aria-label="Volume">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+  const input = host.querySelector('input') as HTMLInputElement;
+
+  input.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageUp', bubbles: true }));
+
+  expect(host.value).toBe(60);
+  expect(inputSpy).toHaveBeenCalledOnce();
+});
+
+test('rc-slider display="inline-end" renders value display', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host" display="inline-end">
+      <input type="range" min="0" max="100" value="75" aria-label="Volume">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const display = host.querySelector('[part="value-display"]');
+  expect(display).toBeTruthy();
+  await expect.element(screen.getByText('75')).toBeInTheDocument();
+});
+
 test('rc-slider has no automated accessibility violations', async () => {
-  const screen = render(html`<rc-slider data-testid="host" label="Fuel" value="5"></rc-slider>`);
-  await expectNoA11yViolations(screen.getByTestId('host').element());
+  const screen = render(html`
+    <rc-slider data-testid="host">
+      <input type="range" value="5" aria-label="Fuel">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+  await expectNoA11yViolations(host);
 });

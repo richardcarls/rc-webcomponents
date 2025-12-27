@@ -1353,6 +1353,7 @@ const RAW_RUNTIME_STATE =
         "packageDependencies": [\
           ["@custom-elements-manifest/analyzer", "npm:0.11.0"],\
           ["@guanghechen/rollup-plugin-copy", "virtual:79423438f5616e19146b425db724e4c36028bb6a4997133cadb74f3b7c5fba731086928cda35e454e4a227ea24d52e58cf4c4a304673ea89034ff62636e1fadc#npm:6.0.9"],\
+          ["@rcarls/rc-common", "virtual:02d3817ef30f7d97259a7b9b41e4e3d9ef9c7016f68bdb6446746c849cf7e6516b3e0b299884e4a8ea0a98b338ed110a5808c43eb841103713714d4c2c53b572#workspace:packages/rc-common"],\
           ["@rcarls/rc-range-slider", "workspace:packages/rc-range-slider"],\
           ["@vitest/browser-playwright", "virtual:1b8fce1c38a4c9c68ae16ec4a14f7f21b4af131624ed5223989cab437492a0903707055892065e148339553f083439028c2d3fad06216b54e921da2bd3666537#npm:4.1.5"],\
           ["lit", "npm:3.3.2"],\
@@ -1420,6 +1421,7 @@ const RAW_RUNTIME_STATE =
         "packageDependencies": [\
           ["@custom-elements-manifest/analyzer", "npm:0.11.0"],\
           ["@guanghechen/rollup-plugin-copy", "virtual:79423438f5616e19146b425db724e4c36028bb6a4997133cadb74f3b7c5fba731086928cda35e454e4a227ea24d52e58cf4c4a304673ea89034ff62636e1fadc#npm:6.0.9"],\
+          ["@rcarls/rc-common", "virtual:02d3817ef30f7d97259a7b9b41e4e3d9ef9c7016f68bdb6446746c849cf7e6516b3e0b299884e4a8ea0a98b338ed110a5808c43eb841103713714d4c2c53b572#workspace:packages/rc-common"],\
           ["@rcarls/rc-slider", "workspace:packages/rc-slider"],\
           ["@vitest/browser-playwright", "virtual:9def8bc6da65c468f7f7d6a94162339aaea5b85020ccf8b455ba534ef3e6d530d65a553b06523a1914c4a689ba3a6a997628bd45ea5eb18ecca768f8cc415455#npm:4.1.5"],\
           ["lit", "npm:3.3.2"],\

@@ -31,15 +31,27 @@ adapter mechanism changes.
 
 ## Design principles
 
-Four constraints guide every component. Not all packages fully satisfy all four
-today; treat them as the acceptance bar for new work and the lens for reviewing
-existing work.
+These constraints guide every component. Not all packages fully satisfy all of
+them today; treat them as the acceptance bar for new work and the lens for
+reviewing existing work.
 
 ### Progressive enhancement
 
 Build on native HTML and browser behavior. A component wraps or enhances a native
 element; it does not replace it. Feature-detect newer browser APIs before using
 them, and do not throw when a feature is absent.
+
+Components that wrap form controls require the consumer to supply the native
+element as a direct child. Keep that element in the DOM permanently so that:
+
+- **Form association** — `name`/`value` submit correctly without `ElementInternals`.
+- **Label association** — `<label for="id">`, wrapping `<label>`, and `aria-label`
+  directly on the native input all work without a shadow DOM boundary to cross.
+- **Pre-upgrade usability** — the native control is interactive before the custom
+  element registers, and remains so if registration never occurs.
+
+Do not break these associations during upgrade. Do not remove or replace the
+consumer-provided element.
 
 ### Accessible by default
 
@@ -51,22 +63,27 @@ Implement the WAI-ARIA Authoring Practices Guide pattern where one exists:
   close, and avoiding accidental focus loss to `<body>`.
 - Screen reader behavior is part of acceptance.
 
-### Headless and UA-styled
+### Headless
 
 Ship no visual design opinions beyond what is structurally necessary for correct
 layout or behavior. Colors, fonts, borders, and spacing belong to the consumer.
 
-Where defaults are needed, prefer browser UA styles and CSS system colors such
-as `Canvas`, `CanvasText`, `ButtonFace`, `ButtonText`, `ButtonBorder`, `Field`,
+Where defaults are needed, prefer browser UA styles and CSS system colors:
+`Canvas`, `CanvasText`, `ButtonFace`, `ButtonText`, `ButtonBorder`, `Field`,
 `FieldText`, `Highlight`, `HighlightText`, `AccentColor`, `AccentColorText`,
-and `GrayText`. Components must behave correctly under `forced-colors: active`;
-interactive state must be communicated through ARIA attributes, focus, and
-outlines rather than color alone.
+and `GrayText`. Using system colors means components support light and dark mode
+automatically via `color-scheme` with no per-component code. Components must also
+behave correctly under `forced-colors: active`; interactive state must be
+communicated through ARIA attributes, focus, and outlines rather than color alone.
 
 Runtime geometry is the narrow exception: values derived from measurement or
 user interaction, such as splitter pane sizes or virtual-canvas placeholder
 dimensions, may be written as inline styles. Decorative styles belong in static
 CSS or CSS custom properties.
+
+The goal is not only to slot into a design system. A component should be droppable
+into a plain, unstyled HTML page alongside native `<input>`, `<select>`, and
+`<button>` elements and look and feel like it belongs there.
 
 ### Responsive and touch-friendly
 
@@ -74,6 +91,44 @@ CSS or CSS custom properties.
 - Avoid hardcoded breakpoints inside component logic.
 - Set minimum dimensions conservatively.
 - Make keyboard step sizes configurable; Shift multiplies movement by 10 for coarse control.
+
+### Performance
+
+Minimize the cost of including and running each component.
+
+- Every package sets `sideEffects: false` so bundlers can tree-shake unused
+  components. Each package is independently importable; the aggregate
+  `rc-webcomponents` package is a convenience, not a requirement.
+- Keep per-component bundle footprint small. Avoid heavy runtime dependencies;
+  prefer platform APIs over polyfills or third-party utility libraries.
+- Do not block the main thread. Expensive work (large dataset processing, complex
+  geometry calculation) belongs in async tasks or web workers, not synchronous
+  lifecycle methods.
+- Mark high-frequency event listeners (`pointermove`, `scroll`, `wheel`) passive
+  when `preventDefault()` is not needed, so the browser can schedule scrolling
+  without waiting for JavaScript.
+- Let Lit's reactive system batch updates. Avoid triggering extra render cycles
+  inside `updated()` or event handlers unless genuinely required.
+
+### Interoperable and well-typed
+
+Custom elements work in any JavaScript environment — framework or none. Follow
+the standard web component data and event contract:
+
+- **Properties for rich data, attributes for initial configuration.** Boolean,
+  array, and object values are set programmatically via properties. Attributes are
+  reflected only where CSS selectors genuinely need them.
+- **`CustomEvent` for output.** Events are `bubbles: true, composed: true` so
+  they cross shadow DOM boundaries in consuming documents. Names follow the
+  `<element-name>-<verb>` convention (`rc-slider-input`, `rc-dialog-close`) to
+  avoid collisions in mixed-component trees.
+- **TypeScript-first public API.** Every property, method, and event detail type
+  is declared. Tag names are registered in `HTMLElementTagNameMap` so
+  `querySelector` calls and framework template types resolve to the correct class.
+  JSDoc covers all public properties and events.
+- **No framework coupling in component code.** Reactive framework adapters,
+  wrappers, and directives are a consuming-application concern, not a library
+  concern.
 
 ## Architecture notes
 
@@ -126,9 +181,12 @@ rebuild affected dependencies before running tests in packages that consume
 them. Vite HMR does not watch dependency `dist/` output through `node_modules`;
 restart the consuming package dev server after rebuilding a dependency.
 
-## Browser test notes
+## Testing
 
-Tests run in a real Firefox browser via WebDriverIO. Import pattern:
+### Test stack
+
+Tests run in a real Firefox browser via WebDriverIO using Vitest in browser
+mode. Every test exercises live DOM; there is no jsdom.
 
 ```ts
 import { test, expect, vi } from 'vitest';
@@ -137,12 +195,71 @@ import { html } from 'lit';
 import { userEvent } from 'vitest/browser';
 ```
 
-**Locator `.click()` vs. `dispatchEvent`** — The WebDriverIO locator's
-`.click()` method (e.g. `screen.getByRole('menu').click()`) simulates a user
-gesture and works correctly for most cases. However, it does **not** reliably
-reach native `addEventListener('click', ...)` handlers registered directly on
-the same element by a Lit directive. When testing directive-level click
-handlers, dispatch the event explicitly:
+Accessibility violations use the shared helper:
+
+```ts
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+```
+
+### Async assertions
+
+Always `await host.updateComplete` before asserting DOM state. When
+`firstUpdated()` mutates `@state()` properties it schedules a second render
+cycle; if assertions still race, use `vi.waitFor`:
+
+```ts
+await vi.waitFor(() => expect(document.activeElement).toBe(opener));
+```
+
+### What to test in every component
+
+**Progressive enhancement** — verify the consumer-provided native element stays
+in the DOM with its original `name`, `id`, and any other author attributes intact
+after upgrade:
+
+```ts
+const input = host.querySelector<HTMLInputElement>('input[type="range"]');
+expect(input?.isConnected).toBe(true);
+expect(input?.getAttribute('name')).toBe('price-min');
+```
+
+**Label association** — for wrapper components test the three native labeling
+strategies, at minimum the `for`/`id` form:
+
+```ts
+const labelEl = wrapper.querySelector<HTMLLabelElement>('label[for="my-input"]');
+expect(labelEl?.control).toBe(input); // native label registry resolves correctly
+```
+
+**ARIA attributes** — assert that `aria-*` attributes are written to the native
+element after `updateComplete`, not to the host element unless intentional.
+
+**Events** — fire events on native child elements, not on the component host, so
+the delegation path is exercised:
+
+```ts
+input.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }));
+```
+
+**Accessibility audit** — every component must have an `expectNoA11yViolations`
+test. For stateful components (dialog, disclosure, popover, combobox) axe must
+audit the **live open/active state** — auditing the resting state passes
+vacuously because the ARIA requirements only appear when the content is visible:
+
+```ts
+host.showModal();          // put the component in the state that has requirements
+await host.updateComplete;
+await expectNoA11yViolations(host);
+host.close();              // clean up
+```
+
+### Locator `.click()` vs. `dispatchEvent`
+
+The WebDriverIO locator's `.click()` method simulates a user gesture and works
+correctly for most cases. However, it does **not** reliably reach native
+`addEventListener('click', ...)` handlers registered directly on the same
+element by a Lit directive. When testing directive-level click handlers, dispatch
+the event explicitly:
 
 ```ts
 const node = await el.element();
@@ -152,9 +269,11 @@ node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
 Clicking an inner child and letting the event bubble to a directive-decorated
 ancestor works fine with the locator's `.click()`.
 
-**Programmatic focus** — Use `(await el.element()).focus()` to move focus
-without triggering click handlers. Avoid `el.click()` when the goal is only to
-focus, since it will also fire the directive's click listener.
+### Programmatic focus
+
+Use `(await el.element()).focus()` to move focus without triggering click
+handlers. Avoid `el.click()` when the goal is only to focus, since it will also
+fire the directive's click listener.
 
 ## Packages
 
