@@ -37,14 +37,35 @@ export class RCRangeSlider extends LitElement {
   /** Slider step. */
   @property({ type: Number }) step = 1;
 
+  private _value: [number, number] | undefined;
+  private _defaultValue: [number, number] | undefined;
+  private _valueInitialized = false;
+
   /** Current [low, high] value. Assign a new tuple reference to trigger a re-render. */
-  @property({
-    attribute: false,
-    hasChanged(newVal: [number, number], oldVal: [number, number]) {
-      return newVal !== oldVal;
-    },
-  })
-  value: [number, number] = [0, 100];
+  get value(): [number, number] {
+    return this._value ?? this._defaultValue ?? [0, 100];
+  }
+  set value(v: [number, number]) {
+    const old = this._value;
+    this._value = v;
+    this._valueInitialized = true;
+    if (v !== old) {
+      this.requestUpdate('value', old);
+    }
+  }
+
+  /** Initial uncontrolled [low, high] value. Has no effect after the first user interaction or `value` write. */
+  get defaultValue(): [number, number] | undefined {
+    return this._defaultValue;
+  }
+  set defaultValue(v: [number, number] | undefined) {
+    const old = this._defaultValue;
+    this._defaultValue = v;
+    if (!this._valueInitialized && this._value === undefined && v !== undefined) {
+      this.requestUpdate('value', undefined);
+    }
+    this.requestUpdate('defaultValue', old);
+  }
 
   /** Disable both thumbs. */
   @property({ type: Boolean, reflect: true }) disabled = false;

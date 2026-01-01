@@ -155,3 +155,54 @@ test('rc-range-slider has no automated accessibility violations', async () => {
   `);
   await expectNoA11yViolations(screen.getByTestId('host').element());
 });
+
+test('rc-range-slider defaultValue sets initial [low, high] without controlling', async () => {
+  const screen = render(html`
+    <rc-range-slider data-testid="host" label="Price range"></rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  host.defaultValue = [15, 75];
+  await host.updateComplete;
+
+  expect(host.value[0]).toBe(15);
+  expect(host.value[1]).toBe(75);
+
+  const [lowThumb, highThumb] = Array.from(host.querySelectorAll<HTMLElement>('[role="slider"]'));
+  expect(lowThumb.getAttribute('aria-valuenow')).toBe('15');
+  expect(highThumb.getAttribute('aria-valuenow')).toBe('75');
+});
+
+test('rc-range-slider controlled value overrides defaultValue', async () => {
+  const screen = render(html`
+    <rc-range-slider data-testid="host" label="Price range"></rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  host.defaultValue = [15, 75];
+  host.value = [25, 85];
+  await host.updateComplete;
+
+  expect(host.value[0]).toBe(25);
+  expect(host.value[1]).toBe(85);
+});
+
+test('rc-range-slider setting defaultValue does not fire rc-range-slider-input', async () => {
+  const inputSpy = vi.fn();
+  const screen = render(html`
+    <rc-range-slider data-testid="host" label="Price" @rc-range-slider-input=${inputSpy}></rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  host.defaultValue = [10, 90];
+  await host.updateComplete;
+
+  expect(inputSpy).not.toHaveBeenCalled();
+});
+
+test('rc-range-slider without defaultValue falls back to [0, 100]', async () => {
+  const screen = render(html`
+    <rc-range-slider data-testid="host" label="Price range"></rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  expect(host.value).toEqual([0, 100]);
+});

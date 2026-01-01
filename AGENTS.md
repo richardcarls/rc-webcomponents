@@ -31,7 +31,7 @@ adapter mechanism changes.
 
 ## Design principles
 
-Four constraints guide every component. Not all packages fully satisfy all four
+Five constraints guide every component. Not all packages fully satisfy all five
 today; treat them as the acceptance bar for new work and the lens for reviewing
 existing work.
 
@@ -74,6 +74,36 @@ CSS or CSS custom properties.
 - Avoid hardcoded breakpoints inside component logic.
 - Set minimum dimensions conservatively.
 - Make keyboard step sizes configurable; Shift multiplies movement by 10 for coarse control.
+
+### Controlled and uncontrolled state
+
+Any component that manages stateful user interaction through a value-like property — `value`, `open`,
+`selected`, or similar — must support both modes:
+
+**Controlled mode** — The host owns the value. The host sets the property on every update, and the
+component never overrides it. Host writes must be silent: no events fire from programmatic property
+assignment.
+
+**Uncontrolled mode** — The component owns the value after an initial hint. The host sets `defaultValue`
+(or `defaultOpen`, `defaultSelected`, etc.) once before interaction begins. After that the component
+manages state independently.
+
+Implementation rules:
+
+- Add private fields: `_value: T | undefined`, `_defaultValue: T | undefined`, and
+  `_<name>Initialized = false` (e.g. `_valueInitialized`, `_selectedInitialized`).
+- The `value` setter: sets `_value`, sets `_<name>Initialized = true`, applies state silently (no event
+  dispatch), calls `requestUpdate`.
+- The `defaultValue` setter: sets `_defaultValue`; applies state only when
+  `!_<name>Initialized && _value === undefined`; never dispatches events.
+- `_<name>Initialized` does **not** reset on reconnect. A controlled element stays controlled after
+  being moved in the DOM.
+- The `value` getter returns `_value ?? _defaultValue ?? <sensible-fallback>` so callers always receive
+  a typed, non-`undefined` value.
+- For primitive properties, apply `@property({ type: Number, attribute: 'default-value' })` on the
+  `defaultValue` getter/setter so HTML authors can use the attribute form. For non-serializable types
+  (arrays, tuples), omit the attribute mapping.
+- Follow the naming pair: `value`/`defaultValue`, `open`/`defaultOpen`, `selected`/`defaultSelected`.
 
 ## Architecture notes
 

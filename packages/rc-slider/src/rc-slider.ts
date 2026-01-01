@@ -45,8 +45,35 @@ export class RCSlider extends LitElement {
   /** Slider step. */
   @property({ type: Number }) step = 1;
 
+  private _value: number | undefined;
+  private _defaultValue: number | undefined;
+  private _valueInitialized = false;
+
   /** Current slider value. */
-  @property({ type: Number }) value = 0;
+  @property({ type: Number })
+  get value(): number {
+    return this._value ?? this._defaultValue ?? 0;
+  }
+  set value(v: number) {
+    const old = this._value;
+    this._value = v;
+    this._valueInitialized = true;
+    this.requestUpdate('value', old);
+  }
+
+  /** Initial uncontrolled slider value. Has no effect after the first user interaction or `value` write. */
+  @property({ type: Number, attribute: 'default-value' })
+  get defaultValue(): number | undefined {
+    return this._defaultValue;
+  }
+  set defaultValue(v: number | undefined) {
+    const old = this._defaultValue;
+    this._defaultValue = v;
+    if (!this._valueInitialized && this._value === undefined && v !== undefined) {
+      this.requestUpdate('value', undefined);
+    }
+    this.requestUpdate('defaultValue', old);
+  }
 
   /** Disable the underlying input. */
   @property({ type: Boolean, reflect: true }) disabled = false;
