@@ -31,9 +31,9 @@ adapter mechanism changes.
 
 ## Design principles
 
-These constraints guide every component. Not all packages fully satisfy all of
-them today; treat them as the acceptance bar for new work and the lens for
-reviewing existing work.
+Five constraints guide every component. Not all packages fully satisfy all five
+today; treat them as the acceptance bar for new work and the lens for reviewing
+existing work.
 
 ### Progressive enhancement
 
@@ -92,43 +92,35 @@ into a plain, unstyled HTML page alongside native `<input>`, `<select>`, and
 - Set minimum dimensions conservatively.
 - Make keyboard step sizes configurable; Shift multiplies movement by 10 for coarse control.
 
-### Performance
+### Controlled and uncontrolled state
 
-Minimize the cost of including and running each component.
+Any component that manages stateful user interaction through a value-like property — `value`, `open`,
+`selected`, or similar — must support both modes:
 
-- Every package sets `sideEffects: false` so bundlers can tree-shake unused
-  components. Each package is independently importable; the aggregate
-  `rc-webcomponents` package is a convenience, not a requirement.
-- Keep per-component bundle footprint small. Avoid heavy runtime dependencies;
-  prefer platform APIs over polyfills or third-party utility libraries.
-- Do not block the main thread. Expensive work (large dataset processing, complex
-  geometry calculation) belongs in async tasks or web workers, not synchronous
-  lifecycle methods.
-- Mark high-frequency event listeners (`pointermove`, `scroll`, `wheel`) passive
-  when `preventDefault()` is not needed, so the browser can schedule scrolling
-  without waiting for JavaScript.
-- Let Lit's reactive system batch updates. Avoid triggering extra render cycles
-  inside `updated()` or event handlers unless genuinely required.
+**Controlled mode** — The host owns the value. The host sets the property on every update, and the
+component never overrides it. Host writes must be silent: no events fire from programmatic property
+assignment.
 
-### Interoperable and well-typed
+**Uncontrolled mode** — The component owns the value after an initial hint. The host sets `defaultValue`
+(or `defaultOpen`, `defaultSelected`, etc.) once before interaction begins. After that the component
+manages state independently.
 
-Custom elements work in any JavaScript environment — framework or none. Follow
-the standard web component data and event contract:
+Implementation rules:
 
-- **Properties for rich data, attributes for initial configuration.** Boolean,
-  array, and object values are set programmatically via properties. Attributes are
-  reflected only where CSS selectors genuinely need them.
-- **`CustomEvent` for output.** Events are `bubbles: true, composed: true` so
-  they cross shadow DOM boundaries in consuming documents. Names follow the
-  `<element-name>-<verb>` convention (`rc-slider-input`, `rc-dialog-close`) to
-  avoid collisions in mixed-component trees.
-- **TypeScript-first public API.** Every property, method, and event detail type
-  is declared. Tag names are registered in `HTMLElementTagNameMap` so
-  `querySelector` calls and framework template types resolve to the correct class.
-  JSDoc covers all public properties and events.
-- **No framework coupling in component code.** Reactive framework adapters,
-  wrappers, and directives are a consuming-application concern, not a library
-  concern.
+- Add private fields: `_value: T | undefined`, `_defaultValue: T | undefined`, and
+  `_<name>Initialized = false` (e.g. `_valueInitialized`, `_selectedInitialized`).
+- The `value` setter: sets `_value`, sets `_<name>Initialized = true`, applies state silently (no event
+  dispatch), calls `requestUpdate`.
+- The `defaultValue` setter: sets `_defaultValue`; applies state only when
+  `!_<name>Initialized && _value === undefined`; never dispatches events.
+- `_<name>Initialized` does **not** reset on reconnect. A controlled element stays controlled after
+  being moved in the DOM.
+- The `value` getter returns `_value ?? _defaultValue ?? <sensible-fallback>` so callers always receive
+  a typed, non-`undefined` value.
+- For primitive properties, apply `@property({ type: Number, attribute: 'default-value' })` on the
+  `defaultValue` getter/setter so HTML authors can use the attribute form. For non-serializable types
+  (arrays, tuples), omit the attribute mapping.
+- Follow the naming pair: `value`/`defaultValue`, `open`/`defaultOpen`, `selected`/`defaultSelected`.
 
 ## Architecture notes
 

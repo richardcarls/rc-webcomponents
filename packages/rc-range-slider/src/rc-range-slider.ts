@@ -1,7 +1,7 @@
-import { LitElement, html, nothing } from 'lit';
-import type { ComplexAttributeConverter } from 'lit';
-import { property, state, query } from 'lit/decorators.js';
-import { valueToPercent } from '@rcarls/rc-common';
+import { LitElement, html, nothing } from "lit";
+import type { ComplexAttributeConverter } from "lit";
+import { property, state, query } from "lit/decorators.js";
+import { valueToPercent } from "@rcarls/rc-common";
 
 export interface RCRangeSliderValueEvent {
   /** Current [low, high] value tuple. */
@@ -10,16 +10,16 @@ export interface RCRangeSliderValueEvent {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'rc-range-slider': RCRangeSlider;
+    "rc-range-slider": RCRangeSlider;
   }
 
   interface HTMLElementEventMap {
-    'rc-range-slider-input':  CustomEvent<RCRangeSliderValueEvent>;
-    'rc-range-slider-change': CustomEvent<RCRangeSliderValueEvent>;
+    "rc-range-slider-input": CustomEvent<RCRangeSliderValueEvent>;
+    "rc-range-slider-change": CustomEvent<RCRangeSliderValueEvent>;
   }
 }
 
-type DisplayValue = 'float' | 'inline-start' | 'inline-end' | null;
+type DisplayValue = "float" | "inline-start" | "inline-end" | null;
 
 /**
  * Normalises the `display` attribute.
@@ -29,9 +29,9 @@ type DisplayValue = 'float' | 'inline-start' | 'inline-end' | null;
 const displayConverter: ComplexAttributeConverter<DisplayValue> = {
   fromAttribute(v: string | null): DisplayValue {
     if (v === null) return null;
-    if (v === '' || v === 'float') return 'float';
-    if (v === 'inline-start') return 'inline-start';
-    if (v === 'inline-end') return 'inline-end';
+    if (v === "" || v === "float") return "float";
+    if (v === "inline-start") return "inline-start";
+    if (v === "inline-end") return "inline-end";
     return null;
   },
   toAttribute(v: DisplayValue): string | null {
@@ -45,7 +45,7 @@ const displayConverter: ComplexAttributeConverter<DisplayValue> = {
  * (empty string) or not a valid number.
  */
 function parseAttr(s: string, defaultVal: number): number {
-  if (s === '') return defaultVal;
+  if (s === "") return defaultVal;
   const n = parseFloat(s);
   return isNaN(n) ? defaultVal : n;
 }
@@ -78,9 +78,54 @@ function parseAttr(s: string, defaultVal: number): number {
  * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to align float value displays.
  */
 export class RCRangeSlider extends LitElement {
-  override createRenderRoot() { return this; }
+  override createRenderRoot() {
+    return this;
+  }
 
-  /** Disables both inputs. */
+  /** Minimum slider value. */
+  @property({ type: Number }) min = 0;
+
+  /** Maximum slider value. */
+  @property({ type: Number }) max = 100;
+
+  /** Slider step. */
+  @property({ type: Number }) step = 1;
+
+  private _value: [number, number] | undefined;
+  private _defaultValue: [number, number] | undefined;
+  private _valueInitialized = false;
+
+  /** Current [low, high] value. Assign a new tuple reference to trigger a re-render. */
+  get value(): [number, number] {
+    return this._value ?? this._defaultValue ?? [0, 100];
+  }
+  set value(v: [number, number]) {
+    const old = this._value;
+    this._value = v;
+    this._valueInitialized = true;
+    if (v !== old) {
+      this.requestUpdate("value", old);
+    }
+  }
+
+  /** Initial uncontrolled [low, high] value. Has no effect after the first user interaction or `value` write. */
+  get defaultValue(): [number, number] | undefined {
+    return this._defaultValue;
+  }
+  set defaultValue(v: [number, number] | undefined) {
+    const old = this._defaultValue;
+    this._defaultValue = v;
+    if (
+      !this._valueInitialized &&
+      this._value === undefined &&
+      v !== undefined
+    ) {
+      this.requestUpdate("value", undefined);
+    }
+    this.requestUpdate("defaultValue", old);
+  }
+
+  /** Disable both thumbs. */
   @property({ type: Boolean, reflect: true }) disabled = false;
 
   /** Prevents edits while preserving normal display. Not a native range attribute. */
@@ -90,19 +135,19 @@ export class RCRangeSlider extends LitElement {
    * Accessible label for the low (min) thumb. Applied to the native input via
    * `aria-label` only when the consumer has not already set `aria-label` on it.
    */
-  @property({ attribute: 'low-label' }) lowLabel = 'Minimum';
+  @property({ attribute: "low-label" }) lowLabel = "Minimum";
 
   /**
    * Accessible label for the high (max) thumb. Applied to the native input via
    * `aria-label` only when the consumer has not already set `aria-label` on it.
    */
-  @property({ attribute: 'high-label' }) highLabel = 'Maximum';
+  @property({ attribute: "high-label" }) highLabel = "Maximum";
 
   /** Formatted screen-reader text for the low value. Falls back to the raw number. */
-  @property({ attribute: 'low-value-text' }) lowValueText = '';
+  @property({ attribute: "low-value-text" }) lowValueText = "";
 
   /** Formatted screen-reader text for the high value. Falls back to the raw number. */
-  @property({ attribute: 'high-value-text' }) highValueText = '';
+  @property({ attribute: "high-value-text" }) highValueText = "";
 
   /**
    * Controls the live value display.
@@ -116,7 +161,8 @@ export class RCRangeSlider extends LitElement {
   display: DisplayValue = null;
 
   /** Orientation; reflected as an attribute and forwarded to each input's `aria-orientation`. */
-  @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
+  @property({ reflect: true }) orientation: "horizontal" | "vertical" =
+    "horizontal";
 
   /**
    * Current [low, high] value tuple; reflects the native inputs' last committed
@@ -126,15 +172,15 @@ export class RCRangeSlider extends LitElement {
     return [this._lowValue, this._highValue];
   }
 
-  @state() private _lowValue  = 0;
+  @state() private _lowValue = 0;
   @state() private _highValue = 100;
 
   /** Which input is currently on top (receives pointer events). Updated on `pointermove`. */
-  @state() private _topThumb: 'low' | 'high' = 'high';
+  @state() private _topThumb: "low" | "high" = "high";
 
-  @query('.rc-range-slider-group') private _groupEl!: HTMLElement;
+  @query(".rc-range-slider-group") private _groupEl!: HTMLElement;
 
-  private _lowInput:  HTMLInputElement | null = null;
+  private _lowInput: HTMLInputElement | null = null;
   private _highInput: HTMLInputElement | null = null;
 
   override connectedCallback(): void {
@@ -149,7 +195,7 @@ export class RCRangeSlider extends LitElement {
 
   override firstUpdated(): void {
     if (this._lowInput && this._highInput) {
-      this._lowValue  = this._lowInput.valueAsNumber  || 0;
+      this._lowValue = this._lowInput.valueAsNumber || 0;
       this._highValue = this._highInput.valueAsNumber || 100;
     }
   }
@@ -166,10 +212,12 @@ export class RCRangeSlider extends LitElement {
     // Read current values directly from the native inputs for accurate first render.
     // _lowValue / _highValue are @state() properties that trigger re-renders; they
     // lag behind by one cycle on the initial mount because firstUpdated() seeds them.
-    const lowVal  = isNaN(lo.valueAsNumber) ? this._lowValue  : lo.valueAsNumber;
-    const highVal = isNaN(hi.valueAsNumber) ? this._highValue : hi.valueAsNumber;
+    const lowVal = isNaN(lo.valueAsNumber) ? this._lowValue : lo.valueAsNumber;
+    const highVal = isNaN(hi.valueAsNumber)
+      ? this._highValue
+      : hi.valueAsNumber;
 
-    const lowText  = this.lowValueText  || String(lowVal);
+    const lowText = this.lowValueText || String(lowVal);
     const highText = this.highValueText || String(highVal);
 
     const valuesContainer = html`
@@ -177,13 +225,17 @@ export class RCRangeSlider extends LitElement {
         <span
           part="value-display low-value-display"
           class="rc-range-slider-value"
-          style=${this.display === 'float' ? this._floatStyle(lowVal) : nothing}
-        >${lowText}</span>
+          style=${this.display === "float" ? this._floatStyle(lowVal) : nothing}
+          >${lowText}</span
+        >
         <span
           part="value-display high-value-display"
           class="rc-range-slider-value"
-          style=${this.display === 'float' ? this._floatStyle(highVal) : nothing}
-        >${highText}</span>
+          style=${this.display === "float"
+            ? this._floatStyle(highVal)
+            : nothing}
+          >${highText}</span
+        >
       </span>
     `;
 
@@ -199,7 +251,7 @@ export class RCRangeSlider extends LitElement {
         data-display=${this.display ?? nothing}
         data-orientation=${this.orientation}
       >
-        ${this.display === 'inline-start' ? valuesContainer : nothing}
+        ${this.display === "inline-start" ? valuesContainer : nothing}
 
         <div
           part="group"
@@ -215,14 +267,10 @@ export class RCRangeSlider extends LitElement {
             ></span>
           </span>
 
-          ${lo}
-
-          ${hi}
-
-          ${this.display === 'float' ? valuesContainer : nothing}
+          ${lo} ${hi} ${this.display === "float" ? valuesContainer : nothing}
         </div>
 
-        ${this.display === 'inline-end' ? valuesContainer : nothing}
+        ${this.display === "inline-end" ? valuesContainer : nothing}
       </div>
     `;
   }
@@ -238,47 +286,59 @@ export class RCRangeSlider extends LitElement {
     ).slice(0, 2);
 
     if (inputs.length < 2) {
-      console.warn('[rc-range-slider] Requires two child <input type="range"> elements.');
+      console.warn(
+        '[rc-range-slider] Requires two child <input type="range"> elements.',
+      );
       return;
     }
 
     const [lo, hi] = inputs as [HTMLInputElement, HTMLInputElement];
 
     // Mirror disabled state from the native inputs if not explicitly set on the host.
-    if (!this.hasAttribute('disabled') && (lo.disabled || hi.disabled)) {
+    if (!this.hasAttribute("disabled") && (lo.disabled || hi.disabled)) {
       this.disabled = true;
     }
 
     // Add CSS class required by the component's styling rules.
-    lo.classList.add('rc-range-slider-input');
-    hi.classList.add('rc-range-slider-input');
+    lo.classList.add("rc-range-slider-input");
+    hi.classList.add("rc-range-slider-input");
 
-    this._lowInput  = lo;
+    this._lowInput = lo;
     this._highInput = hi;
 
-    this._wireInput(lo, this._onLowInput, this._onLowChange, this._onLowKeydown);
-    this._wireInput(hi, this._onHighInput, this._onHighChange, this._onHighKeydown);
+    this._wireInput(
+      lo,
+      this._onLowInput,
+      this._onLowChange,
+      this._onLowKeydown,
+    );
+    this._wireInput(
+      hi,
+      this._onHighInput,
+      this._onHighChange,
+      this._onHighKeydown,
+    );
   }
 
   private _wireInput(
     input: HTMLInputElement,
-    onInput:   (e: Event) => void,
-    onChange:  (e: Event) => void,
+    onInput: (e: Event) => void,
+    onChange: (e: Event) => void,
     onKeydown: (e: KeyboardEvent) => void,
   ): void {
-    input.addEventListener('input',   onInput);
-    input.addEventListener('change',  onChange);
-    input.addEventListener('keydown', onKeydown);
+    input.addEventListener("input", onInput);
+    input.addEventListener("change", onChange);
+    input.addEventListener("keydown", onKeydown);
   }
 
   private _unwireInputs(): void {
-    this._lowInput?.removeEventListener('input',   this._onLowInput);
-    this._lowInput?.removeEventListener('change',  this._onLowChange);
-    this._lowInput?.removeEventListener('keydown', this._onLowKeydown);
+    this._lowInput?.removeEventListener("input", this._onLowInput);
+    this._lowInput?.removeEventListener("change", this._onLowChange);
+    this._lowInput?.removeEventListener("keydown", this._onLowKeydown);
 
-    this._highInput?.removeEventListener('input',   this._onHighInput);
-    this._highInput?.removeEventListener('change',  this._onHighChange);
-    this._highInput?.removeEventListener('keydown', this._onHighKeydown);
+    this._highInput?.removeEventListener("input", this._onHighInput);
+    this._highInput?.removeEventListener("change", this._onHighChange);
+    this._highInput?.removeEventListener("keydown", this._onHighKeydown);
   }
 
   private _syncAriaAttributes(): void {
@@ -287,51 +347,51 @@ export class RCRangeSlider extends LitElement {
     if (!lo || !hi) return;
 
     // Cross-constraints: each thumb's aria-valuemax/min reflects the other's position.
-    lo.setAttribute('aria-valuemax', String(this._highValue));
-    hi.setAttribute('aria-valuemin', String(this._lowValue));
+    lo.setAttribute("aria-valuemax", String(this._highValue));
+    hi.setAttribute("aria-valuemin", String(this._lowValue));
 
     // Per-thumb labels — only set when the consumer hasn't provided their own.
-    if (!lo.hasAttribute('aria-label') && this.lowLabel) {
-      lo.setAttribute('aria-label', this.lowLabel);
+    if (!lo.hasAttribute("aria-label") && this.lowLabel) {
+      lo.setAttribute("aria-label", this.lowLabel);
     }
-    if (!hi.hasAttribute('aria-label') && this.highLabel) {
-      hi.setAttribute('aria-label', this.highLabel);
+    if (!hi.hasAttribute("aria-label") && this.highLabel) {
+      hi.setAttribute("aria-label", this.highLabel);
     }
 
     if (this.lowValueText) {
-      lo.setAttribute('aria-valuetext', this.lowValueText);
+      lo.setAttribute("aria-valuetext", this.lowValueText);
     } else {
-      lo.removeAttribute('aria-valuetext');
+      lo.removeAttribute("aria-valuetext");
     }
 
     if (this.highValueText) {
-      hi.setAttribute('aria-valuetext', this.highValueText);
+      hi.setAttribute("aria-valuetext", this.highValueText);
     } else {
-      hi.removeAttribute('aria-valuetext');
+      hi.removeAttribute("aria-valuetext");
     }
 
     if (this.readonly) {
-      lo.setAttribute('aria-readonly', 'true');
-      hi.setAttribute('aria-readonly', 'true');
+      lo.setAttribute("aria-readonly", "true");
+      hi.setAttribute("aria-readonly", "true");
     } else {
-      lo.removeAttribute('aria-readonly');
-      hi.removeAttribute('aria-readonly');
+      lo.removeAttribute("aria-readonly");
+      hi.removeAttribute("aria-readonly");
     }
 
-    if (this.orientation === 'vertical') {
-      lo.setAttribute('aria-orientation', 'vertical');
-      hi.setAttribute('aria-orientation', 'vertical');
+    if (this.orientation === "vertical") {
+      lo.setAttribute("aria-orientation", "vertical");
+      hi.setAttribute("aria-orientation", "vertical");
     } else {
-      lo.removeAttribute('aria-orientation');
-      hi.removeAttribute('aria-orientation');
+      lo.removeAttribute("aria-orientation");
+      hi.removeAttribute("aria-orientation");
     }
 
     lo.disabled = this.disabled;
     hi.disabled = this.disabled;
 
     // z-index controls which input receives pointer events when the thumbs overlap.
-    lo.style.zIndex = this._topThumb === 'low'  ? '2' : '1';
-    hi.style.zIndex = this._topThumb === 'high' ? '2' : '1';
+    lo.style.zIndex = this._topThumb === "low" ? "2" : "1";
+    hi.style.zIndex = this._topThumb === "high" ? "2" : "1";
   }
 
   private readonly _onLowInput = (e: Event): void => {
@@ -350,7 +410,7 @@ export class RCRangeSlider extends LitElement {
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
     this._lowValue = clamped;
-    this._dispatch('rc-range-slider-input', this.value);
+    this._dispatch("rc-range-slider-input", this.value);
   };
 
   private readonly _onLowChange = (e: Event): void => {
@@ -365,7 +425,7 @@ export class RCRangeSlider extends LitElement {
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
     this._lowValue = clamped;
-    this._dispatch('rc-range-slider-change', this.value);
+    this._dispatch("rc-range-slider-change", this.value);
   };
 
   private readonly _onHighInput = (e: Event): void => {
@@ -380,7 +440,7 @@ export class RCRangeSlider extends LitElement {
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
     this._highValue = clamped;
-    this._dispatch('rc-range-slider-input', this.value);
+    this._dispatch("rc-range-slider-input", this.value);
   };
 
   private readonly _onHighChange = (e: Event): void => {
@@ -395,7 +455,7 @@ export class RCRangeSlider extends LitElement {
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
     this._highValue = clamped;
-    this._dispatch('rc-range-slider-change', this.value);
+    this._dispatch("rc-range-slider-change", this.value);
   };
 
   /**
@@ -408,25 +468,38 @@ export class RCRangeSlider extends LitElement {
   private readonly _onLowKeydown = (e: KeyboardEvent): void => {
     if (this.disabled || this.readonly) return;
 
-    const input  = e.currentTarget as HTMLInputElement;
-    const step   = parseAttr(input.step, 1);
-    const min    = parseAttr(input.min, 0);
+    const input = e.currentTarget as HTMLInputElement;
+    const step = parseAttr(input.step, 1);
+    const min = parseAttr(input.min, 0);
     const bigStep = step * 10;
-    const low    = this._lowValue;
-    const high   = this._highValue;
+    const low = this._lowValue;
+    const high = this._highValue;
 
     let newLow: number | null = null;
 
     switch (e.key) {
-      case 'ArrowRight':
-      case 'ArrowUp':   newLow = Math.min(low + step,    high); break;
-      case 'ArrowLeft':
-      case 'ArrowDown': newLow = Math.max(low - step,    min);  break;
-      case 'PageUp':    newLow = Math.min(low + bigStep,  high); break;
-      case 'PageDown':  newLow = Math.max(low - bigStep,  min);  break;
-      case 'Home':      newLow = min;  break;
-      case 'End':       newLow = high; break; // low's effective max is high
-      default:          return;
+      case "ArrowRight":
+      case "ArrowUp":
+        newLow = Math.min(low + step, high);
+        break;
+      case "ArrowLeft":
+      case "ArrowDown":
+        newLow = Math.max(low - step, min);
+        break;
+      case "PageUp":
+        newLow = Math.min(low + bigStep, high);
+        break;
+      case "PageDown":
+        newLow = Math.max(low - bigStep, min);
+        break;
+      case "Home":
+        newLow = min;
+        break;
+      case "End":
+        newLow = high;
+        break; // low's effective max is high
+      default:
+        return;
     }
 
     e.preventDefault();
@@ -434,32 +507,45 @@ export class RCRangeSlider extends LitElement {
 
     input.value = String(newLow);
     this._lowValue = newLow;
-    this._dispatch('rc-range-slider-input', this.value);
+    this._dispatch("rc-range-slider-input", this.value);
   };
 
   /** APG keyboard contract for the high thumb. */
   private readonly _onHighKeydown = (e: KeyboardEvent): void => {
     if (this.disabled || this.readonly) return;
 
-    const input   = e.currentTarget as HTMLInputElement;
-    const step    = parseAttr(input.step, 1);
-    const max     = parseAttr(input.max, 100);
+    const input = e.currentTarget as HTMLInputElement;
+    const step = parseAttr(input.step, 1);
+    const max = parseAttr(input.max, 100);
     const bigStep = step * 10;
-    const low     = this._lowValue;
-    const high    = this._highValue;
+    const low = this._lowValue;
+    const high = this._highValue;
 
     let newHigh: number | null = null;
 
     switch (e.key) {
-      case 'ArrowRight':
-      case 'ArrowUp':   newHigh = Math.min(high + step,    max);  break;
-      case 'ArrowLeft':
-      case 'ArrowDown': newHigh = Math.max(high - step,    low);  break;
-      case 'PageUp':    newHigh = Math.min(high + bigStep,  max);  break;
-      case 'PageDown':  newHigh = Math.max(high - bigStep,  low);  break;
-      case 'Home':      newHigh = low; break; // high's effective min is low
-      case 'End':       newHigh = max; break;
-      default:          return;
+      case "ArrowRight":
+      case "ArrowUp":
+        newHigh = Math.min(high + step, max);
+        break;
+      case "ArrowLeft":
+      case "ArrowDown":
+        newHigh = Math.max(high - step, low);
+        break;
+      case "PageUp":
+        newHigh = Math.min(high + bigStep, max);
+        break;
+      case "PageDown":
+        newHigh = Math.max(high - bigStep, low);
+        break;
+      case "Home":
+        newHigh = low;
+        break; // high's effective min is low
+      case "End":
+        newHigh = max;
+        break;
+      default:
+        return;
     }
 
     e.preventDefault();
@@ -467,7 +553,7 @@ export class RCRangeSlider extends LitElement {
 
     input.value = String(newHigh);
     this._highValue = newHigh;
-    this._dispatch('rc-range-slider-input', this.value);
+    this._dispatch("rc-range-slider-input", this.value);
   };
 
   /**
@@ -480,39 +566,40 @@ export class RCRangeSlider extends LitElement {
     const rect = this._groupEl?.getBoundingClientRect();
     if (!rect) return;
 
-    const lo  = this._lowInput;
+    const lo = this._lowInput;
     if (!lo) return;
 
-    const min  = parseAttr(lo.min, 0);
-    const max  = parseAttr(lo.max, 100);
+    const min = parseAttr(lo.min, 0);
+    const max = parseAttr(lo.max, 100);
     const span = max - min;
     if (span <= 0) return;
 
-    const pct = this.orientation === 'vertical'
-      ? 1 - (e.clientY - rect.top)  / rect.height
-      : (e.clientX  - rect.left) / rect.width;
+    const pct =
+      this.orientation === "vertical"
+        ? 1 - (e.clientY - rect.top) / rect.height
+        : (e.clientX - rect.left) / rect.width;
 
-    const val    = pct * span + min;
+    const val = pct * span + min;
     const midVal = (this._lowValue + this._highValue) / 2;
 
     // Split on the midpoint between the two thumbs. When separated, this is
     // equivalent to proximity. When overlapping, the midpoint is the centre of
     // the shared thumb, so hovering left/below puts low on top and right/above
     // puts high on top — no special-casing needed for any overlap position.
-    this._topThumb = val <= midVal ? 'low' : 'high';
+    this._topThumb = val <= midVal ? "low" : "high";
   }
 
   private _rangeStyle(): string {
     const lo = this._lowInput;
     const hi = this._highInput;
-    if (!lo || !hi) return '';
+    if (!lo || !hi) return "";
 
     const min = parseAttr(lo.min, 0);
     const max = parseAttr(lo.max, 100);
     const loP = valueToPercent(lo.valueAsNumber, min, max) * 100;
     const hiP = valueToPercent(hi.valueAsNumber, min, max) * 100;
 
-    if (this.orientation === 'vertical') {
+    if (this.orientation === "vertical") {
       return `bottom:${loP.toFixed(3)}%;height:${(hiP - loP).toFixed(3)}%`;
     }
 
@@ -521,14 +608,14 @@ export class RCRangeSlider extends LitElement {
 
   private _floatStyle(value: number): string {
     const lo = this._lowInput;
-    if (!lo) return '';
+    if (!lo) return "";
 
     const min = parseAttr(lo.min, 0);
     const max = parseAttr(lo.max, 100);
     const pct = valueToPercent(value, min, max);
-    const k   = (1 - pct * 2).toFixed(4);
+    const k = (1 - pct * 2).toFixed(4);
 
-    if (this.orientation === 'vertical') {
+    if (this.orientation === "vertical") {
       return `bottom:calc(${(pct * 100).toFixed(3)}% + ${k} * var(--rc-thumb-radius, 9px))`;
     }
 
@@ -536,7 +623,7 @@ export class RCRangeSlider extends LitElement {
   }
 
   private _dispatch(
-    type: 'rc-range-slider-input' | 'rc-range-slider-change',
+    type: "rc-range-slider-input" | "rc-range-slider-change",
     value: [number, number],
   ): void {
     this.dispatchEvent(

@@ -57,6 +57,9 @@ export class RCTransferList extends LitElement {
   /** Set while the component mutates the backing <select> to prevent observer feedback loops. */
   private _syncing = false;
 
+  private _defaultSelected: ListboxOption[] | undefined;
+  private _selectedInitialized = false;
+
   private _hostObserver = new MutationObserver(() => this._setupSelect());
   private _selectObserver = new MutationObserver(() => {
     if (!this._syncing) this.requestUpdate();
@@ -117,6 +120,7 @@ export class RCTransferList extends LitElement {
   }
 
   set selected(items: ListboxOption[]) {
+    this._selectedInitialized = true;
     if (!this._select) return;
 
     this._syncing = true;
@@ -133,6 +137,27 @@ export class RCTransferList extends LitElement {
     this.requestUpdate();
   }
 
+
+  /** Initial uncontrolled selected list. Applied before any `selected` write from the host. */
+  get defaultSelected(): ListboxOption[] | undefined {
+    return this._defaultSelected;
+  }
+  set defaultSelected(items: ListboxOption[] | undefined) {
+    this._defaultSelected = items;
+    if (!this._selectedInitialized && this._select && items !== undefined) {
+      this._applyDefaultSelected(items);
+    }
+  }
+
+  private _applyDefaultSelected(items: ListboxOption[]): void {
+    if (!this._select) return;
+    this._syncing = true;
+    for (const opt of Array.from(this._select.options)) {
+      opt.selected = items.some((item) => item.value === opt.value);
+    }
+    this._syncing = false;
+    this.requestUpdate();
+  }
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -388,6 +413,11 @@ export class RCTransferList extends LitElement {
     // Watch for external option additions/removals (attribute-level opt.selected
     // changes via IDL are not observable; use the component API instead).
     this._selectObserver.observe(select, { childList: true });
+
+    if (!this._selectedInitialized && this._defaultSelected !== undefined) {
+      this._applyDefaultSelected(this._defaultSelected);
+    }
+
     this.requestUpdate();
   }
 

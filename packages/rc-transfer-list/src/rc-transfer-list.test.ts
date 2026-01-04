@@ -127,3 +127,74 @@ test('rc-transfer-list has no automated accessibility violations', async () => {
   `);
   await expectNoA11yViolations(screen.getByTestId('host').element());
 });
+
+test('rc-transfer-list defaultSelected populates right panel before user interaction', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host">
+      <select multiple>
+        <option value="a">Alpha</option>
+        <option value="b">Bravo</option>
+        <option value="c">Charlie</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+  host.defaultSelected = [{ value: 'b', label: 'Bravo' }];
+  await host.updateComplete;
+
+  expect(host.selected.map((o) => o.value)).toEqual(['b']);
+  expect(host.available.map((o) => o.value)).toContain('a');
+  expect(host.available.map((o) => o.value)).toContain('c');
+});
+
+test('rc-transfer-list explicit selected setter overrides defaultSelected', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host">
+      <select multiple>
+        <option value="a">Alpha</option>
+        <option value="b">Bravo</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+  host.defaultSelected = [{ value: 'a', label: 'Alpha' }];
+  host.selected = [{ value: 'b', label: 'Bravo' }];
+  await host.updateComplete;
+
+  expect(host.selected.map((o) => o.value)).toEqual(['b']);
+});
+
+test('rc-transfer-list defaultSelected does not fire rc-transfer-list-change', async () => {
+  const changeSpy = vi.fn();
+  const screen = render(html`
+    <rc-transfer-list data-testid="host" @rc-transfer-list-change=${changeSpy}>
+      <select multiple>
+        <option value="a">Alpha</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+  host.defaultSelected = [{ value: 'a', label: 'Alpha' }];
+  await host.updateComplete;
+
+  expect(changeSpy).not.toHaveBeenCalled();
+});
+
+test('rc-transfer-list defaultSelected set before connect is applied on connect', async () => {
+  const el = document.createElement('rc-transfer-list') as RCTransferList;
+  el.defaultSelected = [{ value: 'x', label: 'X' }];
+
+  const sel = document.createElement('select');
+  sel.setAttribute('multiple', '');
+  const opt = document.createElement('option');
+  opt.value = 'x';
+  opt.text = 'X';
+  sel.add(opt);
+  el.appendChild(sel);
+
+  document.body.appendChild(el);
+  await el.updateComplete;
+
+  expect(el.selected.map((o) => o.value)).toEqual(['x']);
+  document.body.removeChild(el);
+});

@@ -154,6 +154,58 @@ export type RCTextareaRef = HTMLElement & {
   removePlugin(): void;
 };
 
+export type RCSliderRef = HTMLElement & {
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  defaultValue: number | undefined;
+  disabled: boolean;
+  readonly: boolean;
+  label: string;
+  name: string;
+  display: 'none' | 'inline' | 'overlay' | 'end';
+  valueText: string;
+  orientation: 'horizontal' | 'vertical';
+  ranges: Array<{ from: number; to: number; part?: string; label?: string }>;
+};
+
+export type RCRangeSliderRef = HTMLElement & {
+  min: number;
+  max: number;
+  step: number;
+  value: [number, number];
+  defaultValue: [number, number] | undefined;
+  disabled: boolean;
+  label: string;
+  lowLabel: string;
+  highLabel: string;
+  lowValueText: string;
+  highValueText: string;
+  display: 'none' | 'inline' | 'overlay' | 'end';
+  orientation: 'horizontal' | 'vertical';
+};
+
+export type RCTransferListOption = {
+  value: string;
+  label: string;
+  disabled?: boolean;
+};
+
+export type RCTransferListRef = HTMLElement & {
+  multiple: boolean;
+  availableLabel: string;
+  selectedLabel: string;
+  available: RCTransferListOption[];
+  selected: RCTransferListOption[];
+  defaultSelected: RCTransferListOption[] | undefined;
+  addSelected(): void;
+  addAll(): void;
+  removeSelected(): void;
+  clearSelected(): void;
+  moveSelected(delta: number): void;
+};
+
 // ---- JSX augmentation -------------------------------------------------------
 
 declare module 'solid-js' {
@@ -249,6 +301,55 @@ declare module 'solid-js' {
       'rc-toolbar': JSX.HTMLAttributes<RCToolbarRef> & {
         label?: string;
         orientation?: string;
+      };
+
+      'rc-slider': JSX.HTMLAttributes<RCSliderRef> & {
+        min?: number | string;
+        max?: number | string;
+        step?: number | string;
+        value?: number | string;
+        defaultValue?: number | string;
+        'default-value'?: number | string;
+        'prop:value'?: number | undefined;
+        'prop:defaultValue'?: number | undefined;
+        disabled?: boolean | string;
+        readonly?: boolean | string;
+        label?: string;
+        name?: string;
+        display?: 'none' | 'inline' | 'overlay' | 'end';
+        'value-text'?: string;
+        orientation?: 'horizontal' | 'vertical';
+        'prop:ranges'?: Array<{ from: number; to: number; part?: string; label?: string }>;
+        'on:rc-slider-input'?: (e: CustomEvent<{ value: number }>) => void;
+        'on:rc-slider-change'?: (e: CustomEvent<{ value: number }>) => void;
+      };
+
+      'rc-range-slider': JSX.HTMLAttributes<RCRangeSliderRef> & {
+        min?: number | string;
+        max?: number | string;
+        step?: number | string;
+        'prop:value'?: [number, number] | undefined;
+        'prop:defaultValue'?: [number, number] | undefined;
+        disabled?: boolean | string;
+        label?: string;
+        'low-label'?: string;
+        'high-label'?: string;
+        'low-value-text'?: string;
+        'high-value-text'?: string;
+        display?: 'none' | 'inline' | 'overlay' | 'end';
+        orientation?: 'horizontal' | 'vertical';
+        'on:rc-range-slider-input'?: (e: CustomEvent<{ value: [number, number] }>) => void;
+        'on:rc-range-slider-change'?: (e: CustomEvent<{ value: [number, number] }>) => void;
+      };
+
+      'rc-transfer-list': JSX.HTMLAttributes<RCTransferListRef> & {
+        multiple?: boolean | string;
+        'available-label'?: string;
+        'selected-label'?: string;
+        'prop:available'?: RCTransferListOption[] | undefined;
+        'prop:selected'?: RCTransferListOption[] | undefined;
+        'prop:defaultSelected'?: RCTransferListOption[] | undefined;
+        'on:rc-transfer-list-change'?: (e: CustomEvent<{ selected: RCTransferListOption[] }>) => void;
       };
 
       'rc-splitter': JSX.HTMLAttributes<RCSplitterRef> & {

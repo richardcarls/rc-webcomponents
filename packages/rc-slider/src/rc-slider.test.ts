@@ -205,3 +205,52 @@ test('rc-slider has no automated accessibility violations', async () => {
   await host.updateComplete;
   await expectNoA11yViolations(host);
 });
+
+test('rc-slider defaultValue sets initial value without controlling', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host" label="Fuel" default-value="30"></rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const input = host.querySelector('input') as HTMLInputElement;
+  expect(host.value).toBe(30);
+  expect(input.valueAsNumber).toBe(30);
+});
+
+test('rc-slider controlled value overrides defaultValue', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host" label="Fuel" default-value="30"></rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  host.value = 60;
+  await host.updateComplete;
+
+  expect(host.value).toBe(60);
+  expect((host.querySelector('input') as HTMLInputElement).valueAsNumber).toBe(60);
+});
+
+test('rc-slider user input in uncontrolled mode updates value and fires rc-slider-change', async () => {
+  const changeSpy = vi.fn();
+  const screen = render(html`
+    <rc-slider data-testid="host" label="Fuel" default-value="10" @rc-slider-change=${changeSpy}></rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const input = host.querySelector('input') as HTMLInputElement;
+  input.value = '20';
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+
+  expect(host.value).toBe(20);
+  expect(changeSpy).toHaveBeenCalledOnce();
+  expect(changeSpy.mock.calls[0][0].detail.value).toBe(20);
+});
+
+test('rc-slider without defaultValue falls back to 0', async () => {
+  const screen = render(html`<rc-slider data-testid="host" label="Fuel"></rc-slider>`);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  expect(host.value).toBe(0);
+});
