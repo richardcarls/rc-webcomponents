@@ -96,19 +96,22 @@ export class RCRangeSlider extends LitElement {
   private _valueInitialized = false;
 
   /** Current [low, high] value. Assign a new tuple reference to trigger a re-render. */
+  @property({ attribute: false })
   get value(): [number, number] {
-    return this._value ?? this._defaultValue ?? [0, 100];
+    return this._value ?? this._defaultValue ?? this._nativeInputValue;
   }
   set value(v: [number, number]) {
     const old = this._value;
     this._value = v;
     this._valueInitialized = true;
+    this._applyValueToInputs(v);
     if (v !== old) {
       this.requestUpdate("value", old);
     }
   }
 
   /** Initial uncontrolled [low, high] value. Has no effect after the first user interaction or `value` write. */
+  @property({ attribute: false })
   get defaultValue(): [number, number] | undefined {
     return this._defaultValue;
   }
@@ -120,6 +123,7 @@ export class RCRangeSlider extends LitElement {
       this._value === undefined &&
       v !== undefined
     ) {
+      this._applyValueToInputs(v);
       this.requestUpdate("value", undefined);
     }
     this.requestUpdate("defaultValue", old);
@@ -164,14 +168,6 @@ export class RCRangeSlider extends LitElement {
   @property({ reflect: true }) orientation: "horizontal" | "vertical" =
     "horizontal";
 
-  /**
-   * Current [low, high] value tuple; reflects the native inputs' last committed
-   * values. Read-only from the outside.
-   */
-  get value(): [number, number] {
-    return [this._lowValue, this._highValue];
-  }
-
   @state() private _lowValue = 0;
   @state() private _highValue = 100;
 
@@ -191,13 +187,6 @@ export class RCRangeSlider extends LitElement {
   override disconnectedCallback(): void {
     this._unwireInputs();
     super.disconnectedCallback();
-  }
-
-  override firstUpdated(): void {
-    if (this._lowInput && this._highInput) {
-      this._lowValue = this._lowInput.valueAsNumber || 0;
-      this._highValue = this._highInput.valueAsNumber || 100;
-    }
   }
 
   override updated(): void {
@@ -305,6 +294,7 @@ export class RCRangeSlider extends LitElement {
 
     this._lowInput = lo;
     this._highInput = hi;
+    this._applyInitialValueToInputs(lo, hi);
 
     this._wireInput(
       lo,
@@ -318,6 +308,53 @@ export class RCRangeSlider extends LitElement {
       this._onHighChange,
       this._onHighKeydown,
     );
+  }
+
+  private get _nativeInputValue(): [number, number] {
+    const low = this._lowInput?.valueAsNumber;
+    const high = this._highInput?.valueAsNumber;
+
+    return [
+      low === undefined || isNaN(low) ? 0 : low,
+      high === undefined || isNaN(high) ? 100 : high,
+    ];
+  }
+
+  private _applyInitialValueToInputs(
+    lowInput: HTMLInputElement,
+    highInput: HTMLInputElement,
+  ): void {
+    if (this._value !== undefined) {
+      this._applyValueToInputs(this._value);
+      return;
+    }
+
+    if (this._defaultValue !== undefined) {
+      this._applyValueToInputs(this._defaultValue);
+      return;
+    }
+
+    const lowValue = lowInput.valueAsNumber;
+    const highValue = highInput.valueAsNumber;
+
+    this._lowValue = isNaN(lowValue) ? 0 : lowValue;
+    this._highValue = isNaN(highValue) ? 100 : highValue;
+    this._defaultValue = [this._lowValue, this._highValue];
+  }
+
+  private _applyValueToInputs([low, high]: [number, number]): void {
+    this._lowValue = low;
+    this._highValue = high;
+
+    if (this._lowInput) this._lowInput.value = String(low);
+    if (this._highInput) this._highInput.value = String(high);
+  }
+
+  private _setCurrentValue(value: [number, number]): void {
+    this._value = value;
+    this._valueInitialized = true;
+    this._lowValue = value[0];
+    this._highValue = value[1];
   }
 
   private _wireInput(
@@ -409,7 +446,7 @@ export class RCRangeSlider extends LitElement {
     // during a fast drag even though the emitted value is correctly clamped.
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
-    this._lowValue = clamped;
+    this._setCurrentValue([clamped, this._highValue]);
     this._dispatch("rc-range-slider-input", this.value);
   };
 
@@ -424,7 +461,7 @@ export class RCRangeSlider extends LitElement {
     const clamped = Math.min(input.valueAsNumber, this._highValue);
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
-    this._lowValue = clamped;
+    this._setCurrentValue([clamped, this._highValue]);
     this._dispatch("rc-range-slider-change", this.value);
   };
 
@@ -439,7 +476,7 @@ export class RCRangeSlider extends LitElement {
     const clamped = Math.max(input.valueAsNumber, this._lowValue);
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
-    this._highValue = clamped;
+    this._setCurrentValue([this._lowValue, clamped]);
     this._dispatch("rc-range-slider-input", this.value);
   };
 
@@ -454,7 +491,7 @@ export class RCRangeSlider extends LitElement {
     const clamped = Math.max(input.valueAsNumber, this._lowValue);
     if (clamped !== input.valueAsNumber) input.value = String(clamped);
 
-    this._highValue = clamped;
+    this._setCurrentValue([this._lowValue, clamped]);
     this._dispatch("rc-range-slider-change", this.value);
   };
 
@@ -506,7 +543,7 @@ export class RCRangeSlider extends LitElement {
     if (newLow === low) return;
 
     input.value = String(newLow);
-    this._lowValue = newLow;
+    this._setCurrentValue([newLow, this._highValue]);
     this._dispatch("rc-range-slider-input", this.value);
   };
 
@@ -552,7 +589,7 @@ export class RCRangeSlider extends LitElement {
     if (newHigh === high) return;
 
     input.value = String(newHigh);
-    this._highValue = newHigh;
+    this._setCurrentValue([this._lowValue, newHigh]);
     this._dispatch("rc-range-slider-input", this.value);
   };
 

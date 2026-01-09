@@ -208,7 +208,9 @@ test('rc-slider has no automated accessibility violations', async () => {
 
 test('rc-slider defaultValue sets initial value without controlling', async () => {
   const screen = render(html`
-    <rc-slider data-testid="host" label="Fuel" default-value="30"></rc-slider>
+    <rc-slider data-testid="host" default-value="30">
+      <input type="range" min="0" max="100" value="5" aria-label="Fuel">
+    </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
@@ -220,7 +222,9 @@ test('rc-slider defaultValue sets initial value without controlling', async () =
 
 test('rc-slider controlled value overrides defaultValue', async () => {
   const screen = render(html`
-    <rc-slider data-testid="host" label="Fuel" default-value="30"></rc-slider>
+    <rc-slider data-testid="host" default-value="30">
+      <input type="range" min="0" max="100" value="5" aria-label="Fuel">
+    </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
   host.value = 60;
@@ -233,7 +237,9 @@ test('rc-slider controlled value overrides defaultValue', async () => {
 test('rc-slider user input in uncontrolled mode updates value and fires rc-slider-change', async () => {
   const changeSpy = vi.fn();
   const screen = render(html`
-    <rc-slider data-testid="host" label="Fuel" default-value="10" @rc-slider-change=${changeSpy}></rc-slider>
+    <rc-slider data-testid="host" default-value="10" @rc-slider-change=${changeSpy}>
+      <input type="range" min="0" max="100" value="5" aria-label="Fuel">
+    </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
@@ -248,7 +254,11 @@ test('rc-slider user input in uncontrolled mode updates value and fires rc-slide
 });
 
 test('rc-slider without defaultValue falls back to 0', async () => {
-  const screen = render(html`<rc-slider data-testid="host" label="Fuel"></rc-slider>`);
+  const screen = render(html`
+    <rc-slider data-testid="host">
+      <input type="range" min="0" max="100" value="0" aria-label="Fuel">
+    </rc-slider>
+  `);
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
 

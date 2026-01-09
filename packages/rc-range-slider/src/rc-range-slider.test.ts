@@ -362,7 +362,10 @@ test('rc-range-slider has no automated accessibility violations', async () => {
 
 test('rc-range-slider defaultValue sets initial [low, high] without controlling', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range"></rc-range-slider>
+    <rc-range-slider data-testid="host">
+      <input type="range" min="0" max="100" value="0" aria-label="Minimum">
+      <input type="range" min="0" max="100" value="100" aria-label="Maximum">
+    </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
   host.defaultValue = [15, 75];
@@ -371,14 +374,17 @@ test('rc-range-slider defaultValue sets initial [low, high] without controlling'
   expect(host.value[0]).toBe(15);
   expect(host.value[1]).toBe(75);
 
-  const [lowThumb, highThumb] = Array.from(host.querySelectorAll<HTMLElement>('[role="slider"]'));
-  expect(lowThumb.getAttribute('aria-valuenow')).toBe('15');
-  expect(highThumb.getAttribute('aria-valuenow')).toBe('75');
+  const [lowInput, highInput] = getInputs(host);
+  expect(lowInput.valueAsNumber).toBe(15);
+  expect(highInput.valueAsNumber).toBe(75);
 });
 
 test('rc-range-slider controlled value overrides defaultValue', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range"></rc-range-slider>
+    <rc-range-slider data-testid="host">
+      <input type="range" min="0" max="100" value="0" aria-label="Minimum">
+      <input type="range" min="0" max="100" value="100" aria-label="Maximum">
+    </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
   host.defaultValue = [15, 75];
@@ -392,7 +398,10 @@ test('rc-range-slider controlled value overrides defaultValue', async () => {
 test('rc-range-slider setting defaultValue does not fire rc-range-slider-input', async () => {
   const inputSpy = vi.fn();
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price" @rc-range-slider-input=${inputSpy}></rc-range-slider>
+    <rc-range-slider data-testid="host" @rc-range-slider-input=${inputSpy}>
+      <input type="range" min="0" max="100" value="0" aria-label="Minimum">
+      <input type="range" min="0" max="100" value="100" aria-label="Maximum">
+    </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
   host.defaultValue = [10, 90];
@@ -403,7 +412,10 @@ test('rc-range-slider setting defaultValue does not fire rc-range-slider-input',
 
 test('rc-range-slider without defaultValue falls back to [0, 100]', async () => {
   const screen = render(html`
-    <rc-range-slider data-testid="host" label="Price range"></rc-range-slider>
+    <rc-range-slider data-testid="host">
+      <input type="range" min="0" max="100" value="0" aria-label="Minimum">
+      <input type="range" min="0" max="100" value="100" aria-label="Maximum">
+    </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
   await host.updateComplete;

@@ -39,7 +39,7 @@ test('rc-transfer-list adds highlighted available options', async () => {
   host.addSelected();
 
   expect(host.selected.map((o) => o.label)).toEqual(['Factory']);
-  expect(changeSpy).toHaveBeenCalledOnce();
+  await vi.waitFor(() => expect(changeSpy).toHaveBeenCalledOnce());
 });
 
 test('rc-transfer-list removes highlighted selected options', async () => {

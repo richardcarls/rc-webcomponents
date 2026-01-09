@@ -1,6 +1,6 @@
 import { LitElement, html, nothing } from "lit";
 import type { ComplexAttributeConverter } from "lit";
-import { property, state } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
 import { valueToPercent } from "@rcarls/rc-common";
 
 export interface RCSliderValueEvent {
@@ -93,12 +93,13 @@ export class RCSlider extends LitElement {
   /** Current slider value. */
   @property({ type: Number })
   get value(): number {
-    return this._value ?? this._defaultValue ?? 0;
+    return this._value ?? this._defaultValue ?? this._nativeInputValue;
   }
   set value(v: number) {
     const old = this._value;
     this._value = v;
     this._valueInitialized = true;
+    this._applyValueToInput(v);
     this.requestUpdate("value", old);
   }
 
@@ -115,6 +116,7 @@ export class RCSlider extends LitElement {
       this._value === undefined &&
       v !== undefined
     ) {
+      this._applyValueToInput(v);
       this.requestUpdate("value", undefined);
     }
     this.requestUpdate("defaultValue", old);
@@ -144,13 +146,6 @@ export class RCSlider extends LitElement {
   @property({ reflect: true }) orientation: "horizontal" | "vertical" =
     "horizontal";
 
-  /** Current value; reflects the native input's last committed value. Read-only from the outside. */
-  get value(): number {
-    return this._value;
-  }
-
-  @state() private _value = 0;
-
   private _nativeInput: HTMLInputElement | null = null;
 
   override connectedCallback(): void {
@@ -161,12 +156,6 @@ export class RCSlider extends LitElement {
   override disconnectedCallback(): void {
     this._unwireInput();
     super.disconnectedCallback();
-  }
-
-  override firstUpdated(): void {
-    if (this._nativeInput) {
-      this._value = this._nativeInput.valueAsNumber || 0;
-    }
   }
 
   override updated(): void {
@@ -219,7 +208,12 @@ export class RCSlider extends LitElement {
   }
 
   private get _displayText(): string {
-    return this.valueText || String(this._value);
+    return this.valueText || String(this.value);
+  }
+
+  private get _nativeInputValue(): number {
+    const value = this._nativeInput?.valueAsNumber;
+    return value === undefined || isNaN(value) ? 0 : value;
   }
 
   /**
@@ -243,7 +237,31 @@ export class RCSlider extends LitElement {
     }
 
     this._nativeInput = input;
+    this._applyInitialValueToInput(input);
     this._wireInput(input);
+  }
+
+  private _applyInitialValueToInput(input: HTMLInputElement): void {
+    if (this._value !== undefined) {
+      this._applyValueToInput(this._value);
+      return;
+    }
+
+    if (this._defaultValue !== undefined) {
+      this._applyValueToInput(this._defaultValue);
+      return;
+    }
+
+    const value = input.valueAsNumber;
+    if (!isNaN(value)) {
+      this._defaultValue = value;
+    }
+  }
+
+  private _applyValueToInput(value: number): void {
+    if (!this._nativeInput) return;
+
+    this._nativeInput.value = String(value);
   }
 
   private _wireInput(input: HTMLInputElement): void {
@@ -293,17 +311,18 @@ export class RCSlider extends LitElement {
     const input = e.currentTarget as HTMLInputElement;
 
     if (this.readonly) {
-      input.value = String(this._value);
+      input.value = String(this.value);
       return;
     }
 
     this._value = input.valueAsNumber;
+    this._valueInitialized = true;
 
     this.dispatchEvent(
       new CustomEvent<RCSliderValueEvent>(type, {
         bubbles: true,
         composed: true,
-        detail: { value: this._value },
+        detail: { value: this.value },
       }),
     );
   }
@@ -319,12 +338,13 @@ export class RCSlider extends LitElement {
     else input.stepDown(10);
 
     this._value = input.valueAsNumber;
+    this._valueInitialized = true;
 
     this.dispatchEvent(
       new CustomEvent<RCSliderValueEvent>("rc-slider-input", {
         bubbles: true,
         composed: true,
-        detail: { value: this._value },
+        detail: { value: this.value },
       }),
     );
   };
