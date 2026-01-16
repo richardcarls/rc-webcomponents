@@ -1,6 +1,7 @@
 import { LitElement, html, nothing } from "lit";
 import type { ComplexAttributeConverter } from "lit";
 import { property } from "lit/decorators.js";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { valueToPercent } from "@rcarls/rc-common";
 
 export interface RCSliderValueEvent {
@@ -174,7 +175,9 @@ export class RCSlider extends LitElement {
       <span
         part="value-display"
         class="rc-slider-value"
-        style=${this.display === "float" ? this._floatStyle() : nothing}
+        style=${ifDefined(
+          this.display === "float" ? this._floatStyle() : undefined,
+        )}
         aria-hidden="true"
       >
         <slot name="value-display">${this._displayText}</slot>
@@ -315,8 +318,7 @@ export class RCSlider extends LitElement {
       return;
     }
 
-    this._value = input.valueAsNumber;
-    this._valueInitialized = true;
+    this._commitInputValue(input);
 
     this.dispatchEvent(
       new CustomEvent<RCSliderValueEvent>(type, {
@@ -337,8 +339,7 @@ export class RCSlider extends LitElement {
     if (e.key === "PageUp") input.stepUp(10);
     else input.stepDown(10);
 
-    this._value = input.valueAsNumber;
-    this._valueInitialized = true;
+    this._commitInputValue(input);
 
     this.dispatchEvent(
       new CustomEvent<RCSliderValueEvent>("rc-slider-input", {
@@ -348,6 +349,15 @@ export class RCSlider extends LitElement {
       }),
     );
   };
+
+  private _commitInputValue(input: HTMLInputElement): void {
+    const old = this.value;
+
+    this._value = input.valueAsNumber;
+    this._valueInitialized = true;
+
+    this.requestUpdate("value", old);
+  }
 
   private _progressStyle(): string {
     const input = this._nativeInput;

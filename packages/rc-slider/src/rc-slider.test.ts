@@ -69,6 +69,25 @@ test('rc-slider fires input and change events', async () => {
   expect(changeSpy).toHaveBeenCalledOnce();
 });
 
+test('rc-slider input event updates rendered progress and value display', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host" display="inline-end">
+      <input type="range" min="0" max="100" value="5" aria-label="Fuel">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+  const input = host.querySelector('input') as HTMLInputElement;
+
+  input.value = '45';
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  await host.updateComplete;
+
+  const progress = host.querySelector<HTMLElement>('[part="progress"]');
+  expect(progress?.getAttribute('style')).toContain('width:45');
+  await expect.element(screen.getByText('45')).toBeInTheDocument();
+});
+
 test('rc-slider readonly suppresses value updates', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" readonly>
