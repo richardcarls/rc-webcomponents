@@ -287,6 +287,7 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-splitter**: Resizable pane splitter → rc-common
 - **rc-textarea**: Enhanced textarea (standalone)
 - **rc-disclosure**: Disclosure widget (standalone)
+- **rc-accordion**: Accordion coordinator for disclosure groups → rc-disclosure
 - **rc-slider**: Slider widget (standalone)
 - **rc-range-slider**: Range slider widget (standalone)
 - **rc-transfer-list**: Transfer list → rc-listbox

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc-accordion</title>
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
+    <script type="module" src="/src/define.ts"></script>
+    <style>
+      rc-accordion {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-width: 480px;
+      }
+
+      details {
+        border: 1px solid ButtonBorder;
+        border-radius: 4px;
+        padding: 0;
+      }
+
+      summary {
+        padding: 0.6em 1em;
+        cursor: pointer;
+        font-weight: 500;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        user-select: none;
+      }
+
+      summary::-webkit-details-marker { display: none; }
+
+      summary::after {
+        content: '>';
+        transition: transform 0.15s;
+        font-size: 0.8em;
+      }
+
+      details[open] > summary::after {
+        transform: rotate(90deg);
+      }
+
+      .details-body {
+        padding: 0.75em 1em;
+        border-top: 1px solid ButtonBorder;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-page">
+      <div class="demo-controls">
+        <div class="demo-title">
+          <h1>rc-accordion</h1>
+          <a href="https://www.w3.org/WAI/ARIA/apg/patterns/accordion/">WAI-ARIA Accordion Pattern</a>
+        </div>
+        <button class="theme-picker" type="button">Auto</button>
+      </div>
+
+      <div class="demo-section">
+        <h2>Single-Open Accordion</h2>
+        <p><code>&lt;rc-accordion&gt;</code> coordinates direct child disclosures so only one stays open at a time.</p>
+        <rc-accordion name="profile-settings">
+          <rc-disclosure open>
+            <details open>
+              <summary>Account</summary>
+              <div class="details-body">
+                <p>Account details stay in native disclosure markup and remain usable before custom elements upgrade.</p>
+              </div>
+            </details>
+          </rc-disclosure>
+
+          <rc-disclosure>
+            <details>
+              <summary>Notifications</summary>
+              <div class="details-body">
+                <p>Opening this panel closes the previously open sibling disclosure.</p>
+              </div>
+            </details>
+          </rc-disclosure>
+
+          <rc-disclosure>
+            <details>
+              <summary>Privacy</summary>
+              <div class="details-body">
+                <p>Arrow keys, Home, and End move focus between summaries when focus is inside the accordion.</p>
+              </div>
+            </details>
+          </rc-disclosure>
+        </rc-accordion>
+      </div>
+
+      <div class="demo-section">
+        <h2>Native Group Name</h2>
+        <p>The accordion <code>name</code> is copied to child <code>&lt;details&gt;</code> elements that do not already have one.</p>
+        <rc-accordion name="faq">
+          <rc-disclosure>
+            <details>
+              <summary>Does this replace details?</summary>
+              <div class="details-body">
+                <p>No. The native <code>&lt;details&gt;</code> elements remain the interactive controls.</p>
+              </div>
+            </details>
+          </rc-disclosure>
+
+          <rc-disclosure>
+            <details name="custom-faq">
+              <summary>Can a panel keep its own name?</summary>
+              <div class="details-body">
+                <p>Yes. Existing author-provided names are preserved.</p>
+              </div>
+            </details>
+          </rc-disclosure>
+        </rc-accordion>
+      </div>
+    </main>
+  </body>
+</html>
