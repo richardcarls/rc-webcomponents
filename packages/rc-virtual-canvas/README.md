@@ -1,6 +1,6 @@
 # `@rcarls/rc-virtual-canvas`
 
-A virtualized scrollable canvas component. Overlays a transparent scrollable div on top of a slotted `<canvas>` element, dispatching `render` events on every animation frame with the current viewport and content rectangles. Consumers draw only what is visible. Built with [Lit 3](https://lit.dev).
+A virtualized scrollable canvas component. Overlays a transparent scrollable div on top of a slotted `<canvas>` element, dispatching `rc-virtual-canvas-render` events on every animation frame with the current viewport and content rectangles. Consumers draw only what is visible. Built with [Lit 3](https://lit.dev).
 
 ---
 
@@ -21,7 +21,7 @@ import { RCVirtualCanvas } from '@rcarls/rc-virtual-canvas';    // named class e
 
 ## Basic usage
 
-Place a `<canvas>` inside the component. Set `contentWidth` and `contentHeight` to the total size of your virtual content. On each `render` event, use `detail.viewRect` to determine which portion of that content is visible and draw accordingly.
+Place a `<canvas>` inside the component. Set `contentWidth` and `contentHeight` to the total size of your virtual content. On each `rc-virtual-canvas-render` event, use `detail.viewRect` to determine which portion of that content is visible and draw accordingly.
 
 ```html
 <rc-virtual-canvas
@@ -36,7 +36,7 @@ Place a `<canvas>` inside the component. Set `contentWidth` and `contentHeight` 
 <script>
   const ctx = document.querySelector('#canvas').getContext('2d');
 
-  document.querySelector('#vc').addEventListener('render', (e) => {
+  document.querySelector('#vc').addEventListener('rc-virtual-canvas-render', (e) => {
     const { time, viewRect } = e.detail;
 
     ctx.clearRect(0, 0, viewRect.width, viewRect.height);
@@ -78,7 +78,7 @@ None.
 
 | Event | Bubbles | Cancelable | Detail | When |
 |---|---|---|---|---|
-| `render` | Yes (composed) | No | `{ time: DOMHighResTimeStamp, viewRect: ViewRect, contentRect: ViewRect }` | Every animation frame while the component is connected and a canvas is slotted |
+| `rc-virtual-canvas-render` | Yes (composed) | No | `{ time: DOMHighResTimeStamp, viewRect: ViewRect, contentRect: ViewRect }` | Every animation frame while the component is connected and a canvas is slotted |
 
 **`ViewRect` shape:**
 

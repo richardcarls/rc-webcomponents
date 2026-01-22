@@ -14,6 +14,10 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-virtual-canvas': RCVirtualCanvas;
   }
+
+  interface HTMLElementEventMap {
+    'rc-virtual-canvas-render': CustomEvent<RCVirtualCanvasRenderInit>;
+  }
 }
 
 /**
