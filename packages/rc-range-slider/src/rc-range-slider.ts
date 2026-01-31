@@ -72,6 +72,10 @@ function parseAttr(s: string, defaultVal: number): number {
  * @fires rc-range-slider-input  - Fires while either thumb moves. Detail: `{ value }`.
  * @fires rc-range-slider-change - Fires when a thumb commits a new value. Detail: `{ value }`.
  *
+ * @cssprop [--rc-range-slider-accent=Highlight] - Accent color for selected range, thumb border, focus, hover, and active states.
+ * @cssprop [--rc-range-slider-track-background=color-mix(in srgb, CanvasText 25%, Canvas)] - Unselected track color.
+ * @cssprop [--rc-range-slider-thumb-background=ButtonFace] - Thumb background color.
+ * @cssprop [--rc-range-slider-thumb-border=var(--rc-range-slider-accent)] - Thumb border color.
  * @cssprop [--rc-range-slider-thumb-size=1.125rem] - Visual thumb inline/block size.
  * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to align float value displays and range fill.
  * @cssprop [--rc-range-slider-float-value-block-offset=-1.4em] - Block-axis offset for horizontal float value displays.
@@ -91,7 +95,29 @@ function parseAttr(s: string, defaultVal: number): number {
 export class RCRangeSlider extends LitElement {
   static override styles = css`
     :host {
+      --rc-range-slider-accent: var(--rc-accent, Highlight);
+      --rc-range-slider-track-background: color-mix(in srgb, CanvasText 25%, Canvas);
+      --rc-range-slider-range-background: var(--rc-range-slider-accent);
+      --rc-range-slider-thumb-background: ButtonFace;
+      --rc-range-slider-thumb-border: var(--rc-range-slider-accent);
+      --rc-range-slider-thumb-hover-background: var(--rc-range-slider-accent);
+      --rc-range-slider-thumb-hover-border: var(--rc-range-slider-accent);
+      --rc-range-slider-thumb-active-background: var(--rc-range-slider-accent);
+      --rc-range-slider-thumb-active-border: var(--rc-range-slider-accent);
+      --rc-range-slider-focus-outline: var(--rc-range-slider-accent);
       display: block;
+    }
+
+    :host([disabled]) {
+      --rc-range-slider-accent: GrayText;
+      --rc-range-slider-track-background: color-mix(in srgb, GrayText 35%, Canvas);
+      --rc-range-slider-range-background: GrayText;
+      --rc-range-slider-thumb-border: GrayText;
+      --rc-range-slider-thumb-hover-background: ButtonFace;
+      --rc-range-slider-thumb-hover-border: GrayText;
+      --rc-range-slider-thumb-active-background: ButtonFace;
+      --rc-range-slider-thumb-active-border: GrayText;
+      --rc-range-slider-focus-outline: GrayText;
     }
 
     .rc-range-slider-root {
@@ -126,8 +152,7 @@ export class RCRangeSlider extends LitElement {
       inset-inline: 0;
       inset-block: calc(50% - var(--rc-range-slider-track-size, 0.1875rem) / 2);
       block-size: var(--rc-range-slider-track-size, 0.1875rem);
-      background: CanvasText;
-      opacity: 0.25;
+      background: var(--rc-range-slider-track-background);
       overflow: hidden;
       z-index: 0;
     }
@@ -140,7 +165,7 @@ export class RCRangeSlider extends LitElement {
 
     .rc-range-slider-range {
       inset-block: 0;
-      background: Highlight;
+      background: var(--rc-range-slider-range-background);
       z-index: 1;
     }
 
@@ -149,22 +174,48 @@ export class RCRangeSlider extends LitElement {
       z-index: 2;
       inline-size: var(--rc-range-slider-thumb-size, 1.125rem);
       block-size: var(--rc-range-slider-thumb-size, 1.125rem);
-      background: ButtonFace;
-      border: 1px solid ButtonBorder;
+      background: var(--rc-range-slider-thumb-background);
+      border: 2px solid var(--rc-range-slider-thumb-border);
       border-radius: 50%;
       box-sizing: border-box;
       cursor: grab;
       transform: translate(-50%, -50%);
+      transition:
+        background-color 120ms ease,
+        border-color 120ms ease,
+        box-shadow 120ms ease,
+        transform 120ms ease;
     }
 
     .rc-range-slider-thumb:focus-visible {
-      outline: 2px solid Highlight;
+      outline: 2px solid var(--rc-range-slider-focus-outline);
       outline-offset: 2px;
+    }
+
+    :host(:not([disabled]):not([readonly])) .rc-range-slider-thumb:hover {
+      background: var(--rc-range-slider-thumb-hover-background);
+      border-color: var(--rc-range-slider-thumb-hover-border);
+      box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--rc-range-slider-accent) 20%, transparent);
+    }
+
+    :host(:not([disabled]):not([readonly])) .rc-range-slider-thumb:active {
+      background: var(--rc-range-slider-thumb-active-background);
+      border-color: var(--rc-range-slider-thumb-active-border);
+      box-shadow: 0 0 0 0.35rem color-mix(in srgb, var(--rc-range-slider-accent) 28%, transparent);
+      cursor: grabbing;
+    }
+
+    :host(:not([disabled]):not([readonly])) .rc-range-slider-group:hover .rc-range-slider-track {
+      background: color-mix(in srgb, var(--rc-range-slider-track-background) 70%, CanvasText);
     }
 
     .rc-range-slider-thumb[aria-disabled="true"],
     .rc-range-slider-thumb[aria-readonly="true"] {
       cursor: default;
+    }
+
+    :host([disabled]) .rc-range-slider-root {
+      opacity: 0.65;
     }
 
     ::slotted(input[type="range"]) {
@@ -228,6 +279,7 @@ export class RCRangeSlider extends LitElement {
 
     :host([orientation="vertical"]) .rc-range-slider-range {
       inset-inline: 0;
+      inset-block-start: auto;
     }
 
     :host([orientation="vertical"]) .rc-range-slider-thumb {
@@ -780,14 +832,14 @@ export class RCRangeSlider extends LitElement {
 
     if (this.orientation === "vertical") {
       return [
-        `bottom:calc(${loCenter} + var(--rc-thumb-radius, 9px))`,
-        `height:max(0px, calc(${hiCenter} - ${loCenter} - 2 * var(--rc-thumb-radius, 9px)))`,
+        `bottom:${loCenter}`,
+        `height:max(0px, calc(${hiCenter} - ${loCenter}))`,
       ].join(";");
     }
 
     return [
-      `left:calc(${loCenter} + var(--rc-thumb-radius, 9px))`,
-      `width:max(0px, calc(${hiCenter} - ${loCenter} - 2 * var(--rc-thumb-radius, 9px)))`,
+      `left:${loCenter}`,
+      `width:max(0px, calc(${hiCenter} - ${loCenter}))`,
     ].join(";");
   }
 

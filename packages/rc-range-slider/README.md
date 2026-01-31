@@ -28,6 +28,12 @@ The component exposes `root`, `group`, `track`, `range`, `thumb`, `low-thumb`,
 `high-thumb`, `value-display`, `low-value-display`, and `high-value-display`
 CSS parts.
 
+The selected range, thumb border, focus ring, hover, and active states use
+`--rc-range-slider-accent`, which defaults to `var(--rc-accent, Highlight)`.
+Set `--rc-accent` at the app or theme boundary to share one accent color across
+components; without that token, the slider falls back to the system
+`Highlight` color.
+
 Consumers can decorate the track with a real named slot:
 
 ```html

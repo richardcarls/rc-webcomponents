@@ -269,10 +269,49 @@ test('rc-range-slider range fill style reflects current values', async () => {
   await host.updateComplete;
 
   const rangeEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="range"]');
-  expect(rangeEl?.getAttribute('style')).toContain('left:calc(calc(25.000%');
-  expect(rangeEl?.getAttribute('style')).toContain('var(--rc-thumb-radius, 9px)');
+  expect(rangeEl?.getAttribute('style')).toContain('left:calc(25.000%');
   expect(rangeEl?.getAttribute('style')).toContain('width:max(0px');
-  expect(rangeEl?.getAttribute('style')).toContain('- 2 * var(--rc-thumb-radius, 9px)');
+  expect(rangeEl?.getAttribute('style')).toContain('calc(75.000%');
+});
+
+test('rc-range-slider vertical range fill spans between thumb centers', async () => {
+  const screen = render(html`
+    <rc-range-slider data-testid="host" orientation="vertical">
+      <input type="range" min="0" max="100" value="25" aria-label="Minimum">
+      <input type="range" min="0" max="100" value="75" aria-label="Maximum">
+    </rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  const rangeEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="range"]');
+  expect(rangeEl?.getAttribute('style')).toContain('bottom:calc(25.000%');
+  expect(rangeEl?.getAttribute('style')).toContain('height:max(0px');
+  expect(rangeEl?.getAttribute('style')).toContain('calc(75.000%');
+
+  const trackEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="track"]');
+  const rangeRect = rangeEl!.getBoundingClientRect();
+  const trackRect = trackEl!.getBoundingClientRect();
+  expect(rangeRect.top).toBeGreaterThan(trackRect.top);
+  expect(rangeRect.bottom).toBeLessThan(trackRect.bottom);
+});
+
+test('rc-range-slider selected range and thumbs use the accent token with Highlight fallback', async () => {
+  const screen = render(html`
+    <rc-range-slider data-testid="host" style="--rc-accent: rgb(1, 2, 3);">
+      <input type="range" min="0" max="100" value="25" aria-label="Minimum">
+      <input type="range" min="0" max="100" value="75" aria-label="Maximum">
+    </rc-range-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  const rangeEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="range"]');
+  const thumbEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="thumb"]');
+
+  expect(getComputedStyle(rangeEl!).backgroundColor).toBe('rgb(1, 2, 3)');
+  expect(getComputedStyle(rangeEl!).backgroundColor).not.toBe(getComputedStyle(host.shadowRoot!.querySelector<HTMLElement>('[part~="track"]')!).backgroundColor);
+  expect(getComputedStyle(thumbEl!).borderTopColor).toBe(getComputedStyle(rangeEl!).backgroundColor);
 });
 
 test('rc-range-slider renders track-background slot before range', async () => {
