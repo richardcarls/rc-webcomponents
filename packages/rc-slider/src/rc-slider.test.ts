@@ -15,7 +15,7 @@ test('rc-slider renders progress fill', async () => {
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
 
-  expect(host.querySelector('[part="progress"]')).toBeTruthy();
+  expect(host.shadowRoot?.querySelector('[part="progress"]')).toBeTruthy();
 });
 
 test('rc-slider renders float value display using value-text', async () => {
@@ -43,6 +43,62 @@ test('rc-slider keeps the native input in the DOM after upgrade', async () => {
   expect(input).toBeTruthy();
   expect(input?.isConnected).toBe(true);
   expect(input?.getAttribute('name')).toBe('fuel');
+});
+
+test('rc-slider leaves the consumer native input in light DOM', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host">
+      <input
+        type="range"
+        class="consumer-input"
+        part="consumer-part"
+        value="40"
+        aria-label="Fuel"
+      >
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const input = host.querySelector<HTMLInputElement>('input[type="range"]');
+  expect(input?.className).toBe('consumer-input');
+  expect(input?.getAttribute('part')).toBe('consumer-part');
+});
+
+test('rc-slider renders track-background slot before progress', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host">
+      <span slot="track-background" data-testid="background"></span>
+      <input type="range" min="0" max="100" value="40" aria-label="Fuel">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const track = host.shadowRoot?.querySelector('[part="track"]');
+  const slot = track?.querySelector('slot[name="track-background"]');
+  const progress = track?.querySelector('[part="progress"]');
+  expect(slot).toBeTruthy();
+  expect(progress).toBeTruthy();
+  expect(slot?.compareDocumentPosition(progress!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  expect((slot as HTMLSlotElement).assignedElements()[0]).toBe(
+    host.querySelector('[data-testid="background"]'),
+  );
+});
+
+test('rc-slider reflects styling state on the root part', async () => {
+  const screen = render(html`
+    <rc-slider data-testid="host" readonly disabled value-text="25 of 100">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
+    </rc-slider>
+  `);
+  const host = screen.getByTestId('host').element() as RCSlider;
+  await host.updateComplete;
+
+  const root = host.shadowRoot?.querySelector('[part="root"]');
+  expect(root?.hasAttribute('data-readonly')).toBe(true);
+  expect(root?.hasAttribute('data-disabled')).toBe(true);
+  expect(root?.hasAttribute('data-has-value-text')).toBe(true);
 });
 
 test('rc-slider fires input and change events', async () => {
@@ -83,7 +139,7 @@ test('rc-slider input event updates rendered progress and value display', async 
   input.dispatchEvent(new Event('input', { bubbles: true }));
   await host.updateComplete;
 
-  const progress = host.querySelector<HTMLElement>('[part="progress"]');
+  const progress = host.shadowRoot?.querySelector<HTMLElement>('[part="progress"]');
   expect(progress?.getAttribute('style')).toContain('width:45');
   await expect.element(screen.getByText('45')).toBeInTheDocument();
 });
@@ -166,7 +222,7 @@ test('rc-slider progress fill reflects initial value at first render', async () 
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
 
-  const progress = host.querySelector<HTMLElement>('[part="progress"]');
+  const progress = host.shadowRoot?.querySelector<HTMLElement>('[part="progress"]');
   expect(progress?.getAttribute('style')).toContain('width:25');
 });
 
@@ -209,7 +265,7 @@ test('rc-slider display="inline-end" renders value display', async () => {
   const host = screen.getByTestId('host').element() as RCSlider;
   await host.updateComplete;
 
-  const display = host.querySelector('[part="value-display"]');
+  const display = host.shadowRoot?.querySelector('[part="value-display"]');
   expect(display).toBeTruthy();
   await expect.element(screen.getByText('75')).toBeInTheDocument();
 });

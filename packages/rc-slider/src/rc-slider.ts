@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from "lit";
+import { LitElement, css, html, nothing } from "lit";
 import type { ComplexAttributeConverter } from "lit";
 import { property } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -57,8 +57,7 @@ function parseAttr(s: string, defaultVal: number): number {
  * adds a styled track, optional live value display, and the APG keyboard
  * enhancement (Page Up/Down, ±10 steps).
  *
- * Label association — all native patterns work because there is no shadow DOM boundary:
- * - Wrapping `<label>`: `<label>Volume<rc-slider><input …></rc-slider></label>`
+ * Label association:
  * - Explicit `for`/`id`: `<label for="vol">Volume</label><rc-slider><input id="vol" …></rc-slider>`
  * - Direct `aria-label` on the input: `<input aria-label="Volume" …>`
  *
@@ -68,15 +67,131 @@ function parseAttr(s: string, defaultVal: number): number {
  * Form participation is handled natively by the consumer-provided input's `name`
  * attribute; no `ElementInternals` setup is required.
  *
+ * @slot track-background - Optional decorative content rendered inside the track before the progress fill.
+ * @slot value-display - Optional replacement for the rendered value text.
+ *
  * @fires rc-slider-input  - Fires continuously while the value changes. Detail: `{ value }`.
  * @fires rc-slider-change - Fires when the committed value changes (on release). Detail: `{ value }`.
  *
  * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to position the float value display.
+ * @cssprop [--rc-slider-float-value-block-offset=-1.4em] - Block-axis offset for horizontal float value display.
+ * @cssprop [--rc-slider-float-value-inline-offset=calc(100% + 0.5rem)] - Inline-axis offset for vertical float value display.
+ *
+ * @csspart root - Root layout wrapper.
+ * @csspart control - Track/input positioning wrapper.
+ * @csspart track - Visual slider track.
+ * @csspart progress - Filled progress segment.
+ * @csspart value-display - Rendered value text.
  */
 export class RCSlider extends LitElement {
-  override createRenderRoot() {
-    return this;
-  }
+  static override styles = css`
+    :host {
+      display: block;
+    }
+
+    .rc-slider-root {
+      display: grid;
+      gap: var(--rc-slider-gap, 0.5rem);
+      align-items: center;
+    }
+
+    .rc-slider-root[data-display="inline-start"] {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .rc-slider-root[data-display="inline-end"] {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .rc-slider-control {
+      position: relative;
+      display: block;
+      min-width: 0;
+      min-height: var(--rc-slider-control-size, 1.5rem);
+    }
+
+    .rc-slider-track,
+    .rc-slider-progress {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .rc-slider-track {
+      inset-inline: 0;
+      inset-block: calc(50% - var(--rc-slider-track-size, 0.1875rem) / 2);
+      block-size: var(--rc-slider-track-size, 0.1875rem);
+      background: var(--rc-slider-track-background, CanvasText);
+      opacity: var(--rc-slider-track-opacity, 0.25);
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    ::slotted([slot="track-background"]) {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .rc-slider-progress {
+      inset-block: 0;
+      background: var(--rc-slider-progress-background, Highlight);
+      z-index: 1;
+    }
+
+    ::slotted(input[type="range"]) {
+      position: absolute;
+      inset: 0;
+      inline-size: 100%;
+      block-size: 100%;
+      margin: 0;
+      background: transparent;
+      z-index: 2;
+    }
+
+    .rc-slider-value {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .rc-slider-root[data-display="float"] .rc-slider-value {
+      position: absolute;
+      inset-block-start: var(--rc-slider-float-value-block-offset, -1.4em);
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    :host([orientation="vertical"]) {
+      display: inline-block;
+    }
+
+    :host([orientation="vertical"]) .rc-slider-control {
+      inline-size: var(--rc-slider-control-size, 1.5rem);
+      block-size: var(--rc-slider-vertical-size, 12.5rem);
+    }
+
+    :host([orientation="vertical"]) .rc-slider-track {
+      inset-block: 0;
+      inset-inline: calc(50% - var(--rc-slider-track-size, 0.1875rem) / 2);
+      inline-size: var(--rc-slider-track-size, 0.1875rem);
+      block-size: auto;
+    }
+
+    :host([orientation="vertical"]) .rc-slider-progress {
+      inset-inline: 0;
+    }
+
+    :host([orientation="vertical"]) ::slotted(input[type="range"]) {
+      writing-mode: vertical-lr;
+      direction: rtl;
+    }
+
+    :host([orientation="vertical"]) .rc-slider-root[data-display="float"] .rc-slider-value {
+      inset-block-start: auto;
+      inset-inline-start: var(--rc-slider-float-value-inline-offset, calc(100% + 0.5rem));
+      transform: translateY(50%);
+    }
+  `;
 
   /** Minimum slider value. */
   @property({ type: Number }) min = 0;
@@ -190,11 +305,15 @@ export class RCSlider extends LitElement {
         class="rc-slider-root"
         data-display=${this.display ?? nothing}
         data-orientation=${this.orientation}
+        data-readonly=${this.readonly ? "" : nothing}
+        data-disabled=${this.disabled ? "" : nothing}
+        data-has-value-text=${this.valueText ? "" : nothing}
       >
         ${this.display === "inline-start" ? valueDisplay : nothing}
 
         <span part="control" class="rc-slider-control">
           <span part="track" class="rc-slider-track" aria-hidden="true">
+            <slot name="track-background"></slot>
             <span
               part="progress"
               class="rc-slider-progress"
@@ -202,7 +321,8 @@ export class RCSlider extends LitElement {
             ></span>
           </span>
 
-          ${input} ${this.display === "float" ? valueDisplay : nothing}
+          <slot @slotchange=${this._onDefaultSlotChange}></slot>
+          ${this.display === "float" ? valueDisplay : nothing}
         </span>
 
         ${this.display === "inline-end" ? valueDisplay : nothing}
@@ -243,6 +363,12 @@ export class RCSlider extends LitElement {
     this._applyInitialValueToInput(input);
     this._wireInput(input);
   }
+
+  private _onDefaultSlotChange = (): void => {
+    this._unwireInput();
+    this._findInput();
+    this.requestUpdate();
+  };
 
   private _applyInitialValueToInput(input: HTMLInputElement): void {
     if (this._value !== undefined) {
