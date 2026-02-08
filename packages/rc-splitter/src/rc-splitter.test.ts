@@ -1308,6 +1308,21 @@ describe('RCSplitter', () => {
       await expect.element(secondaryContent).toBeInTheDocument();
     });
 
+    test('exposes primary and secondary pane parts', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" style="width: 400px; height: 300px;">
+          <div>Primary Content</div>
+          <div slot="secondary">Secondary Content</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+
+      expect(host.shadowRoot!.querySelector('#primary')?.getAttribute('part')).toBe('primary');
+      expect(host.shadowRoot!.querySelector('#secondary')?.getAttribute('part')).toBe('secondary');
+    });
+
     test('moves extra primary elements to secondary slot', async () => {
       const screen = render(html`
         <rc-splitter data-testid="host" style="width: 400px; height: 300px;">

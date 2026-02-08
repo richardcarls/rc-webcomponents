@@ -72,6 +72,8 @@ All color defaults use CSS system color keywords so they adapt automatically to 
 
 | Part | Element | Description |
 |---|---|---|
+| `primary` | `div#primary` | Primary pane container |
+| `secondary` | `aside#secondary` | Secondary pane container |
 | `separator` | `div#separator` | The separator bar |
 | `separator-handle` | `div[role="separator"]` inside separator | The focusable drag handle (narrower than the bar if `--rc-splitter-separator-handle-size` is set) |
 
