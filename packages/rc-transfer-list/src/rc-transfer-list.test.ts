@@ -79,6 +79,61 @@ test('rc-transfer-list moves highlighted selected options', async () => {
   expect(host.selected.map((o) => o.label)).toEqual(['Mine', 'Factory']);
 });
 
+test('rc-transfer-list reflects empty and selection states', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host">
+      <select multiple>
+        <option value="factory">Factory</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+  await host.updateComplete;
+
+  const availablePanel = host.querySelector('[part~="available-panel"]');
+  const selectedPanel = host.querySelector('[part~="selected-panel"]');
+  expect(availablePanel?.hasAttribute('data-empty')).toBe(false);
+  expect(selectedPanel?.hasAttribute('data-empty')).toBe(true);
+
+  host.querySelector('rc-listbox')?.dispatchEvent(new CustomEvent('rc-listbox-change', {
+    bubbles: true,
+    composed: true,
+    detail: { value: ['factory'] },
+  }));
+  await host.updateComplete;
+
+  expect(availablePanel?.hasAttribute('data-has-selection')).toBe(true);
+});
+
+test('rc-transfer-list reflects reorder capability states', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host">
+      <select multiple></select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+
+  host.selected = [
+    { value: 'factory', label: 'Factory' },
+    { value: 'mine', label: 'Mine' },
+    { value: 'terraforming', label: 'Terraforming' },
+  ];
+  await host.updateComplete;
+
+  host.querySelectorAll('rc-listbox')[1]?.dispatchEvent(new CustomEvent('rc-listbox-change', {
+    bubbles: true,
+    composed: true,
+    detail: { value: ['mine'] },
+  }));
+  await host.updateComplete;
+
+  const root = host.querySelector('[part="root"]');
+  const selectedPanel = host.querySelector('[part~="selected-panel"]');
+  expect(root?.hasAttribute('data-can-move-up')).toBe(true);
+  expect(root?.hasAttribute('data-can-move-down')).toBe(true);
+  expect(selectedPanel?.hasAttribute('data-has-selection')).toBe(true);
+});
+
 test('rc-transfer-list addSelected syncs selection back to select[multiple]', async () => {
   const screen = render(html`
     <rc-transfer-list data-testid="host">

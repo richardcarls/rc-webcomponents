@@ -1,7 +1,7 @@
 import '@rcarls/rc-listbox/define';
 import '@rcarls/rc-toolbar/define';
 
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import type { ListboxOption, RCListbox, RCListboxChangeEvent } from '@rcarls/rc-listbox';
 
@@ -30,6 +30,13 @@ declare global {
  * framework without giving up form participation.
  *
  * @fires rc-transfer-list-change - Fires when the selected/right-hand list changes.
+ *
+ * @csspart root - Root layout wrapper. Reflects data-can-move-up/down.
+ * @csspart panel - Shared list panel surface.
+ * @csspart available-panel - Available/left panel. Reflects data-empty and data-has-selection.
+ * @csspart selected-panel - Selected/right panel. Reflects data-empty and data-has-selection.
+ * @csspart actions - Transfer action toolbar.
+ * @csspart button - Shared action button surface.
  */
 export class RCTransferList extends LitElement {
   override createRenderRoot() { return this; }
@@ -176,18 +183,30 @@ export class RCTransferList extends LitElement {
   }
 
   override render() {
-    const noAvailable = this.available.length === 0; // reads <select> directly; requestUpdate() always precedes render
-    const noSelected = this.selected.length === 0;
-    const cannotReorder = this.selected.length < 2;
+    const available = this.available; // reads <select> directly; requestUpdate() always precedes render
+    const selected = this.selected;
+    const selectedValues = new Set(this._selectedSelection);
+    const noAvailable = available.length === 0;
+    const noSelected = selected.length === 0;
+    const cannotReorder = selected.length < 2;
     const noAvailableSelection = this._availableSelection.length === 0;
     const noSelectedSelection = this._selectedSelection.length === 0;
+    const canMoveUp = this._canMoveSelected(selected, selectedValues, -1);
+    const canMoveDown = this._canMoveSelected(selected, selectedValues, 1);
 
     return html`
-      <div part="root" class="rc-transfer-list-root">
+      <div
+        part="root"
+        class="rc-transfer-list-root"
+        data-can-move-up=${canMoveUp ? '' : nothing}
+        data-can-move-down=${canMoveDown ? '' : nothing}
+      >
         <section
           part="panel available-panel"
           class="rc-transfer-list-panel"
           aria-labelledby="available-label"
+          data-empty=${noAvailable ? '' : nothing}
+          data-has-selection=${!noAvailableSelection ? '' : nothing}
         >
           <span part="label available-label" id="available-label">${this.availableLabel}</span>
           <rc-listbox
@@ -195,7 +214,7 @@ export class RCTransferList extends LitElement {
             part="listbox available-listbox"
             aria-labelledby="available-label"
             tabindex="0"
-            .options=${this.available}
+            .options=${available}
             .multiple=${this.multiple}
           ></rc-listbox>
         </section>
@@ -248,6 +267,8 @@ export class RCTransferList extends LitElement {
           part="panel selected-panel"
           class="rc-transfer-list-panel"
           aria-labelledby="selected-label"
+          data-empty=${noSelected ? '' : nothing}
+          data-has-selection=${!noSelectedSelection ? '' : nothing}
         >
           <span part="label selected-label" id="selected-label">${this.selectedLabel}</span>
           <rc-listbox
@@ -255,7 +276,7 @@ export class RCTransferList extends LitElement {
             part="listbox selected-listbox"
             aria-labelledby="selected-label"
             tabindex="0"
-            .options=${this.selected}
+            .options=${selected}
             .multiple=${this.multiple}
           ></rc-listbox>
         </section>
@@ -345,6 +366,23 @@ export class RCTransferList extends LitElement {
   private _onMoveUp = (): void => { this.moveSelected(-1); };
 
   private _onMoveDown = (): void => { this.moveSelected(1); };
+
+  private _canMoveSelected(
+    selected: ListboxOption[],
+    selectedValues: Set<string>,
+    delta: -1 | 1,
+  ): boolean {
+    if (selectedValues.size === 0 || selected.length < 2) return false;
+
+    return selected.some((item, index) => {
+      if (!selectedValues.has(item.value)) return false;
+
+      const target = index + delta;
+      if (target < 0 || target >= selected.length) return false;
+
+      return !selectedValues.has(selected[target].value);
+    });
+  }
 
   private _onKeydown = (e: KeyboardEvent): void => {
     if (e.altKey) {
