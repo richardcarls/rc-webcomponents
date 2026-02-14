@@ -4,7 +4,13 @@
 
 :root {
   color-scheme: light dark;
-  --rc-accent: Highlight;
+  --rc-accent: Highlight; /* Chrome doesn't support AccentColor on the open web */
+}
+
+@supports (color: AccentColor) {
+  :root {
+    --rc-accent: AccentColor;
+  }
 }
 
 [data-theme="light"] { color-scheme: light; }
