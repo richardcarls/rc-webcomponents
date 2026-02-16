@@ -32,6 +32,10 @@ export const virtualCanvasStyles = css`
   #placeholder {
     pointer-events: none;
   }
+
+  ::slotted(canvas) {
+    image-rendering: var(--rc-virtual-canvas-image-rendering, auto);
+  }
 `;
 
 export default virtualCanvasStyles;

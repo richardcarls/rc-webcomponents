@@ -4,11 +4,48 @@ import { styleMap } from 'lit/directives/style-map.js';
 
 import virtualCanvasStyles from './rc-virtual-canvas.styles';
 
+export type RCVirtualCanvasViewRect = Readonly<{
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}>;
+
+export type RCVirtualCanvasRenderMode =
+  | 'continuous'
+  | 'viewport-change'
+  | 'manual';
+
+export type RCVirtualCanvasRenderReason =
+  | 'animation-frame'
+  | 'viewport-change'
+  | 'manual';
+
+export type RCVirtualCanvasPoint = Readonly<{
+  x: number;
+  y: number;
+}>;
+
+export type RCVirtualCanvasImageRendering =
+  | 'auto'
+  | 'crisp-edges'
+  | 'pixelated';
+
 export type RCVirtualCanvasRenderInit = {
   time: DOMHighResTimeStamp;
-  viewRect: { x: number; y: number; width: number; height: number };
-  contentRect: { x: number; y: number; width: number; height: number };
+  reason: RCVirtualCanvasRenderReason;
+  viewRect: RCVirtualCanvasViewRect;
+  contentRect: RCVirtualCanvasViewRect;
 };
+
+function createRectSnapshot(rect: RCVirtualCanvasViewRect) {
+  return Object.freeze({
+    x: rect.x,
+    y: rect.y,
+    width: rect.width,
+    height: rect.height,
+  });
+}
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -29,6 +66,7 @@ export class RCVirtualCanvas extends LitElement {
   static styles = [virtualCanvasStyles];
 
   private _rafHandle: number = 0;
+  private _pendingRenderReason?: RCVirtualCanvasRenderReason;
 
   // Stored bound reference so the same closure is used for scheduling and
   // cancellation — `bind()` returns a new function every call.
@@ -38,9 +76,13 @@ export class RCVirtualCanvas extends LitElement {
   /** Pixel width of the virtual content */
   @property({ type: Number })
   set contentWidth(val: number) {
+    const oldValue = this._contentWidth;
+
     this._contentWidth = val;
 
     this._contentRect.width = this._contentWidth;
+    this.requestUpdate('contentWidth', oldValue);
+    this._scheduleRender('viewport-change');
   }
   get contentWidth() {
     return this._contentWidth;
@@ -50,14 +92,30 @@ export class RCVirtualCanvas extends LitElement {
   /** Pixel height of the virtual content */
   @property({ type: Number })
   set contentHeight(val: number) {
+    const oldValue = this._contentHeight;
+
     this._contentHeight = val;
 
     this._contentRect.height = this._contentHeight;
+    this.requestUpdate('contentHeight', oldValue);
+    this._scheduleRender('viewport-change');
   }
   get contentHeight() {
     return this._contentHeight;
   }
   protected _contentHeight: number = 0;
+
+  /** When true, keep the slotted canvas backing store aligned to the viewport. */
+  @property({ attribute: 'auto-resize-canvas', type: Boolean })
+  autoResizeCanvas: boolean = true;
+
+  /** Controls when render events are dispatched. */
+  @property({ attribute: 'render-mode' })
+  renderMode: RCVirtualCanvasRenderMode = 'continuous';
+
+  /** Convenience image-rendering value applied to the slotted canvas. */
+  @property({ attribute: 'image-rendering' })
+  imageRendering: RCVirtualCanvasImageRendering = 'auto';
 
   @query('#root', true)
   protected _$root!: HTMLDivElement;
@@ -93,10 +151,17 @@ export class RCVirtualCanvas extends LitElement {
           ? entry.devicePixelContentBoxSize[0]
           : entry.devicePixelContentBoxSize;
 
-        this._viewRect.width =
-          devicePixelBoxSize?.inlineSize ?? entry.contentRect.width;
-        this._viewRect.height =
-          devicePixelBoxSize?.blockSize ?? entry.contentRect.height;
+        this._viewRect.width = this._getMeasuredCanvasWidth(
+          devicePixelBoxSize?.inlineSize
+            ?? Math.round(entry.contentRect.width * window.devicePixelRatio),
+        );
+        this._viewRect.height = this._getMeasuredCanvasHeight(
+          devicePixelBoxSize?.blockSize
+            ?? Math.round(entry.contentRect.height * window.devicePixelRatio),
+        );
+
+        this._syncCanvasBackingStore();
+        this._scheduleRender('viewport-change');
       }
     },
   );
@@ -104,6 +169,8 @@ export class RCVirtualCanvas extends LitElement {
   protected _onScroll() {
     this._viewRect.x = this._$root.scrollLeft;
     this._viewRect.y = this._$root.scrollTop;
+
+    this._scheduleRender('viewport-change');
   }
 
   protected _onSlotChange(e: Event) {
@@ -119,20 +186,79 @@ export class RCVirtualCanvas extends LitElement {
       this._viewRect = {
         x: this._$root.scrollLeft ?? 0,
         y: this._$root.scrollTop ?? 0,
-        width: this._$canvas.clientWidth,
-        height: this._$canvas.clientHeight,
+        width: this._getMeasuredCanvasWidth(this._$canvas.clientWidth),
+        height: this._getMeasuredCanvasHeight(this._$canvas.clientHeight),
       };
 
+      this._syncCanvasBackingStore();
       this._resizeObserver.observe(this._$canvas, {
         box: 'device-pixel-content-box',
       });
+      this._scheduleRender('viewport-change');
     }
   }
 
+  getViewRect() {
+    return createRectSnapshot(this._viewRect);
+  }
+
+  scrollToContent(x: number, y: number, options: ScrollOptions = {}) {
+    this._$root.scrollTo({
+      ...options,
+      left: x,
+      top: y,
+    });
+
+    this._viewRect.x = this._$root.scrollLeft;
+    this._viewRect.y = this._$root.scrollTop;
+    this._scheduleRender('viewport-change');
+  }
+
+  centerOnContent(x: number, y: number, options: ScrollOptions = {}) {
+    this.scrollToContent(
+      x - (this._$root.clientWidth * 0.5),
+      y - (this._$root.clientHeight * 0.5),
+      options,
+    );
+  }
+
+  clientToContent(clientX: number, clientY: number) {
+    const canvasRect = this._getCanvasClientRect();
+    const scaleX = this._getViewportScaleX(canvasRect);
+    const scaleY = this._getViewportScaleY(canvasRect);
+
+    return Object.freeze({
+      x: this._viewRect.x + ((clientX - canvasRect.left) * scaleX),
+      y: this._viewRect.y + ((clientY - canvasRect.top) * scaleY),
+    });
+  }
+
+  contentToClient(x: number, y: number) {
+    const canvasRect = this._getCanvasClientRect();
+    const scaleX = this._getViewportScaleX(canvasRect);
+    const scaleY = this._getViewportScaleY(canvasRect);
+
+    return Object.freeze({
+      x: canvasRect.left + ((x - this._viewRect.x) / scaleX),
+      y: canvasRect.top + ((y - this._viewRect.y) / scaleY),
+    });
+  }
+
+  requestRender(reason: RCVirtualCanvasRenderReason = 'manual') {
+    this._scheduleRender(reason);
+  }
+
   protected _update(time: DOMHighResTimeStamp) {
+    this._rafHandle = 0;
+
     if (!this.isConnected || this._$canvas == null) {
       return;
     }
+
+    const reason = this._pendingRenderReason
+      ?? (this.renderMode === 'continuous' ? 'animation-frame' : 'manual');
+
+    this._pendingRenderReason = undefined;
 
     this.dispatchEvent(
       new CustomEvent<RCVirtualCanvasRenderInit>('rc-virtual-canvas-render', {
@@ -140,13 +266,16 @@ export class RCVirtualCanvas extends LitElement {
         composed: true,
         detail: {
           time,
-          viewRect: this._viewRect,
-          contentRect: this._contentRect,
+          reason,
+          viewRect: createRectSnapshot(this._viewRect),
+          contentRect: createRectSnapshot(this._contentRect),
         },
       }),
     );
 
-    this._rafHandle = window.requestAnimationFrame(this._boundUpdate);
+    if (this.renderMode === 'continuous') {
+      this._scheduleRender('animation-frame');
+    }
   }
 
   override connectedCallback() {
@@ -154,7 +283,9 @@ export class RCVirtualCanvas extends LitElement {
 
     if (this._rafHandle) cancelAnimationFrame(this._rafHandle);
 
-    this._rafHandle = window.requestAnimationFrame(this._boundUpdate);
+    if (this.renderMode === 'continuous') {
+      this._scheduleRender('animation-frame');
+    }
   }
 
   override disconnectedCallback() {
@@ -163,6 +294,108 @@ export class RCVirtualCanvas extends LitElement {
     cancelAnimationFrame(this._rafHandle);
     this._rafHandle = 0;
     this._resizeObserver.disconnect();
+  }
+
+  protected override updated(changed: Map<string, unknown>) {
+    if (changed.has('renderMode')) {
+      if (this.renderMode === 'continuous') {
+        this._scheduleRender('animation-frame');
+      } else if (this._pendingRenderReason === 'animation-frame') {
+        if (this._rafHandle) {
+          cancelAnimationFrame(this._rafHandle);
+          this._rafHandle = 0;
+        }
+
+        this._pendingRenderReason = undefined;
+      } else if (this.renderMode === 'viewport-change') {
+        this._scheduleRender('viewport-change');
+      }
+    }
+
+    if (changed.has('autoResizeCanvas')) {
+      this._syncCanvasBackingStore();
+    }
+
+    if (changed.has('imageRendering')) {
+      this.style.setProperty(
+        '--rc-virtual-canvas-image-rendering',
+        this.imageRendering,
+      );
+    }
+  }
+
+  private _scheduleRender(reason: RCVirtualCanvasRenderReason) {
+    if (this.renderMode === 'manual' && reason !== 'manual') {
+      return;
+    }
+
+    if (
+      this.renderMode === 'viewport-change'
+      && reason === 'animation-frame'
+    ) {
+      return;
+    }
+
+    this._pendingRenderReason = reason;
+
+    if (!this.isConnected || this._rafHandle) {
+      return;
+    }
+
+    this._rafHandle = window.requestAnimationFrame(this._boundUpdate);
+  }
+
+  private _syncCanvasBackingStore() {
+    if (!this.autoResizeCanvas || this._$canvas == null) {
+      return;
+    }
+
+    const width = Math.max(0, Math.round(this._viewRect.width));
+    const height = Math.max(0, Math.round(this._viewRect.height));
+
+    if (this._$canvas.width !== width) {
+      this._$canvas.width = width;
+    }
+
+    if (this._$canvas.height !== height) {
+      this._$canvas.height = height;
+    }
+  }
+
+  private _getCanvasClientRect() {
+    if (this._$canvas == null) {
+      return this.getBoundingClientRect();
+    }
+
+    return this._$canvas.getBoundingClientRect();
+  }
+
+  private _getMeasuredCanvasWidth(fallbackWidth: number) {
+    if (!this.autoResizeCanvas && this._$canvas && this._$canvas.width > 0) {
+      return this._$canvas.width;
+    }
+
+    return fallbackWidth;
+  }
+
+  private _getMeasuredCanvasHeight(fallbackHeight: number) {
+    if (!this.autoResizeCanvas && this._$canvas && this._$canvas.height > 0) {
+      return this._$canvas.height;
+    }
+
+    return fallbackHeight;
+  }
+
+  private _getViewportScaleX(canvasRect: DOMRect) {
+    return canvasRect.width > 0
+      ? this._viewRect.width / canvasRect.width
+      : 1;
+  }
+
+  private _getViewportScaleY(canvasRect: DOMRect) {
+    return canvasRect.height > 0
+      ? this._viewRect.height / canvasRect.height
+      : 1;
   }
 
   render() {
