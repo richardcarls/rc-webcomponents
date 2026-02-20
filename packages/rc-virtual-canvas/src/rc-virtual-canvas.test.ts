@@ -307,6 +307,55 @@ test('RCVirtualCanvas tracks slotted canvas replacement', async () => {
   });
 });
 
+test('RCVirtualCanvas schedules a fresh animation frame when reconnected with a pending render', async () => {
+  const originalRequestAnimationFrame = window.requestAnimationFrame;
+  const renderSpy = vi.fn();
+  const animationFrameCallbacks: FrameRequestCallback[] = [];
+  const requestAnimationFrameSpy = vi
+    .spyOn(window, 'requestAnimationFrame')
+    .mockImplementation((callback: FrameRequestCallback) => {
+      animationFrameCallbacks.push(callback);
+
+      return animationFrameCallbacks.length;
+    });
+
+  try {
+    render(html`
+      <rc-virtual-canvas
+        data-testid="virtual-canvas"
+        @rc-virtual-canvas-render=${renderSpy}
+      >
+        <canvas style="display: block; width: 50px; height: 50px;"></canvas>
+      </rc-virtual-canvas>
+    `);
+
+    const host = document.querySelector('rc-virtual-canvas') as RCVirtualCanvas;
+
+    await host.updateComplete;
+
+    expect(requestAnimationFrameSpy).toHaveBeenCalledTimes(1);
+
+    host.connectedCallback();
+
+    expect(requestAnimationFrameSpy).toHaveBeenCalledTimes(2);
+
+    const callback = animationFrameCallbacks.at(-1);
+
+    if (!callback) {
+      throw new Error('No animation frame was scheduled');
+    }
+
+    requestAnimationFrameSpy.mockImplementation(originalRequestAnimationFrame);
+    callback(performance.now());
+
+    await vi.waitFor(() => {
+      expect(renderSpy).toHaveBeenCalled();
+    });
+  } finally {
+    requestAnimationFrameSpy.mockRestore();
+  }
+});
+
 test('RCVirtualCanvas cancels animation and resize observation on disconnect', async () => {
   const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame');
   const screen = render(html`

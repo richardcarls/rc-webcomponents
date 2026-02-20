@@ -281,7 +281,10 @@ export class RCVirtualCanvas extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
 
-    if (this._rafHandle) cancelAnimationFrame(this._rafHandle);
+    if (this._rafHandle) {
+      cancelAnimationFrame(this._rafHandle);
+      this._rafHandle = 0;
+    }
 
     if (this.renderMode === 'continuous') {
       this._scheduleRender('animation-frame');
