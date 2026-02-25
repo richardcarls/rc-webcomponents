@@ -5,6 +5,7 @@ import { html } from 'lit';
 import './define';
 import type {
   RCVirtualCanvas,
+  RCVirtualCanvasPointerInit,
   RCVirtualCanvasRenderInit,
 } from './rc-virtual-canvas';
 
@@ -163,6 +164,118 @@ test('RCVirtualCanvas maps client and content coordinates through the backing st
   expect(contentPoint.y).toBeCloseTo(80, 0);
   expect(Math.round(clientPoint.x)).toBe(Math.round(rect.left + 50));
   expect(Math.round(clientPoint.y)).toBe(Math.round(rect.top + 25));
+});
+
+test('RCVirtualCanvas dispatches pointer events with content coordinates and modifiers', async () => {
+  const pointerSpy = vi.fn();
+  const screen = render(html`
+    <rc-virtual-canvas
+      data-testid="virtual-canvas"
+      contentWidth="1000"
+      contentHeight="800"
+      .autoResizeCanvas=${false}
+      render-mode="viewport-change"
+      style="display: block; width: 200px; height: 100px;"
+      @rc-virtual-canvas-pointer=${pointerSpy}
+    >
+      <canvas
+        width="400"
+        height="200"
+        style="display: block; width: 200px; height: 100px;"
+      ></canvas>
+    </rc-virtual-canvas>
+  `);
+
+  const host = screen
+    .getByTestId('virtual-canvas')
+    .element() as RCVirtualCanvas;
+
+  await host.updateComplete;
+  host.scrollToContent(40, 30);
+
+  await vi.waitFor(() => {
+    expect(host.getViewRect().x).toBeCloseTo(40, 0);
+  });
+
+  const root = getScrollRoot(host);
+  const rect = root.getBoundingClientRect();
+  root.dispatchEvent(new PointerEvent('pointerdown', {
+    bubbles: true,
+    cancelable: true,
+    clientX: rect.left + 50,
+    clientY: rect.top + 25,
+    button: 1,
+    buttons: 4,
+    altKey: true,
+    ctrlKey: true,
+    shiftKey: true,
+    metaKey: true,
+  }));
+
+  const event = pointerSpy.mock.calls.at(-1)?.[0] as
+    | CustomEvent<RCVirtualCanvasPointerInit>
+    | undefined;
+
+  expect(event?.detail.type).toBe('pointerdown');
+  expect(event?.detail.contentX).toBeCloseTo(140, 0);
+  expect(event?.detail.contentY).toBeCloseTo(80, 0);
+  expect(event?.detail.button).toBe(1);
+  expect(event?.detail.buttons).toBe(4);
+  expect(event?.detail.altKey).toBe(true);
+  expect(event?.detail.ctrlKey).toBe(true);
+  expect(event?.detail.shiftKey).toBe(true);
+  expect(event?.detail.metaKey).toBe(true);
+  expect(event?.detail.sourceEvent).toBeInstanceOf(PointerEvent);
+  expect(Object.isFrozen(event?.detail.viewRect)).toBe(true);
+});
+
+test('RCVirtualCanvas pointer event cancellation prevents the source contextmenu', async () => {
+  const screen = render(html`
+    <rc-virtual-canvas
+      data-testid="virtual-canvas"
+      render-mode="viewport-change"
+      @rc-virtual-canvas-pointer=${(event: CustomEvent<RCVirtualCanvasPointerInit>) => {
+        if (event.detail.type === 'contextmenu') event.preventDefault();
+      }}
+    >
+      <canvas style="display: block; width: 100px; height: 100px;"></canvas>
+    </rc-virtual-canvas>
+  `);
+
+  const host = screen
+    .getByTestId('virtual-canvas')
+    .element() as RCVirtualCanvas;
+
+  await host.updateComplete;
+
+  const root = getScrollRoot(host);
+  const event = new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    clientX: 10,
+    clientY: 10,
+    button: 2,
+  });
+  const shouldContinue = root.dispatchEvent(event);
+
+  expect(shouldContinue).toBe(false);
+  expect(event.defaultPrevented).toBe(true);
+});
+
+test('RCVirtualCanvas exposes a stylable scroll root part', async () => {
+  const screen = render(html`
+    <rc-virtual-canvas data-testid="virtual-canvas">
+      <canvas style="display: block; width: 100px; height: 100px;"></canvas>
+    </rc-virtual-canvas>
+  `);
+
+  const host = screen
+    .getByTestId('virtual-canvas')
+    .element() as RCVirtualCanvas;
+
+  await host.updateComplete;
+
+  expect(getScrollRoot(host).getAttribute('part')).toBe('scroller');
 });
 
 test('RCVirtualCanvas optionally keeps the canvas backing store sized to the viewport', async () => {

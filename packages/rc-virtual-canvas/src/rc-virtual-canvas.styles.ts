@@ -26,7 +26,24 @@ export const virtualCanvasStyles = css`
     height: 100%;
 
     overflow: auto;
-    scrollbar-width: thin;
+    scrollbar-width: var(--rc-virtual-canvas-scrollbar-width, thin);
+  }
+
+  #root::-webkit-scrollbar {
+    width: var(--rc-virtual-canvas-scrollbar-size, auto);
+    height: var(--rc-virtual-canvas-scrollbar-size, auto);
+  }
+
+  #root::-webkit-scrollbar-thumb {
+    background: var(--rc-virtual-canvas-scrollbar-thumb-background, ButtonFace);
+  }
+
+  #root::-webkit-scrollbar-button {
+    background: var(--rc-virtual-canvas-scrollbar-button-background, ButtonFace);
+  }
+
+  #root::-webkit-scrollbar-track {
+    background: var(--rc-virtual-canvas-scrollbar-track-background, Canvas);
   }
 
   #placeholder {

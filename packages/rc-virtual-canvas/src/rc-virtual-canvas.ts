@@ -26,6 +26,22 @@ export type RCVirtualCanvasPoint = Readonly<{
   y: number;
 }>;
 
+export type RCVirtualCanvasPointerInit = {
+  type: string;
+  clientX: number;
+  clientY: number;
+  contentX: number;
+  contentY: number;
+  viewRect: RCVirtualCanvasViewRect;
+  button: number;
+  buttons: number;
+  altKey: boolean;
+  ctrlKey: boolean;
+  shiftKey: boolean;
+  metaKey: boolean;
+  sourceEvent: PointerEvent | MouseEvent;
+};
+
 export type RCVirtualCanvasImageRendering =
   | 'auto'
   | 'crisp-edges'
@@ -54,6 +70,7 @@ declare global {
 
   interface HTMLElementEventMap {
     'rc-virtual-canvas-render': CustomEvent<RCVirtualCanvasRenderInit>;
+    'rc-virtual-canvas-pointer': CustomEvent<RCVirtualCanvasPointerInit>;
   }
 }
 
@@ -61,6 +78,8 @@ declare global {
  * An accessible virtual scrollable canvas component.
  *
  * @slot - The HTMLCanvasElement
+ * @fires rc-virtual-canvas-render - Fires with viewport data when the canvas should redraw.
+ * @fires rc-virtual-canvas-pointer - Fires pointer/mouse input mapped to virtual content coordinates.
  */
 export class RCVirtualCanvas extends LitElement {
   static styles = [virtualCanvasStyles];
@@ -248,6 +267,35 @@ export class RCVirtualCanvas extends LitElement {
     this._scheduleRender(reason);
   }
 
+  protected _onPointerEvent(event: PointerEvent | MouseEvent) {
+    const contentPoint = this.clientToContent(event.clientX, event.clientY);
+
+    const shouldContinue = this.dispatchEvent(
+      new CustomEvent<RCVirtualCanvasPointerInit>('rc-virtual-canvas-pointer', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: {
+          type: event.type,
+          clientX: event.clientX,
+          clientY: event.clientY,
+          contentX: contentPoint.x,
+          contentY: contentPoint.y,
+          viewRect: createRectSnapshot(this._viewRect),
+          button: event.button,
+          buttons: event.buttons,
+          altKey: event.altKey,
+          ctrlKey: event.ctrlKey,
+          shiftKey: event.shiftKey,
+          metaKey: event.metaKey,
+          sourceEvent: event,
+        },
+      }),
+    );
+
+    if (!shouldContinue) event.preventDefault();
+  }
+
   protected _update(time: DOMHighResTimeStamp) {
     this._rafHandle = 0;
 
@@ -403,7 +451,17 @@ export class RCVirtualCanvas extends LitElement {
 
   render() {
     return html`
-      <div id="root" @scroll=${this._onScroll}>
+      <div
+        id="root"
+        part="scroller"
+        @scroll=${this._onScroll}
+        @pointerdown=${this._onPointerEvent}
+        @pointermove=${this._onPointerEvent}
+        @pointerup=${this._onPointerEvent}
+        @click=${this._onPointerEvent}
+        @dblclick=${this._onPointerEvent}
+        @contextmenu=${this._onPointerEvent}
+      >
         <div
           id="placeholder"
           style=${styleMap({
