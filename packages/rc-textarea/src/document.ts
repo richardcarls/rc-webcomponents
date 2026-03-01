@@ -133,18 +133,20 @@ export class V2Document {
   }
 
   /**
-   * Full rebuild of the document tree from `value` + `decorations`.
-   * Tears down all existing children before reconstructing.
+   * Rebuild the document tree from `value` + `decorations`.
+   * Reuses existing `.v2-line` elements in place to preserve DOM identity
+   * across renders (fixes DevTools node tracking and mouse gesture continuity).
+   * Only the children of each line are replaced; the line element itself survives.
    */
   build(value: string, decorations: Decoration[]): void {
     const editorEl = this.scroll.domNode as HTMLElement;
 
-    // Clear existing DOM children
-    while (editorEl.firstChild) {
-      editorEl.removeChild(editorEl.firstChild);
-    }
-
     const lines = value.split('\n');
+
+    // Snapshot existing line elements for reuse — preserves DOM identity so
+    // DevTools node references survive re-renders and ongoing mouse gestures
+    // (double-click, drag) are not interrupted by node replacement.
+    const existingLineEls = Array.from(editorEl.querySelectorAll<HTMLElement>('.v2-line'));
 
     // Index decorations by type for fast per-line lookup
     const lineDecsByLine = new Map<number, LineDecoration[]>();
@@ -175,8 +177,24 @@ export class V2Document {
       const lineStart = lineStartOffset;
       const lineEnd = lineStart + lineText.length;
 
-      // Create block element via Parchment's static create()
-      const blockDomNode = V2BlockBlot.create() as HTMLElement;
+      // Reuse an existing line element when available, otherwise create a new one.
+      // Reuse preserves DOM identity across renders.
+      let blockDomNode: HTMLElement;
+      if (i < existingLineEls.length) {
+        blockDomNode = existingLineEls[i]!;
+        // Remove all attributes so stale class names, data-*, and title don't bleed through
+        while (blockDomNode.attributes.length > 0) {
+          blockDomNode.removeAttribute(blockDomNode.attributes[0]!.name);
+        }
+        blockDomNode.className = 'v2-line';
+        // Clear children
+        while (blockDomNode.firstChild) {
+          blockDomNode.removeChild(blockDomNode.firstChild);
+        }
+      } else {
+        blockDomNode = V2BlockBlot.create() as HTMLElement;
+        editorEl.appendChild(blockDomNode);
+      }
 
       // Apply line decorations
       const lineDecs = lineDecsByLine.get(lineNum) ?? [];
@@ -218,8 +236,12 @@ export class V2Document {
         if (classes.length > 0) blockDomNode.dataset.messageClass = classes.join(' ');
       }
 
-      editorEl.appendChild(blockDomNode);
       lineStartOffset += lineText.length + 1; // +1 for the '\n' separator
+    }
+
+    // Remove trailing line elements left over from a shorter previous value
+    while (editorEl.children.length > lines.length) {
+      editorEl.removeChild(editorEl.lastChild!);
     }
   }
 
