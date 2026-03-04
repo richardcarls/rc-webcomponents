@@ -40,33 +40,6 @@ test('rc-disclosure mirrors native toggle state', async () => {
   expect(toggleSpy).toHaveBeenCalledOnce();
 });
 
-test('rc-accordion closes sibling disclosures', async () => {
-  const screen = render(html`
-    <rc-accordion>
-      <rc-disclosure data-testid="one" open>
-        <details open>
-          <summary>One</summary>
-          <p>One body</p>
-        </details>
-      </rc-disclosure>
-      <rc-disclosure data-testid="two">
-        <details>
-          <summary>Two</summary>
-          <p>Two body</p>
-        </details>
-      </rc-disclosure>
-    </rc-accordion>
-  `);
-  const one = screen.getByTestId('one').element() as RCDisclosure;
-  const two = screen.getByTestId('two').element() as RCDisclosure;
-
-  two.open = true;
-  two.dispatchEvent(new CustomEvent('rc-disclosure-toggle', { bubbles: true, detail: { open: true } }));
-
-  expect(one.open).toBe(false);
-  expect(two.open).toBe(true);
-});
-
 test('rc-disclosure opens matching fragment targets', async () => {
   const screen = render(html`
     <rc-disclosure data-testid="host" fragment>
@@ -99,26 +72,6 @@ test('rc-disclosure injects aria-controls linking summary to details', async () 
 
   expect(details.id).toBeTruthy();
   expect(summary.getAttribute('aria-controls')).toBe(details.id);
-});
-
-test('rc-accordion ArrowDown moves focus to next summary', async () => {
-  const screen = render(html`
-    <rc-accordion data-testid="accordion">
-      <rc-disclosure>
-        <details><summary>One</summary><p>Body one</p></details>
-      </rc-disclosure>
-      <rc-disclosure>
-        <details><summary>Two</summary><p>Body two</p></details>
-      </rc-disclosure>
-    </rc-accordion>
-  `);
-  const accordion = screen.getByTestId('accordion').element() as HTMLElement;
-  const summaries = Array.from(accordion.querySelectorAll('summary')) as HTMLElement[];
-
-  summaries[0].focus();
-  accordion.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-
-  expect(document.activeElement).toBe(summaries[1]);
 });
 
 test('rc-disclosure has no automated accessibility violations', async () => {

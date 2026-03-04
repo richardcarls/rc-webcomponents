@@ -40,6 +40,8 @@ declare global {
  * @cssprop [--rc-splitter-separator-border-inline-end=1px solid ButtonBorder] - Inline-end border
  * @cssprop [--rc-splitter-separator-border-block-start=1px solid ButtonBorder] - Block-start border (vertical orientation)
  * @cssprop [--rc-splitter-separator-border-block-end=1px solid ButtonBorder] - Block-end border (vertical orientation)
+ * @csspart primary - Primary pane container
+ * @csspart secondary - Secondary pane container
  * @csspart separator - The separator bar
  * @csspart separator-handle - The focusable drag handle
  */
@@ -306,6 +308,7 @@ export class RCSplitter extends LitElement {
     return html`
       <div
         id="primary"
+        part="primary"
         aria-label=${this.label}
         style=${this.orientation === "horizontal"
           ? `width: ${this.valueText}`
@@ -336,6 +339,7 @@ export class RCSplitter extends LitElement {
 
       <aside
         id="secondary"
+        part="secondary"
         ?hidden=${!this._$secondaryElements.length ||
         this.value === this._maxValue}
       >

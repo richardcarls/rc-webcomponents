@@ -61,7 +61,12 @@
       <div class="demo-section">
         <h2>Tilemap</h2>
         <p>Virtualized rendering — only tiles visible in the viewport are drawn each frame.</p>
-        <rc-virtual-canvas id="rc-tilemap" contentWidth="1600" contentHeight="1600">
+        <rc-virtual-canvas
+          id="rc-tilemap"
+          contentWidth="1600"
+          contentHeight="1600"
+          image-rendering="pixelated"
+        >
           <canvas id="tilemap-canvas"></canvas>
         </rc-virtual-canvas>
       </div>
@@ -72,7 +77,7 @@
         <div class="draw-toolbar">
           <label>
             Color
-            <input type="color" id="draw-color" value="#e33" />
+            <input type="color" id="draw-color" value="#ee3333" />
           </label>
           <label>
             Size
@@ -100,6 +105,11 @@
       $rcTilemap.setAttribute('contentHeight', NUM_ROWS * 32);
 
       const tileset = new Image();
+      tileset.addEventListener('load', () => {
+        customElements.whenDefined('rc-virtual-canvas').then(() => {
+          $rcTilemap.requestRender();
+        });
+      });
       tileset.src = 'default_tiles.png';
 
       const tiles = [];
@@ -113,23 +123,49 @@
         }
       }
 
-      $rcTilemap.addEventListener('render', (e) => {
+      $rcTilemap.addEventListener('rc-virtual-canvas-render', (e) => {
         const { time, viewRect, contentRect } = e.detail;
+        const viewportWidth = $tilemapCanvas.clientWidth;
+        const viewportHeight = $tilemapCanvas.clientHeight;
+        const scaleX = viewportWidth > 0 ? viewRect.width / viewportWidth : 1;
+        const scaleY = viewportHeight > 0 ? viewRect.height / viewportHeight : 1;
+
         $tilemapCanvas.width = viewRect.width;
         $tilemapCanvas.height = viewRect.height;
+
         const ctx = $tilemapCanvas.getContext('2d');
         ctx.clearRect(0, 0, viewRect.width, viewRect.height);
-        tiles.forEach(({ x, y, tileX, tileY }) => {
-          if (x + 32 >= viewRect.x && x <= viewRect.x + viewRect.width &&
-              y + 32 >= viewRect.y && y <= viewRect.y + viewRect.height) {
-            ctx.drawImage(tileset, tileX, tileY, 32, 32, x - viewRect.x, y - viewRect.y, 32, 32);
-          }
-        });
+
+        if (tileset.complete && tileset.naturalWidth > 0) {
+          ctx.imageSmoothingEnabled = false;
+
+          tiles.forEach(({ x, y, tileX, tileY }) => {
+            if (x + 32 >= viewRect.x && x <= viewRect.x + viewportWidth &&
+                y + 32 >= viewRect.y && y <= viewRect.y + viewportHeight) {
+              ctx.drawImage(
+                tileset,
+                tileX,
+                tileY,
+                32,
+                32,
+                (x - viewRect.x) * scaleX,
+                (y - viewRect.y) * scaleY,
+                32 * scaleX,
+                32 * scaleY,
+              );
+            }
+          });
+        }
+
         ctx.fillStyle = 'white';
-        ctx.font = '16px serif';
-        ctx.fillText(`time: ${time}`, 4, 16);
-        ctx.fillText(`view: ${viewRect.x}, ${viewRect.y}, ${viewRect.width}×${viewRect.height}`, 4, 32);
-        ctx.fillText(`content: ${contentRect.width}×${contentRect.height}`, 4, 48);
+        ctx.font = `${16 * scaleY}px serif`;
+        ctx.fillText(`time: ${time}`, 4 * scaleX, 16 * scaleY);
+        ctx.fillText(
+          `view: ${viewRect.x}, ${viewRect.y}, ${viewportWidth}×${viewportHeight}`,
+          4 * scaleX,
+          32 * scaleY,
+        );
+        ctx.fillText(`content: ${contentRect.width}×${contentRect.height}`, 4 * scaleX, 48 * scaleY);
       });
 
       // ── Drawing surface demo ──────────────────────────────────────────────
@@ -141,8 +177,30 @@
       const $drawCanvas = document.getElementById('draw-canvas-el');
       const offscreen = new OffscreenCanvas(DRAW_W, DRAW_H);
       const offCtx = offscreen.getContext('2d');
-      offCtx.fillStyle = '#ffffff';
-      offCtx.fillRect(0, 0, DRAW_W, DRAW_H);
+
+      function resetDrawingSurface() {
+        offCtx.fillStyle = '#ffffff';
+        offCtx.fillRect(0, 0, DRAW_W, DRAW_H);
+
+        offCtx.strokeStyle = '#e5e5e5';
+        offCtx.lineWidth = 1;
+
+        for (let x = 0; x <= DRAW_W; x += 40) {
+          offCtx.beginPath();
+          offCtx.moveTo(x + 0.5, 0);
+          offCtx.lineTo(x + 0.5, DRAW_H);
+          offCtx.stroke();
+        }
+
+        for (let y = 0; y <= DRAW_H; y += 40) {
+          offCtx.beginPath();
+          offCtx.moveTo(0, y + 0.5);
+          offCtx.lineTo(DRAW_W, y + 0.5);
+          offCtx.stroke();
+        }
+      }
+
+      resetDrawingSurface();
 
       const colorPicker = document.getElementById('draw-color');
       const sizeSlider = document.getElementById('draw-size');
@@ -153,24 +211,33 @@
       });
 
       window.clearDrawing = function () {
-        offCtx.fillStyle = '#ffffff';
-        offCtx.fillRect(0, 0, DRAW_W, DRAW_H);
+        resetDrawingSurface();
       };
 
       let isDrawing = false;
       let lastContent = { x: 0, y: 0 };
       let lastViewport = { x: 0, y: 0 };
       let currentViewRect = { x: 0, y: 0, width: 0, height: 0 };
+      let currentScale = { x: 1, y: 1 };
 
-      $rcDraw.addEventListener('render', (e) => {
+      $rcDraw.addEventListener('rc-virtual-canvas-render', (e) => {
         const { viewRect } = e.detail;
+        const viewportWidth = $drawCanvas.clientWidth;
+        const viewportHeight = $drawCanvas.clientHeight;
+
         currentViewRect = viewRect;
+        currentScale = {
+          x: viewportWidth > 0 ? viewRect.width / viewportWidth : 1,
+          y: viewportHeight > 0 ? viewRect.height / viewportHeight : 1,
+        };
+
         $drawCanvas.width = viewRect.width;
         $drawCanvas.height = viewRect.height;
+
         const ctx = $drawCanvas.getContext('2d');
         ctx.drawImage(
           offscreen,
-          viewRect.x, viewRect.y, viewRect.width, viewRect.height,
+          viewRect.x, viewRect.y, viewportWidth, viewportHeight,
           0, 0, viewRect.width, viewRect.height,
         );
       });
@@ -209,10 +276,13 @@
         // Draw to visible canvas immediately (in viewport coords)
         const ctx = $drawCanvas.getContext('2d');
         ctx.beginPath();
-        ctx.moveTo(lastViewport.x, lastViewport.y);
-        ctx.lineTo(vx, vy);
+        ctx.moveTo(
+          lastViewport.x * currentScale.x,
+          lastViewport.y * currentScale.y,
+        );
+        ctx.lineTo(vx * currentScale.x, vy * currentScale.y);
         ctx.strokeStyle = color;
-        ctx.lineWidth = size;
+        ctx.lineWidth = size * currentScale.x;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.stroke();

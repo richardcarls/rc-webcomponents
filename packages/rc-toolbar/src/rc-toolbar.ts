@@ -90,6 +90,42 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     }
   }
 
+  protected override _collectItems(slot: HTMLSlotElement): Element[] {
+    return slot.assignedElements().filter((el) => this._isToolbarItem(el));
+  }
+
+  private _isToolbarItem(el: Element): boolean {
+    if (
+      el instanceof HTMLButtonElement ||
+      el instanceof HTMLInputElement ||
+      el instanceof HTMLSelectElement ||
+      el instanceof HTMLTextAreaElement
+    ) {
+      return true;
+    }
+
+    if (el instanceof HTMLAnchorElement || el instanceof HTMLAreaElement) {
+      return el.hasAttribute('href');
+    }
+
+    const role = el.getAttribute('role');
+    if (
+      role === 'button' ||
+      role === 'checkbox' ||
+      role === 'link' ||
+      role === 'menuitem' ||
+      role === 'radio' ||
+      role === 'slider' ||
+      role === 'spinbutton' ||
+      role === 'switch' ||
+      role === 'textbox'
+    ) {
+      return true;
+    }
+
+    return isFocusable(el);
+  }
+
   protected render() {
     return html`
       <div

@@ -6,7 +6,6 @@ export interface RCDisclosureToggleEvent {
 declare global {
   interface HTMLElementTagNameMap {
     'rc-disclosure': RCDisclosure;
-    'rc-accordion': RCAccordion;
   }
 }
 
@@ -158,56 +157,6 @@ export class RCDisclosure extends HTMLElement {
 
     this.open = true;
   }
-}
-
-/** Coordinates child disclosures so only one stays open at a time. */
-export class RCAccordion extends HTMLElement {
-  connectedCallback(): void {
-    this.addEventListener('rc-disclosure-toggle', this._onDisclosureToggle as EventListener);
-    this.addEventListener('keydown', this._onKeydown);
-  }
-
-  disconnectedCallback(): void {
-    this.removeEventListener('rc-disclosure-toggle', this._onDisclosureToggle as EventListener);
-    this.removeEventListener('keydown', this._onKeydown);
-  }
-
-  private _summaries(): HTMLElement[] {
-    return Array.from(
-      this.querySelectorAll<HTMLElement>('rc-disclosure > details > summary'),
-    );
-  }
-
-  private _onKeydown = (e: KeyboardEvent): void => {
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
-
-    const summaries = this._summaries();
-    if (summaries.length === 0) return;
-
-    const active = document.activeElement as HTMLElement;
-    const idx = summaries.indexOf(active);
-    if (idx === -1) return;
-
-    e.preventDefault();
-
-    if (e.key === 'Home') { summaries[0].focus(); return; }
-    if (e.key === 'End') { summaries[summaries.length - 1].focus(); return; }
-
-    const next = e.key === 'ArrowDown'
-      ? (idx + 1) % summaries.length
-      : (idx - 1 + summaries.length) % summaries.length;
-
-    summaries[next].focus();
-  };
-
-  private _onDisclosureToggle = (e: CustomEvent<RCDisclosureToggleEvent>): void => {
-    if (!e.detail.open) return;
-
-    const opened = e.target;
-    for (const disclosure of this.querySelectorAll<RCDisclosure>('rc-disclosure')) {
-      if (disclosure !== opened) disclosure.open = false;
-    }
-  };
 }
 
 export default RCDisclosure;

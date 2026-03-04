@@ -43,17 +43,6 @@
         border-top: 1px solid ButtonBorder;
       }
 
-      rc-accordion {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        max-width: 480px;
-      }
-
-      rc-accordion details {
-        max-width: none;
-      }
-
       .demo-controls-row {
         display: flex;
         gap: 0.5em;
@@ -88,32 +77,6 @@
           <button type="button" onclick="document.getElementById('basic-disclosure').open = true">Open</button>
           <button type="button" onclick="document.getElementById('basic-disclosure').open = false">Close</button>
         </div>
-      </div>
-
-      <div class="demo-section">
-        <h2>Accordion</h2>
-        <p><code>&lt;rc-accordion&gt;</code> coordinates child disclosures so only one stays open at a time.
-        Arrow keys move focus between summaries.</p>
-        <rc-accordion>
-          <rc-disclosure>
-            <details>
-              <summary>Section One</summary>
-              <div class="details-body">Content for section one. Only one section stays open at a time.</div>
-            </details>
-          </rc-disclosure>
-          <rc-disclosure>
-            <details>
-              <summary>Section Two</summary>
-              <div class="details-body">Content for section two. Opening this closes any other open section.</div>
-            </details>
-          </rc-disclosure>
-          <rc-disclosure>
-            <details>
-              <summary>Section Three</summary>
-              <div class="details-body">Content for section three.</div>
-            </details>
-          </rc-disclosure>
-        </rc-accordion>
       </div>
 
       <div class="demo-section">
