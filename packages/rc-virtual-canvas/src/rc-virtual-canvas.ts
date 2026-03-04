@@ -78,6 +78,8 @@ declare global {
  * An accessible virtual scrollable canvas component.
  *
  * @slot - The HTMLCanvasElement
+ * @slot overlay - Optional viewport-positioned content rendered inside the
+ * scroll container above the canvas.
  * @fires rc-virtual-canvas-render - Fires with viewport data when the canvas should redraw.
  * @fires rc-virtual-canvas-pointer - Fires pointer/mouse input mapped to virtual content coordinates.
  */
@@ -86,11 +88,15 @@ export class RCVirtualCanvas extends LitElement {
 
   private _rafHandle: number = 0;
   private _pendingRenderReason?: RCVirtualCanvasRenderReason;
+  private readonly _handledPointerEvents = new WeakSet<Event>();
 
   // Stored bound reference so the same closure is used for scheduling and
   // cancellation — `bind()` returns a new function every call.
   private readonly _boundUpdate = (time: DOMHighResTimeStamp) =>
     this._update(time);
+
+  private readonly _boundPointerEvent = (event: PointerEvent | MouseEvent) =>
+    this._onPointerEvent(event);
 
   /** Pixel width of the virtual content */
   @property({ type: Number })
@@ -268,6 +274,11 @@ export class RCVirtualCanvas extends LitElement {
   }
 
   protected _onPointerEvent(event: PointerEvent | MouseEvent) {
+    if (this._handledPointerEvents.has(event)) return;
+    if (this._isOverlayEvent(event)) return;
+
+    this._handledPointerEvents.add(event);
+
     const contentPoint = this.clientToContent(event.clientX, event.clientY);
 
     const shouldContinue = this.dispatchEvent(
@@ -294,6 +305,13 @@ export class RCVirtualCanvas extends LitElement {
     );
 
     if (!shouldContinue) event.preventDefault();
+  }
+
+  private _isOverlayEvent(event: Event): boolean {
+    return event.composedPath().some((node) =>
+      node instanceof HTMLSlotElement
+      && node.name === 'overlay',
+    );
   }
 
   protected _update(time: DOMHighResTimeStamp) {
@@ -329,6 +347,13 @@ export class RCVirtualCanvas extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
 
+    this.addEventListener('pointerdown', this._boundPointerEvent);
+    this.addEventListener('pointermove', this._boundPointerEvent);
+    this.addEventListener('pointerup', this._boundPointerEvent);
+    this.addEventListener('click', this._boundPointerEvent);
+    this.addEventListener('dblclick', this._boundPointerEvent);
+    this.addEventListener('contextmenu', this._boundPointerEvent);
+
     if (this._rafHandle) {
       cancelAnimationFrame(this._rafHandle);
       this._rafHandle = 0;
@@ -345,6 +370,13 @@ export class RCVirtualCanvas extends LitElement {
     cancelAnimationFrame(this._rafHandle);
     this._rafHandle = 0;
     this._resizeObserver.disconnect();
+
+    this.removeEventListener('pointerdown', this._boundPointerEvent);
+    this.removeEventListener('pointermove', this._boundPointerEvent);
+    this.removeEventListener('pointerup', this._boundPointerEvent);
+    this.removeEventListener('click', this._boundPointerEvent);
+    this.removeEventListener('dblclick', this._boundPointerEvent);
+    this.removeEventListener('contextmenu', this._boundPointerEvent);
   }
 
   protected override updated(changed: Map<string, unknown>) {
@@ -462,6 +494,9 @@ export class RCVirtualCanvas extends LitElement {
         @dblclick=${this._onPointerEvent}
         @contextmenu=${this._onPointerEvent}
       >
+        <div id="overlay" part="overlay">
+          <slot name="overlay"></slot>
+        </div>
         <div
           id="placeholder"
           style=${styleMap({

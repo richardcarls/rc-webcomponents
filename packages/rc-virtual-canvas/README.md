@@ -82,13 +82,17 @@ The canvas element should match the component's rendered size (set via CSS). The
 
 ### CSS parts
 
-None.
+| Part | Description |
+|---|---|
+| `scroller` | Internal scroll container that owns the virtual content scroll range |
+| `overlay` | Viewport-positioned overlay container rendered inside the scroll container |
 
 ### Slots
 
 | Slot | Description |
 |---|---|
 | *(default)* | A single `<canvas>` element. Non-canvas slotted elements are ignored by the component but rendered. |
+| `overlay` | Optional viewport-positioned content rendered over the canvas inside the scroll container. |
 
 ### Events
 

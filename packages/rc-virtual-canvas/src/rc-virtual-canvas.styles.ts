@@ -50,6 +50,21 @@ export const virtualCanvasStyles = css`
     pointer-events: none;
   }
 
+  #overlay {
+    position: sticky;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 0;
+    pointer-events: none;
+  }
+
+  ::slotted([slot='overlay']) {
+    pointer-events: auto;
+  }
+
   ::slotted(canvas) {
     image-rendering: var(--rc-virtual-canvas-image-rendering, auto);
   }

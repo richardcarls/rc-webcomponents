@@ -262,7 +262,43 @@ test('RCVirtualCanvas pointer event cancellation prevents the source contextmenu
   expect(event.defaultPrevented).toBe(true);
 });
 
-test('RCVirtualCanvas exposes a stylable scroll root part', async () => {
+test('RCVirtualCanvas leaves slotted overlay pointer events to overlay content', async () => {
+  const pointerSpy = vi.fn();
+  const screen = render(html`
+    <rc-virtual-canvas
+      data-testid="virtual-canvas"
+      render-mode="viewport-change"
+      @rc-virtual-canvas-pointer=${pointerSpy}
+    >
+      <canvas style="display: block; width: 100px; height: 100px;"></canvas>
+      <div slot="overlay" data-testid="overlay">Overlay</div>
+    </rc-virtual-canvas>
+  `);
+
+  const host = screen
+    .getByTestId('virtual-canvas')
+    .element() as RCVirtualCanvas;
+  const overlay = screen.getByTestId('overlay').element() as HTMLDivElement;
+
+  await host.updateComplete;
+
+  overlay.dispatchEvent(new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    clientX: 10,
+    clientY: 10,
+    button: 2,
+  }));
+
+  const event = pointerSpy.mock.calls.at(-1)?.[0] as
+    | CustomEvent<RCVirtualCanvasPointerInit>
+    | undefined;
+
+  expect(event).toBeUndefined();
+});
+
+test('RCVirtualCanvas exposes stylable scroll root and overlay parts', async () => {
   const screen = render(html`
     <rc-virtual-canvas data-testid="virtual-canvas">
       <canvas style="display: block; width: 100px; height: 100px;"></canvas>
@@ -276,6 +312,7 @@ test('RCVirtualCanvas exposes a stylable scroll root part', async () => {
   await host.updateComplete;
 
   expect(getScrollRoot(host).getAttribute('part')).toBe('scroller');
+  expect(host.shadowRoot?.querySelector('#overlay')?.getAttribute('part')).toBe('overlay');
 });
 
 test('RCVirtualCanvas optionally keeps the canvas backing store sized to the viewport', async () => {
