@@ -1024,6 +1024,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-textarea-adapters@workspace:packages/rc-textarea-adapters":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-textarea-adapters@workspace:packages/rc-textarea-adapters"
+  dependencies:
+    "@rcarls/rc-textarea": "workspace:^"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+  peerDependencies:
+    "@lezer/common": ">=1.0.0"
+    shiki: ">=1.0.0"
+    unified: ">=11.0.0"
+  peerDependenciesMeta:
+    "@lezer/common":
+      optional: true
+    shiki:
+      optional: true
+    unified:
+      optional: true
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-textarea@workspace:^, @rcarls/rc-textarea@workspace:packages/rc-textarea":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-textarea@workspace:packages/rc-textarea"

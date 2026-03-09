@@ -75,6 +75,10 @@ const RAW_RUNTIME_STATE =
       "reference": "workspace:packages/rc-textarea"\
     },\
     {\
+      "name": "@rcarls/rc-textarea-adapters",\
+      "reference": "workspace:packages/rc-textarea-adapters"\
+    },\
+    {\
       "name": "@rcarls/rc-toolbar",\
       "reference": "workspace:packages/rc-toolbar"\
     },\
@@ -110,6 +114,7 @@ const RAW_RUNTIME_STATE =
     ["@rcarls/rc-slider", ["workspace:packages/rc-slider"]],\
     ["@rcarls/rc-splitter", ["virtual:17b3020144fa0e17f2d4da8c8cda2efa63209844f2b08ef7fc39dd36a425950a5017afb36ba15405e5b33eca438007ee55a53b2ca1e15a8b6baba014ab379037#workspace:packages/rc-splitter", "workspace:packages/rc-splitter"]],\
     ["@rcarls/rc-textarea", ["virtual:17b3020144fa0e17f2d4da8c8cda2efa63209844f2b08ef7fc39dd36a425950a5017afb36ba15405e5b33eca438007ee55a53b2ca1e15a8b6baba014ab379037#workspace:packages/rc-textarea", "workspace:packages/rc-textarea"]],\
+    ["@rcarls/rc-textarea-adapters", ["workspace:packages/rc-textarea-adapters"]],\
     ["@rcarls/rc-toolbar", ["virtual:17b3020144fa0e17f2d4da8c8cda2efa63209844f2b08ef7fc39dd36a425950a5017afb36ba15405e5b33eca438007ee55a53b2ca1e15a8b6baba014ab379037#workspace:packages/rc-toolbar", "workspace:packages/rc-toolbar"]],\
     ["@rcarls/rc-transfer-list", ["workspace:packages/rc-transfer-list"]],\
     ["@rcarls/rc-virtual-canvas", ["virtual:17b3020144fa0e17f2d4da8c8cda2efa63209844f2b08ef7fc39dd36a425950a5017afb36ba15405e5b33eca438007ee55a53b2ca1e15a8b6baba014ab379037#workspace:packages/rc-virtual-canvas", "workspace:packages/rc-virtual-canvas"]],\
@@ -1573,6 +1578,19 @@ const RAW_RUNTIME_STATE =
           ["vite-plugin-dts", "virtual:79423438f5616e19146b425db724e4c36028bb6a4997133cadb74f3b7c5fba731086928cda35e454e4a227ea24d52e58cf4c4a304673ea89034ff62636e1fadc#npm:4.5.4"],\
           ["vitest", "virtual:ec43839e600e3e526bf26fd0da73616edc16de5638aa6cc12fee22d759f47f331459c798311c2000e87ccde7fab4ba9d69582e161582e0dfb26753e4393f7ffc#npm:4.1.5"],\
           ["vitest-browser-lit", "virtual:ec43839e600e3e526bf26fd0da73616edc16de5638aa6cc12fee22d759f47f331459c798311c2000e87ccde7fab4ba9d69582e161582e0dfb26753e4393f7ffc#npm:1.0.1"]\
+        ],\
+        "linkType": "SOFT"\
+      }]\
+    ]],\
+    ["@rcarls/rc-textarea-adapters", [\
+      ["workspace:packages/rc-textarea-adapters", {\
+        "packageLocation": "./packages/rc-textarea-adapters/",\
+        "packageDependencies": [\
+          ["@rcarls/rc-textarea", "virtual:17b3020144fa0e17f2d4da8c8cda2efa63209844f2b08ef7fc39dd36a425950a5017afb36ba15405e5b33eca438007ee55a53b2ca1e15a8b6baba014ab379037#workspace:packages/rc-textarea"],\
+          ["@rcarls/rc-textarea-adapters", "workspace:packages/rc-textarea-adapters"],\
+          ["typescript", "patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"],\
+          ["vite", "virtual:02d3817ef30f7d97259a7b9b41e4e3d9ef9c7016f68bdb6446746c849cf7e6516b3e0b299884e4a8ea0a98b338ed110a5808c43eb841103713714d4c2c53b572#npm:7.3.2"],\
+          ["vite-plugin-dts", "virtual:02d3817ef30f7d97259a7b9b41e4e3d9ef9c7016f68bdb6446746c849cf7e6516b3e0b299884e4a8ea0a98b338ed110a5808c43eb841103713714d4c2c53b572#npm:4.5.4"]\
         ],\
         "linkType": "SOFT"\
       }]\

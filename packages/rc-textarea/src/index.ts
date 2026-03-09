@@ -10,6 +10,7 @@ export type {
   RCTextareaPluginAPI,
   TextPattern,
   LineDecoratorPlugin,
+  Token,
 } from './types.ts';
 export { matchPatternResults } from './pattern-matcher.ts';
 export { createLineDecoratorPlugin } from './line-decorator.ts';

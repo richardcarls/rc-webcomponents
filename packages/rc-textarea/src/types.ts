@@ -79,6 +79,25 @@ export type DecorationInput =
   | Omit<LineDecoration, 'id'>
   | Omit<WidgetDecoration, 'id'>;
 
+/**
+ * A semantic token produced by an external tokenizer (lezer, tree-sitter, shiki, etc.).
+ * Offsets are absolute character indices into the plain-text value — the same coordinate
+ * space as `MarkDecoration.from` / `MarkDecoration.to`.
+ *
+ * Use `RCTextareaPluginAPI.decorationsFromTokens()` to convert a token array into
+ * `DecorationInput[]` using a theme map.
+ */
+export interface Token {
+  /** Inclusive start offset (0-based character index into plain text). */
+  from: number;
+  /** Exclusive end offset. */
+  to: number;
+  /** Semantic token type, e.g. `"keyword"`, `"string"`, `"comment"`. */
+  type: string;
+  /** Optional TextMate / VS Code scope list (e.g. `["keyword.control", "source.js"]`). */
+  scopes?: string[];
+}
+
 // ── Plugin types ─────────────────────────────────────────────────────────────
 
 /**
@@ -212,6 +231,32 @@ export interface RCTextareaPluginAPI {
    * ```
    */
   decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
+
+  /**
+   * Convert a flat token array from an external tokenizer (lezer, tree-sitter, shiki, moo, etc.)
+   * into `DecorationInput` objects using a theme map keyed by `token.type`.
+   *
+   * Token offsets must be **absolute** character indices into the plain-text value
+   * (same coordinate space as `MarkDecoration.from` / `MarkDecoration.to`).
+   * Types not present in `themeMap` are silently ignored.
+   *
+   * ```ts
+   * editor.usePlugin({
+   *   update(value, api) {
+   *     const tokens = myTokenizer.tokenize(value);
+   *     api.setDecorations(api.decorationsFromTokens(tokens, {
+   *       keyword: { bold: true, color: 'var(--color-keyword)' },
+   *       string:  { color: 'var(--color-string)' },
+   *       comment: { italic: true, color: 'var(--color-comment)' },
+   *     }));
+   *   },
+   * });
+   * ```
+   */
+  decorationsFromTokens(
+    tokens: Token[],
+    themeMap: Record<string, Omit<MarkDecoration, 'id' | 'type' | 'from' | 'to'>>,
+  ): Omit<MarkDecoration, 'id'>[];
 }
 
 /**

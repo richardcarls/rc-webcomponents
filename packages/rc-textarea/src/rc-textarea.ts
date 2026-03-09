@@ -17,6 +17,7 @@ import type {
   RCTextareaPluginAPI,
   TextPattern,
   MarkDecoration,
+  Token,
 } from './types.ts';
 import { generateId } from './types.ts';
 
@@ -150,6 +151,33 @@ export class RCTextarea extends LitElement {
     this.requestUpdate('plugin', oldPlugin);
   }
 
+  /**
+   * Reactive decorations — set from outside the component without registering a plugin.
+   * Ideal for reactive frameworks (Solid, React 19+, Vue 3) where decorations are
+   * computed as reactive state and passed directly as a property:
+   *
+   * ```tsx
+   * // Solid
+   * <rc-textarea decorations={decorations()} />
+   *
+   * // React 19+
+   * <rc-textarea decorations={decorations} />
+   * ```
+   *
+   * Merges with plugin decorations and pattern decorations on every render.
+   * Setting this property triggers a new render; setting it to `undefined` or `[]`
+   * clears any previously set external decorations.
+   */
+  @property({ attribute: false })
+  get decorations(): DecorationInput[] {
+    return this._externalDecorations;
+  }
+
+  set decorations(value: DecorationInput[] | undefined) {
+    this._externalDecorations = value ?? [];
+    this.requestUpdate();
+  }
+
   // ── Internal state ────────────────────────────────────────────────────
 
   private _value = '';
@@ -163,6 +191,8 @@ export class RCTextarea extends LitElement {
   private _pluginDecorations = new Map<string, Decoration>();
   /** Pattern-generated decorations (rebuilt on each value change). */
   private _patternDecorations: Decoration[] = [];
+  /** Decorations set directly via the `decorations` property (reactive-framework-friendly). */
+  private _externalDecorations: DecorationInput[] = [];
   /** Registered patterns. */
   private _patterns = new Map<string, TextPattern>();
 
@@ -801,6 +831,17 @@ export class RCTextarea extends LitElement {
       decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
         return decorationsFromHtml(html);
       },
+      decorationsFromTokens(
+        tokens: Token[],
+        themeMap: Record<string, Omit<MarkDecoration, 'id' | 'type' | 'from' | 'to'>>,
+      ): Omit<MarkDecoration, 'id'>[] {
+        const result: Omit<MarkDecoration, 'id'>[] = [];
+        for (const t of tokens) {
+          const style = themeMap[t.type];
+          if (style) result.push({ type: 'mark', from: t.from, to: t.to, ...style });
+        }
+        return result;
+      },
     };
   }
 
@@ -895,6 +936,7 @@ export class RCTextarea extends LitElement {
       const allDecorations: Decoration[] = [
         ...this._pluginDecorations.values(),
         ...this._patternDecorations,
+        ...this._externalDecorations.map((d) => ({ ...d, id: generateId() })),
       ];
 
       // Rebuild the Parchment tree
