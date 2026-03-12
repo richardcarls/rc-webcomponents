@@ -257,6 +257,29 @@ export interface RCTextareaPluginAPI {
     tokens: Token[],
     themeMap: Record<string, Omit<MarkDecoration, 'id' | 'type' | 'from' | 'to'>>,
   ): Omit<MarkDecoration, 'id'>[];
+
+  /**
+   * Insert `text` at the current cursor position, replacing any active selection.
+   * Equivalent to typing the text with the keyboard.
+   */
+  insertText(text: string): void;
+
+  /**
+   * Wrap the current selection with `prefix` and `suffix`.
+   * No-op when the selection is collapsed (no text selected).
+   *
+   * ```ts
+   * api.wrapSelection('**', '**'); // bold
+   * api.wrapSelection('`', '`');   // inline code
+   * ```
+   */
+  wrapSelection(prefix: string, suffix: string): void;
+
+  /**
+   * Replace the current selection with `text`.
+   * When the selection is collapsed this is equivalent to `insertText`.
+   */
+  replaceSelection(text: string): void;
 }
 
 /**

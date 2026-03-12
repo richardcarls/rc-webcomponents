@@ -21,6 +21,9 @@ function makeApi(overrides: Partial<RCTextareaPluginAPI> = {}): RCTextareaPlugin
     removeStyleSheet: () => {},
     decorationsFromHtml: () => [],
     decorationsFromTokens: () => [],
+    insertText: () => {},
+    wrapSelection: () => {},
+    replaceSelection: () => {},
     ...overrides,
   };
 }

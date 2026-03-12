@@ -286,6 +286,9 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-toolbar**: ARIA toolbar → rc-common
 - **rc-splitter**: Resizable pane splitter → rc-common
 - **rc-textarea**: Enhanced textarea (standalone)
+- **rc-textarea-adapters**: Adapter factories for lezer, unified, and shiki tokenizers → rc-textarea
+- **rc-text-editor**: Rich text editor extending rc-textarea; includes `<rc-editor-toolbar>` (light DOM formatting toolbar) as a co-located component → rc-textarea
+- **rc-textarea-plugin-markdown**: Markdown decoration plugin usable standalone on any rc-textarea (peer deps: micromark, mdast-util-from-markdown, unist-util-visit)
 - **rc-disclosure**: Disclosure widget (standalone)
 - **rc-accordion**: Accordion coordinator for disclosure groups → rc-disclosure
 - **rc-slider**: Slider widget (standalone)

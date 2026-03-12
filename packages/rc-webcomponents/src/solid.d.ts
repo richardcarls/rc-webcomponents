@@ -152,6 +152,15 @@ export type RCTextareaRef = HTMLElement & {
   label: string | null;
   usePlugin(plugin: RCTextareaPlugin): void;
   removePlugin(): void;
+  wrapSelection(prefix: string, suffix: string): void;
+  replaceSelection(text: string): void;
+};
+
+export type RCTextEditorRef = RCTextareaRef & {
+  toolbar: boolean;
+  markdown: boolean;
+  preview: boolean;
+  defaultPreview: boolean;
 };
 
 export type RCSliderRef = HTMLElement & {
@@ -364,6 +373,35 @@ declare module 'solid-js' {
         'prop:defaultValue'?: number | undefined;
         fixed?: boolean | string;
         'on:rc-splitter-change'?: (e: CustomEvent<{ value: number; valueText: string }>) => void;
+      };
+
+      'rc-editor-toolbar': JSX.HTMLAttributes<HTMLElement> & {
+        label?: string;
+        'on:rc-toolbar-action'?: (e: CustomEvent<{ action: string }>) => void;
+      };
+
+      'rc-text-editor': JSX.HTMLAttributes<RCTextEditorRef> & {
+        value?: string;
+        defaultValue?: string;
+        plugin?: RCTextareaPlugin | null;
+        'prop:value'?: string | undefined;
+        'prop:defaultValue'?: string | undefined;
+        'prop:plugin'?: RCTextareaPlugin | null;
+        toolbar?: boolean | string;
+        markdown?: boolean | string;
+        preview?: boolean | string;
+        'default-preview'?: boolean | string;
+        'prop:preview'?: boolean | undefined;
+        'prop:defaultPreview'?: boolean | undefined;
+        'line-numbers'?: boolean | string;
+        'list-numbers'?: boolean | string;
+        gutter?: boolean | string;
+        'word-wrap'?: boolean | string;
+        'auto-grow'?: boolean | string;
+        'read-only'?: boolean | string;
+        label?: string;
+        'on:rc-textarea-change'?: (e: CustomEvent<{ value: string }>) => void;
+        'on:rc-preview-change'?: (e: CustomEvent<{ preview: boolean }>) => void;
       };
 
       'rc-textarea': JSX.HTMLAttributes<RCTextareaRef> & {

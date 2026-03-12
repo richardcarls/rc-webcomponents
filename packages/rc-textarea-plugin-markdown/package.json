@@ -1,0 +1,45 @@
+{
+  "name": "@rcarls/rc-textarea-plugin-markdown",
+  "private": true,
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-textarea-plugin-markdown"
+  },
+  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/rc-textarea-plugin-markdown.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/packages/rc-textarea-plugin-markdown/src/index.d.ts",
+        "default": "./dist/rc-textarea-plugin-markdown.js"
+      }
+    }
+  },
+  "types": "./dist/types/packages/rc-textarea-plugin-markdown/src/index.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc && vite build",
+    "yalc:publish": "yalc publish --push"
+  },
+  "devDependencies": {
+    "@rcarls/rc-textarea": "workspace:^",
+    "mdast-util-from-markdown": "^2.0.2",
+    "micromark": "^4.0.2",
+    "typescript": "~5.9.3",
+    "unist-util-visit": "^5.0.0",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "peerDependencies": {
+    "@rcarls/rc-textarea": "workspace:^",
+    "mdast-util-from-markdown": ">=2.0.0",
+    "micromark": ">=4.0.0",
+    "unist-util-visit": ">=5.0.0"
+  }
+}

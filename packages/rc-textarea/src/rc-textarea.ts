@@ -1,4 +1,5 @@
 import { LitElement, html } from 'lit';
+import type { CSSResultGroup } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import { styles } from './rc-textarea.styles.ts';
@@ -103,7 +104,7 @@ function decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-gutter-border=1px solid ButtonBorder] - Gutter right border
  */
 export class RCTextarea extends LitElement {
-  static override styles = styles;
+  static override styles: CSSResultGroup = styles;
   static override shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
@@ -188,7 +189,7 @@ export class RCTextarea extends LitElement {
   private _textareaRef: WeakRef<HTMLTextAreaElement> | null = null;
 
   /** Plugin-owned decorations (set via PluginAPI.setDecorations / addDecoration). */
-  private _pluginDecorations = new Map<string, Decoration>();
+  protected _pluginDecorations = new Map<string, Decoration>();
   /** Pattern-generated decorations (rebuilt on each value change). */
   private _patternDecorations: Decoration[] = [];
   /** Decorations set directly via the `decorations` property (reactive-framework-friendly). */
@@ -196,15 +197,15 @@ export class RCTextarea extends LitElement {
   /** Registered patterns. */
   private _patterns = new Map<string, TextPattern>();
 
-  private _plugin: RCTextareaPlugin | null = null;
+  protected _plugin: RCTextareaPlugin | null = null;
   private _pluginProperty: RCTextareaPlugin | null = null;
-  private _pluginApi: RCTextareaPluginAPI | null = null;
+  protected _pluginApi: RCTextareaPluginAPI | null = null;
   /** Sequence counter for async plugin safety (discard stale results). */
   private _pluginSeq = 0;
   /** Stylesheets adopted into the shadow root by the active plugin. */
   private _pluginSheets = new Set<CSSStyleSheet>();
 
-  private _savedSelection: SavedSelection | null = null;
+  protected _savedSelection: SavedSelection | null = null;
   private _rafHandle: number | null = null;
   private _composing = false;
   private _isRendering = false;
@@ -606,7 +607,7 @@ export class RCTextarea extends LitElement {
     }
   };
 
-  private _insertText(text: string): void {
+  protected _insertText(text: string): void {
     const editorEl = this._getEditorEl();
     if (!editorEl) return;
 
@@ -655,6 +656,53 @@ export class RCTextarea extends LitElement {
     this._onInput();
   }
 
+  /**
+   * Wrap the current selection with `prefix` and `suffix`.
+   * No-op when the selection is collapsed (no text selected).
+   *
+   * Uses the model path directly (not `execCommand`) because callers such as
+   * toolbar buttons move focus away from the editor before this fires, which
+   * clears the DOM selection. `_savedSelection` retains the last model-level
+   * anchor/focus offsets.
+   */
+  wrapSelection(prefix: string, suffix: string): void {
+    const editorEl = this._getEditorEl();
+    if (!editorEl) return;
+
+    const sel = saveSelection(editorEl) ?? this._savedSelection;
+    if (!sel || sel.anchorOffset === sel.focusOffset) return;
+
+    const start = Math.min(sel.anchorOffset, sel.focusOffset);
+    const end = Math.max(sel.anchorOffset, sel.focusOffset);
+    const selected = this._value.slice(start, end);
+    const oldValue = this._value;
+    const newValue =
+      oldValue.slice(0, start) + prefix + selected + suffix + oldValue.slice(end);
+
+    const mapped = mapOrClear([...this._pluginDecorations.values()], oldValue, newValue);
+    this._pluginDecorations.clear();
+    for (const d of mapped) this._pluginDecorations.set(d.id, d);
+
+    this._value = newValue;
+    this._syncTextareaValue(true);
+    this._savedSelection = {
+      anchorOffset: start + prefix.length,
+      focusOffset: start + prefix.length + selected.length,
+    };
+    this._pushUndo(this._savedSelection);
+    this._dispatchChange(newValue);
+    this._scheduleRender();
+  }
+
+  /**
+   * Replace the current selection with `text`.
+   * When the selection is collapsed this is equivalent to `insertText`.
+   */
+  replaceSelection(text: string): void {
+    this._insertText(text);
+  }
+
+
   // ── Paste handling ────────────────────────────────────────────────────
 
   private _onPaste = (e: ClipboardEvent): void => {
@@ -668,7 +716,7 @@ export class RCTextarea extends LitElement {
 
   // ── Undo/Redo ─────────────────────────────────────────────────────────
 
-  private _pushUndo(sel: SavedSelection | null): void {
+  protected _pushUndo(sel: SavedSelection | null): void {
     const entry: UndoEntry = {
       value: this._value,
       anchorOffset: sel?.anchorOffset ?? 0,
@@ -842,6 +890,15 @@ export class RCTextarea extends LitElement {
         }
         return result;
       },
+      insertText(text: string): void {
+        component._insertText(text);
+      },
+      wrapSelection(prefix: string, suffix: string): void {
+        component.wrapSelection(prefix, suffix);
+      },
+      replaceSelection(text: string): void {
+        component.replaceSelection(text);
+      },
     };
   }
 
@@ -877,7 +934,7 @@ export class RCTextarea extends LitElement {
 
   // ── Render pipeline ───────────────────────────────────────────────────
 
-  private _scheduleRender(): void {
+  protected _scheduleRender(): void {
     if (this._rafHandle !== null) return;
     this._rafHandle = requestAnimationFrame(() => {
       this._rafHandle = null;
@@ -1123,7 +1180,7 @@ export class RCTextarea extends LitElement {
 
   // ── Form integration ──────────────────────────────────────────────────
 
-  private _syncTextareaValue(fromUser = false): void {
+  protected _syncTextareaValue(fromUser = false): void {
     const textarea = this._textareaRef?.deref();
     if (textarea) {
       textarea.value = this._value;
@@ -1133,7 +1190,7 @@ export class RCTextarea extends LitElement {
     }
   }
 
-  private _dispatchChange(value: string): void {
+  protected _dispatchChange(value: string): void {
     this.dispatchEvent(
       new CustomEvent('rc-textarea-change', {
         bubbles: true,

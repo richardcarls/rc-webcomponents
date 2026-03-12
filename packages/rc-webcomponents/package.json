@@ -49,6 +49,7 @@
     "@rcarls/rc-menubar": "workspace:^",
     "@rcarls/rc-select": "workspace:^",
     "@rcarls/rc-splitter": "workspace:^",
+    "@rcarls/rc-text-editor": "workspace:^",
     "@rcarls/rc-textarea": "workspace:^",
     "@rcarls/rc-toolbar": "workspace:^"
   },
