@@ -849,6 +849,9 @@ export class RCTextarea extends LitElement {
       setDecorations(decorations: DecorationInput[]): void {
         setDecorations(component._pluginDecorations, decorations);
       },
+      getDecorations(): readonly Decoration[] {
+        return [...component._pluginDecorations.values()];
+      },
       scheduleUpdate(): void {
         if (!component._isRendering) component._scheduleRender();
       },

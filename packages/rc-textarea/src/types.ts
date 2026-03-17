@@ -167,6 +167,8 @@ export interface RCTextareaPluginAPI {
   removeDecoration(id: string): void;
   clearDecorations(): void;
   setDecorations(decorations: DecorationInput[]): void;
+  /** Returns the decorations this plugin has currently set, in insertion order. */
+  getDecorations(): readonly Decoration[];
 
   /** Trigger a render pass outside of normal text input events. */
   scheduleUpdate(): void;
