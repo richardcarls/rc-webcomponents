@@ -44,12 +44,12 @@
     "@rcarls/rc-combobox": "workspace:^",
     "@rcarls/rc-dialog": "workspace:^",
     "@rcarls/rc-listbox": "workspace:^",
+    "@rcarls/rc-markdown-editor": "workspace:^",
     "@rcarls/rc-menu": "workspace:^",
     "@rcarls/rc-menu-button": "workspace:^",
     "@rcarls/rc-menubar": "workspace:^",
     "@rcarls/rc-select": "workspace:^",
     "@rcarls/rc-splitter": "workspace:^",
-    "@rcarls/rc-text-editor": "workspace:^",
     "@rcarls/rc-textarea": "workspace:^",
     "@rcarls/rc-toolbar": "workspace:^"
   },

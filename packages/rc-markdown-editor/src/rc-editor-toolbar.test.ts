@@ -64,12 +64,12 @@ describe('RcEditorToolbar', () => {
       actions.push((e as CustomEvent<EditorToolbarActionDetail>).detail.action);
     });
 
-    for (const action of ['bold', 'italic', 'code', 'link', 'heading', 'preview']) {
+    for (const action of ['bold', 'italic', 'code', 'link', 'heading', 'source']) {
       const btn = host.querySelector<HTMLButtonElement>(`button[data-action="${action}"]`);
       btn!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
     }
 
-    expect(actions).toEqual(['bold', 'italic', 'code', 'link', 'heading', 'preview']);
+    expect(actions).toEqual(['bold', 'italic', 'code', 'link', 'heading', 'source']);
   });
 
   test('has no automated accessibility violations', async () => {
