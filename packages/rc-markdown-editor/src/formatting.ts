@@ -4,9 +4,9 @@ import type { ActiveFormats, HeadingLevel } from './types.ts';
 
 
 /**
- * Derives active inline formats from the decoration array at a given
- * selection range in the markdown source editor. Used for toolbar state
- * sync in source mode.
+ * Derives active inline and block formats from the decoration array at a given
+ * selection range in the markdown source editor. Used for toolbar state sync in
+ * source mode.
  */
 export function getFormatsFromDecorations(
   decorations: readonly Decoration[],
@@ -22,10 +22,14 @@ export function getFormatsFromDecorations(
   const headingLevel = headingMark?.className?.replace('rme-heading-', '') as HeadingLevel | undefined;
 
   return {
-    bold:    marks.some((d) => d.bold),
-    italic:  marks.some((d) => d.italic),
-    code:    marks.some((d) => d.className === 'rme-code'),
-    link:    marks.some((d) => d.className === 'rme-link'),
-    heading: headingLevel ?? null,
+    bold:         marks.some((d) => d.bold),
+    italic:       marks.some((d) => d.italic),
+    code:         marks.some((d) => d.className === 'rme-code'),
+    link:         marks.some((d) => d.className === 'rme-link'),
+    heading:      headingLevel ?? null,
+    blockquote:   marks.some((d) => d.className === 'rme-blockquote'),
+    bulletList:   marks.some((d) => d.className === 'rme-list-bullet'),
+    orderedList:  marks.some((d) => d.className === 'rme-list-ordered'),
+    codeBlock:    marks.some((d) => d.className === 'rme-code-block'),
   };
 }

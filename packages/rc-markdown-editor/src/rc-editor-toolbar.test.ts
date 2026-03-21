@@ -9,7 +9,7 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 
 describe('RcEditorToolbar', () => {
-  test('renders 6 default buttons', async () => {
+  test('renders 10 default buttons', async () => {
     const screen = render(html`
       <rc-editor-toolbar data-testid="host"></rc-editor-toolbar>
     `);
@@ -17,7 +17,7 @@ describe('RcEditorToolbar', () => {
     await host.updateComplete;
 
     const buttons = host.querySelectorAll('button[data-action]');
-    expect(buttons).toHaveLength(6);
+    expect(buttons).toHaveLength(10);
   });
 
   test('all default buttons have a non-empty aria-label', async () => {
@@ -64,12 +64,12 @@ describe('RcEditorToolbar', () => {
       actions.push((e as CustomEvent<EditorToolbarActionDetail>).detail.action);
     });
 
-    for (const action of ['bold', 'italic', 'code', 'link', 'heading', 'source']) {
+    for (const action of ['bold', 'italic', 'code', 'link', 'heading', 'blockquote', 'bullet-list', 'ordered-list', 'code-block', 'source']) {
       const btn = host.querySelector<HTMLButtonElement>(`button[data-action="${action}"]`);
       btn!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
     }
 
-    expect(actions).toEqual(['bold', 'italic', 'code', 'link', 'heading', 'source']);
+    expect(actions).toEqual(['bold', 'italic', 'code', 'link', 'heading', 'blockquote', 'bullet-list', 'ordered-list', 'code-block', 'source']);
   });
 
   test('has no automated accessibility violations', async () => {

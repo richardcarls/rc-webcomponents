@@ -97,12 +97,52 @@ export const rmeStyles = css`
     border-color: Highlight;
   }
 
-  /* Hide the slotted native textarea — keeps it in DOM for form participation */
+  /* ── Source mode decoration classes ─────────────────────────────────────── */
+
+  /* Blockquote lines get a subtle left border in source mode */
+  .rme-blockquote { color: GrayText; }
+
+  /* List items are visually distinct from prose */
+  .rme-list-bullet, .rme-list-ordered { color: GrayText; }
+
+  /* Fenced code blocks use a monospace hint */
+  .rme-code-block { color: GrayText; font-style: italic; }
+
+  /* ── Rich view block element spacing ─────────────────────────────────────── */
+
+  #rich-view blockquote {
+    margin: 0.5em 0;
+    padding-left: 1em;
+    border-left: 3px solid ButtonBorder;
+    color: GrayText;
+  }
+
+  #rich-view pre {
+    margin: 0.5em 0;
+    padding: 0.65em 0.85em;
+    background: Field;
+    border: 1px solid ButtonBorder;
+    border-radius: 4px;
+    overflow-x: auto;
+  }
+
+  #rich-view pre code {
+    font-family: 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+    font-size: 0.875em;
+  }
+
+  #rich-view ul, #rich-view ol {
+    margin: 0.5em 0;
+    padding-left: 1.75em;
+  }
+
+  #rich-view li { margin: 0.2em 0; }
+
+  /* ── Hide the slotted native textarea ────────────────────────────────────── */
   ::slotted(textarea) {
     display: none !important;
   }
 
-  /* Labels for the slotted textarea still render normally */
   ::slotted(label) {
     display: block;
     margin-bottom: 0.25em;

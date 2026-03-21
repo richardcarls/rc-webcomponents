@@ -5,6 +5,10 @@ export type EditorToolbarAction =
   | 'code'
   | 'link'
   | 'heading'
+  | 'blockquote'
+  | 'bullet-list'
+  | 'ordered-list'
+  | 'code-block'
   | 'source';
 
 /** Detail payload carried by `rc-toolbar-action` custom events. */
@@ -22,6 +26,10 @@ export interface ActiveFormats {
   code?: boolean;
   link?: boolean;
   heading?: HeadingLevel | null;
+  blockquote?: boolean;
+  bulletList?: boolean;
+  orderedList?: boolean;
+  codeBlock?: boolean;
 }
 
 /** Editor display mode. */

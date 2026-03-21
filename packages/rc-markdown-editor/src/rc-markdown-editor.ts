@@ -43,11 +43,14 @@ _turndown.addRule('inlineCode', {
 type PartialDecoration = Partial<Omit<DecorationInput, 'type' | 'from' | 'to'>>;
 
 const DECORATION_MAP: Record<string, PartialDecoration> = {
-  heading:    { bold: true },        // class set per heading level below
+  heading:    { bold: true },        // className set per depth below
   emphasis:   { italic: true },
   strong:     { bold: true },
   inlineCode: { className: 'rme-code' },
   link:       { underline: 'solid', className: 'rme-link' },
+  blockquote: { className: 'rme-blockquote' },
+  code:       { className: 'rme-code-block' }, // fenced code block (not inlineCode)
+  // list className is set dynamically based on node.ordered
 };
 
 
@@ -339,13 +342,23 @@ export class RcMarkdownEditor extends LitElement {
           (node: {
             type: string;
             depth?: number;
+            ordered?: boolean | null;
             position?: { start: { offset?: number }; end: { offset?: number } };
           }) => {
-            const style = DECORATION_MAP[node.type];
             const from = node.position?.start.offset;
             const to = node.position?.end.offset;
+            if (from === undefined || to === undefined) return;
 
-            if (!style || from === undefined || to === undefined) return;
+            if (node.type === 'list') {
+              decorations.push({
+                type: 'mark', from, to,
+                className: node.ordered ? 'rme-list-ordered' : 'rme-list-bullet',
+              } as DecorationInput);
+              return;
+            }
+
+            const style = DECORATION_MAP[node.type];
+            if (!style) return;
 
             const dec: DecorationInput = { type: 'mark', from, to, ...style };
             if (node.type === 'heading' && node.depth) {
@@ -414,8 +427,22 @@ export class RcMarkdownEditor extends LitElement {
         document.execCommand('formatBlock', false, newTag);
         break;
       }
+      case 'blockquote': {
+        const newTag = this._activeFormats.blockquote ? 'p' : 'blockquote';
+        document.execCommand('formatBlock', false, newTag);
+        break;
+      }
+      case 'bullet-list':
+        document.execCommand('insertUnorderedList');
+        break;
+      case 'ordered-list':
+        document.execCommand('insertOrderedList');
+        break;
+      case 'code-block':
+        this._toggleRichCodeBlock();
+        break;
       case 'link': {
-        // TODO: replace prompt with a proper popover in a future iteration
+        // TODO: replace prompt with a proper link popover
         const url = prompt('Enter URL:');
         if (url) document.execCommand('createLink', false, url);
         break;
@@ -428,28 +455,70 @@ export class RcMarkdownEditor extends LitElement {
     if (!editor) return;
 
     switch (action) {
-      case 'bold':    editor.wrapSelection('**', '**'); break;
-      case 'italic':  editor.wrapSelection('*', '*');   break;
-      case 'code':    editor.wrapSelection('`', '`');   break;
-      case 'link':    editor.replaceSelection('[](url)'); break;
-      case 'heading': this._toggleHeadingInSource();    break;
+      case 'bold':         editor.wrapSelection('**', '**');    break;
+      case 'italic':       editor.wrapSelection('*', '*');      break;
+      case 'code':         editor.wrapSelection('`', '`');      break;
+      case 'link':         editor.replaceSelection('[](url)');  break;
+      case 'heading':      this._toggleLinePrefix('# ');        break;
+      case 'blockquote':   this._toggleLinePrefix('> ');        break;
+      case 'bullet-list':  this._toggleLinePrefix('- ');        break;
+      case 'ordered-list': this._toggleLinePrefix('1. ');       break;
+      case 'code-block':   this._toggleSourceCodeFence();       break;
     }
   }
 
-  private _toggleHeadingInSource() {
+  /** Toggles a line prefix (e.g. `'# '`, `'> '`, `'- '`) on the cursor's line. */
+  private _toggleLinePrefix(prefix: string) {
     const api = this._pluginApi;
     const editor = this._sourceEditor;
     if (!api || !editor) return;
 
     const { value, selectionStart } = api;
     const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
-    const prefix = '# ';
 
     if (value.startsWith(prefix, lineStart)) {
       editor.value = value.slice(0, lineStart) + value.slice(lineStart + prefix.length);
     } else {
       editor.value = value.slice(0, lineStart) + prefix + value.slice(lineStart);
     }
+  }
+
+  /** Wraps the current selection (or cursor line) with a fenced code block. */
+  private _toggleSourceCodeFence() {
+    const api = this._pluginApi;
+    const editor = this._sourceEditor;
+    if (!api || !editor) return;
+
+    const { value, selectionStart, selectionEnd } = api;
+    const fence = '```';
+
+    // Determine line boundaries for the selection
+    const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
+    const lineEndIdx = value.indexOf('\n', selectionEnd);
+    const lineEnd = lineEndIdx === -1 ? value.length : lineEndIdx;
+
+    // Check if the block is already wrapped (previous non-empty line is ``` and next is ```)
+    const prevNewline = value.lastIndexOf('\n', lineStart - 2);
+    const prevLine = prevNewline === -1 ? '' : value.slice(prevNewline + 1, lineStart - 1);
+    const afterEnd = lineEnd + 1;
+    const nextNewline = value.indexOf('\n', afterEnd);
+    const nextLine = value.slice(afterEnd, nextNewline === -1 ? undefined : nextNewline);
+
+    if (prevLine.trim() === fence && nextLine.trim() === fence) {
+      // Unwrap: remove the fence lines
+      const unwrapStart = prevNewline === -1 ? 0 : prevNewline + 1;
+      const unwrapEnd = nextNewline === -1 ? value.length : nextNewline + 1;
+      const inner = value.slice(lineStart, lineEnd);
+      editor.value = value.slice(0, unwrapStart) + inner + '\n' + value.slice(unwrapEnd);
+      return;
+    }
+
+    // Wrap the selected lines
+    const selected = value.slice(lineStart, lineEnd);
+    editor.value =
+      value.slice(0, lineStart) +
+      fence + '\n' + selected + '\n' + fence +
+      value.slice(lineEnd);
   }
 
   private _wrapRichSelection(tag: string) {
@@ -469,6 +538,44 @@ export class RcMarkdownEditor extends LitElement {
     }
     sel.removeAllRanges();
     sel.addRange(range);
+  }
+
+  private _toggleRichCodeBlock() {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    const range = sel.getRangeAt(0);
+    const anchor = range.commonAncestorContainer;
+    const el: Element | null =
+      anchor.nodeType === Node.TEXT_NODE
+        ? (anchor as Text).parentElement
+        : (anchor as Element);
+
+    const existingPre = el?.closest('pre');
+    if (existingPre) {
+      // Unwrap: replace <pre> with a <p> containing the plain text
+      const p = document.createElement('p');
+      p.textContent = existingPre.textContent ?? '';
+      existingPre.replaceWith(p);
+      return;
+    }
+
+    // Wrap: create <pre><code> around the selection (or current block)
+    const pre = document.createElement('pre');
+    const code = document.createElement('code');
+    pre.appendChild(code);
+
+    try {
+      const fragment = range.extractContents();
+      code.appendChild(fragment);
+      range.insertNode(pre);
+    } catch {
+      // Fallback: wrap the current element
+      if (el && el !== this._richView) {
+        code.textContent = el.textContent ?? '';
+        el.replaceWith(pre);
+      }
+    }
   }
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
@@ -521,11 +628,15 @@ export class RcMarkdownEditor extends LitElement {
     if (this.sourceMode) return;
 
     this._activeFormats = {
-      bold:    !!el?.closest('strong, b'),
-      italic:  !!el?.closest('em, i'),
-      code:    !!el?.closest('code'),
-      link:    !!el?.closest('a'),
-      heading: (el?.closest('h1,h2,h3,h4,h5,h6')?.tagName.toLowerCase() ?? null) as HeadingLevel | null,
+      bold:        !!el?.closest('strong, b'),
+      italic:      !!el?.closest('em, i'),
+      code:        !!el?.closest(':not(pre) > code'),
+      link:        !!el?.closest('a'),
+      heading:     (el?.closest('h1,h2,h3,h4,h5,h6')?.tagName.toLowerCase() ?? null) as HeadingLevel | null,
+      blockquote:  !!el?.closest('blockquote'),
+      bulletList:  !!el?.closest('ul'),
+      orderedList: !!el?.closest('ol'),
+      codeBlock:   !!el?.closest('pre'),
     };
 
     this._pushToolbarState();
@@ -539,13 +650,21 @@ export class RcMarkdownEditor extends LitElement {
       activeItalic?: boolean;
       activeCode?: boolean;
       activeHeading?: HeadingLevel | null;
+      activeBlockquote?: boolean;
+      activeBulletList?: boolean;
+      activeOrderedList?: boolean;
+      activeCodeBlock?: boolean;
     }) | undefined;
 
     if (toolbar) {
-      toolbar.activeBold    = !!this._activeFormats.bold;
-      toolbar.activeItalic  = !!this._activeFormats.italic;
-      toolbar.activeCode    = !!this._activeFormats.code;
-      toolbar.activeHeading = this._activeFormats.heading ?? null;
+      toolbar.activeBold        = !!this._activeFormats.bold;
+      toolbar.activeItalic      = !!this._activeFormats.italic;
+      toolbar.activeCode        = !!this._activeFormats.code;
+      toolbar.activeHeading     = this._activeFormats.heading ?? null;
+      toolbar.activeBlockquote  = !!this._activeFormats.blockquote;
+      toolbar.activeBulletList  = !!this._activeFormats.bulletList;
+      toolbar.activeOrderedList = !!this._activeFormats.orderedList;
+      toolbar.activeCodeBlock   = !!this._activeFormats.codeBlock;
     }
 
     this.dispatchEvent(new CustomEvent<ActiveFormats>('rc-formatting-change', {
