@@ -9,7 +9,7 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 
 describe('RcEditorToolbar', () => {
-  test('renders 10 default buttons', async () => {
+  test('renders 12 default buttons plus heading select', async () => {
     const screen = render(html`
       <rc-editor-toolbar data-testid="host"></rc-editor-toolbar>
     `);
@@ -17,7 +17,8 @@ describe('RcEditorToolbar', () => {
     await host.updateComplete;
 
     const buttons = host.querySelectorAll('button[data-action]');
-    expect(buttons).toHaveLength(10);
+    expect(buttons).toHaveLength(12);
+    expect(host.querySelector('select[aria-label="Heading level"]')).toBeTruthy();
   });
 
   test('all default buttons have a non-empty aria-label', async () => {

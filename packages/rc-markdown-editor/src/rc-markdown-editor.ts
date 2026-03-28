@@ -1,8 +1,10 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { micromark } from 'micromark';
+import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import TurndownService from 'turndown';
 import { fromMarkdown } from 'mdast-util-from-markdown';
+import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
 import { visit } from 'unist-util-visit';
 
 import type { RCTextarea, RCTextareaPluginAPI, DecorationInput } from '@rcarls/rc-textarea';
@@ -18,6 +20,19 @@ import type {
 import { getFormatsFromDecorations } from './formatting.ts';
 
 
+// ── Markdown rendering options ────────────────────────────────────────────────
+
+const MICROMARK_OPTIONS = {
+  allowDangerousHtml: true,          // preserves <u> underline passthrough
+  extensions: [gfmStrikethrough()],  // renders ~~text~~ as <del>
+};
+
+const MDAST_OPTIONS = {
+  extensions: [gfmStrikethrough()],
+  mdastExtensions: [gfmStrikethroughFromMarkdown()],
+};
+
+
 // ── Turndown instance (module-level singleton) ────────────────────────────────
 
 const _turndown = new TurndownService({
@@ -29,12 +44,33 @@ const _turndown = new TurndownService({
   strongDelimiter: '**',
 });
 
-// Override inline-code rule so <code> outside <pre> maps to backtick spans
+// Inline code: <code> outside <pre> → `backticks`
 _turndown.addRule('inlineCode', {
-  filter: (node) =>
-    node.nodeName === 'CODE' &&
-    node.parentElement?.nodeName !== 'PRE',
+  filter: (node) => node.nodeName === 'CODE' && node.parentElement?.nodeName !== 'PRE',
   replacement: (content) => '`' + content + '`',
+});
+
+// Underline: preserve <u> as HTML (no markdown equivalent)
+_turndown.addRule('underline', {
+  filter: ['u'],
+  replacement: (content) => '<u>' + content + '</u>',
+});
+
+// Strikethrough: <s>/<del> → ~~text~~
+_turndown.addRule('strikethrough', {
+  filter: ['s', 'del', 'strike'],
+  replacement: (content) => '~~' + content + '~~',
+});
+
+// Code blocks with language: read data-lang from <pre>, emit fenced block
+_turndown.addRule('codeBlockWithLang', {
+  filter: (node) => node.nodeName === 'PRE' && !!node.querySelector('code'),
+  replacement: (_content, node) => {
+    const pre = node as HTMLElement;
+    const code = pre.querySelector('code');
+    const lang = pre.dataset['lang'] ?? '';
+    return '\n\n```' + lang + '\n' + (code?.textContent ?? '') + '\n```\n\n';
+  },
 });
 
 
@@ -43,14 +79,15 @@ _turndown.addRule('inlineCode', {
 type PartialDecoration = Partial<Omit<DecorationInput, 'type' | 'from' | 'to'>>;
 
 const DECORATION_MAP: Record<string, PartialDecoration> = {
-  heading:    { bold: true },        // className set per depth below
-  emphasis:   { italic: true },
-  strong:     { bold: true },
-  inlineCode: { className: 'rme-code' },
-  link:       { underline: 'solid', className: 'rme-link' },
-  blockquote: { className: 'rme-blockquote' },
-  code:       { className: 'rme-code-block' }, // fenced code block (not inlineCode)
-  // list className is set dynamically based on node.ordered
+  heading:       { bold: true },         // className set per depth below
+  emphasis:      { italic: true },
+  strong:        { bold: true },
+  inlineCode:    { className: 'rme-code' },
+  link:          { underline: 'solid', className: 'rme-link' },
+  blockquote:    { className: 'rme-blockquote' },
+  code:          { className: 'rme-code-block' }, // fenced code block
+  delete:        { className: 'rme-strikethrough' }, // GFM ~~text~~
+  // list and html (underline) are handled dynamically below
 };
 
 
@@ -274,9 +311,32 @@ export class RcMarkdownEditor extends LitElement {
   private _setRichViewContent(markdown: string) {
     if (!this._richView) return;
     this._ignoreRichMutations = true;
-    this._richView.innerHTML = micromark(markdown);
+    this._richView.innerHTML = this._renderMarkdown(markdown);
     this._ignoreRichMutations = false;
     this._richViewRendered = true;
+  }
+
+  private _renderMarkdown(markdown: string): string {
+    const html = micromark(markdown, MICROMARK_OPTIONS);
+
+    // Annotate <pre> elements with data-lang from the markdown AST
+    const tree = fromMarkdown(markdown, MDAST_OPTIONS);
+    const langs: (string | null)[] = [];
+
+    visit(tree, 'code', (node: { lang?: string | null }) => {
+      langs.push(node.lang ?? null);
+    });
+
+    if (langs.length === 0) return html;
+
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const pres = doc.querySelectorAll('pre');
+
+    langs.forEach((lang, i) => {
+      if (pres[i] && lang) pres[i].dataset['lang'] = lang;
+    });
+
+    return doc.body.innerHTML;
   }
 
   private _scheduleMarkdownSync() {
@@ -320,21 +380,30 @@ export class RcMarkdownEditor extends LitElement {
 
   // ── Source editor ─────────────────────────────────────────────────────────
 
+  private _cachedTree: ReturnType<typeof fromMarkdown> | null = null;
+
   private _setupSourcePlugin() {
     this._sourceEditor.usePlugin({
       mount: (api: RCTextareaPluginAPI) => {
         this._pluginApi = api;
         api.onCursorMove((start: number, end: number) => {
           if (!this.sourceMode) return;
-          this._activeFormats = getFormatsFromDecorations(api.getDecorations(), start, end);
+          const formats = getFormatsFromDecorations(api.getDecorations(), start, end);
+          // Resolve code block language from the cached MDAST
+          const lang = formats.codeBlock && this._cachedTree
+            ? this._getCodeBlockLanguage(this._cachedTree, start)
+            : null;
+          this._activeFormats = { ...formats, codeLanguage: lang };
           this._pushToolbarState();
         });
       },
       destroy: () => {
         this._pluginApi = null;
+        this._cachedTree = null;
       },
       update: (value: string, api: RCTextareaPluginAPI) => {
-        const tree = fromMarkdown(value);
+        const tree = fromMarkdown(value, MDAST_OPTIONS);
+        this._cachedTree = tree;
         const decorations: DecorationInput[] = [];
 
         visit(
@@ -373,6 +442,25 @@ export class RcMarkdownEditor extends LitElement {
     });
   }
 
+  private _getCodeBlockLanguage(
+    tree: ReturnType<typeof fromMarkdown>,
+    offset: number,
+  ): string | null {
+    let lang: string | null = null;
+    visit(
+      tree,
+      'code',
+      (node: { lang?: string | null; position?: { start: { offset?: number }; end: { offset?: number } } }) => {
+        const from = node.position?.start.offset;
+        const to = node.position?.end.offset;
+        if (from !== undefined && to !== undefined && from <= offset && to >= offset) {
+          lang = node.lang ?? '';
+        }
+      },
+    );
+    return lang;
+  }
+
   private _onSourceChange = (e: Event) => {
     void e;
     const md = this._sourceEditor?.value ?? '';
@@ -385,10 +473,22 @@ export class RcMarkdownEditor extends LitElement {
   // ── Toolbar ───────────────────────────────────────────────────────────────
 
   private _onToolbarAction = (e: CustomEvent<EditorToolbarActionDetail>) => {
-    const { action } = e.detail;
+    const { action, headingLevel, codeLanguage } = e.detail;
 
     if (action === 'source') {
       this.sourceMode = !this.sourceMode;
+      return;
+    }
+
+    if (action === 'code-block-language') {
+      if (this.sourceMode) this._setSourceCodeBlockLanguage(codeLanguage ?? '');
+      else this._setRichCodeBlockLanguage(codeLanguage ?? '');
+      return;
+    }
+
+    if (action === 'heading' && headingLevel !== undefined) {
+      if (this.sourceMode) this._setSourceHeadingLevel(headingLevel);
+      else document.execCommand('formatBlock', false, headingLevel ?? 'p');
       return;
     }
 
@@ -413,34 +513,19 @@ export class RcMarkdownEditor extends LitElement {
     }
 
     switch (action) {
-      case 'bold':
-        document.execCommand('bold');
-        break;
-      case 'italic':
-        document.execCommand('italic');
-        break;
-      case 'code':
-        this._wrapRichSelection('code');
-        break;
-      case 'heading': {
-        const newTag = this._activeFormats.heading ? 'p' : 'h1';
-        document.execCommand('formatBlock', false, newTag);
-        break;
-      }
+      case 'bold':          document.execCommand('bold');             break;
+      case 'italic':        document.execCommand('italic');           break;
+      case 'underline':     document.execCommand('underline');        break;
+      case 'strikethrough': this._wrapRichSelection('s');             break;
+      case 'code':          this._wrapRichSelection('code');          break;
       case 'blockquote': {
         const newTag = this._activeFormats.blockquote ? 'p' : 'blockquote';
         document.execCommand('formatBlock', false, newTag);
         break;
       }
-      case 'bullet-list':
-        document.execCommand('insertUnorderedList');
-        break;
-      case 'ordered-list':
-        document.execCommand('insertOrderedList');
-        break;
-      case 'code-block':
-        this._toggleRichCodeBlock();
-        break;
+      case 'bullet-list':   document.execCommand('insertUnorderedList'); break;
+      case 'ordered-list':  document.execCommand('insertOrderedList');   break;
+      case 'code-block':    this._toggleRichCodeBlock();                  break;
       case 'link': {
         // TODO: replace prompt with a proper link popover
         const url = prompt('Enter URL:');
@@ -455,16 +540,68 @@ export class RcMarkdownEditor extends LitElement {
     if (!editor) return;
 
     switch (action) {
-      case 'bold':         editor.wrapSelection('**', '**');    break;
-      case 'italic':       editor.wrapSelection('*', '*');      break;
-      case 'code':         editor.wrapSelection('`', '`');      break;
-      case 'link':         editor.replaceSelection('[](url)');  break;
-      case 'heading':      this._toggleLinePrefix('# ');        break;
-      case 'blockquote':   this._toggleLinePrefix('> ');        break;
-      case 'bullet-list':  this._toggleLinePrefix('- ');        break;
-      case 'ordered-list': this._toggleLinePrefix('1. ');       break;
-      case 'code-block':   this._toggleSourceCodeFence();       break;
+      case 'bold':          editor.wrapSelection('**', '**');      break;
+      case 'italic':        editor.wrapSelection('*', '*');        break;
+      case 'underline':     editor.wrapSelection('<u>', '</u>');   break;
+      case 'strikethrough': editor.wrapSelection('~~', '~~');      break;
+      case 'code':          editor.wrapSelection('`', '`');        break;
+      case 'link':          editor.replaceSelection('[](url)');    break;
+      case 'blockquote':    this._toggleLinePrefix('> ');          break;
+      case 'bullet-list':   this._toggleLinePrefix('- ');          break;
+      case 'ordered-list':  this._toggleLinePrefix('1. ');         break;
+      case 'code-block':    this._toggleSourceCodeFence();         break;
     }
+  }
+
+  /** Sets the heading level on the cursor's line in source mode. null = paragraph. */
+  private _setSourceHeadingLevel(level: HeadingLevel | null) {
+    const api = this._pluginApi;
+    const editor = this._sourceEditor;
+    if (!api || !editor) return;
+
+    const { value, selectionStart } = api;
+    const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
+
+    // Strip any existing heading prefix
+    const stripped = value.slice(lineStart).replace(/^#{1,6} /, '');
+    const prefix = level ? '#'.repeat(parseInt(level[1]!)) + ' ' : '';
+    editor.value = value.slice(0, lineStart) + prefix + stripped + value.slice(
+      lineStart + (value.slice(lineStart).length - stripped.length),
+    );
+  }
+
+  /** Updates the language of the code block at the cursor in source mode. */
+  private _setSourceCodeBlockLanguage(lang: string) {
+    const api = this._pluginApi;
+    const editor = this._sourceEditor;
+    if (!api || !editor) return;
+
+    const { value, selectionStart } = api;
+    // Find the opening fence line (``` or ```lang) above the cursor
+    const before = value.slice(0, selectionStart);
+    const fenceMatch = before.match(/```\w*\n(?![\s\S]*```)/);
+    if (!fenceMatch?.index === undefined) return;
+
+    const fenceStart = (fenceMatch?.index ?? 0);
+    const fenceEnd = fenceStart + (fenceMatch?.[0].indexOf('\n') ?? 3) + 1;
+    editor.value = value.slice(0, fenceStart) + '```' + lang + '\n' + value.slice(fenceEnd);
+  }
+
+  /** Updates the data-lang attribute on the <pre> at the cursor in rich mode. */
+  private _setRichCodeBlockLanguage(lang: string) {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    const anchor = sel.getRangeAt(0).commonAncestorContainer;
+    const el: Element | null =
+      anchor.nodeType === Node.TEXT_NODE
+        ? (anchor as Text).parentElement
+        : (anchor as Element);
+
+    const pre = el?.closest('pre');
+    if (!pre) return;
+    if (lang) pre.dataset['lang'] = lang;
+    else delete pre.dataset['lang'];
   }
 
   /** Toggles a line prefix (e.g. `'# '`, `'> '`, `'- '`) on the cursor's line. */
@@ -594,10 +731,11 @@ export class RcMarkdownEditor extends LitElement {
 
     let action: EditorToolbarAction | null = null;
     switch (e.key) {
-      case 'b': action = 'bold';    break;
-      case 'i': action = 'italic';  break;
-      case '`': action = 'code';    break;
-      case 'k': action = 'link';    break;
+      case 'b': action = 'bold';          break;
+      case 'i': action = 'italic';        break;
+      case 'u': action = 'underline';     break;
+      case '`': action = 'code';          break;
+      case 'k': action = 'link';          break;
     }
 
     if (action) {
@@ -627,16 +765,20 @@ export class RcMarkdownEditor extends LitElement {
 
     if (this.sourceMode) return;
 
+    const pre = el?.closest('pre');
     this._activeFormats = {
-      bold:        !!el?.closest('strong, b'),
-      italic:      !!el?.closest('em, i'),
-      code:        !!el?.closest(':not(pre) > code'),
-      link:        !!el?.closest('a'),
-      heading:     (el?.closest('h1,h2,h3,h4,h5,h6')?.tagName.toLowerCase() ?? null) as HeadingLevel | null,
-      blockquote:  !!el?.closest('blockquote'),
-      bulletList:  !!el?.closest('ul'),
-      orderedList: !!el?.closest('ol'),
-      codeBlock:   !!el?.closest('pre'),
+      bold:          !!el?.closest('strong, b'),
+      italic:        !!el?.closest('em, i'),
+      underline:     !!el?.closest('u'),
+      strikethrough: !!el?.closest('s, del, strike'),
+      code:          !pre && !!el?.closest('code'),
+      link:          !!el?.closest('a'),
+      heading:       (el?.closest('h1,h2,h3,h4,h5,h6')?.tagName.toLowerCase() ?? null) as HeadingLevel | null,
+      blockquote:    !!el?.closest('blockquote'),
+      bulletList:    !!el?.closest('ul'),
+      orderedList:   !!el?.closest('ol'),
+      codeBlock:     !!pre,
+      codeLanguage:  pre ? (pre.dataset['lang'] ?? '') : null,
     };
 
     this._pushToolbarState();
@@ -648,23 +790,31 @@ export class RcMarkdownEditor extends LitElement {
     const toolbar = this._toolbarEl as (HTMLElement & {
       activeBold?: boolean;
       activeItalic?: boolean;
+      activeUnderline?: boolean;
+      activeStrikethrough?: boolean;
       activeCode?: boolean;
       activeHeading?: HeadingLevel | null;
       activeBlockquote?: boolean;
       activeBulletList?: boolean;
       activeOrderedList?: boolean;
       activeCodeBlock?: boolean;
+      codeLanguage?: string | null;
+      sourceMode?: boolean;
     }) | undefined;
 
     if (toolbar) {
-      toolbar.activeBold        = !!this._activeFormats.bold;
-      toolbar.activeItalic      = !!this._activeFormats.italic;
-      toolbar.activeCode        = !!this._activeFormats.code;
-      toolbar.activeHeading     = this._activeFormats.heading ?? null;
-      toolbar.activeBlockquote  = !!this._activeFormats.blockquote;
-      toolbar.activeBulletList  = !!this._activeFormats.bulletList;
-      toolbar.activeOrderedList = !!this._activeFormats.orderedList;
-      toolbar.activeCodeBlock   = !!this._activeFormats.codeBlock;
+      toolbar.activeBold          = !!this._activeFormats.bold;
+      toolbar.activeItalic        = !!this._activeFormats.italic;
+      toolbar.activeUnderline     = !!this._activeFormats.underline;
+      toolbar.activeStrikethrough = !!this._activeFormats.strikethrough;
+      toolbar.activeCode          = !!this._activeFormats.code;
+      toolbar.activeHeading       = this._activeFormats.heading ?? null;
+      toolbar.activeBlockquote    = !!this._activeFormats.blockquote;
+      toolbar.activeBulletList    = !!this._activeFormats.bulletList;
+      toolbar.activeOrderedList   = !!this._activeFormats.orderedList;
+      toolbar.activeCodeBlock     = !!this._activeFormats.codeBlock;
+      toolbar.codeLanguage        = this._activeFormats.codeLanguage ?? null;
+      toolbar.sourceMode          = this.sourceMode;
     }
 
     this.dispatchEvent(new CustomEvent<ActiveFormats>('rc-formatting-change', {

@@ -1288,7 +1288,9 @@ const RAW_RUNTIME_STATE =
           ["@vitest/browser-playwright", "virtual:4c3c94703cda95f6246a1847dd60f4192df3bceff28744811445d889facad023e44017d84e6ff20ea29fc29f937aebad95b277a8b9be7064e28d686dceb8fe24#npm:4.1.5"],\
           ["lit", "npm:3.3.2"],\
           ["mdast-util-from-markdown", "npm:2.0.3"],\
+          ["mdast-util-gfm-strikethrough", "npm:2.0.0"],\
           ["micromark", "npm:4.0.2"],\
+          ["micromark-extension-gfm-strikethrough", "npm:2.1.0"],\
           ["playwright", "npm:1.60.0"],\
           ["rollup", "npm:4.60.2"],\
           ["turndown", "npm:7.2.4"],\
@@ -1316,7 +1318,9 @@ const RAW_RUNTIME_STATE =
           ["@vitest/browser-playwright", "virtual:2a70fcc9df40c4c025ab2b16ecfd5632db199e5164493ee09d12acc872f315b98a579f84c9cdcd7e14cf7df473966d68c1603621bcb66e5b5821e10de4c7aba2#npm:4.1.5"],\
           ["lit", "npm:3.3.2"],\
           ["mdast-util-from-markdown", "npm:2.0.3"],\
+          ["mdast-util-gfm-strikethrough", "npm:2.0.0"],\
           ["micromark", "npm:4.0.2"],\
+          ["micromark-extension-gfm-strikethrough", "npm:2.1.0"],\
           ["playwright", "npm:1.60.0"],\
           ["rollup", "npm:4.60.2"],\
           ["turndown", "npm:7.2.4"],\
@@ -5061,6 +5065,15 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["longest-streak", [\
+      ["npm:3.1.0", {\
+        "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/longest-streak-npm-3.1.0-e2ab1c40ee-10c0.zip/node_modules/longest-streak/",\
+        "packageDependencies": [\
+          ["longest-streak", "npm:3.1.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["magic-string", [\
       ["npm:0.30.21", {\
         "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/magic-string-npm-0.30.21-9a226cb21e-10c0.zip/node_modules/magic-string/",\
@@ -5097,6 +5110,47 @@ const RAW_RUNTIME_STATE =
           ["micromark-util-symbol", "npm:2.0.1"],\
           ["micromark-util-types", "npm:2.0.2"],\
           ["unist-util-stringify-position", "npm:4.0.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["mdast-util-gfm-strikethrough", [\
+      ["npm:2.0.0", {\
+        "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/mdast-util-gfm-strikethrough-npm-2.0.0-d16d95c318-10c0.zip/node_modules/mdast-util-gfm-strikethrough/",\
+        "packageDependencies": [\
+          ["@types/mdast", "npm:4.0.4"],\
+          ["mdast-util-from-markdown", "npm:2.0.3"],\
+          ["mdast-util-gfm-strikethrough", "npm:2.0.0"],\
+          ["mdast-util-to-markdown", "npm:2.1.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["mdast-util-phrasing", [\
+      ["npm:4.1.0", {\
+        "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/mdast-util-phrasing-npm-4.1.0-30939ebbcd-10c0.zip/node_modules/mdast-util-phrasing/",\
+        "packageDependencies": [\
+          ["@types/mdast", "npm:4.0.4"],\
+          ["mdast-util-phrasing", "npm:4.1.0"],\
+          ["unist-util-is", "npm:6.0.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["mdast-util-to-markdown", [\
+      ["npm:2.1.2", {\
+        "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/mdast-util-to-markdown-npm-2.1.2-40d984eac3-10c0.zip/node_modules/mdast-util-to-markdown/",\
+        "packageDependencies": [\
+          ["@types/mdast", "npm:4.0.4"],\
+          ["@types/unist", "npm:3.0.3"],\
+          ["longest-streak", "npm:3.1.0"],\
+          ["mdast-util-phrasing", "npm:4.1.0"],\
+          ["mdast-util-to-markdown", "npm:2.1.2"],\
+          ["mdast-util-to-string", "npm:4.0.0"],\
+          ["micromark-util-classify-character", "npm:2.0.1"],\
+          ["micromark-util-decode-string", "npm:2.0.1"],\
+          ["unist-util-visit", "npm:5.1.0"],\
+          ["zwitch", "npm:2.0.4"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -5174,6 +5228,21 @@ const RAW_RUNTIME_STATE =
           ["micromark-util-normalize-identifier", "npm:2.0.1"],\
           ["micromark-util-resolve-all", "npm:2.0.1"],\
           ["micromark-util-subtokenize", "npm:2.1.0"],\
+          ["micromark-util-symbol", "npm:2.0.1"],\
+          ["micromark-util-types", "npm:2.0.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["micromark-extension-gfm-strikethrough", [\
+      ["npm:2.1.0", {\
+        "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/micromark-extension-gfm-strikethrough-npm-2.1.0-b2aa188eba-10c0.zip/node_modules/micromark-extension-gfm-strikethrough/",\
+        "packageDependencies": [\
+          ["devlop", "npm:1.1.0"],\
+          ["micromark-extension-gfm-strikethrough", "npm:2.1.0"],\
+          ["micromark-util-chunked", "npm:2.0.1"],\
+          ["micromark-util-classify-character", "npm:2.0.1"],\
+          ["micromark-util-resolve-all", "npm:2.0.1"],\
           ["micromark-util-symbol", "npm:2.0.1"],\
           ["micromark-util-types", "npm:2.0.2"]\
         ],\
@@ -9458,6 +9527,15 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/yallist-npm-5.0.0-8732dd9f1c-10c0.zip/node_modules/yallist/",\
         "packageDependencies": [\
           ["yallist", "npm:5.0.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["zwitch", [\
+      ["npm:2.0.4", {\
+        "packageLocation": "../../../../C:/Users/rick/AppData/Local/Yarn/Berry/cache/zwitch-npm-2.0.4-13220031e2-10c0.zip/node_modules/zwitch/",\
+        "packageDependencies": [\
+          ["zwitch", "npm:2.0.4"]\
         ],\
         "linkType": "HARD"\
       }]\

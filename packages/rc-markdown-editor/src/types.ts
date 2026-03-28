@@ -2,6 +2,8 @@
 export type EditorToolbarAction =
   | 'bold'
   | 'italic'
+  | 'underline'
+  | 'strikethrough'
   | 'code'
   | 'link'
   | 'heading'
@@ -9,11 +11,16 @@ export type EditorToolbarAction =
   | 'bullet-list'
   | 'ordered-list'
   | 'code-block'
+  | 'code-block-language'
   | 'source';
 
 /** Detail payload carried by `rc-toolbar-action` custom events. */
 export interface EditorToolbarActionDetail {
   action: EditorToolbarAction;
+  /** Heading level for `action === 'heading'`; null means paragraph. */
+  headingLevel?: HeadingLevel | null;
+  /** Language string for `action === 'code-block-language'`. */
+  codeLanguage?: string;
 }
 
 /** Heading level active at the current cursor position. */
@@ -23,6 +30,8 @@ export type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 export interface ActiveFormats {
   bold?: boolean;
   italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
   code?: boolean;
   link?: boolean;
   heading?: HeadingLevel | null;
@@ -30,6 +39,8 @@ export interface ActiveFormats {
   bulletList?: boolean;
   orderedList?: boolean;
   codeBlock?: boolean;
+  /** Language of the code block at the cursor, or null if none / not in a code block. */
+  codeLanguage?: string | null;
 }
 
 /** Editor display mode. */

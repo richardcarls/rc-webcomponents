@@ -53,14 +53,17 @@ export const rmeStyles = css`
     --rc-textarea-border-top: none;
   }
 
-  /* Toolbar layout */
+  /* ── Toolbar ─────────────────────────────────────────────────────────────── */
+
   rc-editor-toolbar [role='toolbar'] {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 2px;
-    padding: 2px;
+    padding: 4px;
     border: 1px solid ButtonBorder;
     border-radius: 4px 4px 0 0;
+    background: Canvas;
   }
 
   rc-editor-toolbar button {
@@ -68,16 +71,19 @@ export const rmeStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 2em;
-    padding: 0.25em 0.5em;
+    padding: 0.35em;
     border: 1px solid transparent;
     border-radius: 3px;
     background: transparent;
     color: ButtonText;
     font: inherit;
-    font-size: 0.875em;
+    font-size: 0.8125em;
     cursor: pointer;
     line-height: 1;
+  }
+
+  rc-editor-toolbar button svg {
+    flex-shrink: 0;
   }
 
   rc-editor-toolbar button:hover {
@@ -90,23 +96,65 @@ export const rmeStyles = css`
     outline-offset: 1px;
   }
 
-  /* Active/pressed state for toolbar buttons */
   rc-editor-toolbar button[aria-pressed='true'] {
     background: Highlight;
     color: HighlightText;
     border-color: Highlight;
   }
 
+  /* Heading select */
+  rc-editor-toolbar select {
+    appearance: auto;
+    padding: 0.25em 0.35em;
+    border: 1px solid ButtonBorder;
+    border-radius: 3px;
+    background: ButtonFace;
+    color: ButtonText;
+    font: inherit;
+    font-size: 0.8125em;
+    cursor: pointer;
+  }
+
+  rc-editor-toolbar select:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  rc-editor-toolbar select.toolbar-active {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  /* Code block language input */
+  rc-editor-toolbar .lang-input {
+    padding: 0.25em 0.5em;
+    border: 1px solid ButtonBorder;
+    border-radius: 3px;
+    background: Field;
+    color: FieldText;
+    font: inherit;
+    font-size: 0.8125em;
+    width: 8em;
+  }
+
+  rc-editor-toolbar .lang-input:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  rc-editor-toolbar .lang-input::placeholder {
+    color: GrayText;
+  }
+
   /* ── Source mode decoration classes ─────────────────────────────────────── */
 
-  /* Blockquote lines get a subtle left border in source mode */
-  .rme-blockquote { color: GrayText; }
-
-  /* List items are visually distinct from prose */
-  .rme-list-bullet, .rme-list-ordered { color: GrayText; }
-
-  /* Fenced code blocks use a monospace hint */
-  .rme-code-block { color: GrayText; font-style: italic; }
+  .rme-blockquote    { color: GrayText; }
+  .rme-list-bullet,
+  .rme-list-ordered  { color: GrayText; }
+  .rme-code-block    { color: GrayText; font-style: italic; }
+  .rme-strikethrough { text-decoration: line-through; }
+  .rme-underline     { text-decoration: underline; }
 
   /* ── Rich view block element spacing ─────────────────────────────────────── */
 

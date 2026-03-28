@@ -12,7 +12,7 @@ export function getFormatsFromDecorations(
   decorations: readonly Decoration[],
   start: number,
   end: number,
-): ActiveFormats {
+): Omit<ActiveFormats, 'codeLanguage'> {
   const marks = decorations.filter(
     (d): d is Extract<Decoration, { type: 'mark' }> =>
       d.type === 'mark' && d.from <= start && d.to >= end,
@@ -24,6 +24,8 @@ export function getFormatsFromDecorations(
   return {
     bold:         marks.some((d) => d.bold),
     italic:       marks.some((d) => d.italic),
+    underline:    marks.some((d) => d.className === 'rme-underline'),
+    strikethrough: marks.some((d) => d.className === 'rme-strikethrough'),
     code:         marks.some((d) => d.className === 'rme-code'),
     link:         marks.some((d) => d.className === 'rme-link'),
     heading:      headingLevel ?? null,
