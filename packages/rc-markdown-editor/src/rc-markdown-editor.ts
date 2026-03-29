@@ -265,6 +265,9 @@ export class RcMarkdownEditor extends LitElement {
         if (this.sourceMode) this._switchToSource();
         else this._switchToRich();
       }
+      // Keep source-button aria-pressed in sync whenever mode changes,
+      // including programmatic changes not initiated by the toolbar.
+      this._pushToolbarState();
     }
 
     // Programmatic value change while in rich mode: re-render the rich view
@@ -368,6 +371,9 @@ export class RcMarkdownEditor extends LitElement {
       this._syncMarkdownFromRichView();
     }
     this._sourceEditor.value = this.value;
+    // Reset undo history so the first Ctrl+Z in this session undoes to the
+    // pre-edit state rather than to the end of a previous source-mode session.
+    this._sourceEditor.clearHistory();
   }
 
   private _switchToRich() {
@@ -748,7 +754,11 @@ export class RcMarkdownEditor extends LitElement {
   // ── Selection tracking ────────────────────────────────────────────────────
 
   private _onSelectionChange = () => {
-    const sel = window.getSelection();
+    // Chrome shadow-adjusts window.getSelection() to the nearest light-DOM ancestor
+    // for selections inside a shadow root — use shadowRoot.getSelection() when available.
+    const sel =
+      (this.shadowRoot as unknown as { getSelection?: () => Selection | null })
+        .getSelection?.() ?? window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
 
     const range = sel.getRangeAt(0);

@@ -716,6 +716,12 @@ export class RCTextarea extends LitElement {
 
   // ── Undo/Redo ─────────────────────────────────────────────────────────
 
+  /** Reset the undo/redo history. Call when the editor receives entirely new content. */
+  clearHistory(): void {
+    this._undoStack = [];
+    this._undoIndex = -1;
+  }
+
   protected _pushUndo(sel: SavedSelection | null): void {
     const entry: UndoEntry = {
       value: this._value,
