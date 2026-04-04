@@ -1,0 +1,58 @@
+/* Demo section: bordered container for live component examples */
+.demo-section {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.25rem 0;
+  background: var(--vp-c-bg-soft);
+}
+
+.demo-section > p:first-child {
+  margin-top: 0;
+}
+
+.demo-section > p:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Layout helpers reused across demos */
+.demo-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.demo-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.demo-col > label {
+  font-size: 0.875rem;
+  color: var(--vp-c-text-2);
+}
+
+/* Event log shared by multiple demos */
+.event-log {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.8rem;
+  min-height: 2.5em;
+  max-height: 8em;
+  overflow-y: auto;
+}
+
+.event-log p {
+  margin: 0.1em 0;
+  color: var(--vp-c-text-1);
+}
+
+.event-log p.placeholder {
+  color: var(--vp-c-text-3);
+}
