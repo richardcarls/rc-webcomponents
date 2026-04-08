@@ -56,9 +56,9 @@ _turndown.addRule('underline', {
   replacement: (content) => '<u>' + content + '</u>',
 });
 
-// Strikethrough: <s>/<del> → ~~text~~
+// Strikethrough: <s>/<del>/<strike> → ~~text~~
 _turndown.addRule('strikethrough', {
-  filter: ['s', 'del', 'strike'],
+  filter: (node) => ['S', 'DEL', 'STRIKE'].includes(node.nodeName),
   replacement: (content) => '~~' + content + '~~',
 });
 
