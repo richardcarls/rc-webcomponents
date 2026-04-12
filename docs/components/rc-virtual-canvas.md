@@ -92,7 +92,7 @@ Scroll to pan across the 1280 × 960 virtual canvas. Only visible tiles are draw
     id="demo-virtual-canvas"
     contentWidth="1280"
     contentHeight="960"
-    style="display:block;width:100%;border:1px solid ButtonBorder;background:#111;"
+    style="display:block;width:100%;border:1px solid var(--rc-border-color,ButtonBorder);background:#111;"
   >
     <canvas id="demo-canvas-el" style="display:block;width:100%;aspect-ratio:4/3;"></canvas>
   </rc-virtual-canvas>

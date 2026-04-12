@@ -41,37 +41,12 @@ yarn add @rcarls/rc-menu-button
 import '@rcarls/rc-menu-button/define';
 ```
 
-<style>
-.mb-demo .menu-trigger {
-  padding: 0.5em 1em;
-  font-size: 1rem;
-  cursor: pointer;
-  font: inherit;
-  border: 1px solid ButtonBorder;
-  border-radius: 4px;
-  background: ButtonFace;
-  color: ButtonText;
-}
-.mb-demo rc-menu button {
-  all: unset;
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.5em 1em;
-  cursor: pointer;
-  font: inherit;
-}
-.mb-demo rc-menu button:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
-.mb-demo rc-menu button:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
-.mb-demo rc-menu button[disabled] { opacity: 0.5; cursor: not-allowed; }
-</style>
-
 ## Basic menu button
 
 <ClientOnly>
-<div class="demo-section mb-demo">
+<div class="demo-section">
   <rc-menu-button>
-    <button slot="trigger" class="menu-trigger">Options</button>
+    <button slot="trigger">Options</button>
     <rc-menu label="Options">
       <button onclick="void 0">Cut</button>
       <button onclick="void 0">Copy</button>
@@ -102,9 +77,9 @@ menuButton.addEventListener('rc-menu-button-toggle', (e) => {
 ## With disabled items
 
 <ClientOnly>
-<div class="demo-section mb-demo">
+<div class="demo-section">
   <rc-menu-button>
-    <button slot="trigger" class="menu-trigger">File</button>
+    <button slot="trigger">File</button>
     <rc-menu label="File Actions">
       <button onclick="void 0">New</button>
       <button onclick="void 0">Open</button>
@@ -120,17 +95,17 @@ menuButton.addEventListener('rc-menu-button-toggle', (e) => {
 Multiple independent menu buttons can coexist. Opening one closes any other open menus.
 
 <ClientOnly>
-<div class="demo-section mb-demo">
+<div class="demo-section">
   <div style="display:flex;gap:0.5rem;">
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">Edit</button>
+      <button slot="trigger">Edit</button>
       <rc-menu label="Edit Actions">
         <button onclick="void 0">Undo</button>
         <button onclick="void 0">Redo</button>
       </rc-menu>
     </rc-menu-button>
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">View</button>
+      <button slot="trigger">View</button>
       <rc-menu label="View Options">
         <button onclick="void 0">Zoom In</button>
         <button onclick="void 0">Zoom Out</button>

@@ -36,46 +36,13 @@ yarn add @rcarls/rc-menubar
 import '@rcarls/rc-menubar/define';
 ```
 
-<style>
-.mbar-demo rc-menubar {
-  border: 1px solid ButtonBorder;
-  border-radius: 4px;
-  --rc-menubar-padding-inline: 4px;
-  --rc-menubar-padding-block: 4px;
-}
-.mbar-demo .menu-trigger {
-  padding: 0.4em 0.85em;
-  font-size: 0.95rem;
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  border-radius: 3px;
-  font: inherit;
-  color: inherit;
-}
-.mbar-demo .menu-trigger:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
-.mbar-demo .menu-trigger:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
-.mbar-demo rc-menu button {
-  all: unset;
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.5em 1em;
-  cursor: pointer;
-  font: inherit;
-}
-.mbar-demo rc-menu button:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
-.mbar-demo rc-menu button:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
-.mbar-demo rc-menu button[disabled] { opacity: 0.5; cursor: not-allowed; }
-</style>
-
 ## Application menubar
 
 <ClientOnly>
-<div class="demo-section mbar-demo">
+<div class="demo-section">
   <rc-menubar label="Application Menu">
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">File</button>
+      <button slot="trigger">File</button>
       <rc-menu label="File">
         <button onclick="void 0">New</button>
         <button onclick="void 0">Open…</button>
@@ -84,7 +51,7 @@ import '@rcarls/rc-menubar/define';
       </rc-menu>
     </rc-menu-button>
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">Edit</button>
+      <button slot="trigger">Edit</button>
       <rc-menu label="Edit">
         <button onclick="void 0">Undo</button>
         <button onclick="void 0">Redo</button>
@@ -94,7 +61,7 @@ import '@rcarls/rc-menubar/define';
       </rc-menu>
     </rc-menu-button>
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">View</button>
+      <button slot="trigger">View</button>
       <rc-menu label="View">
         <button onclick="void 0">Zoom In</button>
         <button onclick="void 0">Zoom Out</button>
@@ -102,7 +69,7 @@ import '@rcarls/rc-menubar/define';
       </rc-menu>
     </rc-menu-button>
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">Help</button>
+      <button slot="trigger">Help</button>
       <rc-menu label="Help">
         <button onclick="void 0">Documentation</button>
         <button onclick="void 0">About</button>
@@ -136,17 +103,17 @@ import '@rcarls/rc-menubar/define';
 ## Vertical menubar
 
 <ClientOnly>
-<div class="demo-section mbar-demo">
+<div class="demo-section">
   <rc-menubar label="Vertical Menu" orientation="vertical" style="display:inline-flex;">
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">Options</button>
+      <button slot="trigger">Options</button>
       <rc-menu label="Options">
         <button onclick="void 0">Option 1</button>
         <button onclick="void 0">Option 2</button>
       </rc-menu>
     </rc-menu-button>
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">Settings</button>
+      <button slot="trigger">Settings</button>
       <rc-menu label="Settings">
         <button onclick="void 0">Preferences</button>
         <button onclick="void 0">Account</button>
@@ -170,10 +137,10 @@ import '@rcarls/rc-menubar/define';
 A realistic editor structure with Format, Insert, and View menus.
 
 <ClientOnly>
-<div class="demo-section mbar-demo">
+<div class="demo-section">
   <rc-menubar label="Document Editor">
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">Format</button>
+      <button slot="trigger">Format</button>
       <rc-menu label="Format">
         <button onclick="void 0">Bold</button>
         <button onclick="void 0">Italic</button>
@@ -183,7 +150,7 @@ A realistic editor structure with Format, Insert, and View menus.
       </rc-menu>
     </rc-menu-button>
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">Insert</button>
+      <button slot="trigger">Insert</button>
       <rc-menu label="Insert">
         <button onclick="void 0">Image…</button>
         <button onclick="void 0">Link…</button>
@@ -192,7 +159,7 @@ A realistic editor structure with Format, Insert, and View menus.
       </rc-menu>
     </rc-menu-button>
     <rc-menu-button>
-      <button slot="trigger" class="menu-trigger">View</button>
+      <button slot="trigger">View</button>
       <rc-menu label="View">
         <button onclick="void 0">Outline</button>
         <button onclick="void 0">Word count</button>

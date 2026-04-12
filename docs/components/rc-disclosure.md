@@ -46,23 +46,21 @@ Wraps a native `<details>` element and fires `rc-disclosure-toggle` on open/clos
 <ClientOnly>
 <div class="demo-section">
   <rc-disclosure id="basic-disclosure">
-    <details style="border:1px solid ButtonBorder;border-radius:4px;padding:0;max-width:480px;">
-      <summary style="padding:0.6em 1em;cursor:pointer;font-weight:500;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none;">
+    <details class="accordion-details">
+      <summary class="accordion-summary">
         What is rc-disclosure?
-        <span aria-hidden="true" style="font-size:0.8em;">▸</span>
+        <span aria-hidden="true">▸</span>
       </summary>
-      <div style="padding:0.75em 1em;border-top:1px solid ButtonBorder;">
-        <p style="margin:0;">A lightweight behavioral wrapper around the native <code>&lt;details&gt;</code> element.
+      <div class="accordion-body">
+        <p>A lightweight behavioral wrapper around the native <code>&lt;details&gt;</code> element.
         The browser owns open/close behavior and accessibility; this element adds a consistent custom event
         and optional fragment-hash targeting.</p>
       </div>
     </details>
   </rc-disclosure>
-  <div style="display:flex;gap:0.5em;margin-top:0.75em;">
-    <button @click="openDisclosure"
-      style="padding:0.35em 0.75em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">Open</button>
-    <button @click="closeDisclosure"
-      style="padding:0.35em 0.75em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">Close</button>
+  <div class="demo-row" style="margin-top:0.75em;">
+    <button @click="openDisclosure">Open</button>
+    <button @click="closeDisclosure">Close</button>
   </div>
 </div>
 </ClientOnly>
@@ -93,19 +91,17 @@ Set the `fragment` attribute to automatically open when the URL hash matches the
 <ClientOnly>
 <div class="demo-section">
   <rc-disclosure fragment>
-    <details id="fragment-target" style="border:1px solid ButtonBorder;border-radius:4px;padding:0;max-width:480px;">
-      <summary style="padding:0.6em 1em;cursor:pointer;font-weight:500;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none;">
+    <details id="fragment-target" class="accordion-details">
+      <summary class="accordion-summary">
         Opens via #fragment-target in URL
-        <span aria-hidden="true" style="font-size:0.8em;">▸</span>
+        <span aria-hidden="true">▸</span>
       </summary>
-      <div style="padding:0.75em 1em;border-top:1px solid ButtonBorder;">
-        <p style="margin:0;">This disclosure opens automatically when the page loads with <code>#fragment-target</code> in the URL, or when the hash changes to match.</p>
+      <div class="accordion-body">
+        <p>This disclosure opens automatically when the page loads with <code>#fragment-target</code> in the URL, or when the hash changes to match.</p>
       </div>
     </details>
   </rc-disclosure>
-  <div style="margin-top:0.75em;">
-    <a href="#fragment-target" style="font-size:0.875rem;">Navigate to #fragment-target</a>
-  </div>
+  <p style="margin-top:0.75em;"><a href="#fragment-target">Navigate to #fragment-target</a></p>
 </div>
 </ClientOnly>
 

@@ -22,25 +22,10 @@ yarn add @rcarls/rc-splitter
 import '@rcarls/rc-splitter/define';
 ```
 
-<style>
-.splitter-demo rc-splitter { --rc-splitter-separator-size: 8px; }
-.splitter-demo rc-splitter[orientation="vertical"] { height: 260px; }
-.splitter-demo article {
-  box-sizing: border-box;
-  max-height: 50vh;
-  padding: 0.5em 0.75em;
-  border: 1px solid ButtonBorder;
-  overflow: auto;
-  font-size: 0.875rem;
-}
-.splitter-demo article h3 { margin: 0 0 0.4em; font-size: 0.95rem; }
-.splitter-demo article p { margin: 0; color: var(--vp-c-text-2); }
-</style>
-
 ## Basic usage
 
 <ClientOnly>
-<div class="demo-section splitter-demo">
+<div class="demo-section">
   <rc-splitter>
     <article>
       <h3>Primary pane</h3>
@@ -64,7 +49,7 @@ import '@rcarls/rc-splitter/define';
 ## Vertical orientation
 
 <ClientOnly>
-<div class="demo-section splitter-demo">
+<div class="demo-section">
   <rc-splitter orientation="vertical">
     <article>
       <h3>Top pane</h3>
@@ -88,7 +73,7 @@ import '@rcarls/rc-splitter/define';
 ## Nested splitters
 
 <ClientOnly>
-<div class="demo-section splitter-demo">
+<div class="demo-section">
   <rc-splitter>
     <rc-splitter orientation="vertical">
       <article><h3>Top-left</h3><p>Nested vertical splitter.</p></article>
@@ -107,7 +92,7 @@ import '@rcarls/rc-splitter/define';
 `mode="percent"` tracks size as a percentage of the container. `step` controls arrow-key increment.
 
 <ClientOnly>
-<div class="demo-section splitter-demo">
+<div class="demo-section">
   <rc-splitter mode="percent" step="10">
     <article>
       <h3>Primary (percent mode)</h3>
@@ -133,7 +118,7 @@ import '@rcarls/rc-splitter/define';
 `fixed` makes the separator non-interactive. `value` sets the initial primary pane size in pixels.
 
 <ClientOnly>
-<div class="demo-section splitter-demo">
+<div class="demo-section">
   <rc-splitter value="200" fixed>
     <article>
       <h3>Fixed 200 px</h3>

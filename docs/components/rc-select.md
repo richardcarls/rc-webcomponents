@@ -214,14 +214,13 @@ The native `<select slot="select">` acts as the form control. `FormData` picks u
 
 <ClientOnly>
 <div class="demo-section">
-  <form id="rc-select-demo-form" style="display:flex;flex-direction:column;gap:0.75rem;max-width:28em;">
-    <div style="display:flex;flex-direction:column;gap:0.25rem;">
-      <label for="form-name" style="font-size:0.875rem;font-weight:600;">Name</label>
-      <input id="form-name" type="text" name="name" placeholder="Your name"
-        style="padding:0.35em 0.5em;border:1px solid ButtonBorder;border-radius:0.125em;background:Field;color:FieldText;font:inherit;" />
+  <form id="rc-select-demo-form">
+    <div>
+      <label for="form-name">Name</label>
+      <input id="form-name" type="text" name="name" placeholder="Your name">
     </div>
-    <div style="display:flex;flex-direction:column;gap:0.25rem;">
-      <label style="font-size:0.875rem;font-weight:600;">Role</label>
+    <div>
+      <label>Role</label>
       <rc-select placeholder="Select a role…">
         <select slot="select" name="role">
           <option value="">Select a role…</option>
@@ -231,8 +230,8 @@ The native `<select slot="select">` acts as the form control. `FormData` picks u
         </select>
       </rc-select>
     </div>
-    <div style="display:flex;flex-direction:column;gap:0.25rem;">
-      <label style="font-size:0.875rem;font-weight:600;">Permissions</label>
+    <div>
+      <label>Permissions</label>
       <rc-select placeholder="Add permissions…">
         <select slot="select" name="permissions" multiple>
           <option value="read">Read</option>
@@ -242,10 +241,7 @@ The native `<select slot="select">` acts as the form control. `FormData` picks u
         </select>
       </rc-select>
     </div>
-    <button type="submit"
-      style="align-self:flex-start;padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:0.125em;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-      Submit
-    </button>
+    <button type="submit">Submit</button>
   </form>
   <pre style="margin-top:0.75rem;padding:0.5rem 0.75rem;background:var(--vp-c-bg);border:1px solid var(--vp-c-divider);border-radius:4px;font-size:0.85rem;">{{ formOutput }}</pre>
 </div>
@@ -277,8 +273,7 @@ Options added to the native `<select>` at runtime are reflected in the popup aut
         <option value="item2">Item 2</option>
       </select>
     </rc-select>
-    <button @click="addDynamicOption"
-      style="padding:0.35em 0.75em;cursor:pointer;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;">
+    <button @click="addDynamicOption">
       Add option
     </button>
   </div>

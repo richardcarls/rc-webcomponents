@@ -68,20 +68,17 @@ Native `showModal()`, Escape closes.
 
 <ClientOnly>
 <div class="demo-section">
-  <button onclick="document.querySelector('#basic').showModal()"
-    style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-    Open dialog
-  </button>
+  <button onclick="document.querySelector('#basic').showModal()">Open dialog</button>
   <rc-dialog id="basic">
-    <dialog aria-labelledby="basic-title" style="padding:0;border:1px solid ButtonBorder;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,0.2);min-width:20rem;">
-      <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:Canvas;border-bottom:1px solid ButtonBorder;">
-        <span id="basic-title" style="flex:1;font-weight:600;">Basic Dialog</span>
-        <button onclick="document.querySelector('#basic').close()" style="border:none;background:none;cursor:pointer;font-size:1.1rem;line-height:1;">✕</button>
+    <dialog aria-labelledby="basic-title">
+      <div class="dlg-titlebar">
+        <span id="basic-title">Basic Dialog</span>
+        <button class="dlg-close" onclick="document.querySelector('#basic').close()" aria-label="Close">✕</button>
       </div>
-      <div style="padding:1rem;"><p style="margin:0;">Press <kbd>Escape</kbd> or click a button to close.</p></div>
-      <div style="display:flex;justify-content:flex-end;gap:0.5rem;padding:0.75rem 1rem;border-top:1px solid ButtonBorder;">
-        <button onclick="document.querySelector('#basic').close('cancel')" style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">Cancel</button>
-        <button onclick="document.querySelector('#basic').close('ok')" style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">OK</button>
+      <div class="dlg-body"><p>Press <kbd>Escape</kbd> or click a button to close.</p></div>
+      <div class="dlg-footer">
+        <button onclick="document.querySelector('#basic').close('cancel')">Cancel</button>
+        <button onclick="document.querySelector('#basic').close('ok')">OK</button>
       </div>
     </dialog>
   </rc-dialog>
@@ -95,7 +92,7 @@ Native `showModal()`, Escape closes.
   <dialog aria-labelledby="dlg-title">
     <div class="dlg-titlebar">
       <span id="dlg-title">Dialog</span>
-      <button onclick="document.querySelector('#dlg').close()">✕</button>
+      <button class="dlg-close" onclick="document.querySelector('#dlg').close()">✕</button>
     </div>
     <div class="dlg-body"><p>Dialog content.</p></div>
     <div class="dlg-footer">
@@ -112,19 +109,16 @@ Set `movable` and `move-handle` to enable dragging by the titlebar. While the ti
 
 <ClientOnly>
 <div class="demo-section">
-  <button onclick="document.querySelector('#movable').showModal()"
-    style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-    Open movable dialog
-  </button>
+  <button onclick="document.querySelector('#movable').showModal()">Open movable dialog</button>
   <rc-dialog id="movable" movable move-handle=".dlg-titlebar">
-    <dialog aria-labelledby="movable-title" style="padding:0;border:1px solid ButtonBorder;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,0.2);min-width:20rem;">
-      <div class="dlg-titlebar" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:Canvas;border-bottom:1px solid ButtonBorder;cursor:move;user-select:none;">
-        <span id="movable-title" style="flex:1;font-weight:600;">Movable Dialog</span>
-        <button onclick="document.querySelector('#movable').close()" style="border:none;background:none;cursor:pointer;font-size:1.1rem;line-height:1;">✕</button>
+    <dialog aria-labelledby="movable-title">
+      <div class="dlg-titlebar movable">
+        <span id="movable-title">Movable Dialog</span>
+        <button class="dlg-close" onclick="document.querySelector('#movable').close()" aria-label="Close">✕</button>
       </div>
-      <div style="padding:1rem;"><p style="margin:0;">Drag the titlebar or use arrow keys (with titlebar focused) to reposition.</p></div>
-      <div style="display:flex;justify-content:flex-end;padding:0.75rem 1rem;border-top:1px solid ButtonBorder;">
-        <button onclick="document.querySelector('#movable').close('ok')" style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">OK</button>
+      <div class="dlg-body"><p>Drag the titlebar or use arrow keys (with titlebar focused) to reposition.</p></div>
+      <div class="dlg-footer">
+        <button onclick="document.querySelector('#movable').close('ok')">OK</button>
       </div>
     </dialog>
   </rc-dialog>
@@ -134,7 +128,7 @@ Set `movable` and `move-handle` to enable dragging by the titlebar. While the ti
 ```html
 <rc-dialog movable move-handle=".dlg-titlebar">
   <dialog>
-    <div class="dlg-titlebar"><!-- drag handle --></div>
+    <div class="dlg-titlebar movable"><!-- drag handle --></div>
     <!-- ... -->
   </dialog>
 </rc-dialog>
@@ -146,19 +140,16 @@ Add `resize="both"` to allow dragging any edge or corner. While the resize handl
 
 <ClientOnly>
 <div class="demo-section">
-  <button onclick="document.querySelector('#resizable').showModal()"
-    style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-    Open resizable dialog
-  </button>
+  <button onclick="document.querySelector('#resizable').showModal()">Open resizable dialog</button>
   <rc-dialog id="resizable" movable move-handle=".dlg-titlebar" resize="both">
-    <dialog aria-labelledby="resizable-title" style="padding:0;border:1px solid ButtonBorder;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,0.2);min-width:20rem;min-height:10rem;display:none;">
-      <div class="dlg-titlebar" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:Canvas;border-bottom:1px solid ButtonBorder;cursor:move;user-select:none;flex-shrink:0;">
-        <span id="resizable-title" style="flex:1;font-weight:600;">Resizable Dialog</span>
-        <button onclick="document.querySelector('#resizable').close()" style="border:none;background:none;cursor:pointer;font-size:1.1rem;line-height:1;">✕</button>
+    <dialog aria-labelledby="resizable-title" style="min-height:10rem;display:none;">
+      <div class="dlg-titlebar movable">
+        <span id="resizable-title">Resizable Dialog</span>
+        <button class="dlg-close" onclick="document.querySelector('#resizable').close()" aria-label="Close">✕</button>
       </div>
-      <div style="padding:1rem;flex:1;overflow:auto;min-height:0;"><p style="margin:0;">Drag any edge or corner to resize.</p></div>
-      <div style="display:flex;justify-content:flex-end;padding:0.75rem 1rem;border-top:1px solid ButtonBorder;flex-shrink:0;">
-        <button onclick="document.querySelector('#resizable').close('ok')" style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">OK</button>
+      <div class="dlg-body" style="flex:1;overflow:auto;min-height:0;"><p>Drag any edge or corner to resize.</p></div>
+      <div class="dlg-footer">
+        <button onclick="document.querySelector('#resizable').close('ok')">OK</button>
       </div>
     </dialog>
   </rc-dialog>
@@ -167,7 +158,7 @@ Add `resize="both"` to allow dragging any edge or corner. While the resize handl
 
 ```html
 <rc-dialog movable move-handle=".dlg-titlebar" resize="both">
-  <dialog style="min-width: 20rem; min-height: 10rem;">
+  <dialog style="min-height: 10rem;">
     <!-- ... -->
   </dialog>
 </rc-dialog>
@@ -179,15 +170,12 @@ A card-style dialog with an overlaid close button. No structural titlebar or foo
 
 <ClientOnly>
 <div class="demo-section">
-  <button onclick="document.querySelector('#minimal').showModal()"
-    style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-    Open minimal dialog
-  </button>
+  <button onclick="document.querySelector('#minimal').showModal()">Open minimal dialog</button>
   <rc-dialog id="minimal">
     <dialog aria-labelledby="minimal-title" aria-describedby="minimal-desc"
-      style="padding:2rem;border:none;border-radius:12px;min-width:22rem;max-width:32rem;box-shadow:0 8px 40px rgba(0,0,0,0.18);position:relative;">
-      <button onclick="document.querySelector('#minimal').close()" aria-label="Close"
-        style="position:absolute;top:0.5rem;right:0.5rem;border:none;background:none;cursor:pointer;font-size:1.25rem;line-height:1;padding:0.25rem;border-radius:50%;">✕</button>
+      style="padding:2rem;border-radius:12px;min-width:22rem;max-width:32rem;box-shadow:0 8px 40px rgba(0,0,0,0.18);position:relative;">
+      <button class="dlg-close" onclick="document.querySelector('#minimal').close()" aria-label="Close"
+        style="position:absolute;top:0.5rem;right:0.5rem;">✕</button>
       <h3 id="minimal-title" style="margin:0 0 0.75rem;">Quick note</h3>
       <p id="minimal-desc" style="margin:0 0 0.5rem;">No structural titlebar or footer — just content and an overlaid ✕ button.</p>
       <p style="margin:0;">Press <kbd>Escape</kbd> or ✕ to close.</p>
@@ -199,7 +187,7 @@ A card-style dialog with an overlaid close button. No structural titlebar or foo
 ```html
 <rc-dialog id="dlg">
   <dialog aria-labelledby="title" style="position: relative; padding: 2rem;">
-    <button onclick="document.querySelector('#dlg').close()" aria-label="Close"
+    <button class="dlg-close" onclick="document.querySelector('#dlg').close()" aria-label="Close"
       style="position: absolute; top: 0.5rem; right: 0.5rem;">✕</button>
     <h3 id="title">Quick note</h3>
     <p>Content here.</p>
@@ -213,25 +201,20 @@ Uses `role="alertdialog"` and `aria-describedby` for the alert message.
 
 <ClientOnly>
 <div class="demo-section">
-  <button onclick="document.querySelector('#alert-dlg').showModal()"
-    style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-    Delete item…
-  </button>
+  <button onclick="document.querySelector('#alert-dlg').showModal()">Delete item…</button>
   <rc-dialog id="alert-dlg">
-    <dialog role="alertdialog" aria-labelledby="alert-title" aria-describedby="alert-desc"
-      style="padding:0;border:1px solid ButtonBorder;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,0.2);min-width:20rem;">
-      <div style="display:flex;align-items:center;padding:0.5rem 1rem;background:Canvas;border-bottom:1px solid ButtonBorder;">
-        <span id="alert-title" style="font-weight:600;">Delete item?</span>
+    <dialog role="alertdialog" aria-labelledby="alert-title" aria-describedby="alert-desc">
+      <div class="dlg-titlebar">
+        <span id="alert-title">Delete item?</span>
       </div>
-      <div style="padding:1rem;text-align:center;">
+      <div class="dlg-body" style="text-align:center;">
         <div style="font-size:2.5rem;margin-bottom:0.5rem;" aria-hidden="true">⚠️</div>
-        <p id="alert-desc" style="margin:0 0 1.25rem;">This will permanently delete the item and cannot be undone.</p>
+        <p id="alert-desc">This will permanently delete the item and cannot be undone.</p>
       </div>
-      <div style="display:flex;justify-content:flex-end;gap:0.5rem;padding:0.75rem 1rem;border-top:1px solid ButtonBorder;">
-        <button onclick="document.querySelector('#alert-dlg').close('cancel')"
-          style="padding:0.5rem 1.25rem;background:none;border:1px solid ButtonBorder;border-radius:4px;cursor:pointer;font-size:1rem;">Cancel</button>
+      <div class="dlg-footer">
+        <button onclick="document.querySelector('#alert-dlg').close('cancel')">Cancel</button>
         <button onclick="document.querySelector('#alert-dlg').close('delete')"
-          style="padding:0.5rem 1.25rem;background:#c0392b;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:1rem;">Delete</button>
+          style="background:#c0392b;color:#fff;border-color:#c0392b;">Delete</button>
       </div>
     </dialog>
   </rc-dialog>
@@ -240,13 +223,15 @@ Uses `role="alertdialog"` and `aria-describedby` for the alert message.
 
 ```html
 <rc-dialog id="alert-dlg">
-  <dialog role="alertdialog"
-          aria-labelledby="alert-title"
-          aria-describedby="alert-desc">
-    <div id="alert-title">Delete item?</div>
-    <p id="alert-desc">This action cannot be undone.</p>
-    <button onclick="document.querySelector('#alert-dlg').close('cancel')">Cancel</button>
-    <button onclick="document.querySelector('#alert-dlg').close('delete')">Delete</button>
+  <dialog role="alertdialog" aria-labelledby="alert-title" aria-describedby="alert-desc">
+    <div class="dlg-titlebar"><span id="alert-title">Delete item?</span></div>
+    <div class="dlg-body">
+      <p id="alert-desc">This action cannot be undone.</p>
+    </div>
+    <div class="dlg-footer">
+      <button onclick="document.querySelector('#alert-dlg').close('cancel')">Cancel</button>
+      <button onclick="document.querySelector('#alert-dlg').close('delete')">Delete</button>
+    </div>
   </dialog>
 </rc-dialog>
 ```
@@ -257,33 +242,28 @@ Uses `<form method="dialog">`. Submitting closes the dialog and sets `returnValu
 
 <ClientOnly>
 <div class="demo-section">
-  <button onclick="document.querySelector('#formdlg').showModal()"
-    style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-    Open form dialog
-  </button>
+  <button onclick="document.querySelector('#formdlg').showModal()">Open form dialog</button>
   <rc-dialog id="formdlg">
-    <dialog aria-labelledby="form-title" style="padding:0;border:1px solid ButtonBorder;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,0.2);min-width:24rem;">
-      <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:Canvas;border-bottom:1px solid ButtonBorder;">
-        <span id="form-title" style="flex:1;font-weight:600;">New contact</span>
-        <button formmethod="dialog" form="contact-form" value="cancel" aria-label="Close" style="border:none;background:none;cursor:pointer;font-size:1.1rem;line-height:1;">✕</button>
+    <dialog aria-labelledby="form-title" style="min-width:24rem;">
+      <div class="dlg-titlebar">
+        <span id="form-title">New contact</span>
+        <button class="dlg-close" formmethod="dialog" form="contact-form" value="cancel" aria-label="Close">✕</button>
       </div>
-      <div style="padding:1rem;">
-        <form id="contact-form" method="dialog" style="display:flex;flex-direction:column;gap:0.75rem;">
-          <div style="display:flex;flex-direction:column;gap:0.25rem;">
-            <label for="contact-name" style="font-weight:600;font-size:0.875rem;">Name</label>
-            <input id="contact-name" name="name" type="text" placeholder="Jane Smith"
-              style="padding:0.375rem 0.5rem;border:1px solid ButtonBorder;border-radius:4px;font-size:1rem;font-family:inherit;" />
+      <div class="dlg-body">
+        <form id="contact-form" method="dialog">
+          <div>
+            <label for="contact-name">Name</label>
+            <input id="contact-name" name="name" type="text" placeholder="Jane Smith">
           </div>
-          <div style="display:flex;flex-direction:column;gap:0.25rem;">
-            <label for="contact-email" style="font-weight:600;font-size:0.875rem;">Email</label>
-            <input id="contact-email" name="email" type="email" placeholder="jane@example.com"
-              style="padding:0.375rem 0.5rem;border:1px solid ButtonBorder;border-radius:4px;font-size:1rem;font-family:inherit;" />
+          <div>
+            <label for="contact-email">Email</label>
+            <input id="contact-email" name="email" type="email" placeholder="jane@example.com">
           </div>
         </form>
       </div>
-      <div style="display:flex;justify-content:flex-end;gap:0.5rem;padding:0.75rem 1rem;border-top:1px solid ButtonBorder;">
-        <button formmethod="dialog" form="contact-form" value="cancel" style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">Cancel</button>
-        <button type="submit" form="contact-form" value="save" style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">Save</button>
+      <div class="dlg-footer">
+        <button formmethod="dialog" form="contact-form" value="cancel">Cancel</button>
+        <button type="submit" form="contact-form" value="save">Save</button>
       </div>
     </dialog>
   </rc-dialog>
@@ -308,29 +288,23 @@ Listens for `rc-dialog-request-close` (cancelable). When the textarea has conten
 
 <ClientOnly>
 <div class="demo-section">
-  <button onclick="document.querySelector('#guard').showModal()"
-    style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-    Open with guard
-  </button>
-  <rc-dialog id="guard" movable move-handle=".guard-titlebar">
-    <dialog aria-labelledby="guard-title" style="padding:0;border:1px solid ButtonBorder;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,0.2);min-width:22rem;">
-      <div class="guard-titlebar" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:Canvas;border-bottom:1px solid ButtonBorder;cursor:move;user-select:none;">
-        <span id="guard-title" style="flex:1;font-weight:600;">Edit note</span>
-        <button onclick="document.querySelector('#guard').requestClose('cancel')" style="border:none;background:none;cursor:pointer;font-size:1.1rem;line-height:1;">✕</button>
+  <button onclick="document.querySelector('#guard').showModal()">Open with guard</button>
+  <rc-dialog id="guard" movable move-handle=".dlg-titlebar">
+    <dialog aria-labelledby="guard-title" style="min-width:22rem;">
+      <div class="dlg-titlebar movable">
+        <span id="guard-title">Edit note</span>
+        <button class="dlg-close" onclick="document.querySelector('#guard').requestClose('cancel')" aria-label="Close">✕</button>
       </div>
-      <div style="padding:1rem;">
-        <div style="display:flex;flex-direction:column;gap:0.25rem;">
-          <label for="guard-note" style="font-weight:600;font-size:0.875rem;">Note</label>
-          <textarea id="guard-note" rows="5" placeholder="Type something to trigger the guard…"
-            style="resize:vertical;padding:0.375rem 0.5rem;border:1px solid ButtonBorder;border-radius:4px;font-size:1rem;font-family:inherit;"></textarea>
+      <div class="dlg-body">
+        <div>
+          <label for="guard-note">Note</label>
+          <textarea id="guard-note" rows="5" placeholder="Type something to trigger the guard…"></textarea>
         </div>
         <p id="guard-warning" role="alert" style="display:none;font-size:0.8rem;color:#c0392b;margin:0.25rem 0 0;">You have unsaved changes. Save or discard before closing.</p>
       </div>
-      <div style="display:flex;justify-content:flex-end;gap:0.5rem;padding:0.75rem 1rem;border-top:1px solid ButtonBorder;">
-        <button onclick="document.getElementById('guard-note').value='';document.getElementById('guard-warning').style.display='none';document.querySelector('#guard').close('discard')"
-          style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">Discard</button>
-        <button onclick="document.querySelector('#guard').close('save')"
-          style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">Save</button>
+      <div class="dlg-footer">
+        <button onclick="document.getElementById('guard-note').value='';document.getElementById('guard-warning').style.display='none';document.querySelector('#guard').close('discard')">Discard</button>
+        <button onclick="document.querySelector('#guard').close('save')">Save</button>
       </div>
     </dialog>
   </rc-dialog>
@@ -355,24 +329,21 @@ document.querySelector('#guard').addEventListener(
 
 <ClientOnly>
 <div class="demo-section">
-  <button onclick="document.querySelector('#infopanel').showModal()"
-    style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-    Open info panel
-  </button>
+  <button onclick="document.querySelector('#infopanel').showModal()">Open info panel</button>
   <rc-dialog id="infopanel" closed-by="any" light-dismiss>
     <dialog aria-labelledby="info-title" aria-describedby="info-body"
       style="padding:0;border:none;border-radius:8px;min-width:26rem;box-shadow:0 4px 32px rgba(0,0,0,0.22);">
-      <div style="background:#1a73e8;color:#fff;padding:1rem 1.25rem;font-weight:600;font-size:1.1rem;border-radius:8px 8px 0 0;display:flex;align-items:center;gap:0.5rem;">
+      <div class="info-header">
         <span aria-hidden="true">ℹ️</span>
         <span id="info-title">Keyboard shortcuts</span>
       </div>
-      <div id="info-body" style="background:#f8faff;padding:1.25rem;line-height:1.7;color:#2c3e50;">
-        <p style="margin:0 0 0.5rem;"><kbd>Ctrl+K</kbd> — Open command palette</p>
-        <p style="margin:0 0 0.5rem;"><kbd>Ctrl+/</kbd> — Toggle sidebar</p>
-        <p style="margin:0 0 0.5rem;"><kbd>Ctrl+Shift+P</kbd> — Open settings</p>
-        <p style="margin:0;"><kbd>?</kbd> — Show all shortcuts</p>
+      <div class="info-body" id="info-body">
+        <p><kbd>Ctrl+K</kbd> — Open command palette</p>
+        <p><kbd>Ctrl+/</kbd> — Toggle sidebar</p>
+        <p><kbd>Ctrl+Shift+P</kbd> — Open settings</p>
+        <p><kbd>?</kbd> — Show all shortcuts</p>
       </div>
-      <div style="font-size:0.8rem;color:#888;text-align:center;padding:0.5rem;border-top:1px solid #e0e6f0;">Click anywhere outside to dismiss</div>
+      <div class="info-footer">Click anywhere outside to dismiss</div>
     </dialog>
   </rc-dialog>
 </div>

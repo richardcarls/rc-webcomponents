@@ -62,41 +62,20 @@ rc-range-slider::part(value-display) {
 }
 ```
 
-<style>
-rc-range-slider {
-  display: block;
-  max-width: 400px;
-  --rc-range-slider-track-size: 0.375rem;
-  --rc-range-slider-thumb-size: 1.125rem;
-  --rc-thumb-radius: 0.5625rem;
-}
-rc-range-slider::part(track),
-rc-range-slider::part(range) { border-radius: 999px; }
-rc-range-slider::part(thumb) {
-  box-shadow: 0 1px 2px color-mix(in srgb, CanvasText 18%, transparent);
-}
-rc-range-slider::part(value-display) { font-size: 0.75rem; color: GrayText; }
-rc-range-slider[orientation="vertical"] {
-  max-width: none;
-  display: inline-block;
-  --rc-range-slider-vertical-size: 12.5rem;
-}
-</style>
-
 ## Basic — `fieldset`/`legend`
 
 A `<fieldset>`/`<legend>` names the group without JavaScript.
 
 <ClientOnly>
 <div class="demo-section">
-  <fieldset style="border:none;padding:0;margin:0;">
-    <legend style="font-size:0.875rem;font-weight:500;padding:0;margin-block-end:0.4em;">Price range</legend>
+  <fieldset>
+    <legend>Price range</legend>
     <rc-range-slider id="basic-range">
       <input type="range" name="price-min" min="0" max="100" value="20" aria-label="Minimum price">
       <input type="range" name="price-max" min="0" max="100" value="80" aria-label="Maximum price">
     </rc-range-slider>
   </fieldset>
-  <p style="font-size:0.875rem;color:var(--vp-c-text-2);margin:0.5rem 0 0;">{{ priceDisplay }}</p>
+  <p>{{ priceDisplay }}</p>
 </div>
 </ClientOnly>
 
@@ -123,8 +102,8 @@ slider.addEventListener('rc-range-slider-input', (e) => {
 
 <ClientOnly>
 <div class="demo-section">
-  <fieldset style="border:none;padding:0;margin:0;">
-    <legend style="font-size:0.875rem;font-weight:500;padding:0;margin-block-end:0.4em;">Year range</legend>
+  <fieldset>
+    <legend>Year range</legend>
     <rc-range-slider display="float">
       <input type="range" name="year-start" min="2000" max="2030" value="2010" aria-label="Start year">
       <input type="range" name="year-end" min="2000" max="2030" value="2025" aria-label="End year">
@@ -146,8 +125,8 @@ slider.addEventListener('rc-range-slider-input', (e) => {
 
 <ClientOnly>
 <div class="demo-section">
-  <fieldset style="border:none;padding:0;margin:0;">
-    <legend style="font-size:0.875rem;font-weight:500;padding:0;margin-block-end:0.4em;">Budget range</legend>
+  <fieldset>
+    <legend>Budget range</legend>
     <rc-range-slider display="inline-end">
       <input type="range" name="budget-min" min="0" max="1000" value="100" aria-label="Minimum budget">
       <input type="range" name="budget-max" min="0" max="1000" value="800" aria-label="Maximum budget">
@@ -162,8 +141,8 @@ Thumbs are visible and focusable but values cannot be changed.
 
 <ClientOnly>
 <div class="demo-section">
-  <fieldset style="border:none;padding:0;margin:0;">
-    <legend style="font-size:0.875rem;font-weight:500;padding:0;margin-block-end:0.4em;">Read-only range</legend>
+  <fieldset>
+    <legend>Read-only range</legend>
     <rc-range-slider readonly>
       <input type="range" min="0" max="100" value="30" aria-label="Minimum">
       <input type="range" min="0" max="100" value="70" aria-label="Maximum">
@@ -176,8 +155,8 @@ Thumbs are visible and focusable but values cannot be changed.
 
 <ClientOnly>
 <div class="demo-section">
-  <fieldset style="border:none;padding:0;margin:0;">
-    <legend style="font-size:0.875rem;font-weight:500;padding:0;margin-block-end:0.4em;">Disabled range</legend>
+  <fieldset>
+    <legend>Disabled range</legend>
     <rc-range-slider disabled>
       <input type="range" min="0" max="100" value="20" aria-label="Minimum">
       <input type="range" min="0" max="100" value="60" aria-label="Maximum">
@@ -190,8 +169,8 @@ Thumbs are visible and focusable but values cannot be changed.
 
 <ClientOnly>
 <div class="demo-section">
-  <fieldset style="border:none;padding:0;margin:0;">
-    <legend style="font-size:0.875rem;font-weight:500;padding:0;margin-block-end:0.4em;">Vertical range</legend>
+  <fieldset>
+    <legend>Vertical range</legend>
     <rc-range-slider orientation="vertical">
       <input type="range" min="0" max="100" value="25" aria-label="Minimum">
       <input type="range" min="0" max="100" value="75" aria-label="Maximum">

@@ -244,14 +244,13 @@ The native `<select slot="select">` is the form control. `FormData` reads its va
 
 <ClientOnly>
 <div class="demo-section">
-  <form id="cb-demo-form" style="display:flex;flex-direction:column;gap:0.75rem;max-width:28em;">
-    <div style="display:flex;flex-direction:column;gap:0.25rem;">
-      <label for="cb-form-name" style="font-size:0.875rem;font-weight:600;">Name</label>
-      <input id="cb-form-name" type="text" name="name" placeholder="Your name"
-        style="padding:0.35em 0.5em;border:1px solid ButtonBorder;border-radius:0.125em;background:Field;color:FieldText;font:inherit;" />
+  <form id="cb-demo-form">
+    <div>
+      <label for="cb-form-name">Name</label>
+      <input id="cb-form-name" type="text" name="name" placeholder="Your name">
     </div>
-    <div style="display:flex;flex-direction:column;gap:0.25rem;">
-      <label style="font-size:0.875rem;font-weight:600;">Role</label>
+    <div>
+      <label>Role</label>
       <rc-combobox placeholder="Search a role…">
         <select slot="select" name="role">
           <option value="admin">Administrator</option>
@@ -261,8 +260,8 @@ The native `<select slot="select">` is the form control. `FormData` reads its va
         </select>
       </rc-combobox>
     </div>
-    <div style="display:flex;flex-direction:column;gap:0.25rem;">
-      <label style="font-size:0.875rem;font-weight:600;">Interests (multi)</label>
+    <div>
+      <label>Interests (multi)</label>
       <rc-combobox placeholder="Add interests…">
         <select slot="select" name="interests" multiple>
           <option value="ux">UX</option>
@@ -273,7 +272,7 @@ The native `<select slot="select">` is the form control. `FormData` reads its va
         </select>
       </rc-combobox>
     </div>
-    <button type="submit" style="align-self:flex-start;padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:0.125em;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">Submit</button>
+    <button type="submit">Submit</button>
   </form>
   <pre style="margin-top:0.75rem;padding:0.5rem 0.75rem;background:var(--vp-c-bg);border:1px solid var(--vp-c-divider);border-radius:4px;font-size:0.85rem;">{{ formOutput }}</pre>
 </div>

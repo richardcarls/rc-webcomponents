@@ -20,57 +20,12 @@ yarn add @rcarls/rc-transfer-list
 import '@rcarls/rc-transfer-list/define';
 ```
 
-<style>
-.tl-demo rc-transfer-list { display: inline-block; }
-.tl-demo .rc-transfer-list-root {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 0.75em;
-  align-items: start;
-}
-.tl-demo .rc-transfer-list-panel { display: flex; flex-direction: column; gap: 0.25em; }
-.tl-demo .rc-transfer-list-panel [part~="label"] {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--vp-c-text-2);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.tl-demo rc-transfer-list rc-listbox {
-  min-width: 160px;
-  height: 200px;
-  border: 1px solid ButtonBorder;
-  border-radius: 4px;
-  overflow-y: auto;
-  display: block;
-}
-.tl-demo .rc-transfer-list-actions { padding-block-start: 1.5em; }
-.tl-demo rc-transfer-list button {
-  padding: 0.35em 0.75em;
-  font-size: 0.875rem;
-  border: 1px solid ButtonBorder;
-  border-radius: 4px;
-  background: ButtonFace;
-  color: ButtonText;
-  cursor: pointer;
-  white-space: nowrap;
-  font: inherit;
-}
-.tl-demo rc-transfer-list button:hover:not(:disabled) {
-  background: color-mix(in srgb, ButtonFace 80%, Highlight 20%);
-}
-.tl-demo rc-transfer-list button:disabled { opacity: 0.45; cursor: not-allowed; }
-.tl-demo rc-listbox [part~="option"] { padding: 0.3em 0.6em; cursor: default; user-select: none; }
-.tl-demo rc-listbox [part~="option"][aria-selected="true"] { background: Highlight; color: HighlightText; }
-.tl-demo rc-listbox [part~="option"][data-active] { outline: 2px solid Highlight; outline-offset: -2px; }
-</style>
-
 ## Basic
 
 Backed by a native `<select multiple>`. Transfers reflect back to the `<select>` for form participation — no JavaScript required.
 
 <ClientOnly>
-<div class="demo-section tl-demo">
+<div class="demo-section">
   <rc-transfer-list available-label="Available" selected-label="Selected">
     <select multiple name="features">
       <option value="dark-mode">Dark mode</option>
@@ -101,7 +56,7 @@ Backed by a native `<select multiple>`. Transfers reflect back to the `<select>`
 `multiple` allows selecting several items before transferring them all at once. Click or use Ctrl/Shift+Click for multi-select within each panel.
 
 <ClientOnly>
-<div class="demo-section tl-demo">
+<div class="demo-section">
   <rc-transfer-list multiple available-label="Team members" selected-label="Assigned">
     <select multiple name="team">
       <option value="alice">Alice</option>

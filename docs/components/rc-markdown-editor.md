@@ -199,15 +199,9 @@ editor.addEventListener('rc-mode-change', (e) => {
       <textarea id="controlled-ta" name="notes"></textarea>
     </rc-markdown-editor>
   </form>
-  <div style="margin-top:0.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
-    <button id="set-value-btn" type="button"
-      style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-      Set new value
-    </button>
-    <button id="toggle-mode-btn" type="button"
-      style="padding:0.4em 1em;border:1px solid ButtonBorder;border-radius:4px;background:ButtonFace;color:ButtonText;font:inherit;cursor:pointer;">
-      Toggle source / rich mode
-    </button>
+  <div class="demo-row" style="margin-top:0.5rem;">
+    <button id="set-value-btn" type="button">Set new value</button>
+    <button id="toggle-mode-btn" type="button">Toggle source / rich mode</button>
   </div>
 </div>
 </ClientOnly>

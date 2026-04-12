@@ -31,44 +31,10 @@ yarn add @rcarls/rc-toolbar
 import '@rcarls/rc-toolbar/define';
 ```
 
-<style>
-.tb-demo rc-toolbar {
-  border: 1px solid ButtonBorder;
-  border-radius: 4px;
-  display: inline-flex;
-}
-.tb-demo rc-toolbar button {
-  padding: 0.4em 0.8em;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font: inherit;
-}
-.tb-demo rc-toolbar button:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
-.tb-demo rc-toolbar button:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
-.tb-demo rc-toolbar button:disabled { opacity: 0.4; cursor: not-allowed; }
-.tb-demo rc-toolbar hr {
-  margin: 0 0.25em;
-  border: none;
-  border-left: 1px solid ButtonBorder;
-  height: 1.5em;
-  align-self: center;
-}
-.tb-demo rc-toolbar[orientation="vertical"] { display: inline-flex; flex-direction: column; }
-.tb-demo rc-toolbar[orientation="vertical"] hr {
-  border-left: none;
-  border-top: 1px solid ButtonBorder;
-  width: 1.5em;
-  height: auto;
-  margin: 0.25em 0;
-}
-</style>
-
 ## Basic toolbar
 
 <ClientOnly>
-<div class="demo-section tb-demo">
+<div class="demo-section">
   <rc-toolbar label="Formatting">
     <button @click="logClick('Bold')">Bold</button>
     <button @click="logClick('Italic')">Italic</button>
@@ -93,7 +59,7 @@ import '@rcarls/rc-toolbar/define';
 Non-focusable elements like `<hr>` render as visual separators but are skipped during keyboard navigation.
 
 <ClientOnly>
-<div class="demo-section tb-demo">
+<div class="demo-section">
   <rc-toolbar label="Text formatting">
     <button @click="logClick('Bold')">Bold</button>
     <button @click="logClick('Italic')">Italic</button>
@@ -124,7 +90,7 @@ Non-focusable elements like `<hr>` render as visual separators but are skipped d
 ## Vertical orientation
 
 <ClientOnly>
-<div class="demo-section tb-demo">
+<div class="demo-section">
   <rc-toolbar orientation="vertical" label="Actions">
     <button @click="logClick('Cut')">Cut</button>
     <button @click="logClick('Copy')">Copy</button>

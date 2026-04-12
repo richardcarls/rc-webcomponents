@@ -36,27 +36,10 @@ yarn add @rcarls/rc-menu
 import '@rcarls/rc-menu/define';
 ```
 
-<style>
-.menu-demo rc-menu button {
-  all: unset;
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.5em 1em;
-  cursor: pointer;
-  font: inherit;
-}
-.menu-demo rc-menu button:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
-.menu-demo rc-menu button:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
-.menu-demo rc-menu button[disabled] { opacity: 0.5; cursor: not-allowed; }
-.menu-demo rc-menu button.has-icon { display: flex; align-items: center; gap: 0.6em; }
-.menu-demo rc-menu button.has-icon svg { flex-shrink: 0; width: 1em; height: 1em; }
-</style>
-
 ## Basic menu
 
 <ClientOnly>
-<div class="demo-section menu-demo">
+<div class="demo-section">
   <rc-menu label="Actions">
     <button onclick="void 0">Cut</button>
     <button onclick="void 0">Copy</button>
@@ -87,7 +70,7 @@ menu.addEventListener('rc-menu-activate', (e) => {
 Disabled items are visible but skipped by keyboard navigation.
 
 <ClientOnly>
-<div class="demo-section menu-demo">
+<div class="demo-section">
   <rc-menu label="File Actions">
     <button onclick="void 0">New</button>
     <button onclick="void 0">Open</button>
@@ -111,7 +94,7 @@ Disabled items are visible but skipped by keyboard navigation.
 `all: unset` resets `display` to `inline`, breaking SVG layout. Add `display: flex; align-items: center` after the reset to restore it.
 
 <ClientOnly>
-<div class="demo-section menu-demo">
+<div class="demo-section">
   <rc-menu label="Edit Actions">
     <button class="has-icon" onclick="void 0">
       <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
