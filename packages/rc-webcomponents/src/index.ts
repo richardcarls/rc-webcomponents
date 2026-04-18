@@ -6,5 +6,6 @@ export * from '@rcarls/rc-menu-button';
 export * from '@rcarls/rc-menubar';
 export * from '@rcarls/rc-select';
 export * from '@rcarls/rc-splitter';
+export * from '@rcarls/rc-markdown-editor';
 export * from '@rcarls/rc-textarea';
 export * from '@rcarls/rc-toolbar';

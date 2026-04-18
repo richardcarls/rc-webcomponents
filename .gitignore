@@ -13,6 +13,10 @@ dist-ssr
 custom-elements.json
 *.local
 
+# VitePress build artifacts
+**/.vitepress/cache
+**/.vitepress/dist
+
 # Yarn Berry
 /.yarn/install-state.gz
 

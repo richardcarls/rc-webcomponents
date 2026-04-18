@@ -1,0 +1,71 @@
+{
+  "name": "@rcarls/rc-markdown-editor",
+  "private": true,
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-markdown-editor"
+  },
+  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/rc-markdown-editor.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/packages/rc-markdown-editor/src/index.d.ts",
+        "default": "./dist/rc-markdown-editor.js"
+      }
+    },
+    "./define": {
+      "import": {
+        "types": "./dist/types/packages/rc-markdown-editor/src/define.d.ts",
+        "default": "./dist/rc-markdown-editor-define.js"
+      }
+    }
+  },
+  "types": "./dist/types/packages/rc-markdown-editor/src/index.d.ts",
+  "sideEffects": [
+    "./dist/rc-markdown-editor-define.js"
+  ],
+  "customElements": "dist/custom-elements.json",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && cem analyze",
+    "cem:analyze": "cem analyze",
+    "preview": "vite preview",
+    "test:browser": "vitest",
+    "test:browser:chrome": "vitest --project=chromium",
+    "test:browser:firefox": "vitest --project=firefox",
+    "yalc:publish": "yalc publish --push"
+  },
+  "dependencies": {
+    "@rcarls/rc-textarea": "workspace:^"
+  },
+  "devDependencies": {
+    "@custom-elements-manifest/analyzer": "0.11.0",
+    "@guanghechen/rollup-plugin-copy": "^6.0.9",
+    "@types/turndown": "^5.0.5",
+    "@vitest/browser-playwright": "4.1.5",
+    "lit": "^3.0.0",
+    "mdast-util-from-markdown": "^2.0.2",
+    "mdast-util-gfm-strikethrough": "^2.0.0",
+    "micromark": "^4.0.2",
+    "micromark-extension-gfm-strikethrough": "^2.0.0",
+    "playwright": "^1.56.0",
+    "rollup": "^4.60.2",
+    "turndown": "^7.2.0",
+    "typescript": "~5.9.3",
+    "unist-util-visit": "^5.0.0",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.6",
+    "vitest-browser-lit": "^1.0.1"
+  },
+  "peerDependencies": {
+    "lit": "^3.0.0"
+  }
+}

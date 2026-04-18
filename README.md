@@ -122,3 +122,9 @@ yarn.cmd test
 ```
 
 > **Dependency graph:** the root `build` script runs `yarn workspaces foreach --topological`, so Yarn enforces package order from the workspace dependency declarations. For targeted package work, rebuild affected dependencies first: `rc-common` → `rc-listbox` / `rc-menu` → `rc-select` / `rc-menu-button` → `rc-combobox` / `rc-menubar` / `rc-toolbar` / `rc-splitter` / `rc-dialog` → `rc-webcomponents`. Rebuild a dep before running tests in packages that consume it; Vite's HMR does not watch `node_modules` for dist changes.
+
+---
+
+## Attribution
+
+The `rc-markdown-editor` toolbar uses icons from [Bootstrap Icons](https://icons.getbootstrap.com/) by the Bootstrap Authors, licensed under the [MIT License](https://github.com/twbs/icons/blob/main/LICENSE).

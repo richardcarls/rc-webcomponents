@@ -41,16 +41,22 @@
     "yalc:publish": "yalc publish --push"
   },
   "dependencies": {
+    "@rcarls/rc-accordion": "workspace:^",
     "@rcarls/rc-combobox": "workspace:^",
     "@rcarls/rc-dialog": "workspace:^",
+    "@rcarls/rc-disclosure": "workspace:^",
     "@rcarls/rc-listbox": "workspace:^",
+    "@rcarls/rc-markdown-editor": "workspace:^",
     "@rcarls/rc-menu": "workspace:^",
     "@rcarls/rc-menu-button": "workspace:^",
     "@rcarls/rc-menubar": "workspace:^",
+    "@rcarls/rc-range-slider": "workspace:^",
     "@rcarls/rc-select": "workspace:^",
+    "@rcarls/rc-slider": "workspace:^",
     "@rcarls/rc-splitter": "workspace:^",
     "@rcarls/rc-textarea": "workspace:^",
-    "@rcarls/rc-toolbar": "workspace:^"
+    "@rcarls/rc-toolbar": "workspace:^",
+    "@rcarls/rc-transfer-list": "workspace:^"
   },
   "peerDependencies": {
     "lit": "^3.0.0"

@@ -1,0 +1,386 @@
+/* ---- VitePress chrome: neutral zinc brand + system-ui font ---- */
+:root {
+  --vp-c-brand-1: #18181b;
+  --vp-c-brand-2: #3f3f46;
+  --vp-c-brand-3: #71717a;
+  --vp-c-brand-soft: rgba(24, 24, 27, 0.08);
+  --vp-font-family-base: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --vp-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.dark {
+  --vp-c-brand-1: #d4d4d8;
+  --vp-c-brand-2: #a1a1aa;
+  --vp-c-brand-3: #71717a;
+  --vp-c-brand-soft: rgba(212, 212, 216, 0.08);
+}
+
+/* ---- RC theme presets: Zinc ---- */
+:root[data-rc-theme="zinc"] {
+  --rc-surface:        #ffffff;
+  --rc-field:          #f4f4f5;
+  --rc-button-bg:      #f4f4f5;
+  --rc-field-text:     #18181b;
+  --rc-button-text:    #27272a;
+  --rc-highlight-text: #ffffff;
+  --rc-text-disabled:  #a1a1aa;
+  --rc-highlight:      #18181b;
+  --rc-accent:         #18181b;
+  --rc-border-color:   #d4d4d8;
+  --rc-border:         1px solid #d4d4d8;
+  --rc-shadow:         0 2px 8px rgba(0, 0, 0, 0.12);
+  --rc-radius-sm:      0.25em;
+  --rc-radius-md:      0.375em;
+}
+
+.dark[data-rc-theme="zinc"] {
+  --rc-surface:        #18181b;
+  --rc-field:          #27272a;
+  --rc-button-bg:      #3f3f46;
+  --rc-field-text:     #fafafa;
+  --rc-button-text:    #f4f4f5;
+  --rc-highlight-text: #18181b;
+  --rc-text-disabled:  #71717a;
+  --rc-highlight:      #e4e4e7;
+  --rc-accent:         #e4e4e7;
+  --rc-border-color:   #52525b;
+  --rc-border:         1px solid #52525b;
+  --rc-shadow:         0 2px 8px rgba(0, 0, 0, 0.5);
+  --rc-radius-sm:      0.25em;
+  --rc-radius-md:      0.375em;
+}
+
+/* ---- RC theme presets: Blue ---- */
+:root[data-rc-theme="blue"] {
+  --rc-surface:        #ffffff;
+  --rc-field:          #f8fafc;
+  --rc-button-bg:      #eff6ff;
+  --rc-field-text:     #0f172a;
+  --rc-button-text:    #1e40af;
+  --rc-highlight-text: #ffffff;
+  --rc-text-disabled:  #94a3b8;
+  --rc-highlight:      #2563eb;
+  --rc-accent:         #3b82f6;
+  --rc-border-color:   #bfdbfe;
+  --rc-border:         1px solid #bfdbfe;
+  --rc-shadow:         0 2px 8px rgba(37, 99, 235, 0.15);
+  --rc-radius-sm:      0.25em;
+  --rc-radius-md:      0.375em;
+}
+
+.dark[data-rc-theme="blue"] {
+  --rc-surface:        #0f172a;
+  --rc-field:          #1e293b;
+  --rc-button-bg:      #1e3a8a;
+  --rc-field-text:     #f1f5f9;
+  --rc-button-text:    #e2e8f0;
+  --rc-highlight-text: #0f172a;
+  --rc-text-disabled:  #64748b;
+  --rc-highlight:      #60a5fa;
+  --rc-accent:         #60a5fa;
+  --rc-border-color:   #1d4ed8;
+  --rc-border:         1px solid #1d4ed8;
+  --rc-shadow:         0 2px 8px rgba(96, 165, 250, 0.2);
+  --rc-radius-sm:      0.25em;
+  --rc-radius-md:      0.375em;
+}
+
+/* ---- Demo section: bordered container for live component examples ---- */
+.demo-section {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.25rem 0;
+  background: var(--rc-surface, Canvas);
+}
+
+.demo-section > p:first-child { margin-top: 0; }
+.demo-section > p:last-of-type { margin-bottom: 0; }
+
+/* ---- Layout helpers reused across demos ---- */
+.demo-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.demo-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.demo-col > label {
+  font-size: 0.875rem;
+  color: var(--vp-c-text-2);
+}
+
+/* ---- Event log shared by multiple demos ---- */
+.event-log {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.8rem;
+  min-height: 2.5em;
+  max-height: 8em;
+  overflow-y: auto;
+}
+
+.event-log p { margin: 0.1em 0; color: var(--vp-c-text-1); }
+.event-log p.placeholder { color: var(--vp-c-text-3); }
+
+/* ---- Demo page styles — suppressed in UA Style mode ---- */
+/* No wrapper classes (.tb-demo etc.) — all scoped to .demo-section or semantic   */
+/* element/component selectors. In UA Style (data-rc-theme="ua") this entire      */
+/* block is inactive; components render with their own defaults + base.css tokens. */
+:root:not([data-rc-theme="ua"]) {
+
+  /* ── Generic button baseline ─────────────────────────────────────────── */
+  & .demo-section button {
+    padding: 0.4em 1em;
+    border: 1px solid var(--rc-border-color, ButtonBorder);
+    border-radius: var(--rc-radius-md, 0.25em);
+    background: var(--rc-button-bg, ButtonFace);
+    color: var(--rc-button-text, ButtonText);
+    font: inherit;
+    cursor: pointer;
+    line-height: normal;
+  }
+  & .demo-section button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--rc-button-bg, ButtonFace) 80%, var(--rc-accent, Highlight) 20%);
+  }
+  & .demo-section button:focus-visible {
+    outline: 2px solid var(--rc-accent, Highlight);
+    outline-offset: 2px;
+  }
+  & .demo-section button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Dialog close button — overrides generic */
+  & .demo-section .dlg-close {
+    border: none;
+    background: none;
+    padding: 0.25rem;
+    font-size: 1.1rem;
+    line-height: 1;
+    border-radius: 50%;
+  }
+  & .demo-section .dlg-close:hover:not(:disabled) {
+    background: color-mix(in srgb, currentColor 12%, transparent);
+  }
+
+  /* Menu item buttons — all:unset then rebuild */
+  & .demo-section rc-menu button {
+    all: unset;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.5em 1em;
+    cursor: pointer;
+    font: inherit;
+  }
+  & .demo-section rc-menu button:hover:not(:disabled) { background: color-mix(in srgb, currentColor 10%, transparent); }
+  & .demo-section rc-menu button:focus-visible { outline: 2px solid var(--rc-accent, Highlight); outline-offset: -2px; }
+  & .demo-section rc-menu button:disabled { opacity: 0.5; cursor: not-allowed; }
+  & .demo-section rc-menu button.has-icon { display: flex; align-items: center; gap: 0.6em; }
+  & .demo-section rc-menu button.has-icon svg { flex-shrink: 0; width: 1em; height: 1em; }
+
+  /* Toolbar buttons — borderless */
+  & .demo-section rc-toolbar button {
+    border: none;
+    border-radius: 0;
+    background: none;
+    padding: 0.4em 0.8em;
+    font: inherit;
+  }
+  & .demo-section rc-toolbar button:hover:not(:disabled) { background: color-mix(in srgb, currentColor 10%, transparent); }
+  & .demo-section rc-toolbar button:focus-visible { outline: 2px solid var(--rc-accent, Highlight); outline-offset: -2px; }
+  & .demo-section rc-toolbar button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Menu/menubar trigger slot buttons */
+  & .demo-section rc-menu-button > button[slot="trigger"] {
+    border: none;
+    background: transparent;
+    border-radius: var(--rc-radius-sm, 0.125em);
+    padding: 0.4em 0.85em;
+    font: inherit;
+  }
+  & .demo-section rc-menu-button > button[slot="trigger"]:hover:not(:disabled) {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+  & .demo-section rc-menu-button > button[slot="trigger"]:focus-visible {
+    outline: 2px solid var(--rc-accent, Highlight);
+    outline-offset: -2px;
+  }
+
+  /* ── Inputs and textareas ─────────────────────────────────────────────── */
+  & .demo-section input:not([type="range"]),
+  & .demo-section textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--rc-border-color, ButtonBorder);
+    border-radius: var(--rc-radius-md, 0.25em);
+    background: var(--rc-field, Field);
+    color: var(--rc-field-text, FieldText);
+    font: inherit;
+  }
+  & .demo-section textarea { resize: vertical; }
+
+  /* ── Form layout ─────────────────────────────────────────────────────── */
+  & .demo-section form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 28em;
+  }
+  & .demo-section form > div { display: flex; flex-direction: column; gap: 0.25rem; }
+  & .demo-section form label { font-size: 0.875rem; font-weight: 600; }
+  & .demo-section form button[type="submit"],
+  & .demo-section form button[type="button"] { align-self: flex-start; }
+  /* Labels outside forms (e.g. slider demos) */
+  & .demo-section > label,
+  & .demo-section label:not(form label) { font-size: 0.875rem; font-weight: 500; display: block; }
+  /* Fieldsets used as labelling groups (e.g. range-slider demos) */
+  & .demo-section fieldset { border: none; padding: 0; margin: 0; }
+  & .demo-section legend { font-size: 0.875rem; font-weight: 500; padding: 0; margin-block-end: 0.4em; }
+
+  /* ── Dialog element and structural helpers ───────────────────────────── */
+  & .demo-section dialog {
+    padding: 0;
+    border: 1px solid var(--rc-border-color, ButtonBorder);
+    border-radius: var(--rc-radius-md, 0.25em);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    min-width: 20rem;
+  }
+  & .dlg-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--rc-surface, Canvas);
+    border-bottom: 1px solid var(--rc-border-color, ButtonBorder);
+    user-select: none;
+  }
+  & .dlg-titlebar.movable { cursor: move; }
+  & .dlg-titlebar > :first-child { flex: 1; font-weight: 600; }
+  & .dlg-body { padding: 1rem; }
+  & .dlg-body > p { margin: 0; }
+  & .dlg-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--rc-border-color, ButtonBorder);
+  }
+  /* Light-dismiss info-panel example */
+  & .info-header {
+    background: var(--rc-accent, Highlight);
+    color: var(--rc-highlight-text, HighlightText);
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  & .info-body {
+    background: var(--rc-field, Field);
+    color: var(--rc-field-text, FieldText);
+    padding: 1.25rem;
+    line-height: 1.7;
+  }
+  & .info-body p { margin: 0 0 0.5rem; }
+  & .info-body p:last-child { margin: 0; }
+  & .info-footer {
+    font-size: 0.8rem;
+    color: var(--rc-text-disabled, GrayText);
+    text-align: center;
+    padding: 0.5rem;
+    border-top: 1px solid var(--rc-border-color, ButtonBorder);
+  }
+
+  /* ── Accordion ───────────────────────────────────────────────────────── */
+  & .demo-section rc-accordion { display: flex; flex-direction: column; gap: 4px; }
+  & .demo-section .accordion-details { border: 1px solid var(--rc-border-color, ButtonBorder); border-radius: 4px; padding: 0; }
+  & .demo-section .accordion-summary { padding: 0.6em 1em; cursor: pointer; font-weight: 500; list-style: none; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  & .demo-section .accordion-summary::-webkit-details-marker { display: none; }
+  & .demo-section .accordion-body { padding: 0.75em 1em; border-top: 1px solid var(--rc-border-color, ButtonBorder); }
+  & .demo-section .accordion-body p { margin: 0; }
+
+  /* ── Slider ──────────────────────────────────────────────────────────── */
+  & rc-slider { display: block; max-width: 400px; }
+  & .rc-slider-root { display: grid; grid-template-columns: 1fr; gap: 0.4em; }
+  & .rc-slider-root[data-display="inline-end"] { grid-template-columns: 1fr auto; align-items: center; }
+  & .rc-slider-root[data-display="inline-start"] { grid-template-columns: auto 1fr; align-items: center; }
+  & .rc-slider-label { font-size: 0.875rem; font-weight: 500; }
+  & .rc-slider-control { position: relative; display: flex; align-items: center; height: 24px; }
+  & .rc-slider-track { position: absolute; inset: 0; display: flex; align-items: center; pointer-events: none; }
+  & .rc-slider-track::before { content: ''; display: block; width: 100%; height: 6px; background: var(--rc-track-bg, light-dark(rgba(0,0,0,0.18), rgba(255,255,255,0.22))); border-radius: 3px; }
+  & .rc-slider-progress { position: absolute; height: 6px; border-radius: 3px; background: var(--rc-accent, Highlight); pointer-events: none; }
+  & .rc-slider-control input[type="range"] { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; appearance: none; background: transparent; cursor: pointer; }
+  & .rc-slider-control input[type="range"]:disabled { cursor: not-allowed; }
+  & .rc-slider-control input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: transparent; border: none; }
+  & .rc-slider-control input[type="range"]::-moz-range-track { height: 6px; background: transparent; border: none; }
+  & .rc-slider-control input[type="range"]::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--rc-button-bg, ButtonFace); border: 2px solid var(--rc-accent, Highlight); cursor: pointer; margin-top: -6px; }
+  & .rc-slider-control input[type="range"]::-moz-range-thumb { appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--rc-button-bg, ButtonFace); border: 2px solid var(--rc-accent, Highlight); cursor: pointer; }
+  & .rc-slider-control input[type="range"]:not(:disabled):hover::-webkit-slider-thumb { background: var(--rc-accent, Highlight); }
+  & .rc-slider-control input[type="range"]:not(:disabled):hover::-moz-range-thumb { background: var(--rc-accent, Highlight); }
+  & .rc-slider-control input[type="range"]:focus-visible { outline: none; }
+  & .rc-slider-control input[type="range"]:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--rc-accent, Highlight); outline-offset: 2px; }
+  & .rc-slider-control input[type="range"]:focus-visible::-moz-range-thumb { outline: 2px solid var(--rc-accent, Highlight); outline-offset: 2px; }
+  & .rc-slider-value { font-variant-numeric: tabular-nums; font-size: 0.875rem; min-width: 2.5em; text-align: right; color: var(--rc-text-disabled, GrayText); }
+  & .rc-slider-root[data-display="inline-start"] .rc-slider-value { text-align: left; }
+  & .rc-slider-root[data-display="float"] .rc-slider-value { position: absolute; top: -1.4em; font-size: 0.75rem; min-width: 0; text-align: start; transform: translateX(-50%); white-space: nowrap; }
+  & rc-slider[orientation="vertical"] { max-width: none; display: inline-block; }
+  & rc-slider[orientation="vertical"] .rc-slider-root { height: 200px; }
+  & rc-slider[orientation="vertical"] .rc-slider-control { width: 24px; height: 100%; flex-direction: column; }
+  & rc-slider[orientation="vertical"] .rc-slider-track { flex-direction: column; justify-content: center; align-items: center; }
+  & rc-slider[orientation="vertical"] .rc-slider-track::before { width: 6px; height: 100%; }
+  & rc-slider[orientation="vertical"] .rc-slider-progress { width: 6px; height: auto; }
+  & rc-slider[orientation="vertical"] .rc-slider-control input[type="range"] { writing-mode: vertical-lr; direction: rtl; }
+  & rc-slider[orientation="vertical"] .rc-slider-control input[type="range"]::-webkit-slider-runnable-track { width: 6px; height: auto; }
+  & rc-slider[orientation="vertical"] .rc-slider-control input[type="range"]::-webkit-slider-thumb { cursor: ns-resize; margin-top: 0; margin-left: -6px; }
+  & rc-slider[orientation="vertical"] .rc-slider-control input[type="range"]::-moz-range-thumb { cursor: ns-resize; }
+  & rc-slider[disabled] .rc-slider-control { opacity: 0.6; cursor: not-allowed; }
+  & rc-slider[disabled] .rc-slider-progress { background: var(--rc-text-disabled, GrayText); }
+  & .demo-section .rc-slider-display { font-size: 0.875rem; color: var(--rc-text-disabled, GrayText); margin: 0.5rem 0 0; }
+
+  /* ── Range slider ────────────────────────────────────────────────────── */
+  & rc-range-slider { display: block; max-width: 400px; --rc-range-slider-track-size: 0.375rem; --rc-range-slider-thumb-size: 1.125rem; --rc-thumb-radius: 0.5625rem; }
+  & rc-range-slider::part(track), & rc-range-slider::part(range) { border-radius: 999px; }
+  & rc-range-slider::part(thumb) { box-shadow: 0 1px 2px color-mix(in srgb, var(--rc-field-text, CanvasText) 18%, transparent); }
+  & rc-range-slider::part(value-display) { font-size: 0.75rem; color: var(--rc-text-disabled, GrayText); }
+  & rc-range-slider[orientation="vertical"] { max-width: none; display: inline-block; --rc-range-slider-vertical-size: 12.5rem; }
+
+  /* ── Toolbar ─────────────────────────────────────────────────────────── */
+  & .demo-section rc-toolbar { border: 1px solid var(--rc-border-color, ButtonBorder); border-radius: var(--rc-radius-md, 0.25em); display: inline-flex; }
+  & .demo-section rc-toolbar hr { margin: 0 0.25em; border: none; border-left: 1px solid var(--rc-border-color, ButtonBorder); height: 1.5em; align-self: center; }
+  & .demo-section rc-toolbar[orientation="vertical"] { display: inline-flex; flex-direction: column; }
+  & .demo-section rc-toolbar[orientation="vertical"] hr { border-left: none; border-top: 1px solid var(--rc-border-color, ButtonBorder); width: 1.5em; height: auto; margin: 0.25em 0; }
+
+  /* ── Menubar ─────────────────────────────────────────────────────────── */
+  & .demo-section rc-menubar { border: 1px solid var(--rc-border-color, ButtonBorder); border-radius: var(--rc-radius-md, 0.25em); --rc-menubar-padding-inline: 4px; --rc-menubar-padding-block: 4px; }
+
+  /* ── Splitter ────────────────────────────────────────────────────────── */
+  & .demo-section rc-splitter { --rc-splitter-separator-size: 8px; }
+  & .demo-section rc-splitter[orientation="vertical"] { height: 260px; }
+  & .demo-section rc-splitter article { box-sizing: border-box; max-height: 50vh; padding: 0.5em 0.75em; border: 1px solid var(--rc-border-color, ButtonBorder); overflow: auto; font-size: 0.875rem; }
+  & .demo-section rc-splitter article h3 { margin: 0 0 0.4em; font-size: 0.95rem; }
+  & .demo-section rc-splitter article p { margin: 0; color: var(--vp-c-text-2); }
+
+  /* ── Transfer list ───────────────────────────────────────────────────── */
+  & .demo-section .rc-transfer-list-root { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.75em; align-items: start; }
+  & .demo-section .rc-transfer-list-panel { display: flex; flex-direction: column; gap: 0.25em; }
+  & .demo-section .rc-transfer-list-panel [part~="label"] { font-size: 0.875rem; font-weight: 500; color: var(--vp-c-text-2); text-transform: uppercase; letter-spacing: 0.04em; }
+  & .demo-section rc-transfer-list rc-listbox { min-width: 160px; height: 200px; border: 1px solid var(--rc-border-color, ButtonBorder); border-radius: 4px; overflow-y: auto; display: block; }
+  & .demo-section .rc-transfer-list-actions { padding-block-start: 1.5em; }
+  & .demo-section rc-listbox [part~="option"] { padding: 0.3em 0.6em; cursor: default; user-select: none; }
+  & .demo-section rc-listbox [part~="option"][aria-selected="true"] { background: var(--rc-accent, Highlight); color: var(--rc-highlight-text, HighlightText); }
+  & .demo-section rc-listbox [part~="option"][data-active] { outline: 2px solid var(--rc-accent, Highlight); outline-offset: -2px; }
+}
