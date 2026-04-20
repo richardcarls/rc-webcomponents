@@ -17,6 +17,19 @@ import type { RCTextareaPlugin } from '@rcarls/rc-textarea';
 
 // ---- Ref types --------------------------------------------------------------
 
+/** Public API surface of `<rc-disclosure>`. */
+export type RCDisclosureRef = HTMLElement & {
+  open: boolean;
+  fragment: boolean;
+};
+
+export type RCDisclosureToggleDetail = {
+  open: boolean;
+};
+
+/** Public API surface of `<rc-accordion>`. */
+export type RCAccordionRef = HTMLElement;
+
 /** Public API surface of `<rc-listbox>`. */
 export type RCListboxRef = HTMLElement & {
   multiple: boolean;
@@ -171,12 +184,9 @@ export type RCSliderRef = HTMLElement & {
   defaultValue: number | undefined;
   disabled: boolean;
   readonly: boolean;
-  label: string;
-  name: string;
-  display: 'none' | 'inline' | 'overlay' | 'end';
+  display: 'float' | 'inline-start' | 'inline-end' | null;
   valueText: string;
   orientation: 'horizontal' | 'vertical';
-  ranges: Array<{ from: number; to: number; part?: string; label?: string }>;
 };
 
 export type RCRangeSliderRef = HTMLElement & {
@@ -186,12 +196,11 @@ export type RCRangeSliderRef = HTMLElement & {
   value: [number, number];
   defaultValue: [number, number] | undefined;
   disabled: boolean;
-  label: string;
   lowLabel: string;
   highLabel: string;
   lowValueText: string;
   highValueText: string;
-  display: 'none' | 'inline' | 'overlay' | 'end';
+  display: 'float' | 'inline-start' | 'inline-end' | null;
   orientation: 'horizontal' | 'vertical';
 };
 
@@ -220,6 +229,17 @@ export type RCTransferListRef = HTMLElement & {
 declare module 'solid-js' {
   namespace JSX {
     interface IntrinsicElements {
+      'rc-disclosure': JSX.HTMLAttributes<RCDisclosureRef> & {
+        open?: boolean | string;
+        fragment?: boolean | string;
+        'on:rc-disclosure-toggle'?: (e: CustomEvent<RCDisclosureToggleDetail>) => void;
+      };
+
+      'rc-accordion': JSX.HTMLAttributes<RCAccordionRef> & {
+        name?: string;
+        'on:rc-disclosure-toggle'?: (e: CustomEvent<RCDisclosureToggleDetail>) => void;
+      };
+
       'rc-listbox': JSX.HTMLAttributes<RCListboxRef> & {
         multiple?: boolean | string;
         'filter-strategy'?: 'prefix' | 'contains';
@@ -323,12 +343,9 @@ declare module 'solid-js' {
         'prop:defaultValue'?: number | undefined;
         disabled?: boolean | string;
         readonly?: boolean | string;
-        label?: string;
-        name?: string;
-        display?: 'none' | 'inline' | 'overlay' | 'end';
+        display?: 'float' | 'inline-start' | 'inline-end';
         'value-text'?: string;
         orientation?: 'horizontal' | 'vertical';
-        'prop:ranges'?: Array<{ from: number; to: number; part?: string; label?: string }>;
         'on:rc-slider-input'?: (e: CustomEvent<{ value: number }>) => void;
         'on:rc-slider-change'?: (e: CustomEvent<{ value: number }>) => void;
       };
@@ -340,12 +357,11 @@ declare module 'solid-js' {
         'prop:value'?: [number, number] | undefined;
         'prop:defaultValue'?: [number, number] | undefined;
         disabled?: boolean | string;
-        label?: string;
         'low-label'?: string;
         'high-label'?: string;
         'low-value-text'?: string;
         'high-value-text'?: string;
-        display?: 'none' | 'inline' | 'overlay' | 'end';
+        display?: 'float' | 'inline-start' | 'inline-end';
         orientation?: 'horizontal' | 'vertical';
         'on:rc-range-slider-input'?: (e: CustomEvent<{ value: [number, number] }>) => void;
         'on:rc-range-slider-change'?: (e: CustomEvent<{ value: [number, number] }>) => void;
