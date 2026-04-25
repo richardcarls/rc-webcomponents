@@ -1,6 +1,9 @@
 export default {
   title: 'rc-webcomponents',
+  titleTemplate: ':title | rc-webcomponents',
   description: 'WAI-ARIA compliant headless web components built with Lit',
+  lastUpdated: true,
+  cleanUrls: true,
   vue: {
     template: {
       compilerOptions: {
@@ -11,11 +14,34 @@ export default {
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
+      { text: 'Guide', link: '/guide/progressive-enhancement' },
       { text: 'Components', link: '/components/rc-select' },
     ],
+    outline: {
+      level: [2, 3],
+      label: 'On this page',
+    },
+    editLink: {
+      pattern: 'https://github.com/richardcarls/rc-webcomponents/edit/main/docs/:path',
+      text: 'Edit this page on GitHub',
+    },
+    lastUpdated: {
+      text: 'Updated',
+      formatOptions: {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      },
+    },
     sidebar: [
       {
-        text: 'Form & Selection',
+        text: 'Start here',
+        items: [
+          { text: 'Overview', link: '/' },
+          { text: 'Progressive enhancement', link: '/guide/progressive-enhancement' },
+        ],
+      },
+      {
+        text: 'Choose and edit values',
         items: [
           { text: 'rc-select', link: '/components/rc-select' },
           { text: 'rc-combobox', link: '/components/rc-combobox' },
@@ -26,7 +52,7 @@ export default {
         ],
       },
       {
-        text: 'Navigation & Menu',
+        text: 'Build command surfaces',
         items: [
           { text: 'rc-menu', link: '/components/rc-menu' },
           { text: 'rc-menu-button', link: '/components/rc-menu-button' },
@@ -35,7 +61,7 @@ export default {
         ],
       },
       {
-        text: 'Layout & Structure',
+        text: 'Structure content',
         items: [
           { text: 'rc-splitter', link: '/components/rc-splitter' },
           { text: 'rc-dialog', link: '/components/rc-dialog' },
@@ -45,7 +71,7 @@ export default {
         ],
       },
       {
-        text: 'Editors',
+        text: 'Edit rich text',
         items: [
           { text: 'rc-markdown-editor', link: '/components/rc-markdown-editor' },
         ],
@@ -53,6 +79,29 @@ export default {
     ],
     search: {
       provider: 'local',
+      options: {
+        translations: {
+          button: {
+            buttonText: 'Search components',
+            buttonAriaLabel: 'Search component documentation',
+          },
+          modal: {
+            displayDetails: 'Display detailed list',
+            resetButtonTitle: 'Reset search',
+            backButtonTitle: 'Close search',
+            noResultsText: 'No component docs found for',
+            footer: {
+              selectText: 'to select',
+              selectKeyAriaLabel: 'enter',
+              navigateText: 'to navigate',
+              navigateUpKeyAriaLabel: 'up arrow',
+              navigateDownKeyAriaLabel: 'down arrow',
+              closeText: 'to close',
+              closeKeyAriaLabel: 'escape',
+            },
+          },
+        },
+      },
     },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/richardcarls/rc-webcomponents' },

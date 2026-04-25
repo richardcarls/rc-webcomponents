@@ -2,6 +2,18 @@
 
 An ARIA transfer list backed by a native `<select multiple>`. Users move items between Available and Selected panels using buttons or keyboard shortcuts. Selected options reflect back to the `<select>` for form participation.
 
+<AtAGlance
+  package-name="@rcarls/rc-transfer-list"
+  tag="rc-transfer-list"
+  native="Requires a native select[multiple] child"
+  state="Controlled or uncontrolled selected items"
+  :events="['rc-transfer-list-change']"
+  :related="[
+    { label: 'Progressive enhancement', href: '/guide/progressive-enhancement' },
+    { label: 'rc-select', href: '/components/rc-select' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

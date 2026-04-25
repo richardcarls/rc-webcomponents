@@ -23,6 +23,18 @@ A button that opens an ARIA menu popup. Handles toggle, positioning, focus manag
 
 [WAI-ARIA Menu Button Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/)
 
+<AtAGlance
+  package-name="@rcarls/rc-menu-button"
+  tag="rc-menu-button"
+  native="Uses a trigger button and rc-menu content"
+  state="Controlled or uncontrolled open state"
+  :events="['rc-menu-button-toggle']"
+  :related="[
+    { label: 'rc-menu', href: '/components/rc-menu' },
+    { label: 'rc-menubar', href: '/components/rc-menubar' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

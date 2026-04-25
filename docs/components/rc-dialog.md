@@ -44,6 +44,18 @@ A draggable, resizable wrapper around a native `<dialog>`. Wraps the browser's b
 
 [WAI-ARIA Dialog (Modal) Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
 
+<AtAGlance
+  package-name="@rcarls/rc-dialog"
+  tag="rc-dialog"
+  native="Requires a native dialog child"
+  state="Open state follows the native dialog"
+  :events="['rc-dialog-open', 'rc-dialog-toggle', 'rc-dialog-request-close', 'rc-dialog-cancel', 'rc-dialog-close']"
+  :related="[
+    { label: 'Progressive enhancement', href: '/guide/progressive-enhancement' },
+    { label: 'rc-disclosure', href: '/components/rc-disclosure' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

@@ -64,6 +64,17 @@ onMounted(() => {
 
 A virtualized canvas component. Only the portion of the content visible in the viewport is drawn on each render frame, making it efficient for large grids, tilemaps, and drawing surfaces.
 
+<AtAGlance
+  package-name="@rcarls/rc-virtual-canvas"
+  tag="rc-virtual-canvas"
+  native="Renders an internal canvas-like viewport"
+  state="Viewport and render state managed by the component"
+  :events="['rc-virtual-canvas-pointer', 'rc-virtual-canvas-render']"
+  :related="[
+    { label: 'rc-splitter', href: '/components/rc-splitter' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

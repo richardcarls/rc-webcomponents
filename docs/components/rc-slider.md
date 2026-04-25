@@ -19,6 +19,18 @@ A single-thumb slider wrapping a native `<input type="range">`. The component ad
 
 [WAI-ARIA Slider Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/)
 
+<AtAGlance
+  package-name="@rcarls/rc-slider"
+  tag="rc-slider"
+  native="Requires a native input[type=range] child"
+  state="Controlled or uncontrolled value"
+  :events="['rc-slider-input', 'rc-slider-change']"
+  :related="[
+    { label: 'Progressive enhancement', href: '/guide/progressive-enhancement' },
+    { label: 'rc-range-slider', href: '/components/rc-range-slider' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

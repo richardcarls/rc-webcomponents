@@ -18,6 +18,18 @@ An ARIA menubar with roving tabindex for horizontal navigation between top-level
 
 [WAI-ARIA Menubar Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/)
 
+<AtAGlance
+  package-name="@rcarls/rc-menubar"
+  tag="rc-menubar"
+  native="Uses consumer-provided menu buttons and menu items"
+  state="Active item managed by roving tabindex"
+  :events="[]"
+  :related="[
+    { label: 'rc-menu', href: '/components/rc-menu' },
+    { label: 'rc-menu-button', href: '/components/rc-menu-button' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

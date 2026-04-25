@@ -96,6 +96,18 @@ onMounted(() => {
 
 An enhanced textarea with line decorations, a gutter, and a plugin API. Wraps a native `<textarea>` — form association, labels, and pre-upgrade usability work without JavaScript.
 
+<AtAGlance
+  package-name="@rcarls/rc-textarea"
+  tag="rc-textarea"
+  native="Requires a native textarea child"
+  state="Controlled or uncontrolled text value"
+  :events="['rc-textarea-focus', 'rc-textarea-blur', 'rc-textarea-change']"
+  :related="[
+    { label: 'Progressive enhancement', href: '/guide/progressive-enhancement' },
+    { label: 'rc-markdown-editor', href: '/components/rc-markdown-editor' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

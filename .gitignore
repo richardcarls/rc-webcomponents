@@ -16,6 +16,7 @@ custom-elements.json
 # VitePress build artifacts
 **/.vitepress/cache
 **/.vitepress/dist
+**/.vitepress/.temp
 
 # Yarn Berry
 /.yarn/install-state.gz

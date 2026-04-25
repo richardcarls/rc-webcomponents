@@ -21,6 +21,18 @@ A behavioral wrapper around the native `<details>`/`<summary>` element. Adds a c
 
 [WAI-ARIA Disclosure Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/)
 
+<AtAGlance
+  package-name="@rcarls/rc-disclosure"
+  tag="rc-disclosure"
+  native="Requires native details and summary content"
+  state="Controlled or uncontrolled open state"
+  :events="['rc-disclosure-toggle']"
+  :related="[
+    { label: 'Progressive enhancement', href: '/guide/progressive-enhancement' },
+    { label: 'rc-accordion', href: '/components/rc-accordion' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

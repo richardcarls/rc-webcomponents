@@ -10,6 +10,9 @@ hero:
       text: Browse components
       link: /components/rc-select
     - theme: alt
+      text: Progressive enhancement
+      link: /guide/progressive-enhancement
+    - theme: alt
       text: GitHub
       link: https://github.com/richardcarls/rc-webcomponents
 
@@ -44,3 +47,13 @@ features:
 | [rc-accordion](/components/rc-accordion) | Accordion coordinator for disclosure groups |
 | [rc-virtual-canvas](/components/rc-virtual-canvas) | Virtual canvas for large datasets |
 | [rc-markdown-editor](/components/rc-markdown-editor) | WYSIWYG Markdown editor |
+
+## Documentation model
+
+Component pages pair live examples with generated API tables. The API tables come
+from `dist/custom-elements.json`, so public properties, attributes, events,
+methods, slots, CSS parts, and CSS custom properties should be documented in
+source JSDoc and regenerated with `yarn.cmd cem:analyze` before building docs.
+
+Start with [Progressive enhancement](/guide/progressive-enhancement) to see how
+the components preserve native controls, label association, and form behavior.

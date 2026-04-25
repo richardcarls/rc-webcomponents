@@ -78,6 +78,17 @@ A WYSIWYG Markdown editor. The default view renders micromark HTML in a `content
 
 [WAI-ARIA Toolbar Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/)
 
+<AtAGlance
+  package-name="@rcarls/rc-markdown-editor"
+  tag="rc-markdown-editor"
+  native="Builds on rc-textarea"
+  state="Controlled or uncontrolled markdown value"
+  :events="['rc-formatting-change', 'rc-change', 'rc-mode-change']"
+  :related="[
+    { label: 'rc-textarea', href: '/components/rc-textarea' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group
