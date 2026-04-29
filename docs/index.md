@@ -13,6 +13,9 @@ hero:
       text: Progressive enhancement
       link: /guide/progressive-enhancement
     - theme: alt
+      text: Theme previews
+      link: /guide/theme-previews
+    - theme: alt
       text: GitHub
       link: https://github.com/richardcarls/rc-webcomponents
 
@@ -57,3 +60,6 @@ source JSDoc and regenerated with `yarn.cmd cem:analyze` before building docs.
 
 Start with [Progressive enhancement](/guide/progressive-enhancement) to see how
 the components preserve native controls, label association, and form behavior.
+Use [Theme previews](/guide/theme-previews) to compare docs-only examples
+inspired by Material, iOS, Fluent, and Carbon, and to apply those preview tokens
+to live demo blocks without theming the whole docs page.

@@ -1,0 +1,18 @@
+:host {
+  --rc-surface: #fffbfe;
+  --rc-field: #fef7ff;
+  --rc-button-bg: #6750a4;
+  --rc-field-text: #1d1b20;
+  --rc-button-text: #ffffff;
+  --rc-highlight: #6750a4;
+  --rc-highlight-text: #ffffff;
+  --rc-accent: #6750a4;
+  --rc-border-color: #79747e;
+  --rc-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
+  --rc-font-family: Roboto, system-ui, sans-serif;
+  --rc-control-block-size: 2.5rem;
+  --rc-control-radius: 1.25rem;
+  --rc-control-padding-inline: 1rem;
+  --rc-item-padding-block: 0.625rem;
+  --rc-motion-duration: 200ms;
+}

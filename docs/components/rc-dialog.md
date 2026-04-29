@@ -154,7 +154,7 @@ Add `resize="both"` to allow dragging any edge or corner. While the resize handl
 <div class="demo-section">
   <button onclick="document.querySelector('#resizable').showModal()">Open resizable dialog</button>
   <rc-dialog id="resizable" movable move-handle=".dlg-titlebar" resize="both">
-    <dialog aria-labelledby="resizable-title" style="min-height:10rem;display:none;">
+    <dialog aria-labelledby="resizable-title" style="min-height:10rem;">
       <div class="dlg-titlebar movable">
         <span id="resizable-title">Resizable Dialog</span>
         <button class="dlg-close" onclick="document.querySelector('#resizable').close()" aria-label="Close">✕</button>

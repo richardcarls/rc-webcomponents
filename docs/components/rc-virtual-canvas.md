@@ -1,61 +1,99 @@
 <script setup>
 import { onMounted } from 'vue';
 
+const COLS = 40;
+const ROWS = 30;
+const TILE = 32;
+const SOURCE_TILE = 32;
+let spritesheet;
+let spritesReady = false;
+
+// Deterministic tile colors (hue based on position)
+function tileColor(row, col) {
+  const hue = ((row * 7 + col * 13) % 360 + 360) % 360;
+  return `hsl(${hue},55%,40%)`;
+}
+
+function spriteFor(row, col) {
+  const spriteCols = Math.floor(spritesheet.naturalWidth / SOURCE_TILE) || 1;
+  const spriteRows = Math.floor(spritesheet.naturalHeight / SOURCE_TILE) || 1;
+  const index = (row * 3 + col * 5 + row * col) % (spriteCols * spriteRows);
+  return {
+    x: (index % spriteCols) * SOURCE_TILE,
+    y: Math.floor(index / spriteCols) * SOURCE_TILE,
+  };
+}
+
+function renderTilemap(e) {
+  const canvasEl = document.getElementById('demo-canvas-el');
+  if (!canvasEl) return;
+
+  const { viewRect } = e.detail;
+  const vpW = canvasEl.clientWidth;
+  const vpH = canvasEl.clientHeight;
+  if (!vpW || !vpH) return;
+
+  canvasEl.width = viewRect.width;
+  canvasEl.height = viewRect.height;
+
+  const ctx = canvasEl.getContext('2d');
+  const scaleX = viewRect.width / vpW;
+  const scaleY = viewRect.height / vpH;
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const x = c * TILE;
+      const y = r * TILE;
+      if (x + TILE < viewRect.x || x > viewRect.x + vpW) continue;
+      if (y + TILE < viewRect.y || y > viewRect.y + vpH) continue;
+
+      const dx = (x - viewRect.x) * scaleX;
+      const dy = (y - viewRect.y) * scaleY;
+      const sizeX = TILE * scaleX;
+      const sizeY = TILE * scaleY;
+
+      if (spritesReady) {
+        const sprite = spriteFor(r, c);
+        ctx.drawImage(
+          spritesheet,
+          sprite.x, sprite.y, SOURCE_TILE, SOURCE_TILE,
+          dx, dy, sizeX, sizeY,
+        );
+      } else {
+        ctx.fillStyle = tileColor(r, c);
+        ctx.fillRect(dx, dy, sizeX - 1, sizeY - 1);
+      }
+    }
+  }
+
+  // Viewport label
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fillRect(0, 0, 200 * scaleX, 18 * scaleY);
+  ctx.fillStyle = '#000';
+  ctx.font = `${12 * scaleY}px monospace`;
+  ctx.fillText(
+    `view ${Math.round(viewRect.x)},${Math.round(viewRect.y)} — scroll to pan`,
+    4 * scaleX, 13 * scaleY,
+  );
+}
+
 onMounted(() => {
   // Simple tilemap: render a grid of colored tiles
   const rcCanvas = document.getElementById('demo-virtual-canvas');
-  const canvasEl = document.getElementById('demo-canvas-el');
-  if (!rcCanvas || !canvasEl) return;
-
-  const COLS = 40;
-  const ROWS = 30;
-  const TILE = 32;
-
-  // Deterministic tile colors (hue based on position)
-  function tileColor(row, col) {
-    const hue = ((row * 7 + col * 13) % 360 + 360) % 360;
-    return `hsl(${hue},55%,40%)`;
-  }
+  if (!rcCanvas) return;
 
   rcCanvas.setAttribute('contentWidth', String(COLS * TILE));
   rcCanvas.setAttribute('contentHeight', String(ROWS * TILE));
 
-  rcCanvas.addEventListener('rc-virtual-canvas-render', (e) => {
-    const { viewRect } = e.detail;
-    const vpW = canvasEl.clientWidth;
-    const vpH = canvasEl.clientHeight;
-    if (!vpW || !vpH) return;
+  spritesheet = new Image();
+  spritesheet.addEventListener('load', () => {
+    spritesReady = true;
+    rcCanvas.requestRender?.();
+  }, { once: true });
+  spritesheet.src = '/default_tiles.png';
 
-    canvasEl.width = viewRect.width;
-    canvasEl.height = viewRect.height;
-
-    const ctx = canvasEl.getContext('2d');
-    const scaleX = viewRect.width / vpW;
-    const scaleY = viewRect.height / vpH;
-
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        const x = c * TILE;
-        const y = r * TILE;
-        if (x + TILE < viewRect.x || x > viewRect.x + vpW) continue;
-        if (y + TILE < viewRect.y || y > viewRect.y + vpH) continue;
-        ctx.fillStyle = tileColor(r, c);
-        ctx.fillRect(
-          (x - viewRect.x) * scaleX, (y - viewRect.y) * scaleY,
-          TILE * scaleX - 1, TILE * scaleY - 1,
-        );
-      }
-    }
-
-    // Viewport label
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.fillRect(0, 0, 200 * scaleX, 18 * scaleY);
-    ctx.fillStyle = '#000';
-    ctx.font = `${12 * scaleY}px monospace`;
-    ctx.fillText(
-      `view ${Math.round(viewRect.x)},${Math.round(viewRect.y)} — scroll to pan`,
-      4 * scaleX, 13 * scaleY,
-    );
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => rcCanvas.requestRender?.());
   });
 });
 </script>
@@ -104,6 +142,7 @@ Scroll to pan across the 1280 × 960 virtual canvas. Only visible tiles are draw
     contentWidth="1280"
     contentHeight="960"
     style="display:block;width:100%;border:1px solid var(--rc-border-color,ButtonBorder);background:#111;"
+    @rc-virtual-canvas-render="renderTilemap"
   >
     <canvas id="demo-canvas-el" style="display:block;width:100%;aspect-ratio:4/3;"></canvas>
   </rc-virtual-canvas>

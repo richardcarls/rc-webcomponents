@@ -7,7 +7,7 @@ export default {
   vue: {
     template: {
       compilerOptions: {
-        isCustomElement: (tag) => tag.startsWith('rc-'),
+        isCustomElement: (tag) => tag.startsWith('rc-') || tag === 'theme-preview',
       },
     },
   },
@@ -15,6 +15,7 @@ export default {
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/progressive-enhancement' },
+      { text: 'Theme previews', link: '/guide/theme-previews' },
       { text: 'Components', link: '/components/rc-select' },
     ],
     outline: {
@@ -38,6 +39,7 @@ export default {
         items: [
           { text: 'Overview', link: '/' },
           { text: 'Progressive enhancement', link: '/guide/progressive-enhancement' },
+          { text: 'Theme previews', link: '/guide/theme-previews' },
         ],
       },
       {

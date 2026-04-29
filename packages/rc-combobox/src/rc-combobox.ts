@@ -38,6 +38,17 @@ declare global {
  * @csspart toggle - The chevron toggle button.
  *
  * @cssprop [--rc-combobox-max-height=20em] - Maximum popup height.
+ * @cssprop [--rc-combobox-control-block-size=var(--rc-control-block-size)] - Anchor block size.
+ * @cssprop [--rc-combobox-padding-block=calc(var(--rc-control-padding-block) / 2)] - Anchor block-axis padding.
+ * @cssprop [--rc-combobox-padding-inline=calc(var(--rc-control-padding-inline) / 2)] - Anchor inline-axis padding.
+ * @cssprop [--rc-combobox-gap=var(--rc-control-gap)] - Gap between chips, input, and toggle.
+ * @cssprop [--rc-combobox-radius=var(--rc-control-radius)] - Anchor border radius.
+ * @cssprop [--rc-combobox-border=var(--rc-border)] - Anchor border.
+ * @cssprop [--rc-combobox-listbox-radius=var(--rc-control-radius)] - Popup listbox border radius.
+ * @cssprop [--rc-combobox-listbox-padding-block=var(--rc-control-padding-block)] - Popup listbox block padding.
+ * @cssprop [--rc-combobox-chip-radius=var(--rc-radius-md)] - Multi-select chip border radius.
+ * @cssprop [--rc-combobox-chip-padding-block=0.1em] - Multi-select chip block-axis padding.
+ * @cssprop [--rc-combobox-chip-padding-inline=0.3em] - Multi-select chip inline-axis padding.
  * @attr [allowcreate] - When present, shows a "Create 'X'" option for unmatched input.
  */
 export class RCCombobox extends RCSelect {

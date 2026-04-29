@@ -61,7 +61,6 @@ Wraps a native `<details>` element and fires `rc-disclosure-toggle` on open/clos
     <details class="accordion-details">
       <summary class="accordion-summary">
         What is rc-disclosure?
-        <span aria-hidden="true">▸</span>
       </summary>
       <div class="accordion-body">
         <p>A lightweight behavioral wrapper around the native <code>&lt;details&gt;</code> element.
@@ -106,7 +105,6 @@ Set the `fragment` attribute to automatically open when the URL hash matches the
     <details id="fragment-target" class="accordion-details">
       <summary class="accordion-summary">
         Opens via #fragment-target in URL
-        <span aria-hidden="true">▸</span>
       </summary>
       <div class="accordion-body">
         <p>This disclosure opens automatically when the page loads with <code>#fragment-target</code> in the URL, or when the hash changes to match.</p>

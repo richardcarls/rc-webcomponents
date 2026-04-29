@@ -156,7 +156,7 @@ No theme or styling applied — line numbers via the `line-numbers` attribute, w
 <ClientOnly>
 <div class="demo-section">
   <rc-textarea line-numbers word-wrap>
-    <textarea id="basic-ta" rows="6"></textarea>
+    <textarea id="basic-ta" rows="6" :value="taContents.basic"></textarea>
   </rc-textarea>
 </div>
 </ClientOnly>
@@ -174,7 +174,7 @@ The `onCursorMove` plugin API tracks cursor position in real time. `--rc-textare
 <ClientOnly>
 <div class="demo-section">
   <rc-textarea id="active-demo" line-numbers>
-    <textarea id="active-ta" name="active" rows="7"></textarea>
+    <textarea id="active-ta" name="active" rows="7" :value="taContents.active"></textarea>
   </rc-textarea>
   <div style="display:flex;gap:1.25rem;padding:0.3rem 0.85rem;font-family:monospace;font-size:0.72rem;color:var(--vp-c-text-2);background:var(--vp-c-bg-soft);border:1px solid var(--vp-c-divider);border-top:none;border-radius:0 0 6px 6px;">
     <span>Ln <b>{{ alLine }}</b>, Col <b>{{ alCol }}</b></span>
@@ -203,7 +203,7 @@ editor.usePlugin({
 <ClientOnly>
 <div class="demo-section">
   <rc-textarea list-numbers word-wrap auto-grow>
-    <textarea id="list-ta" name="list" rows="10"></textarea>
+    <textarea id="list-ta" name="list" rows="10" :value="taContents.list"></textarea>
   </rc-textarea>
 </div>
 </ClientOnly>
@@ -221,7 +221,7 @@ Regex patterns with inline mark decorations via `addPattern()`. Type `TODO`, `FI
 <ClientOnly>
 <div class="demo-section">
   <rc-textarea id="pattern-demo" line-numbers>
-    <textarea id="pattern-ta" name="pattern" rows="6" placeholder="Type TODO, FIXME, or HACK…"></textarea>
+    <textarea id="pattern-ta" name="pattern" rows="6" placeholder="Type TODO, FIXME, or HACK…" :value="taContents.pattern"></textarea>
   </rc-textarea>
 </div>
 </ClientOnly>
@@ -244,7 +244,7 @@ editor.addPattern({ pattern: /\bHACK\b/g,  bold: true, color: '#f9e2af' });
 <ClientOnly>
 <div class="demo-section">
   <rc-textarea word-wrap auto-grow>
-    <textarea id="wrap-ta" rows="3" placeholder="Long lines will wrap…"></textarea>
+    <textarea id="wrap-ta" rows="3" placeholder="Long lines will wrap…" :value="taContents.wrap"></textarea>
   </rc-textarea>
 </div>
 </ClientOnly>

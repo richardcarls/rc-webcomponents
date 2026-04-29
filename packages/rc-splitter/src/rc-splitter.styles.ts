@@ -40,27 +40,47 @@ export const splitterStyles = css`
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background-color: var(--rc-splitter-separator-color, var(--rc-surface, ButtonFace));
-    border-left: var(--rc-splitter-separator-border-inline-start, 1px solid ButtonBorder);
-    border-right: var(--rc-splitter-separator-border-inline-end, 1px solid ButtonBorder);
+    background-color: var(--rc-splitter-separator-color, color-mix(in srgb, ButtonBorder 35%, Canvas 65%));
+    border-left: var(--rc-splitter-separator-border-inline-start, var(--rc-splitter-keyline, 1px solid ButtonBorder));
+    border-right: var(--rc-splitter-separator-border-inline-end, var(--rc-splitter-keyline, 1px solid ButtonBorder));
 
     :host([orientation='vertical']) & {
       flex-direction: row;
       border-left: unset;
       border-right: unset;
-      border-top: var(--rc-splitter-separator-border-block-start, 1px solid ButtonBorder);
-      border-bottom: var(--rc-splitter-separator-border-block-end, 1px solid ButtonBorder);
+      border-top: var(--rc-splitter-separator-border-block-start, var(--rc-splitter-keyline, 1px solid ButtonBorder));
+      border-bottom: var(--rc-splitter-separator-border-block-end, var(--rc-splitter-keyline, 1px solid ButtonBorder));
     }
   }
 
   #separator-handle {
     width: 100%;
     height: var(--rc-splitter-separator-handle-size, 100%);
+    background:
+      linear-gradient(
+        to bottom,
+        transparent,
+        transparent calc(50% - 1px),
+        var(--rc-splitter-handle-color, ButtonBorder) calc(50% - 1px),
+        var(--rc-splitter-handle-color, ButtonBorder) calc(50% + 1px),
+        transparent calc(50% + 1px),
+        transparent
+      );
     cursor: col-resize;
 
     :host([orientation='vertical']) & {
       width: var(--rc-splitter-separator-handle-size, 100%);
       height: 100%;
+      background:
+        linear-gradient(
+          to right,
+          transparent,
+          transparent calc(50% - 1px),
+          var(--rc-splitter-handle-color, ButtonBorder) calc(50% - 1px),
+          var(--rc-splitter-handle-color, ButtonBorder) calc(50% + 1px),
+          transparent calc(50% + 1px),
+          transparent
+        );
       cursor: row-resize;
     }
 

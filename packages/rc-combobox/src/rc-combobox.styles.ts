@@ -9,23 +9,33 @@ export const comboboxStyles = css`
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.25em;
-    border: 1px solid var(--rc-border-color, ButtonBorder);
-    border-radius: var(--rc-radius-sm, 0.125em);
+    gap: var(--rc-combobox-gap, var(--rc-control-gap, 0.25em));
+    min-block-size: var(--rc-combobox-control-block-size, var(--rc-control-block-size, auto));
+    border: var(--rc-combobox-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    border-radius: var(--rc-combobox-radius, var(--rc-control-radius, var(--rc-radius-sm, 0.125em)));
     background: var(--rc-field, Field);
     color: var(--rc-field-text, FieldText);
-    padding: 0.125em 0.25em;
+    padding: var(--rc-combobox-padding-block, calc(var(--rc-control-padding-block, 0.25em) / 2))
+      var(--rc-combobox-padding-inline, calc(var(--rc-control-padding-inline, 0.5em) / 2));
     cursor: text;
+    font-family: var(--rc-font-family, inherit);
+    font-size: var(--rc-font-size, inherit);
+    line-height: var(--rc-line-height, normal);
+    transition:
+      background-color var(--rc-motion-duration, 120ms),
+      border-color var(--rc-motion-duration, 120ms),
+      box-shadow var(--rc-motion-duration, 120ms);
   }
 
   /* Chips — the whole chip is the remove button for a larger touch target */
   [part='chip'] {
     display: inline-flex;
     align-items: center;
-    gap: 0.2em;
-    padding: 0.1em 0.3em;
-    border: 1px solid var(--rc-border-color, ButtonBorder);
-    border-radius: var(--rc-radius-md, 0.25em);
+    gap: var(--rc-combobox-chip-gap, calc(var(--rc-control-gap, 0.25em) * 0.8));
+    padding: var(--rc-combobox-chip-padding-block, 0.1em)
+      var(--rc-combobox-chip-padding-inline, 0.3em);
+    border: var(--rc-combobox-chip-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    border-radius: var(--rc-combobox-chip-radius, var(--rc-radius-md, 0.25em));
     background: var(--rc-button-bg, ButtonFace);
     color: var(--rc-button-text, ButtonText);
     font: inherit;
@@ -38,7 +48,8 @@ export const comboboxStyles = css`
     }
 
     &:focus-visible {
-      outline: auto;
+      outline: var(--rc-focus-ring, auto);
+      outline-offset: var(--rc-focus-ring-offset, 0);
     }
   }
 
@@ -60,7 +71,8 @@ export const comboboxStyles = css`
     color: inherit;
     font: inherit;
     outline: none;
-    padding: 0.25em 0.25em;
+    padding: var(--rc-combobox-input-padding-block, var(--rc-control-padding-block, 0.25em))
+      var(--rc-combobox-input-padding-inline, calc(var(--rc-control-padding-inline, 0.5em) / 2));
     cursor: text;
   }
 
@@ -73,7 +85,7 @@ export const comboboxStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.25em;
+    padding: var(--rc-combobox-toggle-padding, var(--rc-control-padding-block, 0.25em));
     border: none;
     background: transparent;
     color: inherit;
@@ -82,7 +94,8 @@ export const comboboxStyles = css`
     font: inherit;
 
     &:focus-visible {
-      outline: auto;
+      outline: var(--rc-focus-ring, auto);
+      outline-offset: var(--rc-focus-ring-offset, 0);
     }
   }
 
@@ -96,10 +109,11 @@ export const comboboxStyles = css`
     max-height: var(--rc-combobox-max-height, 20em);
     overflow-y: auto;
     background: var(--rc-surface, Canvas);
-    border: 1px solid var(--rc-border-color, ButtonBorder);
+    border: var(--rc-combobox-listbox-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    border-radius: var(--rc-combobox-listbox-radius, var(--rc-control-radius, 0));
     box-shadow: var(--rc-combobox-shadow, var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)));
     color: var(--rc-button-text, ButtonText);
-    padding-block: 0.25em;
+    padding-block: var(--rc-combobox-listbox-padding-block, var(--rc-control-padding-block, 0.25em));
 
     &:not(:popover-open) {
       display: none;
@@ -109,8 +123,8 @@ export const comboboxStyles = css`
   rc-listbox [part~='option'] {
     display: flex;
     align-items: center;
-    gap: 0.4em;
-    padding: 0.3em 0.75em;
+    gap: var(--rc-item-gap, 0.4em);
+    padding: var(--rc-item-padding-block, 0.3em) var(--rc-item-padding-inline, 0.75em);
     cursor: default;
 
     /* display: flex overrides [hidden]'s browser-default display:none — restore it explicitly */
@@ -124,12 +138,12 @@ export const comboboxStyles = css`
     &[data-active]:not([aria-disabled='true']) {
       background: var(--rc-highlight, Highlight);
       color: var(--rc-highlight-text, HighlightText);
-      outline: 2px solid var(--rc-accent, Highlight);
+      outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
       outline-offset: -2px;
     }
 
     &[aria-disabled='true'] {
-      opacity: 0.5;
+      opacity: var(--rc-disabled-opacity, 0.5);
       cursor: not-allowed;
     }
   }

@@ -1,0 +1,18 @@
+:host {
+  --rc-surface: #ffffff;
+  --rc-field: #f4f4f4;
+  --rc-button-bg: #0f62fe;
+  --rc-field-text: #161616;
+  --rc-button-text: #ffffff;
+  --rc-highlight: #0f62fe;
+  --rc-highlight-text: #ffffff;
+  --rc-accent: #0f62fe;
+  --rc-border-color: #8d8d8d;
+  --rc-shadow: none;
+  --rc-font-family: "IBM Plex Sans", system-ui, sans-serif;
+  --rc-control-block-size: 2.5rem;
+  --rc-control-radius: 0;
+  --rc-control-padding-inline: 1rem;
+  --rc-item-padding-block: 0.6875rem;
+  --rc-motion-duration: 110ms;
+}

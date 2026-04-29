@@ -50,7 +50,12 @@ const props = withDefaults(defineProps<{
       <dt>Related</dt>
       <dd>
         <a v-for="item in props.related" :key="item.href" :href="item.href">{{ item.label }}</a>
+        <a href="/guide/theme-previews">Theme previews</a>
       </dd>
+    </div>
+    <div v-else>
+      <dt>Related</dt>
+      <dd><a href="/guide/theme-previews">Theme previews</a></dd>
     </div>
   </dl>
 </template>

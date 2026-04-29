@@ -28,6 +28,7 @@ declare global {
  * @cssprop --rc-menubar-gap - Gap between menu buttons
  * @cssprop --rc-menubar-padding-inline - Horizontal padding
  * @cssprop --rc-menubar-padding-block - Vertical padding
+ * @cssprop --rc-menubar-radius - Root container border radius
  */
 export class RCMenubar extends LitElement {
   static styles = [menubarStyles];

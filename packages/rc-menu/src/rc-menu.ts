@@ -37,7 +37,15 @@ const MENU_ITEM_ROLES = ['menuitem', 'menuitemcheckbox', 'menuitemradio'] as con
  * @cssprop [--rc-menu-padding-block=0.25em] - Block (top/bottom) padding inside the panel
  * @cssprop [--rc-menu-background=Canvas] - Background color; falls back through --rc-surface
  * @cssprop [--rc-menu-border=1px solid ButtonBorder] - Border; falls back through --rc-border
+ * @cssprop [--rc-menu-radius=var(--rc-control-radius)] - Menu panel border radius
  * @cssprop [--rc-menu-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Box shadow; falls back through --rc-shadow
+ * @cssprop [--rc-menu-item-padding-block=var(--rc-item-padding-block)] - Menu item block-axis padding
+ * @cssprop [--rc-menu-item-padding-inline=var(--rc-item-padding-inline)] - Menu item inline-axis padding
+ * @cssprop [--rc-menu-item-gap=var(--rc-item-gap)] - Gap between icon and text content in flex menu items
+ * @cssprop [--rc-menu-disabled-color=GrayText] - Disabled menu item text color
+ * @cssprop [--rc-menu-disabled-opacity=var(--rc-disabled-opacity)] - Disabled menu item opacity
+ * @cssprop [--rc-menu-separator-border=var(--rc-border)] - Separator border
+ * @cssprop [--rc-menu-separator-margin-block=var(--rc-control-gap)] - Separator block-axis margin
  * @csspart root - The root container element
  */
 export class RCMenu extends RovingTabIndexMixin(LitElement) {

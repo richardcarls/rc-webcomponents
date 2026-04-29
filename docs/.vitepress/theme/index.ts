@@ -21,6 +21,10 @@ export default {
         import('@rcarls/rc-webcomponents/define'),
         import('@rcarls/rc-virtual-canvas/define'),
       ]);
+      const { installPreviewThemeController } = await import('./preview-theme-controller');
+      installPreviewThemeController();
+      const { defineThemePreview } = await import('./components/theme-preview');
+      defineThemePreview();
     }
   },
 };

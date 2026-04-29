@@ -49,6 +49,17 @@ declare global {
  * @csspart toggle-icon - The chevron/arrow icon container.
  *
  * @cssprop [--rc-select-max-height=20em] - Maximum popup height.
+ * @cssprop [--rc-select-control-block-size=var(--rc-control-block-size)] - Trigger block size.
+ * @cssprop [--rc-select-padding-block=var(--rc-control-padding-block)] - Trigger block-axis padding.
+ * @cssprop [--rc-select-padding-inline=var(--rc-control-padding-inline)] - Trigger inline-axis padding.
+ * @cssprop [--rc-select-gap=var(--rc-control-gap)] - Gap between trigger content, chips, and icon.
+ * @cssprop [--rc-select-radius=var(--rc-control-radius)] - Trigger border radius.
+ * @cssprop [--rc-select-border=var(--rc-border)] - Trigger border.
+ * @cssprop [--rc-select-listbox-radius=var(--rc-control-radius)] - Popup listbox border radius.
+ * @cssprop [--rc-select-listbox-padding-block=var(--rc-control-padding-block)] - Popup listbox block padding.
+ * @cssprop [--rc-select-chip-radius=var(--rc-radius-md)] - Multi-select chip border radius.
+ * @cssprop [--rc-select-chip-padding-block=0.1em] - Multi-select chip block-axis padding.
+ * @cssprop [--rc-select-chip-padding-inline=0.3em] - Multi-select chip inline-axis padding.
  */
 export class RCSelect extends LitElement {
   static override styles = selectStyles;

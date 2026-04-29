@@ -1,46 +1,62 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onBeforeUnmount, onMounted } from 'vue';
 
-type RcTheme = 'zinc' | 'blue' | 'ua';
+type PreviewTheme = 'material' | 'ios' | 'fluent' | 'carbon';
 
-const STORAGE_KEY = 'rc-theme';
+const STORAGE_KEY = 'rc-preview-theme';
+const CHANGE_EVENT = 'rc-preview-theme-change';
 
-const themes: { id: RcTheme; label: string }[] = [
-  { id: 'zinc', label: 'Zinc'                },
-  { id: 'blue', label: 'Blue'                },
-  { id: 'ua',   label: 'UA Style (Default)'  },
+const themes: { id: PreviewTheme; label: string }[] = [
+  { id: 'material', label: 'Material' },
+  { id: 'ios', label: 'iOS' },
+  { id: 'fluent', label: 'Fluent' },
+  { id: 'carbon', label: 'Carbon' },
 ];
 
-const active = ref<RcTheme>('zinc');
+const active = ref<PreviewTheme>('material');
+let demoObserver: MutationObserver | null = null;
 
-function applyTheme(theme: RcTheme) {
+function applyThemeToDemoSections(theme: PreviewTheme) {
+  document.body.dataset.rcPreviewTheme = theme;
+  document.querySelectorAll<HTMLElement>('.demo-section').forEach((section) => {
+    section.dataset.rcPreviewTheme = theme;
+  });
+}
+
+function applyTheme(theme: PreviewTheme) {
   active.value = theme;
-  if (theme === 'ua') {
-    document.documentElement.dataset.rcTheme = 'ua';
-  } else {
-    document.documentElement.dataset.rcTheme = theme;
-  }
   try { localStorage.setItem(STORAGE_KEY, theme); } catch { /* storage unavailable */ }
+  applyThemeToDemoSections(theme);
+  window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: { theme } }));
 }
 
 onMounted(() => {
-  let saved: RcTheme = 'zinc';
+  let saved: PreviewTheme = 'material';
   try {
-    const stored = localStorage.getItem(STORAGE_KEY) as RcTheme | null;
+    const stored = localStorage.getItem(STORAGE_KEY) as PreviewTheme | null;
     if (stored && themes.some((t) => t.id === stored)) saved = stored;
   } catch { /* storage unavailable */ }
   applyTheme(saved);
+
+  demoObserver = new MutationObserver(() => applyThemeToDemoSections(active.value));
+  demoObserver.observe(document.body, { childList: true, subtree: true });
+});
+
+onBeforeUnmount(() => {
+  demoObserver?.disconnect();
+  demoObserver = null;
 });
 </script>
 
 <template>
   <div class="rc-theme-switcher">
-    <span class="rc-theme-label">Theme</span>
+    <span class="rc-theme-label">Preview theme</span>
     <div class="rc-theme-links">
       <button
         v-for="t in themes"
         :key="t.id"
         class="rc-theme-link"
+        :data-rc-preview-theme-option="t.id"
         :class="{ 'is-active': active === t.id }"
         :aria-pressed="active === t.id"
         @click="applyTheme(t.id)"

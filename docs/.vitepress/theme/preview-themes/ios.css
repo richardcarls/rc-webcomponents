@@ -1,0 +1,19 @@
+:host {
+  --rc-surface: #ffffff;
+  --rc-field: #f2f2f7;
+  --rc-button-bg: #007aff;
+  --rc-field-text: #1c1c1e;
+  --rc-button-text: #ffffff;
+  --rc-highlight: #007aff;
+  --rc-highlight-text: #ffffff;
+  --rc-accent: #007aff;
+  --rc-border-color: #d1d1d6;
+  --rc-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --rc-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --rc-font-size: 0.9375rem;
+  --rc-control-block-size: 2.75rem;
+  --rc-control-radius: 0.75rem;
+  --rc-control-padding-inline: 0.875rem;
+  --rc-item-padding-block: 0.625rem;
+  --rc-motion-duration: 180ms;
+}
