@@ -1,14 +1,14 @@
 :host {
-  --rc-surface: #ffffff;
-  --rc-field: #ffffff;
-  --rc-button-bg: #0f6cbd;
-  --rc-field-text: #242424;
+  --rc-surface: light-dark(#ffffff, #1b1a19);
+  --rc-field: light-dark(#ffffff, #292827);
+  --rc-button-bg: light-dark(#0f6cbd, #479ef5);
+  --rc-field-text: light-dark(#242424, #f3f2f1);
   --rc-button-text: #ffffff;
-  --rc-highlight: #0f6cbd;
+  --rc-highlight: light-dark(#0f6cbd, #479ef5);
   --rc-highlight-text: #ffffff;
-  --rc-accent: #0f6cbd;
-  --rc-border-color: #d1d1d1;
-  --rc-shadow: 0 4px 8px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
+  --rc-accent: light-dark(#0f6cbd, #479ef5);
+  --rc-border-color: light-dark(#d1d1d1, #3b3a39);
+  --rc-shadow: light-dark(0 4px 8px rgba(0, 0, 0, 0.14), none);
   --rc-font-family: "Segoe UI", system-ui, sans-serif;
   --rc-control-block-size: 2rem;
   --rc-control-radius: 0.25rem;

@@ -1,15 +1,17 @@
 import baseCss from '../preview-themes/base.css?raw';
+import noneCss from '../preview-themes/none.css?raw';
 import materialCss from '../preview-themes/material.css?raw';
 import iosCss from '../preview-themes/ios.css?raw';
 import fluentCss from '../preview-themes/fluent.css?raw';
 import carbonCss from '../preview-themes/carbon.css?raw';
 
-type PreviewTheme = 'material' | 'ios' | 'fluent' | 'carbon';
+type PreviewTheme = 'none' | 'material' | 'ios' | 'fluent' | 'carbon';
 
 const STORAGE_KEY = 'rc-preview-theme';
 const CHANGE_EVENT = 'rc-preview-theme-change';
 
 const themeCss: Record<PreviewTheme, string> = {
+  none: noneCss,
   material: materialCss,
   ios: iosCss,
   fluent: fluentCss,
@@ -17,6 +19,7 @@ const themeCss: Record<PreviewTheme, string> = {
 };
 
 const themeLabels: Record<PreviewTheme, string> = {
+  none: 'Default component appearance',
   material: 'Material-inspired',
   ios: 'iOS-inspired',
   fluent: 'Fluent-inspired',
@@ -40,7 +43,7 @@ function sheetFor(cssText: string) {
 }
 
 function isPreviewTheme(value: string | null): value is PreviewTheme {
-  return value === 'material' || value === 'ios' || value === 'fluent' || value === 'carbon';
+  return value === 'none' || value === 'material' || value === 'ios' || value === 'fluent' || value === 'carbon';
 }
 
 function storedTheme(): PreviewTheme {
@@ -50,12 +53,12 @@ function storedTheme(): PreviewTheme {
   } catch {
     // Storage can be unavailable in embedded contexts.
   }
-  return 'material';
+  return 'none';
 }
 
 export class ThemePreview extends HTMLElement {
   private readonly _root = this.attachShadow({ mode: 'open' });
-  private _theme: PreviewTheme = 'material';
+  private _theme: PreviewTheme = 'none';
 
   connectedCallback() {
     this._theme = isPreviewTheme(this.getAttribute('theme'))
@@ -93,7 +96,9 @@ export class ThemePreview extends HTMLElement {
   }
 
   private _applySheets() {
-    const cssTexts = [baseCss, themeCss[this._theme]];
+    const cssTexts = this._theme === 'none'
+      ? [themeCss.none]
+      : [baseCss, themeCss[this._theme]];
     if (supportsAdoptedStyleSheets()) {
       this._root.adoptedStyleSheets = cssTexts.map(sheetFor);
       return;

@@ -42,6 +42,7 @@ const MENU_ITEM_ROLES = ['menuitem', 'menuitemcheckbox', 'menuitemradio'] as con
  * @cssprop [--rc-menu-item-padding-block=var(--rc-item-padding-block)] - Menu item block-axis padding
  * @cssprop [--rc-menu-item-padding-inline=var(--rc-item-padding-inline)] - Menu item inline-axis padding
  * @cssprop [--rc-menu-item-gap=var(--rc-item-gap)] - Gap between icon and text content in flex menu items
+ * @cssprop [--rc-menu-icon-size=1.2em] - Size clamp for direct slotted icon media
  * @cssprop [--rc-menu-disabled-color=GrayText] - Disabled menu item text color
  * @cssprop [--rc-menu-disabled-opacity=var(--rc-disabled-opacity)] - Disabled menu item opacity
  * @cssprop [--rc-menu-separator-border=var(--rc-border)] - Separator border

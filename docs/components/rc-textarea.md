@@ -48,7 +48,7 @@ const taContents = {
   wrap: 'This is a very long line that demonstrates word-wrap and auto-grow working together. The editor expands as you type, and long lines wrap at the container boundary instead of producing a horizontal scrollbar.',
 };
 
-onMounted(() => {
+onMounted(async () => {
   // Set textarea default values after mount.
   const ids = {
     'basic-ta': taContents.basic,
@@ -57,10 +57,20 @@ onMounted(() => {
     'pattern-ta': taContents.pattern,
     'wrap-ta': taContents.wrap,
   };
+  const hosts = [];
   for (const [id, val] of Object.entries(ids)) {
     const el = document.getElementById(id);
-    if (el) el.defaultValue = val;
+    if (!el) continue;
+    el.defaultValue = val;
+    el.value = val;
+    const host = el.closest('rc-textarea');
+    if (host) {
+      host.value = val;
+      hosts.push(host);
+    }
   }
+
+  await Promise.all(hosts.map((host) => host.updateComplete));
 
   // Active line + cursor state plugin
   const activeDemo = document.getElementById('active-demo');
@@ -85,9 +95,9 @@ onMounted(() => {
   // Pattern matching
   const patternDemo = document.getElementById('pattern-demo');
   if (patternDemo) {
-    patternDemo.addPattern({ pattern: /\bTODO\b/g,  bold: true, color: '#fab387', background: 'rgba(250,179,135,.15)' });
-    patternDemo.addPattern({ pattern: /\bFIXME\b/g, bold: true, color: '#f38ba8', background: 'rgba(243,139,168,.15)' });
-    patternDemo.addPattern({ pattern: /\bHACK\b/g,  bold: true, color: '#f9e2af', background: 'rgba(249,226,175,.15)' });
+    patternDemo.addPattern({ pattern: /\bTODO\b/g,  bold: true, color: '#7c2d12', background: '#ffedd5' });
+    patternDemo.addPattern({ pattern: /\bFIXME\b/g, bold: true, color: '#9f1239', background: '#ffe4e6' });
+    patternDemo.addPattern({ pattern: /\bHACK/g,  bold: true, color: '#713f12', background: '#fef9c3' });
   }
 });
 </script>

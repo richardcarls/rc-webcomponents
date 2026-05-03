@@ -104,7 +104,7 @@ export const selectStyles = css`
     border: var(--rc-select-listbox-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
     border-radius: var(--rc-select-listbox-radius, var(--rc-control-radius, 0));
     box-shadow: var(--rc-select-shadow, var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)));
-    color: var(--rc-button-text, ButtonText);
+    color: var(--rc-field-text, FieldText);
     padding-block: var(--rc-select-listbox-padding-block, var(--rc-control-padding-block, 0.25em));
 
     &:not(:popover-open) {

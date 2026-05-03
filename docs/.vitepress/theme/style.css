@@ -1,22 +1,19 @@
-/* ---- VitePress chrome: neutral brand + system-ui font ---- */
+/* ---- VitePress chrome: system-ui font ---- */
 :root {
-  --vp-c-brand-1: #18181b;
-  --vp-c-brand-2: #3f3f46;
-  --vp-c-brand-3: #71717a;
-  --vp-c-brand-soft: rgba(24, 24, 27, 0.08);
   --vp-font-family-base: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --vp-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-.dark {
-  --vp-c-brand-1: #d4d4d8;
-  --vp-c-brand-2: #a1a1aa;
-  --vp-c-brand-3: #71717a;
-  --vp-c-brand-soft: rgba(212, 212, 216, 0.08);
-}
-
 /* ---- Demo framing plus scoped preview theming for live examples ---- */
 .demo-section {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.25rem 0;
+  background: var(--vp-c-bg);
+}
+
+body[data-rc-preview-theme] .demo-section {
   --rc-surface: Canvas;
   --rc-field: Field;
   --rc-button-bg: ButtonFace;
@@ -54,14 +51,6 @@
   --rc-range-slider-track-radius: var(--rc-control-radius);
   --rc-range-slider-thumb-background: var(--rc-field);
   --rc-range-slider-thumb-border: var(--rc-accent);
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin: 1.25rem 0;
-  background: var(--vp-c-bg);
-}
-
-body[data-rc-preview-theme] .demo-section {
   border: var(--rc-border);
   border-radius: calc(var(--rc-control-radius) + 0.25rem);
   background: var(--rc-surface);
@@ -73,16 +62,16 @@ body[data-rc-preview-theme] .demo-section {
 }
 
 body[data-rc-preview-theme="material"] .demo-section {
-  --rc-surface: #fffbfe;
-  --rc-field: #fef7ff;
-  --rc-button-bg: #6750a4;
-  --rc-field-text: #1d1b20;
-  --rc-button-text: #ffffff;
-  --rc-highlight: #6750a4;
-  --rc-highlight-text: #ffffff;
-  --rc-accent: #6750a4;
-  --rc-border-color: #79747e;
-  --rc-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
+  --rc-surface: light-dark(#fffbfe, #141218);
+  --rc-field: light-dark(#fef7ff, #211f26);
+  --rc-button-bg: light-dark(#6750a4, #d0bcff);
+  --rc-field-text: light-dark(#1d1b20, #e6e0e9);
+  --rc-button-text: light-dark(#ffffff, #381e72);
+  --rc-highlight: light-dark(#6750a4, #d0bcff);
+  --rc-highlight-text: light-dark(#ffffff, #381e72);
+  --rc-accent: light-dark(#6750a4, #d0bcff);
+  --rc-border-color: light-dark(#79747e, #938f99);
+  --rc-shadow: light-dark(0 1px 2px rgba(0, 0, 0, 0.3), none);
   --rc-font-family: Roboto, system-ui, sans-serif;
   --rc-control-block-size: 2.5rem;
   --rc-control-radius: 1.25rem;
@@ -92,16 +81,16 @@ body[data-rc-preview-theme="material"] .demo-section {
 }
 
 body[data-rc-preview-theme="ios"] .demo-section {
-  --rc-surface: #ffffff;
-  --rc-field: #f2f2f7;
-  --rc-button-bg: #007aff;
-  --rc-field-text: #1c1c1e;
+  --rc-surface: light-dark(#ffffff, #000000);
+  --rc-field: light-dark(#f2f2f7, #1c1c1e);
+  --rc-button-bg: light-dark(#007aff, #0a84ff);
+  --rc-field-text: light-dark(#1c1c1e, #f2f2f7);
   --rc-button-text: #ffffff;
-  --rc-highlight: #007aff;
+  --rc-highlight: light-dark(#007aff, #0a84ff);
   --rc-highlight-text: #ffffff;
-  --rc-accent: #007aff;
-  --rc-border-color: #d1d1d6;
-  --rc-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --rc-accent: light-dark(#007aff, #0a84ff);
+  --rc-border-color: light-dark(#d1d1d6, #38383a);
+  --rc-shadow: light-dark(0 8px 24px rgba(0, 0, 0, 0.12), none);
   --rc-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   --rc-font-size: 0.9375rem;
   --rc-control-block-size: 2.75rem;
@@ -112,16 +101,16 @@ body[data-rc-preview-theme="ios"] .demo-section {
 }
 
 body[data-rc-preview-theme="fluent"] .demo-section {
-  --rc-surface: #ffffff;
-  --rc-field: #ffffff;
-  --rc-button-bg: #0f6cbd;
-  --rc-field-text: #242424;
+  --rc-surface: light-dark(#ffffff, #1b1a19);
+  --rc-field: light-dark(#ffffff, #292827);
+  --rc-button-bg: light-dark(#0f6cbd, #479ef5);
+  --rc-field-text: light-dark(#242424, #f3f2f1);
   --rc-button-text: #ffffff;
-  --rc-highlight: #0f6cbd;
+  --rc-highlight: light-dark(#0f6cbd, #479ef5);
   --rc-highlight-text: #ffffff;
-  --rc-accent: #0f6cbd;
-  --rc-border-color: #d1d1d1;
-  --rc-shadow: 0 4px 8px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
+  --rc-accent: light-dark(#0f6cbd, #479ef5);
+  --rc-border-color: light-dark(#d1d1d1, #3b3a39);
+  --rc-shadow: light-dark(0 4px 8px rgba(0, 0, 0, 0.14), none);
   --rc-font-family: "Segoe UI", system-ui, sans-serif;
   --rc-control-block-size: 2rem;
   --rc-control-radius: 0.25rem;
@@ -131,15 +120,15 @@ body[data-rc-preview-theme="fluent"] .demo-section {
 }
 
 body[data-rc-preview-theme="carbon"] .demo-section {
-  --rc-surface: #ffffff;
-  --rc-field: #f4f4f4;
-  --rc-button-bg: #0f62fe;
-  --rc-field-text: #161616;
+  --rc-surface: light-dark(#ffffff, #161616);
+  --rc-field: light-dark(#f4f4f4, #262626);
+  --rc-button-bg: light-dark(#0f62fe, #4589ff);
+  --rc-field-text: light-dark(#161616, #f4f4f4);
   --rc-button-text: #ffffff;
-  --rc-highlight: #0f62fe;
+  --rc-highlight: light-dark(#0f62fe, #4589ff);
   --rc-highlight-text: #ffffff;
-  --rc-accent: #0f62fe;
-  --rc-border-color: #8d8d8d;
+  --rc-accent: light-dark(#0f62fe, #4589ff);
+  --rc-border-color: light-dark(#8d8d8d, #525252);
   --rc-shadow: none;
   --rc-font-family: "IBM Plex Sans", system-ui, sans-serif;
   --rc-control-block-size: 2.5rem;
@@ -165,6 +154,19 @@ body[data-rc-preview-theme] .demo-section textarea {
 body[data-rc-preview-theme] .demo-section option {
   background: var(--rc-field);
   color: var(--rc-field-text);
+}
+
+body[data-rc-preview-theme] .demo-section fieldset {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+body[data-rc-preview-theme] .demo-section legend {
+  padding: 0;
+  color: var(--rc-field-text);
+  font: inherit;
 }
 
 body[data-rc-preview-theme] .demo-section button {
@@ -224,10 +226,7 @@ body[data-rc-preview-theme] .demo-section rc-menu button {
   gap: var(--rc-item-gap);
   width: 100%;
   text-align: start;
-  background: transparent;
   color: var(--rc-field-text);
-  border: 0;
-  border-radius: 0;
 }
 
 body[data-rc-preview-theme] .demo-section rc-menu button:disabled,
@@ -246,6 +245,8 @@ body[data-rc-preview-theme] .demo-section rc-menu button img {
 
 body[data-rc-preview-theme] .demo-section rc-listbox [part~="option"] {
   padding: var(--rc-item-padding-block) var(--rc-item-padding-inline);
+  background: var(--rc-field);
+  color: var(--rc-field-text);
 }
 
 body[data-rc-preview-theme] .demo-section rc-listbox [part~="option"][aria-selected="true"] {
@@ -294,7 +295,65 @@ body[data-rc-preview-theme] .demo-section .event-log {
 }
 
 .demo-section fieldset {
+  min-inline-size: 0;
   margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.demo-section legend {
+  padding: 0;
+}
+
+.demo-section rc-menu button,
+.demo-section rc-menu [role="menuitem"],
+.demo-section rc-menu [role="menuitemradio"],
+.demo-section rc-menu [role="menuitemcheckbox"] {
+  display: flex;
+  align-items: center;
+  gap: var(--rc-item-gap, 0.5em);
+  inline-size: 100%;
+  min-block-size: var(--rc-control-block-size, 2.25em);
+  padding: var(--rc-item-padding-block, 0.3em) var(--rc-item-padding-inline, 0.75em);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+}
+
+.demo-section rc-menu button svg,
+.demo-section rc-menu button img,
+.demo-section rc-menu [role="menuitem"] svg,
+.demo-section rc-menu [role="menuitem"] img,
+.demo-section rc-menu [role="menuitemradio"] svg,
+.demo-section rc-menu [role="menuitemradio"] img,
+.demo-section rc-menu [role="menuitemcheckbox"] svg,
+.demo-section rc-menu [role="menuitemcheckbox"] img {
+  flex: 0 0 auto;
+  inline-size: var(--rc-menu-icon-size, 1.2em);
+  block-size: var(--rc-menu-icon-size, 1.2em);
+  max-inline-size: var(--rc-menu-icon-size, 1.2em);
+  max-block-size: var(--rc-menu-icon-size, 1.2em);
+}
+
+.demo-section rc-menu-button > button[slot="trigger"],
+.demo-section rc-menu-button > [role="button"][slot="trigger"] {
+  min-block-size: var(--rc-control-block-size, 2.25em);
+  padding: var(--rc-control-padding-block, 0.25em) var(--rc-control-padding-inline, 0.5em);
+  border: var(--rc-border, 1px solid ButtonBorder);
+  border-radius: var(--rc-control-radius, 0.125em);
+  background: var(--rc-button-bg, ButtonFace);
+  color: var(--rc-button-text, ButtonText);
+  font: inherit;
+}
+
+.demo-section rc-menubar[orientation="vertical"] rc-menu-button,
+.demo-section rc-menubar[orientation="vertical"] rc-menu-button > button[slot="trigger"],
+.demo-section rc-menubar[orientation="vertical"] rc-menu-button > [role="button"][slot="trigger"] {
+  display: block;
+  inline-size: 100%;
+  text-align: start;
 }
 
 .event-log {

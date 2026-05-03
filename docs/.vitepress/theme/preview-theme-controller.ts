@@ -1,10 +1,10 @@
-type PreviewTheme = 'material' | 'ios' | 'fluent' | 'carbon';
+type PreviewTheme = 'none' | 'material' | 'ios' | 'fluent' | 'carbon';
 
 const STORAGE_KEY = 'rc-preview-theme';
 const CHANGE_EVENT = 'rc-preview-theme-change';
-const THEMES: PreviewTheme[] = ['material', 'ios', 'fluent', 'carbon'];
+const THEMES: PreviewTheme[] = ['none', 'material', 'ios', 'fluent', 'carbon'];
 
-let activeTheme: PreviewTheme = 'material';
+let activeTheme: PreviewTheme = 'none';
 let observer: MutationObserver | null = null;
 let installed = false;
 
@@ -19,13 +19,16 @@ function readStoredTheme(): PreviewTheme {
   } catch {
     // Storage can be unavailable in restricted browsing contexts.
   }
-  return 'material';
+  return 'none';
 }
 
 function syncDemoSections(theme: PreviewTheme) {
-  document.body.dataset.rcPreviewTheme = theme;
+  if (theme === 'none') delete document.body.dataset.rcPreviewTheme;
+  else document.body.dataset.rcPreviewTheme = theme;
+
   document.querySelectorAll<HTMLElement>('.demo-section').forEach((section) => {
-    section.dataset.rcPreviewTheme = theme;
+    if (theme === 'none') delete section.dataset.rcPreviewTheme;
+    else section.dataset.rcPreviewTheme = theme;
   });
 }
 
@@ -34,6 +37,10 @@ function syncSwitcher(theme: PreviewTheme) {
     const selected = button.dataset.rcPreviewThemeOption === theme;
     button.classList.toggle('is-active', selected);
     button.setAttribute('aria-pressed', String(selected));
+  });
+
+  document.querySelectorAll<HTMLSelectElement>('[data-rc-preview-theme-select]').forEach((select) => {
+    select.value = theme;
   });
 }
 
@@ -66,6 +73,13 @@ export function installPreviewThemeController() {
   document.addEventListener('click', (event) => {
     const button = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-rc-preview-theme-option]');
     const theme = button?.dataset.rcPreviewThemeOption ?? null;
+    if (!isPreviewTheme(theme)) return;
+    applyPreviewTheme(theme);
+  });
+
+  document.addEventListener('change', (event) => {
+    const select = (event.target as Element | null)?.closest<HTMLSelectElement>('[data-rc-preview-theme-select]');
+    const theme = select?.value ?? null;
     if (!isPreviewTheme(theme)) return;
     applyPreviewTheme(theme);
   });

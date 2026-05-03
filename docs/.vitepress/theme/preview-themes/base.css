@@ -38,7 +38,7 @@
   --rc-range-slider-thumb-background: var(--rc-field);
   --rc-range-slider-thumb-border: var(--rc-accent);
   display: block;
-  color-scheme: light;
+  color-scheme: inherit;
   font-family: var(--rc-font-family);
 }
 
@@ -96,6 +96,17 @@
   color: var(--rc-text-disabled);
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+fieldset {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  padding: 0;
 }
 
 button,
@@ -219,6 +230,8 @@ rc-transfer-list rc-listbox {
 
 rc-listbox [part~="option"] {
   padding: var(--rc-item-padding-block) var(--rc-item-padding-inline);
+  background: var(--rc-field);
+  color: var(--rc-field-text);
 }
 
 rc-listbox [part~="option"][aria-selected="true"] {

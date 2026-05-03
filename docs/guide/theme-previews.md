@@ -2,8 +2,8 @@
 
 The examples throughout the component pages use default UA-oriented styling so
 behavior, labels, form participation, and keyboard support stay easy to inspect.
-This page shows the same rc components inside docs-only theme previews inspired
-by popular design systems.
+This page shows the same rc components in their default appearance, or inside
+docs-only theme previews inspired by popular design systems.
 
 The selector in the sidebar changes the previews on this page and the live demo
 blocks on component pages. It does not write tokens to
@@ -15,8 +15,9 @@ blocks on component pages. It does not write tokens to
 
 ## How it works
 
-The preview element owns an open shadow root and applies a base preview
-stylesheet plus the selected design-system-inspired stylesheet through
+The preview element owns an open shadow root. The "None" option applies only
+layout styles for the preview surface; the named theme options add a base
+preview stylesheet plus the selected design-system-inspired stylesheet through
 `shadowRoot.adoptedStyleSheets`.
 
 The preview themes are intentionally illustrative. They are not official

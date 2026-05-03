@@ -44,6 +44,15 @@ export const menuStyles = css`
       var(--rc-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
   }
 
+  ::slotted(svg),
+  ::slotted(img) {
+    flex: 0 0 auto;
+    inline-size: var(--rc-menu-icon-size, 1.2em);
+    block-size: var(--rc-menu-icon-size, 1.2em);
+    max-inline-size: var(--rc-menu-icon-size, 1.2em);
+    max-block-size: var(--rc-menu-icon-size, 1.2em);
+  }
+
   ::slotted(button:disabled),
   ::slotted([aria-disabled='true']) {
     color: var(--rc-menu-disabled-color, var(--rc-text-disabled, GrayText));
