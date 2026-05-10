@@ -9,6 +9,12 @@ const props = defineProps<{ tag: string }>();
 
 interface TypeRef { text: string }
 
+interface Parameter {
+  name: string;
+  type?: TypeRef;
+  optional?: boolean;
+}
+
 interface Member {
   kind: string;
   name: string;
@@ -19,6 +25,8 @@ interface Member {
   privacy?: string;
   readonly?: boolean;
   static?: boolean;
+  parameters?: Parameter[];
+  return?: TypeRef;
 }
 
 interface CemEvent {
@@ -84,6 +92,19 @@ const publicMethods = computed(() =>
       !m.static,
   ) ?? [],
 );
+
+function typeText(type?: TypeRef) {
+  return type?.text || 'unknown';
+}
+
+function methodSignature(method: Member) {
+  const params = method.parameters?.map((param) => {
+    const optional = param.optional ? '?' : '';
+    return `${param.name}${optional}: ${typeText(param.type)}`;
+  }).join(', ') ?? '';
+  const returnType = method.return?.text ? `: ${method.return.text}` : '';
+  return `${method.name}(${params})${returnType}`;
+}
 </script>
 
 <template>
@@ -95,13 +116,13 @@ const publicMethods = computed(() =>
   </div>
   <div v-else class="api-table-wrapper">
     <!-- Properties -->
-    <template v-if="publicFields.length">
+    <section class="api-section">
       <h3>Properties</h3>
       <table>
         <thead>
           <tr>
             <th>Property</th>
-            <th>Attribute</th>
+            <th>Markup</th>
             <th>Type</th>
             <th>Default</th>
             <th>Description</th>
@@ -112,23 +133,25 @@ const publicMethods = computed(() =>
             <td><code>{{ m.name }}</code></td>
             <td>
               <code v-if="m.attribute">{{ m.attribute }}</code>
-              <span v-else class="na">—</span>
+              <span v-else class="na">JS property only</span>
             </td>
             <td>
               <code v-if="m.type?.text" class="type">{{ m.type.text }}</code>
+              <span v-else class="na">Unknown</span>
             </td>
             <td>
               <code v-if="m.default !== undefined">{{ m.default }}</code>
-              <span v-else class="na">—</span>
+              <span v-else class="na">Not specified</span>
             </td>
-            <td>{{ m.description ?? '—' }}</td>
+            <td>{{ m.description ?? 'No description provided.' }}</td>
           </tr>
         </tbody>
       </table>
-    </template>
+      <p v-if="!publicFields.length" class="api-empty">No public properties are documented in the custom elements manifest.</p>
+    </section>
 
     <!-- Methods -->
-    <template v-if="publicMethods.length">
+    <section class="api-section">
       <h3>Methods</h3>
       <table>
         <thead>
@@ -139,15 +162,16 @@ const publicMethods = computed(() =>
         </thead>
         <tbody>
           <tr v-for="m in publicMethods" :key="m.name">
-            <td><code>{{ m.name }}()</code></td>
-            <td>{{ m.description ?? '—' }}</td>
+            <td><code>{{ methodSignature(m) }}</code></td>
+            <td>{{ m.description ?? 'No description provided.' }}</td>
           </tr>
         </tbody>
       </table>
-    </template>
+      <p v-if="!publicMethods.length" class="api-empty">No public methods are documented in the custom elements manifest.</p>
+    </section>
 
     <!-- Events -->
-    <template v-if="decl.events?.length">
+    <section class="api-section">
       <h3>Events</h3>
       <table>
         <thead>
@@ -162,15 +186,17 @@ const publicMethods = computed(() =>
             <td><code>{{ ev.name }}</code></td>
             <td>
               <code v-if="ev.type?.text" class="type">{{ ev.type.text }}</code>
+              <span v-else class="na">No detail type documented</span>
             </td>
-            <td>{{ ev.description ?? '—' }}</td>
+            <td>{{ ev.description ?? 'No description provided.' }}</td>
           </tr>
         </tbody>
       </table>
-    </template>
+      <p v-if="!decl.events?.length" class="api-empty">No custom events are documented in the custom elements manifest.</p>
+    </section>
 
     <!-- Slots -->
-    <template v-if="decl.slots?.length">
+    <section class="api-section">
       <h3>Slots</h3>
       <table>
         <thead>
@@ -184,14 +210,15 @@ const publicMethods = computed(() =>
             <td>
               <code>{{ sl.name || '(default)' }}</code>
             </td>
-            <td>{{ sl.description ?? '—' }}</td>
+            <td>{{ sl.description ?? 'No description provided.' }}</td>
           </tr>
         </tbody>
       </table>
-    </template>
+      <p v-if="!decl.slots?.length" class="api-empty">No slots are documented in the custom elements manifest.</p>
+    </section>
 
     <!-- CSS Custom Properties -->
-    <template v-if="decl.cssProperties?.length">
+    <section class="api-section">
       <h3>CSS Custom Properties</h3>
       <table>
         <thead>
@@ -206,16 +233,17 @@ const publicMethods = computed(() =>
             <td><code>{{ cp.name }}</code></td>
             <td>
               <code v-if="cp.default">{{ cp.default }}</code>
-              <span v-else class="na">—</span>
+              <span v-else class="na">Not specified</span>
             </td>
-            <td>{{ cp.description ?? '—' }}</td>
+            <td>{{ cp.description ?? 'No description provided.' }}</td>
           </tr>
         </tbody>
       </table>
-    </template>
+      <p v-if="!decl.cssProperties?.length" class="api-empty">No CSS custom properties are documented in the custom elements manifest.</p>
+    </section>
 
     <!-- CSS Parts -->
-    <template v-if="decl.cssParts?.length">
+    <section class="api-section">
       <h3>CSS Parts</h3>
       <table>
         <thead>
@@ -227,15 +255,20 @@ const publicMethods = computed(() =>
         <tbody>
           <tr v-for="pt in decl.cssParts" :key="pt.name">
             <td><code>{{ pt.name }}</code></td>
-            <td>{{ pt.description ?? '—' }}</td>
+            <td>{{ pt.description ?? 'No description provided.' }}</td>
           </tr>
         </tbody>
       </table>
-    </template>
+      <p v-if="!decl.cssParts?.length" class="api-empty">No CSS parts are documented in the custom elements manifest.</p>
+    </section>
   </div>
 </template>
 
 <style scoped>
+.api-table-wrapper {
+  max-width: 100%;
+}
+
 .api-table-wrapper :deep(h3) {
   font-size: 1rem;
   margin: 1.5rem 0 0.5rem;
@@ -243,11 +276,20 @@ const publicMethods = computed(() =>
   border: none;
 }
 
+.api-section {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .api-table-wrapper table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 1rem;
   font-size: 0.875rem;
+}
+
+.api-section:not(:has(tbody tr)) table {
+  display: none;
 }
 
 .api-table-wrapper th,
@@ -270,6 +312,7 @@ const publicMethods = computed(() =>
   background: var(--vp-c-mute);
   padding: 0.1em 0.35em;
   border-radius: 3px;
+  white-space: nowrap;
 }
 
 code.type {
@@ -278,6 +321,15 @@ code.type {
 
 .na {
   color: var(--vp-c-text-3);
+}
+
+.api-empty {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--vp-c-divider);
+  border-radius: 6px;
+  color: var(--vp-c-text-2);
+  font-size: 0.875rem;
 }
 
 .api-not-found {

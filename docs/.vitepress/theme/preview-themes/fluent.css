@@ -1,0 +1,18 @@
+:host {
+  --rc-surface: light-dark(#ffffff, #1b1a19);
+  --rc-field: light-dark(#ffffff, #292827);
+  --rc-button-bg: light-dark(#0f6cbd, #479ef5);
+  --rc-field-text: light-dark(#242424, #f3f2f1);
+  --rc-button-text: #ffffff;
+  --rc-highlight: light-dark(#0f6cbd, #479ef5);
+  --rc-highlight-text: #ffffff;
+  --rc-accent: light-dark(#0f6cbd, #479ef5);
+  --rc-border-color: light-dark(#d1d1d1, #3b3a39);
+  --rc-shadow: light-dark(0 4px 8px rgba(0, 0, 0, 0.14), none);
+  --rc-font-family: "Segoe UI", system-ui, sans-serif;
+  --rc-control-block-size: 2rem;
+  --rc-control-radius: 0.25rem;
+  --rc-control-padding-inline: 0.75rem;
+  --rc-item-padding-block: 0.375rem;
+  --rc-motion-duration: 100ms;
+}

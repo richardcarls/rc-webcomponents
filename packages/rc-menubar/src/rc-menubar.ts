@@ -25,9 +25,13 @@ declare global {
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/menubar/
  * @slot default - Takes rc-menu-button elements to display in the menubar
  * @csspart root - The root container element
- * @cssprop --rc-menubar-gap - Gap between menu buttons
- * @cssprop --rc-menubar-padding-inline - Horizontal padding
- * @cssprop --rc-menubar-padding-block - Vertical padding
+ * @cssprop [--rc-menubar-gap=var(--rc-control-gap)] - Gap between menu buttons
+ * @cssprop [--rc-menubar-padding-inline=var(--rc-control-padding-inline)] - Inline-axis padding
+ * @cssprop [--rc-menubar-padding-block=var(--rc-control-padding-block)] - Block-axis padding
+ * @cssprop [--rc-menubar-border=var(--rc-border)] - Root container border
+ * @cssprop [--rc-menubar-radius=var(--rc-control-radius)] - Root container border radius
+ * @cssprop [--rc-menubar-background=Canvas] - Root container background
+ * @cssprop [--rc-menubar-color=CanvasText] - Root container text color
  */
 export class RCMenubar extends LitElement {
   static styles = [menubarStyles];
@@ -37,7 +41,7 @@ export class RCMenubar extends LitElement {
   label = 'Menu';
 
   /** Menubar orientation, for keyboard navigation */
-  @property({ type: String })
+  @property({ type: String, reflect: true })
   orientation: 'horizontal' | 'vertical' = 'horizontal';
 
   /** Reference to the currently open menu button */
@@ -78,6 +82,7 @@ export class RCMenubar extends LitElement {
       changedProperties.has('orientation')
     ) {
       this._syncHostAria();
+      this._syncMenuButtonOrientation();
     }
   }
 
@@ -86,6 +91,12 @@ export class RCMenubar extends LitElement {
     this.setAttribute('role', 'menubar');
     this.setAttribute('aria-label', this.label);
     this.setAttribute('aria-orientation', this.orientation);
+  }
+
+  private _syncMenuButtonOrientation(): void {
+    this.menuButtons.forEach((menuButton) => {
+      menuButton.orientation = this.orientation;
+    });
   }
 
   /** Get the trigger element from a menu button */
@@ -197,6 +208,7 @@ export class RCMenubar extends LitElement {
 
       this.menuButtons.forEach((menuButton) => {
         menuButton.removeAttribute('role');
+        menuButton.orientation = this.orientation;
 
         const trigger = this._getTrigger(menuButton);
         trigger?.setAttribute('role', 'menuitem');

@@ -18,6 +18,18 @@ An ARIA menu popup with full keyboard navigation. Arrow keys move between items;
 
 [WAI-ARIA Menu Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/)
 
+<AtAGlance
+  package-name="@rcarls/rc-menu"
+  tag="rc-menu"
+  native="Uses consumer-provided menuitem elements"
+  state="Active item managed by keyboard navigation"
+  :events="['rc-menu-activate', 'rc-menu-close']"
+  :related="[
+    { label: 'rc-menu-button', href: '/components/rc-menu-button' },
+    { label: 'rc-menubar', href: '/components/rc-menubar' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

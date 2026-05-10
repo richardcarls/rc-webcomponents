@@ -31,6 +31,10 @@ declare global {
  *
  * @fires rc-transfer-list-change - Fires when the selected/right-hand list changes.
  *
+ * @cssprop [--rc-transfer-list-gap=var(--rc-control-gap)] - Gap between panels and the action toolbar
+ * @cssprop [--rc-transfer-list-panel-gap=var(--rc-control-gap)] - Gap between a panel label and its listbox
+ * @cssprop [--rc-transfer-list-listbox-min-block-size=10rem] - Minimum block size for each listbox
+ * @cssprop [--rc-transfer-list-listbox-border=var(--rc-border)] - Border around each listbox
  * @csspart root - Root layout wrapper. Reflects data-can-move-up/down.
  * @csspart panel - Shared list panel surface.
  * @csspart available-panel - Available/left panel. Reflects data-empty and data-has-selection.
@@ -195,6 +199,50 @@ export class RCTransferList extends LitElement {
     const canMoveDown = this._canMoveSelected(selected, selectedValues, 1);
 
     return html`
+      <style>
+        rc-transfer-list {
+          display: block;
+        }
+
+        rc-transfer-list .rc-transfer-list-root {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+          align-items: stretch;
+          gap: var(--rc-transfer-list-gap, var(--rc-control-gap, 0.75rem));
+        }
+
+        rc-transfer-list .rc-transfer-list-panel {
+          display: flex;
+          min-inline-size: 0;
+          flex-direction: column;
+          gap: var(--rc-transfer-list-panel-gap, var(--rc-control-gap, 0.35rem));
+        }
+
+        rc-transfer-list .rc-transfer-list-panel > rc-listbox {
+          flex: 1 1 auto;
+          min-block-size: var(--rc-transfer-list-listbox-min-block-size, 10rem);
+          overflow: auto;
+          border: var(--rc-transfer-list-listbox-border, var(--rc-border, 1px solid ButtonBorder));
+        }
+
+        rc-transfer-list .rc-transfer-list-actions {
+          align-self: center;
+        }
+
+        rc-transfer-list .rc-transfer-list-actions button {
+          white-space: nowrap;
+        }
+
+        @media (max-width: 42rem) {
+          rc-transfer-list .rc-transfer-list-root {
+            grid-template-columns: minmax(0, 1fr);
+          }
+
+          rc-transfer-list .rc-transfer-list-actions {
+            align-self: stretch;
+          }
+        }
+      </style>
       <div
         part="root"
         class="rc-transfer-list-root"

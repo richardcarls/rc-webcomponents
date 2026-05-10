@@ -4,6 +4,17 @@ Coordinates a group of `rc-disclosure` widgets so only one stays open at a time.
 
 [WAI-ARIA Accordion Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/)
 
+<AtAGlance
+  package-name="@rcarls/rc-accordion"
+  tag="rc-accordion"
+  native="Coordinates rc-disclosure panels"
+  state="Open panel coordination"
+  :events="[]"
+  :related="[
+    { label: 'rc-disclosure', href: '/components/rc-disclosure' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

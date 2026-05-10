@@ -78,6 +78,17 @@ A WYSIWYG Markdown editor. The default view renders micromark HTML in a `content
 
 [WAI-ARIA Toolbar Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/)
 
+<AtAGlance
+  package-name="@rcarls/rc-markdown-editor"
+  tag="rc-markdown-editor"
+  native="Builds on rc-textarea"
+  state="Controlled or uncontrolled markdown value"
+  :events="['rc-formatting-change', 'rc-change', 'rc-mode-change']"
+  :related="[
+    { label: 'rc-textarea', href: '/components/rc-textarea' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group
@@ -148,7 +159,7 @@ Click **Source** or press Ctrl+Shift+S to switch to the `rc-textarea` source edi
   <form>
     <rc-markdown-editor id="main-editor">
       <label for="main-ta">Post body</label>
-      <textarea id="main-ta" name="body"></textarea>
+      <textarea id="main-ta" name="body" :value="contents.mainEditor"></textarea>
     </rc-markdown-editor>
   </form>
 </div>
@@ -163,7 +174,7 @@ Click **Source** or press Ctrl+Shift+S to switch to the `rc-textarea` source edi
   <form>
     <rc-markdown-editor id="events-editor">
       <label for="events-ta">Content</label>
-      <textarea id="events-ta" name="events-content"></textarea>
+      <textarea id="events-ta" name="events-content" :value="contents.eventsEditor"></textarea>
     </rc-markdown-editor>
   </form>
   <div class="event-log" style="margin-top:0.5rem;" aria-live="polite">
@@ -196,7 +207,7 @@ editor.addEventListener('rc-mode-change', (e) => {
   <form>
     <rc-markdown-editor id="controlled-editor" default-source-mode>
       <label for="controlled-ta">Notes</label>
-      <textarea id="controlled-ta" name="notes"></textarea>
+      <textarea id="controlled-ta" name="notes" :value="contents.controlledEditor"></textarea>
     </rc-markdown-editor>
   </form>
   <div class="demo-row" style="margin-top:0.5rem;">
@@ -227,7 +238,7 @@ editor.sourceMode = true;
   <form>
     <rc-markdown-editor>
       <label for="shortcuts-ta">Try it</label>
-      <textarea id="shortcuts-ta" name="shortcuts-content"></textarea>
+      <textarea id="shortcuts-ta" name="shortcuts-content" :value="contents.shortcutsEditor"></textarea>
     </rc-markdown-editor>
   </form>
 </div>

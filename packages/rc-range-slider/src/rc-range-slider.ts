@@ -73,10 +73,14 @@ function parseAttr(s: string, defaultVal: number): number {
  * @fires rc-range-slider-change - Fires when a thumb commits a new value. Detail: `{ value }`.
  *
  * @cssprop [--rc-range-slider-accent=Highlight] - Accent color for selected range, thumb border, focus, hover, and active states.
+ * @cssprop [--rc-range-slider-gap=var(--rc-control-gap)] - Gap between track and inline value display.
+ * @cssprop [--rc-range-slider-control-size=var(--rc-control-block-size)] - Track hit-area block size.
  * @cssprop [--rc-range-slider-track-background=color-mix(in srgb, CanvasText 25%, Canvas)] - Unselected track color.
+ * @cssprop [--rc-range-slider-track-radius=var(--rc-control-radius)] - Track border radius.
  * @cssprop [--rc-range-slider-thumb-background=ButtonFace] - Thumb background color.
  * @cssprop [--rc-range-slider-thumb-border=var(--rc-range-slider-accent)] - Thumb border color.
  * @cssprop [--rc-range-slider-thumb-size=1.125rem] - Visual thumb inline/block size.
+ * @cssprop [--rc-range-slider-value-color=var(--rc-text-disabled)] - Value display text color.
  * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to align float value displays and range fill.
  * @cssprop [--rc-range-slider-float-value-block-offset=-1.4em] - Block-axis offset for horizontal float value displays.
  * @cssprop [--rc-range-slider-float-value-inline-offset=calc(100% + 0.5rem)] - Inline-axis offset for vertical float value displays.
@@ -106,6 +110,9 @@ export class RCRangeSlider extends LitElement {
       --rc-range-slider-thumb-active-border: var(--rc-range-slider-accent);
       --rc-range-slider-focus-outline: var(--rc-range-slider-accent);
       display: block;
+      font-family: var(--rc-font-family, inherit);
+      font-size: var(--rc-font-size, inherit);
+      line-height: var(--rc-line-height, normal);
     }
 
     :host([disabled]) {
@@ -122,7 +129,7 @@ export class RCRangeSlider extends LitElement {
 
     .rc-range-slider-root {
       display: grid;
-      gap: var(--rc-range-slider-gap, 0.5rem);
+      gap: var(--rc-range-slider-gap, var(--rc-control-gap, 0.5rem));
       align-items: center;
     }
 
@@ -138,7 +145,7 @@ export class RCRangeSlider extends LitElement {
       position: relative;
       display: block;
       min-width: 0;
-      min-height: var(--rc-range-slider-control-size, 1.5rem);
+      min-height: var(--rc-range-slider-control-size, var(--rc-control-block-size, 1.5rem));
       touch-action: none;
     }
 
@@ -153,6 +160,7 @@ export class RCRangeSlider extends LitElement {
       inset-block: calc(50% - var(--rc-range-slider-track-size, 0.1875rem) / 2);
       block-size: var(--rc-range-slider-track-size, 0.1875rem);
       background: var(--rc-range-slider-track-background);
+      border-radius: var(--rc-range-slider-track-radius, var(--rc-control-radius, 0));
       overflow: hidden;
       z-index: 0;
     }
@@ -166,6 +174,7 @@ export class RCRangeSlider extends LitElement {
     .rc-range-slider-range {
       inset-block: 0;
       background: var(--rc-range-slider-range-background);
+      border-radius: inherit;
       z-index: 1;
     }
 
@@ -184,12 +193,12 @@ export class RCRangeSlider extends LitElement {
         background-color 120ms ease,
         border-color 120ms ease,
         box-shadow 120ms ease,
-        transform 120ms ease;
+        transform var(--rc-motion-duration, 120ms) ease;
     }
 
     .rc-range-slider-thumb:focus-visible {
-      outline: 2px solid var(--rc-range-slider-focus-outline);
-      outline-offset: 2px;
+      outline: var(--rc-focus-ring, 2px solid var(--rc-range-slider-focus-outline));
+      outline-offset: var(--rc-focus-ring-offset, 2px);
     }
 
     :host(:not([disabled]):not([readonly])) .rc-range-slider-thumb:hover {
@@ -235,6 +244,7 @@ export class RCRangeSlider extends LitElement {
       pointer-events: none;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
+      color: var(--rc-range-slider-value-color, var(--rc-text-disabled, GrayText));
     }
 
     .rc-range-slider-root[data-display="float"] .rc-range-slider-values {
@@ -266,7 +276,7 @@ export class RCRangeSlider extends LitElement {
     }
 
     :host([orientation="vertical"]) .rc-range-slider-group {
-      inline-size: var(--rc-range-slider-control-size, 1.5rem);
+      inline-size: var(--rc-range-slider-control-size, var(--rc-control-block-size, 1.5rem));
       block-size: var(--rc-range-slider-vertical-size, 12.5rem);
     }
 

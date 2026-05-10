@@ -13,6 +13,17 @@ An ARIA toolbar with roving tabindex. Groups related controls and provides keybo
 
 [WAI-ARIA Toolbar Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/)
 
+<AtAGlance
+  package-name="@rcarls/rc-toolbar"
+  tag="rc-toolbar"
+  native="Uses consumer-provided buttons and controls"
+  state="Active item managed by roving tabindex"
+  :events="[]"
+  :related="[
+    { label: 'rc-menubar', href: '/components/rc-menubar' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

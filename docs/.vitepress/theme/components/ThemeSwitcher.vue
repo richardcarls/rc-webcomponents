@@ -1,97 +1,136 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onBeforeUnmount, onMounted } from 'vue';
 
-type RcTheme = 'zinc' | 'blue' | 'ua';
+type PreviewTheme = 'none' | 'material' | 'ios' | 'fluent' | 'carbon';
 
-const STORAGE_KEY = 'rc-theme';
+const STORAGE_KEY = 'rc-preview-theme';
+const CHANGE_EVENT = 'rc-preview-theme-change';
 
-const themes: { id: RcTheme; label: string }[] = [
-  { id: 'zinc', label: 'Zinc'                },
-  { id: 'blue', label: 'Blue'                },
-  { id: 'ua',   label: 'UA Style (Default)'  },
+const themes: { id: PreviewTheme; label: string }[] = [
+  { id: 'none', label: 'None' },
+  { id: 'material', label: 'Material' },
+  { id: 'ios', label: 'iOS' },
+  { id: 'fluent', label: 'Fluent' },
+  { id: 'carbon', label: 'Carbon' },
 ];
 
-const active = ref<RcTheme>('zinc');
+const active = ref<PreviewTheme>('none');
+let demoObserver: MutationObserver | null = null;
 
-function applyTheme(theme: RcTheme) {
+function applyThemeToDemoSections(theme: PreviewTheme) {
+  if (theme === 'none') delete document.body.dataset.rcPreviewTheme;
+  else document.body.dataset.rcPreviewTheme = theme;
+
+  document.querySelectorAll<HTMLElement>('.demo-section').forEach((section) => {
+    if (theme === 'none') delete section.dataset.rcPreviewTheme;
+    else section.dataset.rcPreviewTheme = theme;
+  });
+}
+
+function applyTheme(theme: PreviewTheme) {
   active.value = theme;
-  if (theme === 'ua') {
-    document.documentElement.dataset.rcTheme = 'ua';
-  } else {
-    document.documentElement.dataset.rcTheme = theme;
-  }
   try { localStorage.setItem(STORAGE_KEY, theme); } catch { /* storage unavailable */ }
+  applyThemeToDemoSections(theme);
+  window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: { theme } }));
 }
 
 onMounted(() => {
-  let saved: RcTheme = 'zinc';
+  let saved: PreviewTheme = 'none';
   try {
-    const stored = localStorage.getItem(STORAGE_KEY) as RcTheme | null;
+    const stored = localStorage.getItem(STORAGE_KEY) as PreviewTheme | null;
     if (stored && themes.some((t) => t.id === stored)) saved = stored;
   } catch { /* storage unavailable */ }
   applyTheme(saved);
+
+  demoObserver = new MutationObserver(() => applyThemeToDemoSections(active.value));
+  demoObserver.observe(document.body, { childList: true, subtree: true });
+});
+
+onBeforeUnmount(() => {
+  demoObserver?.disconnect();
+  demoObserver = null;
 });
 </script>
 
 <template>
   <div class="rc-theme-switcher">
-    <span class="rc-theme-label">Theme</span>
-    <div class="rc-theme-links">
-      <button
+    <label class="rc-theme-label" for="rc-preview-theme-select">Preview theme</label>
+    <select
+      id="rc-preview-theme-select"
+      class="rc-theme-select"
+      data-rc-preview-theme-select
+      :value="active"
+      aria-label="Preview theme"
+      @change="applyTheme(($event.target as HTMLSelectElement).value as PreviewTheme)"
+    >
+      <option
         v-for="t in themes"
         :key="t.id"
-        class="rc-theme-link"
-        :class="{ 'is-active': active === t.id }"
-        :aria-pressed="active === t.id"
-        @click="applyTheme(t.id)"
-      >{{ t.label }}</button>
-    </div>
+        :value="t.id"
+      >{{ t.label }}</option>
+    </select>
   </div>
 </template>
 
 <style scoped>
 .rc-theme-switcher {
-  padding: 16px 24px 24px;
-  border-top: 1px solid var(--vp-c-divider);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid var(--vp-c-divider);
 }
 
 .rc-theme-label {
-  display: block;
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--vp-c-text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
+  line-height: 1;
 }
 
-.rc-theme-links {
-  display: flex;
-  gap: 12px;
-}
-
-.rc-theme-link {
-  font-size: 0.8125rem;
+.rc-theme-select {
+  inline-size: clamp(6.75rem, 24vw, 8.25rem);
+  height: 32px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  background-color: var(--vp-c-bg);
   color: var(--vp-c-text-2);
-  background: none;
-  border: none;
-  padding: 0;
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 32px;
   cursor: pointer;
-  font-family: inherit;
 }
 
-.rc-theme-link.is-active {
-  color: var(--vp-c-text-1);
-  font-weight: 600;
-}
-
-.rc-theme-link:hover {
+.rc-theme-select:hover {
+  border-color: var(--vp-c-brand-3);
   color: var(--vp-c-text-1);
 }
 
-.rc-theme-link:focus-visible {
+.rc-theme-select:focus-visible {
   outline: 2px solid var(--vp-c-brand-1);
   outline-offset: 2px;
-  border-radius: 2px;
+}
+
+@media (max-width: 959px) {
+  .rc-theme-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .rc-theme-switcher {
+    margin-left: 16px;
+    padding-left: 16px;
+  }
 }
 </style>

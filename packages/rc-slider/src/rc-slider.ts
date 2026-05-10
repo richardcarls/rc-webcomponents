@@ -74,6 +74,14 @@ function parseAttr(s: string, defaultVal: number): number {
  * @fires rc-slider-change - Fires when the committed value changes (on release). Detail: `{ value }`.
  *
  * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to position the float value display.
+ * @cssprop [--rc-slider-gap=var(--rc-control-gap)] - Gap between track and inline value display.
+ * @cssprop [--rc-slider-control-size=var(--rc-control-block-size)] - Track hit-area block size.
+ * @cssprop [--rc-slider-track-size=0.1875rem] - Visual track thickness.
+ * @cssprop [--rc-slider-track-background=CanvasText] - Unfilled track color.
+ * @cssprop [--rc-slider-track-opacity=0.25] - Unfilled track opacity.
+ * @cssprop [--rc-slider-track-radius=var(--rc-control-radius)] - Track border radius.
+ * @cssprop [--rc-slider-progress-background=var(--rc-accent)] - Filled track color.
+ * @cssprop [--rc-slider-value-color=var(--rc-text-disabled)] - Value display text color.
  * @cssprop [--rc-slider-float-value-block-offset=-1.4em] - Block-axis offset for horizontal float value display.
  * @cssprop [--rc-slider-float-value-inline-offset=calc(100% + 0.5rem)] - Inline-axis offset for vertical float value display.
  *
@@ -91,8 +99,11 @@ export class RCSlider extends LitElement {
 
     .rc-slider-root {
       display: grid;
-      gap: var(--rc-slider-gap, 0.5rem);
+      gap: var(--rc-slider-gap, var(--rc-control-gap, 0.5rem));
       align-items: center;
+      font-family: var(--rc-font-family, inherit);
+      font-size: var(--rc-font-size, inherit);
+      line-height: var(--rc-line-height, normal);
     }
 
     .rc-slider-root[data-display="inline-start"] {
@@ -107,7 +118,7 @@ export class RCSlider extends LitElement {
       position: relative;
       display: block;
       min-width: 0;
-      min-height: var(--rc-slider-control-size, 1.5rem);
+      min-height: var(--rc-slider-control-size, var(--rc-control-block-size, 1.5rem));
     }
 
     .rc-slider-track,
@@ -122,6 +133,7 @@ export class RCSlider extends LitElement {
       block-size: var(--rc-slider-track-size, 0.1875rem);
       background: var(--rc-slider-track-background, CanvasText);
       opacity: var(--rc-slider-track-opacity, 0.25);
+      border-radius: var(--rc-slider-track-radius, var(--rc-control-radius, 0));
       overflow: hidden;
       z-index: 0;
     }
@@ -134,7 +146,8 @@ export class RCSlider extends LitElement {
 
     .rc-slider-progress {
       inset-block: 0;
-      background: var(--rc-slider-progress-background, Highlight);
+      background: var(--rc-slider-progress-background, var(--rc-accent, Highlight));
+      border-radius: inherit;
       z-index: 1;
     }
 
@@ -151,6 +164,7 @@ export class RCSlider extends LitElement {
     .rc-slider-value {
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
+      color: var(--rc-slider-value-color, var(--rc-text-disabled, GrayText));
     }
 
     .rc-slider-root[data-display="float"] .rc-slider-value {
@@ -166,7 +180,7 @@ export class RCSlider extends LitElement {
     }
 
     :host([orientation="vertical"]) .rc-slider-control {
-      inline-size: var(--rc-slider-control-size, 1.5rem);
+      inline-size: var(--rc-slider-control-size, var(--rc-control-block-size, 1.5rem));
       block-size: var(--rc-slider-vertical-size, 12.5rem);
     }
 

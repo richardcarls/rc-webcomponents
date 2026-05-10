@@ -50,6 +50,18 @@ A headless select-only ARIA combobox backed by a native `<select>`. The componen
 
 [WAI-ARIA Combobox Pattern (select-only)](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/)
 
+<AtAGlance
+  package-name="@rcarls/rc-select"
+  tag="rc-select"
+  native="Requires a slotted native select"
+  state="Controlled or uncontrolled selection"
+  :events="['rc-select-open', 'rc-select-close', 'rc-select-change']"
+  :related="[
+    { label: 'Progressive enhancement', href: '/guide/progressive-enhancement' },
+    { label: 'rc-combobox', href: '/components/rc-combobox' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

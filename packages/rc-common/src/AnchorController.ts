@@ -66,6 +66,14 @@ const FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
   'right': 'left',         'right-start': 'left-start',   'right-end': 'left-end',
 };
 
+// Inline-axis flip: start ↔ end (handles horizontal viewport overflow)
+const INLINE_FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
+  'top': 'top',            'top-start': 'top-end',         'top-end': 'top-start',
+  'bottom': 'bottom',      'bottom-start': 'bottom-end',   'bottom-end': 'bottom-start',
+  'left': 'left',          'left-start': 'left-end',       'left-end': 'left-start',
+  'right': 'right',        'right-start': 'right-end',     'right-end': 'right-start',
+};
+
 // ---- Native detection -------------------------------------------------------
 
 // Chrome 125+ only — full correct implementation including shadow DOM + popover top layer.
@@ -188,10 +196,20 @@ export class AnchorController implements ReactiveController {
     floating.setAttribute('data-rc-anchor', uid);
 
     const flipPlacement = FLIP_PLACEMENT[placement];
+    const inlineFlipPlacement = INLINE_FLIP_PLACEMENT[placement];
+    const bothFlipPlacement = FLIP_PLACEMENT[inlineFlipPlacement];
     const flipBlock = flip
-      ? `@position-try --${uid}-flip { ${placementCSS(flipPlacement, offset)} }`
+      ? `
+        @position-try --${uid}-end  { ${placementCSS(inlineFlipPlacement, offset)} }
+        @position-try --${uid}-flip { ${placementCSS(flipPlacement, offset)} }
+        @position-try --${uid}-both { ${placementCSS(bothFlipPlacement, offset)} }
+      `
       : '';
-    const positionTry = flip ? `position-try-fallbacks: --${uid}-flip;` : '';
+    // Try inline flip first (fixes horizontal overflow on narrow viewports),
+    // then block flip (fixes vertical overflow), then both together.
+    const positionTry = flip
+      ? `position-try-fallbacks: --${uid}-end, --${uid}-flip, --${uid}-both;`
+      : '';
 
     const css = `
       ${flipBlock}
@@ -235,14 +253,17 @@ export class AnchorController implements ReactiveController {
     const placement = this._opts.placement ?? 'bottom-start';
     const offset = this._opts.offset ?? 4;
     const rect = anchor.getBoundingClientRect();
+    const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const isBottom = placement.startsWith('bottom') || placement === 'bottom';
-    const spaceBelow = vh - rect.bottom;
-    const flipToAbove = isBottom && spaceBelow < 120 && rect.top > spaceBelow;
+
     floating.style.position = 'fixed';
     floating.style.boxSizing = 'border-box';
     floating.style.minWidth = `${rect.width}px`;
-    floating.style.left = `${rect.left}px`;
+
+    // Vertical: flip above when not enough space below
+    const isBottom = placement.startsWith('bottom') || placement === 'bottom';
+    const spaceBelow = vh - rect.bottom;
+    const flipToAbove = isBottom && spaceBelow < 120 && rect.top > spaceBelow;
     if (flipToAbove) {
       floating.style.top = '';
       floating.style.bottom = `${vh - rect.top + offset}px`;
@@ -250,6 +271,15 @@ export class AnchorController implements ReactiveController {
       floating.style.bottom = '';
       floating.style.top = `${rect.bottom + offset}px`;
     }
+
+    // Horizontal: for -end placements anchor right edge; otherwise anchor left.
+    // In both cases clamp to viewport so the popup never clips off either edge.
+    const isEndPlacement = placement.endsWith('-end');
+    const popupWidth = floating.offsetWidth || parseFloat(getComputedStyle(floating).minWidth) || 0;
+    let left = isEndPlacement ? rect.right - popupWidth : rect.left;
+    if (left + popupWidth > vw - 4) left = rect.right - popupWidth; // try right-aligning
+    left = Math.max(4, Math.min(left, vw - popupWidth - 4));        // clamp to viewport
+    floating.style.left = `${left}px`;
   }
 
   private _cleanup(): void {

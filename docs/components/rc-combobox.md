@@ -50,6 +50,17 @@ An editable combobox with filtering and allow-create, backed by a native `<selec
 
 [WAI-ARIA Combobox Pattern (editable)](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/)
 
+<AtAGlance
+  package-name="@rcarls/rc-combobox"
+  tag="rc-combobox"
+  native="Uses an editable input and popup listbox"
+  state="Controlled or uncontrolled text and selection"
+  :events="['rc-select-change', 'rc-combobox-create', 'rc-select-open', 'rc-select-close']"
+  :related="[
+    { label: 'rc-select', href: '/components/rc-select' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

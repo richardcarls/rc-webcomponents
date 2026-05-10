@@ -19,6 +19,18 @@ A two-thumb range slider for selecting a value range. Wraps two native `<input t
 
 [WAI-ARIA Multi-Thumb Slider Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/)
 
+<AtAGlance
+  package-name="@rcarls/rc-range-slider"
+  tag="rc-range-slider"
+  native="Requires two native input[type=range] children"
+  state="Controlled or uncontrolled range value"
+  :events="['rc-range-slider-input', 'rc-range-slider-change']"
+  :related="[
+    { label: 'Progressive enhancement', href: '/guide/progressive-enhancement' },
+    { label: 'rc-slider', href: '/components/rc-slider' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

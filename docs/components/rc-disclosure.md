@@ -21,6 +21,18 @@ A behavioral wrapper around the native `<details>`/`<summary>` element. Adds a c
 
 [WAI-ARIA Disclosure Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/)
 
+<AtAGlance
+  package-name="@rcarls/rc-disclosure"
+  tag="rc-disclosure"
+  native="Requires native details and summary content"
+  state="Controlled or uncontrolled open state"
+  :events="['rc-disclosure-toggle']"
+  :related="[
+    { label: 'Progressive enhancement', href: '/guide/progressive-enhancement' },
+    { label: 'rc-accordion', href: '/components/rc-accordion' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group
@@ -49,7 +61,6 @@ Wraps a native `<details>` element and fires `rc-disclosure-toggle` on open/clos
     <details class="accordion-details">
       <summary class="accordion-summary">
         What is rc-disclosure?
-        <span aria-hidden="true">▸</span>
       </summary>
       <div class="accordion-body">
         <p>A lightweight behavioral wrapper around the native <code>&lt;details&gt;</code> element.
@@ -94,7 +105,6 @@ Set the `fragment` attribute to automatically open when the URL hash matches the
     <details id="fragment-target" class="accordion-details">
       <summary class="accordion-summary">
         Opens via #fragment-target in URL
-        <span aria-hidden="true">▸</span>
       </summary>
       <div class="accordion-body">
         <p>This disclosure opens automatically when the page loads with <code>#fragment-target</code> in the URL, or when the hash changes to match.</p>

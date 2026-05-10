@@ -9,27 +9,37 @@ export const selectStyles = css`
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.25em;
+    gap: var(--rc-select-gap, var(--rc-control-gap, 0.25em));
   }
 
   #trigger {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.25em;
-    padding: 0.25em 0.5em;
+    gap: var(--rc-select-gap, var(--rc-control-gap, 0.25em));
+    min-block-size: var(--rc-select-control-block-size, var(--rc-control-block-size, auto));
+    padding: var(--rc-select-padding-block, var(--rc-control-padding-block, 0.25em))
+      var(--rc-select-padding-inline, var(--rc-control-padding-inline, 0.5em));
     min-width: 8em;
     cursor: default;
     user-select: none;
-    border: 1px solid var(--rc-border-color, ButtonBorder);
-    border-radius: var(--rc-radius-sm, 0.125em);
+    border: var(--rc-select-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    border-radius: var(--rc-select-radius, var(--rc-control-radius, var(--rc-radius-sm, 0.125em)));
     background: var(--rc-field, Field);
     color: var(--rc-field-text, FieldText);
+    font-family: var(--rc-font-family, inherit);
+    font-size: var(--rc-font-size, inherit);
+    line-height: var(--rc-line-height, normal);
+    transition:
+      background-color var(--rc-motion-duration, 120ms),
+      border-color var(--rc-motion-duration, 120ms),
+      box-shadow var(--rc-motion-duration, 120ms);
 
     /* Keyboard focus indicator */
     outline: none;
     &:focus-visible {
-      outline: auto;
+      outline: var(--rc-focus-ring, auto);
+      outline-offset: var(--rc-focus-ring-offset, 0);
     }
   }
 
@@ -49,10 +59,11 @@ export const selectStyles = css`
   [part='chip'] {
     display: inline-flex;
     align-items: center;
-    gap: 0.2em;
-    padding: 0.1em 0.3em;
-    border: 1px solid var(--rc-border-color, ButtonBorder);
-    border-radius: var(--rc-radius-md, 0.25em);
+    gap: var(--rc-select-chip-gap, calc(var(--rc-control-gap, 0.25em) * 0.8));
+    padding: var(--rc-select-chip-padding-block, 0.1em)
+      var(--rc-select-chip-padding-inline, 0.3em);
+    border: var(--rc-select-chip-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    border-radius: var(--rc-select-chip-radius, var(--rc-radius-md, 0.25em));
     background: var(--rc-button-bg, ButtonFace);
     color: var(--rc-button-text, ButtonText);
     font: inherit;
@@ -65,7 +76,8 @@ export const selectStyles = css`
     }
 
     &:focus-visible {
-      outline: auto;
+      outline: var(--rc-focus-ring, auto);
+      outline-offset: var(--rc-focus-ring-offset, 0);
     }
   }
 
@@ -89,10 +101,11 @@ export const selectStyles = css`
     max-height: var(--rc-select-max-height, 20em);
     overflow-y: auto;
     background: var(--rc-surface, Canvas);
-    border: 1px solid var(--rc-border-color, ButtonBorder);
+    border: var(--rc-select-listbox-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    border-radius: var(--rc-select-listbox-radius, var(--rc-control-radius, 0));
     box-shadow: var(--rc-select-shadow, var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)));
-    color: var(--rc-button-text, ButtonText);
-    padding-block: 0.25em;
+    color: var(--rc-field-text, FieldText);
+    padding-block: var(--rc-select-listbox-padding-block, var(--rc-control-padding-block, 0.25em));
 
     &:not(:popover-open) {
       display: none;
@@ -103,8 +116,8 @@ export const selectStyles = css`
   rc-listbox [part~='option'] {
     display: flex;
     align-items: center;
-    gap: 0.4em;
-    padding: 0.3em 0.75em;
+    gap: var(--rc-item-gap, 0.4em);
+    padding: var(--rc-item-padding-block, 0.3em) var(--rc-item-padding-inline, 0.75em);
     cursor: default;
 
     /* display: flex overrides [hidden]'s browser-default display:none — restore it explicitly */
@@ -118,12 +131,12 @@ export const selectStyles = css`
     &[data-active]:not([aria-disabled='true']) {
       background: var(--rc-highlight, Highlight);
       color: var(--rc-highlight-text, HighlightText);
-      outline: 2px solid var(--rc-accent, Highlight);
+      outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
       outline-offset: -2px;
     }
 
     &[aria-disabled='true'] {
-      opacity: 0.5;
+      opacity: var(--rc-disabled-opacity, 0.5);
       cursor: not-allowed;
     }
   }

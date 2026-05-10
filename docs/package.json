@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vitepress dev .",
     "build": "vitepress build .",
+    "build:checked": "yarn.cmd cem:analyze && vitepress build .",
     "preview": "vitepress preview ."
   },
   "dependencies": {

@@ -48,7 +48,7 @@ const taContents = {
   wrap: 'This is a very long line that demonstrates word-wrap and auto-grow working together. The editor expands as you type, and long lines wrap at the container boundary instead of producing a horizontal scrollbar.',
 };
 
-onMounted(() => {
+onMounted(async () => {
   // Set textarea default values after mount.
   const ids = {
     'basic-ta': taContents.basic,
@@ -57,10 +57,20 @@ onMounted(() => {
     'pattern-ta': taContents.pattern,
     'wrap-ta': taContents.wrap,
   };
+  const hosts = [];
   for (const [id, val] of Object.entries(ids)) {
     const el = document.getElementById(id);
-    if (el) el.defaultValue = val;
+    if (!el) continue;
+    el.defaultValue = val;
+    el.value = val;
+    const host = el.closest('rc-textarea');
+    if (host) {
+      host.value = val;
+      hosts.push(host);
+    }
   }
+
+  await Promise.all(hosts.map((host) => host.updateComplete));
 
   // Active line + cursor state plugin
   const activeDemo = document.getElementById('active-demo');
@@ -85,9 +95,9 @@ onMounted(() => {
   // Pattern matching
   const patternDemo = document.getElementById('pattern-demo');
   if (patternDemo) {
-    patternDemo.addPattern({ pattern: /\bTODO\b/g,  bold: true, color: '#fab387', background: 'rgba(250,179,135,.15)' });
-    patternDemo.addPattern({ pattern: /\bFIXME\b/g, bold: true, color: '#f38ba8', background: 'rgba(243,139,168,.15)' });
-    patternDemo.addPattern({ pattern: /\bHACK\b/g,  bold: true, color: '#f9e2af', background: 'rgba(249,226,175,.15)' });
+    patternDemo.addPattern({ pattern: /\bTODO\b/g,  bold: true, color: '#7c2d12', background: '#ffedd5' });
+    patternDemo.addPattern({ pattern: /\bFIXME\b/g, bold: true, color: '#9f1239', background: '#ffe4e6' });
+    patternDemo.addPattern({ pattern: /\bHACK/g,  bold: true, color: '#713f12', background: '#fef9c3' });
   }
 });
 </script>
@@ -95,6 +105,18 @@ onMounted(() => {
 # rc-textarea
 
 An enhanced textarea with line decorations, a gutter, and a plugin API. Wraps a native `<textarea>` — form association, labels, and pre-upgrade usability work without JavaScript.
+
+<AtAGlance
+  package-name="@rcarls/rc-textarea"
+  tag="rc-textarea"
+  native="Requires a native textarea child"
+  state="Controlled or uncontrolled text value"
+  :events="['rc-textarea-focus', 'rc-textarea-blur', 'rc-textarea-change']"
+  :related="[
+    { label: 'Progressive enhancement', href: '/guide/progressive-enhancement' },
+    { label: 'rc-markdown-editor', href: '/components/rc-markdown-editor' }
+  ]"
+/>
 
 ## Installation
 
@@ -144,7 +166,7 @@ No theme or styling applied — line numbers via the `line-numbers` attribute, w
 <ClientOnly>
 <div class="demo-section">
   <rc-textarea line-numbers word-wrap>
-    <textarea id="basic-ta" rows="6"></textarea>
+    <textarea id="basic-ta" rows="6" :value="taContents.basic"></textarea>
   </rc-textarea>
 </div>
 </ClientOnly>
@@ -162,7 +184,7 @@ The `onCursorMove` plugin API tracks cursor position in real time. `--rc-textare
 <ClientOnly>
 <div class="demo-section">
   <rc-textarea id="active-demo" line-numbers>
-    <textarea id="active-ta" name="active" rows="7"></textarea>
+    <textarea id="active-ta" name="active" rows="7" :value="taContents.active"></textarea>
   </rc-textarea>
   <div style="display:flex;gap:1.25rem;padding:0.3rem 0.85rem;font-family:monospace;font-size:0.72rem;color:var(--vp-c-text-2);background:var(--vp-c-bg-soft);border:1px solid var(--vp-c-divider);border-top:none;border-radius:0 0 6px 6px;">
     <span>Ln <b>{{ alLine }}</b>, Col <b>{{ alCol }}</b></span>
@@ -191,7 +213,7 @@ editor.usePlugin({
 <ClientOnly>
 <div class="demo-section">
   <rc-textarea list-numbers word-wrap auto-grow>
-    <textarea id="list-ta" name="list" rows="10"></textarea>
+    <textarea id="list-ta" name="list" rows="10" :value="taContents.list"></textarea>
   </rc-textarea>
 </div>
 </ClientOnly>
@@ -209,7 +231,7 @@ Regex patterns with inline mark decorations via `addPattern()`. Type `TODO`, `FI
 <ClientOnly>
 <div class="demo-section">
   <rc-textarea id="pattern-demo" line-numbers>
-    <textarea id="pattern-ta" name="pattern" rows="6" placeholder="Type TODO, FIXME, or HACK…"></textarea>
+    <textarea id="pattern-ta" name="pattern" rows="6" placeholder="Type TODO, FIXME, or HACK…" :value="taContents.pattern"></textarea>
   </rc-textarea>
 </div>
 </ClientOnly>
@@ -232,7 +254,7 @@ editor.addPattern({ pattern: /\bHACK\b/g,  bold: true, color: '#f9e2af' });
 <ClientOnly>
 <div class="demo-section">
   <rc-textarea word-wrap auto-grow>
-    <textarea id="wrap-ta" rows="3" placeholder="Long lines will wrap…"></textarea>
+    <textarea id="wrap-ta" rows="3" placeholder="Long lines will wrap…" :value="taContents.wrap"></textarea>
   </rc-textarea>
 </div>
 </ClientOnly>

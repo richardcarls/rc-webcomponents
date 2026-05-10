@@ -22,8 +22,9 @@ declare global {
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/
  * @slot Takes any number of child elements to display in the toolbar. Only focusable elements are navigable.
  * @cssprop [--rc-toolbar-gap-inline=0.25em] - Gap between toolbar items
- * @cssprop [--rc-toolbar-padding-inline=0.25em] - Horizontal padding on the toolbar container
- * @cssprop [--rc-toolbar-padding-block=0.125em] - Vertical padding on the toolbar container
+ * @cssprop [--rc-toolbar-padding-inline=calc(var(--rc-control-padding-inline) / 2)] - Horizontal padding on the toolbar container
+ * @cssprop [--rc-toolbar-padding-block=calc(var(--rc-control-padding-block) / 2)] - Vertical padding on the toolbar container
+ * @cssprop [--rc-toolbar-radius=var(--rc-control-radius)] - Toolbar container border radius
  * @csspart root - The toolbar container element
  */
 export class RCToolbar extends RovingTabIndexMixin(LitElement) {

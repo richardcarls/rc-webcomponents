@@ -4,6 +4,17 @@ A resizable pane splitter. Drag the separator or use arrow keys to resize adjace
 
 [WAI-ARIA Window Splitter Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/)
 
+<AtAGlance
+  package-name="@rcarls/rc-splitter"
+  tag="rc-splitter"
+  native="Uses consumer-provided pane content"
+  state="Controlled or uncontrolled pane sizes"
+  :events="['rc-splitter-change']"
+  :related="[
+    { label: 'rc-dialog', href: '/components/rc-dialog' }
+  ]"
+/>
+
 ## Installation
 
 ::: code-group

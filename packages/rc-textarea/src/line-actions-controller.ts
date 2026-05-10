@@ -69,6 +69,13 @@ WIDGET_SHEET.replaceSync(`
     background: var(--rc-line-action-hover-bg, transparent);
     color: var(--rc-line-action-hover-color, inherit);
   }
+  /* Compact indicator is always fully visible — it's the sole diagnostic signal */
+  .rc-line-compact-indicator {
+    opacity: var(--rc-line-compact-indicator-opacity, 0.7);
+  }
+  .rc-line-compact-indicator:hover {
+    opacity: 1;
+  }
 `);
 
 const POPOVER_STYLE_ID = 'rc-line-actions-popover-style';
@@ -180,7 +187,7 @@ export class LineActionsController {
 
     if (actions.length === 0) return [];
 
-    const offset = LineActionsController._lineEndOffset(value, lineIndex);
+    const offset = LineActionsController.lineEndOffset(value, lineIndex);
     const actionsSnapshot = [...actions];
     const buttonOptions = { renderButton: this._options.renderButton, createIcon: this._options.createIcon };
 
@@ -239,13 +246,58 @@ export class LineActionsController {
     return value.slice(0, selectionStart).split('\n').length - 1;
   }
 
+  /**
+   * Compact / indicator mode — one small button per line with actions and/or a
+   * diagnostic message. Tapping the button opens a self-contained popover with
+   * the message (if any) and the action buttons.
+   *
+   * Use this instead of `getDecorationsForLines()` on mobile / read-only views
+   * where cursor placement is unreliable or unavailable (e.g. `'popover'` mode
+   * doesn't work in read-only textareas because `selectionStart` never changes).
+   *
+   * @param lineActions  Map of 0-based line index → actions for that line.
+   * @param value        Current plain-text value of the editor.
+   * @param diagnosticMessages  Optional map of 0-based line index → message
+   *                            text to show at the top of the compact popover.
+   */
+  getDecorationsForLinesCompact(
+    lineActions: Map<number, LineAction[]>,
+    value: string,
+    diagnosticMessages?: Map<number, string>,
+  ): DecorationInput[] {
+    this._hidePopover();
+    const result: DecorationInput[] = [];
+
+    // Union the set of line indices from both maps
+    const lineIndices = new Set([...lineActions.keys(), ...(diagnosticMessages?.keys() ?? [])]);
+
+    for (const lineIndex of lineIndices) {
+      const actions = lineActions.get(lineIndex) ?? [];
+      const message = diagnosticMessages?.get(lineIndex);
+      if (actions.length === 0 && !message) continue;
+
+      const offset = LineActionsController.lineEndOffset(value, lineIndex);
+      const options = this._options;
+      result.push({
+        type: 'widget',
+        offset,
+        side: 'after',
+        create(): HTMLElement {
+          return buildCompactIndicator(actions, message, options);
+        },
+      });
+    }
+
+    return result;
+  }
+
   // ── Private helpers ───────────────────────────────────────────────────────
 
   /**
    * Character offset of the end of the given 0-based line (points at the
    * newline character, or end-of-string for the last line).
    */
-  private static _lineEndOffset(value: string, lineIndex: number): number {
+  static lineEndOffset(value: string, lineIndex: number): number {
     const lines = value.split('\n');
     let offset = 0;
     for (let i = 0; i < lineIndex && i < lines.length; i++) {
@@ -374,4 +426,163 @@ function buildPopoverButtons(
   for (const action of actions) {
     panel.appendChild(buildButton(action, options));
   }
+}
+
+// ── Compact indicator (mobile / read-only) ────────────────────────────────────
+
+const COMPACT_POPOVER_STYLE_ID = 'rc-compact-popover-style';
+
+const COMPACT_POPOVER_STYLES = `
+  .rc-compact-popover {
+    position: fixed;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: var(--rc-line-actions-gap, 4px);
+    padding: 8px 10px;
+    background: var(--rc-line-action-bg, Canvas);
+    border: var(--rc-line-action-border, 1px solid ButtonBorder);
+    border-radius: var(--rc-line-action-border-radius, 6px);
+    box-shadow: var(
+      --rc-line-action-shadow,
+      0 2px 12px color-mix(in srgb, CanvasText 20%, transparent)
+    );
+    max-width: min(280px, calc(100vw - 16px));
+  }
+  .rc-compact-popover-message {
+    margin: 0 0 4px;
+    font-size: 0.85em;
+    opacity: 0.85;
+    line-height: 1.4;
+    white-space: normal;
+    word-break: break-word;
+  }
+  .rc-compact-popover .rc-line-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: var(--rc-line-action-padding, 5px 8px);
+    border: var(--rc-line-action-border, none);
+    border-radius: var(--rc-line-action-border-radius, 3px);
+    background: var(--rc-line-action-bg, transparent);
+    color: var(--rc-line-action-color, ButtonText);
+    font-size: var(--rc-line-action-font-size, 0.875em);
+    cursor: pointer;
+    user-select: none;
+    line-height: 1.4;
+    white-space: nowrap;
+    opacity: 1;
+  }
+  .rc-compact-popover .rc-line-action-btn:hover {
+    background: var(--rc-line-action-hover-bg, ButtonFace);
+  }
+`;
+
+function buildCompactIndicator(
+  actions: LineAction[],
+  message: string | undefined,
+  options: LineActionsOptions,
+): HTMLElement {
+  const btn = document.createElement('button');
+  btn.className = 'rc-line-action-btn rc-line-compact-indicator';
+  btn.type = 'button';
+  btn.setAttribute('title', message ?? actions.map((a) => a.label).join(', '));
+
+  const iconEl = options.createIcon?.('mdi-alert-circle-outline') ?? null;
+  if (iconEl) {
+    btn.setAttribute('aria-label', message ?? actions.map((a) => a.label).join(', '));
+    btn.appendChild(iconEl);
+  } else {
+    btn.textContent = '⚠';
+    btn.setAttribute('aria-label', message ?? actions.map((a) => a.label).join(', '));
+  }
+
+  btn.addEventListener('mousedown', (e) => e.preventDefault());
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showCompactPopover(btn, actions, message, options);
+  });
+
+  return btn;
+}
+
+function showCompactPopover(
+  anchor: HTMLElement,
+  actions: LineAction[],
+  message: string | undefined,
+  options: Pick<LineActionsOptions, 'renderButton' | 'createIcon'>,
+): void {
+  // Remove any existing compact popover
+  document.querySelector('.rc-compact-popover')?.remove();
+
+  // Inject styles once per document
+  if (!document.getElementById(COMPACT_POPOVER_STYLE_ID)) {
+    const style = document.createElement('style');
+    style.id = COMPACT_POPOVER_STYLE_ID;
+    style.textContent = COMPACT_POPOVER_STYLES;
+    document.head.appendChild(style);
+  }
+
+  const panel = document.createElement('div');
+  panel.className = 'rc-compact-popover';
+  panel.addEventListener('mousedown', (e) => e.preventDefault());
+
+  if (message) {
+    const p = document.createElement('p');
+    p.className = 'rc-compact-popover-message';
+    p.textContent = message;
+    panel.appendChild(p);
+  }
+
+  for (const action of actions) {
+    const actionBtn = buildButton(action, options);
+    // Wrap onClick so the popover dismisses after the action fires
+    const origClick = action.onClick;
+    actionBtn.addEventListener('click', () => {
+      origClick();
+      panel.remove();
+    });
+    panel.appendChild(actionBtn);
+  }
+
+  document.body.appendChild(panel);
+
+  // Position below (or above) the anchor button
+  const rect = anchor.getBoundingClientRect();
+  const panelHeight = panel.offsetHeight || 80;
+  const panelWidth = panel.offsetWidth || 200;
+
+  let top = rect.bottom + 4;
+  if (top + panelHeight > window.innerHeight) {
+    top = rect.top - panelHeight - 4;
+  }
+  top = Math.max(top, 4);
+
+  let left = rect.left;
+  left = Math.min(left, window.innerWidth - panelWidth - 8);
+  left = Math.max(left, 8);
+
+  panel.style.top = `${top}px`;
+  panel.style.left = `${left}px`;
+
+  // Dismiss on click-outside or Escape — defer to avoid self-dismiss on the opening click
+  setTimeout(() => {
+    const clickHandler = (e: MouseEvent) => {
+      if (!panel.contains(e.target as Node)) {
+        panel.remove();
+        document.removeEventListener('click', clickHandler, true);
+        document.removeEventListener('keydown', keyHandler);
+      }
+    };
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        panel.remove();
+        document.removeEventListener('click', clickHandler, true);
+        document.removeEventListener('keydown', keyHandler);
+      }
+    };
+    document.addEventListener('click', clickHandler, true);
+    document.addEventListener('keydown', keyHandler);
+  }, 0);
 }

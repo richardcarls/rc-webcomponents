@@ -136,6 +136,38 @@ Implementation rules:
   a native `<dialog>` with no shadow root; the consuming document has
   unrestricted CSS access.
 
+## Public API change checklist
+
+When changing a component's public API, update every associated surface in the
+same change unless a surface is genuinely unaffected. Public API includes
+properties, attributes, methods, events, slots, CSS custom properties, CSS parts,
+native child requirements, exported types, and documented behavior.
+
+- Update the component source, JSDoc, event detail types, and exported
+  TypeScript types so `dist/custom-elements.json` and declaration files can
+  reflect the new contract.
+- Update the component's VitePress page in `docs/components/<component>.md`,
+  including live demos, code snippets, accessibility/keyboard notes, events, and
+  the at-a-glance summary.
+- Update package `README.md` files, the root `README.md` package summaries, and
+  aggregate package docs when the API change affects public usage.
+- Update or add tests for progressive enhancement, labels/forms, ARIA state,
+  controlled/uncontrolled behavior, event dispatch, and the live open/active
+  state for accessibility audits where relevant.
+- Regenerate Custom Elements Manifest data before docs dev/build: on Windows run
+  `yarn.cmd cem:analyze`; on Linux or macOS run `yarn cem:analyze`.
+
+Generated API tables in the docs read from `dist/custom-elements.json`; do not
+hand-edit generated API output as a substitute for source JSDoc/type updates.
+Component examples must preserve this library's design principles: the
+consumer-provided native child remains in the DOM, labels and forms work before
+upgrade, ARIA is demonstrated on the native control where applicable, and
+interactive demos show keyboard and accessibility-relevant behavior.
+
+Keep this checklist in `AGENTS.md` only. Tool-specific adapter files such as
+`CLAUDE.md`, `GEMINI.md`, Copilot instructions, and Cursor rules should point
+back here rather than duplicating API-change rules.
+
 ## Environment (Windows)
 
 **Always use `yarn.cmd` instead of `yarn`** (and `npx.cmd` instead of `npx`).

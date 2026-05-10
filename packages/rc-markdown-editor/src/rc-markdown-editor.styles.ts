@@ -59,7 +59,7 @@ export const rmeStyles = css`
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 2px;
+    gap: var(--rme-toolbar-gap, 1px);
     padding: 4px;
     border: 1px solid ButtonBorder;
     border-radius: 4px 4px 0 0;
@@ -71,18 +71,22 @@ export const rmeStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.35em;
+    min-inline-size: var(--rme-toolbar-button-size, 2rem);
+    min-block-size: var(--rme-toolbar-button-size, 2rem);
+    padding: 0.3em;
     border: 1px solid transparent;
     border-radius: 3px;
     background: transparent;
     color: ButtonText;
     font: inherit;
-    font-size: 0.8125em;
+    font-size: 0.875em;
     cursor: pointer;
     line-height: 1;
   }
 
   rc-editor-toolbar button svg {
+    inline-size: 1.15em;
+    block-size: 1.15em;
     flex-shrink: 0;
   }
 

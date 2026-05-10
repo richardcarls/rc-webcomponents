@@ -28,6 +28,13 @@ declare global {
  * @slot trigger - The button element that triggers the menu
  * @slot default - The rc-menu element to display as popup
  * @fires rc-menu-button-toggle - Fired when the menu opens or closes
+ * @cssprop [--rc-menu-button-trigger-block-size=var(--rc-control-block-size)] - Minimum block size of the trigger
+ * @cssprop [--rc-menu-button-trigger-padding-block=var(--rc-control-padding-block)] - Trigger block-axis padding
+ * @cssprop [--rc-menu-button-trigger-padding-inline=var(--rc-control-padding-inline)] - Trigger inline-axis padding
+ * @cssprop [--rc-menu-button-trigger-border=var(--rc-border)] - Trigger border
+ * @cssprop [--rc-menu-button-trigger-radius=var(--rc-control-radius)] - Trigger border radius
+ * @cssprop [--rc-menu-button-trigger-background=var(--rc-button-bg)] - Trigger background
+ * @cssprop [--rc-menu-button-trigger-color=var(--rc-button-text)] - Trigger text color
  * @cssprop [--rc-menu-button-popup-z-index=1000] - Z-index of the popup overlay
  * @csspart root - The root container element
  * @csspart popup - The popup container element
@@ -89,12 +96,17 @@ export class RCMenuButton extends LitElement {
    * Orientation of this menu button, affects which arrow keys open/close the menu.
    * If not set, inherits from a parent rc-menubar or element with role="menubar".
    */
-  @property({ type: String })
+  @property({ type: String, reflect: true })
   orientation: 'horizontal' | 'vertical' | undefined;
 
   /** Preferred placement of the popup relative to the trigger button. */
   @property({ reflect: true })
   placement: AnchorPlacement = 'bottom-start';
+
+  private get _effectivePlacement(): AnchorPlacement {
+    if (this.placement !== 'bottom-start') return this.placement;
+    return this._resolvedOrientation === 'vertical' ? 'right-start' : this.placement;
+  }
 
   /**
    * Resolved orientation, considering inheritance from parent menubar.
@@ -173,6 +185,7 @@ export class RCMenuButton extends LitElement {
   openMenu(focusTarget: 'first' | 'last' = 'first') {
     if (this.open) return;
 
+    this._anchorCtrl.setOptions({ placement: this._effectivePlacement });
     this._setOpen(true, true);
     this._anchorCtrl.update();
 
@@ -330,8 +343,11 @@ export class RCMenuButton extends LitElement {
       this._syncTriggerAria();
     }
 
-    if (changedProperties.has('placement')) {
-      this._anchorCtrl.setOptions({ placement: this.placement });
+    if (
+      changedProperties.has('placement') ||
+      changedProperties.has('orientation')
+    ) {
+      this._anchorCtrl.setOptions({ placement: this._effectivePlacement });
     }
   }
 
