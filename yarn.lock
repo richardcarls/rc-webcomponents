@@ -1227,6 +1227,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-app-bar@workspace:^, @rcarls/rc-app-bar@workspace:packages/rc-app-bar":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-app-bar@workspace:packages/rc-app-bar"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
+    "@rcarls/rc-common": "workspace:^"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-combobox@workspace:^, @rcarls/rc-combobox@workspace:packages/rc-combobox":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-combobox@workspace:packages/rc-combobox"
@@ -1450,6 +1471,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-search-bar@workspace:^, @rcarls/rc-search-bar@workspace:packages/rc-search-bar":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-search-bar@workspace:packages/rc-search-bar"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@guanghechen/rollup-plugin-copy": "npm:^6.0.9"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-select@workspace:^, @rcarls/rc-select@workspace:packages/rc-select":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-select@workspace:packages/rc-select"
@@ -1646,6 +1687,7 @@ __metadata:
   resolution: "@rcarls/rc-webcomponents@workspace:packages/rc-webcomponents"
   dependencies:
     "@rcarls/rc-accordion": "workspace:^"
+    "@rcarls/rc-app-bar": "workspace:^"
     "@rcarls/rc-combobox": "workspace:^"
     "@rcarls/rc-dialog": "workspace:^"
     "@rcarls/rc-disclosure": "workspace:^"
@@ -1655,6 +1697,7 @@ __metadata:
     "@rcarls/rc-menu-button": "workspace:^"
     "@rcarls/rc-menubar": "workspace:^"
     "@rcarls/rc-range-slider": "workspace:^"
+    "@rcarls/rc-search-bar": "workspace:^"
     "@rcarls/rc-select": "workspace:^"
     "@rcarls/rc-slider": "workspace:^"
     "@rcarls/rc-splitter": "workspace:^"

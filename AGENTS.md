@@ -305,8 +305,8 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 **Rebuild a package before running tests in packages that depend on it.**
 
 - **rc-common**: Shared controllers and directives (`DragController`,
-  `ResizeController`, `AnchorController`, `KeyboardNavigationDirective`,
-  `MouseMoveDirective`)
+  `ResizeController`, `AnchorController`, `ScrollObserverController`,
+  `KeyboardNavigationDirective`, `MouseMoveDirective`)
 - **rc-listbox**: Light-DOM ARIA listbox used by select, combobox, and
   transfer-list → rc-common
 - **rc-menu**: ARIA menu popup → rc-common
@@ -316,6 +316,12 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-menu-button**: Menu button → rc-common, rc-menu
 - **rc-menubar**: Menubar with roving tabindex → rc-common, rc-menu, rc-menu-button
 - **rc-toolbar**: ARIA toolbar → rc-common
+- **rc-app-bar**: Material-style top app bar with dual-mode
+  (controlled/uncontrolled) scroll-driven elevation and a collapsible expanded
+  title; no implicit landmark role → rc-common
+- **rc-search-bar**: Enhances a required native `input[type="search"]` with
+  icon chrome, a clear button, and debounced `rc-search-bar-input` events
+  (standalone)
 - **rc-splitter**: Resizable pane splitter → rc-common
 - **rc-textarea**: Enhanced textarea (standalone)
 - **rc-textarea-adapters**: Adapter factories for lezer, unified, and shiki tokenizers → rc-textarea

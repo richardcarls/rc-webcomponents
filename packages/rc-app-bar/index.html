@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc-app-bar</title>
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
+    <script type="module" src="/src/define.ts"></script>
+    <style>
+      .demo-frame {
+        border: 1px solid ButtonBorder;
+        border-radius: 4px;
+        overflow: clip;
+      }
+
+      .demo-scroll {
+        height: 240px;
+        overflow-y: auto;
+      }
+
+      .demo-scroll article {
+        padding: 1rem;
+      }
+
+      rc-app-bar button.icon {
+        display: inline-grid;
+        place-items: center;
+        inline-size: 40px;
+        block-size: 40px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: none;
+        color: inherit;
+        font-size: 1.25rem;
+        cursor: pointer;
+      }
+
+      rc-app-bar button.icon:hover {
+        background: color-mix(in srgb, currentColor 10%, transparent);
+      }
+
+      rc-app-bar button.icon:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+      }
+
+      rc-app-bar [slot='expanded-title'] {
+        margin: 0;
+        font-size: inherit;
+        font-weight: 500;
+        line-height: 1.2;
+      }
+
+      rc-app-bar input[type='search'] {
+        flex: 1;
+        min-width: 0;
+        font: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-page">
+      <div class="demo-controls">
+        <div class="demo-title">
+          <h1>rc-app-bar</h1>
+          <a href="https://m3.material.io/components/top-app-bar/overview">Material 3 Top App Bar (modeled pattern)</a>
+        </div>
+        <button class="theme-picker" type="button">Auto</button>
+      </div>
+
+      <div class="demo-section">
+        <h2>Small App Bar with Scroll Elevation</h2>
+        <p>
+          The bar observes the scroll container referenced by
+          <code>scroll-target</code> and toggles <code>data-scrolled</code> +
+          <code>:state(scrolled)</code> when scrolled past the threshold.
+        </p>
+        <div class="demo-frame">
+          <header>
+            <rc-app-bar scroll-target="#small-scroll">
+              <button slot="leading" class="icon" aria-label="Back" onclick="console.log('back')">&larr;</button>
+              <span>Inbox</span>
+              <button slot="trailing" class="icon" aria-label="Search" onclick="console.log('search')">&#128269;</button>
+            </rc-app-bar>
+          </header>
+          <div class="demo-scroll" id="small-scroll">
+            <article>
+              <p>Scroll this area to elevate the app bar.</p>
+              <p style="block-size: 60rem"></p>
+              <p>End of content.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2>Medium App Bar (collapsible expanded title)</h2>
+        <p>
+          <code>variant="medium"</code> shows the <code>expanded-title</code>
+          row until the container scrolls; the title then collapses inline.
+          Provide the title in both slots — the bar exposes exactly one to
+          assistive technology at a time.
+        </p>
+        <div class="demo-frame">
+          <header>
+            <rc-app-bar variant="medium" scroll-target="#medium-scroll">
+              <button slot="leading" class="icon" aria-label="Back">&larr;</button>
+              <span>Slow-Roasted Tomato Pasta</span>
+              <button slot="trailing" class="icon" aria-label="Edit">&#9998;</button>
+              <h2 slot="expanded-title">Slow-Roasted Tomato Pasta</h2>
+            </rc-app-bar>
+          </header>
+          <div class="demo-scroll" id="medium-scroll">
+            <article>
+              <p>Scroll to collapse the expanded title into the bar row.</p>
+              <p style="block-size: 60rem"></p>
+              <p>End of content.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2>Search Layout (composition)</h2>
+        <p>
+          There is no search variant — slot a search field (such as
+          <code>rc-search-bar</code> wrapping a native input) into the default
+          title region of a small bar.
+        </p>
+        <div class="demo-frame">
+          <header>
+            <rc-app-bar>
+              <button slot="leading" class="icon" aria-label="Back">&larr;</button>
+              <input type="search" aria-label="Search 51 recipes" placeholder="Search 51 recipes" />
+              <button slot="trailing" class="icon" aria-label="New recipe">&plus;</button>
+            </rc-app-bar>
+          </header>
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2>Controlled Mode</h2>
+        <p>
+          Assign the <code>scrolled</code> property to drive the state from
+          application code; host writes are silent and detach the observer.
+        </p>
+        <div class="demo-frame">
+          <rc-app-bar id="controlled-bar">
+            <span>Controlled bar</span>
+          </rc-app-bar>
+        </div>
+        <p>
+          <button type="button" onclick="document.getElementById('controlled-bar').scrolled = true">scrolled = true</button>
+          <button type="button" onclick="document.getElementById('controlled-bar').scrolled = false">scrolled = false</button>
+          <button type="button" onclick="document.getElementById('controlled-bar').scrolled = undefined">release (undefined)</button>
+        </p>
+      </div>
+    </main>
+
+    <script>
+      document.addEventListener('rc-app-bar-scroll', (e) => {
+        console.log('rc-app-bar-scroll', e.detail);
+      });
+    </script>
+  </body>
+</html>

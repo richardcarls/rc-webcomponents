@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@rcarls/rc-accordion": "workspace:^",
+    "@rcarls/rc-app-bar": "workspace:^",
     "@rcarls/rc-combobox": "workspace:^",
     "@rcarls/rc-dialog": "workspace:^",
     "@rcarls/rc-disclosure": "workspace:^",
@@ -51,6 +52,7 @@
     "@rcarls/rc-menu-button": "workspace:^",
     "@rcarls/rc-menubar": "workspace:^",
     "@rcarls/rc-range-slider": "workspace:^",
+    "@rcarls/rc-search-bar": "workspace:^",
     "@rcarls/rc-select": "workspace:^",
     "@rcarls/rc-slider": "workspace:^",
     "@rcarls/rc-splitter": "workspace:^",

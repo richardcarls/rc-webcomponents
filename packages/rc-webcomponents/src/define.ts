@@ -1,3 +1,4 @@
+import '@rcarls/rc-app-bar/define';
 import '@rcarls/rc-combobox/define';
 import '@rcarls/rc-dialog/define';
 import '@rcarls/rc-disclosure/define';
@@ -7,6 +8,7 @@ import '@rcarls/rc-menubar/define';
 import '@rcarls/rc-menu-button/define';
 import '@rcarls/rc-menu/define';
 import '@rcarls/rc-range-slider/define';
+import '@rcarls/rc-search-bar/define';
 import '@rcarls/rc-select/define';
 import '@rcarls/rc-slider/define';
 import '@rcarls/rc-splitter/define';

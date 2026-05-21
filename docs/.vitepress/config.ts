@@ -47,6 +47,7 @@ export default {
         items: [
           { text: 'rc-select', link: '/components/rc-select' },
           { text: 'rc-combobox', link: '/components/rc-combobox' },
+          { text: 'rc-search-bar', link: '/components/rc-search-bar' },
           { text: 'rc-slider', link: '/components/rc-slider' },
           { text: 'rc-range-slider', link: '/components/rc-range-slider' },
           { text: 'rc-textarea', link: '/components/rc-textarea' },
@@ -56,6 +57,7 @@ export default {
       {
         text: 'Build command surfaces',
         items: [
+          { text: 'rc-app-bar', link: '/components/rc-app-bar' },
           { text: 'rc-menu', link: '/components/rc-menu' },
           { text: 'rc-menu-button', link: '/components/rc-menu-button' },
           { text: 'rc-menubar', link: '/components/rc-menubar' },

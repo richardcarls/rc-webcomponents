@@ -1,4 +1,5 @@
 export * from '@rcarls/rc-accordion';
+export * from '@rcarls/rc-app-bar';
 export * from '@rcarls/rc-combobox';
 export * from '@rcarls/rc-dialog';
 export * from '@rcarls/rc-disclosure';
@@ -8,6 +9,7 @@ export * from '@rcarls/rc-menu';
 export * from '@rcarls/rc-menu-button';
 export * from '@rcarls/rc-menubar';
 export * from '@rcarls/rc-range-slider';
+export * from '@rcarls/rc-search-bar';
 export * from '@rcarls/rc-select';
 export * from '@rcarls/rc-slider';
 export * from '@rcarls/rc-splitter';

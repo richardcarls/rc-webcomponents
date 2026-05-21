@@ -224,6 +224,31 @@ export type RCTransferListRef = HTMLElement & {
   moveSelected(delta: number): void;
 };
 
+/** Public API surface of `<rc-app-bar>`. */
+export type RCAppBarRef = HTMLElement & {
+  variant: 'small' | 'medium';
+  scrolled: boolean | undefined;
+  scrollTarget: Element | Document | Window | string | null;
+  scrollThreshold: number;
+};
+
+export type RCAppBarScrollDetail = {
+  scrolled: boolean;
+};
+
+/** Public API surface of `<rc-search-bar>`. */
+export type RCSearchBarRef = HTMLElement & {
+  value: string;
+  defaultValue: string | undefined;
+  debounce: number;
+  clearLabel: string;
+  placeholder: string | undefined;
+};
+
+export type RCSearchBarInputDetail = {
+  value: string;
+};
+
 // ---- JSX augmentation -------------------------------------------------------
 
 declare module 'solid-js' {
@@ -418,6 +443,26 @@ declare module 'solid-js' {
         label?: string;
         'on:rc-textarea-change'?: (e: CustomEvent<{ value: string }>) => void;
         'on:rc-preview-change'?: (e: CustomEvent<{ preview: boolean }>) => void;
+      };
+
+      'rc-app-bar': JSX.HTMLAttributes<RCAppBarRef> & {
+        variant?: 'small' | 'medium';
+        'scroll-target'?: string;
+        'scroll-threshold'?: number | string;
+        'prop:scrolled'?: boolean | undefined;
+        'prop:scrollTarget'?: Element | Document | Window | string | null;
+        'on:rc-app-bar-scroll'?: (e: CustomEvent<RCAppBarScrollDetail>) => void;
+      };
+
+      'rc-search-bar': JSX.HTMLAttributes<RCSearchBarRef> & {
+        debounce?: number | string;
+        'clear-label'?: string;
+        placeholder?: string;
+        'default-value'?: string;
+        'prop:value'?: string | undefined;
+        'prop:defaultValue'?: string | undefined;
+        'on:rc-search-bar-input'?: (e: CustomEvent<RCSearchBarInputDetail>) => void;
+        'on:rc-search-bar-clear'?: (e: CustomEvent) => void;
       };
 
       'rc-textarea': JSX.HTMLAttributes<RCTextareaRef> & {
