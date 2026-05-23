@@ -215,3 +215,38 @@ test('requestUpdate is called on the host when the state flips', async () => {
 
   ctl.hostDisconnected();
 });
+
+test('onScroll reports every evaluated offset and delta', async () => {
+  const sc = await renderScrollContainer();
+  const cb = vi.fn();
+  const ctl = new ScrollObserverController(createHost(), { target: sc, onScroll: cb });
+  ctl.hostConnected();
+
+  expect(cb).toHaveBeenLastCalledWith(0, 0);
+
+  scrollTo(sc, 20);
+  scrollTo(sc, 55);
+  scrollTo(sc, 40);
+
+  expect(cb).toHaveBeenNthCalledWith(2, expect.closeTo(20, 0), expect.closeTo(20, 0));
+  expect(cb).toHaveBeenNthCalledWith(3, expect.closeTo(55, 0), expect.closeTo(35, 0));
+  expect(cb).toHaveBeenNthCalledWith(4, expect.closeTo(40, 0), expect.closeTo(-15, 0));
+
+  ctl.hostDisconnected();
+});
+
+test('onScroll delta resets after retargeting', async () => {
+  const first = await renderScrollContainer();
+  const second = await renderScrollContainer();
+  const cb = vi.fn();
+  const ctl = new ScrollObserverController(createHost(), { target: first, onScroll: cb });
+  ctl.hostConnected();
+
+  scrollTo(first, 50);
+  second.scrollTop = 30;
+  ctl.setOptions({ target: second });
+
+  expect(cb).toHaveBeenLastCalledWith(expect.closeTo(30, 0), 0);
+
+  ctl.hostDisconnected();
+});

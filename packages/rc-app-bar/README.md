@@ -1,15 +1,12 @@
 # `@rcarls/rc-app-bar`
 
-A Material-style top app bar modeled with web-component conventions: a
-structural row for a leading nav control, a title region, and trailing
-actions, plus an optional expanded title row (`variant="medium"`) that
-collapses when the associated scroll container scrolls.
+A headless app bar with leading, title, exact-center, and trailing regions.
+It uses a single consumer-owned title element and supports pinned, continuously
+collapsing, and direction-sensitive hide-on-scroll behavior.
 
-The component is headless and carries no landmark role — wrap the page-level
-instance in `<header>` so landmark semantics stay under consumer control
-(secondary instances, such as one bar per split pane, should not be banners).
-
----
+Material 3 and Apple HIG inform the available structures and behaviors, but the
+default appearance remains deliberately UA-like: system colors, a thin
+scrolled divider, and no supplied action controls or decorative icons.
 
 ## Installation
 
@@ -17,17 +14,9 @@ instance in `<header>` so landmark semantics stay under consumer control
 npm install @rcarls/rc-app-bar
 ```
 
-## Import
-
 ```js
-// Registers <rc-app-bar>
 import '@rcarls/rc-app-bar/define';
-
-// Or import the class without registering
-import { RCAppBar } from '@rcarls/rc-app-bar';
 ```
-
----
 
 ## Basic usage
 
@@ -36,135 +25,197 @@ import { RCAppBar } from '@rcarls/rc-app-bar';
   <rc-app-bar scroll-target="#content">
     <button slot="leading" aria-label="Back">&larr;</button>
     <span>Inbox</span>
-    <rc-toolbar slot="trailing" label="Actions">
-      <button aria-label="Search">…</button>
-    </rc-toolbar>
+    <rc-toolbar slot="trailing" label="Actions">...</rc-toolbar>
   </rc-app-bar>
 </header>
-<div id="content" class="scroll-area">…</div>
+<div id="content" class="scroll-area">...</div>
 ```
 
-Medium variant with a collapsible expanded title — provide the title in both
-the default slot and `expanded-title`; the bar exposes exactly one to
-assistive technology at a time:
+The default slot is the single title region. It may contain a title, subtitle,
+or any other consumer markup. The title node remains connected and is never
+duplicated while the bar changes layout.
+
+## Expanded and scroll behaviors
+
+`variant="expanded"` places the title in a flexible second row. Its height
+comes from the title content rather than a Material-specific fixed size.
 
 ```html
-<rc-app-bar variant="medium" scroll-target="#content">
+<rc-app-bar
+  variant="expanded"
+  scroll-behavior="collapse"
+  scroll-target="#content"
+>
   <button slot="leading" aria-label="Back">&larr;</button>
-  <span>Slow-Roasted Tomato Pasta</span>
-  <rc-toolbar slot="trailing" label="Actions">…</rc-toolbar>
-  <h1 slot="expanded-title">Slow-Roasted Tomato Pasta</h1>
+  <div>
+    <strong>Slow-Roasted Tomato Pasta</strong>
+    <small>Summer recipes</small>
+  </div>
+  <button slot="trailing" aria-label="Edit">Edit</button>
 </rc-app-bar>
 ```
 
-Search layout is composition, not a variant — slot a search field (such as
-`<rc-search-bar>` wrapping a native input) into the default title region.
+Scroll behaviors are exclusive:
 
----
+- `pinned` keeps the current structure visible and only exposes scrolled state.
+- `collapse` continuously shrinks an expanded title row over its measured
+  height, then keeps the compact row visible.
+- `hide` hides the complete bar while scrolling down past `scroll-threshold`
+  and reveals it when scrolling up or returning near the top.
 
-## Scrolled state: controlled and uncontrolled
+The component never consumes, stops, or rewrites the document's scroll.
 
-The scrolled (elevated/collapsed) state follows this library's
-controlled/uncontrolled convention:
+## Exact-center composition
 
-- **Uncontrolled** — set `scrollTarget` (element property) or the
-  `scroll-target` attribute (CSS selector, or the keyword `window`). The bar
-  observes the container with a passive listener and drives the state itself,
-  firing `rc-app-bar-scroll` on each threshold crossing.
-- **Controlled** — assign the `scrolled` property. Host writes apply silently
-  (no events) and detach the observer. Assign `undefined` to release back to
-  observation.
+The optional `center` slot remains at the host's geometric midpoint even when
+leading and trailing controls have different widths. This is useful for
+desktop controls or an [`rc-search-bar`](../rc-search-bar/):
 
-The state is output for CSS as a `data-scrolled` attribute on the host and a
-`scrolled` custom state (`rc-app-bar:state(scrolled)`), following the
-headless-library `data-*` state convention. Neither is an input: writing the
-attribute yourself has no effect on behavior.
+```html
+<rc-app-bar>
+  <button slot="leading">Back</button>
+  <span>Recipes</span>
+  <rc-search-bar slot="center" placeholder="Search recipes">
+    <input type="search" aria-label="Search recipes" />
+  </rc-search-bar>
+  <button slot="trailing" aria-label="Account">Account</button>
+</rc-app-bar>
+```
+
+Title and center content may coexist. The title is constrained before it can
+overlap the centered content. Without center content, the title uses all space
+between leading and trailing controls; consumers may apply
+`rc-app-bar::part(title) { text-align: center; }`.
+
+## Controlled state
+
+`scrolled` follows the library's controlled/uncontrolled convention:
+
+- Set `scrollTarget` or `scroll-target` for uncontrolled observation.
+- Assign `scrolled` to control the endpoint silently.
+- Assign `undefined` to release control back to observation.
+
+In controlled collapse mode, `true` snaps to compact and `false` restores the
+expanded row. Controlled hide mode remains visible because a boolean value
+cannot express scroll direction.
+
+State output is available as `data-scrolled`, `data-collapsed`, and
+`data-hidden`, with equivalent `:state(scrolled)`, `:state(collapsed)`, and
+`:state(hidden)` custom states.
+
+## View Transitions
+
+Document View Transitions are consumer-owned progressive enhancement. Assign a
+unique `view-transition-name` to the light-DOM title element, not
+`::part(title)` or the shadow-owned slot wrapper:
+
+```html
+<rc-app-bar id="recipe-bar" variant="expanded" scroll-behavior="collapse">
+  <h1 class="recipe-title">Slow-Roasted Tomato Pasta</h1>
+</rc-app-bar>
+```
 
 ```css
-rc-app-bar[data-scrolled] {
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+.recipe-title {
+  view-transition-name: recipe-app-bar-title;
 }
 
-/* equivalent, using the custom state */
-rc-app-bar:state(scrolled) {
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+::view-transition-old(recipe-app-bar-title) {
+  animation: 180ms ease-out both title-out;
+}
+
+::view-transition-new(recipe-app-bar-title) {
+  animation: 180ms 120ms ease-in both title-in;
+}
+
+@keyframes title-out {
+  to {
+    opacity: 0;
+    translate: 0 -1rem;
+  }
+}
+
+@keyframes title-in {
+  from {
+    opacity: 0;
+  }
 }
 ```
 
----
+```js
+const bar = document.querySelector('#recipe-bar');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
-## API
+async function setCollapsed(collapsed) {
+  const update = async () => {
+    bar.scrolled = collapsed;
+    await bar.updateComplete;
+  };
 
-### Properties / attributes
+  if (!document.startViewTransition || reduceMotion.matches) {
+    await update();
+    return;
+  }
 
-| Property | Attribute | Type | Default | Description |
-|---|---|---|---|---|
-| `variant` | `variant` | `'small' \| 'medium'` | `'small'` | Structural variant; `medium` adds the collapsible expanded title row |
-| `scrolled` | — | `boolean \| undefined` | `undefined` | Controlled scrolled state; `undefined` = uncontrolled (observer-driven) |
-| `scrollTarget` | `scroll-target` | `Element \| Document \| Window \| string \| null` | `null` | Scroll container to observe; the attribute form is a CSS selector or `window` |
-| `scrollThreshold` | `scroll-threshold` | `number` | `4` | Scroll offset in px past which the bar becomes scrolled (strict `>`) |
+  document.startViewTransition(update);
+}
+```
+
+The app bar never starts a document transition itself because the API is
+global and may conflict with navigation or unrelated components. Unsupported
+browsers receive the immediate endpoint change. Give concurrently rendered
+titles unique transition names.
+
+## Styling
+
+The component supplies no controls or action icons. The default scrolled
+separator is the `scroll-shadow` part, despite being rendered as a system-color
+border by default:
+
+```css
+rc-app-bar::part(scroll-shadow) {
+  border-block-end: 0;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+}
+
+rc-app-bar.glass::part(root) {
+  background: color-mix(in srgb, Canvas 70%, transparent);
+  backdrop-filter: blur(18px);
+}
+```
 
 ### CSS custom properties
 
 | Property | Default | Description |
-|---|---|---|
+| --- | --- | --- |
 | `--rc-app-bar-bg` | `Canvas` | Bar background |
 | `--rc-app-bar-color` | `CanvasText` | Bar text color |
-| `--rc-app-bar-height` | `64px` | Title row block size |
-| `--rc-app-bar-expanded-height` | `48px` | Expanded title row block size |
-| `--rc-app-bar-title-font-size` | `1.375rem` | Inline title font size |
-| `--rc-app-bar-expanded-title-font-size` | `1.5rem` | Expanded title font size |
-| `--rc-app-bar-divider-scrolled` | `1px solid GrayText` | Bottom divider shown while scrolled |
-| `--rc-app-bar-shadow-scrolled` | `none` | Box shadow applied while scrolled |
-| `--rc-app-bar-transition-duration` | `200ms` | Collapse and fade duration |
+| `--rc-app-bar-compact-min-height` | `3rem` | Compact row minimum height |
+| `--rc-app-bar-expanded-padding-block` | `0.75em` | Expanded title block padding |
 | `--rc-app-bar-padding-inline` | `0.75em` | Horizontal padding |
-| `--rc-app-bar-gap` | `0.5em` | Gap between title row regions |
+| `--rc-app-bar-gap` | `0.5em` | Gap between regions |
+| `--rc-app-bar-transition-duration` | `200ms` | Endpoint and hide transition duration |
+| `--rc-app-bar-scroll-shadow` | `1px solid GrayText` | Scrolled separator border |
 
 ### CSS parts
 
-| Part | Element | Description |
-|---|---|---|
-| `root` | container `div` | The bar container |
-| `title-row` | `div` | The main row |
-| `leading` | `div` | Wrapper around the leading slot |
-| `title` | `div` | Wrapper around the inline title slot |
-| `trailing` | `div` | Wrapper around the trailing slot |
-| `expanded` | `div` | Wrapper around the expanded title row |
+`root`, `leading`, `title`, `center`, `trailing`, `scroll-shadow`
 
-### Slots
+## Breaking migration
 
-| Slot | Description |
-|---|---|
-| `leading` | Navigation control, typically a back or menu icon button |
-| *(default)* | Inline title content, or a search field for a search layout |
-| `trailing` | Trailing actions, typically an `rc-toolbar` |
-| `expanded-title` | Larger title for `variant="medium"`; hidden in `small` |
+- Replace `variant="small"` with `variant="compact"`.
+- Replace `variant="medium"` with `variant="expanded"`.
+- Remove `slot="expanded-title"` and keep one title in the default slot.
+- Replace old fixed height/title-font tokens and the `title-row`/`expanded`
+  parts with the structural API documented above.
 
-### Events
+## Accessibility
 
-| Event | Detail | Description |
-|---|---|---|
-| `rc-app-bar-scroll` | `{ scrolled: boolean }` | Fired on each threshold crossing in uncontrolled mode; never fired by host property writes |
-
----
-
-## Accessibility notes
-
-- The host has no implicit role. Wrap the page-level bar in `<header>` for the
-  banner landmark; do not give secondary pane bars a banner role.
-- In `variant="medium"`, the inactive title copy (inline while expanded,
-  expanded row while collapsed) is `aria-hidden` and `visibility: hidden`, so
-  the title is announced once and collapsed content is unfocusable.
-- The collapse and fade transitions are disabled under
-  `prefers-reduced-motion: reduce`.
-- The scrolled divider uses `GrayText`, so the state survives dark mode and
-  `forced-colors: active` without relying on color alone. The reserved
-  transparent border renders as a constant divider in forced-colors mode.
-
----
-
-## Browser support
-
-Evergreen browsers. `ElementInternals.states` (`:state(scrolled)`) is
-feature-detected; the `data-scrolled` attribute is always set and is the
-portable styling hook.
+- The host has no implicit landmark role. Wrap a page-level instance in
+  `<header>` when appropriate.
+- Consumer-provided controls retain their native semantics and keyboard
+  behavior.
+- The single title remains connected and exposed to assistive technology in
+  every visual state.
+- Movement and fades are disabled under `prefers-reduced-motion: reduce`.
+- The default divider uses `GrayText` and remains visible in forced colors.

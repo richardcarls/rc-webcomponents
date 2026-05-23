@@ -9,6 +9,13 @@ export type ScrollObserverTarget = Element | Document | Window;
  */
 export type ScrollObserverChangeCB = (scrolled: boolean, scrollTop: number) => void;
 
+/**
+ * @callback ScrollObserverScrollCB
+ * @param scrollTop - current scroll offset
+ * @param delta - change from the previously evaluated scroll offset
+ */
+export type ScrollObserverScrollCB = (scrollTop: number, delta: number) => void;
+
 export interface ScrollObserverOptions {
   /** The scroll container to observe. Accepts an element reference or getter. */
   target: ScrollObserverTarget | (() => ScrollObserverTarget | null) | null;
@@ -16,6 +23,8 @@ export interface ScrollObserverOptions {
   threshold?: number;
   /** Invoked only when the boolean state crosses the threshold. */
   onChange?: ScrollObserverChangeCB;
+  /** Invoked on every evaluated scroll event, including the initial attach. */
+  onScroll?: ScrollObserverScrollCB;
   /** When true, detaches the listener entirely (e.g. host-controlled state). */
   disabled?: boolean;
 }
@@ -42,6 +51,8 @@ export class ScrollObserverController implements ReactiveController {
   private _attached: ScrollObserverTarget | null = null;
 
   private _scrolled = false;
+
+  private _lastScrollTop: number | undefined;
 
   private readonly _onScroll = () => this._evaluate();
 
@@ -94,6 +105,7 @@ export class ScrollObserverController implements ReactiveController {
   private _detach(): void {
     this._attached?.removeEventListener('scroll', this._onScroll);
     this._attached = null;
+    this._lastScrollTop = undefined;
   }
 
   private _scrollTop(): number {
@@ -111,6 +123,11 @@ export class ScrollObserverController implements ReactiveController {
     if (!this._attached) return;
 
     const scrollTop = this._scrollTop();
+    const delta = scrollTop - (this._lastScrollTop ?? scrollTop);
+
+    this._lastScrollTop = scrollTop;
+    this._opts.onScroll?.(scrollTop, delta);
+
     const scrolled = scrollTop > (this._opts.threshold ?? 4);
     if (scrolled === this._scrolled) return;
 

@@ -78,7 +78,7 @@ Custom elements are framework-agnostic by definition. Components follow the stan
 | [`rc-menu-button`](packages/rc-menu-button/) | Button that opens an ARIA menu | rc-common, rc-menu |
 | [`rc-menubar`](packages/rc-menubar/) | ARIA `menubar` with roving tabindex | rc-common, rc-menu-button |
 | [`rc-toolbar`](packages/rc-toolbar/) | ARIA `toolbar` with roving tabindex | rc-common |
-| [`rc-app-bar`](packages/rc-app-bar/) | Material-style top app bar with scroll-driven elevation and collapsible title | rc-common |
+| [`rc-app-bar`](packages/rc-app-bar/) | Headless grid app bar with exact-center composition and pinned, collapse, or hide scroll behavior | rc-common |
 | [`rc-splitter`](packages/rc-splitter/) | Resizable pane splitter (`separator` role) | rc-common |
 | [`rc-textarea`](packages/rc-textarea/) | Enhanced `<textarea>` — line decorations, gutter, plugin API | — |
 | [`rc-disclosure`](packages/rc-disclosure/) | Native `<details>` / `<summary>` disclosure wrapper | — |

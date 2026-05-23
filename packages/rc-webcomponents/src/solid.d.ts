@@ -226,7 +226,8 @@ export type RCTransferListRef = HTMLElement & {
 
 /** Public API surface of `<rc-app-bar>`. */
 export type RCAppBarRef = HTMLElement & {
-  variant: 'small' | 'medium';
+  variant: 'compact' | 'expanded';
+  scrollBehavior: 'pinned' | 'collapse' | 'hide';
   scrolled: boolean | undefined;
   scrollTarget: Element | Document | Window | string | null;
   scrollThreshold: number;
@@ -446,7 +447,8 @@ declare module 'solid-js' {
       };
 
       'rc-app-bar': JSX.HTMLAttributes<RCAppBarRef> & {
-        variant?: 'small' | 'medium';
+        variant?: 'compact' | 'expanded';
+        'scroll-behavior'?: 'pinned' | 'collapse' | 'hide';
         'scroll-target'?: string;
         'scroll-threshold'?: number | string;
         'prop:scrolled'?: boolean | undefined;

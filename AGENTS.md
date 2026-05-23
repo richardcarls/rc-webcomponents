@@ -130,6 +130,17 @@ Implementation rules:
   native behavior or assistive technology, such as `<dialog>` and `<textarea>`.
 - Shared interaction behaviors live in `rc-common` as `ReactiveController`
   classes or Lit directives so they compose cleanly onto any Lit host.
+- Design-system references guide behavior and composition, not default
+  appearance. `rc-app-bar` remains UA-like while permitting Material-style
+  structures and consumer-styled glass/HIG treatments.
+- Consumers supply app-bar controls and action icons. Components supply a
+  default icon only when it communicates component-owned state, such as a
+  disclosure or select indicator.
+- App-bar-like structural grouping uses leading, title, exact-center, and
+  trailing regions. Title and center content may coexist; consumers own whether
+  a composition conforms to an external design system.
+- Action priority, overflow measurement, and conditional action/menu rendering
+  belong in a future `rc-menubar`-related component, not `rc-app-bar`.
 - Each package builds to ESM and UMD with declaration files. `sideEffects: false`
   enables tree-shaking when consumers import individual elements.
 - `rc-dialog` intentionally exposes no CSS custom properties or parts. It wraps
@@ -316,9 +327,9 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-menu-button**: Menu button → rc-common, rc-menu
 - **rc-menubar**: Menubar with roving tabindex → rc-common, rc-menu, rc-menu-button
 - **rc-toolbar**: ARIA toolbar → rc-common
-- **rc-app-bar**: Material-style top app bar with dual-mode
-  (controlled/uncontrolled) scroll-driven elevation and a collapsible expanded
-  title; no implicit landmark role → rc-common
+- **rc-app-bar**: Headless grid app bar with leading/title/center/trailing
+  regions, dual-mode scrolled state, and pinned/collapse/hide scroll behavior;
+  no implicit landmark role → rc-common
 - **rc-search-bar**: Enhances a required native `input[type="search"]` with
   icon chrome, a clear button, and debounced `rc-search-bar-input` events
   (standalone)
