@@ -4,6 +4,19 @@ import { classMap } from 'lit/directives/class-map.js';
 
 import searchBarStyles from './rc-search-bar.styles';
 
+const _uaClearSheet = new CSSStyleSheet();
+_uaClearSheet.replaceSync(
+  `rc-search-bar:not([allow-native-clear]) input[type="search"]::-webkit-search-cancel-button
+   { -webkit-appearance: none; display: none; }`,
+);
+let _uaClearSuppressed = false;
+
+function _suppressUaClear(): void {
+  if (_uaClearSuppressed) return;
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, _uaClearSheet];
+  _uaClearSuppressed = true;
+}
+
 declare global {
   interface HTMLElementTagNameMap {
     'rc-search-bar': RCSearchBar;
@@ -24,13 +37,15 @@ export interface RCSearchBarInputDetail {
  * pre-upgrade behavior are preserved. Without a slotted search input the
  * component renders no chrome and stays inert.
  *
- * The native WebKit cancel button is not suppressed; hiding it is documented
- * consumer CSS. It clears through the normal input path (a debounced
- * `rc-search-bar-input` with an empty value) and never fires
+ * The native WebKit cancel button is suppressed by default via an
+ * adopted document stylesheet. Set `allow-native-clear` to restore it.
+ * When restored, the native button clears through the normal input path
+ * (a debounced `rc-search-bar-input` with an empty value) and never fires
  * `rc-search-bar-clear`.
  *
  * @slot - The required native `<input type="search">`
  * @slot leading - Decorative leading icon; mark it `aria-hidden="true"`
+ * @slot trailing - Optional trailing content after the clear button
  * @slot clear-icon - Optional glyph replacing the default clear glyph
  * @fires rc-search-bar-input - Debounced after typing, immediate on clear;
  *   `detail: { value }`
@@ -43,8 +58,12 @@ export interface RCSearchBarInputDetail {
  * @cssprop [--rc-search-bar-height=48px] - Wrapper block size
  * @cssprop [--rc-search-bar-padding-inline=0.5em] - Wrapper horizontal padding
  * @cssprop [--rc-search-bar-gap=0.25em] - Gap between icon, input, and clear button
+ * @cssprop [--rc-search-bar-input-font-size] - Input font size (inherits when unset)
+ * @cssprop [--rc-search-bar-input-font-family] - Input font family (inherits when unset)
+ * @cssprop [--rc-search-bar-input-color] - Input text color (inherits when unset)
  * @csspart root - The wrapper element
  * @csspart leading - Wrapper around the leading icon slot
+ * @csspart trailing - Wrapper around the trailing slot
  * @csspart clear - The clear button
  */
 export class RCSearchBar extends LitElement {
@@ -57,6 +76,33 @@ export class RCSearchBar extends LitElement {
   /** Accessible label for the clear button. */
   @property({ type: String, attribute: 'clear-label' })
   clearLabel = 'Clear search';
+
+  /** When set, leaves the browser's native WebKit cancel button visible. */
+  @property({ type: Boolean, attribute: 'allow-native-clear', reflect: true })
+  allowNativeClear = false;
+
+  /**
+   * When set, the clear button is visible whenever the input is focused,
+   * even with no value — matching the Apple HIG "cancel" pattern.
+   * Consider setting `clear-label="Cancel"` in this mode.
+   */
+  @property({ type: Boolean, attribute: 'show-clear-on-focus' })
+  showClearOnFocus = false;
+
+  /** Disables the component and mirrors the state to the slotted input. */
+  @property({ type: Boolean, reflect: true })
+  get disabled(): boolean {
+    // _disabledHost holds what the host last set; fall back to what the input
+    // actually reports (kept in sync by the MutationObserver).
+    return this._disabledHost ?? this._inputDisabled;
+  }
+  set disabled(value: boolean) {
+    const old = this.disabled;
+    this._disabledHost = value;
+    const input = this._input();
+    if (input) input.disabled = value;
+    this.requestUpdate('disabled', old);
+  }
 
   /**
    * Placeholder mirrored onto the native input. An author `placeholder`
@@ -90,7 +136,37 @@ export class RCSearchBar extends LitElement {
   private _hasLeading = false;
 
   @state()
+  private _hasTrailing = false;
+
+  @state()
   private _inputDisabled = false;
+
+  // Tracks the last value written via the disabled setter so the getter and
+  // Lit's reflect can return it before the input is slotted.
+  private _disabledHost: boolean | undefined = undefined;
+
+  @state()
+  private _focused = false;
+
+  private _lastInteractionWasPointer = false;
+  private readonly _onPointerDown = (): void => {
+    this._lastInteractionWasPointer = true;
+  };
+  private readonly _onFocusIn = (): void => {
+    if (!this._lastInteractionWasPointer) this.toggleAttribute('data-focus-visible', true);
+    this._lastInteractionWasPointer = false;
+  };
+  private readonly _onFocusOut = (): void => {
+    this.toggleAttribute('data-focus-visible', false);
+  };
+
+  private readonly _onInputFocus = (): void => {
+    this._focused = true;
+  };
+
+  private readonly _onInputBlur = (): void => {
+    this._focused = false;
+  };
 
   private readonly _disabledObserver = new MutationObserver(() => {
     const input = this._input();
@@ -143,6 +219,11 @@ export class RCSearchBar extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    _suppressUaClear();
+
+    this.addEventListener('pointerdown', this._onPointerDown, { capture: true });
+    this.addEventListener('focusin', this._onFocusIn);
+    this.addEventListener('focusout', this._onFocusOut);
 
     // Slot assignment survives a DOM move without re-firing slotchange, so
     // listeners are re-bound here (addEventListener is idempotent per ref).
@@ -151,10 +232,20 @@ export class RCSearchBar extends LitElement {
   }
 
   override disconnectedCallback(): void {
+    this.removeEventListener('pointerdown', this._onPointerDown, { capture: true });
+    this.removeEventListener('focusin', this._onFocusIn);
+    this.removeEventListener('focusout', this._onFocusOut);
+
     super.disconnectedCallback();
 
+    this._focused = false;
     this._cancelPendingInput();
-    this._input()?.removeEventListener('input', this._onNativeInput);
+
+    const input = this._input();
+    input?.removeEventListener('input', this._onNativeInput);
+    input?.removeEventListener('focus', this._onInputFocus);
+    input?.removeEventListener('blur', this._onInputBlur);
+
     this._disabledObserver.disconnect();
   }
 
@@ -182,8 +273,11 @@ export class RCSearchBar extends LitElement {
     const previous = this._input();
     if (previous && previous !== input) {
       previous.removeEventListener('input', this._onNativeInput);
+      previous.removeEventListener('focus', this._onInputFocus);
+      previous.removeEventListener('blur', this._onInputBlur);
     }
     this._disabledObserver.disconnect();
+    this._focused = false;
 
     this._inputRef = input ? new WeakRef(input) : null;
     this._hasInput = input !== null;
@@ -210,8 +304,24 @@ export class RCSearchBar extends LitElement {
       this._authorPlaceholder = input.hasAttribute('placeholder');
       this._applyPlaceholder(input);
 
+      if (this._disabledHost !== undefined) {
+        input.disabled = this._disabledHost;
+      }
       this._inputDisabled = input.disabled;
       this._hasValue = input.value.length > 0;
+
+      if (
+        import.meta.env.DEV &&
+        !input.labels?.length &&
+        !input.getAttribute('aria-label') &&
+        !input.getAttribute('aria-labelledby')
+      ) {
+        console.warn(
+          '[rc-search-bar] Slotted <input type="search"> has no accessible name.',
+          'Add aria-label, wrap in <label>, or use <label for="...">.',
+          input,
+        );
+      }
 
       this._bindInput(input);
     });
@@ -219,6 +329,8 @@ export class RCSearchBar extends LitElement {
 
   private _bindInput(input: HTMLInputElement): void {
     input.addEventListener('input', this._onNativeInput);
+    input.addEventListener('focus', this._onInputFocus);
+    input.addEventListener('blur', this._onInputBlur);
     this._disabledObserver.observe(input, { attributeFilter: ['disabled'] });
   }
 
@@ -308,19 +420,36 @@ export class RCSearchBar extends LitElement {
           part="clear"
           type="button"
           aria-label=${this.clearLabel}
-          ?hidden=${!this._hasInput || !this._hasValue}
+          ?hidden=${!this._hasInput || (!this._hasValue && !(this.showClearOnFocus && this._focused))}
           ?disabled=${this._inputDisabled}
           @click=${this._handleClear}
         >
           <slot name="clear-icon"><span aria-hidden="true">&#10005;</span></slot>
         </button>
+        <span
+          id="trailing"
+          part="trailing"
+          class=${classMap({ empty: !this._hasTrailing })}
+        >
+          <slot name="trailing" @slotchange=${this._onTrailingSlotChange}></slot>
+        </span>
       </div>
     `;
+  }
+
+  /** Programmatically clears the value and fires rc-search-bar-clear + rc-search-bar-input. */
+  public clear(): void {
+    this._handleClear();
   }
 
   private _onLeadingSlotChange(e: Event): void {
     const slot = e.target as HTMLSlotElement;
     this._hasLeading = slot.assignedElements().length > 0;
+  }
+
+  private _onTrailingSlotChange(e: Event): void {
+    const slot = e.target as HTMLSlotElement;
+    this._hasTrailing = slot.assignedElements().length > 0;
   }
 }
 

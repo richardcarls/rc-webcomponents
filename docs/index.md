@@ -36,6 +36,8 @@ features:
 | --- | --- |
 | [rc-select](/components/rc-select) | Select-only ARIA combobox backed by native `<select>` |
 | [rc-combobox](/components/rc-combobox) | Editable combobox with filtering and allow-create |
+| [rc-search-bar](/components/rc-search-bar) | Enhances a native search input with icon chrome, clear behavior, and debounced events |
+| [rc-app-bar](/components/rc-app-bar) | Headless grid app bar with exact-center composition and scroll behaviors |
 | [rc-slider](/components/rc-slider) | Single-thumb slider wrapping native `<input type="range">` |
 | [rc-range-slider](/components/rc-range-slider) | Two-thumb range slider |
 | [rc-textarea](/components/rc-textarea) | Enhanced textarea with line decorations and plugin API |

@@ -175,6 +175,10 @@ consumer-provided native child remains in the DOM, labels and forms work before
 upgrade, ARIA is demonstrated on the native control where applicable, and
 interactive demos show keyboard and accessibility-relevant behavior.
 
+When creating a new component package, add it to the `## Packages` table on the
+VitePress home page in `docs/index.md` in the same change. Infrastructure,
+adapter/plugin, and aggregate packages do not need home-page component entries.
+
 Keep this checklist in `AGENTS.md` only. Tool-specific adapter files such as
 `CLAUDE.md`, `GEMINI.md`, Copilot instructions, and Cursor rules should point
 back here rather than duplicating API-change rules.

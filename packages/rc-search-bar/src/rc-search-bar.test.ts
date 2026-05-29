@@ -275,11 +275,13 @@ test('no slotted search input degrades silently with no chrome', async () => {
 test('has no automated accessibility violations with a live clear button', async () => {
   const screen = render(html`
     <div data-testid="wrap">
-      <label for="a11y-search">Search recipes</label>
-      <rc-search-bar>
-        <span slot="leading" aria-hidden="true">&#128269;</span>
-        <input type="search" id="a11y-search" value="tomato" />
-      </rc-search-bar>
+      <search>
+        <label for="a11y-search">Search recipes</label>
+        <rc-search-bar>
+          <span slot="leading" aria-hidden="true">&#128269;</span>
+          <input type="search" id="a11y-search" value="tomato" />
+        </rc-search-bar>
+      </search>
     </div>
   `);
 
@@ -291,4 +293,76 @@ test('has no automated accessibility violations with a live clear button', async
   expect(clearButton(host).hidden).toBe(false);
 
   await expectNoA11yViolations(wrap);
+});
+
+test('show-clear-on-focus: clear button shows on focus with no value, hides on blur', async () => {
+  const screen = render(html`
+    <rc-search-bar data-testid="host" show-clear-on-focus>
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  await tick();
+  await host.updateComplete;
+
+  const input = host.querySelector<HTMLInputElement>('input')!;
+  expect(clearButton(host).hidden).toBe(true);
+
+  input.dispatchEvent(new FocusEvent('focus'));
+  await host.updateComplete;
+  expect(clearButton(host).hidden).toBe(false);
+
+  input.dispatchEvent(new FocusEvent('blur'));
+  await host.updateComplete;
+  expect(clearButton(host).hidden).toBe(true);
+});
+
+test('show-clear-on-focus: clear while empty dispatches both events and stays focused', async () => {
+  const screen = render(html`
+    <rc-search-bar data-testid="host" debounce="0" show-clear-on-focus>
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  await tick();
+
+  const input = host.querySelector<HTMLInputElement>('input')!;
+  const events: string[] = [];
+  host.addEventListener('rc-search-bar-clear', () => events.push('clear'));
+  host.addEventListener('rc-search-bar-input', (e) =>
+    events.push(`input:${(e as CustomEvent).detail.value}`),
+  );
+
+  input.dispatchEvent(new FocusEvent('focus'));
+  await host.updateComplete;
+
+  const clear = clearButton(host);
+  expect(clear.hidden).toBe(false);
+
+  clear.click();
+  await host.updateComplete;
+
+  expect(events).toEqual(['clear', 'input:']);
+  expect(host.value).toBe('');
+  await vi.waitFor(() => expect(document.activeElement).toBe(input));
+});
+
+test('allow-native-clear reflects as a boolean attribute', async () => {
+  const screen = render(html`
+    <rc-search-bar data-testid="host" allow-native-clear>
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  await tick();
+
+  expect(host.hasAttribute('allow-native-clear')).toBe(true);
+  expect(host.allowNativeClear).toBe(true);
+
+  host.allowNativeClear = false;
+  await host.updateComplete;
+  expect(host.hasAttribute('allow-native-clear')).toBe(false);
 });

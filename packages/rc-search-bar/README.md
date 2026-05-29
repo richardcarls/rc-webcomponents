@@ -47,25 +47,12 @@ import { RCSearchBar } from '@rcarls/rc-search-bar';
 </script>
 ```
 
-Recommended consumer CSS — the shadow wrapper provides the field chrome, so
-strip the slotted input's own (shadow CSS cannot style light-DOM content):
+The component's shadow CSS already strips the slotted input's native border,
+background, and outline so it blends into the wrapper chrome — no consumer reset
+needed.
 
-```css
-rc-search-bar input[type='search'] {
-  background: transparent;
-  border: none;
-  outline: none;
-  font: inherit;
-  color: inherit;
-}
-
-/* Optional: hide the native WebKit cancel button in favor of the
-   component's clear button. */
-rc-search-bar input[type='search']::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-  display: none;
-}
-```
+The native WebKit cancel button is suppressed automatically. Set
+`allow-native-clear` to restore it.
 
 ---
 
@@ -90,6 +77,8 @@ rc-search-bar input[type='search']::-webkit-search-cancel-button {
 | `defaultValue` | `default-value` | `string \| undefined` | `undefined` | Initial uncontrolled value hint, applied once |
 | `debounce` | `debounce` | `number` | `200` | Debounce window in ms for `rc-search-bar-input`; `0` dispatches synchronously |
 | `clearLabel` | `clear-label` | `string` | `'Clear search'` | Accessible label for the clear button |
+| `allowNativeClear` | `allow-native-clear` | `boolean` | `false` | When set, restores the browser's native WebKit cancel button |
+| `showClearOnFocus` | `show-clear-on-focus` | `boolean` | `false` | When set, shows the clear button on focus even with no value (Apple HIG cancel pattern) |
 | `placeholder` | `placeholder` | `string \| undefined` | `undefined` | Mirrored onto the input unless the author already set one |
 
 ### CSS custom properties
@@ -120,6 +109,7 @@ rc-search-bar input[type='search']::-webkit-search-cancel-button {
 | *(default)* | The required native `<input type="search">` |
 | `leading` | Decorative leading icon; mark it `aria-hidden="true"` |
 | `clear-icon` | Optional glyph replacing the default ✕ in the clear button |
+| `trailing` | Optional content after the clear button (supplementary badges or actions) |
 
 ### Events
 
@@ -140,10 +130,14 @@ rc-search-bar input[type='search']::-webkit-search-cancel-button {
 - The clear button is a real `<button>` with a configurable `aria-label`
   (`clear-label`) and a ≥24×24 px hit target. Activating it returns focus to
   the input before the button hides, so focus is never dropped.
-- The native WebKit cancel button is not suppressed. If left visible it
-  clears through the normal input path (a debounced `rc-search-bar-input`
-  with an empty value) and never fires `rc-search-bar-clear`; hide it with
-  the CSS snippet above if you want a single clear affordance.
+- The native WebKit cancel button is suppressed automatically via an adopted
+  document stylesheet. Set `allow-native-clear` to restore it. When restored,
+  it clears through the normal input path (a debounced `rc-search-bar-input`
+  with an empty value) and never fires `rc-search-bar-clear`.
+- Set `show-clear-on-focus` to show the clear button whenever the input is
+  focused (Apple HIG cancel pattern). Consider `clear-label="Cancel"` in this
+  mode. The `rc-search-bar-clear` event fires even when the value is empty,
+  allowing the host to dismiss a search overlay.
 
 ---
 

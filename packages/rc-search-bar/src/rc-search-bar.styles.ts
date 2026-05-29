@@ -3,6 +3,7 @@ import { css } from 'lit';
 export const searchBarStyles = css`
   :host {
     display: inline-flex;
+    color-scheme: inherit;
   }
 
   [hidden] {
@@ -22,8 +23,7 @@ export const searchBarStyles = css`
     border-radius: var(--rc-search-bar-radius, var(--rc-control-radius, 0));
   }
 
-  /* because :has(:focus-visible) doesn't work across the slot boundary */
-  #root:focus-within {
+  :host([data-focus-visible]) #root {
     outline: var(--rc-focus-ring, auto);
     outline-offset: var(--rc-focus-ring-offset, 0);
   }
@@ -50,6 +50,22 @@ export const searchBarStyles = css`
   ::slotted(input[type='search']) {
     flex: 1 1 auto;
     min-inline-size: 0;
+    border: none;
+    background: transparent;
+    color: var(--rc-search-bar-input-color, inherit);
+    font-family: var(--rc-search-bar-input-font-family, inherit);
+    font-size: var(--rc-search-bar-input-font-size, inherit);
+    outline: none;
+  }
+
+  #trailing {
+    display: flex;
+    flex: none;
+    align-items: center;
+  }
+
+  #trailing.empty {
+    display: none;
   }
 
   #clear {
