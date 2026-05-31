@@ -49,7 +49,10 @@ export interface RCAppBarScrollDetail {
  * @cssprop [--rc-app-bar-padding-inline=0.75em] - Horizontal padding
  * @cssprop [--rc-app-bar-gap=0.5em] - Gap between regions
  * @cssprop [--rc-app-bar-transition-duration=200ms] - Endpoint and hide duration
- * @cssprop [--rc-app-bar-scroll-shadow=1px solid GrayText] - Scrolled divider
+ * @cssprop [--rc-app-bar-scroll-divider=1px solid GrayText] - Scrolled divider
+ * @cssprop [--rc-app-bar-collapse-progress=0] - Collapse animation progress 0–1; read-only
+ * @cssprop [--rc-app-bar-title-font-size] - Compact-row title font size (opt-in; inherits when unset)
+ * @cssprop [--rc-app-bar-expanded-title-font-size] - Expanded-row title font size (opt-in)
  * @csspart root - The grid container
  * @csspart leading - Wrapper around the leading slot
  * @csspart title - Wrapper around the single title slot
@@ -103,6 +106,11 @@ export class RCAppBar extends LitElement {
 
   private _collapseProgress = 0;
 
+  private readonly _reducedMotion =
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)')
+      : null;
+
   private _internals = this.attachInternals();
 
   private _resizeObserver: ResizeObserver | null = null;
@@ -142,6 +150,11 @@ export class RCAppBar extends LitElement {
     this.requestUpdate('scrolled', oldValue);
   }
 
+  /** Whether the expanded title row is currently collapsed. */
+  get collapsed(): boolean {
+    return this._collapsed;
+  }
+
   override connectedCallback(): void {
     super.connectedCallback();
     this._connectResizeObserver();
@@ -173,9 +186,16 @@ export class RCAppBar extends LitElement {
     this._syncVisualState();
   }
 
-  protected override updated(): void {
+  protected override updated(changed: PropertyValues): void {
     this._observeLayout();
-    this._measureLayout();
+    if (
+      changed.has('variant') ||
+      changed.has('_hasLeading') ||
+      changed.has('_hasCenter') ||
+      changed.has('_hasTrailing')
+    ) {
+      this._measureLayout();
+    }
     this._syncStateOutputs();
   }
 
@@ -256,8 +276,13 @@ export class RCAppBar extends LitElement {
       if (this._collapseDistance <= 0) return;
 
       const distance = this._collapseDistance;
-      const progress = Math.min(Math.max(scrollTop / distance, 0), 1);
-      this._setCollapseProgress(progress >= 0.999 ? 1 : progress);
+      let progress = Math.min(Math.max(scrollTop / distance, 0), 1);
+      if (this._reducedMotion?.matches) {
+        progress = scrollTop > this.scrollThreshold ? 1 : 0;
+      } else {
+        progress = progress >= 0.999 ? 1 : progress;
+      }
+      this._setCollapseProgress(progress);
     } else {
       this._setCollapseProgress(0);
     }
@@ -290,7 +315,7 @@ export class RCAppBar extends LitElement {
 
   private _setCollapseProgress(progress: number): void {
     this._collapseProgress = progress;
-    this.style.setProperty('--_rc-app-bar-collapse-progress', `${progress}`);
+    this.style.setProperty('--rc-app-bar-collapse-progress', `${progress}`);
     this._applyCollapseGeometry();
 
     const collapsed = progress >= 1;
