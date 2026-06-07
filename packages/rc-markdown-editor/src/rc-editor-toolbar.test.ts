@@ -9,7 +9,7 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 
 describe('RcEditorToolbar', () => {
-  test('renders 12 default buttons plus heading select', async () => {
+  test('renders 11 default buttons plus heading select', async () => {
     const screen = render(html`
       <rc-editor-toolbar data-testid="host"></rc-editor-toolbar>
     `);
@@ -17,7 +17,7 @@ describe('RcEditorToolbar', () => {
     await host.updateComplete;
 
     const buttons = host.querySelectorAll('button[data-action]');
-    expect(buttons).toHaveLength(12);
+    expect(buttons).toHaveLength(11);
     expect(host.querySelector('select[aria-label="Heading level"]')).toBeTruthy();
   });
 
@@ -65,12 +65,12 @@ describe('RcEditorToolbar', () => {
       actions.push((e as CustomEvent<EditorToolbarActionDetail>).detail.action);
     });
 
-    for (const action of ['bold', 'italic', 'code', 'link', 'heading', 'blockquote', 'bullet-list', 'ordered-list', 'code-block', 'source']) {
+    for (const action of ['bold', 'italic', 'underline', 'strikethrough', 'code', 'link', 'blockquote', 'bullet-list', 'ordered-list', 'code-block', 'source']) {
       const btn = host.querySelector<HTMLButtonElement>(`button[data-action="${action}"]`);
       btn!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
     }
 
-    expect(actions).toEqual(['bold', 'italic', 'code', 'link', 'heading', 'blockquote', 'bullet-list', 'ordered-list', 'code-block', 'source']);
+    expect(actions).toEqual(['bold', 'italic', 'underline', 'strikethrough', 'code', 'link', 'blockquote', 'bullet-list', 'ordered-list', 'code-block', 'source']);
   });
 
   test('has no automated accessibility violations', async () => {

@@ -146,7 +146,7 @@ test('continuous collapse maps expanded-row scroll distance to progress', async 
 
   scrollTo(sc, distance / 2);
   expect(Number.parseFloat(
-    host.style.getPropertyValue('--_rc-app-bar-collapse-progress'),
+    host.style.getPropertyValue('--rc-app-bar-collapse-progress'),
   )).toBeCloseTo(0.5, 1);
   expect(host.hasAttribute('data-collapsed')).toBe(false);
 
