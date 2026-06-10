@@ -334,6 +334,8 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-app-bar**: Headless grid app bar with leading/title/center/trailing
   regions, dual-mode scrolled state, and pinned/collapse/hide scroll behavior;
   no implicit landmark role → rc-common
+- **rc-fab**: Floating action button with regular and extended variants
+  (standalone)
 - **rc-search-bar**: Enhances a required native `input[type="search"]` with
   icon chrome, a clear button, and debounced `rc-search-bar-input` events
   (standalone)
@@ -349,4 +351,5 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-transfer-list**: Transfer list → rc-listbox
 - **rc-virtual-canvas**: Virtual canvas (standalone)
 - **rc-dialog**: Draggable/resizable `<dialog>` wrapper → rc-common
+- **rc-theme-material**: Optional CSS-only Material 3 token bridge (standalone)
 - **rc-webcomponents**: Aggregate package → all component packages

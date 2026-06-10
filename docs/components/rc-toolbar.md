@@ -123,6 +123,12 @@ Non-focusable elements like `<hr>` render as visual separators but are skipped d
 </rc-toolbar>
 ```
 
+## Material bridge
+
+`@rcarls/rc-theme-material` maps Material-inspired surface shape and spacing
+into this component. It does not choose appearances for consumer-provided
+buttons. See [Theme previews](/guide/theme-previews).
+
 ## API
 
 <ApiTable tag="rc-toolbar" />

@@ -302,6 +302,12 @@ The native `<select slot="select">` is the form control. `FormData` reads its va
 | ← (at cursor start) | Enter chip nav | — |
 | Printable chars | Filter options, open popup | Continue filtering |
 
+## Material bridge
+
+`@rcarls/rc-theme-material` maps Material outlined-field, menu-surface, option,
+and chip tokens into this component. See [Theme previews](/guide/theme-previews)
+for installation, activation, precedence, and compatibility details.
+
 ## API
 
 <ApiTable tag="rc-combobox" />

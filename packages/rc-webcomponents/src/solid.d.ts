@@ -446,6 +446,12 @@ declare module 'solid-js' {
         'on:rc-preview-change'?: (e: CustomEvent<{ preview: boolean }>) => void;
       };
 
+      'rc-fab': JSX.HTMLAttributes<HTMLElement> & {
+        variant?: 'regular' | 'extended';
+        label?: string;
+        disabled?: boolean | string;
+      };
+
       'rc-app-bar': JSX.HTMLAttributes<RCAppBarRef> & {
         variant?: 'compact' | 'expanded';
         'scroll-behavior'?: 'pinned' | 'collapse' | 'hide';

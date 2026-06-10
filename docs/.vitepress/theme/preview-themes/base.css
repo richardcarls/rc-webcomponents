@@ -1,3 +1,4 @@
+@layer rc-theme-preview.base {
 :host {
   --rc-surface: Canvas;
   --rc-field: Field;
@@ -51,7 +52,7 @@
   gap: 1rem;
   padding: 1rem;
   border: var(--rc-border);
-  border-radius: calc(var(--rc-control-radius) + 0.25rem);
+  border-radius: var(--rc-radius-md, calc(var(--rc-control-radius) + 0.25rem));
   background: var(--rc-surface);
   color: var(--rc-field-text);
   box-shadow: var(--rc-shadow);
@@ -87,9 +88,18 @@
   align-items: start;
 }
 
+.preview-gallery {
+  display: grid;
+  gap: 1rem;
+}
+
 .preview-field {
   display: grid;
   gap: 0.35rem;
+}
+
+.preview-field-wide {
+  grid-column: 1 / -1;
 }
 
 .preview-label {
@@ -187,6 +197,39 @@ rc-toolbar {
   font: inherit;
 }
 
+.preview-splitter {
+  inline-size: 100%;
+  block-size: 7rem;
+}
+
+.preview-splitter > div {
+  display: grid;
+  place-items: center;
+}
+
+.preview-canvas {
+  inline-size: 100%;
+  block-size: 7rem;
+}
+
+.preview-canvas canvas {
+  background:
+    linear-gradient(135deg, var(--rc-field), var(--rc-surface));
+}
+
+.preview-canvas [slot="overlay"] {
+  display: inline-block;
+  margin: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--rc-surface);
+  color: var(--rc-field-text);
+}
+
+rc-dialog > dialog[open] {
+  position: static;
+  margin: 0;
+}
+
 rc-select {
   inline-size: 100%;
 }
@@ -237,4 +280,5 @@ rc-listbox [part~="option"] {
 rc-listbox [part~="option"][aria-selected="true"] {
   background: var(--rc-highlight);
   color: var(--rc-highlight-text);
+}
 }

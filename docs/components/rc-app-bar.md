@@ -128,16 +128,18 @@ accessible in every visual state.
 to collapse progress without intercepting or rewriting scroll.
 
 <ClientOnly>
-<div class="app-bar-frame">
-  <header>
-    <rc-app-bar variant="expanded" scroll-behavior="collapse" scroll-target="#docs-collapse-scroll">
-      <button slot="leading" aria-label="Back">&larr;</button>
-      <div class="title-stack"><strong>Slow-Roasted Tomato Pasta</strong><small>Summer recipes</small></div>
-      <button slot="trailing">Edit</button>
-    </rc-app-bar>
-  </header>
-  <div class="app-bar-scroll" id="docs-collapse-scroll">
-    <article><p>Scroll to collapse the title.</p><p style="block-size: 40rem"></p></article>
+<div class="demo-section">
+  <div class="app-bar-frame">
+    <header>
+      <rc-app-bar variant="expanded" scroll-behavior="collapse" scroll-target="#docs-collapse-scroll">
+        <button slot="leading" aria-label="Back">&larr;</button>
+        <div class="title-stack"><strong>Slow-Roasted Tomato Pasta</strong><small>Summer recipes</small></div>
+        <button slot="trailing">Edit</button>
+      </rc-app-bar>
+    </header>
+    <div class="app-bar-scroll" id="docs-collapse-scroll">
+      <article><p>Scroll to collapse the title.</p><p style="block-size: 40rem"></p></article>
+    </div>
   </div>
 </div>
 </ClientOnly>
@@ -168,15 +170,17 @@ leading and trailing controls have different widths. Title and center content
 may coexist; the title is constrained before overlap.
 
 <ClientOnly>
-<div class="app-bar-frame">
-  <rc-app-bar>
-    <button slot="leading">Back to all recipes</button>
-    <span>Recipes</span>
-    <rc-search-bar slot="center" placeholder="Search recipes">
-      <input type="search" aria-label="Search recipes" />
-    </rc-search-bar>
-    <button slot="trailing">Me</button>
-  </rc-app-bar>
+<div class="demo-section">
+  <div class="app-bar-frame">
+    <rc-app-bar>
+      <button slot="leading">Back to all recipes</button>
+      <span>Recipes</span>
+      <rc-search-bar slot="center" placeholder="Search recipes">
+        <input type="search" aria-label="Search recipes" />
+      </rc-search-bar>
+      <button slot="trailing">Me</button>
+    </rc-app-bar>
+  </div>
 </div>
 </ClientOnly>
 
@@ -202,15 +206,17 @@ snaps to compact and `false` restores expanded. Assign `undefined` to release
 control back to observation.
 
 <ClientOnly>
-<div class="app-bar-frame">
-  <rc-app-bar id="docs-controlled-bar" variant="expanded" scroll-behavior="collapse">
-    <span>Controlled title</span>
-  </rc-app-bar>
-</div>
-<div class="demo-row" style="margin-top:0.75em;">
-  <button @click="setScrolled(true)">compact endpoint</button>
-  <button @click="setScrolled(false)">expanded endpoint</button>
-  <button @click="setScrolled(undefined)">release</button>
+<div class="demo-section">
+  <div class="app-bar-frame">
+    <rc-app-bar id="docs-controlled-bar" variant="expanded" scroll-behavior="collapse">
+      <span>Controlled title</span>
+    </rc-app-bar>
+  </div>
+  <div class="demo-row" style="margin-top:0.75em;">
+    <button @click="setScrolled(true)">compact endpoint</button>
+    <button @click="setScrolled(false)">expanded endpoint</button>
+    <button @click="setScrolled(undefined)">release</button>
+  </div>
 </div>
 </ClientOnly>
 
@@ -221,12 +227,14 @@ Do not put `view-transition-name` on `::part(title)` or the shadow-owned slot
 wrapper. Give every concurrently rendered title a unique name.
 
 <ClientOnly>
-<div class="app-bar-frame">
-  <rc-app-bar id="docs-transition-bar" variant="expanded" scroll-behavior="collapse">
-    <span class="docs-transition-title">Transitioned title</span>
-  </rc-app-bar>
+<div class="demo-section">
+  <div class="app-bar-frame">
+    <rc-app-bar id="docs-transition-bar" variant="expanded" scroll-behavior="collapse">
+      <span class="docs-transition-title">Transitioned title</span>
+    </rc-app-bar>
+  </div>
+  <p><button @click="transitionTitle()">Toggle with View Transition</button></p>
 </div>
-<p><button @click="transitionTitle()">Toggle with View Transition</button></p>
 </ClientOnly>
 
 ```css
@@ -267,6 +275,12 @@ are global and may conflict with navigation or unrelated components.
 - All controls and action icons are consumer-supplied.
 - The `scroll-shadow` part defaults to a `GrayText` divider. Consumers may
   replace it with a shadow.
+- Read `collapsed` to distinguish the fully collapsed endpoint from intermediate
+  collapse progress. The live progress is exposed to CSS through the read-only
+  `--rc-app-bar-collapse-progress` custom property.
+- Use `--rc-app-bar-title-font-size` and
+  `--rc-app-bar-expanded-title-font-size` for opt-in title typography, and
+  `--rc-app-bar-scroll-divider` to replace the default scrolled divider.
 - Consumers may style `root` with translucent backgrounds and
   `backdrop-filter` for a glass presentation.
 - Motion is disabled under `prefers-reduced-motion: reduce`.
@@ -279,6 +293,13 @@ are global and may conflict with navigation or unrelated components.
 - Remove `slot="expanded-title"` and keep one title in the default slot.
 - Replace old fixed Material size/font tokens and `title-row`/`expanded`
   parts with the structural API below.
+
+## Material bridge
+
+`@rcarls/rc-theme-material` maps M3 top-app-bar surface, title typography,
+height, spacing, and scrolled-state roles into this component. The mapping is a
+styling approximation and does not impose Material structure or behavior. See
+[Theme previews](/guide/theme-previews) for integration details.
 
 ## API
 

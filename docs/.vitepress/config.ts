@@ -7,7 +7,8 @@ export default {
   vue: {
     template: {
       compilerOptions: {
-        isCustomElement: (tag) => tag.startsWith('rc-') || tag === 'theme-preview',
+        isCustomElement: (tag) =>
+          tag.startsWith('rc-') || tag === 'theme-preview' || tag === 'search',
       },
     },
   },
@@ -58,6 +59,7 @@ export default {
         text: 'Build command surfaces',
         items: [
           { text: 'rc-app-bar', link: '/components/rc-app-bar' },
+          { text: 'rc-fab', link: '/components/rc-fab' },
           { text: 'rc-menu', link: '/components/rc-menu' },
           { text: 'rc-menu-button', link: '/components/rc-menu-button' },
           { text: 'rc-menubar', link: '/components/rc-menubar' },

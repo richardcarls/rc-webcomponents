@@ -1,0 +1,31 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-toolbar::part(root) {
+    background: var(--md-sys-color-surface-container, Canvas);
+    color: var(--md-sys-color-on-surface, CanvasText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-toolbar > button {
+    min-inline-size: 2.5rem;
+    min-block-size: 2.5rem;
+    padding: 0.5rem;
+    border: 0;
+    border-radius: var(--md-sys-shape-corner-full, 999px);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    transition: background-color 150ms ease;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-toolbar > button:hover {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-toolbar > button[aria-pressed='true'] {
+    background: var(--md-sys-color-secondary-container, Highlight);
+    color: var(--md-sys-color-on-secondary-container, HighlightText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-toolbar > button:disabled {
+    opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
+  }
+}

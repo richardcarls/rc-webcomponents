@@ -1,0 +1,13 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-virtual-canvas {
+    --rc-virtual-canvas-scrollbar-width: thin;
+    --rc-virtual-canvas-scrollbar-size: 0.75rem;
+    --rc-virtual-canvas-scrollbar-thumb-background: var(--md-sys-color-outline, ButtonFace);
+    --rc-virtual-canvas-scrollbar-track-background: var(--md-sys-color-surface-container, Canvas);
+    --rc-virtual-canvas-scrollbar-button-background: var(--md-sys-color-surface-container-high, ButtonFace);
+    border-radius: var(--md-sys-shape-corner-medium, 0.75rem);
+    background: var(--md-sys-color-surface-container-low, Canvas);
+    box-shadow: inset 0 0 0 1px var(--md-sys-color-outline-variant, ButtonBorder);
+    overflow: hidden;
+  }
+}

@@ -2,6 +2,7 @@ import '@rcarls/rc-app-bar/define';
 import '@rcarls/rc-combobox/define';
 import '@rcarls/rc-dialog/define';
 import '@rcarls/rc-disclosure/define';
+import '@rcarls/rc-fab/define';
 import '@rcarls/rc-accordion/define';
 import '@rcarls/rc-listbox/define';
 import '@rcarls/rc-menubar/define';

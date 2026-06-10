@@ -45,10 +45,7 @@ onMounted(async () => {
 <style scoped>
 /* ── Base demo layout ────────────────────────────────────────────────────── */
 .demo-wrap {
-  padding: 1.25rem;
-  background: var(--vp-c-bg-soft);
-  border-radius: 0.5rem;
-  margin-block: 1rem;
+  display: block;
 }
 
 .demo-wrap rc-search-bar {
@@ -271,7 +268,7 @@ followed immediately by an empty `rc-search-bar-input`, and returns focus to
 the input.
 
 <ClientOnly>
-<div class="demo-wrap" id="demo-basic">
+<div class="demo-section demo-wrap" id="demo-basic">
   <search aria-label="Recipe search">
     <rc-search-bar placeholder="Search recipes">
       <span slot="leading" aria-hidden="true">&#128269;</span>
@@ -318,7 +315,7 @@ icons `aria-hidden="true"` — the input's accessible name comes from its label,
 not this slot.
 
 <ClientOnly>
-<div class="demo-wrap" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
+<div class="demo-section demo-wrap" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
   <search style="flex:1; min-inline-size:12rem;">
     <rc-search-bar placeholder="With icon">
       <span slot="leading" aria-hidden="true">&#128269;</span>
@@ -355,7 +352,7 @@ filter toggle. Controls placed here remain accessible via keyboard and are
 announced by screen readers.
 
 <ClientOnly>
-<div class="demo-wrap" id="demo-trailing">
+<div class="demo-section demo-wrap" id="demo-trailing">
   <search aria-label="Search with voice">
     <rc-search-bar placeholder="Search or dictate">
       <span slot="leading" aria-hidden="true">&#128269;</span>
@@ -394,7 +391,7 @@ component, or text character. The slot content replaces only the glyph; the
 always provided by the component.
 
 <ClientOnly>
-<div class="demo-wrap" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
+<div class="demo-section demo-wrap" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
   <search style="flex:1; min-inline-size:12rem;">
     <rc-search-bar placeholder="Default ✕">
       <span slot="leading" aria-hidden="true">&#128269;</span>
@@ -426,7 +423,7 @@ The input stays in light DOM, so every native labeling strategy works without
 any ARIA wiring from the component.
 
 <ClientOnly>
-<div class="demo-wrap" style="display:flex; flex-direction:column; gap:1.25rem;">
+<div class="demo-section demo-wrap" style="display:flex; flex-direction:column; gap:1.25rem;">
   <!-- label[for] -->
   <div>
     <div class="variant-label" style="margin-bottom:0.4rem;">label[for] + id</div>
@@ -501,7 +498,7 @@ The `rc-search-bar-clear` event fires even when the value is empty, so the host
 can dismiss a search overlay or blur the input.
 
 <ClientOnly>
-<div class="demo-wrap" id="demo-cancel">
+<div class="demo-section demo-wrap" id="demo-cancel">
   <div style="display:flex; gap:1rem; flex-wrap:wrap;">
     <div style="flex:1; min-inline-size:12rem;">
       <div class="variant-label" style="margin-bottom:0.4rem;">Default (clear on value)</div>
@@ -555,7 +552,7 @@ aesthetic. Customize via CSS custom properties on the host and `::part()`
 selectors on shadow parts.
 
 <ClientOnly>
-<div class="variant-grid">
+<div class="demo-section variant-grid">
 
   <div class="variant">
     <span class="variant-label">Bare default</span>
@@ -732,7 +729,7 @@ your token set diverges from the OS scheme:
   interaction always dispatches events normally.
 
 <ClientOnly>
-<div class="demo-wrap">
+<div class="demo-section demo-wrap">
   <div id="demo-controlled">
     <search aria-label="Controlled search">
       <rc-search-bar id="bar-controlled" debounce="0" placeholder="Controlled search">
@@ -775,7 +772,7 @@ The `debounce` attribute sets the delay in milliseconds before
 `debounce="0"` to fire on every keystroke.
 
 <ClientOnly>
-<div class="demo-wrap" style="display:flex; gap:1rem; flex-wrap:wrap;">
+<div class="demo-section demo-wrap" style="display:flex; gap:1rem; flex-wrap:wrap;">
   <div style="flex:1; min-inline-size:12rem;">
     <div class="variant-label" style="margin-bottom:0.4rem;">debounce="0" (immediate)</div>
     <search>
@@ -820,7 +817,7 @@ button. The component mirrors the attribute to the slotted input; a
 changes independently.
 
 <ClientOnly>
-<div class="demo-wrap" style="display:flex; gap:1rem; flex-wrap:wrap;">
+<div class="demo-section demo-wrap" style="display:flex; gap:1rem; flex-wrap:wrap;">
   <search style="flex:1; min-inline-size:12rem;">
     <rc-search-bar disabled placeholder="Disabled, no value">
       <span slot="leading" aria-hidden="true">&#128269;</span>
@@ -851,6 +848,13 @@ rc-search-bar[disabled] {
   cursor: not-allowed;
 }
 ```
+
+## Material bridge
+
+`@rcarls/rc-theme-material` maps M3 search-container, input, icon, size, shape,
+and system color roles into this component. The mapping follows M3 terminology
+because Material Web does not currently ship an equivalent search-bar element.
+See [Theme previews](/guide/theme-previews) for integration details.
 
 ## API
 

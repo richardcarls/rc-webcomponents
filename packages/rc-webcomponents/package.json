@@ -46,6 +46,7 @@
     "@rcarls/rc-combobox": "workspace:^",
     "@rcarls/rc-dialog": "workspace:^",
     "@rcarls/rc-disclosure": "workspace:^",
+    "@rcarls/rc-fab": "workspace:^",
     "@rcarls/rc-listbox": "workspace:^",
     "@rcarls/rc-markdown-editor": "workspace:^",
     "@rcarls/rc-menu": "workspace:^",

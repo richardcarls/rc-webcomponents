@@ -1,6 +1,6 @@
 import baseCss from '../preview-themes/base.css?raw';
 import noneCss from '../preview-themes/none.css?raw';
-import materialCss from '../preview-themes/material.css?raw';
+import materialCss from '@rcarls/rc-theme-material/theme.css?inline';
 import iosCss from '../preview-themes/ios.css?raw';
 import fluentCss from '../preview-themes/fluent.css?raw';
 import carbonCss from '../preview-themes/carbon.css?raw';
@@ -20,7 +20,7 @@ const themeCss: Record<PreviewTheme, string> = {
 
 const themeLabels: Record<PreviewTheme, string> = {
   none: 'Default component appearance',
-  material: 'Material-inspired',
+  material: 'Material 3 full style layer',
   ios: 'iOS-inspired',
   fluent: 'Fluent-inspired',
   carbon: 'Carbon-inspired',
@@ -90,6 +90,7 @@ export class ThemePreview extends HTMLElement {
   private _setTheme(theme: PreviewTheme) {
     if (theme === this._theme) return;
     this._theme = theme;
+    this.classList.toggle('rc-theme-material', theme === 'material');
     this._applySheets();
     const label = this._root.querySelector('[data-preview-label]');
     if (label) label.textContent = themeLabels[theme];
@@ -109,6 +110,7 @@ export class ThemePreview extends HTMLElement {
   }
 
   private _render() {
+    this.classList.toggle('rc-theme-material', this._theme === 'material');
     this._root.innerHTML = `
       <style data-preview-fallback></style>
       <div class="preview-shell">
@@ -159,7 +161,115 @@ export class ThemePreview extends HTMLElement {
               <button type="button">Link</button>
             </rc-toolbar>
           </div>
+
+          <label class="preview-field">
+            <span class="preview-label">Search</span>
+            <rc-search-bar>
+              <input type="search" value="Seasonal soup" aria-label="Search recipes">
+            </rc-search-bar>
+          </label>
+
+          <label class="preview-field">
+            <span class="preview-label">Ingredients</span>
+            <rc-combobox placeholder="Add ingredient">
+              <select slot="select" multiple aria-label="Ingredients">
+                <option selected>Carrot</option>
+                <option selected>Ginger</option>
+                <option>Garlic</option>
+              </select>
+            </rc-combobox>
+          </label>
         </div>
+
+        <section class="preview-gallery" aria-label="Material component state gallery">
+          <rc-app-bar data-scrolled>
+            <button slot="leading" type="button" aria-label="Back">‹</button>
+            <strong slot="title">Recipe Tome</strong>
+            <button slot="trailing" type="button" aria-label="Favorite">♡</button>
+          </rc-app-bar>
+
+          <div class="preview-grid">
+            <div class="preview-field">
+              <span class="preview-label">Menu and menubar</span>
+              <rc-menubar label="Recipe actions">
+                <rc-menu-button>
+                  <button slot="trigger" type="button">File</button>
+                  <rc-menu label="File">
+                    <button type="button">New recipe</button>
+                    <button type="button" disabled>Import</button>
+                  </rc-menu>
+                </rc-menu-button>
+              </rc-menubar>
+              <rc-menu label="Example menu">
+                <button type="button">Edit</button>
+                <button type="button" aria-current="true">Preview</button>
+                <button type="button" disabled>Publish</button>
+              </rc-menu>
+            </div>
+
+            <div class="preview-field">
+              <span class="preview-label">Disclosure and accordion</span>
+              <rc-accordion>
+                <rc-disclosure open>
+                  <details open><summary>Details</summary><p>Material surface content.</p></details>
+                </rc-disclosure>
+                <rc-disclosure>
+                  <details><summary>Nutrition</summary><p>Nutrition details.</p></details>
+                </rc-disclosure>
+              </rc-accordion>
+            </div>
+
+            <div class="preview-field">
+              <span class="preview-label">Textarea</span>
+              <rc-textarea label="Notes" line-numbers>
+                <textarea>Simmer until tender.</textarea>
+              </rc-textarea>
+            </div>
+
+            <div class="preview-field preview-field-wide">
+              <span class="preview-label">Markdown editor</span>
+              <rc-markdown-editor label="Recipe description">
+                <textarea># Carrot soup</textarea>
+              </rc-markdown-editor>
+            </div>
+
+            <div class="preview-field preview-field-wide">
+              <span class="preview-label">Transfer list</span>
+              <rc-transfer-list multiple>
+                <select multiple aria-label="Recipe sections">
+                  <option>Breakfast</option>
+                  <option selected>Dinner</option>
+                  <option>Dessert</option>
+                </select>
+              </rc-transfer-list>
+            </div>
+
+            <div class="preview-field">
+              <span class="preview-label">Splitter</span>
+              <rc-splitter class="preview-splitter" label="Preview panes">
+                <div>Recipe</div>
+                <div slot="secondary">Notes</div>
+              </rc-splitter>
+            </div>
+
+            <div class="preview-field">
+              <span class="preview-label">Virtual canvas</span>
+              <rc-virtual-canvas class="preview-canvas">
+                <canvas width="320" height="160"></canvas>
+                <span slot="overlay">Scrollable surface</span>
+              </rc-virtual-canvas>
+            </div>
+          </div>
+
+          <rc-dialog>
+            <dialog open aria-label="Material dialog preview">
+              <h3>Save recipe?</h3>
+              <p>This light-DOM dialog demonstrates the Material container treatment.</p>
+              <button type="button">Cancel</button>
+              <button type="button">Save</button>
+            </dialog>
+          </rc-dialog>
+        </section>
       </div>
     `;
   }

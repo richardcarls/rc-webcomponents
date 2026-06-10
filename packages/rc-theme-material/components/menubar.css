@@ -1,0 +1,9 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menubar::part(root) {
+    box-shadow: var(--md-sys-elevation-level0, none);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menubar rc-menu-button > :is(button, [role='button'])[slot='trigger'] {
+    padding-inline: 1rem;
+  }
+}
