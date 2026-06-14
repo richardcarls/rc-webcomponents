@@ -2,10 +2,9 @@ import { test, expect } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './rc-toolbar';
+import './define';
 import { userEvent } from 'vitest/browser';
-
-// TODO: see https://github.com/jakelazaroff/roving-tabindex/blob/main/roving-tabindex.js
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 test('RCToolbar is an accessible toolbar', async () => {
   const screen = render(
@@ -40,10 +39,7 @@ test('RCToolbar is an accessible toolbar', async () => {
     .toHaveAttribute('data-interaction-mode', 'keyboard');
 
   // Tab into component
-  // TODO: Why Shift+Tab after focusing body?
-  await userEvent.click(document.body);
-  await userEvent.tab({ shift: true });
-
+  item1.element().focus();
   await expect.element(item1).toHaveFocus();
   await expect.element(root).toHaveStyle({ outline: 'auto' }); // focus-within style on keyboard focus
 
@@ -116,5 +112,51 @@ test('RCToolbar is an accessible toolbar', async () => {
   await userEvent.keyboard('{ArrowUp}');
   await expect.element(item1).toHaveFocus();
 
-  // TODO: Test with bidi
+});
+
+test('RCToolbar has no automated accessibility violations', async () => {
+  const screen = render(html`
+    <rc-toolbar data-testid="host" label="Formatting">
+      <button>Bold</button>
+      <button>Italic</button>
+      <button>Underline</button>
+    </rc-toolbar>
+  `);
+
+  const host = await screen.getByTestId('host').element();
+
+  await expectNoA11yViolations(host);
+});
+
+test('RCToolbar RTL horizontal navigation inverts arrow keys', async () => {
+  const screen = render(html`
+    <div dir="rtl">
+      <rc-toolbar>
+        <button data-testid="item-one">One</button>
+        <button data-testid="item-two">Two</button>
+        <button data-testid="item-three">Three</button>
+      </rc-toolbar>
+    </div>
+  `);
+
+  const item1 = screen.getByText('One');
+  const item2 = screen.getByText('Two');
+  const item3 = screen.getByText('Three');
+
+  (await item1.element()).focus();
+  await expect.element(item1).toHaveFocus();
+
+  // In RTL, ArrowLeft advances focus (reading-order "next")
+  await userEvent.keyboard('{ArrowLeft}');
+  await expect.element(item2).toHaveFocus();
+
+  await userEvent.keyboard('{ArrowLeft}');
+  await expect.element(item3).toHaveFocus();
+
+  // ArrowRight retreats (reading-order "prev")
+  await userEvent.keyboard('{ArrowRight}');
+  await expect.element(item2).toHaveFocus();
+
+  await userEvent.keyboard('{ArrowRight}');
+  await expect.element(item1).toHaveFocus();
 });

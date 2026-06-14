@@ -1,54 +1,14 @@
 import { LitElement, html } from 'lit';
-import { customElement, property, state, query } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 
 import {
+  isFocusable,
   keyNavigation,
   type KeyboardNavigationAction,
+  RovingTabIndexMixin,
 } from '@rcarls/rc-common';
 
 import toolbarStyles from './rc-toolbar.styles';
-
-type FocusableElement =
-  | HTMLAnchorElement
-  | HTMLAreaElement
-  | HTMLButtonElement
-  | HTMLInputElement
-  | HTMLTextAreaElement
-  | HTMLSelectElement;
-
-/** Returns true for focusable Elements */
-function isFocusable(el?: Element | null): el is FocusableElement {
-  if (el == null) {
-    return false;
-  }
-
-  if (el.hasAttribute('disabled')) {
-    return false;
-  }
-
-  if (
-    (el instanceof HTMLAnchorElement || el instanceof HTMLAreaElement) &&
-    el.hasAttribute('href')
-  ) {
-    return true;
-  }
-
-  if (
-    el instanceof HTMLButtonElement ||
-    el instanceof HTMLInputElement ||
-    el instanceof HTMLTextAreaElement ||
-    el instanceof HTMLSelectElement
-  ) {
-    return true;
-  }
-
-  if (el.hasAttribute('tabindex')) {
-    // TODO: Can't check if >= 0 since we modify tabindex
-    return true;
-  }
-
-  return false;
-}
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -61,9 +21,13 @@ declare global {
  *
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/
  * @slot Takes any number of child elements to display in the toolbar. Only focusable elements are navigable.
+ * @cssprop [--rc-toolbar-gap-inline=0.25em] - Gap between toolbar items
+ * @cssprop [--rc-toolbar-padding-inline=calc(var(--rc-control-padding-inline) / 2)] - Horizontal padding on the toolbar container
+ * @cssprop [--rc-toolbar-padding-block=calc(var(--rc-control-padding-block) / 2)] - Vertical padding on the toolbar container
+ * @cssprop [--rc-toolbar-radius=var(--rc-control-radius)] - Toolbar container border radius
+ * @csspart root - The toolbar container element
  */
-@customElement('rc-toolbar')
-export class RCToolbar extends LitElement {
+export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   static styles = [toolbarStyles];
 
   /** Accessible label for this toolbar. Default label is 'Toolbar'. */
@@ -74,81 +38,40 @@ export class RCToolbar extends LitElement {
   @property({ type: String })
   orientation: 'horizontal' | 'vertical' = 'horizontal';
 
-  /** The last item to have focus. */
-  @state()
-  protected _lastFocused: FocusableElement | undefined;
-
   @query('#root', true)
   protected _$root!: HTMLDivElement;
 
-  /** Array of focusable slotted HTMLElements */
-  get items(): FocusableElement[] {
-    return this._items.map((ref) => ref.deref()).filter((el) => el != null);
+  private readonly _disabledObserver = new MutationObserver(() => this._syncTabStop());
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this._disabledObserver.observe(this, { attributeFilter: ['disabled'], subtree: true });
   }
 
-  private _items: WeakRef<FocusableElement>[] = [];
-
-  /** First focusable slotted HTMLElement */
-  get firstItem(): FocusableElement | undefined {
-    return this.items.at(0);
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._disabledObserver.disconnect();
   }
 
-  /** Last focusable slotted HTMLElement */
-  get lastItem(): FocusableElement | undefined {
-    return this.items.at(-1);
+  private _syncTabStop(): void {
+    if (!this._lastFocused || isFocusable(this._lastFocused)) return;
+    this._lastFocused = undefined;
+    this._initItems();
   }
 
-  /** Next focusable slotted HTMLElement, in tab-order */
-  get nextItem(): FocusableElement | undefined {
-    const index = this._lastFocused ? this.items.indexOf(this._lastFocused) : 0;
+  protected override _initItems() {
+    // Set tabindex synchronously so items are in the tab order immediately,
+    // even if the document has no focus yet (focus() would be a no-op).
+    super._initItems();
 
-    return this.items.at((index + 1) % this.items.length);
-  }
-
-  /** Previous focusable slotted HTMLElement, in tab-order */
-  get previousItem(): FocusableElement | undefined {
-    const index = this._lastFocused ? this.items.indexOf(this._lastFocused) : 0;
-
-    return this.items.at((index - 1) % this.items.length);
-  }
-
-  /** Set focus to a specific slotted HTMLElement */
-  focusItem(item?: FocusableElement | null) {
-    if (item != null) {
-      item.focus();
-    }
-  }
-
-  /** Set focus to a specific slotted HTMLElement */
-  focusItemAt(index: number) {
-    this.focusItem(this.items.at(index));
-  }
-
-  protected _handleItemFocus(e: FocusEvent) {
-    const $self = e.composedPath()[0] as FocusableElement;
-
-    this._lastFocused = $self;
-
-    // Set roving tab index
-    this.items.forEach((el) => el.setAttribute('tabindex', '-1'));
-    $self.setAttribute('tabindex', '0');
-  }
-
-  protected _onSlotChange(e: Event) {
-    // Reset tabindex on old items
-    // TODO: Restore original tabindex attribute?
-    this._items.forEach((ref) => {
-      const el = ref.deref();
-
-      el?.removeAttribute('tabindex');
+    // Defer focus to avoid firing focusin/focusout inside a SolidJS reactive
+    // update cycle, which can cause the update to hang.
+    // Guard: only restore focus when the toolbar already contains it — prevents
+    // focus-stealing when a toolbar mounts inside a larger component (e.g. rc-transfer-list).
+    const target = this._lastFocused ?? this.firstItem;
+    queueMicrotask(() => {
+      if (this.matches(':focus-within')) this.focusItem(target);
     });
-
-    this._items = (e.currentTarget as HTMLSlotElement)
-      .assignedElements()
-      .filter((el) => isFocusable(el))
-      .map((el) => new WeakRef(el));
-
-    this.focusItem(this._lastFocused ?? this.firstItem);
   }
 
   protected _onNavigate(action: KeyboardNavigationAction) {
@@ -168,10 +91,47 @@ export class RCToolbar extends LitElement {
     }
   }
 
+  protected override _collectItems(slot: HTMLSlotElement): Element[] {
+    return slot.assignedElements().filter((el) => this._isToolbarItem(el));
+  }
+
+  private _isToolbarItem(el: Element): boolean {
+    if (
+      el instanceof HTMLButtonElement ||
+      el instanceof HTMLInputElement ||
+      el instanceof HTMLSelectElement ||
+      el instanceof HTMLTextAreaElement
+    ) {
+      return true;
+    }
+
+    if (el instanceof HTMLAnchorElement || el instanceof HTMLAreaElement) {
+      return el.hasAttribute('href');
+    }
+
+    const role = el.getAttribute('role');
+    if (
+      role === 'button' ||
+      role === 'checkbox' ||
+      role === 'link' ||
+      role === 'menuitem' ||
+      role === 'radio' ||
+      role === 'slider' ||
+      role === 'spinbutton' ||
+      role === 'switch' ||
+      role === 'textbox'
+    ) {
+      return true;
+    }
+
+    return isFocusable(el);
+  }
+
   protected render() {
     return html`
       <div
         id="root"
+        part="root"
         ${keyNavigation(this._onNavigate)}
         data-interaction-mode="keyboard"
         role="toolbar"

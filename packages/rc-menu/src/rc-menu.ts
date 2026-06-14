@@ -1,0 +1,170 @@
+import { LitElement, html } from 'lit';
+import { property, query } from 'lit/decorators.js';
+
+import {
+  isFocusable,
+  keyNavigation,
+  type FocusableElement,
+  type KeyboardNavigationAction,
+  RovingTabIndexMixin,
+} from '@rcarls/rc-common';
+
+import menuStyles from './rc-menu.styles';
+
+export interface RCMenuActivateEvent {
+  item: HTMLElement;
+  value: string;
+  text: string;
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'rc-menu': RCMenu;
+  }
+}
+
+/** WAI-ARIA roles that are valid direct children of `role="menu"`. */
+const MENU_ITEM_ROLES = ['menuitem', 'menuitemcheckbox', 'menuitemradio'] as const;
+
+/**
+ * A menu component, as defined in WAI-ARIA
+ *
+ * @see https://www.w3.org/WAI/ARIA/apg/patterns/menu/
+ * @slot Takes any number of child elements to display in the menu. Only focusable elements are navigable.
+ * @fires rc-menu-activate - Fired when a menu item is activated via Enter or Space
+ * @fires rc-menu-close - Fired when Escape is pressed
+ * @cssprop [--rc-menu-min-width=10em] - Minimum width of the menu panel
+ * @cssprop [--rc-menu-padding-block=0.25em] - Block (top/bottom) padding inside the panel
+ * @cssprop [--rc-menu-background=Canvas] - Background color; falls back through --rc-surface
+ * @cssprop [--rc-menu-border=1px solid ButtonBorder] - Border; falls back through --rc-border
+ * @cssprop [--rc-menu-radius=var(--rc-control-radius)] - Menu panel border radius
+ * @cssprop [--rc-menu-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Box shadow; falls back through --rc-shadow
+ * @cssprop [--rc-menu-item-padding-block=var(--rc-item-padding-block)] - Menu item block-axis padding
+ * @cssprop [--rc-menu-item-padding-inline=var(--rc-item-padding-inline)] - Menu item inline-axis padding
+ * @cssprop [--rc-menu-item-gap=var(--rc-item-gap)] - Gap between icon and text content in flex menu items
+ * @cssprop [--rc-menu-icon-size=1.2em] - Size clamp for direct slotted icon media
+ * @cssprop [--rc-menu-disabled-color=GrayText] - Disabled menu item text color
+ * @cssprop [--rc-menu-disabled-opacity=var(--rc-disabled-opacity)] - Disabled menu item opacity
+ * @cssprop [--rc-menu-separator-border=var(--rc-border)] - Separator border
+ * @cssprop [--rc-menu-separator-margin-block=var(--rc-control-gap)] - Separator block-axis margin
+ * @csspart root - The root container element
+ */
+export class RCMenu extends RovingTabIndexMixin(LitElement) {
+  static styles = [menuStyles];
+
+  /** Accessible label for this menu. */
+  @property({ type: String })
+  label = '';
+
+  @query('#root', true)
+  protected _$root!: HTMLDivElement;
+
+  /**
+   * Collects navigable menu items from the slot, supporting `role="group"`
+   * containers and skipping `role="separator"` elements.
+   *
+   * Direct focusable children are included as-is. Elements with
+   * `role="group"` are traversed one level deep so their focusable children
+   * participate in arrow-key navigation. Separators and non-focusable
+   * container elements are excluded.
+   */
+  protected override _collectItems(slot: HTMLSlotElement): FocusableElement[] {
+    const items: FocusableElement[] = [];
+
+    for (const el of slot.assignedElements()) {
+      const role = el.getAttribute('role');
+
+      if (role === 'separator') continue;
+
+      if (role === 'group') {
+        for (const child of el.children) {
+          if (isFocusable(child)) items.push(child as FocusableElement);
+        }
+        continue;
+      }
+
+      if (isFocusable(el)) items.push(el as FocusableElement);
+    }
+
+    return items;
+  }
+
+  protected override _initItems() {
+    super._initItems(); // sets tabindex 0/−1
+
+    this.items.forEach((el) => {
+      const existingRole = el.getAttribute('role');
+
+      // Preserve explicit WAI-ARIA menu item roles set by the consumer.
+      // Only assign the menuitem default when no valid role is present.
+      if (!existingRole || !MENU_ITEM_ROLES.includes(existingRole as typeof MENU_ITEM_ROLES[number])) {
+        el.setAttribute('role', 'menuitem');
+      }
+    });
+  }
+
+  protected _onNavigate(action: KeyboardNavigationAction) {
+    switch (action) {
+      case 'next':
+        this.focusItem(this.nextItem);
+        break;
+      case 'prev':
+        this.focusItem(this.previousItem);
+        break;
+      case 'start':
+        this.focusItem(this.firstItem);
+        break;
+      case 'end':
+        this.focusItem(this.lastItem);
+        break;
+      case 'activate':
+        if (this._lastFocused) {
+          this._lastFocused.click();
+          this.dispatchEvent(
+            new CustomEvent<RCMenuActivateEvent>('rc-menu-activate', {
+              bubbles: true,
+              composed: true,
+              detail: {
+                item: this._lastFocused,
+                value: this._lastFocused.dataset.value ?? this._lastFocused.getAttribute('value') ?? '',
+                text: this._lastFocused.textContent?.trim() ?? '',
+              },
+            }),
+          );
+        }
+        break;
+      case 'escape':
+        this.dispatchEvent(
+          new CustomEvent('rc-menu-close', {
+            bubbles: true,
+            composed: true,
+            detail: { reason: 'escape' },
+          }),
+        );
+        break;
+    }
+  }
+
+  protected render() {
+    return html`
+      <div
+        id="root"
+        part="root"
+        ${keyNavigation(this._onNavigate, {
+          handleEscape: true,
+          handleActivate: true,
+        })}
+        data-interaction-mode="keyboard"
+        role="menu"
+        aria-label=${this.label}
+        tabindex="-1"
+      >
+        <div id="slot-wrap" @focusin=${this._handleItemFocus}>
+          <slot id="items" @slotchange=${this._onSlotChange}></slot>
+        </div>
+      </div>
+    `;
+  }
+}
+
+export default RCMenu;

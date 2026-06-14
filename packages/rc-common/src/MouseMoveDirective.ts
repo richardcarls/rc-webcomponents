@@ -4,13 +4,19 @@ import { PartType, type PartInfo, type ElementPart } from 'lit/directive.js';
 
 import { directive, AsyncDirective } from 'lit/async-directive.js';
 
+/**
+ * Lit element directive that invokes a callback during an active pointer drag.
+ *
+ * The exported name remains `mouseMove` for compatibility, but the directive
+ * listens to Pointer Events so mouse, touch, and pen input share the same path.
+ */
 class MouseMoveDirective extends AsyncDirective {
-  private _element?: WeakRef<Element>;
-  private _mouseDownHandle!: (evt: MouseEvent) => void;
-  private _mouseMoveHandle!: (evt: MouseEvent) => void;
-  private _mouseUpLeaveHandle!: (evt: MouseEvent) => void;
+  private _element?: WeakRef<HTMLElement>;
+  private readonly _pointerDownHandle: (evt: PointerEvent) => void;
+  private readonly _pointerMoveHandle: (evt: PointerEvent) => void;
+  private readonly _pointerEndHandle: (evt: PointerEvent) => void;
   private _callback!: (evt: MouseEvent) => void;
-  private _isDragging: boolean = false;
+  private _activePointerId: number | null = null;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -18,77 +24,101 @@ class MouseMoveDirective extends AsyncDirective {
     if (partInfo.type !== PartType.ELEMENT) {
       throw new Error('The `mouseMove` directive must be used on an element.');
     }
+
+    this._pointerDownHandle = this._onPointerDown.bind(this);
+    this._pointerMoveHandle = this._onPointerMove.bind(this);
+    this._pointerEndHandle = this._onPointerEnd.bind(this);
   }
 
-  protected _onMouseDown(evt: MouseEvent) {
+  /** Start a pointer drag cycle on the directive-decorated element. */
+  protected _onPointerDown(evt: PointerEvent): void {
+    if (this._activePointerId !== null) return;
+
     evt.preventDefault();
 
     const el = evt.currentTarget as HTMLElement;
-    // const parent = (el.parentElement ?? globalThis.window) as HTMLElement;
-    const parent = globalThis.window;
+    this._activePointerId = evt.pointerId;
 
-    parent.addEventListener('mousemove', this._mouseMoveHandle);
-    parent.addEventListener('mouseup', this._mouseUpLeaveHandle);
-    parent.addEventListener('mouseleave', this._mouseUpLeaveHandle);
-
+    this._capturePointer(el, evt.pointerId);
+    el.addEventListener('pointermove', this._pointerMoveHandle);
+    el.addEventListener('pointerup', this._pointerEndHandle);
+    el.addEventListener('pointercancel', this._pointerEndHandle);
+    el.addEventListener('lostpointercapture', this._pointerEndHandle);
     el.focus();
-
-    // if ('ontouchstart' in window) {
-    //   this.$elem.addEventListener('touchstart',this._onTouchStart, false);
-    //   this.$elem.addEventListener('touchend',this._onTouchEnd, false);
-    //   this.$elem.addEventListener('touchcancel',this._onTouchEnd, false);
-    // }
   }
 
-  protected _onMouseMove(evt: MouseEvent) {
+  /** Forward pointer movement during an active drag cycle. */
+  protected _onPointerMove(evt: PointerEvent): void {
+    if (evt.pointerId !== this._activePointerId) return;
+
     evt.preventDefault();
-
-    if (!this._isDragging) {
-      this._isDragging = true;
-    }
-
     this._callback(evt);
   }
 
-  protected _onMouseUp(evt: MouseEvent) {
+  /** Finish the active pointer drag cycle and remove temporary listeners. */
+  protected _onPointerEnd(evt: PointerEvent): void {
+    if (evt.pointerId !== this._activePointerId) return;
+
     evt.preventDefault();
 
-    const parent = evt.currentTarget as HTMLElement;
-
-    parent.removeEventListener('mousemove', this._mouseMoveHandle);
-    parent.removeEventListener('mouseup', this._mouseUpLeaveHandle);
-    parent.removeEventListener('mouseleave', this._mouseUpLeaveHandle);
-
-    this._isDragging = false;
+    const el = evt.currentTarget as HTMLElement;
+    this._releasePointer(el, evt.pointerId);
+    this._removePointerCycleListeners(el);
+    this._activePointerId = null;
   }
 
-  protected _init() {
+  /** Attach the permanent pointerdown listener to the current element. */
+  protected _init(): void {
     const el = this._element?.deref();
 
-    if (el != null && el instanceof HTMLElement) {
-      this._mouseDownHandle = this._onMouseDown.bind(this);
-      this._mouseMoveHandle = this._onMouseMove.bind(this);
-      this._mouseUpLeaveHandle = this._onMouseUp.bind(this);
+    if (!el) return;
 
-      el.addEventListener('mousedown', this._mouseDownHandle);
+    el.removeEventListener('pointerdown', this._pointerDownHandle);
+    el.addEventListener('pointerdown', this._pointerDownHandle);
+  }
 
-      // if ('ontouchstart' in window) {
-      //   this._onTouchStart = this._onTouchStart.bind(this);
-      //   this._onTouchEnd = this._onTouchEnd.bind(this);
-      //   this._onTouchMove = this._onTouchMove.bind(this);
-      // }
+  /** Remove all listeners associated with the active drag cycle. */
+  private _removePointerCycleListeners(el: HTMLElement): void {
+    el.removeEventListener('pointermove', this._pointerMoveHandle);
+    el.removeEventListener('pointerup', this._pointerEndHandle);
+    el.removeEventListener('pointercancel', this._pointerEndHandle);
+    el.removeEventListener('lostpointercapture', this._pointerEndHandle);
+  }
+
+  private _capturePointer(el: HTMLElement, pointerId: number): void {
+    try {
+      el.setPointerCapture(pointerId);
+    } catch {
+      // Synthetic PointerEvents in browser tests may not have a real active pointer.
     }
   }
 
+  private _releasePointer(el: HTMLElement, pointerId: number): void {
+    try {
+      if (el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
+    } catch {
+      // Synthetic PointerEvents in browser tests may not have a real active pointer.
+    }
+  }
+
+  /** Render no DOM; this directive only wires pointer listeners. */
   render(_cb: (e: MouseEvent) => void) {
     return nothing;
   }
 
-  update(part: ElementPart, [cb]: Parameters<this['render']>) {
-    if (this.isConnected && this._element?.deref() === undefined) {
-      this._element = new WeakRef(part.element);
-      this._callback = cb.bind(part.options?.host ?? part.element);
+  override update(part: ElementPart, [cb]: Parameters<this['render']>) {
+    this._callback = cb.bind(part.options?.host ?? part.element);
 
+    if (!this.isConnected) return;
+    if (!(part.element instanceof HTMLElement)) return;
+
+    const el = this._element?.deref();
+
+    if (el !== part.element) {
+      el?.removeEventListener('pointerdown', this._pointerDownHandle);
+      if (el) this._removePointerCycleListeners(el);
+      this._activePointerId = null;
+      this._element = new WeakRef(part.element);
       this._init();
     }
   }
@@ -96,9 +126,11 @@ class MouseMoveDirective extends AsyncDirective {
   override disconnected(): void {
     const el = this._element?.deref();
 
-    if (el != null && el instanceof HTMLElement) {
-      el.removeEventListener('click', this._mouseDownHandle);
-    }
+    if (!el) return;
+
+    el.removeEventListener('pointerdown', this._pointerDownHandle);
+    this._removePointerCycleListeners(el);
+    this._activePointerId = null;
   }
 
   override reconnected(): void {
@@ -106,6 +138,11 @@ class MouseMoveDirective extends AsyncDirective {
   }
 }
 
+/**
+ * Wire pointer-drag movement to an element without rendering DOM.
+ *
+ * The callback receives the `PointerEvent` as a `MouseEvent`-compatible object.
+ */
 export const mouseMove = directive(MouseMoveDirective);
 export type { MouseMoveDirective };
 

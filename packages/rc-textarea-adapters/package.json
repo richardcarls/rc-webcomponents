@@ -1,0 +1,53 @@
+{
+  "name": "@rcarls/rc-textarea-adapters",
+  "private": true,
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-textarea-adapters"
+  },
+  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/rc-textarea-adapters.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/packages/rc-textarea-adapters/src/index.d.ts",
+        "default": "./dist/rc-textarea-adapters.js"
+      }
+    }
+  },
+  "types": "./dist/types/packages/rc-textarea-adapters/src/index.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc && vite build"
+  },
+  "dependencies": {
+    "@rcarls/rc-textarea": "workspace:^"
+  },
+  "peerDependencies": {
+    "@lezer/common": ">=1.0.0",
+    "shiki": ">=1.0.0",
+    "unified": ">=11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@lezer/common": {
+      "optional": true
+    },
+    "shiki": {
+      "optional": true
+    },
+    "unified": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4"
+  }
+}

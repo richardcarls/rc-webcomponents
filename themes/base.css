@@ -1,0 +1,68 @@
+/**
+ * themes/base.css
+ *
+ * Defines the rc-webcomponents semantic token set. All tokens fall back to
+ * CSS System Colors, so this file is optional — components work without it.
+ * Import this file (or override these tokens in :root) to integrate with
+ * your design system.
+ */
+:root {
+  /* Backgrounds */
+  --rc-surface:        Canvas;
+  --rc-field:          Field;
+  --rc-button-bg:      ButtonFace;
+
+  /* Text */
+  --rc-field-text:      FieldText;
+  --rc-button-text:     ButtonText;
+  --rc-highlight-text:  HighlightText;
+  --rc-text-disabled:   GrayText;
+
+  /* Interactive states */
+  --rc-highlight:      Highlight;
+  --rc-accent:         Highlight; /* Chrome doesn't support AccentColor on the open web */
+
+  /* Borders & decoration */
+  --rc-border-color:   ButtonBorder;
+  --rc-border-width:   1px;
+  --rc-border-style:   solid;
+  --rc-shadow:         0 2px 8px rgba(0, 0, 0, .15);
+
+  /* Typography */
+  --rc-font-family:    inherit;
+  --rc-font-size:      1em;
+  --rc-font-weight:    400;
+  --rc-line-height:    normal;
+
+  /* Control geometry */
+  --rc-control-block-size:     2.25em;
+  --rc-control-padding-block:  0.25em;
+  --rc-control-padding-inline: 0.5em;
+  --rc-control-gap:            0.25em;
+
+  /* Collection item geometry */
+  --rc-item-padding-block:     0.3em;
+  --rc-item-padding-inline:    0.75em;
+  --rc-item-gap:               0.4em;
+
+  /* Shape */
+  --rc-radius-sm:      0.125em;
+  --rc-radius-md:      0.25em;
+  --rc-control-radius: var(--rc-radius-sm);
+
+  /* Interaction feedback */
+  --rc-focus-ring:         auto;
+  --rc-focus-ring-offset:  0;
+  --rc-disabled-opacity:   0.5;
+  --rc-motion-duration:    120ms;
+
+  /* rc-menu / rc-splitter compat — these components already use --rc-border
+     as an intermediate token; this ensures it resolves to the same source. */
+  --rc-border:         var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
+}
+
+@supports (color: AccentColor) {
+  :root {
+    --rc-accent: AccentColor;
+  }
+}

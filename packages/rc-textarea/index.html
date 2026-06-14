@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc-textarea</title>
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
+    <script type="module" src="/src/define.ts"></script>
+    <!-- highlight.js UMD — must load before the module script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+      /* ── Catppuccin Mocha (dark, default) ────────────────────────────────── */
+      :root {
+        color-scheme: dark;
+        --base:     #1e1e2e;
+        --mantle:   #181825;
+        --crust:    #11111b;
+        --surface0: #313244;
+        --surface1: #45475a;
+        --surface2: #585b70;
+        --overlay0: #6c7086;
+        --text:     #cdd6f4;
+        --subtext0: #a6adc8;
+        --blue:     #89b4fa;
+        --mauve:    #cba6f7;
+        --red:      #f38ba8;
+        --peach:    #fab387;
+        --yellow:   #f9e2af;
+        --green:    #a6e3a1;
+        --sky:      #89dceb;
+        --pink:     #f5c2e7;
+        --rc-active-line-bg: rgba(137,180,250,.055);
+      }
+
+      /* ── Catppuccin Latte (light) ────────────────────────────────────────── */
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --base:     #eff1f5;
+        --mantle:   #e6e9ef;
+        --crust:    #dce0e8;
+        --surface0: #ccd0da;
+        --surface1: #bcc0cc;
+        --surface2: #acb0be;
+        --overlay0: #9ca0b0;
+        --text:     #4c4f69;
+        --subtext0: #6c6f85;
+        --blue:     #1e66f5;
+        --mauve:    #8839ef;
+        --red:      #d20f39;
+        --peach:    #fe640b;
+        --yellow:   #df8e1d;
+        --green:    #40a02b;
+        --sky:      #04a5e5;
+        --pink:     #ea76cb;
+        --rc-active-line-bg: rgba(30,102,245,.06);
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 5rem;
+        background: var(--base);
+        color: var(--text);
+        line-height: 1.6;
+        transition: background 0.15s, color 0.15s;
+      }
+
+      header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 3rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--surface0);
+      }
+      .header-text h1 { margin: 0 0 0.25rem; font-size: 1.75rem; font-weight: 700; }
+      .header-text p  { margin: 0; font-size: 0.875rem; color: var(--subtext0); }
+
+      /* ── Theme toggle ──────────────────────────────────────────────────────── */
+      #theme-toggle {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.35em 0.8em;
+        margin-top: 0.2rem;
+        border: 1px solid var(--surface1);
+        border-radius: 6px;
+        background: var(--mantle);
+        color: var(--subtext0);
+        font-family: inherit;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+      }
+      #theme-toggle:hover { border-color: var(--surface2); color: var(--text); }
+      #theme-toggle .icon { font-size: 1rem; line-height: 1; }
+
+      .demo { margin-bottom: 3.5rem; }
+
+      .demo-header {
+        display: flex;
+        align-items: baseline;
+        gap: 0.6rem;
+        margin-bottom: 0.35rem;
+      }
+      h2 { margin: 0; font-size: 1.05rem; font-weight: 600; color: var(--blue); }
+
+      .badge {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.15em 0.5em;
+        border-radius: 4px;
+        background: rgba(166,227,161,.15);
+        color: var(--green);
+        border: 1px solid rgba(166,227,161,.3);
+      }
+
+      .demo-desc {
+        margin: 0 0 0.8rem;
+        font-size: 0.875rem;
+        color: var(--subtext0);
+      }
+      .demo-desc code {
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-size: 0.8125rem;
+        background: var(--surface0);
+        padding: 0.1em 0.35em;
+        border-radius: 3px;
+        color: var(--sky);
+      }
+
+      /* ── Editor theming ──────────────────────────────────────────────────── */
+
+      rc-textarea:not(.no-theme) {
+        display: block;
+        --rc-textarea-font-family: 'Cascadia Code', 'Fira Code', monospace;
+        --rc-textarea-font-size: 13.5px;
+        --rc-textarea-line-height: 1.65;
+        --rc-textarea-background: var(--mantle);
+        --rc-textarea-color: var(--text);
+        --rc-textarea-border: 1px solid var(--surface1);
+        --rc-textarea-border-radius: 6px 6px 0 0;
+        --rc-textarea-padding: 0.75em 1em;
+        --rc-textarea-focus-outline: 2px solid var(--blue);
+        --rc-textarea-gutter-bg: var(--crust);
+        --rc-textarea-gutter-color: var(--overlay0);
+        --rc-textarea-gutter-border: 1px solid var(--surface1);
+        --rc-textarea-caret-color: var(--pink);
+        --rc-textarea-active-line-bg: var(--rc-active-line-bg);
+      }
+
+      /* Standalone (no status bar) gets full rounded corners */
+      rc-textarea.standalone {
+        --rc-textarea-border-radius: 6px;
+      }
+
+      /* ── Status bar ──────────────────────────────────────────────────────── */
+
+      .status-bar {
+        display: flex;
+        gap: 1.25rem;
+        padding: 0.3rem 0.85rem;
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-size: 0.72rem;
+        color: var(--subtext0);
+        background: var(--surface0);
+        border: 1px solid var(--surface1);
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+      }
+      .status-bar span { color: var(--text); }
+
+      /* ── Floating word tooltip ───────────────────────────────────────────── */
+
+      #word-tooltip {
+        position: fixed;
+        z-index: 9999;
+        display: none;
+        padding: 0.4rem 0.65rem;
+        background: var(--surface0);
+        border: 1px solid var(--surface1);
+        border-radius: 6px;
+        box-shadow: 0 6px 16px rgba(0,0,0,.45);
+        font-size: 0.75rem;
+        pointer-events: none;
+        max-width: 280px;
+      }
+      #word-tooltip .tw-word {
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        color: var(--sky);
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+      }
+      #word-tooltip .tw-def { color: var(--subtext0); }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <div class="header-text">
+        <h1>rc-textarea</h1>
+        <p>WAI-ARIA contenteditable editor · Parchment document model · Plugin &amp; decoration API</p>
+      </div>
+      <button id="theme-toggle" type="button" aria-label="Toggle color scheme">
+        <span class="icon" aria-hidden="true">☀</span>
+        <span class="label">Light</span>
+      </button>
+      <button class="theme-picker" type="button" aria-label="Cycle shared theme" title="Cycle shared --rc-* namespace tokens">Auto</button>
+    </header>
+
+    <!-- ── 0. Basic Unstyled ─────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header">
+        <h2>Basic Unstyled</h2>
+      </div>
+      <p class="demo-desc">
+        Basic example with no theme or styling applied.
+      </p>
+
+      <rc-textarea class="no-theme" line-numbers word-wrap>
+        <textarea rows="8">Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo quaerat exercitationem, voluptatum inventore impedit omnis magnam maiores cupiditate veniam ad.
+
+Lorem ipsum dolor sit amet.
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti, totam.</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 1. Active line + cursor state ─────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header">
+        <h2>Active line + cursor state</h2>
+        <span class="badge">New</span>
+      </div>
+      <p class="demo-desc">
+        Active line highlighted via <code>--rc-textarea-active-line-bg</code>.
+        Status bar reads <code>api.selectionStart</code> / <code>api.selectionEnd</code>
+        via <code>api.onCursorMove()</code>.
+      </p>
+      <rc-textarea id="active-demo" line-numbers>
+        <textarea name="active" rows="8">Move the cursor around to see the active line highlight.
+Use Shift+Arrow to extend the selection.
+
+Blank lines are fully editable.
+
+End of section.</textarea>
+      </rc-textarea>
+      <div class="status-bar">
+        Ln <span id="al-line">–</span>,
+        Col <span id="al-col">–</span>
+        &ensp;·&ensp;
+        Sel <span id="al-sel">0–0</span>
+        (<span id="al-chars">collapsed</span>)
+      </div>
+    </div>
+
+    <!-- ── 2. List-numbers gutter ─────────────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header">
+        <h2>List-numbers gutter</h2>
+        <span class="badge">New</span>
+      </div>
+      <p class="demo-desc">
+        <code>list-numbers</code> attribute — a sequential counter that increments only on
+        non-blank lines. Blank separator lines get an empty gutter cell. Edit the text to
+        add or remove steps and watch the numbering update live.
+      </p>
+      <rc-textarea id="list-demo" class="standalone" list-numbers word-wrap auto-grow>
+        <textarea name="list" rows="12">Install the dependencies with your package manager.
+
+Copy the example configuration file to your project root.
+
+Open the config and set your API key and base URL.
+
+Run the development server.
+
+Open http://localhost:5173 in your browser.
+
+Edit any source file — changes reload instantly.
+
+When ready, run the build command to produce an optimised bundle.</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 3. Pattern matching ────────────────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header"><h2>Pattern matching</h2></div>
+      <p class="demo-desc">
+        Regex patterns with inline mark decorations via <code>addPattern()</code>.
+        Type <code>TODO</code>, <code>FIXME</code>, or <code>HACK</code> anywhere.
+      </p>
+      <rc-textarea id="pattern-demo" class="standalone" line-numbers>
+        <textarea name="pattern" rows="6" placeholder="Type TODO, FIXME, or HACK…">function processData(input) {
+  // TODO: validate input before processing
+  const result = transform(input);
+  // FIXME: breaks when input is null
+  if (!result) HACK_return_default();
+  return result;
+}</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 4. Syntax highlighting (hljs) ─────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header"><h2>Syntax highlighting — highlight.js</h2></div>
+      <p class="demo-desc">
+        <code>plugin.highlight()</code> converts hljs HTML to mark decorations via
+        <code>api.decorationsFromHtml()</code>. Theme CSS injected with
+        <code>api.adoptStyleSheet()</code> — scoped to the shadow root, no leakage.
+      </p>
+      <rc-textarea id="hljs-demo" class="standalone" line-numbers auto-grow>
+        <textarea name="hljs" rows="10">const greeting = (name) => {
+  if (!name) throw new Error('name required');
+  return `Hello, ${name}!`;
+};
+
+class EventEmitter {
+  #listeners = new Map();
+
+  on(event, fn) {
+    const list = this.#listeners.get(event) ?? [];
+    this.#listeners.set(event, [...list, fn]);
+    return () => this.off(event, fn);
+  }
+
+  emit(event, ...args) {
+    this.#listeners.get(event)?.forEach(fn => fn(...args));
+  }
+}
+</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 5. Diagnostics (line + mark decorations) ───────────────────────── -->
+    <div class="demo">
+      <div class="demo-header"><h2>Diagnostics — line &amp; mark decorations</h2></div>
+      <p class="demo-desc">
+        <code>LineDecoration</code> with <code>message</code> renders an error-lens annotation via
+        <code>::after</code> (excluded from clipboard). Wavy underlines from <code>MarkDecoration</code>.
+        Decorations are recomputed on each edit by <code>plugin.update()</code>.
+      </p>
+      <rc-textarea id="lens-demo" class="standalone" line-numbers>
+        <textarea name="lens" rows="6">import fs from 'fs';
+const raw = fs.readFileSync('data.json');
+const parsed = JSON.parse(raw);
+let unusedVar = true;
+export default parsed;
+</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 6. Widget decorations (color swatches) ─────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header"><h2>Widget decorations — inline color swatches</h2></div>
+      <p class="demo-desc">
+        <code>WidgetDecoration</code> inserts a non-editable DOM element at a character offset.
+        Edit the hex values and watch swatches update live.
+      </p>
+      <rc-textarea id="widget-demo" class="standalone" line-numbers>
+        <textarea name="widget" rows="6">:root {
+  --primary:   #89b4fa;
+  --success:   #a6e3a1;
+  --danger:    #f38ba8;
+  --warning:   #f9e2af;
+  --accent:    #cba6f7;
+}</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 7. Cursor-aware tooltip ────────────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header">
+        <h2>Cursor-aware tooltip</h2>
+        <span class="badge">New</span>
+      </div>
+      <p class="demo-desc">
+        Plugin uses <code>api.onCursorMove()</code> to track cursor changes,
+        <code>api.getWordAtCursor()</code> to read the current word, and
+        <code>api.getCursorRect()</code> to anchor a floating tooltip below the caret.
+        Move the cursor over any keyword to see its definition.
+      </p>
+      <rc-textarea id="tooltip-demo" class="standalone" line-numbers>
+        <textarea name="tooltip" rows="11">async function fetchUser(id) {
+  const response = await fetch(`/api/users/${id}`);
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+const result = await fetchUser(42);
+console.log(result);
+</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- ── 8. Word wrap + auto-grow ──────────────────────────────────────── -->
+    <div class="demo">
+      <div class="demo-header"><h2>Word wrap + auto-grow</h2></div>
+      <p class="demo-desc">
+        <code>word-wrap</code> enables soft wrapping. <code>auto-grow</code> expands the editor
+        to fit content with no scrollbar.
+      </p>
+      <rc-textarea id="wrap-demo" class="standalone" word-wrap auto-grow>
+        <textarea name="wrap" rows="3" placeholder="Long lines will wrap…">This is a very long line that demonstrates word-wrap and auto-grow working together. The editor expands as you type, and long lines wrap at the container boundary instead of producing a horizontal scrollbar.</textarea>
+      </rc-textarea>
+    </div>
+
+    <!-- Floating tooltip element (shared across demos) -->
+    <div id="word-tooltip">
+      <div class="tw-word"></div>
+      <div class="tw-def"></div>
+    </div>
+
+    <script type="module">
+      // ── Theme toggle ──────────────────────────────────────────────────────
+      const root = document.documentElement;
+      const toggleBtn = document.getElementById('theme-toggle');
+      const toggleIcon = toggleBtn.querySelector('.icon');
+      const toggleLabel = toggleBtn.querySelector('.label');
+
+      toggleBtn.addEventListener('click', () => {
+        const isLight = root.dataset.theme === 'light';
+        if (isLight) {
+          delete root.dataset.theme;
+          toggleIcon.textContent = '☀';
+          toggleLabel.textContent = 'Light';
+        } else {
+          root.dataset.theme = 'light';
+          toggleIcon.textContent = '☾';
+          toggleLabel.textContent = 'Dark';
+        }
+      });
+
+      // ── Shared hljs theme (compiled once, adopted into each shadow root) ──
+      const hljsSheet = new CSSStyleSheet();
+      hljsSheet.replaceSync(`
+        .hljs-keyword                       { color: #cba6f7; }
+        .hljs-string                        { color: #a6e3a1; }
+        .hljs-number                        { color: #fab387; }
+        .hljs-comment                       { color: #6c7086; font-style: italic; }
+        .hljs-title, .hljs-title.function_  { color: #89b4fa; }
+        .hljs-title.class_                  { color: #f9e2af; }
+        .hljs-params                        { color: #cdd6f4; }
+        .hljs-built_in                      { color: #89dceb; }
+        .hljs-literal                       { color: #fab387; }
+        .hljs-subst                         { color: #cdd6f4; }
+        .hljs-regexp                        { color: #f38ba8; }
+        .hljs-operator                      { color: #89dceb; }
+        .hljs-attr, .hljs-property          { color: #89dceb; }
+        .hljs-variable.language_            { color: #cba6f7; }
+        .hljs-punctuation                   { color: #cdd6f4; }
+        .hljs-meta                          { color: #6c7086; }
+        .hljs-template-curly                { color: #cdd6f4; }
+      `);
+
+      // ── 1. Active line + cursor state ─────────────────────────────────────
+      const activeDemo = document.getElementById('active-demo');
+      const alLine  = document.getElementById('al-line');
+      const alCol   = document.getElementById('al-col');
+      const alSel   = document.getElementById('al-sel');
+      const alChars = document.getElementById('al-chars');
+
+      let alUnsub;
+      activeDemo.usePlugin({
+        mount(api) {
+          alUnsub = api.onCursorMove((start, end) => {
+            const before = api.value.slice(0, start);
+            const ln = before.split('\n').length;
+            const col = before.length - before.lastIndexOf('\n'); // 1-based
+            alLine.textContent = ln;
+            alCol.textContent = col;
+            alSel.textContent = `${start}–${end}`;
+            alChars.textContent = start === end ? 'collapsed' : `${end - start} chars`;
+          });
+        },
+        destroy() { alUnsub?.(); },
+      });
+
+      // ── 3. Pattern matching ───────────────────────────────────────────────
+      const patternDemo = document.getElementById('pattern-demo');
+      patternDemo.addPattern({ pattern: /\bTODO\b/g,  bold: true, color: '#fab387', background: 'rgba(250,179,135,.12)' });
+      patternDemo.addPattern({ pattern: /\bFIXME\b/g, bold: true, color: '#f38ba8', background: 'rgba(243,139,168,.12)' });
+      patternDemo.addPattern({ pattern: /\bHACK\b/g,  bold: true, color: '#f9e2af', background: 'rgba(249,226,175,.12)' });
+
+      // ── 4. highlight.js ───────────────────────────────────────────────────
+      document.getElementById('hljs-demo').usePlugin({
+        mount(api) { api.adoptStyleSheet(hljsSheet); },
+        async highlight(value, api) {
+          if (!window.hljs) return null;
+          try {
+            const { value: html } = window.hljs.highlight(value, { language: 'javascript' });
+            api.setDecorations(api.decorationsFromHtml(html));
+          } catch { /* ignore parse errors */ }
+        },
+      });
+
+      // ── 5. Diagnostics ────────────────────────────────────────────────────
+      const diagSheet = new CSSStyleSheet();
+      diagSheet.replaceSync(`
+        .v2-error   { background: rgba(243,139,168,.07); }
+        .v2-warning { background: rgba(249,226,175,.07); }
+        .v2-info    { background: rgba(137,180,250,.07); }
+        .v2-line[data-message-class~="error"][data-message]::after
+                    { color: #f38ba8; }
+        .v2-line[data-message-class~="warning"][data-message]::after
+                    { color: #f9e2af; }
+        .v2-line[data-message-class~="info"][data-message]::after
+                    { color: #89b4fa; }
+      `);
+
+      document.getElementById('lens-demo').usePlugin({
+        mount(api) { api.adoptStyleSheet(diagSheet); },
+        update(value, api) {
+          const lines = value.split('\n');
+          const decs = [];
+
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const ln = i + 1;
+            if (/^import /.test(line)) {
+              decs.push({ type: 'line', line: ln, className: 'v2-info',
+                message: 'CommonJS — consider import() for ESM', messageClassName: 'info' });
+            }
+            if (/readFileSync/.test(line)) {
+              decs.push({ type: 'line', line: ln, className: 'v2-error',
+                message: 'Synchronous I/O blocks the event loop', messageClassName: 'error' });
+            }
+            if (/JSON\.parse/.test(line)) {
+              decs.push({ type: 'line', line: ln, className: 'v2-warning',
+                message: 'Missing try/catch — may throw SyntaxError', messageClassName: 'warning' });
+            }
+            if (/^let /.test(line)) {
+              const m = line.match(/^let (\w+)/);
+              if (m) decs.push({ type: 'line', line: ln, className: 'v2-warning',
+                message: `'${m[1]}' is assigned but never used`, messageClassName: 'warning' });
+            }
+          }
+
+          // Wavy underlines computed from regex matches
+          for (const { rx, color } of [
+            { rx: /readFileSync/g, color: '#f38ba8' },
+            { rx: /JSON\.parse/g,  color: '#f9e2af' },
+            { rx: /\bunusedVar\b/g, color: '#f9e2af' },
+          ]) {
+            let m;
+            rx.lastIndex = 0;
+            while ((m = rx.exec(value)) !== null) {
+              decs.push({ type: 'mark', from: m.index, to: m.index + m[0].length,
+                underline: 'wavy', underlineColor: color });
+            }
+          }
+
+          api.setDecorations(decs);
+        },
+      });
+
+      // ── 6. Widget decorations (color swatches) ────────────────────────────
+      document.getElementById('widget-demo').usePlugin({
+        mount(api) { buildSwatches(api); },
+        update(_, api) { buildSwatches(api); },
+      });
+
+      function buildSwatches(api) {
+        const pat = /#([0-9a-fA-F]{3,6})\b/g;
+        const decs = [];
+        let m;
+        while ((m = pat.exec(api.value)) !== null) {
+          const color = m[0];
+          const offset = m.index;
+          decs.push({
+            type: 'widget', offset, side: 'before',
+            create() {
+              const el = document.createElement('span');
+              el.style.cssText = `
+                display:inline-block;width:10px;height:10px;
+                background:${color};border:1px solid rgba(255,255,255,.2);
+                border-radius:2px;margin-right:4px;vertical-align:middle;
+              `;
+              return el;
+            },
+          });
+        }
+        api.setDecorations(decs);
+      }
+
+      // ── 7. Cursor-aware tooltip ───────────────────────────────────────────
+      const tooltipEl   = document.getElementById('word-tooltip');
+      const tooltipWord = tooltipEl.querySelector('.tw-word');
+      const tooltipDef  = tooltipEl.querySelector('.tw-def');
+
+      // Mini keyword dictionary for the demo
+      const kwDefs = {
+        async:    'Marks a function as asynchronous; it always returns a Promise.',
+        await:    'Suspends execution until the awaited Promise settles.',
+        function: 'Defines a function; creates its own this and arguments.',
+        const:    'Block-scoped binding — reference cannot be reassigned.',
+        let:      'Block-scoped binding — reference can be reassigned.',
+        if:       'Conditional branch — body runs when condition is truthy.',
+        throw:    'Throws an exception and unwinds the call stack.',
+        return:   'Exits the current function, optionally yielding a value.',
+        fetch:    'Web API — initiates an HTTP request, returns Promise<Response>.',
+        console:  'Web API — exposes debug output methods (log, warn, error…).',
+        new:      'Invokes a constructor and allocates a new object instance.',
+        Error:    'Built-in exception class; wraps a message and stack trace.',
+      };
+
+      let ttUnsub;
+      document.getElementById('tooltip-demo').usePlugin({
+        mount(api) {
+          api.adoptStyleSheet(hljsSheet);
+          ttUnsub = api.onCursorMove(() => {
+            const w = api.getWordAtCursor();
+            const def = w ? kwDefs[w.word] : undefined;
+            if (!w || !def) { tooltipEl.style.display = 'none'; return; }
+            const rect = api.getCursorRect();
+            if (!rect) { tooltipEl.style.display = 'none'; return; }
+            tooltipWord.textContent = w.word;
+            tooltipDef.textContent = def;
+            tooltipEl.style.display = 'block';
+            // Position below cursor, clamp to viewport edges
+            const gap = 7;
+            let left = rect.left;
+            const top  = rect.bottom + gap;
+            const tw = tooltipEl.offsetWidth;
+            if (left + tw > window.innerWidth - 12) left = window.innerWidth - tw - 12;
+            tooltipEl.style.left = `${Math.max(8, left)}px`;
+            tooltipEl.style.top  = `${top}px`;
+          });
+        },
+        async highlight(value, api) {
+          if (!window.hljs) return null;
+          try {
+            const { value: html } = window.hljs.highlight(value, { language: 'javascript' });
+            api.setDecorations(api.decorationsFromHtml(html));
+          } catch { /* ignore */ }
+        },
+        destroy() {
+          ttUnsub?.();
+          tooltipEl.style.display = 'none';
+        },
+      });
+
+      // Hide tooltip when focus leaves any editor
+      document.addEventListener('rc-textarea-blur', () => {
+        tooltipEl.style.display = 'none';
+      }, { capture: true });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rc-menu-button</title>
+    <link rel="stylesheet" href="/demo.css" />
+    <script type="module" src="/demo.js"></script>
+    <script type="module" src="/src/define.ts"></script>
+    <style>
+      .menu-trigger {
+        padding: 0.5em 1em;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      rc-menu button {
+        all: unset;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.5em 1em;
+        cursor: pointer;
+      }
+      rc-menu button:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+      rc-menu button:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
+      rc-menu button[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+      #status {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: Canvas;
+        border: 1px solid ButtonBorder;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-page">
+      <div class="demo-controls">
+        <div class="demo-title">
+          <h1>rc-menu-button</h1>
+          <a href="https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/">WAI-ARIA Menu Button Pattern</a>
+        </div>
+        <button class="theme-picker" type="button">Auto</button>
+      </div>
+
+      <div class="demo-section">
+        <h2>Basic Menu Button</h2>
+        <rc-menu-button>
+          <button slot="trigger" class="menu-trigger">Options</button>
+          <rc-menu label="Options">
+            <button onclick="handleAction('cut')">Cut</button>
+            <button onclick="handleAction('copy')">Copy</button>
+            <button onclick="handleAction('paste')">Paste</button>
+          </rc-menu>
+        </rc-menu-button>
+      </div>
+
+      <div class="demo-section">
+        <h2>Menu Button with Disabled Items</h2>
+        <rc-menu-button>
+          <button slot="trigger" class="menu-trigger">File</button>
+          <rc-menu label="File Actions">
+            <button onclick="handleAction('new')">New</button>
+            <button onclick="handleAction('open')">Open</button>
+            <button onclick="handleAction('save')" disabled>Save</button>
+            <button onclick="handleAction('close')">Close</button>
+          </rc-menu>
+        </rc-menu-button>
+      </div>
+
+      <div class="demo-section">
+        <h2>Multiple Menu Buttons</h2>
+        <div style="display: flex; gap: 0.5rem;">
+          <rc-menu-button>
+            <button slot="trigger" class="menu-trigger">Edit</button>
+            <rc-menu label="Edit Actions">
+              <button onclick="handleAction('undo')">Undo</button>
+              <button onclick="handleAction('redo')">Redo</button>
+            </rc-menu>
+          </rc-menu-button>
+
+          <rc-menu-button>
+            <button slot="trigger" class="menu-trigger">View</button>
+            <rc-menu label="View Options">
+              <button onclick="handleAction('zoom-in')">Zoom In</button>
+              <button onclick="handleAction('zoom-out')">Zoom Out</button>
+              <button onclick="handleAction('reset-zoom')">Reset Zoom</button>
+            </rc-menu>
+          </rc-menu-button>
+        </div>
+      </div>
+
+      <div id="status">Status: Ready</div>
+    </main>
+
+    <script>
+      const status = document.getElementById('status');
+
+      window.handleAction = function (action) {
+        status.textContent = `Status: Action "${action}" triggered`;
+        console.log('Action:', action);
+      };
+
+      document.querySelectorAll('rc-menu-button').forEach((menuButton) => {
+        menuButton.addEventListener('rc-menu-button-toggle', (e) => {
+          const state = e.detail.open ? 'opened' : 'closed';
+          console.log(`Menu ${state}`);
+        });
+      });
+
+      document.querySelectorAll('rc-menu').forEach((menu) => {
+        menu.addEventListener('rc-menu-activate', (e) => {
+          console.log('Menu item activated:', e.detail.item.textContent.trim());
+        });
+      });
+    </script>
+  </body>
+</html>

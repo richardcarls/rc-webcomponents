@@ -1,0 +1,87 @@
+:host {
+  display: block;
+  color-scheme: inherit;
+  font-family: system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.preview-shell {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid ButtonBorder;
+  border-radius: 0.25rem;
+  background: Canvas;
+  color: CanvasText;
+}
+
+.preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.preview-title,
+.preview-kicker {
+  margin: 0;
+}
+
+.preview-title {
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.preview-kicker {
+  color: GrayText;
+  font-size: 0.75rem;
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.preview-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.preview-label {
+  color: GrayText;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+fieldset {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+rc-select {
+  inline-size: 100%;
+}
+
+rc-slider,
+rc-range-slider {
+  display: block;
+  max-inline-size: 18rem;
+}
