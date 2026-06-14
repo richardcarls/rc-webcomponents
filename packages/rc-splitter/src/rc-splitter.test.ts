@@ -199,11 +199,17 @@ describe('RCSplitter', () => {
       // Wait for resize observer
       await new Promise((r) => setTimeout(r, 50));
 
+      const separator = getSeparator(host);
+      await vi.waitFor(() => {
+        expect(Number(separator.getAttribute('aria-valuemax'))).toBeGreaterThan(
+          0,
+        );
+      });
+
       // Set a value that can be decreased
       host.value = 100;
       const initialValue = host.value;
 
-      const separator = getSeparator(host);
       await focusSeparator(separator);
       await pressKey(separator, '{ArrowLeft}');
 
@@ -333,11 +339,17 @@ describe('RCSplitter', () => {
       // Wait for resize observer
       await new Promise((r) => setTimeout(r, 50));
 
+      const separator = getSeparator(host);
+      await vi.waitFor(() => {
+        expect(Number(separator.getAttribute('aria-valuemax'))).toBeGreaterThan(
+          0,
+        );
+      });
+
       // Set a value that can be decreased
       host.value = 100;
       const initialValue = host.value;
 
-      const separator = getSeparator(host);
       await focusSeparator(separator);
       await pressKey(separator, '{ArrowUp}');
 
