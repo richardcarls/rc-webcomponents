@@ -1,0 +1,19 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-slider::part(value-display) {
+    min-inline-size: 2rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--md-sys-shape-corner-extra-small, 0.25rem);
+    background: var(--md-sys-color-inverse-surface, var(--md-sys-color-on-surface, CanvasText));
+    color: var(--md-sys-color-inverse-on-surface, var(--md-sys-color-surface, Canvas));
+    font-size: var(--md-sys-typescale-label-small-size, 0.75rem);
+    text-align: center;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-slider input[type='range'] {
+    accent-color: var(--md-slider-handle-color, var(--md-sys-color-primary, Highlight));
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-slider[disabled] {
+    opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
+  }
+}

@@ -1,0 +1,23 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(root) {
+    box-sizing: border-box;
+    box-shadow: var(--md-sys-elevation-level0, none);
+    transition: box-shadow 200ms ease, background-color 200ms ease;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar:hover::part(root) {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 4%, var(--md-sys-color-surface-container-high, Field));
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar[data-focus-visible]::part(root) {
+    box-shadow: var(--md-sys-elevation-level1, none);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(clear) {
+    border-radius: var(--md-sys-shape-corner-full, 999px);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(clear):hover {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface-variant, CanvasText) 8%, transparent);
+  }
+}

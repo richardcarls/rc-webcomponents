@@ -13,6 +13,7 @@
   background: var(--vp-c-bg);
 }
 
+@layer rc-theme-preview.base {
 body[data-rc-preview-theme] .demo-section {
   --rc-surface: Canvas;
   --rc-field: Field;
@@ -59,25 +60,6 @@ body[data-rc-preview-theme] .demo-section {
   font-family: var(--rc-font-family);
   font-size: var(--rc-font-size);
   line-height: var(--rc-line-height);
-}
-
-body[data-rc-preview-theme="material"] .demo-section {
-  --rc-surface: light-dark(#fffbfe, #141218);
-  --rc-field: light-dark(#fef7ff, #211f26);
-  --rc-button-bg: light-dark(#6750a4, #d0bcff);
-  --rc-field-text: light-dark(#1d1b20, #e6e0e9);
-  --rc-button-text: light-dark(#ffffff, #381e72);
-  --rc-highlight: light-dark(#6750a4, #d0bcff);
-  --rc-highlight-text: light-dark(#ffffff, #381e72);
-  --rc-accent: light-dark(#6750a4, #d0bcff);
-  --rc-border-color: light-dark(#79747e, #938f99);
-  --rc-shadow: light-dark(0 1px 2px rgba(0, 0, 0, 0.3), none);
-  --rc-font-family: Roboto, system-ui, sans-serif;
-  --rc-control-block-size: 2.5rem;
-  --rc-control-radius: 1.25rem;
-  --rc-control-padding-inline: 1rem;
-  --rc-item-padding-block: 0.625rem;
-  --rc-motion-duration: 200ms;
 }
 
 body[data-rc-preview-theme="ios"] .demo-section {
@@ -192,6 +174,8 @@ body[data-rc-preview-theme] .demo-section input[type="range"] {
 
 body[data-rc-preview-theme] .demo-section rc-select,
 body[data-rc-preview-theme] .demo-section rc-combobox,
+body[data-rc-preview-theme] .demo-section rc-search-bar,
+body[data-rc-preview-theme] .demo-section rc-app-bar,
 body[data-rc-preview-theme] .demo-section rc-slider,
 body[data-rc-preview-theme] .demo-section rc-range-slider,
 body[data-rc-preview-theme] .demo-section rc-transfer-list,
@@ -199,6 +183,32 @@ body[data-rc-preview-theme] .demo-section rc-toolbar,
 body[data-rc-preview-theme] .demo-section rc-menu,
 body[data-rc-preview-theme] .demo-section rc-menubar {
   font: inherit;
+}
+
+body[data-rc-preview-theme] .demo-section rc-search-bar {
+  --rc-search-bar-bg: var(--rc-field);
+  --rc-search-bar-color: var(--rc-field-text);
+  --rc-search-bar-icon-color: var(--rc-text-disabled);
+  --rc-search-bar-clear-color: var(--rc-text-disabled);
+  --rc-search-bar-height: var(--rc-control-block-size);
+  --rc-search-bar-padding-inline: var(--rc-control-padding-inline);
+  --rc-search-bar-radius: var(--rc-control-radius);
+}
+
+body[data-rc-preview-theme] .demo-section rc-search-bar > input[type="search"] {
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+}
+
+body[data-rc-preview-theme] .demo-section rc-app-bar {
+  --rc-app-bar-bg: var(--rc-surface);
+  --rc-app-bar-color: var(--rc-field-text);
+  --rc-app-bar-scroll-divider: var(--rc-border);
+  --rc-app-bar-transition-duration: var(--rc-motion-duration);
 }
 
 body[data-rc-preview-theme] .demo-section rc-toolbar {
@@ -258,6 +268,7 @@ body[data-rc-preview-theme] .demo-section .event-log {
   background: color-mix(in srgb, var(--rc-surface) 92%, var(--rc-field-text) 8%);
   border: var(--rc-border);
   border-radius: var(--rc-control-radius);
+}
 }
 
 .demo-section > p:first-child { margin-top: 0; }

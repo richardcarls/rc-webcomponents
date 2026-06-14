@@ -140,6 +140,12 @@ rc-menu button.has-icon {
 }
 ```
 
+## Material bridge
+
+`@rcarls/rc-theme-material` maps Material menu surface, item, separator, and
+elevation tokens into this component without styling slotted native buttons.
+See [Theme previews](/guide/theme-previews) for integration details.
+
 ## API
 
 <ApiTable tag="rc-menu" />

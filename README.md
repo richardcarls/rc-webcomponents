@@ -69,20 +69,24 @@ Custom elements are framework-agnostic by definition. Components follow the stan
 
 | Package | Description | Depends on |
 | --- | --- | --- |
-| [`rc-common`](packages/rc-common/) | Shared controllers and directives: `DragController`, `ResizeController`, `AnchorController`, `KeyboardNavigationDirective`, `MouseMoveDirective` | — |
+| [`rc-common`](packages/rc-common/) | Shared controllers and directives: `DragController`, `ResizeController`, `AnchorController`, `ScrollObserverController`, `KeyboardNavigationDirective`, `MouseMoveDirective` | — |
 | [`rc-listbox`](packages/rc-listbox/) | Light-DOM ARIA `listbox` used by select and combobox | rc-common |
 | [`rc-menu`](packages/rc-menu/) | ARIA `menu` / `menuitem` popup | rc-common |
 | [`rc-select`](packages/rc-select/) | Select-only ARIA combobox backed by a native `<select>` | rc-common, rc-listbox |
 | [`rc-combobox`](packages/rc-combobox/) | Editable ARIA combobox with filtering and allow-create | rc-common, rc-listbox, rc-select |
+| [`rc-search-bar`](packages/rc-search-bar/) | Enhances a native `<input type="search">` with icon chrome, clear button, and debounced search events | — |
 | [`rc-menu-button`](packages/rc-menu-button/) | Button that opens an ARIA menu | rc-common, rc-menu |
 | [`rc-menubar`](packages/rc-menubar/) | ARIA `menubar` with roving tabindex | rc-common, rc-menu-button |
 | [`rc-toolbar`](packages/rc-toolbar/) | ARIA `toolbar` with roving tabindex | rc-common |
+| [`rc-app-bar`](packages/rc-app-bar/) | Headless grid app bar with exact-center composition and pinned, collapse, or hide scroll behavior | rc-common |
 | [`rc-splitter`](packages/rc-splitter/) | Resizable pane splitter (`separator` role) | rc-common |
 | [`rc-textarea`](packages/rc-textarea/) | Enhanced `<textarea>` — line decorations, gutter, plugin API | — |
 | [`rc-disclosure`](packages/rc-disclosure/) | Native `<details>` / `<summary>` disclosure wrapper | — |
 | [`rc-accordion`](packages/rc-accordion/) | Accordion coordinator for disclosure groups | rc-disclosure |
 | [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable `<dialog>` wrapper with accessible event forwarding | rc-common |
+| [`rc-fab`](packages/rc-fab/) | Floating action button with regular and extended variants | — |
 | [`rc-virtual-canvas`](packages/rc-virtual-canvas/) | Virtualized canvas for large datasets | — |
+| [`rc-theme-material`](packages/rc-theme-material/) | Optional CSS-only Material 3 token bridge | — |
 | [`rc-webcomponents`](packages/rc-webcomponents/) | Aggregate package exporting the component collection | all component packages |
 
 Workspace dependency arrows show which packages must be **rebuilt** before dependent packages will pick up changes (they resolve to each dep's `dist/` output, not source).

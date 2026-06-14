@@ -128,6 +128,27 @@ Multiple independent menu buttons can coexist. Opening one closes any other open
 </div>
 </ClientOnly>
 
+## Popup placement
+
+The popup is positioned by `AnchorController`. Set `placement` to choose the
+preferred side and alignment; viewport-aware fallback positioning keeps the
+menu visible when the preferred placement does not fit.
+
+```html
+<rc-menu-button placement="bottom-end">
+  <button slot="trigger">Actions</button>
+  <rc-menu label="Actions">...</rc-menu>
+</rc-menu-button>
+```
+
+The default placement is `bottom-start`.
+
+## Material bridge
+
+`@rcarls/rc-theme-material` maps Material-inspired trigger geometry and the
+popup menu surface. Consumers still choose filled, tonal, text, or icon-button
+treatments for the native trigger. See [Theme previews](/guide/theme-previews).
+
 ## API
 
 <ApiTable tag="rc-menu-button" />

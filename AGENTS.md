@@ -130,6 +130,17 @@ Implementation rules:
   native behavior or assistive technology, such as `<dialog>` and `<textarea>`.
 - Shared interaction behaviors live in `rc-common` as `ReactiveController`
   classes or Lit directives so they compose cleanly onto any Lit host.
+- Design-system references guide behavior and composition, not default
+  appearance. `rc-app-bar` remains UA-like while permitting Material-style
+  structures and consumer-styled glass/HIG treatments.
+- Consumers supply app-bar controls and action icons. Components supply a
+  default icon only when it communicates component-owned state, such as a
+  disclosure or select indicator.
+- App-bar-like structural grouping uses leading, title, exact-center, and
+  trailing regions. Title and center content may coexist; consumers own whether
+  a composition conforms to an external design system.
+- Action priority, overflow measurement, and conditional action/menu rendering
+  belong in a future `rc-menubar`-related component, not `rc-app-bar`.
 - Each package builds to ESM and UMD with declaration files. `sideEffects: false`
   enables tree-shaking when consumers import individual elements.
 - `rc-dialog` intentionally exposes no CSS custom properties or parts. It wraps
@@ -163,6 +174,10 @@ Component examples must preserve this library's design principles: the
 consumer-provided native child remains in the DOM, labels and forms work before
 upgrade, ARIA is demonstrated on the native control where applicable, and
 interactive demos show keyboard and accessibility-relevant behavior.
+
+When creating a new component package, add it to the `## Packages` table on the
+VitePress home page in `docs/index.md` in the same change. Infrastructure,
+adapter/plugin, and aggregate packages do not need home-page component entries.
 
 Keep this checklist in `AGENTS.md` only. Tool-specific adapter files such as
 `CLAUDE.md`, `GEMINI.md`, Copilot instructions, and Cursor rules should point
@@ -305,8 +320,8 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 **Rebuild a package before running tests in packages that depend on it.**
 
 - **rc-common**: Shared controllers and directives (`DragController`,
-  `ResizeController`, `AnchorController`, `KeyboardNavigationDirective`,
-  `MouseMoveDirective`)
+  `ResizeController`, `AnchorController`, `ScrollObserverController`,
+  `KeyboardNavigationDirective`, `MouseMoveDirective`)
 - **rc-listbox**: Light-DOM ARIA listbox used by select, combobox, and
   transfer-list → rc-common
 - **rc-menu**: ARIA menu popup → rc-common
@@ -316,6 +331,14 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-menu-button**: Menu button → rc-common, rc-menu
 - **rc-menubar**: Menubar with roving tabindex → rc-common, rc-menu, rc-menu-button
 - **rc-toolbar**: ARIA toolbar → rc-common
+- **rc-app-bar**: Headless grid app bar with leading/title/center/trailing
+  regions, dual-mode scrolled state, and pinned/collapse/hide scroll behavior;
+  no implicit landmark role → rc-common
+- **rc-fab**: Floating action button with regular and extended variants
+  (standalone)
+- **rc-search-bar**: Enhances a required native `input[type="search"]` with
+  icon chrome, a clear button, and debounced `rc-search-bar-input` events
+  (standalone)
 - **rc-splitter**: Resizable pane splitter → rc-common
 - **rc-textarea**: Enhanced textarea (standalone)
 - **rc-textarea-adapters**: Adapter factories for lezer, unified, and shiki tokenizers → rc-textarea
@@ -328,4 +351,5 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-transfer-list**: Transfer list → rc-listbox
 - **rc-virtual-canvas**: Virtual canvas (standalone)
 - **rc-dialog**: Draggable/resizable `<dialog>` wrapper → rc-common
+- **rc-theme-material**: Optional CSS-only Material 3 token bridge (standalone)
 - **rc-webcomponents**: Aggregate package → all component packages

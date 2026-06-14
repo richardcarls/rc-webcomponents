@@ -237,6 +237,12 @@ The thumb is visible and focusable but the value cannot be changed.
 </div>
 </ClientOnly>
 
+## Material bridge
+
+`@rcarls/rc-theme-material` maps Material slider track, label, shape, and state
+tokens into this component. The native range input remains consumer-owned. See
+[Theme previews](/guide/theme-previews) for integration details.
+
 ## API
 
 <ApiTable tag="rc-slider" />

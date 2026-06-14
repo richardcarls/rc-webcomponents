@@ -292,6 +292,12 @@ Options added to the native `<select>` at runtime are reflected in the popup aut
 </div>
 </ClientOnly>
 
+## Material bridge
+
+`@rcarls/rc-theme-material` maps Material outlined-field, menu-surface, option,
+and chip tokens into this component. See [Theme previews](/guide/theme-previews)
+for installation, activation, precedence, and compatibility details.
+
 ## API
 
 <ApiTable tag="rc-select" />

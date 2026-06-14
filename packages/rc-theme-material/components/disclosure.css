@@ -1,0 +1,28 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure {
+    display: block;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details {
+    border-block-end: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
+    background: var(--md-sys-color-surface, Canvas);
+    color: var(--md-sys-color-on-surface, CanvasText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details > summary {
+    min-block-size: 3rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--md-sys-shape-corner-small, 0.5rem);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details > summary:hover {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details > :not(summary) {
+    padding-inline: 1rem;
+    padding-block-end: 1rem;
+  }
+}

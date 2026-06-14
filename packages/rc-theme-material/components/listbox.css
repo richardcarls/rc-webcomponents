@@ -1,0 +1,33 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox {
+    display: block;
+    color: var(--md-sys-color-on-surface, CanvasText);
+    font-family: var(--md-sys-typescale-body-large-font, inherit);
+    font-size: var(--md-sys-typescale-body-large-size, 1rem);
+    line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox [part~='option'] {
+    min-block-size: 3rem;
+    padding: 0.75rem;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox [part~='option']:hover,
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox [part~='option'][data-active] {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox [part~='option'][aria-selected='true'] {
+    background: var(--md-sys-color-secondary-container, Highlight);
+    color: var(--md-sys-color-on-secondary-container, HighlightText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox [part~='option'][aria-disabled='true'] {
+    color: var(--md-sys-color-on-surface, GrayText);
+    opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
+  }
+}
