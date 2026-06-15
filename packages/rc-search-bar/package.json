@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Headless search bar enhancing a native input[type=search] with clear button and debounced events, built with Lit",
   "repository": {
     "type": "git",
