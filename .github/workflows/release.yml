@@ -17,16 +17,16 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Enable Corepack
         run: corepack enable
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
           cache: yarn
           registry-url: 'https://registry.npmjs.org'
 
@@ -37,4 +37,7 @@ jobs:
         run: yarn build
 
       - name: Publish changed packages
-        run: yarn changeset publish --provenance
+        run: yarn changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
