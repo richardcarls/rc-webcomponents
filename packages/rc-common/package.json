@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared reactive controllers and directives for @rcarls Lit web components",
   "repository": {
     "type": "git",

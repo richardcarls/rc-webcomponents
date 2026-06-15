@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Aggregate package — all @rcarls WAI-ARIA compliant headless web components",
   "repository": {
     "type": "git",
