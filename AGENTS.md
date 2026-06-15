@@ -130,6 +130,17 @@ Implementation rules:
   native behavior or assistive technology, such as `<dialog>` and `<textarea>`.
 - Shared interaction behaviors live in `rc-common` as `ReactiveController`
   classes or Lit directives so they compose cleanly onto any Lit host.
+- Design-system references guide behavior and composition, not default
+  appearance. `rc-app-bar` remains UA-like while permitting Material-style
+  structures and consumer-styled glass/HIG treatments.
+- Consumers supply app-bar controls and action icons. Components supply a
+  default icon only when it communicates component-owned state, such as a
+  disclosure or select indicator.
+- App-bar-like structural grouping uses leading, title, exact-center, and
+  trailing regions. Title and center content may coexist; consumers own whether
+  a composition conforms to an external design system.
+- Action priority, overflow measurement, and conditional action/menu rendering
+  belong in a future `rc-menubar`-related component, not `rc-app-bar`.
 - Each package builds to ESM and UMD with declaration files. `sideEffects: false`
   enables tree-shaking when consumers import individual elements.
 - `rc-dialog` intentionally exposes no CSS custom properties or parts. It wraps
@@ -163,6 +174,10 @@ Component examples must preserve this library's design principles: the
 consumer-provided native child remains in the DOM, labels and forms work before
 upgrade, ARIA is demonstrated on the native control where applicable, and
 interactive demos show keyboard and accessibility-relevant behavior.
+
+When creating a new component package, add it to the `## Packages` table on the
+VitePress home page in `docs/index.md` in the same change. Infrastructure,
+adapter/plugin, and aggregate packages do not need home-page component entries.
 
 Keep this checklist in `AGENTS.md` only. Tool-specific adapter files such as
 `CLAUDE.md`, `GEMINI.md`, Copilot instructions, and Cursor rules should point
@@ -204,6 +219,90 @@ enforces package order from workspace dependencies. For targeted package work,
 rebuild affected dependencies before running tests in packages that consume
 them. Vite HMR does not watch dependency `dist/` output through `node_modules`;
 restart the consuming package dev server after rebuilding a dependency.
+
+## Commit messages
+
+All commits must follow [Conventional Commits](https://www.conventionalcommits.org/).
+`commitlint` enforces this via a Husky `commit-msg` hook on every commit.
+
+```text
+type(scope): short description
+
+feat      – new user-facing capability
+fix       – bug fix
+refactor  – restructuring with no behavior change
+style     – formatting / cosmetic only
+chore     – maintenance (deps, build, config)
+docs      – documentation only
+test      – tests only
+```
+
+Use `!` before the colon for breaking changes: `feat(rc-slider)!: rename value attribute`.
+
+## Release workflow
+
+This project uses [Changesets](https://github.com/changesets/changesets) for versioning
+and changelog generation, combined with GitFlow branching.
+
+All 25 component packages are version-locked together (`fixed` group in `.changeset/config.json`).
+A single changeset bump moves all packages to the same new version.
+
+### During feature development
+
+After landing a meaningful change, add a changeset intent file that describes what changed
+and the bump type (`major`, `minor`, or `patch`):
+
+Windows:
+
+```powershell
+yarn.cmd changeset
+```
+
+Linux / Mac:
+
+```bash
+yarn changeset
+```
+
+The interactive prompt asks which packages changed and the bump severity. Commit the
+generated `.changeset/*.md` file alongside the code change. Changesets accumulate on
+`develop` until a release is cut.
+
+### Cutting a release (GitFlow)
+
+1. **Create the release branch** from `develop`:
+
+   ```sh
+   git checkout -b release/vX.Y.Z develop
+   ```
+
+2. **Apply all pending changesets** — bumps every package version and writes `CHANGELOG.md`
+   files; clears the `.changeset/` intent files:
+
+   Windows: `yarn.cmd version:packages`
+   Linux / Mac: `yarn version:packages`
+
+3. **Commit the version bump**:
+
+   ```sh
+   git add .
+   git commit -m "chore(release): bump packages to vX.Y.Z"
+   ```
+
+4. **Merge release → `main`** (no-ff), tag, and back-merge to `develop`:
+
+   ```sh
+   git checkout main
+   git merge --no-ff release/vX.Y.Z -m "chore(release): merge branch release/vX.Y.Z"
+   git tag vX.Y.Z
+   git checkout develop
+   git merge --no-ff main -m "chore(release): back-merge vX.Y.Z into develop"
+   git branch -d release/vX.Y.Z
+   ```
+
+5. **Push** — the `release.yml` GitHub Actions workflow triggers on the `main` push and
+   runs `yarn release` (`build` → `changeset publish`) using the `NPM_TOKEN` secret.
+   Set that secret in the repository settings before the first publish.
 
 ## Testing
 
@@ -305,8 +404,8 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 **Rebuild a package before running tests in packages that depend on it.**
 
 - **rc-common**: Shared controllers and directives (`DragController`,
-  `ResizeController`, `AnchorController`, `KeyboardNavigationDirective`,
-  `MouseMoveDirective`)
+  `ResizeController`, `AnchorController`, `ScrollObserverController`,
+  `KeyboardNavigationDirective`, `MouseMoveDirective`)
 - **rc-listbox**: Light-DOM ARIA listbox used by select, combobox, and
   transfer-list → rc-common
 - **rc-menu**: ARIA menu popup → rc-common
@@ -316,6 +415,14 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-menu-button**: Menu button → rc-common, rc-menu
 - **rc-menubar**: Menubar with roving tabindex → rc-common, rc-menu, rc-menu-button
 - **rc-toolbar**: ARIA toolbar → rc-common
+- **rc-app-bar**: Headless grid app bar with leading/title/center/trailing
+  regions, dual-mode scrolled state, and pinned/collapse/hide scroll behavior;
+  no implicit landmark role → rc-common
+- **rc-fab**: Floating action button with regular and extended variants
+  (standalone)
+- **rc-search-bar**: Enhances a required native `input[type="search"]` with
+  icon chrome, a clear button, and debounced `rc-search-bar-input` events
+  (standalone)
 - **rc-splitter**: Resizable pane splitter → rc-common
 - **rc-textarea**: Enhanced textarea (standalone)
 - **rc-textarea-adapters**: Adapter factories for lezer, unified, and shiki tokenizers → rc-textarea
@@ -328,4 +435,5 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-transfer-list**: Transfer list → rc-listbox
 - **rc-virtual-canvas**: Virtual canvas (standalone)
 - **rc-dialog**: Draggable/resizable `<dialog>` wrapper → rc-common
+- **rc-theme-material**: Optional CSS-only Material 3 token bridge (standalone)
 - **rc-webcomponents**: Aggregate package → all component packages

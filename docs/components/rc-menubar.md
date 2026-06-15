@@ -183,6 +183,12 @@ A realistic editor structure with Format, Insert, and View menus.
 </div>
 </ClientOnly>
 
+## Material bridge
+
+`@rcarls/rc-theme-material` maps Material surface, shape, spacing, and menu
+tokens into this component. Consumer-provided native buttons retain their own
+appearance. See [Theme previews](/guide/theme-previews).
+
 ## API
 
 <ApiTable tag="rc-menubar" />

@@ -1,54 +1,26 @@
 <script setup lang="ts">
 import { ref, onBeforeUnmount, onMounted } from 'vue';
 
-type PreviewTheme = 'none' | 'material' | 'ios' | 'fluent' | 'carbon';
-
-const STORAGE_KEY = 'rc-preview-theme';
-const CHANGE_EVENT = 'rc-preview-theme-change';
-
-const themes: { id: PreviewTheme; label: string }[] = [
-  { id: 'none', label: 'None' },
-  { id: 'material', label: 'Material' },
-  { id: 'ios', label: 'iOS' },
-  { id: 'fluent', label: 'Fluent' },
-  { id: 'carbon', label: 'Carbon' },
-];
+import {
+  getActivePreviewTheme,
+  PREVIEW_THEME_CHANGE_EVENT,
+  PREVIEW_THEMES,
+  type PreviewTheme,
+} from '../preview-theme-controller';
 
 const active = ref<PreviewTheme>('none');
-let demoObserver: MutationObserver | null = null;
 
-function applyThemeToDemoSections(theme: PreviewTheme) {
-  if (theme === 'none') delete document.body.dataset.rcPreviewTheme;
-  else document.body.dataset.rcPreviewTheme = theme;
-
-  document.querySelectorAll<HTMLElement>('.demo-section').forEach((section) => {
-    if (theme === 'none') delete section.dataset.rcPreviewTheme;
-    else section.dataset.rcPreviewTheme = theme;
-  });
-}
-
-function applyTheme(theme: PreviewTheme) {
-  active.value = theme;
-  try { localStorage.setItem(STORAGE_KEY, theme); } catch { /* storage unavailable */ }
-  applyThemeToDemoSections(theme);
-  window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: { theme } }));
+function syncActiveTheme(event: Event) {
+  active.value = (event as CustomEvent<{ theme: PreviewTheme }>).detail.theme;
 }
 
 onMounted(() => {
-  let saved: PreviewTheme = 'none';
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY) as PreviewTheme | null;
-    if (stored && themes.some((t) => t.id === stored)) saved = stored;
-  } catch { /* storage unavailable */ }
-  applyTheme(saved);
-
-  demoObserver = new MutationObserver(() => applyThemeToDemoSections(active.value));
-  demoObserver.observe(document.body, { childList: true, subtree: true });
+  active.value = getActivePreviewTheme();
+  window.addEventListener(PREVIEW_THEME_CHANGE_EVENT, syncActiveTheme);
 });
 
 onBeforeUnmount(() => {
-  demoObserver?.disconnect();
-  demoObserver = null;
+  window.removeEventListener(PREVIEW_THEME_CHANGE_EVENT, syncActiveTheme);
 });
 </script>
 
@@ -61,10 +33,9 @@ onBeforeUnmount(() => {
       data-rc-preview-theme-select
       :value="active"
       aria-label="Preview theme"
-      @change="applyTheme(($event.target as HTMLSelectElement).value as PreviewTheme)"
     >
       <option
-        v-for="t in themes"
+        v-for="t in PREVIEW_THEMES"
         :key="t.id"
         :value="t.id"
       >{{ t.label }}</option>

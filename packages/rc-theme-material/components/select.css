@@ -1,0 +1,34 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(trigger) {
+    box-sizing: border-box;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(trigger):hover {
+    border-color: var(--md-sys-color-on-surface, CanvasText);
+    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 4%, var(--md-sys-color-surface, Field));
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(trigger):focus-visible,
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(trigger)[aria-expanded='true'] {
+    border-color: var(--md-sys-color-primary, Highlight);
+    box-shadow: inset 0 0 0 1px var(--md-sys-color-primary, Highlight);
+    outline: none;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(chip) {
+    min-block-size: 2rem;
+    border-color: var(--md-sys-color-outline, ButtonBorder);
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant, ButtonText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(chip):hover {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface-variant, CanvasText) 8%, transparent);
+    color: var(--md-sys-color-on-surface-variant, CanvasText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(listbox) {
+    background: var(--md-menu-container-color, var(--md-sys-color-surface-container, Canvas));
+  }
+}

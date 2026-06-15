@@ -1,13 +1,17 @@
 {
   "name": "@rcarls/rc-textarea-plugin-markdown",
-  "private": true,
-  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.2.0",
+  "description": "Markdown decoration plugin for rc-textarea",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-textarea-plugin-markdown"
   },
   "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist"

@@ -198,6 +198,12 @@ Thumbs are visible and focusable but values cannot be changed.
 </rc-range-slider>
 ```
 
+## Material bridge
+
+`@rcarls/rc-theme-material` maps Material slider track, handle, label, shape,
+focus, hover, active, and disabled tokens into this component. See
+[Theme previews](/guide/theme-previews) for integration details.
+
 ## API
 
 <ApiTable tag="rc-range-slider" />

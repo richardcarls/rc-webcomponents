@@ -1,0 +1,31 @@
+@layer rc-theme-material.components {
+  @media (prefers-reduced-motion: reduce) {
+    :where(.rc-theme-material, :host(.rc-theme-material)) *,
+    :where(.rc-theme-material, :host(.rc-theme-material)) *::before,
+    :where(.rc-theme-material, :host(.rc-theme-material)) *::after {
+      transition-duration: 0s !important;
+      animation-duration: 0s !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where(.rc-theme-material, :host(.rc-theme-material)) :is(
+      rc-select,
+      rc-combobox,
+      rc-search-bar,
+      rc-textarea,
+      rc-markdown-editor,
+      rc-menu,
+      rc-menubar,
+      rc-toolbar,
+      rc-dialog > dialog
+    ) {
+      forced-color-adjust: auto;
+      box-shadow: none;
+    }
+
+    :where(.rc-theme-material, :host(.rc-theme-material)) :is(button, [role='button'], [role^='menuitem']):focus-visible {
+      outline: 2px solid Highlight;
+    }
+  }
+}

@@ -1,0 +1,27 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-transfer-list {
+    --rc-transfer-list-gap: 1rem;
+    --rc-transfer-list-panel-gap: 0.5rem;
+    --rc-transfer-list-listbox-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-transfer-list::part(panel) {
+    padding: 0.75rem;
+    border-radius: var(--md-sys-shape-corner-medium, 0.75rem);
+    background: var(--md-sys-color-surface-container, Canvas);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-transfer-list::part(label) {
+    color: var(--md-sys-color-on-surface-variant, CanvasText);
+    font-weight: 500;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-transfer-list::part(button) {
+    min-block-size: 2.5rem;
+    padding-inline: 1rem;
+    border: 0;
+    border-radius: var(--md-sys-shape-corner-full, 999px);
+    background: var(--md-sys-color-secondary-container, ButtonFace);
+    color: var(--md-sys-color-on-secondary-container, ButtonText);
+  }
+}

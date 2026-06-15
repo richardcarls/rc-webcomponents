@@ -1,0 +1,14 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-accordion {
+    display: grid;
+    gap: 0.125rem;
+    overflow: hidden;
+    border-radius: var(--md-sys-shape-corner-medium, 0.75rem);
+    background: var(--md-sys-color-surface-container, Canvas);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-accordion > rc-disclosure > details {
+    border: 0;
+    background: transparent;
+  }
+}

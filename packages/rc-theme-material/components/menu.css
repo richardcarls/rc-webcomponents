@@ -1,0 +1,24 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu :is(button, [role='menuitem'], [role='menuitemradio'], [role='menuitemcheckbox']) {
+    min-block-size: 3rem;
+    border: 0;
+    background: transparent;
+    color: var(--md-sys-color-on-surface, CanvasText);
+    font: inherit;
+    transition: background-color 150ms ease;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu :is(button, [role='menuitem'], [role='menuitemradio'], [role='menuitemcheckbox']):hover {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu :is([aria-checked='true'], [aria-current='true']) {
+    background: var(--md-sys-color-secondary-container, Highlight);
+    color: var(--md-sys-color-on-secondary-container, HighlightText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu :is(button, [role^='menuitem']):focus-visible {
+    outline: 2px solid var(--md-sys-color-primary, Highlight);
+    outline-offset: -2px;
+  }
+}

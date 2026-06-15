@@ -45,6 +45,7 @@ import {
 
 | Package | Purpose |
 | --- | --- |
+| `rc-app-bar` | Headless app bar with exact-center composition and scroll behaviors. |
 | `rc-combobox` | Editable ARIA combobox. |
 | `rc-dialog` | Native `<dialog>` enhancement wrapper. |
 | `rc-listbox` | Light-DOM ARIA listbox. |

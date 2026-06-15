@@ -309,6 +309,11 @@ export class RCTextarea extends LitElement {
       this._syncGutterHeights();
     });
     this._resizeObserver.observe(this);
+
+    // Render any value already set via defaultValue/value before first update.
+    // The slot-change path covers editable mode (slotted <textarea> triggers it);
+    // read-only mode has no slotted element so the render must be seeded here.
+    this._scheduleRender();
   }
 
   override updated(changed: Map<string, unknown>): void {

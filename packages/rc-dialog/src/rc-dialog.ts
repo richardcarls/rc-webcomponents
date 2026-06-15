@@ -179,8 +179,8 @@ export class RCDialog extends LitElement {
   requestClose(returnValue?: string): void {
     const dlg = this._dlg();
     if (!dlg) return;
-    if (typeof (dlg as any).requestClose === 'function') {
-      (dlg as any).requestClose(returnValue);
+    if ('requestClose' in dlg && typeof dlg.requestClose === 'function') {
+      dlg.requestClose(returnValue);
     } else {
       // Synthesize a cancelable cancel event; _onCancel fires rc-dialog-request-close.
       // If not prevented, _onCancel does not call dlg.close() — we do it here.
