@@ -17,7 +17,7 @@ declare global {
  *
  * Place the button icon in the `icon` slot:
  * ```html
- * <rc-fab label="New recipe">
+ * <rc-fab label="New item">
  *   <iconify-icon slot="icon" icon="mdi-plus"></iconify-icon>
  * </rc-fab>
  * ```

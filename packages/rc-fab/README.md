@@ -17,11 +17,11 @@ import '@rcarls/rc-fab/define';
 ## Usage
 
 ```html
-<rc-fab label="New recipe">
+<rc-fab label="New item">
   <span slot="icon" aria-hidden="true">+</span>
 </rc-fab>
 
-<rc-fab variant="extended" label="New recipe">
+<rc-fab variant="extended" label="New item">
   <span slot="icon" aria-hidden="true">+</span>
 </rc-fab>
 ```

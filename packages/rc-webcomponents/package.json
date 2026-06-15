@@ -15,7 +15,8 @@
   "type": "module",
   "files": [
     "dist",
-    "src/solid.d.ts"
+    "src/solid.d.ts",
+    "themes"
   ],
   "module": "./dist/rc-webcomponents.js",
   "exports": {
@@ -34,11 +35,12 @@
     "./solid": {
       "types": "./src/solid.d.ts"
     },
-    "./themes/base.css": "../../themes/base.css"
+    "./themes/base.css": "./themes/base.css"
   },
   "types": "./dist/types/index.d.ts",
   "sideEffects": [
-    "./dist/rc-webcomponents-define.js"
+    "./dist/rc-webcomponents-define.js",
+    "./themes/*.css"
   ],
   "scripts": {
     "build": "tsc && vite build",
@@ -63,7 +65,8 @@
     "@rcarls/rc-splitter": "workspace:^",
     "@rcarls/rc-textarea": "workspace:^",
     "@rcarls/rc-toolbar": "workspace:^",
-    "@rcarls/rc-transfer-list": "workspace:^"
+    "@rcarls/rc-transfer-list": "workspace:^",
+    "@rcarls/rc-virtual-canvas": "workspace:^"
   },
   "peerDependencies": {
     "lit": "^3.0.0"

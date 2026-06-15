@@ -33,8 +33,14 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Build packages
-        run: yarn build
+      - name: Fetch release tags
+        run: git fetch --tags --force
+
+      - name: Validate release tag
+        run: yarn validate:release
+
+      - name: Build, validate packages, and test
+        run: yarn ci
 
       - name: Publish changed packages
         run: yarn changeset publish
