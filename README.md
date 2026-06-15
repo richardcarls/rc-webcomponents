@@ -2,6 +2,8 @@
 
 A collection of WAI-ARIA compliant web components built with [Lit 3.x](https://lit.dev). Yarn workspaces monorepo — each package is independently consumable.
 
+**[Documentation](https://richardcarls.github.io/rc-webcomponents/)**
+
 ## Design principles
 
 These are the guiding constraints for every component in the collection. Not every package fully achieves all four today, but they serve as the target for new work and the lens for reviewing existing work.

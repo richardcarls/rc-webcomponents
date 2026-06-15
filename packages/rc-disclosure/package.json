@@ -10,7 +10,7 @@
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-disclosure"
   },
-  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-disclosure",
   "license": "MIT",
   "type": "module",
   "files": [

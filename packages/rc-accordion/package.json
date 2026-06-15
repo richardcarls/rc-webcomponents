@@ -10,7 +10,7 @@
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-accordion"
   },
-  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-accordion",
   "license": "MIT",
   "type": "module",
   "files": [

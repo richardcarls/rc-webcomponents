@@ -10,7 +10,7 @@
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-menu-button"
   },
-  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-menu-button",
   "license": "MIT",
   "type": "module",
   "files": [

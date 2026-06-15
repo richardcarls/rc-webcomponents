@@ -10,7 +10,7 @@
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-transfer-list"
   },
-  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-transfer-list",
   "license": "MIT",
   "type": "module",
   "files": [

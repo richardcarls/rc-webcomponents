@@ -10,7 +10,7 @@
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-splitter"
   },
-  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-splitter",
   "license": "MIT",
   "type": "module",
   "files": [
