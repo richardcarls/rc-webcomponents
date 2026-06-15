@@ -20,12 +20,12 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/types/packages/rc-textarea-plugin-markdown/src/index.d.ts",
+        "types": "./dist/types/index.d.ts",
         "default": "./dist/rc-textarea-plugin-markdown.js"
       }
     }
   },
-  "types": "./dist/types/packages/rc-textarea-plugin-markdown/src/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "build": "tsc && vite build",

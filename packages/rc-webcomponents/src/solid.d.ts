@@ -130,6 +130,7 @@ export type RCMenuButtonRef = HTMLElement & {
   open: boolean | undefined;
   defaultOpen: boolean;
   orientation: 'horizontal' | 'vertical' | undefined;
+  placement: 'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'left-start' | 'left-end' | 'right' | 'right-start' | 'right-end';
 };
 
 /** Public API surface of `<rc-menubar>`. */
@@ -169,11 +170,72 @@ export type RCTextareaRef = HTMLElement & {
   replaceSelection(text: string): void;
 };
 
-export type RCTextEditorRef = RCTextareaRef & {
+export type RCMarkdownEditorRef = HTMLElement & {
+  value: string;
+  defaultValue: string;
   toolbar: boolean;
-  markdown: boolean;
-  preview: boolean;
-  defaultPreview: boolean;
+  sourceMode: boolean;
+  defaultSourceMode: boolean;
+  readOnly: boolean;
+};
+
+export type RCMarkdownEditorFormats = {
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  code?: boolean;
+  link?: boolean;
+  heading?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | null;
+  blockquote?: boolean;
+  bulletList?: boolean;
+  orderedList?: boolean;
+  codeBlock?: boolean;
+  codeLanguage?: string | null;
+};
+
+export type RCVirtualCanvasViewRect = Readonly<{
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}>;
+
+export type RCVirtualCanvasRenderDetail = {
+  time: DOMHighResTimeStamp;
+  reason: 'animation-frame' | 'viewport-change' | 'manual';
+  viewRect: RCVirtualCanvasViewRect;
+  contentRect: RCVirtualCanvasViewRect;
+};
+
+export type RCVirtualCanvasPointerDetail = {
+  type: string;
+  clientX: number;
+  clientY: number;
+  contentX: number;
+  contentY: number;
+  viewRect: RCVirtualCanvasViewRect;
+  button: number;
+  buttons: number;
+  altKey: boolean;
+  ctrlKey: boolean;
+  shiftKey: boolean;
+  metaKey: boolean;
+  sourceEvent: PointerEvent | MouseEvent;
+};
+
+export type RCVirtualCanvasRef = HTMLElement & {
+  contentWidth: number;
+  contentHeight: number;
+  autoResizeCanvas: boolean;
+  renderMode: 'continuous' | 'viewport-change' | 'manual';
+  imageRendering: 'auto' | 'crisp-edges' | 'pixelated';
+  getViewRect(): RCVirtualCanvasViewRect;
+  scrollToContent(x: number, y: number, options?: ScrollToOptions): void;
+  centerOnContent(x: number, y: number, options?: ScrollToOptions): void;
+  clientToContent(clientX: number, clientY: number): Readonly<{ x: number; y: number }>;
+  contentToClient(x: number, y: number): Readonly<{ x: number; y: number }>;
+  requestRender(reason?: 'animation-frame' | 'viewport-change' | 'manual'): void;
 };
 
 export type RCSliderRef = HTMLElement & {
@@ -348,6 +410,7 @@ declare module 'solid-js' {
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
         orientation?: 'horizontal' | 'vertical';
+        placement?: 'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'left-start' | 'left-end' | 'right' | 'right-start' | 'right-end';
         'on:rc-menu-button-toggle'?: (e: CustomEvent<{ open: boolean }>) => void;
       };
 
@@ -422,28 +485,21 @@ declare module 'solid-js' {
         'on:rc-toolbar-action'?: (e: CustomEvent<{ action: string }>) => void;
       };
 
-      'rc-text-editor': JSX.HTMLAttributes<RCTextEditorRef> & {
+      'rc-markdown-editor': JSX.HTMLAttributes<RCMarkdownEditorRef> & {
         value?: string;
         defaultValue?: string;
-        plugin?: RCTextareaPlugin | null;
+        'default-value'?: string;
         'prop:value'?: string | undefined;
         'prop:defaultValue'?: string | undefined;
-        'prop:plugin'?: RCTextareaPlugin | null;
         toolbar?: boolean | string;
-        markdown?: boolean | string;
-        preview?: boolean | string;
-        'default-preview'?: boolean | string;
-        'prop:preview'?: boolean | undefined;
-        'prop:defaultPreview'?: boolean | undefined;
-        'line-numbers'?: boolean | string;
-        'list-numbers'?: boolean | string;
-        gutter?: boolean | string;
-        'word-wrap'?: boolean | string;
-        'auto-grow'?: boolean | string;
+        'source-mode'?: boolean | string;
+        'default-source-mode'?: boolean | string;
+        'prop:sourceMode'?: boolean | undefined;
+        'prop:defaultSourceMode'?: boolean | undefined;
         'read-only'?: boolean | string;
-        label?: string;
-        'on:rc-textarea-change'?: (e: CustomEvent<{ value: string }>) => void;
-        'on:rc-preview-change'?: (e: CustomEvent<{ preview: boolean }>) => void;
+        'on:rc-change'?: (e: CustomEvent<{ value: string }>) => void;
+        'on:rc-mode-change'?: (e: CustomEvent<{ mode: 'rich' | 'source' }>) => void;
+        'on:rc-formatting-change'?: (e: CustomEvent<RCMarkdownEditorFormats>) => void;
       };
 
       'rc-fab': JSX.HTMLAttributes<HTMLElement> & {
@@ -471,6 +527,16 @@ declare module 'solid-js' {
         'prop:defaultValue'?: string | undefined;
         'on:rc-search-bar-input'?: (e: CustomEvent<RCSearchBarInputDetail>) => void;
         'on:rc-search-bar-clear'?: (e: CustomEvent) => void;
+      };
+
+      'rc-virtual-canvas': JSX.HTMLAttributes<RCVirtualCanvasRef> & {
+        contentWidth?: number | string;
+        contentHeight?: number | string;
+        'auto-resize-canvas'?: boolean | string;
+        'render-mode'?: 'continuous' | 'viewport-change' | 'manual';
+        'image-rendering'?: 'auto' | 'crisp-edges' | 'pixelated';
+        'on:rc-virtual-canvas-render'?: (e: CustomEvent<RCVirtualCanvasRenderDetail>) => void;
+        'on:rc-virtual-canvas-pointer'?: (e: CustomEvent<RCVirtualCanvasPointerDetail>) => void;
       };
 
       'rc-textarea': JSX.HTMLAttributes<RCTextareaRef> & {

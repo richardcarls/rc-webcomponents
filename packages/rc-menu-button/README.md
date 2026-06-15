@@ -119,7 +119,9 @@ Keyboard handling depends on the resolved `orientation` (horizontal by default, 
 
 ## Notes
 
-**Popup positioning** currently uses `position: absolute; top: 100%; left: 0` relative to the host. A future release will migrate to `AnchorController` (CSS Anchor Positioning) to support directional flipping and better viewport-aware placement.
+**Popup positioning** uses `AnchorController`, with native CSS Anchor
+Positioning when available and a viewport-aware fallback otherwise. Set the
+`placement` property or attribute to choose the preferred direction.
 
 **Light dismiss** is active at all times. A capture-phase `click` listener on `document` closes the menu whenever the click falls outside the component boundary (checked via `composedPath()`).
 

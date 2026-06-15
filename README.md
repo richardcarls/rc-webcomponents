@@ -83,10 +83,16 @@ Custom elements are framework-agnostic by definition. Components follow the stan
 | [`rc-app-bar`](packages/rc-app-bar/) | Headless grid app bar with exact-center composition and pinned, collapse, or hide scroll behavior | rc-common |
 | [`rc-splitter`](packages/rc-splitter/) | Resizable pane splitter (`separator` role) | rc-common |
 | [`rc-textarea`](packages/rc-textarea/) | Enhanced `<textarea>` — line decorations, gutter, plugin API | — |
+| [`rc-textarea-adapters`](packages/rc-textarea-adapters/) | Adapter factories for Lezer, unified, and Shiki tokenizers | rc-textarea |
+| [`rc-textarea-plugin-markdown`](packages/rc-textarea-plugin-markdown/) | Markdown decoration plugin for rc-textarea | rc-textarea |
+| [`rc-markdown-editor`](packages/rc-markdown-editor/) | Rich/source Markdown editor with a formatting toolbar | rc-textarea |
 | [`rc-disclosure`](packages/rc-disclosure/) | Native `<details>` / `<summary>` disclosure wrapper | — |
 | [`rc-accordion`](packages/rc-accordion/) | Accordion coordinator for disclosure groups | rc-disclosure |
 | [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable `<dialog>` wrapper with accessible event forwarding | rc-common |
 | [`rc-fab`](packages/rc-fab/) | Floating action button with regular and extended variants | — |
+| [`rc-slider`](packages/rc-slider/) | Single-thumb slider backed by a native range input | rc-common |
+| [`rc-range-slider`](packages/rc-range-slider/) | Two-thumb range slider backed by native range inputs | rc-common |
+| [`rc-transfer-list`](packages/rc-transfer-list/) | Native-select-backed transfer list | rc-listbox, rc-toolbar |
 | [`rc-virtual-canvas`](packages/rc-virtual-canvas/) | Virtualized canvas for large datasets | — |
 | [`rc-theme-material`](packages/rc-theme-material/) | Optional CSS-only Material 3 token bridge | — |
 | [`rc-webcomponents`](packages/rc-webcomponents/) | Aggregate package exporting the component collection | all component packages |

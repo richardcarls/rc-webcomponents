@@ -244,7 +244,7 @@ Use `!` before the colon for breaking changes: `feat(rc-slider)!: rename value a
 This project uses [Changesets](https://github.com/changesets/changesets) for versioning
 and changelog generation, combined with GitFlow branching.
 
-All 25 component packages are version-locked together (`fixed` group in `.changeset/config.json`).
+All 25 published packages are version-locked together (`fixed` group in `.changeset/config.json`).
 A single changeset bump moves all packages to the same new version.
 
 ### During feature development
@@ -300,9 +300,23 @@ generated `.changeset/*.md` file alongside the code change. Changesets accumulat
    git branch -d release/vX.Y.Z
    ```
 
-5. **Push** — the `release.yml` GitHub Actions workflow triggers on the `main` push and
-   runs `yarn release` (`build` → `changeset publish`) using the `NPM_TOKEN` secret.
-   Set that secret in the repository settings before the first publish.
+5. **Push `main` and the tag together** — the `release.yml` workflow triggers on the
+   `main` push, but publishing proceeds only when `HEAD` has an exact `vX.Y.Z` tag
+   matching every fixed-group package version. The workflow rebuilds, validates
+   packed exports, runs browser tests, and publishes with the `NODE_AUTH_TOKEN`
+   secret.
+
+Feature flow: create `feature/<name>` from `develop`, implement and add a
+changeset, merge to `develop` with `--no-ff`, then push `develop` for CI.
+
+Release flow: create `release/vX.Y.Z`, run `version:packages`, validate, merge to
+`main`, create annotated tag `vX.Y.Z` on the merge commit, push `main` and the
+tag together, then back-merge `main` to `develop`.
+
+Use `yarn.cmd validate:packages` to verify package metadata, aggregate coverage,
+and every declared export against dry-run pack contents. Use
+`yarn.cmd validate:release` on a release merge commit to verify the exact tag,
+fixed-group versions, and absence of pending changesets.
 
 ## Testing
 
@@ -426,7 +440,8 @@ Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
 - **rc-splitter**: Resizable pane splitter → rc-common
 - **rc-textarea**: Enhanced textarea (standalone)
 - **rc-textarea-adapters**: Adapter factories for lezer, unified, and shiki tokenizers → rc-textarea
-- **rc-text-editor**: Rich text editor extending rc-textarea; includes `<rc-editor-toolbar>` (light DOM formatting toolbar) as a co-located component → rc-textarea
+- **rc-markdown-editor**: Rich/source Markdown editor with a co-located
+  `<rc-editor-toolbar>` → rc-textarea
 - **rc-textarea-plugin-markdown**: Markdown decoration plugin usable standalone on any rc-textarea (peer deps: micromark, mdast-util-from-markdown, unist-util-visit)
 - **rc-disclosure**: Disclosure widget (standalone)
 - **rc-accordion**: Accordion coordinator for disclosure groups → rc-disclosure

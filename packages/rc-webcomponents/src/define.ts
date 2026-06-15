@@ -17,5 +17,6 @@ import '@rcarls/rc-markdown-editor/define';
 import '@rcarls/rc-textarea/define';
 import '@rcarls/rc-toolbar/define';
 import '@rcarls/rc-transfer-list/define';
+import '@rcarls/rc-virtual-canvas/define';
 
 export * from './index.js';

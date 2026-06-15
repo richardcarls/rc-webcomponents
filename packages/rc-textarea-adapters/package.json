@@ -20,12 +20,12 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/types/packages/rc-textarea-adapters/src/index.d.ts",
+        "types": "./dist/types/index.d.ts",
         "default": "./dist/rc-textarea-adapters.js"
       }
     }
   },
-  "types": "./dist/types/packages/rc-textarea-adapters/src/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "build": "tsc && vite build"

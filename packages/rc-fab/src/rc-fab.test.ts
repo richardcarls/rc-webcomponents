@@ -9,7 +9,7 @@ import type { RCFab } from './rc-fab.ts';
 
 test('regular variant exposes the label as the button accessible name', async () => {
   const screen = render(html`
-    <rc-fab data-testid="host" label="New recipe">
+    <rc-fab data-testid="host" label="New item">
       <span slot="icon" aria-hidden="true">+</span>
     </rc-fab>
   `);
@@ -18,13 +18,13 @@ test('regular variant exposes the label as the button accessible name', async ()
   await host.updateComplete;
 
   const button = host.shadowRoot?.querySelector('button');
-  expect(button?.getAttribute('aria-label')).toBe('New recipe');
-  expect(button?.textContent?.trim()).toBe('New recipe');
+  expect(button?.getAttribute('aria-label')).toBe('New item');
+  expect(button?.textContent?.trim()).toBe('New item');
 });
 
 test('extended variant renders the visible label without a redundant aria-label', async () => {
   const screen = render(html`
-    <rc-fab data-testid="host" variant="extended" label="New recipe">
+    <rc-fab data-testid="host" variant="extended" label="New item">
       <span slot="icon" aria-hidden="true">+</span>
     </rc-fab>
   `);
@@ -34,12 +34,12 @@ test('extended variant renders the visible label without a redundant aria-label'
 
   const button = host.shadowRoot?.querySelector('button');
   expect(button?.getAttribute('aria-label')).toBe('');
-  expect(button?.textContent?.trim()).toBe('New recipe');
+  expect(button?.textContent?.trim()).toBe('New item');
 });
 
 test('disabled maps to the native button', async () => {
   const screen = render(html`
-    <rc-fab data-testid="host" label="New recipe" disabled></rc-fab>
+    <rc-fab data-testid="host" label="New item" disabled></rc-fab>
   `);
 
   const host = (await screen.getByTestId('host').element()) as RCFab;
@@ -50,7 +50,7 @@ test('disabled maps to the native button', async () => {
 
 test('has no automated accessibility violations', async () => {
   const screen = render(html`
-    <rc-fab data-testid="host" label="New recipe">
+    <rc-fab data-testid="host" label="New item">
       <span slot="icon" aria-hidden="true">+</span>
     </rc-fab>
   `);

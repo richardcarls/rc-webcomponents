@@ -17,7 +17,7 @@ import type {
   EditorToolbarActionDetail,
   HeadingLevel,
 } from './types.ts';
-import { getFormatsFromDecorations } from './formatting.ts';
+import { getFormatsFromDecorations, setCodeBlockLanguage } from './formatting.ts';
 
 
 // ── Markdown rendering options ────────────────────────────────────────────────
@@ -582,15 +582,11 @@ export class RcMarkdownEditor extends LitElement {
     const editor = this._sourceEditor;
     if (!api || !editor) return;
 
-    const { value, selectionStart } = api;
-    // Find the opening fence line (``` or ```lang) above the cursor
-    const before = value.slice(0, selectionStart);
-    const fenceMatch = before.match(/```\w*\n(?![\s\S]*```)/);
-    if (!fenceMatch?.index === undefined) return;
+    const nextValue = setCodeBlockLanguage(api.value, api.selectionStart, lang);
 
-    const fenceStart = (fenceMatch?.index ?? 0);
-    const fenceEnd = fenceStart + (fenceMatch?.[0].indexOf('\n') ?? 3) + 1;
-    editor.value = value.slice(0, fenceStart) + '```' + lang + '\n' + value.slice(fenceEnd);
+    if (nextValue === null) return;
+
+    editor.value = nextValue;
   }
 
   /** Updates the data-lang attribute on the <pre> at the cursor in rich mode. */
