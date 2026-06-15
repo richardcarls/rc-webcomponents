@@ -1,6 +1,8 @@
 {
   "name": "@rcarls/rc-theme-material",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
   "description": "Optional Material 3 design-token bridge for rc-webcomponents.",
   "repository": {

@@ -1,5 +1,6 @@
 export default {
   title: 'rc-webcomponents',
+  base: '/rc-webcomponents/',
   titleTemplate: ':title | rc-webcomponents',
   description: 'WAI-ARIA compliant headless web components built with Lit',
   lastUpdated: true,

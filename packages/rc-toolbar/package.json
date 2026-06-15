@@ -1,13 +1,17 @@
 {
   "name": "@rcarls/rc-toolbar",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
+  "description": "Headless WAI-ARIA toolbar web component built with Lit",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-toolbar"
   },
   "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist"

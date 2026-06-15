@@ -1,13 +1,17 @@
 {
   "name": "@rcarls/rc-app-bar",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
+  "description": "Headless grid app bar with scroll behaviors and leading/title/center/trailing regions, built with Lit",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-app-bar"
   },
   "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist"

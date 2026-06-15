@@ -1,13 +1,17 @@
 {
   "name": "@rcarls/rc-search-bar",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
+  "description": "Headless search bar enhancing a native input[type=search] with clear button and debounced events, built with Lit",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-search-bar"
   },
   "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist"

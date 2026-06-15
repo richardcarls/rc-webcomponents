@@ -1,13 +1,17 @@
 {
   "name": "@rcarls/rc-combobox",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
+  "description": "Headless editable combobox with filtering and allow-create, built with Lit",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-combobox"
   },
   "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist"

@@ -1,13 +1,17 @@
 {
   "name": "@rcarls/rc-webcomponents",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
+  "description": "Aggregate package — all @rcarls WAI-ARIA compliant headless web components",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-webcomponents"
   },
   "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist",
