@@ -34,5 +34,5 @@
   "linked": [],
   "access": "public",
   "baseBranch": "develop",
-  "ignore": []
+  "ignore": ["@rcarls/docs"]
 }

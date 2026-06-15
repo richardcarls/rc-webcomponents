@@ -30,7 +30,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "vitest run --project=chromium",
+    "build": "echo 'CSS-only package, no build step'",
     "test:browser": "vitest",
     "test:browser:chrome": "vitest --project=chromium",
     "test:browser:firefox": "vitest --project=firefox",

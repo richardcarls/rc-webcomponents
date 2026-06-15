@@ -18,20 +18,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Enable Corepack
         run: corepack enable
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
           cache: yarn
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      - name: Build packages
+        run: yarn build
 
       - name: Generate Custom Elements Manifest
         run: yarn cem:analyze
