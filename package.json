@@ -16,7 +16,7 @@
     "docs"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach --all --parallel --topological --exclude '@rcarls/docs' run build",
+    "build": "yarn workspaces foreach --all --topological --exclude '@rcarls/docs' run build",
     "test": "yarn workspaces foreach --all --exclude '@rcarls/docs' run test:browser",
     "cem:analyze": "cem analyze",
     "docs": "yarn cem:analyze && yarn workspace @rcarls/docs run dev",
