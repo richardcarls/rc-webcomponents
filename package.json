@@ -7,10 +7,10 @@
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git"
   },
   "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
-  "description": "A collection of web components.",
+  "description": "A collection of themeable headless web components architected for progressive enhancement and accessibility.",
   "author": "Richard Carls <richard.j.carls@gmail.com>",
   "license": "MIT",
-  "packageManager": "yarn@4.14.1",
+  "packageManager": "yarn@4.16.0",
   "workspaces": [
     "packages/*",
     "docs"
@@ -21,10 +21,16 @@
     "cem:analyze": "cem analyze",
     "docs": "yarn cem:analyze && yarn workspace @rcarls/docs run dev",
     "docs:build": "yarn cem:analyze && yarn workspace @rcarls/docs run build",
-    "yalc:publish": "yarn workspaces foreach --all --topological --exclude '@rcarls/docs' run yalc:publish"
+    "yalc:publish": "yarn workspaces foreach --all --topological --exclude '@rcarls/docs' run yalc:publish",
+    "version:packages": "changeset version",
+    "release": "yarn build && changeset publish",
+    "prepare": "husky"
   },
   "customElements": "dist/custom-elements.json",
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
     "@custom-elements-manifest/analyzer": "0.11.0",
     "@guanghechen/rollup-plugin-copy": "^6.0.9",
     "@types/node": "^25.6.0",
@@ -32,6 +38,7 @@
     "@yarnpkg/types": "^4.0.1",
     "api-viewer-element": "^1.0.0-pre.10",
     "axe-core": "^4.11.4",
+    "husky": "^9.1.7",
     "lit": "^3.0.0",
     "playwright": "^1.56.0",
     "rollup": "^4.60.2",

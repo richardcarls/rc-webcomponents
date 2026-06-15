@@ -220,6 +220,90 @@ rebuild affected dependencies before running tests in packages that consume
 them. Vite HMR does not watch dependency `dist/` output through `node_modules`;
 restart the consuming package dev server after rebuilding a dependency.
 
+## Commit messages
+
+All commits must follow [Conventional Commits](https://www.conventionalcommits.org/).
+`commitlint` enforces this via a Husky `commit-msg` hook on every commit.
+
+```text
+type(scope): short description
+
+feat      – new user-facing capability
+fix       – bug fix
+refactor  – restructuring with no behavior change
+style     – formatting / cosmetic only
+chore     – maintenance (deps, build, config)
+docs      – documentation only
+test      – tests only
+```
+
+Use `!` before the colon for breaking changes: `feat(rc-slider)!: rename value attribute`.
+
+## Release workflow
+
+This project uses [Changesets](https://github.com/changesets/changesets) for versioning
+and changelog generation, combined with GitFlow branching.
+
+All 25 component packages are version-locked together (`fixed` group in `.changeset/config.json`).
+A single changeset bump moves all packages to the same new version.
+
+### During feature development
+
+After landing a meaningful change, add a changeset intent file that describes what changed
+and the bump type (`major`, `minor`, or `patch`):
+
+Windows:
+
+```powershell
+yarn.cmd changeset
+```
+
+Linux / Mac:
+
+```bash
+yarn changeset
+```
+
+The interactive prompt asks which packages changed and the bump severity. Commit the
+generated `.changeset/*.md` file alongside the code change. Changesets accumulate on
+`develop` until a release is cut.
+
+### Cutting a release (GitFlow)
+
+1. **Create the release branch** from `develop`:
+
+   ```sh
+   git checkout -b release/vX.Y.Z develop
+   ```
+
+2. **Apply all pending changesets** — bumps every package version and writes `CHANGELOG.md`
+   files; clears the `.changeset/` intent files:
+
+   Windows: `yarn.cmd version:packages`
+   Linux / Mac: `yarn version:packages`
+
+3. **Commit the version bump**:
+
+   ```sh
+   git add .
+   git commit -m "chore(release): bump packages to vX.Y.Z"
+   ```
+
+4. **Merge release → `main`** (no-ff), tag, and back-merge to `develop`:
+
+   ```sh
+   git checkout main
+   git merge --no-ff release/vX.Y.Z -m "chore(release): merge branch release/vX.Y.Z"
+   git tag vX.Y.Z
+   git checkout develop
+   git merge --no-ff main -m "chore(release): back-merge vX.Y.Z into develop"
+   git branch -d release/vX.Y.Z
+   ```
+
+5. **Push** — the `release.yml` GitHub Actions workflow triggers on the `main` push and
+   runs `yarn release` (`build` → `changeset publish`) using the `NPM_TOKEN` secret.
+   Set that secret in the repository settings before the first publish.
+
 ## Testing
 
 ### Test stack

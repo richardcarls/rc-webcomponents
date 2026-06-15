@@ -1,0 +1,39 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.4/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    [
+      "@rcarls/rc-accordion",
+      "@rcarls/rc-app-bar",
+      "@rcarls/rc-combobox",
+      "@rcarls/rc-common",
+      "@rcarls/rc-dialog",
+      "@rcarls/rc-disclosure",
+      "@rcarls/rc-fab",
+      "@rcarls/rc-listbox",
+      "@rcarls/rc-markdown-editor",
+      "@rcarls/rc-menu",
+      "@rcarls/rc-menu-button",
+      "@rcarls/rc-menubar",
+      "@rcarls/rc-range-slider",
+      "@rcarls/rc-search-bar",
+      "@rcarls/rc-select",
+      "@rcarls/rc-slider",
+      "@rcarls/rc-splitter",
+      "@rcarls/rc-textarea",
+      "@rcarls/rc-textarea-adapters",
+      "@rcarls/rc-textarea-plugin-markdown",
+      "@rcarls/rc-theme-material",
+      "@rcarls/rc-toolbar",
+      "@rcarls/rc-transfer-list",
+      "@rcarls/rc-virtual-canvas",
+      "@rcarls/rc-webcomponents"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "develop",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
