@@ -147,6 +147,18 @@ Implementation rules:
   a native `<dialog>` with no shadow root; the consuming document has
   unrestricted CSS access.
 
+## Documentation and demos
+
+The VitePress docs workspace (`@rcarls/rc-docs` in `docs/`) is the canonical
+home for public component docs, examples, and live demos. Package READMEs are
+npm landing pages and should stay short unless a package has usage that cannot
+fit naturally in the docs site.
+
+Do not add tracked package-local demo pages or shared demo assets. Files such as
+`packages/<name>/*.html` and `packages/<name>/public/` are ignored local scratch
+space for ad hoc Vite experiments only. Package builds must not depend on or
+publish those local scratch assets.
+
 ## Public API change checklist
 
 When changing a component's public API, update every associated surface in the
@@ -197,7 +209,7 @@ Use `yarn` and `npx` directly.
 Windows:
 
 ```powershell
-yarn.cmd workspace @rcarls/<package> run dev           # Dev server with hot reload
+yarn.cmd docs                                          # Docs site with live demos
 yarn.cmd workspace @rcarls/<package> run build         # TypeScript check + Vite build
 yarn.cmd workspace @rcarls/<package> run test:browser  # Run browser tests
 yarn.cmd build                                         # Build all packages using the dependency graph
@@ -207,7 +219,7 @@ yarn.cmd test                                          # Test all packages
 Linux / Mac:
 
 ```bash
-yarn workspace @rcarls/<package> run dev           # Dev server with hot reload
+yarn docs                                          # Docs site with live demos
 yarn workspace @rcarls/<package> run build         # TypeScript check + Vite build
 yarn workspace @rcarls/<package> run test:browser  # Run browser tests
 yarn build                                         # Build all packages using the dependency graph
@@ -218,7 +230,7 @@ The root `build` script runs `yarn workspaces foreach --topological`, so Yarn
 enforces package order from workspace dependencies. For targeted package work,
 rebuild affected dependencies before running tests in packages that consume
 them. Vite HMR does not watch dependency `dist/` output through `node_modules`;
-restart the consuming package dev server after rebuilding a dependency.
+restart the docs dev server after rebuilding a dependency.
 
 ## Commit messages
 

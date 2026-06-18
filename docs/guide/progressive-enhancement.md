@@ -48,7 +48,7 @@ changes, regenerate the manifest before building docs:
 
 ```sh
 yarn.cmd cem:analyze
-yarn.cmd workspace @rcarls/docs run build
+yarn.cmd workspace @rcarls/rc-docs run build
 ```
 
 On Linux and macOS, use `yarn` instead of `yarn.cmd`.

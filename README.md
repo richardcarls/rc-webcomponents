@@ -108,7 +108,7 @@ Workspace dependency arrows show which packages must be **rebuilt** before depen
 | Component model | Lit 3.x (web components, `LitElement`, reactive controllers) |
 | Language | TypeScript — `strict: true`, `noUnusedLocals`, `noUnusedParameters` |
 | Build | Vite — ESM + UMD outputs, declaration files via `vite-plugin-dts` |
-| Dev server | Vite dev server with HMR per package |
+| Docs and demos | VitePress docs site |
 | Testing | Vitest + WebdriverIO (real browser) |
 | Package manager | Yarn 4.x Berry (workspaces + PnP) |
 
@@ -117,8 +117,8 @@ Workspace dependency arrows show which packages must be **rebuilt** before depen
 ## Commands
 
 ```powershell
-# Dev server for a single package (hot reload)
-yarn.cmd workspace @rcarls/<package> run dev
+# Docs and live component demos
+yarn.cmd docs
 
 # TypeScript check + Vite build for a single package
 yarn.cmd workspace @rcarls/<package> run build
@@ -134,6 +134,11 @@ yarn.cmd test
 ```
 
 > **Dependency graph:** the root `build` script runs `yarn workspaces foreach --topological`, so Yarn enforces package order from the workspace dependency declarations. For targeted package work, rebuild affected dependencies first: `rc-common` → `rc-listbox` / `rc-menu` → `rc-select` / `rc-menu-button` → `rc-combobox` / `rc-menubar` / `rc-toolbar` / `rc-splitter` / `rc-dialog` → `rc-webcomponents`. Rebuild a dep before running tests in packages that consume it; Vite's HMR does not watch `node_modules` for dist changes.
+
+Component docs and examples live in `docs/components/`. Package READMEs are
+npm landing pages, not the canonical docs source. Package-local `.html` files
+and `public/` folders are ignored local scratch space for ad hoc Vite
+experiments; they are not tracked or part of package builds.
 
 ---
 

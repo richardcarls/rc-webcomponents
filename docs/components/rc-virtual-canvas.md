@@ -216,7 +216,7 @@ rcCanvas.addEventListener('pointermove', (e) => {
 ```
 
 ::: tip Full drawing surface demo
-Run `yarn workspace @rcarls/rc-virtual-canvas run dev` to see the full interactive drawing demo with color/size controls and a 1600 × 1200 pannable surface.
+Use `yarn.cmd docs` to run the docs site and iterate on live `rc-virtual-canvas` examples.
 :::
 
 ## API

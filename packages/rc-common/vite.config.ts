@@ -5,7 +5,7 @@ import dts from "vite-plugin-dts";
 
 export default defineConfig({
   plugins: [dts({ outDir: "dist/types" })],
-  publicDir: resolve(__dirname, "public"),
+  publicDir: process.env.NODE_ENV === 'production' ? false : resolve(__dirname, 'public'),
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

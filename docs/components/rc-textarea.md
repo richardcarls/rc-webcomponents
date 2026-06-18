@@ -267,10 +267,10 @@ editor.addPattern({ pattern: /\bHACK\b/g,  bold: true, color: '#f9e2af' });
 
 ## Plugin API
 
-The plugin API enables syntax highlighting, diagnostics, widget decorations, and cursor-aware tooltips. Explore the full demos in the package dev server:
+The plugin API enables syntax highlighting, diagnostics, widget decorations, and cursor-aware tooltips. The VitePress docs site is the canonical demo surface:
 
 ```sh
-yarn workspace @rcarls/rc-textarea run dev
+yarn.cmd docs
 ```
 
 ```js

@@ -13,6 +13,10 @@ dist-ssr
 custom-elements.json
 *.local
 
+# Local package demo scratch files
+/packages/*/*.html
+/packages/*/public/
+
 # VitePress build artifacts
 **/.vitepress/cache
 **/.vitepress/dist
