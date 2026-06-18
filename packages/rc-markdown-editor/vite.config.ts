@@ -2,21 +2,9 @@ import { resolve } from 'path';
 
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
-import { copy } from '@guanghechen/rollup-plugin-copy';
 
 export default defineConfig({
-  plugins: [
-    dts({ outDir: 'dist/types' }),
-    copy({
-      targets: [
-        {
-          src: '../../demo-shared/**/*',
-          dest: 'public',
-        },
-      ],
-      copyOnce: true,
-    }),
-  ],
+  plugins: [dts({ outDir: 'dist/types' })],
 
   // Exclude 'development' condition to prevent micromark from resolving
   // to its /dev/ entry, which imports `debug` via a Yarn Berry PnP virtual
@@ -32,7 +20,7 @@ export default defineConfig({
     exclude: ['micromark', 'mdast-util-from-markdown', 'unist-util-visit', 'turndown'],
   },
 
-  publicDir: resolve(__dirname, 'public'),
+  publicDir: process.env.NODE_ENV === 'production' ? false : resolve(__dirname, 'public'),
   build: {
     sourcemap: true,
     lib: {
