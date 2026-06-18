@@ -1,14 +1,14 @@
 # rc-accordion
 
-Coordinates a group of `rc-disclosure` widgets so only one stays open at a time. Manages keyboard navigation between summaries (Arrow keys, Home, End) and copies its `name` attribute to child `<details>` elements that don't already have one.
+Implements the [WAI-ARIA Accordion Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/) by coordinating child `<details>` panels.
 
-[WAI-ARIA Accordion Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/)
+Also supports [`rc-disclosure`](/components/rc-disclosure) for granular control and fragment-target.
 
 <AtAGlance
   package-name="@rcarls/rc-accordion"
   tag="rc-accordion"
-  native="Coordinates rc-disclosure panels"
-  state="Open panel coordination"
+  native="Coordinates native details panels"
+  state="Single or multiple open panels"
   :events="[]"
   :related="[
     { label: 'rc-disclosure', href: '/components/rc-disclosure' }
@@ -33,84 +33,141 @@ yarn add @rcarls/rc-accordion
 import '@rcarls/rc-accordion/define';
 ```
 
-## Single-open accordion
+## Single-open accordion (default)
 
-`rc-accordion` coordinates direct child disclosures so only one stays open at a time. Opening one panel closes the previously open sibling.
+Classic accordion behavior: opening one panel closes the previously open sibling.
 
+::: raw
 <ClientOnly>
 <div class="demo-section">
-  <rc-accordion name="profile-settings">
-    <rc-disclosure open>
-      <details class="accordion-details" open>
-        <summary class="accordion-summary">Account<span aria-hidden="true">▸</span></summary>
-        <div class="accordion-body">
-          <p>Account details stay in native disclosure markup and remain usable before custom elements upgrade.</p>
-        </div>
-      </details>
-    </rc-disclosure>
-    <rc-disclosure>
-      <details class="accordion-details">
-        <summary class="accordion-summary">Notifications<span aria-hidden="true">▸</span></summary>
-        <div class="accordion-body">
-          <p>Opening this panel closes the previously open sibling disclosure.</p>
-        </div>
-      </details>
-    </rc-disclosure>
-    <rc-disclosure>
-      <details class="accordion-details">
-        <summary class="accordion-summary">Privacy<span aria-hidden="true">▸</span></summary>
-        <div class="accordion-body">
-          <p>Arrow keys, Home, and End move focus between summaries when focus is inside the accordion.</p>
-        </div>
-      </details>
-    </rc-disclosure>
-  </rc-accordion>
-</div>
-</ClientOnly>
-
-```html
-<rc-accordion name="settings">
-  <rc-disclosure open>
+  <rc-accordion name="single-open-example">
     <details open>
-      <summary>Account</summary>
-      <div>Account content.</div>
+      <summary>Heading 1</summary>
+      <div>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit a beatae, similique perspiciatis error esse voluptatem cumque voluptas animi excepturi!</p>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum, nobis.</p>
+      </div>
     </details>
-  </rc-disclosure>
-  <rc-disclosure>
     <details>
-      <summary>Notifications</summary>
-      <div>Notification settings.</div>
+      <summary>Heading 2</summary>
+      <div>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit a beatae, similique perspiciatis error esse voluptatem cumque voluptas animi excepturi!</p>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum, nobis.</p>
+      </div>
     </details>
-  </rc-disclosure>
-  <rc-disclosure>
     <details>
-      <summary>Privacy</summary>
-      <div>Privacy controls.</div>
+      <summary>Heading 3</summary>
+      <div>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit a beatae, similique perspiciatis error esse voluptatem cumque voluptas animi excepturi!</p>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum, nobis.</p>
+      </div>
     </details>
-  </rc-disclosure>
+  </rc-accordion>
+</div>
+</ClientOnly>
+:::
+
+```html
+<rc-accordion name="accordion-1">
+  <details open>
+    <summary>Heading 1</summary>
+
+    Panel content.
+  </details>
+
+  <details>
+    <summary>Heading 2</summary>
+
+    Panel content.
+  </details>
+
+  <details>
+    <summary>Heading 3</summary>
+
+    Panel content.
+  </details>
 </rc-accordion>
 ```
 
-## Native group name
+### Native group name behavior
 
-The accordion `name` attribute is copied to child `<details>` elements that do not already have one, enabling the browser's built-in exclusive-open behavior (Chrome 120+). Panels with an existing author-provided `name` keep their own name.
+In single-open mode, the accordion `name` attribute is applied to child `<details>` elements that do not already have one, enabling the browser's built-in exclusive-open behavior. [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details#name)
+
+The component polyfills this behavior if not natively supported on the client.
+
+## Multiple-open accordion
+
+Add `multiple` when panels should open and close independently.
 
 <ClientOnly>
 <div class="demo-section">
-  <rc-accordion name="faq">
+  <rc-accordion multiple>
+    <details open>
+      <summary>Heading 1</summary>
+      <div>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit a beatae, similique perspiciatis error esse voluptatem cumque voluptas animi excepturi!</p>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum, nobis.</p>
+      </div>
+    </details>
+    <details open>
+      <summary>Heading 2</summary>
+      <div>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit a beatae, similique perspiciatis error esse voluptatem cumque voluptas animi excepturi!</p>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum, nobis.</p>
+      </div>
+    </details>
+  </rc-accordion>
+</div>
+</ClientOnly>
+
+```html
+<rc-accordion multiple>
+  <details open>
+    <summary>Heading 1</summary>
+
+    Panel content.
+  </details>
+
+  <details open>
+    <summary>Heading 2</summary>
+
+    Panel content.
+  </details>
+</rc-accordion>
+```
+
+## With rc-disclosure
+
+Wrap each panel in `rc-disclosure` for more granular control of the accordion.
+
+Any disclosure automatically opens and scrolls when the URL hash matches an id within it. [Try it](#fragment-example).
+
+<ClientOnly>
+<div class="demo-section">
+  <rc-accordion name="rc-disclosure-example">
     <rc-disclosure>
-      <details class="accordion-details">
-        <summary class="accordion-summary">Does this replace details?<span aria-hidden="true">▸</span></summary>
-        <div class="accordion-body">
-          <p>No. The native <code>&lt;details&gt;</code> elements remain the interactive controls.</p>
+      <details open>
+        <summary>Heading 1</summary>
+        <div>
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit a beatae, similique perspiciatis error esse voluptatem cumque voluptas animi excepturi!</p>
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum, nobis.</p>
         </div>
       </details>
     </rc-disclosure>
     <rc-disclosure>
-      <details class="accordion-details" name="custom-faq">
-        <summary class="accordion-summary">Can a panel keep its own name?<span aria-hidden="true">▸</span></summary>
-        <div class="accordion-body">
-          <p>Yes. Existing author-provided names are preserved. This panel has <code>name="custom-faq"</code>.</p>
+      <details id="fragment-example">
+        <summary>Fragment Example</summary>
+        <div>
+          <p>This panel opens automatically when the URL hash matches <a href="#fragment-example">#fragment-example</a>.</p>
+        </div>
+      </details>
+    </rc-disclosure>
+    <rc-disclosure>
+      <details>
+        <summary>Heading 3</summary>
+        <div>
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit a beatae, similique perspiciatis error esse voluptatem cumque voluptas animi excepturi!</p>
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum, nobis.</p>
         </div>
       </details>
     </rc-disclosure>
@@ -119,16 +176,38 @@ The accordion `name` attribute is copied to child `<details>` elements that do n
 </ClientOnly>
 
 ```html
-<!-- The accordion's name="faq" flows to child <details> without a name -->
-<rc-accordion name="faq">
+<rc-accordion name="rc-disclosure-example">
   <rc-disclosure>
-    <details><!-- gets name="faq" --></details>
+    <details id="fragment-1" open>
+      <summary>Heading 1</summary>
+
+      Panel content.
+    </details>
   </rc-disclosure>
   <rc-disclosure>
-    <details name="custom-faq"><!-- keeps its own name --></details>
+    <details id="fragment-2">
+      <summary>Heading 2</summary>
+
+      Panel content.
+    </details>
+  </rc-disclosure>
+  <rc-disclosure>
+    <details id="fragment-3">
+      <summary>Heading 3</summary>
+
+      Panel content.
+    </details>
   </rc-disclosure>
 </rc-accordion>
 ```
+
+## Integrating into your design system
+
+### Material Design
+
+`@rcarls/rc-theme-material` styles both plain `<details>` children and `rc-disclosure`-wrapped panels.
+
+See [Theme previews](/guide/theme-previews) for integration details.
 
 ## API
 
