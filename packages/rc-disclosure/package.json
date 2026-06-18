@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless WAI-ARIA disclosure widget built with Lit",
+  "description": "Headless native details/summary disclosure web component",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -39,11 +39,9 @@
   "scripts": {
     "build": "tsc && vite build && cem analyze",
     "cem:analyze": "cem analyze",
-    "preview": "vite preview",
     "test:browser": "vitest",
     "test:browser:chrome": "vitest --project=chromium",
-    "test:browser:firefox": "vitest --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --project=firefox"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "0.11.0",

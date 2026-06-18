@@ -1,19 +1,19 @@
-import { resolve } from "path";
+import { resolve } from 'path';
 
-import { defineConfig } from "vite";
-import dts from "vite-plugin-dts";
+import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 
 export default defineConfig({
-  plugins: [dts({ outDir: "dist/types" })],
+  plugins: [dts({ outDir: 'dist/types' })],
   publicDir: process.env.NODE_ENV === 'production' ? false : resolve(__dirname, 'public'),
   build: {
     sourcemap: true,
     lib: {
       entry: {
-        "rc-disclosure": resolve(__dirname, "src/index.ts"),
-        "rc-disclosure-define": resolve(__dirname, "src/define.ts"),
+        'rc-disclosure': resolve(__dirname, 'src/index.ts'),
+        'rc-disclosure-define': resolve(__dirname, 'src/define.ts'),
       },
-      formats: ["es"],
+      formats: ['es'],
     },
     rollupOptions: {
       external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],

@@ -10,6 +10,7 @@ onMounted(() => {
 function openDisclosure() {
   document.getElementById('basic-disclosure').open = true;
 }
+
 function closeDisclosure() {
   document.getElementById('basic-disclosure').open = false;
 }
@@ -17,9 +18,7 @@ function closeDisclosure() {
 
 # rc-disclosure
 
-A behavioral wrapper around the native `<details>`/`<summary>` element. Adds a consistent `rc-disclosure-toggle` event and optional fragment-hash targeting. The browser owns all open/close behavior and accessibility.
-
-[WAI-ARIA Disclosure Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/)
+A behavioral wrapper around the native [WAI-ARIA Disclosure Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/) with the `<details>`/`<summary>` element. Enhances the native `<details>` with a consistent `rc-disclosure-toggle` toggle event and implements automatic fragment-hash targeting (opens the disclosure to reveal target).
 
 <AtAGlance
   package-name="@rcarls/rc-disclosure"
@@ -51,21 +50,20 @@ yarn add @rcarls/rc-disclosure
 import '@rcarls/rc-disclosure/define';
 ```
 
-## Basic disclosure
+## Usage
 
-Wraps a native `<details>` element and fires `rc-disclosure-toggle` on open/close. Control it programmatically via the `open` property.
+Wrap a native `<details>` element. Control it programmatically via the `open` property and listen for `rc-disclosure-toggle` events.
 
 <ClientOnly>
 <div class="demo-section">
   <rc-disclosure id="basic-disclosure">
-    <details class="accordion-details">
-      <summary class="accordion-summary">
-        What is rc-disclosure?
+    <details>
+      <summary>
+        Heading
       </summary>
-      <div class="accordion-body">
-        <p>A lightweight behavioral wrapper around the native <code>&lt;details&gt;</code> element.
-        The browser owns open/close behavior and accessibility; this element adds a consistent custom event
-        and optional fragment-hash targeting.</p>
+      <div>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit a beatae, similique perspiciatis error esse voluptatem cumque voluptas animi excepturi!</p>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum, nobis.</p>
       </div>
     </details>
   </rc-disclosure>
@@ -79,8 +77,9 @@ Wraps a native `<details>` element and fires `rc-disclosure-toggle` on open/clos
 ```html
 <rc-disclosure id="my-disclosure">
   <details>
-    <summary>Toggle me</summary>
-    <div>Content revealed on open.</div>
+    <summary>Heading</summary>
+
+    Panel content.
   </details>
 </rc-disclosure>
 ```
@@ -95,18 +94,18 @@ document.addEventListener('rc-disclosure-toggle', (e) => {
 });
 ```
 
-## Fragment targeting
+## Text fragment targeting
 
-Set the `fragment` attribute to automatically open when the URL hash matches the `id` of the inner `<details>`. Useful for deep-linking to FAQ entries or documentation sections.
+`rc-disclosure` automatically opens and scrolls into view when the URL hash matches any `id` within its subtree. This is analogous to the native browser behavior of `hidden="until-found"`, revealing matched text hidden inside a closed `<details>` when a user invokes find-in-page.
 
 <ClientOnly>
 <div class="demo-section">
-  <rc-disclosure fragment>
-    <details id="fragment-target" class="accordion-details">
-      <summary class="accordion-summary">
+  <rc-disclosure>
+    <details id="fragment-target">
+      <summary>
         Opens via #fragment-target in URL
       </summary>
-      <div class="accordion-body">
+      <div>
         <p>This disclosure opens automatically when the page loads with <code>#fragment-target</code> in the URL, or when the hash changes to match.</p>
       </div>
     </details>
@@ -116,13 +115,22 @@ Set the `fragment` attribute to automatically open when the URL hash matches the
 </ClientOnly>
 
 ```html
-<rc-disclosure fragment>
+<rc-disclosure>
   <details id="my-section">
     <summary>Opens on #my-section</summary>
-    <div>Deep-linked content.</div>
+
+    Panel content.
   </details>
 </rc-disclosure>
 ```
+
+## Integrating into your design system
+
+### Material Design
+
+`@rcarls/rc-theme-material` styles both plain `<details>` children and `rc-disclosure`-wrapped panels.
+
+See [Theme previews](/guide/theme-previews) for integration details.
 
 ## API
 
