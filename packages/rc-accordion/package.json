@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless WAI-ARIA accordion coordinator for disclosure groups, built with Lit",
+  "description": "Implements the WAI-ARIA Accordion Pattern by coordinating child <details> panels.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -39,11 +39,9 @@
   "scripts": {
     "build": "tsc && vite build && cem analyze",
     "cem:analyze": "cem analyze",
-    "preview": "vite preview",
     "test:browser": "vitest",
     "test:browser:chrome": "vitest --project=chromium",
-    "test:browser:firefox": "vitest --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --project=firefox"
   },
   "dependencies": {
     "@rcarls/rc-disclosure": "workspace:^"

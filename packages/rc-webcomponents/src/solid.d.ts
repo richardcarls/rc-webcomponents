@@ -28,7 +28,9 @@ export type RCDisclosureToggleDetail = {
 };
 
 /** Public API surface of `<rc-accordion>`. */
-export type RCAccordionRef = HTMLElement;
+export type RCAccordionRef = HTMLElement & {
+  multiple: boolean;
+};
 
 /** Public API surface of `<rc-listbox>`. */
 export type RCListboxRef = HTMLElement & {
@@ -325,6 +327,7 @@ declare module 'solid-js' {
 
       'rc-accordion': JSX.HTMLAttributes<RCAccordionRef> & {
         name?: string;
+        multiple?: boolean | string;
         'on:rc-disclosure-toggle'?: (e: CustomEvent<RCDisclosureToggleDetail>) => void;
       };
 
