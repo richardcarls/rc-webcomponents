@@ -8,7 +8,7 @@ while changing code.
 
 `rc-webcomponents` is a WAI-ARIA-oriented web component library built with Lit
 3.x and TypeScript in a Yarn 4.x Berry monorepo. Packages live in `packages/`;
-the VitePress docs workspace lives in `docs/`.
+the Docusaurus docs workspace lives in `docs/`.
 
 ## Agent Context
 
@@ -83,7 +83,7 @@ behavior. When changing it, update every affected surface in the same change:
 - Component source, JSDoc, event detail types, and exported TypeScript types.
 - Tests for progressive enhancement, labels/forms, ARIA state, keyboard support,
   controlled/uncontrolled behavior, event dispatch, and live accessibility states.
-- VitePress docs in `docs/components/<component>.md`, including demos, snippets,
+- Docusaurus docs in `docs/docs/components/<component>.mdx`, including demos, snippets,
   accessibility notes, events, and at-a-glance summaries.
 - Package README, root README package summary, and aggregate docs when public
   usage changes.
@@ -101,7 +101,7 @@ plugin, and aggregate packages do not need home-page component entries.
 
 - `README.md` is the public root overview and package catalog. Keep architecture
   detail and agent workflow here only when it helps future code changes.
-- The VitePress docs workspace is the canonical home for public component docs,
+- The Docusaurus docs workspace is the canonical home for public component docs,
   examples, and live demos.
 - Package READMEs are npm landing pages and should stay short unless a package
   has usage details that do not fit naturally in the docs site.
