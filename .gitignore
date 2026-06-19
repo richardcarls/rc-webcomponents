@@ -25,6 +25,8 @@ custom-elements.json
 # Docusaurus build artifacts
 **/.docusaurus
 **/build
+/docs/static/rc-webcomponents-dist/
+/docs/static/rc-theme-material/
 
 # Yarn Berry
 /.yarn/install-state.gz

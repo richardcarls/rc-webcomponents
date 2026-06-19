@@ -3,8 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "docusaurus start --host 0.0.0.0",
-    "build": "docusaurus build",
+    "dev": "node scripts/build-rc-define.mjs && docusaurus start --host 0.0.0.0",
+    "build": "node scripts/build-rc-define.mjs && docusaurus build",
     "serve": "docusaurus serve"
   },
   "dependencies": {

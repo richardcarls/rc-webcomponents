@@ -1,7 +1,6 @@
 import type { FormEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { DemoFrame } from './DemoFrame';
-import frameStyles from './DemoFrame.module.css';
 
 type SelectChangeEvent = CustomEvent<{ value: string | string[] }>;
 
@@ -28,9 +27,9 @@ export function SingleSelectDemo() {
 
   return (
     <DemoFrame>
-      <div className={frameStyles.row}>
-        <div className={frameStyles.col}>
-          <label className={frameStyles.fieldLabel}>Country</label>
+      <div className="demo-row">
+        <div className="demo-col">
+          <label>Country</label>
           <rc-select ref={selectRef} placeholder="Choose a country...">
             <select slot="select" name="country">
               <option value="">Choose a country...</option>
@@ -47,8 +46,8 @@ export function SingleSelectDemo() {
             </select>
           </rc-select>
         </div>
-        <div className={frameStyles.col}>
-          <label className={frameStyles.fieldLabel}>Priority</label>
+        <div className="demo-col">
+          <label>Priority</label>
           <rc-select placeholder="Select priority...">
             <select slot="select" name="priority">
               <option value="">Select priority...</option>
@@ -60,8 +59,8 @@ export function SingleSelectDemo() {
           </rc-select>
         </div>
       </div>
-      <div className={frameStyles.eventLog}>
-        {log.length ? log.map((message) => <p key={message}>{message}</p>) : <p className={frameStyles.placeholder}>Events will appear here...</p>}
+      <div className="demo-event-log">
+        {log.length ? log.map((message) => <p key={message}>{message}</p>) : <p className="demo-placeholder">Events will appear here...</p>}
       </div>
     </DemoFrame>
   );
@@ -87,9 +86,9 @@ export function MultiSelectDemo() {
 
   return (
     <DemoFrame>
-      <div className={frameStyles.row}>
-        <div className={frameStyles.col}>
-          <label className={frameStyles.fieldLabel}>Tags</label>
+      <div className="demo-row">
+        <div className="demo-col">
+          <label>Tags</label>
           <rc-select ref={selectRef} placeholder="Add tags...">
             <select slot="select" name="tags" multiple>
               <option value="bug">Bug</option>
@@ -104,8 +103,8 @@ export function MultiSelectDemo() {
           </rc-select>
         </div>
       </div>
-      <div className={frameStyles.eventLog}>
-        {log.length ? log.map((message) => <p key={message}>{message}</p>) : <p className={frameStyles.placeholder}>Events will appear here...</p>}
+      <div className="demo-event-log">
+        {log.length ? log.map((message) => <p key={message}>{message}</p>) : <p className="demo-placeholder">Events will appear here...</p>}
       </div>
     </DemoFrame>
   );
@@ -125,13 +124,13 @@ export function SelectFormDemo() {
   return (
     <DemoFrame>
       <form onSubmit={handleSubmit}>
-        <div className={frameStyles.row}>
-          <div className={frameStyles.col}>
-            <label className={frameStyles.fieldLabel} htmlFor="docusaurus-form-name">Name</label>
+        <div className="demo-row">
+          <div className="demo-col">
+            <label htmlFor="docusaurus-form-name">Name</label>
             <input id="docusaurus-form-name" type="text" name="name" placeholder="Your name" />
           </div>
-          <div className={frameStyles.col}>
-            <label className={frameStyles.fieldLabel}>Role</label>
+          <div className="demo-col">
+            <label>Role</label>
             <rc-select placeholder="Select a role...">
               <select slot="select" name="role">
                 <option value="">Select a role...</option>
@@ -144,7 +143,7 @@ export function SelectFormDemo() {
         </div>
         <button type="submit">Submit</button>
       </form>
-      <pre className={frameStyles.formOutput}>{output}</pre>
+      <pre className="demo-form-output">{output}</pre>
     </DemoFrame>
   );
 }
@@ -165,7 +164,7 @@ export function DynamicOptionsDemo() {
 
   return (
     <DemoFrame>
-      <div className={frameStyles.row}>
+      <div className="demo-row">
         <rc-select ref={selectRef} placeholder="Choose an item...">
           <select slot="select" name="dynamic">
             <option value="">Choose an item...</option>

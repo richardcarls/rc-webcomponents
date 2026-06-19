@@ -17,25 +17,6 @@ const config: Config = {
     },
   },
   clientModules: ['./src/client/rc-elements.ts'],
-  plugins: [
-    function rawCssPlugin() {
-      return {
-        name: 'raw-css-plugin',
-        configureWebpack() {
-          return {
-            module: {
-              rules: [
-                {
-                  resourceQuery: /raw/,
-                  type: 'asset/source',
-                },
-              ],
-            },
-          };
-        },
-      };
-    },
-  ],
   presets: [
     [
       'classic',

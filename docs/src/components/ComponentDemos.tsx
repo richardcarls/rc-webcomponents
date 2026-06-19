@@ -2,7 +2,6 @@ import type { FormEvent, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
 import { DemoFrame } from './DemoFrame';
-import styles from './DemoFrame.module.css';
 
 type DetailEvent<T> = CustomEvent<T>;
 
@@ -41,10 +40,10 @@ function EventLog({ entries, placeholder = 'Events will appear here...' }: {
   placeholder?: string;
 }) {
   return (
-    <div className={styles.eventLog}>
+    <div className="demo-event-log">
       {entries.length
         ? entries.map((entry) => <p key={entry}>{entry}</p>)
-        : <p className={styles.placeholder}>{placeholder}</p>}
+        : <p className="demo-placeholder">{placeholder}</p>}
     </div>
   );
 }
@@ -89,9 +88,9 @@ export function ComboboxDemo() {
 
   return (
     <DemoFrame>
-      <div className={styles.row}>
-        <label className={styles.col}>
-          <span className={styles.fieldLabel}>Ingredient</span>
+      <div className="demo-row">
+        <label className="demo-col">
+          <span>Ingredient</span>
           <rc-combobox ref={comboRef} placeholder="Choose or create">
             <select slot="select" name="ingredient">
               <option value="carrot">Carrot</option>
@@ -101,8 +100,8 @@ export function ComboboxDemo() {
             </select>
           </rc-combobox>
         </label>
-        <label className={styles.col}>
-          <span className={styles.fieldLabel}>Multiple</span>
+        <label className="demo-col">
+          <span>Multiple</span>
           <rc-combobox placeholder="Add tags" allow-create>
             <select slot="select" name="tags" multiple>
               <option value="vegetarian">Vegetarian</option>
@@ -169,7 +168,7 @@ export function DisclosureDemo() {
 export function FabDemo() {
   return (
     <DemoFrame>
-      <div className={styles.row}>
+      <div className="demo-row">
         <rc-fab aria-label="Create">+</rc-fab>
         <rc-fab extended>
           <span aria-hidden="true">+</span>
@@ -404,8 +403,8 @@ export function FormDataDemo() {
   return (
     <DemoFrame>
       <form onSubmit={handleSubmit}>
-        <label className={styles.col}>
-          <span className={styles.fieldLabel}>Status</span>
+        <label className="demo-col">
+          <span>Status</span>
           <rc-select>
             <select slot="select" name="status">
               <option value="draft">Draft</option>
@@ -415,7 +414,7 @@ export function FormDataDemo() {
         </label>
         <button type="submit">Submit</button>
       </form>
-      <pre className={styles.formOutput}>{output}</pre>
+      <pre className="demo-form-output">{output}</pre>
     </DemoFrame>
   );
 }
