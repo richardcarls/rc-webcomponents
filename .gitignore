@@ -22,6 +22,10 @@ custom-elements.json
 **/.vitepress/dist
 **/.vitepress/.temp
 
+# Docusaurus build artifacts
+**/.docusaurus
+**/build
+
 # Yarn Berry
 /.yarn/install-state.gz
 

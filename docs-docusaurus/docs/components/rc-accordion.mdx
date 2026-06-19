@@ -1,0 +1,92 @@
+---
+title: rc-accordion
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import {
+  DisclosureAccordionDemo,
+  MultipleAccordionDemo,
+  SingleAccordionDemo,
+} from '@site/src/components/AccordionDemos';
+
+# rc-accordion
+
+Implements the [WAI-ARIA Accordion Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/) by coordinating child `<details>` panels.
+
+Also supports [`rc-disclosure`](/components/rc-disclosure) for granular control and fragment-target behavior.
+
+<AtAGlance
+  packageName="@rcarls/rc-accordion"
+  tag="rc-accordion"
+  native="Coordinates native details panels"
+  state="Single or multiple open panels"
+  events={[]}
+  related={[{ label: 'rc-disclosure', href: '/components/rc-disclosure' }]}
+/>
+
+## Installation
+
+```sh
+npm install @rcarls/rc-accordion
+```
+
+```sh
+yarn add @rcarls/rc-accordion
+```
+
+```js
+import '@rcarls/rc-accordion/define';
+```
+
+## Single-open accordion
+
+Classic accordion behavior: opening one panel closes the previously open sibling.
+
+<SingleAccordionDemo />
+
+```html
+<rc-accordion name="accordion-1">
+  <details open>
+    <summary>Heading 1</summary>
+    Panel content.
+  </details>
+  <details>
+    <summary>Heading 2</summary>
+    Panel content.
+  </details>
+</rc-accordion>
+```
+
+## Multiple-open accordion
+
+Add `multiple` when panels should open and close independently.
+
+<MultipleAccordionDemo />
+
+```html
+<rc-accordion multiple>
+  <details open>
+    <summary>Heading 1</summary>
+    Panel content.
+  </details>
+  <details open>
+    <summary>Heading 2</summary>
+    Panel content.
+  </details>
+</rc-accordion>
+```
+
+## With rc-disclosure
+
+Wrap each panel in `rc-disclosure` for more granular control. Any disclosure automatically opens and scrolls when the URL hash matches an id within it.
+
+<DisclosureAccordionDemo />
+
+## Material bridge
+
+`@rcarls/rc-theme-material` styles both plain `<details>` children and `rc-disclosure`-wrapped panels. The final demo scopes Material styling to the demo frame so this spike can inspect package-theme interaction without theming the Docusaurus chrome.
+
+## API
+
+<ApiTable tag="rc-accordion" />

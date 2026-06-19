@@ -1,0 +1,86 @@
+---
+title: rc-select
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import {
+  DynamicOptionsDemo,
+  MultiSelectDemo,
+  SelectFormDemo,
+  SingleSelectDemo,
+} from '@site/src/components/SelectDemos';
+
+# rc-select
+
+A headless select-only ARIA combobox backed by a native `<select>`. The component keeps the slotted `<select>` as the source of truth for form submission while rendering a custom trigger and popover listbox.
+
+[WAI-ARIA Combobox Pattern (select-only)](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/)
+
+<AtAGlance
+  packageName="@rcarls/rc-select"
+  tag="rc-select"
+  native="Requires a slotted native select"
+  state="Controlled or uncontrolled selection"
+  events={['rc-select-open', 'rc-select-close', 'rc-select-change']}
+  related={[
+    { label: 'Progressive enhancement', href: '/guide/progressive-enhancement' },
+    { label: 'rc-combobox', href: '/components/rc-combobox' },
+  ]}
+/>
+
+## Installation
+
+```sh
+npm install @rcarls/rc-select
+```
+
+```sh
+yarn add @rcarls/rc-select
+```
+
+```js
+import '@rcarls/rc-select/define';
+```
+
+## Single-select
+
+Full keyboard navigation: Arrow keys, Home/End, type-ahead. Closes on selection or Escape.
+
+<SingleSelectDemo />
+
+```html
+<rc-select placeholder="Choose a country...">
+  <select slot="select" name="country">
+    <option value="">Choose a country...</option>
+    <option value="us">United States</option>
+    <option value="ca">Canada</option>
+  </select>
+</rc-select>
+```
+
+## Multi-select
+
+Select multiple items. Chips render inline in the trigger. This demo opts into the Material theme to evaluate scoped package CSS in Docusaurus.
+
+<MultiSelectDemo />
+
+## Form integration
+
+The native `<select slot="select">` acts as the form control. `FormData` picks up its value automatically.
+
+<SelectFormDemo />
+
+## Dynamic options
+
+Options added to the native `<select>` at runtime are reflected in the popup automatically via `MutationObserver`.
+
+<DynamicOptionsDemo />
+
+## Material bridge
+
+`@rcarls/rc-theme-material` maps Material outlined-field, menu-surface, option, and chip tokens into this component.
+
+## API
+
+<ApiTable tag="rc-select" />

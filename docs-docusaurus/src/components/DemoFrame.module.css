@@ -1,0 +1,66 @@
+.root {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+}
+
+.root :where(p) {
+  margin: 0.65rem 0;
+}
+
+.root :where(summary) {
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.col {
+  display: flex;
+  min-width: min(16rem, 100%);
+  flex: 1 1 16rem;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fieldLabel {
+  font-size: 0.875rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.eventLog {
+  min-height: 2.5em;
+  max-height: 8em;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  overflow-y: auto;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 4px;
+  background: var(--ifm-background-color);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+}
+
+.eventLog p {
+  margin: 0.1em 0;
+}
+
+.placeholder {
+  color: var(--ifm-color-emphasis-600);
+}
+
+.formOutput {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 4px;
+  background: var(--ifm-background-color);
+  font-size: 0.85rem;
+}
