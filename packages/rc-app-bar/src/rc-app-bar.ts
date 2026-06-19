@@ -2,10 +2,7 @@ import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import {
-  ScrollObserverController,
-  type ScrollObserverTarget,
-} from '@rcarls/rc-common';
+import { ScrollObserverController, type ScrollObserverTarget } from '@rcarls/rc-common';
 
 import appBarStyles from './rc-app-bar.styles';
 
@@ -107,13 +104,13 @@ export class RCAppBar extends LitElement {
   private _collapseProgress = 0;
 
   private readonly _reducedMotion =
-    typeof window !== 'undefined'
-      ? window.matchMedia('(prefers-reduced-motion: reduce)')
-      : null;
+    typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 
   private _internals = this.attachInternals();
 
   private _resizeObserver: ResizeObserver | null = null;
+
+  private _measureLayoutFrame = 0;
 
   private readonly _scroll = new ScrollObserverController(this, {
     target: () => this._resolveScrollTarget(),
@@ -163,6 +160,7 @@ export class RCAppBar extends LitElement {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this._resizeObserver?.disconnect();
+    this._cancelQueuedLayoutMeasure();
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
@@ -202,7 +200,7 @@ export class RCAppBar extends LitElement {
   private _connectResizeObserver(): void {
     if (!('ResizeObserver' in globalThis)) return;
 
-    this._resizeObserver ??= new ResizeObserver(() => this._measureLayout());
+    this._resizeObserver ??= new ResizeObserver(() => this._queueLayoutMeasure());
     this._observeLayout();
   }
 
@@ -223,7 +221,7 @@ export class RCAppBar extends LitElement {
     if (!leading || !title || !trailing) return;
 
     const edgeSize = Math.max(leading.offsetWidth, trailing.offsetWidth);
-    this.style.setProperty('--_rc-app-bar-edge-size', `${edgeSize}px`);
+    this._setGeometryProperty('--_rc-app-bar-edge-size', `${edgeSize}px`);
 
     if (this.variant === 'expanded' && !this._collapsed) {
       const nextDistance = title.offsetHeight;
@@ -237,15 +235,27 @@ export class RCAppBar extends LitElement {
         const endpointCompactHeight = Math.max(compactHeight, contentHeight);
 
         this._collapseDistance = nextDistance;
-        this._collapseOffsetDistance =
-          compactHeight - (endpointCompactHeight - contentHeight) / 2;
-        this.style.setProperty(
-          '--_rc-app-bar-collapse-distance',
-          `${nextDistance}px`,
-        );
+        this._collapseOffsetDistance = compactHeight - (endpointCompactHeight - contentHeight) / 2;
+        this._setGeometryProperty('--_rc-app-bar-collapse-distance', `${nextDistance}px`);
         this._applyCollapseGeometry();
       }
     }
+  }
+
+  private _queueLayoutMeasure(): void {
+    if (this._measureLayoutFrame) return;
+
+    this._measureLayoutFrame = window.requestAnimationFrame(() => {
+      this._measureLayoutFrame = 0;
+      this._measureLayout();
+    });
+  }
+
+  private _cancelQueuedLayoutMeasure(): void {
+    if (!this._measureLayoutFrame) return;
+
+    window.cancelAnimationFrame(this._measureLayoutFrame);
+    this._measureLayoutFrame = 0;
   }
 
   private _syncScrollObserver(): void {
@@ -329,15 +339,17 @@ export class RCAppBar extends LitElement {
 
   private _applyCollapseGeometry(): void {
     const offset = this._collapseOffsetDistance * this._collapseProgress;
-    const remainingRow =
-      this._collapseDistance * (1 - this._collapseProgress);
+    const remainingRow = this._collapseDistance * (1 - this._collapseProgress);
 
-    this.style.setProperty('--_rc-app-bar-collapse-offset', `${-offset}px`);
-    this.style.setProperty('--_rc-app-bar-expanded-size', `${remainingRow}px`);
-    this.style.setProperty(
-      '--_rc-app-bar-expanded-opacity',
-      `${1 - this._collapseProgress}`,
-    );
+    this._setGeometryProperty('--_rc-app-bar-collapse-offset', `${-offset}px`);
+    this._setGeometryProperty('--_rc-app-bar-expanded-size', `${remainingRow}px`);
+    this._setGeometryProperty('--_rc-app-bar-expanded-opacity', `${1 - this._collapseProgress}`);
+  }
+
+  private _setGeometryProperty(name: string, value: string): void {
+    if (this.style.getPropertyValue(name) === value) return;
+
+    this.style.setProperty(name, value);
   }
 
   private _setHidden(hidden: boolean): void {
@@ -388,33 +400,17 @@ export class RCAppBar extends LitElement {
 
   protected override render() {
     return html`
-      <div
-        id="root"
-        part="root"
-        data-has-center=${this._hasCenter ? '' : nothing}
-      >
-        <div
-          id="leading"
-          part="leading"
-          class=${classMap({ empty: !this._hasLeading })}
-        >
+      <div id="root" part="root" data-has-center=${this._hasCenter ? '' : nothing}>
+        <div id="leading" part="leading" class=${classMap({ empty: !this._hasLeading })}>
           <slot name="leading" @slotchange=${this._onSlotChange}></slot>
         </div>
         <div id="title" part="title">
           <slot @slotchange=${this._onSlotChange}></slot>
         </div>
-        <div
-          id="center"
-          part="center"
-          class=${classMap({ empty: !this._hasCenter })}
-        >
+        <div id="center" part="center" class=${classMap({ empty: !this._hasCenter })}>
           <slot name="center" @slotchange=${this._onSlotChange}></slot>
         </div>
-        <div
-          id="trailing"
-          part="trailing"
-          class=${classMap({ empty: !this._hasTrailing })}
-        >
+        <div id="trailing" part="trailing" class=${classMap({ empty: !this._hasTrailing })}>
           <slot name="trailing" @slotchange=${this._onSlotChange}></slot>
         </div>
         <div id="scroll-shadow" part="scroll-shadow"></div>
