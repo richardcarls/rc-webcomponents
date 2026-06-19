@@ -1,0 +1,46 @@
+---
+title: rc-menubar
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { MenubarDemo } from '@site/src/components/ComponentDemos';
+
+# rc-menubar
+
+An ARIA menubar with roving tabindex and submenu handoff for command surfaces.
+
+<AtAGlance
+  packageName="@rcarls/rc-menubar"
+  tag="rc-menubar"
+  native="Consumer supplies menu buttons and menus"
+  state="Roving focus and submenu state"
+  events={[]}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-menubar
+`
+
+`sh
+yarn add @rcarls/rc-menubar
+`
+
+`js
+import '@rcarls/rc-menubar/define';
+`
+
+## Live demo
+
+<MenubarDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the per-demo controls to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside that demo frame.
+
+## API
+
+<ApiTable tag="rc-menubar" />

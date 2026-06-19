@@ -1,0 +1,46 @@
+---
+title: rc-disclosure
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { DisclosureDemo } from '@site/src/components/ComponentDemos';
+
+# rc-disclosure
+
+A disclosure wrapper around native `<details>` and `<summary>` with controlled/uncontrolled open support.
+
+<AtAGlance
+  packageName="@rcarls/rc-disclosure"
+  tag="rc-disclosure"
+  native="Requires a native details child"
+  state="Controlled or uncontrolled open state"
+  events={['rc-disclosure-toggle']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-disclosure
+`
+
+`sh
+yarn add @rcarls/rc-disclosure
+`
+
+`js
+import '@rcarls/rc-disclosure/define';
+`
+
+## Live demo
+
+<DisclosureDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the per-demo controls to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside that demo frame.
+
+## API
+
+<ApiTable tag="rc-disclosure" />

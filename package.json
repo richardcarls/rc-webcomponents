@@ -13,8 +13,7 @@
   "packageManager": "yarn@4.16.0",
   "workspaces": [
     "packages/*",
-    "docs",
-    "docs-docusaurus"
+    "docs"
   ],
   "scripts": {
     "build": "yarn workspaces foreach --all --topological --exclude '@rcarls/rc-docs' run build",
@@ -22,8 +21,6 @@
     "cem:analyze": "cem analyze",
     "docs": "yarn cem:analyze && yarn workspace @rcarls/rc-docs run dev",
     "docs:build": "yarn cem:analyze && yarn workspace @rcarls/rc-docs run build",
-    "docs:docusaurus": "yarn cem:analyze && yarn workspace @rcarls/rc-docs-docusaurus run dev",
-    "docs:docusaurus:build": "yarn cem:analyze && yarn workspace @rcarls/rc-docs-docusaurus run build",
     "validate:packages": "node scripts/validate-packages.mjs",
     "validate:release": "node scripts/validate-release.mjs",
     "test:release-validation": "node --test scripts/validate-release.test.mjs",

@@ -1,0 +1,46 @@
+---
+title: rc-menu
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { MenuDemo } from '@site/src/components/ComponentDemos';
+
+# rc-menu
+
+An ARIA menu popup for command surfaces, with keyboard navigation and item activation events.
+
+<AtAGlance
+  packageName="@rcarls/rc-menu"
+  tag="rc-menu"
+  native="Consumer supplies menu item controls"
+  state="Open/active item state"
+  events={['rc-menu-activate', 'rc-menu-close']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-menu
+`
+
+`sh
+yarn add @rcarls/rc-menu
+`
+
+`js
+import '@rcarls/rc-menu/define';
+`
+
+## Live demo
+
+<MenuDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the per-demo controls to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside that demo frame.
+
+## API
+
+<ApiTable tag="rc-menu" />

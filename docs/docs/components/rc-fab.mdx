@@ -1,0 +1,46 @@
+---
+title: rc-fab
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { FabDemo } from '@site/src/components/ComponentDemos';
+
+# rc-fab
+
+A floating action button with regular and extended variants. Consumers own icons, labels, and placement.
+
+<AtAGlance
+  packageName="@rcarls/rc-fab"
+  tag="rc-fab"
+  native="No required native child"
+  state="Stateless button-like action"
+  events={[]}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-fab
+`
+
+`sh
+yarn add @rcarls/rc-fab
+`
+
+`js
+import '@rcarls/rc-fab/define';
+`
+
+## Live demo
+
+<FabDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the per-demo controls to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside that demo frame.
+
+## API
+
+<ApiTable tag="rc-fab" />

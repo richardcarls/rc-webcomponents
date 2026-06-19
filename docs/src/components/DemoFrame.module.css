@@ -1,0 +1,78 @@
+.root {
+  margin: 1rem 0 1.25rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-block-end: 0.5rem;
+  padding-block-end: 0.5rem;
+  border-block-end: 1px solid var(--ifm-color-emphasis-300);
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.8125rem;
+}
+
+.control {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.control select {
+  block-size: 2rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.25rem;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  font: inherit;
+}
+
+.surfaceHost {
+  display: block;
+  min-inline-size: 0;
+}
+
+.row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.col {
+  display: flex;
+  min-width: min(16rem, 100%);
+  flex: 1 1 16rem;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fieldLabel {
+  color: CanvasText;
+  font-size: 0.875rem;
+}
+
+.eventLog {
+  min-height: 2.5em;
+  max-height: 8em;
+  margin-top: 1rem;
+  overflow-y: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+}
+
+.eventLog p {
+  margin: 0.1em 0;
+}
+
+.placeholder {
+  color: GrayText;
+}
+
+.formOutput {
+  margin-top: 0.75rem;
+  overflow: auto;
+  font-size: 0.85rem;
+}

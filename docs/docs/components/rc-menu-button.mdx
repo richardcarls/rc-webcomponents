@@ -1,0 +1,46 @@
+---
+title: rc-menu-button
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { MenuButtonDemo } from '@site/src/components/ComponentDemos';
+
+# rc-menu-button
+
+A button that opens an ARIA menu while preserving consumer-supplied trigger and menu content.
+
+<AtAGlance
+  packageName="@rcarls/rc-menu-button"
+  tag="rc-menu-button"
+  native="Requires trigger and menu children"
+  state="Controlled or uncontrolled open state"
+  events={['rc-menu-button-toggle']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-menu-button
+`
+
+`sh
+yarn add @rcarls/rc-menu-button
+`
+
+`js
+import '@rcarls/rc-menu-button/define';
+`
+
+## Live demo
+
+<MenuButtonDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the per-demo controls to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside that demo frame.
+
+## API
+
+<ApiTable tag="rc-menu-button" />

@@ -1,0 +1,46 @@
+---
+title: rc-markdown-editor
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { MarkdownEditorDemo } from '@site/src/components/ComponentDemos';
+
+# rc-markdown-editor
+
+A rich/source Markdown editor with a colocated formatting toolbar, backed by a native textarea.
+
+<AtAGlance
+  packageName="@rcarls/rc-markdown-editor"
+  tag="rc-markdown-editor"
+  native="Requires a textarea child"
+  state="Native textarea value plus editor mode"
+  events={['rc-formatting-change', 'rc-change', 'rc-mode-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-markdown-editor
+`
+
+`sh
+yarn add @rcarls/rc-markdown-editor
+`
+
+`js
+import '@rcarls/rc-markdown-editor/define';
+`
+
+## Live demo
+
+<MarkdownEditorDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the per-demo controls to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside that demo frame.
+
+## API
+
+<ApiTable tag="rc-markdown-editor" />

@@ -1,0 +1,46 @@
+---
+title: rc-textarea
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { TextareaDemo } from '@site/src/components/ComponentDemos';
+
+# rc-textarea
+
+An enhanced textarea with line numbers, decorations, gutter support, and a plugin API while preserving the native `<textarea>`.
+
+<AtAGlance
+  packageName="@rcarls/rc-textarea"
+  tag="rc-textarea"
+  native="Requires a native textarea child"
+  state="Native textarea value"
+  events={['rc-textarea-focus', 'rc-textarea-blur', 'rc-textarea-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-textarea
+`
+
+`sh
+yarn add @rcarls/rc-textarea
+`
+
+`js
+import '@rcarls/rc-textarea/define';
+`
+
+## Live demo
+
+<TextareaDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the per-demo controls to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside that demo frame.
+
+## API
+
+<ApiTable tag="rc-textarea" />

@@ -1,0 +1,52 @@
+---
+title: rc-select
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { SingleSelectDemo, MultiSelectDemo, SelectFormDemo, DynamicOptionsDemo } from '@site/src/components/SelectDemos';
+
+# rc-select
+
+A headless select-only ARIA combobox backed by a native `<select>`. The component keeps the slotted `<select>` as the source of truth for form submission while rendering a custom trigger and popover listbox.
+
+<AtAGlance
+  packageName="@rcarls/rc-select"
+  tag="rc-select"
+  native="Requires a slotted native select"
+  state="Controlled or uncontrolled selection"
+  events={['rc-select-open', 'rc-select-close', 'rc-select-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-select
+`
+
+`sh
+yarn add @rcarls/rc-select
+`
+
+`js
+import '@rcarls/rc-select/define';
+`
+
+## Live demo
+
+<SingleSelectDemo />
+
+<MultiSelectDemo />
+
+<SelectFormDemo />
+
+<DynamicOptionsDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the per-demo controls to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside that demo frame.
+
+## API
+
+<ApiTable tag="rc-select" />

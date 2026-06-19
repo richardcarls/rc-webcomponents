@@ -1,0 +1,46 @@
+---
+title: rc-dialog
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { DialogDemo } from '@site/src/components/ComponentDemos';
+
+# rc-dialog
+
+A draggable, resizable wrapper around a native `<dialog>` that keeps browser dialog behavior intact.
+
+<AtAGlance
+  packageName="@rcarls/rc-dialog"
+  tag="rc-dialog"
+  native="Requires a native dialog child"
+  state="Open state follows the native dialog"
+  events={['rc-dialog-open', 'rc-dialog-toggle', 'rc-dialog-request-close', 'rc-dialog-cancel', 'rc-dialog-close']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-dialog
+`
+
+`sh
+yarn add @rcarls/rc-dialog
+`
+
+`js
+import '@rcarls/rc-dialog/define';
+`
+
+## Live demo
+
+<DialogDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the per-demo controls to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside that demo frame.
+
+## API
+
+<ApiTable tag="rc-dialog" />
