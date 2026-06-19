@@ -1,29 +1,23 @@
-import baseCss from '../preview-themes/base.css?raw';
 import noneCss from '../preview-themes/none.css?raw';
 import materialCss from '@rcarls/rc-theme-material/theme.css?inline';
-import iosCss from '../preview-themes/ios.css?raw';
-import fluentCss from '../preview-themes/fluent.css?raw';
-import carbonCss from '../preview-themes/carbon.css?raw';
 
-type PreviewTheme = 'none' | 'material' | 'ios' | 'fluent' | 'carbon';
+import {
+  PREVIEW_MODE_STORAGE_KEY,
+  PREVIEW_THEME_CHANGE_EVENT,
+  PREVIEW_THEME_STORAGE_KEY,
+  type PreviewMode,
+  type PreviewState,
+  type PreviewTheme,
+} from '../preview-theme-controller';
 
-const STORAGE_KEY = 'rc-preview-theme';
-const CHANGE_EVENT = 'rc-preview-theme-change';
-
-const themeCss: Record<PreviewTheme, string> = {
-  none: noneCss,
-  material: materialCss,
-  ios: iosCss,
-  fluent: fluentCss,
-  carbon: carbonCss,
+const themeCss: Record<PreviewTheme, string[]> = {
+  none: [noneCss],
+  material: [noneCss, materialCss],
 };
 
 const themeLabels: Record<PreviewTheme, string> = {
   none: 'Default component appearance',
-  material: 'Material 3 full style layer',
-  ios: 'iOS-inspired',
-  fluent: 'Fluent-inspired',
-  carbon: 'Carbon-inspired',
+  material: 'Material 3 package theme',
 };
 
 const sheetCache = new Map<string, CSSStyleSheet>();
@@ -34,83 +28,131 @@ function supportsAdoptedStyleSheets() {
 
 function sheetFor(cssText: string) {
   let sheet = sheetCache.get(cssText);
+
   if (!sheet) {
     sheet = new CSSStyleSheet();
     sheet.replaceSync(cssText);
     sheetCache.set(cssText, sheet);
   }
+
   return sheet;
 }
 
 function isPreviewTheme(value: string | null): value is PreviewTheme {
-  return value === 'none' || value === 'material' || value === 'ios' || value === 'fluent' || value === 'carbon';
+  return value === 'none' || value === 'material';
+}
+
+function isPreviewMode(value: string | null): value is PreviewMode {
+  return value === 'auto' || value === 'light' || value === 'dark';
 }
 
 function storedTheme(): PreviewTheme {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(PREVIEW_THEME_STORAGE_KEY);
     if (isPreviewTheme(stored)) return stored;
   } catch {
     // Storage can be unavailable in embedded contexts.
   }
+
   return 'none';
+}
+
+function storedMode(): PreviewMode {
+  try {
+    const stored = localStorage.getItem(PREVIEW_MODE_STORAGE_KEY);
+    if (isPreviewMode(stored)) return stored;
+  } catch {
+    // Storage can be unavailable in embedded contexts.
+  }
+
+  return 'auto';
+}
+
+function applyPreviewMode($scope: HTMLElement, mode: PreviewMode) {
+  if (mode === 'auto') {
+    delete $scope.dataset.rcPreviewMode;
+    $scope.style.colorScheme = '';
+
+    return;
+  }
+
+  $scope.dataset.rcPreviewMode = mode;
+  $scope.style.colorScheme = mode;
 }
 
 export class ThemePreview extends HTMLElement {
   private readonly _root = this.attachShadow({ mode: 'open' });
+
   private _theme: PreviewTheme = 'none';
 
+  private _mode: PreviewMode = 'auto';
+
   connectedCallback() {
-    this._theme = isPreviewTheme(this.getAttribute('theme'))
-      ? this.getAttribute('theme') as PreviewTheme
-      : storedTheme();
+    const theme = this.getAttribute('theme');
+    const mode = this.getAttribute('mode');
+
+    this._theme = isPreviewTheme(theme) ? theme : storedTheme();
+    this._mode = isPreviewMode(mode) ? mode : storedMode();
+
     this._render();
-    this._applySheets();
-    window.addEventListener(CHANGE_EVENT, this._onThemeChange as EventListener);
+    this._applyTheme();
+    window.addEventListener(PREVIEW_THEME_CHANGE_EVENT, this._onPreviewChange as EventListener);
     window.addEventListener('storage', this._onStorage);
   }
 
   disconnectedCallback() {
-    window.removeEventListener(CHANGE_EVENT, this._onThemeChange as EventListener);
+    window.removeEventListener(PREVIEW_THEME_CHANGE_EVENT, this._onPreviewChange as EventListener);
     window.removeEventListener('storage', this._onStorage);
   }
 
-  private readonly _onThemeChange = (event: CustomEvent<{ theme?: PreviewTheme }>) => {
-    if (isPreviewTheme(event.detail?.theme ?? null)) {
-      this._setTheme(event.detail.theme);
-    }
+  private readonly _onPreviewChange = (event: CustomEvent<Partial<PreviewState>>) => {
+    const theme = event.detail?.theme;
+    const mode = event.detail?.mode;
+
+    this._setPreviewState({
+      theme: isPreviewTheme(theme ?? null) ? theme : this._theme,
+      mode: isPreviewMode(mode ?? null) ? mode : this._mode,
+    });
   };
 
   private readonly _onStorage = (event: StorageEvent) => {
-    if (event.key === STORAGE_KEY && isPreviewTheme(event.newValue)) {
-      this._setTheme(event.newValue);
+    if (event.key === PREVIEW_THEME_STORAGE_KEY && isPreviewTheme(event.newValue)) {
+      this._setPreviewState({ theme: event.newValue, mode: this._mode });
+    }
+
+    if (event.key === PREVIEW_MODE_STORAGE_KEY && isPreviewMode(event.newValue)) {
+      this._setPreviewState({ theme: this._theme, mode: event.newValue });
     }
   };
 
-  private _setTheme(theme: PreviewTheme) {
-    if (theme === this._theme) return;
-    this._theme = theme;
-    this.classList.toggle('rc-theme-material', theme === 'material');
-    this._applySheets();
-    const label = this._root.querySelector('[data-preview-label]');
-    if (label) label.textContent = themeLabels[theme];
+  private _setPreviewState(state: PreviewState) {
+    if (state.theme === this._theme && state.mode === this._mode) return;
+
+    this._theme = state.theme;
+    this._mode = state.mode;
+    this._applyTheme();
+
+    const $label = this._root.querySelector('[data-preview-label]');
+    if ($label) $label.textContent = themeLabels[this._theme];
   }
 
-  private _applySheets() {
-    const cssTexts = this._theme === 'none'
-      ? [themeCss.none]
-      : [baseCss, themeCss[this._theme]];
+  private _applyTheme() {
+    this.classList.toggle('rc-theme-material', this._theme === 'material');
+    applyPreviewMode(this, this._mode);
+
+    const cssTexts = themeCss[this._theme];
+
     if (supportsAdoptedStyleSheets()) {
       this._root.adoptedStyleSheets = cssTexts.map(sheetFor);
+
       return;
     }
 
-    const fallback = this._root.querySelector<HTMLStyleElement>('style[data-preview-fallback]');
-    if (fallback) fallback.textContent = cssTexts.join('\n');
+    const $fallback = this._root.querySelector<HTMLStyleElement>('style[data-preview-fallback]');
+    if ($fallback) $fallback.textContent = cssTexts.join('\n');
   }
 
   private _render() {
-    this.classList.toggle('rc-theme-material', this._theme === 'material');
     this._root.innerHTML = `
       <style data-preview-fallback></style>
       <div class="preview-shell">

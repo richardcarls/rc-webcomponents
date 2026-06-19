@@ -65,3 +65,69 @@ test('contextual toolbar controls receive Material state styling', () => {
   expect(getComputedStyle(button).borderRadius).not.toBe('0px');
   expect(getComputedStyle(button).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
 });
+
+test('disclosure styles use Material list headers and card expansion', () => {
+  const scope = renderScope();
+  const disclosure = document.createElement('rc-disclosure');
+  disclosure.innerHTML = `
+    <details>
+      <summary>Details</summary>
+      <p>Expanded content</p>
+    </details>
+  `;
+  scope.append(disclosure);
+
+  const details = disclosure.querySelector('details');
+  const summary = disclosure.querySelector('summary');
+  const content = disclosure.querySelector('p');
+  expect(details).not.toBeNull();
+  expect(summary).not.toBeNull();
+  expect(content).not.toBeNull();
+
+  const summaryStyle = getComputedStyle(summary!);
+  expect(summaryStyle.display).toBe('grid');
+  expect(summaryStyle.minBlockSize).toBe('56px');
+  expect(summaryStyle.fontSize).not.toBe('');
+
+  const detailsStyle = getComputedStyle(details!);
+  expect(detailsStyle.borderRadius).not.toBe('0px');
+  expect(detailsStyle.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+
+  content!.style.transitionDuration = '0ms';
+  details!.open = true;
+  expect(getComputedStyle(details!).boxShadow).not.toBe('none');
+  expect(getComputedStyle(content!).opacity).toBe('1');
+});
+
+test('accordion styles direct and wrapped disclosures as equal-height Material segments', () => {
+  const scope = renderScope();
+  const accordion = document.createElement('rc-accordion');
+  accordion.innerHTML = `
+    <details>
+      <summary>Direct item</summary>
+      <p>Direct content</p>
+    </details>
+    <rc-disclosure>
+      <details>
+        <summary>Wrapped item</summary>
+        <p>Wrapped content</p>
+      </details>
+    </rc-disclosure>
+  `;
+  scope.append(accordion);
+
+  const summaries = accordion.querySelectorAll('summary');
+  expect(summaries).toHaveLength(2);
+
+  const firstSummaryStyle = getComputedStyle(summaries[0]!);
+  const secondSummaryStyle = getComputedStyle(summaries[1]!);
+  expect(firstSummaryStyle.display).toBe('grid');
+  expect(secondSummaryStyle.display).toBe('grid');
+  expect(firstSummaryStyle.minBlockSize).toBe(secondSummaryStyle.minBlockSize);
+
+  const details = accordion.querySelectorAll('details');
+  expect(details).toHaveLength(2);
+  expect(getComputedStyle(details[0]!).borderRadius).toBe(
+    getComputedStyle(details[1]!).borderRadius,
+  );
+});

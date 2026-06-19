@@ -1,26 +1,34 @@
 <script setup lang="ts">
-import { ref, onBeforeUnmount, onMounted } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 import {
-  getActivePreviewTheme,
-  PREVIEW_THEME_CHANGE_EVENT,
+  getActivePreviewState,
+  PREVIEW_MODES,
   PREVIEW_THEMES,
+  PREVIEW_THEME_CHANGE_EVENT,
+  type PreviewMode,
+  type PreviewState,
   type PreviewTheme,
 } from '../preview-theme-controller';
 
-const active = ref<PreviewTheme>('none');
+const activeTheme = ref<PreviewTheme>('none');
+const activeMode = ref<PreviewMode>('auto');
 
-function syncActiveTheme(event: Event) {
-  active.value = (event as CustomEvent<{ theme: PreviewTheme }>).detail.theme;
+function syncActiveState(event: Event) {
+  const state = (event as CustomEvent<PreviewState>).detail;
+  activeTheme.value = state.theme;
+  activeMode.value = state.mode;
 }
 
 onMounted(() => {
-  active.value = getActivePreviewTheme();
-  window.addEventListener(PREVIEW_THEME_CHANGE_EVENT, syncActiveTheme);
+  const state = getActivePreviewState();
+  activeTheme.value = state.theme;
+  activeMode.value = state.mode;
+  window.addEventListener(PREVIEW_THEME_CHANGE_EVENT, syncActiveState);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener(PREVIEW_THEME_CHANGE_EVENT, syncActiveTheme);
+  window.removeEventListener(PREVIEW_THEME_CHANGE_EVENT, syncActiveState);
 });
 </script>
 
@@ -31,14 +39,25 @@ onBeforeUnmount(() => {
       id="rc-preview-theme-select"
       class="rc-theme-select"
       data-rc-preview-theme-select
-      :value="active"
+      :value="activeTheme"
       aria-label="Preview theme"
     >
-      <option
-        v-for="t in PREVIEW_THEMES"
-        :key="t.id"
-        :value="t.id"
-      >{{ t.label }}</option>
+      <option v-for="theme in PREVIEW_THEMES" :key="theme.id" :value="theme.id">
+        {{ theme.label }}
+      </option>
+    </select>
+
+    <label class="rc-theme-label" for="rc-preview-mode-select">Preview mode</label>
+    <select
+      id="rc-preview-mode-select"
+      class="rc-theme-select rc-theme-mode-select"
+      data-rc-preview-mode-select
+      :value="activeMode"
+      aria-label="Preview color mode"
+    >
+      <option v-for="mode in PREVIEW_MODES" :key="mode.id" :value="mode.id">
+        {{ mode.label }}
+      </option>
     </select>
   </div>
 </template>
@@ -61,7 +80,7 @@ onBeforeUnmount(() => {
 }
 
 .rc-theme-select {
-  inline-size: clamp(6.75rem, 24vw, 8.25rem);
+  inline-size: clamp(6rem, 18vw, 7.75rem);
   height: 32px;
   padding: 0 28px 0 10px;
   border: 1px solid var(--vp-c-divider);
@@ -72,6 +91,10 @@ onBeforeUnmount(() => {
   font-size: 0.8125rem;
   line-height: 32px;
   cursor: pointer;
+}
+
+.rc-theme-mode-select {
+  inline-size: clamp(5.25rem, 16vw, 6.25rem);
 }
 
 .rc-theme-select:hover {

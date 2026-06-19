@@ -1,15 +1,15 @@
 # Theme previews
 
-The examples throughout the component pages use default UA-oriented styling so
-behavior, labels, form participation, and keyboard support stay easy to inspect.
-This page shows the same rc components in their default appearance, or inside
-theme previews inspired by popular design systems. Material uses the shipped
-`@rcarls/rc-theme-material` bridge; iOS, Fluent, and Carbon remain docs-only
-previews.
+The component pages show rc components in their default appearance or with the
+packaged Material 3 theme applied. The preview controls do not theme the
+VitePress chrome and do not write tokens to `document.documentElement`.
 
-The selector in the navigation bar changes the previews on this page and the live demo
-blocks on component pages. It does not write tokens to
-`document.documentElement`, and it does not theme the VitePress chrome.
+The navigation bar has two preview controls:
+
+- **Preview theme** switches between default component appearance and
+  `@rcarls/rc-theme-material`.
+- **Preview mode** switches the preview scopes between inherited color mode,
+  forced light mode, and forced dark mode.
 
 <ClientOnly>
   <theme-preview></theme-preview>
@@ -17,22 +17,20 @@ blocks on component pages. It does not write tokens to
 
 ## How it works
 
-The preview element owns an open shadow root. The "None" option applies only
-layout styles for the preview surface; the named theme options add a base
-preview stylesheet plus the selected design-system-inspired stylesheet through
-`shadowRoot.adoptedStyleSheets`.
+Component-page live examples keep the shared `.demo-section` wrapper as a
+behavior hook only. The global preview controller reapplies the selected preview
+state after client-side navigation. When Material is active, it adds
+`.rc-theme-material` to demo scopes so the package's scoped `--md-*` defaults
+and component styles apply.
 
-The Material preview adopts `@rcarls/rc-theme-material/theme.css`, which combines
-representative light/dark M3 defaults, the token bridge, and the full component
-style layer. The other previews are illustrative and are not exported by
-component packages.
+The `Auto` mode leaves `color-scheme` unset so previews inherit the current page
+or browser mode. The `Light` and `Dark` modes set `color-scheme` only on demo
+scopes and `<theme-preview>`, leaving the docs shell unchanged.
 
-Component-page live examples use the shared `.demo-section` wrapper. The global
-theme controller reapplies the selected theme after client-side navigation, so
-newly mounted examples receive the same semantic tokens without page-specific
-theme code. For Material, it adds `.rc-theme-material` and the docs provide the
-preview's `--md-sys-*` values. Examples that demonstrate explicit consumer
-styling may override those tokens locally.
+The preview gallery owns an open shadow root. It always uses a small neutral
+layout stylesheet for the gallery itself. The Material option additionally
+adopts `@rcarls/rc-theme-material/theme.css`, which combines bundled scoped
+Material token defaults, the token bridge, and the full component style layer.
 
 ## Material bridge
 
@@ -50,10 +48,9 @@ already provides Material system tokens:
 ```
 
 For a standalone baseline, import `@rcarls/rc-theme-material/theme.css` instead.
-It combines representative light/dark defaults with the bridge and full
-component styles. Import
-`defaults.css` separately only when those system-token defaults are useful
-without the RC mappings.
+It combines bundled light/dark token defaults with the bridge and full component
+styles. Import `defaults.css` separately only when those scoped token defaults
+are useful without the RC mappings.
 
 Applications that already provide Material system tokens can combine the bridge
 and full component layer:
@@ -72,8 +69,10 @@ The bridge maps Material component tokens first, then Material system roles,
 then platform colors:
 
 ```css
---rc-slider-progress-background:
-  var(--md-slider-active-track-color, var(--md-sys-color-primary, Highlight));
+--rc-slider-progress-background: var(
+  --md-slider-active-track-color,
+  var(--md-sys-color-primary, Highlight)
+);
 ```
 
 It covers select, combobox, slider, range slider, search bar, app bar, menu,
@@ -92,11 +91,11 @@ application CSS can override the package normally.
 
 ## Material fidelity
 
-| Surface | Fidelity | Notes |
-| --- | --- | --- |
-| Select, combobox, listbox, menus, search, app bar, sliders | Strong | Existing public parts and states support recognizable M3 styling. |
-| Toolbar, transfer list, textarea, splitter, dialog, disclosure | Approximate | Styles follow M3 roles while retaining RC structure. |
-| Markdown editor and virtual canvas | Foundational | Surface and contextual state treatment only. |
+| Surface                                                        | Fidelity     | Notes                                                             |
+| -------------------------------------------------------------- | ------------ | ----------------------------------------------------------------- |
+| Select, combobox, listbox, menus, search, app bar, sliders     | Strong       | Existing public parts and states support recognizable M3 styling. |
+| Toolbar, transfer list, textarea, splitter, dialog, disclosure | Approximate  | Styles follow M3 roles while retaining RC structure.              |
+| Markdown editor and virtual canvas                             | Foundational | Surface and contextual state treatment only.                      |
 
 The CSS-only layer intentionally omits floating labels, supporting/error-text
 structures, ripples, Material button variants, and structural component
