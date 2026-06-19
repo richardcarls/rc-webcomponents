@@ -32,27 +32,27 @@ features:
 
 ## Packages
 
-| Package | Description |
-| --- | --- |
-| [rc-select](/components/rc-select) | Select-only ARIA combobox backed by native `<select>` |
-| [rc-combobox](/components/rc-combobox) | Editable combobox with filtering and allow-create |
-| [rc-search-bar](/components/rc-search-bar) | Enhances a native search input with icon chrome, clear behavior, and debounced events |
-| [rc-app-bar](/components/rc-app-bar) | Headless grid app bar with exact-center composition and scroll behaviors |
-| [rc-fab](/components/rc-fab) | Floating action button with regular and extended variants |
-| [rc-slider](/components/rc-slider) | Single-thumb slider wrapping native `<input type="range">` |
-| [rc-range-slider](/components/rc-range-slider) | Two-thumb range slider |
-| [rc-textarea](/components/rc-textarea) | Enhanced textarea with line decorations and plugin API |
-| [rc-transfer-list](/components/rc-transfer-list) | ARIA transfer list (dual listbox) |
-| [rc-menu](/components/rc-menu) | ARIA menu popup |
-| [rc-menu-button](/components/rc-menu-button) | Button that opens an ARIA menu |
-| [rc-menubar](/components/rc-menubar) | ARIA menubar with roving tabindex |
-| [rc-toolbar](/components/rc-toolbar) | ARIA toolbar |
-| [rc-splitter](/components/rc-splitter) | Resizable pane splitter |
-| [rc-dialog](/components/rc-dialog) | Draggable and resizable `<dialog>` wrapper |
-| [rc-disclosure](/components/rc-disclosure) | Disclosure widget wrapping `<details>`/`<summary>` |
-| [rc-accordion](/components/rc-accordion) | Accordion coordinator for disclosure groups |
-| [rc-virtual-canvas](/components/rc-virtual-canvas) | Virtual canvas for large datasets |
-| [rc-markdown-editor](/components/rc-markdown-editor) | WYSIWYG Markdown editor |
+| Package                                              | Description                                                                           |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [rc-select](/components/rc-select)                   | Select-only ARIA combobox backed by native `<select>`                                 |
+| [rc-combobox](/components/rc-combobox)               | Editable combobox with filtering and allow-create                                     |
+| [rc-search-bar](/components/rc-search-bar)           | Enhances a native search input with icon chrome, clear behavior, and debounced events |
+| [rc-app-bar](/components/rc-app-bar)                 | Headless grid app bar with exact-center composition and scroll behaviors              |
+| [rc-fab](/components/rc-fab)                         | Floating action button with regular and extended variants                             |
+| [rc-slider](/components/rc-slider)                   | Single-thumb slider wrapping native `<input type="range">`                            |
+| [rc-range-slider](/components/rc-range-slider)       | Two-thumb range slider                                                                |
+| [rc-textarea](/components/rc-textarea)               | Enhanced textarea with line decorations and plugin API                                |
+| [rc-transfer-list](/components/rc-transfer-list)     | ARIA transfer list (dual listbox)                                                     |
+| [rc-menu](/components/rc-menu)                       | ARIA menu popup                                                                       |
+| [rc-menu-button](/components/rc-menu-button)         | Button that opens an ARIA menu                                                        |
+| [rc-menubar](/components/rc-menubar)                 | ARIA menubar with roving tabindex                                                     |
+| [rc-toolbar](/components/rc-toolbar)                 | ARIA toolbar                                                                          |
+| [rc-splitter](/components/rc-splitter)               | Resizable pane splitter                                                               |
+| [rc-dialog](/components/rc-dialog)                   | Draggable and resizable `<dialog>` wrapper                                            |
+| [rc-disclosure](/components/rc-disclosure)           | Disclosure widget wrapping `<details>`/`<summary>`                                    |
+| [rc-accordion](/components/rc-accordion)             | Native `<details>` accordion coordinator with single or multiple open panels          |
+| [rc-virtual-canvas](/components/rc-virtual-canvas)   | Virtual canvas for large datasets                                                     |
+| [rc-markdown-editor](/components/rc-markdown-editor) | WYSIWYG Markdown editor                                                               |
 
 ## Documentation model
 

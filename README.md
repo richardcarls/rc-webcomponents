@@ -69,33 +69,33 @@ Custom elements are framework-agnostic by definition. Components follow the stan
 
 ## Packages
 
-| Package | Description | Depends on |
-| --- | --- | --- |
-| [`rc-common`](packages/rc-common/) | Shared controllers and directives: `DragController`, `ResizeController`, `AnchorController`, `ScrollObserverController`, `KeyboardNavigationDirective`, `MouseMoveDirective` | — |
-| [`rc-listbox`](packages/rc-listbox/) | Light-DOM ARIA `listbox` used by select and combobox | rc-common |
-| [`rc-menu`](packages/rc-menu/) | ARIA `menu` / `menuitem` popup | rc-common |
-| [`rc-select`](packages/rc-select/) | Select-only ARIA combobox backed by a native `<select>` | rc-common, rc-listbox |
-| [`rc-combobox`](packages/rc-combobox/) | Editable ARIA combobox with filtering and allow-create | rc-common, rc-listbox, rc-select |
-| [`rc-search-bar`](packages/rc-search-bar/) | Enhances a native `<input type="search">` with icon chrome, clear button, and debounced search events | — |
-| [`rc-menu-button`](packages/rc-menu-button/) | Button that opens an ARIA menu | rc-common, rc-menu |
-| [`rc-menubar`](packages/rc-menubar/) | ARIA `menubar` with roving tabindex | rc-common, rc-menu-button |
-| [`rc-toolbar`](packages/rc-toolbar/) | ARIA `toolbar` with roving tabindex | rc-common |
-| [`rc-app-bar`](packages/rc-app-bar/) | Headless grid app bar with exact-center composition and pinned, collapse, or hide scroll behavior | rc-common |
-| [`rc-splitter`](packages/rc-splitter/) | Resizable pane splitter (`separator` role) | rc-common |
-| [`rc-textarea`](packages/rc-textarea/) | Enhanced `<textarea>` — line decorations, gutter, plugin API | — |
-| [`rc-textarea-adapters`](packages/rc-textarea-adapters/) | Adapter factories for Lezer, unified, and Shiki tokenizers | rc-textarea |
-| [`rc-textarea-plugin-markdown`](packages/rc-textarea-plugin-markdown/) | Markdown decoration plugin for rc-textarea | rc-textarea |
-| [`rc-markdown-editor`](packages/rc-markdown-editor/) | Rich/source Markdown editor with a formatting toolbar | rc-textarea |
-| [`rc-disclosure`](packages/rc-disclosure/) | Native `<details>` / `<summary>` disclosure wrapper | — |
-| [`rc-accordion`](packages/rc-accordion/) | Accordion coordinator for disclosure groups | rc-disclosure |
-| [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable `<dialog>` wrapper with accessible event forwarding | rc-common |
-| [`rc-fab`](packages/rc-fab/) | Floating action button with regular and extended variants | — |
-| [`rc-slider`](packages/rc-slider/) | Single-thumb slider backed by a native range input | rc-common |
-| [`rc-range-slider`](packages/rc-range-slider/) | Two-thumb range slider backed by native range inputs | rc-common |
-| [`rc-transfer-list`](packages/rc-transfer-list/) | Native-select-backed transfer list | rc-listbox, rc-toolbar |
-| [`rc-virtual-canvas`](packages/rc-virtual-canvas/) | Virtualized canvas for large datasets | — |
-| [`rc-theme-material`](packages/rc-theme-material/) | Optional CSS-only Material 3 token bridge | — |
-| [`rc-webcomponents`](packages/rc-webcomponents/) | Aggregate package exporting the component collection | all component packages |
+| Package                                                                | Description                                                                                                                                                                  | Depends on                       |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| [`rc-common`](packages/rc-common/)                                     | Shared controllers and directives: `DragController`, `ResizeController`, `AnchorController`, `ScrollObserverController`, `KeyboardNavigationDirective`, `MouseMoveDirective` | —                                |
+| [`rc-listbox`](packages/rc-listbox/)                                   | Light-DOM ARIA `listbox` used by select and combobox                                                                                                                         | rc-common                        |
+| [`rc-menu`](packages/rc-menu/)                                         | ARIA `menu` / `menuitem` popup                                                                                                                                               | rc-common                        |
+| [`rc-select`](packages/rc-select/)                                     | Select-only ARIA combobox backed by a native `<select>`                                                                                                                      | rc-common, rc-listbox            |
+| [`rc-combobox`](packages/rc-combobox/)                                 | Editable ARIA combobox with filtering and allow-create                                                                                                                       | rc-common, rc-listbox, rc-select |
+| [`rc-search-bar`](packages/rc-search-bar/)                             | Enhances a native `<input type="search">` with icon chrome, clear button, and debounced search events                                                                        | —                                |
+| [`rc-menu-button`](packages/rc-menu-button/)                           | Button that opens an ARIA menu                                                                                                                                               | rc-common, rc-menu               |
+| [`rc-menubar`](packages/rc-menubar/)                                   | ARIA `menubar` with roving tabindex                                                                                                                                          | rc-common, rc-menu-button        |
+| [`rc-toolbar`](packages/rc-toolbar/)                                   | ARIA `toolbar` with roving tabindex                                                                                                                                          | rc-common                        |
+| [`rc-app-bar`](packages/rc-app-bar/)                                   | Headless grid app bar with exact-center composition and pinned, collapse, or hide scroll behavior                                                                            | rc-common                        |
+| [`rc-splitter`](packages/rc-splitter/)                                 | Resizable pane splitter (`separator` role)                                                                                                                                   | rc-common                        |
+| [`rc-textarea`](packages/rc-textarea/)                                 | Enhanced `<textarea>` — line decorations, gutter, plugin API                                                                                                                 | —                                |
+| [`rc-textarea-adapters`](packages/rc-textarea-adapters/)               | Adapter factories for Lezer, unified, and Shiki tokenizers                                                                                                                   | rc-textarea                      |
+| [`rc-textarea-plugin-markdown`](packages/rc-textarea-plugin-markdown/) | Markdown decoration plugin for rc-textarea                                                                                                                                   | rc-textarea                      |
+| [`rc-markdown-editor`](packages/rc-markdown-editor/)                   | Rich/source Markdown editor with a formatting toolbar                                                                                                                        | rc-textarea                      |
+| [`rc-disclosure`](packages/rc-disclosure/)                             | Native `<details>` / `<summary>` disclosure wrapper                                                                                                                          | —                                |
+| [`rc-accordion`](packages/rc-accordion/)                               | Native `<details>` accordion coordinator with single or multiple open panels                                                                                                 | rc-disclosure                    |
+| [`rc-dialog`](packages/rc-dialog/)                                     | Draggable, resizable `<dialog>` wrapper with accessible event forwarding                                                                                                     | rc-common                        |
+| [`rc-fab`](packages/rc-fab/)                                           | Floating action button with regular and extended variants                                                                                                                    | —                                |
+| [`rc-slider`](packages/rc-slider/)                                     | Single-thumb slider backed by a native range input                                                                                                                           | rc-common                        |
+| [`rc-range-slider`](packages/rc-range-slider/)                         | Two-thumb range slider backed by native range inputs                                                                                                                         | rc-common                        |
+| [`rc-transfer-list`](packages/rc-transfer-list/)                       | Native-select-backed transfer list                                                                                                                                           | rc-listbox, rc-toolbar           |
+| [`rc-virtual-canvas`](packages/rc-virtual-canvas/)                     | Virtualized canvas for large datasets                                                                                                                                        | —                                |
+| [`rc-theme-material`](packages/rc-theme-material/)                     | Optional CSS-only Material 3 token bridge                                                                                                                                    | —                                |
+| [`rc-webcomponents`](packages/rc-webcomponents/)                       | Aggregate package exporting the component collection                                                                                                                         | all component packages           |
 
 Workspace dependency arrows show which packages must be **rebuilt** before dependent packages will pick up changes (they resolve to each dep's `dist/` output, not source).
 
@@ -103,14 +103,14 @@ Workspace dependency arrows show which packages must be **rebuilt** before depen
 
 ## Stack
 
-| Concern | Tool |
-| --- | --- |
-| Component model | Lit 3.x (web components, `LitElement`, reactive controllers) |
-| Language | TypeScript — `strict: true`, `noUnusedLocals`, `noUnusedParameters` |
-| Build | Vite — ESM + UMD outputs, declaration files via `vite-plugin-dts` |
-| Docs and demos | VitePress docs site |
-| Testing | Vitest + WebdriverIO (real browser) |
-| Package manager | Yarn 4.x Berry (workspaces + PnP) |
+| Concern         | Tool                                                                |
+| --------------- | ------------------------------------------------------------------- |
+| Component model | Lit 3.x (web components, `LitElement`, reactive controllers)        |
+| Language        | TypeScript — `strict: true`, `noUnusedLocals`, `noUnusedParameters` |
+| Build           | Vite — ESM + UMD outputs, declaration files via `vite-plugin-dts`   |
+| Docs and demos  | VitePress docs site                                                 |
+| Testing         | Vitest + WebdriverIO (real browser)                                 |
+| Package manager | Yarn 4.x Berry (workspaces + PnP)                                   |
 
 ---
 
