@@ -2,31 +2,34 @@
 title: Theme previews
 ---
 
-import { FormDataDemo } from '@site/src/components/ComponentDemos';
+import { ThemePreviewShowcase } from '@site/src/components/ThemePreviewShowcase';
 
 # Theme previews
 
-Every live demo has its own preview controls. The controls change only that demo,
-not the Docusaurus shell and not neighboring demos.
+Live demos share preview controls across the current docs page. The controls
+change every demo on that page, but not the Docusaurus shell and not neighboring
+pages.
 
-<FormDataDemo />
+<ThemePreviewShowcase />
 
 ## Preview modes
 
-- **Theme: None** shows the component without a package theme. This is the
-  default and is intended to expose the true bare-metal browser appearance.
+- **Theme: None** shows components without a package theme. This is the default
+  on component pages and is intended to expose the true bare-metal browser
+  appearance.
 - **Theme: Material** applies `@rcarls/rc-theme-material/theme.css` only inside
-  the demo frame.
+  each demo frame. The broad preview on this page defaults to Material so the
+  theme package is visible immediately.
 - **Mode: Auto** inherits the current page or browser color scheme.
 - **Mode: Light** and **Mode: Dark** set `color-scheme` only on the demo surface.
 
 ## Isolation model
 
-`DemoFrame` renders controls in the Docusaurus page, then portals the demo
-content into an open shadow root. The shadow root receives only a tiny structural
-reset plus optional package-theme CSS. Docusaurus and Infima styles therefore do
-not restyle native buttons, inputs, summaries, dialogs, or component internals in
-the default preview.
+`DemoFrame` renders page-shared controls in the Docusaurus page, then portals
+each demo into an open shadow root. The shadow root receives only a tiny
+structural reset plus optional package-theme CSS. Docusaurus and Infima styles
+therefore do not restyle native buttons, inputs, summaries, dialogs, or
+component internals in the default preview.
 
 The Material option adds the scoped `rc-theme-material` class and injects the
 theme package CSS inside the same shadow root. That keeps theme evaluation local

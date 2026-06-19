@@ -15,7 +15,13 @@ A draggable, resizable wrapper around a native `<dialog>` that keeps browser dia
   tag="rc-dialog"
   native="Requires a native dialog child"
   state="Open state follows the native dialog"
-  events={['rc-dialog-open', 'rc-dialog-toggle', 'rc-dialog-request-close', 'rc-dialog-cancel', 'rc-dialog-close']}
+  events={[
+    'rc-dialog-open',
+    'rc-dialog-toggle',
+    'rc-dialog-request-close',
+    'rc-dialog-cancel',
+    'rc-dialog-close',
+  ]}
   related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
 />
 
@@ -39,7 +45,7 @@ import '@rcarls/rc-dialog/define';
 
 ## Theming
 
-The default demo mode shows the component without a package theme. Use the per-demo controls to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside that demo frame.
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
 ## API
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import { useLocation } from '@docusaurus/router';
 import { createPortal } from 'react-dom';
 
 import { ClientOnly } from './ClientOnly';
@@ -32,6 +33,16 @@ interface DocusaurusRuntimeWindow extends Window {
       baseUrl?: string;
     };
   };
+}
+
+interface DemoFramePreviewState {
+  mode: DemoFrameMode;
+  theme: DemoFrameTheme;
+}
+
+interface DemoFramePreviewStore {
+  pathname: string;
+  state: DemoFramePreviewState;
 }
 
 const STRUCTURAL_CSS = `
@@ -100,15 +111,70 @@ const STRUCTURAL_CSS = `
   overflow: auto;
   font-size: 0.85rem;
 }
+
+.demo-section-heading {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
 `;
 
 let structuralSheet: CSSStyleSheet | undefined;
 let materialSheetPromise: Promise<CSSStyleSheet> | undefined;
 let materialCssPromise: Promise<string> | undefined;
+let previewSnapshot: DemoFramePreviewStore = {
+  pathname: '',
+  state: {
+    mode: 'auto',
+    theme: 'none',
+  },
+};
+
+const previewListeners = new Set<() => void>();
+
+function getPreviewSnapshot(): DemoFramePreviewStore {
+  return previewSnapshot;
+}
+
+function subscribePreviewState(listener: () => void): () => void {
+  previewListeners.add(listener);
+
+  return () => {
+    previewListeners.delete(listener);
+  };
+}
+
+function emitPreviewStateChange(): void {
+  previewListeners.forEach((listener) => listener());
+}
+
+function ensurePreviewState(pathname: string, state: DemoFramePreviewState): void {
+  if (previewSnapshot.pathname === pathname) {
+    return;
+  }
+
+  previewSnapshot = { pathname, state };
+}
+
+function setPreviewState(next: Partial<DemoFramePreviewState>): void {
+  const state = {
+    ...previewSnapshot.state,
+    ...next,
+  };
+
+  if (state.mode === previewSnapshot.state.mode && state.theme === previewSnapshot.state.theme) {
+    return;
+  }
+
+  previewSnapshot = {
+    ...previewSnapshot,
+    state,
+  };
+  emitPreviewStateChange();
+}
 
 function supportsConstructableStylesheets(shadowRoot: ShadowRoot): boolean {
-  return 'adoptedStyleSheets' in shadowRoot
-    && 'replaceSync' in CSSStyleSheet.prototype;
+  return 'adoptedStyleSheets' in shadowRoot && 'replaceSync' in CSSStyleSheet.prototype;
 }
 
 function createStylesheet(cssText: string): CSSStyleSheet {
@@ -135,14 +201,13 @@ function docsAssetUrl(path: string): string {
 }
 
 async function loadMaterialCss(): Promise<string> {
-  materialCssPromise ??= fetch(docsAssetUrl('rc-theme-material/theme.css'))
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Unable to load Material theme CSS: ${response.status}`);
-      }
+  materialCssPromise ??= fetch(docsAssetUrl('rc-theme-material/theme.css')).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Unable to load Material theme CSS: ${response.status}`);
+    }
 
-      return response.text();
-    });
+    return response.text();
+  });
 
   return materialCssPromise;
 }
@@ -230,22 +295,25 @@ function ShadowDemoSurface({ children, label, mode, theme }: ShadowDemoSurfacePr
 
   return (
     <div ref={hostRef} className={styles.surfaceHost}>
-      {shadowRoot && createPortal(
-        <section
-          className={theme === 'material' ? 'demo-surface rc-theme-material' : 'demo-surface'}
-          data-mode={mode === 'auto' ? undefined : mode}
-          aria-label={label}
-        >
-          {children}
-        </section>,
-        shadowRoot,
-      )}
+      {shadowRoot &&
+        createPortal(
+          <section
+            className={theme === 'material' ? 'demo-surface rc-theme-material' : 'demo-surface'}
+            data-mode={mode === 'auto' ? undefined : mode}
+            aria-label={label}
+          >
+            {children}
+          </section>,
+          shadowRoot,
+        )}
     </div>
   );
 }
 
-function controlId(label: string, suffix: string) {
-  return `${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${suffix}`;
+function controlId(label: string, frameId: string, suffix: string) {
+  const baseId = `${label}-${frameId}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+  return `${baseId}-${suffix}`;
 }
 
 export function DemoFrame({
@@ -255,12 +323,17 @@ export function DemoFrame({
   defaultTheme = 'none',
   label = 'Live demo',
 }: DemoFrameProps) {
-  const [mode, setMode] = useState<DemoFrameMode>(defaultMode);
-  const [theme, setTheme] = useState<DemoFrameTheme>(defaultTheme);
+  const { pathname } = useLocation();
+  ensurePreviewState(pathname, { mode: defaultMode, theme: defaultTheme });
+
+  const {
+    state: { mode, theme },
+  } = useSyncExternalStore(subscribePreviewState, getPreviewSnapshot, getPreviewSnapshot);
   const showMode = controls === 'mode' || controls === 'all';
   const showTheme = controls === 'theme' || controls === 'all';
-  const modeId = controlId(label, 'mode');
-  const themeId = controlId(label, 'theme');
+  const frameId = useId();
+  const modeId = controlId(label, frameId, 'mode');
+  const themeId = controlId(label, frameId, 'theme');
 
   return (
     <ClientOnly fallback={<section className={styles.root} aria-label={label} />}>
@@ -273,7 +346,11 @@ export function DemoFrame({
                 <select
                   id={themeId}
                   value={theme}
-                  onChange={(event) => setTheme(event.currentTarget.value as DemoFrameTheme)}
+                  onChange={(event) => {
+                    setPreviewState({
+                      theme: event.currentTarget.value as DemoFrameTheme,
+                    });
+                  }}
                 >
                   <option value="none">None</option>
                   <option value="material">Material</option>
@@ -287,7 +364,11 @@ export function DemoFrame({
                 <select
                   id={modeId}
                   value={mode}
-                  onChange={(event) => setMode(event.currentTarget.value as DemoFrameMode)}
+                  onChange={(event) => {
+                    setPreviewState({
+                      mode: event.currentTarget.value as DemoFrameMode,
+                    });
+                  }}
                 >
                   <option value="auto">Auto</option>
                   <option value="light">Light</option>
