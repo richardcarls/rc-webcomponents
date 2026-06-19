@@ -6,7 +6,7 @@
     border-radius: var(--md-sys-shape-corner-extra-large, 1.75rem);
     background: var(--md-sys-color-surface-container-high, Canvas);
     color: var(--md-sys-color-on-surface, CanvasText);
-    box-shadow: var(--md-sys-elevation-level3, var(--md-sys-elevation-level2, none));
+    box-shadow: var(--rc-shadow-level3, var(--rc-shadow, none));
     font-family: var(--md-sys-typescale-body-medium-font, inherit);
   }
 
@@ -14,7 +14,10 @@
     background: color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-dialog > dialog :is(button, [role='button']) {
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-dialog
+    > dialog
+    :is(button, [role='button']) {
     min-block-size: 2.5rem;
     padding-inline: 1.5rem;
     border: 0;

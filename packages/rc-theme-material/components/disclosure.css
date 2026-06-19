@@ -1,28 +1,123 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure {
     display: block;
+    --rc-theme-material-disclosure-easing: cubic-bezier(
+      var(--md-sys-motion-easing-standard-x0, 0.2),
+      var(--md-sys-motion-easing-standard-y0, 0),
+      var(--md-sys-motion-easing-standard-x1, 0),
+      var(--md-sys-motion-easing-standard-y1, 1)
+    );
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details {
-    border-block-end: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
-    background: var(--md-sys-color-surface, Canvas);
+    overflow: clip;
+    border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
+    border-radius: var(--md-sys-shape-corner-large, 1rem);
+    background: var(--md-sys-color-surface-container-low, Canvas);
     color: var(--md-sys-color-on-surface, CanvasText);
+    transition:
+      background-color var(--md-sys-motion-duration-200, 200ms)
+        var(--rc-theme-material-disclosure-easing),
+      border-color var(--md-sys-motion-duration-200, 200ms)
+        var(--rc-theme-material-disclosure-easing),
+      box-shadow var(--md-sys-motion-duration-200, 200ms) var(--rc-theme-material-disclosure-easing);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details[open] {
+    background: var(--md-sys-color-surface-container, Canvas);
+    box-shadow: var(
+      --rc-shadow-level1,
+      0 1px 2px 0 rgb(0 0 0 / 0.3),
+      0 1px 3px 1px rgb(0 0 0 / 0.15)
+    );
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details > summary {
-    min-block-size: 3rem;
-    padding: 0.75rem 1rem;
-    border-radius: var(--md-sys-shape-corner-small, 0.5rem);
-    font-weight: 500;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    box-sizing: border-box;
+    min-block-size: 3.5rem;
+    padding-block: 0.75rem;
+    padding-inline: 1rem;
+    border-radius: calc(var(--md-sys-shape-corner-large, 1rem) - 1px);
+    color: var(--md-sys-color-on-surface, CanvasText);
     cursor: pointer;
+    font-family: var(--md-sys-typescale-title-small-font, inherit);
+    font-size: var(--md-sys-typescale-title-small-size, 0.875rem);
+    font-weight: var(--md-sys-typescale-title-small-weight, 500);
+    line-height: var(--md-sys-typescale-title-small-line-height, 1.25rem);
+    transition: background-color var(--md-sys-motion-duration-100, 100ms)
+      var(--rc-theme-material-disclosure-easing);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details > summary::marker {
+    color: var(--md-sys-color-on-surface-variant, GrayText);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details > summary:hover {
     background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText)
+        calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-disclosure
+    > details
+    > summary:focus-visible {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: -2px;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details > :not(summary) {
+    box-sizing: border-box;
+    max-block-size: 0;
+    overflow: clip;
+    padding-block: 0;
     padding-inline: 1rem;
-    padding-block-end: 1rem;
+    color: var(--md-sys-color-on-surface-variant, CanvasText);
+    font-family: var(--md-sys-typescale-body-medium-font, inherit);
+    font-size: var(--md-sys-typescale-body-medium-size, 0.875rem);
+    line-height: var(--md-sys-typescale-body-medium-line-height, 1.25rem);
+    opacity: 0;
+    transition:
+      max-block-size var(--md-sys-motion-duration-300, 300ms)
+        var(--rc-theme-material-disclosure-easing),
+      opacity var(--md-sys-motion-duration-200, 200ms) var(--rc-theme-material-disclosure-easing),
+      padding-block var(--md-sys-motion-duration-200, 200ms)
+        var(--rc-theme-material-disclosure-easing);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-disclosure
+    > details[open]
+    > :not(summary) {
+    max-block-size: 60rem;
+    padding-block: 0 1rem;
+    opacity: 1;
+  }
+
+  @supports (transition-behavior: allow-discrete) {
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details > :not(summary) {
+      transition:
+        content-visibility var(--md-sys-motion-duration-300, 300ms) allow-discrete,
+        max-block-size var(--md-sys-motion-duration-300, 300ms)
+          var(--rc-theme-material-disclosure-easing),
+        opacity var(--md-sys-motion-duration-200, 200ms) var(--rc-theme-material-disclosure-easing),
+        padding-block var(--md-sys-motion-duration-200, 200ms)
+          var(--rc-theme-material-disclosure-easing);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details,
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details > summary,
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-disclosure > details > :not(summary) {
+      transition-duration: 0ms;
+    }
   }
 }
