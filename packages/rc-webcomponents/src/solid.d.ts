@@ -15,8 +15,6 @@
 
 import type { RCTextareaPlugin } from '@rcarls/rc-textarea';
 
-// ---- Ref types --------------------------------------------------------------
-
 /** Public API surface of `<rc-disclosure>`. */
 export type RCDisclosureRef = HTMLElement & {
   open: boolean;
@@ -91,6 +89,10 @@ export type RCComboboxRef = RCSelectRef & {
   filterStrategy: 'prefix' | 'contains' | ((label: string, query: string) => boolean);
 };
 
+export type RCComboboxCreateDetail = {
+  text: string;
+};
+
 /** Public API surface of `<rc-dialog>`. */
 export type RCDialogRef = HTMLElement & {
   open: boolean | undefined;
@@ -116,6 +118,10 @@ export type RCDialogToggleDetail = {
   returnValue: string;
 };
 
+export type RCDialogCloseDetail = {
+  returnValue: string;
+};
+
 /** Public API surface of `<rc-menu>`. */
 export type RCMenuRef = HTMLElement & {
   label: string;
@@ -127,12 +133,34 @@ export type RCMenuActivateDetail = {
   text: string;
 };
 
+export type RCMenuCloseDetail = {
+  reason: 'escape';
+};
+
 /** Public API surface of `<rc-menu-button>`. */
+export type RCMenuButtonPlacement =
+  | 'top'
+  | 'top-start'
+  | 'top-end'
+  | 'bottom'
+  | 'bottom-start'
+  | 'bottom-end'
+  | 'left'
+  | 'left-start'
+  | 'left-end'
+  | 'right'
+  | 'right-start'
+  | 'right-end';
+
 export type RCMenuButtonRef = HTMLElement & {
   open: boolean | undefined;
   defaultOpen: boolean;
   orientation: 'horizontal' | 'vertical' | undefined;
-  placement: 'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'left-start' | 'left-end' | 'right' | 'right-start' | 'right-end';
+  placement: RCMenuButtonPlacement;
+};
+
+export type RCMenuButtonToggleDetail = {
+  open: boolean;
 };
 
 /** Public API surface of `<rc-menubar>`. */
@@ -196,6 +224,14 @@ export type RCMarkdownEditorFormats = {
   codeLanguage?: string | null;
 };
 
+export type RCMarkdownEditorChangeDetail = {
+  value: string;
+};
+
+export type RCMarkdownEditorModeChangeDetail = {
+  mode: 'rich' | 'source';
+};
+
 export type RCVirtualCanvasViewRect = Readonly<{
   x: number;
   y: number;
@@ -253,6 +289,10 @@ export type RCSliderRef = HTMLElement & {
   orientation: 'horizontal' | 'vertical';
 };
 
+export type RCSliderChangeDetail = {
+  value: number;
+};
+
 export type RCRangeSliderRef = HTMLElement & {
   min: number;
   max: number;
@@ -266,6 +306,10 @@ export type RCRangeSliderRef = HTMLElement & {
   highValueText: string;
   display: 'float' | 'inline-start' | 'inline-end' | null;
   orientation: 'horizontal' | 'vertical';
+};
+
+export type RCRangeSliderChangeDetail = {
+  value: [number, number];
 };
 
 export type RCTransferListOption = {
@@ -286,6 +330,10 @@ export type RCTransferListRef = HTMLElement & {
   removeSelected(): void;
   clearSelected(): void;
   moveSelected(delta: number): void;
+};
+
+export type RCTransferListChangeDetail = {
+  selected: RCTransferListOption[];
 };
 
 /** Public API surface of `<rc-app-bar>`. */
@@ -314,7 +362,21 @@ export type RCSearchBarInputDetail = {
   value: string;
 };
 
-// ---- JSX augmentation -------------------------------------------------------
+export type RCSplitterChangeDetail = {
+  value: number;
+  valueText: string;
+};
+
+export type RCTextareaChangeDetail = {
+  value: string;
+};
+
+export type RCTextareaSelectDetail = {
+  selectionStart: number;
+  selectionEnd: number;
+};
+
+/** SolidJS JSX declarations for rc-webcomponents elements. */
 
 declare module 'solid-js' {
   namespace JSX {
@@ -377,7 +439,7 @@ declare module 'solid-js' {
         'on:rc-select-change'?: (e: CustomEvent<RCSelectChangeDetail>) => void;
         'on:rc-select-open'?: (e: CustomEvent) => void;
         'on:rc-select-close'?: (e: CustomEvent) => void;
-        'on:rc-combobox-create'?: (e: CustomEvent<{ text: string }>) => void;
+        'on:rc-combobox-create'?: (e: CustomEvent<RCComboboxCreateDetail>) => void;
       };
 
       'rc-dialog': JSX.HTMLAttributes<RCDialogRef> & {
@@ -396,15 +458,15 @@ declare module 'solid-js' {
         'light-dismiss'?: boolean | string;
         'on:rc-dialog-open'?: (e: CustomEvent) => void;
         'on:rc-dialog-toggle'?: (e: CustomEvent<RCDialogToggleDetail>) => void;
-        'on:rc-dialog-close'?: (e: CustomEvent<{ returnValue: string }>) => void;
-        'on:rc-dialog-request-close'?: (e: CustomEvent<{ returnValue: string }>) => void;
+        'on:rc-dialog-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
+        'on:rc-dialog-request-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
         'on:rc-dialog-cancel'?: (e: CustomEvent) => void;
       };
 
       'rc-menu': JSX.HTMLAttributes<RCMenuRef> & {
         label?: string;
         'on:rc-menu-activate'?: (e: CustomEvent<RCMenuActivateDetail>) => void;
-        'on:rc-menu-close'?: (e: CustomEvent<{ reason: 'escape' }>) => void;
+        'on:rc-menu-close'?: (e: CustomEvent<RCMenuCloseDetail>) => void;
       };
 
       'rc-menu-button': JSX.HTMLAttributes<RCMenuButtonRef> & {
@@ -413,8 +475,8 @@ declare module 'solid-js' {
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
         orientation?: 'horizontal' | 'vertical';
-        placement?: 'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'left-start' | 'left-end' | 'right' | 'right-start' | 'right-end';
-        'on:rc-menu-button-toggle'?: (e: CustomEvent<{ open: boolean }>) => void;
+        placement?: RCMenuButtonPlacement;
+        'on:rc-menu-button-toggle'?: (e: CustomEvent<RCMenuButtonToggleDetail>) => void;
       };
 
       'rc-menubar': JSX.HTMLAttributes<RCMenubarRef>;
@@ -438,8 +500,8 @@ declare module 'solid-js' {
         display?: 'float' | 'inline-start' | 'inline-end';
         'value-text'?: string;
         orientation?: 'horizontal' | 'vertical';
-        'on:rc-slider-input'?: (e: CustomEvent<{ value: number }>) => void;
-        'on:rc-slider-change'?: (e: CustomEvent<{ value: number }>) => void;
+        'on:rc-slider-input'?: (e: CustomEvent<RCSliderChangeDetail>) => void;
+        'on:rc-slider-change'?: (e: CustomEvent<RCSliderChangeDetail>) => void;
       };
 
       'rc-range-slider': JSX.HTMLAttributes<RCRangeSliderRef> & {
@@ -455,8 +517,8 @@ declare module 'solid-js' {
         'high-value-text'?: string;
         display?: 'float' | 'inline-start' | 'inline-end';
         orientation?: 'horizontal' | 'vertical';
-        'on:rc-range-slider-input'?: (e: CustomEvent<{ value: [number, number] }>) => void;
-        'on:rc-range-slider-change'?: (e: CustomEvent<{ value: [number, number] }>) => void;
+        'on:rc-range-slider-input'?: (e: CustomEvent<RCRangeSliderChangeDetail>) => void;
+        'on:rc-range-slider-change'?: (e: CustomEvent<RCRangeSliderChangeDetail>) => void;
       };
 
       'rc-transfer-list': JSX.HTMLAttributes<RCTransferListRef> & {
@@ -466,7 +528,7 @@ declare module 'solid-js' {
         'prop:available'?: RCTransferListOption[] | undefined;
         'prop:selected'?: RCTransferListOption[] | undefined;
         'prop:defaultSelected'?: RCTransferListOption[] | undefined;
-        'on:rc-transfer-list-change'?: (e: CustomEvent<{ selected: RCTransferListOption[] }>) => void;
+        'on:rc-transfer-list-change'?: (e: CustomEvent<RCTransferListChangeDetail>) => void;
       };
 
       'rc-splitter': JSX.HTMLAttributes<RCSplitterRef> & {
@@ -480,7 +542,7 @@ declare module 'solid-js' {
         'prop:value'?: number | undefined;
         'prop:defaultValue'?: number | undefined;
         fixed?: boolean | string;
-        'on:rc-splitter-change'?: (e: CustomEvent<{ value: number; valueText: string }>) => void;
+        'on:rc-splitter-change'?: (e: CustomEvent<RCSplitterChangeDetail>) => void;
       };
 
       'rc-editor-toolbar': JSX.HTMLAttributes<HTMLElement> & {
@@ -500,8 +562,8 @@ declare module 'solid-js' {
         'prop:sourceMode'?: boolean | undefined;
         'prop:defaultSourceMode'?: boolean | undefined;
         'read-only'?: boolean | string;
-        'on:rc-change'?: (e: CustomEvent<{ value: string }>) => void;
-        'on:rc-mode-change'?: (e: CustomEvent<{ mode: 'rich' | 'source' }>) => void;
+        'on:rc-change'?: (e: CustomEvent<RCMarkdownEditorChangeDetail>) => void;
+        'on:rc-mode-change'?: (e: CustomEvent<RCMarkdownEditorModeChangeDetail>) => void;
         'on:rc-formatting-change'?: (e: CustomEvent<RCMarkdownEditorFormats>) => void;
       };
 
@@ -556,10 +618,10 @@ declare module 'solid-js' {
         'auto-grow'?: boolean | string;
         'read-only'?: boolean | string;
         label?: string;
-        'on:rc-textarea-change'?: (e: CustomEvent<{ value: string }>) => void;
+        'on:rc-textarea-change'?: (e: CustomEvent<RCTextareaChangeDetail>) => void;
         'on:rc-textarea-focus'?: (e: CustomEvent) => void;
         'on:rc-textarea-blur'?: (e: CustomEvent) => void;
-        'on:rc-textarea-select'?: (e: CustomEvent<{ selectionStart: number; selectionEnd: number }>) => void;
+        'on:rc-textarea-select'?: (e: CustomEvent<RCTextareaSelectDetail>) => void;
       };
     }
   }
