@@ -55,7 +55,9 @@ export function AppBarDemo() {
     <DemoFrame>
       <div style={{ border: '1px solid ButtonBorder' }}>
         <rc-app-bar ref={barRef} variant="expanded" scroll-behavior="collapse">
-          <button slot="leading" type="button" aria-label="Back">Back</button>
+          <button slot="leading" type="button" aria-label="Back">
+            <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+          </button>
           <div>
             <strong>Recipes</strong>
             <small style={{ display: 'block' }}>Summer collection</small>
@@ -63,7 +65,9 @@ export function AppBarDemo() {
           <rc-search-bar slot="center">
             <input type="search" aria-label="Search recipes" />
           </rc-search-bar>
-          <button slot="trailing" type="button">Edit</button>
+          <button slot="trailing" type="button" aria-label="Edit">
+            <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+          </button>
         </rc-app-bar>
       </div>
       <p>
@@ -131,7 +135,9 @@ export function DialogDemo() {
         <dialog aria-labelledby="dialog-demo-title">
           <div data-titlebar style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <strong id="dialog-demo-title" style={{ flex: 1 }}>Native dialog</strong>
-            <button type="button" onClick={() => dialogRef.current?.close('dismiss')}>Close</button>
+            <button type="button" aria-label="Close" onClick={() => dialogRef.current?.close('dismiss')}>
+              <span className="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
           </div>
           <p>Drag the titlebar, resize the edges, or press Escape.</p>
           <button type="button" onClick={() => dialogRef.current?.close('ok')}>OK</button>
@@ -169,9 +175,11 @@ export function FabDemo() {
   return (
     <DemoFrame>
       <div className="demo-row">
-        <rc-fab aria-label="Create">+</rc-fab>
+        <rc-fab aria-label="Create">
+          <span className="material-symbols-outlined" aria-hidden="true">add</span>
+        </rc-fab>
         <rc-fab extended>
-          <span aria-hidden="true">+</span>
+          <span className="material-symbols-outlined" aria-hidden="true">edit</span>
           <span>Compose</span>
         </rc-fab>
       </div>
@@ -345,10 +353,16 @@ export function ToolbarDemo() {
   return (
     <DemoFrame>
       <rc-toolbar label="Formatting">
-        <button type="button" onClick={() => setClicked('Bold')}>Bold</button>
-        <button type="button" onClick={() => setClicked('Italic')}>Italic</button>
+        <button type="button" aria-label="Bold" onClick={() => setClicked('Bold')}>
+          <span className="material-symbols-outlined" aria-hidden="true">format_bold</span>
+        </button>
+        <button type="button" aria-label="Italic" onClick={() => setClicked('Italic')}>
+          <span className="material-symbols-outlined" aria-hidden="true">format_italic</span>
+        </button>
         <hr />
-        <button type="button" onClick={() => setClicked('Link')}>Link</button>
+        <button type="button" aria-label="Link" onClick={() => setClicked('Link')}>
+          <span className="material-symbols-outlined" aria-hidden="true">link</span>
+        </button>
       </rc-toolbar>
       <p>{clicked}</p>
     </DemoFrame>

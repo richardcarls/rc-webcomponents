@@ -4604,6 +4604,7 @@ __metadata:
     "@docusaurus/tsconfig": "npm:^3.10.1"
     "@docusaurus/types": "npm:^3.10.1"
     "@mdx-js/react": "npm:^3.1.1"
+    "@rcarls/rc-textarea-plugin-markdown": "workspace:^"
     "@rcarls/rc-theme-material": "workspace:^"
     "@rcarls/rc-webcomponents": "workspace:^"
     "@types/react": "npm:^19.2.0"
@@ -4869,7 +4870,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-textarea-plugin-markdown@workspace:packages/rc-textarea-plugin-markdown":
+"@rcarls/rc-textarea-plugin-markdown@workspace:^, @rcarls/rc-textarea-plugin-markdown@workspace:packages/rc-textarea-plugin-markdown":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-textarea-plugin-markdown@workspace:packages/rc-textarea-plugin-markdown"
   dependencies:

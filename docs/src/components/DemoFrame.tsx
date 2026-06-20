@@ -117,11 +117,27 @@ const STRUCTURAL_CSS = `
   font-size: 0.95rem;
   font-weight: 700;
 }
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.5rem;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
 `;
 
 let structuralSheet: CSSStyleSheet | undefined;
 let materialSheetPromise: Promise<CSSStyleSheet> | undefined;
 let materialCssPromise: Promise<string> | undefined;
+let symbolFontInjected = false;
+let robotoFontInjected = false;
 let previewSnapshot: DemoFramePreviewStore = {
   pathname: '',
   state: {
@@ -200,6 +216,26 @@ function docsAssetUrl(path: string): string {
   return `${normalizeBaseUrl(runtimeWindow.__docusaurus?.siteConfig?.baseUrl)}${path}`;
 }
 
+function injectSymbolFont(): void {
+  if (symbolFontInjected) return;
+  symbolFontInjected = true;
+  const $link = document.createElement('link');
+  $link.rel = 'stylesheet';
+  $link.href =
+    'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap';
+  document.head.append($link);
+}
+
+function injectMaterialFonts(): void {
+  injectSymbolFont();
+  if (robotoFontInjected) return;
+  robotoFontInjected = true;
+  const $link = document.createElement('link');
+  $link.rel = 'stylesheet';
+  $link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap';
+  document.head.append($link);
+}
+
 async function loadMaterialCss(): Promise<string> {
   materialCssPromise ??= fetch(docsAssetUrl('rc-theme-material/theme.css')).then((response) => {
     if (!response.ok) {
@@ -251,6 +287,8 @@ function ShadowDemoSurface({ children, label, mode, theme }: ShadowDemoSurfacePr
       return;
     }
 
+    injectSymbolFont();
+
     if (supportsConstructableStylesheets(shadowRoot)) {
       const structural = getStructuralSheet();
       shadowRoot.adoptedStyleSheets = [structural];
@@ -258,6 +296,7 @@ function ShadowDemoSurface({ children, label, mode, theme }: ShadowDemoSurfacePr
       removeFallbackStyle(shadowRoot, 'material');
 
       if (theme === 'material') {
+        injectMaterialFonts();
         let active = true;
 
         void loadMaterialSheet().then((material) => {
@@ -277,6 +316,7 @@ function ShadowDemoSurface({ children, label, mode, theme }: ShadowDemoSurfacePr
     upsertFallbackStyle(shadowRoot, 'structural', STRUCTURAL_CSS);
 
     if (theme === 'material') {
+      injectMaterialFonts();
       let active = true;
 
       void loadMaterialCss().then((cssText) => {

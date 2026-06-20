@@ -11,6 +11,7 @@
     "@docusaurus/core": "^3.10.1",
     "@docusaurus/preset-classic": "^3.10.1",
     "@mdx-js/react": "^3.1.1",
+    "@rcarls/rc-textarea-plugin-markdown": "workspace:^",
     "@rcarls/rc-theme-material": "workspace:^",
     "@rcarls/rc-webcomponents": "workspace:^",
     "clsx": "^2.1.1",
