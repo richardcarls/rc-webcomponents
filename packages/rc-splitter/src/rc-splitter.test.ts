@@ -312,8 +312,15 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
+      // Wait for resize observer and RAF to initialize _maxValue
+      await new Promise((r) => setTimeout(r, 50));
 
       const separator = getSeparator(host);
+      await vi.waitFor(() => {
+        expect(Number(separator.getAttribute('aria-valuemax'))).toBeGreaterThan(0);
+      });
+
+      host.value = 100;
       const initialValue = host.value;
 
       await focusSeparator(separator);

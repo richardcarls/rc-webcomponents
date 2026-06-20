@@ -68,6 +68,7 @@ export class RCSplitter extends LitElement {
 
   private _defaultValue: number | undefined;
   private _hostValue: number | undefined;
+  private _valueInitialized = false;
 
   /** The current splitter value. Host writes update silently. */
   @property({ type: Number })
@@ -128,6 +129,7 @@ export class RCSplitter extends LitElement {
   }
 
   private _setUserValue(val: number): void {
+    this._valueInitialized = true;
     this._hostValue = undefined;
     this._setValue(val, true);
   }
@@ -276,7 +278,9 @@ export class RCSplitter extends LitElement {
       if (!this._initialMax) {
         this._initialMax = this._maxValue;
         this._setValue(
-          this._hostValue ?? this.defaultValue ?? this._maxValue / 2,
+          this._valueInitialized
+            ? this._value
+            : (this._hostValue ?? this.defaultValue ?? this._maxValue / 2),
           false,
         );
       } else if (this._hostValue !== undefined) {
