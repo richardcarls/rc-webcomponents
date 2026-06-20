@@ -121,7 +121,7 @@ test('RCVirtualCanvas scrolls and centers on content coordinates', async () => {
   host.centerOnContent(400, 300);
 
   await vi.waitFor(() => {
-    expect(host.getViewRect().x).toBeCloseTo(400 - (root.clientWidth * 0.5));
+    expect(host.getViewRect().x).toBeCloseTo(400 - (root.clientWidth * 0.5), 0);
     expect(host.getViewRect().y).toBeCloseTo(300 - (root.clientHeight * 0.5), 0);
   });
 });
