@@ -7,7 +7,10 @@ const sidebars: SidebarsConfig = {
       label: 'Start here',
       collapsible: false,
       items: [
+        'guide/installation',
         'guide/progressive-enhancement',
+        'guide/react',
+        'guide/styling',
         'guide/theme-previews',
       ],
     },

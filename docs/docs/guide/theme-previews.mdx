@@ -6,50 +6,9 @@ import { ThemePreviewShowcase } from '@site/src/components/ThemePreviewShowcase'
 
 # Theme previews
 
-Live demos share preview controls across the current docs page. The controls
-change every demo on that page, but not the Docusaurus shell and not neighboring
-pages.
+Use the theme and color mode controls above demos to preview components in the
+different supported themes.
 
 <ThemePreviewShowcase />
 
-## Preview modes
-
-- **Theme: None** shows components without a package theme. This is the default
-  on component pages and is intended to expose the true bare-metal browser
-  appearance.
-- **Theme: Material** applies `@rcarls/rc-theme-material/theme.css` only inside
-  each demo frame. The broad preview on this page defaults to Material so the
-  theme package is visible immediately.
-- **Mode: Auto** inherits the current page or browser color scheme.
-- **Mode: Light** and **Mode: Dark** set `color-scheme` only on the demo surface.
-
-## Isolation model
-
-`DemoFrame` renders page-shared controls in the Docusaurus page, then portals
-each demo into an open shadow root. The shadow root receives only a tiny
-structural reset plus optional package-theme CSS. Docusaurus and Infima styles
-therefore do not restyle native buttons, inputs, summaries, dialogs, or
-component internals in the default preview.
-
-The Material option adds the scoped `rc-theme-material` class and injects the
-theme package CSS inside the same shadow root. That keeps theme evaluation local
-to the demo while preserving the package's normal scoped-selector behavior.
-
-## Material package use
-
-Applications can install the optional CSS-only package and import the full theme:
-
-```css
-@import '@rcarls/rc-theme-material/theme.css';
-```
-
-Applications that already provide Material system tokens can import only the
-bridge and component layers they need:
-
-```css
-@import '@rcarls/rc-theme-material/bridge.css';
-@import '@rcarls/rc-theme-material/components.css';
-```
-
-The package changes styling only. It does not change component behavior or claim
-Material structural conformance.
+See the [theming guide](/theming) for more information about packaged themes.

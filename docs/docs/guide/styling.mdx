@@ -1,0 +1,144 @@
+---
+title: Styling
+---
+
+# Styling
+
+## Headless by default
+
+Components ship without decorative visual opinions. The default appearance
+mirrors the UA stylesheet — buttons look like buttons, inputs look like
+inputs. This lets them blend into any design system without fighting existing
+styles.
+
+What components always emit is structural: layout, geometry, and interaction
+state indicators. The decorative layer is entirely up to you.
+
+## Color scheme
+
+Components consume CSS system colors (`Canvas`, `CanvasText`, `ButtonFace`,
+`Highlight`, etc.), which the browser resolves differently in light and dark
+schemes. Set `color-scheme` on a container and every component inside it
+adapts automatically:
+
+```css
+.my-app {
+  color-scheme: dark;
+}
+```
+
+No class-based theming or JavaScript needed for basic color scheme support.
+
+## Global design tokens
+
+The optional `base.css` export defines semantic tokens that all components
+reference. Import it once at your application root to enable the token layer:
+
+```css
+@import '@rcarls/rc-webcomponents/themes/base.css';
+```
+
+These tokens fall back to CSS system colors without the import — the file is
+optional. Override any token at your theme boundary to adjust all components
+at once:
+
+```css
+:root {
+  --rc-accent: oklch(55% 0.2 250);       /* primary action color */
+  --rc-border-color: oklch(75% 0 0);     /* all component borders */
+  --rc-control-block-size: 2.5rem;       /* input / button height */
+  --rc-control-radius: 0.5rem;           /* border radius */
+  --rc-font-family: 'Inter', sans-serif;
+}
+```
+
+Full token reference:
+
+| Token | Default | Controls |
+| --- | --- | --- |
+| `--rc-accent` | `Highlight` / `AccentColor` | Focus rings, selected states |
+| `--rc-surface` | `Canvas` | Surface backgrounds |
+| `--rc-field` | `Field` | Input field backgrounds |
+| `--rc-border-color` | `ButtonBorder` | All borders |
+| `--rc-border-width` | `1px` | All borders |
+| `--rc-control-block-size` | `2.25em` | Control height |
+| `--rc-control-padding-block` | `0.25em` | Control vertical padding |
+| `--rc-control-padding-inline` | `0.5em` | Control horizontal padding |
+| `--rc-control-radius` | `0.125em` | Control corner radius |
+| `--rc-radius-md` | `0.25em` | Larger radius (chips, badges) |
+| `--rc-font-family` | `inherit` | All component text |
+| `--rc-font-size` | `1em` | All component text |
+| `--rc-shadow` | `0 2px 8px …` | Popups and overlays |
+| `--rc-motion-duration` | `120ms` | All transitions |
+| `--rc-disabled-opacity` | `0.5` | Disabled state opacity |
+
+## Per-component tokens
+
+Each component also exposes its own scoped tokens for fine-grained control.
+These are documented in the API table on each component page. Example:
+
+```css
+/* Make the FAB match your brand */
+rc-fab {
+  --rc-fab-bg: oklch(55% 0.2 250);
+  --rc-fab-color: white;
+  --rc-fab-radius: 0.75rem;
+  --rc-fab-shadow: 0 4px 12px oklch(55% 0.2 250 / 40%);
+}
+```
+
+## CSS parts
+
+Components expose named parts for styling elements that are inside shadow
+DOM. Use the `::part()` selector:
+
+```css
+/* Style the trigger button inside rc-select */
+rc-select::part(trigger) {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Style the toggle icon */
+rc-select::part(toggle-icon) {
+  color: var(--rc-accent);
+}
+```
+
+Available parts are listed in the API table under the **Parts** section on
+each component's page.
+
+## Material theme
+
+The optional `@rcarls/rc-theme-material` package maps Material 3 design
+tokens to the RC token layer. It changes styling only — no behavior changes.
+
+```sh
+npm install @rcarls/rc-theme-material
+```
+
+Import the full theme bundle:
+
+```css
+@import '@rcarls/rc-theme-material/theme.css';
+```
+
+Or import layers selectively if your app already provides Material system
+tokens:
+
+```css
+@import '@rcarls/rc-theme-material/bridge.css';
+@import '@rcarls/rc-theme-material/components.css';
+```
+
+Apply the `rc-theme-material` class to a container to scope the theme:
+
+```html
+<div class="rc-theme-material">
+  <rc-select>...</rc-select>
+  <rc-fab>...</rc-fab>
+</div>
+```
+
+See [Theme previews](./theme-previews) to compare components with and without
+the Material theme applied.

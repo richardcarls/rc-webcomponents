@@ -38,7 +38,7 @@ const config: Config = {
     navbar: {
       title: 'rc-webcomponents',
       items: [
-        { label: 'Guide', to: '/guide/progressive-enhancement' },
+        { label: 'Guide', to: '/guide/installation' },
         { label: 'Theme previews', to: '/guide/theme-previews' },
         { label: 'Components', to: '/components/rc-select' },
         {
