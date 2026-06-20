@@ -96,7 +96,7 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 
 This project uses Yarn 4.x (Berry) workspaces and plug-and-play (PnP).
 
-Vite build outputs ESM + UMD as well as type declarations. Tests run with Vitest + WebdriverIO. Docs site is VitePress.
+Vite build outputs ESM + UMD as well as type declarations. Tests run with Vitest + WebdriverIO. Docs site is Docusaurus.
 
 > **Note:** use the root package `build` script to build all workspace packages in topological order. Rebuild package deps before running tests.
 

@@ -1,0 +1,153 @@
+---
+title: Using with React
+---
+
+# Using with React
+
+## Setup
+
+Register elements once in your application entry point:
+
+```ts title="main.tsx"
+import '@rcarls/rc-webcomponents/define';
+import { createRoot } from 'react-dom/client';
+import { App } from './App';
+
+createRoot(document.getElementById('root')!).render(<App />);
+```
+
+## Elements in JSX
+
+Custom elements render in JSX like any HTML element. String attributes map
+directly:
+
+```tsx
+<rc-select placeholder="Choose one">
+  <select name="status">
+    <option value="draft">Draft</option>
+    <option value="published">Published</option>
+  </select>
+</rc-select>
+```
+
+Boolean attributes require an empty string or the attribute name:
+
+```tsx
+<rc-combobox allow-create placeholder="Add tags">
+  <select slot="select" name="tags" multiple>
+    <option value="a">Alpha</option>
+  </select>
+</rc-combobox>
+```
+
+## Custom events
+
+Components dispatch custom DOM events with a structured `detail` payload.
+Use `addEventListener` in a `useEffect` to subscribe:
+
+```tsx
+import { useEffect, useRef } from 'react';
+
+function StatusPicker() {
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const handler = (e: Event) => {
+      const { value } = (e as CustomEvent<{ value: string }>).detail;
+      console.log('selected:', value);
+    };
+
+    el.addEventListener('rc-select-change', handler);
+    return () => el.removeEventListener('rc-select-change', handler);
+  }, []);
+
+  return (
+    <rc-select ref={ref}>
+      <select name="status">
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+      </select>
+    </rc-select>
+  );
+}
+```
+
+Each component's page documents which events it dispatches and the shape of
+`event.detail`.
+
+## Refs and imperative methods
+
+Some components expose methods for programmatic control. Access them through
+a ref typed as an intersection with `HTMLElement`:
+
+```tsx
+import { useRef } from 'react';
+
+type DialogEl = HTMLElement & {
+  showModal(): void;
+  close(returnValue?: string): void;
+};
+
+function ConfirmDialog() {
+  const ref = useRef<DialogEl>(null);
+
+  return (
+    <>
+      <button type="button" onClick={() => ref.current?.showModal()}>
+        Open
+      </button>
+      <rc-dialog ref={ref} movable resize="both">
+        <dialog aria-labelledby="title">
+          <strong id="title">Confirm</strong>
+          <button type="button" onClick={() => ref.current?.close('ok')}>
+            OK
+          </button>
+        </dialog>
+      </rc-dialog>
+    </>
+  );
+}
+```
+
+The `solid.d.ts` export in `@rcarls/rc-webcomponents` documents the full
+public API surface as typed ref intersections. These are portable — use them
+as `HTMLElement & RCSelectRef` with any framework.
+
+## TypeScript JSX types
+
+React does not include built-in JSX declarations for custom elements. Add a
+declaration file to your project to suppress unknown-element errors and get
+attribute completions:
+
+```ts title="types/rc-webcomponents.d.ts"
+import 'react';
+
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'rc-select': React.HTMLAttributes<HTMLElement> & {
+        placeholder?: string;
+        multiple?: boolean;
+        disabled?: boolean;
+        display?: 'auto' | 'chips' | 'compact';
+      };
+      'rc-fab': React.HTMLAttributes<HTMLElement> & {
+        extended?: boolean;
+      };
+      // Add other elements as needed.
+      // See each component's API table for the full attribute surface.
+    }
+  }
+}
+```
+
+Import this file once — for example, via `include` in your `tsconfig.json`
+or a triple-slash reference in `vite-env.d.ts`:
+
+```ts title="vite-env.d.ts"
+/// <reference types="vite/client" />
+/// <reference path="./types/rc-webcomponents.d.ts" />
+```

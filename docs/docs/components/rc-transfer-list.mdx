@@ -1,0 +1,46 @@
+---
+title: rc-transfer-list
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { TransferListDemo } from '@site/src/components/ComponentDemos';
+
+# rc-transfer-list
+
+A native-select-backed transfer list for moving options between available and selected collections.
+
+<AtAGlance
+  packageName="@rcarls/rc-transfer-list"
+  tag="rc-transfer-list"
+  native="Requires a native select child"
+  state="Native select selection"
+  events={['rc-transfer-list-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-transfer-list
+`
+
+`sh
+yarn add @rcarls/rc-transfer-list
+`
+
+`js
+import '@rcarls/rc-transfer-list/define';
+`
+
+## Live demo
+
+<TransferListDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-transfer-list" />

@@ -1,0 +1,46 @@
+---
+title: rc-toolbar
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ToolbarDemo } from '@site/src/components/ComponentDemos';
+
+# rc-toolbar
+
+An ARIA toolbar that coordinates keyboard navigation across consumer-supplied controls.
+
+<AtAGlance
+  packageName="@rcarls/rc-toolbar"
+  tag="rc-toolbar"
+  native="Consumer supplies toolbar controls"
+  state="Roving focus only"
+  events={[]}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-toolbar
+`
+
+`sh
+yarn add @rcarls/rc-toolbar
+`
+
+`js
+import '@rcarls/rc-toolbar/define';
+`
+
+## Live demo
+
+<ToolbarDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-toolbar" />

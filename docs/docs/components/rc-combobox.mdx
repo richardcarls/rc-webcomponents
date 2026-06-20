@@ -1,0 +1,46 @@
+---
+title: rc-combobox
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ComboboxDemo } from '@site/src/components/ComponentDemos';
+
+# rc-combobox
+
+An editable ARIA combobox with filtering, multi-select support, and optional allow-create behavior.
+
+<AtAGlance
+  packageName="@rcarls/rc-combobox"
+  tag="rc-combobox"
+  native="Requires a slotted native select"
+  state="Controlled or uncontrolled text and selection"
+  events={['rc-select-change', 'rc-combobox-create', 'rc-select-open', 'rc-select-close']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-combobox
+`
+
+`sh
+yarn add @rcarls/rc-combobox
+`
+
+`js
+import '@rcarls/rc-combobox/define';
+`
+
+## Live demo
+
+<ComboboxDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-combobox" />

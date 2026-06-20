@@ -1,0 +1,54 @@
+---
+title: rc-accordion
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import {
+  SingleAccordionDemo,
+  MultipleAccordionDemo,
+  DisclosureAccordionDemo,
+} from '@site/src/components/AccordionDemos';
+
+# rc-accordion
+
+A native `<details>` accordion coordinator with single-open or multiple-open behavior.
+
+<AtAGlance
+  packageName="@rcarls/rc-accordion"
+  tag="rc-accordion"
+  native="Coordinates native details children"
+  state="Single or multiple open panels"
+  events={[]}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-accordion
+`
+
+`sh
+yarn add @rcarls/rc-accordion
+`
+
+`js
+import '@rcarls/rc-accordion/define';
+`
+
+## Live demo
+
+<SingleAccordionDemo />
+
+<MultipleAccordionDemo />
+
+<DisclosureAccordionDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-accordion" />

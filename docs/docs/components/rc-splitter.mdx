@@ -1,0 +1,46 @@
+---
+title: rc-splitter
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { SplitterDemo } from '@site/src/components/ComponentDemos';
+
+# rc-splitter
+
+A resizable pane splitter using the separator pattern with pointer and keyboard resizing.
+
+<AtAGlance
+  packageName="@rcarls/rc-splitter"
+  tag="rc-splitter"
+  native="Pane content slots"
+  state="Controlled or uncontrolled pane size"
+  events={['rc-splitter-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-splitter
+`
+
+`sh
+yarn add @rcarls/rc-splitter
+`
+
+`js
+import '@rcarls/rc-splitter/define';
+`
+
+## Live demo
+
+<SplitterDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-splitter" />

@@ -1,0 +1,46 @@
+---
+title: rc-slider
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { SliderDemo } from '@site/src/components/ComponentDemos';
+
+# rc-slider
+
+A single-thumb slider backed by a native `<input type="range">` so labels, forms, and pre-upgrade interaction remain native.
+
+<AtAGlance
+  packageName="@rcarls/rc-slider"
+  tag="rc-slider"
+  native="Requires a native range input child"
+  state="Controlled or uncontrolled numeric value"
+  events={['rc-slider-input', 'rc-slider-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-slider
+`
+
+`sh
+yarn add @rcarls/rc-slider
+`
+
+`js
+import '@rcarls/rc-slider/define';
+`
+
+## Live demo
+
+<SliderDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-slider" />

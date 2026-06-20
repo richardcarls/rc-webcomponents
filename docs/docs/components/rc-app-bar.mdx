@@ -1,0 +1,46 @@
+---
+title: rc-app-bar
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { AppBarDemo } from '@site/src/components/ComponentDemos';
+
+# rc-app-bar
+
+A headless grid app bar with leading, title, exact-center, and trailing regions plus pinned, collapse, and hide scroll behaviors.
+
+<AtAGlance
+  packageName="@rcarls/rc-app-bar"
+  tag="rc-app-bar"
+  native="Structural slots only; consumer supplies controls, icons, and landmarks"
+  state="Controlled or uncontrolled scrolled state"
+  events={['rc-app-bar-scroll']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-app-bar
+`
+
+`sh
+yarn add @rcarls/rc-app-bar
+`
+
+`js
+import '@rcarls/rc-app-bar/define';
+`
+
+## Live demo
+
+<AppBarDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-app-bar" />
