@@ -2,44 +2,998 @@
 title: rc-textarea
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
-import { TextareaDemo } from '@site/src/components/ComponentDemos';
+import {
+  TextareaBasicDemo,
+  TextareaMarkdownDemo,
+  TextareaHljsDemo,
+} from '@site/src/components/ComponentDemos';
 
 # rc-textarea
 
-An enhanced textarea with line numbers, decorations, gutter support, and a plugin API while preserving the native `<textarea>`.
+A progressive enhancement wrapper around the native `<textarea>` with support for line numbers,
+syntax / pattern decoration, inline widgets, and a robust plugin API.
 
 <AtAGlance
   packageName="@rcarls/rc-textarea"
   tag="rc-textarea"
   native="Requires a native textarea child"
   state="Native textarea value"
-  events={['rc-textarea-focus', 'rc-textarea-blur', 'rc-textarea-change']}
-  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+  events={['rc-textarea-focus', 'rc-textarea-blur', 'rc-textarea-change', 'rc-textarea-select']}
+  related={[
+    { label: 'Markdown plugin', href: '/components/rc-markdown-editor' },
+    { label: 'Theme previews', href: '/guide/theme-previews' },
+  ]}
 />
 
 ## Installation
 
-`sh
+```bash
 npm install @rcarls/rc-textarea
-`
+```
 
-`sh
+```bash
 yarn add @rcarls/rc-textarea
-`
+```
 
-`js
+Import the define entry to register `<rc-textarea>`:
+
+```ts
 import '@rcarls/rc-textarea/define';
-`
+```
 
-## Live demo
+Import public types when you need typed access:
 
-<TextareaDemo />
+```ts
+import type { RCTextarea, RCTextareaPlugin } from '@rcarls/rc-textarea';
+```
+
+## Demos
+
+<Tabs>
+<TabItem value="basic" label="Basic" default>
+
+Plain textarea with `auto-grow` and no gutter — the minimal starting point.
+
+<TextareaBasicDemo />
+
+```html
+<rc-textarea auto-grow>
+  <textarea rows="4" aria-label="Text editor"></textarea>
+</rc-textarea>
+```
+
+</TabItem>
+<TabItem value="markdown" label="Markdown">
+
+Uses `@rcarls/rc-textarea-plugin-markdown` for live Markdown decoration and an HTML preview panel below the editor.
+
+<TextareaMarkdownDemo />
+
+```ts
+import { createMarkdownPlugin } from '@rcarls/rc-textarea-plugin-markdown';
+
+const editor = document.querySelector('rc-textarea');
+const plugin = createMarkdownPlugin();
+
+editor.usePlugin(plugin);
+
+// Render preview HTML from the current value
+previewEl.innerHTML = plugin.getPreviewHtml(editor.value);
+```
+
+</TabItem>
+<TabItem value="syntax" label="Syntax Highlighting">
+
+Uses highlight.js with the Rust language pack. Theme colors injected into the shadow root via `api.adoptStyleSheet()`.
+
+<TextareaHljsDemo />
+
+```ts
+import hljs from 'highlight.js/lib/core';
+import rust from 'highlight.js/lib/languages/rust';
+hljs.registerLanguage('rust', rust);
+
+editor.usePlugin({
+  mount(api) {
+    api.adoptStyleSheet(`
+      .hljs-keyword, .hljs-type { color: #cba6f7; }
+      .hljs-string  { color: #a6e3a1; }
+      .hljs-comment { color: #6c7086; font-style: italic; }
+    `);
+  },
+  highlight(value) {
+    return hljs.highlight(value, { language: 'rust' }).value;
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+## Options
+
+### Attributes
+
+| Attribute      | Property      | Description                                                                         |
+| -------------- | ------------- | ----------------------------------------------------------------------------------- |
+| `line-numbers` | `lineNumbers` | Show sequential line numbers in the gutter.                                         |
+| `gutter`       | `gutter`      | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`. |
+| `word-wrap`    | `wordWrap`    | Wrap long lines instead of scrolling horizontally.                                  |
+| `auto-grow`    | `autoGrow`    | Let the field grow vertically with content.                                         |
+| `read-only`    | `readOnly`    | Render selectable, non-editable content.                                            |
+
+`list-numbers` and `label` still exist for compatibility but are deprecated. Prefer a plugin
+with `LineDecoration.gutterContent` for sparse numbering, and put accessible names on the
+slotted textarea with `aria-label` or a real `<label for="...">`.
+
+### JavaScript properties
+
+| Property                          | Type                       | Description                                                               |
+| --------------------------------- | -------------------------- | ------------------------------------------------------------------------- |
+| `value`                           | `string`                   | Current plain-text value. Host writes are silent.                         |
+| `defaultValue`                    | `string \| undefined`      | Initial uncontrolled value.                                               |
+| `plugin`                          | `RCTextareaPlugin \| null` | Declarative plugin hook for reactive frameworks.                          |
+| `decorations`                     | `DecorationInput[]`        | External decoration layer merged with plugin and pattern decorations.     |
+| `selectionStart` / `selectionEnd` | `number`                   | Current plain-text selection offsets (read-only).                         |
+
+## Events
+
+All events bubble and are composed.
+
+| Event                | Detail                                             | Fires when                                         |
+| -------------------- | -------------------------------------------------- | -------------------------------------------------- |
+| `rc-textarea-change` | `{ value: string }`                                | User editing changes the plain-text value.         |
+| `rc-textarea-focus`  | none                                               | The editor receives focus.                         |
+| `rc-textarea-blur`   | none                                               | The editor loses focus.                            |
+| `rc-textarea-select` | `{ selectionStart: number, selectionEnd: number }` | The selection changes while the editor is focused. |
+
+```ts
+editor.addEventListener('rc-textarea-change', (e) => {
+  console.log(e.detail.value);
+});
+```
+
+## Keyboard Behavior
+
+| Key                               | Behavior                                              |
+| --------------------------------- | ----------------------------------------------------- |
+| `Tab`                             | Inserts `\t`.                                         |
+| `Ctrl/Cmd+Z`                      | Undo.                                                 |
+| `Ctrl/Cmd+Y` / `Ctrl/Cmd+Shift+Z` | Redo.                                                 |
+| `Paste`                           | Inserts plain text only; normalizes line endings.     |
+| `Enter`                           | Inserts a line break.                                 |
 
 ## Theming
 
-The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+`rc-textarea` is headless and uses CSS system colors by default.
+
+### Component tokens
+
+| Token                                     | Default                               | Use                                   |
+| ----------------------------------------- | ------------------------------------- | ------------------------------------- |
+| `--rc-textarea-font-family`               | `monospace`                           | Editor and gutter font family.        |
+| `--rc-textarea-font-size`                 | `1em`                                 | Editor and gutter font size.          |
+| `--rc-textarea-line-height`               | `1.5`                                 | Editor and gutter line height.        |
+| `--rc-textarea-padding`                   | `0.5em`                               | Editor and gutter padding.            |
+| `--rc-textarea-background`                | `Field`                               | Field background.                     |
+| `--rc-textarea-color`                     | `var(--rc-text, FieldText)`           | Field text color.                     |
+| `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)` | Caret color.                          |
+| `--rc-textarea-border`                    | `1px solid ButtonBorder`              | Field border.                         |
+| `--rc-textarea-border-radius`             | `2px`                                 | Field corner radius.                  |
+| `--rc-textarea-focus-outline`             | `2px solid Highlight`                 | Focus ring.                           |
+| `--rc-textarea-active-line-bg`            | `transparent`                         | Active line background.               |
+| `--rc-textarea-gutter-bg`                 | `Canvas`                              | Gutter background.                    |
+| `--rc-textarea-gutter-color`              | `GrayText`                            | Gutter text color.                    |
+| `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`              | Gutter separator.                     |
+| `--rc-textarea-gutter-padding-inline-end` | `0.75em`                              | Space between gutter labels and text. |
+
+```css
+rc-textarea {
+  color-scheme: dark;
+  --rc-textarea-font-family: 'Fira Code', monospace;
+  --rc-textarea-font-size: 13px;
+  --rc-textarea-background: #1e1e2e;
+  --rc-textarea-color: #cdd6f4;
+  --rc-textarea-active-line-bg: rgb(255 255 255 / 0.06);
+}
+```
+
+### CSS parts
+
+The exposed CSS parts are `root`, `gutter`, `gutter-cells`, `editor-area`, and `editor`.
+
+```css
+rc-textarea::part(editor) {
+  tab-size: 2;
+}
+```
+
+### Decoration styles
+
+Decoration elements (`.mark`, `.line`, `.widget`) live inside the shadow root. Use
+`api.adoptStyleSheet()` from a plugin to reach them — document stylesheets cannot pierce the
+shadow boundary.
+
+## Pattern Highlights
+
+Use `addPattern()` for lightweight regex decoration without writing a plugin.
+
+```ts
+const todoId = editor.addPattern({
+  pattern: /\bTODO\b/g,
+  bold: true,
+  color: 'var(--editor-todo-color)',
+});
+
+editor.removePattern(todoId);
+editor.clearPatterns();
+```
+
+Patterns can also style named capture groups and add line diagnostics:
+
+```ts
+editor.addPattern({
+  pattern: /^(?<key>\w[\w-]*):\s*(?<value>.+)$/gm,
+  captureGroups: {
+    key:   { bold: true, color: 'var(--editor-key-color)' },
+    value: { color: 'var(--editor-value-color)' },
+  },
+  createLineDecoration: () => ({ className: 'config-line' }),
+});
+```
+
+## Plugin API
+
+<Tabs>
+<TabItem value="overview" label="Overview" default>
+
+### Mental model
+
+`rc-textarea` stores one plain-text value. Plugins add visual decorations over that value.
+Decorations never change the submitted textarea value. Offsets are always absolute character
+indices into the current plain-text value unless a helper explicitly says otherwise.
+
+Only one plugin is active at a time. `usePlugin()` or assigning the `plugin` property replaces
+the previous plugin and calls its `destroy()` hook.
+
+### Quick start
+
+```ts
+import type { RCTextareaPlugin, RCTextareaPluginAPI } from '@rcarls/rc-textarea';
+
+const editor = document.querySelector('rc-textarea');
+
+let api: RCTextareaPluginAPI | undefined;
+
+const plugin: RCTextareaPlugin = {
+  mount(pluginApi) {
+    api = pluginApi;
+  },
+
+  update(value, pluginApi) {
+    pluginApi.setDecorations(parseDiagnostics(value));
+  },
+
+  destroy() {
+    api = undefined;
+  },
+};
+
+editor.usePlugin(plugin);
+```
+
+### Plugin interface
+
+```ts
+interface RCTextareaPlugin {
+  mount?(api: RCTextareaPluginAPI): void;
+  destroy?(): void;
+
+  /** Display-layer transform — read-only mode only. */
+  transform?(value: string, api: RCTextareaPluginAPI): string | null | void;
+
+  /** Imperative decoration hook. May be async. */
+  update?(value: string, api: RCTextareaPluginAPI): void | Promise<void>;
+
+  /**
+   * HTML compat hook — return HTML token spans from hljs/prism.
+   * The returned string is parsed via api.parseDecorationsFromHtml().
+   */
+  highlight?(
+    value: string,
+    api: RCTextareaPluginAPI,
+  ): string | null | void | Promise<string | null | void>;
+}
+```
+
+At least one of `update` or `highlight` must be provided. Async hooks are allowed — if a
+newer render starts while a hook is pending, stale results are discarded.
+
+`transform()` runs only in read-only mode and substitutes the display-layer text without
+changing `editor.value` or the slotted textarea value.
+
+### External updates
+
+Call `scheduleUpdate()` when external state changes but the text value does not:
+
+```ts
+let removeThemeListener: (() => void) | undefined;
+
+editor.usePlugin({
+  mount(api) {
+    const onThemeChange = () => api.scheduleUpdate();
+    window.addEventListener('theme-change', onThemeChange);
+    removeThemeListener = () => window.removeEventListener('theme-change', onThemeChange);
+  },
+  update(value, api) {
+    api.setDecorations(decorate(value, currentTheme));
+  },
+  destroy() {
+    removeThemeListener?.();
+  },
+});
+```
+
+</TabItem>
+<TabItem value="decorations" label="Decorations">
+
+When passing decorations to the API, omit `id` — the component assigns IDs.
+
+```ts
+type DecorationInput =
+  | Omit<MarkDecoration, 'id'>
+  | Omit<LineDecoration, 'id'>
+  | Omit<WidgetDecoration, 'id'>;
+```
+
+### MarkDecoration
+
+Styles a character range `[from, to)`.
+
+```ts
+interface MarkDecoration {
+  id: string;
+  type: 'mark';
+  from: number;        // inclusive, 0-based character offset
+  to: number;          // exclusive
+  className?: string;
+  bold?: boolean;
+  italic?: boolean;
+  color?: string;
+  background?: string;
+  underline?: 'solid' | 'wavy' | 'dotted' | 'dashed';
+  underlineColor?: string;
+  attributes?: Record<string, string>;
+}
+```
+
+```ts
+api.setDecorations([
+  { type: 'mark', from: 0, to: 5, className: 'keyword', bold: true },
+]);
+```
+
+### LineDecoration
+
+Adds a class, gutter label, or diagnostic message to a logical line.
+
+```ts
+interface LineDecoration {
+  id: string;
+  type: 'line';
+  line: number;               // 1-based
+  className?: string;
+  message?: string;           // rendered via ::after — not in selection or clipboard
+  messageClassName?: string;
+  attributes?: Record<string, string>;
+  gutterContent?: string | null; // string: custom label; null: suppress; undefined: use default
+}
+```
+
+```ts
+api.setDecorations([
+  {
+    type: 'line',
+    line: 3,
+    className: 'line-error',
+    message: 'Missing semicolon',
+    messageClassName: 'error',
+    gutterContent: '!',
+  },
+]);
+```
+
+Style error-lens messages through an adopted stylesheet:
+
+```ts
+api.adoptStyleSheet(`
+  .line[data-message-class~="error"][data-message]::after {
+    content: attr(data-message);
+    color: var(--editor-diagnostic-error);
+    font-style: italic;
+    margin-left: 1em;
+  }
+`);
+```
+
+### WidgetDecoration
+
+Inserts a non-editable DOM element at a character offset. Widgets have no text width in the
+value coordinate space.
+
+```ts
+interface WidgetDecoration {
+  id: string;
+  type: 'widget';
+  offset: number;
+  create(): HTMLElement;      // called on every render — return a new element each time
+  side?: 'before' | 'after';
+}
+```
+
+```ts
+api.setDecorations([
+  {
+    type: 'widget',
+    offset: 5,
+    side: 'after',
+    create() {
+      const badge = document.createElement('span');
+      badge.textContent = '!';
+      badge.title = 'Diagnostic available';
+      return badge;
+    },
+  },
+]);
+```
+
+</TabItem>
+<TabItem value="cursor" label="API reference">
+
+### Full plugin API
+
+```ts
+interface RCTextareaPluginAPI {
+  // State
+  readonly host: HTMLElement;
+  readonly value: string;
+  readonly selectionStart: number;
+  readonly selectionEnd: number;
+
+  // Cursor
+  getCursorRect(): DOMRect | null;
+  getWordAtCursor(): { word: string; from: number; to: number } | null;
+  onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void;
+
+  // Text mutation
+  insertText(text: string): void;
+  wrapSelection(prefix: string, suffix: string): void;
+  replaceSelection(text: string): void;
+
+  // Decorations
+  addDecoration(decoration: DecorationInput): string;
+  removeDecoration(id: string): void;
+  clearDecorations(): void;
+  setDecorations(decorations: DecorationInput[]): void;
+  getDecorations(): readonly Decoration[];
+
+  scheduleUpdate(): void;
+
+  // Stylesheets
+  adoptStyleSheet(sheetOrCssText: CSSStyleSheet | string): CSSStyleSheet;
+  removeStyleSheet(sheet: CSSStyleSheet): void;
+
+  // HTML / token bridges
+  parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
+  /** @deprecated Use parseDecorationsFromHtml */
+  decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
+  decorationsFromTokens(
+    tokens: Token[],
+    themeMap: Record<string, Omit<MarkDecoration, 'id' | 'type' | 'from' | 'to'>>,
+  ): Omit<MarkDecoration, 'id'>[];
+}
+```
+
+### Cursor and selection
+
+```ts
+let unsubscribe: (() => void) | undefined;
+
+editor.usePlugin({
+  mount(api) {
+    unsubscribe = api.onCursorMove((selectionStart, selectionEnd) => {
+      if (selectionStart !== selectionEnd) return;
+      const word = api.getWordAtCursor();
+      const rect = api.getCursorRect();
+      if (word && rect) showCompletion(word, rect);
+    });
+  },
+  destroy() {
+    unsubscribe?.();
+  },
+});
+```
+
+`getCursorRect()` returns viewport coordinates — suitable for anchoring autocomplete panels or
+hover tooltips.
+
+### Text mutation
+
+`insertText()`, `wrapSelection()`, and `replaceSelection()` update the value, sync the slotted
+textarea, dispatch `rc-textarea-change`, and schedule a render.
+
+```ts
+api.insertText('```\n\n```');
+api.wrapSelection('**', '**');    // no-op when selection is collapsed
+api.replaceSelection('[replaced]');
+```
+
+### Stylesheet injection
+
+Decoration elements live inside the shadow root. Use `api.adoptStyleSheet()` to style them.
+Adopted sheets are removed automatically when the plugin is unmounted.
+
+```ts
+editor.usePlugin({
+  mount(api) {
+    api.adoptStyleSheet(`
+      .keyword { color: var(--editor-syntax-keyword); font-weight: 600; }
+      .string  { color: var(--editor-syntax-string); }
+    `);
+  },
+});
+```
+
+### Token bridge
+
+`decorationsFromTokens()` converts flat token arrays from external tokenizers (lezer, shiki,
+moo, etc.) into mark decorations. Token offsets must be absolute character indices.
+
+```ts
+interface Token {
+  from: number;
+  to: number;
+  type: string;
+  scopes?: string[];
+}
+```
+
+```ts
+editor.usePlugin({
+  update(value, api) {
+    const tokens = tokenizer.tokenize(value);
+    api.setDecorations(
+      api.decorationsFromTokens(tokens, {
+        keyword: { bold: true, color: 'var(--editor-syntax-keyword)' },
+        string:  { color: 'var(--editor-syntax-string)' },
+        comment: { italic: true, color: 'var(--editor-syntax-comment)' },
+      }),
+    );
+  },
+});
+```
+
+For ready-made Lezer, Unified, and Shiki adapters, install `@rcarls/rc-textarea-adapters`.
+
+</TabItem>
+<TabItem value="helpers" label="Helpers">
+
+### `matchPatternResults(value, patterns)`
+
+Run a `TextPattern` array against a string and get decoration objects without registering
+patterns on the editor. Useful when a plugin needs to merge pattern results with other
+decorations in a single `setDecorations()` call.
+
+```ts
+import { matchPatternResults } from '@rcarls/rc-textarea';
+
+const patterns = [
+  { id: 'kw-fn',  pattern: /\bfunction\b/g, bold: true, className: 'keyword' },
+  { id: 'kw-ret', pattern: /\breturn\b/g,   bold: true, className: 'keyword' },
+];
+
+editor.usePlugin({
+  update(value, api) {
+    const { markDecorations, lineDecorations } = matchPatternResults(value, patterns);
+    api.setDecorations([...markDecorations, ...lineDecorations, ...lint(value)]);
+  },
+});
+```
+
+### `createLineDecoratorPlugin(decorator, options?)`
+
+Wraps a `LineDecoratorPlugin` in a full `RCTextareaPlugin`. Handles CSS injection, line-relative
+offset conversion, and optional `watch` subscriptions.
+
+```ts
+import { createLineDecoratorPlugin, type LineDecoratorPlugin } from '@rcarls/rc-textarea';
+
+const keywordDecorator: LineDecoratorPlugin = {
+  styles: '.keyword { font-weight: 600; color: var(--editor-syntax-keyword); }',
+
+  decorateLine(line) {
+    const decorations = [];
+    for (const match of line.matchAll(/\bfunction\b/g)) {
+      decorations.push({
+        type: 'mark' as const,
+        from: match.index,
+        to: match.index + match[0].length,
+        className: 'keyword',
+      });
+    }
+    return decorations;
+  },
+};
+
+editor.usePlugin(createLineDecoratorPlugin(keywordDecorator));
+```
+
+`extraDecorations` merges whole-document results into the line decorator output:
+
+```ts
+editor.usePlugin(
+  createLineDecoratorPlugin(myLineDecorator, {
+    extraDecorations(value) {
+      return lint(value).map((d) => ({
+        type: 'line' as const,
+        line: d.line,
+        message: d.message,
+        messageClassName: 'error',
+      }));
+    },
+  }),
+);
+```
+
+`watch` triggers `api.scheduleUpdate()` when external state changes:
+
+```ts
+editor.usePlugin(
+  createLineDecoratorPlugin(myLineDecorator, {
+    watch: [
+      (onChange) => {
+        window.addEventListener('theme-change', onChange);
+        return () => window.removeEventListener('theme-change', onChange);
+      },
+    ],
+  }),
+);
+```
+
+</TabItem>
+<TabItem value="recipes" label="Recipes">
+
+### highlight.js
+
+```ts
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+hljs.registerLanguage('javascript', javascript);
+
+editor.usePlugin({
+  mount(api) {
+    api.adoptStyleSheet(`
+      .hljs-keyword { color: var(--editor-syntax-keyword); font-weight: 600; }
+      .hljs-string  { color: var(--editor-syntax-string); }
+      .hljs-comment { color: var(--editor-syntax-comment); font-style: italic; }
+    `);
+  },
+  highlight(value) {
+    return hljs.highlight(value, { language: 'javascript' }).value;
+  },
+});
+```
+
+### Prism.js
+
+```ts
+import Prism from 'prismjs';
+import 'prismjs/components/prism-python';
+
+editor.usePlugin({
+  mount(api) {
+    api.adoptStyleSheet(`
+      .token.keyword { color: var(--editor-syntax-keyword); font-weight: 600; }
+      .token.string  { color: var(--editor-syntax-string); }
+      .token.comment { color: var(--editor-syntax-comment); font-style: italic; }
+    `);
+  },
+  highlight(value) {
+    return Prism.highlight(value, Prism.languages.python, 'python');
+  },
+});
+```
+
+### Merging HTML marks with other decorations
+
+```ts
+editor.usePlugin({
+  update(value, api) {
+    const html = highlight(value);
+    const syntax = api.parseDecorationsFromHtml(html);
+    const diagnostics = lint(value);
+    api.setDecorations([...syntax, ...diagnostics]);
+  },
+});
+```
+
+### Async plugin (WASM / web worker)
+
+Stale results are automatically discarded when a newer render starts.
+
+```ts
+editor.usePlugin({
+  async update(value, api) {
+    const decs = await myWasmParser.decorate(value);
+    api.setDecorations(decs);
+  },
+});
+```
+
+### Read-only preview transform
+
+```ts
+editor.readOnly = true;
+
+editor.usePlugin({
+  transform(value) {
+    return value.trimEnd();
+  },
+  update(value, api) {
+    api.setDecorations(parsePreviewDecorations(value));
+  },
+});
+```
+
+### Pattern with diagnostic message
+
+```ts
+editor.addPattern({
+  pattern: /\bFIXME\b/g,
+  bold: true,
+  color: 'var(--editor-diagnostic-error)',
+  underline: 'wavy',
+  createLineDecoration: () => ({
+    className: 'line-error',
+    message: 'Review before release',
+    messageClassName: 'error',
+    gutterContent: '!',
+  }),
+});
+```
+
+### Accessing the slotted textarea
+
+```ts
+editor.usePlugin({
+  mount(api) {
+    const textarea = api.host.querySelector('textarea');
+    if (textarea) console.log(textarea.name, textarea.maxLength);
+  },
+});
+```
+
+</TabItem>
+</Tabs>
+
+## Architecture
+
+<Tabs>
+<TabItem value="dom" label="DOM & Rendering" default>
+
+### Core invariants
+
+- A consumer-provided native `<textarea>` remains connected as the form control.
+- The public value is plain text. Marks, line diagnostics, widgets, gutter labels, and syntax
+  colors are visual decorations only.
+- Host writes to `value` are silent. User editing dispatches `rc-textarea-change`.
+- Selection is stored as plain-text offsets so it survives full DOM rebuilds.
+- Plugin, pattern, and external decorations are merged for rendering but keep separate sources.
+
+### DOM structure
+
+```
+rc-textarea (LitElement shadow host, delegatesFocus=true)
+└── #root part="root"
+    ├── #gutter part="gutter" aria-hidden="true"
+    │   └── #gutter-cells part="gutter-cells"
+    │       └── .gutter-cell spans
+    └── #editor-area part="editor-area"
+        ├── #editor part="editor" contenteditable role="textbox"
+        │   └── .line divs
+        │       ├── text nodes
+        │       ├── .mark spans
+        │       ├── .widget spans contenteditable="false"
+        │       └── data-message / data-message-class line metadata
+        └── <slot>
+            └── consumer <textarea> in light DOM
+```
+
+The shadow editor is the interactive surface after upgrade. The slotted textarea remains the
+submission and validation surface and is visually hidden after slot resolution.
+
+### Editing loop
+
+1. Browser editing, paste, or plugin text mutation changes the contenteditable surface or the
+   value model.
+2. `_onInput()` extracts plain text with `getText()`, saves selection offsets, remaps existing
+   plugin decorations through the edit, syncs the slotted textarea, pushes undo state, and
+   dispatches `rc-textarea-change`.
+3. `_scheduleRender()` batches work into one animation frame.
+4. `_performRender()` resolves the display value, runs patterns, runs the active plugin, merges
+   all decoration sources, rebuilds the Parchment document, restores selection, reapplies active
+   line state, and syncs gutter labels/heights.
+
+The editor DOM is rebuilt on each render frame because decoration changes can alter the
+Parchment tree shape.
+
+### Parchment integration
+
+Parchment provides the DOM shape and blot registry; `rc-textarea` owns the render loop.
+
+- The scroll/root blot wraps `#editor`.
+- Block blots render `.line` elements, one per logical line.
+- Inline blots render `.mark` spans.
+- Widget blots render `.widget` spans with `contenteditable=false`.
+- `RCDocument.build(text, decorations)` creates the new tree from scratch on each render.
+
+Parchment mutation observation is suppressed so browser DOM mutations do not fight the
+component's scheduled render pass.
+
+</TabItem>
+<TabItem value="internals" label="Internals">
+
+### Value lifecycle
+
+`value`, `defaultValue`, and slotted textarea content have this precedence:
+
+1. A host write to `value` wins and marks the component controlled.
+2. `defaultValue` seeds the internal value only before value initialization.
+3. Slotted textarea content seeds the internal value when neither `value` nor `defaultValue`
+   already initialized it.
+
+Initialization flags do not reset on reconnect. User edits update `_value`, sync the textarea,
+dispatch `rc-textarea-change`, push undo state, and schedule a render. Programmatic `value`
+writes sync the textarea and schedule a render without dispatching events.
+
+### Decoration sources
+
+Render-time decorations are merged in this order:
+
+1. Plugin-owned decorations in `_pluginDecorations`.
+2. Pattern-generated decorations in `_patternDecorations`.
+3. External decorations from the `decorations` property.
+
+Pattern decorations are fully recomputed from regexes on each render. External decorations
+receive fresh IDs during render.
+
+`LineDecoration.gutterContent` overrides gutter cells: `string` renders custom text, `null`
+renders an empty cell suppressing built-in content, `undefined` uses the current gutter mode.
+
+### Plugin lifecycle
+
+`usePlugin(plugin)`:
+
+1. Calls `destroy()` on the current plugin.
+2. Clears plugin styles, decorations, cursor callbacks, and stale async sequence state.
+3. Builds a live `RCTextareaPluginAPI`.
+4. Calls `plugin.mount(api)`.
+5. Schedules a render.
+
+`removePlugin()` performs the same cleanup without mounting a replacement.
+
+Async plugin hooks are guarded by `_pluginSeq`; stale results return early when a newer render
+or plugin change has advanced the sequence.
+
+### Selection management
+
+The component cannot keep DOM `Range` objects across rebuilds, so selection is saved as
+plain-text offsets:
+
+- `saveSelection()` maps the active DOM selection to `{ anchorOffset, focusOffset }`.
+- `restoreSelection()` maps saved offsets back into the rebuilt editor DOM.
+- Widget decorations do not contribute characters to the plain-text coordinate space.
+
+`selectionchange` is listened for at the document level. The handler ignores events unless the
+host is focused, then updates active line state, emits `rc-textarea-select`, and notifies plugin
+cursor subscribers.
+
+### Undo and redo
+
+The browser's native contenteditable undo history is invalidated by full DOM rebuilds. The
+component keeps its own stack of:
+
+```ts
+interface UndoEntry {
+  value: string;
+  anchorOffset: number;
+  focusOffset: number;
+}
+```
+
+The stack stores plain text and selection offsets only. Decorations are remapped or recomputed
+from the restored value. The stack is capped at `MAX_UNDO` entries.
+
+### Gutter synchronization
+
+`_computeGutterLabels()` produces one label per logical line, accounting for built-in modes and
+`LineDecoration.gutterContent` overrides. `_syncGutter()` mutates only the cell count and text
+that changed.
+
+`_syncGutterHeights()` mirrors editor padding and line heights. In word-wrap mode it measures
+each `.line` element and assigns explicit cell heights so wrapped lines stay aligned.
+
+</TabItem>
+<TabItem value="files" label="File map">
+
+### Source files
+
+| File                             | Purpose                                                                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/rc-textarea.ts`             | Main LitElement: value state, native textarea sync, editing events, plugin lifecycle, render loop, gutter, undo/redo, event dispatch. |
+| `src/document.ts`                | `RCDocument` builder and `getText()` extraction for the editor DOM.                                                                   |
+| `src/blots.ts`                   | Parchment blot classes and registry for lines, marks, widgets, and the scroll root.                                                   |
+| `src/selection.ts`               | `saveSelection()` / `restoreSelection()` plain-text offset conversion.                                                                |
+| `src/decoration.ts`              | Decoration ID assignment, set replacement, and remapping through text edits.                                                          |
+| `src/pattern-matcher.ts`         | Regex `TextPattern` matching and capture-group decoration expansion.                                                                  |
+| `src/line-decorator.ts`          | `createLineDecoratorPlugin()` helper for line-relative decoration logic.                                                              |
+| `src/line-actions-controller.ts` | Controller for action UI anchored to editor lines.                                                                                    |
+| `src/types.ts`                   | Public interfaces and utility types.                                                                                                  |
+| `src/rc-textarea.styles.ts`      | Shadow DOM layout, parts, tokens, and internal decoration selectors.                                                                  |
+
+### Styling contract
+
+The public styling surface is CSS custom properties plus these parts: `root`, `gutter`,
+`gutter-cells`, `editor-area`, `editor`. Internal selectors (`.line`, `.mark`, `.widget`,
+`.gutter-cell`, `.line--active`) are implementation details accessible to plugin authors
+through `api.adoptStyleSheet()`.
+
+Default colors use system colors. New default styles should be forced-colors-safe and prefer
+inherited custom properties over fixed palette choices.
+
+### Deprecated compatibility surface
+
+`listNumbers` / `list-numbers` and `label` are kept for compatibility but warn when used.
+Prefer:
+
+- `lineNumbers` for sequential numbering.
+- `gutter` plus `LineDecoration.gutterContent` for sparse or custom gutter content.
+- A real `<label for>` association or `aria-label` on the slotted textarea.
+
+### Verification checklist
+
+When changing internals, cover the affected behavior with browser tests:
+
+- Native textarea remains connected and synced for forms.
+- Host `value` writes are silent; user edits dispatch `rc-textarea-change`.
+- Selection survives rebuilds for typing, paste, undo/redo, and plugin text mutation.
+- Pattern, plugin, and external decorations render together.
+- Line diagnostics and gutter content align with wrapped and unwrapped lines.
+- Accessibility audit covers the live enhanced editor, not only unupgraded markup.
+
+</TabItem>
+</Tabs>
+
+## Troubleshooting
+
+**Decorations disappear after large edits.** Plugin decorations are remapped through edits, but
+very large text changes clear mapped plugin decorations to avoid stale offsets. Recompute
+plugin decorations in `update()` for durable results.
+
+**Cursor position looks different after decorations change.** Selection is restored through
+plain-text offsets. Widgets have no text width in the value, and new decorations can change the
+visual shape around the same offset. Use `getCursorRect()` for positioning UI.
+
+**Styles do not apply to marks or lines.** Decoration elements are in the shadow root. Use
+`api.adoptStyleSheet()` rather than a document stylesheet.
+
+**HTML highlighting duplicates decorations.** Returning a string from `highlight()` adds parsed
+marks to existing plugin decorations. If you need exact replacement, do all work inside
+`update()` and call `api.setDecorations()`.
 
 ## API
 

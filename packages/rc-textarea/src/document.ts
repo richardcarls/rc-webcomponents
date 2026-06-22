@@ -1,33 +1,22 @@
 /**
- * V2Document — manages the Parchment-backed contenteditable editor DOM.
+ * RCDocument — manages the Parchment-backed contenteditable editor DOM.
  *
- * Maintains a V2ScrollBlot as document root (wrapping the #editor div).
+ * Maintains a RCScrollBlot as document root (wrapping the #editor div).
  * build() tears down the current tree and reconstructs it from plain text +
  * a flat array of decorations. DOM is built directly using the blots'
  * static create() methods for efficiency.
+ *
+ * @see {@link https://github.com/quilljs/parchment Parchment on GitHub}
  */
-import {
-  V2ScrollBlot,
-  V2BlockBlot,
-  V2InlineBlot,
-  V2WidgetBlot,
-  createRegistry,
-} from './blots.ts';
-import type {
-  Decoration,
-  MarkDecoration,
-  LineDecoration,
-  WidgetDecoration,
-} from './types.ts';
-
-// ── Inline content builder ───────────────────────────────────────────────────
+import { RCScrollBlot, RCBlockBlot, RCInlineBlot, RCWidgetBlot, createRegistry } from './blots.ts';
+import type { Decoration, MarkDecoration, LineDecoration, WidgetDecoration } from './types.ts';
 
 /**
  * Builds the child DOM of a line element given the line text, absolute line
  * start offset, and all decorations that affect this line.
  */
 function buildLineContent(
-  lineEl: HTMLElement,
+  $line: HTMLElement,
   lineText: string,
   lineStart: number,
   markDecorations: MarkDecoration[],
@@ -35,18 +24,22 @@ function buildLineContent(
 ): void {
   if (lineText.length === 0) {
     // Empty line needs a <br> so contenteditable allows cursor placement
-    lineEl.appendChild(document.createElement('br'));
+    $line.appendChild(document.createElement('br'));
+
     return;
   }
 
   // Collect segment boundary points from all mark decoration edges
   const boundarySet = new Set<number>([0, lineText.length]);
-  for (const dec of markDecorations) {
-    boundarySet.add(Math.max(0, dec.from - lineStart));
-    boundarySet.add(Math.min(lineText.length, dec.to - lineStart));
+
+  for (const decoration of markDecorations) {
+    boundarySet.add(Math.max(0, decoration.from - lineStart));
+    boundarySet.add(Math.min(lineText.length, decoration.to - lineStart));
   }
-  for (const dec of widgetDecorations) {
-    const localOffset = dec.offset - lineStart;
+
+  for (const decoration of widgetDecorations) {
+    const localOffset = decoration.offset - lineStart;
+
     if (localOffset >= 0 && localOffset <= lineText.length) {
       boundarySet.add(localOffset);
     }
@@ -55,118 +48,130 @@ function buildLineContent(
   const boundaries = [...boundarySet].sort((a, b) => a - b);
 
   for (let i = 0; i < boundaries.length - 1; i++) {
-    const segStart = boundaries[i]!;
-    const segEnd = boundaries[i + 1]!;
+    const segmentStart = boundaries[i]!;
+    const segmentEnd = boundaries[i + 1]!;
 
-    // Insert widgets whose position falls at segStart ('before' side)
-    for (const w of widgetDecorations) {
-      const localOffset = w.offset - lineStart;
-      if (localOffset === segStart && (w.side ?? 'before') === 'before') {
-        lineEl.appendChild(createWidgetEl(w));
+    // Insert widgets whose position falls at segmentStart ('before' side)
+    for (const widget of widgetDecorations) {
+      const localOffset = widget.offset - lineStart;
+
+      if (localOffset === segmentStart && (widget.side ?? 'before') === 'before') {
+        $line.appendChild(createWidget(widget));
       }
     }
 
-    const segText = lineText.slice(segStart, segEnd);
-    if (!segText) continue;
+    const segment = lineText.slice(segmentStart, segmentEnd);
 
-    // Find the innermost (smallest) mark decoration fully covering [segStart, segEnd)
-    let bestDec: MarkDecoration | undefined;
+    if (!segment) {
+      continue;
+    }
+
+    // Find the innermost (smallest) mark decoration fully covering [segmentStart, segmentEnd)
+    let bestDecoration: MarkDecoration | undefined;
     let bestSize = Infinity;
-    for (const dec of markDecorations) {
-      const localFrom = dec.from - lineStart;
-      const localTo = dec.to - lineStart;
-      if (localFrom <= segStart && localTo >= segEnd) {
+
+    for (const decoration of markDecorations) {
+      const localFrom = decoration.from - lineStart;
+      const localTo = decoration.to - lineStart;
+
+      if (localFrom <= segmentStart && localTo >= segmentEnd) {
         const size = localTo - localFrom;
+
         if (size < bestSize) {
           bestSize = size;
-          bestDec = dec;
+          bestDecoration = decoration;
         }
       }
     }
 
-    if (bestDec) {
-      const spanEl = V2InlineBlot.create(bestDec) as HTMLSpanElement;
-      if (bestDec.attributes) {
-        for (const [k, v] of Object.entries(bestDec.attributes)) {
-          spanEl.setAttribute(k, v);
+    if (bestDecoration) {
+      const $span = RCInlineBlot.create(bestDecoration) as HTMLSpanElement;
+
+      if (bestDecoration.attributes) {
+        for (const [attrName, attrValue] of Object.entries(bestDecoration.attributes)) {
+          $span.setAttribute(attrName, attrValue);
         }
       }
-      spanEl.appendChild(document.createTextNode(segText));
-      lineEl.appendChild(spanEl);
+
+      $span.appendChild(document.createTextNode(segment));
+
+      $line.appendChild($span);
     } else {
-      lineEl.appendChild(document.createTextNode(segText));
+      $line.appendChild(document.createTextNode(segment));
     }
 
     // Insert 'after' widgets at segEnd
-    for (const w of widgetDecorations) {
-      const localOffset = w.offset - lineStart;
-      if (localOffset === segEnd && w.side === 'after') {
-        lineEl.appendChild(createWidgetEl(w));
+    for (const widget of widgetDecorations) {
+      const localOffset = widget.offset - lineStart;
+
+      if (localOffset === segmentEnd && widget.side === 'after') {
+        $line.appendChild(createWidget(widget));
       }
     }
   }
 
   // Widgets at very end of line (default 'before' side)
-  for (const w of widgetDecorations) {
-    const localOffset = w.offset - lineStart;
-    if (localOffset === lineText.length && (w.side ?? 'before') === 'before') {
-      lineEl.appendChild(createWidgetEl(w));
+  for (const widget of widgetDecorations) {
+    const localOffset = widget.offset - lineStart;
+
+    if (localOffset === lineText.length && (widget.side ?? 'before') === 'before') {
+      $line.appendChild(createWidget(widget));
     }
   }
 }
 
-/** Create the `.v2-widget` span wrapper for a `WidgetDecoration`. */
-function createWidgetEl(dec: WidgetDecoration): HTMLSpanElement {
-  const spanEl = V2WidgetBlot.create() as HTMLSpanElement;
-  spanEl.appendChild(dec.create());
-  return spanEl;
+/** Create the `.widget` span wrapper for a `WidgetDecoration`. */
+function createWidget(decoration: WidgetDecoration): HTMLSpanElement {
+  const $span = RCWidgetBlot.create() as HTMLSpanElement;
+
+  $span.appendChild(decoration.create());
+
+  return $span;
 }
 
-// ── V2Document ───────────────────────────────────────────────────────────────
+export class RCDocument {
+  private readonly scroll: RCScrollBlot;
 
-export class V2Document {
-  private readonly scroll: V2ScrollBlot;
-
-  constructor(editorEl: HTMLDivElement) {
+  constructor($documentRoot: HTMLDivElement) {
     const registry = createRegistry();
-    this.scroll = new V2ScrollBlot(registry, editorEl);
+
+    this.scroll = new RCScrollBlot(registry, $documentRoot);
   }
 
   /**
-   * Rebuild the document tree from `value` + `decorations`.
-   * Reuses existing `.v2-line` elements in place to preserve DOM identity
+   * Rebuild the document tree.
+   *
+   * Reuses existing `.line` elements in place to preserve DOM identity
    * across renders (fixes DevTools node tracking and mouse gesture continuity).
-   * Only the children of each line are replaced; the line element itself survives.
    */
   build(value: string, decorations: Decoration[]): void {
-    const editorEl = this.scroll.domNode as HTMLElement;
-
+    const $documentRoot = this.scroll.domNode as HTMLElement;
     const lines = value.split('\n');
 
-    // Snapshot existing line elements for reuse — preserves DOM identity so
-    // DevTools node references survive re-renders and ongoing mouse gestures
-    // (double-click, drag) are not interrupted by node replacement.
-    const existingLineEls = Array.from(editorEl.querySelectorAll<HTMLElement>('.v2-line'));
+    // Snapshot existing line elements for reuse
+    const $lines = Array.from($documentRoot.querySelectorAll<HTMLElement>('.line'));
 
     // Index decorations by type for fast per-line lookup
-    const lineDecsByLine = new Map<number, LineDecoration[]>();
-    const markDecs: MarkDecoration[] = [];
-    const widgetDecs: WidgetDecoration[] = [];
+    const lineDecorationsMap = new Map<number, LineDecoration[]>();
+    const markDecorations: MarkDecoration[] = [];
+    const widgetDecorations: WidgetDecoration[] = [];
 
-    for (const dec of decorations) {
-      if (dec.type === 'line') {
-        const arr = lineDecsByLine.get(dec.line) ?? [];
-        arr.push(dec);
-        lineDecsByLine.set(dec.line, arr);
-      } else if (dec.type === 'mark') {
-        markDecs.push(dec);
+    for (const decoration of decorations) {
+      if (decoration.type === 'line') {
+        const lineDecorations = lineDecorationsMap.get(decoration.line) ?? [];
+
+        lineDecorations.push(decoration);
+
+        lineDecorationsMap.set(decoration.line, lineDecorations);
+      } else if (decoration.type === 'mark') {
+        markDecorations.push(decoration);
       } else {
-        widgetDecs.push(dec);
+        widgetDecorations.push(decoration);
       }
     }
 
-    markDecs.sort((a, b) => a.from - b.from || a.to - b.to);
-    widgetDecs.sort((a, b) => a.offset - b.offset);
+    markDecorations.sort((a, b) => a.from - b.from || a.to - b.to);
+    widgetDecorations.sort((a, b) => a.offset - b.offset);
 
     // Absolute character offset of the first character on the current line
     let lineStartOffset = 0;
@@ -178,119 +183,152 @@ export class V2Document {
       const lineEnd = lineStart + lineText.length;
 
       // Reuse an existing line element when available, otherwise create a new one.
-      // Reuse preserves DOM identity across renders.
-      let blockDomNode: HTMLElement;
-      if (i < existingLineEls.length) {
-        blockDomNode = existingLineEls[i]!;
+      let $block: HTMLElement;
+
+      if (i < $lines.length) {
+        $block = $lines[i]!;
+
         // Remove all attributes so stale class names, data-*, and title don't bleed through
-        while (blockDomNode.attributes.length > 0) {
-          blockDomNode.removeAttribute(blockDomNode.attributes[0]!.name);
+        while ($block.attributes.length > 0) {
+          $block.removeAttribute($block.attributes[0]!.name);
         }
-        blockDomNode.className = 'v2-line';
+
+        $block.className = 'line';
+
         // Clear children
-        while (blockDomNode.firstChild) {
-          blockDomNode.removeChild(blockDomNode.firstChild);
+        while ($block.firstChild) {
+          $block.removeChild($block.firstChild);
         }
       } else {
-        blockDomNode = V2BlockBlot.create() as HTMLElement;
-        editorEl.appendChild(blockDomNode);
+        $block = RCBlockBlot.create() as HTMLElement;
+
+        $documentRoot.appendChild($block);
       }
 
       // Apply line decorations
-      const lineDecs = lineDecsByLine.get(lineNum) ?? [];
-      for (const ld of lineDecs) {
-        if (ld.className) {
-          for (const cls of ld.className.split(/\s+/).filter(Boolean)) {
-            blockDomNode.classList.add(cls);
+      const lineDecorations = lineDecorationsMap.get(lineNum) ?? [];
+
+      for (const decoration of lineDecorations) {
+        if (decoration.className) {
+          for (const cls of decoration.className.split(/\s+/).filter(Boolean)) {
+            $block.classList.add(cls);
           }
         }
-        if (ld.attributes) {
-          for (const [k, v] of Object.entries(ld.attributes)) {
-            blockDomNode.setAttribute(k, v);
+
+        if (decoration.attributes) {
+          for (const [attrName, attrValue] of Object.entries(decoration.attributes)) {
+            $block.setAttribute(attrName, attrValue);
           }
         }
       }
 
       // Narrow decorations to those overlapping this line
-      const lineMarkDecs = markDecs.filter(d => d.from < lineEnd && d.to > lineStart);
-      const lineWidgetDecs = widgetDecs.filter(
-        d => d.offset >= lineStart && d.offset <= lineEnd,
-      );
+      const marks = markDecorations.filter((d) => d.from < lineEnd && d.to > lineStart);
+      const widgets = widgetDecorations.filter((d) => d.offset >= lineStart && d.offset <= lineEnd);
 
-      buildLineContent(blockDomNode, lineText, lineStart, lineMarkDecs, lineWidgetDecs);
+      buildLineContent($block, lineText, lineStart, marks, widgets);
 
-      // Set error-lens message via data attribute — rendered by ::after pseudo-element
+      // Set diagnostic message via data attribute — rendered by ::after pseudo-element
       // so it is completely outside the DOM selection and clipboard path.
-      const msgLineDecs = lineDecs.filter(ld => ld.message);
-      if (msgLineDecs.length > 0) {
-        const text = msgLineDecs.map(ld => ld.message).join(' \u00b7 ');
-        blockDomNode.dataset.message = text;
-        blockDomNode.title = text;
+      const diagnostics = lineDecorations.filter((decoration) => decoration.message);
+
+      if (diagnostics.length > 0) {
+        const text = diagnostics.map((decoration) => decoration.message).join(' · ');
         const classes = [
           ...new Set(
-            msgLineDecs.flatMap(ld =>
-              ld.messageClassName ? ld.messageClassName.split(/\s+/).filter(Boolean) : [],
+            diagnostics.flatMap((decoration) =>
+              decoration.messageClassName
+                ? decoration.messageClassName.split(/\s+/).filter(Boolean)
+                : [],
             ),
           ),
         ];
-        if (classes.length > 0) blockDomNode.dataset.messageClass = classes.join(' ');
+
+        $block.dataset.message = text;
+        $block.title = text;
+
+        if (classes.length > 0) {
+          $block.dataset.messageClass = classes.join(' ');
+        }
       }
 
       lineStartOffset += lineText.length + 1; // +1 for the '\n' separator
     }
 
     // Remove trailing line elements left over from a shorter previous value
-    while (editorEl.children.length > lines.length) {
-      editorEl.removeChild(editorEl.lastChild!);
+    while ($documentRoot.children.length > lines.length) {
+      $documentRoot.removeChild($documentRoot.lastChild!);
     }
   }
 
   destroy(): void {
-    const editorEl = this.scroll.domNode as HTMLElement;
-    while (editorEl.firstChild) {
-      editorEl.removeChild(editorEl.firstChild);
+    const $documentRoot = this.scroll.domNode as HTMLElement;
+
+    while ($documentRoot.firstChild) {
+      $documentRoot.removeChild($documentRoot.firstChild);
     }
   }
 }
 
-// ── Plain text extraction ─────────────────────────────────────────────────────
-
 /**
- * Extracts plain text directly from the editor's contenteditable DOM.
- * Handles our structured .v2-line divs as well as browser-inserted markup
- * from edits that happen between render frames.
+ * Extracts plain text directly from the contenteditable DOM.
  */
-export function extractEditorText(editorEl: HTMLElement): string {
-  const lines = Array.from(editorEl.querySelectorAll<HTMLElement>('.v2-line'));
-  if (lines.length > 0) {
-    return lines.map(lineEl => getLineText(lineEl)).join('\n');
+export function getText($editorEl: HTMLElement): string {
+  const $lines = Array.from($editorEl.querySelectorAll<HTMLElement>('.line'));
+
+  if ($lines.length > 0) {
+    return $lines.map(($lineEl) => getLineText($lineEl)).join('\n');
   }
+
   // Fallback: raw contenteditable DOM walk
-  return extractRawText(editorEl);
+  return extractRawText($editorEl);
 }
 
-function getLineText(lineEl: HTMLElement): string {
+function getLineText($lineEl: HTMLElement): string {
   let text = '';
-  for (const node of lineEl.childNodes) text += getNodeText(node);
+
+  for (const node of $lineEl.childNodes) {
+    text += getNodeText(node);
+  }
+
   return text;
 }
 
 function getNodeText(node: Node): string {
-  if (node.nodeType === Node.TEXT_NODE) return (node as Text).data;
-  if (!(node instanceof Element)) return '';
-  if (node.classList.contains('v2-widget')) return '';
-  if (node.classList.contains('v2-line-message')) return '';
-  if (node.tagName === 'BR') return '';
+  if (node.nodeType === Node.TEXT_NODE) {
+    return (node as Text).data;
+  }
+
+  if (!(node instanceof Element)) {
+    return '';
+  }
+
+  if (node.classList.contains('widget')) {
+    return '';
+  }
+
+  if (node.classList.contains('line-message')) {
+    return '';
+  }
+
+  if (node.tagName === 'BR') {
+    return '';
+  }
+
   let text = '';
-  for (const child of node.childNodes) text += getNodeText(child);
+
+  for (const child of node.childNodes) {
+    text += getNodeText(child);
+  }
+
   return text;
 }
 
-function extractRawText(el: HTMLElement): string {
+function extractRawText($el: HTMLElement): string {
   let result = '';
   let firstBlock = true;
 
-  for (const node of el.childNodes) {
+  for (const node of $el.childNodes) {
     if (node.nodeType === Node.TEXT_NODE) {
       result += (node as Text).data;
     } else if (node instanceof HTMLElement) {
@@ -299,10 +337,17 @@ function extractRawText(el: HTMLElement): string {
         firstBlock = false;
         continue;
       }
-      if (node.classList.contains('v2-widget')) continue;
+
+      if (node.classList.contains('widget')) {
+        continue;
+      }
 
       const isBlock = node.tagName === 'DIV' || node.tagName === 'P';
-      if (isBlock && !firstBlock) result += '\n';
+
+      if (isBlock && !firstBlock) {
+        result += '\n';
+      }
+
       firstBlock = false;
       result += extractRawText(node);
     }

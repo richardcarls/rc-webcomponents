@@ -1,5 +1,11 @@
-import type { FormEvent, RefObject } from 'react';
+import type { CSSProperties, FormEvent, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
+
+import hljs from 'highlight.js/lib/core';
+import rust from 'highlight.js/lib/languages/rust';
+hljs.registerLanguage('rust', rust);
+
+import { createMarkdownPlugin } from '@rcarls/rc-textarea-plugin-markdown';
 
 import { DemoFrame } from './DemoFrame';
 
@@ -342,6 +348,143 @@ export function TextareaDemo() {
     <DemoFrame>
       <rc-textarea label="Notes" line-numbers>
         <textarea defaultValue={'TODO: test seasoning\nSimmer until tender.'} />
+      </rc-textarea>
+    </DemoFrame>
+  );
+}
+
+// ── rc-textarea feature demos ─────────────────────────────────────────────────
+
+export function TextareaBasicDemo() {
+  return (
+    <DemoFrame>
+      <rc-textarea auto-grow>
+        <textarea
+          rows={4}
+          aria-label="Text editor"
+          defaultValue={
+            'The woods are lovely, dark and deep,\n' +
+            'But I have promises to keep,\n' +
+            'And miles to go before I sleep.\n\n' +
+            '— Robert Frost'
+          }
+        />
+      </rc-textarea>
+    </DemoFrame>
+  );
+}
+
+const MARKDOWN_SEED = '# Shopping list\n\n- **Carrots** — 1 bunch\n- *Ginger* — 2 cm piece\n- Garlic — 4 cloves\n\n> Buy organic where possible.';
+
+export function TextareaMarkdownDemo() {
+  const [editor, setEditor] = useState<any>(null);
+  const [preview, setPreview] = useState('');
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const plugin = createMarkdownPlugin();
+    editor.usePlugin(plugin);
+    setPreview(plugin.getPreviewHtml(MARKDOWN_SEED));
+
+    const onchange = (e: Event) => {
+      const value = (e as CustomEvent<{ value: string }>).detail.value;
+      setPreview(plugin.getPreviewHtml(value));
+    };
+
+    editor.addEventListener('rc-textarea-change', onchange);
+    return () => editor.removeEventListener('rc-textarea-change', onchange);
+  }, [editor]);
+
+  return (
+    <DemoFrame>
+      <rc-textarea ref={setEditor} line-numbers auto-grow>
+        <textarea rows={7} aria-label="Markdown editor" defaultValue={MARKDOWN_SEED} />
+      </rc-textarea>
+      {preview && (
+        <div
+          style={{ padding: '0.75em 1em', borderTop: '1px solid ButtonBorder' }}
+          dangerouslySetInnerHTML={{ __html: preview }}
+        />
+      )}
+    </DemoFrame>
+  );
+}
+
+const RUST_SNIPPET = `struct Matrix {
+    data: Vec<Vec<f64>>,
+    rows: usize,
+    cols: usize,
+}
+
+impl Matrix {
+    fn new(rows: usize, cols: usize) -> Self {
+        Matrix {
+            data: vec![vec![0.0; cols]; rows],
+            rows,
+            cols,
+        }
+    }
+
+    fn get(&self, row: usize, col: usize) -> f64 {
+        self.data[row][col]
+    }
+}
+
+fn main() {
+    let m = Matrix::new(3, 3);
+    // Access element at (1, 1)
+    println!("m[1][1] = {}", m.get(1, 1));
+}`;
+
+const HLJS_DARK_CSS = `
+  .hljs-keyword, .hljs-type { color: #cba6f7; }
+  .hljs-string { color: #a6e3a1; }
+  .hljs-number { color: #fab387; }
+  .hljs-comment { color: #6c7086; font-style: italic; }
+  .hljs-title, .hljs-title.function_ { color: #89b4fa; font-weight: bold; }
+  .hljs-built_in { color: #89dceb; }
+  .hljs-literal { color: #f5c2e7; }
+  .hljs-variable, .hljs-punctuation { color: #cdd6f4; }
+  .hljs-operator { color: #89dceb; }
+`;
+
+export function TextareaHljsDemo() {
+  const [editor, setEditor] = useState<any>(null);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    editor.usePlugin({
+      mount(api: any) {
+        api.adoptStyleSheet(HLJS_DARK_CSS);
+      },
+      highlight(value: string) {
+        return hljs.highlight(value, { language: 'rust' }).value;
+      },
+    });
+  }, [editor]);
+
+  return (
+    <DemoFrame>
+      <rc-textarea
+        ref={setEditor}
+        line-numbers
+        auto-grow
+        style={{
+          '--rc-textarea-font-family': "'Fira Code', 'Cascadia Code', monospace",
+          '--rc-textarea-font-size': '13px',
+          '--rc-textarea-background': '#1e1e2e',
+          '--rc-textarea-color': '#cdd6f4',
+          '--rc-textarea-caret-color': '#89b4fa',
+          '--rc-textarea-border': '1px solid #313244',
+          '--rc-textarea-active-line-bg': 'rgba(255, 255, 255, 0.04)',
+          '--rc-textarea-gutter-bg': '#181825',
+          '--rc-textarea-gutter-color': '#6c7086',
+          '--rc-textarea-gutter-border': '1px solid #313244',
+        } as CSSProperties}
+      >
+        <textarea rows={12} aria-label="Rust code editor" defaultValue={RUST_SNIPPET} />
       </rc-textarea>
     </DemoFrame>
   );

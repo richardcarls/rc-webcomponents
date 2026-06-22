@@ -4610,6 +4610,7 @@ __metadata:
     "@types/react": "npm:^19.2.0"
     "@types/react-dom": "npm:^19.2.0"
     clsx: "npm:^2.1.1"
+    highlight.js: "npm:^11.11.1"
     lit: "npm:^3.0.0"
     prism-react-renderer: "npm:^2.4.1"
     react: "npm:^19.2.0"
@@ -10053,6 +10054,13 @@ __metadata:
   dependencies:
     tslib: "npm:^1"
   checksum: 10c0/068dc1e83da320872cc204474a79e683fc07020d76b7b11ad90dd0c8f03d98e814731873a293f51253a7fbd798dc1840a7db544b90c3de208844718ad722e168
+  languageName: node
+  linkType: hard
+
+"highlight.js@npm:^11.11.1":
+  version: 11.11.1
+  resolution: "highlight.js@npm:11.11.1"
+  checksum: 10c0/40f53ac19dac079891fcefd5bd8a21cf2e8931fd47da5bd1dca73b7e4375c1defed0636fc39120c639b9c44119b7d110f7f0c15aa899557a5a1c8910f3c0144c
   languageName: node
   linkType: hard
 

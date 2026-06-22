@@ -15,6 +15,7 @@
     "@rcarls/rc-theme-material": "workspace:^",
     "@rcarls/rc-webcomponents": "workspace:^",
     "clsx": "^2.1.1",
+    "highlight.js": "^11.11.1",
     "lit": "^3.0.0",
     "prism-react-renderer": "^2.4.1",
     "react": "^19.2.0",

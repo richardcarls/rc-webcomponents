@@ -11,8 +11,6 @@ export const styles = css`
     display: none;
   }
 
-  /* ── Root layout ──────────────────────────────────────────────────────── */
-
   #root {
     display: flex;
     align-items: stretch;
@@ -23,8 +21,6 @@ export const styles = css`
     overflow: hidden;
     min-height: var(--_rc-textarea-min-height, auto);
   }
-
-  /* ── Gutter ───────────────────────────────────────────────────────────── */
 
   #gutter {
     display: none;
@@ -61,8 +57,6 @@ export const styles = css`
     color: var(--rc-textarea-color, var(--rc-text, FieldText));
   }
 
-  /* ── Editor area ──────────────────────────────────────────────────────── */
-
   #editor-area {
     position: relative;
     flex: 1;
@@ -81,10 +75,7 @@ export const styles = css`
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);
     color: var(--rc-textarea-color, var(--rc-text, FieldText));
-    caret-color: var(
-      --rc-textarea-caret-color,
-      var(--rc-textarea-color, FieldText)
-    );
+    caret-color: var(--rc-textarea-caret-color, var(--rc-textarea-color, FieldText));
     background: transparent;
     outline: none;
     overflow: auto;
@@ -131,12 +122,8 @@ export const styles = css`
     outline-offset: -1px;
   }
 
-  /* ── Slot (hidden lightDOM textarea) ──────────────────────────────────── */
-
+  /* Slotted textarea is hidden on host upgrade */
   ::slotted(textarea) {
-    /* Visually hidden but accessible to form submission.
-       Inline styles applied via JS take precedence and are more reliable,
-       but this provides a baseline in case of timing issues. */
     position: absolute !important;
     width: 1px !important;
     height: 1px !important;
@@ -149,23 +136,18 @@ export const styles = css`
     pointer-events: none !important;
   }
 
-  /* ── Line structure ───────────────────────────────────────────────────── */
-
-  .v2-line {
+  .line {
     position: relative;
     display: block;
   }
 
   /* Active line highlight — opt-in via CSS custom property. */
-  .v2-line--active {
+  .line--active {
     background: var(--rc-textarea-active-line-bg, transparent);
   }
 
-  /* Error-lens style end-of-line message via ::after pseudo-element.
-     content: attr(data-message) is set when V2Document assigns data-message.
-     Using ::after keeps the annotation completely outside the DOM selection
-     and clipboard path — no user-select tricks needed. */
-  .v2-line[data-message]::after {
+  /* Error-lens -style end-of-line diagnostic message */
+  .line[data-message]::after {
     content: attr(data-message);
     display: inline;
     margin-left: 4ch;
@@ -176,22 +158,14 @@ export const styles = css`
     font-style: italic;
   }
 
-  /* ── Inline decoration spans ──────────────────────────────────────────── */
-
-  .v2-mark {
-    /* Base class; formatting applied via inline style by V2InlineBlot */
+  .mark {
     border-radius: 2px;
   }
 
-  /* ── Widget spans ─────────────────────────────────────────────────────── */
-
-  .v2-widget {
+  .widget {
     display: inline-block;
     user-select: none;
     cursor: default;
     vertical-align: middle;
   }
-
-  /* ── Scrollbar sync between editor and gutter ─────────────────────────── */
-  /* Gutter doesn't scroll independently; editor scroll is handled in JS */
 `;

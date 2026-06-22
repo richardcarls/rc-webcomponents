@@ -5,15 +5,14 @@ import type {
   RCTextareaPlugin,
 } from './types.ts';
 
-/**
- * Options for `createLineDecoratorPlugin`.
- */
 export interface LineDecoratorPluginOptions {
   /**
-   * An array of subscriber setup functions. Each function receives a callback
-   * and should call it whenever an external value changes (e.g. a reactive
-   * signal). It may return an optional cleanup/unsubscribe function called on
-   * plugin destroy.
+   * An array of subscriber setup functions for (e.g., reactive
+   * signals).
+   *
+   * Each function receives a callback and should call it whenever an external
+   * value changes . It may return an optional cleanup/unsubscribe function
+   * called on plugin destroy.
    *
    * This is intentionally framework-agnostic. For Solid.js signals:
    * ```ts
@@ -26,8 +25,9 @@ export interface LineDecoratorPluginOptions {
 
   /**
    * Called once per update pass **after** all per-line decorations are built.
+   *
    * Use this to merge in decorations that require the full document value
-   * (e.g. diagnostics from a whole-document parser).
+   * (e.g., diagnostics from a whole-document parser).
    */
   extraDecorations?: (value: string) => DecorationInput[];
 }
@@ -36,6 +36,7 @@ export interface LineDecoratorPluginOptions {
  * Factory that wraps a `LineDecoratorPlugin` in a full `RCTextareaPlugin`.
  *
  * Handles the boilerplate that every per-line decorator needs:
+ *
  * - CSS injection via `api.adoptStyleSheet` on mount
  * - `lineStart` offset bookkeeping when converting line-relative offsets to
  *   absolute document offsets
@@ -69,47 +70,57 @@ export function createLineDecoratorPlugin(
   const cleanups: (() => void)[] = [];
 
   return {
-    mount(a) {
-      if (decorator.styles) a.adoptStyleSheet(decorator.styles);
+    mount(api) {
+      if (decorator.styles) {
+        api.adoptStyleSheet(decorator.styles);
+      }
+
       for (const subscribe of options.watch ?? []) {
-        const cleanup = subscribe(() => a.scheduleUpdate());
-        if (cleanup) cleanups.push(cleanup);
+        const cleanup = subscribe(() => api.scheduleUpdate());
+
+        if (cleanup) {
+          cleanups.push(cleanup);
+        }
       }
     },
 
     destroy() {
       for (const cleanup of cleanups) cleanup();
+
       cleanups.length = 0;
     },
 
-    update(value, a) {
+    update(value, api) {
       const lines = value.split('\n');
-      const allDecorations: DecorationInput[] = [];
-      let lineStart = 0;
+      const decorations: DecorationInput[] = [];
 
+      let lineStart = 0;
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        for (const d of decorator.decorateLine(line, i)) {
-          if (d.type === 'mark') {
+
+        for (const decoration of decorator.decorateLine(line, i)) {
+          if (decoration.type === 'mark') {
             // Convert line-relative offsets to absolute document offsets
-            allDecorations.push({
-              ...(d as Omit<MarkDecoration, 'id'>),
-              from: lineStart + d.from,
-              to: lineStart + d.to,
+            decorations.push({
+              ...(decoration as Omit<MarkDecoration, 'id'>),
+              from: lineStart + decoration.from,
+              to: lineStart + decoration.to,
             });
           } else {
             // LineDecoration already uses 1-based line numbers — pass through
-            allDecorations.push(d);
+            decorations.push(decoration);
           }
         }
-        lineStart += line.length + 1; // +1 for the '\n'
+
+        // +1 for the '\n'
+        lineStart += line.length + 1;
       }
 
       if (options.extraDecorations) {
-        allDecorations.push(...options.extraDecorations(value));
+        decorations.push(...options.extraDecorations(value));
       }
 
-      a.setDecorations(allDecorations);
+      api.setDecorations(decorations);
     },
   };
 }
