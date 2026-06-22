@@ -1,7 +1,8 @@
 # `@rcarls/rc-fab`
 
-A floating action button with regular icon-only and extended icon-and-label
-variants. The component uses a native shadow-DOM `<button>` and provides no
+A "floating action button (FAB)" implementation, adapted from Material Design 3.
+
+The component uses a native shadow-DOM `<button>` and provides no
 positioning behavior; consumers own where the action floats in their layout.
 
 ## Installation
