@@ -35,9 +35,9 @@
   "scripts": {
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test:browser": "vitest",
-    "test:browser:chrome": "vitest --project=chromium",
-    "test:browser:firefox": "vitest --project=firefox",
+    "test:browser": "vitest --run",
+    "test:browser:chrome": "vitest --run --project=chromium",
+    "test:browser:firefox": "vitest --run --project=firefox",
     "yalc:publish": "yalc publish --push"
   },
   "dependencies": {

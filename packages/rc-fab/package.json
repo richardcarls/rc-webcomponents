@@ -40,9 +40,9 @@
     "build": "tsc && vite build && cem analyze",
     "cem:analyze": "cem analyze",
     "preview": "vite preview",
-    "test:browser": "vitest",
-    "test:browser:chrome": "vitest --project=chromium",
-    "test:browser:firefox": "vitest --project=firefox"
+    "test:browser": "vitest --run",
+    "test:browser:chrome": "vitest --run --project=chromium",
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
     "@rcarls/rc-common": "workspace:^"
