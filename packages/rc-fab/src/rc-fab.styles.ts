@@ -46,24 +46,24 @@ export const fabStyles = css`
 
     border: none;
     border-radius: var(--rc-fab-radius, 9999px);
-    box-shadow: var(--rc-fab-shadow, none);
+    box-shadow: var(--rc-fab-shadow, var(--rc-shadow-level2, none));
 
-    font-family: var(--rc-fab-font-family, inherit);
-    font-size: var(--rc-fab-font-size, 0.875rem);
+    font-family: var(--rc-fab-font-family, var(--rc-font-family, inherit));
+    font-size: var(--rc-fab-font-size, var(--rc-font-size, 0.875rem));
     font-weight: var(--rc-fab-font-weight, 500);
     letter-spacing: var(--rc-fab-letter-spacing, 0.00625em);
     white-space: nowrap;
 
     cursor: pointer;
     transition:
-      background var(--rc-fab-transition-duration, 200ms) ease,
-      box-shadow var(--rc-fab-transition-duration, 200ms) ease,
-      transform var(--rc-fab-transition-duration, 200ms) ease;
+      background var(--rc-fab-transition-duration, var(--rc-motion-duration, 200ms)) ease,
+      box-shadow var(--rc-fab-transition-duration, var(--rc-motion-duration, 200ms)) ease,
+      transform var(--rc-fab-transition-duration, var(--rc-motion-duration, 200ms)) ease;
   }
 
   :host(:has(button:hover)) ::slotted(button) {
     background: var(--rc-fab-bg-hover, var(--rc-fab-bg, ButtonFace));
-    box-shadow: var(--rc-fab-shadow-hover, var(--rc-fab-shadow, none));
+    box-shadow: var(--rc-fab-shadow-hover, var(--rc-fab-shadow, var(--rc-shadow-level3, none)));
   }
 
   :host(:has(button:active)) ::slotted(button) {
@@ -72,12 +72,12 @@ export const fabStyles = css`
   }
 
   :host(:has(button:focus-visible)) ::slotted(button) {
-    outline: var(--rc-fab-focus-ring, 2px solid currentColor);
-    outline-offset: var(--rc-fab-focus-ring-offset, 2px);
+    outline: var(--rc-fab-focus-ring, var(--rc-focus-ring, 2px solid currentColor));
+    outline-offset: var(--rc-fab-focus-ring-offset, var(--rc-focus-ring-offset, 2px));
   }
 
   :host(:has(button:disabled)) ::slotted(button) {
-    opacity: 0.38;
+    opacity: var(--rc-fab-disabled-opacity, var(--rc-disabled-opacity, 0.38));
     pointer-events: none;
     box-shadow: none;
   }

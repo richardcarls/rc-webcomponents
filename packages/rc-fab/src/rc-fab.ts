@@ -68,6 +68,7 @@ declare global {
  * @cssprop [--rc-fab-letter-spacing=0.00625em] - Letter spacing for label text.
  * @cssprop [--rc-fab-focus-ring=2px solid currentColor] - Focus ring style.
  * @cssprop [--rc-fab-focus-ring-offset=2px] - Focus ring offset.
+ * @cssprop [--rc-fab-disabled-opacity=0.38] - Opacity applied when the button is disabled.
  * @cssprop [--rc-fab-transition-duration=200ms] - Transition speed for hover and active states.
  * @cssprop [--rc-fab-scroll-threshold=300px] - Scroll distance at which the FAB becomes fully visible. Requires the `scroll-reveal` attribute. The JS fallback reads this value once on connect; px units only.
  * @cssprop [--rc-fab-scroll-timeline=scroll(root block)] - The `animation-timeline` value used for scroll-reveal. Override to target a different scroller, e.g. `scroll(nearest block)` for embedded contexts. CSS path only; the JS fallback discovers the nearest scrollable ancestor automatically.
