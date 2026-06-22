@@ -178,16 +178,70 @@ export function DisclosureDemo() {
 }
 
 export function FabDemo() {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
   return (
     <DemoFrame>
-      <div className="demo-row">
-        <rc-fab aria-label="Create">
-          <span className="material-symbols-outlined" aria-hidden="true">add</span>
-        </rc-fab>
-        <rc-fab extended>
-          <span className="material-symbols-outlined" aria-hidden="true">edit</span>
-          <span>Compose</span>
-        </rc-fab>
+      <div
+        ref={scrollerRef}
+        style={{
+          position: 'relative',
+          blockSize: '18rem',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+        }}
+      >
+        {/* Tall inner content to enable scrolling */}
+        <div
+          style={{
+            blockSize: '54rem',
+            padding: '1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+          }}
+        >
+          <p style={{ margin: 0, fontSize: '0.875rem', opacity: 0.7 }}>
+            ↓ Scroll down to reveal the back-to-top button
+          </p>
+        </div>
+
+        {/*
+         * Zero-height sticky trap. Sticks at bottom:0 of the scroll viewport so
+         * absolutely-positioned FABs inside it stay visually pinned to the
+         * container's bottom corner while remaining inside the scroll container
+         * (which is required for scroll(nearest block) and _findScrollTarget()).
+         */}
+        <div style={{ position: 'sticky', bottom: 0, blockSize: 0 }}>
+          {/* Back-to-top FAB — hidden until 100 px into the demo scroll */}
+          <rc-fab
+            scroll-reveal
+            style={{
+              '--rc-fab-position': 'absolute',
+              '--rc-fab-scroll-threshold': '100px',
+              '--rc-fab-scroll-timeline': 'scroll(nearest block)',
+            } as CSSProperties}
+          >
+            <button
+              type="button"
+              aria-label="Back to top"
+              onClick={() => scrollerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
+              ↑
+            </button>
+          </rc-fab>
+
+          {/* Extended FAB — always visible */}
+          <rc-fab
+            position="bottom-start"
+            style={{ '--rc-fab-position': 'absolute' } as CSSProperties}
+          >
+            <button type="button">
+              <span className="material-symbols-outlined" aria-hidden="true">add</span>
+              Create
+            </button>
+          </rc-fab>
+        </div>
       </div>
     </DemoFrame>
   );

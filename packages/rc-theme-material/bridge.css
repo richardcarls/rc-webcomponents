@@ -30,6 +30,9 @@
     --rc-shadow-level3: 0 var(--md-sys-elevation-level3, 6px)
       calc(var(--md-sys-elevation-level3, 6px) * 2)
       color-mix(in srgb, var(--md-sys-color-shadow, #000) 18%, transparent);
+    --rc-shadow-level4: 0 var(--md-sys-elevation-level4, 8px)
+      calc(var(--md-sys-elevation-level4, 8px) * 2)
+      color-mix(in srgb, var(--md-sys-color-shadow, #000) 24%, transparent);
     --rc-shadow: var(--rc-shadow-level2);
     --rc-font-family: var(--md-sys-typescale-body-medium-font, inherit);
     --rc-font-size: var(--md-sys-typescale-body-medium-size, 0.875rem);
@@ -333,6 +336,22 @@
     --rc-transfer-list-listbox-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
   }
 
+  .rc-theme-material rc-fab,
+  :host(.rc-theme-material) rc-fab {
+    --rc-fab-bg: var(--md-fab-container-color, var(--md-sys-color-primary-container, ButtonFace));
+    --rc-fab-color: var(--md-fab-icon-color, var(--md-sys-color-on-primary-container, ButtonText));
+    --rc-fab-shadow: var(--rc-shadow-level3);
+    --rc-fab-shadow-hover: var(--rc-shadow-level4);
+    --rc-fab-shadow-active: var(--rc-shadow-level3);
+    --rc-fab-radius: var(--md-fab-container-shape, var(--md-sys-shape-corner-large, 1rem));
+    --rc-fab-font-family: var(--md-fab-label-text-font, var(--md-sys-typescale-label-large-font, inherit));
+    --rc-fab-font-size: var(--md-fab-label-text-size, var(--md-sys-typescale-label-large-size, 0.875rem));
+    --rc-fab-font-weight: var(--md-fab-label-text-weight, var(--md-sys-typescale-label-large-weight, 500));
+    --rc-fab-letter-spacing: var(--md-fab-label-text-tracking, var(--md-sys-typescale-label-large-tracking, 0.00625em));
+    --rc-fab-focus-ring: var(--rc-focus-ring);
+    --rc-fab-focus-ring-offset: var(--rc-focus-ring-offset);
+  }
+
   .rc-theme-material rc-splitter,
   :host(.rc-theme-material) rc-splitter {
     --rc-splitter-separator-color: var(--md-sys-color-surface-container, Canvas);
@@ -371,6 +390,13 @@
     :host(.rc-theme-material) rc-menu-button {
       --rc-border-color: ButtonBorder;
       --rc-shadow: none;
+    }
+
+    .rc-theme-material rc-fab,
+    :host(.rc-theme-material) rc-fab {
+      --rc-fab-shadow: none;
+      --rc-fab-shadow-hover: none;
+      --rc-fab-shadow-active: none;
     }
   }
 }

@@ -7,56 +7,157 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 import './define.ts';
 import type { RCFab } from './rc-fab.ts';
 
-test('regular variant exposes the label as the button accessible name', async () => {
+test('native button remains connected with author attributes intact', async () => {
   const screen = render(html`
-    <rc-fab data-testid="host" label="New item">
-      <span slot="icon" aria-hidden="true">+</span>
+    <rc-fab data-testid="host">
+      <button type="button" id="fab-btn" aria-label="Create">
+        <span aria-hidden="true">+</span>
+      </button>
     </rc-fab>
   `);
-
   const host = (await screen.getByTestId('host').element()) as RCFab;
+
   await host.updateComplete;
 
-  const button = host.shadowRoot?.querySelector('button');
-  expect(button?.getAttribute('aria-label')).toBe('New item');
-  expect(button?.textContent?.trim()).toBe('New item');
+  const $button = host.querySelector('button');
+
+  expect($button?.isConnected).toBe(true);
+  expect($button?.id).toBe('fab-btn');
+  expect($button?.type).toBe('button');
 });
 
-test('extended variant renders the visible label without a redundant aria-label', async () => {
+test('icon-only: accessible name comes from the button aria-label', async () => {
   const screen = render(html`
-    <rc-fab data-testid="host" variant="extended" label="New item">
-      <span slot="icon" aria-hidden="true">+</span>
+    <rc-fab data-testid="host">
+      <button type="button" aria-label="Create">
+        <span aria-hidden="true">+</span>
+      </button>
     </rc-fab>
   `);
-
   const host = (await screen.getByTestId('host').element()) as RCFab;
+
   await host.updateComplete;
 
-  const button = host.shadowRoot?.querySelector('button');
-  expect(button?.getAttribute('aria-label')).toBe('');
-  expect(button?.textContent?.trim()).toBe('New item');
+  expect(host.querySelector('button')?.getAttribute('aria-label')).toBe('Create');
 });
 
-test('disabled maps to the native button', async () => {
+test('extended: accessible name comes from the button text content', async () => {
   const screen = render(html`
-    <rc-fab data-testid="host" label="New item" disabled></rc-fab>
+    <rc-fab data-testid="host">
+      <button type="button">
+        <span aria-hidden="true">+</span>
+        Compose
+      </button>
+    </rc-fab>
   `);
-
   const host = (await screen.getByTestId('host').element()) as RCFab;
+
   await host.updateComplete;
 
-  expect(host.shadowRoot?.querySelector('button')?.disabled).toBe(true);
+  expect(host.querySelector('button')?.textContent?.trim()).toContain('Compose');
+  expect(host.querySelector('button')?.hasAttribute('aria-label')).toBe(false);
+});
+
+test('disabled is set directly on the native button', async () => {
+  const screen = render(html`
+    <rc-fab data-testid="host">
+      <button type="button" aria-label="Create" disabled></button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+
+  expect(host.querySelector('button')?.disabled).toBe(true);
+});
+
+test('position attribute reflects to the host element', async () => {
+  const screen = render(html`
+    <rc-fab data-testid="host" position="top-start">
+      <button type="button" aria-label="Create"></button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+
+  expect(host.getAttribute('position')).toBe('top-start');
+  expect(host.position).toBe('top-start');
 });
 
 test('has no automated accessibility violations', async () => {
   const screen = render(html`
-    <rc-fab data-testid="host" label="New item">
-      <span slot="icon" aria-hidden="true">+</span>
+    <rc-fab data-testid="host">
+      <button type="button" aria-label="Create">
+        <span aria-hidden="true">+</span>
+      </button>
     </rc-fab>
   `);
-
   const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+  await expectNoA11yViolations(host);
+});
+
+test('scroll-reveal attribute reflects to the host element', async () => {
+  const screen = render(html`
+    <rc-fab data-testid="host" scroll-reveal>
+      <button type="button" aria-label="Back to top"></button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
   await host.updateComplete;
 
+  expect(host.getAttribute('scroll-reveal')).not.toBeNull();
+  expect(host.scrollReveal).toBe(true);
+});
+
+test('scroll-reveal: has no automated accessibility violations', async () => {
+  const screen = render(html`
+    <rc-fab data-testid="host" scroll-reveal>
+      <button type="button" aria-label="Back to top">
+        <span aria-hidden="true">↑</span>
+      </button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
   await expectNoA11yViolations(host);
+});
+
+test('scroll-reveal JS fallback: sets scroll-below-threshold below threshold', async () => {
+  if (CSS.supports('animation-timeline: scroll()')) return;
+
+  const screen = render(html`
+    <rc-fab data-testid="host" scroll-reveal>
+      <button type="button" aria-label="Back to top"></button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+
+  // Document scroll is 0, which is less than the default 300px threshold
+  expect(host.hasAttribute('scroll-below-threshold')).toBe(true);
+});
+
+test('scroll-reveal JS fallback: removes scroll-below-threshold when scroll-reveal is disabled', async () => {
+  if (CSS.supports('animation-timeline: scroll()')) return;
+
+  const screen = render(html`
+    <rc-fab data-testid="host" scroll-reveal>
+      <button type="button" aria-label="Back to top"></button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+  expect(host.hasAttribute('scroll-below-threshold')).toBe(true);
+
+  host.scrollReveal = false;
+  await host.updateComplete;
+
+  expect(host.hasAttribute('scroll-below-threshold')).toBe(false);
 });

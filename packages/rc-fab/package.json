@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless floating action button web component built with Lit",
+  "description": "A sticky-positioned button over page content with scroll behaviors, adapted from the Material Design FAB component.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -42,8 +42,10 @@
     "preview": "vite preview",
     "test:browser": "vitest",
     "test:browser:chrome": "vitest --project=chromium",
-    "test:browser:firefox": "vitest --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --project=firefox"
+  },
+  "dependencies": {
+    "@rcarls/rc-common": "workspace:^"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "0.11.0",

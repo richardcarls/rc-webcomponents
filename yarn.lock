@@ -4623,6 +4623,7 @@ __metadata:
   resolution: "@rcarls/rc-fab@workspace:packages/rc-fab"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:^"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"

@@ -1,0 +1,17 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab > button:hover {
+    background: color-mix(
+      in srgb,
+      var(--md-fab-hover-icon-color, var(--md-sys-color-on-primary-container, ButtonText)) 8%,
+      var(--rc-fab-bg, var(--md-sys-color-primary-container, ButtonFace))
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab > button:active {
+    background: color-mix(
+      in srgb,
+      var(--md-fab-pressed-icon-color, var(--md-sys-color-on-primary-container, ButtonText)) 12%,
+      var(--rc-fab-bg, var(--md-sys-color-primary-container, ButtonFace))
+    );
+  }
+}
