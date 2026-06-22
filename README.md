@@ -2,7 +2,7 @@
 
 A collection of web components that are inspired by and implement [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/) patterns, with progressive enhancement design philosophy.
 
-Components are fully typed and developed primarily with [Lit 3.x](https://lit.dev).
+Components are fully typed and developed primarily with [Lit](https://lit.dev).
 
 **[Documentation and component demos](https://richardcarls.github.io/rc-webcomponents/)**
 
