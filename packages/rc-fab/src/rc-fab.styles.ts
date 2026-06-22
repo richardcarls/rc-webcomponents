@@ -2,7 +2,7 @@ import { css } from 'lit';
 
 export const fabStyles = css`
   :host {
-    position: fixed;
+    position: var(--rc-fab-position, fixed);
     inset-block-end: var(--rc-fab-inset-block, 1.5rem);
     inset-inline-end: var(--rc-fab-inset-inline, 1.5rem);
     z-index: var(--rc-fab-z-index, 10);
@@ -45,7 +45,7 @@ export const fabStyles = css`
     color: var(--rc-fab-color, ButtonText);
 
     border: none;
-    border-radius: var(--rc-fab-radius, 0.25rem);
+    border-radius: var(--rc-fab-radius, 9999px);
     box-shadow: var(--rc-fab-shadow, none);
 
     font-family: var(--rc-fab-font-family, inherit);
@@ -80,6 +80,87 @@ export const fabStyles = css`
     opacity: 0.38;
     pointer-events: none;
     box-shadow: none;
+  }
+
+  @keyframes rc-fab-scroll-reveal {
+    from {
+      opacity: 0;
+      visibility: hidden;
+    }
+    50% {
+      visibility: visible;
+    }
+    to {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  @supports (animation-timeline: scroll()) {
+    :host([scroll-reveal]) {
+      /*
+       * Override for embedded/demo contexts where root does not scroll:
+       *   style="--rc-fab-scroll-timeline: scroll(nearest block)"
+       */
+      --rc-fab-scroll-timeline: scroll(root block);
+
+      animation-name: rc-fab-scroll-reveal;
+      animation-duration: 1ms; /* required; scroll position drives progress, not time */
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: var(--rc-fab-scroll-timeline);
+      animation-range:
+        calc(var(--rc-fab-scroll-threshold, 300px) - 100px)
+        var(--rc-fab-scroll-threshold, 300px);
+    }
+
+    /* Keyboard escape hatch: always visible when the button has focus */
+    :host([scroll-reveal]):has(button:focus-visible) {
+      animation: none;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :host([scroll-reveal]) {
+        animation-range:
+          var(--rc-fab-scroll-threshold, 300px)
+          var(--rc-fab-scroll-threshold, 300px);
+      }
+    }
+  }
+
+  /*
+   * JS fallback for browsers without scroll-driven animation support.
+   * [scroll-below-threshold] is toggled by ScrollObserverController;
+   * transitions replicate the CSS animation's show/hide behavior.
+   */
+  @supports not (animation-timeline: scroll()) {
+    /* visible state: visibility snaps immediately, opacity fades in */
+    :host([scroll-reveal]) {
+      transition: opacity 200ms linear, visibility 0s linear;
+    }
+
+    /* hidden state: opacity fades first, visibility snaps off after delay */
+    :host([scroll-reveal][scroll-below-threshold]) {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 200ms linear, visibility 0s linear 200ms;
+    }
+
+    /* Keyboard escape hatch */
+    :host([scroll-reveal][scroll-below-threshold]):has(button:focus-visible) {
+      opacity: 1;
+      visibility: visible;
+      transition: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :host([scroll-reveal]),
+      :host([scroll-reveal][scroll-below-threshold]) {
+        transition: none;
+      }
+    }
   }
 `;
 

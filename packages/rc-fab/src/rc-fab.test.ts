@@ -99,3 +99,67 @@ test('has no automated accessibility violations', async () => {
 
   await expectNoA11yViolations(host);
 });
+
+test('scroll-reveal attribute reflects to the host element', async () => {
+  const screen = render(html`
+    <rc-fab data-testid="host" scroll-reveal>
+      <button type="button" aria-label="Back to top"></button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+
+  expect(host.getAttribute('scroll-reveal')).not.toBeNull();
+  expect(host.scrollReveal).toBe(true);
+});
+
+test('scroll-reveal: has no automated accessibility violations', async () => {
+  const screen = render(html`
+    <rc-fab data-testid="host" scroll-reveal>
+      <button type="button" aria-label="Back to top">
+        <span aria-hidden="true">↑</span>
+      </button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+
+  await expectNoA11yViolations(host);
+});
+
+test('scroll-reveal JS fallback: sets scroll-below-threshold below threshold', async () => {
+  if (CSS.supports('animation-timeline: scroll()')) return;
+
+  const screen = render(html`
+    <rc-fab data-testid="host" scroll-reveal>
+      <button type="button" aria-label="Back to top"></button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+
+  // Document scroll is 0, which is less than the default 300px threshold
+  expect(host.hasAttribute('scroll-below-threshold')).toBe(true);
+});
+
+test('scroll-reveal JS fallback: removes scroll-below-threshold when scroll-reveal is disabled', async () => {
+  if (CSS.supports('animation-timeline: scroll()')) return;
+
+  const screen = render(html`
+    <rc-fab data-testid="host" scroll-reveal>
+      <button type="button" aria-label="Back to top"></button>
+    </rc-fab>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCFab;
+
+  await host.updateComplete;
+  expect(host.hasAttribute('scroll-below-threshold')).toBe(true);
+
+  host.scrollReveal = false;
+  await host.updateComplete;
+
+  expect(host.hasAttribute('scroll-below-threshold')).toBe(false);
+});

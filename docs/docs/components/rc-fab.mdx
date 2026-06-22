@@ -8,9 +8,13 @@ import { FabDemo } from '@site/src/components/ComponentDemos';
 
 # rc-fab
 
-A Floating Action Button shell that positions a consumer-provided `<button>` in a fixed viewport
-corner and supplies elevation styling. The button's own text content or `aria-label` is its
-accessible name — no separate label property is needed.
+A scroll-triggered floating button shell, designed first for **back to top** and adaptable to any
+fixed-position action: sticky CTAs, chat launchers, view-transition morphs, and Material Design
+FABs.
+
+Place a native `<button>` as the only direct child. The component positions it in a fixed viewport
+corner and applies elevation styling. The button's own text content or `aria-label` is its
+accessible name.
 
 <AtAGlance
   packageName="@rcarls/rc-fab"
@@ -23,26 +27,262 @@ accessible name — no separate label property is needed.
 
 ## Installation
 
-`sh
+```sh
 npm install @rcarls/rc-fab
-`
+```
 
-`sh
-yarn add @rcarls/rc-fab
-`
-
-`js
+```js
 import '@rcarls/rc-fab/define';
-`
+```
 
 ## Live demo
+
+Scroll the demo canvas to see the back-to-top FAB (↑, bottom-right) reveal after 100 px. The
+extended FAB (bottom-left) is always visible. Both use `position: absolute` inside the demo
+container; real-world use relies on `position: fixed` anchored to the viewport corner.
 
 <FabDemo />
 
 ## Theming
 
-The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+The default demo mode shows the component without a package theme. Use the shared preview controls
+on this page to compare inherited, light, and dark color schemes or to apply the optional Material
+theme inside the demo frames.
 
 ## API
 
 <ApiTable tag="rc-fab" />
+
+## Patterns & affordances
+
+### Back to top (primary use case)
+
+Add the `scroll-reveal` attribute to hide the FAB until the user has scrolled past
+`--rc-fab-scroll-threshold` (default 300 px). Wire the button's click to `scrollTo`.
+
+```html
+<rc-fab scroll-reveal>
+  <button type="button" aria-label="Back to top"
+          onclick="scrollTo({ top: 0, behavior: 'smooth' })">
+    <span aria-hidden="true">↑</span>
+  </button>
+</rc-fab>
+```
+
+`scroll-reveal` uses CSS scroll-driven animations (`animation-timeline: scroll()`). In browsers
+that do not support this API the FAB is always visible — no JavaScript or polyfills are needed for
+the fallback.
+
+Change the threshold or fade window with CSS:
+
+```css
+rc-fab[scroll-reveal] {
+  --rc-fab-scroll-threshold: 500px; /* appear after scrolling 500 px */
+}
+```
+
+By default the animation targets the root document scroller. Override
+`--rc-fab-scroll-timeline` to target a different scrolling ancestor:
+
+```css
+rc-fab[scroll-reveal] {
+  --rc-fab-scroll-timeline: scroll(nearest block);
+}
+```
+
+### Sticky CTA / chat launcher
+
+Omit `scroll-reveal` for an always-visible button. Override `--rc-fab-radius` for a pill or
+rounded-square shape.
+
+```html
+<rc-fab>
+  <button type="button">
+    <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+    Chat with us
+  </button>
+</rc-fab>
+
+<style>
+  rc-fab {
+    --rc-fab-radius: 2rem; /* pill shape */
+    --rc-fab-bg: #1a73e8;
+    --rc-fab-color: #fff;
+    --rc-fab-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+  }
+</style>
+```
+
+### Safe area insets
+
+On notched or rounded devices, push the FAB above the home indicator by
+combining `--rc-fab-inset-block` with `env(safe-area-inset-bottom)`:
+
+```css
+rc-fab {
+  --rc-fab-inset-block: max(1.5rem, env(safe-area-inset-bottom, 0px));
+}
+```
+
+For `bottom-start` also cover the left edge:
+
+```css
+rc-fab[position='bottom-start'] {
+  --rc-fab-inset-inline: max(1.5rem, env(safe-area-inset-left, 0px));
+}
+```
+
+### View transitions: morph to page or dialog
+
+Assign `view-transition-name` to the FAB host or inner button. The browser will
+capture the FAB and animate it into the target element when the navigation or
+dialog open is wrapped in `document.startViewTransition()`.
+
+```html
+<rc-fab style="view-transition-name: fab">
+  <button type="button" aria-label="Compose" id="compose-btn">
+    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+  </button>
+</rc-fab>
+```
+
+```js
+document.getElementById('compose-btn').addEventListener('click', () => {
+  document.startViewTransition(() => {
+    // open dialog or navigate — the browser morphs the FAB into the target
+    dialog.showModal();
+  });
+});
+```
+
+Give the dialog or target page element the same `view-transition-name`:
+
+```css
+dialog {
+  view-transition-name: fab;
+}
+```
+
+### Cross-page FAB icon swap (cross-document view transitions)
+
+When navigating between pages, the browser automatically morphs elements that
+share the same `view-transition-name`. Add the same name to the FAB on each
+page and browsers that support cross-document view transitions will animate
+between them.
+
+```html
+<!-- page-a.html -->
+<rc-fab style="view-transition-name: page-fab">
+  <button type="button" aria-label="Edit">
+    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+  </button>
+</rc-fab>
+
+<!-- page-b.html -->
+<rc-fab style="view-transition-name: page-fab">
+  <button type="button" aria-label="Delete">
+    <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+  </button>
+</rc-fab>
+```
+
+No JavaScript needed — enable cross-document transitions in CSS:
+
+```css
+@view-transition {
+  navigation: auto;
+}
+```
+
+### FAB position change on desktop (navigation rail pattern)
+
+Use a responsive media query to move the FAB when a navigation rail is present.
+Pair with `view-transition-name` for an animated relocation.
+
+```css
+@media (min-width: 840px) {
+  rc-fab {
+    --rc-fab-inset-block: 1.5rem;
+    --rc-fab-inset-inline: calc(var(--nav-rail-width, 80px) + 1.5rem);
+  }
+}
+```
+
+### Extended FAB with scroll-driven label reveal
+
+Show a label as the user scrolls down, then collapse back to icon-only on
+scroll-up — entirely in CSS using a scroll-driven animation.
+
+```html
+<rc-fab id="extended-fab">
+  <button type="button">
+    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+    <span class="fab-label">Compose</span>
+  </button>
+</rc-fab>
+```
+
+```css
+#extended-fab .fab-label {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: fab-label-reveal linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 100px 300px;
+}
+
+@keyframes fab-label-reveal {
+  to { max-width: 10rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #extended-fab .fab-label {
+    animation: none;
+    max-width: 10rem;
+  }
+}
+```
+
+### Entry animation from `display: none`
+
+Add a smooth fade-in when the FAB is inserted into the DOM or when the
+`hidden` attribute is removed. Uses `@starting-style` and
+`transition-behavior: allow-discrete`.
+
+```css
+rc-fab {
+  transition: opacity 200ms ease, display 200ms;
+  transition-behavior: allow-discrete;
+}
+
+@starting-style {
+  rc-fab {
+    opacity: 0;
+  }
+}
+```
+
+### Material Design 3 FAB
+
+Override the circular default with Material's rounded-square shape and supply
+your design tokens.
+
+```css
+rc-fab {
+  --rc-fab-radius: 1rem;           /* MD3 FAB shape */
+  --rc-fab-bg: var(--md-sys-color-primary-container);
+  --rc-fab-color: var(--md-sys-color-on-primary-container);
+  --rc-fab-shadow:
+    0 1px 2px rgb(0 0 0 / 0.3),
+    0 2px 6px 2px rgb(0 0 0 / 0.15);
+  --rc-fab-shadow-hover:
+    0 2px 4px rgb(0 0 0 / 0.3),
+    0 4px 8px 3px rgb(0 0 0 / 0.15);
+  --rc-fab-size: 3.5rem;
+}
+```
+
+For the large FAB variant set `--rc-fab-size: 6rem` and `--rc-fab-radius: 1.75rem`.
+For the extended FAB add text inside the button alongside the icon.

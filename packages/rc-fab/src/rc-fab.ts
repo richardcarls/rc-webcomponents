@@ -1,5 +1,8 @@
 import { LitElement, html } from 'lit';
+import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+
+import { ScrollObserverController } from '@rcarls/rc-common';
 
 import fabStyles from './rc-fab.styles.js';
 
@@ -10,15 +13,23 @@ declare global {
 }
 
 /**
- * A Floating Action Button shell that positions a consumer-provided native
- * `<button>` in a fixed viewport corner and applies elevation styling.
+ * A scroll-triggered floating button shell, designed first for "back to top"
+ * and adaptable to any fixed-position action: sticky CTAs, chat launchers,
+ * view-transition morphs, and Material Design FABs.
  *
  * Place a native `<button>` as the direct child. The button's own accessible
  * name — its text content or `aria-label` — becomes the FAB's accessible name.
  * Icons go inside the button alongside or instead of visible text.
  *
  * ```html
- * <!-- Icon-only FAB -->
+ * <!-- Back to top (scroll-triggered) -->
+ * <rc-fab scroll-reveal>
+ *   <button type="button" aria-label="Back to top" onclick="scrollTo({top:0,behavior:'smooth'})">
+ *     <span aria-hidden="true">↑</span>
+ *   </button>
+ * </rc-fab>
+ *
+ * <!-- Icon-only FAB (always visible) -->
  * <rc-fab>
  *   <button type="button" aria-label="Create">
  *     <span class="material-symbols-outlined" aria-hidden="true">add</span>
@@ -37,6 +48,7 @@ declare global {
  * @slot default - The native `<button>` element. The button's own accessible
  *   name (text content or `aria-label`) serves as the FAB's accessible name.
  *
+ * @cssprop [--rc-fab-position=fixed] - CSS position value. Override to `absolute` for layout-relative placement or `sticky` for scroll-snapping.
  * @cssprop [--rc-fab-inset-block=1.5rem] - Distance from the block-axis edge.
  * @cssprop [--rc-fab-inset-inline=1.5rem] - Distance from the inline-axis edge.
  * @cssprop [--rc-fab-z-index=10] - Stacking order.
@@ -44,7 +56,7 @@ declare global {
  * @cssprop [--rc-fab-bg-hover=var(--rc-fab-bg)] - Hover background colour.
  * @cssprop [--rc-fab-color=ButtonText] - Button foreground colour.
  * @cssprop [--rc-fab-size=3.5rem] - Height and minimum width.
- * @cssprop [--rc-fab-radius=0.25rem] - Border-radius (structural default; themes override).
+ * @cssprop [--rc-fab-radius=9999px] - Border-radius. Default is pill-shaped. Override to `50%` for a circle (icon-only), `1rem` for Material rounded-square, etc.
  * @cssprop [--rc-fab-shadow=none] - Elevation shadow.
  * @cssprop [--rc-fab-shadow-hover=var(--rc-fab-shadow)] - Hover shadow.
  * @cssprop [--rc-fab-shadow-active=none] - Pressed shadow.
@@ -57,13 +69,21 @@ declare global {
  * @cssprop [--rc-fab-focus-ring=2px solid currentColor] - Focus ring style.
  * @cssprop [--rc-fab-focus-ring-offset=2px] - Focus ring offset.
  * @cssprop [--rc-fab-transition-duration=200ms] - Transition speed for hover and active states.
+ * @cssprop [--rc-fab-scroll-threshold=300px] - Scroll distance at which the FAB becomes fully visible. Requires the `scroll-reveal` attribute. The JS fallback reads this value once on connect; px units only.
+ * @cssprop [--rc-fab-scroll-timeline=scroll(root block)] - The `animation-timeline` value used for scroll-reveal. Override to target a different scroller, e.g. `scroll(nearest block)` for embedded contexts. CSS path only; the JS fallback discovers the nearest scrollable ancestor automatically.
  */
 export class RCFab extends LitElement {
   static override styles = fabStyles;
 
+  private _scrollObs?: ScrollObserverController;
+
   /** Viewport corner where the FAB is anchored. Uses logical inline/block directions. */
   @property({ type: String, reflect: true })
   position: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start' = 'bottom-end';
+
+  /** Reveal the FAB only after the page scrolls past `--rc-fab-scroll-threshold` (default 300 px). Uses CSS scroll-driven animations; falls back to a passive scroll listener in unsupported browsers. */
+  @property({ type: Boolean, attribute: 'scroll-reveal', reflect: true })
+  scrollReveal = false;
 
   protected override firstUpdated(): void {
     if (import.meta.env.DEV && !this.querySelector(':scope > button')) {
@@ -72,6 +92,50 @@ export class RCFab extends LitElement {
         this,
       );
     }
+  }
+
+  protected override updated(changed: PropertyValues): void {
+    super.updated(changed);
+    if (changed.has('scrollReveal') || (this.scrollReveal && !this._scrollObs)) {
+      this._syncScrollFallback();
+    }
+  }
+
+  private _syncScrollFallback(): void {
+    if (this._scrollObs) {
+      this._scrollObs.setOptions({ disabled: true });
+      this.removeController(this._scrollObs);
+      this._scrollObs = undefined;
+      this.removeAttribute('scroll-below-threshold');
+    }
+
+    if (!this.scrollReveal || CSS.supports('animation-timeline: scroll()')) return;
+
+    const threshold = this._getThreshold();
+
+    this._scrollObs = new ScrollObserverController(this, {
+      target: () => this._findScrollTarget(),
+      threshold,
+      onScroll: (scrollTop) => {
+        this.toggleAttribute('scroll-below-threshold', scrollTop < threshold);
+      },
+    });
+  }
+
+  private _findScrollTarget(): Element {
+    let el: Element | null = this.parentElement;
+    while (el && el !== document.documentElement) {
+      const { overflow, overflowY } = getComputedStyle(el);
+      if (/auto|scroll/.test(overflowY) || /auto|scroll/.test(overflow)) return el;
+      el = el.parentElement;
+    }
+    return document.scrollingElement ?? document.documentElement;
+  }
+
+  private _getThreshold(): number {
+    const raw = getComputedStyle(this).getPropertyValue('--rc-fab-scroll-threshold').trim();
+    const n = parseFloat(raw);
+    return Number.isFinite(n) ? n : 300;
   }
 
   protected override render() {

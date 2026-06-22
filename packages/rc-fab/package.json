@@ -44,6 +44,9 @@
     "test:browser:chrome": "vitest --project=chromium",
     "test:browser:firefox": "vitest --project=firefox"
   },
+  "dependencies": {
+    "@rcarls/rc-common": "workspace:^"
+  },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "0.11.0",
     "@vitest/browser-playwright": "4.1.5",
