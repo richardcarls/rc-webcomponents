@@ -1,32 +1,38 @@
 import type { RCTextareaPluginAPI, DecorationInput } from './types.ts';
 
-// ── Public types ──────────────────────────────────────────────────────────────
-
 export interface LineAction {
+  /** Stable identifier used for action-set change detection. */
   id: string;
+
+  /** Human-readable label; used as button text and accessible name. */
   label: string;
-  /** data-icon attribute — host renders via iconify or similar */
-  icon?: string;
+
+  /** Icon name passed to `LineActionsOptions.createIcon`, e.g. `'mdi-lock-outline'`. */
+  iconName?: string;
+
+  /** Called when the action button is activated. */
   onClick: () => void;
 }
 
 export interface LineActionsOptions {
-  /** Where to place the inline widget. Default: 'append'. */
+  /** Where to place the inline widget. Default: `'append'`. */
   position?: 'append';
+
   /**
-   * Create and return a DOM element for the given icon name (e.g. 'mdi-lock-outline').
-   * Called when `action.icon` is set. Return `null` to fall back to text label.
+   * Create and return a DOM element for the given icon name (e.g. `'mdi-lock-outline'`).
+   * Called when `action.iconName` is set. Return `null` to fall back to text label.
    *
-   * @example — iconify web component
+   * @example
    * ```ts
    * createIcon: (name) => {
-   *   const el = document.createElement('iconify-icon');
-   *   el.setAttribute('icon', name);
-   *   return el;
+   *   const $icon = document.createElement('iconify-icon');
+   *   $icon.setAttribute('icon', name);
+   *   return $icon;
    * }
    * ```
    */
   createIcon?: (iconName: string) => HTMLElement | null;
+
   /**
    * Full control over button content. Called instead of the default icon/label
    * logic. Use `createIcon` when you only need to swap the icon renderer —
@@ -35,10 +41,7 @@ export interface LineActionsOptions {
   renderButton?: (action: LineAction, btn: HTMLButtonElement) => void;
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-
-// Constructed once at module level and shared across all controller instances —
-// zero extra parsing cost per instantiation (Lit adoptedStyleSheets pattern).
+// Constructed once at module level and shared across all controller instances
 const WIDGET_SHEET = new CSSStyleSheet();
 WIDGET_SHEET.replaceSync(`
   .rc-line-actions {
@@ -110,8 +113,6 @@ const POPOVER_STYLES = `
   }
 `;
 
-// ── LineActionsController ─────────────────────────────────────────────────────
-
 /**
  * Helper class for plugins that need to show inline action buttons next to a
  * line, or a floating popover panel anchored to the active line.
@@ -136,9 +137,13 @@ const POPOVER_STYLES = `
  */
 export class LineActionsController {
   private readonly _api: RCTextareaPluginAPI;
+
   private readonly _options: LineActionsOptions;
+
   private _popover: HTMLDivElement | null = null;
+
   private _lastActionsKey = '';
+
   private readonly _blurHandler: () => void;
 
   constructor(api: RCTextareaPluginAPI, options?: LineActionsOptions) {
@@ -172,17 +177,23 @@ export class LineActionsController {
       } else {
         this._showPopover(actions);
       }
+
       return [];
     }
 
     // inline mode — always hide any lingering popover
     this._hidePopover();
 
-    if (actions.length === 0) return [];
+    if (actions.length === 0) {
+      return [];
+    }
 
     const offset = LineActionsController._lineEndOffset(value, lineIndex);
     const actionsSnapshot = [...actions];
-    const buttonOptions = { renderButton: this._options.renderButton, createIcon: this._options.createIcon };
+    const buttonOptions = {
+      renderButton: this._options.renderButton,
+      createIcon: this._options.createIcon,
+    };
 
     return [
       {
@@ -211,20 +222,26 @@ export class LineActionsController {
     if (renderMode === 'popover') {
       if (activeLineIndex === undefined) {
         this._hidePopover();
+
         return [];
       }
+
       const actions = lineActions.get(activeLineIndex) ?? [];
+
       return this.getDecorations(activeLineIndex, actions, value, 'popover');
     }
 
     // inline mode — emit widget for each line that has actions
     this._hidePopover();
+
     const result: DecorationInput[] = [];
+
     for (const [lineIndex, actions] of lineActions) {
       if (actions.length > 0) {
         result.push(...this.getDecorations(lineIndex, actions, value, 'inline'));
       }
     }
+
     return result;
   }
 
@@ -239,8 +256,6 @@ export class LineActionsController {
     return value.slice(0, selectionStart).split('\n').length - 1;
   }
 
-  // ── Private helpers ───────────────────────────────────────────────────────
-
   /**
    * Character offset of the end of the given 0-based line (points at the
    * newline character, or end-of-string for the last line).
@@ -248,12 +263,16 @@ export class LineActionsController {
   private static _lineEndOffset(value: string, lineIndex: number): number {
     const lines = value.split('\n');
     let offset = 0;
+
     for (let i = 0; i < lineIndex && i < lines.length; i++) {
-      offset += lines[i]!.length + 1; // +1 for the '\n'
+      // +1 for the '\n'
+      offset += lines[i]!.length + 1;
     }
+
     if (lineIndex < lines.length) {
       offset += lines[lineIndex]!.length;
     }
+
     return offset;
   }
 
@@ -262,10 +281,12 @@ export class LineActionsController {
 
     // Inject global popover styles once per document
     if (!document.getElementById(POPOVER_STYLE_ID)) {
-      const style = document.createElement('style');
-      style.id = POPOVER_STYLE_ID;
-      style.textContent = POPOVER_STYLES;
-      document.head.appendChild(style);
+      const $style = document.createElement('style');
+
+      $style.id = POPOVER_STYLE_ID;
+      $style.textContent = POPOVER_STYLES;
+
+      document.head.appendChild($style);
     }
 
     // Create the panel element if it does not exist yet
@@ -273,6 +294,7 @@ export class LineActionsController {
       this._popover = document.createElement('div');
       this._popover.className = 'rc-line-actions-popover';
       this._popover.addEventListener('mousedown', (e) => e.preventDefault());
+
       document.body.appendChild(this._popover);
     }
 
@@ -280,6 +302,7 @@ export class LineActionsController {
     if (actionsKey !== this._lastActionsKey) {
       this._lastActionsKey = actionsKey;
       this._popover.innerHTML = '';
+
       buildPopoverButtons(this._popover, actions, this._options);
     }
 
@@ -287,16 +310,18 @@ export class LineActionsController {
   }
 
   private _positionPopover(): void {
-    if (!this._popover) return;
+    if (!this._popover) {
+      return;
+    }
 
     const cursorRect = this._api.getCursorRect();
     const hostRect = this._api.host.getBoundingClientRect();
-
-    let top: number;
     const panelHeight = this._popover.offsetHeight || 32;
 
+    let top: number;
     if (cursorRect) {
       top = cursorRect.bottom + 4;
+
       if (top + panelHeight > window.innerHeight) {
         top = cursorRect.top - panelHeight - 4;
       }
@@ -305,6 +330,7 @@ export class LineActionsController {
     }
 
     const panelWidth = this._popover.offsetWidth || 120;
+
     let left = hostRect.left;
     left = Math.min(left, window.innerWidth - panelWidth - 8);
     left = Math.max(left, 8);
@@ -322,56 +348,60 @@ export class LineActionsController {
   }
 }
 
-// ── DOM helpers (module-level so they can be used inside widget create() closures) ──
-
 function buildButton(
   action: LineAction,
   options: Pick<LineActionsOptions, 'renderButton' | 'createIcon'>,
 ): HTMLButtonElement {
-  const btn = document.createElement('button');
-  btn.className = 'rc-line-action-btn';
-  btn.type = 'button';
-  btn.setAttribute('title', action.label);
+  const $btn = document.createElement('button');
+
+  $btn.className = 'rc-line-action-btn';
+  $btn.type = 'button';
+  $btn.setAttribute('title', action.label);
 
   if (options.renderButton) {
-    options.renderButton(action, btn);
-  } else if (action.icon) {
-    const iconEl = options.createIcon?.(action.icon) ?? null;
-    if (iconEl) {
-      btn.setAttribute('aria-label', action.label);
-      btn.appendChild(iconEl);
+    options.renderButton(action, $btn);
+  } else if (action.iconName) {
+    const $icon = options.createIcon?.(action.iconName) ?? null;
+
+    if ($icon) {
+      $btn.setAttribute('aria-label', action.label);
+      $btn.appendChild($icon);
     } else {
       // Fallback: data-icon attribute for hosts that process it externally
-      btn.dataset['icon'] = action.icon;
-      btn.setAttribute('aria-label', action.label);
+      $btn.dataset['icon'] = action.iconName;
+      $btn.setAttribute('aria-label', action.label);
     }
   } else {
-    btn.textContent = action.label;
+    $btn.textContent = action.label;
   }
 
-  btn.addEventListener('mousedown', (e) => e.preventDefault());
-  btn.addEventListener('click', () => action.onClick());
-  return btn;
+  $btn.addEventListener('mousedown', (e) => e.preventDefault());
+  $btn.addEventListener('click', () => action.onClick());
+
+  return $btn;
 }
 
 function buildWidgetContainer(
   actions: LineAction[],
   options: Pick<LineActionsOptions, 'renderButton' | 'createIcon'>,
 ): HTMLElement {
-  const container = document.createElement('span');
-  container.className = 'rc-line-actions';
+  const $container = document.createElement('span');
+
+  $container.className = 'rc-line-actions';
+
   for (const action of actions) {
-    container.appendChild(buildButton(action, options));
+    $container.appendChild(buildButton(action, options));
   }
-  return container;
+
+  return $container;
 }
 
 function buildPopoverButtons(
-  panel: HTMLDivElement,
+  $panel: HTMLDivElement,
   actions: LineAction[],
   options: Pick<LineActionsOptions, 'renderButton' | 'createIcon'>,
 ): void {
   for (const action of actions) {
-    panel.appendChild(buildButton(action, options));
+    $panel.appendChild(buildButton(action, options));
   }
 }

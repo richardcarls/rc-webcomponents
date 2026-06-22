@@ -1,12 +1,6 @@
-import type {
-  Decoration,
-  MarkDecoration,
-  LineDecoration,
-  DecorationInput,
-} from './types.ts';
-export { generateId } from './types.ts';
+import type { Decoration, MarkDecoration, LineDecoration, DecorationInput } from './types.ts';
 
-// ── Edit detection ────────────────────────────────────────────────────────────
+export { generateId } from './types.ts';
 
 /**
  * The minimal description of a single contiguous edit:
@@ -16,8 +10,10 @@ export { generateId } from './types.ts';
 interface Edit {
   /** Character offset where the edit begins (inclusive). */
   start: number;
+
   /** Number of characters removed. */
   removed: number;
+
   /** Number of characters inserted. */
   inserted: number;
 }
@@ -29,9 +25,12 @@ interface Edit {
  * This is a heuristic ("longest common prefix/suffix"), not a full LCS diff.
  * It assumes the browser makes one contiguous edit per input event, which holds
  * true for normal typing, deletion, and paste.
+ *
+ * @see {@link http://www.xmailserver.org/diff2.pdf Myers 1986 — An O(ND) Difference Algorithm and Its Variations}
  */
 export function findEdit(oldValue: string, newValue: string): Edit {
   let start = 0;
+
   while (
     start < oldValue.length &&
     start < newValue.length &&
@@ -39,16 +38,15 @@ export function findEdit(oldValue: string, newValue: string): Edit {
   ) {
     start++;
   }
+
   let oldEnd = oldValue.length;
   let newEnd = newValue.length;
-  while (
-    oldEnd > start &&
-    newEnd > start &&
-    oldValue[oldEnd - 1] === newValue[newEnd - 1]
-  ) {
+
+  while (oldEnd > start && newEnd > start && oldValue[oldEnd - 1] === newValue[newEnd - 1]) {
     oldEnd--;
     newEnd--;
   }
+
   return { start, removed: oldEnd - start, inserted: newEnd - start };
 }
 
@@ -60,37 +58,52 @@ export function findEdit(oldValue: string, newValue: string): Edit {
  * - Ranges entirely **after** the edit are shifted by `edit.inserted − edit.removed`.
  * - Ranges that **overlap** the edit region are expanded/contracted to cover the
  *   nearest edit boundary, then dropped if they collapse.
+ *
+ * Adapted from the position-mapping model described in ProseMirror's `StepMap`.
+ *
+ * @see {@link https://prosemirror.net/docs/ref/#transform.StepMap ProseMirror — StepMap}
  */
-function remapMarkRange(
-  from: number,
-  to: number,
-  edit: Edit,
-): { from: number; to: number } | null {
+function remapMarkRange(from: number, to: number, edit: Edit): { from: number; to: number } | null {
   const editEnd = edit.start + edit.removed;
   const delta = edit.inserted - edit.removed;
 
-  if (to <= edit.start) return { from, to };           // entirely before edit
-  if (from >= editEnd) return { from: from + delta, to: to + delta }; // entirely after
+  // entirely before edit — unchanged
+  if (to <= edit.start) {
+    return { from, to };
+  }
 
-  // Overlaps the edit region — clamp to nearest edit boundary
+  // entirely after edit — shift by delta
+  if (from >= editEnd) {
+    return { from: from + delta, to: to + delta };
+  }
+
+  // overlaps the edit region — clamp to nearest edit boundary
   const newFrom = Math.min(from, edit.start);
   const newTo = Math.max(
     to > editEnd ? to + delta : edit.start + edit.inserted,
     edit.start + edit.inserted,
   );
-  if (newFrom >= newTo) return null;
+
+  if (newFrom >= newTo) {
+    return null;
+  }
+
   return { from: newFrom, to: newTo };
 }
 
 /**
  * Count the number of `\n` characters in `text` before `offset`.
- * Used to convert a character offset to a 1-based line number.
+ * The result is the zero-based line index at that position; add 1 for a 1-based line number.
  */
 function countNewlinesBefore(text: string, offset: number): number {
   let count = 0;
+
   for (let i = 0; i < offset && i < text.length; i++) {
-    if (text[i] === '\n') count++;
+    if (text[i] === '\n') {
+      count++;
+    }
   }
+
   return count;
 }
 
@@ -125,22 +138,30 @@ export function mapDecorationsThroughChange(
 
   const mapped: Decoration[] = [];
 
-  for (const dec of decorations) {
-    if (dec.type === 'mark') {
-      const result = remapMarkRange(dec.from, dec.to, edit);
-      if (result) mapped.push({ ...dec, from: result.from, to: result.to });
-    } else if (dec.type === 'line') {
-      if (dec.line < editStartLine) {
-        mapped.push(dec);                                   // before edit — unchanged
-      } else if (dec.line <= editEndLine) {
+  for (const docoration of decorations) {
+    if (docoration.type === 'mark') {
+      const result = remapMarkRange(docoration.from, docoration.to, edit);
+
+      if (result) {
+        mapped.push({ ...docoration, from: result.from, to: result.to });
+      }
+    } else if (docoration.type === 'line') {
+      if (docoration.line < editStartLine) {
+        // before edit — unchanged
+        mapped.push(docoration);
+      } else if (docoration.line <= editEndLine) {
         // falls within deleted region — drop
       } else {
-        mapped.push({ ...dec, line: dec.line + lineDelta }); // after edit — shift
+        // after edit — shift by line delta
+        mapped.push({ ...docoration, line: docoration.line + lineDelta });
       }
     } else {
       // WidgetDecoration: treat the offset like a mark's 'from'
-      const result = remapMarkRange(dec.offset, dec.offset + 1, edit);
-      if (result) mapped.push({ ...dec, offset: result.from });
+      const result = remapMarkRange(docoration.offset, docoration.offset + 1, edit);
+
+      if (result) {
+        mapped.push({ ...docoration, offset: result.from });
+      }
     }
   }
 
@@ -158,8 +179,12 @@ export function mapDecorationsThroughChange(
  * into an empty document (no existing decorations to preserve).
  */
 export function isLargeChange(oldValue: string, edit: Edit): boolean {
-  if (oldValue.length === 0) return false;
+  if (oldValue.length === 0) {
+    return false;
+  }
+
   const changeSize = Math.max(edit.removed, edit.inserted);
+
   return changeSize > 50 && changeSize > oldValue.length * 0.5;
 }
 
@@ -169,28 +194,30 @@ export function isLargeChange(oldValue: string, edit: Edit): boolean {
  *
  * This is the primary entry point used by the component on each input event.
  */
-export function mapOrClear(
+export function remapDecorations(
   decorations: Decoration[],
   oldValue: string,
   newValue: string,
 ): Decoration[] {
   const edit = findEdit(oldValue, newValue);
-  if (isLargeChange(oldValue, edit)) return [];
+
+  if (isLargeChange(oldValue, edit)) {
+    return [];
+  }
+
   return mapDecorationsThroughChange(decorations, oldValue, newValue);
 }
 
-// ── Decoration ID management ──────────────────────────────────────────────────
-
 /**
  * Add a single decoration to `map`, assigning it a fresh UUID as its `id`.
- * Returns the assigned ID.
+ *
+ * @returns the assigned `id`, used to remove or look up the decoration later
  */
-export function addDecoration(
-  map: Map<string, Decoration>,
-  input: DecorationInput,
-): string {
+export function addDecoration(map: Map<string, Decoration>, input: DecorationInput): string {
   const id = crypto.randomUUID();
+
   map.set(id, { ...input, id } as Decoration);
+
   return id;
 }
 
@@ -198,16 +225,13 @@ export function addDecoration(
  * Replace all decorations in `map` with a new set derived from `inputs`.
  * Each input is assigned a fresh UUID.
  */
-export function setDecorations(
-  map: Map<string, Decoration>,
-  inputs: DecorationInput[],
-): void {
+export function setDecorations(map: Map<string, Decoration>, inputs: DecorationInput[]): void {
   map.clear();
+
   for (const input of inputs) {
     const id = crypto.randomUUID();
     map.set(id, { ...input, id } as Decoration);
   }
 }
 
-// Type helpers for extracting subtypes from Decoration union
 export type { MarkDecoration, LineDecoration };

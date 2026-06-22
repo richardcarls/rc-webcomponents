@@ -1,79 +1,122 @@
-// ── Decoration types ─────────────────────────────────────────────────────────
-
 /**
  * A styled inline range over characters [from, to).
+ *
  * Rich formatting properties (bold, italic, color, etc.) are rendered as
  * inline styles on the blot span; `className` adds an extra CSS class.
  */
 export interface MarkDecoration {
+  /** Unique identifier assigned at creation time. */
   id: string;
+
+  /** Decoration type discriminant. */
   type: 'mark';
+
   /** Inclusive start offset (0-based character index into plain text). */
   from: number;
+
   /** Exclusive end offset. */
   to: number;
+
+  /** Space-separated CSS class name(s) added to the blot span. */
   className?: string;
+
+  /** Renders the range bold (`font-weight: bold`). */
   bold?: boolean;
+
+  /** Renders the range italic (`font-style: italic`). */
   italic?: boolean;
+
+  /** Text color (`color` CSS property). Accepts any CSS color value. */
   color?: string;
+
+  /** Background color (`background` CSS property). Accepts any CSS color value. */
   background?: string;
+
+  /** Underline style (`text-decoration-style`). */
   underline?: 'solid' | 'wavy' | 'dotted' | 'dashed';
+
+  /** Underline color (`text-decoration-color`). Defaults to the text `color` when omitted. */
   underlineColor?: string;
+
+  /** Additional HTML attributes set directly on the blot span element. */
   attributes?: Record<string, string>;
 }
 
 /**
  * A decoration applied to an entire logical line.
+ *
  * Adds a CSS class and/or data attributes to the line div, and optionally
- * appends an error-lens style annotation message at the end of the line.
+ * appends a diagnostic message at the end of the line.
  */
 export interface LineDecoration {
+  /** Unique identifier assigned at creation time. */
   id: string;
+
+  /** Decoration type discriminant. */
   type: 'line';
+
   /** 1-based logical line number. */
   line: number;
+
+  /** Space-separated CSS class name(s) added to the line div. */
   className?: string;
+
   /**
-   * Error-lens style annotation text shown at the end of the line.
-   * Rendered via `::after` pseudo-element on the line div (not a real DOM node),
-   * so it is completely excluded from selection and clipboard operations.
+   * Error-lens style diagnostic text shown at the end of the line.
    */
   message?: string;
+
   /**
    * Space-separated CSS class name(s) applied to the `data-message-class` attribute
    * on the line div. Use attribute selectors in CSS to style the message:
    *
    * ```css
-   * .v2-line[data-message-class~="error"][data-message]::after { color: red; }
+   * .line[data-message-class~="error"][data-message]::after { color: red; }
    * ```
    */
   messageClassName?: string;
+
+  /** Additional HTML attributes set directly on the line element. */
   attributes?: Record<string, string>;
+
   /**
    * Override the built-in gutter cell text for this line.
+   *
    * - `string`    — custom label (e.g. `"!"`, `"▶"`)
    * - `null`      — force empty cell (suppress built-in content)
-   * - `undefined` — use the built-in mode default (`line-numbers`, `list-numbers`, etc.)
+   * - `undefined` — use the built-in mode default (`line-numbers`, `gutter`, etc.)
    */
   gutterContent?: string | null;
 }
 
 /**
  * A non-editable DOM element inserted at a character offset.
+ *
  * Widgets are purely visual and do not appear in the plain text value.
  */
 export interface WidgetDecoration {
+  /** Unique identifier assigned at creation time. */
   id: string;
+
+  /** Decoration type discriminant. */
   type: 'widget';
+
   /** Character offset. Widget is placed before (or after) the character at this position. */
   offset: number;
+
   /** Factory called each render cycle. Must return a new element each time. */
   create(): HTMLElement;
+
   /** Whether to place the widget before or after the character at `offset`. Default: 'before'. */
   side?: 'before' | 'after';
 }
 
+/** Decorations are visual formatting applied to the field content without affecting
+ *  the underlying plain text value.
+ */
 export type Decoration = MarkDecoration | LineDecoration | WidgetDecoration;
+
+/** Input shape for creating a decoration — id-less variant of each decoration type. */
 export type DecorationInput =
   | Omit<MarkDecoration, 'id'>
   | Omit<LineDecoration, 'id'>
@@ -81,6 +124,7 @@ export type DecorationInput =
 
 /**
  * A semantic token produced by an external tokenizer (lezer, tree-sitter, shiki, etc.).
+ *
  * Offsets are absolute character indices into the plain-text value — the same coordinate
  * space as `MarkDecoration.from` / `MarkDecoration.to`.
  *
@@ -90,15 +134,16 @@ export type DecorationInput =
 export interface Token {
   /** Inclusive start offset (0-based character index into plain text). */
   from: number;
+
   /** Exclusive end offset. */
   to: number;
-  /** Semantic token type, e.g. `"keyword"`, `"string"`, `"comment"`. */
+
+  /** Semantic token type. */
   type: string;
-  /** Optional TextMate / VS Code scope list (e.g. `["keyword.control", "source.js"]`). */
+
+  /** Optional scope list. */
   scopes?: string[];
 }
-
-// ── Plugin types ─────────────────────────────────────────────────────────────
 
 /**
  * Contextual API available inside plugin lifecycle callbacks.
@@ -112,38 +157,48 @@ export interface Token {
  *   mount(a) { api = a; },
  *   update() {},
  * });
+ *
  * // later:
  * api.setDecorations([...]);
  * api.scheduleUpdate();
  * ```
  */
 export interface RCTextareaPluginAPI {
-  /** The host rc-textarea element. */
+  /** The host `rc-textarea` element. */
   readonly host: HTMLElement;
+
+  /** The current plain-text field value at the time of the callback. */
   readonly value: string;
 
-  /** Normalized selection start offset (always ≤ selectionEnd). */
+  /** Normalized selection start offset (always ≤ `selectionEnd`). */
   readonly selectionStart: number;
-  /** Normalized selection end offset (always ≥ selectionStart). Equals selectionStart when the cursor is collapsed. */
+
+  /** Normalized selection end offset (always ≥ `selectionStart`). Equals `selectionStart` when the cursor is collapsed. */
   readonly selectionEnd: number;
 
   /**
-   * Returns the bounding rect of the cursor (caret) in viewport coordinates,
-   * or `null` if the editor is not focused or the cursor is outside the editor.
+   * Returns the bounding rect of the cursor (caret) in viewport coordinates.
+   *
    * Useful for anchoring autocomplete popups or hover tooltips to the cursor.
+   *
+   * @returns the cursor bounding rect, or `null` if the editor is not focused
+   *   or the cursor is outside the editor
    */
   getCursorRect(): DOMRect | null;
 
   /**
-   * Returns the word at the current cursor position, or `null` if the cursor is
-   * not on a word character (`\w` — alphanumeric + underscore).
+   * Returns the word boundaries at the current cursor position.
+   *
+   * @returns the word and its `[from, to)` offsets, or `null` if the cursor is
+   *   not on a word character (`\w` — alphanumeric + underscore)
    */
   getWordAtCursor(): { word: string; from: number; to: number } | null;
 
   /**
    * Subscribe to cursor/selection changes. The callback fires on every cursor
    * move (arrow keys, mouse clicks, selection changes) while the editor is focused.
-   * Returns an unsubscribe function — call it in your plugin's `destroy()`.
+   *
+   * @returns an unsubscribe function. Call this in `destroy()`
    *
    * @example
    * ```ts
@@ -159,15 +214,31 @@ export interface RCTextareaPluginAPI {
    * });
    * ```
    */
-  onCursorMove(
-    callback: (selectionStart: number, selectionEnd: number) => void,
-  ): () => void;
+  onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void;
 
+  /**
+   * Add a single decoration to the plugin's decoration set.
+   *
+   * Use the returned id with `removeDecoration` to remove it individually.
+   *
+   * @returns the assigned `id`, used to remove or look up the decoration later
+   */
   addDecoration(d: DecorationInput): string;
+
+  /** Remove a previously added decoration by its id. */
   removeDecoration(id: string): void;
+
+  /** Remove all decorations set by this plugin. */
   clearDecorations(): void;
+
+  /**
+   * Replace the full decoration set with `decorations`.
+   */
   setDecorations(decorations: DecorationInput[]): void;
-  /** Returns the decorations this plugin has currently set, in insertion order. */
+
+  /**
+   * @returns the decorations this plugin has currently set, in insertion order
+   */
   getDecorations(): readonly Decoration[];
 
   /** Trigger a render pass outside of normal text input events. */
@@ -176,13 +247,10 @@ export interface RCTextareaPluginAPI {
   /**
    * Inject a stylesheet into the component's shadow root via `adoptedStyleSheets`.
    *
-   * Pass a `CSSStyleSheet` object to share an already-constructed sheet (zero
-   * extra parsing cost), or a raw CSS text string to compile and adopt a new one.
-   * Returns the adopted `CSSStyleSheet` so it can be passed to `removeStyleSheet`
-   * if explicit removal is needed before the plugin is unmounted.
+   * Adopted sheets are automatically removed when the plugin is unmounted.
    *
-   * Adopted sheets are **automatically removed** when the plugin is unmounted
-   * (via `removePlugin()` or `usePlugin()` with a replacement).
+   * @returns the adopted `CSSStyleSheet`, which can be passed to `removeStyleSheet`
+   *   if explicit removal is needed before unmount
    *
    * @example CSS text string
    * ```ts
@@ -210,8 +278,6 @@ export interface RCTextareaPluginAPI {
 
   /**
    * Remove a previously adopted stylesheet from the shadow root.
-   * The sheet does not need to have been adopted via `adoptStyleSheet` —
-   * any sheet already present in `adoptedStyleSheets` may be removed.
    */
   removeStyleSheet(sheet: CSSStyleSheet): void;
 
@@ -223,14 +289,20 @@ export interface RCTextareaPluginAPI {
    * them into `MarkDecoration` objects covering the corresponding character
    * ranges of the plain text value.
    *
+   * @example
    * ```ts
    * editor.usePlugin({
    *   highlight(value, api) {
    *     const html = hljs.highlight(value, { language: 'js' }).value;
-   *     api.setDecorations(api.decorationsFromHtml(html));
+   *     api.setDecorations(api.parseDecorationsFromHtml(html));
    *   },
    * });
    * ```
+   */
+  parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
+
+  /**
+   * @deprecated Use `parseDecorationsFromHtml` instead.
    */
   decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
 
@@ -242,6 +314,7 @@ export interface RCTextareaPluginAPI {
    * (same coordinate space as `MarkDecoration.from` / `MarkDecoration.to`).
    * Types not present in `themeMap` are silently ignored.
    *
+   * @example
    * ```ts
    * editor.usePlugin({
    *   update(value, api) {
@@ -262,14 +335,17 @@ export interface RCTextareaPluginAPI {
 
   /**
    * Insert `text` at the current cursor position, replacing any active selection.
+   *
    * Equivalent to typing the text with the keyboard.
    */
   insertText(text: string): void;
 
   /**
    * Wrap the current selection with `prefix` and `suffix`.
+   *
    * No-op when the selection is collapsed (no text selected).
    *
+   * @example
    * ```ts
    * api.wrapSelection('**', '**'); // bold
    * api.wrapSelection('`', '`');   // inline code
@@ -279,6 +355,7 @@ export interface RCTextareaPluginAPI {
 
   /**
    * Replace the current selection with `text`.
+   *
    * When the selection is collapsed this is equivalent to `insertText`.
    */
   replaceSelection(text: string): void;
@@ -293,12 +370,14 @@ export interface RCTextareaPluginAPI {
  * ```ts
  * import hljs from 'highlight.js/lib/core';
  * import javascript from 'highlight.js/lib/languages/javascript';
+ *
  * hljs.registerLanguage('javascript', javascript);
  *
  * editor.usePlugin({
  *   highlight(value, api) {
  *     const html = hljs.highlight(value, { language: 'javascript' }).value;
- *     api.setDecorations(api.decorationsFromHtml(html));
+ *
+ *     api.setDecorations(api.parseDecorationsFromHtml(html));
  *   },
  * });
  * ```
@@ -308,6 +387,7 @@ export interface RCTextareaPluginAPI {
  * editor.usePlugin({
  *   async update(value, api) {
  *     const decs = await myParser.decorate(value);
+ *
  *     api.setDecorations(decs);
  *   },
  * });
@@ -316,26 +396,34 @@ export interface RCTextareaPluginAPI {
 export interface RCTextareaPlugin {
   /** Called when the plugin is registered. Store `api` here for external use. */
   mount?(api: RCTextareaPluginAPI): void;
+
   /** Called when the plugin is replaced or the element disconnects. */
   destroy?(): void;
+
   /**
    * Display-layer value transform — called before `update`/`highlight` in
-   * read-only mode. Return a non-null string to substitute it as the rendered
+   * read-only mode.
+   *
+   * Return a non-null string to substitute it as the rendered
    * text passed to all subsequent hooks and to the document builder.
-   * The underlying `element.value` is **never** modified; only the display
+   * The underlying `element.value` is never modified; only the display
    * layer sees the transformed text.
+   *
    * Return `null` or `void` to leave the value unchanged.
    */
   transform?(value: string, api: RCTextareaPluginAPI): string | null | void;
+
   /**
-   * Imperative decoration API — called on each value change.
-   * Use `api.setDecorations()` to apply decorations.
+   * Imperative decoration API
    */
   update?(value: string, api: RCTextareaPluginAPI): void | Promise<void>;
+
   /**
-   * HTML-based compat — called on each value change.
+   * HTML-based compat
+   *
    * Return an HTML string (e.g. from hljs/prism); it will be parsed via
-   * `api.decorationsFromHtml()` and applied as mark decorations.
+   * `api.parseDecorationsFromHtml()` and applied as mark decorations.
+   *
    * Return `null` or `void` to skip.
    */
   highlight?(
@@ -344,10 +432,9 @@ export interface RCTextareaPlugin {
   ): string | null | void | Promise<string | null | void>;
 }
 
-// ── Pattern types ─────────────────────────────────────────────────────────────
-
 /**
  * The subset of `MarkDecoration` properties used for styling.
+ *
  * Used in `TextPattern.captureGroups` to assign a style to each named capture group.
  */
 export type MarkDecorationStyle = Pick<
@@ -363,26 +450,51 @@ export type MarkDecorationStyle = Pick<
 >;
 
 export interface TextPattern {
+  /** Unique identifier used to register and unregister the pattern. */
   id: string;
+
+  /** Regular expression matched against the full editor value. Use the `g` flag for multiple matches. */
   pattern: RegExp;
+
+  /** Space-separated CSS class name(s) applied to matched ranges. */
   className?: string;
+
+  /** Renders matched ranges bold (`font-weight: bold`). */
   bold?: boolean;
+
+  /** Renders matched ranges italic (`font-style: italic`). */
   italic?: boolean;
+
+  /** Text color for matched ranges. Accepts any CSS color value. */
   color?: string;
+
+  /** Background color for matched ranges. Accepts any CSS color value. */
   background?: string;
+
+  /** Underline style for matched ranges (`text-decoration-style`). */
   underline?: 'solid' | 'wavy' | 'dotted' | 'dashed';
+
+  /** Underline color for matched ranges (`text-decoration-color`). Defaults to the text `color` when omitted. */
   underlineColor?: string;
+
+  /** Additional HTML attributes set directly on matched-range spans. */
   attributes?: Record<string, string>;
+
   /**
-   * Factory called for each regex match. Return a partial LineDecoration
-   * (message, messageClassName, className, attributes) to add an error-lens
-   * annotation on the matched line, or `null` to skip.
+   * Factory called for each regex match.
+   *
+   * Return a partial LineDecoration
+   * (message, messageClassName, className, attributes) to add a diagnostic
+   * message on the matched line, or `null` to skip.
    */
   createLineDecoration?: (
     match: RegExpMatchArray,
   ) => Omit<LineDecoration, 'id' | 'type' | 'line'> | null;
+
   /**
-   * Per-named-capture-group decoration styles. When provided, one
+   * Decoration styles for each named capture group in the pattern.
+   *
+   * When provided, one
    * `MarkDecoration` is emitted per captured group (unmatched optional groups
    * are skipped) instead of one decoration for the whole match.
    *
@@ -404,13 +516,13 @@ export interface TextPattern {
   captureGroups?: Record<string, MarkDecorationStyle>;
 }
 
-// ── Line decorator types ──────────────────────────────────────────────────────
-
 /**
  * A simplified plugin variant for per-line decoration.
  *
- * Return mark/line decorations with offsets **relative to the start of the
- * line** — `createLineDecoratorPlugin()` converts them to absolute document
+ * Return mark/line decorations with offsets relative to the start of the
+ * line.
+ *
+ * `createLineDecoratorPlugin()` converts them to absolute document
  * offsets automatically, so no `lineStart` bookkeeping is needed.
  *
  * @example
@@ -420,10 +532,15 @@ export interface TextPattern {
  *   decorateLine(line) {
  *     const results: Omit<MarkDecoration | LineDecoration, 'id'>[] = [];
  *     const m = /\bfunction\b/.exec(line);
- *     if (m) results.push({ type: 'mark', from: m.index, to: m.index + m[0].length, className: 'kw' });
+ *
+ *     if (m) {
+ *       results.push({ type: 'mark', from: m.index, to: m.index + m[0].length, className: 'kw' });
+ *     }
+ *
  *     return results;
  *   },
  * };
+ *
  * editor.usePlugin(createLineDecoratorPlugin(myDecorator));
  * ```
  */
@@ -439,6 +556,7 @@ export interface LineDecoratorPlugin {
     line: string,
     lineIndex: number,
   ): (Omit<MarkDecoration, 'id'> | Omit<LineDecoration, 'id'>)[];
+
   /** CSS text to inject into the component's shadow root once on mount. */
   styles?: string;
 }

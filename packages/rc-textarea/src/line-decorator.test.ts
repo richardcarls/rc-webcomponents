@@ -1,4 +1,5 @@
 import { test, expect, describe, vi } from 'vitest';
+
 import { createLineDecoratorPlugin } from './line-decorator.ts';
 import type { LineDecoratorPlugin, DecorationInput, RCTextareaPluginAPI } from './types.ts';
 
@@ -20,6 +21,7 @@ function makeApi(overrides: Partial<RCTextareaPluginAPI> = {}): RCTextareaPlugin
     scheduleUpdate: () => {},
     adoptStyleSheet: () => new CSSStyleSheet(),
     removeStyleSheet: () => {},
+    parseDecorationsFromHtml: () => [],
     decorationsFromHtml: () => [],
     decorationsFromTokens: () => [],
     insertText: () => {},
@@ -30,20 +32,17 @@ function makeApi(overrides: Partial<RCTextareaPluginAPI> = {}): RCTextareaPlugin
 }
 
 describe('createLineDecoratorPlugin', () => {
-  // ── offset conversion ─────────────────────────────────────────────────
-
   test('line-relative mark offsets are converted to absolute document offsets', () => {
     const received: DecorationInput[][] = [];
     const api = makeApi({ setDecorations: (d) => received.push(d) });
 
     const decorator: LineDecoratorPlugin = {
       decorateLine: (line) =>
-        line === 'hello'
-          ? [{ type: 'mark', from: 1, to: 4, className: 'a' }]
-          : [],
+        line === 'hello' ? [{ type: 'mark', from: 1, to: 4, className: 'a' }] : [],
     };
 
     const plugin = createLineDecoratorPlugin(decorator);
+
     plugin.mount!(api);
     plugin.update!('hello\nworld', api);
 
@@ -58,12 +57,11 @@ describe('createLineDecoratorPlugin', () => {
 
     const decorator: LineDecoratorPlugin = {
       decorateLine: (line) =>
-        line === 'world'
-          ? [{ type: 'mark', from: 0, to: 5, className: 'b' }]
-          : [],
+        line === 'world' ? [{ type: 'mark', from: 0, to: 5, className: 'b' }] : [],
     };
 
     const plugin = createLineDecoratorPlugin(decorator);
+
     plugin.mount!(api);
     plugin.update!('hello\nworld', api);
 
@@ -73,10 +71,14 @@ describe('createLineDecoratorPlugin', () => {
   test('lineIndex is 0-based and passed correctly', () => {
     const indices: number[] = [];
     const decorator: LineDecoratorPlugin = {
-      decorateLine: (_line, i) => { indices.push(i); return []; },
+      decorateLine: (_line, i) => {
+        indices.push(i);
+        return [];
+      },
     };
 
     const plugin = createLineDecoratorPlugin(decorator);
+
     plugin.mount!(makeApi());
     plugin.update!('a\nb\nc', makeApi());
 
@@ -89,12 +91,11 @@ describe('createLineDecoratorPlugin', () => {
 
     const decorator: LineDecoratorPlugin = {
       decorateLine: (_line, i) =>
-        i === 1
-          ? [{ type: 'line', line: 2, message: 'error here', className: 'err' }]
-          : [],
+        i === 1 ? [{ type: 'line', line: 2, message: 'error here', className: 'err' }] : [],
     };
 
     const plugin = createLineDecoratorPlugin(decorator);
+
     plugin.mount!(api);
     plugin.update!('ok\nbad', api);
 
@@ -102,11 +103,14 @@ describe('createLineDecoratorPlugin', () => {
     expect(received[0][0]).toMatchObject({ type: 'line', line: 2, message: 'error here' });
   });
 
-  // ── CSS injection ─────────────────────────────────────────────────────
-
   test('styles are adopted on mount when provided', () => {
     const adopted: (CSSStyleSheet | string)[] = [];
-    const api = makeApi({ adoptStyleSheet: (s) => { adopted.push(s); return new CSSStyleSheet(); } });
+    const api = makeApi({
+      adoptStyleSheet: (s) => {
+        adopted.push(s);
+        return new CSSStyleSheet();
+      },
+    });
 
     const decorator: LineDecoratorPlugin = {
       styles: '.foo { color: red; }',
@@ -114,19 +118,24 @@ describe('createLineDecoratorPlugin', () => {
     };
 
     createLineDecoratorPlugin(decorator).mount!(api);
+
     expect(adopted).toHaveLength(1);
     expect(adopted[0]).toBe('.foo { color: red; }');
   });
 
   test('no adoptStyleSheet call when styles is undefined', () => {
     const adopted: unknown[] = [];
-    const api = makeApi({ adoptStyleSheet: (s) => { adopted.push(s); return new CSSStyleSheet(); } });
+    const api = makeApi({
+      adoptStyleSheet: (s) => {
+        adopted.push(s);
+        return new CSSStyleSheet();
+      },
+    });
 
     createLineDecoratorPlugin({ decorateLine: () => [] }).mount!(api);
+
     expect(adopted).toHaveLength(0);
   });
-
-  // ── extraDecorations ──────────────────────────────────────────────────
 
   test('extraDecorations are appended after line decorations', () => {
     const received: DecorationInput[][] = [];
@@ -145,20 +154,23 @@ describe('createLineDecoratorPlugin', () => {
     expect(received[0][1]).toMatchObject({ type: 'line', message: 'extra' });
   });
 
-  // ── watch / subscriptions ────────────────────────────────────────────
-
   test('watch subscriber is called on mount with a scheduleUpdate callback', () => {
     const scheduled: number[] = [];
     const api = makeApi({ scheduleUpdate: () => scheduled.push(1) });
 
     let storedCb: (() => void) | null = null;
-    const subscribe = vi.fn((cb: () => void) => { storedCb = cb; });
+    const subscribe = vi.fn((cb: () => void) => {
+      storedCb = cb;
+    });
 
     const plugin = createLineDecoratorPlugin({ decorateLine: () => [] }, { watch: [subscribe] });
+
     plugin.mount!(api);
 
     expect(subscribe).toHaveBeenCalledOnce();
+
     storedCb!();
+
     expect(scheduled).toHaveLength(1);
   });
 
@@ -167,6 +179,7 @@ describe('createLineDecoratorPlugin', () => {
     const subscribe = (_cb: () => void) => cleanup;
 
     const plugin = createLineDecoratorPlugin({ decorateLine: () => [] }, { watch: [subscribe] });
+
     plugin.mount!(makeApi());
     plugin.destroy!();
 
@@ -178,6 +191,7 @@ describe('createLineDecoratorPlugin', () => {
     const subscribe = (_cb: () => void) => cleanup;
 
     const plugin = createLineDecoratorPlugin({ decorateLine: () => [] }, { watch: [subscribe] });
+
     plugin.mount!(makeApi());
     plugin.destroy!();
     plugin.destroy!();
@@ -187,9 +201,10 @@ describe('createLineDecoratorPlugin', () => {
 
   test('multiple watch subscribers are all set up and cleaned up', () => {
     const cleanups = [vi.fn(), vi.fn()];
-    const subs = cleanups.map(c => (_cb: () => void) => c);
+    const subs = cleanups.map((c) => (_cb: () => void) => c);
 
     const plugin = createLineDecoratorPlugin({ decorateLine: () => [] }, { watch: subs });
+
     plugin.mount!(makeApi());
     plugin.destroy!();
 
