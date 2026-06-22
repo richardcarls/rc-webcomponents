@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { ScrollObserverController } from '@rcarls/rc-common';
+import { ScrollObserverController, findNearestScrollAncestor } from '@rcarls/rc-common';
 
 import fabStyles from './rc-fab.styles.js';
 
@@ -114,22 +114,12 @@ export class RCFab extends LitElement {
     const threshold = this._getThreshold();
 
     this._scrollObs = new ScrollObserverController(this, {
-      target: () => this._findScrollTarget(),
+      target: () => findNearestScrollAncestor(this),
       threshold,
       onScroll: (scrollTop) => {
         this.toggleAttribute('scroll-below-threshold', scrollTop < threshold);
       },
     });
-  }
-
-  private _findScrollTarget(): Element {
-    let el: Element | null = this.parentElement;
-    while (el && el !== document.documentElement) {
-      const { overflow, overflowY } = getComputedStyle(el);
-      if (/auto|scroll/.test(overflowY) || /auto|scroll/.test(overflow)) return el;
-      el = el.parentElement;
-    }
-    return document.scrollingElement ?? document.documentElement;
   }
 
   private _getThreshold(): number {
