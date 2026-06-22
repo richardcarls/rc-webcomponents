@@ -1,12 +1,15 @@
 # `@rcarls/rc-fab`
 
-A scroll-triggered floating button shell, designed first for "back to top" and
-adaptable to any fixed-position action: sticky CTAs, chat launchers,
-view-transition morphs, and Material Design FABs.
+A sticky-positioned button over page content with scroll behaviors, adapted from
+the [Material Design FAB component](https://m3.material.io/components/floating-action-button/overview).
 
-Place a native `<button>` as the only direct child. The component positions it
-in a fixed viewport corner and applies elevation styling. The button's own text
-content or `aria-label` is its accessible name.
+Use this for "back to top", sticky CTAs, chat launchers, and of course as FABs in your
+Material Design website or PWA.
+
+Place a native `<button>` as the direct child. The button's own accessible name (text
+content or `aria-label`) becomes the FAB's accessible name.
+
+Icons go inside the button alongside or instead of visible text.
 
 ## Installation
 
@@ -68,15 +71,15 @@ import '@rcarls/rc-fab/define';
 ## Scroll-reveal behaviour
 
 `scroll-reveal` uses CSS scroll-driven animations (`animation-timeline: scroll()`).
-In browsers that do not yet support this API, a passive scroll listener (backed by
-`ScrollObserverController` from `@rcarls/rc-common`) provides equivalent behaviour.
+
+In browsers that do not yet support this API, a passive scroll listener provides
+equivalent behaviour.
+
 The `[scroll-below-threshold]` attribute is toggled on the host and CSS transitions
 handle the show/hide. The FAB is always visible in any remaining edge cases.
 
-The `50%` point in the reveal animation lifts `visibility: hidden` early so
-keyboard users can reach the button as it starts fading in. When the button
-receives `focus-visible` while below the threshold the animation is overridden
-and the FAB is shown fully.
+When the button receives `focus-visible` while below the threshold the animation is
+overridden and the FAB is shown fully.
 
 ## Accessibility
 
@@ -86,3 +89,5 @@ and the FAB is shown fully.
 - With `scroll-reveal`, the FAB is removed from the accessibility tree and tab
   order while hidden, matching the expectation that invisible controls are
   unreachable.
+- The `50%` point in the reveal animation lifts `visibility: hidden` early so
+  keyboard users can reach the button as it starts fading in.

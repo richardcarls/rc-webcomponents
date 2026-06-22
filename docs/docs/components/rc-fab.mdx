@@ -8,13 +8,16 @@ import { FabDemo } from '@site/src/components/ComponentDemos';
 
 # rc-fab
 
-A scroll-triggered floating button shell, designed first for **back to top** and adaptable to any
-fixed-position action: sticky CTAs, chat launchers, view-transition morphs, and Material Design
-FABs.
+A sticky-positioned button over page content with scroll behaviors, adapted from
+the [Material Design FAB component](https://m3.material.io/components/floating-action-button/overview).
 
-Place a native `<button>` as the only direct child. The component positions it in a fixed viewport
-corner and applies elevation styling. The button's own text content or `aria-label` is its
-accessible name.
+Use this for "back to top", sticky CTAs, chat launchers, and of course as FABs in your
+Material Design website or PWA.
+
+Place a native `<button>` as the direct child. The button's own accessible name (text
+content or `aria-label`) becomes the FAB's accessible name.
+
+Icons go inside the button alongside or instead of visible text.
 
 <AtAGlance
   packageName="@rcarls/rc-fab"
@@ -37,7 +40,7 @@ import '@rcarls/rc-fab/define';
 
 ## Live demo
 
-Scroll the demo canvas to see the back-to-top FAB (↑, bottom-right) reveal after 100 px. The
+Scroll the demo canvas to see the back-to-top FAB reveal after 100 px. The
 extended FAB (bottom-left) is always visible. Both use `position: absolute` inside the demo
 container; real-world use relies on `position: fixed` anchored to the viewport corner.
 
@@ -45,17 +48,19 @@ container; real-world use relies on `position: fixed` anchored to the viewport c
 
 ## Theming
 
-The default demo mode shows the component without a package theme. Use the shared preview controls
-on this page to compare inherited, light, and dark color schemes or to apply the optional Material
-theme inside the demo frames.
+`rc-fab` is headless, with a default pill shape (circular with just an icon), and uses
+CSS system colors by default.
+
+Apply `rc-theme-material` to acheive the Material Design FAB style, or customize with
+CSS custom properties for shape, size, colors, and shadow.
 
 ## API
 
 <ApiTable tag="rc-fab" />
 
-## Patterns & affordances
+## Cookbook
 
-### Back to top (primary use case)
+### Back to top
 
 Add the `scroll-reveal` attribute to hide the FAB until the user has scrolled past
 `--rc-fab-scroll-threshold` (default 300 px). Wire the button's click to `scrollTo`.
@@ -68,10 +73,6 @@ Add the `scroll-reveal` attribute to hide the FAB until the user has scrolled pa
   </button>
 </rc-fab>
 ```
-
-`scroll-reveal` uses CSS scroll-driven animations (`animation-timeline: scroll()`). In browsers
-that do not support this API the FAB is always visible — no JavaScript or polyfills are needed for
-the fallback.
 
 Change the threshold or fade window with CSS:
 
@@ -194,7 +195,7 @@ No JavaScript needed — enable cross-document transitions in CSS:
 }
 ```
 
-### FAB position change on desktop (navigation rail pattern)
+### FAB position change on desktop (Material Design navigation rail pattern)
 
 Use a responsive media query to move the FAB when a navigation rail is present.
 Pair with `view-transition-name` for an animated relocation.

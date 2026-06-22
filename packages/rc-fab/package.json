@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "A \"floating action button (FAB)\" implementation, adapted from Material Design 3.",
+  "description": "A sticky-positioned button over page content with scroll behaviors, adapted from the Material Design FAB component.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
