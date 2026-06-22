@@ -2,6 +2,10 @@ import { css } from 'lit';
 
 export const fabStyles = css`
   :host {
+    position: fixed;
+    inset-block-end: var(--rc-fab-inset-block, 1.5rem);
+    inset-inline-end: var(--rc-fab-inset-inline, 1.5rem);
+    z-index: var(--rc-fab-z-index, 10);
     display: inline-flex;
   }
 
@@ -9,7 +13,24 @@ export const fabStyles = css`
     display: none;
   }
 
-  button {
+  :host([position='bottom-start']) {
+    inset-inline-end: unset;
+    inset-inline-start: var(--rc-fab-inset-inline, 1.5rem);
+  }
+
+  :host([position='top-end']) {
+    inset-block-end: unset;
+    inset-block-start: var(--rc-fab-inset-block, 1.5rem);
+  }
+
+  :host([position='top-start']) {
+    inset-block-end: unset;
+    inset-block-start: var(--rc-fab-inset-block, 1.5rem);
+    inset-inline-end: unset;
+    inset-inline-start: var(--rc-fab-inset-inline, 1.5rem);
+  }
+
+  ::slotted(button) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -20,12 +41,12 @@ export const fabStyles = css`
     padding-block: 0;
     padding-inline: var(--rc-fab-padding-inline, 1rem);
 
-    background: var(--rc-fab-bg, Canvas);
-    color: var(--rc-fab-color, CanvasText);
+    background: var(--rc-fab-bg, ButtonFace);
+    color: var(--rc-fab-color, ButtonText);
 
     border: none;
-    border-radius: var(--rc-fab-radius, 1rem);
-    box-shadow: var(--rc-fab-shadow, 0 3px 8px rgb(0 0 0 / 0.3));
+    border-radius: var(--rc-fab-radius, 0.25rem);
+    box-shadow: var(--rc-fab-shadow, none);
 
     font-family: var(--rc-fab-font-family, inherit);
     font-size: var(--rc-fab-font-size, 0.875rem);
@@ -38,46 +59,27 @@ export const fabStyles = css`
       background var(--rc-fab-transition-duration, 200ms) ease,
       box-shadow var(--rc-fab-transition-duration, 200ms) ease,
       transform var(--rc-fab-transition-duration, 200ms) ease;
-
-    &:hover {
-      background: var(--rc-fab-bg-hover, var(--rc-fab-bg, Canvas));
-      box-shadow: var(--rc-fab-shadow-hover, 0 6px 16px rgb(0 0 0 / 0.3));
-    }
-
-    &:active {
-      box-shadow: var(--rc-fab-shadow-active, 0 2px 4px rgb(0 0 0 / 0.3));
-      transform: scale(0.96);
-    }
-
-    &:focus-visible {
-      outline: var(--rc-fab-focus-ring, 2px solid currentColor);
-      outline-offset: var(--rc-fab-focus-ring-offset, 2px);
-    }
-
-    &:disabled {
-      opacity: 0.38;
-      pointer-events: none;
-      box-shadow: none;
-    }
   }
 
-  /* Regular variant: icon-only, square-ish with equal padding */
-  :host([variant='regular']) button {
-    padding-inline: 0;
+  :host(:has(button:hover)) ::slotted(button) {
+    background: var(--rc-fab-bg-hover, var(--rc-fab-bg, ButtonFace));
+    box-shadow: var(--rc-fab-shadow-hover, var(--rc-fab-shadow, none));
   }
 
-  #label {
-    display: none;
+  :host(:has(button:active)) ::slotted(button) {
+    box-shadow: var(--rc-fab-shadow-active, none);
+    transform: scale(0.96);
   }
 
-  /* Extended variant: icon + label */
-  :host([variant='extended']) #label {
-    display: inline;
+  :host(:has(button:focus-visible)) ::slotted(button) {
+    outline: var(--rc-fab-focus-ring, 2px solid currentColor);
+    outline-offset: var(--rc-fab-focus-ring-offset, 2px);
   }
 
-  slot[name='icon']::slotted(*) {
-    font-size: var(--rc-fab-icon-size, 1.5rem);
-    flex-shrink: 0;
+  :host(:has(button:disabled)) ::slotted(button) {
+    opacity: 0.38;
+    pointer-events: none;
+    box-shadow: none;
   }
 `;
 
