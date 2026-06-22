@@ -53,6 +53,21 @@ short and tell the tool to read `AGENTS.md` before project work.
   `ReactiveController` classes.
 - Each package builds ESM, UMD, and declarations. Keep package exports and
   `sideEffects: false` tree-shaking behavior intact.
+- In `firstUpdated()`, guard required native child checks behind
+  `import.meta.env.DEV` and emit a `console.warn` when the expected child is
+  absent. Use `:scope > <tagname>` to scope the query to direct children only.
+  This warns authors at development time without shipping any check in production.
+
+  ```ts
+  protected override firstUpdated(): void {
+    if (import.meta.env.DEV && !this.querySelector(':scope > button')) {
+      console.warn(
+        '[rc-fab] No direct child <button> found. Place a native <button> inside <rc-fab>.',
+        this,
+      );
+    }
+  }
+  ```
 
 ## Stateful APIs
 
@@ -135,6 +150,10 @@ yarn build
 yarn test
 yarn validate:packages
 ```
+
+New package `test:browser` scripts must include `--run` (`vitest --run`). Without it
+Vitest defaults to watch mode on Linux and the root `test` script hangs waiting for
+each workspace to exit.
 
 The root `build` script runs workspaces topologically. For targeted package work,
 rebuild changed dependencies before running tests in packages that consume them.
