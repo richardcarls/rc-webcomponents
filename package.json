@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@rcarls/workspace-root",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git"
@@ -27,7 +27,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "ci": "yarn build && yarn validate:packages && yarn test:release-validation && yarn test",
-    "yalc:publish": "yarn workspaces foreach --all --topological --exclude '@rcarls/rc-docs' run yalc:publish",
     "version:packages": "changeset version",
     "release": "yarn validate:release && yarn ci && changeset publish",
     "prepare": "husky"
