@@ -8,13 +8,15 @@ import { FabDemo } from '@site/src/components/ComponentDemos';
 
 # rc-fab
 
-A floating action button with regular and extended variants. Consumers own icons, labels, and placement.
+A Floating Action Button shell that positions a consumer-provided `<button>` in a fixed viewport
+corner and supplies elevation styling. The button's own text content or `aria-label` is its
+accessible name — no separate label property is needed.
 
 <AtAGlance
   packageName="@rcarls/rc-fab"
   tag="rc-fab"
-  native="No required native child"
-  state="Stateless button-like action"
+  native="Direct-child <button> element"
+  state="Stateless button wrapper"
   events={[]}
   related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
 />

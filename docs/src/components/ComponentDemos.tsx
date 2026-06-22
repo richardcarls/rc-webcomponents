@@ -180,13 +180,18 @@ export function DisclosureDemo() {
 export function FabDemo() {
   return (
     <DemoFrame>
-      <div className="demo-row">
-        <rc-fab aria-label="Create">
-          <span className="material-symbols-outlined" aria-hidden="true">add</span>
+      {/* will-change:transform creates a containing block for position:fixed children */}
+      <div style={{ position: 'relative', minBlockSize: '10rem', willChange: 'transform' }}>
+        <rc-fab>
+          <button type="button" aria-label="Create">
+            <span className="material-symbols-outlined" aria-hidden="true">add</span>
+          </button>
         </rc-fab>
-        <rc-fab extended>
-          <span className="material-symbols-outlined" aria-hidden="true">edit</span>
-          <span>Compose</span>
+        <rc-fab position="bottom-start">
+          <button type="button">
+            <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+            Compose
+          </button>
         </rc-fab>
       </div>
     </DemoFrame>
