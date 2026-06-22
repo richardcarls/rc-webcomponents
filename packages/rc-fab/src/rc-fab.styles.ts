@@ -109,8 +109,7 @@ export const fabStyles = css`
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: var(--rc-fab-scroll-timeline);
-      animation-range:
-        calc(var(--rc-fab-scroll-threshold, 300px) - 100px)
+      animation-range: calc(var(--rc-fab-scroll-threshold, 300px) - 100px)
         var(--rc-fab-scroll-threshold, 300px);
     }
 
@@ -123,9 +122,7 @@ export const fabStyles = css`
 
     @media (prefers-reduced-motion: reduce) {
       :host([scroll-reveal]) {
-        animation-range:
-          var(--rc-fab-scroll-threshold, 300px)
-          var(--rc-fab-scroll-threshold, 300px);
+        animation-range: var(--rc-fab-scroll-threshold, 300px) var(--rc-fab-scroll-threshold, 300px);
       }
     }
   }
@@ -138,14 +135,18 @@ export const fabStyles = css`
   @supports not (animation-timeline: scroll()) {
     /* visible state: visibility snaps immediately, opacity fades in */
     :host([scroll-reveal]) {
-      transition: opacity 200ms linear, visibility 0s linear;
+      transition:
+        opacity 200ms linear,
+        visibility 0s linear;
     }
 
     /* hidden state: opacity fades first, visibility snaps off after delay */
     :host([scroll-reveal][scroll-below-threshold]) {
       opacity: 0;
       visibility: hidden;
-      transition: opacity 200ms linear, visibility 0s linear 200ms;
+      transition:
+        opacity 200ms linear,
+        visibility 0s linear 200ms;
     }
 
     /* Keyboard escape hatch */

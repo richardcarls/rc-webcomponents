@@ -13,30 +13,36 @@ declare global {
 }
 
 /**
- * A scroll-triggered floating button shell, designed first for "back to top"
- * and adaptable to any fixed-position action: sticky CTAs, chat launchers,
- * view-transition morphs, and Material Design FABs.
+ * A sticky-positioned button on top of the page content with scroll behaviors.
+ *
+ * Adapted from the Material Design FAB component, use this for "back to top",
+ * sticky CTAs, chat launchers, and of course as FABs in your Material Design PWA.
  *
  * Place a native `<button>` as the direct child. The button's own accessible
- * name — its text content or `aria-label` — becomes the FAB's accessible name.
+ * name (text content or `aria-label`) becomes the FAB's accessible name.
+ *
  * Icons go inside the button alongside or instead of visible text.
  *
+ * @example Back to top (scroll-triggered)
  * ```html
- * <!-- Back to top (scroll-triggered) -->
  * <rc-fab scroll-reveal>
  *   <button type="button" aria-label="Back to top" onclick="scrollTo({top:0,behavior:'smooth'})">
  *     <span aria-hidden="true">↑</span>
  *   </button>
  * </rc-fab>
+ * ```
  *
- * <!-- Icon-only FAB (always visible) -->
+ * @example Icon-only FAB (always visible)
+ * ```html
  * <rc-fab>
  *   <button type="button" aria-label="Create">
  *     <span class="material-symbols-outlined" aria-hidden="true">add</span>
  *   </button>
  * </rc-fab>
+ * ```
  *
- * <!-- Extended FAB (icon + visible label) -->
+ * @example Extended FAB (icon + visible label)
+ * ```html
  * <rc-fab>
  *   <button type="button">
  *     <span class="material-symbols-outlined" aria-hidden="true">edit</span>
@@ -72,11 +78,13 @@ declare global {
  * @cssprop [--rc-fab-transition-duration=200ms] - Transition speed for hover and active states.
  * @cssprop [--rc-fab-scroll-threshold=300px] - Scroll distance at which the FAB becomes fully visible. Requires the `scroll-reveal` attribute. The JS fallback reads this value once on connect; px units only.
  * @cssprop [--rc-fab-scroll-timeline=scroll(root block)] - The `animation-timeline` value used for scroll-reveal. Override to target a different scroller, e.g. `scroll(nearest block)` for embedded contexts. CSS path only; the JS fallback discovers the nearest scrollable ancestor automatically.
+ *
+ * @see @link { https://material.io/components/buttons-floating-action-button/} for Material Design FAB guidelines.
  */
 export class RCFab extends LitElement {
   static override styles = fabStyles;
 
-  private _scrollObs?: ScrollObserverController;
+  private _scrollCtrl?: ScrollObserverController;
 
   /** Viewport corner where the FAB is anchored. Uses logical inline/block directions. */
   @property({ type: String, reflect: true })
@@ -97,16 +105,18 @@ export class RCFab extends LitElement {
 
   protected override updated(changed: PropertyValues): void {
     super.updated(changed);
-    if (changed.has('scrollReveal') || (this.scrollReveal && !this._scrollObs)) {
+
+    if (changed.has('scrollReveal') || (this.scrollReveal && !this._scrollCtrl)) {
       this._syncScrollFallback();
     }
   }
 
   private _syncScrollFallback(): void {
-    if (this._scrollObs) {
-      this._scrollObs.setOptions({ disabled: true });
-      this.removeController(this._scrollObs);
-      this._scrollObs = undefined;
+    if (this._scrollCtrl) {
+      this._scrollCtrl.setOptions({ disabled: true });
+      this.removeController(this._scrollCtrl);
+      this._scrollCtrl = undefined;
+
       this.removeAttribute('scroll-below-threshold');
     }
 
@@ -114,7 +124,7 @@ export class RCFab extends LitElement {
 
     const threshold = this._getThreshold();
 
-    this._scrollObs = new ScrollObserverController(this, {
+    this._scrollCtrl = new ScrollObserverController(this, {
       target: () => findNearestScrollAncestor(this),
       threshold,
       onScroll: (scrollTop) => {
@@ -126,6 +136,7 @@ export class RCFab extends LitElement {
   private _getThreshold(): number {
     const raw = getComputedStyle(this).getPropertyValue('--rc-fab-scroll-threshold').trim();
     const n = parseFloat(raw);
+
     return Number.isFinite(n) ? n : 300;
   }
 

@@ -96,7 +96,6 @@ test('has no automated accessibility violations', async () => {
   const host = (await screen.getByTestId('host').element()) as RCFab;
 
   await host.updateComplete;
-
   await expectNoA11yViolations(host);
 });
 
@@ -125,7 +124,6 @@ test('scroll-reveal: has no automated accessibility violations', async () => {
   const host = (await screen.getByTestId('host').element()) as RCFab;
 
   await host.updateComplete;
-
   await expectNoA11yViolations(host);
 });
 
