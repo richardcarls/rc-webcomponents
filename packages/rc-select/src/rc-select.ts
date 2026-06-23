@@ -1,17 +1,20 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import {
-  ActiveDescendantController,
-  AnchorController,
-} from '@rcarls/rc-common';
+import { ActiveDescendantController, AnchorController } from '@rcarls/rc-common';
 import type { RCListbox, ListboxOption } from '@rcarls/rc-listbox';
+
 import { selectStyles } from './rc-select.styles.js';
 
 export type RCSelectValue = string | string[];
 
 export interface RCSelectChangeEvent {
+  /** Updated value after the change. */
   value: RCSelectValue;
+
+  /** All selected option values after the change. */
   selectedValues: string[];
+
+  /** All selected option objects after the change. */
   selectedOptions: ListboxOption[];
 }
 
@@ -22,12 +25,12 @@ declare global {
 }
 
 /**
- * A fully-accessible, form-associated select/combobox component.
+ * A progressive enhancement implementation of the single- and multi-select
+ * WAI-ARIA APG Combobox pattern.
  *
  * Wraps a native `<select slot="select">` as the form value reflector while
- * rendering a custom trigger and popup listbox. Follows the WAI-ARIA APG
- * Combobox pattern (select-only variant) with JS-computed popup placement
- * and `aria-activedescendant` for virtual keyboard navigation.
+ * rendering a custom button trigger and popup listbox. Popup placement
+ * and `aria-activedescendant` virtual keyboard navigation are supported.
  *
  * @slot select - Required. A native `<select>` element used for form submission
  *   and as the source of truth for options, multiple, and disabled state.
@@ -64,30 +67,67 @@ declare global {
 export class RCSelect extends LitElement {
   static override styles = selectStyles;
 
-  @property({ type: Boolean, reflect: true }) open = false;
-  @property({ type: Boolean, reflect: true }) multiple = false;
-  @property({ type: Boolean, reflect: true }) disabled = false;
-  @property() placeholder = '';
-  @property() display: 'auto' | 'chips' | 'compact' = 'auto';
+  /** Reflects whether the popup listbox is open. */
+  @property({ type: Boolean, reflect: true })
+  open = false;
 
-  @query('#anchor') protected _$anchor!: HTMLElement;
-  @query('#trigger') protected _$trigger!: HTMLElement;
-  @query('#listbox') protected _$listbox!: RCListbox;
+  /** Enables selection of multiple options simultaneously. */
+  @property({ type: Boolean, reflect: true })
+  multiple = false;
 
-  @state() protected _selectedValues: Set<string> = new Set();
-  @state() private _chipNavIndex = -1;
-  @state() private _options: ListboxOption[] = [];
+  /** Disables the trigger and prevents the popup from opening. */
+  @property({ type: Boolean, reflect: true })
+  disabled = false;
+
+  /** Text shown in the trigger when no value is selected. */
+  @property()
+  placeholder = '';
+
+  /**
+   * Controls how selected values appear in the trigger.
+   *
+   * - `'chips'` — each selected value renders as a removable chip.
+   * - `'compact'` — selected values are summarized as "First, +N more".
+   * - `'auto'` — uses `'chips'` on pointer devices and `'compact'` on touch.
+   */
+  @property()
+  display: 'auto' | 'chips' | 'compact' = 'auto';
+
+  @query('#anchor')
+  protected _$anchor!: HTMLElement;
+
+  @query('#trigger')
+  protected _$trigger!: HTMLElement;
+
+  @query('#listbox')
+  protected _$listbox!: RCListbox;
+
+  @state()
+  protected _selectedValues: Set<string> = new Set();
+
+  @state()
+  protected _chipNavIndex = -1;
+
+  @state()
+  protected _options: ListboxOption[] = [];
 
   protected _selectRef: WeakRef<HTMLSelectElement> | null = null;
-  private _mutationObserver: MutationObserver | null = null;
-  private _defaultValue: RCSelectValue | undefined;
-  private _propertyOptions: ListboxOption[] | undefined;
-  private _value: RCSelectValue | undefined;
-  private _selectionInitialized = false;
-  private _typeAheadBuffer = '';
-  private _typeAheadTimer = 0;
 
-  protected _adc = new ActiveDescendantController(this, {
+  protected _mutationObserver: MutationObserver | null = null;
+
+  private _defaultValue: RCSelectValue | undefined;
+
+  private _propertyOptions: ListboxOption[] | undefined;
+
+  private _value: RCSelectValue | undefined;
+
+  private _selectionInitialized = false;
+
+  protected _typeAheadBuffer = '';
+
+  protected _typeAheadTimer = 0;
+
+  protected _activeDescendantCtrl = new ActiveDescendantController(this, {
     host: () => this._$trigger ?? null,
     items: () => this._$listbox?.navigableItems ?? [],
   });
@@ -102,41 +142,55 @@ export class RCSelect extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
+
     document.addEventListener('click', this._onDocClick, { capture: true });
     document.addEventListener('keydown', this._onDocKeyDown, { capture: true });
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
+
     document.removeEventListener('click', this._onDocClick, { capture: true });
     document.removeEventListener('keydown', this._onDocKeyDown, {
       capture: true,
     });
+
     this._mutationObserver?.disconnect();
   }
 
-  // ── Popup ────────────────────────────────────────────────────────────────────
-
+  /** Opens the popup listbox if not already open or disabled. */
   openPopup() {
-    if (this.open || this.disabled) return;
+    if (this.open || this.disabled) {
+      return;
+    }
+
     this.open = true;
     this._$listbox.showPopover();
     this._anchorCtrl.update();
-    this.dispatchEvent(
-      new CustomEvent('rc-select-open', { bubbles: true, composed: true }),
-    );
+
+    this.dispatchEvent(new CustomEvent('rc-select-open', { bubbles: true, composed: true }));
     this.requestUpdate();
   }
 
+  /**
+   * Closes the popup listbox.
+   *
+   * @param returnFocus - When `true` (default), returns focus to the trigger.
+   */
   closePopup(returnFocus = true) {
-    if (!this.open) return;
+    if (!this.open) {
+      return;
+    }
+
     this.open = false;
     this._$listbox.hidePopover();
-    this._adc.clear();
-    if (returnFocus) this._$trigger?.focus();
-    this.dispatchEvent(
-      new CustomEvent('rc-select-close', { bubbles: true, composed: true }),
-    );
+    this._activeDescendantCtrl.clear();
+
+    if (returnFocus) {
+      this._$trigger?.focus();
+    }
+
+    this.dispatchEvent(new CustomEvent('rc-select-close', { bubbles: true, composed: true }));
   }
 
   /**
@@ -144,9 +198,7 @@ export class RCSelect extends LitElement {
    * emits `rc-select-change`.
    */
   get value(): RCSelectValue {
-    return this.multiple
-      ? this.selectedValues
-      : (this.selectedValues[0] ?? '');
+    return this.multiple ? this.selectedValues : (this.selectedValues[0] ?? '');
   }
 
   set value(value: RCSelectValue | undefined) {
@@ -156,6 +208,7 @@ export class RCSelect extends LitElement {
 
     if (value === undefined) {
       this.requestUpdate('value', oldValue);
+
       return;
     }
 
@@ -204,6 +257,7 @@ export class RCSelect extends LitElement {
     return this._selectedOptionsFor(this.selectedValues);
   }
 
+  /** Applies a normalized array of values as the current selection. */
   protected _applySelection(values: string[]): void {
     const selectedValues = this.multiple ? values : values.slice(0, 1);
 
@@ -213,94 +267,111 @@ export class RCSelect extends LitElement {
     this.requestUpdate();
   }
 
-  // ── Document-level listeners ─────────────────────────────────────────────────
+  protected _onDocClick = (e: MouseEvent) => {
+    if (!this.open) {
+      return;
+    }
 
-  private _onDocClick = (e: MouseEvent) => {
-    if (!this.open) return;
-    if (!e.composedPath().includes(this)) this.closePopup(false);
+    if (!e.composedPath().includes(this)) {
+      this.closePopup(false);
+    }
   };
 
-  private _onDocKeyDown = (e: KeyboardEvent) => {
-    if (!this.open) return;
+  protected _onDocKeyDown = (e: KeyboardEvent) => {
+    if (!this.open) {
+      return;
+    }
+
     if (e.key === 'Escape') {
       e.preventDefault();
+
       this.closePopup();
     }
   };
 
-  // ── Slot: native <select> ────────────────────────────────────────────────────
-
   protected _handleSelectSlotChange(e: Event) {
-    const slot = e.target as HTMLSlotElement;
-    const sel =
-      slot
+    const $slot = e.target as HTMLSlotElement;
+    const $select =
+      $slot
         .assignedElements()
-        .find(
-          (el): el is HTMLSelectElement => el instanceof HTMLSelectElement,
-        ) ?? null;
+        .find(($el): $el is HTMLSelectElement => $el instanceof HTMLSelectElement) ?? null;
 
     // Disconnect synchronously so the old observer stops immediately.
     this._mutationObserver?.disconnect();
     this._mutationObserver = null;
-    this._selectRef = sel ? new WeakRef(sel) : null;
+    this._selectRef = $select ? new WeakRef($select) : null;
 
-    if (!sel) return;
+    if (!$select) {
+      return;
+    }
 
     // Defer all DOM reads/mutations so this handler is instantaneous when
     // slotchange fires synchronously inside a framework reactive update pass
     // (e.g. SolidJS runUpdates on second+ mount, when shadow DOM already exists).
     queueMicrotask(() => {
-      if (!sel.isConnected) return;
-      this.multiple = sel.multiple;
-      this.disabled = sel.disabled;
-      this._syncOptionsFromSelect(sel);
+      if (!$select.isConnected) {
+        return;
+      }
+
+      this.multiple = $select.multiple;
+      this.disabled = $select.disabled;
+      this._syncOptionsFromSelect($select);
+
       this._mutationObserver = new MutationObserver(() => {
-        const s = this._selectRef?.deref();
-        if (!s) return;
+        const $current = this._selectRef?.deref();
 
-        this.multiple = s.multiple;
-        this.disabled = s.disabled;
-
-        if (this._propertyOptions !== undefined) {
-          this._applySelectionFromCurrentSource();
+        if (!$current) {
           return;
         }
 
-        this._syncOptionsFromSelect(s);
+        this.multiple = $current.multiple;
+        this.disabled = $current.disabled;
+
+        if (this._propertyOptions !== undefined) {
+          this._applySelectionFromCurrentSource();
+
+          return;
+        }
+
+        this._syncOptionsFromSelect($current);
       });
-      this._mutationObserver.observe(sel, {
+      this._mutationObserver.observe($select, {
         childList: true,
         subtree: true,
         attributes: true,
       });
-      this._syncAccessibleName(sel);
+
+      this._syncAccessibleName($select);
     });
   }
 
-  protected _syncOptionsFromSelect(sel: HTMLSelectElement) {
+  protected _syncOptionsFromSelect($sel: HTMLSelectElement) {
     if (this._propertyOptions !== undefined) {
       this._syncOptions(this._propertyOptions);
       this._mirrorOptionsToNativeSelect();
       this._applySelectionFromCurrentSource();
+
       return;
     }
 
-    const options = this._optionsFromSelect(sel);
+    const options = this._optionsFromSelect($sel);
 
     this._syncOptions(options);
     this._applySelectionFromCurrentSource();
-    this._syncAccessibleName(sel);
+    this._syncAccessibleName($sel);
   }
 
-  private _applySelectionFromCurrentSource(): void {
+  protected _applySelectionFromCurrentSource(): void {
     if (this._value !== undefined) {
       this._applySelection(this._normalizeValue(this._value));
+
       return;
     }
 
     if (!this._selectionInitialized && this._defaultValue !== undefined) {
       this._selectionInitialized = true;
       this._applySelection(this._normalizeValue(this._defaultValue));
+
       return;
     }
 
@@ -312,73 +383,89 @@ export class RCSelect extends LitElement {
     this._applySelection(selected);
   }
 
-  private _syncOptions(options: ListboxOption[]): void {
+  protected _syncOptions(options: ListboxOption[]): void {
     this._options = [...options];
-    if (this._$listbox) this._$listbox.options = this._options;
+
+    if (this._$listbox) {
+      this._$listbox.options = this._options;
+    }
   }
 
-  private _currentOptions(): ListboxOption[] {
-    if (this._propertyOptions !== undefined) return this._propertyOptions;
+  protected _currentOptions(): ListboxOption[] {
+    if (this._propertyOptions !== undefined) {
+      return this._propertyOptions;
+    }
 
-    const sel = this._selectRef?.deref();
+    const $select = this._selectRef?.deref();
 
-    return sel ? this._optionsFromSelect(sel) : [];
+    return $select ? this._optionsFromSelect($select) : [];
   }
 
-  private _optionsFromSelect(sel: HTMLSelectElement): ListboxOption[] {
+  protected _optionsFromSelect($select: HTMLSelectElement): ListboxOption[] {
     const options: ListboxOption[] = [];
 
-    for (const opt of sel.options) {
-      if (!opt.value) continue;
+    for (const $option of $select.options) {
+      if (!$option.value) {
+        continue;
+      }
 
       options.push({
-        value: opt.value,
-        label: opt.text,
-        disabled: opt.disabled,
+        value: $option.value,
+        label: $option.text,
+        disabled: $option.disabled,
       });
     }
 
     return options;
   }
 
-  private _selectedValuesFromNativeSelect(): string[] {
-    const sel = this._selectRef?.deref();
-    if (!sel) return this.selectedValues;
+  protected _selectedValuesFromNativeSelect(): string[] {
+    const $select = this._selectRef?.deref();
 
-    return Array.from(sel.selectedOptions)
-      .map((opt) => opt.value)
-      .filter(Boolean);
-  }
-
-  private _defaultSelectedValuesFromNativeSelect(): string[] {
-    const sel = this._selectRef?.deref();
-    if (!sel) return this.selectedValues;
-
-    return Array.from(sel.options)
-      .filter((opt) => opt.defaultSelected)
-      .map((opt) => opt.value)
-      .filter(Boolean);
-  }
-
-  private _mirrorOptionsToNativeSelect(): void {
-    const sel = this._selectRef?.deref();
-    if (!sel || this._propertyOptions === undefined) return;
-
-    this._mutationObserver?.disconnect();
-    sel.replaceChildren();
-
-    for (const opt of this._propertyOptions) {
-      const optionEl = document.createElement('option');
-
-      optionEl.value = opt.value;
-      optionEl.text = opt.label;
-      optionEl.disabled = opt.disabled ?? false;
-      optionEl.selected = this._selectedValues.has(opt.value);
-
-      sel.add(optionEl);
+    if (!$select) {
+      return this.selectedValues;
     }
 
-    this._mutationObserver?.observe(sel, {
+    return Array.from($select.selectedOptions)
+      .map(($opt) => $opt.value)
+      .filter(Boolean);
+  }
+
+  protected _defaultSelectedValuesFromNativeSelect(): string[] {
+    const $select = this._selectRef?.deref();
+
+    if (!$select) {
+      return this.selectedValues;
+    }
+
+    return Array.from($select.options)
+      .filter(($option) => $option.defaultSelected)
+      .map(($option) => $option.value)
+      .filter(Boolean);
+  }
+
+  protected _mirrorOptionsToNativeSelect(): void {
+    const $select = this._selectRef?.deref();
+
+    if (!$select || this._propertyOptions === undefined) {
+      return;
+    }
+
+    this._mutationObserver?.disconnect();
+    $select.replaceChildren();
+
+    for (const opt of this._propertyOptions) {
+      const $option = document.createElement('option');
+
+      $option.value = opt.value;
+      $option.text = opt.label;
+      $option.disabled = opt.disabled ?? false;
+      $option.selected = this._selectedValues.has(opt.value);
+
+      $select.add($option);
+    }
+
+    this._mutationObserver?.observe($select, {
       childList: true,
       subtree: true,
       attributes: true,
@@ -396,37 +483,44 @@ export class RCSelect extends LitElement {
 
     this._syncOptions(options);
 
-    const sel = this._selectRef?.deref();
-    if (!sel || Array.from(sel.options).some((opt) => opt.value === option.value)) return;
+    const $select = this._selectRef?.deref();
 
-    const optionEl = document.createElement('option');
+    if (!$select || Array.from($select.options).some(($opt) => $opt.value === option.value)) {
+      return;
+    }
 
-    optionEl.value = option.value;
-    optionEl.text = option.label;
-    optionEl.disabled = option.disabled ?? false;
-    optionEl.selected = this._selectedValues.has(option.value);
+    const $option = document.createElement('option');
 
-    sel.add(optionEl);
+    $option.value = option.value;
+    $option.text = option.label;
+    $option.disabled = option.disabled ?? false;
+    $option.selected = this._selectedValues.has(option.value);
+
+    $select.add($option);
   }
 
-  private _normalizeValue(value: RCSelectValue): string[] {
+  protected _normalizeValue(value: RCSelectValue): string[] {
     return Array.isArray(value) ? value : value ? [value] : [];
   }
 
-  private _syncAccessibleName(sel: HTMLSelectElement): void {
-    if (!this._$trigger) return;
-    if (this._$trigger.hasAttribute('aria-label')) return; // don't clobber explicit
+  protected _syncAccessibleName($sel: HTMLSelectElement): void {
+    if (!this._$trigger) {
+      return;
+    }
 
-    const name =
-      sel.getAttribute('aria-label') ??
-      sel.labels?.[0]?.textContent?.trim() ??
-      null;
+    // Don't clobber an explicit aria-label.
+    if (this._$trigger.hasAttribute('aria-label')) {
+      return;
+    }
 
-    if (name) this._$trigger.setAttribute('aria-label', name);
-    else this._$trigger.removeAttribute('aria-label');
+    const name = $sel.getAttribute('aria-label') ?? $sel.labels?.[0]?.textContent?.trim() ?? null;
+
+    if (name) {
+      this._$trigger.setAttribute('aria-label', name);
+    } else {
+      this._$trigger.removeAttribute('aria-label');
+    }
   }
-
-  // ── Selection ────────────────────────────────────────────────────────────────
 
   protected _handleListboxChange(e: CustomEvent) {
     const { optionValue, value, selected } = e.detail as {
@@ -435,18 +529,29 @@ export class RCSelect extends LitElement {
       selected: boolean;
     };
     const activatedValue = optionValue ?? (Array.isArray(value) ? value.at(-1) : value);
-    if (!activatedValue) return;
+
+    if (!activatedValue) {
+      return;
+    }
 
     e.stopPropagation();
 
     if (this.multiple) {
       const next = new Set(this._selectedValues);
-      if (selected) next.add(activatedValue);
-      else next.delete(activatedValue);
+
+      if (selected) {
+        next.add(activatedValue);
+      } else {
+        next.delete(activatedValue);
+      }
+
       this._selectedValues = next;
     } else {
       this._selectedValues = selected ? new Set([activatedValue]) : new Set();
-      if (selected) this.closePopup();
+
+      if (selected) {
+        this.closePopup();
+      }
     }
 
     this._selectionInitialized = true;
@@ -463,15 +568,20 @@ export class RCSelect extends LitElement {
     this._selectedValues = next;
     this._$listbox.setSelectedValues([...next]);
     this._selectionInitialized = true;
+
     this._syncNativeSelect();
     this._dispatchChange();
   }
 
   protected _syncNativeSelect() {
-    const sel = this._selectRef?.deref();
-    if (!sel) return;
-    for (const opt of sel.options) {
-      opt.selected = this._selectedValues.has(opt.value);
+    const $select = this._selectRef?.deref();
+
+    if (!$select) {
+      return;
+    }
+
+    for (const $option of $select.options) {
+      $option.selected = this._selectedValues.has($option.value);
     }
   }
 
@@ -489,7 +599,7 @@ export class RCSelect extends LitElement {
     );
   }
 
-  private _selectedOptionsFor(values: string[]): ListboxOption[] {
+  protected _selectedOptionsFor(values: string[]): ListboxOption[] {
     return values.map((value) => {
       return (
         this._options.find((opt) => opt.value === value) ?? {
@@ -500,38 +610,51 @@ export class RCSelect extends LitElement {
     });
   }
 
-  // ── Display helpers ──────────────────────────────────────────────────────────
-
   protected get _effectiveDisplay(): 'chips' | 'compact' {
-    if (this.display === 'chips') return 'chips';
-    if (this.display === 'compact') return 'compact';
+    if (this.display === 'chips') {
+      return 'chips';
+    }
+
+    if (this.display === 'compact') {
+      return 'compact';
+    }
+
     return window.matchMedia('(pointer: coarse)').matches ? 'compact' : 'chips';
   }
 
   protected _labelFor(value: string): string {
-    const sel = this._selectRef?.deref();
-    if (sel) {
-      for (const opt of sel.options) {
-        if (opt.value === value) return opt.text;
+    const $select = this._selectRef?.deref();
+
+    if ($select) {
+      for (const $option of $select.options) {
+        if ($option.value === value) {
+          return $option.text;
+        }
       }
     }
+
     return value;
   }
 
   protected get _displayLabel(): string {
-    if (this._selectedValues.size === 0) return this.placeholder;
-    if (this._effectiveDisplay === 'chips' && this.multiple)
+    if (this._selectedValues.size === 0) {
       return this.placeholder;
+    }
+
+    if (this._effectiveDisplay === 'chips' && this.multiple) {
+      return this.placeholder;
+    }
+
     if (this._selectedValues.size === 1) {
       return this._labelFor([...this._selectedValues][0]);
     }
+
     // Compact multi: "First, +N more"
     const values = [...this._selectedValues];
     const first = this._labelFor(values[0]);
+
     return `${first}, +${values.length - 1} more`;
   }
-
-  // ── Keyboard: trigger ────────────────────────────────────────────────────────
 
   protected _handleTriggerKeyDown(e: KeyboardEvent) {
     switch (e.key) {
@@ -539,45 +662,60 @@ export class RCSelect extends LitElement {
         e.preventDefault();
         if (!this.open) {
           this.openPopup();
-          this._adc.navigateToFirst();
-        } else this._adc.navigate(1);
+          this._activeDescendantCtrl.navigateToFirst();
+        } else {
+          this._activeDescendantCtrl.navigate(1);
+        }
         break;
+
       case 'ArrowUp':
         e.preventDefault();
         if (!this.open) {
           this.openPopup();
-          this._adc.navigateToLast();
-        } else this._adc.navigate(-1);
+          this._activeDescendantCtrl.navigateToLast();
+        } else {
+          this._activeDescendantCtrl.navigate(-1);
+        }
         break;
+
       case 'Home':
         if (this.open) {
           e.preventDefault();
-          this._adc.navigateToFirst();
+          this._activeDescendantCtrl.navigateToFirst();
         }
         break;
+
       case 'End':
         if (this.open) {
           e.preventDefault();
-          this._adc.navigateToLast();
+          this._activeDescendantCtrl.navigateToLast();
         }
         break;
+
       case ' ':
       case 'Enter':
         e.preventDefault();
         if (!this.open) {
           this.openPopup();
-          this._adc.navigateToFirst();
-        } else this._activateActive();
+          this._activeDescendantCtrl.navigateToFirst();
+        } else {
+          this._activateActive();
+        }
         break;
+
       case 'Tab':
-        if (this.open) this.closePopup(false);
+        if (this.open) {
+          this.closePopup(false);
+        }
         break;
+
       case 'ArrowLeft':
         if (!this.open && this.multiple && this._selectedValues.size > 0) {
           e.preventDefault();
           this._enterChipNav();
         }
         break;
+
       default:
         if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
           this._handleTypeAhead(e.key);
@@ -585,30 +723,31 @@ export class RCSelect extends LitElement {
     }
   }
 
-  private _activateActive() {
-    const item = this._adc.activeItem;
-    if (item) {
-      item.dispatchEvent(
-        new PointerEvent('pointerdown', { bubbles: true, cancelable: true }),
-      );
+  protected _activateActive() {
+    const $item = this._activeDescendantCtrl.activeItem;
+
+    if ($item) {
+      $item.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
     }
   }
 
-  // ── Type-ahead ───────────────────────────────────────────────────────────────
-
-  private _handleTypeAhead(char: string) {
+  protected _handleTypeAhead(char: string) {
     clearTimeout(this._typeAheadTimer);
+
     this._typeAheadBuffer += char.toLowerCase();
+
     this._typeAheadTimer = window.setTimeout(() => {
       this._typeAheadBuffer = '';
     }, 500);
 
-    const allOpts = this._$listbox?.allOptions ?? [];
-    const match = allOpts.find(
-      (o) =>
-        !o.disabled && o.label.toLowerCase().startsWith(this._typeAheadBuffer),
+    const options = this._$listbox?.allOptions ?? [];
+    const match = options.find(
+      (option) => !option.disabled && option.label.toLowerCase().startsWith(this._typeAheadBuffer),
     );
-    if (!match) return;
+
+    if (!match) {
+      return;
+    }
 
     if (!this.open) {
       // Select-only type-ahead: immediately select the match
@@ -619,56 +758,59 @@ export class RCSelect extends LitElement {
       }
     } else {
       // Open popup: move virtual cursor to match
-      const items = this._$listbox.navigableItems;
-      const el = items.find(
-        (el) => el.getAttribute('data-value') === match.value,
-      );
-      if (el) this._adc.navigateToItem(el);
+      const $items = this._$listbox.navigableItems;
+      const $item = $items.find(($el) => $el.getAttribute('data-value') === match.value);
+
+      if ($item) {
+        this._activeDescendantCtrl.navigateToItem($item);
+      }
     }
   }
 
-  // ── Chip keyboard navigation ─────────────────────────────────────────────────
+  protected _enterChipNav() {
+    const $buttons = this._$chipButtons();
 
-  private _enterChipNav() {
-    const buttons = this._getChipButtons();
-    if (buttons.length === 0) return;
-    this._chipNavIndex = buttons.length - 1;
-    buttons[this._chipNavIndex].focus();
+    if ($buttons.length === 0) {
+      return;
+    }
+
+    this._chipNavIndex = $buttons.length - 1;
+    $buttons[this._chipNavIndex].focus();
   }
 
-  private _getChipButtons(): HTMLButtonElement[] {
-    return Array.from(
-      this.renderRoot.querySelectorAll<HTMLButtonElement>(
-        'button[part~="chip"]',
-      ),
-    );
+  protected _$chipButtons(): HTMLButtonElement[] {
+    return Array.from(this.renderRoot.querySelectorAll<HTMLButtonElement>('button[part~="chip"]'));
   }
 
   protected _handleChipKeyDown(e: KeyboardEvent, value: string) {
-    const buttons = this._getChipButtons();
+    const $buttons = this._$chipButtons();
+
     switch (e.key) {
       case 'ArrowLeft':
         e.preventDefault();
         if (this._chipNavIndex > 0) {
           this._chipNavIndex--;
-          buttons[this._chipNavIndex]?.focus();
+          $buttons[this._chipNavIndex]?.focus();
         }
         break;
+
       case 'ArrowRight':
         e.preventDefault();
-        if (this._chipNavIndex < buttons.length - 1) {
+        if (this._chipNavIndex < $buttons.length - 1) {
           this._chipNavIndex++;
-          buttons[this._chipNavIndex]?.focus();
+          $buttons[this._chipNavIndex]?.focus();
         } else {
           this._chipNavIndex = -1;
           this._$trigger?.focus();
         }
         break;
+
       case 'Escape':
         e.preventDefault();
         this._chipNavIndex = -1;
         this._$trigger?.focus();
         break;
+
       case 'Delete':
       case 'Backspace':
       case 'Enter':
@@ -681,20 +823,17 @@ export class RCSelect extends LitElement {
     }
   }
 
-  // ── Trigger click ────────────────────────────────────────────────────────────
-
   protected _handleTriggerClick() {
-    if (this.open) this.closePopup();
-    else this.openPopup();
+    if (this.open) {
+      this.closePopup();
+    } else {
+      this.openPopup();
+    }
   }
-
-  // ── Render ───────────────────────────────────────────────────────────────────
 
   protected override render() {
     const showChips =
-      this.multiple &&
-      this._effectiveDisplay === 'chips' &&
-      this._selectedValues.size > 0;
+      this.multiple && this._effectiveDisplay === 'chips' && this._selectedValues.size > 0;
 
     return html`
       <div id="anchor" part="anchor">
@@ -712,7 +851,9 @@ export class RCSelect extends LitElement {
           @keydown=${this._handleTriggerKeyDown}
         >
           ${showChips ? this._renderChips() : nothing}
+
           <span part="value-display">${this._displayLabel}</span>
+
           <span part="toggle-icon" aria-hidden="true">
             <slot name="toggle-icon">&#9660;</slot>
           </span>
@@ -748,8 +889,7 @@ export class RCSelect extends LitElement {
                 e.stopPropagation();
                 this._removeValue(value);
               }}
-              @keydown=${(e: KeyboardEvent) =>
-                this._handleChipKeyDown(e, value)}
+              @keydown=${(e: KeyboardEvent) => this._handleChipKeyDown(e, value)}
             >
               <span part="chip-label">${label}</span
               ><span part="chip-remove" aria-hidden="true">&#215;</span>

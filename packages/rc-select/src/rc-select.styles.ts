@@ -23,7 +23,10 @@ export const selectStyles = css`
     min-width: 8em;
     cursor: default;
     user-select: none;
-    border: var(--rc-select-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    border: var(
+      --rc-select-border,
+      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
+    );
     border-radius: var(--rc-select-radius, var(--rc-control-radius, var(--rc-radius-sm, 0.125em)));
     background: var(--rc-field, Field);
     color: var(--rc-field-text, FieldText);
@@ -60,9 +63,11 @@ export const selectStyles = css`
     display: inline-flex;
     align-items: center;
     gap: var(--rc-select-chip-gap, calc(var(--rc-control-gap, 0.25em) * 0.8));
-    padding: var(--rc-select-chip-padding-block, 0.1em)
-      var(--rc-select-chip-padding-inline, 0.3em);
-    border: var(--rc-select-chip-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    padding: var(--rc-select-chip-padding-block, 0.1em) var(--rc-select-chip-padding-inline, 0.3em);
+    border: var(
+      --rc-select-chip-border,
+      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
+    );
     border-radius: var(--rc-select-chip-radius, var(--rc-radius-md, 0.25em));
     background: var(--rc-button-bg, ButtonFace);
     color: var(--rc-button-text, ButtonText);
@@ -101,9 +106,15 @@ export const selectStyles = css`
     max-height: var(--rc-select-max-height, 20em);
     overflow-y: auto;
     background: var(--rc-surface, Canvas);
-    border: var(--rc-select-listbox-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    border: var(
+      --rc-select-listbox-border,
+      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
+    );
     border-radius: var(--rc-select-listbox-radius, var(--rc-control-radius, 0));
-    box-shadow: var(--rc-select-shadow, var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)));
+    box-shadow: var(
+      --rc-select-shadow,
+      var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
+    );
     color: var(--rc-field-text, FieldText);
     padding-block: var(--rc-select-listbox-padding-block, var(--rc-control-padding-block, 0.25em));
 
@@ -121,7 +132,9 @@ export const selectStyles = css`
     cursor: default;
 
     /* display: flex overrides [hidden]'s browser-default display:none — restore it explicitly */
-    &[hidden] { display: none; }
+    &[hidden] {
+      display: none;
+    }
 
     &:not([hidden]):not([aria-disabled='true']):hover {
       background: var(--rc-highlight, Highlight);
