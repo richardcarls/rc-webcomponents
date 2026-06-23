@@ -1,8 +1,9 @@
 # `@rcarls/rc-combobox`
 
-An editable ARIA combobox built with Lit 3. It extends `rc-select` with a text
-input, live filtering, keyboard navigation, and optional allow-create behavior
-while still preserving a native slotted `<select>` for form submission.
+A web component implementation of the [WAI-ARIA APG combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/),
+with autocomplete filtering and optional on-the-fly item creation.
+
+Extends `rc-select` with a text input and wraps a native slotted `<select>`.
 
 ## Installation
 
