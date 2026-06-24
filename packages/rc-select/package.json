@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless select-only combobox backed by a native select element, built with Lit",
+  "description": "A progressive enhancement implementation of the single- and multi-select WAI-ARIA APG Combobox pattern.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",

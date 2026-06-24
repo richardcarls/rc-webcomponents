@@ -31,4 +31,25 @@
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(listbox) {
     background: var(--md-menu-container-color, var(--md-sys-color-surface-container, Canvas));
   }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(toggle-indicator) {
+    color: var(
+      --md-outlined-select-text-field-trailing-icon-color,
+      var(--md-sys-color-on-surface-variant, CanvasText)
+    );
+    transition: color 150ms ease, transform 150ms ease;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select[open]::part(toggle-indicator) {
+    transform: rotate(180deg);
+    color: var(
+      --md-outlined-select-text-field-focus-trailing-icon-color,
+      var(--md-sys-color-primary, Highlight)
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select[disabled]::part(trigger) {
+    opacity: var(--md-sys-state-disabled-container-opacity, 0.38);
+    pointer-events: none;
+  }
 }

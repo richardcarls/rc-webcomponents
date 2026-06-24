@@ -9,29 +9,28 @@ function addLogLine(setter: (next: string[]) => void, lines: string[], line: str
 }
 
 export function SingleSelectDemo() {
-  const selectRef = useRef<HTMLElement | null>(null);
+  const [selectEl, setSelectEl] = useState<HTMLElement | null>(null);
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    const select = selectRef.current;
-    if (!select) return;
+    if (!selectEl) return;
 
     const handleChange = (event: Event) => {
       const { value } = (event as SelectChangeEvent).detail;
       setLog((current) => [`rc-select-change -> value: "${value}"`, ...current].slice(0, 20));
     };
 
-    select.addEventListener('rc-select-change', handleChange);
-    return () => select.removeEventListener('rc-select-change', handleChange);
-  }, []);
+    selectEl.addEventListener('rc-select-change', handleChange);
+    return () => selectEl.removeEventListener('rc-select-change', handleChange);
+  }, [selectEl]);
 
   return (
     <DemoFrame>
       <div className="demo-row">
         <div className="demo-col">
           <label>Country</label>
-          <rc-select ref={selectRef} placeholder="Choose a country...">
-            <select slot="select" name="country">
+          <rc-select ref={(el) => setSelectEl(el as HTMLElement | null)} placeholder="Choose a country...">
+            <select name="country">
               <option value="">Choose a country...</option>
               <option value="us">United States</option>
               <option value="ca">Canada</option>
@@ -49,7 +48,7 @@ export function SingleSelectDemo() {
         <div className="demo-col">
           <label>Priority</label>
           <rc-select placeholder="Select priority...">
-            <select slot="select" name="priority">
+            <select name="priority">
               <option value="">Select priority...</option>
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -67,12 +66,11 @@ export function SingleSelectDemo() {
 }
 
 export function MultiSelectDemo() {
-  const selectRef = useRef<HTMLElement | null>(null);
+  const [selectEl, setSelectEl] = useState<HTMLElement | null>(null);
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    const select = selectRef.current;
-    if (!select) return;
+    if (!selectEl) return;
 
     const handleChange = (event: Event) => {
       const { value } = (event as SelectChangeEvent).detail;
@@ -80,17 +78,17 @@ export function MultiSelectDemo() {
       setLog((current) => [`rc-select-change -> value: [${values}]`, ...current].slice(0, 20));
     };
 
-    select.addEventListener('rc-select-change', handleChange);
-    return () => select.removeEventListener('rc-select-change', handleChange);
-  }, []);
+    selectEl.addEventListener('rc-select-change', handleChange);
+    return () => selectEl.removeEventListener('rc-select-change', handleChange);
+  }, [selectEl]);
 
   return (
     <DemoFrame>
       <div className="demo-row">
         <div className="demo-col">
           <label>Tags</label>
-          <rc-select ref={selectRef} placeholder="Add tags...">
-            <select slot="select" name="tags" multiple>
+          <rc-select ref={(el) => setSelectEl(el as HTMLElement | null)} placeholder="Add tags...">
+            <select name="tags" multiple>
               <option value="bug">Bug</option>
               <option value="feature">Feature</option>
               <option value="docs">Documentation</option>
@@ -132,7 +130,7 @@ export function SelectFormDemo() {
           <div className="demo-col">
             <label>Role</label>
             <rc-select placeholder="Select a role...">
-              <select slot="select" name="role">
+              <select name="role">
                 <option value="">Select a role...</option>
                 <option value="admin">Administrator</option>
                 <option value="editor">Editor</option>
@@ -166,7 +164,7 @@ export function DynamicOptionsDemo() {
     <DemoFrame>
       <div className="demo-row">
         <rc-select ref={selectRef} placeholder="Choose an item...">
-          <select slot="select" name="dynamic">
+          <select name="dynamic">
             <option value="">Choose an item...</option>
             <option value="item1">Item 1</option>
             <option value="item2">Item 2</option>

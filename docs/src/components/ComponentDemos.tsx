@@ -617,7 +617,7 @@ export function FormDataDemo() {
         <label className="demo-col">
           <span>Status</span>
           <rc-select>
-            <select slot="select" name="status">
+            <select name="status">
               <option value="draft">Draft</option>
               <option value="published">Published</option>
             </select>

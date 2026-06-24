@@ -123,7 +123,7 @@ export function ThemePreviewShowcase() {
                 <label className="theme-preview-field">
                   <span>Status</span>
                   <rc-select placeholder="Choose status">
-                    <select slot="select" name="status" defaultValue="active">
+                    <select name="status" defaultValue="active">
                       <option value="">Choose status</option>
                       <option value="active">Active</option>
                       <option value="on-hold">On hold</option>
