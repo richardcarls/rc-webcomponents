@@ -12,8 +12,12 @@ _uaClearSheet.replaceSync(
 let _uaClearSuppressed = false;
 
 function _suppressUaClear(): void {
-  if (_uaClearSuppressed) return;
+  if (_uaClearSuppressed) {
+    return;
+  }
+
   document.adoptedStyleSheets = [...document.adoptedStyleSheets, _uaClearSheet];
+
   _uaClearSuppressed = true;
 }
 
@@ -47,9 +51,11 @@ export interface RCSearchBarInputDetail {
  * @slot leading - Decorative leading icon; mark it `aria-hidden="true"`
  * @slot trailing - Optional trailing content after the clear button
  * @slot clear-icon - Optional glyph replacing the default clear glyph
+ *
  * @fires rc-search-bar-input - Debounced after typing, immediate on clear;
  *   `detail: { value }`
  * @fires rc-search-bar-clear - When the clear button is activated
+ *
  * @cssprop [--rc-search-bar-bg=Field] - Wrapper background
  * @cssprop [--rc-search-bar-color=FieldText] - Wrapper text color
  * @cssprop [--rc-search-bar-icon-color=GrayText] - Leading icon color
@@ -82,8 +88,9 @@ export class RCSearchBar extends LitElement {
   allowNativeClear = false;
 
   /**
-   * When set, the clear button is visible whenever the input is focused,
-   * even with no value — matching the Apple HIG "cancel" pattern.
+   * When set, the clear button is visible whenever the input is focused.
+   *
+   * Matching the Apple HIG "cancel" pattern.
    * Consider setting `clear-label="Cancel"` in this mode.
    */
   @property({ type: Boolean, attribute: 'show-clear-on-focus' })
@@ -99,14 +106,19 @@ export class RCSearchBar extends LitElement {
   set disabled(value: boolean) {
     const old = this.disabled;
     this._disabledHost = value;
-    const input = this._input();
-    if (input) input.disabled = value;
+
+    const $input = this._$input();
+    if ($input) {
+      $input.disabled = value;
+    }
+
     this.requestUpdate('disabled', old);
   }
 
   /**
-   * Placeholder mirrored onto the native input. An author `placeholder`
-   * attribute already present on the input is never overwritten.
+   * Placeholder mirrored onto the native input.
+   *
+   * Consumer `placeholder` attribute is always honored.
    */
   @property({ type: String })
   placeholder?: string;
@@ -122,7 +134,7 @@ export class RCSearchBar extends LitElement {
 
   private _authorPlaceholder = false;
 
-  private _inputRef: WeakRef<HTMLInputElement> | null = null;
+  private _$inputRef: WeakRef<HTMLInputElement> | null = null;
 
   private _debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
@@ -149,13 +161,19 @@ export class RCSearchBar extends LitElement {
   private _focused = false;
 
   private _lastInteractionWasPointer = false;
+
   private readonly _onPointerDown = (): void => {
     this._lastInteractionWasPointer = true;
   };
+
   private readonly _onFocusIn = (): void => {
-    if (!this._lastInteractionWasPointer) this.toggleAttribute('data-focus-visible', true);
+    if (!this._lastInteractionWasPointer) {
+      this.toggleAttribute('data-focus-visible', true);
+    }
+
     this._lastInteractionWasPointer = false;
   };
+
   private readonly _onFocusOut = (): void => {
     this.toggleAttribute('data-focus-visible', false);
   };
@@ -169,8 +187,11 @@ export class RCSearchBar extends LitElement {
   };
 
   private readonly _disabledObserver = new MutationObserver(() => {
-    const input = this._input();
-    if (input) this._inputDisabled = input.disabled;
+    const $input = this._$input();
+
+    if ($input) {
+      this._inputDisabled = $input.disabled;
+    }
   });
 
   /**
@@ -179,7 +200,7 @@ export class RCSearchBar extends LitElement {
    */
   @property({ attribute: false })
   get value(): string {
-    return this._input()?.value ?? this._value ?? this._defaultValue ?? '';
+    return this._$input()?.value ?? this._value ?? this._defaultValue ?? '';
   }
   set value(value: string) {
     const oldValue = this.value;
@@ -188,8 +209,12 @@ export class RCSearchBar extends LitElement {
     this._valueSetByHost = true;
     this._valueInitialized = true;
 
-    const input = this._input();
-    if (input) input.value = value;
+    const $input = this._$input();
+
+    if ($input) {
+      $input.value = value;
+    }
+
     this._hasValue = value.length > 0;
 
     this.requestUpdate('value', oldValue);
@@ -203,14 +228,15 @@ export class RCSearchBar extends LitElement {
   get defaultValue(): string | undefined {
     return this._defaultValue;
   }
+
   set defaultValue(value: string | undefined) {
     const oldValue = this._defaultValue;
 
     this._defaultValue = value;
 
-    const input = this._input();
-    if (input && value !== undefined && !this._valueInitialized) {
-      input.value = value;
+    const $input = this._$input();
+    if ($input && value !== undefined && !this._valueInitialized) {
+      $input.value = value;
       this._hasValue = value.length > 0;
     }
 
@@ -219,6 +245,7 @@ export class RCSearchBar extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+
     _suppressUaClear();
 
     this.addEventListener('pointerdown', this._onPointerDown, { capture: true });
@@ -227,8 +254,11 @@ export class RCSearchBar extends LitElement {
 
     // Slot assignment survives a DOM move without re-firing slotchange, so
     // listeners are re-bound here (addEventListener is idempotent per ref).
-    const input = this._input();
-    if (input) this._bindInput(input);
+    const $input = this._$input();
+
+    if ($input) {
+      this._bindInput($input);
+    }
   }
 
   override disconnectedCallback(): void {
@@ -241,48 +271,54 @@ export class RCSearchBar extends LitElement {
     this._focused = false;
     this._cancelPendingInput();
 
-    const input = this._input();
-    input?.removeEventListener('input', this._onNativeInput);
-    input?.removeEventListener('focus', this._onInputFocus);
-    input?.removeEventListener('blur', this._onInputBlur);
+    const $input = this._$input();
+
+    $input?.removeEventListener('input', this._onNativeInput);
+    $input?.removeEventListener('focus', this._onInputFocus);
+    $input?.removeEventListener('blur', this._onInputBlur);
 
     this._disabledObserver.disconnect();
   }
 
   protected override updated(changed: PropertyValues<this>): void {
     if (changed.has('placeholder')) {
-      const input = this._input();
-      if (input) this._applyPlaceholder(input);
+      const $input = this._$input();
+
+      if ($input) {
+        this._applyPlaceholder($input);
+      }
     }
   }
 
-  private _input(): HTMLInputElement | null {
-    return this._inputRef?.deref() ?? null;
+  private _$input(): HTMLInputElement | null {
+    return this._$inputRef?.deref() ?? null;
   }
 
   private _handleSlotChange(e: Event): void {
-    const slot = e.target as HTMLSlotElement;
-    const input =
-      slot
+    const $slot = e.target as HTMLSlotElement;
+    const $input =
+      $slot
         .assignedElements({ flatten: true })
         .find(
-          (el): el is HTMLInputElement =>
-            el instanceof HTMLInputElement && el.type === 'search',
+          ($el): $el is HTMLInputElement =>
+            $el instanceof HTMLInputElement && $el.type === 'search',
         ) ?? null;
 
-    const previous = this._input();
-    if (previous && previous !== input) {
-      previous.removeEventListener('input', this._onNativeInput);
-      previous.removeEventListener('focus', this._onInputFocus);
-      previous.removeEventListener('blur', this._onInputBlur);
+    const $previousInput = this._$input();
+
+    if ($previousInput && $previousInput !== $input) {
+      $previousInput.removeEventListener('input', this._onNativeInput);
+      $previousInput.removeEventListener('focus', this._onInputFocus);
+      $previousInput.removeEventListener('blur', this._onInputBlur);
     }
+
     this._disabledObserver.disconnect();
     this._focused = false;
 
-    this._inputRef = input ? new WeakRef(input) : null;
-    this._hasInput = input !== null;
+    this._$inputRef = $input ? new WeakRef($input) : null;
+    this._hasInput = $input !== null;
 
-    if (!input) {
+    if (!$input) {
       this._hasValue = false;
 
       return;
@@ -290,62 +326,68 @@ export class RCSearchBar extends LitElement {
 
     // Deferred reads keep framework render cycles (e.g. SolidJS) untouched.
     queueMicrotask(() => {
-      if (!input.isConnected) return;
+      if (!$input.isConnected) {
+        return;
+      }
 
       if (this._valueSetByHost) {
-        input.value = this._value ?? '';
-      } else if (input.value) {
+        $input.value = this._value ?? '';
+      } else if ($input.value) {
         // An author-provided value wins over defaultValue.
         this._valueInitialized = true;
       } else if (this._defaultValue !== undefined && !this._valueInitialized) {
-        input.value = this._defaultValue;
+        $input.value = this._defaultValue;
       }
 
-      this._authorPlaceholder = input.hasAttribute('placeholder');
-      this._applyPlaceholder(input);
+      this._authorPlaceholder = $input.hasAttribute('placeholder');
+      this._applyPlaceholder($input);
 
       if (this._disabledHost !== undefined) {
-        input.disabled = this._disabledHost;
+        $input.disabled = this._disabledHost;
       }
-      this._inputDisabled = input.disabled;
-      this._hasValue = input.value.length > 0;
+
+      this._inputDisabled = $input.disabled;
+      this._hasValue = $input.value.length > 0;
 
       if (
         import.meta.env.DEV &&
-        !input.labels?.length &&
-        !input.getAttribute('aria-label') &&
-        !input.getAttribute('aria-labelledby')
+        !$input.labels?.length &&
+        !$input.getAttribute('aria-label') &&
+        !$input.getAttribute('aria-labelledby')
       ) {
         console.warn(
           '[rc-search-bar] Slotted <input type="search"> has no accessible name.',
           'Add aria-label, wrap in <label>, or use <label for="...">.',
-          input,
+          $input,
         );
       }
 
-      this._bindInput(input);
+      this._bindInput($input);
     });
   }
 
-  private _bindInput(input: HTMLInputElement): void {
-    input.addEventListener('input', this._onNativeInput);
-    input.addEventListener('focus', this._onInputFocus);
-    input.addEventListener('blur', this._onInputBlur);
-    this._disabledObserver.observe(input, { attributeFilter: ['disabled'] });
+  private _bindInput($input: HTMLInputElement): void {
+    $input.addEventListener('input', this._onNativeInput);
+    $input.addEventListener('focus', this._onInputFocus);
+    $input.addEventListener('blur', this._onInputBlur);
+
+    this._disabledObserver.observe($input, { attributeFilter: ['disabled'] });
   }
 
-  private _applyPlaceholder(input: HTMLInputElement): void {
-    if (this.placeholder === undefined || this._authorPlaceholder) return;
+  private _applyPlaceholder($input: HTMLInputElement): void {
+    if (this.placeholder === undefined || this._authorPlaceholder) {
+      return;
+    }
 
-    input.placeholder = this.placeholder;
+    $input.placeholder = this.placeholder;
   }
 
   private readonly _onNativeInput = (e: Event): void => {
-    const input = e.currentTarget as HTMLInputElement;
+    const $input = e.currentTarget as HTMLInputElement;
 
     this._valueInitialized = true;
-    this._hasValue = input.value.length > 0;
-    this._scheduleInputEvent(input.value);
+    this._hasValue = $input.value.length > 0;
+    this._scheduleInputEvent($input.value);
   };
 
   private _scheduleInputEvent(value: string): void {
@@ -364,7 +406,9 @@ export class RCSearchBar extends LitElement {
   }
 
   private _cancelPendingInput(): void {
-    if (this._debounceTimer === undefined) return;
+    if (this._debounceTimer === undefined) {
+      return;
+    }
 
     clearTimeout(this._debounceTimer);
     this._debounceTimer = undefined;
@@ -381,12 +425,16 @@ export class RCSearchBar extends LitElement {
   }
 
   private _handleClear(): void {
-    const input = this._input();
-    if (!input) return;
+    const $input = this._$input();
+
+    if (!$input) {
+      return;
+    }
 
     this._cancelPendingInput();
 
-    input.value = '';
+    $input.value = '';
+
     this._valueInitialized = true;
     this._hasValue = false;
 
@@ -401,7 +449,7 @@ export class RCSearchBar extends LitElement {
 
     // Refocus before the re-render hides the button, so focus never drops
     // to <body>.
-    input.focus();
+    $input.focus();
   }
 
   protected override render() {
@@ -414,23 +462,23 @@ export class RCSearchBar extends LitElement {
         >
           <slot name="leading" @slotchange=${this._onLeadingSlotChange}></slot>
         </span>
+
         <slot @slotchange=${this._handleSlotChange}></slot>
+
         <button
           id="clear"
           part="clear"
           type="button"
           aria-label=${this.clearLabel}
-          ?hidden=${!this._hasInput || (!this._hasValue && !(this.showClearOnFocus && this._focused))}
+          ?hidden=${!this._hasInput ||
+          (!this._hasValue && !(this.showClearOnFocus && this._focused))}
           ?disabled=${this._inputDisabled}
           @click=${this._handleClear}
         >
           <slot name="clear-icon"><span aria-hidden="true">&#10005;</span></slot>
         </button>
-        <span
-          id="trailing"
-          part="trailing"
-          class=${classMap({ empty: !this._hasTrailing })}
-        >
+
+        <span id="trailing" part="trailing" class=${classMap({ empty: !this._hasTrailing })}>
           <slot name="trailing" @slotchange=${this._onTrailingSlotChange}></slot>
         </span>
       </div>
@@ -443,13 +491,15 @@ export class RCSearchBar extends LitElement {
   }
 
   private _onLeadingSlotChange(e: Event): void {
-    const slot = e.target as HTMLSlotElement;
-    this._hasLeading = slot.assignedElements().length > 0;
+    const $slot = e.target as HTMLSlotElement;
+
+    this._hasLeading = $slot.assignedElements().length > 0;
   }
 
   private _onTrailingSlotChange(e: Event): void {
-    const slot = e.target as HTMLSlotElement;
-    this._hasTrailing = slot.assignedElements().length > 0;
+    const $slot = e.target as HTMLSlotElement;
+
+    this._hasTrailing = $slot.assignedElements().length > 0;
   }
 }
 

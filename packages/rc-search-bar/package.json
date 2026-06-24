@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless search bar enhancing a native input[type=search] with clear button and debounced events, built with Lit",
+  "description": "Enhances a native `<input type=\"search\">` with more consistent appearance and behavior, and introduces convenience properties and debounced search events.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
