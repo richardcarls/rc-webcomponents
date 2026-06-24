@@ -11,10 +11,10 @@ function makeCombobox(opts?: { multiple?: boolean; allowCreate?: boolean; placeh
   return html`
     <rc-combobox
       ?multiple=${opts?.multiple ?? false}
-      ?allowcreate=${opts?.allowCreate ?? false}
+      ?allow-create=${opts?.allowCreate ?? false}
       placeholder=${opts?.placeholder ?? 'Search...'}
     >
-      <select slot="select" aria-label="Fruit" ?multiple=${opts?.multiple ?? false}>
+      <select aria-label="Fruit" ?multiple=${opts?.multiple ?? false}>
         <option value="apple">Apple</option>
         <option value="banana">Banana</option>
         <option value="cherry" disabled>Cherry</option>
@@ -26,7 +26,7 @@ function makeCombobox(opts?: { multiple?: boolean; allowCreate?: boolean; placeh
 function makeSelectedCombobox() {
   return html`
     <rc-combobox multiple>
-      <select slot="select" aria-label="Fruit" multiple>
+      <select aria-label="Fruit" multiple>
         <option value="apple">Apple</option>
         <option value="banana" selected>Banana</option>
         <option value="cherry" selected>Cherry</option>

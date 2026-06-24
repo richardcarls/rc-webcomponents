@@ -11,6 +11,10 @@ export const comboboxStyles = css`
     flex-wrap: wrap;
     gap: var(--rc-combobox-gap, var(--rc-control-gap, 0.25em));
     min-block-size: var(--rc-combobox-control-block-size, var(--rc-control-block-size, auto));
+    padding: var(--rc-combobox-padding-block, var(--rc-control-padding-block, 1px))
+      var(--rc-combobox-padding-inline, var(--rc-control-padding-inline, 4px));
+    min-width: 8em;
+    cursor: text;
     border: var(
       --rc-combobox-border,
       var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
@@ -21,9 +25,6 @@ export const comboboxStyles = css`
     );
     background: var(--rc-field, Field);
     color: var(--rc-field-text, FieldText);
-    padding: var(--rc-combobox-padding-block, calc(var(--rc-control-padding-block, 0.25em) / 2))
-      var(--rc-combobox-padding-inline, calc(var(--rc-control-padding-inline, 0.5em) / 2));
-    cursor: text;
     font-family: var(--rc-font-family, inherit);
     font-size: var(--rc-font-size, inherit);
     line-height: var(--rc-line-height, normal);
@@ -31,6 +32,13 @@ export const comboboxStyles = css`
       background-color var(--rc-motion-duration, 120ms),
       border-color var(--rc-motion-duration, 120ms),
       box-shadow var(--rc-motion-duration, 120ms);
+
+    /* Focus ring — anchor shows the ring when the internal input is focused */
+    outline: none;
+    &:focus-within {
+      outline: var(--rc-focus-ring, auto);
+      outline-offset: var(--rc-focus-ring-offset, 0);
+    }
   }
 
   /* Chips — the whole chip is the remove button for a larger touch target */
@@ -74,14 +82,13 @@ export const comboboxStyles = css`
 
   #trigger {
     flex: 1;
-    min-width: 6em;
+    min-width: 0;
     border: none;
     background: transparent;
     color: inherit;
     font: inherit;
     outline: none;
-    padding: var(--rc-combobox-input-padding-block, var(--rc-control-padding-block, 0.25em))
-      var(--rc-combobox-input-padding-inline, calc(var(--rc-control-padding-inline, 0.5em) / 2));
+    padding: 0;
     cursor: text;
   }
 
@@ -94,12 +101,11 @@ export const comboboxStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--rc-combobox-toggle-padding, var(--rc-control-padding-block, 0.25em));
+    inline-size: var(--rc-select-toggle-indicator-size, 1.1em);
     border: none;
     background: transparent;
     color: inherit;
     cursor: default;
-    font-size: 0.75em;
     font: inherit;
 
     &:focus-visible {
@@ -108,8 +114,8 @@ export const comboboxStyles = css`
     }
   }
 
-  /* Hidden native select slot */
-  slot[name='select'] {
+  /* Hide the default slot — visually suppresses the slotted native <select> */
+  slot:not([name]) {
     display: none;
   }
 

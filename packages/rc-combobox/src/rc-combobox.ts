@@ -24,9 +24,7 @@ declare global {
  * and adding: live filtering of the listbox, keyboard navigation from input,
  * and an optional "Create '{text}'" option for new entries.
  *
- * @attr [allowcreate] - When present, shows a "Create 'X'" option for unmatched input.
- *
- * @slot select - Required. A native `<select>` element for form submission.
+ * @slot - Required. A native `<select>` element for form submission.
  * @slot toggle-icon - Optional. Replaces the default chevron icon.
  *
  * @fires rc-select-change - Inherited selection change event.
@@ -40,6 +38,8 @@ declare global {
  * @csspart chip-remove - Remove button inside a chip.
  * @csspart input - The text input element.
  * @csspart toggle - The chevron toggle button.
+ *
+ * @attr [allow-create] - When present, shows a "Create 'X'" option for unmatched input.
  *
  * @cssprop [--rc-combobox-max-height=20em] - Maximum popup height.
  * @cssprop [--rc-combobox-control-block-size=var(--rc-control-block-size)] - Anchor block size.
@@ -58,7 +58,7 @@ export class RCCombobox extends RCSelect {
   static override styles = comboboxStyles;
 
   /** When set, shows a "Create '{text}'" option for text that has no exact match. */
-  @property({ type: Boolean, attribute: 'allowcreate' })
+  @property({ type: Boolean, attribute: 'allow-create' })
   allowCreate = false;
 
   /**
@@ -412,7 +412,20 @@ export class RCCombobox extends RCSelect {
           tabindex="-1"
           @click=${this._handleToggleClick}
         >
-          <slot name="toggle-icon">&#9660;</slot>
+          <slot name="toggle-icon">
+            <svg
+              width="10"
+              height="6"
+              viewBox="0 0 10 6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="1,1 5,5 9,1" />
+            </svg>
+          </slot>
         </button>
       </div>
 
@@ -426,7 +439,7 @@ export class RCCombobox extends RCSelect {
         @rc-listbox-change=${this._handleListboxChange}
       ></rc-listbox>
 
-      <slot name="select" @slotchange=${this._handleSelectSlotChange}></slot>
+      <slot @slotchange=${this._handleSelectSlotChange}></slot>
     `;
   }
 }

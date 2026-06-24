@@ -113,7 +113,7 @@ export function ComboboxDemo() {
         <label className="demo-col">
           <span>Multiple</span>
           <rc-combobox placeholder="Add tags" allow-create>
-            <select slot="select" name="tags" multiple>
+            <select name="tags" multiple>
               <option value="vegetarian">Vegetarian</option>
               <option value="quick">Quick</option>
               <option value="dinner">Dinner</option>
