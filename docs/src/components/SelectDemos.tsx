@@ -1,8 +1,7 @@
-import type { FormEvent } from 'react';
+import type * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
+import type { RCSelectRef, RCSelectChangeDetail } from '@rcarls/rc-webcomponents/react';
 import { DemoFrame } from './DemoFrame';
-
-type SelectChangeEvent = CustomEvent<{ value: string | string[] }>;
 
 function addLogLine(setter: (next: string[]) => void, lines: string[], line: string) {
   setter([line, ...lines].slice(0, 20));
@@ -16,7 +15,7 @@ export function SingleSelectDemo() {
     if (!selectEl) return;
 
     const handleChange = (event: Event) => {
-      const { value } = (event as SelectChangeEvent).detail;
+      const { value } = (event as CustomEvent<RCSelectChangeDetail>).detail;
       setLog((current) => [`rc-select-change -> value: "${value}"`, ...current].slice(0, 20));
     };
 
@@ -73,7 +72,7 @@ export function MultiSelectDemo() {
     if (!selectEl) return;
 
     const handleChange = (event: Event) => {
-      const { value } = (event as SelectChangeEvent).detail;
+      const { value } = (event as CustomEvent<RCSelectChangeDetail>).detail;
       const values = Array.isArray(value) ? value.join(', ') : value;
       setLog((current) => [`rc-select-change -> value: [${values}]`, ...current].slice(0, 20));
     };
@@ -111,7 +110,7 @@ export function MultiSelectDemo() {
 export function SelectFormDemo() {
   const [output, setOutput] = useState('FormData will appear here after submit.');
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const lines: string[] = [];
@@ -147,7 +146,7 @@ export function SelectFormDemo() {
 }
 
 export function DynamicOptionsDemo() {
-  const selectRef = useRef<HTMLElement | null>(null);
+  const selectRef = useRef<RCSelectRef>(null);
   const countRef = useRef(2);
 
   const addDynamicOption = () => {

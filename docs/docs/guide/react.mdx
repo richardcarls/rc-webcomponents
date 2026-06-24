@@ -16,6 +16,23 @@ import { App } from './App';
 createRoot(document.getElementById('root')!).render(<App />);
 ```
 
+## TypeScript JSX types
+
+Add a triple-slash reference once — for example, in `vite-env.d.ts`:
+
+```ts title="vite-env.d.ts"
+/// <reference types="vite/client" />
+/// <reference types="@rcarls/rc-webcomponents/react" />
+```
+
+This gives all `rc-*` elements proper attribute completions and ref types in
+JSX. You can also import ref and event detail types directly for use with
+`useRef` and `addEventListener`:
+
+```ts
+import type { RCSelectRef, RCSelectChangeDetail } from '@rcarls/rc-webcomponents/react';
+```
+
 ## Elements in JSX
 
 Custom elements render in JSX like any HTML element. String attributes map
@@ -30,7 +47,7 @@ directly:
 </rc-select>
 ```
 
-Boolean attributes require an empty string or the attribute name:
+Boolean attributes use a JSX boolean (no string needed in React):
 
 ```tsx
 <rc-combobox allow-create placeholder="Add tags">
@@ -47,16 +64,17 @@ Use `addEventListener` in a `useEffect` to subscribe:
 
 ```tsx
 import { useEffect, useRef } from 'react';
+import type { RCSelectRef, RCSelectChangeDetail } from '@rcarls/rc-webcomponents/react';
 
 function StatusPicker() {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<RCSelectRef>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
     const handler = (e: Event) => {
-      const { value } = (e as CustomEvent<{ value: string }>).detail;
+      const { value } = (e as CustomEvent<RCSelectChangeDetail>).detail;
       console.log('selected:', value);
     };
 
@@ -76,23 +94,19 @@ function StatusPicker() {
 ```
 
 Each component's page documents which events it dispatches and the shape of
-`event.detail`.
+`event.detail`. All detail types are exported from `@rcarls/rc-webcomponents/react`.
 
 ## Refs and imperative methods
 
-Some components expose methods for programmatic control. Access them through
-a ref typed as an intersection with `HTMLElement`:
+Some components expose methods for programmatic control. Use a ref typed with
+the exported ref type:
 
 ```tsx
 import { useRef } from 'react';
-
-type DialogEl = HTMLElement & {
-  showModal(): void;
-  close(returnValue?: string): void;
-};
+import type { RCDialogRef } from '@rcarls/rc-webcomponents/react';
 
 function ConfirmDialog() {
-  const ref = useRef<DialogEl>(null);
+  const ref = useRef<RCDialogRef>(null);
 
   return (
     <>
@@ -112,42 +126,6 @@ function ConfirmDialog() {
 }
 ```
 
-The `solid.d.ts` export in `@rcarls/rc-webcomponents` documents the full
-public API surface as typed ref intersections. These are portable — use them
-as `HTMLElement & RCSelectRef` with any framework.
-
-## TypeScript JSX types
-
-React does not include built-in JSX declarations for custom elements. Add a
-declaration file to your project to suppress unknown-element errors and get
-attribute completions:
-
-```ts title="types/rc-webcomponents.d.ts"
-import 'react';
-
-declare module 'react' {
-  namespace JSX {
-    interface IntrinsicElements {
-      'rc-select': React.HTMLAttributes<HTMLElement> & {
-        placeholder?: string;
-        multiple?: boolean;
-        disabled?: boolean;
-        display?: 'auto' | 'chips' | 'compact';
-      };
-      'rc-fab': React.HTMLAttributes<HTMLElement> & {
-        extended?: boolean;
-      };
-      // Add other elements as needed.
-      // See each component's API table for the full attribute surface.
-    }
-  }
-}
-```
-
-Import this file once — for example, via `include` in your `tsconfig.json`
-or a triple-slash reference in `vite-env.d.ts`:
-
-```ts title="vite-env.d.ts"
-/// <reference types="vite/client" />
-/// <reference path="./types/rc-webcomponents.d.ts" />
-```
+All ref types (`RCSelectRef`, `RCComboboxRef`, `RCDialogRef`, …) are exported
+from `@rcarls/rc-webcomponents/react` and document the full public API surface
+of each element.

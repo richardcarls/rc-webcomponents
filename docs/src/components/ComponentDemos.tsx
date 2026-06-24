@@ -1,5 +1,18 @@
-import type { CSSProperties, FormEvent, RefObject } from 'react';
+import type { CSSProperties, RefObject } from 'react';
+import type * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
+
+import type {
+  RCAppBarRef,
+  RCDialogRef,
+  RCDisclosureRef,
+  RCMarkdownEditorRef,
+  RCMenuRef,
+  RCRangeSliderRef,
+  RCSearchBarRef,
+  RCSliderRef,
+  RCTransferListRef,
+} from '@rcarls/rc-webcomponents/react';
 
 import hljs from 'highlight.js/lib/core';
 import rust from 'highlight.js/lib/languages/rust';
@@ -55,7 +68,7 @@ function EventLog({ entries, placeholder = 'Events will appear here...' }: {
 }
 
 export function AppBarDemo() {
-  const barRef = useRef<HTMLElement & { scrolled?: boolean }>(null);
+  const barRef = useRef<RCAppBarRef>(null);
 
   return (
     <DemoFrame>
@@ -136,7 +149,7 @@ export function ComboboxDemo() {
 }
 
 export function DialogDemo() {
-  const dialogRef = useRef<HTMLElement & { showModal: () => void; close: (value?: string) => void }>(null);
+  const dialogRef = useRef<RCDialogRef>(null);
   const log = useEventLog<{ returnValue: string }>(
     dialogRef,
     'rc-dialog-close',
@@ -164,7 +177,7 @@ export function DialogDemo() {
 }
 
 export function DisclosureDemo() {
-  const disclosureRef = useRef<HTMLElement & { open?: boolean }>(null);
+  const disclosureRef = useRef<RCDisclosureRef>(null);
 
   return (
     <DemoFrame>
@@ -257,7 +270,7 @@ export function FabDemo() {
 }
 
 export function MarkdownEditorDemo() {
-  const editorRef = useRef<HTMLElement | null>(null);
+  const editorRef = useRef<RCMarkdownEditorRef>(null);
   const log = useEventLog<{ value?: string }>(
     editorRef,
     'rc-change',
@@ -266,7 +279,7 @@ export function MarkdownEditorDemo() {
 
   return (
     <DemoFrame>
-      <rc-markdown-editor ref={editorRef} label="Recipe notes">
+      <rc-markdown-editor ref={editorRef}>
         <textarea defaultValue={'# Carrot soup\n\nSimmer until tender.'} />
       </rc-markdown-editor>
       <EventLog entries={log} />
@@ -275,7 +288,7 @@ export function MarkdownEditorDemo() {
 }
 
 export function MenuDemo() {
-  const menuRef = useRef<HTMLElement | null>(null);
+  const menuRef = useRef<RCMenuRef>(null);
   const log = useEventLog<{ value?: string }>(
     menuRef,
     'rc-menu-activate',
@@ -333,7 +346,7 @@ export function MenubarDemo() {
 }
 
 export function RangeSliderDemo() {
-  const sliderRef = useRef<HTMLElement | null>(null);
+  const sliderRef = useRef<RCRangeSliderRef>(null);
   const log = useEventLog<{ value: [number, number] }>(
     sliderRef,
     'rc-range-slider-change',
@@ -352,7 +365,7 @@ export function RangeSliderDemo() {
 }
 
 export function SearchBarDemo() {
-  const searchRef = useRef<HTMLElement & { value?: string }>(null);
+  const searchRef = useRef<RCSearchBarRef>(null);
   const log = useEventLog<{ value: string }>(
     searchRef,
     'rc-search-bar-input',
@@ -378,7 +391,7 @@ export function SearchBarDemo() {
 }
 
 export function SliderDemo() {
-  const sliderRef = useRef<HTMLElement | null>(null);
+  const sliderRef = useRef<RCSliderRef>(null);
   const log = useEventLog<{ value: number }>(
     sliderRef,
     'rc-slider-change',
@@ -576,7 +589,7 @@ export function ToolbarDemo() {
 }
 
 export function TransferListDemo() {
-  const transferRef = useRef<HTMLElement | null>(null);
+  const transferRef = useRef<RCTransferListRef>(null);
   const log = useEventLog<{ selected: string[] }>(
     transferRef,
     'rc-transfer-list-change',
@@ -611,7 +624,7 @@ export function VirtualCanvasDemo() {
 export function FormDataDemo() {
   const [output, setOutput] = useState('Submit to inspect FormData.');
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const data = new FormData(event.currentTarget);

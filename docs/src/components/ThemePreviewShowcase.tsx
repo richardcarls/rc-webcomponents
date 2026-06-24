@@ -2,6 +2,8 @@ import { useCallback, useRef } from 'react';
 
 import { markdownPlugin } from '@rcarls/rc-textarea-plugin-markdown';
 
+import type { RCDialogRef, RCTextareaRef } from '@rcarls/rc-webcomponents/react';
+
 import { DemoFrame } from './DemoFrame';
 
 const SHOWCASE_CSS = `
@@ -79,10 +81,8 @@ A *brief* summary with **key** points.
 - [Link text](url)`;
 
 export function ThemePreviewShowcase() {
-  const dialogRef = useRef<
-    HTMLElement & { showModal: () => void; close: (value?: string) => void }
-  >(null);
-  const textareaRef = useCallback((el: (HTMLElement & { plugin: typeof markdownPlugin }) | null) => {
+  const dialogRef = useRef<RCDialogRef>(null);
+  const textareaRef = useCallback((el: RCTextareaRef | null) => {
     if (el) el.plugin = markdownPlugin;
   }, []);
 
@@ -221,8 +221,11 @@ export function ThemePreviewShowcase() {
               Open dialog
             </button>
           </div>
-          <rc-fab variant="extended" label="New">
-            <span slot="icon" className="material-symbols-outlined" aria-hidden="true">add</span>
+          <rc-fab>
+            <button type="button">
+              <span className="material-symbols-outlined" aria-hidden="true">add</span>
+              New
+            </button>
           </rc-fab>
         </div>
 
