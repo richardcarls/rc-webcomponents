@@ -18,8 +18,8 @@ export const selectStyles = css`
     flex-wrap: wrap;
     gap: var(--rc-select-gap, var(--rc-control-gap, 0.25em));
     min-block-size: var(--rc-select-control-block-size, var(--rc-control-block-size, auto));
-    padding: var(--rc-select-padding-block, var(--rc-control-padding-block, 0.25em))
-      var(--rc-select-padding-inline, var(--rc-control-padding-inline, 0.5em));
+    padding: var(--rc-select-padding-block, var(--rc-control-padding-block, 1px))
+      var(--rc-select-padding-inline, var(--rc-control-padding-inline, 4px));
     min-width: 8em;
     cursor: default;
     user-select: none;
@@ -53,9 +53,12 @@ export const selectStyles = css`
     white-space: nowrap;
   }
 
-  [part='toggle-icon'] {
+  [part='toggle-indicator'] {
     flex-shrink: 0;
-    font-size: 0.75em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--rc-select-toggle-indicator-size, 1.1em);
   }
 
   /* Chips — the whole chip is the remove button for a larger touch target */
@@ -96,8 +99,8 @@ export const selectStyles = css`
     pointer-events: none;
   }
 
-  /* Hidden native select slot */
-  slot[name='select'] {
+  /* Hide the default slot — visually suppresses the slotted native <select> */
+  slot:not([name]) {
     display: none;
   }
 

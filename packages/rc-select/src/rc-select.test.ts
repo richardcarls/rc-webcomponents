@@ -10,7 +10,6 @@ function makeSelect(opts?: { multiple?: boolean; disabled?: boolean; placeholder
   return html`
     <rc-select placeholder=${opts?.placeholder ?? 'Choose...'}>
       <select
-        slot="select"
         aria-label="Fruit"
         ?multiple=${opts?.multiple ?? false}
         ?disabled=${opts?.disabled ?? false}
@@ -27,7 +26,7 @@ function makeSelect(opts?: { multiple?: boolean; disabled?: boolean; placeholder
 function makeSelectedSelect() {
   return html`
     <rc-select placeholder="Choose...">
-      <select slot="select" aria-label="Fruit" multiple>
+      <select aria-label="Fruit" multiple>
         <option value="apple">Apple</option>
         <option value="banana" selected>Banana</option>
         <option value="cherry" selected>Cherry</option>
@@ -313,7 +312,7 @@ test('host value writes do not dispatch rc-select-change', async () => {
 test('options property populates listbox and native select', async () => {
   const screen = render(html`
     <rc-select>
-      <select slot="select" multiple></select>
+      <select multiple></select>
     </rc-select>
   `);
   const host = screen.container.querySelector('rc-select') as RCSelect;
@@ -476,7 +475,7 @@ test('multiple: chip remove button click removes the value', async () => {
 test('display="compact" shows summary text instead of chips', async () => {
   const screen = render(html`
     <rc-select display="compact" placeholder="Choose...">
-      <select slot="select" multiple>
+      <select multiple>
         <option value="apple">Apple</option>
         <option value="banana">Banana</option>
       </select>

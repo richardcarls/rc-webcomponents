@@ -29,7 +29,7 @@ import '@rcarls/rc-select/define';
 <label>
   Fruit
   <rc-select placeholder="Choose fruit">
-    <select slot="select" name="fruit">
+    <select name="fruit">
       <option value="">Choose fruit</option>
       <option value="apple">Apple</option>
       <option value="banana">Banana</option>

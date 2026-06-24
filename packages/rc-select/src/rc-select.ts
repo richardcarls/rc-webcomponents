@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ActiveDescendantController, AnchorController } from '@rcarls/rc-common';
 import type { RCListbox, ListboxOption } from '@rcarls/rc-listbox';
@@ -28,14 +28,15 @@ declare global {
  * A progressive enhancement implementation of the single- and multi-select
  * WAI-ARIA APG Combobox pattern.
  *
- * Wraps a native `<select slot="select">` as the form value reflector while
+ * Wraps a native `<select>` (default slot) as the form value reflector while
  * rendering a custom button trigger and popup listbox. Popup placement
  * and `aria-activedescendant` virtual keyboard navigation are supported.
  *
- * @slot select - Required. A native `<select>` element used for form submission
+ * @slot - Required. A native `<select>` element used for form submission
  *   and as the source of truth for options, multiple, and disabled state.
  * @slot display - Optional. Replaces the default value label in the trigger.
- * @slot toggle-icon - Optional. Replaces the default chevron icon.
+ * @slot toggle-indicator - Optional. Replaces the default chevron indicator. Accepts any
+ *   element(s); the container shifts to inline-start in RTL via flex direction.
  *
  * @fires rc-select-change - When user interaction changes selection.
  *   `detail: { value, selectedValues, selectedOptions }`
@@ -49,7 +50,10 @@ declare global {
  * @csspart chip-label - Text label inside a chip.
  * @csspart chip-remove - Remove button inside a chip.
  * @csspart value-display - The text label showing selected value(s).
- * @csspart toggle-icon - The chevron/arrow icon container.
+ * @csspart toggle-indicator - The open/close indicator container.
+ *
+ * @attr [has-value] - Present when one or more options are selected. Use with CSS
+ *   selectors (e.g. `rc-select[has-value]`) for floating-label wrappers.
  *
  * @cssprop [--rc-select-max-height=20em] - Maximum popup height.
  * @cssprop [--rc-select-control-block-size=var(--rc-control-block-size)] - Trigger block size.
@@ -63,6 +67,7 @@ declare global {
  * @cssprop [--rc-select-chip-radius=var(--rc-radius-md)] - Multi-select chip border radius.
  * @cssprop [--rc-select-chip-padding-block=0.1em] - Multi-select chip block-axis padding.
  * @cssprop [--rc-select-chip-padding-inline=0.3em] - Multi-select chip inline-axis padding.
+ * @cssprop [--rc-select-toggle-indicator-size=1.1em] - Inline size of the toggle indicator container.
  */
 export class RCSelect extends LitElement {
   static override styles = selectStyles;
@@ -93,26 +98,55 @@ export class RCSelect extends LitElement {
   @property()
   display: 'auto' | 'chips' | 'compact' = 'auto';
 
+  /** Flex container used by `_anchorCtrl` as the positioning reference for the popup. */
   @query('#anchor')
   protected _$anchor!: HTMLElement;
 
+  /**
+   * The combobox trigger div.
+   *
+   * Owns `role="combobox"`, `aria-activedescendant`,
+   * `aria-expanded`, and receives focus during keyboard navigation.
+   */
   @query('#trigger')
   protected _$trigger!: HTMLElement;
 
+  /** The `<rc-listbox>` popup. Receives option lists and selected-value updates from the host. */
   @query('#listbox')
   protected _$listbox!: RCListbox;
 
+  /**
+   * Reactive set of currently selected option values.
+   *
+   * Drive changes through `_applySelection` rather than mutating this directly
+   * so the listbox and native `<select>` stay in sync.
+   */
   @state()
   protected _selectedValues: Set<string> = new Set();
 
+  /**
+   * Index into the chip button array for roving-tabindex chip navigation.
+   *
+   * `-1` means focus is on the trigger.
+   */
   @state()
   protected _chipNavIndex = -1;
 
+  /**
+   * The resolved option list, as rendered in the listbox.
+   *
+   * `_options` is sourced from the `options` property or the slotted `<select>`.
+   */
   @state()
   protected _options: ListboxOption[] = [];
 
+  /** WeakRef to the slotted `<select>`. Refreshed on every `slotchange`; `null` when absent. */
   protected _selectRef: WeakRef<HTMLSelectElement> | null = null;
 
+  /**
+   * Watches the slotted `<select>` for `childList`, `subtree`, and `attributes` changes
+   * so the option list and disabled/multiple state stay in sync with author mutations.
+   */
   protected _mutationObserver: MutationObserver | null = null;
 
   private _defaultValue: RCSelectValue | undefined;
@@ -123,15 +157,22 @@ export class RCSelect extends LitElement {
 
   private _selectionInitialized = false;
 
+  /** Accumulated printable characters for type-ahead matching; cleared after 500 ms idle. */
   protected _typeAheadBuffer = '';
 
+  /** `window.setTimeout` handle for resetting `_typeAheadBuffer`; cancel before modifying. */
   protected _typeAheadTimer = 0;
 
+  /**
+   * Manages `aria-activedescendant` on `_$trigger` and keyboard cursor position
+   * within `_$listbox.navigableItems`.
+   */
   protected _activeDescendantCtrl = new ActiveDescendantController(this, {
     host: () => this._$trigger ?? null,
     items: () => this._$listbox?.navigableItems ?? [],
   });
 
+  /** Manages CSS-anchored (or JS-fallback) placement of `_$listbox` relative to `_$anchor`. */
   protected _anchorCtrl = new AnchorController(this, {
     anchor: () => this._$anchor ?? null,
     floating: () => this._$listbox ?? null,
@@ -156,6 +197,11 @@ export class RCSelect extends LitElement {
     });
 
     this._mutationObserver?.disconnect();
+  }
+
+  override updated(changed: PropertyValues) {
+    super.updated(changed);
+    this.toggleAttribute('has-value', this._selectedValues.size > 0);
   }
 
   /** Opens the popup listbox if not already open or disabled. */
@@ -253,11 +299,17 @@ export class RCSelect extends LitElement {
     return [...this._selectedValues];
   }
 
+  /** `ListboxOption` objects for the current selection; falls back to label-only stubs for unknown values. */
   protected get selectedOptions(): ListboxOption[] {
     return this._selectedOptionsFor(this.selectedValues);
   }
 
-  /** Applies a normalized array of values as the current selection. */
+  /**
+   * Applies an already-normalized array of values as the current selection.
+   *
+   * In single-select mode only the first value is kept. Syncs `_$listbox` and the
+   * native `<select>` but does NOT dispatch `rc-select-change`.
+   */
   protected _applySelection(values: string[]): void {
     const selectedValues = this.multiple ? values : values.slice(0, 1);
 
@@ -267,6 +319,7 @@ export class RCSelect extends LitElement {
     this.requestUpdate();
   }
 
+  /** Document-capture click handler that closes the popup when a click lands outside `this`. */
   protected _onDocClick = (e: MouseEvent) => {
     if (!this.open) {
       return;
@@ -277,6 +330,7 @@ export class RCSelect extends LitElement {
     }
   };
 
+  /** Document-capture keydown handler; closes the popup on `Escape`. */
   protected _onDocKeyDown = (e: KeyboardEvent) => {
     if (!this.open) {
       return;
@@ -289,6 +343,10 @@ export class RCSelect extends LitElement {
     }
   };
 
+  /**
+   * Resolves the slotted `<select>` on every `slotchange`, wires `_mutationObserver`,
+   * and seeds initial state via `queueMicrotask` to stay safe inside framework reactive passes.
+   */
   protected _handleSelectSlotChange(e: Event) {
     const $slot = e.target as HTMLSlotElement;
     const $select =
@@ -345,7 +403,11 @@ export class RCSelect extends LitElement {
     });
   }
 
-  protected _syncOptionsFromSelect($sel: HTMLSelectElement) {
+  /**
+   * Derives options from `$select` (or defers to `_propertyOptions` when set)
+   * and re-applies selection from the current authoritative source.
+   */
+  protected _syncOptionsFromSelect($select: HTMLSelectElement) {
     if (this._propertyOptions !== undefined) {
       this._syncOptions(this._propertyOptions);
       this._mirrorOptionsToNativeSelect();
@@ -354,13 +416,17 @@ export class RCSelect extends LitElement {
       return;
     }
 
-    const options = this._optionsFromSelect($sel);
+    const options = this._optionsFromSelect($select);
 
     this._syncOptions(options);
     this._applySelectionFromCurrentSource();
-    this._syncAccessibleName($sel);
+    this._syncAccessibleName($select);
   }
 
+  /**
+   * Picks the correct selection source in priority order:
+   * controlled `_value` → `_defaultValue` → native `<select>` default/current state.
+   */
   protected _applySelectionFromCurrentSource(): void {
     if (this._value !== undefined) {
       this._applySelection(this._normalizeValue(this._value));
@@ -383,6 +449,7 @@ export class RCSelect extends LitElement {
     this._applySelection(selected);
   }
 
+  /** Writes `_options` and pushes the list to `_$listbox` when it is mounted. */
   protected _syncOptions(options: ListboxOption[]): void {
     this._options = [...options];
 
@@ -391,6 +458,7 @@ export class RCSelect extends LitElement {
     }
   }
 
+  /** Returns `_propertyOptions` when set; otherwise reads live from the slotted `<select>`. */
   protected _currentOptions(): ListboxOption[] {
     if (this._propertyOptions !== undefined) {
       return this._propertyOptions;
@@ -401,6 +469,11 @@ export class RCSelect extends LitElement {
     return $select ? this._optionsFromSelect($select) : [];
   }
 
+  /**
+   * Maps non-empty native `<option>` nodes to `ListboxOption` objects.
+   *
+   * Options with empty `value` are skipped (placeholder guard).
+   */
   protected _optionsFromSelect($select: HTMLSelectElement): ListboxOption[] {
     const options: ListboxOption[] = [];
 
@@ -419,6 +492,7 @@ export class RCSelect extends LitElement {
     return options;
   }
 
+  /** Returns values of currently selected `<option>` nodes; falls back to `selectedValues` when no native select is present. */
   protected _selectedValuesFromNativeSelect(): string[] {
     const $select = this._selectRef?.deref();
 
@@ -431,6 +505,7 @@ export class RCSelect extends LitElement {
       .filter(Boolean);
   }
 
+  /** Returns values of `defaultSelected` `<option>` nodes (author `selected` attribute); falls back to `selectedValues`. */
   protected _defaultSelectedValuesFromNativeSelect(): string[] {
     const $select = this._selectRef?.deref();
 
@@ -444,6 +519,12 @@ export class RCSelect extends LitElement {
       .filter(Boolean);
   }
 
+  /**
+   * Rebuilds native `<select>` options from `_propertyOptions`.
+   *
+   * Only runs when `_propertyOptions` is set; pauses then resumes `_mutationObserver`
+   * while writing to avoid re-entrant sync.
+   */
   protected _mirrorOptionsToNativeSelect(): void {
     const $select = this._selectRef?.deref();
 
@@ -472,6 +553,10 @@ export class RCSelect extends LitElement {
     });
   }
 
+  /**
+   * Upserts a single option into `_options` (and `_propertyOptions` when set)
+   * and adds the corresponding `<option>` to the native `<select>` if absent.
+   */
   protected _addOption(option: ListboxOption): void {
     const options = this._options.some((opt) => opt.value === option.value)
       ? this._options.map((opt) => (opt.value === option.value ? option : opt))
@@ -499,10 +584,16 @@ export class RCSelect extends LitElement {
     $select.add($option);
   }
 
+  /** Coerces `RCSelectValue` (string or string[]) to `string[]`; returns `[]` for empty-string singles. */
   protected _normalizeValue(value: RCSelectValue): string[] {
     return Array.isArray(value) ? value : value ? [value] : [];
   }
 
+  /**
+   * Copies `aria-label` or first-label text from the native `<select>` to `_$trigger`.
+   *
+   * No-op when the trigger already has an explicit `aria-label`.
+   */
   protected _syncAccessibleName($sel: HTMLSelectElement): void {
     if (!this._$trigger) {
       return;
@@ -522,6 +613,12 @@ export class RCSelect extends LitElement {
     }
   }
 
+  /**
+   * Handles `rc-listbox-change` from the popup.
+   *
+   * Stops propagation, mutates `_selectedValues`, syncs state, and fires
+   * `rc-select-change`.
+   */
   protected _handleListboxChange(e: CustomEvent) {
     const { optionValue, value, selected } = e.detail as {
       optionValue?: string;
@@ -560,6 +657,7 @@ export class RCSelect extends LitElement {
     this._dispatchChange();
   }
 
+  /** Removes a single value from `_selectedValues`, syncs the listbox and native select, and dispatches `rc-select-change`. */
   protected _removeValue(value: string) {
     const next = new Set(this._selectedValues);
 
@@ -573,6 +671,7 @@ export class RCSelect extends LitElement {
     this._dispatchChange();
   }
 
+  /** Flips `selected` on each `<option>` in the native `<select>` to match `_selectedValues`; no-op when no native select is present. */
   protected _syncNativeSelect() {
     const $select = this._selectRef?.deref();
 
@@ -585,6 +684,7 @@ export class RCSelect extends LitElement {
     }
   }
 
+  /** Constructs and dispatches `rc-select-change` with current `value`, `selectedValues`, and `selectedOptions`. */
   protected _dispatchChange(): void {
     this.dispatchEvent(
       new CustomEvent<RCSelectChangeEvent>('rc-select-change', {
@@ -599,6 +699,7 @@ export class RCSelect extends LitElement {
     );
   }
 
+  /** Maps value strings to `ListboxOption` objects from `_options`; creates label-only fallback stubs for unknown values. */
   protected _selectedOptionsFor(values: string[]): ListboxOption[] {
     return values.map((value) => {
       return (
@@ -610,6 +711,7 @@ export class RCSelect extends LitElement {
     });
   }
 
+  /** Resolved display mode after `auto` pointer-detection: `'chips'` on fine-pointer devices, `'compact'` on coarse. */
   protected get _effectiveDisplay(): 'chips' | 'compact' {
     if (this.display === 'chips') {
       return 'chips';
@@ -622,6 +724,7 @@ export class RCSelect extends LitElement {
     return window.matchMedia('(pointer: coarse)').matches ? 'compact' : 'chips';
   }
 
+  /** Looks up the display label for `value` from native `<select>` option text; returns `value` itself as a fallback. */
   protected _labelFor(value: string): string {
     const $select = this._selectRef?.deref();
 
@@ -636,6 +739,7 @@ export class RCSelect extends LitElement {
     return value;
   }
 
+  /** Text shown in the trigger's value-display area; returns placeholder when chips are active or nothing is selected. */
   protected get _displayLabel(): string {
     if (this._selectedValues.size === 0) {
       return this.placeholder;
@@ -656,6 +760,12 @@ export class RCSelect extends LitElement {
     return `${first}, +${values.length - 1} more`;
   }
 
+  /**
+   * APG Combobox keyboard handler on the trigger.
+   *
+   * Arrow keys navigate/open, Space/Enter activate, Tab closes without focus return,
+   * ArrowLeft enters chip navigation, and printable chars forward to type-ahead.
+   */
   protected _handleTriggerKeyDown(e: KeyboardEvent) {
     switch (e.key) {
       case 'ArrowDown':
@@ -723,6 +833,12 @@ export class RCSelect extends LitElement {
     }
   }
 
+  /**
+   * Dispatches a synthetic `pointerdown` on the active listbox item to activate it.
+   *
+   * Prefers `pointerdown` over a direct call so listbox item click logic
+   * (which is bound to `pointerdown`) fires through its normal path.
+   */
   protected _activateActive() {
     const $item = this._activeDescendantCtrl.activeItem;
 
@@ -731,6 +847,10 @@ export class RCSelect extends LitElement {
     }
   }
 
+  /**
+   * Accumulates characters in `_typeAheadBuffer` and either immediately selects
+   * the first match (closed single-select) or moves the virtual cursor (open popup).
+   */
   protected _handleTypeAhead(char: string) {
     clearTimeout(this._typeAheadTimer);
 
@@ -767,6 +887,7 @@ export class RCSelect extends LitElement {
     }
   }
 
+  /** Focuses the last chip button and sets `_chipNavIndex` to begin roving-tabindex navigation within the chip group. */
   protected _enterChipNav() {
     const $buttons = this._$chipButtons();
 
@@ -778,10 +899,18 @@ export class RCSelect extends LitElement {
     $buttons[this._chipNavIndex].focus();
   }
 
+  /** Queries all `button[part~="chip"]` elements in `renderRoot`; order matches DOM order. */
   protected _$chipButtons(): HTMLButtonElement[] {
     return Array.from(this.renderRoot.querySelectorAll<HTMLButtonElement>('button[part~="chip"]'));
   }
 
+  /**
+   * Keyboard handler for chip buttons.
+   *
+   * ArrowLeft/Right rove chip focus, Escape returns to trigger,
+   * Delete/Backspace/Enter/Space remove the chip's value
+   * and return focus to the trigger.
+   */
   protected _handleChipKeyDown(e: KeyboardEvent, value: string) {
     const $buttons = this._$chipButtons();
 
@@ -823,6 +952,7 @@ export class RCSelect extends LitElement {
     }
   }
 
+  /** Toggles the popup open or closed on trigger click. */
   protected _handleTriggerClick() {
     if (this.open) {
       this.closePopup();
@@ -854,8 +984,21 @@ export class RCSelect extends LitElement {
 
           <span part="value-display">${this._displayLabel}</span>
 
-          <span part="toggle-icon" aria-hidden="true">
-            <slot name="toggle-icon">&#9660;</slot>
+          <span part="toggle-indicator" aria-hidden="true">
+            <slot name="toggle-indicator">
+              <svg
+                width="10"
+                height="6"
+                viewBox="0 0 10 6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="1,1 5,5 9,1" />
+              </svg>
+            </slot>
           </span>
         </div>
       </div>
@@ -869,10 +1012,11 @@ export class RCSelect extends LitElement {
         @rc-listbox-change=${this._handleListboxChange}
       ></rc-listbox>
 
-      <slot name="select" @slotchange=${this._handleSelectSlotChange}></slot>
+      <slot @slotchange=${this._handleSelectSlotChange}></slot>
     `;
   }
 
+  /** Renders the chip group `<span>` with one `<button>` per selected value for multi-select chip display mode. */
   protected _renderChips() {
     return html`
       <span part="chips" role="group" aria-label="Selected items">
