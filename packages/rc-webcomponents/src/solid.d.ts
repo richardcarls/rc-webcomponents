@@ -568,9 +568,8 @@ declare module 'solid-js' {
       };
 
       'rc-fab': JSX.HTMLAttributes<HTMLElement> & {
-        variant?: 'regular' | 'extended';
-        label?: string;
-        disabled?: boolean | string;
+        position?: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start' | string;
+        'scroll-reveal'?: boolean | string;
       };
 
       'rc-app-bar': JSX.HTMLAttributes<RCAppBarRef> & {
