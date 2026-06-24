@@ -89,20 +89,29 @@ export function AppBarDemo() {
 }
 
 export function ComboboxDemo() {
-  const comboRef = useRef<HTMLElement | null>(null);
-  const log = useEventLog<{ value: string | string[] }>(
-    comboRef,
-    'rc-select-change',
-    ({ value }) => `rc-select-change -> ${Array.isArray(value) ? value.join(', ') : value}`,
-  );
+  const [comboEl, setComboEl] = useState<HTMLElement | null>(null);
+  const [log, setLog] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!comboEl) return;
+
+    const handleChange = (event: Event) => {
+      const { value } = (event as CustomEvent<{ value: string | string[] }>).detail;
+      const display = Array.isArray(value) ? value.join(', ') : value;
+      setLog((current) => [`rc-select-change -> ${display}`, ...current].slice(0, 8));
+    };
+
+    comboEl.addEventListener('rc-select-change', handleChange);
+    return () => comboEl.removeEventListener('rc-select-change', handleChange);
+  }, [comboEl]);
 
   return (
     <DemoFrame>
       <div className="demo-row">
         <label className="demo-col">
           <span>Ingredient</span>
-          <rc-combobox ref={comboRef} placeholder="Choose or create">
-            <select slot="select" name="ingredient">
+          <rc-combobox ref={(el) => setComboEl(el as HTMLElement | null)} placeholder="Choose or create">
+            <select name="ingredient">
               <option value="carrot">Carrot</option>
               <option value="ginger">Ginger</option>
               <option value="garlic">Garlic</option>
