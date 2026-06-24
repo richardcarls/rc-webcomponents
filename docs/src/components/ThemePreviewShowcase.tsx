@@ -134,7 +134,7 @@ export function ThemePreviewShowcase() {
                 <label className="theme-preview-field">
                   <span>Label</span>
                   <rc-combobox placeholder="Choose or create">
-                    <select slot="select" name="label" defaultValue="feature">
+                    <select name="label" defaultValue="feature">
                       <option value="bug">Bug</option>
                       <option value="feature">Feature</option>
                       <option value="enhancement">Enhancement</option>

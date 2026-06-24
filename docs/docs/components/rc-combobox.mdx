@@ -5,10 +5,16 @@ title: rc-combobox
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { ComboboxDemo } from '@site/src/components/ComponentDemos';
+import {
+  ComboboxAllowCreateValidationDemo,
+  ComboboxCreateReactDemo,
+  ComboboxCreateFormDemo,
+} from '@site/src/components/ComboboxDemos';
 
 # rc-combobox
 
-An editable ARIA combobox with filtering, multi-select support, and optional allow-create behavior.
+A web component implementation of the [WAI-ARIA APG combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/),
+with autocomplete filtering and optional on-the-fly item creation.
 
 <AtAGlance
   packageName="@rcarls/rc-combobox"
@@ -40,6 +46,171 @@ import '@rcarls/rc-combobox/define';
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## Allow Create
+
+Add the `allow-create` attribute to show a **"Create 'X'"** option when typed text has no exact match in the option list. Activating it inserts the new option into the native `<select>`, selects it, and fires `rc-combobox-create`.
+
+```html
+<rc-combobox allow-create placeholder="Add a tag…">
+  <select name="tags" multiple></select>
+</rc-combobox>
+```
+
+### Validation
+
+`rc-combobox-create` is **cancelable**. Call `event.preventDefault()` to block the default insertion. The event `detail` contains the raw typed text:
+
+```js
+combobox.addEventListener('rc-combobox-create', (event) => {
+  if (event.detail.text.trim().length < 2) {
+    event.preventDefault(); // too short — block insertion
+    showError('Tag must be at least 2 characters.');
+  }
+  // Otherwise the default runs: option is inserted and selected.
+});
+```
+
+<ComboboxAllowCreateValidationDemo />
+
+### React: managing options as state
+
+When React owns the option list (for example, data fetched from a server), call `preventDefault()` and add the new item to your state instead. The component reads options from the slotted `<select>`, so the new `<option>` is picked up automatically after React re-renders via the `slotchange` event. Select the new value programmatically in a `useEffect` that runs after that render:
+
+```tsx
+const [options, setOptions] = useState(initialOptions);
+const pendingValue = useRef<string | null>(null);
+const comboRef = useRef<HTMLElement & { value: string | string[] | undefined }>(null);
+
+useEffect(() => {
+  const el = comboRef.current;
+  if (!el) return;
+
+  const handleCreate = (e: Event) => {
+    e.preventDefault(); // React manages options — block component insertion.
+    const { text } = (e as CustomEvent<{ text: string }>).detail;
+    const value = text.trim().toLowerCase().replace(/\s+/g, '-');
+    setOptions((prev) => [...prev, { value, label: text.trim() }]);
+    pendingValue.current = value;
+  };
+
+  el.addEventListener('rc-combobox-create', handleCreate);
+  return () => el.removeEventListener('rc-combobox-create', handleCreate);
+}, []);
+
+// Runs after React renders the new <option> into the DOM, by which point
+// the combobox has processed slotchange and registered the option.
+useEffect(() => {
+  const value = pendingValue.current;
+  if (!value || !comboRef.current) return;
+  pendingValue.current = null;
+
+  const el = comboRef.current;
+  const current = Array.isArray(el.value) ? el.value : el.value ? [el.value] : [];
+  if (!current.includes(value)) {
+    el.value = [...current, value];
+  }
+}, [options]);
+
+return (
+  <rc-combobox ref={comboRef} allow-create placeholder="Add a framework…">
+    <select name="frameworks" multiple>
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>{opt.label}</option>
+      ))}
+    </select>
+  </rc-combobox>
+);
+```
+
+<ComboboxCreateReactDemo />
+
+### Form usage — ephemeral options until committed
+
+Keep `options` (permanent) and `pendingOptions` (session-only) as separate state. Render both into the `<select>` so React controls all `<option>` elements. On submit, move the newly created selections into `options` with `setOptions`:
+
+```tsx
+const [options, setOptions] = useState(persistedOptions);   // permanent
+const [pendingOptions, setPendingOptions] = useState([]);   // session-only
+const pendingValue = useRef(null);
+
+const handleCreate = (e) => {
+  e.preventDefault(); // React renders all <option> elements — block component insertion.
+  const { text } = e.detail;
+  const newOpt = { value: text.toLowerCase(), label: text };
+  setPendingOptions((prev) => [...prev, newOpt]);
+  pendingValue.current = newOpt.value;
+  // (post-render useEffect selects pendingValue — same pattern as the React demo above)
+};
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+  const data = new FormData(e.currentTarget);
+  const selected = data.getAll('labels');
+  const newlyCreated = pendingOptions.filter((o) => selected.includes(o.value));
+
+  // After saving to the server, commit new options to permanent state:
+  setOptions((prev) => [...prev, ...newlyCreated]);
+  setPendingOptions([]);
+  comboRef.current.value = []; // clear selection after submit
+};
+
+// Reset discards pending options without committing them:
+const handleReset = () => {
+  setPendingOptions([]);
+  comboRef.current.value = [];
+};
+
+// JSX: render persisted and pending options separately.
+<rc-combobox ref={comboRef} allow-create>
+  <select name="labels" multiple>
+    {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+    {pendingOptions.map((o) => <option key={`p-${o.value}`} value={o.value}>{o.label}</option>)}
+  </select>
+</rc-combobox>
+```
+
+<ComboboxCreateFormDemo />
+
+## Controlled vs Uncontrolled
+
+### Selection
+
+**Uncontrolled** (default): the component owns selection after mount. Use `<option selected>` or `default-value` / `defaultValue` for the initial value. Listen to `rc-select-change` to observe changes.
+
+```html
+<!-- initial selection via native attribute -->
+<rc-combobox>
+  <select name="fruit">
+    <option value="apple" selected>Apple</option>
+    <option value="banana">Banana</option>
+  </select>
+</rc-combobox>
+```
+
+**Controlled**: write `el.value` (the property) to drive selection from outside the component. Programmatic writes apply selection silently — no `rc-select-change` is dispatched. Keep your state in sync by updating `el.value` in response to `rc-select-change`:
+
+```js
+// Drive selection from outside:
+combobox.value = 'banana';
+
+// React to user selection and keep external state in sync:
+combobox.addEventListener('rc-select-change', (e) => {
+  myState.fruit = e.detail.value;
+});
+```
+
+For multiple selects, pass an array:
+
+```js
+combobox.value = ['apple', 'cherry'];
+```
+
+### Options with allow-create
+
+**Uncontrolled options**: let the default behavior run. The component appends the new `<option>` to the native `<select>` and selects it. The option persists for the lifetime of the element.
+
+**Controlled options**: call `event.preventDefault()` on `rc-combobox-create` and manage the `<option>` elements yourself (for example, in React state). After adding the option to the DOM, set `el.value` to include the new value. See [React: managing options as state](#react-managing-options-as-state) above.
 
 ## API
 

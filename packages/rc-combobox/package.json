@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless editable combobox with filtering and allow-create, built with Lit",
+  "description": "A web component implementation of the WAI-ARIA APG combobox pattern, with autocomplete filtering and optional on-the-fly item creation.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
