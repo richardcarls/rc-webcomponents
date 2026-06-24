@@ -16,6 +16,7 @@
   "files": [
     "dist",
     "src/solid.d.ts",
+    "src/react.d.ts",
     "themes"
   ],
   "module": "./dist/rc-webcomponents.js",
@@ -34,6 +35,9 @@
     },
     "./solid": {
       "types": "./src/solid.d.ts"
+    },
+    "./react": {
+      "types": "./src/react.d.ts"
     },
     "./themes/base.css": "./themes/base.css"
   },
