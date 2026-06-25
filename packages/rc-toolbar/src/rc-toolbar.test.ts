@@ -34,9 +34,6 @@ test('RCToolbar is an accessible toolbar', async () => {
   await expect.element(root).toBeInstanceOf(HTMLDivElement);
   await expect.element(root).toHaveAccessibleName('Toolbar');
   await expect.element(root).toHaveAttribute('aria-orientation', 'horizontal');
-  await expect
-    .element(root)
-    .toHaveAttribute('data-interaction-mode', 'keyboard');
 
   // Tab into component
   item1.element().focus();

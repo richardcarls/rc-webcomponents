@@ -3,6 +3,7 @@ import { property, query } from 'lit/decorators.js';
 
 import {
   isFocusable,
+  keyInteraction,
   keyNavigation,
   type FocusableElement,
   type KeyboardNavigationAction,
@@ -154,7 +155,7 @@ export class RCMenu extends RovingTabIndexMixin(LitElement) {
           handleEscape: true,
           handleActivate: true,
         })}
-        data-interaction-mode="keyboard"
+        ${keyInteraction()}
         role="menu"
         aria-label=${this.label}
         tabindex="-1"

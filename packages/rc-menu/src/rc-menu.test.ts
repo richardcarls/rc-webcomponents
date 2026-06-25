@@ -31,9 +31,6 @@ test('RCMenu is an accessible menu', async () => {
   await expect.element(root).toBeInstanceOf(HTMLDivElement);
   await expect.element(root).toHaveAccessibleName('Test Menu');
   await expect.element(root).toHaveAttribute('tabindex', '-1');
-  await expect
-    .element(root)
-    .toHaveAttribute('data-interaction-mode', 'keyboard');
 
   // Items should have menuitem role
   await expect.element(item1).toHaveAttribute('role', 'menuitem');

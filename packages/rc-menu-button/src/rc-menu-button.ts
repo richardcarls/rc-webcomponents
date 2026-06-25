@@ -3,6 +3,7 @@ import { property, query, state } from 'lit/decorators.js';
 
 import {
   AnchorController,
+  keyInteraction,
   keyNavigation,
   type AnchorPlacement,
   type KeyboardNavigationAction,
@@ -383,6 +384,7 @@ export class RCMenuButton extends LitElement {
             handleActivate: true,
             handleEscape: this.open,
           })}
+          ${keyInteraction()}
           @click=${this._handleTriggerClick}
         >
           <slot
