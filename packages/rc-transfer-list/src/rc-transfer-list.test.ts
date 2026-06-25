@@ -150,8 +150,53 @@ test('rc-transfer-list addSelected syncs selection back to select[multiple]', as
   host.addSelected();
 
   const select = host.querySelector('select') as HTMLSelectElement;
+
   expect(select.options[0].selected).toBe(true);
   expect(host.selected.map((o) => o.value)).toEqual(['a']);
+});
+
+test('rc-transfer-list rebinds when the native select child is replaced', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host">
+      <select multiple>
+        <option value="a">Alpha</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+  await host.updateComplete;
+
+  const $nextSelect = document.createElement('select');
+  $nextSelect.multiple = true;
+  $nextSelect.add(new Option('Bravo', 'b', false, true));
+
+  host.querySelector('select')?.replaceWith($nextSelect);
+
+  await vi.waitFor(() => expect(host.selected.map((o) => o.value)).toEqual(['b']));
+});
+
+test('rc-transfer-list restores the native select when disconnected', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host">
+      <select multiple>
+        <option value="a">Alpha</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+  await host.updateComplete;
+
+  const $select = host.querySelector('select') as HTMLSelectElement;
+
+  expect($select.style.display).toBe('none');
+  expect($select.getAttribute('aria-hidden')).toBe('true');
+  expect($select.tabIndex).toBe(-1);
+
+  host.remove();
+
+  expect($select.style.display).toBe('');
+  expect($select.hasAttribute('aria-hidden')).toBe(false);
+  expect($select.hasAttribute('tabindex')).toBe(false);
 });
 
 test('rc-transfer-list Alt+ArrowRight transfers highlighted item', async () => {

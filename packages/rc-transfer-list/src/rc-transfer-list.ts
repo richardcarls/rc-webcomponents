@@ -1,9 +1,15 @@
-import '@rcarls/rc-listbox/define';
-import '@rcarls/rc-toolbar/define';
-
 import { LitElement, html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+
+import {
+  MutationObserverController,
+  NativeChildController,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 import type { ListboxOption, RCListbox, RCListboxChangeEvent } from '@rcarls/rc-listbox';
+
+import '@rcarls/rc-listbox/define';
+import '@rcarls/rc-toolbar/define';
 
 export interface RCTransferListChangeEvent {
   /** Ordered selected/right-hand list options. */
@@ -43,39 +49,74 @@ declare global {
  * @csspart button - Shared action button surface.
  */
 export class RCTransferList extends LitElement {
-  override createRenderRoot() { return this; }
+  override createRenderRoot() {
+    return this;
+  }
 
   /** Enable multi-selection in both lists. */
-  @property({ type: Boolean, reflect: true }) multiple = false;
+  @property({ type: Boolean, reflect: true })
+  multiple = false;
 
   /** Visible label for the available list. */
-  @property({ attribute: 'available-label' }) availableLabel = 'Available';
+  @property({ attribute: 'available-label' })
+  availableLabel = 'Available';
 
   /** Visible label for the selected list. */
-  @property({ attribute: 'selected-label' }) selectedLabel = 'Selected';
+  @property({ attribute: 'selected-label' })
+  selectedLabel = 'Selected';
 
-  @query('#available-list') private _$availableList?: RCListbox;
-  @query('#selected-list') private _$selectedList?: RCListbox;
+  @query('#available-list')
+  private _$availableList?: RCListbox;
+
+  @query('#selected-list')
+  private _$selectedList?: RCListbox;
 
   /** Values currently highlighted in the available list. Drives the "Add →" button disable state. */
-  @state() private _availableSelection: string[] = [];
+  @state()
+  private _availableSelection: string[] = [];
 
   /** Values currently highlighted in the selected list. Drives Remove/reorder button disable states. */
-  @state() private _selectedSelection: string[] = [];
+  @state()
+  private _selectedSelection: string[] = [];
 
-  private _select: HTMLSelectElement | null = null;
+  private _$select: HTMLSelectElement | null = null;
 
   /** Set while the component mutates the backing <select> to prevent observer feedback loops. */
   private _syncing = false;
 
   private _defaultSelected: ListboxOption[] | undefined;
+
   private _selectedInitialized = false;
 
-  private _hostObserver = new MutationObserver(() => this._setupSelect());
-  private _selectObserver = new MutationObserver(() => {
-    if (!this._syncing) this.requestUpdate();
+  private readonly _selectObserver = new MutationObserverController(this, {
+    target: null,
+    disabled: true,
+    callback: () => {
+      if (!this._syncing) {
+        this.requestUpdate();
+      }
+    },
   });
 
+  constructor() {
+    super();
+
+    new NativeChildController<HTMLSelectElement>(this, {
+      selector: ':scope > select[multiple]',
+      observe: true,
+      onChange: ($select) => this._setupSelect($select),
+      onMissing: () => {
+        if (import.meta.env.DEV) {
+          warnMissingDirectChild(this, {
+            selector: ':scope > select[multiple]',
+            message:
+              '[rc-transfer-list] No direct child <select multiple> found. ' +
+              'Add a <select multiple> child for form participation and progressive enhancement.',
+          });
+        }
+      },
+    });
+  }
 
   /**
    * Available/left-hand options derived from unselected `<option>` elements.
@@ -85,36 +126,43 @@ export class RCTransferList extends LitElement {
    * skipped to prevent duplicate option values.
    */
   get available(): ListboxOption[] {
-    if (!this._select) return [];
+    if (!this._$select) {
+      return [];
+    }
 
-    return Array.from(this._select.options)
-      .filter((o) => !o.selected)
-      .map((o) => ({ value: o.value, label: o.label || o.text }));
+    return Array.from(this._$select.options)
+      .filter(($option) => !$option.selected)
+      .map(($option) => ({ value: $option.value, label: $option.label || $option.text }));
   }
 
   set available(items: ListboxOption[]) {
-    if (!this._select) return;
+    if (!this._$select) {
+      return;
+    }
 
     this._syncing = true;
 
     const selectedValues = new Set(
-      Array.from(this._select.options).filter((o) => o.selected).map((o) => o.value),
+      Array.from(this._$select.options)
+        .filter(($option) => $option.selected)
+        .map(($option) => $option.value),
     );
 
-    for (const opt of Array.from(this._select.options)) {
-      if (!opt.selected) opt.remove();
+    for (const $option of Array.from(this._$select.options)) {
+      if (!$option.selected) {
+        $option.remove();
+      }
     }
 
     for (const item of items) {
       if (!selectedValues.has(item.value)) {
-        this._select.add(new Option(item.label, item.value));
+        this._$select.add(new Option(item.label, item.value));
       }
     }
 
     this._syncing = false;
     this.requestUpdate();
   }
-
 
   /**
    * Selected/right-hand options derived from selected `<option>` elements.
@@ -123,64 +171,74 @@ export class RCTransferList extends LitElement {
    * `<select>`. Unselected options are left unchanged.
    */
   get selected(): ListboxOption[] {
-    if (!this._select) return [];
+    if (!this._$select) {
+      return [];
+    }
 
-    return Array.from(this._select.options)
-      .filter((o) => o.selected)
-      .map((o) => ({ value: o.value, label: o.label || o.text }));
+    return Array.from(this._$select.options)
+      .filter(($option) => $option.selected)
+      .map(($option) => ({ value: $option.value, label: $option.label || $option.text }));
   }
 
   set selected(items: ListboxOption[]) {
     this._selectedInitialized = true;
-    if (!this._select) return;
+
+    if (!this._$select) {
+      return;
+    }
 
     this._syncing = true;
 
-    for (const opt of Array.from(this._select.options)) {
-      if (opt.selected) opt.remove();
+    for (const $option of Array.from(this._$select.options)) {
+      if ($option.selected) {
+        $option.remove();
+      }
     }
 
     for (const item of items) {
-      this._select.add(new Option(item.label, item.value, false, true));
+      this._$select.add(new Option(item.label, item.value, false, true));
     }
 
     this._syncing = false;
     this.requestUpdate();
   }
 
-
   /** Initial uncontrolled selected list. Applied before any `selected` write from the host. */
   get defaultSelected(): ListboxOption[] | undefined {
     return this._defaultSelected;
   }
+
   set defaultSelected(items: ListboxOption[] | undefined) {
     this._defaultSelected = items;
-    if (!this._selectedInitialized && this._select && items !== undefined) {
+
+    if (!this._selectedInitialized && this._$select && items !== undefined) {
       this._applyDefaultSelected(items);
     }
   }
 
   private _applyDefaultSelected(items: ListboxOption[]): void {
-    if (!this._select) return;
-    this._syncing = true;
-    for (const opt of Array.from(this._select.options)) {
-      opt.selected = items.some((item) => item.value === opt.value);
+    if (!this._$select) {
+      return;
     }
+
+    this._syncing = true;
+
+    for (const $option of Array.from(this._$select.options)) {
+      $option.selected = items.some((item) => item.value === $option.value);
+    }
+
     this._syncing = false;
     this.requestUpdate();
   }
 
   override connectedCallback(): void {
     super.connectedCallback();
-    this._hostObserver.observe(this, { childList: true });
     this.addEventListener('keydown', this._onKeydown);
     this.addEventListener('rc-listbox-change', this._onListboxChange);
-    this._setupSelect();
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this._hostObserver.disconnect();
     this._teardownSelect();
     this.removeEventListener('keydown', this._onKeydown);
     this.removeEventListener('rc-listbox-change', this._onListboxChange);
@@ -334,15 +392,22 @@ export class RCTransferList extends LitElement {
 
   /** Adds the highlighted available options to the selected list. */
   addSelected(): void {
-    if (!this._select) return;
+    if (!this._$select) {
+      return;
+    }
 
     const values = new Set(this._$availableList?.selectedValues ?? []);
-    if (values.size === 0) return;
+
+    if (values.size === 0) {
+      return;
+    }
 
     this._syncing = true;
 
-    for (const opt of Array.from(this._select.options)) {
-      if (!opt.selected && values.has(opt.value)) opt.selected = true;
+    for (const $option of Array.from(this._$select.options)) {
+      if (!$option.selected && values.has($option.value)) {
+        $option.selected = true;
+      }
     }
 
     this._syncing = false;
@@ -353,10 +418,16 @@ export class RCTransferList extends LitElement {
 
   /** Adds every available option to the selected list. */
   addAll(): void {
-    if (!this._select) return;
+    if (!this._$select) {
+      return;
+    }
 
     this._syncing = true;
-    for (const opt of Array.from(this._select.options)) opt.selected = true;
+
+    for (const $option of Array.from(this._$select.options)) {
+      $option.selected = true;
+    }
+
     this._syncing = false;
 
     this._availableSelection = [];
@@ -366,15 +437,22 @@ export class RCTransferList extends LitElement {
 
   /** Removes the highlighted right-hand options from the selected list. */
   removeSelected(): void {
-    if (!this._select) return;
+    if (!this._$select) {
+      return;
+    }
 
     const values = new Set(this._$selectedList?.selectedValues ?? []);
-    if (values.size === 0) return;
+
+    if (values.size === 0) {
+      return;
+    }
 
     this._syncing = true;
 
-    for (const opt of Array.from(this._select.options)) {
-      if (opt.selected && values.has(opt.value)) opt.selected = false;
+    for (const $option of Array.from(this._$select.options)) {
+      if ($option.selected && values.has($option.value)) {
+        $option.selected = false;
+      }
     }
 
     this._syncing = false;
@@ -385,10 +463,16 @@ export class RCTransferList extends LitElement {
 
   /** Clears the selected/right-hand list. */
   clearSelected(): void {
-    if (!this._select) return;
+    if (!this._$select) {
+      return;
+    }
 
     this._syncing = true;
-    for (const opt of Array.from(this._select.options)) opt.selected = false;
+
+    for (const $option of Array.from(this._$select.options)) {
+      $option.selected = false;
+    }
+
     this._syncing = false;
 
     this._selectedSelection = [];
@@ -398,10 +482,15 @@ export class RCTransferList extends LitElement {
 
   /** Moves highlighted right-hand options by `delta` rows (-1 = up, 1 = down). */
   moveSelected(delta: number): void {
-    if (delta === 0 || !this._select) return;
+    if (delta === 0 || !this._$select) {
+      return;
+    }
 
     const values = new Set(this._$selectedList?.selectedValues ?? []);
-    if (values.size === 0) return;
+
+    if (values.size === 0) {
+      return;
+    }
 
     this._syncing = true;
     this._reorderSelectOptions(values, delta);
@@ -467,38 +556,39 @@ export class RCTransferList extends LitElement {
     const raw = ev.detail.value;
     const values = Array.isArray(raw) ? raw : raw ? [raw] : [];
     const targetId = (e.target as Element | null)?.id;
-    if (targetId === 'available-list') this._availableSelection = values;
-    else if (targetId === 'selected-list') this._selectedSelection = values;
+
+    if (targetId === 'available-list') {
+      this._availableSelection = values;
+    } else if (targetId === 'selected-list') {
+      this._selectedSelection = values;
+    }
   };
 
-  private _setupSelect(): void {
-    const select = this.querySelector<HTMLSelectElement>(':scope > select[multiple]');
-
-    if (select === this._select) return;
+  private _setupSelect($select: HTMLSelectElement | null): void {
+    if ($select === this._$select) {
+      return;
+    }
 
     this._teardownSelect();
-    this._select = select;
+    this._$select = $select;
 
-    if (!select) {
-      if (import.meta.env.DEV) {
-        console.warn(
-          '[rc-transfer-list] No direct child <select multiple> found. ' +
-          'Add a <select multiple> child for form participation and progressive enhancement.',
-          this,
-        );
-      }
+    if (!$select) {
       return;
     }
 
     // Remove from visual display, AT, and tab order — the rc-listbox UI is the
     // accessible interface; the <select> is only present for form serialisation.
-    select.style.display = 'none';
-    select.setAttribute('aria-hidden', 'true');
-    select.tabIndex = -1;
+    $select.style.display = 'none';
+    $select.setAttribute('aria-hidden', 'true');
+    $select.tabIndex = -1;
 
     // Watch for external option additions/removals (attribute-level opt.selected
     // changes via IDL are not observable; use the component API instead).
-    this._selectObserver.observe(select, { childList: true });
+    this._selectObserver.setOptions({
+      target: $select,
+      disabled: false,
+      observerOptions: { childList: true },
+    });
 
     if (!this._selectedInitialized && this._defaultSelected !== undefined) {
       this._applyDefaultSelected(this._defaultSelected);
@@ -508,13 +598,14 @@ export class RCTransferList extends LitElement {
   }
 
   private _teardownSelect(): void {
-    if (this._select) {
-      this._select.style.display = '';
-      this._select.removeAttribute('aria-hidden');
-      this._select.removeAttribute('tabindex');
+    if (this._$select) {
+      this._$select.style.display = '';
+      this._$select.removeAttribute('aria-hidden');
+      this._$select.removeAttribute('tabindex');
     }
-    this._selectObserver.disconnect();
-    this._select = null;
+
+    this._selectObserver.setOptions({ target: null, disabled: true });
+    this._$select = null;
   }
 
   /**
@@ -522,21 +613,24 @@ export class RCTransferList extends LitElement {
    * preserve user-determined order in form serialisation.
    */
   private _reorderSelectOptions(movedValues: Set<string>, delta: number): void {
-    const select = this._select!;
-    const opts = Array.from(select.options).filter((o) => o.selected);
+    const $select = this._$select!;
+    const $options = Array.from($select.options).filter(($option) => $option.selected);
 
-    const start = delta < 0 ? 1 : opts.length - 2;
-    const end = delta < 0 ? opts.length : -1;
+    const start = delta < 0 ? 1 : $options.length - 2;
+    const end = delta < 0 ? $options.length : -1;
     const step = delta < 0 ? 1 : -1;
 
     for (let i = start; i !== end; i += step) {
       const target = i + delta;
-      if (!movedValues.has(opts[i].value) || movedValues.has(opts[target].value)) continue;
+
+      if (!movedValues.has($options[i].value) || movedValues.has($options[target].value)) {
+        continue;
+      }
 
       if (delta < 0) {
-        select.insertBefore(opts[i], opts[target]);
+        $select.insertBefore($options[i], $options[target]);
       } else {
-        opts[target].insertAdjacentElement('afterend', opts[i]);
+        $options[target].insertAdjacentElement('afterend', $options[i]);
       }
     }
   }

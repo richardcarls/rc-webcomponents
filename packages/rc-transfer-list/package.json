@@ -46,6 +46,7 @@
     "yalc:publish": "yalc publish --push"
   },
   "dependencies": {
+    "@rcarls/rc-common": "workspace:^",
     "@rcarls/rc-listbox": "workspace:^",
     "@rcarls/rc-toolbar": "workspace:^"
   },
