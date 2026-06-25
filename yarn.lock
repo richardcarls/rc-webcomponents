@@ -4948,6 +4948,7 @@ __metadata:
   resolution: "@rcarls/rc-transfer-list@workspace:packages/rc-transfer-list"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:^"
     "@rcarls/rc-listbox": "workspace:^"
     "@rcarls/rc-toolbar": "workspace:^"
     "@vitest/browser-playwright": "npm:4.1.5"
