@@ -61,7 +61,7 @@ function EventLog({ entries, placeholder = 'Events will appear here...' }: {
   return (
     <div className="demo-event-log">
       {entries.length
-        ? entries.map((entry) => <p key={entry}>{entry}</p>)
+        ? entries.map((entry, i) => <p key={i}>{entry}</p>)
         : <p className="demo-placeholder">{placeholder}</p>}
     </div>
   );
@@ -365,23 +365,41 @@ export function RangeSliderDemo() {
 }
 
 export function SearchBarDemo() {
-  const searchRef = useRef<RCSearchBarRef>(null);
-  const log = useEventLog<{ value: string }>(
-    searchRef,
-    'rc-search-bar-input',
-    ({ value }) => `rc-search-bar-input -> ${value}`,
-  );
+  const [searchEl, setSearchEl] = useState<RCSearchBarRef | null>(null);
+  const [log, setLog] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!searchEl) return;
+
+    const onInput = (e: Event) => {
+      const { value } = (e as CustomEvent<{ value: string }>).detail;
+      setLog((prev) => [`rc-search-bar-input -> ${value}`, ...prev].slice(0, 8));
+    };
+
+    const onClear = () => {
+      setLog((prev) => ['rc-search-bar-clear', ...prev].slice(0, 8));
+    };
+
+    searchEl.addEventListener('rc-search-bar-input', onInput);
+    searchEl.addEventListener('rc-search-bar-clear', onClear);
+
+    return () => {
+      searchEl.removeEventListener('rc-search-bar-input', onInput);
+      searchEl.removeEventListener('rc-search-bar-clear', onClear);
+    };
+  }, [searchEl]);
 
   return (
     <DemoFrame>
-      <rc-search-bar ref={searchRef}>
+      <rc-search-bar ref={setSearchEl}>
+        <span slot="leading" aria-hidden="true" className="material-symbols-outlined">search</span>
         <input type="search" name="q" defaultValue="tomato" aria-label="Search recipes" />
       </rc-search-bar>
       <p>
-        <button type="button" onClick={() => { if (searchRef.current) searchRef.current.value = 'pasta'; }}>
+        <button type="button" onClick={() => { if (searchEl) searchEl.value = 'pasta'; }}>
           Set pasta
         </button>{' '}
-        <button type="button" onClick={() => { if (searchRef.current) searchRef.current.value = ''; }}>
+        <button type="button" onClick={() => { if (searchEl) searchEl.value = ''; }}>
           Clear
         </button>
       </p>

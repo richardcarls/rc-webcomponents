@@ -219,6 +219,8 @@
       --md-search-bar-container-shape,
       var(--md-sys-shape-corner-full, 999px)
     );
+    --rc-search-bar-border: none;
+    --rc-search-bar-shadow: var(--rc-shadow-level1);
     --rc-search-bar-height: var(--md-search-bar-container-height, 3.5rem);
     --rc-search-bar-padding-inline: 1rem;
     --rc-search-bar-gap: 1rem;

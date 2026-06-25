@@ -20,12 +20,6 @@ export type KeyboardNavigationAction =
  */
 export interface KeyNavigationOptions {
   /**
-   * Set data-interaction-mode attribute for keyboard vs mouse styling.
-   * @default true
-   */
-  useInteractionModeAttr?: boolean;
-
-  /**
    * Dispatch 'escape' action on Escape key.
    * @default false
    */
@@ -66,7 +60,6 @@ export interface KeyNavigationOptions {
 class KeyboardNavigationDirective extends AsyncDirective {
   private _element?: WeakRef<Element>;
   private _keyDownHandle!: (ev: KeyboardEvent) => any;
-  private _mouseClickHandle!: (ev: MouseEvent) => any;
   private _callback!: (action: KeyboardNavigationAction) => void;
   private _options: KeyNavigationOptions = {};
   /**
@@ -160,34 +153,13 @@ class KeyboardNavigationDirective extends AsyncDirective {
         action = 'activate';
       } else if (key === 'Escape' && this._options.handleEscape) {
         action = 'escape';
-      } else if (key === 'Tab') {
-        // Set interaction mode for keyboard-only focus styling, but don't handle
-        if (this._options.useInteractionModeAttr) {
-          this._element
-            ?.deref()
-            ?.setAttribute('data-interaction-mode', 'keyboard');
-        }
       }
     }
 
     if (action != null) {
       this._callback(action);
-
-      if (this._options.useInteractionModeAttr) {
-        this._element
-          ?.deref()
-          ?.setAttribute('data-interaction-mode', 'keyboard');
-      }
-
       e.stopPropagation();
       e.preventDefault();
-    }
-  }
-
-  protected _onMouseClick(_e: MouseEvent) {
-    if (this._options.useInteractionModeAttr) {
-      // For :focus-within styling only when focused item is :focus-visible
-      this._element?.deref()?.removeAttribute('data-interaction-mode');
     }
   }
 
@@ -196,17 +168,15 @@ class KeyboardNavigationDirective extends AsyncDirective {
 
     if (el != null && el instanceof HTMLElement) {
       this._keyDownHandle = this._onKeydown.bind(this);
-      this._mouseClickHandle = this._onMouseClick.bind(this);
       el.addEventListener('keydown', this._keyDownHandle);
-      el.addEventListener('click', this._mouseClickHandle);
     }
   }
 
   /**
    * @param _cb - Callback function invoked with the navigation action
-   * @param _options - Options object or deprecated boolean for useInteractionModeAttr
+   * @param _options - Options object or deprecated boolean (deprecated).
    * @deprecated Passing a boolean as the second parameter is deprecated.
-   *             Use an options object instead: `{ useInteractionModeAttr: true }`
+   *             Use an options object instead.
    */
   render(
     _cb: (action: KeyboardNavigationAction) => void,
@@ -228,20 +198,17 @@ class KeyboardNavigationDirective extends AsyncDirective {
     // Always update callback and options (supports reactive property changes)
     this._callback = cb.bind(part.options?.host ?? part.element);
 
-    // Handle deprecated boolean parameter
+    // Handle deprecated boolean parameter (previously controlled useInteractionModeAttr)
     if (typeof optionsOrBoolean === 'boolean') {
       if (import.meta.env?.DEV) {
         console.warn(
           '[keyNavigation] Passing a boolean as the second parameter is deprecated. ' +
-            'Use an options object instead: { useInteractionModeAttr: true }',
+            'Use an options object instead.',
         );
       }
-      this._options = { useInteractionModeAttr: optionsOrBoolean };
+      this._options = {};
     } else {
-      this._options = {
-        useInteractionModeAttr: true,
-        ...optionsOrBoolean,
-      };
+      this._options = { ...optionsOrBoolean };
     }
   }
 
@@ -250,7 +217,6 @@ class KeyboardNavigationDirective extends AsyncDirective {
 
     if (el != null && el instanceof HTMLElement) {
       el.removeEventListener('keydown', this._keyDownHandle);
-      el.removeEventListener('click', this._mouseClickHandle);
     }
   }
 
