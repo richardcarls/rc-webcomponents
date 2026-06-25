@@ -26,6 +26,7 @@ declare global {
  * @cssprop [--rc-toolbar-padding-inline=calc(var(--rc-control-padding-inline) / 2)] - Horizontal padding on the toolbar container
  * @cssprop [--rc-toolbar-padding-block=calc(var(--rc-control-padding-block) / 2)] - Vertical padding on the toolbar container
  * @cssprop [--rc-toolbar-radius=var(--rc-control-radius)] - Toolbar container border radius
+ * @cssprop [--rc-toolbar-vertical-radius=var(--rc-toolbar-radius)] - Toolbar container border radius when orientation is vertical; falls back to `--rc-toolbar-radius`
  * @csspart root - The toolbar container element
  */
 export class RCToolbar extends RovingTabIndexMixin(LitElement) {
