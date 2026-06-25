@@ -41,6 +41,12 @@ declare global {
  * @cssprop [--rc-transfer-list-panel-gap=var(--rc-control-gap)] - Gap between a panel label and its listbox
  * @cssprop [--rc-transfer-list-listbox-min-block-size=10rem] - Minimum block size for each listbox
  * @cssprop [--rc-transfer-list-listbox-border=var(--rc-border)] - Border around each listbox
+ * @cssprop [--rc-transfer-list-option-gap=var(--rc-item-gap)] - Gap between option adornments and labels
+ * @cssprop [--rc-transfer-list-option-padding-block=var(--rc-item-padding-block)] - Block padding for option rows
+ * @cssprop [--rc-transfer-list-option-padding-inline=var(--rc-item-padding-inline)] - Inline padding for option rows
+ * @cssprop [--rc-transfer-list-option-selected-bg=var(--rc-highlight)] - Selected option background
+ * @cssprop [--rc-transfer-list-option-selected-color=var(--rc-highlight-text)] - Selected option foreground
+ *
  * @csspart root - Root layout wrapper. Reflects data-can-move-up/down.
  * @csspart panel - Shared list panel surface.
  * @csspart available-panel - Available/left panel. Reflects data-empty and data-has-selection.
@@ -281,10 +287,60 @@ export class RCTransferList extends LitElement {
           min-block-size: var(--rc-transfer-list-listbox-min-block-size, 10rem);
           overflow: auto;
           border: var(--rc-transfer-list-listbox-border, var(--rc-border, 1px solid ButtonBorder));
+          background: var(--rc-transfer-list-listbox-bg, var(--rc-surface, Canvas));
+          color: var(--rc-transfer-list-listbox-color, var(--rc-field-text, FieldText));
+        }
+
+        rc-transfer-list rc-listbox [part~='option'] {
+          display: flex;
+          align-items: center;
+          gap: var(--rc-transfer-list-option-gap, var(--rc-item-gap, 0.4em));
+          padding: var(--rc-transfer-list-option-padding-block, var(--rc-item-padding-block, 0.3em))
+            var(--rc-transfer-list-option-padding-inline, var(--rc-item-padding-inline, 0.75em));
+          cursor: default;
+        }
+
+        rc-transfer-list rc-listbox [part~='option'][hidden] {
+          display: none;
+        }
+
+        rc-transfer-list
+          rc-listbox
+          [part~='option']:not([hidden]):not([aria-disabled='true']):hover,
+        rc-transfer-list rc-listbox [part~='option'][data-active]:not([aria-disabled='true']) {
+          background: var(
+            --rc-transfer-list-option-hover-bg,
+            var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight))
+          );
+          color: var(
+            --rc-transfer-list-option-hover-color,
+            var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText))
+          );
+        }
+
+        rc-transfer-list rc-listbox [part~='option'][data-active]:not([aria-disabled='true']) {
+          outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
+          outline-offset: -2px;
+        }
+
+        rc-transfer-list rc-listbox [part~='option'][aria-selected='true'] {
+          background: var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight));
+          color: var(
+            --rc-transfer-list-option-selected-color,
+            var(--rc-highlight-text, HighlightText)
+          );
+        }
+
+        rc-transfer-list rc-listbox [part~='option'][aria-disabled='true'] {
+          opacity: var(--rc-disabled-opacity, 0.5);
+          cursor: not-allowed;
         }
 
         rc-transfer-list .rc-transfer-list-actions {
           align-self: center;
+          transform: translateY(
+            calc((1lh + var(--rc-transfer-list-panel-gap, var(--rc-control-gap, 0.35rem))) / 2)
+          );
         }
 
         rc-transfer-list .rc-transfer-list-actions button {
@@ -298,6 +354,7 @@ export class RCTransferList extends LitElement {
 
           rc-transfer-list .rc-transfer-list-actions {
             align-self: stretch;
+            transform: none;
           }
         }
       </style>

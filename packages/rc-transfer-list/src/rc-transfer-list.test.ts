@@ -105,6 +105,54 @@ test('rc-transfer-list reflects empty and selection states', async () => {
   expect(availablePanel?.hasAttribute('data-has-selection')).toBe(true);
 });
 
+test('rc-transfer-list visibly highlights selected listbox options by default', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host">
+      <select multiple>
+        <option value="factory">Factory</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+  await host.updateComplete;
+
+  host.querySelector('rc-listbox')?.setSelectedValues(['factory']);
+  await host.updateComplete;
+
+  const $option = host.querySelector('[role="option"][aria-selected="true"]') as HTMLElement;
+  const style = getComputedStyle($option);
+
+  expect(style.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+  expect(style.backgroundColor).not.toBe('transparent');
+});
+
+test('rc-transfer-list centers action buttons against listbox height', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host">
+      <select multiple>
+        <option value="factory">Factory</option>
+        <option value="mine">Mine</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+  await host.updateComplete;
+
+  const $actions = host.querySelector('[part~="actions"]') as HTMLElement;
+  const $listbox = host.querySelector('rc-listbox') as HTMLElement;
+
+  if (matchMedia('(max-width: 42rem)').matches) {
+    expect(getComputedStyle($actions).transform).toBe('none');
+    return;
+  }
+
+  const actionsRect = $actions.getBoundingClientRect();
+  const listboxRect = $listbox.getBoundingClientRect();
+  const actionsCenter = actionsRect.top + actionsRect.height / 2;
+  const listboxCenter = listboxRect.top + listboxRect.height / 2;
+
+  expect(actionsCenter).toBeCloseTo(listboxCenter, 0);
+});
 test('rc-transfer-list reflects reorder capability states', async () => {
   const screen = render(html`
     <rc-transfer-list data-testid="host">
