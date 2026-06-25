@@ -12,6 +12,7 @@ import type {
   RCRangeSliderRef,
   RCSearchBarRef,
   RCSliderRef,
+  RCTransferListChangeDetail,
   RCTransferListRef,
 } from '@rcarls/rc-webcomponents/react';
 
@@ -646,15 +647,25 @@ export function ToolbarDemo() {
 
 export function TransferListDemo() {
   const transferRef = useRef<RCTransferListRef>(null);
-  const log = useEventLog<{ selected: string[] }>(
+  const [compact, setCompact] = useState(false);
+  const log = useEventLog<RCTransferListChangeDetail>(
     transferRef,
     'rc-transfer-list-change',
-    ({ selected }) => `rc-transfer-list-change -> ${selected.join(', ')}`,
+    ({ selected }) =>
+      `rc-transfer-list-change -> ${selected.map(({ label }) => label).join(', ') || '(none)'}`,
   );
 
   return (
     <DemoFrame>
-      <rc-transfer-list ref={transferRef} multiple>
+      <label>
+        <input
+          type="checkbox"
+          checked={compact}
+          onChange={(event) => setCompact(event.currentTarget.checked)}
+        />{' '}
+        Compact layout
+      </label>
+      <rc-transfer-list ref={transferRef} multiple compact={compact ? true : undefined}>
         <select multiple aria-label="Available sections">
           <option value="breakfast">Breakfast</option>
           <option value="dinner" selected>Dinner</option>
