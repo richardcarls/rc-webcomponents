@@ -1,6 +1,6 @@
 # `@rcarls/rc-common`
 
-Shared controllers and directives for the `@rcarls` web components library. Not a component itself — a set of composable Lit primitives for drag, resize, anchor positioning, active-descendant navigation, roving tabindex, scroll observation, slider value math, keyboard interaction, pointer movement, DOM scroll ancestor lookup, and focusability testing.
+Shared controllers and directives for the `@rcarls` web components library. Not a component itself — a set of composable Lit primitives for drag, resize, anchor positioning, active-descendant navigation, roving tabindex, scroll observation, lifecycle-safe observers, native-child lookup, typeahead, slider value math, keyboard interaction, pointer movement, DOM scroll ancestor lookup, and focusability testing.
 
 ---
 
@@ -14,13 +14,22 @@ npm install @rcarls/rc-common
 
 ```js
 import { DragController, ResizeController, AnchorController } from '@rcarls/rc-common';
-import { ActiveDescendantController, ScrollObserverController } from '@rcarls/rc-common';
+import {
+  ActiveDescendantController,
+  MutationObserverController,
+  RafScheduler,
+  ScrollObserverController,
+  TypeaheadController,
+} from '@rcarls/rc-common';
 import { RovingTabIndexMixin, keyInteraction, keyNavigation, mouseMove } from '@rcarls/rc-common';
 import {
   findNearestScrollAncestor,
+  getDirectChild,
+  getDirectChildren,
   isFocusable,
   snapToStep,
   valueToPercent,
+  warnMissingDirectChild,
 } from '@rcarls/rc-common';
 ```
 
@@ -37,10 +46,14 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `DragController` | Pointer and keyboard drag-to-move behavior |
 | `KeyboardInteractionDirective` / `keyInteraction` | Tracking pointer vs keyboard interaction mode on a rendered element |
 | `KeyboardNavigationDirective` / `keyNavigation` | Mapping APG arrow-key models to navigation actions |
+| `MutationObserverController` | Lifecycle-safe `MutationObserver` wiring for light-DOM or shadow-DOM changes |
 | `MouseMoveDirective` / `mouseMove` | Pointermove callbacks while a pointer drag is active |
+| `NativeChildController`, `getDirectChild`, `getDirectChildren`, `warnMissingDirectChild` | Finding, validating, and tracking consumer-provided native light-DOM children |
+| `RafScheduler` | Coalescing repeated work into one animation frame and canceling on disconnect |
 | `ResizeController` | Pointer and keyboard resize behavior |
 | `RovingTabIndexMixin` | Roving tabindex for components whose child controls receive real DOM focus |
 | `ScrollObserverController` | Scroll threshold and delta observation for scroll-driven component state |
+| `TypeaheadController` | Printable-key buffering for composite widget typeahead |
 | `findNearestScrollAncestor` | Locating the nearest scrollable ancestor for scroll-driven behavior |
 | `isFocusable` | Filtering focusable items for keyboard navigation |
 | `snapToStep`, `valueToPercent` | Slider and range-slider numeric helpers |
