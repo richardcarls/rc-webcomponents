@@ -37,6 +37,16 @@ async function pressKey(target: HTMLElement, keyToken: string): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+// Waits for the ResizeObserver+RAF cycle to complete and _maxValue to be set.
+// Returns the separator element for convenience.
+async function waitForInit(host: RCSplitter): Promise<HTMLElement> {
+  const separator = getSeparator(host);
+  await vi.waitFor(() => {
+    expect(Number(separator.getAttribute('aria-valuemax'))).toBeGreaterThan(0);
+  });
+  return separator;
+}
+
 function firePointerEvent(
   target: EventTarget,
   type: string,
@@ -253,11 +263,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-
-      // Wait for resize observer to calculate max
-      await new Promise((r) => setTimeout(r, 50));
-
-      const separator = getSeparator(host);
+      const separator = await waitForInit(host);
 
       await focusSeparator(separator);
       await pressKey(separator, '{End}');
@@ -276,14 +282,12 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      // Wait for resize observer
-      await new Promise((r) => setTimeout(r, 50));
+      const separator = await waitForInit(host);
 
       // Set a value that can be collapsed/restored
       host.value = 150;
       const initialValue = host.value;
 
-      const separator = getSeparator(host);
       await focusSeparator(separator);
 
       // First Enter collapses
@@ -378,11 +382,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-
-      // Wait for resize observer
-      await new Promise((r) => setTimeout(r, 50));
-
-      const separator = getSeparator(host);
+      const separator = await waitForInit(host);
 
       await focusSeparator(separator);
 
@@ -445,14 +445,12 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      // Wait for resize observer
-      await new Promise((r) => setTimeout(r, 50));
+      const separator = await waitForInit(host);
 
       // Set a specific value
       host.value = 100;
       const initialValue = host.value;
 
-      const separator = getSeparator(host);
       await focusSeparator(separator);
 
       await pressKey(separator, '{ArrowRight}');
@@ -517,11 +515,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-
-      // Wait for resize observer
-      await new Promise((r) => setTimeout(r, 50));
-
-      const separator = getSeparator(host);
+      const separator = await waitForInit(host);
 
       await focusSeparator(separator);
       await pressKey(separator, '{End}');
@@ -632,11 +626,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-
-      // Wait for resize observer
-      await new Promise((r) => setTimeout(r, 50));
-
-      const separator = getSeparator(host);
+      const separator = await waitForInit(host);
 
       expect(separator.getAttribute('aria-valuemin')).toBe('0');
       const maxValue = separator.getAttribute('aria-valuemax');
@@ -655,10 +645,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      // Wait for resize observer
-      await new Promise((r) => setTimeout(r, 50));
-
-      const separator = getSeparator(host);
+      const separator = await waitForInit(host);
 
       await focusSeparator(separator);
       // Dispatch keyboard event directly on the separator
@@ -691,8 +678,10 @@ describe('RCSplitter', () => {
       );
       expect(separator.getAttribute('data-interaction-mode')).toBe('keyboard');
 
-      // Mouse click should clear it
-      separator.click();
+      // Pointer interaction should clear it (keyInteraction listens for pointerdown)
+      separator.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true }),
+      );
       expect(separator.hasAttribute('data-interaction-mode')).toBe(false);
     });
   });
@@ -708,9 +697,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
-
-      const separator = getSeparator(host);
+      const separator = await waitForInit(host);
       const initialValue = host.value;
 
       firePointerEvent(separator, 'pointerdown');
@@ -740,12 +727,10 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      const separator = await waitForInit(host);
 
       host.value = 100;
       const initialValue = host.value;
-
-      const separator = getSeparator(host);
 
       firePointerEvent(separator, 'pointerdown');
 
@@ -776,9 +761,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
-
-      const separator = getSeparator(host);
+      const separator = await waitForInit(host);
       const initialValue = host.value;
 
       firePointerEvent(separator, 'pointerdown');
@@ -894,7 +877,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      await waitForInit(host);
 
       // Set a value that's not a multiple of step
       host.value = 103;
@@ -916,7 +899,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      await waitForInit(host);
 
       host.value = 107;
 
@@ -937,10 +920,9 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      const separator = await waitForInit(host);
 
       host.value = 100;
-      const separator = getSeparator(host);
       await focusSeparator(separator);
 
       await pressKey(separator, '{ArrowRight}');
@@ -964,7 +946,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      await waitForInit(host);
 
       expect(host.value).toBe(150);
     });
@@ -979,7 +961,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      await waitForInit(host);
 
       // Default should be max/2 = 400/2 = 200
       expect(host.value).toBe(200);
@@ -1093,12 +1075,11 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      const separator = await waitForInit(host);
 
       host.value = 100;
       const initialValue = host.value;
 
-      const separator = getSeparator(host);
       await focusSeparator(separator);
 
       await pressKey(separator, '{Escape}');
@@ -1125,11 +1106,9 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      const separator = await waitForInit(host);
 
       host.value = 100;
-
-      const separator = getSeparator(host);
       await focusSeparator(separator);
 
       await pressKey(separator, '{ArrowRight}');
@@ -1149,12 +1128,11 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      const separator = await waitForInit(host);
 
       host.value = 100;
       const initialValue = host.value;
 
-      const separator = getSeparator(host);
       await focusSeparator(separator);
 
       // Vertical arrows should be ignored for horizontal splitter
@@ -1179,12 +1157,11 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      const separator = await waitForInit(host);
 
       host.value = 100;
       const initialValue = host.value;
 
-      const separator = getSeparator(host);
       await focusSeparator(separator);
 
       // Horizontal arrows should be ignored for vertical splitter
@@ -1213,7 +1190,7 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      await waitForInit(host);
 
       (handleChange as ReturnType<typeof vi.fn>).mockClear();
 
@@ -1262,11 +1239,10 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      const separator = await waitForInit(host);
 
       host.value = 180;
 
-      const separator = getSeparator(host);
       await focusSeparator(separator);
 
       // Press Home to collapse
@@ -1288,11 +1264,9 @@ describe('RCSplitter', () => {
 
       const host = screen.getByTestId('host').element() as RCSplitter;
       await host.updateComplete;
-      await new Promise((r) => setTimeout(r, 50));
+      const separator = await waitForInit(host);
 
       host.value = 120;
-
-      const separator = getSeparator(host);
       await focusSeparator(separator);
 
       // Move a bit

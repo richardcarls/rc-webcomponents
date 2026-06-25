@@ -7,6 +7,7 @@ import {
 } from "lit/decorators.js";
 
 import {
+  keyInteraction,
   keyNavigation,
   type KeyboardNavigationAction,
   mouseMove,
@@ -110,7 +111,6 @@ export class RCSplitter extends LitElement {
 
   private _setValue(val: number, dispatch: boolean): void {
     const oldValue = this._value;
-    this._lastValue = oldValue;
 
     this._value = Math.min(
       Math.max(Math.round(val / this.step) * this.step, this._minValue),
@@ -131,6 +131,12 @@ export class RCSplitter extends LitElement {
   private _setUserValue(val: number): void {
     this._valueInitialized = true;
     this._hostValue = undefined;
+    // Capture the last non-zero position before a user-driven change so
+    // toggle-collapse can restore it. Internal resize callbacks use _setValue
+    // directly and must not overwrite this.
+    if (this._value > 0) {
+      this._lastValue = this._value;
+    }
     this._setValue(val, true);
   }
 
@@ -262,7 +268,7 @@ export class RCSplitter extends LitElement {
         el?.getBoundingClientRect() ?? this.getBoundingClientRect();
 
       if (this.mode === "length") {
-        this._maxValue =
+        const measured =
           this.orientation === "horizontal"
             ? // For horizontal splitters, just take the host width...
               this._measureHostSize("inline")
@@ -270,6 +276,13 @@ export class RCSplitter extends LitElement {
               this._initialMax ||
               Math.ceil(clientRect.height) ||
               this._measureHostSize("block");
+
+        // After initialization, ignore spurious zero measurements (e.g. during
+        // Chromium's layout recalculation triggered by a secondary ResizeObserver
+        // callback). A temporarily-zero result would clamp _value to 0 incorrectly.
+        if (measured > 0 || !this._initialMax) {
+          this._maxValue = measured;
+        }
       } else {
         // Percentage max is always just 100%
         this._maxValue = 100.0;
@@ -338,6 +351,7 @@ export class RCSplitter extends LitElement {
           aria-valuemin=${this._minValue}
           aria-valuemax=${this._maxValue}
           ${keyNavigation(this._onKeyboardResize)}
+          ${keyInteraction()}
           ${mouseMove(this._onPointerResize)}
           ?hidden=${!this._$secondaryElements.length}
         ></div>
