@@ -11,6 +11,8 @@ import type { ListboxOption, RCListbox, RCListboxChangeEvent } from '@rcarls/rc-
 import '@rcarls/rc-listbox/define';
 import '@rcarls/rc-toolbar/define';
 
+import { transferListStyles } from './rc-transfer-list.styles.js';
+
 export interface RCTransferListChangeEvent {
   /** Ordered selected/right-hand list options. */
   selected: ListboxOption[];
@@ -23,13 +25,12 @@ declare global {
 }
 
 /**
- * Side-by-side transfer list built from two `rc-listbox` instances.
+ * Enhances a `<select multiple>` element to become a side-by-side transfer list.
  *
- * Requires a direct child `<select multiple>` element as the single source of
- * truth for option data and form participation. Unselected `<option>` elements
- * populate the available (left) panel; selected ones populate the selected
- * (right) panel. Transfers are reflected back to the `<select>` so native form
- * submission serialises the right-panel values in user-determined order.
+ * The component renders two listboxes and transfer/reorder actions in between.
+ * Available options are on the left, and selected options appear on the right. It
+ * is an older enterprise/admin UI pattern, but solves the specific problem of
+ * multiple selection within a large amount of options.
  *
  * The `available` and `selected` JS array properties write through to the
  * backing `<select>`, so the component can also be driven imperatively from a
@@ -55,13 +56,15 @@ declare global {
  * @csspart button - Shared action button surface.
  */
 export class RCTransferList extends LitElement {
-  override createRenderRoot() {
-    return this;
-  }
+  static override styles = transferListStyles;
 
   /** Enable multi-selection in both lists. */
   @property({ type: Boolean, reflect: true })
   multiple = false;
+
+  /** Stack the panels and action toolbar into a compact one-column layout. */
+  @property({ type: Boolean, reflect: true })
+  compact = false;
 
   /** Visible label for the available list. */
   @property({ attribute: 'available-label' })
@@ -237,17 +240,9 @@ export class RCTransferList extends LitElement {
     this.requestUpdate();
   }
 
-  override connectedCallback(): void {
-    super.connectedCallback();
-    this.addEventListener('keydown', this._onKeydown);
-    this.addEventListener('rc-listbox-change', this._onListboxChange);
-  }
-
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this._teardownSelect();
-    this.removeEventListener('keydown', this._onKeydown);
-    this.removeEventListener('rc-listbox-change', this._onListboxChange);
   }
 
   override render() {
@@ -263,106 +258,13 @@ export class RCTransferList extends LitElement {
     const canMoveDown = this._canMoveSelected(selected, selectedValues, 1);
 
     return html`
-      <style>
-        rc-transfer-list {
-          display: block;
-        }
-
-        rc-transfer-list .rc-transfer-list-root {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-          align-items: stretch;
-          gap: var(--rc-transfer-list-gap, var(--rc-control-gap, 0.75rem));
-        }
-
-        rc-transfer-list .rc-transfer-list-panel {
-          display: flex;
-          min-inline-size: 0;
-          flex-direction: column;
-          gap: var(--rc-transfer-list-panel-gap, var(--rc-control-gap, 0.35rem));
-        }
-
-        rc-transfer-list .rc-transfer-list-panel > rc-listbox {
-          flex: 1 1 auto;
-          min-block-size: var(--rc-transfer-list-listbox-min-block-size, 10rem);
-          overflow: auto;
-          border: var(--rc-transfer-list-listbox-border, var(--rc-border, 1px solid ButtonBorder));
-          background: var(--rc-transfer-list-listbox-bg, var(--rc-surface, Canvas));
-          color: var(--rc-transfer-list-listbox-color, var(--rc-field-text, FieldText));
-        }
-
-        rc-transfer-list rc-listbox [part~='option'] {
-          display: flex;
-          align-items: center;
-          gap: var(--rc-transfer-list-option-gap, var(--rc-item-gap, 0.4em));
-          padding: var(--rc-transfer-list-option-padding-block, var(--rc-item-padding-block, 0.3em))
-            var(--rc-transfer-list-option-padding-inline, var(--rc-item-padding-inline, 0.75em));
-          cursor: default;
-        }
-
-        rc-transfer-list rc-listbox [part~='option'][hidden] {
-          display: none;
-        }
-
-        rc-transfer-list
-          rc-listbox
-          [part~='option']:not([hidden]):not([aria-disabled='true']):hover,
-        rc-transfer-list rc-listbox [part~='option'][data-active]:not([aria-disabled='true']) {
-          background: var(
-            --rc-transfer-list-option-hover-bg,
-            var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight))
-          );
-          color: var(
-            --rc-transfer-list-option-hover-color,
-            var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText))
-          );
-        }
-
-        rc-transfer-list rc-listbox [part~='option'][data-active]:not([aria-disabled='true']) {
-          outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
-          outline-offset: -2px;
-        }
-
-        rc-transfer-list rc-listbox [part~='option'][aria-selected='true'] {
-          background: var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight));
-          color: var(
-            --rc-transfer-list-option-selected-color,
-            var(--rc-highlight-text, HighlightText)
-          );
-        }
-
-        rc-transfer-list rc-listbox [part~='option'][aria-disabled='true'] {
-          opacity: var(--rc-disabled-opacity, 0.5);
-          cursor: not-allowed;
-        }
-
-        rc-transfer-list .rc-transfer-list-actions {
-          align-self: center;
-          transform: translateY(
-            calc((1lh + var(--rc-transfer-list-panel-gap, var(--rc-control-gap, 0.35rem))) / 2)
-          );
-        }
-
-        rc-transfer-list .rc-transfer-list-actions button {
-          white-space: nowrap;
-        }
-
-        @media (max-width: 42rem) {
-          rc-transfer-list .rc-transfer-list-root {
-            grid-template-columns: minmax(0, 1fr);
-          }
-
-          rc-transfer-list .rc-transfer-list-actions {
-            align-self: stretch;
-            transform: none;
-          }
-        }
-      </style>
       <div
+        id="root"
         part="root"
         class="rc-transfer-list-root"
         data-can-move-up=${canMoveUp ? '' : nothing}
         data-can-move-down=${canMoveDown ? '' : nothing}
+        @keydown=${this._onKeydown}
       >
         <section
           part="panel available-panel"
@@ -379,11 +281,13 @@ export class RCTransferList extends LitElement {
             tabindex="0"
             .options=${available}
             .multiple=${this.multiple}
+            @rc-listbox-change=${this._onListboxChange}
           ></rc-listbox>
         </section>
 
         <rc-toolbar
-          orientation="vertical"
+          id="actions"
+          orientation=${this.compact ? 'horizontal' : 'vertical'}
           label="Transfer actions"
           part="actions"
           class="rc-transfer-list-actions"
@@ -393,37 +297,54 @@ export class RCTransferList extends LitElement {
             part="button add-button"
             ?disabled=${noAvailable || noAvailableSelection}
             @click=${this.addSelected}
-          >Add &#x2192;</button>
+          >
+            Add &#x2192;
+          </button>
+
           <button
             type="button"
             part="button add-all-button"
             ?disabled=${noAvailable}
             @click=${this.addAll}
-          >Add all &#x2192;</button>
+          >
+            Add all &#x2192;
+          </button>
+
           <button
             type="button"
             part="button remove-button"
             ?disabled=${noSelected || noSelectedSelection}
             @click=${this.removeSelected}
-          >&#x2190; Remove</button>
+          >
+            &#x2190; Remove
+          </button>
+
           <button
             type="button"
             part="button clear-button"
             ?disabled=${noSelected}
             @click=${this.clearSelected}
-          >&#x2190; Clear</button>
+          >
+            &#x2190; Clear
+          </button>
+
           <button
             type="button"
             part="button move-up-button"
             ?disabled=${cannotReorder || noSelectedSelection}
             @click=${this._onMoveUp}
-          >Move up</button>
+          >
+            Move up
+          </button>
+
           <button
             type="button"
             part="button move-down-button"
             ?disabled=${cannotReorder || noSelectedSelection}
             @click=${this._onMoveDown}
-          >Move down</button>
+          >
+            Move down
+          </button>
         </rc-toolbar>
 
         <section
@@ -434,6 +355,7 @@ export class RCTransferList extends LitElement {
           data-has-selection=${!noSelectedSelection ? '' : nothing}
         >
           <span part="label selected-label" id="selected-label">${this.selectedLabel}</span>
+
           <rc-listbox
             id="selected-list"
             part="listbox selected-listbox"
@@ -441,9 +363,11 @@ export class RCTransferList extends LitElement {
             tabindex="0"
             .options=${selected}
             .multiple=${this.multiple}
+            @rc-listbox-change=${this._onListboxChange}
           ></rc-listbox>
         </section>
       </div>
+      <slot></slot>
     `;
   }
 
@@ -557,22 +481,33 @@ export class RCTransferList extends LitElement {
     this._dispatchChange(values);
   }
 
-  private _onMoveUp = (): void => { this.moveSelected(-1); };
+  private _onMoveUp = (): void => {
+    this.moveSelected(-1);
+  };
 
-  private _onMoveDown = (): void => { this.moveSelected(1); };
+  private _onMoveDown = (): void => {
+    this.moveSelected(1);
+  };
 
   private _canMoveSelected(
     selected: ListboxOption[],
     selectedValues: Set<string>,
     delta: -1 | 1,
   ): boolean {
-    if (selectedValues.size === 0 || selected.length < 2) return false;
+    if (selectedValues.size === 0 || selected.length < 2) {
+      return false;
+    }
 
     return selected.some((item, index) => {
-      if (!selectedValues.has(item.value)) return false;
+      if (!selectedValues.has(item.value)) {
+        return false;
+      }
 
       const target = index + delta;
-      if (target < 0 || target >= selected.length) return false;
+
+      if (target < 0 || target >= selected.length) {
+        return false;
+      }
 
       return !selectedValues.has(selected[target].value);
     });
@@ -581,29 +516,52 @@ export class RCTransferList extends LitElement {
   private _onKeydown = (e: KeyboardEvent): void => {
     if (e.altKey) {
       switch (e.key) {
-        case 'ArrowRight': e.preventDefault(); this.addSelected(); break;
-        case 'ArrowLeft':  e.preventDefault(); this.removeSelected(); break;
-        case 'ArrowUp':    e.preventDefault(); this.moveSelected(-1); break;
-        case 'ArrowDown':  e.preventDefault(); this.moveSelected(1); break;
+        case 'ArrowRight':
+          e.preventDefault();
+          this.addSelected();
+
+          break;
+
+        case 'ArrowLeft':
+          e.preventDefault();
+          this.removeSelected();
+
+          break;
+
+        case 'ArrowUp':
+          e.preventDefault();
+          this.moveSelected(-1);
+
+          break;
+
+        case 'ArrowDown':
+          e.preventDefault();
+          this.moveSelected(1);
+
+          break;
       }
+
       return;
     }
 
-    const targetId = (e.target as Element).id;
+    const targetId = this._getListboxEventTargetId(e);
 
     // APG shortcut: Enter in the available list adds the active item.
+
     // Restricted to single-select: in multi mode Enter toggles selection in rc-listbox
     // first, so triggering addSelected() here would immediately transfer a single item
     // and discard any multi-item selection the user was building.
     if (targetId === 'available-list' && !this.multiple && e.key === 'Enter') {
       e.preventDefault();
       this.addSelected();
+
       return;
     }
 
     // APG shortcut: Delete in the selected list removes the highlighted items.
     if (targetId === 'selected-list' && e.key === 'Delete') {
       e.preventDefault();
+
       this.removeSelected();
     }
   };
@@ -612,7 +570,7 @@ export class RCTransferList extends LitElement {
     const ev = e as CustomEvent<RCListboxChangeEvent>;
     const raw = ev.detail.value;
     const values = Array.isArray(raw) ? raw : raw ? [raw] : [];
-    const targetId = (e.target as Element | null)?.id;
+    const targetId = (e.currentTarget as Element | null)?.id;
 
     if (targetId === 'available-list') {
       this._availableSelection = values;
@@ -620,6 +578,19 @@ export class RCTransferList extends LitElement {
       this._selectedSelection = values;
     }
   };
+
+  private _getListboxEventTargetId(e: Event): string | undefined {
+    for (const node of e.composedPath()) {
+      if (
+        node instanceof Element &&
+        (node.id === 'available-list' || node.id === 'selected-list')
+      ) {
+        return node.id;
+      }
+    }
+
+    return undefined;
+  }
 
   private _setupSelect($select: HTMLSelectElement | null): void {
     if ($select === this._$select) {
