@@ -2,7 +2,11 @@ import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { ScrollObserverController, type ScrollObserverTarget } from '@rcarls/rc-common';
+import {
+  RafScheduler,
+  ScrollObserverController,
+  type ScrollObserverTarget,
+} from '@rcarls/rc-common';
 
 import appBarStyles from './rc-app-bar.styles';
 
@@ -110,7 +114,7 @@ export class RCAppBar extends LitElement {
 
   private _resizeObserver: ResizeObserver | null = null;
 
-  private _measureLayoutFrame = 0;
+  private readonly _layoutMeasure = new RafScheduler(this);
 
   private readonly _scroll = new ScrollObserverController(this, {
     target: () => this._resolveScrollTarget(),
@@ -243,19 +247,11 @@ export class RCAppBar extends LitElement {
   }
 
   private _queueLayoutMeasure(): void {
-    if (this._measureLayoutFrame) return;
-
-    this._measureLayoutFrame = window.requestAnimationFrame(() => {
-      this._measureLayoutFrame = 0;
-      this._measureLayout();
-    });
+    this._layoutMeasure.schedule(() => this._measureLayout());
   }
 
   private _cancelQueuedLayoutMeasure(): void {
-    if (!this._measureLayoutFrame) return;
-
-    window.cancelAnimationFrame(this._measureLayoutFrame);
-    this._measureLayoutFrame = 0;
+    this._layoutMeasure.cancel();
   }
 
   private _syncScrollObserver(): void {

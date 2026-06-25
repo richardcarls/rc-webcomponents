@@ -2,7 +2,11 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { ScrollObserverController, findNearestScrollAncestor } from '@rcarls/rc-common';
+import {
+  ScrollObserverController,
+  findNearestScrollAncestor,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 
 import fabStyles from './rc-fab.styles.js';
 
@@ -95,11 +99,11 @@ export class RCFab extends LitElement {
   scrollReveal = false;
 
   protected override firstUpdated(): void {
-    if (import.meta.env.DEV && !this.querySelector(':scope > button')) {
-      console.warn(
-        '[rc-fab] No direct child <button> found. Place a native <button> inside <rc-fab>.',
-        this,
-      );
+    if (import.meta.env.DEV) {
+      warnMissingDirectChild(this, {
+        selector: ':scope > button',
+        message: '[rc-fab] No direct child <button> found. Place a native <button> inside <rc-fab>.',
+      });
     }
   }
 

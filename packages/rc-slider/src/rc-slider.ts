@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from "lit";
 import type { ComplexAttributeConverter } from "lit";
 import { property } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { valueToPercent } from "@rcarls/rc-common";
+import { getDirectChild, valueToPercent, warnMissingDirectChild } from "@rcarls/rc-common";
 
 export interface RCSliderValueEvent {
   /** Current numeric slider value. */
@@ -359,11 +359,12 @@ export class RCSlider extends LitElement {
    * rather than replacing it.
    */
   private _findInput(): void {
-    const input = this.querySelector<HTMLInputElement>('input[type="range"]');
+    const input = getDirectChild<HTMLInputElement>(this, ':scope > input[type="range"]');
     if (!input) {
-      console.warn(
-        '[rc-slider] Requires a child <input type="range"> element.',
-      );
+      warnMissingDirectChild(this, {
+        selector: ':scope > input[type="range"]',
+        message: '[rc-slider] Requires a child <input type="range"> element.',
+      });
       return;
     }
 

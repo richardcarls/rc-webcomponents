@@ -1,7 +1,12 @@
 import { LitElement, css, html, nothing } from "lit";
 import type { ComplexAttributeConverter } from "lit";
 import { property, state } from "lit/decorators.js";
-import { snapToStep, valueToPercent } from "@rcarls/rc-common";
+import {
+  getDirectChildren,
+  snapToStep,
+  valueToPercent,
+  warnMissingDirectChild,
+} from "@rcarls/rc-common";
 
 export interface RCRangeSliderValueEvent {
   /** Current [low, high] value tuple. */
@@ -514,14 +519,17 @@ export class RCRangeSlider extends LitElement {
    * reflectors.
    */
   private _findInputs(): void {
-    const inputs = Array.from(
-      this.querySelectorAll<HTMLInputElement>('input[type="range"]'),
+    const inputs = getDirectChildren<HTMLInputElement>(
+      this,
+      ':scope > input[type="range"]',
     ).slice(0, 2);
 
     if (inputs.length < 2) {
-      console.warn(
-        '[rc-range-slider] Requires two child <input type="range"> elements.',
-      );
+      warnMissingDirectChild(this, {
+        selector: ':scope > input[type="range"]',
+        minimum: 2,
+        message: '[rc-range-slider] Requires two child <input type="range"> elements.',
+      });
       return;
     }
 
