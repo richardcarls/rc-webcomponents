@@ -2,6 +2,8 @@ import { LitElement, html, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
+import { keyInteraction } from '@rcarls/rc-common';
+
 import searchBarStyles from './rc-search-bar.styles';
 
 const _uaClearSheet = new CSSStyleSheet();
@@ -56,14 +58,16 @@ export interface RCSearchBarInputDetail {
  *   `detail: { value }`
  * @fires rc-search-bar-clear - When the clear button is activated
  *
+ * @cssprop [--rc-search-bar-border=1px solid ButtonBorder] - Wrapper border; set to `none` in M3 theme (uses elevation instead)
+ * @cssprop [--rc-search-bar-shadow=none] - Wrapper box-shadow for elevation; M3 theme sets Level 1 at rest
  * @cssprop [--rc-search-bar-bg=Field] - Wrapper background
  * @cssprop [--rc-search-bar-color=FieldText] - Wrapper text color
  * @cssprop [--rc-search-bar-icon-color=GrayText] - Leading icon color
  * @cssprop [--rc-search-bar-clear-color=GrayText] - Clear button glyph color
- * @cssprop [--rc-search-bar-radius=var(--rc-control-radius)] - Wrapper border radius
- * @cssprop [--rc-search-bar-height=48px] - Wrapper block size
- * @cssprop [--rc-search-bar-padding-inline=0.5em] - Wrapper horizontal padding
- * @cssprop [--rc-search-bar-gap=0.25em] - Gap between icon, input, and clear button
+ * @cssprop [--rc-search-bar-radius=var(--rc-control-radius,0.125em)] - Wrapper border radius
+ * @cssprop [--rc-search-bar-height=var(--rc-control-block-size,2.5rem)] - Wrapper block size
+ * @cssprop [--rc-search-bar-padding-inline=var(--rc-control-padding-inline,0.75rem)] - Wrapper horizontal padding
+ * @cssprop [--rc-search-bar-gap=var(--rc-control-gap,0.25em)] - Gap between icon, input, and clear button
  * @cssprop [--rc-search-bar-input-font-size] - Input font size (inherits when unset)
  * @cssprop [--rc-search-bar-input-font-family] - Input font family (inherits when unset)
  * @cssprop [--rc-search-bar-input-color] - Input text color (inherits when unset)
@@ -160,24 +164,6 @@ export class RCSearchBar extends LitElement {
   @state()
   private _focused = false;
 
-  private _lastInteractionWasPointer = false;
-
-  private readonly _onPointerDown = (): void => {
-    this._lastInteractionWasPointer = true;
-  };
-
-  private readonly _onFocusIn = (): void => {
-    if (!this._lastInteractionWasPointer) {
-      this.toggleAttribute('data-focus-visible', true);
-    }
-
-    this._lastInteractionWasPointer = false;
-  };
-
-  private readonly _onFocusOut = (): void => {
-    this.toggleAttribute('data-focus-visible', false);
-  };
-
   private readonly _onInputFocus = (): void => {
     this._focused = true;
   };
@@ -248,10 +234,6 @@ export class RCSearchBar extends LitElement {
 
     _suppressUaClear();
 
-    this.addEventListener('pointerdown', this._onPointerDown, { capture: true });
-    this.addEventListener('focusin', this._onFocusIn);
-    this.addEventListener('focusout', this._onFocusOut);
-
     // Slot assignment survives a DOM move without re-firing slotchange, so
     // listeners are re-bound here (addEventListener is idempotent per ref).
     const $input = this._$input();
@@ -262,10 +244,6 @@ export class RCSearchBar extends LitElement {
   }
 
   override disconnectedCallback(): void {
-    this.removeEventListener('pointerdown', this._onPointerDown, { capture: true });
-    this.removeEventListener('focusin', this._onFocusIn);
-    this.removeEventListener('focusout', this._onFocusOut);
-
     super.disconnectedCallback();
 
     this._focused = false;
@@ -454,7 +432,7 @@ export class RCSearchBar extends LitElement {
 
   protected override render() {
     return html`
-      <div id="root" part="root" class=${classMap({ empty: !this._hasInput })}>
+      <div id="root" part="root" class=${classMap({ empty: !this._hasInput })} ${keyInteraction({ attributeTarget: this })}>
         <span
           id="leading"
           part="leading"
@@ -470,8 +448,8 @@ export class RCSearchBar extends LitElement {
           part="clear"
           type="button"
           aria-label=${this.clearLabel}
-          ?hidden=${!this._hasInput ||
-          (!this._hasValue && !(this.showClearOnFocus && this._focused))}
+          ?hidden=${!this._hasInput}
+          ?inert=${this._hasInput && !this._hasValue && !(this.showClearOnFocus && this._focused)}
           ?disabled=${this._inputDisabled}
           @click=${this._handleClear}
         >

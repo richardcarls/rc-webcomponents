@@ -66,16 +66,18 @@ The native WebKit cancel button is suppressed automatically. Set
 
 ### CSS custom properties
 
-| Property                         | Default                       | Description                               |
-| -------------------------------- | ----------------------------- | ----------------------------------------- |
-| `--rc-search-bar-bg`             | `Field`                       | Wrapper background                        |
-| `--rc-search-bar-color`          | `FieldText`                   | Wrapper text color                        |
-| `--rc-search-bar-icon-color`     | `GrayText`                    | Leading icon color                        |
-| `--rc-search-bar-clear-color`    | `GrayText`                    | Clear button glyph color                  |
-| `--rc-search-bar-radius`         | `var(--rc-control-radius, 0)` | Wrapper border radius                     |
-| `--rc-search-bar-height`         | `48px`                        | Wrapper block size                        |
-| `--rc-search-bar-padding-inline` | `0.5em`                       | Wrapper horizontal padding                |
-| `--rc-search-bar-gap`            | `0.25em`                      | Gap between icon, input, and clear button |
+| Property                         | Default                                     | Description                               |
+| -------------------------------- | ------------------------------------------- | ----------------------------------------- |
+| `--rc-search-bar-border`         | `1px solid ButtonBorder`                    | Border; M3 theme uses elevation instead   |
+| `--rc-search-bar-shadow`         | `none`                                      | Elevation shadow; M3 sets Level 1 at rest |
+| `--rc-search-bar-bg`             | `Field`                                     | Wrapper background                        |
+| `--rc-search-bar-color`          | `FieldText`                                 | Wrapper text color                        |
+| `--rc-search-bar-icon-color`     | `GrayText`                                  | Leading icon color                        |
+| `--rc-search-bar-clear-color`    | `GrayText`                                  | Clear button glyph color                  |
+| `--rc-search-bar-radius`         | `var(--rc-control-radius, 0.125em)`         | Wrapper border radius                     |
+| `--rc-search-bar-height`         | `var(--rc-control-block-size, 2.5rem)`      | Wrapper block size                        |
+| `--rc-search-bar-padding-inline` | `var(--rc-control-padding-inline, 0.75rem)` | Wrapper horizontal padding                |
+| `--rc-search-bar-gap`            | `var(--rc-control-gap, 0.25em)`             | Gap between icon, input, and clear button |
 
 ### CSS parts
 
