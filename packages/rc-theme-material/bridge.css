@@ -42,6 +42,8 @@
     --rc-control-padding-inline: 1rem;
     --rc-control-gap: 0.5rem;
     --rc-control-radius: var(--md-sys-shape-corner-full, 1.25rem);
+    --rc-toolbar-radius: var(--md-sys-shape-corner-large, 1rem);
+    --rc-toolbar-vertical-radius: 0;
     --rc-item-padding-block: 0.75rem;
     --rc-item-padding-inline: 0.75rem;
     --rc-item-gap: 0.75rem;
@@ -308,6 +310,7 @@
     --rc-toolbar-padding-inline: 0.25rem;
     --rc-toolbar-padding-block: 0.25rem;
     --rc-toolbar-radius: var(--md-sys-shape-corner-large, 1rem);
+    --rc-toolbar-vertical-radius: 0;
   }
 
   .rc-theme-material rc-textarea,
