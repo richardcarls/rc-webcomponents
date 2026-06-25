@@ -8,7 +8,19 @@ import { TransferListDemo } from '@site/src/components/ComponentDemos';
 
 # rc-transfer-list
 
-A native-select-backed transfer list for moving options between available and selected collections.
+Enhances a `<select multiple>` element to become a side-by-side transfer list.
+
+The component renders two listboxes and transfer/reorder actions in between.
+Available options are on the left, and selected options appear on the right. It
+is an older enterprise/admin UI pattern, but solves the specific problem of
+multiple selection within a large amount of options.
+
+Modern use cases include user and permissions management tasks, multi-select for
+columns / fields / filters and list re-ordering.
+
+Use `compact` when the surrounding layout should stack the available list,
+actions, and selected list in one column. The component does not switch layout
+automatically at viewport breakpoints.
 
 <AtAGlance
   packageName="@rcarls/rc-transfer-list"
@@ -21,17 +33,17 @@ A native-select-backed transfer list for moving options between available and se
 
 ## Installation
 
-`sh
+```sh
 npm install @rcarls/rc-transfer-list
-`
+```
 
-`sh
+```sh
 yarn add @rcarls/rc-transfer-list
-`
+```
 
-`js
+```js
 import '@rcarls/rc-transfer-list/define';
-`
+```
 
 ## Live demo
 

@@ -323,6 +323,7 @@ export type RCRangeSliderRef = HTMLElement & {
 /** Public API surface of `<rc-transfer-list>`. */
 export type RCTransferListRef = HTMLElement & {
   multiple: boolean;
+  compact: boolean;
   availableLabel: string;
   selectedLabel: string;
   available: RCTransferListOption[];
@@ -509,6 +510,7 @@ declare module 'react' {
 
       'rc-transfer-list': React.DetailedHTMLProps<React.HTMLAttributes<RCTransferListRef>, RCTransferListRef> & {
         multiple?: boolean;
+        compact?: boolean;
         'available-label'?: string;
         'selected-label'?: string;
         available?: RCTransferListOption[];
