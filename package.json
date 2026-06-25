@@ -21,6 +21,7 @@
     "cem:analyze": "cem analyze",
     "docs": "yarn cem:analyze && yarn workspace @rcarls/rc-docs run dev",
     "docs:build": "yarn cem:analyze && yarn workspace @rcarls/rc-docs run build",
+    "audit:api-surfaces": "node scripts/audit-api-surfaces.mjs",
     "validate:packages": "node scripts/validate-packages.mjs",
     "validate:release": "node scripts/validate-release.mjs",
     "test:release-validation": "node --test scripts/validate-release.test.mjs",

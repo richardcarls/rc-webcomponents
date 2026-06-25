@@ -6,6 +6,7 @@ import type {
   RCAppBarRef,
   RCDialogRef,
   RCDisclosureRef,
+  RCListboxRef,
   RCMarkdownEditorRef,
   RCMenuRef,
   RCRangeSliderRef,
@@ -265,6 +266,43 @@ export function FabDemo() {
           </rc-fab>
         </div>
       </div>
+    </DemoFrame>
+  );
+}
+
+export function ListboxDemo() {
+  const listboxRef = useRef<RCListboxRef>(null);
+  const log = useEventLog<{
+    optionValue: string;
+    selected: boolean;
+    selectedValues: string[];
+  }>(
+    listboxRef,
+    'rc-listbox-change',
+    ({ optionValue, selected, selectedValues }) =>
+      `${selected ? 'Selected' : 'Deselected'} ${optionValue}; current: ${selectedValues.join(', ') || '(none)'}`,
+  );
+
+  useEffect(() => {
+    const listbox = listboxRef.current;
+    if (!listbox) {
+      return;
+    }
+
+    listbox.options = [
+      { value: 'apples', label: 'Apples' },
+      { value: 'berries', label: 'Berries' },
+      { value: 'citrus', label: 'Citrus' },
+      { value: 'dates', label: 'Dates', disabled: true },
+      { value: 'figs', label: 'Figs' },
+    ];
+    listbox.setSelectedValues(['berries']);
+  }, []);
+
+  return (
+    <DemoFrame>
+      <rc-listbox ref={listboxRef} multiple checkmark aria-label="Fruit choices"></rc-listbox>
+      <EventLog entries={log} />
     </DemoFrame>
   );
 }

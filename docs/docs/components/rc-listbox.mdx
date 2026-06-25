@@ -1,0 +1,67 @@
+---
+title: rc-listbox
+---
+
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ListboxDemo } from '@site/src/components/ComponentDemos';
+
+# rc-listbox
+
+A light-DOM ARIA listbox used by `rc-select`, `rc-combobox`, and direct JavaScript-driven listbox integrations.
+
+<AtAGlance
+  packageName="@rcarls/rc-listbox"
+  tag="rc-listbox"
+  native="Renders options from JS data"
+  state="Controlled or uncontrolled selection"
+  events={['rc-listbox-change']}
+  related={[
+    { label: 'rc-select', href: '/components/rc-select' },
+    { label: 'rc-combobox', href: '/components/rc-combobox' },
+  ]}
+/>
+
+## Installation
+
+`sh
+npm install @rcarls/rc-listbox
+`
+
+`sh
+yarn add @rcarls/rc-listbox
+`
+
+`js
+import '@rcarls/rc-listbox/define';
+`
+
+## Live demo
+
+<ListboxDemo />
+
+## Usage
+
+`rc-listbox` is usually an infrastructure component inside composite controls. Use it directly when application code owns the option data and selection state.
+
+```ts
+const listbox = document.querySelector('rc-listbox');
+
+listbox.options = [
+  { value: 'apple', label: 'Apple' },
+  { value: 'banana', label: 'Banana' },
+  { value: 'cherry', label: 'Cherry', disabled: true },
+];
+
+listbox.setSelectedValues(['apple']);
+```
+
+Because it renders into light DOM, option IDs remain in the same document or shadow root as the controlling element. That keeps `aria-activedescendant` relationships valid for parent combobox and select patterns.
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frame.
+
+## API
+
+<ApiTable tag="rc-listbox" />

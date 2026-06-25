@@ -51,6 +51,12 @@ short and tell the tool to read `AGENTS.md` before project work.
   hardcoded responsive breakpoints inside component behavior.
 - Shared interaction behavior belongs in `rc-common` as Lit directives or
   `ReactiveController` classes.
+- Before adding new interaction, focus, positioning, scrolling, pointer, resize,
+  keyboard, slider math, or DOM utility logic, inspect
+  `packages/rc-common/src/index.ts` and existing consumers. Prefer reusing an
+  existing controller, directive, or utility; if two or more components need the
+  same behavior, treat extraction to `rc-common` as part of the change instead of
+  leaving a package-local copy.
 - Each package builds ESM, UMD, and declarations. Keep package exports and
   `sideEffects: false` tree-shaking behavior intact.
 - In `firstUpdated()`, guard required native child checks behind
@@ -95,22 +101,34 @@ Public API includes properties, attributes, methods, events, slots, CSS custom
 properties, CSS parts, native child requirements, exported types, and documented
 behavior. When changing it, update every affected surface in the same change:
 
-- Component source, JSDoc, event detail types, and exported TypeScript types.
+- Component source and TypeDoc/JSDoc, including CEM tags such as `@slot`,
+  `@fires`, `@csspart`, and `@cssprop`.
+- Event detail interfaces, exported TypeScript types, and `HTMLElementTagNameMap`
+  / `HTMLElementEventMap` declarations.
 - Tests for progressive enhancement, labels/forms, ARIA state, keyboard support,
   controlled/uncontrolled behavior, event dispatch, and live accessibility states.
-- Docusaurus docs in `docs/docs/components/<component>.mdx`, including demos, snippets,
-  accessibility notes, events, and at-a-glance summaries.
-- Package README, root README package summary, and aggregate docs when public
-  usage changes.
 - Custom Elements Manifest data before docs dev/build:
   Windows `yarn.cmd cem:analyze`; Linux/macOS `yarn cem:analyze`.
+- Docusaurus docs in `docs/docs/components/<component>.mdx`, including demos,
+  snippets, accessibility notes, events, and at-a-glance summaries.
+- Package README, root README package summary, aggregate package exports, and
+  aggregate React/Solid typings when public usage changes.
 
 Generated API tables come from `dist/custom-elements.json`; do not hand-edit
 generated output instead of source comments and types.
 
+Use this public API sync walk before finishing any API-facing change:
+
+```text
+source/JSDoc -> event/detail/exported types -> tests -> CEM -> package README
+-> docs page/demos -> root README/package catalog -> aggregate React/Solid typings
+```
+
 When adding a new component package, add it to the `## Packages` table in
-`README.md` and `docs/index.md` in the same change. Infrastructure, adapter,
-plugin, and aggregate packages do not need home-page component entries.
+`README.md`, create or update `docs/docs/components/<component>.mdx`, and add it
+to `docs/sidebars.ts` in the same change. Infrastructure, adapter, plugin, and
+aggregate packages do not need docs sidebar entries unless they are documented as
+directly usable public packages.
 
 ## Documentation And Demos
 
@@ -119,7 +137,9 @@ plugin, and aggregate packages do not need home-page component entries.
 - The Docusaurus docs workspace is the canonical home for public component docs,
   examples, and live demos.
 - Package READMEs are npm landing pages and should stay short unless a package
-  has usage details that do not fit naturally in the docs site.
+  has usage details that do not fit naturally in the docs site. Do not maintain a
+  competing exhaustive API table in a package README when the generated docs API
+  table can be the canonical source.
 - Do not add tracked package-local demo pages or shared demo assets. Files such
   as `packages/<name>/*.html` and `packages/<name>/public/` are ignored scratch
   space for ad hoc Vite experiments only.

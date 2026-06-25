@@ -195,7 +195,7 @@ rc-app-bar.glass::part(root) {
 | `--rc-app-bar-padding-inline` | `0.75em` | Horizontal padding |
 | `--rc-app-bar-gap` | `0.5em` | Gap between regions |
 | `--rc-app-bar-transition-duration` | `200ms` | Endpoint and hide transition duration |
-| `--rc-app-bar-scroll-shadow` | `1px solid GrayText` | Scrolled separator border |
+| `--rc-app-bar-scroll-divider` | `1px solid GrayText` | Scrolled separator border |
 
 ### CSS parts
 

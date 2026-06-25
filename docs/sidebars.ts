@@ -34,6 +34,7 @@ const sidebars: SidebarsConfig = {
       collapsible: false,
       items: [
         'components/rc-accordion',
+        'components/rc-listbox',
         'components/rc-menu',
         'components/rc-menubar',
         'components/rc-toolbar',

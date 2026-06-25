@@ -183,6 +183,7 @@ export type RCAccordionRef = HTMLElement & {
 /** Public API surface of `<rc-listbox>`. */
 export type RCListboxRef = HTMLElement & {
   multiple: boolean;
+  checkmark: boolean;
   filterStrategy: 'prefix' | 'contains' | ((label: string, query: string) => boolean);
   value: RCSelectValue;
   defaultValue: RCSelectValue | undefined;
@@ -267,7 +268,10 @@ export type RCMenuButtonRef = HTMLElement & {
 };
 
 /** Public API surface of `<rc-menubar>`. */
-export type RCMenubarRef = HTMLElement;
+export type RCMenubarRef = HTMLElement & {
+  label: string;
+  orientation: 'horizontal' | 'vertical';
+};
 
 /** Public API surface of `<rc-toolbar>`. */
 export type RCToolbarRef = HTMLElement & {
@@ -409,6 +413,7 @@ declare module 'react' {
 
       'rc-listbox': React.DetailedHTMLProps<React.HTMLAttributes<RCListboxRef>, RCListboxRef> & {
         multiple?: boolean;
+        checkmark?: boolean;
         'filter-strategy'?: 'prefix' | 'contains';
         value?: RCSelectValue;
         'default-value'?: RCSelectValue;
@@ -466,6 +471,7 @@ declare module 'react' {
 
       'rc-menubar': React.DetailedHTMLProps<React.HTMLAttributes<RCMenubarRef>, RCMenubarRef> & {
         label?: string;
+        orientation?: 'horizontal' | 'vertical';
       };
 
       'rc-toolbar': React.DetailedHTMLProps<React.HTMLAttributes<RCToolbarRef>, RCToolbarRef> & {

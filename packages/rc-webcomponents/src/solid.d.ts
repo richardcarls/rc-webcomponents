@@ -33,6 +33,7 @@ export type RCAccordionRef = HTMLElement & {
 /** Public API surface of `<rc-listbox>`. */
 export type RCListboxRef = HTMLElement & {
   multiple: boolean;
+  checkmark: boolean;
   filterStrategy: 'prefix' | 'contains' | ((label: string, query: string) => boolean);
   value: RCSelectValue;
   defaultValue: RCSelectValue | undefined;
@@ -164,7 +165,10 @@ export type RCMenuButtonToggleDetail = {
 };
 
 /** Public API surface of `<rc-menubar>`. */
-export type RCMenubarRef = HTMLElement;
+export type RCMenubarRef = HTMLElement & {
+  label: string;
+  orientation: 'horizontal' | 'vertical';
+};
 
 /** Public API surface of `<rc-toolbar>`. */
 export type RCToolbarRef = HTMLElement & {
@@ -395,6 +399,7 @@ declare module 'solid-js' {
 
       'rc-listbox': JSX.HTMLAttributes<RCListboxRef> & {
         multiple?: boolean | string;
+        checkmark?: boolean | string;
         'filter-strategy'?: 'prefix' | 'contains';
         value?: RCSelectValue;
         defaultValue?: RCSelectValue;
@@ -479,7 +484,10 @@ declare module 'solid-js' {
         'on:rc-menu-button-toggle'?: (e: CustomEvent<RCMenuButtonToggleDetail>) => void;
       };
 
-      'rc-menubar': JSX.HTMLAttributes<RCMenubarRef>;
+      'rc-menubar': JSX.HTMLAttributes<RCMenubarRef> & {
+        label?: string;
+        orientation?: 'horizontal' | 'vertical';
+      };
 
       'rc-toolbar': JSX.HTMLAttributes<RCToolbarRef> & {
         label?: string;
