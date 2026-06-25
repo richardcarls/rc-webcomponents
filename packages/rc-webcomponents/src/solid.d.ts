@@ -324,6 +324,7 @@ export type RCTransferListOption = {
 
 export type RCTransferListRef = HTMLElement & {
   multiple: boolean;
+  compact: boolean;
   availableLabel: string;
   selectedLabel: string;
   available: RCTransferListOption[];
@@ -531,8 +532,10 @@ declare module 'solid-js' {
 
       'rc-transfer-list': JSX.HTMLAttributes<RCTransferListRef> & {
         multiple?: boolean | string;
+        compact?: boolean | string;
         'available-label'?: string;
         'selected-label'?: string;
+        'prop:compact'?: boolean | undefined;
         'prop:available'?: RCTransferListOption[] | undefined;
         'prop:selected'?: RCTransferListOption[] | undefined;
         'prop:defaultSelected'?: RCTransferListOption[] | undefined;

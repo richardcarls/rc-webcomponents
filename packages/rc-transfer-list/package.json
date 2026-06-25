@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless WAI-ARIA transfer list web component built with Lit",
+  "description": "Enhances a `<select multiple>` element to become a side-by-side transfer list.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
