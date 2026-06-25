@@ -135,7 +135,7 @@ test('clear empties the input, fires both events in order, and restores focus', 
 
   const $clear = clearButton($host);
 
-  expect($clear.hidden).toBe(false);
+  expect($clear.inert).toBe(false);
 
   $clear.click();
   await $host.updateComplete;
@@ -144,7 +144,7 @@ test('clear empties the input, fires both events in order, and restores focus', 
   expect($input.value).toBe('');
   expect(events).toEqual(['clear', 'input:']);
   expect($host.value).toBe('');
-  expect($clear.hidden).toBe(true);
+  expect($clear.inert).toBe(true);
   await vi.waitFor(() => expect(document.activeElement).toBe($input));
 
   // No late debounced dispatch arrives afterwards.
@@ -319,15 +319,15 @@ test('show-clear-on-focus: clear button shows on focus with no value, hides on b
 
   const $input = $host.querySelector<HTMLInputElement>('input')!;
 
-  expect(clearButton($host).hidden).toBe(true);
+  expect(clearButton($host).inert).toBe(true);
 
   $input.dispatchEvent(new FocusEvent('focus'));
   await $host.updateComplete;
-  expect(clearButton($host).hidden).toBe(false);
+  expect(clearButton($host).inert).toBe(false);
 
   $input.dispatchEvent(new FocusEvent('blur'));
   await $host.updateComplete;
-  expect(clearButton($host).hidden).toBe(true);
+  expect(clearButton($host).inert).toBe(true);
 });
 
 test('show-clear-on-focus: clear while empty dispatches both events and stays focused', async () => {
