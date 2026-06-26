@@ -42,6 +42,24 @@ listbox.options = [
 listbox.setSelectedValues(['apple']);
 ```
 
+Options may also represent actions instead of selectable values:
+
+```ts
+listbox.options = [
+  { value: 'none', label: 'None' },
+  { kind: 'action', action: 'clear', value: 'clear', label: 'Clear selection' },
+];
+
+listbox.addEventListener('rc-listbox-change', (event) => {
+  if (event.detail.reason === 'action') {
+    // event.detail.option is narrowed to ListboxActionOption
+    return;
+  }
+
+  // event.detail.option is narrowed to ListboxSelectableOption
+});
+```
+
 ## API
 
 | Property / method | Type | Description |
@@ -65,7 +83,7 @@ listbox.setSelectedValues(['apple']);
 
 | Event | Detail | Description |
 | --- | --- | --- |
-| `rc-listbox-change` | `{ value: string; selected: boolean }` | Fires when an option is activated. |
+| `rc-listbox-change` | `{ reason: 'select'; value; selected; option } \| { reason: 'action'; action; option }` | Fires when an option or action row is activated. |
 
 ## Accessibility
 
