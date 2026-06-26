@@ -47,58 +47,64 @@ export interface RCListboxChangeEvent {
 
 let _uid = 0;
 
-/** Base CSS injected once per root (Document or ShadowRoot) that hosts rc-listbox. */
-const BASE_CSS = `
-rc-listbox ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
+/** Structural CSS injected into the root that contains rc-listbox's light-DOM options. */
+const LIGHT_DOM_CSS = `
+@layer rc-base {
+  rc-listbox ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
 
-rc-listbox li[role='option'] {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 2px 4px;
-  cursor: default;
-  user-select: none;
-  outline: none;
-  background: transparent;
-  color: inherit;
-}
+  rc-listbox li[role='option'] {
+    display: flex;
+    align-items: center;
+    gap: var(--rc-listbox-option-gap, 0.25rem);
+    min-block-size: var(--rc-listbox-option-min-block-size, 0px);
+    padding: var(--rc-listbox-option-padding-block, 2px) var(--rc-listbox-option-padding-inline, 4px);
+    cursor: default;
+    user-select: none;
+    outline: none;
+    background: transparent;
+    color: inherit;
+    transition: var(--rc-listbox-option-transition);
+  }
 
-rc-listbox li[role='option']:hover {
-  background: var(--rc-listbox-hover-bg, color-mix(in srgb, Highlight 8%, transparent));
-}
+  rc-listbox li[role='option']:hover {
+    background: var(--rc-listbox-hover-bg, color-mix(in srgb, Highlight 8%, transparent));
+    color: var(--rc-listbox-hover-color, inherit);
+  }
 
-rc-listbox li[role='option'][data-active] {
-  background: var(--rc-listbox-active-bg, color-mix(in srgb, Highlight 8%, transparent));
-}
+  rc-listbox li[role='option'][data-active] {
+    background: var(--rc-listbox-active-bg, color-mix(in srgb, Highlight 8%, transparent));
+    color: var(--rc-listbox-active-color, var(--rc-listbox-hover-color, inherit));
+  }
 
-rc-listbox li[role='option'][aria-selected='true'] {
-  background: var(--rc-listbox-selected-bg, Highlight);
-  color: var(--rc-listbox-selected-color, HighlightText);
-}
+  rc-listbox li[role='option'][aria-selected='true'] {
+    background: var(--rc-listbox-selected-bg, Highlight);
+    color: var(--rc-listbox-selected-color, HighlightText);
+  }
 
-rc-listbox li[role='option'][aria-disabled='true'] {
-  color: var(--rc-listbox-disabled-color, GrayText);
-  opacity: var(--rc-listbox-disabled-opacity, 1);
-  pointer-events: none;
-}
+  rc-listbox li[role='option'][aria-disabled='true'] {
+    color: var(--rc-listbox-disabled-color, GrayText);
+    opacity: var(--rc-listbox-disabled-opacity, 1);
+    pointer-events: none;
+  }
 
-rc-listbox [part~='option-checkmark'] {
-  display: none;
-  min-inline-size: 1em;
-  text-align: center;
-}
+  rc-listbox [part~='option-checkmark'] {
+    display: none;
+    min-inline-size: 1em;
+    text-align: center;
+  }
 
-rc-listbox[checkmark] [part~='option-checkmark'] {
-  display: inline;
-  visibility: hidden;
-}
+  rc-listbox[checkmark] [part~='option-checkmark'] {
+    display: inline;
+    visibility: hidden;
+  }
 
-rc-listbox[checkmark] li[role='option'][aria-selected='true'] [part~='option-checkmark'] {
-  visibility: visible;
+  rc-listbox[checkmark] li[role='option'][aria-selected='true'] [part~='option-checkmark'] {
+    visibility: visible;
+  }
 }
 `;
 
@@ -128,6 +134,20 @@ rc-listbox[checkmark] li[role='option'][aria-selected='true'] [part~='option-che
  * @csspart option - Individual `<li role="option">` elements
  * @csspart option-checkmark - The checkmark `<span>` inside each option (when `checkmark` is true)
  * @csspart create-option - The "Create" option when allow-create is active
+ *
+ * @cssprop [--rc-listbox-option-gap=0.25rem] - Gap between the checkmark and option label.
+ * @cssprop [--rc-listbox-option-min-block-size=0px] - Minimum block size (height) of each option row.
+ * @cssprop [--rc-listbox-option-padding-block=2px] - Block-axis padding of each option row.
+ * @cssprop [--rc-listbox-option-padding-inline=4px] - Inline-axis padding of each option row.
+ * @cssprop [--rc-listbox-option-transition] - CSS transition applied to each option row.
+ * @cssprop [--rc-listbox-hover-bg] - Background of a hovered option.
+ * @cssprop [--rc-listbox-hover-color] - Text color of a hovered option.
+ * @cssprop [--rc-listbox-active-bg] - Background of the keyboard-active option.
+ * @cssprop [--rc-listbox-active-color] - Text color of the keyboard-active option.
+ * @cssprop [--rc-listbox-selected-bg] - Background of a selected option.
+ * @cssprop [--rc-listbox-selected-color] - Text color of a selected option.
+ * @cssprop [--rc-listbox-disabled-color] - Text color of a disabled option.
+ * @cssprop [--rc-listbox-disabled-opacity] - Opacity of a disabled option.
  */
 export class RCListbox extends LitElement {
   static override styles = css`
@@ -144,8 +164,8 @@ export class RCListbox extends LitElement {
     RCListbox._styledRoots.add(root);
 
     const style = document.createElement('style');
-    style.setAttribute('data-rc-listbox-base', '');
-    style.textContent = BASE_CSS;
+    style.setAttribute('data-rc-light-dom-base', 'rc-listbox');
+    style.textContent = LIGHT_DOM_CSS;
 
     if (root instanceof Document) {
       root.head.appendChild(style);
