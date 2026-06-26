@@ -2,7 +2,7 @@ import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
 import { RCSelect } from '@rcarls/rc-select';
-import type { FilterStrategy } from '@rcarls/rc-listbox';
+import type { FilterStrategy, RCListboxChangeEvent } from '@rcarls/rc-listbox';
 
 import { comboboxStyles } from './rc-combobox.styles.js';
 
@@ -164,14 +164,9 @@ export class RCCombobox extends RCSelect {
   }
 
   protected override _handleListboxChange(e: CustomEvent) {
-    const { optionValue, value } = e.detail as {
-      optionValue?: string;
-      value: string | string[];
-      selected: boolean;
-    };
-    const activatedValue = optionValue ?? (Array.isArray(value) ? value.at(-1) : value);
+    const detail = e.detail as RCListboxChangeEvent;
 
-    if (activatedValue === '__create__') {
+    if (detail.reason === 'action' && detail.action === 'create') {
       e.stopPropagation();
       void this._activateCreate(this._filterText.trim());
 
