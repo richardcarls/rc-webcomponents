@@ -147,6 +147,13 @@ directly usable public packages.
   the DOM, labels/forms work before upgrade, ARIA is demonstrated on the native
   element where applicable, and interactive demos show keyboard and accessibility
   behavior.
+- `docs/src/components/DemoFrame.tsx` renders demo children into an open shadow
+  root via `createPortal()`. Effects in the parent demo component can run before
+  that portaled custom element ref exists. When a demo needs to set properties,
+  attach listeners, or call methods on a web component inside `DemoFrame`, prefer
+  a callback ref or state-backed element reference that reacts when the portaled
+  element mounts. When browser-smoke-testing demos, query through the DemoFrame
+  `surfaceHost` shadow root instead of using document-only selectors.
 
 ## Commands
 
