@@ -1,33 +1,55 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox {
     display: block;
+    background: var(--md-sys-color-surface-container, Canvas);
+    border-radius: 4px;
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 2px 6px 2px rgba(0, 0, 0, 0.15);
+    padding-block: 0.5rem;
+    overflow-y: auto;
     color: var(--md-sys-color-on-surface, CanvasText);
     font-family: var(--md-sys-typescale-body-large-font, inherit);
     font-size: var(--md-sys-typescale-body-large-size, 1rem);
     line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox [part~='option'] {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox li[role='option'] {
     min-block-size: 3rem;
-    padding: 0.75rem;
-    border-radius: 0;
+    padding-inline: 0.75rem;
     background: transparent;
     color: inherit;
-    transition: background-color 150ms ease, color 150ms ease;
+    transition:
+      background-color 150ms ease,
+      color 150ms ease;
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox [part~='option']:hover,
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox [part~='option'][data-active] {
-    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox li[role='option']:hover {
+    background: var(--rc-listbox-hover-bg);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox [part~='option'][aria-selected='true'] {
-    background: var(--md-sys-color-secondary-container, Highlight);
-    color: var(--md-sys-color-on-secondary-container, HighlightText);
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-listbox
+    li[role='option'][data-active] {
+    background: var(--rc-listbox-active-bg);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox [part~='option'][aria-disabled='true'] {
-    color: var(--md-sys-color-on-surface, GrayText);
-    opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-listbox
+    li[role='option'][aria-selected='true'] {
+    background: var(--rc-listbox-selected-bg);
+    color: var(--rc-listbox-selected-color);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-listbox
+    li[role='option'][aria-disabled='true'] {
+    opacity: var(--rc-listbox-disabled-opacity);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox[checkmark] [part~='option-checkmark'] {
+    inline-size: 1.5rem;
+    flex-shrink: 0;
+    text-align: center;
   }
 }

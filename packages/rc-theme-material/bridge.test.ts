@@ -68,6 +68,22 @@ test('maps disabled, focus, hover, and active state contracts', () => {
   expect(styles.getPropertyValue('--rc-range-slider-thumb-active-background')).not.toBe('');
 });
 
+test('maps listbox selection to the selected container color role', () => {
+  const scope = renderMaterialScope();
+  const listbox = document.createElement('rc-listbox');
+
+  scope.style.setProperty('--md-sys-color-primary', 'rgb(1, 2, 3)');
+  scope.style.setProperty('--md-sys-color-on-primary', 'rgb(4, 5, 6)');
+  scope.style.setProperty('--md-sys-color-secondary-container', 'rgb(7, 8, 9)');
+  scope.style.setProperty('--md-sys-color-on-secondary-container', 'rgb(10, 11, 12)');
+  scope.append(listbox);
+
+  const styles = getComputedStyle(listbox);
+
+  expect(styles.getPropertyValue('--rc-listbox-selected-bg')).toBe('rgb(7, 8, 9)');
+  expect(styles.getPropertyValue('--rc-listbox-selected-color')).toBe('rgb(10, 11, 12)');
+});
+
 test('maps open menu surfaces without choosing a consumer button variant', () => {
   const scope = renderMaterialScope();
   const menuButton = document.createElement('rc-menu-button');
