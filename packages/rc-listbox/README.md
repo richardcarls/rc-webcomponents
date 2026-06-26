@@ -1,12 +1,12 @@
 # `@rcarls/rc-listbox`
 
-A headless WAI-ARIA listbox component built with Lit 3. It renders option
-elements into light DOM so parent components can use `aria-activedescendant`
-with IDs that resolve in the same document or shadow root.
+A [WAI-ARIA listbox](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/) component
+that renders a `<ul role="presentation">` + `<li role="option">` subtree
+directly into its own light DOM to facilitate `aria-activedescendant` virtual
+navigation with IDs inside the same document or shadow root.
 
-`rc-listbox` is primarily an infrastructure component for `rc-select` and
-`rc-combobox`, but it can be used directly when an application controls option
-state from JavaScript.
+`rc-listbox` is primarily an infrastructure component that can be used
+directly when an application or component controls option state.
 
 ## Installation
 

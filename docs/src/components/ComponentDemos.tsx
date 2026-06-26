@@ -1,6 +1,6 @@
 import type { CSSProperties, RefObject } from 'react';
 import type * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type {
   RCAppBarRef,
@@ -25,16 +25,29 @@ import { createMarkdownPlugin } from '@rcarls/rc-textarea-plugin-markdown';
 import { DemoFrame } from './DemoFrame';
 
 type DetailEvent<T> = CustomEvent<T>;
+type EventLogTarget = RefObject<HTMLElement | null> | HTMLElement | null;
+
+function getEventLogTarget(target: EventLogTarget): HTMLElement | null {
+  if (!target) {
+    return null;
+  }
+
+  if ('addEventListener' in target) {
+    return target;
+  }
+
+  return target.current;
+}
 
 function useEventLog<T>(
-  ref: RefObject<HTMLElement | null>,
+  target: EventLogTarget,
   eventName: string,
   format: (detail: T) => string,
 ) {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    const $element = ref.current;
+    const $element = getEventLogTarget(target);
     if (!$element) {
       return;
     }
@@ -51,7 +64,7 @@ function useEventLog<T>(
     return () => {
       $element.removeEventListener(eventName, handleEvent);
     };
-  }, [eventName, format, ref]);
+  }, [eventName, format, target]);
 
   return log;
 }
@@ -272,37 +285,66 @@ export function FabDemo() {
 }
 
 export function ListboxDemo() {
-  const listboxRef = useRef<RCListboxRef>(null);
+  const [listboxEl, setListboxEl] = useState<RCListboxRef | null>(null);
+  const seedListbox = useCallback((listbox: RCListboxRef | null) => {
+    setListboxEl(listbox);
+    if (!listbox) return;
+
+    async function applyOptions() {
+      if (typeof customElements !== 'undefined') {
+        await customElements.whenDefined('rc-listbox');
+      }
+
+      if (!listbox.isConnected) return;
+
+      listbox.options = [
+        { value: 'apples', label: 'Apples' },
+        { value: 'berries', label: 'Berries' },
+        { value: 'citrus', label: 'Citrus' },
+        { value: 'dates', label: 'Dates', disabled: true },
+        { value: 'elderflower', label: 'Elderflower' },
+        { value: 'figs', label: 'Figs' },
+        { value: 'grapes', label: 'Grapes' },
+      ];
+      listbox.setSelectedValues(['berries']);
+    }
+
+    void applyOptions();
+  }, []);
   const log = useEventLog<{
     optionValue: string;
     selected: boolean;
     selectedValues: string[];
   }>(
-    listboxRef,
+    listboxEl,
     'rc-listbox-change',
     ({ optionValue, selected, selectedValues }) =>
       `${selected ? 'Selected' : 'Deselected'} ${optionValue}; current: ${selectedValues.join(', ') || '(none)'}`,
   );
 
-  useEffect(() => {
-    const listbox = listboxRef.current;
-    if (!listbox) {
-      return;
-    }
-
-    listbox.options = [
-      { value: 'apples', label: 'Apples' },
-      { value: 'berries', label: 'Berries' },
-      { value: 'citrus', label: 'Citrus' },
-      { value: 'dates', label: 'Dates', disabled: true },
-      { value: 'figs', label: 'Figs' },
-    ];
-    listbox.setSelectedValues(['berries']);
-  }, []);
-
   return (
     <DemoFrame>
-      <rc-listbox ref={listboxRef} multiple checkmark aria-label="Fruit choices"></rc-listbox>
+      <label className="demo-col" style={{ marginBlockEnd: '0.5rem' }}>
+        <span>Filter</span>
+        <input
+          type="search"
+          placeholder="Type to filter…"
+          aria-label="Filter fruit options"
+          onChange={(e) => {
+            const text = e.currentTarget.value;
+            if (!listboxEl) return;
+            text ? listboxEl.filterOptions(text) : listboxEl.clearFilter();
+          }}
+        />
+      </label>
+      <rc-listbox
+        ref={seedListbox}
+        multiple
+        checkmark
+        tabIndex={0}
+        aria-label="Fruit choices"
+        style={{ maxHeight: '12rem', border: '1px solid ButtonBorder' }}
+      ></rc-listbox>
       <EventLog entries={log} />
     </DemoFrame>
   );
