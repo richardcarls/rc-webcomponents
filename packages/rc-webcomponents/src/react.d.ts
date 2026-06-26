@@ -197,6 +197,8 @@ export type RCListboxRef = HTMLElement & {
   filterOptions(text: string): void;
   clearFilter(): void;
   setCreateOption(label: string | null): void;
+  setSelectedValues(values: string[]): void;
+  appendOption(opt: RCSelectOption): void;
 };
 
 /** Public API surface of `<rc-select>`. */
