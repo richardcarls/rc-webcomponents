@@ -66,6 +66,24 @@ test('contextual toolbar controls receive Material state styling', () => {
   expect(getComputedStyle(button).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
 });
 
+test('listbox selected options use the selection token contract', () => {
+  const scope = renderScope();
+  const listbox = document.createElement('rc-listbox');
+  const option = document.createElement('li');
+
+  scope.style.setProperty('--rc-listbox-selected-bg', 'rgb(1, 2, 3)');
+  scope.style.setProperty('--rc-listbox-selected-color', 'rgb(4, 5, 6)');
+  option.setAttribute('role', 'option');
+  option.setAttribute('aria-selected', 'true');
+  listbox.append(option);
+  scope.append(listbox);
+
+  const styles = getComputedStyle(option);
+
+  expect(styles.backgroundColor).toBe('rgb(1, 2, 3)');
+  expect(styles.color).toBe('rgb(4, 5, 6)');
+});
+
 test('disclosure styles use Material list headers and card expansion', () => {
   const scope = renderScope();
   const disclosure = document.createElement('rc-disclosure');

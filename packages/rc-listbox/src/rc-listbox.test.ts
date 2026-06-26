@@ -1,5 +1,6 @@
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
+
 import { html } from 'lit';
 
 import './define';
@@ -12,17 +13,18 @@ const OPTIONS = [
   { value: 'cherry', label: 'Cherry', disabled: true },
 ];
 
-test('renders options from options property', async () => {
+test('renders <li role="option"> elements from options property', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = OPTIONS;
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  const options = el.querySelectorAll('[role="option"]');
-  expect(options).toHaveLength(3);
-  expect(options[0].querySelector('[part="option-label"]')?.textContent).toBe('Apple');
-  expect(options[1].querySelector('[part="option-label"]')?.textContent).toBe('Banana');
-  expect(options[2].querySelector('[part="option-label"]')?.textContent).toBe('Cherry');
+  $listbox.options = OPTIONS;
+
+  const $options = $listbox.querySelectorAll('li[role="option"]');
+
+  expect($options).toHaveLength(3);
+  expect($options[0].textContent?.trim()).toBe('Apple');
+  expect($options[1].textContent?.trim()).toBe('Banana');
+  expect($options[2].textContent?.trim()).toBe('Cherry');
 });
 
 test('has role=listbox on host element', async () => {
@@ -30,39 +32,107 @@ test('has role=listbox on host element', async () => {
   await expect.element(screen.getByRole('listbox')).toBeInTheDocument();
 });
 
+test('options are wrapped in a <ul role="presentation">', async () => {
+  const screen = render(html`<rc-listbox></rc-listbox>`);
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
+  $listbox.options = OPTIONS;
+
+  const $ul = $listbox.querySelector(':scope > ul');
+  expect($ul).not.toBeNull();
+  expect($ul?.getAttribute('role')).toBe('presentation');
+});
+
 test('has no automated accessibility violations', async () => {
   const screen = render(html`<rc-listbox aria-label="Fruit"></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = OPTIONS;
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  await expectNoA11yViolations(el);
+  $listbox.options = OPTIONS;
+  await $listbox.updateComplete;
+
+  await expectNoA11yViolations($listbox);
+});
+
+test('bootstraps from pre-rendered <ul>/<li> children', async () => {
+  const screen = render(html`
+    <rc-listbox aria-label="Fruit">
+      <ul>
+        <li value="apple">Apple</li>
+        <li value="banana">Banana</li>
+      </ul>
+    </rc-listbox>
+  `);
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+  await $listbox.updateComplete;
+
+  const $opts = $listbox.querySelectorAll('li[role="option"]');
+
+  expect($opts).toHaveLength(2);
+  expect($opts[0].getAttribute('data-value')).toBe('apple');
+  expect($opts[1].getAttribute('data-value')).toBe('banana');
+});
+
+test('options setter replaces pre-rendered DOM', async () => {
+  const screen = render(html`
+    <rc-listbox aria-label="Fruit">
+      <ul>
+        <li value="apple">Apple</li>
+      </ul>
+    </rc-listbox>
+  `);
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+  await $listbox.updateComplete;
+
+  $listbox.options = [{ value: 'cherry', label: 'Cherry' }];
+
+  const $opts = $listbox.querySelectorAll('li[role="option"]');
+
+  expect($opts).toHaveLength(1);
+  expect($opts[0].getAttribute('data-value')).toBe('cherry');
+  expect($opts[0].textContent?.trim()).toBe('Cherry');
 });
 
 test('aria-selected reflects setSelectedValues', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = OPTIONS;
-  el.setSelectedValues(['apple']);
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  const opts = el.querySelectorAll('[role="option"]');
-  expect(opts[0].getAttribute('aria-selected')).toBe('true');
-  expect(opts[1].getAttribute('aria-selected')).toBe('false');
+  $listbox.options = OPTIONS;
+  $listbox.setSelectedValues(['apple']);
+
+  const $opts = $listbox.querySelectorAll('li[role="option"]');
+
+  expect($opts[0].getAttribute('aria-selected')).toBe('true');
+  expect($opts[1].getAttribute('aria-selected')).toBe('false');
+});
+
+test('selected option colors use CSS custom properties', async () => {
+  const screen = render(html`<rc-listbox></rc-listbox>`);
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
+  $listbox.style.setProperty('--rc-listbox-selected-bg', 'rgb(1, 2, 3)');
+  $listbox.style.setProperty('--rc-listbox-selected-color', 'rgb(4, 5, 6)');
+  $listbox.options = OPTIONS;
+  $listbox.setSelectedValues(['apple']);
+
+  const $option = $listbox.querySelector('li[role="option"][aria-selected="true"]');
+
+  expect($option).not.toBeNull();
+  expect(getComputedStyle($option!).backgroundColor).toBe('rgb(1, 2, 3)');
+  expect(getComputedStyle($option!).color).toBe('rgb(4, 5, 6)');
 });
 
 test('toggleOption selects in single mode and fires rc-listbox-change', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = OPTIONS;
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
+  $listbox.options = OPTIONS;
 
   const handler = vi.fn();
-  el.addEventListener('rc-listbox-change', handler);
-  el.toggleOption('banana');
-  await el.updateComplete;
 
-  expect(el.selectedValues).toEqual(['banana']);
+  $listbox.addEventListener('rc-listbox-change', handler);
+  $listbox.toggleOption('banana');
+
+  expect($listbox.selectedValues).toEqual(['banana']);
   expect(handler).toHaveBeenCalledOnce();
   expect(handler.mock.calls[0][0].detail).toMatchObject({
     value: 'banana',
@@ -75,138 +145,170 @@ test('toggleOption selects in single mode and fires rc-listbox-change', async ()
 
 test('toggleOption deselects in single mode', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = OPTIONS;
-  el.setSelectedValues(['banana']);
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  el.toggleOption('banana');
-  await el.updateComplete;
-  expect(el.selectedValues).toEqual([]);
+  $listbox.options = OPTIONS;
+  $listbox.setSelectedValues(['banana']);
+  $listbox.toggleOption('banana');
+
+  expect($listbox.selectedValues).toEqual([]);
 });
 
 test('multiple mode: toggleOption toggles without clearing others', async () => {
   const screen = render(html`<rc-listbox multiple></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = OPTIONS;
-  el.setSelectedValues(['apple']);
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  el.toggleOption('banana');
-  await el.updateComplete;
-  expect(el.selectedValues).toContain('apple');
-  expect(el.selectedValues).toContain('banana');
+  $listbox.options = OPTIONS;
+  $listbox.setSelectedValues(['apple']);
+  $listbox.toggleOption('banana');
+
+  expect($listbox.selectedValues).toContain('apple');
+  expect($listbox.selectedValues).toContain('banana');
 });
 
 test('multiple: aria-multiselectable="true" on host', async () => {
   const screen = render(html`<rc-listbox multiple></rc-listbox>`);
-  const el = await screen.getByRole('listbox').element();
-  await (el as RCListbox).updateComplete;
-  expect(el.getAttribute('aria-multiselectable')).toBe('true');
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
+  await $listbox.updateComplete;
+
+  expect($listbox.getAttribute('aria-multiselectable')).toBe('true');
 });
 
 test('filterOptions hides non-matching options', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = OPTIONS;
-  el.filterOptions('ba');
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  const opts = el.querySelectorAll('[role="option"]');
-  expect((opts[0] as HTMLElement).hidden).toBe(true);
-  expect((opts[1] as HTMLElement).hidden).toBe(false);
+  $listbox.options = OPTIONS;
+  $listbox.filterOptions('ba');
+
+  const $opts = $listbox.querySelectorAll('li[role="option"]');
+
+  expect(($opts[0] as HTMLElement).hidden).toBe(true);
+  expect(($opts[1] as HTMLElement).hidden).toBe(false);
 });
 
 test('clearFilter shows all options', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = OPTIONS;
-  el.filterOptions('xy');
-  await el.updateComplete;
-  el.clearFilter();
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  const opts = el.querySelectorAll('[role="option"]');
-  expect((opts[0] as HTMLElement).hidden).toBe(false);
-  expect((opts[1] as HTMLElement).hidden).toBe(false);
+  $listbox.options = OPTIONS;
+  $listbox.filterOptions('xy');
+  $listbox.clearFilter();
+
+  const $opts = $listbox.querySelectorAll('li[role="option"]');
+
+  expect(($opts[0] as HTMLElement).hidden).toBe(false);
+  expect(($opts[1] as HTMLElement).hidden).toBe(false);
 });
 
 test('navigableItems excludes hidden and disabled options', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = OPTIONS;
-  el.filterOptions('ba'); // hides Apple, Cherry (disabled anyway)
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  const nav = el.navigableItems;
-  expect(nav).toHaveLength(1);
-  expect(nav[0].getAttribute('data-value')).toBe('banana');
+  $listbox.options = OPTIONS;
+  $listbox.filterOptions('ba');
+
+  const $nav = $listbox.navigableItems;
+
+  expect($nav).toHaveLength(1);
+  expect($nav[0].getAttribute('data-value')).toBe('banana');
 });
 
 test('disabled option: aria-disabled="true", excluded from navigableItems', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = OPTIONS;
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  const opts = el.querySelectorAll('[role="option"]');
-  expect(opts[2].getAttribute('aria-disabled')).toBe('true');
-  expect(el.navigableItems.map((e) => e.getAttribute('data-value'))).not.toContain('cherry');
+  $listbox.options = OPTIONS;
+
+  const $opts = $listbox.querySelectorAll('li[role="option"]');
+
+  expect($opts[2].getAttribute('aria-disabled')).toBe('true');
+  expect($listbox.navigableItems.map((e) => e.getAttribute('data-value'))).not.toContain('cherry');
 });
 
 test('appendOption adds new option to end of list', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = [{ value: 'a', label: 'A' }];
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  el.appendOption({ value: 'b', label: 'B' });
-  await el.updateComplete;
+  $listbox.options = [{ value: 'a', label: 'A' }];
+  $listbox.appendOption({ value: 'b', label: 'B' });
 
-  const opts = el.querySelectorAll('[role="option"]');
-  expect(opts).toHaveLength(2);
-  expect(opts[1].querySelector('[part="option-label"]')?.textContent).toBe('B');
+  const $opts = $listbox.querySelectorAll('li[role="option"]');
+
+  expect($opts).toHaveLength(2);
+  expect($opts[1].textContent?.trim()).toBe('B');
 });
 
 test('setCreateOption shows Create option in navigableItems', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = [{ value: 'a', label: 'A' }];
-  el.setCreateOption('NewThing');
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  const createOpt = el.querySelector('[data-value="__create__"]');
-  expect(createOpt).not.toBeNull();
-  expect(createOpt!.textContent).toContain('NewThing');
-  expect(el.navigableItems).toContain(createOpt);
+  $listbox.options = [{ value: 'a', label: 'A' }];
+  $listbox.setCreateOption('NewThing');
+
+  const $createOpt = $listbox.querySelector('[data-value="__create__"]');
+
+  expect($createOpt).not.toBeNull();
+  expect($createOpt!.textContent).toContain('NewThing');
+  expect($listbox.navigableItems).toContain($createOpt);
 });
 
-test('setCreateOption(null) hides Create option', async () => {
+test('setCreateOption(null) removes Create option', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = [{ value: 'a', label: 'A' }];
-  el.setCreateOption('NewThing');
-  await el.updateComplete;
-  el.setCreateOption(null);
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
-  expect(el.querySelector('[data-value="__create__"]')).toBeNull();
+  $listbox.options = [{ value: 'a', label: 'A' }];
+  $listbox.setCreateOption('NewThing');
+  $listbox.setCreateOption(null);
+
+  expect($listbox.querySelector('[data-value="__create__"]')).toBeNull();
 });
 
-test('Create option fires rc-listbox-change with value __create__', async () => {
+test('Create option fires rc-listbox-change with optionValue __create__', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
-  const el = (await screen.getByRole('listbox').element()) as RCListbox;
-  el.options = [];
-  el.setCreateOption('Foo');
-  await el.updateComplete;
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
+  $listbox.options = [];
+  $listbox.setCreateOption('Foo');
+  await $listbox.updateComplete;
 
   const handler = vi.fn();
-  el.addEventListener('rc-listbox-change', handler);
 
-  const createEl = el.querySelector<HTMLElement>('[data-value="__create__"]')!;
-  createEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+  $listbox.addEventListener('rc-listbox-change', handler);
+
+  const $createEl = $listbox.querySelector<HTMLElement>('[data-value="__create__"]')!;
+
+  $createEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
 
   expect(handler).toHaveBeenCalledOnce();
   expect(handler.mock.calls[0][0].detail.optionValue).toBe('__create__');
   expect(handler.mock.calls[0][0].detail.selectedValues).toEqual([]);
+});
+
+test('checkmark injects option-checkmark spans', async () => {
+  const screen = render(html`<rc-listbox checkmark></rc-listbox>`);
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
+  $listbox.options = OPTIONS;
+  await $listbox.updateComplete;
+
+  const $opts = $listbox.querySelectorAll('li[role="option"]');
+
+  expect($opts[0].querySelector('[part="option-checkmark"]')).not.toBeNull();
+});
+
+test('checkmark=false removes option-checkmark spans', async () => {
+  const screen = render(html`<rc-listbox checkmark></rc-listbox>`);
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
+  $listbox.options = OPTIONS;
+  await $listbox.updateComplete;
+
+  $listbox.checkmark = false;
+  await $listbox.updateComplete;
+
+  const $opts = $listbox.querySelectorAll('li[role="option"]');
+
+  expect($opts[0].querySelector('[part="option-checkmark"]')).toBeNull();
 });

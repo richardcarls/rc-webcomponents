@@ -91,9 +91,9 @@ test('slotted <select> options appear in listbox', async () => {
 
   // 3 real options (placeholder skipped)
   expect($options).toHaveLength(3);
-  expect($options[0].querySelector('[part="option-label"]')?.textContent).toBe('Apple');
-  expect($options[1].querySelector('[part="option-label"]')?.textContent).toBe('Banana');
-  expect($options[2].querySelector('[part="option-label"]')?.textContent).toBe('Cherry');
+  expect($options[0].textContent).toContain('Apple');
+  expect($options[1].textContent).toContain('Banana');
+  expect($options[2].textContent).toContain('Cherry');
 });
 
 test('clicking trigger opens popup', async () => {

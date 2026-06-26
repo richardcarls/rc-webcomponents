@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless WAI-ARIA listbox web component built with Lit",
+  "description": "A WAI-ARIA listbox component that renders options into light DOM to facilitate `aria-activedescendant` virtual navigation with IDs inside the same document or shadow root.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",

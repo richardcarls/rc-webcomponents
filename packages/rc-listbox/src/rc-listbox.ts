@@ -1,39 +1,11 @@
-import { LitElement, html, nothing } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { ActiveDescendantController } from '@rcarls/rc-common';
-
-export interface ListboxOption {
-  value: string;
-  label: string;
-  disabled?: boolean;
-}
-
-/**
- * Determines how `filterOptions()` matches option labels against the query string.
- *
- * - `'prefix'` — label must start with the query (default, matches native `<select>` type-ahead).
- * - `'contains'` — label must contain the query anywhere.
- * - `function` — custom predicate; receives lowercased label and query, return `true` to show the option.
- */
-export type FilterStrategy =
-  | 'prefix'
-  | 'contains'
-  | ((label: string, query: string) => boolean);
-
-export interface RCListboxChangeEvent {
-  /** Canonical selected value for single mode, or selected values for multi mode. */
-  value: string | string[];
-  /** Whether the option was selected (false means it was deselected). */
-  selected: boolean;
-  /** The option value that was activated. `'__create__'` for the create option. */
-  optionValue: string;
-  /** The option that was activated. */
-  option: ListboxOption | null;
-  /** Selected values as a consistently-array-shaped convenience value. */
-  selectedValues: string[];
-  /** Selected option objects. */
-  selectedOptions: ListboxOption[];
-}
+import { LitElement, html, css } from 'lit';
+import { property } from 'lit/decorators.js';
+import {
+  ActiveDescendantController,
+  ItemsCollectionController,
+  type ItemsCollectionOption,
+  type ItemsCollectionFilterStrategy,
+} from '@rcarls/rc-common';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -41,15 +13,106 @@ declare global {
   }
 }
 
-let _uid = 0;
+/** Option shape accepted by `rc-listbox`. */
+export type ListboxOption = ItemsCollectionOption;
 
 /**
- * A headless listbox popup component following the WAI-ARIA listbox pattern.
+ * Determines how `filterOptions()` matches option labels against the query string.
  *
- * Renders into its own light DOM (no shadow root) so that when placed inside
- * another component's shadow root, option element IDs resolve within that same
- * shadow root — enabling `aria-activedescendant` and `aria-controls` IDREFs to
- * work correctly from the parent trigger.
+ * - `'prefix'`: label must start with the query (default, matches native `<select>` type-ahead).
+ * - `'contains'`:  label must contain the query anywhere.
+ * - `function`:  custom predicate; receives lowercased label and query, return `true` to show the option.
+ */
+export type FilterStrategy = ItemsCollectionFilterStrategy;
+
+export interface RCListboxChangeEvent {
+  /** Canonical selected value for single mode, or selected values for multi mode. */
+  value: string | string[];
+
+  /** Whether the option was selected (false means it was deselected). */
+  selected: boolean;
+
+  /** The option value that was activated. `'__create__'` for the create option. */
+  optionValue: string;
+
+  /** The option that was activated. */
+  option: ListboxOption | null;
+
+  /** Selected values as a consistently-array-shaped convenience value. */
+  selectedValues: string[];
+
+  /** Selected option objects. */
+  selectedOptions: ListboxOption[];
+}
+
+let _uid = 0;
+
+/** Base CSS injected once per root (Document or ShadowRoot) that hosts rc-listbox. */
+const BASE_CSS = `
+rc-listbox ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+rc-listbox li[role='option'] {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 2px 4px;
+  cursor: default;
+  user-select: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+}
+
+rc-listbox li[role='option']:hover {
+  background: var(--rc-listbox-hover-bg, color-mix(in srgb, Highlight 8%, transparent));
+}
+
+rc-listbox li[role='option'][data-active] {
+  background: var(--rc-listbox-active-bg, color-mix(in srgb, Highlight 8%, transparent));
+}
+
+rc-listbox li[role='option'][aria-selected='true'] {
+  background: var(--rc-listbox-selected-bg, Highlight);
+  color: var(--rc-listbox-selected-color, HighlightText);
+}
+
+rc-listbox li[role='option'][aria-disabled='true'] {
+  color: var(--rc-listbox-disabled-color, GrayText);
+  opacity: var(--rc-listbox-disabled-opacity, 1);
+  pointer-events: none;
+}
+
+rc-listbox [part~='option-checkmark'] {
+  display: none;
+  min-inline-size: 1em;
+  text-align: center;
+}
+
+rc-listbox[checkmark] [part~='option-checkmark'] {
+  display: inline;
+  visibility: hidden;
+}
+
+rc-listbox[checkmark] li[role='option'][aria-selected='true'] [part~='option-checkmark'] {
+  visibility: visible;
+}
+`;
+
+/**
+ * A [WAI-ARIA listbox](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/) component.
+ *
+ * Renders a `<ul role="presentation">` + `<li role="option">` subtree directly
+ * into its own light DOM so that option IDs remain in the same document or
+ * shadow root scope as parent consumers (`rc-select`, `rc-combobox`). This
+ * keeps `aria-activedescendant` references valid regardless of nesting.
+ *
+ * Pre-rendered `<ul>/<li>` children are accepted as a progressive enhancement
+ * baseline. The component reads them on first connect if no `options` setter
+ * has been called.
  *
  * Consumers drive this component via its JS API:
  *   - Set `options` to populate the list
@@ -58,17 +121,37 @@ let _uid = 0;
  *   - Call `filterOptions()` to filter visible options
  *   - Read `navigableItems` to feed `ActiveDescendantController`
  *
- * @slot — No slots; options are rendered programmatically from the `options` property.
+ * @slot — Accepts pre-rendered `<ul>` with `<li>` children for progressive enhancement.
+ *
  * @fires rc-listbox-change - Fired when an option is activated (clicked or Enter/Space)
- * @csspart option - Individual option elements
- * @csspart option-checkmark - The checkmark indicator inside each option
- * @csspart option-label - The label text span inside each option
+ *
+ * @csspart option - Individual `<li role="option">` elements
+ * @csspart option-checkmark - The checkmark `<span>` inside each option (when `checkmark` is true)
  * @csspart create-option - The "Create" option when allow-create is active
  */
 export class RCListbox extends LitElement {
-  /** Renders into the host element — no shadow root — so option IDs resolve in the parent shadow root. */
-  override createRenderRoot() {
-    return this;
+  static override styles = css`
+    :host {
+      display: block;
+      overflow-y: auto;
+    }
+  `;
+
+  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
+
+  private static _ensureBaseStyles(root: Document | ShadowRoot): void {
+    if (RCListbox._styledRoots.has(root)) return;
+    RCListbox._styledRoots.add(root);
+
+    const style = document.createElement('style');
+    style.setAttribute('data-rc-listbox-base', '');
+    style.textContent = BASE_CSS;
+
+    if (root instanceof Document) {
+      root.head.appendChild(style);
+    } else {
+      root.appendChild(style);
+    }
   }
 
   /** Allow multiple selection. Reflected as `aria-multiselectable` on the host. */
@@ -77,6 +160,7 @@ export class RCListbox extends LitElement {
 
   /**
    * Render a checkmark indicator inside each option element.
+   *
    * Hidden by default; enable for combobox / select patterns where the
    * consumer's CSS shows it conditionally via `[aria-selected='true']`.
    */
@@ -85,6 +169,7 @@ export class RCListbox extends LitElement {
 
   /**
    * How option labels are matched against the active filter text.
+   *
    * Defaults to `'contains'` (substring). Set to `'prefix'` for starts-with
    * matching, or pass a custom predicate for full control.
    * Function values are JS-only; string values may be set via the
@@ -93,97 +178,108 @@ export class RCListbox extends LitElement {
   @property({ attribute: 'filter-strategy', reflect: false })
   filterStrategy: FilterStrategy = 'contains';
 
-  @state() private _options: ListboxOption[] = [];
-  @state() private _selectedValues: Set<string> = new Set();
-  @state() private _filterText = '';
-  @state() private _createLabel: string | null = null;
   private _defaultValue: string | string[] | undefined;
   private _value: string | string[] | undefined;
   private _selectionInitialized = false;
+  private _filterText = '';
 
-  private readonly _uid = `rc-lb-${++_uid}`;
+  /** Unique ID prefix for all rendered option elements in this instance. */
+  protected readonly _uid = `rc-lb-${++_uid}`;
 
-  private readonly _adc = new ActiveDescendantController(this, {
+  /** Manages the `<ul>/<li>` option DOM subtree in the component's light DOM. */
+  protected readonly _ctrl = new ItemsCollectionController(this, {
+    idPrefix: this._uid,
+    onInitFromDom: () => this._applySelectionFromSource(),
+    onActivate: (value) => this._handleActivate(value),
+  });
+
+  /** Active-descendant controller; tracks keyboard focus within the option list. */
+  protected readonly _activeDescendantCtrl = new ActiveDescendantController(this, {
     host: () => this,
     items: () => this.navigableItems,
   });
 
-  override connectedCallback() {
+  override connectedCallback(): void {
     super.connectedCallback();
-    if (!this.hasAttribute('role')) this.setAttribute('role', 'listbox');
+
+    RCListbox._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
+
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'listbox');
+    }
+
     this.addEventListener('keydown', this._onKeydown);
     this.addEventListener('blur', this._onBlur);
   }
 
-  override disconnectedCallback() {
+  override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.removeEventListener('keydown', this._onKeydown);
     this.removeEventListener('blur', this._onBlur);
   }
 
-  override updated() {
-    if (this.multiple) {
-      this.setAttribute('aria-multiselectable', 'true');
-    } else {
-      this.removeAttribute('aria-multiselectable');
+  override updated(changed: Map<PropertyKey, unknown>): void {
+    if (changed.has('multiple')) {
+      this.multiple
+        ? this.setAttribute('aria-multiselectable', 'true')
+        : this.removeAttribute('aria-multiselectable');
+    }
+
+    if (changed.has('checkmark')) {
+      this._ctrl.checkmark = this.checkmark;
     }
   }
 
-  // ── Options ─────────────────────────────────────────────────────────────────
+  protected override render() {
+    return html`<slot></slot>`;
+  }
 
   /** All options regardless of filter state. */
   get allOptions(): readonly ListboxOption[] {
-    return this._options;
+    return this._ctrl.allOptions;
   }
 
   /** Options currently passing the active filter. */
   get filteredOptions(): readonly ListboxOption[] {
-    return this._options.filter((o) => this._isVisible(o));
+    const filterText = this._filterText;
+    if (!filterText) return [...this._ctrl.allOptions];
+    return this._ctrl.allOptions.filter((o) => this._isVisible(o));
   }
 
-  /** Replace the full options list. Triggers a re-render. */
+  /** Replace the full options list. */
   get options(): ListboxOption[] {
-    return [...this._options];
+    return [...this._ctrl.allOptions];
   }
 
-  /** Replace the full options list. Triggers a re-render. */
+  /** Replace the full options list. */
   set options(opts: ListboxOption[]) {
-    this._options = [...opts];
+    this._ctrl.setOptions([...opts]);
     this._applySelectionFromSource();
   }
 
   /** Append a single option without replacing the list. */
   appendOption(opt: ListboxOption): void {
-    this._options = [...this._options, opt];
+    this._ctrl.appendOption(opt);
   }
 
-  // ── Selection ────────────────────────────────────────────────────────────────
-
+  /** Current selection as a consistently-array-shaped read-only view. */
   get selectedValues(): string[] {
-    return [...this._selectedValues];
+    return this._ctrl.selectedValues;
   }
 
   /** Current selection. Host writes update silently. */
   get value(): string | string[] {
-    return this.multiple
-      ? this.selectedValues
-      : (this.selectedValues[0] ?? '');
+    return this.multiple ? this.selectedValues : (this.selectedValues[0] ?? '');
   }
 
   /** Current selection. Host writes update silently. */
   set value(value: string | string[] | undefined) {
-    const oldValue = this._value;
-
     this._value = value;
 
-    if (value === undefined) {
-      this.requestUpdate('value', oldValue);
-      return;
-    }
+    if (value === undefined) return;
 
     this._selectionInitialized = true;
     this._applySelection(this._normalizeValue(value));
-    this.requestUpdate('value', oldValue);
   }
 
   /** Initial uncontrolled selection. */
@@ -193,15 +289,11 @@ export class RCListbox extends LitElement {
 
   /** Initial uncontrolled selection. */
   set defaultValue(value: string | string[] | undefined) {
-    const oldValue = this._defaultValue;
-
     this._defaultValue = value;
 
     if (!this._selectionInitialized && this._value === undefined && value !== undefined) {
       this._applySelection(this._normalizeValue(value));
     }
-
-    this.requestUpdate('defaultValue', oldValue);
   }
 
   /** Replace the selection set without firing `rc-listbox-change`. */
@@ -211,216 +303,240 @@ export class RCListbox extends LitElement {
 
   /**
    * Toggle the selected state of the option with `value`.
-   * In single-select mode, toggleing a selected item deselects it (and selects
+   * In single-select mode, toggling a selected item deselects it (and selects
    * the new item). Fires `rc-listbox-change`.
    */
   toggleOption(value: string): void {
-    const opt = this._options.find((o) => o.value === value);
+    const opt = this._ctrl.allOptions.find((o) => o.value === value);
+
     if (!opt || opt.disabled) return;
 
-    const wasSelected = this._selectedValues.has(value);
+    const wasSelected = this._ctrl.isSelected(value);
 
     if (this.multiple) {
-      const next = new Set(this._selectedValues);
-      if (wasSelected) next.delete(value); else next.add(value);
-      this._selectedValues = next;
+      const next = new Set(this._ctrl.selectedValues);
+
+      if (wasSelected) {
+        next.delete(value);
+      } else {
+        next.add(value);
+      }
+
+      this._ctrl.setSelectedValues([...next]);
     } else {
-      this._selectedValues = wasSelected ? new Set() : new Set([value]);
+      this._ctrl.setSelectedValues(wasSelected ? [] : [value]);
     }
 
     this._selectionInitialized = true;
     this._dispatchChange(opt, !wasSelected);
   }
 
+  /** Clears all selected values without firing `rc-listbox-change`. */
   clearSelection(): void {
     this._applySelection([]);
   }
 
-  // ── Filtering ────────────────────────────────────────────────────────────────
-
-  /** Filter visible options to those whose label starts with `text` (case-insensitive). */
+  /** Filter visible options to those whose label matches `text` (case-insensitive). */
   filterOptions(text: string): void {
     this._filterText = text;
+    this._ctrl.filterOptions(text, this.filterStrategy);
   }
 
+  /** Removes any active filter, making all options visible. */
   clearFilter(): void {
     this._filterText = '';
+    this._ctrl.clearFilter();
   }
 
-  // ── Navigation target ────────────────────────────────────────────────────────
-
   /**
-   * Ordered list of option elements currently navigable: visible and not disabled.
+   * Ordered list of currently navigable option elements (visible and not disabled).
+   *
    * Feed this to `ActiveDescendantController.items` in the parent component.
    * Includes the create option element when one is set.
    */
   get navigableItems(): Element[] {
-    const results: Element[] = [];
-    for (let i = 0; i < this._options.length; i++) {
-      const opt = this._options[i];
-      if (opt.disabled || !this._isVisible(opt)) continue;
-      const el = this.querySelector<Element>(`#${this._optId(i)}`);
-      if (el) results.push(el);
-    }
-    if (this._createLabel !== null) {
-      const el = this.querySelector<Element>(`#${this._uid}-create`);
-      if (el) results.push(el);
-    }
-    return results;
+    return this._ctrl.navigableItems;
   }
-
-  // ── Allow-create ─────────────────────────────────────────────────────────────
 
   /**
    * Show or hide the "Create" option at the end of the list.
-   * Pass `null` to hide it, or a non-empty string to show "Create '{label}'".
-   * Fires `rc-listbox-change` with `value: '__create__'` when activated.
+   *
+   * Pass `null` to hide it, or a non-empty string to show `Create "{label}"`.
+   * Fires `rc-listbox-change` with `optionValue: '__create__'` when activated.
    */
   setCreateOption(label: string | null): void {
-    this._createLabel = label;
+    this._ctrl.setCreateOption(label);
   }
 
-  // ── Rendering ────────────────────────────────────────────────────────────────
-
-  protected override render() {
-    return html`
-      ${this._options.map(
-        (opt, i) => html`
-          <div
-            id=${this._optId(i)}
-            part="option"
-            role="option"
-            aria-selected=${this._selectedValues.has(opt.value) ? 'true' : 'false'}
-            aria-disabled=${opt.disabled ? 'true' : 'false'}
-            data-value=${opt.value}
-            ?hidden=${!this._isVisible(opt)}
-            @pointerdown=${(e: PointerEvent) => {
-              e.preventDefault();
-              this.toggleOption(opt.value);
-            }}
-          >${this.checkmark ? html`<span part="option-checkmark" aria-hidden="true">&#x2713;</span>` : nothing}<span part="option-label">${opt.label}</span></div>
-        `,
-      )}
-      ${this._createLabel !== null
-        ? html`
-            <div
-              id=${`${this._uid}-create`}
-              part="option create-option"
-              role="option"
-              aria-selected="false"
-              data-value="__create__"
-              @pointerdown=${(e: PointerEvent) => {
-                e.preventDefault();
-                this.dispatchEvent(
-                  new CustomEvent<RCListboxChangeEvent>('rc-listbox-change', {
-                    bubbles: true,
-                    composed: true,
-                    detail: {
-                      value: this.value,
-                      selected: true,
-                      optionValue: '__create__',
-                      option: null,
-                      selectedValues: this.selectedValues,
-                      selectedOptions: this._selectedOptionsFor(this.selectedValues),
-                    },
-                  }),
-                );
-              }}
-            >${this.checkmark ? html`<span part="option-checkmark" aria-hidden="true">&#x2713;</span>` : nothing}<span part="option-label">Create "${this._createLabel}"</span></div>
-          `
-        : nothing}
-    `;
-  }
-
-  private _onBlur = (): void => {
-    this._adc.clear();
+  /** Clears the active descendant when focus leaves the listbox. */
+  protected _onBlur = (): void => {
+    this._activeDescendantCtrl.clear();
   };
 
-  private _onKeydown = (e: KeyboardEvent): void => {
+  /**
+   * Handles arrow-key navigation and Enter/Space activation.
+   *
+   * Passes modifier-key combos through to parent handlers unchanged.
+   */
+  protected _onKeydown = (e: KeyboardEvent): void => {
     // Pass modifier-key combos to parent handlers (e.g. Alt+Arrow in rc-transfer-list).
-    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.altKey || e.ctrlKey || e.metaKey) {
+      return;
+    }
 
     switch (e.key) {
       case 'ArrowDown': {
         e.preventDefault();
-        if (this._adc.activeItem) this._adc.navigate(1);
-        else this._adc.navigateToFirst();
-        if (!this.multiple) this._selectActiveItem();
+
+        if (this._activeDescendantCtrl.activeItem) {
+          this._activeDescendantCtrl.navigate(1);
+        } else {
+          this._activeDescendantCtrl.navigateToFirst();
+        }
+
+        if (!this.multiple) {
+          this._selectActiveItem();
+        }
+
         break;
       }
+
       case 'ArrowUp': {
         e.preventDefault();
-        if (this._adc.activeItem) this._adc.navigate(-1);
-        else this._adc.navigateToLast();
-        if (!this.multiple) this._selectActiveItem();
+
+        if (this._activeDescendantCtrl.activeItem) {
+          this._activeDescendantCtrl.navigate(-1);
+        } else {
+          this._activeDescendantCtrl.navigateToLast();
+        }
+
+        if (!this.multiple) {
+          this._selectActiveItem();
+        }
+
         break;
       }
+
       case 'Home': {
         e.preventDefault();
-        this._adc.navigateToFirst();
-        if (!this.multiple) this._selectActiveItem();
+
+        this._activeDescendantCtrl.navigateToFirst();
+
+        if (!this.multiple) {
+          this._selectActiveItem();
+        }
+
         break;
       }
+
       case 'End': {
         e.preventDefault();
-        this._adc.navigateToLast();
-        if (!this.multiple) this._selectActiveItem();
+        this._activeDescendantCtrl.navigateToLast();
+
+        if (!this.multiple) {
+          this._selectActiveItem();
+        }
+
         break;
       }
+
       case ' ':
       case 'Enter': {
         e.preventDefault();
-        const value = this._adc.activeItem?.getAttribute('data-value');
-        if (value == null) break;
+
+        const value = this._activeDescendantCtrl.activeItem?.getAttribute('data-value');
+
+        if (value == null) {
+          break;
+        }
+
         if (this.multiple) {
           this.toggleOption(value);
         } else {
           this._selectActiveItem();
         }
+
         break;
       }
     }
   };
 
+  /** Routes pointer activations from the controller. */
+  private _handleActivate(value: string): void {
+    if (value === '__create__') {
+      this.dispatchEvent(
+        new CustomEvent<RCListboxChangeEvent>('rc-listbox-change', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            value: this.value,
+            selected: true,
+            optionValue: '__create__',
+            option: null,
+            selectedValues: this.selectedValues,
+            selectedOptions: this._selectedOptionsFor(this.selectedValues),
+          },
+        }),
+      );
+    } else {
+      this.toggleOption(value);
+    }
+  }
+
   /**
-   * Selects the active-descendant item without toggling (single-select safe).
+   * Selects the active-descendant item without toggling.
+   *
    * Used by arrow-key navigation so the item under the cursor is always selected.
    */
-  private _selectActiveItem(): void {
-    const value = this._adc.activeItem?.getAttribute('data-value');
+  protected _selectActiveItem(): void {
+    const value = this._activeDescendantCtrl.activeItem?.getAttribute('data-value');
+
     if (value == null) return;
 
-    const opt = this._options.find((o) => o.value === value);
+    const opt = this._ctrl.allOptions.find((o) => o.value === value);
+
     if (!opt || opt.disabled) return;
 
-    if (this._selectedValues.has(value) && this._selectedValues.size === 1) return;
+    const current = this._ctrl.selectedValues;
+    if (current.length === 1 && current[0] === value) return;
 
-    this._selectedValues = new Set([value]);
+    this._ctrl.setSelectedValues([value]);
     this._selectionInitialized = true;
     this._dispatchChange(opt, true);
   }
 
-  private _optId(index: number): string {
-    return `${this._uid}-${index}`;
-  }
-
-  private _isVisible(opt: ListboxOption): boolean {
+  /**
+   * Returns `true` when `opt` passes the current `_filterText` and `filterStrategy`.
+   */
+  protected _isVisible(opt: ListboxOption): boolean {
     if (!this._filterText) return true;
 
     const label = opt.label.toLowerCase();
     const query = this._filterText.toLowerCase();
 
-    if (typeof this.filterStrategy === 'function') return this.filterStrategy(label, query);
-    if (this.filterStrategy === 'contains') return label.includes(query);
+    if (typeof this.filterStrategy === 'function') {
+      return this.filterStrategy(label, query);
+    }
 
-    return label.startsWith(query); // 'prefix' default
+    if (this.filterStrategy === 'contains') {
+      return label.includes(query);
+    }
+
+    return label.startsWith(query);
   }
 
-  private _applySelection(values: string[]): void {
-    this._selectedValues = new Set(this.multiple ? values : values.slice(0, 1));
+  /**
+   * Directly replaces the selection without firing an event.
+   * Enforces the single-select limit when `multiple` is false.
+   */
+  protected _applySelection(values: string[]): void {
+    this._ctrl.setSelectedValues(this.multiple ? values : values.slice(0, 1));
   }
 
-  private _applySelectionFromSource(): void {
+  /**
+   * Re-applies `_value` or `_defaultValue` after `options` or DOM bootstrap changes.
+   */
+  protected _applySelectionFromSource(): void {
     if (this._value !== undefined) {
       this._applySelection(this._normalizeValue(this._value));
       return;
@@ -432,11 +548,13 @@ export class RCListbox extends LitElement {
     }
   }
 
-  private _normalizeValue(value: string | string[]): string[] {
+  /** Coerces a `string | string[]` value to `string[]`. */
+  protected _normalizeValue(value: string | string[]): string[] {
     return Array.isArray(value) ? value : value ? [value] : [];
   }
 
-  private _dispatchChange(option: ListboxOption, selected: boolean): void {
+  /** Fires `rc-listbox-change` with a fully-populated detail object. */
+  protected _dispatchChange(option: ListboxOption, selected: boolean): void {
     this.dispatchEvent(
       new CustomEvent<RCListboxChangeEvent>('rc-listbox-change', {
         bubbles: true,
@@ -453,15 +571,15 @@ export class RCListbox extends LitElement {
     );
   }
 
-  private _selectedOptionsFor(values: string[]): ListboxOption[] {
-    return values.map((value) => {
-      return (
-        this._options.find((opt) => opt.value === value) ?? {
-          value,
-          label: value,
-        }
-      );
-    });
+  /**
+   * Maps value strings to their `ListboxOption` objects.
+   * Creates synthetic `{ value, label: value }` entries for values not in the list.
+   */
+  protected _selectedOptionsFor(values: string[]): ListboxOption[] {
+    return values.map(
+      (value) =>
+        this._ctrl.allOptions.find((opt) => opt.value === value) ?? { value, label: value },
+    );
   }
 }
 
