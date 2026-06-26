@@ -9,10 +9,9 @@ import { ListboxDemo } from '@site/src/components/ComponentDemos';
 # rc-listbox
 
 A [WAI-ARIA listbox](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/) component
-that renders a `<ul role="presentation">` + `<li role="option">` subtree directly
-into its own light DOM. Because option elements remain in the parent's DOM scope
-(document or the enclosing shadow root), `aria-activedescendant` ID references
-stay valid for parent combobox and select patterns regardless of shadow nesting.
+that renders a `<ul role="presentation">` + `<li role="option">` subtree
+directly into its own light DOM to facilitate `aria-activedescendant` virtual
+navigation with IDs inside the same document or shadow root.
 
 `rc-listbox` is primarily an infrastructure component that can be used
 directly when an application or component controls option data and selection state.
@@ -49,7 +48,8 @@ import '@rcarls/rc-listbox/define';
 
 ## Usage
 
-`rc-listbox` is usually an infrastructure component inside composite controls. Use it directly when application code owns the option data and selection state.
+`rc-listbox` is usually an infrastructure component inside composite controls. Use
+it directly when application code owns the option data and selection state.
 
 ```ts
 const listbox = document.querySelector('rc-listbox');
@@ -90,9 +90,8 @@ shared preview controls on this page to compare inherited, light, and dark color
 schemes, or to apply the optional Material theme inside the demo frame.
 
 Base styles (layout, system-color selection, disabled state) are injected once
-per root node via `adoptedStyleSheets`. The Material theme overrides these with
-M3 menu tokens: 48 dp item height, 4 dp container radius, elevation level 2
-shadow, and `surface-container` background.
+per root node with a `style[data-rc-light-dom-base="rc-listbox"]` element in
+an `rc-base` cascade layer.
 
 ## API
 

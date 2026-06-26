@@ -62,7 +62,7 @@ fallbacks:
 | `rc-dialog` | Native `<dialog>` enhancement wrapper. |
 | `rc-disclosure` | Native disclosure enhancement wrapper. |
 | `rc-fab` | Floating action button. |
-| `rc-listbox` | Light-DOM ARIA listbox. |
+| `rc-listbox` | ARIA listbox that renders option DOM into its own light DOM. |
 | `rc-markdown-editor` | Rich/source Markdown editor. |
 | `rc-menu` | ARIA menu popup. |
 | `rc-menu-button` | Trigger button for ARIA menus. |

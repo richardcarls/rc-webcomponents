@@ -6,7 +6,7 @@ directly into its own light DOM to facilitate `aria-activedescendant` virtual
 navigation with IDs inside the same document or shadow root.
 
 `rc-listbox` is primarily an infrastructure component that can be used
-directly when an application or component controls option state.
+directly when an application or component controls option data and selection state.
 
 ## Installation
 
