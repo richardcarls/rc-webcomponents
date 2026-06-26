@@ -1,4 +1,5 @@
 export * from './ActiveDescendantController';
+export * from './ItemsCollectionController';
 export * from './KeyboardInteractionDirective';
 export * from './KeyboardNavigationDirective';
 export * from './MouseMoveDirective';
