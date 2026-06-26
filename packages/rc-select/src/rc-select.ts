@@ -1,7 +1,12 @@
 import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ActiveDescendantController, AnchorController } from '@rcarls/rc-common';
-import type { RCListbox, ListboxOption } from '@rcarls/rc-listbox';
+import type {
+  RCListbox,
+  RCListboxChangeEvent,
+  ListboxOption,
+  ListboxSelectableOption,
+} from '@rcarls/rc-listbox';
 
 import { selectStyles } from './rc-select.styles.js';
 
@@ -15,7 +20,7 @@ export interface RCSelectChangeEvent {
   selectedValues: string[];
 
   /** All selected option objects after the change. */
-  selectedOptions: ListboxOption[];
+  selectedOptions: ListboxSelectableOption[];
 }
 
 declare global {
@@ -300,7 +305,7 @@ export class RCSelect extends LitElement {
   }
 
   /** `ListboxOption` objects for the current selection; falls back to label-only stubs for unknown values. */
-  protected get selectedOptions(): ListboxOption[] {
+  protected get selectedOptions(): ListboxSelectableOption[] {
     return this._selectedOptionsFor(this.selectedValues);
   }
 
@@ -620,11 +625,14 @@ export class RCSelect extends LitElement {
    * `rc-select-change`.
    */
   protected _handleListboxChange(e: CustomEvent) {
-    const { optionValue, value, selected } = e.detail as {
-      optionValue?: string;
-      value: string | string[];
-      selected: boolean;
-    };
+    const detail = e.detail as RCListboxChangeEvent;
+
+    if (detail.reason === 'action') {
+      e.stopPropagation();
+      return;
+    }
+
+    const { optionValue, value, selected } = detail;
     const activatedValue = optionValue ?? (Array.isArray(value) ? value.at(-1) : value);
 
     if (!activatedValue) {
@@ -700,10 +708,12 @@ export class RCSelect extends LitElement {
   }
 
   /** Maps value strings to `ListboxOption` objects from `_options`; creates label-only fallback stubs for unknown values. */
-  protected _selectedOptionsFor(values: string[]): ListboxOption[] {
+  protected _selectedOptionsFor(values: string[]): ListboxSelectableOption[] {
     return values.map((value) => {
       return (
-        this._options.find((opt) => opt.value === value) ?? {
+        this._options.find(
+          (opt): opt is ListboxSelectableOption => opt.kind !== 'action' && opt.value === value,
+        ) ?? {
           value,
           label: value,
         }

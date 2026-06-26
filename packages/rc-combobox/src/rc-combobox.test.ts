@@ -203,7 +203,7 @@ test('allowcreate: "Create X" appears for unmatched input', async () => {
   $input.dispatchEvent(new InputEvent('input', { bubbles: true }));
   await $host.updateComplete;
 
-  const $createOpt = $host.renderRoot.querySelector('[data-value="__create__"]');
+  const $createOpt = $host.renderRoot.querySelector('[data-action="create"]');
 
   expect($createOpt).not.toBeNull();
   expect($createOpt!.textContent).toContain('mango');
@@ -218,7 +218,7 @@ test('allowcreate: "Create X" does not appear for exact match', async () => {
   $input.dispatchEvent(new InputEvent('input', { bubbles: true }));
   await $host.updateComplete;
 
-  const $createOpt = $host.renderRoot.querySelector('[data-value="__create__"]');
+  const $createOpt = $host.renderRoot.querySelector('[data-action="create"]');
 
   expect($createOpt).toBeNull();
 });
@@ -236,7 +236,7 @@ test('allowcreate: activating create fires rc-combobox-create event', async () =
   $input.dispatchEvent(new InputEvent('input', { bubbles: true }));
   await $host.updateComplete;
 
-  const $createEl = $host.renderRoot.querySelector<HTMLElement>('[data-value="__create__"]')!;
+  const $createEl = $host.renderRoot.querySelector<HTMLElement>('[data-action="create"]')!;
 
   $createEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
 
@@ -256,7 +256,7 @@ test('allowcreate: preventDefault on rc-combobox-create cancels insertion', asyn
   $input.dispatchEvent(new InputEvent('input', { bubbles: true }));
   await $host.updateComplete;
 
-  const $createEl = $host.renderRoot.querySelector<HTMLElement>('[data-value="__create__"]')!;
+  const $createEl = $host.renderRoot.querySelector<HTMLElement>('[data-action="create"]')!;
 
   $createEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
   await $host.updateComplete;
@@ -273,7 +273,7 @@ test('allowcreate: new option appears in listbox after creation', async () => {
   $input.dispatchEvent(new InputEvent('input', { bubbles: true }));
   await $host.updateComplete;
 
-  const $createEl = $host.renderRoot.querySelector<HTMLElement>('[data-value="__create__"]')!;
+  const $createEl = $host.renderRoot.querySelector<HTMLElement>('[data-action="create"]')!;
 
   $createEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
   await $host.updateComplete;
@@ -298,7 +298,7 @@ test('allowcreate: new option also added to native <select>', async () => {
   await $host.updateComplete;
 
   $host.renderRoot
-    .querySelector<HTMLElement>('[data-value="__create__"]')!
+    .querySelector<HTMLElement>('[data-action="create"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
   await $host.updateComplete;
 

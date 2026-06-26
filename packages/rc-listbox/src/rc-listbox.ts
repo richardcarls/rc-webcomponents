@@ -3,7 +3,9 @@ import { property } from 'lit/decorators.js';
 import {
   ActiveDescendantController,
   ItemsCollectionController,
+  type ItemsCollectionActionOption,
   type ItemsCollectionOption,
+  type ItemsCollectionSelectableOption,
   type ItemsCollectionFilterStrategy,
 } from '@rcarls/rc-common';
 
@@ -15,6 +17,10 @@ declare global {
 
 /** Option shape accepted by `rc-listbox`. */
 export type ListboxOption = ItemsCollectionOption;
+export type ListboxSelectableOption = ItemsCollectionSelectableOption;
+export type ListboxActionOption<Action extends string = string> = ItemsCollectionActionOption & {
+  action: Action;
+};
 
 /**
  * Determines how `filterOptions()` matches option labels against the query string.
@@ -25,25 +31,54 @@ export type ListboxOption = ItemsCollectionOption;
  */
 export type FilterStrategy = ItemsCollectionFilterStrategy;
 
-export interface RCListboxChangeEvent {
+export interface RCListboxSelectChangeEvent {
+  reason: 'select';
+
   /** Canonical selected value for single mode, or selected values for multi mode. */
   value: string | string[];
 
   /** Whether the option was selected (false means it was deselected). */
   selected: boolean;
 
-  /** The option value that was activated. `'__create__'` for the create option. */
+  /** The option value that was activated. */
   optionValue: string;
 
   /** The option that was activated. */
-  option: ListboxOption | null;
+  option: ListboxSelectableOption;
 
-  /** Selected values as a consistently-array-shaped convenience value. */
+  /** Selected values array (length=1 for single-selection mode). */
   selectedValues: string[];
 
-  /** Selected option objects. */
-  selectedOptions: ListboxOption[];
+  /** Selected options. */
+  selectedOptions: ListboxSelectableOption[];
 }
+
+export interface RCListboxActionChangeEvent<Action extends string = string> {
+  reason: 'action';
+
+  /** Current canonical selected value; action rows do not mutate selection. */
+  value: string | string[];
+
+  /** Action activations never select the action row. */
+  selected: false;
+
+  /** The action option value that was activated. */
+  optionValue: string;
+
+  /** The action option that was activated. */
+  option: ListboxActionOption<Action>;
+
+  /** The activated action command. */
+  action: Action;
+
+  /** Selected values array (length=1 for single-selection mode). */
+  selectedValues: string[];
+
+  /** Selected options. */
+  selectedOptions: ListboxSelectableOption[];
+}
+
+export type RCListboxChangeEvent = RCListboxSelectChangeEvent | RCListboxActionChangeEvent;
 
 let _uid = 0;
 
@@ -109,12 +144,10 @@ const LIGHT_DOM_CSS = `
 `;
 
 /**
- * A [WAI-ARIA listbox](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/) component.
- *
- * Renders a `<ul role="presentation">` + `<li role="option">` subtree directly
- * into its own light DOM so that option IDs remain in the same document or
- * shadow root scope as parent consumers (`rc-select`, `rc-combobox`). This
- * keeps `aria-activedescendant` references valid regardless of nesting.
+ * A WAI-ARIA listbox component that renders a `<ul role="presentation">`
+ * + `<li role="option">` subtree directly into its own light DOM to facilitate
+ * `aria-activedescendant` virtual navigation with IDs inside the same document
+ * or shadow root.
  *
  * Pre-rendered `<ul>/<li>` children are accepted as a progressive enhancement
  * baseline. The component reads them on first connect if no `options` setter
@@ -207,10 +240,10 @@ export class RCListbox extends LitElement {
   protected readonly _uid = `rc-lb-${++_uid}`;
 
   /** Manages the `<ul>/<li>` option DOM subtree in the component's light DOM. */
-  protected readonly _ctrl = new ItemsCollectionController(this, {
+  protected readonly _itemsCollectionCtrl = new ItemsCollectionController(this, {
     idPrefix: this._uid,
     onInitFromDom: () => this._applySelectionFromSource(),
-    onActivate: (value) => this._handleActivate(value),
+    onActivate: (option) => this._handleActivate(option),
   });
 
   /** Active-descendant controller; tracks keyboard focus within the option list. */
@@ -234,6 +267,7 @@ export class RCListbox extends LitElement {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+
     this.removeEventListener('keydown', this._onKeydown);
     this.removeEventListener('blur', this._onBlur);
   }
@@ -246,7 +280,7 @@ export class RCListbox extends LitElement {
     }
 
     if (changed.has('checkmark')) {
-      this._ctrl.checkmark = this.checkmark;
+      this._itemsCollectionCtrl.checkmark = this.checkmark;
     }
   }
 
@@ -256,35 +290,39 @@ export class RCListbox extends LitElement {
 
   /** All options regardless of filter state. */
   get allOptions(): readonly ListboxOption[] {
-    return this._ctrl.allOptions;
+    return this._itemsCollectionCtrl.allOptions;
   }
 
   /** Options currently passing the active filter. */
   get filteredOptions(): readonly ListboxOption[] {
     const filterText = this._filterText;
-    if (!filterText) return [...this._ctrl.allOptions];
-    return this._ctrl.allOptions.filter((o) => this._isVisible(o));
+
+    if (!filterText) {
+      return [...this._itemsCollectionCtrl.allOptions];
+    }
+
+    return this._itemsCollectionCtrl.allOptions.filter((option) => this._isVisible(option));
   }
 
   /** Replace the full options list. */
   get options(): ListboxOption[] {
-    return [...this._ctrl.allOptions];
+    return [...this._itemsCollectionCtrl.allOptions];
   }
 
   /** Replace the full options list. */
-  set options(opts: ListboxOption[]) {
-    this._ctrl.setOptions([...opts]);
+  set options(options: ListboxOption[]) {
+    this._itemsCollectionCtrl.setOptions([...options]);
     this._applySelectionFromSource();
   }
 
   /** Append a single option without replacing the list. */
-  appendOption(opt: ListboxOption): void {
-    this._ctrl.appendOption(opt);
+  appendOption(option: ListboxOption): void {
+    this._itemsCollectionCtrl.appendOption(option);
   }
 
   /** Current selection as a consistently-array-shaped read-only view. */
   get selectedValues(): string[] {
-    return this._ctrl.selectedValues;
+    return this._itemsCollectionCtrl.selectedValues;
   }
 
   /** Current selection. Host writes update silently. */
@@ -327,14 +365,14 @@ export class RCListbox extends LitElement {
    * the new item). Fires `rc-listbox-change`.
    */
   toggleOption(value: string): void {
-    const opt = this._ctrl.allOptions.find((o) => o.value === value);
+    const option = this._itemsCollectionCtrl.allOptions.find((opt) => opt.value === value);
 
-    if (!opt || opt.disabled) return;
+    if (!option || option.kind === 'action' || option.disabled) return;
 
-    const wasSelected = this._ctrl.isSelected(value);
+    const wasSelected = this._itemsCollectionCtrl.isSelected(value);
 
     if (this.multiple) {
-      const next = new Set(this._ctrl.selectedValues);
+      const next = new Set(this._itemsCollectionCtrl.selectedValues);
 
       if (wasSelected) {
         next.delete(value);
@@ -342,13 +380,13 @@ export class RCListbox extends LitElement {
         next.add(value);
       }
 
-      this._ctrl.setSelectedValues([...next]);
+      this._itemsCollectionCtrl.setSelectedValues([...next]);
     } else {
-      this._ctrl.setSelectedValues(wasSelected ? [] : [value]);
+      this._itemsCollectionCtrl.setSelectedValues(wasSelected ? [] : [value]);
     }
 
     this._selectionInitialized = true;
-    this._dispatchChange(opt, !wasSelected);
+    this._dispatchChange(option, !wasSelected);
   }
 
   /** Clears all selected values without firing `rc-listbox-change`. */
@@ -359,13 +397,13 @@ export class RCListbox extends LitElement {
   /** Filter visible options to those whose label matches `text` (case-insensitive). */
   filterOptions(text: string): void {
     this._filterText = text;
-    this._ctrl.filterOptions(text, this.filterStrategy);
+    this._itemsCollectionCtrl.filterOptions(text, this.filterStrategy);
   }
 
   /** Removes any active filter, making all options visible. */
   clearFilter(): void {
     this._filterText = '';
-    this._ctrl.clearFilter();
+    this._itemsCollectionCtrl.clearFilter();
   }
 
   /**
@@ -375,17 +413,18 @@ export class RCListbox extends LitElement {
    * Includes the create option element when one is set.
    */
   get navigableItems(): Element[] {
-    return this._ctrl.navigableItems;
+    return this._itemsCollectionCtrl.navigableItems;
   }
 
   /**
    * Show or hide the "Create" option at the end of the list.
    *
    * Pass `null` to hide it, or a non-empty string to show `Create "{label}"`.
-   * Fires `rc-listbox-change` with `optionValue: '__create__'` when activated.
+   * Fires `rc-listbox-change` with `reason: 'action'` and `action: 'create'`
+   * when activated.
    */
   setCreateOption(label: string | null): void {
-    this._ctrl.setCreateOption(label);
+    this._itemsCollectionCtrl.setCreateOption(label);
   }
 
   /** Clears the active descendant when focus leaves the listbox. */
@@ -464,14 +503,16 @@ export class RCListbox extends LitElement {
       case 'Enter': {
         e.preventDefault();
 
-        const value = this._activeDescendantCtrl.activeItem?.getAttribute('data-value');
+        const option = this._activeOption();
 
-        if (value == null) {
+        if (!option) {
           break;
         }
 
-        if (this.multiple) {
-          this.toggleOption(value);
+        if (option.kind === 'action') {
+          this._dispatchAction(option);
+        } else if (this.multiple) {
+          this.toggleOption(option.value);
         } else {
           this._selectActiveItem();
         }
@@ -482,24 +523,11 @@ export class RCListbox extends LitElement {
   };
 
   /** Routes pointer activations from the controller. */
-  private _handleActivate(value: string): void {
-    if (value === '__create__') {
-      this.dispatchEvent(
-        new CustomEvent<RCListboxChangeEvent>('rc-listbox-change', {
-          bubbles: true,
-          composed: true,
-          detail: {
-            value: this.value,
-            selected: true,
-            optionValue: '__create__',
-            option: null,
-            selectedValues: this.selectedValues,
-            selectedOptions: this._selectedOptionsFor(this.selectedValues),
-          },
-        }),
-      );
+  private _handleActivate(option: ListboxOption): void {
+    if (option.kind === 'action') {
+      this._dispatchAction(option);
     } else {
-      this.toggleOption(value);
+      this.toggleOption(option.value);
     }
   }
 
@@ -509,29 +537,30 @@ export class RCListbox extends LitElement {
    * Used by arrow-key navigation so the item under the cursor is always selected.
    */
   protected _selectActiveItem(): void {
-    const value = this._activeDescendantCtrl.activeItem?.getAttribute('data-value');
+    const activeOption = this._activeOption();
 
-    if (value == null) return;
+    if (!activeOption || activeOption.kind === 'action' || activeOption.disabled) return;
 
-    const opt = this._ctrl.allOptions.find((o) => o.value === value);
+    const value = activeOption.value;
+    const current = this._itemsCollectionCtrl.selectedValues;
 
-    if (!opt || opt.disabled) return;
+    if (current.length === 1 && current[0] === value) {
+      return;
+    }
 
-    const current = this._ctrl.selectedValues;
-    if (current.length === 1 && current[0] === value) return;
-
-    this._ctrl.setSelectedValues([value]);
+    this._itemsCollectionCtrl.setSelectedValues([value]);
     this._selectionInitialized = true;
-    this._dispatchChange(opt, true);
+
+    this._dispatchChange(activeOption, true);
   }
 
   /**
    * Returns `true` when `opt` passes the current `_filterText` and `filterStrategy`.
    */
-  protected _isVisible(opt: ListboxOption): boolean {
+  protected _isVisible(option: ListboxOption): boolean {
     if (!this._filterText) return true;
 
-    const label = opt.label.toLowerCase();
+    const label = option.label.toLowerCase();
     const query = this._filterText.toLowerCase();
 
     if (typeof this.filterStrategy === 'function') {
@@ -547,10 +576,11 @@ export class RCListbox extends LitElement {
 
   /**
    * Directly replaces the selection without firing an event.
+   *
    * Enforces the single-select limit when `multiple` is false.
    */
   protected _applySelection(values: string[]): void {
-    this._ctrl.setSelectedValues(this.multiple ? values : values.slice(0, 1));
+    this._itemsCollectionCtrl.setSelectedValues(this.multiple ? values : values.slice(0, 1));
   }
 
   /**
@@ -559,11 +589,13 @@ export class RCListbox extends LitElement {
   protected _applySelectionFromSource(): void {
     if (this._value !== undefined) {
       this._applySelection(this._normalizeValue(this._value));
+
       return;
     }
 
     if (!this._selectionInitialized && this._defaultValue !== undefined) {
       this._selectionInitialized = true;
+
       this._applySelection(this._normalizeValue(this._defaultValue));
     }
   }
@@ -573,13 +605,40 @@ export class RCListbox extends LitElement {
     return Array.isArray(value) ? value : value ? [value] : [];
   }
 
-  /** Fires `rc-listbox-change` with a fully-populated detail object. */
-  protected _dispatchChange(option: ListboxOption, selected: boolean): void {
+  protected _activeOption(): ListboxOption | null {
+    const active = this._activeDescendantCtrl.activeItem;
+
+    return active ? this._itemsCollectionCtrl.optionForElement(active) : null;
+  }
+
+  /** Fires `rc-listbox-change` for a command/action row without mutating selection. */
+  protected _dispatchAction(option: ListboxActionOption): void {
     this.dispatchEvent(
-      new CustomEvent<RCListboxChangeEvent>('rc-listbox-change', {
+      new CustomEvent<RCListboxActionChangeEvent>('rc-listbox-change', {
         bubbles: true,
         composed: true,
         detail: {
+          reason: 'action',
+          value: this.value,
+          selected: false,
+          optionValue: option.value,
+          option,
+          action: option.action,
+          selectedValues: this.selectedValues,
+          selectedOptions: this._selectedOptionsFor(this.selectedValues),
+        },
+      }),
+    );
+  }
+
+  /** Fires `rc-listbox-change` with a fully-populated detail object. */
+  protected _dispatchChange(option: ListboxSelectableOption, selected: boolean): void {
+    this.dispatchEvent(
+      new CustomEvent<RCListboxSelectChangeEvent>('rc-listbox-change', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          reason: 'select',
           value: this.value,
           selected,
           optionValue: option.value,
@@ -595,10 +654,12 @@ export class RCListbox extends LitElement {
    * Maps value strings to their `ListboxOption` objects.
    * Creates synthetic `{ value, label: value }` entries for values not in the list.
    */
-  protected _selectedOptionsFor(values: string[]): ListboxOption[] {
+  protected _selectedOptionsFor(values: string[]): ListboxSelectableOption[] {
     return values.map(
       (value) =>
-        this._ctrl.allOptions.find((opt) => opt.value === value) ?? { value, label: value },
+        this._itemsCollectionCtrl.allOptions.find(
+          (opt): opt is ListboxSelectableOption => opt.kind !== 'action' && opt.value === value,
+        ) ?? { value, label: value },
     );
   }
 }

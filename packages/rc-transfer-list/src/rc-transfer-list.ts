@@ -568,6 +568,12 @@ export class RCTransferList extends LitElement {
 
   private _onListboxChange = (e: Event): void => {
     const ev = e as CustomEvent<RCListboxChangeEvent>;
+
+    if (ev.detail.reason === 'action') {
+      e.stopPropagation();
+      return;
+    }
+
     const raw = ev.detail.value;
     const values = Array.isArray(raw) ? raw : raw ? [raw] : [];
     const targetId = (e.currentTarget as Element | null)?.id;

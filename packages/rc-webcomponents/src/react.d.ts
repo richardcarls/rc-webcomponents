@@ -22,10 +22,23 @@ import type { RCTextareaPlugin } from '@rcarls/rc-textarea';
 // ── Shared value types ───────────────────────────────────────────────────────
 
 export type RCSelectOption = {
+  kind?: 'option';
   value: string;
   label: string;
   disabled?: boolean;
+  data?: unknown;
 };
+
+export type RCListboxActionOption<Action extends string = string> = {
+  kind: 'action';
+  action: Action;
+  value: string;
+  label: string;
+  disabled?: boolean;
+  data?: unknown;
+};
+
+export type RCListboxOption = RCSelectOption | RCListboxActionOption;
 
 export type RCSelectValue = string | string[];
 
@@ -41,11 +54,24 @@ export type RCSelectChangeDetail = {
   selectedOptions: RCSelectOption[];
 };
 
-export type RCListboxChangeDetail = RCSelectChangeDetail & {
+export type RCListboxSelectChangeDetail = RCSelectChangeDetail & {
+  reason: 'select';
   selected: boolean;
   optionValue: string;
-  option: RCSelectOption | null;
+  option: RCSelectOption;
 };
+
+export type RCListboxActionChangeDetail<Action extends string = string> = RCSelectChangeDetail & {
+  reason: 'action';
+  selected: false;
+  optionValue: string;
+  option: RCListboxActionOption<Action>;
+  action: Action;
+};
+
+export type RCListboxChangeDetail =
+  | RCListboxSelectChangeDetail
+  | RCListboxActionChangeDetail;
 
 export type RCComboboxCreateDetail = {
   text: string;
@@ -187,9 +213,9 @@ export type RCListboxRef = HTMLElement & {
   filterStrategy: 'prefix' | 'contains' | ((label: string, query: string) => boolean);
   value: RCSelectValue;
   defaultValue: RCSelectValue | undefined;
-  options: RCSelectOption[];
-  readonly allOptions: ReadonlyArray<{ value: string; label: string; disabled?: boolean }>;
-  readonly filteredOptions: ReadonlyArray<{ value: string; label: string; disabled?: boolean }>;
+  options: RCListboxOption[];
+  readonly allOptions: ReadonlyArray<RCListboxOption>;
+  readonly filteredOptions: ReadonlyArray<RCListboxOption>;
   readonly selectedValues: string[];
   readonly navigableItems: Element[];
   toggleOption(value: string): void;
@@ -198,7 +224,7 @@ export type RCListboxRef = HTMLElement & {
   clearFilter(): void;
   setCreateOption(label: string | null): void;
   setSelectedValues(values: string[]): void;
-  appendOption(opt: RCSelectOption): void;
+  appendOption(opt: RCListboxOption): void;
 };
 
 /** Public API surface of `<rc-select>`. */
@@ -420,7 +446,7 @@ declare module 'react' {
         'filter-strategy'?: 'prefix' | 'contains';
         value?: RCSelectValue;
         'default-value'?: RCSelectValue;
-        options?: RCSelectOption[];
+        options?: RCListboxOption[];
       };
 
       'rc-select': React.DetailedHTMLProps<React.HTMLAttributes<RCSelectRef>, RCSelectRef> & {

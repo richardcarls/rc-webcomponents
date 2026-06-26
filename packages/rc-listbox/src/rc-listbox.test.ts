@@ -278,9 +278,10 @@ test('setCreateOption shows Create option in navigableItems', async () => {
   $listbox.options = [{ value: 'a', label: 'A' }];
   $listbox.setCreateOption('NewThing');
 
-  const $createOpt = $listbox.querySelector('[data-value="__create__"]');
+  const $createOpt = $listbox.querySelector('[part~="create-option"]');
 
   expect($createOpt).not.toBeNull();
+  expect($createOpt!.getAttribute('data-action')).toBe('create');
   expect($createOpt!.textContent).toContain('NewThing');
   expect($listbox.navigableItems).toContain($createOpt);
 });
@@ -293,10 +294,10 @@ test('setCreateOption(null) removes Create option', async () => {
   $listbox.setCreateOption('NewThing');
   $listbox.setCreateOption(null);
 
-  expect($listbox.querySelector('[data-value="__create__"]')).toBeNull();
+  expect($listbox.querySelector('[part~="create-option"]')).toBeNull();
 });
 
-test('Create option fires rc-listbox-change with optionValue __create__', async () => {
+test('Create option fires rc-listbox-change as an action detail', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
   const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
 
@@ -308,13 +309,54 @@ test('Create option fires rc-listbox-change with optionValue __create__', async 
 
   $listbox.addEventListener('rc-listbox-change', handler);
 
-  const $createEl = $listbox.querySelector<HTMLElement>('[data-value="__create__"]')!;
+  const $createEl = $listbox.querySelector<HTMLElement>('[data-action="create"]')!;
 
   $createEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
 
   expect(handler).toHaveBeenCalledOnce();
-  expect(handler.mock.calls[0][0].detail.optionValue).toBe('__create__');
-  expect(handler.mock.calls[0][0].detail.selectedValues).toEqual([]);
+  expect(handler.mock.calls[0][0].detail).toMatchObject({
+    reason: 'action',
+    action: 'create',
+    selected: false,
+    option: {
+      kind: 'action',
+      action: 'create',
+      value: 'create:Foo',
+      label: 'Create "Foo"',
+      data: { text: 'Foo' },
+    },
+    selectedValues: [],
+  });
+});
+
+test('action options dispatch action details without changing selection', async () => {
+  const screen = render(html`<rc-listbox></rc-listbox>`);
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
+  $listbox.options = [
+    { value: 'apple', label: 'Apple' },
+    { kind: 'action', action: 'clear', value: 'clear', label: 'Clear selection' },
+  ];
+  $listbox.setSelectedValues(['apple', 'clear']);
+  await $listbox.updateComplete;
+
+  const handler = vi.fn();
+
+  $listbox.addEventListener('rc-listbox-change', handler);
+
+  $listbox
+    .querySelector<HTMLElement>('[data-action="clear"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  expect($listbox.selectedValues).toEqual(['apple']);
+  expect(handler).toHaveBeenCalledOnce();
+  expect(handler.mock.calls[0][0].detail).toMatchObject({
+    reason: 'action',
+    action: 'clear',
+    selected: false,
+    optionValue: 'clear',
+    selectedValues: ['apple'],
+  });
 });
 
 test('checkmark injects option-checkmark spans', async () => {
