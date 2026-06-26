@@ -46,6 +46,35 @@ test('rc-transfer-list renders owned UI in shadow DOM', async () => {
   expect(host.querySelector('rc-listbox')).toBeNull();
 });
 
+test('transfer-list option tokens flow into both listbox option rows', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host">
+      <select multiple>
+        <option value="a">Alpha</option>
+        <option value="b" selected>Bravo</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+
+  host.style.setProperty('--rc-transfer-list-option-gap', '9px');
+  host.style.setProperty('--rc-transfer-list-option-padding-block', '5px');
+  host.style.setProperty('--rc-transfer-list-option-padding-inline', '7px');
+  await host.updateComplete;
+
+  const $options = [...shadow(host).querySelectorAll('rc-listbox [role="option"]')] as HTMLElement[];
+
+  expect($options).toHaveLength(2);
+
+  for (const $option of $options) {
+    const styles = getComputedStyle($option);
+
+    expect(styles.gap).toBe('9px');
+    expect(styles.paddingBlockStart).toBe('5px');
+    expect(styles.paddingInlineStart).toBe('7px');
+  }
+});
+
 test('rc-transfer-list keeps the native select connected and hidden after upgrade', async () => {
   const screen = render(html`
     <rc-transfer-list data-testid="host">

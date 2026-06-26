@@ -34,31 +34,44 @@ export const transferListStyles = css`
     border: var(--rc-transfer-list-listbox-border, var(--rc-border, 1px solid ButtonBorder));
     background: var(--rc-transfer-list-listbox-bg, var(--rc-surface, Canvas));
     color: var(--rc-transfer-list-listbox-color, var(--rc-field-text, FieldText));
-  }
-
-  rc-listbox [part~='option'] {
-    display: flex;
-    align-items: center;
-    gap: var(--rc-transfer-list-option-gap, var(--rc-item-gap, 0.4em));
-    padding: var(--rc-transfer-list-option-padding-block, var(--rc-item-padding-block, 0.3em))
-      var(--rc-transfer-list-option-padding-inline, var(--rc-item-padding-inline, 0.75em));
-    cursor: default;
+    --rc-listbox-option-gap: var(--rc-transfer-list-option-gap, var(--rc-item-gap, 0.4em));
+    --rc-listbox-option-padding-block: var(
+      --rc-transfer-list-option-padding-block,
+      var(--rc-item-padding-block, 0.3em)
+    );
+    --rc-listbox-option-padding-inline: var(
+      --rc-transfer-list-option-padding-inline,
+      var(--rc-item-padding-inline, 0.75em)
+    );
+    --rc-listbox-hover-bg: var(
+      --rc-transfer-list-option-hover-bg,
+      var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight))
+    );
+    --rc-listbox-hover-color: var(
+      --rc-transfer-list-option-hover-color,
+      var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText))
+    );
+    --rc-listbox-active-bg: var(
+      --rc-transfer-list-option-hover-bg,
+      var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight))
+    );
+    --rc-listbox-active-color: var(
+      --rc-transfer-list-option-hover-color,
+      var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText))
+    );
+    --rc-listbox-selected-bg: var(
+      --rc-transfer-list-option-selected-bg,
+      var(--rc-highlight, Highlight)
+    );
+    --rc-listbox-selected-color: var(
+      --rc-transfer-list-option-selected-color,
+      var(--rc-highlight-text, HighlightText)
+    );
+    --rc-listbox-disabled-opacity: var(--rc-disabled-opacity, 0.5);
   }
 
   rc-listbox [part~='option'][hidden] {
     display: none;
-  }
-
-  rc-listbox [part~='option']:not([hidden]):not([aria-disabled='true']):hover,
-  rc-listbox [part~='option'][data-active]:not([aria-disabled='true']) {
-    background: var(
-      --rc-transfer-list-option-hover-bg,
-      var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight))
-    );
-    color: var(
-      --rc-transfer-list-option-hover-color,
-      var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText))
-    );
   }
 
   rc-listbox [part~='option'][data-active]:not([aria-disabled='true']) {
@@ -66,13 +79,7 @@ export const transferListStyles = css`
     outline-offset: -2px;
   }
 
-  rc-listbox [part~='option'][aria-selected='true'] {
-    background: var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight));
-    color: var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText));
-  }
-
   rc-listbox [part~='option'][aria-disabled='true'] {
-    opacity: var(--rc-disabled-opacity, 0.5);
     cursor: not-allowed;
   }
 

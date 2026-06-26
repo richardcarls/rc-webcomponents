@@ -67,7 +67,7 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | Package | Description | Depends on |
 | --- | --- | --- |
 | [`rc-common`](packages/rc-common/) | Shared controllers, directives, mixins, and utilities: drag, resize, anchor positioning, scroll observation, keyboard interaction/navigation, active descendant, roving tabindex, focusability, and slider math | — |
-| [`rc-listbox`](packages/rc-listbox/) | Light-DOM ARIA `listbox` used by select and combobox | rc-common |
+| [`rc-listbox`](packages/rc-listbox/) | ARIA `listbox` that renders option DOM into its own light DOM for select and combobox | rc-common |
 | [`rc-menu`](packages/rc-menu/) | ARIA `menu` / `menuitem` popup | rc-common |
 | [`rc-select`](packages/rc-select/) | Select-only ARIA combobox backed by a native `<select>` | rc-common, rc-listbox |
 | [`rc-combobox`](packages/rc-combobox/) | Editable ARIA combobox with filtering and allow-create | rc-common, rc-listbox, rc-select |

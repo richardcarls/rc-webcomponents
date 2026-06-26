@@ -96,6 +96,25 @@ test('slotted <select> options appear in listbox', async () => {
   expect($options[2].textContent).toContain('Cherry');
 });
 
+test('shared item tokens flow into the internal listbox option rows', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+
+  host.style.setProperty('--rc-item-gap', '9px');
+  host.style.setProperty('--rc-item-padding-block', '5px');
+  host.style.setProperty('--rc-item-padding-inline', '7px');
+  host.openPopup();
+  await host.updateComplete;
+
+  const $listbox = host.renderRoot.querySelector('rc-listbox')!;
+  const $option = $listbox.querySelector('[role="option"]') as HTMLElement;
+  const styles = getComputedStyle($option);
+
+  expect(styles.gap).toBe('9px');
+  expect(styles.paddingBlockStart).toBe('5px');
+  expect(styles.paddingInlineStart).toBe('7px');
+});
+
 test('clicking trigger opens popup', async () => {
   const screen = render(makeSelect());
   const host = await getHost(screen);

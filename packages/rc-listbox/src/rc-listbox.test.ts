@@ -32,6 +32,18 @@ test('has role=listbox on host element', async () => {
   await expect.element(screen.getByRole('listbox')).toBeInTheDocument();
 });
 
+test('injects light-DOM base styles in the rc-base cascade layer', async () => {
+  const screen = render(html`<rc-listbox></rc-listbox>`);
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
+  await $listbox.updateComplete;
+
+  const $style = document.head.querySelector('style[data-rc-light-dom-base="rc-listbox"]');
+
+  expect($style).not.toBeNull();
+  expect($style?.textContent).toContain('@layer rc-base');
+});
+
 test('options are wrapped in a <ul role="presentation">', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
   const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
@@ -119,6 +131,25 @@ test('selected option colors use CSS custom properties', async () => {
   expect($option).not.toBeNull();
   expect(getComputedStyle($option!).backgroundColor).toBe('rgb(1, 2, 3)');
   expect(getComputedStyle($option!).color).toBe('rgb(4, 5, 6)');
+});
+
+test('option row sizing uses CSS custom properties', async () => {
+  const screen = render(html`<rc-listbox></rc-listbox>`);
+  const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
+  $listbox.style.setProperty('--rc-listbox-option-gap', '9px');
+  $listbox.style.setProperty('--rc-listbox-option-min-block-size', '44px');
+  $listbox.style.setProperty('--rc-listbox-option-padding-block', '5px');
+  $listbox.style.setProperty('--rc-listbox-option-padding-inline', '7px');
+  $listbox.options = OPTIONS;
+
+  const $option = $listbox.querySelector('li[role="option"]') as HTMLElement;
+  const styles = getComputedStyle($option);
+
+  expect(styles.gap).toBe('9px');
+  expect(styles.minBlockSize).toBe('44px');
+  expect(styles.paddingBlockStart).toBe('5px');
+  expect(styles.paddingInlineStart).toBe('7px');
 });
 
 test('toggleOption selects in single mode and fires rc-listbox-change', async () => {
