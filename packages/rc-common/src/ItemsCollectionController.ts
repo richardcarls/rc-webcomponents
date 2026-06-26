@@ -1,10 +1,22 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
-export interface ItemsCollectionOption {
+export interface ItemsCollectionBaseOption {
   value: string;
   label: string;
   disabled?: boolean;
+  data?: unknown;
 }
+
+export interface ItemsCollectionSelectableOption extends ItemsCollectionBaseOption {
+  kind?: 'option';
+}
+
+export interface ItemsCollectionActionOption extends ItemsCollectionBaseOption {
+  kind: 'action';
+  action: string;
+}
+
+export type ItemsCollectionOption = ItemsCollectionSelectableOption | ItemsCollectionActionOption;
 
 export type ItemsCollectionFilterStrategy =
   | 'prefix'
@@ -21,7 +33,7 @@ export interface ItemsCollectionControllerOptions {
    */
   onInitFromDom?: (options: ItemsCollectionOption[]) => void;
   /** Called when the user activates an option by pointer. */
-  onActivate: (value: string) => void;
+  onActivate: (option: ItemsCollectionOption) => void;
 }
 
 /**
@@ -39,12 +51,13 @@ export class ItemsCollectionController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & Element;
   private readonly _idPrefix: string;
   private readonly _onInitFromDom?: (options: ItemsCollectionOption[]) => void;
-  private readonly _onActivate: (value: string) => void;
+  private readonly _onActivate: (option: ItemsCollectionOption) => void;
 
   private _ul: HTMLUListElement | null = null;
   private _options: ItemsCollectionOption[] = [];
   private _liElements: HTMLLIElement[] = [];
   private _createLi: HTMLLIElement | null = null;
+  private _createOption: ItemsCollectionActionOption | null = null;
   private _selectedValues = new Set<string>();
   private _filterText = '';
   private _filterStrategy: ItemsCollectionFilterStrategy = 'contains';
@@ -89,6 +102,16 @@ export class ItemsCollectionController implements ReactiveController {
 
   isSelected(value: string): boolean {
     return this._selectedValues.has(value);
+  }
+
+  optionForElement(element: Element): ItemsCollectionOption | null {
+    if (element === this._createLi) {
+      return this._createOption;
+    }
+
+    const index = this._liElements.indexOf(element as HTMLLIElement);
+
+    return index === -1 ? null : (this._options[index] ?? null);
   }
 
   /**
@@ -145,7 +168,15 @@ export class ItemsCollectionController implements ReactiveController {
 
   /** Update `aria-selected` on all option elements to match `values`. */
   setSelectedValues(values: string[]): void {
-    this._selectedValues = new Set(values);
+    const actionValues = new Set(
+      this._options.filter((opt) => opt.kind === 'action').map((opt) => opt.value),
+    );
+
+    if (this._createOption) {
+      actionValues.add(this._createOption.value);
+    }
+
+    this._selectedValues = new Set(values.filter((value) => !actionValues.has(value)));
     this._syncSelectedToDom();
   }
 
@@ -173,8 +204,19 @@ export class ItemsCollectionController implements ReactiveController {
     if (label === null) {
       this._createLi?.remove();
       this._createLi = null;
+      this._createOption = null;
       return;
     }
+
+    const trimmed = label.trim();
+
+    this._createOption = {
+      kind: 'action',
+      action: 'create',
+      value: `create:${trimmed}`,
+      label: `Create "${trimmed}"`,
+      data: { text: trimmed },
+    };
 
     if (!this._createLi) {
       this._ensureContainer();
@@ -182,14 +224,16 @@ export class ItemsCollectionController implements ReactiveController {
       li.setAttribute('id', `${this._idPrefix}-create`);
       li.setAttribute('role', 'option');
       li.setAttribute('aria-selected', 'false');
-      li.setAttribute('data-value', '__create__');
       li.setAttribute('part', 'option create-option');
       if (this._checkmark) this._ensureCheckmark(li);
       this._ul!.appendChild(li);
       this._createLi = li;
     }
 
-    this._setLabelText(this._createLi, `Create "${label}"`);
+    this._createLi.setAttribute('data-value', this._createOption.value);
+    this._createLi.setAttribute('data-kind', 'action');
+    this._createLi.setAttribute('data-action', this._createOption.action);
+    this._setLabelText(this._createLi, this._createOption.label);
   }
 
   // -- Private: DOM management --
@@ -270,6 +314,12 @@ export class ItemsCollectionController implements ReactiveController {
     li.setAttribute('id', `${this._idPrefix}-${index}`);
     li.setAttribute('part', 'option');
     li.setAttribute('data-value', opt.value);
+    li.setAttribute('data-kind', opt.kind ?? 'option');
+    if (opt.kind === 'action') {
+      li.setAttribute('data-action', opt.action);
+    } else {
+      li.removeAttribute('data-action');
+    }
     li.setAttribute('aria-selected', this._selectedValues.has(opt.value) ? 'true' : 'false');
     li.setAttribute('aria-disabled', opt.disabled ? 'true' : 'false');
 
@@ -365,6 +415,10 @@ export class ItemsCollectionController implements ReactiveController {
     if (li.parentElement !== this._ul) return;
 
     e.preventDefault();
-    this._onActivate(li.getAttribute('data-value')!);
+    const option = this.optionForElement(li);
+
+    if (option) {
+      this._onActivate(option);
+    }
   };
 }
