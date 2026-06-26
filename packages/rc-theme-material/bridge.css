@@ -91,16 +91,23 @@
 
   .rc-theme-material rc-listbox,
   :host(.rc-theme-material) rc-listbox {
+    --rc-listbox-option-gap: 0.75rem;
+    --rc-listbox-option-min-block-size: 3rem;
+    --rc-listbox-option-padding-block: 0;
+    --rc-listbox-option-padding-inline: 0.75rem;
+    --rc-listbox-option-transition: background-color 150ms ease, color 150ms ease;
     --rc-listbox-hover-bg: color-mix(
       in srgb,
       var(--md-sys-color-on-surface, CanvasText) 8%,
       transparent
     );
+    --rc-listbox-hover-color: var(--md-sys-color-on-surface, CanvasText);
     --rc-listbox-active-bg: color-mix(
       in srgb,
       var(--md-sys-color-on-surface, CanvasText) 12%,
       transparent
     );
+    --rc-listbox-active-color: var(--md-sys-color-on-surface, CanvasText);
     --rc-listbox-selected-bg: var(--md-sys-color-secondary-container, Highlight);
     --rc-listbox-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
     --rc-listbox-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);

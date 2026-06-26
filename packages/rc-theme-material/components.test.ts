@@ -13,6 +13,18 @@ function renderScope(): HTMLElement {
   return scope;
 }
 
+function renderPart(scope: HTMLElement, tagName: string, partName: string): HTMLElement {
+  const host = document.createElement(tagName);
+  const shadowRoot = host.attachShadow({ mode: 'open' });
+  const part = document.createElement('div');
+
+  part.setAttribute('part', partName);
+  shadowRoot.append(part);
+  scope.append(host);
+
+  return part;
+}
+
 test('aggregate component styles cover every visual RC component', () => {
   const scope = renderScope();
   const expectations = new Map<string, [string, string]>([
@@ -66,22 +78,36 @@ test('contextual toolbar controls receive Material state styling', () => {
   expect(getComputedStyle(button).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
 });
 
-test('listbox selected options use the selection token contract', () => {
+test('standalone listbox receives the option token contract', () => {
   const scope = renderScope();
   const listbox = document.createElement('rc-listbox');
-  const option = document.createElement('li');
 
-  scope.style.setProperty('--rc-listbox-selected-bg', 'rgb(1, 2, 3)');
-  scope.style.setProperty('--rc-listbox-selected-color', 'rgb(4, 5, 6)');
-  option.setAttribute('role', 'option');
-  option.setAttribute('aria-selected', 'true');
-  listbox.append(option);
   scope.append(listbox);
 
-  const styles = getComputedStyle(option);
+  const styles = getComputedStyle(listbox);
 
-  expect(styles.backgroundColor).toBe('rgb(1, 2, 3)');
-  expect(styles.color).toBe('rgb(4, 5, 6)');
+  expect(styles.getPropertyValue('--rc-listbox-option-gap')).toBe('0.75rem');
+  expect(styles.getPropertyValue('--rc-listbox-option-min-block-size')).toBe('3rem');
+  expect(styles.getPropertyValue('--rc-listbox-option-padding-block')).toBe('0');
+  expect(styles.getPropertyValue('--rc-listbox-selected-bg')).not.toBe('');
+});
+
+test('embedded listbox parts receive Material listbox option tokens', () => {
+  const scope = renderScope();
+  const parts = [
+    renderPart(scope, 'rc-select', 'listbox'),
+    renderPart(scope, 'rc-combobox', 'listbox'),
+    renderPart(scope, 'rc-transfer-list', 'listbox'),
+  ];
+
+  for (const part of parts) {
+    const styles = getComputedStyle(part);
+
+    expect(styles.getPropertyValue('--rc-listbox-option-gap')).toBe('0.75rem');
+    expect(styles.getPropertyValue('--rc-listbox-option-min-block-size')).toBe('3rem');
+    expect(styles.getPropertyValue('--rc-listbox-option-padding-block')).toBe('0');
+    expect(styles.getPropertyValue('--rc-listbox-selected-bg')).not.toBe('');
+  }
 });
 
 test('disclosure styles use Material list headers and card expansion', () => {

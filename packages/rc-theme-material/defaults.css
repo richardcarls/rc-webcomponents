@@ -772,6 +772,31 @@
       var(--md-ref-palette-neutral99),
       var(--md-ref-palette-neutral10)
     );
+    /* Surface container lowest (near-white / near-black) */
+    --md-sys-color-surface-container-lowest: light-dark(
+      var(--md-ref-palette-neutral100),
+      var(--md-ref-palette-neutral10)
+    );
+    /* Surface container low */
+    --md-sys-color-surface-container-low: light-dark(
+      var(--md-ref-palette-neutral99),
+      var(--md-ref-palette-neutral10)
+    );
+    /* Surface container — used for menus, sheets, and elevated surfaces */
+    --md-sys-color-surface-container: light-dark(
+      var(--md-ref-palette-neutral95),
+      var(--md-ref-palette-neutral20)
+    );
+    /* Surface container high */
+    --md-sys-color-surface-container-high: light-dark(
+      var(--md-ref-palette-neutral90),
+      var(--md-ref-palette-neutral20)
+    );
+    /* Surface container highest — used for text fields and chips */
+    --md-sys-color-surface-container-highest: light-dark(
+      var(--md-ref-palette-neutral90),
+      var(--md-ref-palette-neutral20)
+    );
     /* On secondary container */
     --md-sys-color-on-secondary-container: light-dark(
       var(--md-ref-palette-secondary10),
