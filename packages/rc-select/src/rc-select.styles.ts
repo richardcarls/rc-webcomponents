@@ -120,41 +120,33 @@ export const selectStyles = css`
     );
     color: var(--rc-field-text, FieldText);
     padding-block: var(--rc-select-listbox-padding-block, var(--rc-control-padding-block, 0.25em));
+    --rc-listbox-option-gap: var(--rc-item-gap, 0.4em);
+    --rc-listbox-option-padding-block: var(--rc-item-padding-block, 0.3em);
+    --rc-listbox-option-padding-inline: var(--rc-item-padding-inline, 0.75em);
+    --rc-listbox-hover-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-hover-color: var(--rc-highlight-text, HighlightText);
+    --rc-listbox-active-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-active-color: var(--rc-highlight-text, HighlightText);
+    --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
+    --rc-listbox-disabled-opacity: var(--rc-disabled-opacity, 0.5);
 
     &:not(:popover-open) {
       display: none;
     }
   }
 
-  /* Options within the listbox */
-  rc-listbox [part~='option'] {
-    display: flex;
-    align-items: center;
-    gap: var(--rc-item-gap, 0.4em);
-    padding: var(--rc-item-padding-block, 0.3em) var(--rc-item-padding-inline, 0.75em);
-    cursor: default;
+  rc-listbox [part~='option'][hidden] {
+    display: none;
+  }
 
-    /* display: flex overrides [hidden]'s browser-default display:none — restore it explicitly */
-    &[hidden] {
-      display: none;
-    }
+  rc-listbox [part~='option'][data-active]:not([aria-disabled='true']) {
+    outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
+    outline-offset: -2px;
+  }
 
-    &:not([hidden]):not([aria-disabled='true']):hover {
-      background: var(--rc-highlight, Highlight);
-      color: var(--rc-highlight-text, HighlightText);
-    }
-
-    &[data-active]:not([aria-disabled='true']) {
-      background: var(--rc-highlight, Highlight);
-      color: var(--rc-highlight-text, HighlightText);
-      outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
-      outline-offset: -2px;
-    }
-
-    &[aria-disabled='true'] {
-      opacity: var(--rc-disabled-opacity, 0.5);
-      cursor: not-allowed;
-    }
+  rc-listbox [part~='option'][aria-disabled='true'] {
+    cursor: not-allowed;
   }
 
   /* Selection checkmark — reserves space whether visible or not */

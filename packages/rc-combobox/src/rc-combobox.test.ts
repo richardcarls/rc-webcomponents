@@ -82,6 +82,25 @@ test('options appear in listbox from slotted <select>', async () => {
   expect($opts).toHaveLength(3);
 });
 
+test('shared item tokens flow into the internal listbox option rows', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+
+  $host.style.setProperty('--rc-item-gap', '9px');
+  $host.style.setProperty('--rc-item-padding-block', '5px');
+  $host.style.setProperty('--rc-item-padding-inline', '7px');
+  $host.openPopup();
+  await $host.updateComplete;
+
+  const $listbox = $host.renderRoot.querySelector('rc-listbox')!;
+  const $option = $listbox.querySelector('[role="option"]') as HTMLElement;
+  const styles = getComputedStyle($option);
+
+  expect(styles.gap).toBe('9px');
+  expect(styles.paddingBlockStart).toBe('5px');
+  expect(styles.paddingInlineStart).toBe('7px');
+});
+
 test('typing filters listbox options', async () => {
   const screen = render(makeCombobox());
   const $host = await getHost(screen);
