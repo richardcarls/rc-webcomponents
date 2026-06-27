@@ -110,6 +110,50 @@ test('embedded listbox parts receive Material listbox option tokens', () => {
   }
 });
 
+test('standalone menu receives the Material item token contract', () => {
+  const scope = renderScope();
+  const menu = document.createElement('rc-menu');
+
+  scope.append(menu);
+
+  const styles = getComputedStyle(menu);
+
+  expect(styles.getPropertyValue('--rc-menu-item-min-block-size')).toBe('3rem');
+  expect(styles.getPropertyValue('--rc-menu-item-padding-block')).toBe('0');
+  expect(styles.getPropertyValue('--rc-menu-hover-bg')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-menu-active-bg')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-menu-check-size')).toBe('1.5rem');
+  expect(styles.getPropertyValue('--rc-menu-submenu-indicator-color')).not.toBe('');
+});
+
+test('menu button receives the Material trigger token contract', () => {
+  const scope = renderScope();
+  const menuButton = document.createElement('rc-menu-button');
+
+  scope.append(menuButton);
+
+  const styles = getComputedStyle(menuButton);
+
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-background')).toBe('transparent');
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-color')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-hover-background')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-open-background')).not.toBe('');
+});
+
+test('menubar receives the Material menu-button item token contract', () => {
+  const scope = renderScope();
+  const menubar = document.createElement('rc-menubar');
+
+  scope.append(menubar);
+
+  const styles = getComputedStyle(menubar);
+
+  expect(styles.getPropertyValue('--rc-menubar-item-block-size')).toBe('2.5rem');
+  expect(styles.getPropertyValue('--rc-menubar-item-padding-inline')).toBe('1rem');
+  expect(styles.getPropertyValue('--rc-menubar-item-background')).toBe('transparent');
+  expect(styles.getPropertyValue('--rc-menubar-item-open-background')).not.toBe('');
+});
+
 test('disclosure styles use Material list headers and card expansion', () => {
   const scope = renderScope();
   const disclosure = document.createElement('rc-disclosure');

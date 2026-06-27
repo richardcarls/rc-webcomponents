@@ -94,7 +94,28 @@ test('maps open menu surfaces without choosing a consumer button variant', () =>
   scope.append(menuButton);
 
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-background')).not.toBe('');
-  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-background')).toBe('');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-min-block-size')).toBe('3rem');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-padding-block')).toBe('0');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-hover-bg')).not.toBe('');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-submenu-indicator-color')).not.toBe('');
+  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-background')).toBe(
+    'transparent',
+  );
+  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-background')).not.toBe('');
+});
+
+test('maps menubar item tokens through menu-button triggers', () => {
+  const scope = renderMaterialScope();
+  const menubar = document.createElement('rc-menubar');
+
+  scope.append(menubar);
+
+  const styles = getComputedStyle(menubar);
+
+  expect(styles.getPropertyValue('--rc-menubar-item-block-size')).toBe('2.5rem');
+  expect(styles.getPropertyValue('--rc-menubar-item-padding-inline')).toBe('1rem');
+  expect(styles.getPropertyValue('--rc-menubar-item-background')).toBe('transparent');
+  expect(styles.getPropertyValue('--rc-menubar-item-open-background')).not.toBe('');
 });
 
 test('includes a forced-colors bridge', () => {

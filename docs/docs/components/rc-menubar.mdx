@@ -41,6 +41,10 @@ import '@rcarls/rc-menubar/define';
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
+`rc-menubar` owns the menubar surface and maps `--rc-menubar-item-*` variables
+onto each child `rc-menu-button` trigger. This keeps top-level menubar items flat
+while standalone menu buttons can keep their own button-like defaults.
+
 ## API
 
 <ApiTable tag="rc-menubar" />

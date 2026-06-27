@@ -1,7 +1,7 @@
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
-import { userEvent } from 'vitest/browser';
+import { userEvent, type Locator } from 'vitest/browser';
 
 import './define';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
@@ -20,6 +20,15 @@ async function focusTrigger(trigger: Element): Promise<void> {
   await vi.waitFor(() => {
     expect(document.activeElement).toBe(trigger);
   });
+}
+
+async function expectActiveMenuItem(item: Locator) {
+  const itemElement = item.element();
+  const menu = itemElement.closest('rc-menu');
+
+  expect(menu).toBeTruthy();
+  await expect.element(menu as HTMLElement).toHaveFocus();
+  await expect.element(item).toHaveAttribute('data-active');
 }
 
 test('RCMenubar renders with correct ARIA attributes', async () => {
@@ -98,6 +107,58 @@ test('RCMenubar sets roving tabindex on triggers', async () => {
   // First trigger should have tabindex 0, others -1
   await expect.element(trigger1).toHaveAttribute('tabindex', '0');
   await expect.element(trigger2).toHaveAttribute('tabindex', '-1');
+});
+
+test('RCMenubar maps item styling variables to child menu-button triggers', async () => {
+  const screen = render(html`
+    <rc-menubar
+      data-testid="menubar"
+      label="Test Menu"
+      style="
+        --rc-menubar-item-background: rgb(1, 2, 3);
+        --rc-menubar-item-color: rgb(4, 5, 6);
+        --rc-menubar-item-open-background: rgb(7, 8, 9);
+        --rc-menubar-item-open-color: rgb(10, 11, 12);
+        --rc-menubar-item-padding-inline: 2rem;
+      "
+    >
+      <rc-menu-button>
+        <button slot="trigger" data-testid="trigger-1">File</button>
+        <rc-menu label="File">
+          <button>New</button>
+        </rc-menu>
+      </rc-menu-button>
+    </rc-menubar>
+  `);
+
+  const menubar = screen.getByTestId('menubar').element() as any;
+  const menuButton = screen.getByTestId('menubar').element().querySelector('rc-menu-button')!;
+  const trigger = screen.getByTestId('trigger-1').element() as HTMLElement;
+
+  await menubar.updateComplete;
+  await vi.waitFor(() => {
+    expect(trigger.getAttribute('tabindex')).toBe('0');
+  });
+
+  let styles = getComputedStyle(trigger);
+
+  expect(styles.backgroundColor).toBe('rgb(1, 2, 3)');
+  expect(styles.color).toBe('rgb(4, 5, 6)');
+  expect(styles.paddingInlineStart).toBe('32px');
+  expect(
+    getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-background'),
+  ).toBe('rgb(7, 8, 9)');
+  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-color')).toBe(
+    'rgb(10, 11, 12)',
+  );
+
+  await screen.getByTestId('trigger-1').click();
+
+  styles = getComputedStyle(trigger);
+
+  expect(trigger.getAttribute('aria-expanded')).toBe('true');
+  expect(styles.backgroundColor).toBe('rgb(7, 8, 9)');
+  expect(styles.color).toBe('rgb(10, 11, 12)');
 });
 
 test('RCMenubar navigates with arrow keys', async () => {
@@ -210,8 +271,7 @@ test('RCMenubar opens menu with Down arrow', async () => {
   // Down arrow opens menu
   await userEvent.keyboard('{ArrowDown}');
 
-  // First menu item should have focus
-  await expect.element(item1).toHaveFocus();
+  await expectActiveMenuItem(item1);
   await expect.element(trigger1).toHaveAttribute('aria-expanded', 'true');
 });
 
@@ -257,8 +317,7 @@ test('RCMenubar cascade behavior - arrow navigation opens adjacent menus', async
   await expect.element(trigger1).toHaveAttribute('aria-expanded', 'false');
   await expect.element(trigger2).toHaveAttribute('aria-expanded', 'true');
 
-  // Focus should be in the second menu
-  await expect.element(item21).toHaveFocus();
+  await expectActiveMenuItem(item21);
 });
 
 test('RCMenubar closes menu on Escape', async () => {
@@ -289,11 +348,7 @@ test('RCMenubar fires toggle events', async () => {
   const toggleSpy = vi.fn();
 
   const screen = render(html`
-    <rc-menubar
-      data-testid="menubar"
-      label="Test Menu"
-      @rc-menu-button-toggle=${toggleSpy}
-    >
+    <rc-menubar data-testid="menubar" label="Test Menu" @rc-menu-button-toggle=${toggleSpy}>
       <rc-menu-button data-testid="menu-button-1">
         <button slot="trigger" data-testid="trigger-1">File</button>
         <rc-menu label="File">
@@ -341,7 +396,7 @@ test('RCMenubar vertical: opens menu with ArrowRight', async () => {
   await userEvent.keyboard('{ArrowRight}');
 
   await expect.element(trigger1).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(item1).toHaveFocus();
+  await expectActiveMenuItem(item1);
 });
 
 test('RCMenubar vertical: close menu and navigate to next with ArrowDown', async () => {
@@ -383,7 +438,7 @@ test('RCMenubar vertical: close menu and navigate to next with ArrowDown', async
   // ArrowRight opens the second menu
   await userEvent.keyboard('{ArrowRight}');
   await expect.element(trigger2).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(item21).toHaveFocus();
+  await expectActiveMenuItem(item21);
 });
 
 test('RCMenubar vertical: menu-button inherits orientation from menubar', async () => {

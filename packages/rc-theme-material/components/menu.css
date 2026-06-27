@@ -1,24 +1,108 @@
 @layer rc-theme-material.components {
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu :is(button, [role='menuitem'], [role='menuitemradio'], [role='menuitemcheckbox']) {
-    min-block-size: 3rem;
-    border: 0;
-    background: transparent;
+  /* Container + token overrides ------------------------------------------- */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu {
+    background: var(--md-menu-container-color, var(--md-sys-color-surface-container, Canvas));
+    border: none;
+    border-radius: var(--md-menu-container-shape, 4px);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 2px 6px 2px rgba(0, 0, 0, 0.15);
+    padding-block: 0.5rem;
     color: var(--md-sys-color-on-surface, CanvasText);
-    font: inherit;
-    transition: background-color 150ms ease;
+    font-family: var(--md-sys-typescale-body-large-font, inherit);
+    font-size: var(--md-sys-typescale-body-large-size, 1rem);
+    line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
+
+    /* Item geometry — M3 menu item: 48dp height, 12dp h-padding, 12dp gap */
+    --rc-menu-item-min-block-size: 3rem;
+    --rc-menu-item-padding-block: 0;
+    --rc-menu-item-padding-inline: 0.75rem;
+    --rc-menu-item-gap: 0.75rem;
+    --rc-menu-item-transition: background-color 150ms ease, color 150ms ease;
+
+    /* State layers derived from on-surface (M3: 8% hover, 12% keyboard cursor) */
+    --rc-menu-hover-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 8%,
+      transparent
+    );
+    --rc-menu-hover-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-menu-active-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 12%,
+      transparent
+    );
+    --rc-menu-active-color: var(--md-sys-color-on-surface, CanvasText);
+
+    /* Check/radio indicator — M3 leading icon slot is 24dp wide */
+    --rc-menu-check-size: 1.5rem;
+    --rc-menu-check-color: var(--md-sys-color-primary, Highlight);
+
+    /* Trailing shortcut labels (label-large) */
+    --rc-menu-shortcut-size: var(--md-sys-typescale-label-large-size, 0.875rem);
+    --rc-menu-shortcut-color: var(--md-sys-color-on-surface-variant, GrayText);
+    --rc-menu-submenu-indicator-size: 1.25rem;
+    --rc-menu-submenu-indicator-color: var(--md-sys-color-on-surface-variant, CanvasText);
+
+    /* Dividers: outline-variant, full-width by default */
+    --rc-menu-separator-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
+    --rc-menu-separator-margin-block: 0.5rem;
+
+    /* Disabled: M3 uses 38% opacity on on-surface */
+    --rc-menu-disabled-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-menu-disabled-opacity: 0.38;
+
+    /* Section label color */
+    --rc-menu-group-label-color: var(--md-sys-color-on-surface-variant, GrayText);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu :is(button, [role='menuitem'], [role='menuitemradio'], [role='menuitemcheckbox']):hover {
-    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
+  /* M3 uses the state-layer cursor, not a container focus ring ------------- */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu:focus-visible {
+    outline: none;
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu :is([aria-checked='true'], [aria-current='true']) {
+  /* Current item (navigation active / selected radio row) gets secondary-container */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-menu [aria-current='true'] {
     background: var(--md-sys-color-secondary-container, Highlight);
     color: var(--md-sys-color-on-secondary-container, HighlightText);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu :is(button, [role^='menuitem']):focus-visible {
-    outline: 2px solid var(--md-sys-color-primary, Highlight);
-    outline-offset: -2px;
+  /* Section / group labels (optional, for menu segmentation) -------------- */
+  /* Add [data-group-label] as first child of role="group" for a visible heading. */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu [data-group-label] {
+    padding-block-start: 0.75rem;
+    padding-block-end: 0.25rem;
+    font-family: var(--md-sys-typescale-label-small-font, inherit);
+    font-size: var(--md-sys-typescale-label-small-size, 0.6875rem);
+    font-weight: var(--md-sys-typescale-label-small-weight, 500);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Inset dividers within groups ------------------------------------------ */
+  /* Separators inside role="group" are inset by the item padding on both sides.
+     This matches the M3 spec for grouped menus (e.g. radio group segments). */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu [role='group'] > hr,
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu [role='group'] > [role='separator'] {
+    --rc-menu-separator-margin-inline: var(--rc-menu-item-padding-inline, 0.75rem);
   }
 }
+
+/*
+ * Theming notes for rc-menu-button variants:
+ *
+ * The trigger button in rc-menu-button is already styled via
+ * rc-theme-material/components/menu-button.css. If you need a different
+ * trigger surface (filled, tonal, outlined) wrap the trigger <button> in
+ * the appropriate M3 button variant class rather than overriding menu.css.
+ *
+ * For a plain/text trigger (the default), the existing menu-button.css
+ * sets primary-colored text with an 8% hover state layer.
+ *
+ * For an outlined variant:
+ *   rc-menu-button > [slot='trigger'] { border: 1px solid var(--md-sys-color-outline); }
+ *
+ * For a filled variant:
+ *   rc-menu-button > [slot='trigger'] { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
+ */

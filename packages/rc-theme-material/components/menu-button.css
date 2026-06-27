@@ -1,20 +1,20 @@
 @layer rc-theme-material.components {
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu-button > :is(button, [role='button'])[slot='trigger'] {
-    border-color: transparent;
-    background: transparent;
-    color: var(--md-sys-color-primary, ButtonText);
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu-button {
     font-family: var(--md-sys-typescale-label-large-font, inherit);
     font-size: var(--md-sys-typescale-label-large-size, 0.875rem);
     font-weight: 500;
-    transition: background-color 150ms ease;
-  }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu-button > :is(button, [role='button'])[slot='trigger']:hover {
-    background: color-mix(in srgb, var(--md-sys-color-primary, Highlight) 8%, transparent);
-  }
-
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu-button > :is(button, [role='button'])[slot='trigger'][aria-expanded='true'] {
-    background: var(--md-sys-color-secondary-container, ButtonFace);
-    color: var(--md-sys-color-on-secondary-container, ButtonText);
+    --rc-menu-button-trigger-border: 0;
+    --rc-menu-button-trigger-background: transparent;
+    --rc-menu-button-trigger-color: var(--md-sys-color-primary, ButtonText);
+    --rc-menu-button-trigger-transition: background-color 150ms ease, color 150ms ease;
+    --rc-menu-button-trigger-hover-background: color-mix(
+      in srgb,
+      var(--md-sys-color-primary, Highlight) 8%,
+      transparent
+    );
+    --rc-menu-button-trigger-hover-color: var(--md-sys-color-primary, ButtonText);
+    --rc-menu-button-trigger-open-background: var(--md-sys-color-secondary-container, ButtonFace);
+    --rc-menu-button-trigger-open-color: var(--md-sys-color-on-secondary-container, ButtonText);
   }
 }
