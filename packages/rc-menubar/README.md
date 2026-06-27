@@ -13,7 +13,7 @@ npm install @rcarls/rc-menubar
 ## Import
 
 ```js
-import '@rcarls/rc-menubar';                        // side-effect: registers <rc-menubar>
+import '@rcarls/rc-menubar/define';                 // side-effect: registers <rc-menubar>
 import { RCMenubar } from '@rcarls/rc-menubar';     // named class export
 ```
 
@@ -72,15 +72,34 @@ Place `rc-menu-button` elements as direct children. The menubar manages focus an
 
 | Property | Default | Description |
 |---|---|---|
-| `--rc-menubar-gap` | `0` | Gap between menu buttons |
-| `--rc-menubar-padding-inline` | `0` | Horizontal padding on the menubar container |
-| `--rc-menubar-padding-block` | `0` | Vertical padding on the menubar container |
+| `--rc-menubar-gap` | `var(--rc-control-gap)` | Gap between menu buttons |
+| `--rc-menubar-padding-inline` | `var(--rc-control-padding-inline)` | Inline padding on the menubar container |
+| `--rc-menubar-padding-block` | `var(--rc-control-padding-block)` | Block padding on the menubar container |
+| `--rc-menubar-border` | `var(--rc-border)` | Menubar container border |
+| `--rc-menubar-radius` | `var(--rc-control-radius)` | Menubar container border radius |
+| `--rc-menubar-background` | `Canvas` | Menubar container background |
+| `--rc-menubar-color` | `CanvasText` | Menubar container text color |
+| `--rc-menubar-item-block-size` | `2.25em` | Minimum block size for child menu-button triggers |
+| `--rc-menubar-item-padding-block` | `0.25em` | Child trigger block-axis padding |
+| `--rc-menubar-item-padding-inline` | `0.75em` | Child trigger inline-axis padding |
+| `--rc-menubar-item-gap` | `var(--rc-item-gap)` | Gap between flex children inside child triggers |
+| `--rc-menubar-item-border` | `1px solid transparent` | Child trigger border |
+| `--rc-menubar-item-radius` | `var(--rc-control-radius)` | Child trigger border radius |
+| `--rc-menubar-item-background` | `transparent` | Child trigger background |
+| `--rc-menubar-item-color` | `inherit` | Child trigger text color |
+| `--rc-menubar-item-transition` | — | Child trigger state transition |
+| `--rc-menubar-item-hover-background` | `color-mix(in srgb, Highlight 8%, transparent)` | Child trigger hover background |
+| `--rc-menubar-item-hover-color` | `inherit` | Child trigger hover text color |
+| `--rc-menubar-item-hover-border-color` | `transparent` | Child trigger hover border color |
+| `--rc-menubar-item-open-background` | `color-mix(in srgb, Highlight 12%, transparent)` | Child trigger background while its menu is open |
+| `--rc-menubar-item-open-color` | `inherit` | Child trigger text color while its menu is open |
+| `--rc-menubar-item-open-border-color` | `transparent` | Child trigger border color while its menu is open |
 
 ### CSS parts
 
 | Part | Element | Description |
 |---|---|---|
-| `root` | `div[role="menubar"]` | The inner menubar container |
+| `root` | Inner `div` | The visual menubar container |
 
 ### Slots
 
@@ -136,9 +155,9 @@ For vertical orientation, `ArrowDown`/`ArrowUp` replace `ArrowRight`/`ArrowLeft`
 
 | Attribute | Where | Value |
 |---|---|---|
-| `role="menubar"` | Root `div` | — |
-| `aria-orientation` | Root `div` | `"horizontal"` or `"vertical"` |
-| `aria-label` | Root `div` | Value of `label` property |
+| `role="menubar"` | Host element | — |
+| `aria-orientation` | Host element | `"horizontal"` or `"vertical"` |
+| `aria-label` | Host element | Value of `label` property |
 | `tabindex="0"` | Active trigger | One trigger tabbable at a time (roving tabindex) |
 | `tabindex="-1"` | All other triggers | Removed from tab order |
 

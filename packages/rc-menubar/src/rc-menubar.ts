@@ -32,6 +32,21 @@ declare global {
  * @cssprop [--rc-menubar-radius=var(--rc-control-radius)] - Root container border radius
  * @cssprop [--rc-menubar-background=Canvas] - Root container background
  * @cssprop [--rc-menubar-color=CanvasText] - Root container text color
+ * @cssprop [--rc-menubar-item-block-size=2.25em] - Minimum block size for child menu-button triggers
+ * @cssprop [--rc-menubar-item-padding-block=0.25em] - Child trigger block-axis padding
+ * @cssprop [--rc-menubar-item-padding-inline=0.75em] - Child trigger inline-axis padding
+ * @cssprop [--rc-menubar-item-gap=var(--rc-item-gap)] - Gap between flex children inside child triggers
+ * @cssprop [--rc-menubar-item-border=1px solid transparent] - Child trigger border
+ * @cssprop [--rc-menubar-item-radius=var(--rc-control-radius)] - Child trigger border radius
+ * @cssprop [--rc-menubar-item-background=transparent] - Child trigger background
+ * @cssprop [--rc-menubar-item-color=inherit] - Child trigger text color
+ * @cssprop [--rc-menubar-item-transition] - CSS transition applied to child triggers
+ * @cssprop [--rc-menubar-item-hover-background=color-mix(in srgb, Highlight 8%, transparent)] - Child trigger hover background
+ * @cssprop [--rc-menubar-item-hover-color=inherit] - Child trigger hover text color
+ * @cssprop [--rc-menubar-item-hover-border-color=transparent] - Child trigger hover border color
+ * @cssprop [--rc-menubar-item-open-background=color-mix(in srgb, Highlight 12%, transparent)] - Child trigger background when its menu is open
+ * @cssprop [--rc-menubar-item-open-color=inherit] - Child trigger text color when its menu is open
+ * @cssprop [--rc-menubar-item-open-border-color=transparent] - Child trigger border color when its menu is open
  */
 export class RCMenubar extends LitElement {
   static styles = [menubarStyles];
