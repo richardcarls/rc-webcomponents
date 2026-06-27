@@ -16,17 +16,15 @@ async function expectActiveMenuItem(item: Locator) {
 }
 
 test('RCMenuButton renders with correct ARIA attributes', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options" data-testid="menu">
-          <button>Cut</button>
-          <button>Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options" data-testid="menu">
+        <button>Cut</button>
+        <button>Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const host = screen.getByTestId('host');
   const trigger = screen.getByTestId('trigger');
@@ -41,17 +39,15 @@ test('RCMenuButton renders with correct ARIA attributes', async () => {
 });
 
 test('RCMenuButton has no automated accessibility violations', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger">Options</button>
-        <rc-menu label="Options">
-          <button>Cut</button>
-          <button>Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+        <button>Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const host = await screen.getByTestId('host').element();
 
@@ -61,17 +57,15 @@ test('RCMenuButton has no automated accessibility violations', async () => {
 test('RCMenuButton opens on Enter key', async () => {
   const toggleSpy = vi.fn();
 
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host" @rc-menu-button-toggle=${toggleSpy}>
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host" @rc-menu-button-toggle=${toggleSpy}>
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -94,17 +88,15 @@ test('RCMenuButton opens on Enter key', async () => {
 });
 
 test('RCMenuButton opens on Space key', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -121,17 +113,15 @@ test('RCMenuButton opens on Space key', async () => {
 });
 
 test('RCMenuButton opens on ArrowDown key and focuses first item', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -148,17 +138,15 @@ test('RCMenuButton opens on ArrowDown key and focuses first item', async () => {
 });
 
 test('RCMenuButton opens on ArrowUp key and focuses last item', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item2 = screen.getByTestId('item-two');
@@ -177,16 +165,14 @@ test('RCMenuButton opens on ArrowUp key and focuses last item', async () => {
 test('RCMenuButton closes on Escape and returns focus to trigger', async () => {
   const toggleSpy = vi.fn();
 
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host" @rc-menu-button-toggle=${toggleSpy}>
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host" @rc-menu-button-toggle=${toggleSpy}>
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -212,16 +198,14 @@ test('RCMenuButton closes on Escape and returns focus to trigger', async () => {
 });
 
 test('RCMenuButton closes on menu item activation', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -243,16 +227,14 @@ test('RCMenuButton closes on menu item activation', async () => {
 });
 
 test('RCMenuButton toggles on trigger click', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button>Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
 
@@ -266,11 +248,10 @@ test('RCMenuButton toggles on trigger click', async () => {
 });
 
 test('RCMenuButton maps trigger styling variables to the slotted trigger', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button
-        data-testid="host"
-        style="
+  const screen = render(html`
+    <rc-menu-button
+      data-testid="host"
+      style="
           --rc-menu-button-trigger-background: rgb(1, 2, 3);
           --rc-menu-button-trigger-color: rgb(4, 5, 6);
           --rc-menu-button-trigger-open-background: rgb(7, 8, 9);
@@ -278,17 +259,16 @@ test('RCMenuButton maps trigger styling variables to the slotted trigger', async
           --rc-menu-button-trigger-padding-inline: 2rem;
           --rc-menu-button-trigger-gap: 1rem;
         "
-      >
-        <button slot="trigger" data-testid="trigger">
-          <span>Options</span>
-          <span aria-hidden="true">+</span>
-        </button>
-        <rc-menu label="Options">
-          <button>Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+    >
+      <button slot="trigger" data-testid="trigger">
+        <span>Options</span>
+        <span aria-hidden="true">+</span>
+      </button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const host = screen.getByTestId('host').element() as any;
   const trigger = screen.getByTestId('trigger').element() as HTMLElement;
@@ -313,19 +293,17 @@ test('RCMenuButton maps trigger styling variables to the slotted trigger', async
 });
 
 test('RCMenuButton closes on outside click', async () => {
-  const screen = render(
-    html`
-      <div>
-        <rc-menu-button data-testid="host">
-          <button slot="trigger" data-testid="trigger">Options</button>
-          <rc-menu label="Options">
-            <button>Cut</button>
-          </rc-menu>
-        </rc-menu-button>
-        <button data-testid="outside">Outside</button>
-      </div>
-    `,
-  );
+  const screen = render(html`
+    <div>
+      <rc-menu-button data-testid="host">
+        <button slot="trigger" data-testid="trigger">Options</button>
+        <rc-menu label="Options">
+          <button>Cut</button>
+        </rc-menu>
+      </rc-menu-button>
+      <button data-testid="outside">Outside</button>
+    </div>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const outside = screen.getByTestId('outside');
@@ -345,16 +323,14 @@ test('RCMenuButton closes on outside click', async () => {
 });
 
 test('RCMenuButton exposes open/close methods', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const host = screen.getByTestId('host');
   const trigger = screen.getByTestId('trigger');
@@ -379,17 +355,15 @@ test('RCMenuButton exposes open/close methods', async () => {
 });
 
 test('RCMenuButton vertical: opens on ArrowRight and focuses first item', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host" orientation="vertical">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host" orientation="vertical">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -406,17 +380,15 @@ test('RCMenuButton vertical: opens on ArrowRight and focuses first item', async 
 });
 
 test('RCMenuButton vertical: opens on ArrowLeft and focuses last item', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host" orientation="vertical">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host" orientation="vertical">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item2 = screen.getByTestId('item-two');
@@ -433,16 +405,14 @@ test('RCMenuButton vertical: opens on ArrowLeft and focuses last item', async ()
 });
 
 test('RCMenuButton vertical: ArrowDown/ArrowUp do not open menu', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host" orientation="vertical">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host" orientation="vertical">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
 
@@ -461,18 +431,16 @@ test('RCMenuButton vertical: ArrowDown/ArrowUp do not open menu', async () => {
 });
 
 test('RCMenuButton inherits orientation from parent with role="menubar"', async () => {
-  const screen = render(
-    html`
-      <div role="menubar" aria-orientation="vertical">
-        <rc-menu-button data-testid="host">
-          <button slot="trigger" data-testid="trigger">Options</button>
-          <rc-menu label="Options">
-            <button data-testid="item-one">Cut</button>
-          </rc-menu>
-        </rc-menu-button>
-      </div>
-    `,
-  );
+  const screen = render(html`
+    <div role="menubar" aria-orientation="vertical">
+      <rc-menu-button data-testid="host">
+        <button slot="trigger" data-testid="trigger">Options</button>
+        <rc-menu label="Options">
+          <button data-testid="item-one">Cut</button>
+        </rc-menu>
+      </rc-menu-button>
+    </div>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -489,16 +457,14 @@ test('RCMenuButton inherits orientation from parent with role="menubar"', async 
 });
 
 test('RCMenuButton reflects open attribute', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button>Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const host = screen.getByTestId('host');
   const trigger = screen.getByTestId('trigger');

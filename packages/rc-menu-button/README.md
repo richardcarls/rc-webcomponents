@@ -1,6 +1,8 @@
 # `@rcarls/rc-menu-button`
 
-A WAI-ARIA compliant menu button component implementing the [Menu Button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/). Wraps a trigger element and an `rc-menu` popup, wiring ARIA attributes, light-dismiss, and keyboard open/close automatically. Built with [Lit 3](https://lit.dev).
+An implementation of the [WAI-ARIA Menu Button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/).
+
+Wraps a trigger element and an `rc-menu` popup, wiring ARIA attributes, light-dismiss, and keyboard open/close automatically.
 
 ---
 

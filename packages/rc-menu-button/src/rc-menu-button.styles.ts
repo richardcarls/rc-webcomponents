@@ -46,14 +46,20 @@ export const menuButtonStyles = css`
   slot[name='trigger']::slotted(button:hover),
   slot[name='trigger']::slotted([role='button']:hover) {
     border-color: var(--rc-menu-button-trigger-hover-border-color, currentColor);
-    background: var(--rc-menu-button-trigger-hover-background, color-mix(in srgb, Highlight 8%, transparent));
+    background: var(
+      --rc-menu-button-trigger-hover-background,
+      color-mix(in srgb, Highlight 8%, transparent)
+    );
     color: var(--rc-menu-button-trigger-hover-color, inherit);
   }
 
   slot[name='trigger']::slotted(button[aria-expanded='true']),
   slot[name='trigger']::slotted([role='button'][aria-expanded='true']) {
     border-color: var(--rc-menu-button-trigger-open-border-color, currentColor);
-    background: var(--rc-menu-button-trigger-open-background, color-mix(in srgb, Highlight 12%, transparent));
+    background: var(
+      --rc-menu-button-trigger-open-background,
+      color-mix(in srgb, Highlight 12%, transparent)
+    );
     color: var(--rc-menu-button-trigger-open-color, inherit);
   }
 

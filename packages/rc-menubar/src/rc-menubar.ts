@@ -3,10 +3,7 @@ import { property, state } from 'lit/decorators.js';
 
 import { type KeyboardNavigationAction } from '@rcarls/rc-common';
 
-import type {
-  RCMenuButton,
-  RCMenuButtonToggleEvent,
-} from '@rcarls/rc-menu-button';
+import type { RCMenuButton, RCMenuButtonToggleEvent } from '@rcarls/rc-menu-button';
 
 import menubarStyles from './rc-menubar.styles';
 
@@ -16,15 +13,25 @@ declare global {
   }
 }
 
-// Roving tabindex (not aria-activedescendant): trigger buttons need real focus
-// for submenu handoff and screen reader announcements.
+const IE_KEY_ALIASES: Record<string, string> = {
+  Up: 'ArrowUp',
+  Down: 'ArrowDown',
+  Left: 'ArrowLeft',
+  Right: 'ArrowRight',
+};
 
 /**
- * A menubar component containing menu buttons, as defined in WAI-ARIA
+ * A menubar component containing menu buttons.
+ *
+ * Uses roving tabindex rather than aria-activedescendant so trigger buttons
+ * receive real focus — required for submenu handoff and screen reader announcements.
  *
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/menubar/
+ *
  * @slot default - Takes rc-menu-button elements to display in the menubar
+ *
  * @csspart root - The root container element
+ *
  * @cssprop [--rc-menubar-gap=var(--rc-control-gap)] - Gap between menu buttons
  * @cssprop [--rc-menubar-padding-inline=var(--rc-control-padding-inline)] - Inline-axis padding
  * @cssprop [--rc-menubar-padding-block=var(--rc-control-padding-block)] - Block-axis padding
@@ -51,37 +58,42 @@ declare global {
 export class RCMenubar extends LitElement {
   static styles = [menubarStyles];
 
-  /** Accessible label for this menubar */
+  /** Accessible label for the `role="menubar"` element. */
   @property({ type: String })
   label = 'Menu';
 
-  /** Menubar orientation, for keyboard navigation */
+  /** Orientation of the menubar, controls which arrow keys move between items. */
   @property({ type: String, reflect: true })
   orientation: 'horizontal' | 'vertical' = 'horizontal';
 
-  /** Reference to the currently open menu button */
+  /** Weak reference to the currently open child `rc-menu-button`. */
   @state()
-  private _activeMenuButton: WeakRef<RCMenuButton> | undefined;
+  protected _$activeMenuButton: WeakRef<RCMenuButton> | undefined;
 
-  /** The last menu button trigger to have focus */
+  /** The last trigger element to have received focus, used for roving-tabindex bookkeeping. */
   @state()
-  private _lastFocused: HTMLElement | undefined;
+  protected _$lastFocused: HTMLElement | undefined;
 
-  /** Array of menu button elements */
-  private _menuButtons: WeakRef<RCMenuButton>[] = [];
+  /** Weak references to all slotted `rc-menu-button` children, in DOM order. */
+  protected _$menuButtons: WeakRef<RCMenuButton>[] = [];
 
-  private _boundHandleKeydown = this._handleKeydown.bind(this);
+  /** Bound keydown handler, held for `removeEventListener` pairing. */
+  protected _boundHandleKeydown = this._handleKeydown.bind(this);
 
-  private _boundHandleClick = this._handleClick.bind(this);
+  /** Bound click handler, held for `removeEventListener` pairing. */
+  protected _boundHandleClick = this._handleClick.bind(this);
 
+  /** Syncs host ARIA attributes and registers keyboard and click handlers. */
   override connectedCallback() {
     super.connectedCallback();
 
     this._syncHostAria();
+
     this.addEventListener('keydown', this._boundHandleKeydown);
     this.addEventListener('click', this._boundHandleClick);
   }
 
+  /** Removes keyboard and click handlers. */
   override disconnectedCallback() {
     super.disconnectedCallback();
 
@@ -89,236 +101,269 @@ export class RCMenubar extends LitElement {
     this.removeEventListener('click', this._boundHandleClick);
   }
 
+  /** Syncs host ARIA and child orientation when `label` or `orientation` change. */
   protected override updated(changedProperties: Map<PropertyKey, unknown>) {
     super.updated(changedProperties);
 
-    if (
-      changedProperties.has('label') ||
-      changedProperties.has('orientation')
-    ) {
+    if (changedProperties.has('label') || changedProperties.has('orientation')) {
       this._syncHostAria();
       this._syncMenuButtonOrientation();
     }
   }
 
-  /** Keep ARIA semantics on the custom element host for slotted children. */
-  private _syncHostAria(): void {
+  /** Writes `role`, `aria-label`, and `aria-orientation` to the host element. */
+  protected _syncHostAria(): void {
     this.setAttribute('role', 'menubar');
     this.setAttribute('aria-label', this.label);
     this.setAttribute('aria-orientation', this.orientation);
   }
 
-  private _syncMenuButtonOrientation(): void {
-    this.menuButtons.forEach((menuButton) => {
-      menuButton.orientation = this.orientation;
+  /** Propagates the current `orientation` value to all slotted `rc-menu-button` children. */
+  protected _syncMenuButtonOrientation(): void {
+    this.$menuButtons.forEach(($menuButton) => {
+      $menuButton.orientation = this.orientation;
     });
   }
 
-  /** Get the trigger element from a menu button */
-  private _getTrigger(menuButton: RCMenuButton): HTMLElement | null {
-    return menuButton.querySelector('[slot="trigger"]');
+  /** Returns the `[slot="trigger"]` element inside a child `rc-menu-button`. */
+  protected _$getTrigger($menuButton: RCMenuButton): HTMLElement | null {
+    return $menuButton.querySelector('[slot="trigger"]');
   }
 
-  /** Array of focusable trigger elements */
-  get items(): HTMLElement[] {
-    return this._menuButtons
+  /** All slotted trigger elements in DOM order. */
+  get $items(): HTMLElement[] {
+    return this._$menuButtons
       .map((ref) => ref.deref())
       .filter((el): el is RCMenuButton => el != null)
-      .map((mb) => this._getTrigger(mb))
-      .filter((el): el is HTMLElement => el != null);
+      .map(($mb) => this._$getTrigger($mb))
+      .filter(($el): $el is HTMLElement => $el != null);
   }
 
-  /** Array of menu button elements */
-  get menuButtons(): RCMenuButton[] {
-    return this._menuButtons
+  /** All slotted `rc-menu-button` children in DOM order. */
+  get $menuButtons(): RCMenuButton[] {
+    return this._$menuButtons
       .map((ref) => ref.deref())
       .filter((el): el is RCMenuButton => el != null);
   }
 
-  /** First trigger element */
-  get firstItem(): HTMLElement | undefined {
-    return this.items.at(0);
+  /** First trigger element in the menubar. */
+  get $firstItem(): HTMLElement | undefined {
+    return this.$items.at(0);
   }
 
-  /** Last trigger element */
-  get lastItem(): HTMLElement | undefined {
-    return this.items.at(-1);
+  /** Last trigger element in the menubar. */
+  get $lastItem(): HTMLElement | undefined {
+    return this.$items.at(-1);
   }
 
-  /** Next trigger element, in tab-order */
-  get nextItem(): HTMLElement | undefined {
-    const index = this._lastFocused ? this.items.indexOf(this._lastFocused) : 0;
-    return this.items.at((index + 1) % this.items.length);
+  /** Trigger after `_$lastFocused`, wrapping around to the first. */
+  get $nextItem(): HTMLElement | undefined {
+    const index = this._$lastFocused ? this.$items.indexOf(this._$lastFocused) : 0;
+
+    return this.$items.at((index + 1) % this.$items.length);
   }
 
-  /** Previous trigger element, in tab-order */
-  get previousItem(): HTMLElement | undefined {
-    const index = this._lastFocused ? this.items.indexOf(this._lastFocused) : 0;
-    return this.items.at((index - 1) % this.items.length);
+  /** Trigger before `_$lastFocused`, wrapping around to the last. */
+  get $previousItem(): HTMLElement | undefined {
+    const index = this._$lastFocused ? this.$items.indexOf(this._$lastFocused) : 0;
+
+    return this.$items.at((index - 1) % this.$items.length);
   }
 
-  /** Get the menu button that contains a trigger */
-  private _getMenuButtonForTrigger(
-    trigger: HTMLElement,
-  ): RCMenuButton | undefined {
-    return this.menuButtons.find((mb) => this._getTrigger(mb) === trigger);
+  /** Returns the `rc-menu-button` whose slotted trigger matches `$trigger`. */
+  protected _$getMenuButtonForTrigger($trigger: HTMLElement): RCMenuButton | undefined {
+    return this.$menuButtons.find(($mb) => this._$getTrigger($mb) === $trigger);
   }
 
-  /** Set focus to a specific trigger element */
+  /**
+   * Moves focus to a trigger element.
+   *
+   * @param item - trigger to focus; no-ops when `null` or `undefined`
+   */
   focusItem(item?: HTMLElement | null) {
     if (item != null) {
       item.focus();
     }
   }
 
-  /** Close any open menu */
+  /** Closes the currently open child menu without returning focus to its trigger. */
   closeActiveMenu() {
-    const activeMenuButton = this._activeMenuButton?.deref();
-    if (activeMenuButton) {
-      activeMenuButton.closeMenu(false);
-      this._activeMenuButton = undefined;
+    const $activeMenuButton = this._$activeMenuButton?.deref();
+
+    if ($activeMenuButton) {
+      $activeMenuButton.closeMenu(false);
+
+      this._$activeMenuButton = undefined;
     }
   }
 
-  private _handleItemFocus(e: FocusEvent) {
-    const target = e.target as HTMLElement;
+  /** Updates roving-tabindex state when a trigger element receives focus. */
+  protected _handleItemFocus(e: FocusEvent) {
+    const $target = e.target as HTMLElement;
 
-    // Check if focus is on a trigger (slot="trigger")
-    if (target.slot !== 'trigger') return;
+    if ($target.slot !== 'trigger') return;
 
-    this._lastFocused = target;
+    this._$lastFocused = $target;
 
-    // Set roving tab index
-    this.items.forEach((el) => el.setAttribute('tabindex', '-1'));
-    target.setAttribute('tabindex', '0');
+    this.$items.forEach(($item) => $item.setAttribute('tabindex', '-1'));
+
+    $target.setAttribute('tabindex', '0');
   }
 
-  private _handleSlotChange(e: Event) {
-    const slot = e.currentTarget as HTMLSlotElement;
-    const elements = slot.assignedElements();
+  /** Refreshes the cached `rc-menu-button` list when slotted children change. */
+  protected _handleSlotChange(e: Event) {
+    const $slot = e.currentTarget as HTMLSlotElement;
+    const $elements = $slot.assignedElements();
 
-    const prevButtons = this._menuButtons;
+    const prevButtons = this._$menuButtons;
 
-    // Cache element references synchronously — defer all DOM mutations.
+    // Cache element references synchronously. Defer all DOM mutations.
     // slotchange fires synchronously inside a framework reactive update pass
     // on second+ mount (shadow DOM already exists), so the handler must be
     // instantaneous to avoid interacting with the reactive system.
-    this._menuButtons = elements
+    this._$menuButtons = $elements
       .filter((el): el is RCMenuButton => el.tagName === 'RC-MENU-BUTTON')
       .map((el) => new WeakRef(el));
 
     queueMicrotask(() => {
-      if (!this.isConnected) return;
+      if (!this.isConnected) {
+        return;
+      }
 
       prevButtons.forEach((ref) => {
-        const menuButton = ref.deref();
-        if (!menuButton) return;
+        const $menuButton = ref.deref();
+        if (!$menuButton) {
+          return;
+        }
 
-        menuButton.removeAttribute('role');
+        $menuButton.removeAttribute('role');
 
-        const trigger = this._getTrigger(menuButton);
-        trigger?.removeAttribute('tabindex');
-        trigger?.removeAttribute('role');
+        const $trigger = this._$getTrigger($menuButton);
+
+        $trigger?.removeAttribute('tabindex');
+        $trigger?.removeAttribute('role');
       });
 
-      this.menuButtons.forEach((menuButton) => {
-        menuButton.removeAttribute('role');
-        menuButton.orientation = this.orientation;
+      this.$menuButtons.forEach(($menuButton) => {
+        $menuButton.removeAttribute('role');
+        $menuButton.orientation = this.orientation;
 
-        const trigger = this._getTrigger(menuButton);
-        trigger?.setAttribute('role', 'menuitem');
+        const $trigger = this._$getTrigger($menuButton);
+
+        $trigger?.setAttribute('role', 'menuitem');
       });
 
-      const items = this.items;
+      const $items = this.$items;
 
-      items.forEach((trigger, index) => {
-        trigger.setAttribute('tabindex', index === 0 ? '0' : '-1');
+      $items.forEach(($trigger, index) => {
+        $trigger.setAttribute('tabindex', index === 0 ? '0' : '-1');
       });
 
-      if (items.length > 0 && !this._lastFocused) {
-        this._lastFocused = items[0];
+      if ($items.length > 0 && !this._$lastFocused) {
+        this._$lastFocused = $items[0];
       }
     });
   }
 
-  private _handleMenuButtonToggle(e: CustomEvent<RCMenuButtonToggleEvent>) {
-    const menuButton = e.target as RCMenuButton;
+  /** Tracks which child `rc-menu-button` is currently open. */
+  protected _handleMenuButtonToggle(e: CustomEvent<RCMenuButtonToggleEvent>) {
+    const $menuButton = e.target as RCMenuButton;
 
     if (e.detail.open) {
-      // Track the newly opened menu
-      this._activeMenuButton = new WeakRef(menuButton);
+      this._$activeMenuButton = new WeakRef($menuButton);
     } else {
-      // Clear active menu if this was the active one
-      if (this._activeMenuButton?.deref() === menuButton) {
-        this._activeMenuButton = undefined;
+      if (this._$activeMenuButton?.deref() === $menuButton) {
+        this._$activeMenuButton = undefined;
       }
     }
   }
 
-  private _handleNavigate(action: KeyboardNavigationAction) {
-    const activeMenu = this._activeMenuButton?.deref();
-    const wasMenuOpen = activeMenu?.open ?? false;
+  /**
+   * Routes keyboard navigation actions to item focus and menu open/close changes.
+   *
+   * When a menu is open, moving to an adjacent item closes the current menu and
+   * opens the one attached to the newly focused trigger.
+   *
+   * @param action - the navigation action produced by the keydown handler
+   */
+  protected _handleNavigate(action: KeyboardNavigationAction) {
+    const $activeMenu = this._$activeMenuButton?.deref();
+    const wasMenuOpen = $activeMenu?.open ?? false;
 
     switch (action) {
-      case 'next': {
-        // Close current menu and move to next
+      case 'next':
         if (wasMenuOpen) {
           this.closeActiveMenu();
         }
-        this.focusItem(this.nextItem);
-        // If a menu was open, open the new one
+
+        this.focusItem(this.$nextItem);
+
         if (wasMenuOpen) {
           this._openCurrentMenu();
         }
+
         break;
-      }
-      case 'prev': {
-        // Close current menu and move to previous
+
+      case 'prev':
         if (wasMenuOpen) {
           this.closeActiveMenu();
         }
-        this.focusItem(this.previousItem);
-        // If a menu was open, open the new one
+
+        this.focusItem(this.$previousItem);
+
         if (wasMenuOpen) {
           this._openCurrentMenu();
         }
+
         break;
-      }
+
       case 'start':
         if (wasMenuOpen) {
           this.closeActiveMenu();
         }
-        this.focusItem(this.firstItem);
+
+        this.focusItem(this.$firstItem);
+
         if (wasMenuOpen) {
           this._openCurrentMenu();
         }
+
         break;
+
       case 'end':
         if (wasMenuOpen) {
           this.closeActiveMenu();
         }
-        this.focusItem(this.lastItem);
+
+        this.focusItem(this.$lastItem);
+
         if (wasMenuOpen) {
           this._openCurrentMenu();
         }
+
         break;
+
       case 'escape':
         this.closeActiveMenu();
+
         break;
     }
   }
 
-  private _openCurrentMenu() {
-    if (this._lastFocused) {
-      const menuButton = this._getMenuButtonForTrigger(this._lastFocused);
-      if (menuButton) {
-        menuButton.openMenu();
+  /** Opens the menu attached to the last-focused trigger. */
+  protected _openCurrentMenu() {
+    if (this._$lastFocused) {
+      const $menuButton = this._$getMenuButtonForTrigger(this._$lastFocused);
+
+      if ($menuButton) {
+        $menuButton.openMenu();
       }
     }
   }
 
-  private _handleKeydown(e: KeyboardEvent): void {
-    const key = this._normalizeKey(e.key);
+  /** Translates keyboard events to navigation actions and activates keyboard interaction mode. */
+  protected _handleKeydown(e: KeyboardEvent): void {
+    const key = IE_KEY_ALIASES[e.key] ?? e.key;
     const navNext = this.orientation === 'horizontal' ? 'ArrowRight' : 'ArrowDown';
     const navPrev = this.orientation === 'horizontal' ? 'ArrowLeft' : 'ArrowUp';
 
@@ -338,39 +383,25 @@ export class RCMenubar extends LitElement {
       this.setAttribute('data-interaction-mode', 'keyboard');
     }
 
-    if (!action) return;
+    if (!action) {
+      return;
+    }
 
     this._handleNavigate(action);
     this.setAttribute('data-interaction-mode', 'keyboard');
+
     e.stopPropagation();
     e.preventDefault();
   }
 
-  private _handleClick(): void {
+  /** Clears keyboard interaction mode on pointer click. */
+  protected _handleClick(): void {
     this.removeAttribute('data-interaction-mode');
   }
 
-  private _normalizeKey(key: string): string {
-    switch (key) {
-      case 'Up':
-        return 'ArrowUp';
-      case 'Down':
-        return 'ArrowDown';
-      case 'Left':
-        return 'ArrowLeft';
-      case 'Right':
-        return 'ArrowRight';
-      default:
-        return key;
-    }
-  }
-
-  protected render() {
+  protected override render() {
     return html`
-      <div
-        id="root"
-        part="root"
-      >
+      <div id="root" part="root">
         <div
           id="slot-wrap"
           @focusin=${this._handleItemFocus}

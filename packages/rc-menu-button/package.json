@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless WAI-ARIA menu button web component built with Lit",
+  "description": "A WAI-ARIA Menu button component.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",

@@ -1,6 +1,8 @@
 # `@rcarls/rc-menubar`
 
-A WAI-ARIA compliant menubar component implementing the [Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/). Manages roving tabindex across `rc-menu-button` triggers and cascades menu open/close as the user navigates. Built with [Lit 3](https://lit.dev).
+An implementation of the [WAI-ARIA Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/).
+
+Manages roving tabindex across `rc-menu-button` triggers and cascades menu open/close as the user navigates. Built with [Lit 3](https://lit.dev).
 
 ---
 

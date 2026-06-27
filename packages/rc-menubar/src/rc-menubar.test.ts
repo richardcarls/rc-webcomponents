@@ -145,9 +145,9 @@ test('RCMenubar maps item styling variables to child menu-button triggers', asyn
   expect(styles.backgroundColor).toBe('rgb(1, 2, 3)');
   expect(styles.color).toBe('rgb(4, 5, 6)');
   expect(styles.paddingInlineStart).toBe('32px');
-  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-background')).toBe(
-    'rgb(7, 8, 9)',
-  );
+  expect(
+    getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-background'),
+  ).toBe('rgb(7, 8, 9)');
   expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-color')).toBe(
     'rgb(10, 11, 12)',
   );
@@ -348,11 +348,7 @@ test('RCMenubar fires toggle events', async () => {
   const toggleSpy = vi.fn();
 
   const screen = render(html`
-    <rc-menubar
-      data-testid="menubar"
-      label="Test Menu"
-      @rc-menu-button-toggle=${toggleSpy}
-    >
+    <rc-menubar data-testid="menubar" label="Test Menu" @rc-menu-button-toggle=${toggleSpy}>
       <rc-menu-button data-testid="menu-button-1">
         <button slot="trigger" data-testid="trigger-1">File</button>
         <rc-menu label="File">
