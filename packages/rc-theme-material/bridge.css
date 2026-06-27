@@ -294,21 +294,57 @@
       --md-menu-item-label-text-color,
       var(--md-sys-color-on-surface, CanvasText)
     );
-    --rc-menu-item-padding-block: 0.75rem;
+    --rc-menu-item-min-block-size: 3rem;
+    --rc-menu-item-padding-block: 0;
     --rc-menu-item-padding-inline: 0.75rem;
     --rc-menu-item-gap: 0.75rem;
+    --rc-menu-item-transition: background-color 150ms ease, color 150ms ease;
+    --rc-menu-hover-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 8%,
+      transparent
+    );
+    --rc-menu-hover-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-menu-active-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 12%,
+      transparent
+    );
+    --rc-menu-active-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-menu-check-size: 1.5rem;
+    --rc-menu-check-color: var(--md-sys-color-primary, Highlight);
+    --rc-menu-shortcut-size: var(--md-sys-typescale-label-large-size, 0.875rem);
+    --rc-menu-shortcut-color: var(--md-sys-color-on-surface-variant, GrayText);
+    --rc-menu-submenu-indicator-size: 1.25rem;
+    --rc-menu-submenu-indicator-color: var(--md-sys-color-on-surface-variant, CanvasText);
     --rc-menu-disabled-color: var(--md-sys-color-on-surface, GrayText);
     --rc-menu-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
     --rc-menu-separator-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
+    --rc-menu-separator-margin-block: 0.5rem;
+    --rc-menu-group-label-color: var(--md-sys-color-on-surface-variant, GrayText);
   }
 
   .rc-theme-material rc-menu-button,
   :host(.rc-theme-material) rc-menu-button {
+    font-family: var(--md-sys-typescale-label-large-font, inherit);
+    font-size: var(--md-sys-typescale-label-large-size, 0.875rem);
+    font-weight: 500;
     --rc-menu-button-trigger-block-size: 2.5rem;
     --rc-menu-button-trigger-padding-block: 0.625rem;
     --rc-menu-button-trigger-padding-inline: 1.5rem;
     --rc-menu-button-trigger-border: 0;
     --rc-menu-button-trigger-radius: var(--md-sys-shape-corner-full, 999px);
+    --rc-menu-button-trigger-background: transparent;
+    --rc-menu-button-trigger-color: var(--md-sys-color-primary, ButtonText);
+    --rc-menu-button-trigger-transition: background-color 150ms ease, color 150ms ease;
+    --rc-menu-button-trigger-hover-background: color-mix(
+      in srgb,
+      var(--md-sys-color-primary, Highlight) 8%,
+      transparent
+    );
+    --rc-menu-button-trigger-hover-color: var(--md-sys-color-primary, ButtonText);
+    --rc-menu-button-trigger-open-background: var(--md-sys-color-secondary-container, ButtonFace);
+    --rc-menu-button-trigger-open-color: var(--md-sys-color-on-secondary-container, ButtonText);
   }
 
   .rc-theme-material rc-menubar,
@@ -320,6 +356,22 @@
     --rc-menubar-radius: var(--md-sys-shape-corner-large, 1rem);
     --rc-menubar-background: var(--md-sys-color-surface-container, Canvas);
     --rc-menubar-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-menubar-item-block-size: 2.5rem;
+    --rc-menubar-item-padding-block: 0.5rem;
+    --rc-menubar-item-padding-inline: 1rem;
+    --rc-menubar-item-border: 0;
+    --rc-menubar-item-radius: var(--md-sys-shape-corner-full, 999px);
+    --rc-menubar-item-background: transparent;
+    --rc-menubar-item-color: var(--md-sys-color-primary, CanvasText);
+    --rc-menubar-item-transition: background-color 150ms ease, color 150ms ease;
+    --rc-menubar-item-hover-background: color-mix(
+      in srgb,
+      var(--md-sys-color-primary, Highlight) 8%,
+      transparent
+    );
+    --rc-menubar-item-hover-color: var(--md-sys-color-primary, CanvasText);
+    --rc-menubar-item-open-background: var(--md-sys-color-secondary-container, ButtonFace);
+    --rc-menubar-item-open-color: var(--md-sys-color-on-secondary-container, ButtonText);
   }
 
   .rc-theme-material rc-toolbar,
