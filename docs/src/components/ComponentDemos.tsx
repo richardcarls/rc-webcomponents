@@ -389,39 +389,110 @@ export function MenuDemo() {
 }
 
 export function MenuButtonDemo() {
+  const [menuButtonEl, setMenuButtonEl] = useState<HTMLElement | null>(null);
+  const setMenuButtonRef = useCallback((element: HTMLElement | null) => {
+    setMenuButtonEl(element);
+  }, []);
+  const toggleLog = useEventLog<{ open: boolean }>(
+    menuButtonEl,
+    'rc-menu-button-toggle',
+    ({ open }) => `rc-menu-button-toggle -> ${open ? 'open' : 'closed'}`,
+  );
+  const activateLog = useEventLog<{ value?: string; checked?: string }>(
+    menuButtonEl,
+    'rc-menu-activate',
+    ({ checked, value }) =>
+      `rc-menu-activate -> ${value ?? '(no value)'}${checked ? ` (${checked})` : ''}`,
+  );
+
   return (
     <DemoFrame>
-      <rc-menu-button>
+      <rc-menu-button ref={setMenuButtonRef}>
         <button slot="trigger" type="button">Actions</button>
         <rc-menu label="Actions">
-          <button type="button">Edit</button>
-          <button type="button">Share</button>
+          <button type="button" value="edit">
+            <span>Edit</span>
+            <span data-menu-shortcut>Ctrl+E</span>
+          </button>
+          <button type="button" value="share">Share</button>
+          <hr />
+          <button type="button" role="menuitemcheckbox" aria-checked="true" value="show-details">
+            Show details
+          </button>
+          <button type="button" value="more" aria-haspopup="menu">More actions</button>
           <button type="button" disabled>Archive</button>
         </rc-menu>
       </rc-menu-button>
+      <EventLog entries={[...activateLog, ...toggleLog]} />
     </DemoFrame>
   );
 }
 
 export function MenubarDemo() {
+  const [menubarEl, setMenubarEl] = useState<HTMLElement | null>(null);
+  const setMenubarRef = useCallback((element: HTMLElement | null) => {
+    setMenubarEl(element);
+  }, []);
+  const log = useEventLog<{ value?: string; checked?: string }>(
+    menubarEl,
+    'rc-menu-activate',
+    ({ checked, value }) =>
+      `rc-menu-activate -> ${value ?? '(no value)'}${checked ? ` (${checked})` : ''}`,
+  );
+
   return (
     <DemoFrame>
-      <rc-menubar label="Recipe menu">
+      <rc-menubar ref={setMenubarRef} label="Recipe menu">
         <rc-menu-button>
           <button slot="trigger" type="button">File</button>
           <rc-menu label="File">
-            <button type="button">New</button>
-            <button type="button">Open</button>
+            <button type="button" value="new">
+              <span>New</span>
+              <span data-menu-shortcut>Ctrl+N</span>
+            </button>
+            <button type="button" value="open">
+              <span>Open</span>
+              <span data-menu-shortcut>Ctrl+O</span>
+            </button>
+            <hr />
+            <button type="button" value="close" disabled>Close</button>
           </rc-menu>
         </rc-menu-button>
         <rc-menu-button>
           <button slot="trigger" type="button">Edit</button>
           <rc-menu label="Edit">
-            <button type="button">Undo</button>
-            <button type="button">Redo</button>
+            <button type="button" value="undo">
+              <span>Undo</span>
+              <span data-menu-shortcut>Ctrl+Z</span>
+            </button>
+            <button type="button" value="redo">
+              <span>Redo</span>
+              <span data-menu-shortcut>Ctrl+Y</span>
+            </button>
+          </rc-menu>
+        </rc-menu-button>
+        <rc-menu-button>
+          <button slot="trigger" type="button">View</button>
+          <rc-menu label="View">
+            <button type="button" role="menuitemcheckbox" aria-checked="true" value="show-notes">
+              Show notes
+            </button>
+            <button type="button" role="menuitemcheckbox" aria-checked="false" value="compact-layout">
+              Compact layout
+            </button>
+            <div role="group" aria-label="Sort order">
+              <div data-group-label>Sort order</div>
+              <button type="button" role="menuitemradio" aria-checked="true" value="sort-recent">
+                Recent
+              </button>
+              <button type="button" role="menuitemradio" aria-checked="false" value="sort-name">
+                Name
+              </button>
+            </div>
           </rc-menu>
         </rc-menu-button>
       </rc-menubar>
+      <EventLog entries={log} />
     </DemoFrame>
   );
 }

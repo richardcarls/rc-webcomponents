@@ -41,6 +41,11 @@ import '@rcarls/rc-menu-button/define';
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
+`rc-menu-button` keeps the consumer-supplied trigger in light DOM and styles it
+through inherited `--rc-menu-button-trigger-*` custom properties. The popup menu
+remains an `rc-menu`, so menu row styling continues through the `--rc-menu-*`
+contract.
+
 ## API
 
 <ApiTable tag="rc-menu-button" />
