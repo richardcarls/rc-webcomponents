@@ -32,10 +32,18 @@ declare global {
  * @cssprop [--rc-menu-button-trigger-block-size=var(--rc-control-block-size)] - Minimum block size of the trigger
  * @cssprop [--rc-menu-button-trigger-padding-block=var(--rc-control-padding-block)] - Trigger block-axis padding
  * @cssprop [--rc-menu-button-trigger-padding-inline=var(--rc-control-padding-inline)] - Trigger inline-axis padding
+ * @cssprop [--rc-menu-button-trigger-gap=var(--rc-item-gap)] - Gap between flex children in the trigger
  * @cssprop [--rc-menu-button-trigger-border=var(--rc-border)] - Trigger border
  * @cssprop [--rc-menu-button-trigger-radius=var(--rc-control-radius)] - Trigger border radius
  * @cssprop [--rc-menu-button-trigger-background=var(--rc-button-bg)] - Trigger background
  * @cssprop [--rc-menu-button-trigger-color=var(--rc-button-text)] - Trigger text color
+ * @cssprop [--rc-menu-button-trigger-transition] - CSS transition applied to the trigger
+ * @cssprop [--rc-menu-button-trigger-hover-background=color-mix(in srgb, Highlight 8%, transparent)] - Trigger hover background
+ * @cssprop [--rc-menu-button-trigger-hover-color=inherit] - Trigger hover text color
+ * @cssprop [--rc-menu-button-trigger-hover-border-color=currentColor] - Trigger hover border color
+ * @cssprop [--rc-menu-button-trigger-open-background=color-mix(in srgb, Highlight 12%, transparent)] - Trigger background when the menu is open
+ * @cssprop [--rc-menu-button-trigger-open-color=inherit] - Trigger text color when the menu is open
+ * @cssprop [--rc-menu-button-trigger-open-border-color=currentColor] - Trigger border color when the menu is open
  * @cssprop [--rc-menu-button-popup-z-index=1000] - Z-index of the popup overlay
  * @csspart root - The root container element
  * @csspart popup - The popup container element
