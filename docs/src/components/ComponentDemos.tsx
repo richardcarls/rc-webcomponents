@@ -13,6 +13,9 @@ import type {
   RCSliderRef,
   RCTransferListChangeDetail,
   RCTransferListRef,
+  RCVirtualCanvasRef,
+  RCVirtualCanvasRenderDetail,
+  RCVirtualCanvasPointerDetail,
 } from '@rcarls/rc-webcomponents/react';
 
 import hljs from 'highlight.js/lib/core';
@@ -836,12 +839,146 @@ export function TransferListDemo() {
   );
 }
 
+const VC_CONTENT_W = 4000;
+const VC_CONTENT_H = 3000;
+const VC_MINOR = 100;
+const VC_MAJOR = 500;
+
 export function VirtualCanvasDemo() {
+  const [vcEl, setVcEl] = useState<Element | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const overlayRef = useRef<HTMLSpanElement | null>(null);
+  const dotsRef = useRef<Array<{ x: number; y: number }>>([]);
+
+  useEffect(() => {
+    if (!vcEl) return;
+
+    const vc = vcEl as RCVirtualCanvasRef;
+    vc.contentWidth = VC_CONTENT_W;
+    vc.contentHeight = VC_CONTENT_H;
+
+    function drawGrid(e: Event) {
+      const { viewRect } = (e as CustomEvent<RCVirtualCanvasRenderDetail>).detail;
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const scaleX = vc.canvasScaleX;
+      const scaleY = vc.canvasScaleY;
+      const viewW = viewRect.width / scaleX;
+      const viewH = viewRect.height / scaleY;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.scale(scaleX, scaleY);
+
+      // Minor grid lines
+      ctx.beginPath();
+      ctx.strokeStyle = '#dde1e7';
+      ctx.lineWidth = 1;
+      const minorX0 = Math.floor(viewRect.x / VC_MINOR) * VC_MINOR;
+      const minorY0 = Math.floor(viewRect.y / VC_MINOR) * VC_MINOR;
+      for (let x = minorX0; x <= viewRect.x + viewW + VC_MINOR; x += VC_MINOR) {
+        ctx.moveTo(x - viewRect.x, 0);
+        ctx.lineTo(x - viewRect.x, viewH);
+      }
+      for (let y = minorY0; y <= viewRect.y + viewH + VC_MINOR; y += VC_MINOR) {
+        ctx.moveTo(0, y - viewRect.y);
+        ctx.lineTo(viewW, y - viewRect.y);
+      }
+      ctx.stroke();
+
+      // Major grid lines
+      ctx.beginPath();
+      ctx.strokeStyle = '#a8b0bc';
+      ctx.lineWidth = 2;
+      const majorX0 = Math.floor(viewRect.x / VC_MAJOR) * VC_MAJOR;
+      const majorY0 = Math.floor(viewRect.y / VC_MAJOR) * VC_MAJOR;
+      for (let x = majorX0; x <= viewRect.x + viewW + VC_MAJOR; x += VC_MAJOR) {
+        ctx.moveTo(x - viewRect.x, 0);
+        ctx.lineTo(x - viewRect.x, viewH);
+      }
+      for (let y = majorY0; y <= viewRect.y + viewH + VC_MAJOR; y += VC_MAJOR) {
+        ctx.moveTo(0, y - viewRect.y);
+        ctx.lineTo(viewW, y - viewRect.y);
+      }
+      ctx.stroke();
+
+      // Coordinate labels at major intersections
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '11px monospace';
+      ctx.textBaseline = 'top';
+      ctx.textAlign = 'left';
+      for (let x = majorX0; x <= viewRect.x + viewW + VC_MAJOR; x += VC_MAJOR) {
+        for (let y = majorY0; y <= viewRect.y + viewH + VC_MAJOR; y += VC_MAJOR) {
+          ctx.fillText(`${x},${y}`, x - viewRect.x + 4, y - viewRect.y + 4);
+        }
+      }
+
+      // Dots placed via clicks
+      ctx.fillStyle = '#e53935';
+      for (const dot of dotsRef.current) {
+        const px = dot.x - viewRect.x;
+        const py = dot.y - viewRect.y;
+        if (px >= -8 && px <= viewW + 8 && py >= -8 && py <= viewH + 8) {
+          ctx.beginPath();
+          ctx.arc(px, py, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function handlePointer(e: Event) {
+      const { type, contentX, contentY } = (e as CustomEvent<RCVirtualCanvasPointerDetail>).detail;
+      if (overlayRef.current) {
+        overlayRef.current.textContent = `${Math.round(contentX)}, ${Math.round(contentY)}`;
+      }
+      if (type === 'click') {
+        dotsRef.current.push({ x: contentX, y: contentY });
+        vc.requestRender();
+      }
+    }
+
+    vcEl.addEventListener('rc-virtual-canvas-render', drawGrid);
+    vcEl.addEventListener('rc-virtual-canvas-pointer', handlePointer);
+
+    return () => {
+      vcEl.removeEventListener('rc-virtual-canvas-render', drawGrid);
+      vcEl.removeEventListener('rc-virtual-canvas-pointer', handlePointer);
+    };
+  }, [vcEl]);
+
   return (
     <DemoFrame>
-      <rc-virtual-canvas style={{ blockSize: '12rem', inlineSize: '100%' }}>
-        <canvas width="640" height="320" />
-        <span slot="overlay">Scrollable canvas surface</span>
+      <rc-virtual-canvas
+        ref={(el) => setVcEl(el)}
+        render-mode="viewport-change"
+        style={{ display: 'block', blockSize: '14rem', inlineSize: '100%' }}
+      >
+        <canvas
+          ref={canvasRef}
+          style={{ display: 'block', width: '100%', height: '100%' }}
+        />
+        <span
+          ref={overlayRef}
+          slot="overlay"
+          style={{
+            display: 'inline-block',
+            margin: '6px',
+            padding: '2px 6px',
+            background: 'Canvas',
+            color: 'CanvasText',
+            border: '1px solid ButtonBorder',
+            borderRadius: '3px',
+            font: '11px/1.4 monospace',
+            pointerEvents: 'none',
+          } as CSSProperties}
+        >
+          0, 0
+        </span>
       </rc-virtual-canvas>
     </DemoFrame>
   );

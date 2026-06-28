@@ -44,3 +44,19 @@ The default demo mode shows the component without a package theme. Use the share
 ## API
 
 <ApiTable tag="rc-virtual-canvas" />
+
+### Read-only properties
+
+These are computed getters exposed for rendering convenience — they do not appear in the generated API table above.
+
+| Property | Type | Description |
+|---|---|---|
+| `canvasScaleX` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the x-axis. Equals `devicePixelRatio` when `autoResizeCanvas` is true. Use this as the x-scale factor in `ctx.scale()` to convert the canvas context to CSS pixel space. |
+| `canvasScaleY` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the y-axis. |
+
+### Zoom and scale
+
+`rc-virtual-canvas` is a pan-only viewport. It does not manage a content scale factor. Zoom (pinch-to-zoom, scroll-to-zoom) is the consumer's responsibility and should be applied by:
+
+- Scaling the canvas context (`ctx.scale(zoom, zoom)`) before drawing, and
+- Adjusting `contentWidth` and `contentHeight` to reflect the scaled content dimensions so the scrollable area matches.
