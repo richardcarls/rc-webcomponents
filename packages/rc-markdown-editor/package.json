@@ -46,6 +46,7 @@
     "yalc:publish": "yalc publish --push"
   },
   "dependencies": {
+    "@rcarls/rc-select": "workspace:^",
     "@rcarls/rc-textarea": "workspace:^"
   },
   "devDependencies": {

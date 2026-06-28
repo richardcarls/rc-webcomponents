@@ -2,6 +2,7 @@ import { css } from 'lit';
 
 export const rmeStyles = css`
   :host {
+    position: relative;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -49,11 +50,10 @@ export const rmeStyles = css`
   #source-editor {
     flex: 1 1 auto;
     display: block;
+    font-family: var(--rme-src-font-family, 'Cascadia Code', 'Fira Code', ui-monospace, monospace);
     --rc-textarea-border-radius: 0 0 4px 4px;
     --rc-textarea-border-top: none;
   }
-
-  /* ── Toolbar ─────────────────────────────────────────────────────────────── */
 
   rc-editor-toolbar [role='toolbar'] {
     display: flex;
@@ -107,24 +107,26 @@ export const rmeStyles = css`
   }
 
   /* Heading select */
-  rc-editor-toolbar select {
-    appearance: auto;
-    padding: 0.25em 0.35em;
-    border: 1px solid ButtonBorder;
-    border-radius: 3px;
+  rc-editor-toolbar rc-select {
+    font-size: 0.8125em;
+    --rc-select-padding-block: 0.25em;
+    --rc-select-padding-inline: 0.35em;
+    --rc-select-border: 1px solid ButtonBorder;
+    --rc-select-radius: 3px;
+  }
+
+  rc-editor-toolbar rc-select::part(trigger) {
+    min-width: 0;
     background: ButtonFace;
     color: ButtonText;
-    font: inherit;
-    font-size: 0.8125em;
     cursor: pointer;
   }
 
-  rc-editor-toolbar select:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: 1px;
+  rc-editor-toolbar rc-select::part(listbox) {
+    border-radius: 3px;
   }
 
-  rc-editor-toolbar select.toolbar-active {
+  rc-editor-toolbar rc-select.toolbar-active::part(trigger) {
     background: Highlight;
     color: HighlightText;
     border-color: Highlight;
@@ -151,16 +153,10 @@ export const rmeStyles = css`
     color: GrayText;
   }
 
-  /* ── Source mode decoration classes ─────────────────────────────────────── */
-
-  .rme-blockquote    { color: GrayText; }
-  .rme-list-bullet,
-  .rme-list-ordered  { color: GrayText; }
-  .rme-code-block    { color: GrayText; font-style: italic; }
-  .rme-strikethrough { text-decoration: line-through; }
-  .rme-underline     { text-decoration: underline; }
-
-  /* ── Rich view block element spacing ─────────────────────────────────────── */
+  #rich-view a {
+    cursor: pointer;
+    text-decoration: underline;
+  }
 
   #rich-view blockquote {
     margin: 0.5em 0;
@@ -190,7 +186,68 @@ export const rmeStyles = css`
 
   #rich-view li { margin: 0.2em 0; }
 
-  /* ── Hide the slotted native textarea ────────────────────────────────────── */
+  .link-popover {
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    background: Canvas;
+    border: 1px solid ButtonBorder;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent);
+  }
+
+  .link-popover-input {
+    min-inline-size: 16em;
+    padding: 0.25em 0.4em;
+    border: 1px solid ButtonBorder;
+    border-radius: 3px;
+    background: Field;
+    color: FieldText;
+    font: inherit;
+    font-size: 0.875em;
+  }
+
+  .link-popover-input:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  .link-popover-btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 1.75rem;
+    min-block-size: 1.75rem;
+    padding: 0.15em;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    background: transparent;
+    color: ButtonText;
+    font: inherit;
+    font-size: 0.875em;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .link-popover-btn:hover:not(:disabled) {
+    background: ButtonFace;
+    border-color: ButtonBorder;
+  }
+
+  .link-popover-btn:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  .link-popover-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
   ::slotted(textarea) {
     display: none !important;
   }

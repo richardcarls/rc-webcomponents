@@ -1,5 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { micromark } from 'micromark';
 import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import TurndownService from 'turndown';
@@ -20,11 +20,53 @@ import type {
 import { getFormatsFromDecorations, setCodeBlockLanguage } from './formatting.ts';
 
 
-// ── Markdown rendering options ────────────────────────────────────────────────
+// Syntax-highlight stylesheet for the source editor, injected into rc-textarea's
+// shadow via adoptStyleSheet. CSS custom properties inherit through the shadow
+// boundary so consumers can override individual colors.
+const _sourceHighlightSheet = new CSSStyleSheet();
+_sourceHighlightSheet.replaceSync(`
+  .rme-heading-h1,
+  .rme-heading-h2,
+  .rme-heading-h3,
+  .rme-heading-h4,
+  .rme-heading-h5,
+  .rme-heading-h6 {
+    color: var(--rme-src-heading-color, light-dark(#1d6fc4, #82b4f5));
+  }
 
+  .rme-code,
+  .rme-code-block {
+    color: var(--rme-src-code-color, light-dark(#c94a1a, #f09060));
+  }
+
+  .rme-link {
+    color: var(--rme-src-link-color, light-dark(#0370b0, #60b8e8));
+  }
+
+  .rme-blockquote {
+    color: var(--rme-src-blockquote-color, light-dark(#2d7a42, #70b880));
+  }
+
+  .rme-list-bullet,
+  .rme-list-ordered {
+    color: var(--rme-src-list-color, light-dark(#7a5c0a, #d4ac48));
+  }
+
+  .rme-strikethrough {
+    text-decoration: line-through;
+    color: var(--rme-src-dim-color, GrayText);
+  }
+
+  .rme-underline {
+    text-decoration: underline;
+  }
+`);
+
+
+// preserves <u> underline passthrough; renders ~~text~~ as <del>
 const MICROMARK_OPTIONS = {
-  allowDangerousHtml: true,          // preserves <u> underline passthrough
-  extensions: [gfmStrikethrough()],  // renders ~~text~~ as <del>
+  allowDangerousHtml: true,
+  extensions: [gfmStrikethrough()],
 };
 
 const MDAST_OPTIONS = {
@@ -32,8 +74,6 @@ const MDAST_OPTIONS = {
   mdastExtensions: [gfmStrikethroughFromMarkdown()],
 };
 
-
-// ── Turndown instance (module-level singleton) ────────────────────────────────
 
 const _turndown = new TurndownService({
   headingStyle: 'atx',
@@ -44,7 +84,6 @@ const _turndown = new TurndownService({
   strongDelimiter: '**',
 });
 
-// Inline code: <code> outside <pre> → `backticks`
 _turndown.addRule('inlineCode', {
   filter: (node) => node.nodeName === 'CODE' && node.parentElement?.nodeName !== 'PRE',
   replacement: (content) => '`' + content + '`',
@@ -56,7 +95,6 @@ _turndown.addRule('underline', {
   replacement: (content) => '<u>' + content + '</u>',
 });
 
-// Strikethrough: <s>/<del>/<strike> → ~~text~~
 _turndown.addRule('strikethrough', {
   filter: (node) => ['S', 'DEL', 'STRIKE'].includes(node.nodeName),
   replacement: (content) => '~~' + content + '~~',
@@ -66,32 +104,37 @@ _turndown.addRule('strikethrough', {
 _turndown.addRule('codeBlockWithLang', {
   filter: (node) => node.nodeName === 'PRE' && !!node.querySelector('code'),
   replacement: (_content, node) => {
-    const pre = node as HTMLElement;
-    const code = pre.querySelector('code');
-    const lang = pre.dataset['lang'] ?? '';
-    return '\n\n```' + lang + '\n' + (code?.textContent ?? '') + '\n```\n\n';
+    const $pre = node as HTMLElement;
+    const $code = $pre.querySelector('code');
+    const lang = $pre.dataset['lang'] ?? '';
+
+    return '\n\n```' + lang + '\n' + ($code?.textContent ?? '') + '\n```\n\n';
   },
 });
 
 
-// ── Decoration style map for markdown AST nodes ───────────────────────────────
-
 type PartialDecoration = Partial<Omit<DecorationInput, 'type' | 'from' | 'to'>>;
 
 const DECORATION_MAP: Record<string, PartialDecoration> = {
-  heading:       { bold: true },         // className set per depth below
-  emphasis:      { italic: true },
-  strong:        { bold: true },
-  inlineCode:    { className: 'rme-code' },
-  link:          { underline: 'solid', className: 'rme-link' },
-  blockquote:    { className: 'rme-blockquote' },
-  code:          { className: 'rme-code-block' }, // fenced code block
-  delete:        { className: 'rme-strikethrough' }, // GFM ~~text~~
-  // list and html (underline) are handled dynamically below
+
+  // className applied per depth in _setupSourcePlugin, not here
+  heading:    { bold: true },
+
+  emphasis:   { italic: true },
+  strong:     { bold: true },
+  inlineCode: { className: 'rme-code' },
+  link:       { underline: 'solid', className: 'rme-link' },
+  blockquote: { className: 'rme-blockquote' },
+
+  // fenced code block (AST node.type === 'code')
+  code:   { className: 'rme-code-block' },
+
+  // GFM ~~text~~ (AST node.type === 'delete')
+  delete: { className: 'rme-strikethrough' },
+
+  // list and html (underline) nodes are handled dynamically in _setupSourcePlugin
 };
 
-
-// ── RcMarkdownEditor ──────────────────────────────────────────────────────────
 
 /**
  * Markdown-backed rich-text editor with two first-class modes:
@@ -124,8 +167,6 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
 export class RcMarkdownEditor extends LitElement {
   static override styles = rmeStyles;
 
-  // ── Value (controlled / uncontrolled) ────────────────────────────────────
-
   private _value: string | undefined;
   private _defaultValue = '';
   private _valueInitialized = false;
@@ -147,8 +188,6 @@ export class RcMarkdownEditor extends LitElement {
       this.requestUpdate('value', old);
     }
   }
-
-  // ── Source mode (controlled / uncontrolled) ───────────────────────────────
 
   private _sourceMode: boolean | undefined;
   private _defaultSourceMode = false;
@@ -174,109 +213,117 @@ export class RcMarkdownEditor extends LitElement {
     if (old !== v) this._dispatchModeChange(v ? 'source' : 'rich');
   }
 
-  // ── Other properties ──────────────────────────────────────────────────────
-
   /** Show the formatting toolbar. */
   @property({ type: Boolean, reflect: true }) toolbar = true;
 
   /** Make the editor read-only. */
   @property({ type: Boolean, reflect: true, attribute: 'read-only' }) readOnly = false;
 
-  // ── Internal refs (via @query) ────────────────────────────────────────────
+  @query('#rich-view')
+  protected _$richView!: HTMLDivElement;
 
-  @query('#rich-view')      private _richView!: HTMLDivElement;
-  @query('#source-editor')  private _sourceEditor!: RCTextarea;
-  @query('rc-editor-toolbar') private _toolbarEl?: HTMLElement;
+  @query('#source-editor')
+  protected _$sourceEditor!: RCTextarea;
 
-  // ── Internal state ────────────────────────────────────────────────────────
+  @query('rc-editor-toolbar')
+  protected _$toolbar?: HTMLElement;
 
-  private _observer: MutationObserver | null = null;
-  private _savedRichRange: Range | null = null;
-  private _activeFormats: ActiveFormats = {};
-  private _syncTimer: ReturnType<typeof setTimeout> | null = null;
-  private _pluginApi: RCTextareaPluginAPI | null = null;
-  private _ignoreRichMutations = false;
-  private _richViewRendered = false;
+  protected _observer: MutationObserver | null = null;
+  protected _$savedRange: Range | null = null;
+  protected _activeFormats: ActiveFormats = {};
+  protected _syncTimer: ReturnType<typeof setTimeout> | null = null;
+  protected _pluginApi: RCTextareaPluginAPI | null = null;
+  protected _ignoreRichMutations = false;
+  protected _richViewRendered = false;
+  protected _cachedTree: ReturnType<typeof fromMarkdown> | null = null;
 
-  // On the first updated() call after firstUpdated(), the changed map will
-  // include 'sourceMode' if it was set as an attribute. We skip that one call
-  // because firstUpdated() already initialized the correct mode.
-  private _skipNextModeSwitch = false;
+  // Lit calls updated() before firstUpdated() on the first cycle — guard
+  // against mode switches before the initial content setup is done.
+  protected _firstUpdatedDone = false;
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  @query('.link-popover')
+  protected _$linkPopover?: HTMLDivElement;
+
+  @query('.link-popover-input')
+  protected _$linkPopoverInput?: HTMLInputElement;
+
+  @state()
+  protected _linkPopoverOpen = false;
+
+  @state()
+  protected _linkPopoverHref = '';
 
   override connectedCallback() {
     super.connectedCallback();
     document.addEventListener('selectionchange', this._onSelectionChange);
+    document.addEventListener('click', this._onDocumentClick);
     this.addEventListener('keydown', this._onKeyDown);
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener('selectionchange', this._onSelectionChange);
+    document.removeEventListener('click', this._onDocumentClick);
     this.removeEventListener('keydown', this._onKeyDown);
+    this._$richView?.removeEventListener('click', this._onRichViewClick);
     this._observer?.disconnect();
     if (this._syncTimer !== null) clearTimeout(this._syncTimer);
   }
 
   override firstUpdated() {
-    // Read the initial value from the slotted textarea BEFORE syncing it back.
-    // Without this, _syncNativeTextarea() would overwrite the textarea's authored
-    // content with an empty string (the unset defaultValue).
+    // Read initial value from the slotted textarea BEFORE syncing it back.
+    // Without this, _syncNativeTextarea() overwrites the authored content
+    // with an empty string (the unset defaultValue).
     if (!this._valueInitialized) {
-      const textarea = this.querySelector<HTMLTextAreaElement>('textarea');
-      if (textarea?.value) this._defaultValue = textarea.value;
+      const $textarea = this.querySelector<HTMLTextAreaElement>('textarea');
+      if ($textarea?.value) this._defaultValue = $textarea.value;
     }
 
-    // Set up MutationObserver on the rich view
     this._observer = new MutationObserver(() => {
       if (!this._ignoreRichMutations) this._scheduleMarkdownSync();
     });
-    this._observer.observe(this._richView, {
+    this._observer.observe(this._$richView, {
       childList: true,
       subtree: true,
       characterData: true,
     });
 
-    // Set up markdown plugin on the source editor
+    this._$richView.addEventListener('click', this._onRichViewClick);
     this._setupSourcePlugin();
 
-    // Initial mode setup
+    // firstUpdated() handles the initial mode directly so updated() does not
+    // switch modes on the first cycle.
     if (this.sourceMode) {
-      this._sourceEditor.value = this.value;
-      this._skipNextModeSwitch = true;
+      this._$sourceEditor.value = this.value;
     } else {
       this._setRichViewContent(this.value);
-      this._skipNextModeSwitch = true;
     }
 
-    // Sync native backing textarea (value is now correct)
     this._syncNativeTextarea();
-
-    // Wire label → rich-view focus
     this._connectLabel();
+    this._firstUpdatedDone = true;
   }
 
   override updated(changed: Map<string, unknown>) {
     if (changed.has('sourceMode') || changed.has('defaultSourceMode')) {
-      if (this._skipNextModeSwitch) {
-        this._skipNextModeSwitch = false;
-      } else {
+      if (this._firstUpdatedDone) {
         if (this.sourceMode) this._switchToSource();
         else this._switchToRich();
       }
-      // Keep source-button aria-pressed in sync whenever mode changes,
-      // including programmatic changes not initiated by the toolbar.
+      // Keep source-button aria-pressed in sync for programmatic mode changes.
       this._pushToolbarState();
     }
 
-    // Programmatic value change while in rich mode: re-render the rich view
     if (changed.has('value') && !this.sourceMode && this._richViewRendered) {
       this._setRichViewContent(this.value);
     }
-  }
 
-  // ── Rendering ─────────────────────────────────────────────────────────────
+    if (changed.has('_linkPopoverOpen') && this._linkPopoverOpen) {
+      this._positionLinkPopover();
+      this._$linkPopoverInput?.focus();
+      this._$linkPopoverInput?.select();
+    }
+  }
 
   override render() {
     return html`
@@ -306,23 +353,36 @@ export class RcMarkdownEditor extends LitElement {
           @rc-change=${this._onSourceChange}
         ></rc-textarea>
       </div>
+
+      ${this._linkPopoverOpen ? html`
+        <div class="link-popover" role="dialog" aria-label="Link">
+          <input
+            type="url"
+            class="link-popover-input"
+            .value=${this._linkPopoverHref}
+            placeholder="https://"
+            aria-label="URL"
+            @input=${(e: Event) => { this._linkPopoverHref = (e.target as HTMLInputElement).value; }}
+            @keydown=${this._onLinkPopoverKeyDown}
+          />
+          <button type="button" class="link-popover-btn" title="Apply (Enter)" @click=${this._applyLink}>↵</button>
+          <button type="button" class="link-popover-btn" title="Open link" ?disabled=${!this._linkPopoverHref} @click=${this._openLinkHref}>↗</button>
+          <button type="button" class="link-popover-btn" title="Remove link" @click=${this._removeLink}>✕</button>
+        </div>
+      ` : nothing}
     `;
   }
 
-  // ── Rich view ─────────────────────────────────────────────────────────────
-
-  private _setRichViewContent(markdown: string) {
-    if (!this._richView) return;
+  protected _setRichViewContent(markdown: string) {
+    if (!this._$richView) return;
     this._ignoreRichMutations = true;
-    this._richView.innerHTML = this._renderMarkdown(markdown);
+    this._$richView.innerHTML = this._renderMarkdown(markdown);
     this._ignoreRichMutations = false;
     this._richViewRendered = true;
   }
 
-  private _renderMarkdown(markdown: string): string {
-    const html = micromark(markdown, MICROMARK_OPTIONS);
-
-    // Annotate <pre> elements with data-lang from the markdown AST
+  protected _renderMarkdown(markdown: string): string {
+    const markup = micromark(markdown, MICROMARK_OPTIONS);
     const tree = fromMarkdown(markdown, MDAST_OPTIONS);
     const langs: (string | null)[] = [];
 
@@ -330,19 +390,19 @@ export class RcMarkdownEditor extends LitElement {
       langs.push(node.lang ?? null);
     });
 
-    if (langs.length === 0) return html;
+    if (langs.length === 0) return markup;
 
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const pres = doc.querySelectorAll('pre');
+    const doc = new DOMParser().parseFromString(markup, 'text/html');
+    const $pres = doc.querySelectorAll('pre');
 
     langs.forEach((lang, i) => {
-      if (pres[i] && lang) pres[i].dataset['lang'] = lang;
+      if ($pres[i] && lang) $pres[i].dataset['lang'] = lang;
     });
 
     return doc.body.innerHTML;
   }
 
-  private _scheduleMarkdownSync() {
+  protected _scheduleMarkdownSync() {
     if (this.sourceMode) return;
     if (this._syncTimer !== null) clearTimeout(this._syncTimer);
     this._syncTimer = setTimeout(() => {
@@ -351,54 +411,57 @@ export class RcMarkdownEditor extends LitElement {
     }, 150);
   }
 
-  private _syncMarkdownFromRichView() {
-    if (!this._richView || this.sourceMode) return;
-    const md = _turndown.turndown(this._richView.innerHTML);
+  protected _syncMarkdownFromRichView() {
+    if (!this._$richView || this.sourceMode) return;
+    const md = _turndown.turndown(this._$richView.innerHTML);
     if (md === this.value) return;
     this._value = md;
     this._syncNativeTextarea();
     this._dispatchChange(md);
   }
 
-  // ── Mode switching ────────────────────────────────────────────────────────
-
-  private _switchToSource() {
-    if (!this._richView || !this._sourceEditor) return;
-    // Flush any pending sync first
+  protected _switchToSource() {
+    if (!this._$richView || !this._$sourceEditor) return;
+    // Flush any pending rich-view sync. _syncMarkdownFromRichView() guards on
+    // `this.sourceMode`, which is already `true` by the time updated() calls
+    // this method, so it would bail immediately — inline the flush instead.
     if (this._syncTimer !== null) {
       clearTimeout(this._syncTimer);
       this._syncTimer = null;
-      this._syncMarkdownFromRichView();
+      const md = _turndown.turndown(this._$richView.innerHTML);
+      if (md !== this.value) {
+        this._value = md;
+        this._syncNativeTextarea();
+        this._dispatchChange(md);
+      }
     }
-    this._sourceEditor.value = this.value;
-    // Reset undo history so the first Ctrl+Z in this session undoes to the
-    // pre-edit state rather than to the end of a previous source-mode session.
-    this._sourceEditor.clearHistory();
+    this._$sourceEditor.value = this.value;
+    // Reset undo history so the first Ctrl+Z undoes to the pre-edit state
+    // rather than to the end of a previous source-mode session.
+    this._$sourceEditor.clearHistory();
   }
 
-  private _switchToRich() {
-    if (!this._richView) return;
-    const md = this._sourceEditor?.value ?? this.value;
+  protected _switchToRich() {
+    if (!this._$richView) return;
+    const md = this._$sourceEditor?.value ?? this.value;
     this._value = md;
     this._setRichViewContent(md);
     this._syncNativeTextarea();
   }
 
-  // ── Source editor ─────────────────────────────────────────────────────────
-
-  private _cachedTree: ReturnType<typeof fromMarkdown> | null = null;
-
-  private _setupSourcePlugin() {
-    this._sourceEditor.usePlugin({
+  protected _setupSourcePlugin() {
+    this._$sourceEditor.usePlugin({
       mount: (api: RCTextareaPluginAPI) => {
         this._pluginApi = api;
+        api.adoptStyleSheet(_sourceHighlightSheet);
         api.onCursorMove((start: number, end: number) => {
           if (!this.sourceMode) return;
+
           const formats = getFormatsFromDecorations(api.getDecorations(), start, end);
-          // Resolve code block language from the cached MDAST
           const lang = formats.codeBlock && this._cachedTree
             ? this._getCodeBlockLanguage(this._cachedTree, start)
             : null;
+
           this._activeFormats = { ...formats, codeLanguage: lang };
           this._pushToolbarState();
         });
@@ -409,8 +472,9 @@ export class RcMarkdownEditor extends LitElement {
       },
       update: (value: string, api: RCTextareaPluginAPI) => {
         const tree = fromMarkdown(value, MDAST_OPTIONS);
-        this._cachedTree = tree;
         const decorations: DecorationInput[] = [];
+
+        this._cachedTree = tree;
 
         visit(
           tree,
@@ -429,6 +493,7 @@ export class RcMarkdownEditor extends LitElement {
                 type: 'mark', from, to,
                 className: node.ordered ? 'rme-list-ordered' : 'rme-list-bullet',
               } as DecorationInput);
+
               return;
             }
 
@@ -448,7 +513,7 @@ export class RcMarkdownEditor extends LitElement {
     });
   }
 
-  private _getCodeBlockLanguage(
+  protected _getCodeBlockLanguage(
     tree: ReturnType<typeof fromMarkdown>,
     offset: number,
   ): string | null {
@@ -464,21 +529,19 @@ export class RcMarkdownEditor extends LitElement {
         }
       },
     );
+
     return lang;
   }
 
-  private _onSourceChange = (e: Event) => {
-    void e;
-    const md = this._sourceEditor?.value ?? '';
+  protected _onSourceChange = (_e: Event) => {
+    const md = this._$sourceEditor?.value ?? '';
     if (md === this.value) return;
     this._value = md;
     this._syncNativeTextarea();
     this._dispatchChange(md);
   };
 
-  // ── Toolbar ───────────────────────────────────────────────────────────────
-
-  private _onToolbarAction = (e: CustomEvent<EditorToolbarActionDetail>) => {
+  protected _onToolbarAction = (e: CustomEvent<EditorToolbarActionDetail>) => {
     const { action, headingLevel, codeLanguage } = e.detail;
 
     if (action === 'source') {
@@ -505,17 +568,25 @@ export class RcMarkdownEditor extends LitElement {
     }
   };
 
-  private _applyRichFormat(action: EditorToolbarAction) {
-    if (this.readOnly || !this._richView) return;
+  protected _applyRichFormat(action: EditorToolbarAction) {
+    if (this.readOnly || !this._$richView) return;
 
     // Restore saved selection before applying command (toolbar click stole focus)
-    this._richView.focus();
-    if (this._savedRichRange) {
+    this._$richView.focus();
+    if (this._$savedRange) {
       const sel = window.getSelection();
       if (sel) {
         sel.removeAllRanges();
-        sel.addRange(this._savedRichRange.cloneRange());
+        sel.addRange(this._$savedRange.cloneRange());
       }
+    }
+
+    // For character-scope actions, expand a collapsed cursor to the word at cursor
+    const CHAR_SCOPE = new Set<EditorToolbarAction>(['bold', 'italic', 'underline', 'strikethrough', 'code', 'link']);
+    if (CHAR_SCOPE.has(action)) {
+      this._expandRichSelectionToWord();
+      const sel = window.getSelection();
+      if (sel?.rangeCount) this._$savedRange = sel.getRangeAt(0).cloneRange();
     }
 
     switch (action) {
@@ -533,17 +604,36 @@ export class RcMarkdownEditor extends LitElement {
       case 'ordered-list':  document.execCommand('insertOrderedList');   break;
       case 'code-block':    this._toggleRichCodeBlock();                  break;
       case 'link': {
-        // TODO: replace prompt with a proper link popover
-        const url = prompt('Enter URL:');
-        if (url) document.execCommand('createLink', false, url);
+        const sel = window.getSelection();
+        const anchor = sel?.rangeCount ? sel.getRangeAt(0).commonAncestorContainer : null;
+        const $el = anchor
+          ? (anchor.nodeType === Node.TEXT_NODE ? (anchor as Text).parentElement : anchor as Element)
+          : null;
+        this._linkPopoverHref = $el?.closest<HTMLAnchorElement>('a[href]')?.href ?? '';
+        this._linkPopoverOpen = true;
         break;
       }
     }
   }
 
-  private _applySourceFormat(action: EditorToolbarAction) {
-    const editor = this._sourceEditor;
+  protected _applySourceFormat(action: EditorToolbarAction) {
+    const editor = this._$sourceEditor;
+    const api = this._pluginApi;
     if (!editor) return;
+
+    // For character-scope wraps with a collapsed cursor, expand to word at cursor
+    const WORD_WRAP: Partial<Record<EditorToolbarAction, [string, string]>> = {
+      bold: ['**', '**'], italic: ['*', '*'], strikethrough: ['~~', '~~'], code: ['`', '`'],
+    };
+    const wrap = WORD_WRAP[action];
+    if (wrap && api && api.selectionStart === api.selectionEnd) {
+      const wordInfo = api.getWordAtCursor();
+      if (wordInfo) {
+        const [pre, suf] = wrap;
+        editor.value = api.value.slice(0, wordInfo.from) + pre + wordInfo.word + suf + api.value.slice(wordInfo.to);
+        return;
+      }
+    }
 
     switch (action) {
       case 'bold':          editor.wrapSelection('**', '**');      break;
@@ -560,15 +650,14 @@ export class RcMarkdownEditor extends LitElement {
   }
 
   /** Sets the heading level on the cursor's line in source mode. null = paragraph. */
-  private _setSourceHeadingLevel(level: HeadingLevel | null) {
+  protected _setSourceHeadingLevel(level: HeadingLevel | null) {
     const api = this._pluginApi;
-    const editor = this._sourceEditor;
+    const editor = this._$sourceEditor;
     if (!api || !editor) return;
 
     const { value, selectionStart } = api;
     const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
 
-    // Strip any existing heading prefix
     const stripped = value.slice(lineStart).replace(/^#{1,6} /, '');
     const prefix = level ? '#'.repeat(parseInt(level[1]!)) + ' ' : '';
     editor.value = value.slice(0, lineStart) + prefix + stripped + value.slice(
@@ -577,39 +666,38 @@ export class RcMarkdownEditor extends LitElement {
   }
 
   /** Updates the language of the code block at the cursor in source mode. */
-  private _setSourceCodeBlockLanguage(lang: string) {
+  protected _setSourceCodeBlockLanguage(lang: string) {
     const api = this._pluginApi;
-    const editor = this._sourceEditor;
+    const editor = this._$sourceEditor;
     if (!api || !editor) return;
 
     const nextValue = setCodeBlockLanguage(api.value, api.selectionStart, lang);
-
     if (nextValue === null) return;
 
     editor.value = nextValue;
   }
 
-  /** Updates the data-lang attribute on the <pre> at the cursor in rich mode. */
-  private _setRichCodeBlockLanguage(lang: string) {
+  /** Updates the `data-lang` attribute on the `<pre>` at the cursor in rich mode. */
+  protected _setRichCodeBlockLanguage(lang: string) {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
 
     const anchor = sel.getRangeAt(0).commonAncestorContainer;
-    const el: Element | null =
+    const $el: Element | null =
       anchor.nodeType === Node.TEXT_NODE
         ? (anchor as Text).parentElement
         : (anchor as Element);
 
-    const pre = el?.closest('pre');
-    if (!pre) return;
-    if (lang) pre.dataset['lang'] = lang;
-    else delete pre.dataset['lang'];
+    const $pre = $el?.closest('pre');
+    if (!$pre) return;
+    if (lang) $pre.dataset['lang'] = lang;
+    else delete $pre.dataset['lang'];
   }
 
-  /** Toggles a line prefix (e.g. `'# '`, `'> '`, `'- '`) on the cursor's line. */
-  private _toggleLinePrefix(prefix: string) {
+  /** Toggles a line prefix (e.g. `'> '`, `'- '`) on the cursor's line. */
+  protected _toggleLinePrefix(prefix: string) {
     const api = this._pluginApi;
-    const editor = this._sourceEditor;
+    const editor = this._$sourceEditor;
     if (!api || !editor) return;
 
     const { value, selectionStart } = api;
@@ -623,20 +711,18 @@ export class RcMarkdownEditor extends LitElement {
   }
 
   /** Wraps the current selection (or cursor line) with a fenced code block. */
-  private _toggleSourceCodeFence() {
+  protected _toggleSourceCodeFence() {
     const api = this._pluginApi;
-    const editor = this._sourceEditor;
+    const editor = this._$sourceEditor;
     if (!api || !editor) return;
 
     const { value, selectionStart, selectionEnd } = api;
     const fence = '```';
 
-    // Determine line boundaries for the selection
     const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
     const lineEndIdx = value.indexOf('\n', selectionEnd);
     const lineEnd = lineEndIdx === -1 ? value.length : lineEndIdx;
 
-    // Check if the block is already wrapped (previous non-empty line is ``` and next is ```)
     const prevNewline = value.lastIndexOf('\n', lineStart - 2);
     const prevLine = prevNewline === -1 ? '' : value.slice(prevNewline + 1, lineStart - 1);
     const afterEnd = lineEnd + 1;
@@ -644,15 +730,14 @@ export class RcMarkdownEditor extends LitElement {
     const nextLine = value.slice(afterEnd, nextNewline === -1 ? undefined : nextNewline);
 
     if (prevLine.trim() === fence && nextLine.trim() === fence) {
-      // Unwrap: remove the fence lines
       const unwrapStart = prevNewline === -1 ? 0 : prevNewline + 1;
       const unwrapEnd = nextNewline === -1 ? value.length : nextNewline + 1;
       const inner = value.slice(lineStart, lineEnd);
       editor.value = value.slice(0, unwrapStart) + inner + '\n' + value.slice(unwrapEnd);
+
       return;
     }
 
-    // Wrap the selected lines
     const selected = value.slice(lineStart, lineEnd);
     editor.value =
       value.slice(0, lineStart) +
@@ -660,69 +745,77 @@ export class RcMarkdownEditor extends LitElement {
       value.slice(lineEnd);
   }
 
-  private _wrapRichSelection(tag: string) {
+  protected _wrapRichSelection(tag: string) {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
     if (range.collapsed) return;
 
-    const el = document.createElement(tag);
+    const $el = document.createElement(tag);
     try {
-      range.surroundContents(el);
+      range.surroundContents($el);
     } catch {
-      // surroundContents fails when range partially overlaps existing elements
+      // surroundContents fails when the range partially overlaps existing elements
       const fragment = range.extractContents();
-      el.appendChild(fragment);
-      range.insertNode(el);
+      $el.appendChild(fragment);
+      range.insertNode($el);
     }
     sel.removeAllRanges();
     sel.addRange(range);
   }
 
-  private _toggleRichCodeBlock() {
+  protected _toggleRichCodeBlock() {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
 
     const range = sel.getRangeAt(0);
     const anchor = range.commonAncestorContainer;
-    const el: Element | null =
+    const $el: Element | null =
       anchor.nodeType === Node.TEXT_NODE
         ? (anchor as Text).parentElement
         : (anchor as Element);
 
-    const existingPre = el?.closest('pre');
-    if (existingPre) {
-      // Unwrap: replace <pre> with a <p> containing the plain text
-      const p = document.createElement('p');
-      p.textContent = existingPre.textContent ?? '';
-      existingPre.replaceWith(p);
+    const $existingPre = $el?.closest('pre');
+    if ($existingPre) {
+      const $p = document.createElement('p');
+      $p.textContent = $existingPre.textContent ?? '';
+      $existingPre.replaceWith($p);
+      const unwrapRange = document.createRange();
+      unwrapRange.selectNodeContents($p);
+      unwrapRange.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(unwrapRange);
+
       return;
     }
 
-    // Wrap: create <pre><code> around the selection (or current block)
-    const pre = document.createElement('pre');
-    const code = document.createElement('code');
-    pre.appendChild(code);
+    const $pre = document.createElement('pre');
+    const $code = document.createElement('code');
+    $pre.appendChild($code);
 
     try {
       const fragment = range.extractContents();
-      code.appendChild(fragment);
-      range.insertNode(pre);
+      $code.appendChild(fragment);
+      range.insertNode($pre);
     } catch {
-      // Fallback: wrap the current element
-      if (el && el !== this._richView) {
-        code.textContent = el.textContent ?? '';
-        el.replaceWith(pre);
+      if ($el && $el !== this._$richView) {
+        $code.textContent = $el.textContent ?? '';
+        $el.replaceWith($pre);
       }
     }
+
+    // insertNode leaves the selection spanning <pre>; collapse cursor into <code>
+    // so the next keystroke types inside the block rather than replacing it.
+    const innerRange = document.createRange();
+    innerRange.selectNodeContents($code);
+    innerRange.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(innerRange);
   }
 
-  // ── Keyboard shortcuts ────────────────────────────────────────────────────
-
-  private _onKeyDown = (e: KeyboardEvent) => {
+  protected _onKeyDown = (e: KeyboardEvent) => {
     if (!e.ctrlKey && !e.metaKey) return;
 
-    // Ctrl+Shift+S — toggle source mode
     if (e.shiftKey && e.key === 'S') {
       e.preventDefault();
       this.sourceMode = !this.sourceMode;
@@ -747,9 +840,7 @@ export class RcMarkdownEditor extends LitElement {
     }
   };
 
-  // ── Selection tracking ────────────────────────────────────────────────────
-
-  private _onSelectionChange = () => {
+  protected _onSelectionChange = () => {
     // Chrome shadow-adjusts window.getSelection() to the nearest light-DOM ancestor
     // for selections inside a shadow root — use shadowRoot.getSelection() when available.
     const sel =
@@ -759,46 +850,44 @@ export class RcMarkdownEditor extends LitElement {
 
     const range = sel.getRangeAt(0);
     const anchor = range.commonAncestorContainer;
-    const el: Element | null =
+    const $el: Element | null =
       anchor.nodeType === Node.TEXT_NODE
         ? (anchor as Text).parentElement
         : (anchor as Element);
 
-    if (!this._richView?.contains(el)) return;
+    if (!this._$richView?.contains($el)) return;
 
-    // Save the range for restoring before execCommand
-    this._savedRichRange = range.cloneRange();
+    this._$savedRange = range.cloneRange();
 
     if (this.sourceMode) return;
 
-    const pre = el?.closest('pre');
+    const $pre = $el?.closest('pre');
     this._activeFormats = {
-      bold:          !!el?.closest('strong, b'),
-      italic:        !!el?.closest('em, i'),
-      underline:     !!el?.closest('u'),
-      strikethrough: !!el?.closest('s, del, strike'),
-      code:          !pre && !!el?.closest('code'),
-      link:          !!el?.closest('a'),
-      heading:       (el?.closest('h1,h2,h3,h4,h5,h6')?.tagName.toLowerCase() ?? null) as HeadingLevel | null,
-      blockquote:    !!el?.closest('blockquote'),
-      bulletList:    !!el?.closest('ul'),
-      orderedList:   !!el?.closest('ol'),
-      codeBlock:     !!pre,
-      codeLanguage:  pre ? (pre.dataset['lang'] ?? '') : null,
+      bold:          !!$el?.closest('strong, b'),
+      italic:        !!$el?.closest('em, i'),
+      underline:     !!$el?.closest('u'),
+      strikethrough: !!$el?.closest('s, del, strike'),
+      code:          !$pre && !!$el?.closest('code'),
+      link:          !!$el?.closest('a'),
+      heading:       ($el?.closest('h1,h2,h3,h4,h5,h6')?.tagName.toLowerCase() ?? null) as HeadingLevel | null,
+      blockquote:    !!$el?.closest('blockquote'),
+      bulletList:    !!$el?.closest('ul'),
+      orderedList:   !!$el?.closest('ol'),
+      codeBlock:     !!$pre,
+      codeLanguage:  $pre ? ($pre.dataset['lang'] ?? '') : null,
     };
 
     this._pushToolbarState();
   };
 
-  // ── Toolbar state sync ────────────────────────────────────────────────────
-
-  private _pushToolbarState() {
-    const toolbar = this._toolbarEl as (HTMLElement & {
+  protected _pushToolbarState() {
+    const $toolbar = this._$toolbar as (HTMLElement & {
       activeBold?: boolean;
       activeItalic?: boolean;
       activeUnderline?: boolean;
       activeStrikethrough?: boolean;
       activeCode?: boolean;
+      activeLink?: boolean;
       activeHeading?: HeadingLevel | null;
       activeBlockquote?: boolean;
       activeBulletList?: boolean;
@@ -808,19 +897,20 @@ export class RcMarkdownEditor extends LitElement {
       sourceMode?: boolean;
     }) | undefined;
 
-    if (toolbar) {
-      toolbar.activeBold          = !!this._activeFormats.bold;
-      toolbar.activeItalic        = !!this._activeFormats.italic;
-      toolbar.activeUnderline     = !!this._activeFormats.underline;
-      toolbar.activeStrikethrough = !!this._activeFormats.strikethrough;
-      toolbar.activeCode          = !!this._activeFormats.code;
-      toolbar.activeHeading       = this._activeFormats.heading ?? null;
-      toolbar.activeBlockquote    = !!this._activeFormats.blockquote;
-      toolbar.activeBulletList    = !!this._activeFormats.bulletList;
-      toolbar.activeOrderedList   = !!this._activeFormats.orderedList;
-      toolbar.activeCodeBlock     = !!this._activeFormats.codeBlock;
-      toolbar.codeLanguage        = this._activeFormats.codeLanguage ?? null;
-      toolbar.sourceMode          = this.sourceMode;
+    if ($toolbar) {
+      $toolbar.activeBold          = !!this._activeFormats.bold;
+      $toolbar.activeItalic        = !!this._activeFormats.italic;
+      $toolbar.activeUnderline     = !!this._activeFormats.underline;
+      $toolbar.activeStrikethrough = !!this._activeFormats.strikethrough;
+      $toolbar.activeCode          = !!this._activeFormats.code;
+      $toolbar.activeLink          = !!this._activeFormats.link;
+      $toolbar.activeHeading       = this._activeFormats.heading ?? null;
+      $toolbar.activeBlockquote    = !!this._activeFormats.blockquote;
+      $toolbar.activeBulletList    = !!this._activeFormats.bulletList;
+      $toolbar.activeOrderedList   = !!this._activeFormats.orderedList;
+      $toolbar.activeCodeBlock     = !!this._activeFormats.codeBlock;
+      $toolbar.codeLanguage        = this._activeFormats.codeLanguage ?? null;
+      $toolbar.sourceMode          = this.sourceMode;
     }
 
     this.dispatchEvent(new CustomEvent<ActiveFormats>('rc-formatting-change', {
@@ -830,35 +920,104 @@ export class RcMarkdownEditor extends LitElement {
     }));
   }
 
-  // ── Form integration ──────────────────────────────────────────────────────
-
-  private _syncNativeTextarea() {
-    const textarea = this.querySelector<HTMLTextAreaElement>('textarea');
-    if (textarea) textarea.value = this.value;
+  protected _syncNativeTextarea() {
+    const $textarea = this.querySelector<HTMLTextAreaElement>('textarea');
+    if ($textarea) $textarea.value = this.value;
   }
 
-  private _connectLabel() {
-    const textarea = this.querySelector<HTMLTextAreaElement>('textarea');
-    if (!textarea) return;
+  protected _connectLabel() {
+    const $textarea = this.querySelector<HTMLTextAreaElement>('textarea');
+    if (!$textarea) return;
 
     // Mirror label text to the rich view for accessibility
-    const label = textarea.id
-      ? this.querySelector<HTMLLabelElement>(`label[for="${CSS.escape(textarea.id)}"]`)
+    const $label = $textarea.id
+      ? this.querySelector<HTMLLabelElement>(`label[for="${CSS.escape($textarea.id)}"]`)
       : null;
 
-    if (label && this._richView) {
-      this._richView.setAttribute('aria-label', label.textContent?.trim() ?? '');
+    if ($label && this._$richView) {
+      this._$richView.setAttribute('aria-label', $label.textContent?.trim() ?? '');
     }
 
     // Forward label click to the active editor surface
-    label?.addEventListener('click', () => {
-      if (!this.sourceMode) this._richView?.focus();
+    $label?.addEventListener('click', () => {
+      if (!this.sourceMode) this._$richView?.focus();
     });
   }
 
-  // ── Events ────────────────────────────────────────────────────────────────
+  protected _onRichViewClick = (e: MouseEvent) => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    const $a = (e.target as Element).closest<HTMLAnchorElement>('a[href]');
+    if (!$a) return;
+    e.preventDefault();
+    window.open($a.href, '_blank', 'noopener,noreferrer');
+  };
 
-  private _dispatchChange(value: string) {
+  protected _onDocumentClick = (e: MouseEvent) => {
+    if (!this._linkPopoverOpen) return;
+    const $popover = this.shadowRoot?.querySelector('.link-popover');
+    if ($popover && e.composedPath().includes($popover)) return;
+    this._linkPopoverOpen = false;
+  };
+
+  protected _expandRichSelectionToWord(): void {
+    const sel = window.getSelection();
+    if (!sel?.isCollapsed) return;
+    const modify = (sel as unknown as { modify?: (alter: string, dir: string, unit: string) => void }).modify;
+    if (typeof modify !== 'function') return;
+    modify.call(sel, 'move', 'backward', 'word');
+    modify.call(sel, 'extend', 'forward', 'word');
+  }
+
+  protected _positionLinkPopover(): void {
+    if (!this._$savedRange || !this._$linkPopover) return;
+    const rangeRect = this._$savedRange.getBoundingClientRect();
+    const hostRect = this.getBoundingClientRect();
+    this._$linkPopover.style.top  = `${rangeRect.bottom - hostRect.top + 4}px`;
+    this._$linkPopover.style.left = `${Math.max(0, rangeRect.left - hostRect.left)}px`;
+  }
+
+  protected _applyLink = () => {
+    this._linkPopoverOpen = false;
+    if (!this._linkPopoverHref) return;
+    this._$richView?.focus();
+    if (this._$savedRange) {
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(this._$savedRange.cloneRange());
+      }
+    }
+    document.execCommand('createLink', false, this._linkPopoverHref);
+  };
+
+  protected _removeLink = () => {
+    this._linkPopoverOpen = false;
+    this._$richView?.focus();
+    if (this._$savedRange) {
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(this._$savedRange.cloneRange());
+      }
+    }
+    document.execCommand('unlink');
+  };
+
+  protected _openLinkHref = () => {
+    if (this._linkPopoverHref) window.open(this._linkPopoverHref, '_blank', 'noopener,noreferrer');
+  };
+
+  protected _onLinkPopoverKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      this._applyLink();
+    } else if (e.key === 'Escape') {
+      this._linkPopoverOpen = false;
+      this._$richView?.focus();
+    }
+  };
+
+  protected _dispatchChange(value: string) {
     this.dispatchEvent(new CustomEvent<{ value: string }>('rc-change', {
       bubbles: true,
       composed: true,
@@ -866,7 +1025,7 @@ export class RcMarkdownEditor extends LitElement {
     }));
   }
 
-  private _dispatchModeChange(mode: EditorMode) {
+  protected _dispatchModeChange(mode: EditorMode) {
     this.dispatchEvent(new CustomEvent<{ mode: EditorMode }>('rc-mode-change', {
       bubbles: true,
       composed: true,
