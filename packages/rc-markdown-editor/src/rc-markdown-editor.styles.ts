@@ -49,11 +49,10 @@ export const rmeStyles = css`
   #source-editor {
     flex: 1 1 auto;
     display: block;
+    font-family: var(--rme-src-font-family, 'Cascadia Code', 'Fira Code', ui-monospace, monospace);
     --rc-textarea-border-radius: 0 0 4px 4px;
     --rc-textarea-border-top: none;
   }
-
-  /* ── Toolbar ─────────────────────────────────────────────────────────────── */
 
   rc-editor-toolbar [role='toolbar'] {
     display: flex;
@@ -107,24 +106,26 @@ export const rmeStyles = css`
   }
 
   /* Heading select */
-  rc-editor-toolbar select {
-    appearance: auto;
-    padding: 0.25em 0.35em;
-    border: 1px solid ButtonBorder;
-    border-radius: 3px;
+  rc-editor-toolbar rc-select {
+    font-size: 0.8125em;
+    --rc-select-padding-block: 0.25em;
+    --rc-select-padding-inline: 0.35em;
+    --rc-select-border: 1px solid ButtonBorder;
+    --rc-select-radius: 3px;
+  }
+
+  rc-editor-toolbar rc-select::part(trigger) {
+    min-width: 0;
     background: ButtonFace;
     color: ButtonText;
-    font: inherit;
-    font-size: 0.8125em;
     cursor: pointer;
   }
 
-  rc-editor-toolbar select:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: 1px;
+  rc-editor-toolbar rc-select::part(listbox) {
+    border-radius: 3px;
   }
 
-  rc-editor-toolbar select.toolbar-active {
+  rc-editor-toolbar rc-select.toolbar-active::part(trigger) {
     background: Highlight;
     color: HighlightText;
     border-color: Highlight;
@@ -150,17 +151,6 @@ export const rmeStyles = css`
   rc-editor-toolbar .lang-input::placeholder {
     color: GrayText;
   }
-
-  /* ── Source mode decoration classes ─────────────────────────────────────── */
-
-  .rme-blockquote    { color: GrayText; }
-  .rme-list-bullet,
-  .rme-list-ordered  { color: GrayText; }
-  .rme-code-block    { color: GrayText; font-style: italic; }
-  .rme-strikethrough { text-decoration: line-through; }
-  .rme-underline     { text-decoration: underline; }
-
-  /* ── Rich view block element spacing ─────────────────────────────────────── */
 
   #rich-view blockquote {
     margin: 0.5em 0;
@@ -190,7 +180,6 @@ export const rmeStyles = css`
 
   #rich-view li { margin: 0.2em 0; }
 
-  /* ── Hide the slotted native textarea ────────────────────────────────────── */
   ::slotted(textarea) {
     display: none !important;
   }

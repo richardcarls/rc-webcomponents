@@ -3,6 +3,15 @@ import type { Decoration } from '@rcarls/rc-textarea';
 import type { ActiveFormats, HeadingLevel } from './types.ts';
 
 
+/**
+ * Replaces the language token on the opening fence of the code block containing
+ * `selectionStart`. Returns the updated string, or `null` if the cursor is not
+ * inside a fenced code block.
+ *
+ * @param value - Full source editor value.
+ * @param selectionStart - Cursor offset used to locate the containing fence.
+ * @param language - Language string to write (empty string removes the token).
+ */
 export function setCodeBlockLanguage(
   value: string,
   selectionStart: number,

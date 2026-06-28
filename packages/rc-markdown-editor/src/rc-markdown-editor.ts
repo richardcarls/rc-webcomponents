@@ -20,6 +20,49 @@ import type {
 import { getFormatsFromDecorations, setCodeBlockLanguage } from './formatting.ts';
 
 
+// Syntax-highlight stylesheet for the source editor, injected into rc-textarea's
+// shadow via adoptStyleSheet. CSS custom properties inherit through the shadow
+// boundary so consumers can override individual colors.
+const _sourceHighlightSheet = new CSSStyleSheet();
+_sourceHighlightSheet.replaceSync(`
+  .rme-heading-h1,
+  .rme-heading-h2,
+  .rme-heading-h3,
+  .rme-heading-h4,
+  .rme-heading-h5,
+  .rme-heading-h6 {
+    color: var(--rme-src-heading-color, light-dark(#1d6fc4, #82b4f5));
+  }
+
+  .rme-code,
+  .rme-code-block {
+    color: var(--rme-src-code-color, light-dark(#c94a1a, #f09060));
+  }
+
+  .rme-link {
+    color: var(--rme-src-link-color, light-dark(#0370b0, #60b8e8));
+  }
+
+  .rme-blockquote {
+    color: var(--rme-src-blockquote-color, light-dark(#2d7a42, #70b880));
+  }
+
+  .rme-list-bullet,
+  .rme-list-ordered {
+    color: var(--rme-src-list-color, light-dark(#7a5c0a, #d4ac48));
+  }
+
+  .rme-strikethrough {
+    text-decoration: line-through;
+    color: var(--rme-src-dim-color, GrayText);
+  }
+
+  .rme-underline {
+    text-decoration: underline;
+  }
+`);
+
+
 // preserves <u> underline passthrough; renders ~~text~~ as <del>
 const MICROMARK_OPTIONS = {
   allowDangerousHtml: true,
@@ -371,6 +414,7 @@ export class RcMarkdownEditor extends LitElement {
     this._$sourceEditor.usePlugin({
       mount: (api: RCTextareaPluginAPI) => {
         this._pluginApi = api;
+        api.adoptStyleSheet(_sourceHighlightSheet);
         api.onCursorMove((start: number, end: number) => {
           if (!this.sourceMode) return;
 
