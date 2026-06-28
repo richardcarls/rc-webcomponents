@@ -41,6 +41,21 @@ import '@rcarls/rc-splitter/define';
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
+### Collapsible panes
+
+Set the `collapsible` attribute to render a toggle button on the separator that collapses or expands the primary pane:
+
+```html
+<rc-splitter collapsible>
+  <div>Primary</div>
+  <div slot="secondary">Secondary</div>
+</rc-splitter>
+```
+
+The button is also keyboard-accessible: while the separator handle has focus, **Ctrl+Arrow** (left/right for horizontal, up/down for vertical) toggles collapse. The **Enter** key on the handle itself also toggles collapse independently of the `collapsible` attribute.
+
+Style the button via `::part(collapse-button)`. Its position and size are configurable through `--rc-splitter-collapse-button-size` (default `20px`), `--rc-splitter-collapse-button-offset`, and the button color/background tokens.
+
 ### Touch targets
 
 A 24 px diameter transparent circle is always present on the drag handle as a `::after` pseudo-element. It is non-interactive for mouse and keyboard. On touch devices (`any-pointer: coarse`) it becomes hittable, providing a WCAG 2.5.8-compliant touch target without widening the visual separator. The visual indicator and touch target are intentionally decoupled.

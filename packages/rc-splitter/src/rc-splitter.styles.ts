@@ -46,6 +46,8 @@ export const splitterStyles = css`
     /* z-index: 1 as a flex item stacks separator above pane siblings so the
        ::after touch-target circle (which extends past the strip) is hittable */
     z-index: 1;
+    /* Required for collapse-button absolute positioning */
+    position: relative;
 
     :host([orientation='vertical']) & {
       flex-direction: row;
@@ -53,6 +55,43 @@ export const splitterStyles = css`
       border-right: unset;
       border-top: var(--rc-splitter-separator-border-block-start, var(--rc-splitter-keyline, 1px solid ButtonBorder));
       border-bottom: var(--rc-splitter-separator-border-block-end, var(--rc-splitter-keyline, 1px solid ButtonBorder));
+    }
+  }
+
+  #collapse-button {
+    /* Positioned at the start of the separator strip, centered on the cross
+       axis. The button intentionally protrudes into the primary pane so it
+       is visible and hittable at a reasonable size even on narrow strips. */
+    position: absolute;
+    top: var(--rc-splitter-collapse-button-offset, 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--rc-splitter-collapse-button-size, 20px);
+    height: var(--rc-splitter-collapse-button-size, 20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--rc-splitter-collapse-button-border, ButtonBorder);
+    border-radius: 50%;
+    background: var(--rc-splitter-collapse-button-bg, Canvas);
+    color: var(--rc-splitter-collapse-button-color, ButtonText);
+    cursor: pointer;
+    line-height: 1;
+
+    &:hover {
+      background: var(--rc-splitter-collapse-button-hover-bg, ButtonFace);
+    }
+
+    &:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 2px;
+    }
+
+    :host([orientation='vertical']) & {
+      top: 50%;
+      left: var(--rc-splitter-collapse-button-offset, 8px);
+      transform: translateY(-50%);
     }
   }
 

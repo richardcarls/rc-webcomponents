@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, nothing } from "lit";
 import {
   property,
   state,
@@ -45,6 +45,12 @@ declare global {
  * @cssprop [--rc-splitter-handle-fill=transparent] - background-color of the visual indicator; effective when --rc-splitter-handle-pattern is none (e.g. for a solid pill)
  * @cssprop [--rc-splitter-handle-hover-fill=transparent] - background-color of the visual indicator on hover; scoped to the indicator element only, not the full separator strip
  * @cssprop [--rc-splitter-handle-transition=0ms] - CSS transition duration/easing for the visual indicator's background-color changes
+ * @cssprop [--rc-splitter-collapse-button-size=20px] - Diameter of the collapse/expand toggle button
+ * @cssprop [--rc-splitter-collapse-button-offset=8px] - Distance from the start edge of the separator to the collapse button center
+ * @cssprop [--rc-splitter-collapse-button-bg=Canvas] - Collapse button background color
+ * @cssprop [--rc-splitter-collapse-button-hover-bg=ButtonFace] - Collapse button background color on hover
+ * @cssprop [--rc-splitter-collapse-button-border=ButtonBorder] - Collapse button border color
+ * @cssprop [--rc-splitter-collapse-button-color=ButtonText] - Collapse button icon color
  * @cssprop [--rc-splitter-separator-border-inline-start=1px solid ButtonBorder] - Inline-start border
  * @cssprop [--rc-splitter-separator-border-inline-end=1px solid ButtonBorder] - Inline-end border
  * @cssprop [--rc-splitter-separator-border-block-start=1px solid ButtonBorder] - Block-start border (vertical orientation)
@@ -53,6 +59,7 @@ declare global {
  * @csspart secondary - Secondary pane container
  * @csspart separator - The separator bar
  * @csspart separator-handle - The focusable drag handle
+ * @csspart collapse-button - The collapse/expand toggle button (only rendered when `collapsible` is set)
  */
 export class RCSplitter extends LitElement {
   static styles = [splitterStyles];
@@ -131,6 +138,64 @@ export class RCSplitter extends LitElement {
     return Math.min(this._maxValue, this.max ?? this._maxValue);
   }
 
+  /** True once initialized and the primary pane is at its effective minimum. */
+  protected get _isCollapsed(): boolean {
+    return this._initialMax > 0 && this.value <= this._effectiveMin;
+  }
+
+  protected _toggleCollapse(): void {
+    this._setUserValue(
+      this._isCollapsed ? this._lastValue : this._effectiveMin,
+    );
+  }
+
+  protected _onCollapseButtonClick(): void {
+    this._toggleCollapse();
+  }
+
+  protected _onCollapseKeydown(e: KeyboardEvent): void {
+    if (!this.collapsible || this.fixed) return;
+    if (!e.ctrlKey && !e.metaKey) return;
+
+    const isRelevantKey =
+      this.orientation === "horizontal"
+        ? e.key === "ArrowLeft" || e.key === "ArrowRight"
+        : e.key === "ArrowUp" || e.key === "ArrowDown";
+
+    if (isRelevantKey) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      this._toggleCollapse();
+    }
+  }
+
+  private get _collapseButtonIcon() {
+    const isHorizontal = this.orientation === "horizontal";
+    // Chevron points LEFT/UP to collapse (separator moves toward primary),
+    // RIGHT/DOWN to expand (separator moves away from primary).
+    const d = isHorizontal
+      ? this._isCollapsed
+        ? "M 3 1 L 7 5 L 3 9"
+        : "M 7 1 L 3 5 L 7 9"
+      : this._isCollapsed
+        ? "M 1 3 L 5 7 L 9 3"
+        : "M 1 7 L 5 3 L 9 7";
+
+    return html`<svg
+      aria-hidden="true"
+      viewBox="0 0 10 10"
+      width="10"
+      height="10"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d=${d} />
+    </svg>`;
+  }
+
   private _setValue(val: number, dispatch: boolean): void {
     const oldValue = this._value;
 
@@ -168,6 +233,10 @@ export class RCSplitter extends LitElement {
   /** Toggles resizing ability */
   @property({ type: Boolean })
   fixed: boolean = false;
+
+  /** Renders a collapse/expand toggle button on the separator. */
+  @property({ type: Boolean })
+  collapsible: boolean = false;
 
   /** A human-readable string representation of the value. */
   get valueText() {
@@ -362,6 +431,18 @@ export class RCSplitter extends LitElement {
       </div>
 
       <div id="separator" part="separator">
+        ${this.collapsible && this._$secondaryElements.length && !this.fixed
+          ? html`<button
+              id="collapse-button"
+              part="collapse-button"
+              aria-label=${this._isCollapsed
+                ? `Expand ${this.label}`
+                : `Collapse ${this.label}`}
+              aria-expanded=${String(!this._isCollapsed)}
+              aria-controls="primary"
+              @click=${this._onCollapseButtonClick}
+            >${this._collapseButtonIcon}</button>`
+          : nothing}
         <div
           id="separator-handle"
           role="separator"
@@ -374,6 +455,7 @@ export class RCSplitter extends LitElement {
           aria-valuetext=${this.valueText}
           aria-valuemin=${this._effectiveMin}
           aria-valuemax=${this._effectiveMax}
+          @keydown=${this._onCollapseKeydown}
           ${keyNavigation(this._onKeyboardResize)}
           ${keyInteraction()}
           ${mouseMove(this._onPointerResize)}
