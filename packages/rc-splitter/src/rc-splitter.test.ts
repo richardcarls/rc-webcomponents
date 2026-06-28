@@ -1343,4 +1343,117 @@ describe('RCSplitter', () => {
       expect(third.element().getAttribute('slot')).toBe('secondary');
     });
   });
+
+  describe('min and max properties', () => {
+    test('min clamps value to lower bound', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          min="100"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await waitForInit(host);
+
+      host.value = 50;
+      await host.updateComplete;
+
+      expect(host.value).toBe(100);
+    });
+
+    test('max clamps value to upper bound', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          max="200"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await waitForInit(host);
+
+      host.value = 350;
+      await host.updateComplete;
+
+      expect(host.value).toBe(200);
+    });
+
+    test('Home key moves to min when min is set', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          min="80"
+          value="200"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+      await focusSeparator(separator);
+
+      await pressKey(separator, '{Home}');
+
+      expect(host.value).toBe(80);
+    });
+
+    test('End key moves to max when max is set', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          max="250"
+          value="100"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+      await focusSeparator(separator);
+
+      await pressKey(separator, '{End}');
+
+      expect(host.value).toBe(250);
+    });
+
+    test('aria-valuemin and aria-valuemax reflect min/max props', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          min="50"
+          max="300"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      expect(Number(separator.getAttribute('aria-valuemin'))).toBe(50);
+      expect(Number(separator.getAttribute('aria-valuemax'))).toBe(300);
+    });
+  });
 });

@@ -73,6 +73,14 @@ export class RCSplitter extends LitElement {
   @property({ type: Number })
   step: number = 1;
 
+  /** Minimum size of the primary pane in current mode units. Defaults to 0. */
+  @property({ type: Number })
+  min: number = 0;
+
+  /** Maximum size of the primary pane in current mode units. Defaults to the full container size. */
+  @property({ type: Number })
+  max: number | undefined = undefined;
+
   private _defaultValue: number | undefined;
   private _hostValue: number | undefined;
   private _valueInitialized = false;
@@ -115,12 +123,20 @@ export class RCSplitter extends LitElement {
     return this._defaultValue;
   }
 
+  protected get _effectiveMin(): number {
+    return Math.max(this._minValue, this.min);
+  }
+
+  protected get _effectiveMax(): number {
+    return Math.min(this._maxValue, this.max ?? this._maxValue);
+  }
+
   private _setValue(val: number, dispatch: boolean): void {
     const oldValue = this._value;
 
     this._value = Math.min(
-      Math.max(Math.round(val / this.step) * this.step, this._minValue),
-      this._maxValue,
+      Math.max(Math.round(val / this.step) * this.step, this._effectiveMin),
+      this._effectiveMax,
     );
 
     if (dispatch && this._value !== oldValue) {
@@ -137,10 +153,10 @@ export class RCSplitter extends LitElement {
   private _setUserValue(val: number): void {
     this._valueInitialized = true;
     this._hostValue = undefined;
-    // Capture the last non-zero position before a user-driven change so
-    // toggle-collapse can restore it. Internal resize callbacks use _setValue
-    // directly and must not overwrite this.
-    if (this._value > 0) {
+    // Capture the last position above the effective minimum before a user-driven
+    // change so toggle-collapse can restore it. Internal resize callbacks use
+    // _setValue directly and must not overwrite this.
+    if (this._value > this._effectiveMin) {
       this._lastValue = this._value;
     }
     this._setValue(val, true);
@@ -194,13 +210,15 @@ export class RCSplitter extends LitElement {
         this._setUserValue(this.value - this.step);
         break;
       case "start":
-        this._setUserValue(0);
+        this._setUserValue(this._effectiveMin);
         break;
       case "end":
-        this._setUserValue(this._maxValue);
+        this._setUserValue(this._effectiveMax);
         break;
       case "toggle":
-        this._setUserValue(this.value === 0 ? this._lastValue : 0);
+        this._setUserValue(
+          this.value === this._effectiveMin ? this._lastValue : this._effectiveMin,
+        );
         break;
     }
   }
@@ -354,8 +372,8 @@ export class RCSplitter extends LitElement {
           aria-orientation=${this.orientation}
           aria-valuenow=${this.value}
           aria-valuetext=${this.valueText}
-          aria-valuemin=${this._minValue}
-          aria-valuemax=${this._maxValue}
+          aria-valuemin=${this._effectiveMin}
+          aria-valuemax=${this._effectiveMax}
           ${keyNavigation(this._onKeyboardResize)}
           ${keyInteraction()}
           ${mouseMove(this._onPointerResize)}
