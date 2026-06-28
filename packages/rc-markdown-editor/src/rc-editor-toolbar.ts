@@ -48,6 +48,9 @@ export class RcEditorToolbar extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'active-code' })
   activeCode = false;
 
+  @property({ type: Boolean, reflect: true, attribute: 'active-link' })
+  activeLink = false;
+
   @property({ attribute: 'active-heading' })
   activeHeading: HeadingLevel | null = null;
 
@@ -150,11 +153,12 @@ export class RcEditorToolbar extends LitElement {
         >${icons.code}</button>
 
         <button type="button" data-action="link"
-          title="Link (Ctrl+K)" aria-label="Link"
+          title="Link (Ctrl+K)" aria-label="Link" aria-pressed=${p(this.activeLink)}
         >${icons.link}</button>
 
         <rc-select
           title="Heading level"
+          placeholder="Heading level"
           class=${this.activeHeading ? 'toolbar-active' : ''}
           .value=${this.activeHeading ?? 'p'}
           @rc-select-change=${this._onHeadingChange}

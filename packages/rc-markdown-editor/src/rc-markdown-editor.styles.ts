@@ -2,6 +2,7 @@ import { css } from 'lit';
 
 export const rmeStyles = css`
   :host {
+    position: relative;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -152,6 +153,11 @@ export const rmeStyles = css`
     color: GrayText;
   }
 
+  #rich-view a {
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
   #rich-view blockquote {
     margin: 0.5em 0;
     padding-left: 1em;
@@ -179,6 +185,68 @@ export const rmeStyles = css`
   }
 
   #rich-view li { margin: 0.2em 0; }
+
+  .link-popover {
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    background: Canvas;
+    border: 1px solid ButtonBorder;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent);
+  }
+
+  .link-popover-input {
+    min-inline-size: 16em;
+    padding: 0.25em 0.4em;
+    border: 1px solid ButtonBorder;
+    border-radius: 3px;
+    background: Field;
+    color: FieldText;
+    font: inherit;
+    font-size: 0.875em;
+  }
+
+  .link-popover-input:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  .link-popover-btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 1.75rem;
+    min-block-size: 1.75rem;
+    padding: 0.15em;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    background: transparent;
+    color: ButtonText;
+    font: inherit;
+    font-size: 0.875em;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .link-popover-btn:hover:not(:disabled) {
+    background: ButtonFace;
+    border-color: ButtonBorder;
+  }
+
+  .link-popover-btn:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+
+  .link-popover-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
 
   ::slotted(textarea) {
     display: none !important;

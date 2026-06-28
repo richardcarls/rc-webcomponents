@@ -1,5 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { micromark } from 'micromark';
 import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import TurndownService from 'turndown';
@@ -241,16 +241,31 @@ export class RcMarkdownEditor extends LitElement {
   // against mode switches before the initial content setup is done.
   protected _firstUpdatedDone = false;
 
+  @query('.link-popover')
+  protected _$linkPopover?: HTMLDivElement;
+
+  @query('.link-popover-input')
+  protected _$linkPopoverInput?: HTMLInputElement;
+
+  @state()
+  protected _linkPopoverOpen = false;
+
+  @state()
+  protected _linkPopoverHref = '';
+
   override connectedCallback() {
     super.connectedCallback();
     document.addEventListener('selectionchange', this._onSelectionChange);
+    document.addEventListener('click', this._onDocumentClick);
     this.addEventListener('keydown', this._onKeyDown);
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener('selectionchange', this._onSelectionChange);
+    document.removeEventListener('click', this._onDocumentClick);
     this.removeEventListener('keydown', this._onKeyDown);
+    this._$richView?.removeEventListener('click', this._onRichViewClick);
     this._observer?.disconnect();
     if (this._syncTimer !== null) clearTimeout(this._syncTimer);
   }
@@ -273,6 +288,7 @@ export class RcMarkdownEditor extends LitElement {
       characterData: true,
     });
 
+    this._$richView.addEventListener('click', this._onRichViewClick);
     this._setupSourcePlugin();
 
     // firstUpdated() handles the initial mode directly so updated() does not
@@ -300,6 +316,12 @@ export class RcMarkdownEditor extends LitElement {
 
     if (changed.has('value') && !this.sourceMode && this._richViewRendered) {
       this._setRichViewContent(this.value);
+    }
+
+    if (changed.has('_linkPopoverOpen') && this._linkPopoverOpen) {
+      this._positionLinkPopover();
+      this._$linkPopoverInput?.focus();
+      this._$linkPopoverInput?.select();
     }
   }
 
@@ -331,6 +353,23 @@ export class RcMarkdownEditor extends LitElement {
           @rc-change=${this._onSourceChange}
         ></rc-textarea>
       </div>
+
+      ${this._linkPopoverOpen ? html`
+        <div class="link-popover" role="dialog" aria-label="Link">
+          <input
+            type="url"
+            class="link-popover-input"
+            .value=${this._linkPopoverHref}
+            placeholder="https://"
+            aria-label="URL"
+            @input=${(e: Event) => { this._linkPopoverHref = (e.target as HTMLInputElement).value; }}
+            @keydown=${this._onLinkPopoverKeyDown}
+          />
+          <button type="button" class="link-popover-btn" title="Apply (Enter)" @click=${this._applyLink}>↵</button>
+          <button type="button" class="link-popover-btn" title="Open link" ?disabled=${!this._linkPopoverHref} @click=${this._openLinkHref}>↗</button>
+          <button type="button" class="link-popover-btn" title="Remove link" @click=${this._removeLink}>✕</button>
+        </div>
+      ` : nothing}
     `;
   }
 
@@ -542,6 +581,14 @@ export class RcMarkdownEditor extends LitElement {
       }
     }
 
+    // For character-scope actions, expand a collapsed cursor to the word at cursor
+    const CHAR_SCOPE = new Set<EditorToolbarAction>(['bold', 'italic', 'underline', 'strikethrough', 'code', 'link']);
+    if (CHAR_SCOPE.has(action)) {
+      this._expandRichSelectionToWord();
+      const sel = window.getSelection();
+      if (sel?.rangeCount) this._$savedRange = sel.getRangeAt(0).cloneRange();
+    }
+
     switch (action) {
       case 'bold':          document.execCommand('bold');             break;
       case 'italic':        document.execCommand('italic');           break;
@@ -557,9 +604,13 @@ export class RcMarkdownEditor extends LitElement {
       case 'ordered-list':  document.execCommand('insertOrderedList');   break;
       case 'code-block':    this._toggleRichCodeBlock();                  break;
       case 'link': {
-        // TODO: replace prompt with a proper link popover
-        const url = prompt('Enter URL:');
-        if (url) document.execCommand('createLink', false, url);
+        const sel = window.getSelection();
+        const anchor = sel?.rangeCount ? sel.getRangeAt(0).commonAncestorContainer : null;
+        const $el = anchor
+          ? (anchor.nodeType === Node.TEXT_NODE ? (anchor as Text).parentElement : anchor as Element)
+          : null;
+        this._linkPopoverHref = $el?.closest<HTMLAnchorElement>('a[href]')?.href ?? '';
+        this._linkPopoverOpen = true;
         break;
       }
     }
@@ -567,7 +618,22 @@ export class RcMarkdownEditor extends LitElement {
 
   protected _applySourceFormat(action: EditorToolbarAction) {
     const editor = this._$sourceEditor;
+    const api = this._pluginApi;
     if (!editor) return;
+
+    // For character-scope wraps with a collapsed cursor, expand to word at cursor
+    const WORD_WRAP: Partial<Record<EditorToolbarAction, [string, string]>> = {
+      bold: ['**', '**'], italic: ['*', '*'], strikethrough: ['~~', '~~'], code: ['`', '`'],
+    };
+    const wrap = WORD_WRAP[action];
+    if (wrap && api && api.selectionStart === api.selectionEnd) {
+      const wordInfo = api.getWordAtCursor();
+      if (wordInfo) {
+        const [pre, suf] = wrap;
+        editor.value = api.value.slice(0, wordInfo.from) + pre + wordInfo.word + suf + api.value.slice(wordInfo.to);
+        return;
+      }
+    }
 
     switch (action) {
       case 'bold':          editor.wrapSelection('**', '**');      break;
@@ -821,6 +887,7 @@ export class RcMarkdownEditor extends LitElement {
       activeUnderline?: boolean;
       activeStrikethrough?: boolean;
       activeCode?: boolean;
+      activeLink?: boolean;
       activeHeading?: HeadingLevel | null;
       activeBlockquote?: boolean;
       activeBulletList?: boolean;
@@ -836,6 +903,7 @@ export class RcMarkdownEditor extends LitElement {
       $toolbar.activeUnderline     = !!this._activeFormats.underline;
       $toolbar.activeStrikethrough = !!this._activeFormats.strikethrough;
       $toolbar.activeCode          = !!this._activeFormats.code;
+      $toolbar.activeLink          = !!this._activeFormats.link;
       $toolbar.activeHeading       = this._activeFormats.heading ?? null;
       $toolbar.activeBlockquote    = !!this._activeFormats.blockquote;
       $toolbar.activeBulletList    = !!this._activeFormats.bulletList;
@@ -875,6 +943,79 @@ export class RcMarkdownEditor extends LitElement {
       if (!this.sourceMode) this._$richView?.focus();
     });
   }
+
+  protected _onRichViewClick = (e: MouseEvent) => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    const $a = (e.target as Element).closest<HTMLAnchorElement>('a[href]');
+    if (!$a) return;
+    e.preventDefault();
+    window.open($a.href, '_blank', 'noopener,noreferrer');
+  };
+
+  protected _onDocumentClick = (e: MouseEvent) => {
+    if (!this._linkPopoverOpen) return;
+    const $popover = this.shadowRoot?.querySelector('.link-popover');
+    if ($popover && e.composedPath().includes($popover)) return;
+    this._linkPopoverOpen = false;
+  };
+
+  protected _expandRichSelectionToWord(): void {
+    const sel = window.getSelection();
+    if (!sel?.isCollapsed) return;
+    const modify = (sel as unknown as { modify?: (alter: string, dir: string, unit: string) => void }).modify;
+    if (typeof modify !== 'function') return;
+    modify.call(sel, 'move', 'backward', 'word');
+    modify.call(sel, 'extend', 'forward', 'word');
+  }
+
+  protected _positionLinkPopover(): void {
+    if (!this._$savedRange || !this._$linkPopover) return;
+    const rangeRect = this._$savedRange.getBoundingClientRect();
+    const hostRect = this.getBoundingClientRect();
+    this._$linkPopover.style.top  = `${rangeRect.bottom - hostRect.top + 4}px`;
+    this._$linkPopover.style.left = `${Math.max(0, rangeRect.left - hostRect.left)}px`;
+  }
+
+  protected _applyLink = () => {
+    this._linkPopoverOpen = false;
+    if (!this._linkPopoverHref) return;
+    this._$richView?.focus();
+    if (this._$savedRange) {
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(this._$savedRange.cloneRange());
+      }
+    }
+    document.execCommand('createLink', false, this._linkPopoverHref);
+  };
+
+  protected _removeLink = () => {
+    this._linkPopoverOpen = false;
+    this._$richView?.focus();
+    if (this._$savedRange) {
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(this._$savedRange.cloneRange());
+      }
+    }
+    document.execCommand('unlink');
+  };
+
+  protected _openLinkHref = () => {
+    if (this._linkPopoverHref) window.open(this._linkPopoverHref, '_blank', 'noopener,noreferrer');
+  };
+
+  protected _onLinkPopoverKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      this._applyLink();
+    } else if (e.key === 'Escape') {
+      this._linkPopoverOpen = false;
+      this._$richView?.focus();
+    }
+  };
 
   protected _dispatchChange(value: string) {
     this.dispatchEvent(new CustomEvent<{ value: string }>('rc-change', {

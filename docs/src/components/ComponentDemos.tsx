@@ -7,7 +7,6 @@ import type {
   RCDialogRef,
   RCDisclosureRef,
   RCListboxRef,
-  RCMarkdownEditorRef,
   RCMenuRef,
   RCRangeSliderRef,
   RCSearchBarRef,
@@ -379,16 +378,35 @@ function greet(name: string): string {
 `;
 
 export function MarkdownEditorDemo() {
-  const editorRef = useRef<RCMarkdownEditorRef>(null);
-  const log = useEventLog<{ value?: string }>(
-    editorRef,
-    'rc-change',
-    ({ value }) => `rc-change -> ${(value ?? '').slice(0, 32)}`,
-  );
+  const [editorEl, setEditorEl] = useState<HTMLElement | null>(null);
+  const [log, setLog] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!editorEl) return;
+
+    const handleChange = (e: Event) => {
+      const { value = '' } = (e as CustomEvent<{ value?: string }>).detail;
+      const preview = value.slice(0, 40).replace(/\n/g, '↵');
+      setLog((prev) => [`rc-change -> ${preview}`, ...prev].slice(0, 8));
+    };
+
+    const handleModeChange = (e: Event) => {
+      const { mode } = (e as CustomEvent<{ mode: string }>).detail;
+      setLog((prev) => [`rc-mode-change -> ${mode}`, ...prev].slice(0, 8));
+    };
+
+    editorEl.addEventListener('rc-change', handleChange);
+    editorEl.addEventListener('rc-mode-change', handleModeChange);
+
+    return () => {
+      editorEl.removeEventListener('rc-change', handleChange);
+      editorEl.removeEventListener('rc-mode-change', handleModeChange);
+    };
+  }, [editorEl]);
 
   return (
     <DemoFrame>
-      <rc-markdown-editor ref={editorRef}>
+      <rc-markdown-editor ref={(el) => setEditorEl(el as HTMLElement | null)}>
         <textarea defaultValue={MARKDOWN_EDITOR_DEMO_CONTENT} />
       </rc-markdown-editor>
       <EventLog entries={log} />
