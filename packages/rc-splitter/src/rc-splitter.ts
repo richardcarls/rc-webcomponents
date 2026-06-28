@@ -35,10 +35,16 @@ declare global {
  *
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/
  * @cssprop [--rc-splitter-separator-size=6px] - Thickness of the separator bar
- * @cssprop [--rc-splitter-separator-handle-size=100%] - Length of the drag handle within the separator
+ * @cssprop [--rc-splitter-separator-handle-size=100%] - Length of the drag handle area within the separator (also the length of the visible indicator)
  * @cssprop [--rc-splitter-separator-color=color-mix(in srgb, ButtonBorder 35%, Canvas 65%)] - Separator background color
  * @cssprop [--rc-splitter-keyline=1px solid ButtonBorder] - Shared separator keyline border
- * @cssprop [--rc-splitter-handle-color=ButtonBorder] - Visible handle line color
+ * @cssprop [--rc-splitter-handle-color=ButtonBorder] - Color of the dot grip indicators (default visual)
+ * @cssprop [--rc-splitter-handle-thickness=4px] - Cross-axis size of the visual indicator (dot column width or pill/line thickness)
+ * @cssprop [--rc-splitter-handle-border-radius=0] - Border-radius of the visual indicator; set to a large value (e.g. 999px) for a pill shape
+ * @cssprop [--rc-splitter-handle-pattern=<3-dot radial-gradient>] - background-image for the visual indicator; set to `none` to use a solid fill via --rc-splitter-handle-fill instead
+ * @cssprop [--rc-splitter-handle-fill=transparent] - background-color of the visual indicator; effective when --rc-splitter-handle-pattern is none (e.g. for a solid pill)
+ * @cssprop [--rc-splitter-handle-hover-fill=transparent] - background-color of the visual indicator on hover; scoped to the indicator element only, not the full separator strip
+ * @cssprop [--rc-splitter-handle-transition=0ms] - CSS transition duration/easing for the visual indicator's background-color changes
  * @cssprop [--rc-splitter-separator-border-inline-start=1px solid ButtonBorder] - Inline-start border
  * @cssprop [--rc-splitter-separator-border-inline-end=1px solid ButtonBorder] - Inline-end border
  * @cssprop [--rc-splitter-separator-border-block-start=1px solid ButtonBorder] - Block-start border (vertical orientation)
