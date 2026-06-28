@@ -40,6 +40,7 @@
     font-size: var(--md-sys-typescale-body-large-size, 1rem);
     line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
     padding-block: 0.5rem;
+    border-radius: var(--md-menu-container-shape, var(--md-sys-shape-corner-extra-small, 0.25rem));
 
     /* Option sizing — inherited by li[role='option'] via rc-listbox's rc-base layer */
     --rc-listbox-option-gap: 0.75rem;
