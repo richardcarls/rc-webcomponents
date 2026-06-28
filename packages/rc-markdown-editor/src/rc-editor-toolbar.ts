@@ -1,12 +1,14 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
+import '@rcarls/rc-select/define';
+
 import { icons } from './icons.ts';
 import type { EditorToolbarAction, EditorToolbarActionDetail, HeadingLevel } from './types.ts';
 
 
-const HEADING_OPTIONS: Array<{ value: HeadingLevel | ''; label: string }> = [
-  { value: '',   label: 'Paragraph' },
+const HEADING_OPTIONS: Array<{ value: HeadingLevel | 'p'; label: string }> = [
+  { value: 'p',  label: 'Paragraph' },
   { value: 'h1', label: 'Heading 1' },
   { value: 'h2', label: 'Heading 2' },
   { value: 'h3', label: 'Heading 3' },
@@ -21,14 +23,15 @@ const HEADING_OPTIONS: Array<{ value: HeadingLevel | ''; label: string }> = [
  * so the parent shadow stylesheet can reach `rc-editor-toolbar button` directly.
  *
  * Active-format properties are set by the parent editor and reflected as
- * `aria-pressed` on the corresponding buttons. Heading level is shown via a
- * `<select>`. Code-block language is shown via a `<input>` when active.
+ * `aria-pressed` on the corresponding buttons. Heading level is shown via an
+ * `<rc-select>`. Code-block language is shown via a `<input>` when active.
  *
  * @fires rc-toolbar-action - When a formatting button or select is activated.
  */
 export class RcEditorToolbar extends LitElement {
   /** `aria-label` applied to the `[role="toolbar"]` container. */
-  @property({ type: String }) label = 'Formatting';
+  @property({ type: String })
+  label = 'Formatting';
 
   @property({ type: Boolean, reflect: true, attribute: 'active-bold' })
   activeBold = false;
@@ -71,8 +74,8 @@ export class RcEditorToolbar extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'source-mode' })
   sourceMode = false;
 
-  /** Tracks the in-progress language input value before commit. */
-  @state() private _langInputValue = '';
+  @state()
+  protected _langInputValue = '';
 
   override createRenderRoot() {
     return this;
@@ -84,9 +87,7 @@ export class RcEditorToolbar extends LitElement {
     }
   }
 
-  // ── Event helpers ─────────────────────────────────────────────────────────
-
-  private _dispatch(action: EditorToolbarAction, extra?: Partial<EditorToolbarActionDetail>) {
+  protected _dispatch(action: EditorToolbarAction, extra?: Partial<EditorToolbarActionDetail>) {
     this.dispatchEvent(
       new CustomEvent<EditorToolbarActionDetail>('rc-toolbar-action', {
         bubbles: true,
@@ -96,37 +97,34 @@ export class RcEditorToolbar extends LitElement {
     );
   }
 
-  private _onClick = (e: MouseEvent) => {
-    const btn = (e.target as Element).closest<HTMLButtonElement>('button[data-action]');
-    if (!btn) return;
-    this._dispatch(btn.dataset['action'] as EditorToolbarAction);
+  protected _onClick = (e: MouseEvent) => {
+    const $btn = (e.target as Element).closest<HTMLButtonElement>('button[data-action]');
+    if (!$btn) return;
+    this._dispatch($btn.dataset['action'] as EditorToolbarAction);
   };
 
-  private _onHeadingChange = (e: Event) => {
-    const value = (e.target as HTMLSelectElement).value as HeadingLevel | '';
-    this._dispatch('heading', { headingLevel: value || null });
+  protected _onHeadingChange = (e: Event) => {
+    const value = (e as CustomEvent<{ value: string }>).detail.value as HeadingLevel | 'p';
+    this._dispatch('heading', { headingLevel: value === 'p' ? null : value });
   };
 
-  private _onLangInput = (e: Event) => {
+  protected _onLangInput = (e: Event) => {
     this._langInputValue = (e.target as HTMLInputElement).value;
   };
 
-  private _onLangCommit = () => {
+  protected _onLangCommit = () => {
     this._dispatch('code-block-language', { codeLanguage: this._langInputValue.trim() });
   };
 
-  private _onLangKeyDown = (e: KeyboardEvent) => {
+  protected _onLangKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       this._onLangCommit();
     }
   };
 
-  // ── Rendering ─────────────────────────────────────────────────────────────
-
   override render() {
     const p = (v: boolean) => String(v) as 'true' | 'false';
-    const headingVal = this.activeHeading ?? '';
 
     return html`
       <div role="toolbar" aria-label=${this.label} @click=${this._onClick}>
@@ -155,17 +153,18 @@ export class RcEditorToolbar extends LitElement {
           title="Link (Ctrl+K)" aria-label="Link"
         >${icons.link}</button>
 
-        <select
-          aria-label="Heading level"
+        <rc-select
           title="Heading level"
           class=${this.activeHeading ? 'toolbar-active' : ''}
-          @change=${this._onHeadingChange}
-          .value=${headingVal}
+          .value=${this.activeHeading ?? 'p'}
+          @rc-select-change=${this._onHeadingChange}
         >
-          ${HEADING_OPTIONS.map(({ value, label }) => html`
-            <option value=${value} ?selected=${headingVal === value}>${label}</option>
-          `)}
-        </select>
+          <select aria-label="Heading level">
+            ${HEADING_OPTIONS.map(({ value, label }) => html`
+              <option value=${value}>${label}</option>
+            `)}
+          </select>
+        </rc-select>
 
         <button type="button" data-action="blockquote"
           title="Blockquote" aria-label="Blockquote" aria-pressed=${p(this.activeBlockquote)}
