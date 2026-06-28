@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless virtual canvas web component built with Lit",
+  "description": "A scrollable virtual canvas component.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
