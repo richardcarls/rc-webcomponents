@@ -8,7 +8,11 @@ import { VirtualCanvasDemo } from '@site/src/components/ComponentDemos';
 
 # rc-virtual-canvas
 
-A virtualized canvas surface for large scrollable datasets and overlays.
+A scrollable virtual canvas component.
+
+Overlays a transparent scrollable div on top of a slotted `<canvas>` element,
+dispatching `rc-virtual-canvas-render` events with the current viewport and
+content rectangles. Consumers draw only what is visible.
 
 <AtAGlance
   packageName="@rcarls/rc-virtual-canvas"

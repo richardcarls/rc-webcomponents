@@ -1,6 +1,10 @@
 # `@rcarls/rc-virtual-canvas`
 
-A virtualized scrollable canvas component. Overlays a transparent scrollable div on top of a slotted `<canvas>` element, dispatching `rc-virtual-canvas-render` events with the current viewport and content rectangles. Consumers draw only what is visible. Built with [Lit 3](https://lit.dev).
+A scrollable virtual canvas component.
+
+Overlays a transparent scrollable div on top of a slotted `<canvas>` element, dispatching
+`rc-virtual-canvas-render` events with the current viewport and content rectangles.
+Consumers draw only what is visible.
 
 ---
 
@@ -21,7 +25,9 @@ import { RCVirtualCanvas } from '@rcarls/rc-virtual-canvas';    // named class e
 
 ## Basic usage
 
-Place a `<canvas>` inside the component. Set `contentWidth` and `contentHeight` to the total size of your virtual content. On each `rc-virtual-canvas-render` event, use `detail.viewRect` to determine which portion of that content is visible and draw accordingly.
+Place a `<canvas>` inside the component. Set `contentWidth` and `contentHeight` to the
+total size of your virtual content. On each `rc-virtual-canvas-render` event, use
+`detail.viewRect` to determine which portion of that content is visible and draw accordingly.
 
 ```html
 <rc-virtual-canvas
@@ -47,7 +53,9 @@ Place a `<canvas>` inside the component. Set `contentWidth` and `contentHeight` 
 </script>
 ```
 
-The canvas element should match the component's rendered size (set via CSS). The virtual content is larger — scrolling is handled by an absolutely-positioned transparent `<div>` that triggers native scroll events.
+The canvas element should match the component's rendered size (set via CSS). The virtual
+content is larger — scrolling is handled by an absolutely-positioned transparent `<div>`
+that triggers native scroll events.
 
 ---
 
