@@ -278,6 +278,12 @@ export class RCSplitter extends LitElement {
       case "prev":
         this._setUserValue(this.value - this.step);
         break;
+      case "next-large":
+        this._setUserValue(this.value + this.step * 10);
+        break;
+      case "prev-large":
+        this._setUserValue(this.value - this.step * 10);
+        break;
       case "start":
         this._setUserValue(this._effectiveMin);
         break;

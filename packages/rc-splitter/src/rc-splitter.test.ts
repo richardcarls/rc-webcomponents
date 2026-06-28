@@ -394,6 +394,112 @@ describe('RCSplitter', () => {
     });
   });
 
+  describe('keyboard navigation - large step (Shift+Arrow)', () => {
+    test('Shift+Right arrow moves by 10× step on horizontal splitter', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" .step=${5} style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      host.value = 100;
+      await host.updateComplete;
+
+      await focusSeparator(separator);
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true, bubbles: true, cancelable: true }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(150); // 100 + 5 * 10
+    });
+
+    test('Shift+Left arrow moves by 10× step on horizontal splitter', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" .step=${5} style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      host.value = 200;
+      await host.updateComplete;
+
+      await focusSeparator(separator);
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowLeft', shiftKey: true, bubbles: true, cancelable: true }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(150); // 200 - 5 * 10
+    });
+
+    test('Shift+Down arrow moves by 10× step on vertical splitter', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          orientation="vertical"
+          .step=${5}
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      host.value = 100;
+      await host.updateComplete;
+
+      await focusSeparator(separator);
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', shiftKey: true, bubbles: true, cancelable: true }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(150); // 100 + 5 * 10
+    });
+
+    test('Shift+Arrow clamps to effective max', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" .step=${5} style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      // Set value near the max so 10× step would overshoot
+      host.value = host.value; // current (mid-point)
+      const max = (host as any)._effectiveMax as number;
+      host.value = max - 20;
+      await host.updateComplete;
+
+      await focusSeparator(separator);
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true, bubbles: true, cancelable: true }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(max);
+    });
+  });
+
   describe('fixed property', () => {
     test('prevents keyboard resizing when fixed', async () => {
       const screen = render(html`

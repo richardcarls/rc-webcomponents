@@ -69,6 +69,57 @@ test('keyNavigation: role=menubar uses horizontal axis (ArrowRight → next)', a
 });
 
 
+// ─── Shift+Arrow → next-large / prev-large ───────────────────────────────────
+
+test('keyNavigation: Shift+ArrowRight → next-large on horizontal axis', async () => {
+  const cb = vi.fn();
+  const screen = render(html`<div role="toolbar" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('toolbar');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{Shift>}{ArrowRight}{/Shift}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('next-large');
+});
+
+test('keyNavigation: Shift+ArrowLeft → prev-large on horizontal axis', async () => {
+  const cb = vi.fn();
+  const screen = render(html`<div role="toolbar" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('toolbar');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{Shift>}{ArrowLeft}{/Shift}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('prev-large');
+});
+
+test('keyNavigation: Shift+ArrowDown → next-large on vertical axis', async () => {
+  const cb = vi.fn();
+  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('menu');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{Shift>}{ArrowDown}{/Shift}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('next-large');
+});
+
+test('keyNavigation: Shift+ArrowUp → prev-large on vertical axis', async () => {
+  const cb = vi.fn();
+  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('menu');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{Shift>}{ArrowUp}{/Shift}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('prev-large');
+});
+
+
 // ─── role=separator axis (perpendicular to bar) ──────────────────────────────
 
 test('keyNavigation: role=separator default (horizontal bar) uses vertical axis (ArrowDown → next)', async () => {
