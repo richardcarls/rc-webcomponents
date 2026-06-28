@@ -1,18 +1,32 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-splitter {
-    --rc-splitter-separator-size: 0.5rem;
+    /* 24px wide strip — meets WCAG 2.5.8 touch target in the cross axis */
+    --rc-splitter-separator-size: 1.5rem;
     --rc-splitter-separator-color: var(--md-sys-color-surface-container, Canvas);
-    --rc-splitter-keyline: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
-    --rc-splitter-handle-color: var(--md-sys-color-on-surface-variant, ButtonBorder);
-    --rc-splitter-separator-handle-size: 3rem;
-  }
+    /* No keyline border; surface color provides enough contrast */
+    --rc-splitter-keyline: none;
+    --rc-splitter-separator-border-inline-start: none;
+    --rc-splitter-separator-border-inline-end: none;
+    --rc-splitter-separator-border-block-start: none;
+    --rc-splitter-separator-border-block-end: none;
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-splitter::part(separator-handle) {
-    border-radius: var(--md-sys-shape-corner-full, 999px);
-    transition: background-color 150ms ease;
-  }
-
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-splitter::part(separator-handle):hover {
-    background-color: color-mix(in srgb, var(--md-sys-color-primary, Highlight) 8%, transparent);
+    /* M3 drag indicator: 32px × 4px rounded pill, like a bottom-sheet handle */
+    --rc-splitter-separator-handle-size: 2rem;
+    --rc-splitter-handle-thickness: 4px;
+    --rc-splitter-handle-border-radius: 999px;
+    /* Disable the default dot grip; use a solid pill fill instead */
+    --rc-splitter-handle-pattern: none;
+    --rc-splitter-handle-fill: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface-variant, ButtonBorder) 40%,
+      transparent
+    );
+    /* Hover state layer on the pill only, not the full strip */
+    --rc-splitter-handle-hover-fill: color-mix(
+      in srgb,
+      var(--md-sys-color-primary, Highlight) 8%,
+      transparent
+    );
+    --rc-splitter-handle-transition: 150ms var(--md-sys-motion-easing-standard, ease);
   }
 }

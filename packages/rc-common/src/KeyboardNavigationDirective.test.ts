@@ -69,6 +69,98 @@ test('keyNavigation: role=menubar uses horizontal axis (ArrowRight → next)', a
 });
 
 
+// ─── Shift+Arrow → next-large / prev-large ───────────────────────────────────
+
+test('keyNavigation: Shift+ArrowRight → next-large on horizontal axis', async () => {
+  const cb = vi.fn();
+  const screen = render(html`<div role="toolbar" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('toolbar');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{Shift>}{ArrowRight}{/Shift}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('next-large');
+});
+
+test('keyNavigation: Shift+ArrowLeft → prev-large on horizontal axis', async () => {
+  const cb = vi.fn();
+  const screen = render(html`<div role="toolbar" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('toolbar');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{Shift>}{ArrowLeft}{/Shift}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('prev-large');
+});
+
+test('keyNavigation: Shift+ArrowDown → next-large on vertical axis', async () => {
+  const cb = vi.fn();
+  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('menu');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{Shift>}{ArrowDown}{/Shift}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('next-large');
+});
+
+test('keyNavigation: Shift+ArrowUp → prev-large on vertical axis', async () => {
+  const cb = vi.fn();
+  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('menu');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{Shift>}{ArrowUp}{/Shift}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('prev-large');
+});
+
+
+// ─── role=separator axis (perpendicular to bar) ──────────────────────────────
+
+test('keyNavigation: role=separator default (horizontal bar) uses vertical axis (ArrowDown → next)', async () => {
+  const cb = vi.fn();
+  // No aria-orientation set → implicit horizontal bar → vertical keyboard axis
+  const screen = render(html`<div role="separator" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('separator');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{ArrowDown}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('next');
+});
+
+test('keyNavigation: role=separator aria-orientation="vertical" uses horizontal axis (ArrowRight → next)', async () => {
+  const cb = vi.fn();
+  // Vertical bar → horizontal keyboard axis (Left/Right)
+  const screen = render(html`<div role="separator" aria-orientation="vertical" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('separator');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{ArrowRight}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('next');
+});
+
+test('keyNavigation: role=separator aria-orientation="horizontal" uses vertical axis (ArrowUp → prev)', async () => {
+  const cb = vi.fn();
+  const screen = render(html`<div role="separator" aria-orientation="horizontal" tabindex="0" ${keyNavigation(cb)}></div>`);
+  const el = screen.getByRole('separator');
+
+  (await el.element()).focus();
+  await userEvent.keyboard('{ArrowUp}');
+
+  expect(cb).toHaveBeenCalledOnce();
+  expect(cb).toHaveBeenCalledWith('prev');
+});
+
+
 // ─── navigationAxis option override ──────────────────────────────────────────
 
 test('keyNavigation: navigationAxis option overrides role-based detection', async () => {

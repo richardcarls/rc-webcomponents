@@ -7,6 +7,8 @@ import { directive, AsyncDirective } from 'lit/async-directive.js';
 export type KeyboardNavigationAction =
   | 'next'
   | 'prev'
+  | 'next-large'
+  | 'prev-large'
   | 'start'
   | 'end'
   | 'open-to-first'
@@ -80,6 +82,14 @@ class KeyboardNavigationDirective extends AsyncDirective {
           ? 'vertical'
           : 'horizontal';
 
+      case 'separator':
+        // Navigation axis is perpendicular to the bar orientation.
+        // ARIA default bar orientation is horizontal → keyboard axis is vertical (Up/Down).
+        // A vertical bar (aria-orientation="vertical") → keyboard axis is horizontal (Left/Right).
+        return this._element?.deref()?.ariaOrientation === 'vertical'
+          ? 'horizontal'
+          : 'vertical';
+
       case 'scrollbar':
       case 'tree':
       case 'listbox':
@@ -133,8 +143,8 @@ class KeyboardNavigationDirective extends AsyncDirective {
 
     // Navigation axis
     if (this._options.handleNavAxis !== false) {
-      if (key === navNext) action = 'next';
-      else if (key === navPrev) action = 'prev';
+      if (key === navNext) action = e.shiftKey ? 'next-large' : 'next';
+      else if (key === navPrev) action = e.shiftKey ? 'prev-large' : 'prev';
       else if (key === 'Home') action = 'start';
       else if (key === 'End') action = 'end';
     }

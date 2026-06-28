@@ -83,7 +83,7 @@ describe('RCSplitter', () => {
       expect(host).toBeInstanceOf(HTMLElement);
       expect(separator).not.toBeNull();
       expect(separator.getAttribute('tabindex')).toBe('0');
-      expect(separator.getAttribute('aria-orientation')).toBe('horizontal');
+      expect(separator.getAttribute('aria-orientation')).toBe('vertical');
       expect(separator.getAttribute('aria-controls')).toBe('primary');
       expect(separator.getAttribute('aria-labelledby')).toBe('primary');
     });
@@ -143,7 +143,7 @@ describe('RCSplitter', () => {
       await new Promise((r) => setTimeout(r, 50));
 
       const separator = getSeparator(host);
-      expect(separator.getAttribute('aria-orientation')).toBe('vertical');
+      expect(separator.getAttribute('aria-orientation')).toBe('horizontal');
     });
 
     test('hides separator when no secondary content', async () => {
@@ -391,6 +391,112 @@ describe('RCSplitter', () => {
 
       await pressKey(separator, '{End}');
       expect(host.value).toBeGreaterThan(0);
+    });
+  });
+
+  describe('keyboard navigation - large step (Shift+Arrow)', () => {
+    test('Shift+Right arrow moves by 10× step on horizontal splitter', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" .step=${5} style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      host.value = 100;
+      await host.updateComplete;
+
+      await focusSeparator(separator);
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true, bubbles: true, cancelable: true }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(150); // 100 + 5 * 10
+    });
+
+    test('Shift+Left arrow moves by 10× step on horizontal splitter', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" .step=${5} style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      host.value = 200;
+      await host.updateComplete;
+
+      await focusSeparator(separator);
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowLeft', shiftKey: true, bubbles: true, cancelable: true }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(150); // 200 - 5 * 10
+    });
+
+    test('Shift+Down arrow moves by 10× step on vertical splitter', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          orientation="vertical"
+          .step=${5}
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      host.value = 100;
+      await host.updateComplete;
+
+      await focusSeparator(separator);
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', shiftKey: true, bubbles: true, cancelable: true }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(150); // 100 + 5 * 10
+    });
+
+    test('Shift+Arrow clamps to effective max', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" .step=${5} style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      // Set value near the max so 10× step would overshoot
+      host.value = host.value; // current (mid-point)
+      const max = (host as any)._effectiveMax as number;
+      host.value = max - 20;
+      await host.updateComplete;
+
+      await focusSeparator(separator);
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true, bubbles: true, cancelable: true }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(max);
     });
   });
 
@@ -1341,6 +1447,330 @@ describe('RCSplitter', () => {
       // Additional elements moved to secondary
       expect(second.element().getAttribute('slot')).toBe('secondary');
       expect(third.element().getAttribute('slot')).toBe('secondary');
+    });
+  });
+
+  describe('collapsible', () => {
+    function getCollapseButton(host: RCSplitter): HTMLButtonElement | null {
+      return host.shadowRoot!.querySelector('#collapse-button');
+    }
+
+    test('collapse button is absent by default', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      expect(getCollapseButton(host)).toBeNull();
+    });
+
+    test('collapse button appears when collapsible is set', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" collapsible style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await new Promise((r) => setTimeout(r, 50));
+      expect(getCollapseButton(host)).not.toBeNull();
+    });
+
+    test('collapse button is absent when fixed', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" collapsible fixed style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await new Promise((r) => setTimeout(r, 50));
+      expect(getCollapseButton(host)).toBeNull();
+    });
+
+    test('collapse button has correct aria-label when expanded', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" collapsible label="Editor" style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await waitForInit(host);
+      const btn = getCollapseButton(host)!;
+      expect(btn.getAttribute('aria-label')).toBe('Collapse Editor');
+      expect(btn.getAttribute('aria-expanded')).toBe('true');
+    });
+
+    test('clicking collapse button collapses primary pane', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" collapsible style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await waitForInit(host);
+
+      const btn = getCollapseButton(host)!;
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await host.updateComplete;
+
+      expect(host.value).toBe(0);
+      expect(btn.getAttribute('aria-expanded')).toBe('false');
+      expect(btn.getAttribute('aria-label')).toBe('Expand Splitter');
+    });
+
+    test('clicking collapse button again restores previous value', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" collapsible value="200" style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await waitForInit(host);
+
+      const btn = getCollapseButton(host)!;
+      // Collapse
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await host.updateComplete;
+      expect(host.value).toBe(0);
+
+      // Expand
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await host.updateComplete;
+      expect(host.value).toBe(200);
+    });
+
+    test('Ctrl+ArrowLeft collapses horizontal splitter', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          collapsible
+          value="200"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'ArrowLeft',
+          ctrlKey: true,
+        }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(0);
+    });
+
+    test('Ctrl+ArrowLeft then Ctrl+ArrowRight expands horizontal splitter', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          collapsible
+          value="200"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'ArrowLeft', ctrlKey: true }),
+      );
+      await host.updateComplete;
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'ArrowRight', ctrlKey: true }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(200);
+    });
+
+    test('Ctrl+ArrowUp collapses vertical splitter', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          collapsible
+          orientation="vertical"
+          value="100"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      separator.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'ArrowUp',
+          ctrlKey: true,
+        }),
+      );
+      await host.updateComplete;
+
+      expect(host.value).toBe(0);
+    });
+
+    test('collapse button dispatches rc-splitter-change', async () => {
+      const screen = render(html`
+        <rc-splitter data-testid="host" collapsible style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await waitForInit(host);
+
+      const events: CustomEvent[] = [];
+      host.addEventListener('rc-splitter-change', (e) => events.push(e as CustomEvent));
+
+      const btn = getCollapseButton(host)!;
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await host.updateComplete;
+
+      expect(events).toHaveLength(1);
+      expect(events[0].detail.value).toBe(0);
+    });
+  });
+
+  describe('min and max properties', () => {
+    test('min clamps value to lower bound', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          min="100"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await waitForInit(host);
+
+      host.value = 50;
+      await host.updateComplete;
+
+      expect(host.value).toBe(100);
+    });
+
+    test('max clamps value to upper bound', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          max="200"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      await waitForInit(host);
+
+      host.value = 350;
+      await host.updateComplete;
+
+      expect(host.value).toBe(200);
+    });
+
+    test('Home key moves to min when min is set', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          min="80"
+          value="200"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+      await focusSeparator(separator);
+
+      await pressKey(separator, '{Home}');
+
+      expect(host.value).toBe(80);
+    });
+
+    test('End key moves to max when max is set', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          max="250"
+          value="100"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+      await focusSeparator(separator);
+
+      await pressKey(separator, '{End}');
+
+      expect(host.value).toBe(250);
+    });
+
+    test('aria-valuemin and aria-valuemax reflect min/max props', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          min="50"
+          max="300"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+
+      const host = screen.getByTestId('host').element() as RCSplitter;
+      await host.updateComplete;
+      const separator = await waitForInit(host);
+
+      expect(Number(separator.getAttribute('aria-valuemin'))).toBe(50);
+      expect(Number(separator.getAttribute('aria-valuemax'))).toBe(300);
     });
   });
 });
