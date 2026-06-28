@@ -103,9 +103,22 @@ export class RCDialog extends LitElement {
    * `<dialog>` element itself (i.e. the backdrop area, not a child element)
    * calls `requestClose()`. Complements native `closed-by="any"` for browsers
    * that do not yet support the `closedby` attribute.
+   *
+   * Note: backdrop-click detection relies on `e.target === <dialog>`, which is
+   * only meaningful for modal dialogs where the native backdrop exists. For
+   * non-modal dialogs opened via `show()`, this handler will not fire on clicks
+   * outside the dialog since those clicks do not target the `<dialog>` element.
    */
   @property({ type: Boolean, attribute: 'light-dismiss' })
   lightDismiss = false;
+
+  /**
+   * Whether to open as modal (`showModal`) or non-modal (`show`) when using
+   * the controlled `open` property or `defaultOpen`. Default: `true`.
+   * Has no effect on explicit `showModal()` / `show()` method calls — those
+   * always choose their own mode regardless of this property.
+   */
+  modal = true;
 
   // ---- Native <dialog> delegation ----------------------------------------
 
@@ -127,7 +140,7 @@ export class RCDialog extends LitElement {
     this._controlledOpen = value;
 
     if (value !== undefined) {
-      this._applyOpen(value, true);
+      this._applyOpen(value, true, this.modal);
     }
 
     this.requestUpdate('open', oldValue);
@@ -141,8 +154,12 @@ export class RCDialog extends LitElement {
 
     this._defaultOpen = value;
 
-    if (this._controlledOpen === undefined && value) {
-      this._applyOpen(true, true);
+    // Guard with isConnected: Lit processes attributes during template cloning
+    // before the element is connected. _setupDialog handles the open state on
+    // firstUpdated; the eager call here is only needed for dynamic attribute
+    // changes after the element is already in the DOM.
+    if (this._controlledOpen === undefined && value && this.isConnected) {
+      this._applyOpen(true, true, this.modal);
     }
 
     this.requestUpdate('defaultOpen', oldValue);
@@ -159,7 +176,17 @@ export class RCDialog extends LitElement {
     }
   }
 
-  /** Opens the inner `<dialog>` as a non-modal and fires `rc-dialog-open`. */
+  /**
+   * Opens the inner `<dialog>` as a **non-modal** and fires `rc-dialog-open`.
+   *
+   * Non-modal dialogs differ from modal in several ways:
+   * - Focus is **not** trapped inside the dialog; Tab moves freely through the page.
+   * - The browser does **not** fire the native `cancel` event on Escape, so
+   *   `rc-dialog-request-close` is not dispatched automatically on Escape.
+   * - There is no native backdrop, so `light-dismiss` backdrop-click detection
+   *   (which relies on `e.target === <dialog>`) will not trigger for clicks
+   *   outside the dialog.
+   */
   show(): void {
     if (this._applyOpen(true, false, false)) {
       this.dispatchEvent(new CustomEvent('rc-dialog-open', { bubbles: true, composed: true }));
@@ -243,6 +270,13 @@ export class RCDialog extends LitElement {
           dlg,
         );
       }
+      if (!dlg.querySelector('button:not([disabled])')) {
+        console.warn(
+          '[rc-dialog] No enabled <button> found inside <dialog>. APG recommends ' +
+          'including a visible close button in the tab sequence.',
+          dlg,
+        );
+      }
     }
 
     dlg.addEventListener('close', this._onClose);
@@ -280,9 +314,9 @@ export class RCDialog extends LitElement {
     }
 
     if (this._controlledOpen !== undefined) {
-      this._applyOpen(this._controlledOpen, true);
+      this._applyOpen(this._controlledOpen, true, this.modal);
     } else if (this.defaultOpen) {
-      this._applyOpen(true, true);
+      this._applyOpen(true, true, this.modal);
     }
   }
 
@@ -330,8 +364,14 @@ export class RCDialog extends LitElement {
 
   private _onClose = () => {
     // Restore focus to the element that triggered the open, per APG focus management.
-    if (this._openerEl instanceof HTMLElement && this._openerEl.isConnected) {
-      this._openerEl.focus();
+    if (this._openerEl instanceof HTMLElement) {
+      if (this._openerEl.isConnected) {
+        this._openerEl.focus();
+      } else {
+        // Opener was removed from the DOM while the dialog was open; fall back
+        // to body so focus is not left stranded.
+        document.body.focus();
+      }
     }
     this._openerEl = null;
 
