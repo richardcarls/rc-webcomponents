@@ -166,29 +166,54 @@ export function ComboboxDemo() {
 }
 
 export function DialogDemo() {
-  const dialogRef = useRef<RCDialogRef>(null);
+  const [dialogEl, setDialogEl] = useState<RCDialogRef | null>(null);
+  const [confirmEl, setConfirmEl] = useState<RCDialogRef | null>(null);
   const log = useEventLog<{ returnValue: string }>(
-    dialogRef,
+    dialogEl,
     'rc-dialog-close',
     ({ returnValue }) => `rc-dialog-close -> ${returnValue || '(empty)'}`,
+  );
+  const confirmLog = useEventLog<{ returnValue: string }>(
+    confirmEl,
+    'rc-dialog-close',
+    ({ returnValue }) => `rc-dialog-close (confirm) -> ${returnValue || '(empty)'}`,
   );
 
   return (
     <DemoFrame>
-      <button type="button" onClick={() => dialogRef.current?.showModal()}>Open dialog</button>
-      <rc-dialog ref={dialogRef} movable move-handle="[data-titlebar]" resize="both">
+      <p style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: 0 }}>
+        <button type="button" onClick={() => dialogEl?.showModal()}>Open draggable dialog</button>
+        <button type="button" onClick={() => confirmEl?.showModal()}>Open confirm dialog</button>
+      </p>
+      <rc-dialog ref={(el) => setDialogEl(el as RCDialogRef | null)} movable move-handle="[data-titlebar]" resize="both">
         <dialog aria-labelledby="dialog-demo-title">
           <div data-titlebar style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <strong id="dialog-demo-title" style={{ flex: 1 }}>Native dialog</strong>
-            <button type="button" aria-label="Close" onClick={() => dialogRef.current?.close('dismiss')}>
-              <span className="material-symbols-outlined" aria-hidden="true">close</span>
+            <button
+              type="button"
+              aria-label="Close"
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.125rem' }}
+              onClick={() => dialogEl?.close('dismiss')}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '1rem' }}>close</span>
             </button>
           </div>
           <p>Drag the titlebar, resize the edges, or press Escape.</p>
-          <button type="button" onClick={() => dialogRef.current?.close('ok')}>OK</button>
+          <button type="button" style={{ display: 'block', marginInlineStart: 'auto' }} onClick={() => dialogEl?.close('ok')}>OK</button>
         </dialog>
       </rc-dialog>
-      <EventLog entries={log} />
+      <rc-dialog ref={(el) => setConfirmEl(el as RCDialogRef | null)}>
+        <dialog aria-label="Confirm delete" style={{ maxInlineSize: '24rem' }}>
+          <p style={{ marginBlockStart: 0 }}>
+            This will permanently delete the recipe. Continue?
+          </p>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            <button type="button" onClick={() => confirmEl?.close('cancel')}>Cancel</button>
+            <button type="button" onClick={() => confirmEl?.close('delete')}>Delete</button>
+          </div>
+        </dialog>
+      </rc-dialog>
+      <EventLog entries={[...log, ...confirmLog]} />
     </DemoFrame>
   );
 }
