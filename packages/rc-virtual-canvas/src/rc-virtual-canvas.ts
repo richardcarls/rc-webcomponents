@@ -273,6 +273,18 @@ export class RCVirtualCanvas extends LitElement {
     this._scheduleRender(reason);
   }
 
+  /** Ratio of canvas backing-store pixels to CSS pixels along the x-axis (≈ devicePixelRatio when autoResizeCanvas is true). */
+  get canvasScaleX(): number {
+    const canvasRect = this._getCanvasClientRect();
+    return this._getViewportScaleX(canvasRect);
+  }
+
+  /** Ratio of canvas backing-store pixels to CSS pixels along the y-axis (≈ devicePixelRatio when autoResizeCanvas is true). */
+  get canvasScaleY(): number {
+    const canvasRect = this._getCanvasClientRect();
+    return this._getViewportScaleY(canvasRect);
+  }
+
   protected _onPointerEvent(event: PointerEvent | MouseEvent) {
     if (this._handledPointerEvents.has(event)) return;
     if (this._isOverlayEvent(event)) return;

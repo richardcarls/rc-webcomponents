@@ -298,6 +298,8 @@ export type RCVirtualCanvasRef = HTMLElement & {
   autoResizeCanvas: boolean;
   renderMode: 'continuous' | 'viewport-change' | 'manual';
   imageRendering: 'auto' | 'crisp-edges' | 'pixelated';
+  readonly canvasScaleX: number;
+  readonly canvasScaleY: number;
   getViewRect(): RCVirtualCanvasViewRect;
   scrollToContent(x: number, y: number, options?: ScrollToOptions): void;
   centerOnContent(x: number, y: number, options?: ScrollToOptions): void;

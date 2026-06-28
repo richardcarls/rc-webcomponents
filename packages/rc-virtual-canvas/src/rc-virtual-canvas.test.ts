@@ -506,6 +506,31 @@ test('RCVirtualCanvas schedules a fresh animation frame when reconnected with a 
   }
 });
 
+test('RCVirtualCanvas exposes canvas backing store scale as canvasScaleX and canvasScaleY', async () => {
+  const screen = render(html`
+    <rc-virtual-canvas
+      data-testid="virtual-canvas"
+      render-mode="viewport-change"
+      style="display: block; width: 320px; height: 240px;"
+    >
+      <canvas
+        data-testid="canvas"
+        style="display: block; width: 320px; height: 240px;"
+      ></canvas>
+    </rc-virtual-canvas>
+  `);
+
+  const host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
+  const canvas = screen.getByTestId('canvas').element() as HTMLCanvasElement;
+
+  await vi.waitFor(() => {
+    expect(canvas.width).toBeGreaterThanOrEqual(320);
+  });
+
+  expect(host.canvasScaleX).toBeCloseTo(canvas.width / canvas.clientWidth, 5);
+  expect(host.canvasScaleY).toBeCloseTo(canvas.height / canvas.clientHeight, 5);
+});
+
 test('RCVirtualCanvas cancels animation and resize observation on disconnect', async () => {
   const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame');
   const screen = render(html`

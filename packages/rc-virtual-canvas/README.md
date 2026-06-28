@@ -63,6 +63,13 @@ The canvas element should match the component's rendered size (set via CSS). The
 | `renderMode` | `render-mode` | `'continuous' \| 'viewport-change' \| 'manual'` | `'continuous'` | Controls when render events are dispatched |
 | `imageRendering` | `image-rendering` | `'auto' \| 'crisp-edges' \| 'pixelated'` | `'auto'` | Convenience value applied to the slotted canvas via `image-rendering` |
 
+### Read-only properties
+
+| Property | Type | Description |
+|---|---|---|
+| `canvasScaleX` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the x-axis (≈ `devicePixelRatio` when `autoResizeCanvas` is `true`) |
+| `canvasScaleY` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the y-axis |
+
 ### Methods
 
 | Method | Description |
