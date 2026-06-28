@@ -83,7 +83,7 @@ describe('RCSplitter', () => {
       expect(host).toBeInstanceOf(HTMLElement);
       expect(separator).not.toBeNull();
       expect(separator.getAttribute('tabindex')).toBe('0');
-      expect(separator.getAttribute('aria-orientation')).toBe('horizontal');
+      expect(separator.getAttribute('aria-orientation')).toBe('vertical');
       expect(separator.getAttribute('aria-controls')).toBe('primary');
       expect(separator.getAttribute('aria-labelledby')).toBe('primary');
     });
@@ -143,7 +143,7 @@ describe('RCSplitter', () => {
       await new Promise((r) => setTimeout(r, 50));
 
       const separator = getSeparator(host);
-      expect(separator.getAttribute('aria-orientation')).toBe('vertical');
+      expect(separator.getAttribute('aria-orientation')).toBe('horizontal');
     });
 
     test('hides separator when no secondary content', async () => {

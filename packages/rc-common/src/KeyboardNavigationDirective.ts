@@ -80,6 +80,14 @@ class KeyboardNavigationDirective extends AsyncDirective {
           ? 'vertical'
           : 'horizontal';
 
+      case 'separator':
+        // Navigation axis is perpendicular to the bar orientation.
+        // ARIA default bar orientation is horizontal → keyboard axis is vertical (Up/Down).
+        // A vertical bar (aria-orientation="vertical") → keyboard axis is horizontal (Left/Right).
+        return this._element?.deref()?.ariaOrientation === 'vertical'
+          ? 'horizontal'
+          : 'vertical';
+
       case 'scrollbar':
       case 'tree':
       case 'listbox':

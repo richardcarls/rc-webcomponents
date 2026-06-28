@@ -450,7 +450,7 @@ export class RCSplitter extends LitElement {
           part="separator-handle"
           aria-labelledby="primary"
           aria-controls="primary"
-          aria-orientation=${this.orientation}
+          aria-orientation=${this.orientation === 'horizontal' ? 'vertical' : 'horizontal'}
           aria-valuenow=${this.value}
           aria-valuetext=${this.valueText}
           aria-valuemin=${this._effectiveMin}
