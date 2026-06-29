@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Transfer list that enhances a native <select multiple> into available and selected panes.",
   "repository": {
     "type": "git",

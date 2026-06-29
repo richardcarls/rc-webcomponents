@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Aggregate package that re-exports and defines the rc-webcomponents collection.",
   "repository": {
     "type": "git",

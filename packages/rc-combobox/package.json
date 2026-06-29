@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Editable combobox with filtering and optional allow-create behavior, configured from native option data.",
   "repository": {
     "type": "git",

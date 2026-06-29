@@ -1,5 +1,28 @@
 # @rcarls/rc-webcomponents
 
+## 0.3.0
+
+### Added
+
+- Add the `./react` export for React JSX type augmentation.
+- Add typed refs and custom event detail exports for React users.
+- Add `canvasScaleX` and `canvasScaleY` to aggregate React and Solid virtual-canvas refs.
+- Add aggregate typing coverage for listbox action events and options.
+
+### Changed
+
+- Align aggregate React and Solid typings for `rc-listbox`, `rc-menubar`, and `rc-fab`.
+- Update package metadata, README intro, docs links, and published aggregate exports.
+
+### Fixed
+
+- Remove non-existent `rc-fab` props from `solid.d.ts`.
+- Fix published declaration and theme exports.
+
+### Dependencies
+
+- Sync component dependencies to 0.3.0.
+
 ## 0.2.0
 
 ### Patch Changes

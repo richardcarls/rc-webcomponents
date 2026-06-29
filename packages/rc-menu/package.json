@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Menu popup for command surfaces with keyboard navigation and typed activation events.",
   "repository": {
     "type": "git",
