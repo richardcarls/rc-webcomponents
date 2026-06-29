@@ -85,12 +85,39 @@ function EventLog({ entries, placeholder = 'Events will appear here...' }: {
 }
 
 export function AppBarDemo() {
-  const barRef = useRef<RCAppBarRef>(null);
+  const [barEl, setBarEl] = useState<RCAppBarRef | null>(null);
+  const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!barEl) {
+      return;
+    }
+
+    barEl.scrollTarget = scrollEl;
+    barEl.scrolled = undefined;
+
+    return () => {
+      barEl.scrollTarget = null;
+    };
+  }, [barEl, scrollEl]);
 
   return (
     <DemoFrame>
-      <div style={{ border: '1px solid ButtonBorder' }}>
-        <rc-app-bar ref={barRef} variant="expanded" scroll-behavior="collapse">
+      <div
+        ref={setScrollEl}
+        style={{
+          blockSize: '22rem',
+          border: '1px solid ButtonBorder',
+          overflowY: 'auto',
+        }}
+      >
+        <rc-app-bar
+          ref={setBarEl}
+          variant="expanded"
+          scroll-behavior="collapse"
+          scroll-threshold="1"
+          style={{ position: 'sticky', insetBlockStart: 0, zIndex: 1 }}
+        >
           <button slot="leading" type="button" aria-label="Back">
             <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
           </button>
@@ -105,12 +132,37 @@ export function AppBarDemo() {
             <span className="material-symbols-outlined" aria-hidden="true">edit</span>
           </button>
         </rc-app-bar>
+        <div style={{ padding: '1rem', display: 'grid', gap: '0.75rem' }}>
+          <p style={{ margin: 0 }}>
+            Scroll this panel to watch the expanded app bar collapse into its compact row.
+          </p>
+          {[
+            'Prep ingredients and group tasks before the kitchen gets busy.',
+            'Review active orders, pinned notes, and handoff details in one place.',
+            'Keep the search field available while the title gives back vertical space.',
+            'Use the scrolled divider as a quiet boundary between controls and content.',
+            'Return to the top to let the expanded title settle back into view.',
+            'The app bar observes this container directly, so the page itself stays still.',
+          ].map((text) => (
+            <section
+              key={text}
+              style={{
+                minBlockSize: '5rem',
+                padding: '0.75rem',
+                border: '1px solid color-mix(in srgb, CanvasText 16%, transparent)',
+                borderRadius: '0.5rem',
+              }}
+            >
+              {text}
+            </section>
+          ))}
+        </div>
       </div>
       <p>
-        <button type="button" onClick={() => { if (barRef.current) barRef.current.scrolled = true; }}>
+        <button type="button" onClick={() => scrollEl?.scrollTo({ top: 120, behavior: 'smooth' })}>
           Compact endpoint
         </button>{' '}
-        <button type="button" onClick={() => { if (barRef.current) barRef.current.scrolled = false; }}>
+        <button type="button" onClick={() => scrollEl?.scrollTo({ top: 0, behavior: 'smooth' })}>
           Expanded endpoint
         </button>
       </p>
@@ -351,19 +403,6 @@ export function ListboxDemo() {
 
   return (
     <DemoFrame>
-      <label className="demo-col" style={{ marginBlockEnd: '0.5rem' }}>
-        <span>Filter</span>
-        <input
-          type="search"
-          placeholder="Type to filter…"
-          aria-label="Filter fruit options"
-          onChange={(e) => {
-            const text = e.currentTarget.value;
-            if (!listboxEl) return;
-            text ? listboxEl.filterOptions(text) : listboxEl.clearFilter();
-          }}
-        />
-      </label>
       <rc-listbox
         ref={seedListbox}
         multiple
@@ -443,16 +482,19 @@ export function MarkdownEditorDemo() {
 }
 
 export function MenuDemo() {
-  const menuRef = useRef<RCMenuRef>(null);
+  const [menuEl, setMenuEl] = useState<HTMLElement | null>(null);
+  const setMenuRef = useCallback((element: RCMenuRef | null) => {
+    setMenuEl(element as HTMLElement | null);
+  }, []);
   const log = useEventLog<{ value?: string }>(
-    menuRef,
+    menuEl,
     'rc-menu-activate',
     ({ value }) => `rc-menu-activate -> ${value ?? '(no value)'}`,
   );
 
   return (
     <DemoFrame>
-      <rc-menu ref={menuRef} label="Example menu">
+      <rc-menu ref={setMenuRef} label="Example menu">
         <button type="button" value="new">New recipe</button>
         <button type="button" value="duplicate">Duplicate</button>
         <button type="button" value="delete" disabled>Delete</button>

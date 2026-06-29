@@ -5,24 +5,24 @@ export function SingleAccordionDemo() {
     <DemoFrame>
       <rc-accordion name="docusaurus-single-open-example">
         <details open>
-          <summary>Heading 1</summary>
+          <summary>Shipping options</summary>
           <div>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-            <p>Harum, nobis.</p>
+            <p>Standard delivery leaves the warehouse in two business days.</p>
+            <p>Expedited orders move first when inventory is already reserved.</p>
           </div>
         </details>
         <details>
-          <summary>Heading 2</summary>
+          <summary>Billing contacts</summary>
           <div>
-            <p>Sit a beatae, similique perspiciatis error esse voluptatem.</p>
-            <p>Panel content remains native light DOM.</p>
+            <p>Add a finance contact when invoices should go somewhere other than the account owner.</p>
+            <p>Receipts and renewal reminders use the same contact list.</p>
           </div>
         </details>
         <details>
-          <summary>Heading 3</summary>
+          <summary>Notification preferences</summary>
           <div>
+            <p>Weekly summaries are useful for quiet teams; incident alerts should stay immediate.</p>
             <p>Arrow keys move between summaries after upgrade.</p>
-            <p>The browser still owns details semantics.</p>
           </div>
         </details>
       </rc-accordion>
@@ -35,12 +35,19 @@ export function MultipleAccordionDemo() {
     <DemoFrame>
       <rc-accordion multiple>
         <details open>
-          <summary>Heading 1</summary>
-          <div><p>This panel can stay open while other panels expand.</p></div>
+          <summary>Product filters</summary>
+          <div>
+            <p>Keep category, availability, and rating groups open while comparing inventory.</p>
+          </div>
         </details>
         <details open>
-          <summary>Heading 2</summary>
-          <div><p>The <code>multiple</code> attribute disables exclusive-open coordination.</p></div>
+          <summary>Saved views</summary>
+          <div>
+            <p>
+              Teams often review several saved views at once. The <code>multiple</code> attribute
+              disables exclusive-open coordination.
+            </p>
+          </div>
         </details>
       </rc-accordion>
     </DemoFrame>
@@ -53,13 +60,16 @@ export function DisclosureAccordionDemo() {
       <rc-accordion name="docusaurus-disclosure-example">
         <rc-disclosure>
           <details open>
-            <summary>Heading 1</summary>
-            <div><p>Wrapped disclosures still participate in accordion coordination.</p></div>
+            <summary>Release checklist</summary>
+            <div>
+              <p>Wrapped disclosures still participate in accordion coordination.</p>
+              <p>Use this pattern when a disclosure component owns extra styling or behavior.</p>
+            </div>
           </details>
         </rc-disclosure>
         <rc-disclosure>
           <details id="docusaurus-fragment-example">
-            <summary>Fragment Example</summary>
+            <summary>Deep-linked section</summary>
             <div>
               <p>
                 This panel opens automatically when the URL hash matches{' '}
@@ -70,8 +80,10 @@ export function DisclosureAccordionDemo() {
         </rc-disclosure>
         <rc-disclosure>
           <details>
-            <summary>Heading 3</summary>
-            <div><p>The Material theme is scoped to this demo frame.</p></div>
+            <summary>Audit notes</summary>
+            <div>
+              <p>Use the preview controls to compare the same native markup across themes.</p>
+            </div>
           </details>
         </rc-disclosure>
       </rc-accordion>
