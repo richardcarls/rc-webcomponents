@@ -1,5 +1,5 @@
 import { LitElement, nothing, type PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { DragController, ResizeController } from '@rcarls/rc-common';
 
 /** Detail shape for `rc-dialog-close` and `rc-dialog-request-close`. */
@@ -106,9 +106,15 @@ export class RCDialog extends LitElement {
    */
   modal = true;
 
+  /** The inner `<dialog>` element, resolved live via `@query` on each access. */
+  @query(':scope > dialog')
+  protected _$dialog!: HTMLDialogElement | null;
+
   private _controlledOpen: boolean | undefined = undefined;
   private _defaultOpen = false;
-  private _$dialogRef: WeakRef<HTMLDialogElement> | null = null;
+  // Tracks which <dialog> has its listeners wired; used by _teardownDialog to
+  // remove listeners even after the element is removed from the DOM.
+  private _$wired: WeakRef<HTMLDialogElement> | null = null;
   protected _observer: MutationObserver | null = null;
   private _suppressNextCloseToggle = false;
 
@@ -118,7 +124,7 @@ export class RCDialog extends LitElement {
   /** Whether the inner `<dialog>` is currently open. Host writes update silently. */
   @property({ type: Boolean, attribute: 'open', reflect: true })
   get open(): boolean {
-    return this.$dlg()?.open ?? false;
+    return this._$dialog?.open ?? false;
   }
 
   set open(value: boolean | undefined) {
@@ -153,7 +159,7 @@ export class RCDialog extends LitElement {
 
   /** The return value set when the dialog was closed. */
   get returnValue(): string {
-    return this.$dlg()?.returnValue ?? '';
+    return this._$dialog?.returnValue ?? '';
   }
 
   /** Opens the inner `<dialog>` as a modal and fires `rc-dialog-open`. */
@@ -176,7 +182,7 @@ export class RCDialog extends LitElement {
 
   /** Closes the inner `<dialog>`, optionally setting a return value. */
   close(returnValue?: string): void {
-    this.$dlg()?.close(returnValue);
+    this._$dialog?.close(returnValue);
   }
 
   /**
@@ -184,7 +190,7 @@ export class RCDialog extends LitElement {
    * first.
    */
   requestClose(returnValue?: string): void {
-    const $dialog = this.$dlg();
+    const $dialog = this._$dialog;
 
     if (!$dialog) {
       return;
@@ -204,11 +210,6 @@ export class RCDialog extends LitElement {
     }
   }
 
-  /** Returns the inner `<dialog>` element, preferring the cached `WeakRef`. */
-  protected $dlg(): HTMLDialogElement | null {
-    return this._$dialogRef?.deref() ?? this.querySelector<HTMLDialogElement>(':scope > dialog');
-  }
-
   override render() {
     return nothing;
   }
@@ -226,7 +227,7 @@ export class RCDialog extends LitElement {
 
   /** Wires event listeners, drag/resize controllers, and initial open state for the inner `<dialog>`. */
   protected _setupDialog() {
-    const $dialog = this.$dlg();
+    const $dialog = this._$dialog;
 
     if (!$dialog) {
       if (import.meta.env.DEV) {
@@ -240,12 +241,12 @@ export class RCDialog extends LitElement {
       return;
     }
 
-    if (this._$dialogRef?.deref() === $dialog) {
+    if (this._$wired?.deref() === $dialog) {
       return;
     }
 
     this._teardownDialog();
-    this._$dialogRef = new WeakRef($dialog);
+    this._$wired = new WeakRef($dialog);
 
     if (import.meta.env.DEV) {
       const hasLabel =
@@ -324,7 +325,7 @@ export class RCDialog extends LitElement {
   }
 
   override updated(changed: PropertyValues) {
-    const $dialog = this.$dlg();
+    const $dialog = this._$dialog;
 
     if (!$dialog) {
       return;
@@ -368,7 +369,7 @@ export class RCDialog extends LitElement {
 
   /** Removes all event listeners attached to the inner `<dialog>` and clears cached state. */
   protected _teardownDialog(): void {
-    const $dialog = this._$dialogRef?.deref();
+    const $dialog = this._$wired?.deref();
 
     if (!$dialog) {
       return;
@@ -378,7 +379,7 @@ export class RCDialog extends LitElement {
     $dialog.removeEventListener('cancel', this._onCancel);
     $dialog.removeEventListener('click', this._onBackdropClick);
 
-    this._$dialogRef = null;
+    this._$wired = null;
     this._$opener = null;
   }
 
@@ -435,7 +436,7 @@ export class RCDialog extends LitElement {
    * Detects backdrop clicks.
    */
   protected _onBackdropClick = (e: MouseEvent) => {
-    if (e.target === this.$dlg()) {
+    if (e.target === this._$dialog) {
       this.requestClose();
     }
   };
@@ -448,7 +449,7 @@ export class RCDialog extends LitElement {
    * @param modal - Whether to call `showModal()` (`true`) or `show()` (`false`).
    */
   protected _applyOpen(open: boolean, silent: boolean, modal = true): boolean {
-    const $dialog = this.$dlg();
+    const $dialog = this._$dialog;
 
     if (!$dialog) {
       return false;
