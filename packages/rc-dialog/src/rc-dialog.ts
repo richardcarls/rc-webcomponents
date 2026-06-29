@@ -19,45 +19,40 @@ declare global {
   }
 
   interface HTMLElementEventMap {
-    'rc-dialog-open':          CustomEvent<Record<string, never>>;
-    'rc-dialog-close':         CustomEvent<RCDialogCloseEvent>;
+    'rc-dialog-open': CustomEvent<Record<string, never>>;
+    'rc-dialog-close': CustomEvent<RCDialogCloseEvent>;
     'rc-dialog-request-close': CustomEvent<RCDialogCloseEvent>;
-    'rc-dialog-cancel':        CustomEvent<Record<string, never>>;
-    'rc-dialog-toggle':        CustomEvent<RCDialogToggleEvent>;
+    'rc-dialog-cancel': CustomEvent<Record<string, never>>;
+    'rc-dialog-toggle': CustomEvent<RCDialogToggleEvent>;
   }
 }
 
 /**
- * Enhances a consumer-provided `<dialog>` child with drag, resize, and
- * accessible event forwarding. Renders nothing itself — the `<dialog>` element
- * remains in the document's light DOM for full CSS and AT access.
+ * Enhances a native `<dialog>` child with drag, resize, and accessible
+ * event forwarding.
  *
  * @slot - Place a `<dialog>` element with your content here.
  *
  * @fires rc-dialog-open - Fired when the dialog opens via `showModal()` or `show()`.
  * @fires rc-dialog-toggle - Fired when user/native interaction changes open state.
- *
- * @fires rc-dialog-request-close - Fired before the dialog closes (Escape key,
- *   backdrop click when `light-dismiss` is set, or a call to `requestClose()`).
- *   **Cancelable** — call `preventDefault()` to block the close (e.g. unsaved-
- *   changes guard). `detail: { returnValue: string }`
- *
+ * @fires rc-dialog-request-close - Fired before the dialog closes (cancellable).
  * @fires rc-dialog-cancel - Mirrors the inner `<dialog>` cancel event when the
  *   close was not prevented. Backward-compatible alias for `rc-dialog-request-close`.
- *
  * @fires rc-dialog-close - Mirrors the inner `<dialog>` close event.
  *   `detail: { returnValue: string }`
  *
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/
  */
 export class RCDialog extends LitElement {
-  override createRenderRoot() { return this; }
+  override createRenderRoot() {
+    return this;
+  }
 
   /**
-   * Allow the dialog to be moved by dragging. Use `move-handle` to restrict
-   * dragging to a specific child element (e.g. a titlebar).
-   * Named `movable` — not `draggable` — to avoid colliding with the
-   * built-in HTML Drag and Drop `draggable` global attribute.
+   * Allow the dialog to be moved by dragging.
+   *
+   * Use `move-handle` to restrict dragging to a specific child
+   * element (e.g. a titlebar).
    */
   @property({ type: Boolean, reflect: true })
   movable = false;
@@ -87,8 +82,9 @@ export class RCDialog extends LitElement {
   resizeStep = 4;
 
   /**
-   * Proxied to the inner `<dialog closedby="...">` attribute (Chrome 134+,
-   * Safari 18.4+, Firefox 139+). Progressive enhancement — no-op in older browsers.
+   * Proxied to the inner `<dialog closedby="...">` attribute.
+   *
+   * Progressive enhancement, no-op in older browsers.
    *
    * - `'any'`          — Escape OR backdrop click closes the dialog.
    * - `'closerequest'` — Escape only (browser default for modal dialogs).
@@ -99,41 +95,32 @@ export class RCDialog extends LitElement {
   closedBy: 'any' | 'closerequest' | 'none' | '' = '';
 
   /**
-   * JS fallback for backdrop-click dismissal. When true, a click on the
-   * `<dialog>` element itself (i.e. the backdrop area, not a child element)
-   * calls `requestClose()`. Complements native `closed-by="any"` for browsers
-   * that do not yet support the `closedby` attribute.
-   *
-   * Note: backdrop-click detection relies on `e.target === <dialog>`, which is
-   * only meaningful for modal dialogs where the native backdrop exists. For
-   * non-modal dialogs opened via `show()`, this handler will not fire on clicks
-   * outside the dialog since those clicks do not target the `<dialog>` element.
+   * When true and the dialog is modal, a click on the backdrop area calls
+   * `requestClose()`.
    */
   @property({ type: Boolean, attribute: 'light-dismiss' })
   lightDismiss = false;
 
   /**
-   * Whether to open as modal (`showModal`) or non-modal (`show`) when using
-   * the controlled `open` property or `defaultOpen`. Default: `true`.
-   * Has no effect on explicit `showModal()` / `show()` method calls — those
-   * always choose their own mode regardless of this property.
+   * Whether to open as modal with controlled open. Default: `true`.
    */
   modal = true;
 
-  // ---- Native <dialog> delegation ----------------------------------------
-
   private _controlledOpen: boolean | undefined = undefined;
   private _defaultOpen = false;
-  private _dialogRef: WeakRef<HTMLDialogElement> | null = null;
-  // Initialized in connectedCallback — MutationObserver is browser-only.
-  private _observer: MutationObserver | null = null;
+  private _$dialogRef: WeakRef<HTMLDialogElement> | null = null;
+  protected _observer: MutationObserver | null = null;
   private _suppressNextCloseToggle = false;
+
   /** The element that had focus when the dialog was opened; restored on close. */
-  private _openerEl: Element | null = null;
+  protected _$opener: Element | null = null;
 
   /** Whether the inner `<dialog>` is currently open. Host writes update silently. */
   @property({ type: Boolean, attribute: 'open', reflect: true })
-  get open(): boolean { return this._dlg()?.open ?? false; }
+  get open(): boolean {
+    return this.$dlg()?.open ?? false;
+  }
+
   set open(value: boolean | undefined) {
     const oldValue = this._controlledOpen;
 
@@ -148,16 +135,15 @@ export class RCDialog extends LitElement {
 
   /** Initial uncontrolled open state. */
   @property({ type: Boolean, attribute: 'default-open' })
-  get defaultOpen(): boolean { return this._defaultOpen; }
+  get defaultOpen(): boolean {
+    return this._defaultOpen;
+  }
+
   set defaultOpen(value: boolean) {
     const oldValue = this._defaultOpen;
 
     this._defaultOpen = value;
 
-    // Guard with isConnected: Lit processes attributes during template cloning
-    // before the element is connected. _setupDialog handles the open state on
-    // firstUpdated; the eager call here is only needed for dynamic attribute
-    // changes after the element is already in the DOM.
     if (this._controlledOpen === undefined && value && this.isConnected) {
       this._applyOpen(true, true, this.modal);
     }
@@ -166,7 +152,9 @@ export class RCDialog extends LitElement {
   }
 
   /** The return value set when the dialog was closed. */
-  get returnValue(): string { return this._dlg()?.returnValue ?? ''; }
+  get returnValue(): string {
+    return this.$dlg()?.returnValue ?? '';
+  }
 
   /** Opens the inner `<dialog>` as a modal and fires `rc-dialog-open`. */
   showModal(): void {
@@ -177,15 +165,7 @@ export class RCDialog extends LitElement {
   }
 
   /**
-   * Opens the inner `<dialog>` as a **non-modal** and fires `rc-dialog-open`.
-   *
-   * Non-modal dialogs differ from modal in several ways:
-   * - Focus is **not** trapped inside the dialog; Tab moves freely through the page.
-   * - The browser does **not** fire the native `cancel` event on Escape, so
-   *   `rc-dialog-request-close` is not dispatched automatically on Escape.
-   * - There is no native backdrop, so `light-dismiss` backdrop-click detection
-   *   (which relies on `e.target === <dialog>`) will not trigger for clicks
-   *   outside the dialog.
+   * Opens the inner `<dialog>` (non-modal) and fires `rc-dialog-open`.
    */
   show(): void {
     if (this._applyOpen(true, false, false)) {
@@ -195,38 +175,47 @@ export class RCDialog extends LitElement {
   }
 
   /** Closes the inner `<dialog>`, optionally setting a return value. */
-  close(returnValue?: string): void { this._dlg()?.close(returnValue); }
+  close(returnValue?: string): void {
+    this.$dlg()?.close(returnValue);
+  }
 
   /**
    * Requests the inner `<dialog>` to close, firing a cancelable `cancel` event
-   * first. If the consumer prevents `rc-dialog-request-close`, the close is
-   * blocked. Falls back to a synthesized cancel → close sequence in browsers
-   * that do not yet support the native `requestClose()` method.
+   * first.
    */
   requestClose(returnValue?: string): void {
-    const dlg = this._dlg();
-    if (!dlg) return;
-    if ('requestClose' in dlg && typeof dlg.requestClose === 'function') {
-      dlg.requestClose(returnValue);
+    const $dialog = this.$dlg();
+
+    if (!$dialog) {
+      return;
+    }
+
+    if ('requestClose' in $dialog && typeof $dialog.requestClose === 'function') {
+      $dialog.requestClose(returnValue);
     } else {
       // Synthesize a cancelable cancel event; _onCancel fires rc-dialog-request-close.
-      // If not prevented, _onCancel does not call dlg.close() — we do it here.
+      // If not prevented, _onCancel does not call $dlg.close() — we do it here.
       const ev = new Event('cancel', { cancelable: true, bubbles: false });
-      const prevented = !dlg.dispatchEvent(ev);
-      if (!prevented) dlg.close(returnValue);
+      const prevented = !$dialog.dispatchEvent(ev);
+
+      if (!prevented) {
+        $dialog.close(returnValue);
+      }
     }
   }
 
-  // ---- Internals ----------------------------------------------------------
-
-  private _dlg(): HTMLDialogElement | null {
-    return this._dialogRef?.deref() ?? this.querySelector<HTMLDialogElement>(':scope > dialog');
+  /** Returns the inner `<dialog>` element, preferring the cached `WeakRef`. */
+  protected $dlg(): HTMLDialogElement | null {
+    return this._$dialogRef?.deref() ?? this.querySelector<HTMLDialogElement>(':scope > dialog');
   }
 
-  override render() { return nothing; }
+  override render() {
+    return nothing;
+  }
 
   override connectedCallback() {
     super.connectedCallback();
+
     this._observer = new MutationObserver(() => this._setupDialog());
     this._observer.observe(this, { childList: true });
   }
@@ -235,68 +224,82 @@ export class RCDialog extends LitElement {
     this._setupDialog();
   }
 
-  private _setupDialog() {
-    const dlg = this._dlg();
-    if (!dlg) {
+  /** Wires event listeners, drag/resize controllers, and initial open state for the inner `<dialog>`. */
+  protected _setupDialog() {
+    const $dialog = this.$dlg();
+
+    if (!$dialog) {
       if (import.meta.env.DEV) {
         console.warn(
           '[rc-dialog] No <dialog> child found. Place a <dialog> element ' +
-          'directly inside <rc-dialog>.',
+            'directly inside <rc-dialog>.',
           this,
         );
       }
+
       return;
     }
 
-    if (this._dialogRef?.deref() === dlg) return;
+    if (this._$dialogRef?.deref() === $dialog) {
+      return;
+    }
 
     this._teardownDialog();
-    this._dialogRef = new WeakRef(dlg);
+    this._$dialogRef = new WeakRef($dialog);
 
     if (import.meta.env.DEV) {
       const hasLabel =
-        dlg.hasAttribute('aria-labelledby') || dlg.hasAttribute('aria-label');
+        $dialog.hasAttribute('aria-labelledby') || $dialog.hasAttribute('aria-label');
+
       if (!hasLabel) {
         console.warn(
           '[rc-dialog] The inner <dialog> is missing aria-labelledby or ' +
-          'aria-label. Add one to satisfy the ARIA dialog pattern.',
-          dlg,
+            'aria-label. Add one to satisfy the ARIA dialog pattern.',
+          $dialog,
         );
       }
-      if (dlg.getAttribute('role') === 'alertdialog' && !dlg.hasAttribute('aria-describedby')) {
+
+      if (
+        $dialog.getAttribute('role') === 'alertdialog' &&
+        !$dialog.hasAttribute('aria-describedby')
+      ) {
         console.warn(
           '[rc-dialog] <dialog role="alertdialog"> should have aria-describedby ' +
-          'pointing to the alert message text.',
-          dlg,
+            'pointing to the alert message text.',
+          $dialog,
         );
       }
-      if (!dlg.querySelector('button:not([disabled])')) {
+
+      if (!$dialog.querySelector('button:not([disabled])')) {
         console.warn(
           '[rc-dialog] No enabled <button> found inside <dialog>. APG recommends ' +
-          'including a visible close button in the tab sequence.',
-          dlg,
+            'including a visible close button in the tab sequence.',
+          $dialog,
         );
       }
     }
 
-    dlg.addEventListener('close', this._onClose);
-    dlg.addEventListener('cancel', this._onCancel);
+    $dialog.addEventListener('close', this._onClose);
+    $dialog.addEventListener('cancel', this._onCancel);
 
     if (this.lightDismiss && 'closedBy' in HTMLDialogElement.prototype) {
-      dlg.setAttribute('closedby', 'any');
+      $dialog.setAttribute('closedby', 'any');
     } else if (this.lightDismiss) {
-      dlg.addEventListener('click', this._onBackdropClick);
+      $dialog.addEventListener('click', this._onBackdropClick);
     } else {
-      if (this.closedBy) dlg.setAttribute('closedby', this.closedBy);
+      if (this.closedBy) {
+        $dialog.setAttribute('closedby', this.closedBy);
+      }
     }
 
     if (this.movable || this.moveHandle) {
-      const handle = this.moveHandle
-        ? (dlg.querySelector<Element>(this.moveHandle) ?? dlg)
-        : dlg;
+      const $handle = this.moveHandle
+        ? ($dialog.querySelector<Element>(this.moveHandle) ?? $dialog)
+        : $dialog;
+
       new DragController(this, {
-        target: dlg,
-        handle,
+        target: $dialog,
+        handle: $handle,
         bounds: this.moveBounds,
         step: this.moveStep,
       });
@@ -305,7 +308,7 @@ export class RCDialog extends LitElement {
     if (this.resize !== 'none') {
       // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
       new ResizeController(this, {
-        target: dlg,
+        target: $dialog,
         direction: this.resize,
         threshold: this.resizeThreshold,
         step: this.resizeStep,
@@ -321,25 +324,35 @@ export class RCDialog extends LitElement {
   }
 
   override updated(changed: PropertyValues) {
-    const dlg = this._dlg();
-    if (!dlg) return;
+    const $dialog = this.$dlg();
+
+    if (!$dialog) {
+      return;
+    }
 
     if (changed.has('closedBy')) {
-      if (this.closedBy) dlg.setAttribute('closedby', this.closedBy);
-      else dlg.removeAttribute('closedby');
+      if (this.closedBy) {
+        $dialog.setAttribute('closedby', this.closedBy);
+      } else {
+        $dialog.removeAttribute('closedby');
+      }
     }
 
     if (changed.has('lightDismiss')) {
       if (this.lightDismiss && 'closedBy' in HTMLDialogElement.prototype) {
-        // native support available — delegate to closedby="any" instead of JS handler
-        dlg.setAttribute('closedby', 'any');
-        dlg.removeEventListener('click', this._onBackdropClick);
+        // Native support available — delegate to closedby="any" instead of JS handler.
+        $dialog.setAttribute('closedby', 'any');
+        $dialog.removeEventListener('click', this._onBackdropClick);
       } else if (this.lightDismiss) {
-        dlg.addEventListener('click', this._onBackdropClick);
+        $dialog.addEventListener('click', this._onBackdropClick);
       } else {
-        dlg.removeEventListener('click', this._onBackdropClick);
-        if (this.closedBy) dlg.setAttribute('closedby', this.closedBy);
-        else dlg.removeAttribute('closedby');
+        $dialog.removeEventListener('click', this._onBackdropClick);
+
+        if (this.closedBy) {
+          $dialog.setAttribute('closedby', this.closedBy);
+        } else {
+          $dialog.removeAttribute('closedby');
+        }
       }
     }
   }
@@ -347,33 +360,41 @@ export class RCDialog extends LitElement {
   override disconnectedCallback() {
     this._observer?.disconnect();
     this._observer = null;
+
     this._teardownDialog();
+
     super.disconnectedCallback();
   }
 
-  private _teardownDialog(): void {
-    const dlg = this._dialogRef?.deref();
-    if (!dlg) return;
+  /** Removes all event listeners attached to the inner `<dialog>` and clears cached state. */
+  protected _teardownDialog(): void {
+    const $dialog = this._$dialogRef?.deref();
 
-    dlg.removeEventListener('close', this._onClose);
-    dlg.removeEventListener('cancel', this._onCancel);
-    dlg.removeEventListener('click', this._onBackdropClick);
-    this._dialogRef = null;
-    this._openerEl = null;
+    if (!$dialog) {
+      return;
+    }
+
+    $dialog.removeEventListener('close', this._onClose);
+    $dialog.removeEventListener('cancel', this._onCancel);
+    $dialog.removeEventListener('click', this._onBackdropClick);
+
+    this._$dialogRef = null;
+    this._$opener = null;
   }
 
-  private _onClose = () => {
+  protected _onClose = () => {
     // Restore focus to the element that triggered the open, per APG focus management.
-    if (this._openerEl instanceof HTMLElement) {
-      if (this._openerEl.isConnected) {
-        this._openerEl.focus();
+    if (this._$opener instanceof HTMLElement) {
+      if (this._$opener.isConnected) {
+        this._$opener.focus();
       } else {
         // Opener was removed from the DOM while the dialog was open; fall back
         // to body so focus is not left stranded.
         document.body.focus();
       }
     }
-    this._openerEl = null;
+
+    this._$opener = null;
 
     this.dispatchEvent(
       new CustomEvent('rc-dialog-close', {
@@ -392,14 +413,9 @@ export class RCDialog extends LitElement {
   };
 
   /**
-   * Intercepts the native `cancel` event (Escape key or `requestClose()`).
-   * Fires the cancelable `rc-dialog-request-close` event first. If prevented,
-   * the native cancel is suppressed and the dialog stays open. If not prevented,
-   * the backward-compatible `rc-dialog-cancel` is also fired and the browser
-   * proceeds to close the dialog naturally (no explicit `dlg.close()` call here,
-   * so the `requestClose()` fallback can close after `dispatchEvent` returns).
+   * Intercepts the native `cancel` event.
    */
-  private _onCancel = (e: Event) => {
+  protected _onCancel = (e: Event) => {
     const requestCloseEvent = new CustomEvent('rc-dialog-request-close', {
       bubbles: true,
       composed: true,
@@ -411,44 +427,59 @@ export class RCDialog extends LitElement {
     if (prevented) {
       e.preventDefault();
     } else {
-      this.dispatchEvent(
-        new CustomEvent('rc-dialog-cancel', { bubbles: true, composed: true }),
-      );
+      this.dispatchEvent(new CustomEvent('rc-dialog-cancel', { bubbles: true, composed: true }));
     }
   };
 
   /**
-   * Detects backdrop clicks: a click whose `target` is the `<dialog>` element
-   * itself (not a descendant) means the user clicked outside the dialog's
-   * content box on the backdrop area.
+   * Detects backdrop clicks.
    */
-  private _onBackdropClick = (e: MouseEvent) => {
-    if (e.target === this._dlg()) this.requestClose();
+  protected _onBackdropClick = (e: MouseEvent) => {
+    if (e.target === this.$dlg()) {
+      this.requestClose();
+    }
   };
 
-  private _applyOpen(open: boolean, silent: boolean, modal = true): boolean {
-    const dlg = this._dlg();
-    if (!dlg) return false;
+  /**
+   * Opens or closes the inner `<dialog>` and returns `true` if state actually changed.
+   *
+   * @param open - Whether to open (`true`) or close (`false`).
+   * @param silent - When `true`, suppresses the outgoing `rc-dialog-toggle` event.
+   * @param modal - Whether to call `showModal()` (`true`) or `show()` (`false`).
+   */
+  protected _applyOpen(open: boolean, silent: boolean, modal = true): boolean {
+    const $dialog = this.$dlg();
+
+    if (!$dialog) {
+      return false;
+    }
 
     if (open) {
-      if (dlg.open) return false;
+      if ($dialog.open) {
+        return false;
+      }
+
       // Capture focus owner before the dialog steals it, so we can restore on close.
-      this._openerEl = document.activeElement;
-      modal ? dlg.showModal() : dlg.show();
+      this._$opener = document.activeElement;
+      modal ? $dialog.showModal() : $dialog.show();
       this.requestUpdate('open');
+
       return true;
     }
 
-    if (!dlg.open) return false;
+    if (!$dialog.open) {
+      return false;
+    }
 
     this._suppressNextCloseToggle = silent;
-    dlg.close();
+    $dialog.close();
     this.requestUpdate('open');
 
     return true;
   }
 
-  private _dispatchToggle(open: boolean): void {
+  /** Dispatches `rc-dialog-toggle` with the current open state and return value. */
+  protected _dispatchToggle(open: boolean): void {
     this.dispatchEvent(
       new CustomEvent('rc-dialog-toggle', {
         bubbles: true,
