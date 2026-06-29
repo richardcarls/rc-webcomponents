@@ -77,8 +77,11 @@ const INLINE_FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
 // ---- Native detection -------------------------------------------------------
 
 // Chrome 125+ only — full correct implementation including shadow DOM + popover top layer.
-// Firefox reports 'anchor-name' support but has broken rendering for shadow DOM + popover top layer.
-const _hasNativeAnchor = CSS.supports('position-try-fallbacks: flip-block');
+// Firefox 134+ reports position-try-fallbacks support but lacks anchor-size() and has broken
+// shadow DOM anchor rendering; exclude it so the polyfill/fallback runs instead.
+const _hasNativeAnchor =
+  CSS.supports('position-try-fallbacks: flip-block') &&
+  CSS.supports('min-width: anchor-size(width)');
 
 // ---- Polyfill ---------------------------------------------------------------
 
