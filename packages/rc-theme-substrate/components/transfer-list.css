@@ -1,0 +1,30 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-transfer-list {
+    --rc-transfer-list-gap: 1rem;
+    --rc-transfer-list-panel-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-transfer-list-panel-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-transfer-list-panel-background: var(--substrate-surface-raised, Canvas);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-transfer-list::part(panel),
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-transfer-list::part(listbox) {
+    box-shadow: var(--substrate-shadow-sm, none);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-transfer-list::part(listbox) {
+    --rc-listbox-option-gap: var(--substrate-item-gap, 0.5rem);
+    --rc-listbox-option-min-block-size: 2.25rem;
+    --rc-listbox-option-padding-block: var(--substrate-item-padding-block, 0.55rem);
+    --rc-listbox-option-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+    --rc-listbox-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
+    --rc-listbox-hover-color: var(--rc-field-text, FieldText);
+    --rc-listbox-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+    --rc-listbox-active-color: var(--rc-field-text, FieldText);
+    --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-transfer-list::part(button) {
+    border-radius: var(--rc-control-radius, 0.5rem);
+  }
+}

@@ -1,0 +1,15 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-markdown-editor {
+    --rme-padding: 0.75rem;
+    --rme-border: var(--rc-border, 1px solid ButtonBorder);
+    --rme-radius: var(--substrate-radius-lg, 0.75rem);
+    --rme-background: var(--rc-field, Field);
+    --rme-color: var(--rc-field-text, FieldText);
+    --rme-toolbar-background: var(--substrate-surface-raised, Canvas);
+    --rme-toolbar-border: var(--rc-border, 1px solid ButtonBorder);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-markdown-editor::part(rich-view) {
+    line-height: var(--rc-line-height, normal);
+  }
+}

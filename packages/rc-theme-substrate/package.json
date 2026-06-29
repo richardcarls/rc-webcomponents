@@ -1,0 +1,45 @@
+{
+  "name": "@rcarls/rc-theme-substrate",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.2.0",
+  "description": "Lightweight reference theme for rc-webcomponents.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-theme-substrate"
+  },
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": "./bridge.css",
+    "./bridge.css": "./bridge.css",
+    "./defaults.css": "./defaults.css",
+    "./components.css": "./components.css",
+    "./components/*.css": "./components/*.css",
+    "./theme.css": "./theme.css"
+  },
+  "files": [
+    "*.css",
+    "components",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "echo 'CSS-only package, no build step'",
+    "test:browser": "vitest --run",
+    "test:browser:chrome": "vitest --run --project=chromium",
+    "test:browser:firefox": "vitest --run --project=firefox",
+    "yalc:publish": "yalc publish --push"
+  },
+  "devDependencies": {
+    "@vitest/browser-playwright": "4.1.5",
+    "playwright": "^1.56.0",
+    "vite": "^7.1.7",
+    "vitest": "^4.0.6"
+  }
+}
