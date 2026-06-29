@@ -23,6 +23,7 @@ const packages = [
   ['rc-virtual-canvas', 'Virtualized canvas for large datasets', '/components/rc-virtual-canvas'],
   ['rc-markdown-editor', 'Rich/source Markdown editor', '/components/rc-markdown-editor'],
   ['rc-theme-material', 'Optional CSS-only Material 3 token bridge', '/guide/theme-previews'],
+  ['rc-theme-substrate', 'Lightweight CSS-only reference theme for app foundations', '/guide/theme-previews'],
 ];
 
 export default function Home() {

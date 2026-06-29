@@ -90,6 +90,7 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-transfer-list`](packages/rc-transfer-list/) | Native-select-backed transfer list | rc-listbox, rc-toolbar |
 | [`rc-virtual-canvas`](packages/rc-virtual-canvas/) | Virtualized canvas for large datasets | — |
 | [`rc-theme-material`](packages/rc-theme-material/) | Optional CSS-only Material 3 token bridge | — |
+| [`rc-theme-substrate`](packages/rc-theme-substrate/) | Lightweight CSS-only reference theme for app foundations | — |
 | [`rc-webcomponents`](packages/rc-webcomponents/) | Aggregate package exporting the component collection | all component packages |
 
 ## Development

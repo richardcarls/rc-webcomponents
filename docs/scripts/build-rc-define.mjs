@@ -11,6 +11,9 @@ const outDir = join(docsRoot, 'static', 'rc-webcomponents-dist');
 const materialThemeEntry = join(repoRoot, 'packages', 'rc-theme-material', 'theme.css');
 const materialThemeOutDir = join(docsRoot, 'static', 'rc-theme-material');
 const materialThemeOutFile = join(materialThemeOutDir, 'theme.css');
+const substrateThemeEntry = join(repoRoot, 'packages', 'rc-theme-substrate', 'theme.css');
+const substrateThemeOutDir = join(docsRoot, 'static', 'rc-theme-substrate');
+const substrateThemeOutFile = join(substrateThemeOutDir, 'theme.css');
 
 if (!existsSync(entry)) {
   throw new Error(`Missing ${entry}.`);
@@ -18,6 +21,10 @@ if (!existsSync(entry)) {
 
 if (!existsSync(materialThemeEntry)) {
   throw new Error(`Missing ${materialThemeEntry}.`);
+}
+
+if (!existsSync(substrateThemeEntry)) {
+  throw new Error(`Missing ${substrateThemeEntry}.`);
 }
 
 function inlineCssImports(filePath, seen = new Set()) {
@@ -59,3 +66,8 @@ mkdirSync(materialThemeOutDir, { recursive: true });
 writeFileSync(materialThemeOutFile, inlineCssImports(materialThemeEntry));
 
 console.log(`Built docs Material theme CSS -> ${materialThemeOutFile}`);
+
+mkdirSync(substrateThemeOutDir, { recursive: true });
+writeFileSync(substrateThemeOutFile, inlineCssImports(substrateThemeEntry));
+
+console.log(`Built docs Substrate theme CSS -> ${substrateThemeOutFile}`);

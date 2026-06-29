@@ -8,7 +8,7 @@ import styles from './DemoFrame.module.css';
 
 export type DemoFrameMode = 'auto' | 'light' | 'dark';
 
-export type DemoFrameTheme = 'none' | 'material';
+export type DemoFrameTheme = 'none' | 'substrate' | 'material';
 
 export type DemoFrameControls = 'mode' | 'theme' | 'all';
 
@@ -136,6 +136,8 @@ const STRUCTURAL_CSS = `
 let structuralSheet: CSSStyleSheet | undefined;
 let materialSheetPromise: Promise<CSSStyleSheet> | undefined;
 let materialCssPromise: Promise<string> | undefined;
+let substrateSheetPromise: Promise<CSSStyleSheet> | undefined;
+let substrateCssPromise: Promise<string> | undefined;
 let symbolFontInjected = false;
 let robotoFontInjected = false;
 let previewSnapshot: DemoFramePreviewStore = {
@@ -254,6 +256,45 @@ async function loadMaterialSheet(): Promise<CSSStyleSheet> {
   return materialSheetPromise;
 }
 
+async function loadSubstrateCss(): Promise<string> {
+  substrateCssPromise ??= fetch(docsAssetUrl('rc-theme-substrate/theme.css')).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Unable to load Substrate theme CSS: ${response.status}`);
+    }
+
+    return response.text();
+  });
+
+  return substrateCssPromise;
+}
+
+async function loadSubstrateSheet(): Promise<CSSStyleSheet> {
+  substrateSheetPromise ??= loadSubstrateCss().then(createStylesheet);
+
+  return substrateSheetPromise;
+}
+
+function themeClassName(theme: DemoFrameTheme): string {
+  if (theme === 'material') return 'rc-theme-material';
+  if (theme === 'substrate') return 'rc-theme-substrate';
+
+  return '';
+}
+
+function loadThemeCss(theme: DemoFrameTheme): Promise<string> | undefined {
+  if (theme === 'material') return loadMaterialCss();
+  if (theme === 'substrate') return loadSubstrateCss();
+
+  return undefined;
+}
+
+function loadThemeSheet(theme: DemoFrameTheme): Promise<CSSStyleSheet> | undefined {
+  if (theme === 'material') return loadMaterialSheet();
+  if (theme === 'substrate') return loadSubstrateSheet();
+
+  return undefined;
+}
+
 function upsertFallbackStyle(shadowRoot: ShadowRoot, name: string, cssText: string): void {
   let $style = shadowRoot.querySelector<HTMLStyleElement>(`style[data-demo-frame="${name}"]`);
   if (!$style) {
@@ -288,20 +329,29 @@ function ShadowDemoSurface({ children, label, mode, theme }: ShadowDemoSurfacePr
     }
 
     injectSymbolFont();
+    const themeSheetPromise = loadThemeSheet(theme);
+    const themeCssPromise = loadThemeCss(theme);
 
     if (supportsConstructableStylesheets(shadowRoot)) {
       const structural = getStructuralSheet();
       shadowRoot.adoptedStyleSheets = [structural];
       removeFallbackStyle(shadowRoot, 'structural');
-      removeFallbackStyle(shadowRoot, 'material');
+      removeFallbackStyle(shadowRoot, 'theme');
 
-      if (theme === 'material') {
-        injectMaterialFonts();
+      if (theme !== 'none') {
+        if (theme === 'material') {
+          injectMaterialFonts();
+        }
+
+        if (!themeSheetPromise) {
+          return;
+        }
+
         let active = true;
 
-        void loadMaterialSheet().then((material) => {
+        void themeSheetPromise.then((themeSheet) => {
           if (active) {
-            shadowRoot.adoptedStyleSheets = [structural, material];
+            shadowRoot.adoptedStyleSheets = [structural, themeSheet];
           }
         });
 
@@ -315,13 +365,20 @@ function ShadowDemoSurface({ children, label, mode, theme }: ShadowDemoSurfacePr
 
     upsertFallbackStyle(shadowRoot, 'structural', STRUCTURAL_CSS);
 
-    if (theme === 'material') {
-      injectMaterialFonts();
+    if (theme !== 'none') {
+      if (theme === 'material') {
+        injectMaterialFonts();
+      }
+
+      if (!themeCssPromise) {
+        return;
+      }
+
       let active = true;
 
-      void loadMaterialCss().then((cssText) => {
+      void themeCssPromise.then((cssText) => {
         if (active) {
-          upsertFallbackStyle(shadowRoot, 'material', cssText);
+          upsertFallbackStyle(shadowRoot, 'theme', cssText);
         }
       });
 
@@ -330,15 +387,17 @@ function ShadowDemoSurface({ children, label, mode, theme }: ShadowDemoSurfacePr
       };
     }
 
-    removeFallbackStyle(shadowRoot, 'material');
+    removeFallbackStyle(shadowRoot, 'theme');
   }, [shadowRoot, theme]);
+
+  const themeClass = themeClassName(theme);
 
   return (
     <div ref={hostRef} className={styles.surfaceHost}>
       {shadowRoot &&
         createPortal(
           <section
-            className={theme === 'material' ? 'demo-surface rc-theme-material' : 'demo-surface'}
+            className={themeClass ? `demo-surface ${themeClass}` : 'demo-surface'}
             data-mode={mode === 'auto' ? undefined : mode}
             aria-label={label}
           >
@@ -393,6 +452,7 @@ export function DemoFrame({
                   }}
                 >
                   <option value="none">None</option>
+                  <option value="substrate">Substrate</option>
                   <option value="material">Material</option>
                 </select>
               </label>

@@ -13,6 +13,7 @@
     "@mdx-js/react": "^3.1.1",
     "@rcarls/rc-textarea-plugin-markdown": "workspace:^",
     "@rcarls/rc-theme-material": "workspace:^",
+    "@rcarls/rc-theme-substrate": "workspace:^",
     "@rcarls/rc-webcomponents": "workspace:^",
     "clsx": "^2.1.1",
     "highlight.js": "^11.11.1",
