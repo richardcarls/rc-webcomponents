@@ -26,7 +26,8 @@ export interface RCAppBarScrollDetail {
 }
 
 /**
- * A headless app bar with leading, title, exact-center, and trailing regions.
+ * App bar modeled after the Material 3 Top app bar, with leading, title, center, trailing
+ * regions and optional scroll behavior.
  *
  * The element carries no landmark role. Consumers provide all controls and
  * icons, and wrap page-level instances in `<header>` when a banner landmark is
@@ -36,6 +37,9 @@ export interface RCAppBarScrollDetail {
  * `scroll-target` selector attribute) and the bar observes the container.
  * Controlled: assign `scrolled`; assigning `undefined` releases observation.
  * Host writes are silent.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-app-bar rc-app-bar docs}
+ * @see {@link https://m3.material.io/components/top-app-bar/overview Material 3 Top app bar}
  *
  * @slot leading - Leading navigation or controls; accepts multiple children
  * @slot - The single title region; may contain title and subtitle markup

@@ -1,7 +1,8 @@
 # `@rcarls/rc-search-bar`
 
-Enhances a native `<input type="search">` with more consistent appearance and
-behavior, and introduces convenience properties and debounced search events.
+Search field wrapper for a native `<input type="search">` with icon chrome, clear button, and debounced events.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-search-bar](https://richardcarls.github.io/rc-webcomponents/components/rc-search-bar).
 
 ---
 

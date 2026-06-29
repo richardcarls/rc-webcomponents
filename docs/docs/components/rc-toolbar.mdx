@@ -2,13 +2,15 @@
 title: rc-toolbar
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { ToolbarDemo } from '@site/src/components/ComponentDemos';
 
 # rc-toolbar
 
-An ARIA toolbar that coordinates keyboard navigation across consumer-supplied controls.
+Toolbar that groups consumer-supplied controls into one tab stop with arrow-key navigation, following the [WAI-ARIA Toolbar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/).
 
 <AtAGlance
   packageName="@rcarls/rc-toolbar"
@@ -21,17 +23,26 @@ An ARIA toolbar that coordinates keyboard navigation across consumer-supplied co
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-toolbar
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-toolbar
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-toolbar/define';
-`
+```
 
 ## Live demo
 

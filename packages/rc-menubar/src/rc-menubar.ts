@@ -21,12 +21,15 @@ const IE_KEY_ALIASES: Record<string, string> = {
 };
 
 /**
- * A menubar component containing menu buttons.
+ * Menubar coordinator for rc-menu-button children with roving tabindex and submenu
+ * handoff, following the WAI-ARIA Menubar pattern.
  *
  * Uses roving tabindex rather than aria-activedescendant so trigger buttons
  * receive real focus — required for submenu handoff and screen reader announcements.
  *
- * @see https://www.w3.org/WAI/ARIA/apg/patterns/menubar/
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-menubar rc-menubar docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/menubar/ WAI-ARIA Menubar pattern}
  *
  * @slot default - Takes rc-menu-button elements to display in the menubar
  *

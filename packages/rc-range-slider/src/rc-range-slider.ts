@@ -60,8 +60,8 @@ function parseAttr(s: string, defaultVal: number): number {
 }
 
 /**
- * Dual-thumb range slider implementing the WAI-ARIA APG Slider (Multi-Thumb)
- * pattern with custom shadow-DOM slider thumbs.
+ * Two-thumb range slider backed by native range inputs for min/max values, following the
+ * WAI-ARIA Multi-Thumb Slider pattern.
  *
  * Consumers provide two direct child `<input type="range">` elements. Before
  * upgrade, those inputs are the usable progressive-enhancement fallback. After
@@ -69,6 +69,9 @@ function parseAttr(s: string, defaultVal: number): number {
  * shadow thumbs become the focusable, accessible interaction surface.
  *
  * Form participation is handled natively by each input's `name` attribute.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-range-slider rc-range-slider docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/ WAI-ARIA Multi-Thumb Slider pattern}
  *
  * @slot - Consumer-provided native range inputs.
  * @slot track-background - Optional decorative content rendered inside the track before the selected range fill.

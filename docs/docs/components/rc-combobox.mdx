@@ -2,6 +2,8 @@
 title: rc-combobox
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { ComboboxDemo } from '@site/src/components/ComponentDemos';
@@ -13,13 +15,12 @@ import {
 
 # rc-combobox
 
-A web component implementation of the [WAI-ARIA APG combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/),
-with autocomplete filtering and optional on-the-fly item creation.
+Editable combobox with filtering and optional allow-create behavior, configured from native option data and following the [WAI-ARIA Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
 
 <AtAGlance
   packageName="@rcarls/rc-combobox"
   tag="rc-combobox"
-  native="Requires a slotted native select"
+  native="Requires a direct child native select"
   state="Controlled or uncontrolled text and selection"
   events={['rc-select-change', 'rc-combobox-create', 'rc-select-open', 'rc-select-close']}
   related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
@@ -27,17 +28,26 @@ with autocomplete filtering and optional on-the-fly item creation.
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-combobox
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-combobox
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-combobox/define';
-`
+```
 
 ## Live demo
 

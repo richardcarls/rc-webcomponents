@@ -35,8 +35,8 @@ export interface RCSearchBarInputDetail {
 }
 
 /**
- * Enhances a consumer-provided native `<input type="search">` with leading
- * icon chrome, an accessible clear button, and debounced search events.
+ * Search field wrapper for a native <input type="search"> with icon chrome, clear button,
+ * and debounced events.
  *
  * The native input is required and stays in light DOM as the source of
  * truth, so form submission, `label[for]`/wrapping-label association, and
@@ -48,6 +48,8 @@ export interface RCSearchBarInputDetail {
  * When restored, the native button clears through the normal input path
  * (a debounced `rc-search-bar-input` with an empty value) and never fires
  * `rc-search-bar-clear`.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-search-bar rc-search-bar docs}
  *
  * @slot - The required native `<input type="search">`
  * @slot leading - Decorative leading icon; mark it `aria-hidden="true"`

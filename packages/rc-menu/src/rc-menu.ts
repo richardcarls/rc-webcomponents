@@ -151,10 +151,12 @@ const LIGHT_DOM_CSS = `
 `;
 
 /**
- * An implementation of the WAI-ARIA Menu pattern that groups native elements
- * into a menu using `aria-activedescendant` virtual cursor navigation.
+ * Menu popup for command surfaces with keyboard navigation and typed activation events,
+ * following the WAI-ARIA Menu pattern.
  *
- * @see https://www.w3.org/WAI/ARIA/apg/patterns/menu/
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-menu rc-menu docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/menu/ WAI-ARIA Menu pattern}
  *
  * @slot default - Menu items, groups, and separators. Supported content model:
  *   - Focusable elements (`<button>`, `<a>`, `[tabindex]`) become navigable `role="menuitem"` entries.

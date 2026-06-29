@@ -2,13 +2,15 @@
 title: rc-menu-button
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { MenuButtonDemo } from '@site/src/components/ComponentDemos';
 
 # rc-menu-button
 
-A button that opens an ARIA menu while preserving consumer-supplied trigger and menu content.
+Trigger button that opens an `rc-menu` popup, following the [WAI-ARIA Menu Button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/).
 
 <AtAGlance
   packageName="@rcarls/rc-menu-button"
@@ -21,17 +23,26 @@ A button that opens an ARIA menu while preserving consumer-supplied trigger and 
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-menu-button
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-menu-button
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-menu-button/define';
-`
+```
 
 ## Live demo
 

@@ -137,7 +137,7 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
 
 
 /**
- * Markdown-backed rich-text editor with two first-class modes:
+ * Rich/source Markdown editor with a formatting toolbar, backed by rc-textarea.
  *
  * - **Rich mode (default)**: A `contenteditable` div shows micromark-rendered
  *   HTML. DOM mutations are converted back to markdown via turndown and
@@ -154,6 +154,8 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
  *   <textarea id="body" name="body"></textarea>
  * </rc-markdown-editor>
  * ```
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-markdown-editor rc-markdown-editor docs}
  *
  * @fires rc-change          - Value changed. Detail: `{ value: string }`.
  * @fires rc-mode-change     - Mode toggled. Detail: `{ mode: EditorMode }`.

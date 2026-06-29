@@ -2,13 +2,15 @@
 title: rc-app-bar
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { AppBarDemo } from '@site/src/components/ComponentDemos';
 
 # rc-app-bar
 
-A headless grid app bar with leading, title, exact-center, and trailing regions plus pinned, collapse, and hide scroll behaviors.
+App bar modeled after the [Material 3 Top app bar](https://m3.material.io/components/top-app-bar/overview), with leading, title, center, trailing regions and optional scroll behavior.
 
 <AtAGlance
   packageName="@rcarls/rc-app-bar"
@@ -21,17 +23,26 @@ A headless grid app bar with leading, title, exact-center, and trailing regions 
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-app-bar
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-app-bar
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-app-bar/define';
-`
+```
 
 ## Live demo
 

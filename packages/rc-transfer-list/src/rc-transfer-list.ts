@@ -25,7 +25,8 @@ declare global {
 }
 
 /**
- * Enhances a `<select multiple>` element to become a side-by-side transfer list.
+ * Transfer list that enhances a native <select multiple> into available and selected
+ * panes.
  *
  * The component renders two listboxes and transfer/reorder actions in between.
  * Available options are on the left, and selected options appear on the right. It
@@ -35,6 +36,8 @@ declare global {
  * The `available` and `selected` JS array properties write through to the
  * backing `<select>`, so the component can also be driven imperatively from a
  * framework without giving up form participation.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-transfer-list rc-transfer-list docs}
  *
  * @fires rc-transfer-list-change - Fires when the selected/right-hand list changes.
  *

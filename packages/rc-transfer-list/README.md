@@ -1,6 +1,8 @@
 # @rcarls/rc-transfer-list
 
-Enhances a `<select multiple>` element to become a side-by-side transfer list.
+Transfer list that enhances a native `<select multiple>` into available and selected panes.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-transfer-list](https://richardcarls.github.io/rc-webcomponents/components/rc-transfer-list).
 
 The component renders two listboxes and transfer/reorder actions in between.
 Available options are on the left, and selected options appear on the right. It

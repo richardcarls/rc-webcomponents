@@ -2,13 +2,15 @@
 title: rc-range-slider
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { RangeSliderDemo } from '@site/src/components/ComponentDemos';
 
 # rc-range-slider
 
-A two-thumb range slider backed by native range inputs for minimum and maximum values.
+Two-thumb range slider backed by native range inputs for min/max values, following the [WAI-ARIA Multi-Thumb Slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/).
 
 <AtAGlance
   packageName="@rcarls/rc-range-slider"
@@ -21,17 +23,26 @@ A two-thumb range slider backed by native range inputs for minimum and maximum v
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-range-slider
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-range-slider
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-range-slider/define';
-`
+```
 
 ## Live demo
 

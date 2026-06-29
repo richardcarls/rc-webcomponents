@@ -1,9 +1,8 @@
 # `@rcarls/rc-listbox`
 
-A [WAI-ARIA listbox](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/) component
-that renders a `<ul role="presentation">` + `<li role="option">` subtree
-directly into its own light DOM to facilitate `aria-activedescendant` virtual
-navigation with IDs inside the same document or shadow root.
+Listbox that keeps option DOM in light DOM for `aria-activedescendant` navigation, following the [WAI-ARIA Listbox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-listbox](https://richardcarls.github.io/rc-webcomponents/components/rc-listbox).
 
 `rc-listbox` is primarily an infrastructure component that can be used
 directly when an application or component controls option data and selection state.

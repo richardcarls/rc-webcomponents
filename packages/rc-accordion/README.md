@@ -1,5 +1,7 @@
 # @rcarls/rc-accordion
 
-Implements the [WAI-ARIA Accordion Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/) by coordinating child `<details>` panels.
+Accordion coordinator for child native `<details>` panels with single- or multiple-open behavior, following the [WAI-ARIA Accordion pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-accordion](https://richardcarls.github.io/rc-webcomponents/components/rc-accordion).
 
 Also supports [`rc-disclosure`](./rc-disclosure) for granular control and fragment-target.

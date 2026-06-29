@@ -35,12 +35,15 @@ declare global {
 }
 
 /**
- * A progressive enhancement implementation of the single- and multi-select
- * WAI-ARIA APG Combobox pattern.
+ * Select-only combobox backed by a native <select>, following the WAI-ARIA Combobox
+ * pattern.
  *
  * Wraps a native `<select>` (default slot) as the form value reflector while
  * rendering a custom button trigger and popup listbox. Popup placement
  * and `aria-activedescendant` virtual keyboard navigation are supported.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-select rc-select docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/combobox/ WAI-ARIA Combobox pattern}
  *
  * @slot - Required. A native `<select>` element used for form submission
  *   and as the source of truth for options, multiple, and disabled state.

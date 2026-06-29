@@ -1,6 +1,8 @@
 # `@rcarls/rc-toolbar`
 
-A WAI-ARIA compliant toolbar component implementing the [Toolbar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/). Manages roving tabindex across slotted controls so the toolbar acts as a single tab stop with arrow-key internal navigation. Built with [Lit 3](https://lit.dev).
+Toolbar that groups consumer-supplied controls into one tab stop with arrow-key navigation, following the [WAI-ARIA Toolbar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-toolbar](https://richardcarls.github.io/rc-webcomponents/components/rc-toolbar).
 
 ---
 

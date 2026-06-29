@@ -2,13 +2,15 @@
 title: rc-slider
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { SliderDemo } from '@site/src/components/ComponentDemos';
 
 # rc-slider
 
-A single-thumb slider backed by a native `<input type="range">` so labels, forms, and pre-upgrade interaction remain native.
+Single-thumb slider backed by a native `<input type="range">` with custom track and value display hooks, following the [WAI-ARIA Slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/).
 
 <AtAGlance
   packageName="@rcarls/rc-slider"
@@ -21,17 +23,26 @@ A single-thumb slider backed by a native `<input type="range">` so labels, forms
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-slider
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-slider
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-slider/define';
-`
+```
 
 ## Live demo
 

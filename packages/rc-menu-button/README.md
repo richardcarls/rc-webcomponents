@@ -1,6 +1,8 @@
 # `@rcarls/rc-menu-button`
 
-An implementation of the [WAI-ARIA Menu Button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/).
+Trigger button that opens an `rc-menu` popup, following the [WAI-ARIA Menu Button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-menu-button](https://richardcarls.github.io/rc-webcomponents/components/rc-menu-button).
 
 Wraps a trigger element and an `rc-menu` popup, wiring ARIA attributes, light-dismiss, and keyboard open/close automatically.
 

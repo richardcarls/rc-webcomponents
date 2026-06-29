@@ -16,7 +16,7 @@ declare global {
 }
 
 /**
- * Immutable snapshot of the visible window into virtual content for one render frame.
+ * Scrollable virtual canvas for rendering large coordinate-space content.
  *
  * `x` and `y` are scroll offsets in CSS pixels; `width` and `height` are the canvas
  * backing-store dimensions in device pixels (DPR-accurate when `autoResizeCanvas` is `true`).
@@ -126,6 +126,8 @@ function createRectSnapshot(rect: RCVirtualCanvasViewRect) {
 
 /**
  * A scrollable virtual canvas component.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-virtual-canvas rc-virtual-canvas docs}
  *
  * @slot - The HTMLCanvasElement
  * @slot overlay - Optional viewport-positioned content rendered inside the

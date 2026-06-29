@@ -1,7 +1,8 @@
 # `@rcarls/rc-fab`
 
-A sticky-positioned button over page content with scroll behaviors, adapted from
-the [Material Design FAB component](https://m3.material.io/components/floating-action-button/overview).
+Sticky floating action button modeled after the [Material 3 Floating action button](https://m3.material.io/components/floating-action-button/overview), wrapping a consumer-supplied button with scroll-aware visibility.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-fab](https://richardcarls.github.io/rc-webcomponents/components/rc-fab).
 
 Use this for "back to top", sticky CTAs, chat launchers, and of course as FABs in your
 Material Design website or PWA.

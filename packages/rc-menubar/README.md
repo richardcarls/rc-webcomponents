@@ -1,6 +1,8 @@
 # `@rcarls/rc-menubar`
 
-An implementation of the [WAI-ARIA Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/).
+Menubar coordinator for `rc-menu-button` children with roving tabindex and submenu handoff, following the [WAI-ARIA Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-menubar](https://richardcarls.github.io/rc-webcomponents/components/rc-menubar).
 
 Manages roving tabindex across `rc-menu-button` triggers and cascades menu open/close as the user navigates. Built with [Lit 3](https://lit.dev).
 

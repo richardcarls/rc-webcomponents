@@ -33,8 +33,11 @@ declare global {
 }
 
 /**
- * Enhances a native `<dialog>` child with drag, resize, and accessible
- * event forwarding.
+ * Draggable, resizable wrapper for a native <dialog>, following the WAI-ARIA Dialog Modal
+ * pattern.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-dialog rc-dialog docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/ WAI-ARIA Dialog Modal pattern}
  *
  * @slot - Place a `<dialog>` element with your content here.
  *
@@ -46,7 +49,6 @@ declare global {
  * @fires rc-dialog-close - Mirrors the inner `<dialog>` close event.
  *   `detail: { returnValue: string }`
  *
- * @see https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/
  */
 export class RCDialog extends LitElement {
   override createRenderRoot() {

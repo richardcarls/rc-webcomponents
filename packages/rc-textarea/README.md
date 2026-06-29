@@ -1,7 +1,8 @@
 # rc-textarea
 
-A progressive enhancement wrapper around the native `<textarea>` with support for line numbers,
-syntax / pattern decoration, inline widgets, and a robust plugin API.
+Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-textarea](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea).
 
 Made with [Lit](https://lit.dev) and [Parchment](https://github.com/quilljs/parchment).
 
@@ -227,7 +228,7 @@ For Lezer, Unified, and Shiki integrations, see `@rcarls/rc-textarea-adapters`.
 
 ## Theming
 
-`rc-textarea` is headless and uses CSS system colors by default. Theme it with broad tokens
+`rc-textarea` is design-system neutral and uses CSS system colors by default. Theme it with broad tokens
 for the field, then add component tokens for editor-specific surfaces.
 
 ### Broad Theme Tokens

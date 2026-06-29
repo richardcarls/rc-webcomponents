@@ -86,11 +86,12 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
 }
 
 /**
- * Progressively enhanced textarea with line decorations, gutter, and plugin API.
+ * Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.
  *
- * A native `<textarea>` must be provided as a direct child. It is kept in the
- * DOM so that pre-upgrade usability (form submission, label association, etc.)
- * all work without JavaScript.
+ * Provide a native `<textarea>` as the direct child when the component is
+ * editable. Read-only displays may be driven from `value` or `defaultValue`.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-textarea rc-textarea docs}
  *
  * @example Basic usage
  * ```html
@@ -109,7 +110,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * });
  * ```
  *
- * @slot - Accepts a native `<textarea>` element for form wiring and progressive enhancement.
+ * @slot - Accepts a native `<textarea>` element for form wiring.
  *
  * @fires rc-textarea-change - Fired when the field value changes
  * @fires rc-textarea-blur - Fired when the field loses focus

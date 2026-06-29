@@ -2,18 +2,20 @@
 title: rc-dialog
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { DialogDemo } from '@site/src/components/ComponentDemos';
 
 # rc-dialog
 
-A draggable, resizable wrapper around a native `<dialog>` that keeps browser dialog behavior intact.
+Draggable, resizable wrapper for a native `<dialog>`, following the [WAI-ARIA Dialog Modal pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/).
 
 <AtAGlance
   packageName="@rcarls/rc-dialog"
   tag="rc-dialog"
-  native="Requires a native dialog child"
+  native="Requires a direct child native dialog"
   state="Open state follows the native dialog"
   events={[
     'rc-dialog-open',
@@ -27,17 +29,26 @@ A draggable, resizable wrapper around a native `<dialog>` that keeps browser dia
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-dialog
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-dialog
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-dialog/define';
-`
+```
 
 ## Live demo
 

@@ -2,13 +2,15 @@
 title: rc-menu
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { MenuDemo } from '@site/src/components/ComponentDemos';
 
 # rc-menu
 
-An ARIA menu popup for command surfaces, with keyboard navigation and item activation events.
+Menu popup for command surfaces with keyboard navigation and typed activation events, following the [WAI-ARIA Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/).
 
 <AtAGlance
   packageName="@rcarls/rc-menu"
@@ -21,17 +23,26 @@ An ARIA menu popup for command surfaces, with keyboard navigation and item activ
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-menu
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-menu
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-menu/define';
-`
+```
 
 ## Live demo
 

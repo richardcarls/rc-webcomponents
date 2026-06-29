@@ -52,10 +52,8 @@ function parseAttr(s: string, defaultVal: number): number {
 }
 
 /**
- * Progressive enhancement wrapper for a consumer-provided `<input type="range">`.
- * The native input must be supplied as a direct child element — the component
- * adds a styled track, optional live value display, and the APG keyboard
- * enhancement (Page Up/Down, ±10 steps).
+ * Single-thumb slider backed by a native <input type="range"> with custom track and value
+ * display hooks, following the WAI-ARIA Slider pattern.
  *
  * Label association:
  * - Explicit `for`/`id`: `<label for="vol">Volume</label><rc-slider><input id="vol" …></rc-slider>`
@@ -66,6 +64,9 @@ function parseAttr(s: string, defaultVal: number): number {
  *
  * Form participation is handled natively by the consumer-provided input's `name`
  * attribute; no `ElementInternals` setup is required.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-slider rc-slider docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/slider/ WAI-ARIA Slider pattern}
  *
  * @slot track-background - Optional decorative content rendered inside the track before the progress fill.
  * @slot value-display - Optional replacement for the rendered value text.

@@ -2,16 +2,15 @@
 title: rc-listbox
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { ListboxDemo } from '@site/src/components/ComponentDemos';
 
 # rc-listbox
 
-A [WAI-ARIA listbox](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/) component
-that renders a `<ul role="presentation">` + `<li role="option">` subtree
-directly into its own light DOM to facilitate `aria-activedescendant` virtual
-navigation with IDs inside the same document or shadow root.
+Listbox that keeps option DOM in light DOM for `aria-activedescendant` navigation, following the [WAI-ARIA Listbox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/).
 
 `rc-listbox` is primarily an infrastructure component that can be used
 directly when an application or component controls option data and selection state.
@@ -30,17 +29,26 @@ directly when an application or component controls option data and selection sta
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-listbox
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-listbox
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-listbox/define';
-`
+```
 
 ## Live demo
 
