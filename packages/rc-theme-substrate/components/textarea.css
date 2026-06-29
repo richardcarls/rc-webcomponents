@@ -1,0 +1,20 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-textarea {
+    --rc-textarea-padding: 0.75rem;
+    --rc-textarea-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-textarea-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-textarea-background: var(--rc-field, Field);
+    --rc-textarea-color: var(--rc-field-text, FieldText);
+    font-family: var(--rc-font-family, inherit);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-textarea::part(root) {
+    transition:
+      border-color var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease),
+      box-shadow var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-textarea::part(root):focus-within {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+  }
+}

@@ -87,7 +87,7 @@ export function ThemePreviewShowcase() {
   }, []);
 
   return (
-    <DemoFrame defaultTheme="material" label="Theme preview showcase">
+    <DemoFrame defaultTheme="substrate" label="Theme preview showcase">
       <style>{SHOWCASE_CSS}</style>
       <div className="theme-preview-shell">
         <rc-app-bar>
@@ -95,7 +95,7 @@ export function ThemePreviewShowcase() {
             <span className="material-symbols-outlined" aria-hidden="true">menu</span>
           </button>
           <strong>Component Sampler</strong>
-          <rc-menu-button slot="trailing">
+          <rc-menu-button slot="trailing" placement="bottom-end">
             <button slot="trigger" type="button" aria-label="More actions">
               <span className="material-symbols-outlined" aria-hidden="true">more_vert</span>
             </button>

@@ -108,6 +108,44 @@ rc-select::part(toggle-indicator) {
 Available parts are listed in the API table under the **Parts** section on
 each component's page.
 
+## Substrate reference theme
+
+The optional `@rcarls/rc-theme-substrate` package is the canonical reference
+theme. It is a lightweight, app-oriented foundation that maps a small orange
+brand palette and neutral surface system onto the RC token layer. Use it as-is,
+or copy its token bridge as a starting point for your own branded theme.
+
+```sh
+npm install @rcarls/rc-theme-substrate
+```
+
+Import the full theme bundle:
+
+```css
+@import '@rcarls/rc-theme-substrate/theme.css';
+```
+
+Or import the token bridge and selected component polish:
+
+```css
+@import '@rcarls/rc-theme-substrate/bridge.css';
+@import '@rcarls/rc-theme-substrate/components.css';
+```
+
+Apply the `rc-theme-substrate` class to a container to scope the theme:
+
+```html
+<div class="rc-theme-substrate">
+  <rc-select>...</rc-select>
+  <rc-dialog>...</rc-dialog>
+</div>
+```
+
+Substrate includes modern CSS such as cascade layers, `color-mix()`,
+`oklch()`, `@starting-style`, and discrete transition rules where supported.
+View Transitions remain application opt-in: the theme exposes CSS hooks, but
+application code decides when to call `document.startViewTransition()`.
+
 ## Material theme
 
 The optional `@rcarls/rc-theme-material` package maps Material 3 design

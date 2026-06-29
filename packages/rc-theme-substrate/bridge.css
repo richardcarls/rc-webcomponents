@@ -1,0 +1,106 @@
+@layer rc-theme-substrate.defaults, rc-theme-substrate.bridge, rc-theme-substrate.components;
+
+@layer rc-theme-substrate.bridge {
+  /*
+   * Maps Substrate's small brand token set to the rc-webcomponents public
+   * styling contract. Consumers can replace --substrate-* values and keep this
+   * file as their bridge.
+   */
+  .rc-theme-substrate,
+  :host(.rc-theme-substrate) {
+    --rc-surface: var(--substrate-surface, Canvas);
+    --rc-field: var(--substrate-field, Field);
+    --rc-button-bg: var(--substrate-surface-raised, ButtonFace);
+    --rc-field-text: var(--substrate-on-surface, FieldText);
+    --rc-button-text: var(--substrate-on-surface, ButtonText);
+    --rc-highlight: var(--substrate-primary-container, Highlight);
+    --rc-highlight-text: var(--substrate-on-primary-container, HighlightText);
+    --rc-text-disabled: var(--substrate-on-surface-muted, GrayText);
+    --rc-accent: var(--substrate-primary, Highlight);
+    --rc-border-color: var(--substrate-border-color, ButtonBorder);
+    --rc-border-width: 1px;
+    --rc-border-style: solid;
+    --rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
+    --rc-shadow: var(--substrate-shadow-md, 0 2px 8px rgb(0 0 0 / 15%));
+    --rc-font-family: var(--substrate-font-family, inherit);
+    --rc-font-size: var(--substrate-font-size, 1em);
+    --rc-font-weight: var(--substrate-font-weight, 400);
+    --rc-line-height: var(--substrate-line-height, normal);
+    --rc-control-block-size: var(--substrate-control-block-size, 2.5rem);
+    --rc-control-padding-block: var(--substrate-control-padding-block, 0.5rem);
+    --rc-control-padding-inline: var(--substrate-control-padding-inline, 0.75rem);
+    --rc-control-gap: var(--substrate-control-gap, 0.5rem);
+    --rc-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
+    --rc-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+    --rc-item-gap: var(--substrate-item-gap, 0.5rem);
+    --rc-radius-sm: var(--substrate-radius-sm, 0.25rem);
+    --rc-radius-md: var(--substrate-radius-md, 0.5rem);
+    --rc-control-radius: var(--substrate-radius-md, 0.5rem);
+    --rc-focus-ring: var(--substrate-focus-ring, 2px solid Highlight);
+    --rc-focus-ring-offset: var(--substrate-focus-ring-offset, 2px);
+    --rc-disabled-opacity: var(--substrate-disabled-opacity, 0.52);
+    --rc-motion-duration: var(--substrate-motion-duration, 160ms);
+  }
+
+  .rc-theme-substrate rc-listbox,
+  :host(.rc-theme-substrate) rc-listbox,
+  .rc-theme-substrate rc-menu,
+  :host(.rc-theme-substrate) rc-menu {
+    --rc-listbox-option-gap: var(--substrate-item-gap, 0.5rem);
+    --rc-listbox-option-min-block-size: 2.25rem;
+    --rc-listbox-option-padding-block: var(--substrate-item-padding-block, 0.55rem);
+    --rc-listbox-option-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+    --rc-listbox-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
+    --rc-listbox-hover-color: var(--rc-field-text, FieldText);
+    --rc-listbox-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+    --rc-listbox-active-color: var(--rc-field-text, FieldText);
+    --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
+  }
+
+  .rc-theme-substrate rc-select,
+  :host(.rc-theme-substrate) rc-select,
+  .rc-theme-substrate rc-combobox,
+  :host(.rc-theme-substrate) rc-combobox {
+    --rc-select-control-block-size: var(--rc-control-block-size);
+    --rc-select-radius: var(--rc-control-radius);
+    --rc-select-shadow: var(--rc-shadow);
+    --rc-select-listbox-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-select-listbox-border: var(--rc-border);
+    --rc-select-chip-radius: var(--substrate-radius-sm, 0.25rem);
+    --rc-combobox-control-block-size: var(--rc-control-block-size);
+    --rc-combobox-radius: var(--rc-control-radius);
+    --rc-combobox-shadow: var(--rc-shadow);
+    --rc-combobox-listbox-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-combobox-listbox-border: var(--rc-border);
+    --rc-combobox-chip-radius: var(--substrate-radius-sm, 0.25rem);
+  }
+
+  .rc-theme-substrate rc-slider,
+  :host(.rc-theme-substrate) rc-slider,
+  .rc-theme-substrate rc-range-slider,
+  :host(.rc-theme-substrate) rc-range-slider {
+    --rc-slider-track-size: 0.375rem;
+    --rc-slider-track-background: color-mix(in srgb, var(--rc-border-color) 70%, transparent);
+    --rc-slider-progress-background: var(--rc-accent);
+    --rc-slider-track-radius: 999px;
+    --rc-range-slider-accent: var(--rc-accent);
+    --rc-range-slider-track-background: color-mix(
+      in srgb,
+      var(--rc-border-color) 70%,
+      transparent
+    );
+    --rc-range-slider-thumb-background: var(--substrate-surface, Canvas);
+    --rc-range-slider-thumb-border: var(--rc-accent);
+    --rc-thumb-radius: 0.5625rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rc-theme-substrate,
+    :host(.rc-theme-substrate) {
+      --substrate-motion-duration: 0ms;
+      --substrate-motion-duration-slow: 0ms;
+      --rc-motion-duration: 0ms;
+    }
+  }
+}

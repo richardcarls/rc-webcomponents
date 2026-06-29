@@ -1,0 +1,23 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-fab {
+    --rc-fab-bg: var(--rc-accent, Highlight);
+    --rc-fab-color: var(--substrate-on-primary, HighlightText);
+    --rc-fab-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-fab-shadow: var(--substrate-shadow-md, none);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-fab > button {
+    transition:
+      box-shadow var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease),
+      transform var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-fab > button:hover {
+    box-shadow: var(--substrate-shadow-lg, none);
+    transform: translateY(-1px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-fab > button:active {
+    transform: translateY(0);
+  }
+}

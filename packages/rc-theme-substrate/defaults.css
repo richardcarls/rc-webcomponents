@@ -1,0 +1,79 @@
+@layer rc-theme-substrate.defaults, rc-theme-substrate.bridge, rc-theme-substrate.components;
+
+@layer rc-theme-substrate.defaults {
+  /*
+   * Substrate reference tokens.
+   *
+   * These defaults are scoped so applications can place the theme at any app
+   * boundary. Import bridge.css alone when providing your own --substrate-* tokens.
+   */
+  .rc-theme-substrate,
+  :host(.rc-theme-substrate) {
+    color-scheme: light dark;
+
+    --substrate-primary: light-dark(oklch(57% 0.19 48), oklch(76% 0.15 58));
+    --substrate-on-primary: light-dark(oklch(99% 0.01 80), oklch(19% 0.04 45));
+    --substrate-primary-container: light-dark(oklch(94% 0.06 62), oklch(31% 0.08 48));
+    --substrate-on-primary-container: light-dark(oklch(27% 0.08 45), oklch(95% 0.05 66));
+
+    --substrate-surface: light-dark(oklch(99% 0.006 80), oklch(18% 0.012 72));
+    --substrate-surface-raised: light-dark(oklch(97% 0.012 78), oklch(23% 0.016 72));
+    --substrate-field: light-dark(oklch(100% 0 0), oklch(20% 0.014 72));
+    --substrate-on-surface: light-dark(oklch(19% 0.018 72), oklch(94% 0.01 80));
+    --substrate-on-surface-muted: light-dark(oklch(46% 0.018 72), oklch(73% 0.014 80));
+    --substrate-border-color: light-dark(oklch(83% 0.018 75), oklch(39% 0.018 72));
+    --substrate-shadow-color: light-dark(oklch(16% 0.03 60 / 18%), oklch(0% 0 0 / 42%));
+
+    --substrate-font-family:
+      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --substrate-font-size: 0.95rem;
+    --substrate-line-height: 1.45;
+    --substrate-font-weight: 450;
+
+    --substrate-radius-sm: 0.25rem;
+    --substrate-radius-md: 0.5rem;
+    --substrate-radius-lg: 0.75rem;
+    --substrate-radius-xl: 1rem;
+
+    --substrate-control-block-size: 2.5rem;
+    --substrate-control-padding-block: 0.5rem;
+    --substrate-control-padding-inline: 0.75rem;
+    --substrate-control-gap: 0.5rem;
+    --substrate-item-padding-block: 0.55rem;
+    --substrate-item-padding-inline: 0.75rem;
+    --substrate-item-gap: 0.5rem;
+
+    --substrate-shadow-sm: 0 1px 2px var(--substrate-shadow-color);
+    --substrate-shadow-md:
+      0 1px 2px var(--substrate-shadow-color), 0 10px 30px
+      color-mix(in oklch, var(--substrate-shadow-color) 65%, transparent);
+    --substrate-shadow-lg:
+      0 1px 2px var(--substrate-shadow-color), 0 18px 48px
+      color-mix(in oklch, var(--substrate-shadow-color) 80%, transparent);
+
+    --substrate-focus-ring: 2px solid var(--substrate-primary);
+    --substrate-focus-ring-offset: 2px;
+    --substrate-motion-duration: 160ms;
+    --substrate-motion-duration-slow: 240ms;
+    --substrate-motion-easing: cubic-bezier(0.2, 0, 0, 1);
+    --substrate-disabled-opacity: 0.52;
+  }
+
+  @media (forced-colors: active) {
+    .rc-theme-substrate,
+    :host(.rc-theme-substrate) {
+      --substrate-primary: Highlight;
+      --substrate-on-primary: HighlightText;
+      --substrate-primary-container: Highlight;
+      --substrate-on-primary-container: HighlightText;
+      --substrate-surface: Canvas;
+      --substrate-surface-raised: Canvas;
+      --substrate-field: Field;
+      --substrate-on-surface: CanvasText;
+      --substrate-on-surface-muted: GrayText;
+      --substrate-border-color: ButtonBorder;
+      --substrate-shadow-color: transparent;
+      --substrate-focus-ring: 2px solid Highlight;
+    }
+  }
+}

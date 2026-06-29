@@ -1,0 +1,31 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-toolbar {
+    display: inline-block;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-toolbar::part(root) {
+    gap: 0.125rem;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-toolbar > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--substrate-radius-md, 0.5rem);
+    line-height: 1;
+    transition:
+      background-color var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease),
+      color var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-toolbar > button:hover {
+    background: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-toolbar
+    > button[aria-pressed='true'] {
+    background: var(--rc-highlight, Highlight);
+    color: var(--rc-highlight-text, HighlightText);
+  }
+}

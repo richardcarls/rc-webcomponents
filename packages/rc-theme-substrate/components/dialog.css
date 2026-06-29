@@ -1,0 +1,35 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog > dialog {
+    border: var(--rc-border, 1px solid ButtonBorder);
+    border-radius: var(--substrate-radius-xl, 1rem);
+    background: var(--substrate-surface-raised, Canvas);
+    color: var(--rc-field-text, CanvasText);
+    box-shadow: var(--substrate-shadow-lg, none);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition:
+      display var(--substrate-motion-duration-slow, 240ms) allow-discrete,
+      overlay var(--substrate-motion-duration-slow, 240ms) allow-discrete,
+      opacity var(--substrate-motion-duration-slow, 240ms) var(--substrate-motion-easing, ease),
+      transform var(--substrate-motion-duration-slow, 240ms) var(--substrate-motion-easing, ease);
+    transition-behavior: allow-discrete;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog > dialog::backdrop {
+    background: color-mix(in srgb, CanvasText 32%, transparent);
+    transition: opacity var(--substrate-motion-duration-slow, 240ms)
+      var(--substrate-motion-easing, ease);
+  }
+
+  @starting-style {
+    :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog > dialog[open] {
+      opacity: 0;
+      transform: translateY(0.5rem) scale(0.98);
+    }
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog > dialog:not([open]) {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.98);
+  }
+}

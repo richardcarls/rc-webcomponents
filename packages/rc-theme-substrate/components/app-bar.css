@@ -1,0 +1,25 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-app-bar {
+    --rc-app-bar-background: color-mix(
+      in srgb,
+      var(--substrate-surface, Canvas) 88%,
+      transparent
+    );
+    --rc-app-bar-color: var(--rc-field-text, CanvasText);
+    --rc-app-bar-scroll-divider: var(--rc-border, 1px solid ButtonBorder);
+    --rc-app-bar-shadow: none;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    font-family: var(--rc-font-family, inherit);
+    position: relative;
+    z-index: var(--rc-app-bar-z-index, 1);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-app-bar[data-scrolled] {
+    --rc-app-bar-shadow: var(--substrate-shadow-sm, none);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-app-bar :is(button, [role='button']) {
+    border-radius: var(--substrate-radius-md, 0.5rem);
+  }
+}

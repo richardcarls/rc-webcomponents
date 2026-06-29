@@ -1,0 +1,17 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-menubar {
+    --rc-menubar-item-block-size: 2.25rem;
+    --rc-menubar-item-padding-inline: 0.75rem;
+    --rc-menubar-item-background: transparent;
+    --rc-menubar-item-open-background: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 14%,
+      transparent
+    );
+    display: inline-block;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-menubar::part(root) {
+    gap: 0.125rem;
+  }
+}

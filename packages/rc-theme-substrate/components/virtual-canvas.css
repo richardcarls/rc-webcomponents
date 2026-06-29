@@ -1,0 +1,8 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-virtual-canvas {
+    overflow: hidden;
+    border: var(--rc-border, 1px solid ButtonBorder);
+    border-radius: var(--substrate-radius-lg, 0.75rem);
+    background: var(--substrate-surface, Canvas);
+  }
+}

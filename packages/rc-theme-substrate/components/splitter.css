@@ -1,0 +1,14 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-splitter {
+    --rc-splitter-separator-color: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 8%,
+      Canvas
+    );
+    --rc-splitter-handle-color: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 45%,
+      ButtonBorder
+    );
+  }
+}
