@@ -3,39 +3,39 @@ import Layout from '@theme/Layout';
 import styles from './index.module.css';
 
 const packages = [
-  ['rc-select', 'Select-only ARIA combobox backed by native <select>', '/components/rc-select'],
-  ['rc-combobox', 'Editable combobox with filtering and allow-create', '/components/rc-combobox'],
-  ['rc-search-bar', 'Enhances a native search input with icon chrome and debounced events', '/components/rc-search-bar'],
-  ['rc-app-bar', 'Headless grid app bar with exact-center composition and scroll behaviors', '/components/rc-app-bar'],
-  ['rc-fab', 'Floating action button with regular and extended variants', '/components/rc-fab'],
-  ['rc-slider', 'Single-thumb slider wrapping native <input type="range">', '/components/rc-slider'],
+  ['rc-select', 'Select-only combobox backed by native <select>', '/components/rc-select'],
+  ['rc-combobox', 'Editable combobox with filtering and optional allow-create behavior', '/components/rc-combobox'],
+  ['rc-search-bar', 'Search field wrapper for native <input type="search">', '/components/rc-search-bar'],
+  ['rc-app-bar', 'App bar modeled after Material 3 Top app bar', '/components/rc-app-bar'],
+  ['rc-fab', 'Sticky floating action button modeled after Material 3 FAB', '/components/rc-fab'],
+  ['rc-slider', 'Single-thumb slider backed by native <input type="range">', '/components/rc-slider'],
   ['rc-range-slider', 'Two-thumb range slider backed by native range inputs', '/components/rc-range-slider'],
-  ['rc-textarea', 'Enhanced textarea with line decorations and plugin API', '/components/rc-textarea'],
-  ['rc-transfer-list', 'Native-select-backed transfer list', '/components/rc-transfer-list'],
-  ['rc-menu', 'ARIA menu popup', '/components/rc-menu'],
-  ['rc-menu-button', 'Button that opens an ARIA menu', '/components/rc-menu-button'],
-  ['rc-menubar', 'ARIA menubar with roving tabindex', '/components/rc-menubar'],
-  ['rc-toolbar', 'ARIA toolbar', '/components/rc-toolbar'],
-  ['rc-splitter', 'Resizable pane splitter', '/components/rc-splitter'],
-  ['rc-dialog', 'Draggable and resizable <dialog> wrapper', '/components/rc-dialog'],
-  ['rc-disclosure', 'Disclosure widget wrapping <details>/<summary>', '/components/rc-disclosure'],
-  ['rc-accordion', 'Native <details> accordion coordinator with single or multiple open panels', '/components/rc-accordion'],
-  ['rc-virtual-canvas', 'Virtualized canvas for large datasets', '/components/rc-virtual-canvas'],
-  ['rc-markdown-editor', 'Rich/source Markdown editor', '/components/rc-markdown-editor'],
-  ['rc-theme-material', 'Optional CSS-only Material 3 token bridge', '/guide/theme-previews'],
-  ['rc-theme-substrate', 'Lightweight CSS-only reference theme for app foundations', '/guide/theme-previews'],
+  ['rc-textarea', 'Textarea wrapper with line decorations and plugin hooks', '/components/rc-textarea'],
+  ['rc-transfer-list', 'Transfer list enhancing native <select multiple>', '/components/rc-transfer-list'],
+  ['rc-menu', 'Menu popup for command surfaces', '/components/rc-menu'],
+  ['rc-menu-button', 'Trigger button that opens an rc-menu popup', '/components/rc-menu-button'],
+  ['rc-menubar', 'Menubar coordinator for rc-menu-button children', '/components/rc-menubar'],
+  ['rc-toolbar', 'Toolbar that groups controls into one tab stop', '/components/rc-toolbar'],
+  ['rc-splitter', 'Resizable pane splitter with pointer and keyboard controls', '/components/rc-splitter'],
+  ['rc-dialog', 'Draggable, resizable wrapper for native <dialog>', '/components/rc-dialog'],
+  ['rc-disclosure', 'Disclosure wrapper for native <details>/<summary>', '/components/rc-disclosure'],
+  ['rc-accordion', 'Accordion coordinator for native <details> panels', '/components/rc-accordion'],
+  ['rc-virtual-canvas', 'Scrollable virtual canvas for large coordinate spaces', '/components/rc-virtual-canvas'],
+  ['rc-markdown-editor', 'Rich/source Markdown editor backed by rc-textarea', '/components/rc-markdown-editor'],
+  ['rc-theme-material', 'Material 3 CSS theme and token bridge', '/guide/theme-previews'],
+  ['rc-theme-substrate', 'Lightweight CSS reference theme for app layouts', '/guide/theme-previews'],
 ];
 
 export default function Home() {
   return (
     <Layout
-      title="WAI-ARIA compliant headless web components"
-      description="WAI-ARIA compliant headless web components built with Lit"
+      title="Themeable web components for app interfaces"
+      description="Themeable web components that enhance native HTML controls and implement APG patterns where they apply"
     >
       <header className={styles.hero}>
         <div className={styles.inner}>
           <h1>rc-webcomponents</h1>
-          <p>WAI-ARIA compliant headless web components built with Lit.</p>
+          <p>Themeable web components that enhance native HTML controls and implement APG patterns where they apply.</p>
           <div className={styles.actions}>
             <Link className="button button--primary" to="/components/rc-select">Browse components</Link>
             <Link className="button button--secondary" to="/guide/progressive-enhancement">Progressive enhancement</Link>
@@ -50,7 +50,7 @@ export default function Home() {
             <p>Components implement relevant WAI-ARIA patterns with keyboard support, focus management, and screen reader behavior.</p>
           </article>
           <article>
-            <h2>Headless</h2>
+            <h2>Design-system neutral</h2>
             <p>No imposed colors, fonts, or spacing. Components fit plain HTML pages and design systems.</p>
           </article>
           <article>

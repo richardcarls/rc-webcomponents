@@ -1,6 +1,6 @@
 # rc-webcomponents
 
-A collection of web components that are inspired by and implement [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/) patterns, with progressive enhancement design philosophy.
+A collection of themeable web components that enhance native HTML controls and implement [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/) patterns where they apply.
 
 Components are fully typed and developed primarily with [Lit](https://lit.dev).
 
@@ -30,10 +30,9 @@ Every component implements the corresponding [WAI-ARIA Authoring Practices Guide
 - Focus management behaves as defined / expected
 - A11y testing is part of acceptance, not an afterthought
 
-### Headless
+### Design-system neutral
 
-Components are effectively "headless" in that they do not forward any particular design paradigm. They of course have structurally necessary styling for correct
-layout and behavior, as well as sensible UA-like defaults to fit in visually alongside native HTML elements on a page.
+Components do not impose a particular visual system. They ship structurally necessary styling for correct layout and behavior, plus sensible UA-like defaults that fit alongside native HTML elements.
 
 - Components leverage [CSS System Colors](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/system-color) where supported for default colors
  This enables automatic color scheme adaptation for user color preferences and accessibility constraints
@@ -67,31 +66,31 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | Package | Description | Depends on |
 | --- | --- | --- |
 | [`rc-common`](packages/rc-common/) | Shared controllers, directives, mixins, and utilities: drag, resize, anchor positioning, scroll observation, keyboard interaction/navigation, active descendant, roving tabindex, focusability, and slider math | — |
-| [`rc-listbox`](packages/rc-listbox/) | ARIA `listbox` that renders option DOM into its own light DOM for select and combobox | rc-common |
-| [`rc-menu`](packages/rc-menu/) | ARIA `menu` / `menuitem` popup | rc-common |
-| [`rc-select`](packages/rc-select/) | Select-only ARIA combobox backed by a native `<select>` | rc-common, rc-listbox |
-| [`rc-combobox`](packages/rc-combobox/) | Editable ARIA combobox with filtering and allow-create | rc-common, rc-listbox, rc-select |
-| [`rc-search-bar`](packages/rc-search-bar/) | Enhances a native `<input type="search">` with icon chrome, clear button, and debounced search events | — |
-| [`rc-menu-button`](packages/rc-menu-button/) | Button that opens an ARIA menu | rc-common, rc-menu |
-| [`rc-menubar`](packages/rc-menubar/) | ARIA `menubar` with roving tabindex | rc-common, rc-menu-button |
-| [`rc-toolbar`](packages/rc-toolbar/) | ARIA `toolbar` with roving tabindex | rc-common |
-| [`rc-app-bar`](packages/rc-app-bar/) | Headless grid app bar with exact-center composition and pinned, collapse, or hide scroll behavior | rc-common |
-| [`rc-splitter`](packages/rc-splitter/) | Resizable pane splitter (`separator` role) | rc-common |
-| [`rc-textarea`](packages/rc-textarea/) | Enhanced `<textarea>` — line decorations, gutter, plugin API | — |
-| [`rc-textarea-adapters`](packages/rc-textarea-adapters/) | Adapter factories for Lezer, unified, and Shiki tokenizers | rc-textarea |
-| [`rc-textarea-plugin-markdown`](packages/rc-textarea-plugin-markdown/) | Markdown decoration plugin for rc-textarea | rc-textarea |
-| [`rc-markdown-editor`](packages/rc-markdown-editor/) | Rich/source Markdown editor with a formatting toolbar | rc-textarea |
-| [`rc-disclosure`](packages/rc-disclosure/) | Native `<details>` / `<summary>` disclosure wrapper | — |
-| [`rc-accordion`](packages/rc-accordion/) | Native `<details>` accordion coordinator with single or multiple open panels | rc-disclosure |
-| [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable `<dialog>` wrapper with accessible event forwarding | rc-common |
-| [`rc-fab`](packages/rc-fab/) | Floating action button with regular and extended variants | — |
-| [`rc-slider`](packages/rc-slider/) | Single-thumb slider backed by a native range input | rc-common |
-| [`rc-range-slider`](packages/rc-range-slider/) | Two-thumb range slider backed by native range inputs | rc-common |
-| [`rc-transfer-list`](packages/rc-transfer-list/) | Native-select-backed transfer list | rc-listbox, rc-toolbar |
-| [`rc-virtual-canvas`](packages/rc-virtual-canvas/) | Virtualized canvas for large datasets | — |
-| [`rc-theme-material`](packages/rc-theme-material/) | Optional CSS-only Material 3 token bridge | — |
-| [`rc-theme-substrate`](packages/rc-theme-substrate/) | Lightweight CSS-only reference theme for app foundations | — |
-| [`rc-webcomponents`](packages/rc-webcomponents/) | Aggregate package exporting the component collection | all component packages |
+| [`rc-listbox`](packages/rc-listbox/) | Listbox that keeps option DOM in light DOM for `aria-activedescendant` navigation | rc-common |
+| [`rc-menu`](packages/rc-menu/) | Menu popup for command surfaces with keyboard navigation and typed activation events | rc-common |
+| [`rc-select`](packages/rc-select/) | Select-only combobox backed by a native `<select>` | rc-common, rc-listbox |
+| [`rc-combobox`](packages/rc-combobox/) | Editable combobox with filtering and optional allow-create behavior | rc-common, rc-listbox, rc-select |
+| [`rc-search-bar`](packages/rc-search-bar/) | Search field wrapper for a native `<input type="search">` with icon chrome, clear button, and debounced events | rc-common |
+| [`rc-menu-button`](packages/rc-menu-button/) | Trigger button that opens an `rc-menu` popup | rc-common, rc-menu |
+| [`rc-menubar`](packages/rc-menubar/) | Menubar coordinator for `rc-menu-button` children with roving tabindex and submenu handoff | rc-common, rc-menu-button |
+| [`rc-toolbar`](packages/rc-toolbar/) | Toolbar that groups consumer-supplied controls into one tab stop with arrow-key navigation | rc-common |
+| [`rc-app-bar`](packages/rc-app-bar/) | App bar modeled after Material 3 Top app bar, with slots and optional scroll behavior | rc-common |
+| [`rc-splitter`](packages/rc-splitter/) | Resizable pane splitter with pointer, keyboard, and collapse/restore controls | rc-common |
+| [`rc-textarea`](packages/rc-textarea/) | Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks | rc-common |
+| [`rc-textarea-adapters`](packages/rc-textarea-adapters/) | Adapter factories that connect Lezer, unified, and Shiki tokenizers to `rc-textarea` | rc-textarea |
+| [`rc-textarea-plugin-markdown`](packages/rc-textarea-plugin-markdown/) | Markdown decoration plugin for `rc-textarea` | rc-textarea |
+| [`rc-markdown-editor`](packages/rc-markdown-editor/) | Rich/source Markdown editor with a formatting toolbar, backed by `rc-textarea` | rc-textarea |
+| [`rc-disclosure`](packages/rc-disclosure/) | Disclosure wrapper for a native `<details>`/`<summary>` pair with controlled open state | — |
+| [`rc-accordion`](packages/rc-accordion/) | Accordion coordinator for child native `<details>` panels with single- or multiple-open behavior | rc-disclosure |
+| [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable wrapper for a native `<dialog>` | rc-common |
+| [`rc-fab`](packages/rc-fab/) | Sticky floating action button modeled after Material 3 Floating action button | rc-common |
+| [`rc-slider`](packages/rc-slider/) | Single-thumb slider backed by a native `<input type="range">` | rc-common |
+| [`rc-range-slider`](packages/rc-range-slider/) | Two-thumb range slider backed by native range inputs for min/max values | rc-common |
+| [`rc-transfer-list`](packages/rc-transfer-list/) | Transfer list that enhances a native `<select multiple>` into available and selected panes | rc-common, rc-listbox, rc-toolbar |
+| [`rc-virtual-canvas`](packages/rc-virtual-canvas/) | Scrollable virtual canvas for rendering large coordinate-space content | — |
+| [`rc-theme-material`](packages/rc-theme-material/) | Material 3 CSS theme and token bridge for rc-webcomponents | — |
+| [`rc-theme-substrate`](packages/rc-theme-substrate/) | Lightweight CSS reference theme for app-oriented rc-webcomponents layouts | — |
+| [`rc-webcomponents`](packages/rc-webcomponents/) | Aggregate package that re-exports and defines the rc-webcomponents collection | all component packages |
 
 ## Development
 
