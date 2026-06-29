@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from "lit";
 import type { ComplexAttributeConverter } from "lit";
 import { property } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { getDirectChild, valueToPercent, warnMissingDirectChild } from "@rcarls/rc-common";
+import { NativeChildController, valueToPercent, warnMissingDirectChild } from "@rcarls/rc-common";
 
 export interface RCSliderValueEvent {
   /** Current numeric slider value. */
@@ -278,10 +278,19 @@ export class RCSlider extends LitElement {
 
   private _nativeInput: HTMLInputElement | null = null;
 
-  override connectedCallback(): void {
-    this._findInput();
-    super.connectedCallback();
-  }
+  private readonly _nativeInputController = new NativeChildController<HTMLInputElement>(this, {
+    selector: ':scope > input[type="range"]',
+    observe: true,
+    onChange: (input, previous) => this._setupInput(input, previous),
+    onMissing: () => {
+      if (import.meta.env.DEV) {
+        warnMissingDirectChild(this, {
+          selector: ':scope > input[type="range"]',
+          message: '[rc-slider] Requires a child <input type="range"> element.',
+        });
+      }
+    },
+  });
 
   override disconnectedCallback(): void {
     this._unwireInput();
@@ -353,18 +362,13 @@ export class RCSlider extends LitElement {
     return value === undefined || isNaN(value) ? 0 : value;
   }
 
-  /**
-   * Finds the consumer-provided native input and wires event listeners.
-   * The input remains in the DOM permanently; the component enhances it
-   * rather than replacing it.
-   */
-  private _findInput(): void {
-    const input = getDirectChild<HTMLInputElement>(this, ':scope > input[type="range"]');
+  private _setupInput(input: HTMLInputElement | null, previous?: HTMLInputElement | null): void {
+    if (previous && previous !== input) {
+      this._unwireInput(previous);
+    }
+
     if (!input) {
-      warnMissingDirectChild(this, {
-        selector: ':scope > input[type="range"]',
-        message: '[rc-slider] Requires a child <input type="range"> element.',
-      });
+      this._nativeInput = null;
       return;
     }
 
@@ -377,11 +381,11 @@ export class RCSlider extends LitElement {
     this._nativeInput = input;
     this._applyInitialValueToInput(input);
     this._wireInput(input);
+    this.requestUpdate();
   }
 
   private _onDefaultSlotChange = (): void => {
-    this._unwireInput();
-    this._findInput();
+    this._nativeInputController.sync();
     this.requestUpdate();
   };
 
@@ -414,10 +418,10 @@ export class RCSlider extends LitElement {
     input.addEventListener("keydown", this._onKeydown);
   }
 
-  private _unwireInput(): void {
-    this._nativeInput?.removeEventListener("input", this._onInput);
-    this._nativeInput?.removeEventListener("change", this._onChange);
-    this._nativeInput?.removeEventListener("keydown", this._onKeydown);
+  private _unwireInput(input = this._nativeInput): void {
+    input?.removeEventListener("input", this._onInput);
+    input?.removeEventListener("change", this._onChange);
+    input?.removeEventListener("keydown", this._onKeydown);
   }
 
   private _syncAriaAttributes(input: HTMLInputElement): void {

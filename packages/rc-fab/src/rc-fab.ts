@@ -3,6 +3,7 @@ import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import {
+  NativeChildController,
   ScrollObserverController,
   findNearestScrollAncestor,
   warnMissingDirectChild,
@@ -98,13 +99,22 @@ export class RCFab extends LitElement {
   @property({ type: Boolean, attribute: 'scroll-reveal', reflect: true })
   scrollReveal = false;
 
-  protected override firstUpdated(): void {
-    if (import.meta.env.DEV) {
-      warnMissingDirectChild(this, {
-        selector: ':scope > button',
-        message: '[rc-fab] No direct child <button> found. Place a native <button> inside <rc-fab>.',
-      });
-    }
+  constructor() {
+    super();
+
+    new NativeChildController<HTMLButtonElement>(this, {
+      selector: ':scope > button',
+      observe: true,
+      onMissing: () => {
+        if (import.meta.env.DEV) {
+          warnMissingDirectChild(this, {
+            selector: ':scope > button',
+            message:
+              '[rc-fab] No direct child <button> found. Place a native <button> inside <rc-fab>.',
+          });
+        }
+      },
+    });
   }
 
   protected override updated(changed: PropertyValues): void {

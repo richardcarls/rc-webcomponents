@@ -2,6 +2,7 @@ import { LitElement, css, html, nothing } from "lit";
 import type { ComplexAttributeConverter } from "lit";
 import { property, state } from "lit/decorators.js";
 import {
+  NativeChildController,
   getDirectChildren,
   snapToStep,
   valueToPercent,
@@ -397,11 +398,23 @@ export class RCRangeSlider extends LitElement {
   private _dragThumb: RangeThumb | null = null;
   private _dragPointerId: number | null = null;
   private _addedHostRole = false;
+  private readonly _rangeInputController = new NativeChildController<HTMLInputElement>(this, {
+    selector: ':scope > input[type="range"]',
+    observe: true,
+    onChange: () => this._resetInputs(),
+    onMissing: () => {
+      if (import.meta.env.DEV) {
+        warnMissingDirectChild(this, {
+          selector: ':scope > input[type="range"]',
+          message: '[rc-range-slider] Requires two child <input type="range"> elements.',
+        });
+      }
+    },
+  });
 
   override connectedCallback(): void {
     super.connectedCallback();
     this._syncHostRole();
-    this._findInputs();
   }
 
   override disconnectedCallback(): void {
@@ -525,11 +538,13 @@ export class RCRangeSlider extends LitElement {
     ).slice(0, 2);
 
     if (inputs.length < 2) {
-      warnMissingDirectChild(this, {
-        selector: ':scope > input[type="range"]',
-        minimum: 2,
-        message: '[rc-range-slider] Requires two child <input type="range"> elements.',
-      });
+      if (import.meta.env.DEV && inputs.length > 0) {
+        warnMissingDirectChild(this, {
+          selector: ':scope > input[type="range"]',
+          minimum: 2,
+          message: '[rc-range-slider] Requires two child <input type="range"> elements.',
+        });
+      }
       return;
     }
 
@@ -549,11 +564,16 @@ export class RCRangeSlider extends LitElement {
   }
 
   private _onDefaultSlotChange = (): void => {
+    this._rangeInputController.sync();
+    this._resetInputs();
+  };
+
+  private _resetInputs(): void {
     this._unwireInputs();
     this._restoreInputs();
     this._findInputs();
     this.requestUpdate();
-  };
+  }
 
   private get _nativeInputValue(): [number, number] {
     const low = this._lowInput?.valueAsNumber;

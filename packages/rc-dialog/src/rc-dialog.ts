@@ -1,6 +1,11 @@
 import { LitElement, nothing, type PropertyValues } from 'lit';
-import { property, query } from 'lit/decorators.js';
-import { DragController, ResizeController } from '@rcarls/rc-common';
+import { property } from 'lit/decorators.js';
+import {
+  DragController,
+  NativeChildController,
+  ResizeController,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 
 /** Detail shape for `rc-dialog-close` and `rc-dialog-request-close`. */
 export interface RCDialogCloseEvent {
@@ -106,16 +111,30 @@ export class RCDialog extends LitElement {
    */
   modal = true;
 
-  /** The inner `<dialog>` element, resolved live via `@query` on each access. */
-  @query(':scope > dialog')
-  protected _$dialog!: HTMLDialogElement | null;
+  /** The inner `<dialog>` element, resolved from the direct light-DOM child. */
+  protected get _$dialog(): HTMLDialogElement | null {
+    return this._dialogController.child;
+  }
 
   private _controlledOpen: boolean | undefined = undefined;
   private _defaultOpen = false;
+  private readonly _dialogController = new NativeChildController<HTMLDialogElement>(this, {
+    selector: ':scope > dialog',
+    observe: true,
+    onChange: ($dialog) => this._setupDialog($dialog),
+    onMissing: () => {
+      if (import.meta.env.DEV) {
+        warnMissingDirectChild(this, {
+          selector: ':scope > dialog',
+          message:
+            '[rc-dialog] No direct child <dialog> found. Place a native <dialog> inside <rc-dialog>.',
+        });
+      }
+    },
+  });
   // Tracks which <dialog> has its listeners wired; used by _teardownDialog to
   // remove listeners even after the element is removed from the DOM.
   private _$wired: WeakRef<HTMLDialogElement> | null = null;
-  protected _observer: MutationObserver | null = null;
   private _suppressNextCloseToggle = false;
 
   /** The element that had focus when the dialog was opened; restored on close. */
@@ -214,30 +233,14 @@ export class RCDialog extends LitElement {
     return nothing;
   }
 
-  override connectedCallback() {
-    super.connectedCallback();
-
-    this._observer = new MutationObserver(() => this._setupDialog());
-    this._observer.observe(this, { childList: true });
-  }
-
   override firstUpdated() {
-    this._setupDialog();
+    this._dialogController.sync();
   }
 
   /** Wires event listeners, drag/resize controllers, and initial open state for the inner `<dialog>`. */
-  protected _setupDialog() {
-    const $dialog = this._$dialog;
-
+  protected _setupDialog($dialog: HTMLDialogElement | null = this._$dialog) {
     if (!$dialog) {
-      if (import.meta.env.DEV) {
-        console.warn(
-          '[rc-dialog] No <dialog> child found. Place a <dialog> element ' +
-            'directly inside <rc-dialog>.',
-          this,
-        );
-      }
-
+      this._teardownDialog();
       return;
     }
 
@@ -359,9 +362,6 @@ export class RCDialog extends LitElement {
   }
 
   override disconnectedCallback() {
-    this._observer?.disconnect();
-    this._observer = null;
-
     this._teardownDialog();
 
     super.disconnectedCallback();

@@ -2,7 +2,7 @@ import { LitElement, html, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { keyInteraction } from '@rcarls/rc-common';
+import { NativeChildController, keyInteraction, warnMissingDirectChild } from '@rcarls/rc-common';
 
 import searchBarStyles from './rc-search-bar.styles';
 
@@ -180,6 +180,22 @@ export class RCSearchBar extends LitElement {
     }
   });
 
+  private readonly _inputController = new NativeChildController<HTMLInputElement>(this, {
+    selector: ':scope > input[type="search"]',
+    observe: true,
+    onChange: ($input, $previousInput) => this._setupInput($input, $previousInput),
+    onMissing: () => {
+      if (import.meta.env.DEV) {
+        warnMissingDirectChild(this, {
+          selector: ':scope > input[type="search"]',
+          message:
+            '[rc-search-bar] No direct child <input type="search"> found. ' +
+            'Place a native search input inside <rc-search-bar>.',
+        });
+      }
+    },
+  });
+
   /**
    * The current search value. Reads from the native input when present.
    * Host writes are silent (no events) and win over slotted author values.
@@ -233,14 +249,6 @@ export class RCSearchBar extends LitElement {
     super.connectedCallback();
 
     _suppressUaClear();
-
-    // Slot assignment survives a DOM move without re-firing slotchange, so
-    // listeners are re-bound here (addEventListener is idempotent per ref).
-    const $input = this._$input();
-
-    if ($input) {
-      this._bindInput($input);
-    }
   }
 
   override disconnectedCallback(): void {
@@ -272,18 +280,14 @@ export class RCSearchBar extends LitElement {
     return this._$inputRef?.deref() ?? null;
   }
 
-  private _handleSlotChange(e: Event): void {
-    const $slot = e.target as HTMLSlotElement;
-    const $input =
-      $slot
-        .assignedElements({ flatten: true })
-        .find(
-          ($el): $el is HTMLInputElement =>
-            $el instanceof HTMLInputElement && $el.type === 'search',
-        ) ?? null;
+  private _handleSlotChange(): void {
+    this._inputController.sync();
+  }
 
-    const $previousInput = this._$input();
-
+  private _setupInput(
+    $input: HTMLInputElement | null,
+    $previousInput: HTMLInputElement | null,
+  ): void {
     if ($previousInput && $previousInput !== $input) {
       $previousInput.removeEventListener('input', this._onNativeInput);
       $previousInput.removeEventListener('focus', this._onInputFocus);
@@ -295,6 +299,7 @@ export class RCSearchBar extends LitElement {
 
     this._$inputRef = $input ? new WeakRef($input) : null;
     this._hasInput = $input !== null;
+    this._authorPlaceholder = $input?.hasAttribute('placeholder') ?? false;
 
     if (!$input) {
       this._hasValue = false;
@@ -317,7 +322,6 @@ export class RCSearchBar extends LitElement {
         $input.value = this._defaultValue;
       }
 
-      this._authorPlaceholder = $input.hasAttribute('placeholder');
       this._applyPlaceholder($input);
 
       if (this._disabledHost !== undefined) {
