@@ -42,7 +42,7 @@ test('aggregate component styles cover every visual RC component', () => {
     ['rc-toolbar', ['display', 'inline']],
     ['rc-slider', ['display', 'inline']],
     ['rc-range-slider', ['display', 'inline']],
-    ['rc-splitter', ['--rc-splitter-separator-size', '0.5rem']],
+    ['rc-splitter', ['--rc-splitter-separator-size', '1.5rem']],
     ['rc-disclosure', ['display', 'block']],
     ['rc-accordion', ['display', 'grid']],
     ['rc-virtual-canvas', ['overflow', 'hidden']],
