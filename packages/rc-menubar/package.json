@@ -45,9 +45,9 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
-    "@rcarls/rc-common": "workspace:^",
-    "@rcarls/rc-menu": "workspace:^",
-    "@rcarls/rc-menu-button": "workspace:^",
+    "@rcarls/rc-common": "workspace:*",
+    "@rcarls/rc-menu": "workspace:*",
+    "@rcarls/rc-menu-button": "workspace:*",
     "@types/node": "^25.6.0"
   },
   "devDependencies": {

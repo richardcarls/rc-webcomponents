@@ -31,7 +31,7 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
-    "@rcarls/rc-textarea": "workspace:^"
+    "@rcarls/rc-textarea": "workspace:*"
   },
   "peerDependencies": {
     "@lezer/common": ">=1.0.0",
