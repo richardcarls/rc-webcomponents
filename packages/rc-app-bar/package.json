@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless grid app bar with scroll behaviors and leading/title/center/trailing regions, built with Lit",
+  "description": "App bar modeled after the Material 3 Top app bar, with leading, title, center, trailing regions and optional scroll behavior.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -42,8 +42,7 @@
     "preview": "vite preview",
     "test:browser": "vitest --run",
     "test:browser:chrome": "vitest --run --project=chromium",
-    "test:browser:firefox": "vitest --run --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
     "@rcarls/rc-common": "workspace:^"

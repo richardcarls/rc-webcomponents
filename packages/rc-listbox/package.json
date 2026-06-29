@@ -4,13 +4,13 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "A WAI-ARIA listbox component that renders options into light DOM to facilitate `aria-activedescendant` virtual navigation with IDs inside the same document or shadow root.",
+  "description": "Listbox that keeps option DOM in light DOM for aria-activedescendant navigation.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-listbox"
   },
-  "homepage": "https://richardcarls.github.io/rc-webcomponents/",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-listbox",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -42,8 +42,7 @@
     "preview": "vite preview",
     "test:browser": "vitest --run",
     "test:browser:chrome": "vitest --run --project=chromium",
-    "test:browser:firefox": "vitest --run --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
     "@rcarls/rc-common": "workspace:^"

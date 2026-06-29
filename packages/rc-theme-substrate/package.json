@@ -4,13 +4,13 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Lightweight reference theme for rc-webcomponents.",
+  "description": "Lightweight CSS reference theme for app-oriented rc-webcomponents layouts.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-theme-substrate"
   },
-  "homepage": "https://richardcarls.github.io/rc-webcomponents/",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/guide/theme-previews",
   "license": "MIT",
   "type": "module",
   "sideEffects": [
@@ -33,8 +33,7 @@
     "build": "echo 'CSS-only package, no build step'",
     "test:browser": "vitest --run",
     "test:browser:chrome": "vitest --run --project=chromium",
-    "test:browser:firefox": "vitest --run --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "4.1.5",

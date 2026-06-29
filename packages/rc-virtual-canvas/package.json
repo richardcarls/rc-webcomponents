@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "A scrollable virtual canvas component.",
+  "description": "Scrollable virtual canvas for rendering large coordinate-space content.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
