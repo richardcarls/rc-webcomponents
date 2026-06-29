@@ -1,7 +1,8 @@
 # `@rcarls/rc-theme-material`
 
-[Material Design 3](https://m3.material.io/) design-token bridge and full CSS
-style layer for `rc-webcomponents`.
+[Material 3](https://m3.material.io/) CSS theme and token bridge for `rc-webcomponents`.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/guide/theme-previews](https://richardcarls.github.io/rc-webcomponents/guide/theme-previews).
 
 Maps Material Design system and component CSS custom properties onto the
 public `--rc-*` styling contract. It changes presentation only and is an

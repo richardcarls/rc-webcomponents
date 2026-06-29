@@ -7,7 +7,7 @@
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git"
   },
   "homepage": "https://richardcarls.github.io/rc-webcomponents/",
-  "description": "A collection of themeable headless web components architected for progressive enhancement and accessibility.",
+  "description": "Themeable web components that enhance native HTML controls and implement APG patterns where they apply.",
   "author": "Richard Carls <richard.j.carls@gmail.com>",
   "license": "MIT",
   "packageManager": "yarn@4.16.0",

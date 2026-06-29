@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless enhanced textarea web component built with Lit",
+  "description": "Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -45,6 +45,7 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
+    "@rcarls/rc-common": "workspace:^",
     "parchment": "^3.0.0"
   },
   "devDependencies": {

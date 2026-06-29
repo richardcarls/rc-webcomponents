@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless native details/summary disclosure web component",
+  "description": "Disclosure wrapper for a native <details>/<summary> pair with controlled open state.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",

@@ -2,13 +2,15 @@
 title: rc-transfer-list
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { TransferListDemo } from '@site/src/components/ComponentDemos';
 
 # rc-transfer-list
 
-Enhances a `<select multiple>` element to become a side-by-side transfer list.
+Transfer list that enhances a native `<select multiple>` into available and selected panes.
 
 The component renders two listboxes and transfer/reorder actions in between.
 Available options are on the left, and selected options appear on the right. It
@@ -33,13 +35,22 @@ automatically at viewport breakpoints.
 
 ## Installation
 
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
 ```sh
 npm install @rcarls/rc-transfer-list
 ```
 
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
 ```sh
 yarn add @rcarls/rc-transfer-list
 ```
+
+  </TabItem>
+</Tabs>
 
 ```js
 import '@rcarls/rc-transfer-list/define';

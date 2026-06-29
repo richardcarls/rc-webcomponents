@@ -1,6 +1,11 @@
 import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { ActiveDescendantController, AnchorController } from '@rcarls/rc-common';
+import {
+  ActiveDescendantController,
+  AnchorController,
+  NativeChildController,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 import type {
   RCListbox,
   RCListboxChangeEvent,
@@ -30,12 +35,15 @@ declare global {
 }
 
 /**
- * A progressive enhancement implementation of the single- and multi-select
- * WAI-ARIA APG Combobox pattern.
+ * Select-only combobox backed by a native <select>, following the WAI-ARIA Combobox
+ * pattern.
  *
  * Wraps a native `<select>` (default slot) as the form value reflector while
  * rendering a custom button trigger and popup listbox. Popup placement
  * and `aria-activedescendant` virtual keyboard navigation are supported.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-select rc-select docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/combobox/ WAI-ARIA Combobox pattern}
  *
  * @slot - Required. A native `<select>` element used for form submission
  *   and as the source of truth for options, multiple, and disabled state.
@@ -147,6 +155,21 @@ export class RCSelect extends LitElement {
 
   /** WeakRef to the slotted `<select>`. Refreshed on every `slotchange`; `null` when absent. */
   protected _selectRef: WeakRef<HTMLSelectElement> | null = null;
+
+  protected readonly _selectController = new NativeChildController<HTMLSelectElement>(this, {
+    selector: ':scope > select',
+    observe: true,
+    onChange: ($select) => this._setupSelect($select),
+    onMissing: () => {
+      if (import.meta.env.DEV) {
+        warnMissingDirectChild(this, {
+          selector: ':scope > select',
+          message:
+            '[rc-select] No direct child <select> found. Place a native <select> inside <rc-select>.',
+        });
+      }
+    },
+  });
 
   /**
    * Watches the slotted `<select>` for `childList`, `subtree`, and `attributes` changes
@@ -352,13 +375,11 @@ export class RCSelect extends LitElement {
    * Resolves the slotted `<select>` on every `slotchange`, wires `_mutationObserver`,
    * and seeds initial state via `queueMicrotask` to stay safe inside framework reactive passes.
    */
-  protected _handleSelectSlotChange(e: Event) {
-    const $slot = e.target as HTMLSlotElement;
-    const $select =
-      $slot
-        .assignedElements()
-        .find(($el): $el is HTMLSelectElement => $el instanceof HTMLSelectElement) ?? null;
+  protected _handleSelectSlotChange() {
+    this._selectController.sync();
+  }
 
+  protected _setupSelect($select: HTMLSelectElement | null) {
     // Disconnect synchronously so the old observer stops immediately.
     this._mutationObserver?.disconnect();
     this._mutationObserver = null;

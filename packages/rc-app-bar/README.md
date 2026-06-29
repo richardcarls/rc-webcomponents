@@ -1,8 +1,8 @@
 # `@rcarls/rc-app-bar`
 
-A headless app bar with leading, title, exact-center, and trailing regions.
-It uses a single consumer-owned title element and supports pinned, continuously
-collapsing, and direction-sensitive hide-on-scroll behavior.
+App bar modeled after the [Material 3 Top app bar](https://m3.material.io/components/top-app-bar/overview), with leading, title, center, trailing regions and optional scroll behavior.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-app-bar](https://richardcarls.github.io/rc-webcomponents/components/rc-app-bar).
 
 Material 3 and Apple HIG inform the available structures and behaviors, but the
 default appearance remains deliberately UA-like: system colors, a thin

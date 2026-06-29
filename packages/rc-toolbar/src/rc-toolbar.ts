@@ -18,9 +18,12 @@ declare global {
 }
 
 /**
- * A toolbar component, as defined in WAI-ARIA
+ * Toolbar that groups consumer-supplied controls into one tab stop with arrow-key
+ * navigation, following the WAI-ARIA Toolbar pattern.
  *
- * @see https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-toolbar rc-toolbar docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/ WAI-ARIA Toolbar pattern}
+ *
  * @slot Takes any number of child elements to display in the toolbar. Only focusable elements are navigable.
  * @cssprop [--rc-toolbar-gap-inline=0.25em] - Gap between toolbar items
  * @cssprop [--rc-toolbar-padding-inline=calc(var(--rc-control-padding-inline) / 2)] - Horizontal padding on the toolbar container

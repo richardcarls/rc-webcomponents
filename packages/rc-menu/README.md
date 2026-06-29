@@ -1,6 +1,8 @@
 # `@rcarls/rc-menu`
 
-A WAI-ARIA compliant menu component implementing the [Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/). Manages roving tabindex across slotted items and dispatches typed events on activation and close. Built with [Lit 3](https://lit.dev).
+Menu popup for command surfaces with keyboard navigation and typed activation events, following the [WAI-ARIA Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-menu](https://richardcarls.github.io/rc-webcomponents/components/rc-menu).
 
 ---
 

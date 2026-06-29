@@ -1,7 +1,8 @@
 # `@rcarls/rc-combobox`
 
-A web component implementation of the [WAI-ARIA APG combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/),
-with autocomplete filtering and optional on-the-fly item creation.
+Editable combobox with filtering and optional allow-create behavior, configured from native option data and following the [WAI-ARIA Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-combobox](https://richardcarls.github.io/rc-webcomponents/components/rc-combobox).
 
 Extends `rc-select` with a text input and wraps a native slotted `<select>`.
 

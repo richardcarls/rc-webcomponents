@@ -14,8 +14,7 @@ import {
 
 # rc-textarea
 
-A progressive enhancement wrapper around the native `<textarea>` with support for line numbers,
-syntax / pattern decoration, inline widgets, and a robust plugin API.
+Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.
 
 <AtAGlance
   packageName="@rcarls/rc-textarea"
@@ -31,24 +30,25 @@ syntax / pattern decoration, inline widgets, and a robust plugin API.
 
 ## Installation
 
-```bash
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-textarea
 ```
 
-```bash
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-textarea
 ```
 
-Import the define entry to register `<rc-textarea>`:
+  </TabItem>
+</Tabs>
 
-```ts
+```js
 import '@rcarls/rc-textarea/define';
-```
-
-Import public types when you need typed access:
-
-```ts
-import type { RCTextarea, RCTextareaPlugin } from '@rcarls/rc-textarea';
 ```
 
 ## Demos
@@ -169,7 +169,7 @@ editor.addEventListener('rc-textarea-change', (e) => {
 
 ## Theming
 
-`rc-textarea` is headless and uses CSS system colors by default.
+`rc-textarea` is design-system neutral and uses CSS system colors by default.
 
 ### Component tokens
 

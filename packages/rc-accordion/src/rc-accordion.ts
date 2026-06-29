@@ -21,9 +21,13 @@ declare global {
 }
 
 /**
- * Coordinates direct child details as a single-open group by default.
+ * Accordion coordinator for child native <details> panels with single- or multiple-open
+ * behavior, following the WAI-ARIA Accordion pattern.
  *
  * Supports native details and rc-disclosure wrappers.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-accordion rc-accordion docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/accordion/ WAI-ARIA Accordion pattern}
  *
  * @attr {boolean} multiple - Allows more than one panel open at a time.
  */

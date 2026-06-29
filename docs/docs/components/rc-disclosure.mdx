@@ -2,13 +2,15 @@
 title: rc-disclosure
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { DisclosureDemo } from '@site/src/components/ComponentDemos';
 
 # rc-disclosure
 
-A disclosure wrapper around native `<details>` and `<summary>` with controlled/uncontrolled open support.
+Disclosure wrapper for a native `<details>`/`<summary>` pair with controlled open state, following the [WAI-ARIA Disclosure pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/).
 
 <AtAGlance
   packageName="@rcarls/rc-disclosure"
@@ -21,17 +23,26 @@ A disclosure wrapper around native `<details>` and `<summary>` with controlled/u
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-disclosure
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-disclosure
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-disclosure/define';
-`
+```
 
 ## Live demo
 

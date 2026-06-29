@@ -18,11 +18,15 @@ declare global {
 }
 
 /**
- * An editable combobox with autocomplete filtering and optional allow-create.
+ * Editable combobox with filtering and optional allow-create behavior, configured from
+ * native option data and following the WAI-ARIA Combobox pattern.
  *
  * Extends `rc-select` by replacing the trigger `<div>` with a text `<input>`
  * and adding: live filtering of the listbox, keyboard navigation from input,
  * and an optional "Create '{text}'" option for new entries.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-combobox rc-combobox docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/combobox/ WAI-ARIA Combobox pattern}
  *
  * @slot - Required. A native `<select>` element for form submission.
  * @slot toggle-icon - Optional. Replaces the default chevron icon.

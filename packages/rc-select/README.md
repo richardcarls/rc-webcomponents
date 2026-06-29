@@ -1,7 +1,8 @@
 # `@rcarls/rc-select`
 
-A progressive enhancement implementation of the single- and multi-select
-[WAI-ARIA APG Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
+Select-only combobox backed by a native `<select>`, following the [WAI-ARIA Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-select](https://richardcarls.github.io/rc-webcomponents/components/rc-select).
 
 ## Installation
 

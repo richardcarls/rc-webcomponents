@@ -2,13 +2,15 @@
 title: rc-markdown-editor
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { MarkdownEditorDemo } from '@site/src/components/ComponentDemos';
 
 # rc-markdown-editor
 
-A rich/source Markdown editor with a colocated formatting toolbar, backed by a native textarea.
+Rich/source Markdown editor with a formatting toolbar, backed by `rc-textarea`.
 
 <AtAGlance
   packageName="@rcarls/rc-markdown-editor"
@@ -21,17 +23,26 @@ A rich/source Markdown editor with a colocated formatting toolbar, backed by a n
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-markdown-editor
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-markdown-editor
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-markdown-editor/define';
-`
+```
 
 ## Live demo
 

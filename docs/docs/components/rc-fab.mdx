@@ -2,14 +2,15 @@
 title: rc-fab
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { FabDemo } from '@site/src/components/ComponentDemos';
 
 # rc-fab
 
-A sticky-positioned button over page content with scroll behaviors, adapted from
-the [Material Design FAB component](https://m3.material.io/components/floating-action-button/overview).
+Sticky floating action button modeled after the [Material 3 Floating action button](https://m3.material.io/components/floating-action-button/overview), wrapping a consumer-supplied button with scroll-aware visibility.
 
 Use this for "back to top", sticky CTAs, chat launchers, and of course as FABs in your
 Material Design website or PWA.
@@ -30,9 +31,22 @@ Icons go inside the button alongside or instead of visible text.
 
 ## Installation
 
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
 ```sh
 npm install @rcarls/rc-fab
 ```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-fab
+```
+
+  </TabItem>
+</Tabs>
 
 ```js
 import '@rcarls/rc-fab/define';
@@ -48,7 +62,7 @@ container; real-world use relies on `position: fixed` anchored to the viewport c
 
 ## Theming
 
-`rc-fab` is headless, with a default pill shape (circular with just an icon), and uses
+`rc-fab` is design-system neutral, with a default pill shape (circular with just an icon), and uses
 CSS system colors by default.
 
 Apply `rc-theme-material` to acheive the Material Design FAB style, or customize with

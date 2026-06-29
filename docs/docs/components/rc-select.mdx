@@ -2,6 +2,8 @@
 title: rc-select
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import {
@@ -13,13 +15,12 @@ import {
 
 # rc-select
 
-A progressive enhancement implementation of the single- and multi-select
-[WAI-ARIA APG Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
+Select-only combobox backed by a native `<select>`, following the [WAI-ARIA Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
 
 <AtAGlance
   packageName="@rcarls/rc-select"
   tag="rc-select"
-  native="Requires a slotted native select"
+  native="Requires a direct child native select"
   state="Controlled or uncontrolled selection"
   events={['rc-select-open', 'rc-select-close', 'rc-select-change']}
   related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
@@ -27,17 +28,26 @@ A progressive enhancement implementation of the single- and multi-select
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-select
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-select
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-select/define';
-`
+```
 
 ## Live demo
 

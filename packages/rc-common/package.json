@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Shared reactive controllers and directives for @rcarls Lit web components",
+  "description": "Shared controllers, directives, and DOM utilities for rc-webcomponents.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -37,8 +37,7 @@
     "preview": "vite preview",
     "test:browser": "vitest --run",
     "test:browser:chrome": "vitest --run --project=chromium",
-    "test:browser:firefox": "vitest --run --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
     "@oddbird/css-anchor-positioning": "^0.7.0"

@@ -1,7 +1,8 @@
 # @rcarls/rc-textarea-plugin-markdown
 
-Markdown decoration plugin for [@rcarls/rc-textarea](../rc-textarea/). Usable standalone
-on any `rc-textarea` instance.
+Markdown decoration plugin for `rc-textarea`.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-textarea](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea).
 
 Part of the [rc-webcomponents](https://github.com/richardcarls/rc-webcomponents) library.
 

@@ -2,13 +2,15 @@
 title: rc-virtual-canvas
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { VirtualCanvasDemo } from '@site/src/components/ComponentDemos';
 
 # rc-virtual-canvas
 
-A scrollable virtual canvas component.
+Scrollable virtual canvas for rendering large coordinate-space content.
 
 Overlays a transparent scrollable div on top of a slotted `<canvas>` element,
 dispatching `rc-virtual-canvas-render` events with the current viewport and
@@ -25,17 +27,26 @@ content rectangles. Consumers draw only what is visible.
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-virtual-canvas
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-virtual-canvas
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-virtual-canvas/define';
-`
+```
 
 ## Live demo
 

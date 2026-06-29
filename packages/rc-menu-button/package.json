@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "A WAI-ARIA Menu button component.",
+  "description": "Trigger button that opens an rc-menu popup.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -42,8 +42,7 @@
     "preview": "vite preview",
     "test:browser": "vitest --run",
     "test:browser:chrome": "vitest --run --project=chromium",
-    "test:browser:firefox": "vitest --run --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
     "@rcarls/rc-common": "workspace:^",

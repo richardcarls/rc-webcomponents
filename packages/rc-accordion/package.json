@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Implements the WAI-ARIA Accordion Pattern by coordinating child <details> panels.",
+  "description": "Accordion coordinator for child native <details> panels with single- or multiple-open behavior.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",

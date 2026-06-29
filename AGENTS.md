@@ -42,9 +42,9 @@ short and tell the tool to read `AGENTS.md` before project work.
 - Implement the WAI-ARIA Authoring Practices Guide pattern where one exists:
   correct roles and states, full keyboard support, expected focus management, and
   screen-reader behavior.
-- Components are headless. Ship only structural styling needed for correct layout
-  or behavior; avoid decorative visual opinions. Prefer UA-like defaults, CSS
-  system colors, and forced-colors-safe state indicators.
+- Components are design-system neutral. Ship only structural styling needed for
+  correct layout or behavior; avoid decorative visual opinions. Prefer UA-like
+  defaults, CSS system colors, and forced-colors-safe state indicators.
 - Runtime measurement may write inline geometry styles, such as splitter sizes.
   Decorative styles belong in static CSS, CSS custom properties, or CSS parts.
 - Use Pointer Events for pointer interaction. Avoid mouse-only logic and
@@ -134,6 +134,15 @@ directly usable public packages.
 
 - `README.md` is the public root overview and package catalog. Keep architecture
   detail and agent workflow here only when it helps future code changes.
+- Keep package descriptions aligned across `package.json`, package README first
+  paragraph, exported class JSDoc, docs page intro, the root README package
+  table, and the docs homepage package table. Descriptions should be concise and
+  matter-of-fact, mention the native element a component wraps/enhances, and use
+  WAI-ARIA APG links only when a real APG pattern applies. Component class
+  JSDoc should include a docs-site `@see {@link ...}` entry and an APG or
+  Material component `@see` entry where applicable.
+- Do not add `yalc` scripts to package manifests. Keep homepage URLs pointed at
+  the most specific docs page for the public package.
 - The Docusaurus docs workspace is the canonical home for public component docs,
   examples, and live demos.
 - Package READMEs are npm landing pages and should stay short unless a package

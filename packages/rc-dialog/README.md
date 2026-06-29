@@ -1,6 +1,8 @@
 # `@rcarls/rc-dialog`
 
-Enhances a native `<dialog>` element with drag, resize, cancelable close events, and light-dismiss.
+Draggable, resizable wrapper for a native `<dialog>`, following the [WAI-ARIA Dialog Modal pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-dialog](https://richardcarls.github.io/rc-webcomponents/components/rc-dialog).
 
 ---
 

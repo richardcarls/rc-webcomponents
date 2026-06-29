@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 import type { CSSResultGroup } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { NativeChildController, warnMissingDirectChild } from '@rcarls/rc-common';
 
 import { styles } from './rc-textarea.styles.ts';
 import { RCDocument, getText } from './document.ts';
@@ -85,11 +86,12 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
 }
 
 /**
- * Progressively enhanced textarea with line decorations, gutter, and plugin API.
+ * Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.
  *
- * A native `<textarea>` must be provided as a direct child. It is kept in the
- * DOM so that pre-upgrade usability (form submission, label association, etc.)
- * all work without JavaScript.
+ * Provide a native `<textarea>` as the direct child when the component is
+ * editable. Read-only displays may be driven from `value` or `defaultValue`.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-textarea rc-textarea docs}
  *
  * @example Basic usage
  * ```html
@@ -108,7 +110,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * });
  * ```
  *
- * @slot - Accepts a native `<textarea>` element for form wiring and progressive enhancement.
+ * @slot - Accepts a native `<textarea>` element for form wiring.
  *
  * @fires rc-textarea-change - Fired when the field value changes
  * @fires rc-textarea-blur - Fired when the field loses focus
@@ -279,6 +281,22 @@ export class RCTextarea extends LitElement {
   private _document: RCDocument | null = null;
   private _$textareaRef: WeakRef<HTMLTextAreaElement> | null = null;
 
+  private readonly _textareaController = new NativeChildController<HTMLTextAreaElement>(this, {
+    selector: ':scope > textarea',
+    observe: true,
+    onChange: ($textarea, $previousTextarea) =>
+      this._setupTextarea($textarea, $previousTextarea),
+    onMissing: () => {
+      if (import.meta.env.DEV && !this.readOnly) {
+        warnMissingDirectChild(this, {
+          selector: ':scope > textarea',
+          message:
+            '[rc-textarea] No direct child <textarea> found. Place a native <textarea> inside <rc-textarea>.',
+        });
+      }
+    },
+  });
+
   /** Plugin-owned decorations */
   protected _pluginDecorations = new Map<string, Decoration>();
 
@@ -398,6 +416,7 @@ export class RCTextarea extends LitElement {
 
     this._cursorCallbacks.clear();
     this._resizeObserver?.disconnect();
+    this._$textareaRef?.deref()?.removeEventListener('invalid', this._onTextareaInvalid);
 
     if (this._rafHandle !== null) {
       cancelAnimationFrame(this._rafHandle);
@@ -433,6 +452,7 @@ export class RCTextarea extends LitElement {
       }
 
       this._syncGutterHeights();
+      this._textareaController.sync();
     }
 
     if (changed.has('label')) {
@@ -466,15 +486,20 @@ export class RCTextarea extends LitElement {
   }
 
   private _onSlotChange(): void {
-    if (!this._$slot) {
-      return;
+    this._textareaController.sync();
+  }
+
+  private _setupTextarea(
+    $textarea: HTMLTextAreaElement | null,
+    $previousTextarea?: HTMLTextAreaElement | null,
+  ): void {
+    if ($previousTextarea && $previousTextarea !== $textarea) {
+      $previousTextarea.removeEventListener('invalid', this._onTextareaInvalid);
     }
 
-    const $textarea = this._$slot
-      .assignedElements({ flatten: true })
-      .find(($el): $el is HTMLTextAreaElement => $el instanceof HTMLTextAreaElement);
-
     if (!$textarea) {
+      this._$textareaRef = null;
+
       return;
     }
 
@@ -518,17 +543,19 @@ export class RCTextarea extends LitElement {
     }
 
     // Wire up form validation feedback
-    $textarea.addEventListener('invalid', () => {
-      if (this._$editor) {
-        this._$editor.setAttribute('aria-invalid', 'true');
-      }
-    });
+    $textarea.addEventListener('invalid', this._onTextareaInvalid);
 
     // Sync typography from textarea's computed style to editor
     this._syncTypography($textarea);
 
     this._scheduleRender();
   }
+
+  private _onTextareaInvalid = (): void => {
+    if (this._$editor) {
+      this._$editor.setAttribute('aria-invalid', 'true');
+    }
+  };
 
   private _bindEditorEvents($editor: HTMLElement): void {
     $editor.addEventListener('compositionstart', () => {

@@ -2,13 +2,15 @@
 title: rc-splitter
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { SplitterDemo } from '@site/src/components/ComponentDemos';
 
 # rc-splitter
 
-A resizable pane splitter using the separator pattern with pointer and keyboard resizing.
+Resizable pane splitter with pointer, keyboard, and collapse/restore controls, following the [WAI-ARIA Window Splitter pattern](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/).
 
 <AtAGlance
   packageName="@rcarls/rc-splitter"
@@ -21,17 +23,26 @@ A resizable pane splitter using the separator pattern with pointer and keyboard 
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-splitter
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-splitter
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-splitter/define';
-`
+```
 
 ## Live demo
 

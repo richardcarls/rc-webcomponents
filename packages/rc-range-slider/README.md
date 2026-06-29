@@ -1,7 +1,8 @@
 # @rcarls/rc-range-slider
 
-WAI-ARIA APG multi-thumb range slider web component with native form
-participation.
+Two-thumb range slider backed by native range inputs for min/max values, following the [WAI-ARIA Multi-Thumb Slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-range-slider](https://richardcarls.github.io/rc-webcomponents/components/rc-range-slider).
 
 `rc-range-slider` progressively enhances two direct child
 `<input type="range">` elements. Before upgrade, those inputs are the usable

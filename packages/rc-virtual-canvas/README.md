@@ -1,6 +1,8 @@
 # `@rcarls/rc-virtual-canvas`
 
-A scrollable virtual canvas component.
+Scrollable virtual canvas for rendering large coordinate-space content.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-virtual-canvas](https://richardcarls.github.io/rc-webcomponents/components/rc-virtual-canvas).
 
 Overlays a transparent scrollable div on top of a slotted `<canvas>` element, dispatching
 `rc-virtual-canvas-render` events with the current viewport and content rectangles.

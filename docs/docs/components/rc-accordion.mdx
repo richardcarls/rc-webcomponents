@@ -2,6 +2,8 @@
 title: rc-accordion
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import {
@@ -12,7 +14,7 @@ import {
 
 # rc-accordion
 
-A native `<details>` accordion coordinator with single-open or multiple-open behavior.
+Accordion coordinator for child native `<details>` panels with single- or multiple-open behavior, following the [WAI-ARIA Accordion pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/).
 
 <AtAGlance
   packageName="@rcarls/rc-accordion"
@@ -25,17 +27,26 @@ A native `<details>` accordion coordinator with single-open or multiple-open beh
 
 ## Installation
 
-`sh
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
 npm install @rcarls/rc-accordion
-`
+```
 
-`sh
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
 yarn add @rcarls/rc-accordion
-`
+```
 
-`js
+  </TabItem>
+</Tabs>
+
+```js
 import '@rcarls/rc-accordion/define';
-`
+```
 
 ## Live demo
 

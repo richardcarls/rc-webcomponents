@@ -14,11 +14,15 @@ declare global {
 }
 
 /**
- * Light behavioral wrapper for a direct child native `<details>` element.
+ * Disclosure wrapper for a native <details>/<summary> pair with controlled open state,
+ * following the WAI-ARIA Disclosure pattern.
  *
  * The browser keeps ownership of open/close behavior, keyboard support, and
  * accessibility. This element mirrors state, emits a consistent custom event,
  * and automatically opens when the URL hash matches any id within its subtree.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-disclosure rc-disclosure docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/ WAI-ARIA Disclosure pattern}
  *
  * @fires rc-disclosure-toggle - Fires when the child `<details>` toggles.
  */

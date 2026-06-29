@@ -25,9 +25,11 @@ export interface RCMenuButtonToggleEvent {
 }
 
 /**
- * An implementation of the WAI-ARIA Menu button pattern.
+ * Trigger button that opens an rc-menu popup, following the WAI-ARIA Menu Button pattern.
  *
- * @see https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-menu-button rc-menu-button docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/ WAI-ARIA Menu Button pattern}
  *
  * @slot trigger - The button element that triggers the menu
  * @slot default - The rc-menu element to display as popup

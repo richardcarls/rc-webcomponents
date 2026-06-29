@@ -23,7 +23,8 @@ export type ListboxActionOption<Action extends string = string> = ItemsCollectio
 };
 
 /**
- * Determines how `filterOptions()` matches option labels against the query string.
+ * Listbox that keeps option DOM in light DOM for aria-activedescendant navigation,
+ * following the WAI-ARIA Listbox pattern.
  *
  * - `'prefix'`: label must start with the query (default, matches native `<select>` type-ahead).
  * - `'contains'`:  label must contain the query anywhere.
@@ -159,6 +160,9 @@ const LIGHT_DOM_CSS = `
  *   - Call `toggleOption()` for internal keyboard/pointer activation
  *   - Call `filterOptions()` to filter visible options
  *   - Read `navigableItems` to feed `ActiveDescendantController`
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-listbox rc-listbox docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/listbox/ WAI-ARIA Listbox pattern}
  *
  * @slot — Accepts pre-rendered `<ul>` with `<li>` children for progressive enhancement.
  *

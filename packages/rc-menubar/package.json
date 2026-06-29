@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Headless WAI-ARIA menubar with roving tabindex, built with Lit",
+  "description": "Menubar coordinator for rc-menu-button children with roving tabindex and submenu handoff.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -42,8 +42,7 @@
     "preview": "vite preview",
     "test:browser": "vitest --run",
     "test:browser:chrome": "vitest --run --project=chromium",
-    "test:browser:firefox": "vitest --run --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
     "@rcarls/rc-common": "workspace:^",

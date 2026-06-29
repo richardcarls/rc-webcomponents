@@ -2,19 +2,20 @@
 title: rc-search-bar
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
 import { SearchBarDemo } from '@site/src/components/ComponentDemos';
 
 # rc-search-bar
 
-Enhances a native `<input type="search">` with more consistent appearance and
-behavior, and introduces convenience properties and debounced search events.
+Search field wrapper for a native `<input type="search">` with icon chrome, clear button, and debounced events.
 
 <AtAGlance
   packageName="@rcarls/rc-search-bar"
   tag="rc-search-bar"
-  native="Requires a native search input child"
+  native="Requires a direct child native search input"
   state="Controlled or uncontrolled search value"
   events={['rc-search-bar-input', 'rc-search-bar-clear']}
   related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
@@ -22,13 +23,22 @@ behavior, and introduces convenience properties and debounced search events.
 
 ## Installation
 
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
 ```sh
 npm install @rcarls/rc-search-bar
 ```
 
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
 ```sh
 yarn add @rcarls/rc-search-bar
 ```
+
+  </TabItem>
+</Tabs>
 
 ```js
 import '@rcarls/rc-search-bar/define';

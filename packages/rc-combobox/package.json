@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "A web component implementation of the WAI-ARIA APG combobox pattern, with autocomplete filtering and optional on-the-fly item creation.",
+  "description": "Editable combobox with filtering and optional allow-create behavior, configured from native option data.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -42,8 +42,7 @@
     "preview": "vite preview",
     "test:browser": "vitest --run",
     "test:browser:chrome": "vitest --run --project=chromium",
-    "test:browser:firefox": "vitest --run --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
     "@rcarls/rc-common": "workspace:^",

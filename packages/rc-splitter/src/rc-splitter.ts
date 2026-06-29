@@ -26,14 +26,17 @@ declare global {
 }
 
 /**
- * An accessible splitter layout component.
+ * Resizable pane splitter with pointer, keyboard, and collapse/restore controls, following
+ * the WAI-ARIA Window Splitter pattern.
  *
  * Set `orientation="vertical"` for a vertical splitter
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-splitter rc-splitter docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/ WAI-ARIA Window Splitter pattern}
  *
  * @slot - Primary pane contents
  * @slot secondary - Secondary pane contents (optional)
  *
- * @see https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/
  * @cssprop [--rc-splitter-separator-size=6px] - Thickness of the separator bar
  * @cssprop [--rc-splitter-separator-handle-size=100%] - Length of the drag handle area within the separator (also the length of the visible indicator)
  * @cssprop [--rc-splitter-separator-color=color-mix(in srgb, ButtonBorder 35%, Canvas 65%)] - Separator background color

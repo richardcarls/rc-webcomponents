@@ -4,13 +4,13 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Markdown decoration plugin for rc-textarea",
+  "description": "Markdown decoration plugin for rc-textarea.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-textarea-plugin-markdown"
   },
-  "homepage": "https://richardcarls.github.io/rc-webcomponents/",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-textarea",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -28,8 +28,7 @@
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "tsc && vite build",
-    "yalc:publish": "yalc publish --push"
+    "build": "tsc && vite build"
   },
   "devDependencies": {
     "@rcarls/rc-textarea": "workspace:^",

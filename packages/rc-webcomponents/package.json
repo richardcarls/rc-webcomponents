@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Aggregate package — all @rcarls WAI-ARIA compliant headless web components",
+  "description": "Aggregate package that re-exports and defines the rc-webcomponents collection.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -47,8 +47,7 @@
     "./themes/*.css"
   ],
   "scripts": {
-    "build": "tsc && vite build",
-    "yalc:publish": "yalc publish --push"
+    "build": "tsc && vite build"
   },
   "dependencies": {
     "@rcarls/rc-accordion": "workspace:^",

@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.2.0",
-  "description": "Enhances a native `<input type=\"search\">` with more consistent appearance and behavior, and introduces convenience properties and debounced search events.",
+  "description": "Search field wrapper for a native <input type=\"search\"> with icon chrome, clear button, and debounced events.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -42,8 +42,7 @@
     "preview": "vite preview",
     "test:browser": "vitest --run",
     "test:browser:chrome": "vitest --run --project=chromium",
-    "test:browser:firefox": "vitest --run --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "0.11.0",
@@ -59,5 +58,8 @@
   },
   "peerDependencies": {
     "lit": "^3.0.0"
+  },
+  "dependencies": {
+    "@rcarls/rc-common": "workspace:^"
   }
 }

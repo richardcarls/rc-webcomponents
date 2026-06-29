@@ -1,6 +1,8 @@
 # `@rcarls/rc-common`
 
-Shared controllers and directives for the `@rcarls` web components library. Not a component itself — a set of composable Lit primitives for drag, resize, anchor positioning, active-descendant navigation, roving tabindex, scroll observation, lifecycle-safe observers, native-child lookup, typeahead, slider value math, keyboard interaction, pointer movement, DOM scroll ancestor lookup, and focusability testing.
+Shared controllers, directives, and DOM utilities for `rc-webcomponents`.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/](https://richardcarls.github.io/rc-webcomponents/).
 
 ---
 

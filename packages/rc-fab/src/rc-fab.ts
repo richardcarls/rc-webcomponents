@@ -3,6 +3,7 @@ import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import {
+  NativeChildController,
   ScrollObserverController,
   findNearestScrollAncestor,
   warnMissingDirectChild,
@@ -17,7 +18,8 @@ declare global {
 }
 
 /**
- * A sticky-positioned button on top of the page content with scroll behaviors.
+ * Sticky floating action button modeled after the Material 3 Floating action button,
+ * wrapping a consumer-supplied button with scroll-aware visibility.
  *
  * Adapted from the Material Design FAB component, use this for "back to top",
  * sticky CTAs, chat launchers, and of course as FABs in your Material Design PWA.
@@ -26,6 +28,9 @@ declare global {
  * name (text content or `aria-label`) becomes the FAB's accessible name.
  *
  * Icons go inside the button alongside or instead of visible text.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-fab rc-fab docs}
+ * @see {@link https://m3.material.io/components/floating-action-button/overview Material 3 Floating action button}
  *
  * @example Back to top (scroll-triggered)
  * ```html
@@ -83,7 +88,6 @@ declare global {
  * @cssprop [--rc-fab-scroll-threshold=300px] - Scroll distance at which the FAB becomes fully visible. Requires the `scroll-reveal` attribute. The JS fallback reads this value once on connect; px units only.
  * @cssprop [--rc-fab-scroll-timeline=scroll(root block)] - The `animation-timeline` value used for scroll-reveal. Override to target a different scroller, e.g. `scroll(nearest block)` for embedded contexts. CSS path only; the JS fallback discovers the nearest scrollable ancestor automatically.
  *
- * @see @link { https://material.io/components/buttons-floating-action-button/} for Material Design FAB guidelines.
  */
 export class RCFab extends LitElement {
   static override styles = fabStyles;
@@ -98,13 +102,22 @@ export class RCFab extends LitElement {
   @property({ type: Boolean, attribute: 'scroll-reveal', reflect: true })
   scrollReveal = false;
 
-  protected override firstUpdated(): void {
-    if (import.meta.env.DEV) {
-      warnMissingDirectChild(this, {
-        selector: ':scope > button',
-        message: '[rc-fab] No direct child <button> found. Place a native <button> inside <rc-fab>.',
-      });
-    }
+  constructor() {
+    super();
+
+    new NativeChildController<HTMLButtonElement>(this, {
+      selector: ':scope > button',
+      observe: true,
+      onMissing: () => {
+        if (import.meta.env.DEV) {
+          warnMissingDirectChild(this, {
+            selector: ':scope > button',
+            message:
+              '[rc-fab] No direct child <button> found. Place a native <button> inside <rc-fab>.',
+          });
+        }
+      },
+    });
   }
 
   protected override updated(changed: PropertyValues): void {

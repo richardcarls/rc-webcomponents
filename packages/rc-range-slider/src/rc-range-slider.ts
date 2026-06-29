@@ -2,6 +2,7 @@ import { LitElement, css, html, nothing } from "lit";
 import type { ComplexAttributeConverter } from "lit";
 import { property, state } from "lit/decorators.js";
 import {
+  NativeChildController,
   getDirectChildren,
   snapToStep,
   valueToPercent,
@@ -59,8 +60,8 @@ function parseAttr(s: string, defaultVal: number): number {
 }
 
 /**
- * Dual-thumb range slider implementing the WAI-ARIA APG Slider (Multi-Thumb)
- * pattern with custom shadow-DOM slider thumbs.
+ * Two-thumb range slider backed by native range inputs for min/max values, following the
+ * WAI-ARIA Multi-Thumb Slider pattern.
  *
  * Consumers provide two direct child `<input type="range">` elements. Before
  * upgrade, those inputs are the usable progressive-enhancement fallback. After
@@ -68,6 +69,9 @@ function parseAttr(s: string, defaultVal: number): number {
  * shadow thumbs become the focusable, accessible interaction surface.
  *
  * Form participation is handled natively by each input's `name` attribute.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-range-slider rc-range-slider docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/ WAI-ARIA Multi-Thumb Slider pattern}
  *
  * @slot - Consumer-provided native range inputs.
  * @slot track-background - Optional decorative content rendered inside the track before the selected range fill.
@@ -397,11 +401,23 @@ export class RCRangeSlider extends LitElement {
   private _dragThumb: RangeThumb | null = null;
   private _dragPointerId: number | null = null;
   private _addedHostRole = false;
+  private readonly _rangeInputController = new NativeChildController<HTMLInputElement>(this, {
+    selector: ':scope > input[type="range"]',
+    observe: true,
+    onChange: () => this._resetInputs(),
+    onMissing: () => {
+      if (import.meta.env.DEV) {
+        warnMissingDirectChild(this, {
+          selector: ':scope > input[type="range"]',
+          message: '[rc-range-slider] Requires two child <input type="range"> elements.',
+        });
+      }
+    },
+  });
 
   override connectedCallback(): void {
     super.connectedCallback();
     this._syncHostRole();
-    this._findInputs();
   }
 
   override disconnectedCallback(): void {
@@ -525,11 +541,13 @@ export class RCRangeSlider extends LitElement {
     ).slice(0, 2);
 
     if (inputs.length < 2) {
-      warnMissingDirectChild(this, {
-        selector: ':scope > input[type="range"]',
-        minimum: 2,
-        message: '[rc-range-slider] Requires two child <input type="range"> elements.',
-      });
+      if (import.meta.env.DEV && inputs.length > 0) {
+        warnMissingDirectChild(this, {
+          selector: ':scope > input[type="range"]',
+          minimum: 2,
+          message: '[rc-range-slider] Requires two child <input type="range"> elements.',
+        });
+      }
       return;
     }
 
@@ -549,11 +567,16 @@ export class RCRangeSlider extends LitElement {
   }
 
   private _onDefaultSlotChange = (): void => {
+    this._rangeInputController.sync();
+    this._resetInputs();
+  };
+
+  private _resetInputs(): void {
     this._unwireInputs();
     this._restoreInputs();
     this._findInputs();
     this.requestUpdate();
-  };
+  }
 
   private get _nativeInputValue(): [number, number] {
     const low = this._lowInput?.valueAsNumber;

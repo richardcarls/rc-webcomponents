@@ -1,7 +1,8 @@
 # @rcarls/rc-slider
 
-Styled range input web component with composable shadow-DOM track and value
-display hooks.
+Single-thumb slider backed by a native `<input type="range">` with custom track and value display hooks, following the [WAI-ARIA Slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-slider](https://richardcarls.github.io/rc-webcomponents/components/rc-slider).
 
 ## Styling Hooks
 

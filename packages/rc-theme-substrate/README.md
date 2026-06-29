@@ -1,6 +1,8 @@
 # `@rcarls/rc-theme-substrate`
 
-Substrate is the lightweight reference theme for `rc-webcomponents`.
+Lightweight CSS reference theme for app-oriented `rc-webcomponents` layouts.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/guide/theme-previews](https://richardcarls.github.io/rc-webcomponents/guide/theme-previews).
 
 It is a CSS-only, app-oriented foundation theme: orange primary color,
 neutral surfaces, compact controls, system-color fallbacks, and a small set of

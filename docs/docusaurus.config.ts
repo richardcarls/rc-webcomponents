@@ -3,7 +3,7 @@ import type { Preset } from '@docusaurus/types';
 
 const config: Config = {
   title: 'rc-webcomponents',
-  tagline: 'WAI-ARIA oriented headless web components built with Lit',
+  tagline: 'Themeable web components for app interfaces',
   url: 'https://richardcarls.github.io',
   baseUrl: '/rc-webcomponents/',
   organizationName: 'richardcarls',

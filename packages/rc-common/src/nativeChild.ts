@@ -104,6 +104,7 @@ export class NativeChildController<E extends Element = Element> implements React
 
   hostDisconnected(): void {
     this._observer?.disconnect();
+    this._child = null;
   }
 
   /** Re-read the child from the host and invoke `onChange` when it changes. */
