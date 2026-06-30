@@ -262,6 +262,20 @@ describe('RCTextarea — slotted textarea', () => {
     await waitRender();
 
     expect(host.value).toBe('preset text');
+    expect(getEditor(host).querySelector('.line')?.textContent).toBe('preset text');
+  });
+
+  test('slotted textarea defaultValue property seeds the visible editor', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host">
+        <textarea .defaultValue=${'property seeded text'}></textarea>
+      </rc-textarea>
+    `);
+    await waitRender();
+
+    expect(host.value).toBe('property seeded text');
+    expect(getSlottedTextarea(host).value).toBe('property seeded text');
+    expect(getEditor(host).querySelector('.line')?.textContent).toBe('property seeded text');
   });
 
   test('value setter syncs to the slotted textarea', async () => {

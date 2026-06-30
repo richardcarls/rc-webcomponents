@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Search field wrapper for a native <input type=\"search\"> with icon chrome, clear button, and debounced events.",
   "repository": {
     "type": "git",

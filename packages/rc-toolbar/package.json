@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Toolbar that groups consumer-supplied controls into one tab stop with arrow-key navigation.",
   "repository": {
     "type": "git",

@@ -1,5 +1,11 @@
 # @rcarls/rc-accordion
 
+## 0.3.1
+
+### Patch Changes
+
+- @rcarls/rc-disclosure@0.3.1
+
 ## 0.3.0
 
 ### Added

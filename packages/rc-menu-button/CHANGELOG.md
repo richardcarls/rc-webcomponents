@@ -1,5 +1,12 @@
 # @rcarls/rc-menu-button
 
+## 0.3.1
+
+### Patch Changes
+
+- @rcarls/rc-common@0.3.1
+- @rcarls/rc-menu@0.3.1
+
 ## 0.3.0
 
 ### Changed

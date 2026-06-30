@@ -265,13 +265,13 @@ export class RCTextarea extends LitElement {
     this.requestUpdate();
   }
 
-  @query('#editor', true)
+  @query('#editor')
   protected _$editor!: HTMLElement;
 
-  @query('#gutter-cells', true)
+  @query('#gutter-cells')
   protected _$gutterCells!: HTMLElement;
 
-  @query('slot', true)
+  @query('slot')
   protected _$slot!: HTMLSlotElement;
 
   private _value = '';

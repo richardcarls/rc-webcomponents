@@ -1,5 +1,11 @@
 # @rcarls/rc-toolbar
 
+## 0.3.1
+
+### Patch Changes
+
+- @rcarls/rc-common@0.3.1
+
 ## 0.3.0
 
 ### Changed
