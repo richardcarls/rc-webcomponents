@@ -1,4 +1,4 @@
-import type { CSSProperties, RefObject } from 'react';
+import type { CSSProperties } from 'react';
 import type * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -27,19 +27,7 @@ import { createMarkdownPlugin } from '@rcarls/rc-textarea-plugin-markdown';
 import { DemoFrame } from './DemoFrame';
 
 type DetailEvent<T> = CustomEvent<T>;
-type EventLogTarget = RefObject<HTMLElement | null> | HTMLElement | null;
-
-function getEventLogTarget(target: EventLogTarget): HTMLElement | null {
-  if (!target) {
-    return null;
-  }
-
-  if ('addEventListener' in target) {
-    return target;
-  }
-
-  return target.current;
-}
+type EventLogTarget = HTMLElement | null;
 
 function useEventLog<T>(
   target: EventLogTarget,
@@ -49,7 +37,7 @@ function useEventLog<T>(
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    const $element = getEventLogTarget(target);
+    const $element = target;
     if (!$element) {
       return;
     }
@@ -125,9 +113,6 @@ export function AppBarDemo() {
             <strong>Recipes</strong>
             <small style={{ display: 'block' }}>Summer collection</small>
           </div>
-          <rc-search-bar slot="center">
-            <input type="search" aria-label="Search recipes" />
-          </rc-search-bar>
           <button slot="trailing" type="button" aria-label="Edit">
             <span className="material-symbols-outlined" aria-hidden="true">edit</span>
           </button>
@@ -139,7 +124,7 @@ export function AppBarDemo() {
           {[
             'Prep ingredients and group tasks before the kitchen gets busy.',
             'Review active orders, pinned notes, and handoff details in one place.',
-            'Keep the search field available while the title gives back vertical space.',
+            'Let the expanded title collapse while primary actions remain available.',
             'Use the scrolled divider as a quiet boundary between controls and content.',
             'Return to the top to let the expanded title settle back into view.',
             'The app bar observes this container directly, so the page itself stays still.',
@@ -170,6 +155,27 @@ export function AppBarDemo() {
   );
 }
 
+export function AppBarSearchDemo() {
+  return (
+    <DemoFrame>
+      <rc-app-bar>
+        <button slot="leading" type="button" aria-label="Open navigation">
+          <span className="material-symbols-outlined" aria-hidden="true">menu</span>
+        </button>
+        <rc-search-bar
+          slot="center"
+          style={{ inlineSize: 'min(28rem, 100%)' }}
+        >
+          <input type="search" aria-label="Search recipes" placeholder="Search recipes" />
+        </rc-search-bar>
+        <button slot="trailing" type="button" aria-label="Filter results">
+          <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+        </button>
+      </rc-app-bar>
+    </DemoFrame>
+  );
+}
+
 export function ComboboxDemo() {
   const [comboEl, setComboEl] = useState<HTMLElement | null>(null);
   const [log, setLog] = useState<string[]>([]);
@@ -192,7 +198,7 @@ export function ComboboxDemo() {
       <div className="demo-row">
         <label className="demo-col">
           <span>Ingredient</span>
-          <rc-combobox ref={(el) => setComboEl(el as HTMLElement | null)} placeholder="Choose or create">
+          <rc-combobox ref={(el) => setComboEl(el as HTMLElement | null)} placeholder="Choose an ingredient">
             <select name="ingredient">
               <option value="carrot">Carrot</option>
               <option value="ginger">Ginger</option>
@@ -614,16 +620,16 @@ export function MenubarDemo() {
 }
 
 export function RangeSliderDemo() {
-  const sliderRef = useRef<RCRangeSliderRef>(null);
+  const [sliderEl, setSliderEl] = useState<RCRangeSliderRef | null>(null);
   const log = useEventLog<{ value: [number, number] }>(
-    sliderRef,
+    sliderEl,
     'rc-range-slider-change',
     ({ value }) => `rc-range-slider-change -> ${value.join(' - ')}`,
   );
 
   return (
     <DemoFrame>
-      <rc-range-slider ref={sliderRef} display="inline-end">
+      <rc-range-slider ref={setSliderEl} display="inline-end">
         <input type="range" min="0" max="100" defaultValue="20" aria-label="Minimum price" />
         <input type="range" min="0" max="100" defaultValue="80" aria-label="Maximum price" />
       </rc-range-slider>
@@ -677,16 +683,16 @@ export function SearchBarDemo() {
 }
 
 export function SliderDemo() {
-  const sliderRef = useRef<RCSliderRef>(null);
+  const [sliderEl, setSliderEl] = useState<RCSliderRef | null>(null);
   const log = useEventLog<{ value: number }>(
-    sliderRef,
+    sliderEl,
     'rc-slider-change',
     ({ value }) => `rc-slider-change -> ${value}`,
   );
 
   return (
     <DemoFrame>
-      <rc-slider ref={sliderRef} display="inline-end">
+      <rc-slider ref={setSliderEl} display="inline-end">
         <input type="range" min="0" max="100" defaultValue="64" aria-label="Priority" />
       </rc-slider>
       <EventLog entries={log} />
@@ -799,16 +805,36 @@ fn main() {
     println!("m[1][1] = {}", m.get(1, 1));
 }`;
 
-const HLJS_DARK_CSS = `
-  .hljs-keyword, .hljs-type { color: #cba6f7; }
-  .hljs-string { color: #a6e3a1; }
-  .hljs-number { color: #fab387; }
-  .hljs-comment { color: #6c7086; font-style: italic; }
-  .hljs-title, .hljs-title.function_ { color: #89b4fa; font-weight: bold; }
-  .hljs-built_in { color: #89dceb; }
-  .hljs-literal { color: #f5c2e7; }
-  .hljs-variable, .hljs-punctuation { color: #cdd6f4; }
-  .hljs-operator { color: #89dceb; }
+const HLJS_DEMO_CSS = `
+  .hljs-keyword, .hljs-type { color: light-dark(#7c3aed, #cba6f7); }
+  .hljs-string { color: light-dark(#0f766e, #a6e3a1); }
+  .hljs-number { color: light-dark(#b45309, #fab387); }
+  .hljs-comment { color: light-dark(#64748b, #6c7086); font-style: italic; }
+  .hljs-title, .hljs-title.function_ { color: light-dark(#2563eb, #89b4fa); font-weight: bold; }
+  .hljs-built_in { color: light-dark(#0891b2, #89dceb); }
+  .hljs-literal { color: light-dark(#be185d, #f5c2e7); }
+  .hljs-variable, .hljs-punctuation { color: light-dark(#334155, #cdd6f4); }
+  .hljs-operator { color: light-dark(#0369a1, #89dceb); }
+
+  @media (forced-colors: active) {
+    .hljs-keyword,
+    .hljs-type,
+    .hljs-string,
+    .hljs-number,
+    .hljs-title,
+    .hljs-title.function_,
+    .hljs-built_in,
+    .hljs-literal,
+    .hljs-variable,
+    .hljs-punctuation,
+    .hljs-operator {
+      color: CanvasText;
+    }
+
+    .hljs-comment {
+      color: GrayText;
+    }
+  }
 `;
 
 export function TextareaHljsDemo() {
@@ -819,7 +845,7 @@ export function TextareaHljsDemo() {
 
     editor.usePlugin({
       mount(api: any) {
-        api.adoptStyleSheet(HLJS_DARK_CSS);
+        api.adoptStyleSheet(HLJS_DEMO_CSS);
       },
       highlight(value: string) {
         return hljs.highlight(value, { language: 'rust' }).value;
@@ -836,14 +862,14 @@ export function TextareaHljsDemo() {
         style={{
           '--rc-textarea-font-family': "'Fira Code', 'Cascadia Code', monospace",
           '--rc-textarea-font-size': '13px',
-          '--rc-textarea-background': '#1e1e2e',
-          '--rc-textarea-color': '#cdd6f4',
-          '--rc-textarea-caret-color': '#89b4fa',
-          '--rc-textarea-border': '1px solid #313244',
-          '--rc-textarea-active-line-bg': 'rgba(255, 255, 255, 0.04)',
-          '--rc-textarea-gutter-bg': '#181825',
-          '--rc-textarea-gutter-color': '#6c7086',
-          '--rc-textarea-gutter-border': '1px solid #313244',
+          '--rc-textarea-background': 'light-dark(#ffffff, #1e1e2e)',
+          '--rc-textarea-color': 'light-dark(#1f2937, #cdd6f4)',
+          '--rc-textarea-caret-color': 'light-dark(#2563eb, #89b4fa)',
+          '--rc-textarea-border': '1px solid light-dark(#cbd5e1, #313244)',
+          '--rc-textarea-active-line-bg': 'light-dark(rgb(37 99 235 / 0.08), rgb(255 255 255 / 0.04))',
+          '--rc-textarea-gutter-bg': 'light-dark(#f8fafc, #181825)',
+          '--rc-textarea-gutter-color': 'light-dark(#64748b, #6c7086)',
+          '--rc-textarea-gutter-border': '1px solid light-dark(#cbd5e1, #313244)',
         } as CSSProperties}
       >
         <textarea rows={12} aria-label="Rust code editor" defaultValue={RUST_SNIPPET} />
@@ -875,10 +901,10 @@ export function ToolbarDemo() {
 }
 
 export function TransferListDemo() {
-  const transferRef = useRef<RCTransferListRef>(null);
+  const [transferEl, setTransferEl] = useState<RCTransferListRef | null>(null);
   const [compact, setCompact] = useState(false);
   const log = useEventLog<RCTransferListChangeDetail>(
-    transferRef,
+    transferEl,
     'rc-transfer-list-change',
     ({ selected }) =>
       `rc-transfer-list-change -> ${selected.map(({ label }) => label).join(', ') || '(none)'}`,
@@ -894,7 +920,7 @@ export function TransferListDemo() {
         />{' '}
         Compact layout
       </label>
-      <rc-transfer-list ref={transferRef} multiple compact={compact ? true : undefined}>
+      <rc-transfer-list ref={setTransferEl} multiple compact={compact ? true : undefined}>
         <select multiple aria-label="Available sections">
           <option value="breakfast">Breakfast</option>
           <option value="dinner" selected>Dinner</option>
