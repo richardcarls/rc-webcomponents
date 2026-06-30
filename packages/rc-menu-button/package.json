@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Trigger button that opens an rc-menu popup.",
   "repository": {
     "type": "git",
@@ -45,8 +45,8 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
-    "@rcarls/rc-common": "workspace:^",
-    "@rcarls/rc-menu": "workspace:^",
+    "@rcarls/rc-common": "workspace:*",
+    "@rcarls/rc-menu": "workspace:*",
     "@types/node": "^25.6.0"
   },
   "devDependencies": {

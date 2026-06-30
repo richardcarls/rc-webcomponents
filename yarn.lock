@@ -4471,12 +4471,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rcarls/rc-accordion@workspace:^, @rcarls/rc-accordion@workspace:packages/rc-accordion":
+"@rcarls/rc-accordion@workspace:*, @rcarls/rc-accordion@workspace:packages/rc-accordion":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-accordion@workspace:packages/rc-accordion"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-disclosure": "workspace:^"
+    "@rcarls/rc-disclosure": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4491,13 +4491,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-app-bar@workspace:^, @rcarls/rc-app-bar@workspace:packages/rc-app-bar":
+"@rcarls/rc-app-bar@workspace:*, @rcarls/rc-app-bar@workspace:packages/rc-app-bar":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-app-bar@workspace:packages/rc-app-bar"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
-    "@rcarls/rc-search-bar": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
+    "@rcarls/rc-search-bar": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4512,14 +4512,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-combobox@workspace:^, @rcarls/rc-combobox@workspace:packages/rc-combobox":
+"@rcarls/rc-combobox@workspace:*, @rcarls/rc-combobox@workspace:packages/rc-combobox":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-combobox@workspace:packages/rc-combobox"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
-    "@rcarls/rc-listbox": "workspace:^"
-    "@rcarls/rc-select": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
+    "@rcarls/rc-listbox": "workspace:*"
+    "@rcarls/rc-select": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4535,7 +4535,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-common@workspace:^, @rcarls/rc-common@workspace:packages/rc-common":
+"@rcarls/rc-common@workspace:*, @rcarls/rc-common@workspace:packages/rc-common":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-common@workspace:packages/rc-common"
   dependencies:
@@ -4555,12 +4555,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-dialog@workspace:^, @rcarls/rc-dialog@workspace:packages/rc-dialog":
+"@rcarls/rc-dialog@workspace:*, @rcarls/rc-dialog@workspace:packages/rc-dialog":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-dialog@workspace:packages/rc-dialog"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4575,7 +4575,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-disclosure@workspace:^, @rcarls/rc-disclosure@workspace:packages/rc-disclosure":
+"@rcarls/rc-disclosure@workspace:*, @rcarls/rc-disclosure@workspace:packages/rc-disclosure":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-disclosure@workspace:packages/rc-disclosure"
   dependencies:
@@ -4619,12 +4619,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-fab@workspace:^, @rcarls/rc-fab@workspace:packages/rc-fab":
+"@rcarls/rc-fab@workspace:*, @rcarls/rc-fab@workspace:packages/rc-fab":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-fab@workspace:packages/rc-fab"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4639,12 +4639,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-listbox@workspace:^, @rcarls/rc-listbox@workspace:packages/rc-listbox":
+"@rcarls/rc-listbox@workspace:*, @rcarls/rc-listbox@workspace:packages/rc-listbox":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-listbox@workspace:packages/rc-listbox"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4659,13 +4659,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-markdown-editor@workspace:^, @rcarls/rc-markdown-editor@workspace:packages/rc-markdown-editor":
+"@rcarls/rc-markdown-editor@workspace:*, @rcarls/rc-markdown-editor@workspace:packages/rc-markdown-editor":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-markdown-editor@workspace:packages/rc-markdown-editor"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-select": "workspace:^"
-    "@rcarls/rc-textarea": "workspace:^"
+    "@rcarls/rc-select": "workspace:*"
+    "@rcarls/rc-textarea": "workspace:*"
     "@types/turndown": "npm:^5.0.5"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
@@ -4687,13 +4687,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-menu-button@workspace:^, @rcarls/rc-menu-button@workspace:packages/rc-menu-button":
+"@rcarls/rc-menu-button@workspace:*, @rcarls/rc-menu-button@workspace:packages/rc-menu-button":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-menu-button@workspace:packages/rc-menu-button"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
-    "@rcarls/rc-menu": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
+    "@rcarls/rc-menu": "workspace:*"
     "@types/node": "npm:^25.6.0"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
@@ -4709,12 +4709,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-menu@workspace:^, @rcarls/rc-menu@workspace:packages/rc-menu":
+"@rcarls/rc-menu@workspace:*, @rcarls/rc-menu@workspace:packages/rc-menu":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-menu@workspace:packages/rc-menu"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4729,14 +4729,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-menubar@workspace:^, @rcarls/rc-menubar@workspace:packages/rc-menubar":
+"@rcarls/rc-menubar@workspace:*, @rcarls/rc-menubar@workspace:packages/rc-menubar":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-menubar@workspace:packages/rc-menubar"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
-    "@rcarls/rc-menu": "workspace:^"
-    "@rcarls/rc-menu-button": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
+    "@rcarls/rc-menu": "workspace:*"
+    "@rcarls/rc-menu-button": "workspace:*"
     "@types/node": "npm:^25.6.0"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
@@ -4752,12 +4752,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-range-slider@workspace:^, @rcarls/rc-range-slider@workspace:packages/rc-range-slider":
+"@rcarls/rc-range-slider@workspace:*, @rcarls/rc-range-slider@workspace:packages/rc-range-slider":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-range-slider@workspace:packages/rc-range-slider"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4772,12 +4772,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-search-bar@workspace:^, @rcarls/rc-search-bar@workspace:packages/rc-search-bar":
+"@rcarls/rc-search-bar@workspace:*, @rcarls/rc-search-bar@workspace:packages/rc-search-bar":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-search-bar@workspace:packages/rc-search-bar"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4792,13 +4792,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-select@workspace:^, @rcarls/rc-select@workspace:packages/rc-select":
+"@rcarls/rc-select@workspace:*, @rcarls/rc-select@workspace:packages/rc-select":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-select@workspace:packages/rc-select"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
-    "@rcarls/rc-listbox": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
+    "@rcarls/rc-listbox": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4813,12 +4813,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-slider@workspace:^, @rcarls/rc-slider@workspace:packages/rc-slider":
+"@rcarls/rc-slider@workspace:*, @rcarls/rc-slider@workspace:packages/rc-slider":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-slider@workspace:packages/rc-slider"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4833,12 +4833,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-splitter@workspace:^, @rcarls/rc-splitter@workspace:packages/rc-splitter":
+"@rcarls/rc-splitter@workspace:*, @rcarls/rc-splitter@workspace:packages/rc-splitter":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-splitter@workspace:packages/rc-splitter"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4857,7 +4857,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-textarea-adapters@workspace:packages/rc-textarea-adapters"
   dependencies:
-    "@rcarls/rc-textarea": "workspace:^"
+    "@rcarls/rc-textarea": "workspace:*"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
@@ -4879,7 +4879,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-textarea-plugin-markdown@workspace:packages/rc-textarea-plugin-markdown"
   dependencies:
-    "@rcarls/rc-textarea": "workspace:^"
+    "@rcarls/rc-textarea": "workspace:*"
     mdast-util-from-markdown: "npm:^2.0.2"
     micromark: "npm:^4.0.2"
     typescript: "npm:~5.9.3"
@@ -4887,19 +4887,19 @@ __metadata:
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
   peerDependencies:
-    "@rcarls/rc-textarea": "workspace:^"
+    "@rcarls/rc-textarea": "workspace:>=0.2.0 <1.0.0"
     mdast-util-from-markdown: ">=2.0.0"
     micromark: ">=4.0.0"
     unist-util-visit: ">=5.0.0"
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-textarea@workspace:^, @rcarls/rc-textarea@workspace:packages/rc-textarea":
+"@rcarls/rc-textarea@workspace:*, @rcarls/rc-textarea@workspace:packages/rc-textarea":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-textarea@workspace:packages/rc-textarea"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
     "@types/node": "npm:^25.6.0"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
@@ -4938,12 +4938,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-toolbar@workspace:^, @rcarls/rc-toolbar@workspace:packages/rc-toolbar":
+"@rcarls/rc-toolbar@workspace:*, @rcarls/rc-toolbar@workspace:packages/rc-toolbar":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-toolbar@workspace:packages/rc-toolbar"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4958,14 +4958,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-transfer-list@workspace:^, @rcarls/rc-transfer-list@workspace:packages/rc-transfer-list":
+"@rcarls/rc-transfer-list@workspace:*, @rcarls/rc-transfer-list@workspace:packages/rc-transfer-list":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-transfer-list@workspace:packages/rc-transfer-list"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
-    "@rcarls/rc-common": "workspace:^"
-    "@rcarls/rc-listbox": "workspace:^"
-    "@rcarls/rc-toolbar": "workspace:^"
+    "@rcarls/rc-common": "workspace:*"
+    "@rcarls/rc-listbox": "workspace:*"
+    "@rcarls/rc-toolbar": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4980,7 +4980,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-virtual-canvas@workspace:^, @rcarls/rc-virtual-canvas@workspace:packages/rc-virtual-canvas":
+"@rcarls/rc-virtual-canvas@workspace:*, @rcarls/rc-virtual-canvas@workspace:packages/rc-virtual-canvas":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-virtual-canvas@workspace:packages/rc-virtual-canvas"
   dependencies:
@@ -5004,26 +5004,26 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-webcomponents@workspace:packages/rc-webcomponents"
   dependencies:
-    "@rcarls/rc-accordion": "workspace:^"
-    "@rcarls/rc-app-bar": "workspace:^"
-    "@rcarls/rc-combobox": "workspace:^"
-    "@rcarls/rc-dialog": "workspace:^"
-    "@rcarls/rc-disclosure": "workspace:^"
-    "@rcarls/rc-fab": "workspace:^"
-    "@rcarls/rc-listbox": "workspace:^"
-    "@rcarls/rc-markdown-editor": "workspace:^"
-    "@rcarls/rc-menu": "workspace:^"
-    "@rcarls/rc-menu-button": "workspace:^"
-    "@rcarls/rc-menubar": "workspace:^"
-    "@rcarls/rc-range-slider": "workspace:^"
-    "@rcarls/rc-search-bar": "workspace:^"
-    "@rcarls/rc-select": "workspace:^"
-    "@rcarls/rc-slider": "workspace:^"
-    "@rcarls/rc-splitter": "workspace:^"
-    "@rcarls/rc-textarea": "workspace:^"
-    "@rcarls/rc-toolbar": "workspace:^"
-    "@rcarls/rc-transfer-list": "workspace:^"
-    "@rcarls/rc-virtual-canvas": "workspace:^"
+    "@rcarls/rc-accordion": "workspace:*"
+    "@rcarls/rc-app-bar": "workspace:*"
+    "@rcarls/rc-combobox": "workspace:*"
+    "@rcarls/rc-dialog": "workspace:*"
+    "@rcarls/rc-disclosure": "workspace:*"
+    "@rcarls/rc-fab": "workspace:*"
+    "@rcarls/rc-listbox": "workspace:*"
+    "@rcarls/rc-markdown-editor": "workspace:*"
+    "@rcarls/rc-menu": "workspace:*"
+    "@rcarls/rc-menu-button": "workspace:*"
+    "@rcarls/rc-menubar": "workspace:*"
+    "@rcarls/rc-range-slider": "workspace:*"
+    "@rcarls/rc-search-bar": "workspace:*"
+    "@rcarls/rc-select": "workspace:*"
+    "@rcarls/rc-slider": "workspace:*"
+    "@rcarls/rc-splitter": "workspace:*"
+    "@rcarls/rc-textarea": "workspace:*"
+    "@rcarls/rc-toolbar": "workspace:*"
+    "@rcarls/rc-transfer-list": "workspace:*"
+    "@rcarls/rc-virtual-canvas": "workspace:*"
     lit: "npm:^3.0.0"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"

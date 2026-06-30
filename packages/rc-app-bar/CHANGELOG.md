@@ -1,5 +1,19 @@
 # @rcarls/rc-app-bar
 
+## 0.3.0
+
+### Changed
+
+- Update package metadata, README intro, and docs links.
+
+### Fixed
+
+- Defer layout measurements to the next animation frame to avoid measurement loops.
+
+### Dependencies
+
+- Sync internal dependencies to 0.3.0.
+
 ## 0.2.0
 
 ### Minor Changes

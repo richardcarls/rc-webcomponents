@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Accordion coordinator for child native <details> panels with single- or multiple-open behavior.",
   "repository": {
     "type": "git",
@@ -44,7 +44,7 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
-    "@rcarls/rc-disclosure": "workspace:^"
+    "@rcarls/rc-disclosure": "workspace:*"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "0.11.0",

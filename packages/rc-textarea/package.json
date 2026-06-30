@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.",
   "repository": {
     "type": "git",
@@ -45,7 +45,7 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
-    "@rcarls/rc-common": "workspace:^",
+    "@rcarls/rc-common": "workspace:*",
     "parchment": "^3.0.0"
   },
   "devDependencies": {

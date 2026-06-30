@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Aggregate package that re-exports and defines the rc-webcomponents collection.",
   "repository": {
     "type": "git",
@@ -50,26 +50,26 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
-    "@rcarls/rc-accordion": "workspace:^",
-    "@rcarls/rc-app-bar": "workspace:^",
-    "@rcarls/rc-combobox": "workspace:^",
-    "@rcarls/rc-dialog": "workspace:^",
-    "@rcarls/rc-disclosure": "workspace:^",
-    "@rcarls/rc-fab": "workspace:^",
-    "@rcarls/rc-listbox": "workspace:^",
-    "@rcarls/rc-markdown-editor": "workspace:^",
-    "@rcarls/rc-menu": "workspace:^",
-    "@rcarls/rc-menu-button": "workspace:^",
-    "@rcarls/rc-menubar": "workspace:^",
-    "@rcarls/rc-range-slider": "workspace:^",
-    "@rcarls/rc-search-bar": "workspace:^",
-    "@rcarls/rc-select": "workspace:^",
-    "@rcarls/rc-slider": "workspace:^",
-    "@rcarls/rc-splitter": "workspace:^",
-    "@rcarls/rc-textarea": "workspace:^",
-    "@rcarls/rc-toolbar": "workspace:^",
-    "@rcarls/rc-transfer-list": "workspace:^",
-    "@rcarls/rc-virtual-canvas": "workspace:^"
+    "@rcarls/rc-accordion": "workspace:*",
+    "@rcarls/rc-app-bar": "workspace:*",
+    "@rcarls/rc-combobox": "workspace:*",
+    "@rcarls/rc-dialog": "workspace:*",
+    "@rcarls/rc-disclosure": "workspace:*",
+    "@rcarls/rc-fab": "workspace:*",
+    "@rcarls/rc-listbox": "workspace:*",
+    "@rcarls/rc-markdown-editor": "workspace:*",
+    "@rcarls/rc-menu": "workspace:*",
+    "@rcarls/rc-menu-button": "workspace:*",
+    "@rcarls/rc-menubar": "workspace:*",
+    "@rcarls/rc-range-slider": "workspace:*",
+    "@rcarls/rc-search-bar": "workspace:*",
+    "@rcarls/rc-select": "workspace:*",
+    "@rcarls/rc-slider": "workspace:*",
+    "@rcarls/rc-splitter": "workspace:*",
+    "@rcarls/rc-textarea": "workspace:*",
+    "@rcarls/rc-toolbar": "workspace:*",
+    "@rcarls/rc-transfer-list": "workspace:*",
+    "@rcarls/rc-virtual-canvas": "workspace:*"
   },
   "peerDependencies": {
     "lit": "^3.0.0"

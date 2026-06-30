@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Scrollable virtual canvas for rendering large coordinate-space content.",
   "repository": {
     "type": "git",

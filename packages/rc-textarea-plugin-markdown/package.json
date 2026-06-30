@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Markdown decoration plugin for rc-textarea.",
   "repository": {
     "type": "git",
@@ -31,7 +31,7 @@
     "build": "tsc && vite build"
   },
   "devDependencies": {
-    "@rcarls/rc-textarea": "workspace:^",
+    "@rcarls/rc-textarea": "workspace:*",
     "mdast-util-from-markdown": "^2.0.2",
     "micromark": "^4.0.2",
     "typescript": "~5.9.3",
@@ -40,7 +40,7 @@
     "vite-plugin-dts": "^4.5.4"
   },
   "peerDependencies": {
-    "@rcarls/rc-textarea": "workspace:^",
+    "@rcarls/rc-textarea": "workspace:>=0.2.0 <1.0.0",
     "mdast-util-from-markdown": ">=2.0.0",
     "micromark": ">=4.0.0",
     "unist-util-visit": ">=5.0.0"
