@@ -1,5 +1,13 @@
 # @rcarls/rc-markdown-editor
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [808afe4]
+  - @rcarls/rc-textarea@0.3.1
+  - @rcarls/rc-select@0.3.1
+
 ## 0.3.0
 
 ### Added

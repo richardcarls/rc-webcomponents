@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Menubar coordinator for rc-menu-button children with roving tabindex and submenu handoff.",
   "repository": {
     "type": "git",

@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Disclosure wrapper for a native <details>/<summary> pair with controlled open state.",
   "repository": {
     "type": "git",

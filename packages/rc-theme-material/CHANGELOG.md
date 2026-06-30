@@ -1,5 +1,7 @@
 # @rcarls/rc-theme-material
 
+## 0.3.1
+
 ## 0.3.0
 
 ### Added

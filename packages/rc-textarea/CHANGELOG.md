@@ -1,5 +1,14 @@
 # @rcarls/rc-textarea
 
+## 0.3.1
+
+### Patch Changes
+
+- 808afe4: ### Fixed
+
+  - Fix regression where the visible editor did not reflect `value` and `defaultValue` on first mount.
+  - @rcarls/rc-common@0.3.1
+
 ## 0.3.0
 
 ### Added
