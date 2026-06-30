@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Trigger button that opens an rc-menu popup.",
   "repository": {
     "type": "git",

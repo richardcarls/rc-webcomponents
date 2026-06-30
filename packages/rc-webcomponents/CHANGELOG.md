@@ -1,5 +1,31 @@
 # @rcarls/rc-webcomponents
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [808afe4]
+  - @rcarls/rc-textarea@0.3.1
+  - @rcarls/rc-markdown-editor@0.3.1
+  - @rcarls/rc-accordion@0.3.1
+  - @rcarls/rc-app-bar@0.3.1
+  - @rcarls/rc-combobox@0.3.1
+  - @rcarls/rc-dialog@0.3.1
+  - @rcarls/rc-disclosure@0.3.1
+  - @rcarls/rc-fab@0.3.1
+  - @rcarls/rc-listbox@0.3.1
+  - @rcarls/rc-menu@0.3.1
+  - @rcarls/rc-menu-button@0.3.1
+  - @rcarls/rc-menubar@0.3.1
+  - @rcarls/rc-range-slider@0.3.1
+  - @rcarls/rc-search-bar@0.3.1
+  - @rcarls/rc-select@0.3.1
+  - @rcarls/rc-slider@0.3.1
+  - @rcarls/rc-splitter@0.3.1
+  - @rcarls/rc-toolbar@0.3.1
+  - @rcarls/rc-transfer-list@0.3.1
+  - @rcarls/rc-virtual-canvas@0.3.1
+
 ## 0.3.0
 
 ### Added

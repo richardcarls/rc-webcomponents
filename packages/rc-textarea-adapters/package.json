@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Adapter factories that connect Lezer, unified, and Shiki tokenizers to rc-textarea.",
   "repository": {
     "type": "git",
