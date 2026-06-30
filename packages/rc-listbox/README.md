@@ -1,12 +1,11 @@
 # `@rcarls/rc-listbox`
 
-A headless WAI-ARIA listbox component built with Lit 3. It renders option
-elements into light DOM so parent components can use `aria-activedescendant`
-with IDs that resolve in the same document or shadow root.
+Listbox that keeps option DOM in light DOM for `aria-activedescendant` navigation, following the [WAI-ARIA Listbox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/).
 
-`rc-listbox` is primarily an infrastructure component for `rc-select` and
-`rc-combobox`, but it can be used directly when an application controls option
-state from JavaScript.
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-listbox](https://richardcarls.github.io/rc-webcomponents/components/rc-listbox).
+
+`rc-listbox` is primarily an infrastructure component that can be used
+directly when an application or component controls option data and selection state.
 
 ## Installation
 
@@ -42,6 +41,24 @@ listbox.options = [
 listbox.setSelectedValues(['apple']);
 ```
 
+Options may also represent actions instead of selectable values:
+
+```ts
+listbox.options = [
+  { value: 'none', label: 'None' },
+  { kind: 'action', action: 'clear', value: 'clear', label: 'Clear selection' },
+];
+
+listbox.addEventListener('rc-listbox-change', (event) => {
+  if (event.detail.reason === 'action') {
+    // event.detail.option is narrowed to ListboxActionOption
+    return;
+  }
+
+  // event.detail.option is narrowed to ListboxSelectableOption
+});
+```
+
 ## API
 
 | Property / method | Type | Description |
@@ -65,7 +82,7 @@ listbox.setSelectedValues(['apple']);
 
 | Event | Detail | Description |
 | --- | --- | --- |
-| `rc-listbox-change` | `{ value: string; selected: boolean }` | Fires when an option is activated. |
+| `rc-listbox-change` | `{ reason: 'select'; value; selected; option } \| { reason: 'action'; action; option }` | Fires when an option or action row is activated. |
 
 ## Accessibility
 

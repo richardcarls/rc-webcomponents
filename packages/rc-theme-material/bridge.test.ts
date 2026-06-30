@@ -68,6 +68,22 @@ test('maps disabled, focus, hover, and active state contracts', () => {
   expect(styles.getPropertyValue('--rc-range-slider-thumb-active-background')).not.toBe('');
 });
 
+test('maps listbox selection to the selected container color role', () => {
+  const scope = renderMaterialScope();
+  const listbox = document.createElement('rc-listbox');
+
+  scope.style.setProperty('--md-sys-color-primary', 'rgb(1, 2, 3)');
+  scope.style.setProperty('--md-sys-color-on-primary', 'rgb(4, 5, 6)');
+  scope.style.setProperty('--md-sys-color-secondary-container', 'rgb(7, 8, 9)');
+  scope.style.setProperty('--md-sys-color-on-secondary-container', 'rgb(10, 11, 12)');
+  scope.append(listbox);
+
+  const styles = getComputedStyle(listbox);
+
+  expect(styles.getPropertyValue('--rc-listbox-selected-bg')).toBe('rgb(7, 8, 9)');
+  expect(styles.getPropertyValue('--rc-listbox-selected-color')).toBe('rgb(10, 11, 12)');
+});
+
 test('maps open menu surfaces without choosing a consumer button variant', () => {
   const scope = renderMaterialScope();
   const menuButton = document.createElement('rc-menu-button');
@@ -78,7 +94,28 @@ test('maps open menu surfaces without choosing a consumer button variant', () =>
   scope.append(menuButton);
 
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-background')).not.toBe('');
-  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-background')).toBe('');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-min-block-size')).toBe('3rem');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-padding-block')).toBe('0');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-hover-bg')).not.toBe('');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-submenu-indicator-color')).not.toBe('');
+  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-background')).toBe(
+    'transparent',
+  );
+  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-background')).not.toBe('');
+});
+
+test('maps menubar item tokens through menu-button triggers', () => {
+  const scope = renderMaterialScope();
+  const menubar = document.createElement('rc-menubar');
+
+  scope.append(menubar);
+
+  const styles = getComputedStyle(menubar);
+
+  expect(styles.getPropertyValue('--rc-menubar-item-block-size')).toBe('2.5rem');
+  expect(styles.getPropertyValue('--rc-menubar-item-padding-inline')).toBe('1rem');
+  expect(styles.getPropertyValue('--rc-menubar-item-background')).toBe('transparent');
+  expect(styles.getPropertyValue('--rc-menubar-item-open-background')).not.toBe('');
 });
 
 test('includes a forced-colors bridge', () => {

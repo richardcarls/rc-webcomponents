@@ -1,67 +1,63 @@
 # rc-webcomponents
 
-A collection of WAI-ARIA compliant web components built with [Lit 3.x](https://lit.dev). Yarn workspaces monorepo — each package is independently consumable.
+A collection of themeable web components that enhance native HTML controls and implement [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/) patterns where they apply.
+
+Components are fully typed and developed primarily with [Lit](https://lit.dev).
+
+**[Documentation and component demos](https://richardcarls.github.io/rc-webcomponents/)**
 
 ## Design principles
 
-These are the guiding constraints for every component in the collection. Not every package fully achieves all four today, but they serve as the target for new work and the lens for reviewing existing work.
+These are the guiding principles for every component in the collection. I feel that there is a real gap in fundamental elements that really compliment the native set
+of elements supported in HTML5. The Custom Element spec and other modern web APIs rationalized how similar elements could be architected, but also exposed the
+complexity of elements that need to support any platform, are usable by everyone, and are interoperabile with existing elements.
 
-### 1. Progressive enhancement
+### Progressive enhancement
 
-Components build on top of native HTML elements and browser-provided behavior. A `<dialog>` is still a `<dialog>`; an `<rc-dialog>` adds drag, resize, and event forwarding on top of it without replacing it. When JavaScript is absent, blocked, or slow, the underlying markup remains meaningful. Feature detection gates enhanced behaviors — nothing throws if a browser API is unsupported.
+Components build on top of native HTML elements and browser-provided behavior. E.g., a `<dialog>` is still a `<dialog>`; an `<rc-dialog>` adds common user affordances
+like drag and resize, and adds developer experience (DX) enhancements like event forwarding. When JavaScript is absent, blocked, or slow, the underlying markup
+remains semantically meaningful and operable.
+Feature detection gates enhanced behaviors and gracefully degrades without throwing errors or being left in an unusable state.
 
-Components that wrap form controls require the consumer to supply the native element as a direct child. That element stays in the DOM permanently so that:
+Form controls are associated to forms and labels via thier wrapped native elements to ensure operability and accessibility.
 
-- **Form association** — `name` and `value` submit correctly in any `<form>` without any `ElementInternals` setup.
-- **Label association** — `<label for="id">`, a wrapping `<label>`, or `aria-label` on the native input all work natively, because there is no shadow DOM boundary to cross.
-- **Pre-upgrade usability** — the native control is fully interactive before the custom element registers, and remains so if registration never occurs.
+### Accessible by default
 
-The component's job is to enhance: keyboard shortcuts, ARIA state, visual chrome. Not to reproduce what the browser already provides for free.
+Every component implements the corresponding [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/) pattern where one exists.
 
-### 2. Accessible by default
+- Components manage ARIA state (`role`, `aria-*`) and extra semantic parts
+- Keyboard navigation is fully managed
+- Focus management behaves as defined / expected
+- A11y testing is part of acceptance, not an afterthought
 
-Every component implements the corresponding [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/) pattern where one exists. This means:
+### Design-system neutral
 
-- Correct `role`, `aria-*` states, and DOM structure out of the box.
-- Full keyboard navigation — no interaction that requires a pointer.
-- Focus management: trap focus in modals, restore focus on close, never lose focus to `<body>` unexpectedly.
-- Screen reader testing is part of acceptance, not an afterthought.
+Components do not impose a particular visual system. They ship structurally necessary styling for correct layout and behavior, plus sensible UA-like defaults that fit alongside native HTML elements.
 
-### 3. Headless — fits anywhere
+- Components leverage [CSS System Colors](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/system-color) where supported for default colors
+ This enables automatic color scheme adaptation for user color preferences and accessibility constraints
+- Components encapsulate any default styling
+- Components expose a public CSS Custom Properties and CSS Parts surface to enable granular control of thier appearance
+- Components also participate in a set of broad theming design-token variables for quick adoption to existing design systems
 
-Components ship with **no imposed visual styling** beyond what is structurally necessary for correct layout or behavior. Colors, fonts, borders, and spacing are left entirely to the consumer.
+### Responsive and touch-friendly
 
-Where defaults are unavoidable, they defer to browser UA styles and CSS system color keywords — `Canvas`, `CanvasText`, `ButtonFace`, `ButtonText`, `ButtonBorder`, `Field`, `FieldText`, `Highlight`, `HighlightText`, `AccentColor`, `AccentColorText`, and `GrayText`. These keywords track the operating system color scheme automatically, so components support light and dark mode through `color-scheme` with no per-component code. They also behave correctly under `forced-colors: active` (Windows High Contrast) because interactive state is always communicated via ARIA attributes, focus, and outlines — never by color alone.
+- Components use pointer events rather than mouse-only events for touch and stylus support
+- Components are fluid with conservative minimum size constraints and sensible default sizing analogous to native element appearance
+- Larger components have declarative compact variants for smaller screens
 
-Runtime geometry is the narrow exception: values derived from measurement or user interaction (splitter pane sizes, virtual-canvas scroll extents) may be written as inline styles. Decorative styles still belong in static CSS or CSS custom properties.
+### Performance
 
-The goal is not only to slot into a design system without fighting. It is to drop a component into a **plain, unstyled HTML page** alongside native `<input>`, `<select>`, and `<button>` elements and have it look and feel like it belongs there.
+Being efficient is better than not, especially on the client-side where hardware constraints and power usage matter to people.
 
-### 4. Responsive and touch-friendly
+- Components have minimal bundled size and are available as individual packages to support tree-shaking
+- No heavy synchronous work or event churn on the main thread. Efficient use of asyc and off-thread delegation to keep the user experience smooth
+- Lit's reactive update system does not trigger unnecessary extra cycles and is lightweight and performant itself
 
-- Pointer events (`pointerdown`, `pointermove`, `pointerup`) rather than mouse-only events — touch and stylus work out of the box.
-- No hardcoded pixel breakpoints inside component logic.
-- Minimum dimensions are set conservatively so components don't collapse on narrow viewports.
-- Keyboard step sizes (arrow keys) are configurable; Shift multiplies by 10× for coarse control.
+### Interoperable and well-typed
 
-### 5. Performance
-
-Every package sets `sideEffects: false` so bundlers tree-shake unused components at zero cost. Each package is independently importable — the aggregate `rc-webcomponents` package is a convenience, not a mandate.
-
-Beyond bundle size:
-
-- No heavy synchronous work in component lifecycle methods. Anything expensive — large dataset processing, complex layout calculation — is deferred, async, or delegated to a web worker. The main thread handles only rendering and interaction.
-- High-frequency event listeners (`pointermove`, `scroll`, `wheel`) are marked passive when `preventDefault()` is not needed, keeping scroll jank-free.
-- Lit's reactive update system batches property changes into a single render pass. Components do not trigger unnecessary extra cycles inside `updated()` or event handlers.
-
-### 6. Interoperable and well-typed
-
-Custom elements are framework-agnostic by definition. Components follow the standard web component data and event contract so they work correctly with React, Vue, Solid, Angular, or no framework at all.
-
-- **Properties for rich data, attributes for initial configuration.** Boolean, array, and object values are set programmatically via properties. Attributes are reflected only where CSS selectors need them — not as a serialization mechanism.
-- **`CustomEvent` for output.** Events are `bubbles: true, composed: true` so they cross shadow DOM boundaries in consuming documents. Names follow the `<element-name>-<verb>` convention (`rc-slider-input`, `rc-dialog-close`) to avoid collisions in mixed-component trees.
-- **TypeScript-first public API.** Every property, method, and event detail type is declared. Tag names are registered in `HTMLElementTagNameMap` so `querySelector('rc-slider')` and framework template types resolve to the correct class without a cast. JSDoc covers all public properties and events.
-- **No framework coupling.** Components contain no React, Vue, or Solid imports. Adapters and reactive-framework wrappers are a consuming-application concern.
+Custom elements are framework-agnostic by definition. Components follow [web component best-practices](https://web.dev/articles/custom-elements-best-practices)
+so they behave well with React, Vue, Solid, Angular, or no framework at all.
 
 ---
 
@@ -69,66 +65,49 @@ Custom elements are framework-agnostic by definition. Components follow the stan
 
 | Package | Description | Depends on |
 | --- | --- | --- |
-| [`rc-common`](packages/rc-common/) | Shared controllers and directives: `DragController`, `ResizeController`, `AnchorController`, `ScrollObserverController`, `KeyboardNavigationDirective`, `MouseMoveDirective` | — |
-| [`rc-listbox`](packages/rc-listbox/) | Light-DOM ARIA `listbox` used by select and combobox | rc-common |
-| [`rc-menu`](packages/rc-menu/) | ARIA `menu` / `menuitem` popup | rc-common |
-| [`rc-select`](packages/rc-select/) | Select-only ARIA combobox backed by a native `<select>` | rc-common, rc-listbox |
-| [`rc-combobox`](packages/rc-combobox/) | Editable ARIA combobox with filtering and allow-create | rc-common, rc-listbox, rc-select |
-| [`rc-search-bar`](packages/rc-search-bar/) | Enhances a native `<input type="search">` with icon chrome, clear button, and debounced search events | — |
-| [`rc-menu-button`](packages/rc-menu-button/) | Button that opens an ARIA menu | rc-common, rc-menu |
-| [`rc-menubar`](packages/rc-menubar/) | ARIA `menubar` with roving tabindex | rc-common, rc-menu-button |
-| [`rc-toolbar`](packages/rc-toolbar/) | ARIA `toolbar` with roving tabindex | rc-common |
-| [`rc-app-bar`](packages/rc-app-bar/) | Headless grid app bar with exact-center composition and pinned, collapse, or hide scroll behavior | rc-common |
-| [`rc-splitter`](packages/rc-splitter/) | Resizable pane splitter (`separator` role) | rc-common |
-| [`rc-textarea`](packages/rc-textarea/) | Enhanced `<textarea>` — line decorations, gutter, plugin API | — |
-| [`rc-disclosure`](packages/rc-disclosure/) | Native `<details>` / `<summary>` disclosure wrapper | — |
-| [`rc-accordion`](packages/rc-accordion/) | Accordion coordinator for disclosure groups | rc-disclosure |
-| [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable `<dialog>` wrapper with accessible event forwarding | rc-common |
-| [`rc-fab`](packages/rc-fab/) | Floating action button with regular and extended variants | — |
-| [`rc-virtual-canvas`](packages/rc-virtual-canvas/) | Virtualized canvas for large datasets | — |
-| [`rc-theme-material`](packages/rc-theme-material/) | Optional CSS-only Material 3 token bridge | — |
-| [`rc-webcomponents`](packages/rc-webcomponents/) | Aggregate package exporting the component collection | all component packages |
+| [`rc-common`](packages/rc-common/) | Shared controllers, directives, mixins, and utilities: drag, resize, anchor positioning, scroll observation, keyboard interaction/navigation, active descendant, roving tabindex, focusability, and slider math | — |
+| [`rc-listbox`](packages/rc-listbox/) | Listbox that keeps option DOM in light DOM for `aria-activedescendant` navigation | rc-common |
+| [`rc-menu`](packages/rc-menu/) | Menu popup for command surfaces with keyboard navigation and typed activation events | rc-common |
+| [`rc-select`](packages/rc-select/) | Select-only combobox backed by a native `<select>` | rc-common, rc-listbox |
+| [`rc-combobox`](packages/rc-combobox/) | Editable combobox with filtering and optional allow-create behavior | rc-common, rc-listbox, rc-select |
+| [`rc-search-bar`](packages/rc-search-bar/) | Search field wrapper for a native `<input type="search">` with icon chrome, clear button, and debounced events | rc-common |
+| [`rc-menu-button`](packages/rc-menu-button/) | Trigger button that opens an `rc-menu` popup | rc-common, rc-menu |
+| [`rc-menubar`](packages/rc-menubar/) | Menubar coordinator for `rc-menu-button` children with roving tabindex and submenu handoff | rc-common, rc-menu-button |
+| [`rc-toolbar`](packages/rc-toolbar/) | Toolbar that groups consumer-supplied controls into one tab stop with arrow-key navigation | rc-common |
+| [`rc-app-bar`](packages/rc-app-bar/) | App bar modeled after Material 3 Top app bar, with slots and optional scroll behavior | rc-common |
+| [`rc-splitter`](packages/rc-splitter/) | Resizable pane splitter with pointer, keyboard, and collapse/restore controls | rc-common |
+| [`rc-textarea`](packages/rc-textarea/) | Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks | rc-common |
+| [`rc-textarea-adapters`](packages/rc-textarea-adapters/) | Adapter factories that connect Lezer, unified, and Shiki tokenizers to `rc-textarea` | rc-textarea |
+| [`rc-textarea-plugin-markdown`](packages/rc-textarea-plugin-markdown/) | Markdown decoration plugin for `rc-textarea` | rc-textarea |
+| [`rc-markdown-editor`](packages/rc-markdown-editor/) | Rich/source Markdown editor with a formatting toolbar, backed by `rc-textarea` | rc-textarea |
+| [`rc-disclosure`](packages/rc-disclosure/) | Disclosure wrapper for a native `<details>`/`<summary>` pair with controlled open state | — |
+| [`rc-accordion`](packages/rc-accordion/) | Accordion coordinator for child native `<details>` panels with single- or multiple-open behavior | rc-disclosure |
+| [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable wrapper for a native `<dialog>` | rc-common |
+| [`rc-fab`](packages/rc-fab/) | Sticky floating action button modeled after Material 3 Floating action button | rc-common |
+| [`rc-slider`](packages/rc-slider/) | Single-thumb slider backed by a native `<input type="range">` | rc-common |
+| [`rc-range-slider`](packages/rc-range-slider/) | Two-thumb range slider backed by native range inputs for min/max values | rc-common |
+| [`rc-transfer-list`](packages/rc-transfer-list/) | Transfer list that enhances a native `<select multiple>` into available and selected panes | rc-common, rc-listbox, rc-toolbar |
+| [`rc-virtual-canvas`](packages/rc-virtual-canvas/) | Scrollable virtual canvas for rendering large coordinate-space content | — |
+| [`rc-theme-material`](packages/rc-theme-material/) | Material 3 CSS theme and token bridge for rc-webcomponents | — |
+| [`rc-theme-substrate`](packages/rc-theme-substrate/) | Lightweight CSS reference theme for app-oriented rc-webcomponents layouts | — |
+| [`rc-webcomponents`](packages/rc-webcomponents/) | Aggregate package that re-exports and defines the rc-webcomponents collection | all component packages |
 
-Workspace dependency arrows show which packages must be **rebuilt** before dependent packages will pick up changes (they resolve to each dep's `dist/` output, not source).
+## Development
 
----
+This project uses Yarn 4.x (Berry) workspaces and plug-and-play (PnP).
 
-## Stack
+Vite build outputs ESM + UMD as well as type declarations. Tests run with Vitest + WebdriverIO. Docs site is Docusaurus.
 
-| Concern | Tool |
-| --- | --- |
-| Component model | Lit 3.x (web components, `LitElement`, reactive controllers) |
-| Language | TypeScript — `strict: true`, `noUnusedLocals`, `noUnusedParameters` |
-| Build | Vite — ESM + UMD outputs, declaration files via `vite-plugin-dts` |
-| Dev server | Vite dev server with HMR per package |
-| Testing | Vitest + WebdriverIO (real browser) |
-| Package manager | Yarn 4.x Berry (workspaces + PnP) |
+> **Note:** use the root package `build` script to build all workspace packages in topological order. Rebuild package deps before running tests.
 
----
+### AI Agents
 
-## Commands
+Agent guidance is included in `AGENTS.md`. Other agent config files are shallow adapters that point to this canonical source of project context.
 
-```powershell
-# Dev server for a single package (hot reload)
-yarn.cmd workspace @rcarls/<package> run dev
-
-# TypeScript check + Vite build for a single package
-yarn.cmd workspace @rcarls/<package> run build
-
-# Build all packages using the workspace dependency graph
-yarn.cmd build
-
-# Browser tests for a single package
-yarn.cmd workspace @rcarls/<package> run test:browser
-
-# Browser tests for all packages
-yarn.cmd test
-```
-
-> **Dependency graph:** the root `build` script runs `yarn workspaces foreach --topological`, so Yarn enforces package order from the workspace dependency declarations. For targeted package work, rebuild affected dependencies first: `rc-common` → `rc-listbox` / `rc-menu` → `rc-select` / `rc-menu-button` → `rc-combobox` / `rc-menubar` / `rc-toolbar` / `rc-splitter` / `rc-dialog` → `rc-webcomponents`. Rebuild a dep before running tests in packages that consume it; Vite's HMR does not watch `node_modules` for dist changes.
-
----
-
-## Attribution
+## Attributions
 
 The `rc-markdown-editor` toolbar uses icons from [Bootstrap Icons](https://icons.getbootstrap.com/) by the Bootstrap Authors, licensed under the [MIT License](https://github.com/twbs/icons/blob/main/LICENSE).
+
+## License
+
+MIT

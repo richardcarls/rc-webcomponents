@@ -3,14 +3,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
-  "description": "Shared reactive controllers and directives for @rcarls Lit web components",
+  "version": "0.3.0",
+  "description": "Shared controllers, directives, and DOM utilities for rc-webcomponents.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-common"
   },
-  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -33,13 +33,11 @@
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test:browser": "vitest",
-    "test:browser:chrome": "vitest --project=chromium",
-    "test:browser:firefox": "vitest --project=firefox",
-    "yalc:publish": "yalc publish --push"
+    "test:browser": "vitest --run",
+    "test:browser:chrome": "vitest --run --project=chromium",
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
     "@oddbird/css-anchor-positioning": "^0.7.0"

@@ -1,0 +1,24 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) {
+    background: var(--substrate-surface, Canvas);
+    color: var(--substrate-on-surface, CanvasText);
+    font-family: var(--rc-font-family, inherit);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) *,
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) *::before,
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) *::after {
+    box-sizing: border-box;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) :focus-visible {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  @supports (view-transition-name: none) {
+    :where(.rc-theme-substrate, :host(.rc-theme-substrate)) [data-rc-view-transition] {
+      view-transition-name: var(--rc-view-transition-name, none);
+    }
+  }
+}

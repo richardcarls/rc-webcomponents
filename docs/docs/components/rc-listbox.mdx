@@ -1,0 +1,128 @@
+---
+title: rc-listbox
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ListboxDemo } from '@site/src/components/ComponentDemos';
+
+# rc-listbox
+
+Listbox that keeps option DOM in light DOM for `aria-activedescendant` navigation, following the [WAI-ARIA Listbox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/).
+
+`rc-listbox` is primarily an infrastructure component that can be used
+directly when an application or component controls option data and selection state.
+
+<AtAGlance
+  packageName="@rcarls/rc-listbox"
+  tag="rc-listbox"
+  native="<ul>/<li> rendered into the host's light DOM"
+  state="Controlled or uncontrolled selection"
+  events={['rc-listbox-change']}
+  related={[
+    { label: 'rc-select', href: '/components/rc-select' },
+    { label: 'rc-combobox', href: '/components/rc-combobox' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-listbox
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-listbox
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-listbox/define';
+```
+
+## Live demo
+
+<ListboxDemo />
+
+## Usage
+
+`rc-listbox` is usually an infrastructure component inside composite controls. Use
+it directly when application code owns the option data and selection state.
+
+```ts
+const listbox = document.querySelector('rc-listbox');
+
+listbox.options = [
+  { value: 'apple', label: 'Apple' },
+  { value: 'banana', label: 'Banana' },
+  { value: 'cherry', label: 'Cherry', disabled: true },
+];
+
+listbox.setSelectedValues(['apple']);
+```
+
+### Action options
+
+Most rows should be selectable options. Rows that perform commands, such as
+create, clear, or other flows, can use `kind: 'action'`. The change event is a
+discriminated union, so `event.detail.reason` narrows the detail type.
+
+```ts
+listbox.options = [
+  { value: 'apple', label: 'Apple' },
+  { kind: 'action', action: 'clear', value: 'clear', label: 'Clear selection' },
+];
+
+listbox.addEventListener('rc-listbox-change', (event) => {
+  if (event.detail.reason === 'action') {
+    console.log(event.detail.action);
+    return;
+  }
+
+  console.log(event.detail.option.value, event.detail.selected);
+});
+```
+
+### Progressive enhancement with pre-rendered markup
+
+Consumers may supply a `<ul>` with `<li>` children directly in the component's
+slot. On first connect, the component reads those elements to bootstrap its
+internal options. The pre-rendered list is visible and keyboard-navigable before
+JavaScript runs.
+
+```html
+<rc-listbox aria-label="Fruit">
+  <ul>
+    <li value="apple">Apple</li>
+    <li value="banana">Banana</li>
+    <li value="cherry" disabled>Cherry</li>
+  </ul>
+</rc-listbox>
+```
+
+Once the `options` property is set at any point, it becomes the authoritative
+source and the pre-rendered markup is replaced.
+
+## Theming
+
+The default mode shows the component without a package theme applied. Use the
+shared preview controls on this page to compare inherited, light, and dark color
+schemes, or to apply the optional Material theme inside the demo frame.
+
+Base styles (layout, system-color selection, disabled state) are injected once
+per root node with a `style[data-rc-light-dom-base="rc-listbox"]` element in
+an `rc-base` cascade layer.
+
+## API
+
+<ApiTable tag="rc-listbox" />

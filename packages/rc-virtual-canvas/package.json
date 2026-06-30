@@ -3,14 +3,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
-  "description": "Headless virtual canvas web component built with Lit",
+  "version": "0.3.0",
+  "description": "Scrollable virtual canvas for rendering large coordinate-space content.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-virtual-canvas"
   },
-  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-virtual-canvas",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -37,17 +37,15 @@
   ],
   "customElements": "dist/custom-elements.json",
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build && cem analyze",
     "cem:analyze": "cem analyze",
     "preview": "vite preview",
-    "test:browser": "vitest",
-    "test:browser:chrome": "vitest --project=chromium",
-    "test:browser:firefox": "vitest --project=firefox"
+    "test:browser": "vitest --run",
+    "test:browser:chrome": "vitest --run --project=chromium",
+    "test:browser:firefox": "vitest --run --project=firefox"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "0.11.0",
-    "@guanghechen/rollup-plugin-copy": "^6.0.9",
     "@types/node": "^25.6.0",
     "@vitest/browser-playwright": "4.1.5",
     "lit": "^3.0.0",

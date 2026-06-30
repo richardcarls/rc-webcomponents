@@ -9,20 +9,18 @@ import type {
   RCVirtualCanvasRenderInit,
 } from './rc-virtual-canvas';
 
-function getScrollRoot(host: RCVirtualCanvas) {
-  const root = host.shadowRoot?.querySelector<HTMLDivElement>('#root');
+function getScrollRoot($host: RCVirtualCanvas) {
+  const $root = $host.shadowRoot?.querySelector<HTMLDivElement>('#root');
 
-  if (!root) {
+  if (!$root) {
     throw new Error('Scroll root was not rendered');
   }
 
-  return root;
+  return $root;
 }
 
 function lastRenderEvent(renderSpy: ReturnType<typeof vi.fn>) {
-  return renderSpy.mock.calls.at(-1)?.[0] as
-    | CustomEvent<RCVirtualCanvasRenderInit>
-    | undefined;
+  return renderSpy.mock.calls.at(-1)?.[0] as CustomEvent<RCVirtualCanvasRenderInit> | undefined;
 }
 
 test('RCVirtualCanvas dispatches rc-virtual-canvas-render with viewport and content detail', async () => {
@@ -70,15 +68,13 @@ test('RCVirtualCanvas exposes immutable viewport snapshots', async () => {
     </rc-virtual-canvas>
   `);
 
-  const host = screen
-    .getByTestId('virtual-canvas')
-    .element() as RCVirtualCanvas;
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
 
   await vi.waitFor(() => {
     expect(renderSpy).toHaveBeenCalled();
   });
 
-  const methodRect = host.getViewRect();
+  const methodRect = $host.getViewRect();
   const event = lastRenderEvent(renderSpy);
 
   expect(Object.isFrozen(methodRect)).toBe(true);
@@ -101,28 +97,26 @@ test('RCVirtualCanvas scrolls and centers on content coordinates', async () => {
     </rc-virtual-canvas>
   `);
 
-  const host = screen
-    .getByTestId('virtual-canvas')
-    .element() as RCVirtualCanvas;
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
 
   await vi.waitFor(() => {
     expect(renderSpy).toHaveBeenCalled();
   });
 
-  host.scrollToContent(120, 80);
+  $host.scrollToContent(120, 80);
 
   await vi.waitFor(() => {
-    expect(host.getViewRect().x).toBeCloseTo(120, 0);
-    expect(host.getViewRect().y).toBeCloseTo(80, 0);
+    expect($host.getViewRect().x).toBeCloseTo(120, 0);
+    expect($host.getViewRect().y).toBeCloseTo(80, 0);
   });
 
-  const root = getScrollRoot(host);
+  const $root = getScrollRoot($host);
 
-  host.centerOnContent(400, 300);
+  $host.centerOnContent(400, 300);
 
   await vi.waitFor(() => {
-    expect(host.getViewRect().x).toBeCloseTo(400 - (root.clientWidth * 0.5));
-    expect(host.getViewRect().y).toBeCloseTo(300 - (root.clientHeight * 0.5), 0);
+    expect($host.getViewRect().x).toBeCloseTo(400 - $root.clientWidth * 0.5, 0);
+    expect($host.getViewRect().y).toBeCloseTo(300 - $root.clientHeight * 0.5, 0);
   });
 });
 
@@ -144,21 +138,19 @@ test('RCVirtualCanvas maps client and content coordinates through the backing st
     </rc-virtual-canvas>
   `);
 
-  const host = screen
-    .getByTestId('virtual-canvas')
-    .element() as RCVirtualCanvas;
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
 
-  await host.updateComplete;
-  host.scrollToContent(40, 30);
+  await $host.updateComplete;
+  $host.scrollToContent(40, 30);
 
   await vi.waitFor(() => {
-    expect(host.getViewRect().x).toBeCloseTo(40, 0);
+    expect($host.getViewRect().x).toBeCloseTo(40, 0);
   });
 
-  const root = getScrollRoot(host);
-  const rect = root.getBoundingClientRect();
-  const contentPoint = host.clientToContent(rect.left + 50, rect.top + 25);
-  const clientPoint = host.contentToClient(contentPoint.x, contentPoint.y);
+  const $root = getScrollRoot($host);
+  const rect = $root.getBoundingClientRect();
+  const contentPoint = $host.clientToContent(rect.left + 50, rect.top + 25);
+  const clientPoint = $host.contentToClient(contentPoint.x, contentPoint.y);
 
   expect(contentPoint.x).toBeCloseTo(140, 0);
   expect(contentPoint.y).toBeCloseTo(80, 0);
@@ -186,31 +178,31 @@ test('RCVirtualCanvas dispatches pointer events with content coordinates and mod
     </rc-virtual-canvas>
   `);
 
-  const host = screen
-    .getByTestId('virtual-canvas')
-    .element() as RCVirtualCanvas;
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
 
-  await host.updateComplete;
-  host.scrollToContent(40, 30);
+  await $host.updateComplete;
+  $host.scrollToContent(40, 30);
 
   await vi.waitFor(() => {
-    expect(host.getViewRect().x).toBeCloseTo(40, 0);
+    expect($host.getViewRect().x).toBeCloseTo(40, 0);
   });
 
-  const root = getScrollRoot(host);
-  const rect = root.getBoundingClientRect();
-  root.dispatchEvent(new PointerEvent('pointerdown', {
-    bubbles: true,
-    cancelable: true,
-    clientX: rect.left + 50,
-    clientY: rect.top + 25,
-    button: 1,
-    buttons: 4,
-    altKey: true,
-    ctrlKey: true,
-    shiftKey: true,
-    metaKey: true,
-  }));
+  const $root = getScrollRoot($host);
+  const rect = $root.getBoundingClientRect();
+  $root.dispatchEvent(
+    new PointerEvent('pointerdown', {
+      bubbles: true,
+      cancelable: true,
+      clientX: rect.left + 50,
+      clientY: rect.top + 25,
+      button: 1,
+      buttons: 4,
+      altKey: true,
+      ctrlKey: true,
+      shiftKey: true,
+      metaKey: true,
+    }),
+  );
 
   const event = pointerSpy.mock.calls.at(-1)?.[0] as
     | CustomEvent<RCVirtualCanvasPointerInit>
@@ -242,13 +234,11 @@ test('RCVirtualCanvas pointer event cancellation prevents the source contextmenu
     </rc-virtual-canvas>
   `);
 
-  const host = screen
-    .getByTestId('virtual-canvas')
-    .element() as RCVirtualCanvas;
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
 
-  await host.updateComplete;
+  await $host.updateComplete;
 
-  const root = getScrollRoot(host);
+  const $root = getScrollRoot($host);
   const event = new MouseEvent('contextmenu', {
     bubbles: true,
     cancelable: true,
@@ -256,7 +246,7 @@ test('RCVirtualCanvas pointer event cancellation prevents the source contextmenu
     clientY: 10,
     button: 2,
   });
-  const shouldContinue = root.dispatchEvent(event);
+  const shouldContinue = $root.dispatchEvent(event);
 
   expect(shouldContinue).toBe(false);
   expect(event.defaultPrevented).toBe(true);
@@ -275,21 +265,21 @@ test('RCVirtualCanvas leaves slotted overlay pointer events to overlay content',
     </rc-virtual-canvas>
   `);
 
-  const host = screen
-    .getByTestId('virtual-canvas')
-    .element() as RCVirtualCanvas;
-  const overlay = screen.getByTestId('overlay').element() as HTMLDivElement;
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
+  const $overlay = screen.getByTestId('overlay').element() as HTMLDivElement;
 
-  await host.updateComplete;
+  await $host.updateComplete;
 
-  overlay.dispatchEvent(new MouseEvent('contextmenu', {
-    bubbles: true,
-    cancelable: true,
-    composed: true,
-    clientX: 10,
-    clientY: 10,
-    button: 2,
-  }));
+  $overlay.dispatchEvent(
+    new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      clientX: 10,
+      clientY: 10,
+      button: 2,
+    }),
+  );
 
   const event = pointerSpy.mock.calls.at(-1)?.[0] as
     | CustomEvent<RCVirtualCanvasPointerInit>
@@ -305,14 +295,12 @@ test('RCVirtualCanvas exposes stylable scroll root and overlay parts', async () 
     </rc-virtual-canvas>
   `);
 
-  const host = screen
-    .getByTestId('virtual-canvas')
-    .element() as RCVirtualCanvas;
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
 
-  await host.updateComplete;
+  await $host.updateComplete;
 
-  expect(getScrollRoot(host).getAttribute('part')).toBe('scroller');
-  expect(host.shadowRoot?.querySelector('#overlay')?.getAttribute('part')).toBe('overlay');
+  expect(getScrollRoot($host).getAttribute('part')).toBe('scroller');
+  expect($host.shadowRoot?.querySelector('#overlay')?.getAttribute('part')).toBe('overlay');
 });
 
 test('RCVirtualCanvas optionally keeps the canvas backing store sized to the viewport', async () => {
@@ -322,18 +310,15 @@ test('RCVirtualCanvas optionally keeps the canvas backing store sized to the vie
       render-mode="viewport-change"
       style="display: block; width: 320px; height: 240px;"
     >
-      <canvas
-        data-testid="canvas"
-        style="display: block; width: 320px; height: 240px;"
-      ></canvas>
+      <canvas data-testid="canvas" style="display: block; width: 320px; height: 240px;"></canvas>
     </rc-virtual-canvas>
   `);
 
-  const canvas = screen.getByTestId('canvas').element() as HTMLCanvasElement;
+  const $canvas = screen.getByTestId('canvas').element() as HTMLCanvasElement;
 
   await vi.waitFor(() => {
-    expect(canvas.width).toBeGreaterThanOrEqual(320);
-    expect(canvas.height).toBeGreaterThanOrEqual(240);
+    expect($canvas.width).toBeGreaterThanOrEqual(320);
+    expect($canvas.height).toBeGreaterThanOrEqual(240);
   });
 });
 
@@ -354,11 +339,11 @@ test('RCVirtualCanvas preserves manual canvas sizing when autoResizeCanvas is fa
     </rc-virtual-canvas>
   `);
 
-  const canvas = screen.getByTestId('canvas').element() as HTMLCanvasElement;
+  const $canvas = screen.getByTestId('canvas').element() as HTMLCanvasElement;
 
   await vi.waitFor(() => {
-    expect(canvas.width).toBe(64);
-    expect(canvas.height).toBe(48);
+    expect($canvas.width).toBe(64);
+    expect($canvas.height).toBe(48);
   });
 });
 
@@ -368,10 +353,7 @@ test('RCVirtualCanvas supports continuous, viewport-change, and manual render mo
   const manualSpy = vi.fn();
   const screen = render(html`
     <div>
-      <rc-virtual-canvas
-        data-testid="continuous"
-        @rc-virtual-canvas-render=${continuousSpy}
-      >
+      <rc-virtual-canvas data-testid="continuous" @rc-virtual-canvas-render=${continuousSpy}>
         <canvas style="display: block; width: 50px; height: 50px;"></canvas>
       </rc-virtual-canvas>
       <rc-virtual-canvas
@@ -394,12 +376,8 @@ test('RCVirtualCanvas supports continuous, viewport-change, and manual render mo
     </div>
   `);
 
-  const viewportHost = screen
-    .getByTestId('viewport')
-    .element() as RCVirtualCanvas;
-  const manualHost = screen
-    .getByTestId('manual')
-    .element() as RCVirtualCanvas;
+  const $viewportHost = screen.getByTestId('viewport').element() as RCVirtualCanvas;
+  const $manualHost = screen.getByTestId('manual').element() as RCVirtualCanvas;
 
   await vi.waitFor(() => {
     expect(continuousSpy.mock.calls.length).toBeGreaterThan(1);
@@ -408,15 +386,15 @@ test('RCVirtualCanvas supports continuous, viewport-change, and manual render mo
 
   const viewportCallCount = viewportSpy.mock.calls.length;
 
-  await new Promise(resolve => {
+  await new Promise((resolve) => {
     window.setTimeout(resolve, 80);
   });
 
   expect(viewportSpy.mock.calls.length).toBe(viewportCallCount);
   expect(manualSpy).not.toHaveBeenCalled();
 
-  viewportHost.scrollToContent(20, 10);
-  manualHost.requestRender();
+  $viewportHost.scrollToContent(20, 10);
+  $manualHost.requestRender();
 
   await vi.waitFor(() => {
     expect(viewportSpy.mock.calls.length).toBeGreaterThan(viewportCallCount);
@@ -429,30 +407,25 @@ test('RCVirtualCanvas supports continuous, viewport-change, and manual render mo
 test('RCVirtualCanvas tracks slotted canvas replacement', async () => {
   const renderSpy = vi.fn();
   const screen = render(html`
-    <rc-virtual-canvas
-      data-testid="virtual-canvas"
-      @rc-virtual-canvas-render=${renderSpy}
-    >
+    <rc-virtual-canvas data-testid="virtual-canvas" @rc-virtual-canvas-render=${renderSpy}>
       <canvas data-testid="first"></canvas>
     </rc-virtual-canvas>
   `);
 
-  const host = screen
-    .getByTestId('virtual-canvas')
-    .element() as RCVirtualCanvas;
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
 
   await vi.waitFor(() => {
     expect(renderSpy).toHaveBeenCalled();
   });
 
   const firstEventCount = renderSpy.mock.calls.length;
-  const canvas = document.createElement('canvas');
+  const $canvas = document.createElement('canvas');
 
-  canvas.dataset.testid = 'second';
-  host.replaceChildren(canvas);
+  $canvas.dataset.testid = 'second';
+  $host.replaceChildren($canvas);
 
   await vi.waitFor(() => {
-    expect(host.querySelector('[data-testid="second"]')).toBe(canvas);
+    expect($host.querySelector('[data-testid="second"]')).toBe($canvas);
     expect(renderSpy.mock.calls.length).toBeGreaterThan(firstEventCount);
   });
 });
@@ -471,21 +444,18 @@ test('RCVirtualCanvas schedules a fresh animation frame when reconnected with a 
 
   try {
     render(html`
-      <rc-virtual-canvas
-        data-testid="virtual-canvas"
-        @rc-virtual-canvas-render=${renderSpy}
-      >
+      <rc-virtual-canvas data-testid="virtual-canvas" @rc-virtual-canvas-render=${renderSpy}>
         <canvas style="display: block; width: 50px; height: 50px;"></canvas>
       </rc-virtual-canvas>
     `);
 
-    const host = document.querySelector('rc-virtual-canvas') as RCVirtualCanvas;
+    const $host = document.querySelector('rc-virtual-canvas') as RCVirtualCanvas;
 
-    await host.updateComplete;
+    await $host.updateComplete;
 
     expect(requestAnimationFrameSpy).toHaveBeenCalledTimes(1);
 
-    host.connectedCallback();
+    $host.connectedCallback();
 
     expect(requestAnimationFrameSpy).toHaveBeenCalledTimes(2);
 
@@ -506,6 +476,28 @@ test('RCVirtualCanvas schedules a fresh animation frame when reconnected with a 
   }
 });
 
+test('RCVirtualCanvas exposes canvas backing store scale as canvasScaleX and canvasScaleY', async () => {
+  const screen = render(html`
+    <rc-virtual-canvas
+      data-testid="virtual-canvas"
+      render-mode="viewport-change"
+      style="display: block; width: 320px; height: 240px;"
+    >
+      <canvas data-testid="canvas" style="display: block; width: 320px; height: 240px;"></canvas>
+    </rc-virtual-canvas>
+  `);
+
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
+  const $canvas = screen.getByTestId('canvas').element() as HTMLCanvasElement;
+
+  await vi.waitFor(() => {
+    expect($canvas.width).toBeGreaterThanOrEqual(320);
+  });
+
+  expect($host.canvasScaleX).toBeCloseTo($canvas.width / $canvas.clientWidth, 5);
+  expect($host.canvasScaleY).toBeCloseTo($canvas.height / $canvas.clientHeight, 5);
+});
+
 test('RCVirtualCanvas cancels animation and resize observation on disconnect', async () => {
   const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame');
   const screen = render(html`
@@ -514,11 +506,9 @@ test('RCVirtualCanvas cancels animation and resize observation on disconnect', a
     </rc-virtual-canvas>
   `);
 
-  const host = screen
-    .getByTestId('virtual-canvas')
-    .element() as RCVirtualCanvas;
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
 
-  host.remove();
+  $host.remove();
 
   await vi.waitFor(() => {
     expect(cancelAnimationFrameSpy).toHaveBeenCalled();

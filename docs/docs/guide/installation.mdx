@@ -1,0 +1,76 @@
+---
+title: Installation
+---
+
+# Installation
+
+## Install
+
+Install the aggregate package for all components:
+
+```sh
+npm install @rcarls/rc-webcomponents
+```
+
+Or install only the packages you need:
+
+```sh
+npm install @rcarls/rc-select @rcarls/rc-fab
+```
+
+## Load elements
+
+### Register all elements
+
+Import the side-effectful `define` entry to register every element at once.
+Do this once at your application root.
+
+```js
+import '@rcarls/rc-webcomponents/define';
+```
+
+Individual packages expose the same entry:
+
+```js
+import '@rcarls/rc-select/define';
+```
+
+### Register elements manually
+
+Import the class and call `customElements.define` yourself when you need
+control over timing or want to extend a class before registering:
+
+```js
+import { RCSelect } from '@rcarls/rc-webcomponents';
+
+customElements.define('rc-select', RCSelect);
+```
+
+### CDN — no bundler
+
+Load directly from a CDN in plain HTML pages:
+
+```html
+<script type="module"
+  src="https://esm.sh/@rcarls/rc-webcomponents/define">
+</script>
+```
+
+## Basic usage
+
+Once elements are defined, use them in markup like any native element:
+
+```html
+<label for="status-select">Status</label>
+<rc-select>
+  <select id="status-select" name="status">
+    <option value="draft">Draft</option>
+    <option value="published">Published</option>
+  </select>
+</rc-select>
+```
+
+Most form-control components require a native child element. The native
+element stays in the DOM and owns form submission, label association, and
+keyboard behavior. See [Progressive enhancement](./progressive-enhancement)
+for why this matters.

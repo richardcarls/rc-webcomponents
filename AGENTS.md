@@ -1,439 +1,242 @@
 # AGENTS.md
 
-This is the authoritative project context for AI coding agents working in this repository.
+This is the concise project context for AI coding agents working in this repository.
+Read `README.md` first for the public overview, design principles, package catalog,
+and contributor-facing development summary. This file supplements it with the
+critical implementation rules and workflow gotchas that agents most often need
+while changing code.
 
-`rc-webcomponents` is a WAI-ARIA compliant web components library built with Lit
-3.x. It is a Yarn 4.x Berry monorepo with packages in `packages/`.
+`rc-webcomponents` is a WAI-ARIA-oriented web component library built with Lit
+3.x and TypeScript in a Yarn 4.x Berry monorepo. Packages live in `packages/`;
+the Docusaurus docs workspace lives in `docs/`.
 
-## Agent context policy
+## Agent Context
 
-Keep shared AI-agent instructions in `AGENTS.md`. Treat tool-specific files as
-adapters, not second sources of truth.
+Keep shared AI-agent instructions in `AGENTS.md`. Tool-specific files are shallow
+adapters and must point back here rather than duplicating package lists, commands,
+architecture rules, or testing notes.
 
 | File or directory | Purpose |
 | --- | --- |
-| `README.md` | Human-facing overview, package list, and public usage guidance. |
-| `AGENTS.md` | Shared agent-facing project rules, commands, architecture constraints, and gotchas. |
-| `CLAUDE.md` | Claude Code adapter only. It must import `AGENTS.md` and contain only Claude-specific notes. |
-| `GEMINI.md` | Gemini CLI adapter only. It must point to `AGENTS.md` and contain only Gemini-specific notes. |
-| `.github/copilot-instructions.md` | GitHub Copilot adapter only. It must point to `AGENTS.md`. |
-| `.cursor/rules/*.mdc` | Cursor adapter rules only. They must point to `AGENTS.md`. |
-| `.agents/` | Project-local reusable agent assets. Load these on demand. |
+| `README.md` | Human-facing overview, design principles, package table, and public usage guidance. |
+| `AGENTS.md` | Agent-facing implementation invariants, workflow rules, and repo gotchas. |
+| `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, `.cursor/rules/*.mdc` | Tool adapters only. |
+| `.agents/` | Project-local reusable agent assets; load only on demand. |
 
-When adding support for another AI coding tool, make the tool's native context
-file point back to `AGENTS.md` where the tool supports imports. If the tool
-cannot import another file, keep the native file short and include a clear
-instruction to read `AGENTS.md` before doing project work.
+When adding support for another AI coding tool, make its native context file point
+back to `AGENTS.md` where possible. If imports are not supported, keep the adapter
+short and tell the tool to read `AGENTS.md` before project work.
 
-Do not duplicate package lists, commands, architecture rules, or testing notes
-across agent files. Update `AGENTS.md` first, then adjust adapters only when the
-adapter mechanism changes.
+## Architecture Invariants
 
-## Design principles
+- Build on native HTML and browser behavior. Components wrap or enhance native
+  elements; they do not replace browser semantics with custom-only behavior.
+- Feature-detect newer browser APIs and degrade gracefully. Missing enhancement
+  support must not leave a component broken or throwing during normal use.
+- Components that wrap form controls require the consumer-provided native element
+  as a direct child. Keep that element connected permanently so form submission,
+  label association, author attributes, and pre-upgrade usability remain intact.
+- Use light DOM when slotted consumer markup must remain directly available to
+  forms, labels, or assistive technology. Use shadow DOM only when it does not
+  break those associations.
+- Implement the WAI-ARIA Authoring Practices Guide pattern where one exists:
+  correct roles and states, full keyboard support, expected focus management, and
+  screen-reader behavior.
+- Components are design-system neutral. Ship only structural styling needed for
+  correct layout or behavior; avoid decorative visual opinions. Prefer UA-like
+  defaults, CSS system colors, and forced-colors-safe state indicators.
+- Runtime measurement may write inline geometry styles, such as splitter sizes.
+  Decorative styles belong in static CSS, CSS custom properties, or CSS parts.
+- Use Pointer Events for pointer interaction. Avoid mouse-only logic and
+  hardcoded responsive breakpoints inside component behavior.
+- Shared interaction behavior belongs in `rc-common` as Lit directives or
+  `ReactiveController` classes.
+- Before adding new interaction, focus, positioning, scrolling, pointer, resize,
+  keyboard, slider math, or DOM utility logic, inspect
+  `packages/rc-common/src/index.ts` and existing consumers. Prefer reusing an
+  existing controller, directive, or utility; if two or more components need the
+  same behavior, treat extraction to `rc-common` as part of the change instead of
+  leaving a package-local copy.
+- Each package builds ESM, UMD, and declarations. Keep package exports and
+  `sideEffects: false` tree-shaking behavior intact.
+- In `firstUpdated()`, guard required native child checks behind
+  `import.meta.env.DEV` and emit a `console.warn` when the expected child is
+  absent. Use `:scope > <tagname>` to scope the query to direct children only.
+  This warns authors at development time without shipping any check in production.
 
-Five constraints guide every component. Not all packages fully satisfy all five
-today; treat them as the acceptance bar for new work and the lens for reviewing
-existing work.
+  ```ts
+  protected override firstUpdated(): void {
+    if (import.meta.env.DEV && !this.querySelector(':scope > button')) {
+      console.warn(
+        '[rc-fab] No direct child <button> found. Place a native <button> inside <rc-fab>.',
+        this,
+      );
+    }
+  }
+  ```
 
-### Progressive enhancement
+## Stateful APIs
 
-Build on native HTML and browser behavior. A component wraps or enhances a native
-element; it does not replace it. Feature-detect newer browser APIs before using
-them, and do not throw when a feature is absent.
+Any value-like state (`value`, `open`, `selected`, etc.) must support controlled
+and uncontrolled modes.
 
-Components that wrap form controls require the consumer to supply the native
-element as a direct child. Keep that element in the DOM permanently so that:
+- Controlled mode: host writes the property and owns the value. Programmatic
+  writes are silent and must not dispatch user events.
+- Uncontrolled mode: host may provide `defaultValue`, `defaultOpen`,
+  `defaultSelected`, etc.; after initialization the component owns state.
+- Use private backing fields such as `_value`, `_defaultValue`, and
+  `_valueInitialized`.
+- The main property setter sets the backing value, marks initialized, applies
+  state silently, and calls `requestUpdate`.
+- The default property setter applies only before initialization and only when
+  the controlled value is `undefined`.
+- Initialization flags do not reset on reconnect.
+- Getters return a typed fallback: `_value ?? _defaultValue ?? <sensible fallback>`.
+- For primitive default properties, expose the kebab-case attribute form, such as
+  `default-value`. Omit attribute mapping for non-serializable values.
 
-- **Form association** — `name`/`value` submit correctly without `ElementInternals`.
-- **Label association** — `<label for="id">`, wrapping `<label>`, and `aria-label`
-  directly on the native input all work without a shadow DOM boundary to cross.
-- **Pre-upgrade usability** — the native control is interactive before the custom
-  element registers, and remains so if registration never occurs.
+## Public API Changes
 
-Do not break these associations during upgrade. Do not remove or replace the
-consumer-provided element.
+Public API includes properties, attributes, methods, events, slots, CSS custom
+properties, CSS parts, native child requirements, exported types, and documented
+behavior. When changing it, update every affected surface in the same change:
 
-### Accessible by default
+- Component source and TypeDoc/JSDoc, including CEM tags such as `@slot`,
+  `@fires`, `@csspart`, and `@cssprop`.
+- Event detail interfaces, exported TypeScript types, and `HTMLElementTagNameMap`
+  / `HTMLElementEventMap` declarations.
+- Tests for progressive enhancement, labels/forms, ARIA state, keyboard support,
+  controlled/uncontrolled behavior, event dispatch, and live accessibility states.
+- Custom Elements Manifest data before docs dev/build:
+  Windows `yarn.cmd cem:analyze`; Linux/macOS `yarn cem:analyze`.
+- Docusaurus docs in `docs/docs/components/<component>.mdx`, including demos,
+  snippets, accessibility notes, events, and at-a-glance summaries.
+- Package README, root README package summary, aggregate package exports, and
+  aggregate React/Solid typings when public usage changes.
 
-Implement the WAI-ARIA Authoring Practices Guide pattern where one exists:
+Generated API tables come from `dist/custom-elements.json`; do not hand-edit
+generated output instead of source comments and types.
 
-- Correct `role`, `aria-*` states, and DOM structure.
-- Full keyboard navigation; no interaction should require a pointer.
-- Proper focus management, including trapping focus in modals, restoring focus on
-  close, and avoiding accidental focus loss to `<body>`.
-- Screen reader behavior is part of acceptance.
+Use this public API sync walk before finishing any API-facing change:
 
-### Headless
+```text
+source/JSDoc -> event/detail/exported types -> tests -> CEM -> package README
+-> docs page/demos -> root README/package catalog -> aggregate React/Solid typings
+```
 
-Ship no visual design opinions beyond what is structurally necessary for correct
-layout or behavior. Colors, fonts, borders, and spacing belong to the consumer.
+When adding a new component package, add it to the `## Packages` table in
+`README.md`, create or update `docs/docs/components/<component>.mdx`, and add it
+to `docs/sidebars.ts` in the same change. Infrastructure, adapter, plugin, and
+aggregate packages do not need docs sidebar entries unless they are documented as
+directly usable public packages.
 
-Where defaults are needed, prefer browser UA styles and CSS system colors:
-`Canvas`, `CanvasText`, `ButtonFace`, `ButtonText`, `ButtonBorder`, `Field`,
-`FieldText`, `Highlight`, `HighlightText`, `AccentColor`, `AccentColorText`,
-and `GrayText`. Using system colors means components support light and dark mode
-automatically via `color-scheme` with no per-component code. Components must also
-behave correctly under `forced-colors: active`; interactive state must be
-communicated through ARIA attributes, focus, and outlines rather than color alone.
+## Documentation And Demos
 
-Runtime geometry is the narrow exception: values derived from measurement or
-user interaction, such as splitter pane sizes or virtual-canvas placeholder
-dimensions, may be written as inline styles. Decorative styles belong in static
-CSS or CSS custom properties.
-
-The goal is not only to slot into a design system. A component should be droppable
-into a plain, unstyled HTML page alongside native `<input>`, `<select>`, and
-`<button>` elements and look and feel like it belongs there.
-
-### Responsive and touch-friendly
-
-- Use Pointer Events API, not mouse-only events.
-- Avoid hardcoded breakpoints inside component logic.
-- Set minimum dimensions conservatively.
-- Make keyboard step sizes configurable; Shift multiplies movement by 10 for coarse control.
-
-### Controlled and uncontrolled state
-
-Any component that manages stateful user interaction through a value-like property — `value`, `open`,
-`selected`, or similar — must support both modes:
-
-**Controlled mode** — The host owns the value. The host sets the property on every update, and the
-component never overrides it. Host writes must be silent: no events fire from programmatic property
-assignment.
-
-**Uncontrolled mode** — The component owns the value after an initial hint. The host sets `defaultValue`
-(or `defaultOpen`, `defaultSelected`, etc.) once before interaction begins. After that the component
-manages state independently.
-
-Implementation rules:
-
-- Add private fields: `_value: T | undefined`, `_defaultValue: T | undefined`, and
-  `_<name>Initialized = false` (e.g. `_valueInitialized`, `_selectedInitialized`).
-- The `value` setter: sets `_value`, sets `_<name>Initialized = true`, applies state silently (no event
-  dispatch), calls `requestUpdate`.
-- The `defaultValue` setter: sets `_defaultValue`; applies state only when
-  `!_<name>Initialized && _value === undefined`; never dispatches events.
-- `_<name>Initialized` does **not** reset on reconnect. A controlled element stays controlled after
-  being moved in the DOM.
-- The `value` getter returns `_value ?? _defaultValue ?? <sensible-fallback>` so callers always receive
-  a typed, non-`undefined` value.
-- For primitive properties, apply `@property({ type: Number, attribute: 'default-value' })` on the
-  `defaultValue` getter/setter so HTML authors can use the attribute form. For non-serializable types
-  (arrays, tuples), omit the attribute mapping.
-- Follow the naming pair: `value`/`defaultValue`, `open`/`defaultOpen`, `selected`/`defaultSelected`.
-
-## Architecture notes
-
-- Components use Lit 3.x and TypeScript with `strict: true`, `noUnusedLocals`,
-  and `noUnusedParameters`.
-- Use light DOM when slotted consumer markup must remain in the document for
-  native behavior or assistive technology, such as `<dialog>` and `<textarea>`.
-- Shared interaction behaviors live in `rc-common` as `ReactiveController`
-  classes or Lit directives so they compose cleanly onto any Lit host.
-- Design-system references guide behavior and composition, not default
-  appearance. `rc-app-bar` remains UA-like while permitting Material-style
-  structures and consumer-styled glass/HIG treatments.
-- Consumers supply app-bar controls and action icons. Components supply a
-  default icon only when it communicates component-owned state, such as a
-  disclosure or select indicator.
-- App-bar-like structural grouping uses leading, title, exact-center, and
-  trailing regions. Title and center content may coexist; consumers own whether
-  a composition conforms to an external design system.
-- Action priority, overflow measurement, and conditional action/menu rendering
-  belong in a future `rc-menubar`-related component, not `rc-app-bar`.
-- Each package builds to ESM and UMD with declaration files. `sideEffects: false`
-  enables tree-shaking when consumers import individual elements.
-- `rc-dialog` intentionally exposes no CSS custom properties or parts. It wraps
-  a native `<dialog>` with no shadow root; the consuming document has
-  unrestricted CSS access.
-
-## Public API change checklist
-
-When changing a component's public API, update every associated surface in the
-same change unless a surface is genuinely unaffected. Public API includes
-properties, attributes, methods, events, slots, CSS custom properties, CSS parts,
-native child requirements, exported types, and documented behavior.
-
-- Update the component source, JSDoc, event detail types, and exported
-  TypeScript types so `dist/custom-elements.json` and declaration files can
-  reflect the new contract.
-- Update the component's VitePress page in `docs/components/<component>.md`,
-  including live demos, code snippets, accessibility/keyboard notes, events, and
-  the at-a-glance summary.
-- Update package `README.md` files, the root `README.md` package summaries, and
-  aggregate package docs when the API change affects public usage.
-- Update or add tests for progressive enhancement, labels/forms, ARIA state,
-  controlled/uncontrolled behavior, event dispatch, and the live open/active
-  state for accessibility audits where relevant.
-- Regenerate Custom Elements Manifest data before docs dev/build: on Windows run
-  `yarn.cmd cem:analyze`; on Linux or macOS run `yarn cem:analyze`.
-
-Generated API tables in the docs read from `dist/custom-elements.json`; do not
-hand-edit generated API output as a substitute for source JSDoc/type updates.
-Component examples must preserve this library's design principles: the
-consumer-provided native child remains in the DOM, labels and forms work before
-upgrade, ARIA is demonstrated on the native control where applicable, and
-interactive demos show keyboard and accessibility-relevant behavior.
-
-When creating a new component package, add it to the `## Packages` table on the
-VitePress home page in `docs/index.md` in the same change. Infrastructure,
-adapter/plugin, and aggregate packages do not need home-page component entries.
-
-Keep this checklist in `AGENTS.md` only. Tool-specific adapter files such as
-`CLAUDE.md`, `GEMINI.md`, Copilot instructions, and Cursor rules should point
-back here rather than duplicating API-change rules.
-
-## Environment (Windows)
-
-**Always use `yarn.cmd` instead of `yarn`** (and `npx.cmd` instead of `npx`).
-The Unix shim in `%APPDATA%\npm` is broken.
-
-## Environment (Linux / Mac)
-
-Use `yarn` and `npx` directly.
+- `README.md` is the public root overview and package catalog. Keep architecture
+  detail and agent workflow here only when it helps future code changes.
+- Keep package descriptions aligned across `package.json`, package README first
+  paragraph, exported class JSDoc, docs page intro, the root README package
+  table, and the docs homepage package table. Descriptions should be concise and
+  matter-of-fact, mention the native element a component wraps/enhances, and use
+  WAI-ARIA APG links only when a real APG pattern applies. Component class
+  JSDoc should include a docs-site `@see {@link ...}` entry and an APG or
+  Material component `@see` entry where applicable.
+- Do not add `yalc` scripts to package manifests. Keep homepage URLs pointed at
+  the most specific docs page for the public package.
+- The Docusaurus docs workspace is the canonical home for public component docs,
+  examples, and live demos.
+- Package READMEs are npm landing pages and should stay short unless a package
+  has usage details that do not fit naturally in the docs site. Do not maintain a
+  competing exhaustive API table in a package README when the generated docs API
+  table can be the canonical source.
+- Do not add tracked package-local demo pages or shared demo assets. Files such
+  as `packages/<name>/*.html` and `packages/<name>/public/` are ignored scratch
+  space for ad hoc Vite experiments only.
+- Component examples must preserve project principles: native children remain in
+  the DOM, labels/forms work before upgrade, ARIA is demonstrated on the native
+  element where applicable, and interactive demos show keyboard and accessibility
+  behavior.
+- `docs/src/components/DemoFrame.tsx` renders demo children into an open shadow
+  root via `createPortal()`. Effects in the parent demo component can run before
+  that portaled custom element ref exists. When a demo needs to set properties,
+  attach listeners, or call methods on a web component inside `DemoFrame`, prefer
+  a callback ref or state-backed element reference that reacts when the portaled
+  element mounts. When browser-smoke-testing demos, query through the DemoFrame
+  `surfaceHost` shadow root instead of using document-only selectors.
 
 ## Commands
 
-Windows:
+On Windows, always use `yarn.cmd` and `npx.cmd`; the Unix shims in `%APPDATA%\npm`
+are broken. On Linux/macOS, use `yarn` and `npx`.
 
 ```powershell
-yarn.cmd workspace @rcarls/<package> run dev           # Dev server with hot reload
-yarn.cmd workspace @rcarls/<package> run build         # TypeScript check + Vite build
-yarn.cmd workspace @rcarls/<package> run test:browser  # Run browser tests
-yarn.cmd build                                         # Build all packages using the dependency graph
-yarn.cmd test                                          # Test all packages
+yarn.cmd docs
+yarn.cmd workspace @rcarls/<package> run build
+yarn.cmd workspace @rcarls/<package> run test:browser
+yarn.cmd build
+yarn.cmd test
+yarn.cmd validate:packages
 ```
-
-Linux / Mac:
 
 ```bash
-yarn workspace @rcarls/<package> run dev           # Dev server with hot reload
-yarn workspace @rcarls/<package> run build         # TypeScript check + Vite build
-yarn workspace @rcarls/<package> run test:browser  # Run browser tests
-yarn build                                         # Build all packages using the dependency graph
-yarn test                                          # Test all packages
+yarn docs
+yarn workspace @rcarls/<package> run build
+yarn workspace @rcarls/<package> run test:browser
+yarn build
+yarn test
+yarn validate:packages
 ```
 
-The root `build` script runs `yarn workspaces foreach --topological`, so Yarn
-enforces package order from workspace dependencies. For targeted package work,
-rebuild affected dependencies before running tests in packages that consume
-them. Vite HMR does not watch dependency `dist/` output through `node_modules`;
-restart the consuming package dev server after rebuilding a dependency.
+New package `test:browser` scripts must include `--run` (`vitest --run`). Without it
+Vitest defaults to watch mode on Linux and the root `test` script hangs waiting for
+each workspace to exit.
 
-## Commit messages
-
-All commits must follow [Conventional Commits](https://www.conventionalcommits.org/).
-`commitlint` enforces this via a Husky `commit-msg` hook on every commit.
-
-```text
-type(scope): short description
-
-feat      – new user-facing capability
-fix       – bug fix
-refactor  – restructuring with no behavior change
-style     – formatting / cosmetic only
-chore     – maintenance (deps, build, config)
-docs      – documentation only
-test      – tests only
-```
-
-Use `!` before the colon for breaking changes: `feat(rc-slider)!: rename value attribute`.
-
-## Release workflow
-
-This project uses [Changesets](https://github.com/changesets/changesets) for versioning
-and changelog generation, combined with GitFlow branching.
-
-All 25 component packages are version-locked together (`fixed` group in `.changeset/config.json`).
-A single changeset bump moves all packages to the same new version.
-
-### During feature development
-
-After landing a meaningful change, add a changeset intent file that describes what changed
-and the bump type (`major`, `minor`, or `patch`):
-
-Windows:
-
-```powershell
-yarn.cmd changeset
-```
-
-Linux / Mac:
-
-```bash
-yarn changeset
-```
-
-The interactive prompt asks which packages changed and the bump severity. Commit the
-generated `.changeset/*.md` file alongside the code change. Changesets accumulate on
-`develop` until a release is cut.
-
-### Cutting a release (GitFlow)
-
-1. **Create the release branch** from `develop`:
-
-   ```sh
-   git checkout -b release/vX.Y.Z develop
-   ```
-
-2. **Apply all pending changesets** — bumps every package version and writes `CHANGELOG.md`
-   files; clears the `.changeset/` intent files:
-
-   Windows: `yarn.cmd version:packages`
-   Linux / Mac: `yarn version:packages`
-
-3. **Commit the version bump**:
-
-   ```sh
-   git add .
-   git commit -m "chore(release): bump packages to vX.Y.Z"
-   ```
-
-4. **Merge release → `main`** (no-ff), tag, and back-merge to `develop`:
-
-   ```sh
-   git checkout main
-   git merge --no-ff release/vX.Y.Z -m "chore(release): merge branch release/vX.Y.Z"
-   git tag vX.Y.Z
-   git checkout develop
-   git merge --no-ff main -m "chore(release): back-merge vX.Y.Z into develop"
-   git branch -d release/vX.Y.Z
-   ```
-
-5. **Push** — the `release.yml` GitHub Actions workflow triggers on the `main` push and
-   runs `yarn release` (`build` → `changeset publish`) using the `NPM_TOKEN` secret.
-   Set that secret in the repository settings before the first publish.
+The root `build` script runs workspaces topologically. For targeted package work,
+rebuild changed dependencies before running tests in packages that consume them.
+Vite HMR does not watch dependency `dist/` output through `node_modules`; restart
+the docs dev server after rebuilding a dependency.
 
 ## Testing
 
-### Test stack
-
-Tests run in a real Firefox browser via WebDriverIO using Vitest in browser
-mode. Every test exercises live DOM; there is no jsdom.
+Tests run live DOM in a real Firefox browser via WebDriverIO and Vitest browser
+mode; there is no jsdom.
 
 ```ts
-import { test, expect, vi } from 'vitest';
-import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
+import { expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
-```
+import { render } from 'vitest-browser-lit';
 
-Accessibility violations use the shared helper:
-
-```ts
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 ```
 
-### Async assertions
+- Always `await host.updateComplete` before asserting DOM state. If
+  `firstUpdated()` schedules another render, use `vi.waitFor`.
+- Fire events on native child elements, not the component host, when testing
+  delegated behavior.
+- Assert ARIA attributes on the native element unless the host intentionally owns
+  that state.
+- Test that consumer-provided native elements remain connected with author
+  attributes such as `id`, `name`, and `value` intact.
+- Test label association, at minimum the native `for`/`id` path with
+  `label.control`.
+- Every component needs an `expectNoA11yViolations` test. For stateful widgets,
+  audit the live open or active state, not only the resting state.
+- WebDriverIO locator `.click()` does not reliably reach native click listeners
+  registered directly on the same element by a Lit directive. For directive-level
+  click handlers, dispatch a bubbling `MouseEvent` on the element.
+- Use `(await el.element()).focus()` for programmatic focus. Avoid `.click()`
+  when the test only needs focus movement.
 
-Always `await host.updateComplete` before asserting DOM state. When
-`firstUpdated()` mutates `@state()` properties it schedules a second render
-cycle; if assertions still race, use `vi.waitFor`:
+## Versioning And Commits
 
-```ts
-await vi.waitFor(() => expect(document.activeElement).toBe(opener));
-```
-
-### What to test in every component
-
-**Progressive enhancement** — verify the consumer-provided native element stays
-in the DOM with its original `name`, `id`, and any other author attributes intact
-after upgrade:
-
-```ts
-const input = host.querySelector<HTMLInputElement>('input[type="range"]');
-expect(input?.isConnected).toBe(true);
-expect(input?.getAttribute('name')).toBe('price-min');
-```
-
-**Label association** — for wrapper components test the three native labeling
-strategies, at minimum the `for`/`id` form:
-
-```ts
-const labelEl = wrapper.querySelector<HTMLLabelElement>('label[for="my-input"]');
-expect(labelEl?.control).toBe(input); // native label registry resolves correctly
-```
-
-**ARIA attributes** — assert that `aria-*` attributes are written to the native
-element after `updateComplete`, not to the host element unless intentional.
-
-**Events** — fire events on native child elements, not on the component host, so
-the delegation path is exercised:
-
-```ts
-input.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }));
-```
-
-**Accessibility audit** — every component must have an `expectNoA11yViolations`
-test. For stateful components (dialog, disclosure, popover, combobox) axe must
-audit the **live open/active state** — auditing the resting state passes
-vacuously because the ARIA requirements only appear when the content is visible:
-
-```ts
-host.showModal();          // put the component in the state that has requirements
-await host.updateComplete;
-await expectNoA11yViolations(host);
-host.close();              // clean up
-```
-
-### Locator `.click()` vs. `dispatchEvent`
-
-The WebDriverIO locator's `.click()` method simulates a user gesture and works
-correctly for most cases. However, it does **not** reliably reach native
-`addEventListener('click', ...)` handlers registered directly on the same
-element by a Lit directive. When testing directive-level click handlers, dispatch
-the event explicitly:
-
-```ts
-const node = await el.element();
-node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-```
-
-Clicking an inner child and letting the event bubble to a directive-decorated
-ancestor works fine with the locator's `.click()`.
-
-### Programmatic focus
-
-Use `(await el.element()).focus()` to move focus without triggering click
-handlers. Avoid `el.click()` when the goal is only to focus, since it will also
-fire the directive's click listener.
-
-## Packages
-
-Dependencies listed as `→ dep1, dep2` (resolves to each dep's `dist/` output).
-**Rebuild a package before running tests in packages that depend on it.**
-
-- **rc-common**: Shared controllers and directives (`DragController`,
-  `ResizeController`, `AnchorController`, `ScrollObserverController`,
-  `KeyboardNavigationDirective`, `MouseMoveDirective`)
-- **rc-listbox**: Light-DOM ARIA listbox used by select, combobox, and
-  transfer-list → rc-common
-- **rc-menu**: ARIA menu popup → rc-common
-- **rc-select**: Select-only combobox backed by native `<select>` → rc-common, rc-listbox
-- **rc-combobox**: Editable combobox with filtering and allow-create →
-  rc-common, rc-listbox, rc-select
-- **rc-menu-button**: Menu button → rc-common, rc-menu
-- **rc-menubar**: Menubar with roving tabindex → rc-common, rc-menu, rc-menu-button
-- **rc-toolbar**: ARIA toolbar → rc-common
-- **rc-app-bar**: Headless grid app bar with leading/title/center/trailing
-  regions, dual-mode scrolled state, and pinned/collapse/hide scroll behavior;
-  no implicit landmark role → rc-common
-- **rc-fab**: Floating action button with regular and extended variants
-  (standalone)
-- **rc-search-bar**: Enhances a required native `input[type="search"]` with
-  icon chrome, a clear button, and debounced `rc-search-bar-input` events
-  (standalone)
-- **rc-splitter**: Resizable pane splitter → rc-common
-- **rc-textarea**: Enhanced textarea (standalone)
-- **rc-textarea-adapters**: Adapter factories for lezer, unified, and shiki tokenizers → rc-textarea
-- **rc-text-editor**: Rich text editor extending rc-textarea; includes `<rc-editor-toolbar>` (light DOM formatting toolbar) as a co-located component → rc-textarea
-- **rc-textarea-plugin-markdown**: Markdown decoration plugin usable standalone on any rc-textarea (peer deps: micromark, mdast-util-from-markdown, unist-util-visit)
-- **rc-disclosure**: Disclosure widget (standalone)
-- **rc-accordion**: Accordion coordinator for disclosure groups → rc-disclosure
-- **rc-slider**: Slider widget (standalone)
-- **rc-range-slider**: Range slider widget (standalone)
-- **rc-transfer-list**: Transfer list → rc-listbox
-- **rc-virtual-canvas**: Virtual canvas (standalone)
-- **rc-dialog**: Draggable/resizable `<dialog>` wrapper → rc-common
-- **rc-theme-material**: Optional CSS-only Material 3 token bridge (standalone)
-- **rc-webcomponents**: Aggregate package → all component packages
+- Commit messages must follow Conventional Commits. Use `!` before the colon for
+  breaking changes, such as `feat(rc-slider)!: rename value attribute`.
+- Meaningful package changes need a Changesets intent file. Use `yarn.cmd
+  changeset` on Windows or `yarn changeset` on Linux/macOS.
+- Published packages are version-locked together through the Changesets fixed
+  group. A single release bump moves the package set together.
+- Use `yarn.cmd validate:packages` for package metadata, aggregate coverage, and
+  dry-run pack export validation.
+- Use `yarn.cmd validate:release` only on a release merge commit to verify the
+  exact tag, fixed-group versions, and absence of pending changesets.

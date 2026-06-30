@@ -1,0 +1,107 @@
+---
+title: rc-splitter
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { SplitterDemo } from '@site/src/components/ComponentDemos';
+
+# rc-splitter
+
+Resizable pane splitter with pointer, keyboard, and collapse/restore controls, following the [WAI-ARIA Window Splitter pattern](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/).
+
+<AtAGlance
+  packageName="@rcarls/rc-splitter"
+  tag="rc-splitter"
+  native="Pane content slots"
+  state="Controlled or uncontrolled pane size"
+  events={['rc-splitter-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-splitter
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-splitter
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-splitter/define';
+```
+
+## Live demo
+
+<SplitterDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+### Collapsible panes
+
+Set the `collapsible` attribute to render a toggle button on the separator that collapses or expands the primary pane:
+
+```html
+<rc-splitter collapsible>
+  <div>Primary</div>
+  <div slot="secondary">Secondary</div>
+</rc-splitter>
+```
+
+The button is also keyboard-accessible: while the separator handle has focus, **Ctrl+Arrow** (left/right for horizontal, up/down for vertical) toggles collapse. The **Enter** key on the handle itself also toggles collapse independently of the `collapsible` attribute.
+
+Style the button via `::part(collapse-button)`. Its position and size are configurable through `--rc-splitter-collapse-button-size` (default `20px`), `--rc-splitter-collapse-button-offset`, and the button color/background tokens.
+
+### Touch targets
+
+A 24 px diameter transparent circle is always present on the drag handle as a `::after` pseudo-element. It is non-interactive for mouse and keyboard. On touch devices (`any-pointer: coarse`) it becomes hittable, providing a WCAG 2.5.8-compliant touch target without widening the visual separator. The visual indicator and touch target are intentionally decoupled.
+
+The `#separator` uses `z-index: 1` so the touch target circle stacks above pane content when it extends past the separator strip edge, ensuring touch events are captured correctly.
+
+### Visual indicator
+
+The default drag indicator is a 3-dot grip, rendered as a `::before` pseudo-element inside the handle so the touch target (the handle element itself) and the visual remain independent. Hover highlights are scoped to the visual indicator only — they do not highlight the full separator strip.
+
+Customise the indicator via CSS custom properties:
+
+```css
+rc-splitter {
+  /* Switch from dots to a solid line or pill */
+  --rc-splitter-handle-pattern: none;
+  --rc-splitter-handle-fill: ButtonBorder;
+  --rc-splitter-handle-border-radius: 999px; /* pill shape */
+  --rc-splitter-handle-hover-fill: Highlight; /* hover state on indicator only */
+  --rc-splitter-handle-transition: 150ms ease;
+}
+```
+
+### Material 3 theme
+
+When `rc-theme-material` is applied, the splitter uses an M3-style drag indicator modelled after the [M3 bottom sheet drag handle](https://m3.material.io/components/bottom-sheets/overview):
+
+- **Strip width**: 24 px (`1.5rem`) — meets WCAG 2.5.8 in the cross axis (combined with the 24 px touch target circle on touch devices)
+- **Indicator**: 4 px × 32 px fully-rounded pill (`--rc-splitter-handle-pattern: none`, `--rc-splitter-handle-fill`, `--rc-splitter-handle-border-radius: 999px`)
+- **Color**: `on-surface-variant` at 40 % opacity
+- **Hover**: `primary` at 8 % opacity — on the pill only, not the strip
+- **Transition**: 150 ms with M3 standard easing
+
+All tokens are CSS custom properties so individual values can be overridden without replacing the whole theme layer.
+
+## API
+
+<ApiTable tag="rc-splitter" />

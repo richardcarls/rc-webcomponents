@@ -25,6 +25,7 @@
       "@rcarls/rc-textarea-adapters",
       "@rcarls/rc-textarea-plugin-markdown",
       "@rcarls/rc-theme-material",
+      "@rcarls/rc-theme-substrate",
       "@rcarls/rc-toolbar",
       "@rcarls/rc-transfer-list",
       "@rcarls/rc-virtual-canvas",
@@ -32,7 +33,10 @@
     ]
   ],
   "linked": [],
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "onlyUpdatePeerDependentsWhenOutOfRange": true
+  },
   "access": "public",
   "baseBranch": "develop",
-  "ignore": ["@rcarls/docs"]
+  "ignore": ["@rcarls/rc-docs"]
 }

@@ -4,15 +4,14 @@ import {
   findEdit,
   mapDecorationsThroughChange,
   isLargeChange,
-  mapOrClear,
+  remapDecorations,
   addDecoration,
   setDecorations,
   type MarkDecoration,
   type LineDecoration,
 } from './decoration.ts';
-import type { Decoration, WidgetDecoration } from './types.ts';
 
-// ── findEdit ──────────────────────────────────────────────────────────────────
+import type { Decoration, WidgetDecoration } from './types.ts';
 
 describe('findEdit', () => {
   test('empty string → insertion', () => {
@@ -45,15 +44,15 @@ describe('findEdit', () => {
   });
 });
 
-// ── mapDecorationsThroughChange ───────────────────────────────────────────────
-
 describe('mapDecorationsThroughChange', () => {
   function mark(id: string, from: number, to: number): Decoration {
     return { id, type: 'mark', from, to };
   }
+
   function line(id: string, lineNum: number): Decoration {
     return { id, type: 'line', line: lineNum };
   }
+
   function widget(id: string, offset: number): WidgetDecoration {
     return { id, type: 'widget', offset, create: () => document.createElement('span') };
   }
@@ -62,9 +61,11 @@ describe('mapDecorationsThroughChange', () => {
     const result = mapDecorationsThroughChange(
       [mark('d1', 0, 3)],
       'hello world',
-      'hello Xworld', // insert X at offset 6
+      // insert X at offset 6
+      'hello Xworld',
     );
     const d = result[0] as MarkDecoration;
+
     expect(d.from).toBe(0);
     expect(d.to).toBe(3);
   });
@@ -73,9 +74,11 @@ describe('mapDecorationsThroughChange', () => {
     const result = mapDecorationsThroughChange(
       [mark('d1', 6, 11)],
       'hello world',
-      'hello Xworld', // insert X at offset 6, delta +1
+      // insert X at offset 6, delta +1
+      'hello Xworld',
     );
     const d = result[0] as MarkDecoration;
+
     expect(d.from).toBe(7);
     expect(d.to).toBe(12);
   });
@@ -84,8 +87,11 @@ describe('mapDecorationsThroughChange', () => {
     const result = mapDecorationsThroughChange(
       [mark('d1', 2, 4)],
       'hello',
-      'ho', // delete 'ell' (offset 1–4)
+
+      // delete 'ell' (offset 1–4)
+      'ho',
     );
+
     expect(result).toHaveLength(0);
   });
 
@@ -97,6 +103,7 @@ describe('mapDecorationsThroughChange', () => {
       'hello BIGWORLD',
     );
     const d = result[0] as MarkDecoration;
+
     expect(d.from).toBe(6);
     expect(d.to).toBe(14);
   });
@@ -105,9 +112,12 @@ describe('mapDecorationsThroughChange', () => {
     const result = mapDecorationsThroughChange(
       [line('d1', 1)],
       'a\nb\nc',
-      'a\nnew\nb\nc', // insert 'new\n' before 'b'
+
+      // insert 'new\n' before 'b'
+      'a\nnew\nb\nc',
     );
     const d = result[0] as LineDecoration;
+
     expect(d.line).toBe(1);
   });
 
@@ -115,9 +125,12 @@ describe('mapDecorationsThroughChange', () => {
     const result = mapDecorationsThroughChange(
       [line('d1', 3)],
       'a\nb\nc',
-      'a\nnew\nb\nc', // insert one line before 'b', lineDelta +1
+
+      // insert one line before 'b', lineDelta +1
+      'a\nnew\nb\nc',
     );
     const d = result[0] as LineDecoration;
+
     expect(d.line).toBe(4);
   });
 
@@ -125,9 +138,12 @@ describe('mapDecorationsThroughChange', () => {
     const result = mapDecorationsThroughChange(
       [line('d1', 4)],
       'a\nb\nc\nd\ne',
-      'a\nc\nd\ne', // delete line 2 ('b\n'), lineDelta -1
+
+      // delete line 2 ('b\n'), lineDelta -1
+      'a\nc\nd\ne',
     );
     const d = result[0] as LineDecoration;
+
     expect(d.line).toBe(3);
   });
 
@@ -135,8 +151,11 @@ describe('mapDecorationsThroughChange', () => {
     const result = mapDecorationsThroughChange(
       [line('d1', 2)],
       'a\nb\nc',
-      'a\nc', // delete 'b\n' (line 2)
+
+      // delete 'b\n' (line 2)
+      'a\nc',
     );
+
     expect(result).toHaveLength(0);
   });
 
@@ -144,9 +163,12 @@ describe('mapDecorationsThroughChange', () => {
     const result = mapDecorationsThroughChange(
       [widget('w1', 2)],
       'hello',
-      'helXlo', // insert X at offset 3
+
+      // insert X at offset 3
+      'helXlo',
     );
     const w = result[0] as WidgetDecoration;
+
     expect(w.offset).toBe(2);
   });
 
@@ -154,19 +176,21 @@ describe('mapDecorationsThroughChange', () => {
     const result = mapDecorationsThroughChange(
       [widget('w1', 5)],
       'hello',
-      'helXXlo', // insert XX at offset 3, delta +2
+
+      // insert XX at offset 3, delta +2
+      'helXXlo',
     );
     const w = result[0] as WidgetDecoration;
+
     expect(w.offset).toBe(7);
   });
 });
-
-// ── isLargeChange ─────────────────────────────────────────────────────────────
 
 describe('isLargeChange', () => {
   test('deleting more than 50 chars is a large change', () => {
     const text = 'a'.repeat(60);
     const edit = findEdit(text, '');
+
     expect(isLargeChange(text, edit)).toBe(true);
   });
 
@@ -174,32 +198,35 @@ describe('isLargeChange', () => {
     // 120-char doc, remove 65 chars: 65 > 50 ✓ and 65 > 60 (50% of 120) ✓
     const text = 'a'.repeat(120);
     const edit = findEdit(text, 'a'.repeat(55));
+
     expect(isLargeChange(text, edit)).toBe(true);
   });
 
   test('single-character insertion is not a large change', () => {
     const edit = findEdit('hello', 'helllo');
+
     expect(isLargeChange('hello', edit)).toBe(false);
   });
 
   test('empty document edit is not a large change', () => {
     const edit = findEdit('', 'a');
+
     expect(isLargeChange('', edit)).toBe(false);
   });
 
   test('large insertion into empty string is not a large change', () => {
     // changeSize > 50 but NOT > 50% of oldValue.length (0)
     const edit = findEdit('', 'a'.repeat(60));
+
     expect(isLargeChange('', edit)).toBe(false);
   });
 });
 
-// ── mapOrClear ────────────────────────────────────────────────────────────────
-
-describe('mapOrClear', () => {
+describe('remapDecorations', () => {
   test('returns mapped decorations for small changes', () => {
     const decs: Decoration[] = [{ id: 'd1', type: 'mark', from: 6, to: 11 }];
-    const result = mapOrClear(decs, 'hello world', 'hello Xworld');
+    const result = remapDecorations(decs, 'hello world', 'hello Xworld');
+
     expect(result).toHaveLength(1);
     expect((result[0] as MarkDecoration).from).toBe(7);
     expect((result[0] as MarkDecoration).to).toBe(12);
@@ -208,24 +235,25 @@ describe('mapOrClear', () => {
   test('returns empty array for large changes', () => {
     const text = 'a'.repeat(120);
     const decs: Decoration[] = [{ id: 'd1', type: 'mark', from: 0, to: 5 }];
-    const result = mapOrClear(decs, text, 'a'.repeat(55));
+    const result = remapDecorations(decs, text, 'a'.repeat(55));
+
     expect(result).toHaveLength(0);
   });
 
   test('preserves decorations before the edit untouched', () => {
     const decs: Decoration[] = [{ id: 'd1', type: 'mark', from: 0, to: 3 }];
-    const result = mapOrClear(decs, 'hello', 'helXlo');
+    const result = remapDecorations(decs, 'hello', 'helXlo');
+
     expect(result).toHaveLength(1);
     expect((result[0] as MarkDecoration).from).toBe(0);
   });
 });
 
-// ── addDecoration / setDecorations ────────────────────────────────────────────
-
 describe('addDecoration', () => {
   test('returns a unique string id', () => {
     const map = new Map<string, Decoration>();
     const id = addDecoration(map, { type: 'mark', from: 0, to: 5 });
+
     expect(typeof id).toBe('string');
     expect(id.length).toBeGreaterThan(0);
     expect(map.has(id)).toBe(true);
@@ -235,6 +263,7 @@ describe('addDecoration', () => {
     const map = new Map<string, Decoration>();
     const id1 = addDecoration(map, { type: 'mark', from: 0, to: 3 });
     const id2 = addDecoration(map, { type: 'mark', from: 4, to: 7 });
+
     expect(id1).not.toBe(id2);
     expect(map.size).toBe(2);
   });
@@ -243,6 +272,7 @@ describe('addDecoration', () => {
     const map = new Map<string, Decoration>();
     const id = addDecoration(map, { type: 'mark', from: 2, to: 8, className: 'hi' });
     const stored = map.get(id) as MarkDecoration;
+
     expect(stored.id).toBe(id);
     expect(stored.from).toBe(2);
     expect(stored.to).toBe(8);
@@ -253,28 +283,34 @@ describe('addDecoration', () => {
 describe('setDecorations', () => {
   test('replaces all existing decorations with new ones', () => {
     const map = new Map<string, Decoration>();
+
     addDecoration(map, { type: 'mark', from: 0, to: 3 });
     setDecorations(map, [
       { type: 'mark', from: 4, to: 7 },
       { type: 'mark', from: 8, to: 11 },
     ]);
+
     expect(map.size).toBe(2);
   });
 
   test('setDecorations with empty array clears all', () => {
     const map = new Map<string, Decoration>();
+
     addDecoration(map, { type: 'mark', from: 0, to: 3 });
     setDecorations(map, []);
+
     expect(map.size).toBe(0);
   });
 
   test('each new decoration gets a unique id', () => {
     const map = new Map<string, Decoration>();
+
     setDecorations(map, [
       { type: 'mark', from: 0, to: 3 },
       { type: 'mark', from: 4, to: 7 },
     ]);
     const ids = [...map.keys()];
+
     expect(ids[0]).not.toBe(ids[1]);
   });
 });

@@ -1,34 +1,22 @@
-import { resolve } from "path";
+import { resolve } from 'path';
 
-import { defineConfig } from "vite";
-import dts from "vite-plugin-dts";
-import { copy } from "@guanghechen/rollup-plugin-copy";
+import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 
-export default defineConfig({
-  plugins: [
-    dts({ outDir: "dist/types" }),
-    copy({
-      targets: [
-        {
-          src: "../../demo-shared/**/*",
-          dest: "public",
-        },
-      ],
-      copyOnce: true,
-    }),
-  ],
-  publicDir: resolve(__dirname, "public"),
+export default defineConfig(({ command }) => ({
+  plugins: [dts({ outDir: 'dist/types' })],
+  publicDir: command === 'serve' ? resolve(__dirname, 'public') : false,
   build: {
     sourcemap: true,
     lib: {
       entry: {
-        "rc-accordion": resolve(__dirname, "src/index.ts"),
-        "rc-accordion-define": resolve(__dirname, "src/define.ts"),
+        'rc-accordion': resolve(__dirname, 'src/index.ts'),
+        'rc-accordion-define': resolve(__dirname, 'src/define.ts'),
       },
-      formats: ["es"],
+      formats: ['es'],
     },
     rollupOptions: {
       external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
-});
+}));

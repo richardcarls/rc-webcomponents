@@ -23,9 +23,72 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-combobox::part(toggle) {
     border-radius: var(--md-sys-shape-corner-full, 999px);
+    color: var(
+      --md-outlined-text-field-trailing-icon-color,
+      var(--md-sys-color-on-surface-variant, CanvasText)
+    );
+    transition: color 150ms ease, background-color 150ms ease;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-combobox::part(toggle):hover {
     background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-combobox[open]::part(toggle) {
+    color: var(
+      --md-outlined-text-field-focus-trailing-icon-color,
+      var(--md-sys-color-primary, Highlight)
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-combobox::part(chip):hover {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface-variant, CanvasText) 8%, transparent);
+    color: var(--md-sys-color-on-surface-variant, CanvasText);
+  }
+
+  /*
+   * Propagate Material styles to the embedded rc-listbox host. rc-listbox renders
+   * options into its own light DOM inside rc-combobox's shadow root, so inherited
+   * custom properties are the stable styling contract for option rows.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-combobox::part(listbox) {
+    background: var(--md-menu-container-color, var(--md-sys-color-surface-container, Canvas));
+    color: var(--md-sys-color-on-surface, CanvasText);
+    font-family: var(--md-sys-typescale-body-large-font, inherit);
+    font-size: var(--md-sys-typescale-body-large-size, 1rem);
+    line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
+    padding-block: 0.5rem;
+    border-radius: var(--md-menu-container-shape, var(--md-sys-shape-corner-extra-small, 0.25rem));
+
+    /* Option sizing */
+    --rc-listbox-option-gap: 0.75rem;
+    --rc-listbox-option-min-block-size: 3rem;
+    --rc-listbox-option-padding-block: 0;
+    --rc-listbox-option-padding-inline: 0.75rem;
+    --rc-listbox-option-transition: background-color 150ms ease, color 150ms ease;
+
+    /* M3 hover state layer (8% on-surface) instead of secondary-container */
+    --rc-highlight: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
+    --rc-highlight-text: var(--md-sys-color-on-surface, CanvasText);
+    --rc-listbox-hover-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 8%,
+      transparent
+    );
+    --rc-listbox-hover-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-listbox-active-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 12%,
+      transparent
+    );
+    --rc-listbox-active-color: var(--md-sys-color-on-surface, CanvasText);
+
+    /* Selected state */
+    --rc-listbox-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-listbox-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
+    --rc-listbox-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
+
+    /* M3 menus use background state layer for keyboard focus, not an outline ring */
+    --rc-focus-ring: none;
   }
 }

@@ -1,14 +1,13 @@
-import { test, expect, describe } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { matchPatternResults } from './pattern-matcher.ts';
 
 describe('matchPatternResults', () => {
-  // ── Basic matching ────────────────────────────────────────────────────
-
   test('single pattern match produces one mark decoration', () => {
     const { markDecorations } = matchPatternResults('hello world', [
       { id: 'p1', pattern: /world/g, className: 'w' },
     ]);
+
     expect(markDecorations).toHaveLength(1);
     expect(markDecorations[0].from).toBe(6);
     expect(markDecorations[0].to).toBe(11);
@@ -20,6 +19,7 @@ describe('matchPatternResults', () => {
     const { markDecorations } = matchPatternResults('foo bar foo', [
       { id: 'p1', pattern: /foo/g, className: 'f' },
     ]);
+
     expect(markDecorations).toHaveLength(2);
     expect(markDecorations[0].from).toBe(0);
     expect(markDecorations[0].to).toBe(3);
@@ -32,22 +32,25 @@ describe('matchPatternResults', () => {
       { id: 'p1', pattern: /hello/g, className: 'a' },
       { id: 'p2', pattern: /world/g, className: 'b' },
     ]);
+
     expect(markDecorations).toHaveLength(2);
-    expect(markDecorations.find(d => d.className === 'a')?.from).toBe(0);
-    expect(markDecorations.find(d => d.className === 'b')?.from).toBe(6);
+    expect(markDecorations.find((decoration) => decoration.className === 'a')?.from).toBe(0);
+    expect(markDecorations.find((decoration) => decoration.className === 'b')?.from).toBe(6);
   });
 
   test('non-global pattern is treated as global (all occurrences matched)', () => {
     const { markDecorations } = matchPatternResults('foo foo', [
-      { id: 'p1', pattern: /foo/, className: 'f' }, // no 'g' flag
+      { id: 'p1', pattern: /foo/, className: 'f' },
     ]);
+
     expect(markDecorations).toHaveLength(2);
   });
 
   test('zero-length match is skipped to avoid infinite loops', () => {
     const { markDecorations } = matchPatternResults('abc', [
-      { id: 'p1', pattern: /x*/g, className: 'x' }, // matches empty string everywhere
+      { id: 'p1', pattern: /x*/g, className: 'x' },
     ]);
+
     expect(markDecorations).toHaveLength(0);
   });
 
@@ -55,6 +58,7 @@ describe('matchPatternResults', () => {
     const { markDecorations, lineDecorations } = matchPatternResults('hello', [
       { id: 'p1', pattern: /xyz/g },
     ]);
+
     expect(markDecorations).toHaveLength(0);
     expect(lineDecorations).toHaveLength(0);
   });
@@ -63,11 +67,10 @@ describe('matchPatternResults', () => {
     const { markDecorations, lineDecorations } = matchPatternResults('', [
       { id: 'p1', pattern: /hello/g },
     ]);
+
     expect(markDecorations).toHaveLength(0);
     expect(lineDecorations).toHaveLength(0);
   });
-
-  // ── Mark decoration properties ────────────────────────────────────────
 
   test('all formatting properties are copied to the mark decoration', () => {
     const { markDecorations } = matchPatternResults('hello', [
@@ -84,28 +87,28 @@ describe('matchPatternResults', () => {
         attributes: { 'data-kind': 'keyword' },
       },
     ]);
-    const d = markDecorations[0];
-    expect(d.className).toBe('cls');
-    expect(d.bold).toBe(true);
-    expect(d.italic).toBe(true);
-    expect(d.color).toBe('#ff0000');
-    expect(d.background).toBe('#00ff00');
-    expect(d.underline).toBe('wavy');
-    expect(d.underlineColor).toBe('#0000ff');
-    expect(d.attributes).toEqual({ 'data-kind': 'keyword' });
+
+    const decoration = markDecorations[0];
+
+    expect(decoration.className).toBe('cls');
+    expect(decoration.bold).toBe(true);
+    expect(decoration.italic).toBe(true);
+    expect(decoration.color).toBe('#ff0000');
+    expect(decoration.background).toBe('#00ff00');
+    expect(decoration.underline).toBe('wavy');
+    expect(decoration.underlineColor).toBe('#0000ff');
+    expect(decoration.attributes).toEqual({ 'data-kind': 'keyword' });
   });
 
   test('undefined optional properties are not set to truthy values', () => {
-    const { markDecorations } = matchPatternResults('hello', [
-      { id: 'p1', pattern: /hello/g },
-    ]);
-    const d = markDecorations[0];
-    expect(d.className).toBeUndefined();
-    expect(d.bold).toBeUndefined();
-    expect(d.color).toBeUndefined();
-  });
+    const { markDecorations } = matchPatternResults('hello', [{ id: 'p1', pattern: /hello/g }]);
 
-  // ── createLineDecoration ──────────────────────────────────────────────
+    const decoration = markDecorations[0];
+
+    expect(decoration.className).toBeUndefined();
+    expect(decoration.bold).toBeUndefined();
+    expect(decoration.color).toBeUndefined();
+  });
 
   test('createLineDecoration generates a paired line decoration', () => {
     const { markDecorations, lineDecorations } = matchPatternResults('TODO fix', [
@@ -116,6 +119,7 @@ describe('matchPatternResults', () => {
         createLineDecoration: () => ({ message: 'todo found', className: 'todo-line' }),
       },
     ]);
+
     expect(markDecorations).toHaveLength(1);
     expect(lineDecorations).toHaveLength(1);
     expect(lineDecorations[0].type).toBe('line');
@@ -126,16 +130,19 @@ describe('matchPatternResults', () => {
 
   test('createLineDecoration receives the regex match array', () => {
     let capturedMatch: RegExpMatchArray | null = null;
+
     matchPatternResults('error: oops', [
       {
         id: 'p1',
         pattern: /error: (\w+)/g,
-        createLineDecoration: (m) => {
-          capturedMatch = m;
+        createLineDecoration: (match) => {
+          capturedMatch = match;
+
           return null;
         },
       },
     ]);
+
     expect(capturedMatch).not.toBeNull();
     expect(capturedMatch![0]).toBe('error: oops');
     expect(capturedMatch![1]).toBe('oops');
@@ -149,6 +156,7 @@ describe('matchPatternResults', () => {
         createLineDecoration: () => null,
       },
     ]);
+
     expect(lineDecorations).toHaveLength(0);
   });
 
@@ -160,6 +168,7 @@ describe('matchPatternResults', () => {
         createLineDecoration: () => ({ message: 'found' }),
       },
     ]);
+
     expect(lineDecorations).toHaveLength(1);
     expect(lineDecorations[0].line).toBe(2);
   });
@@ -172,6 +181,7 @@ describe('matchPatternResults', () => {
         createLineDecoration: () => ({ message: 'found' }),
       },
     ]);
+
     expect(lineDecorations[0].line).toBe(3);
   });
 
@@ -183,6 +193,7 @@ describe('matchPatternResults', () => {
         createLineDecoration: () => ({ message: 'found' }),
       },
     ]);
+
     expect(lineDecorations).toHaveLength(2);
     expect(lineDecorations[0].line).toBe(1);
     expect(lineDecorations[1].line).toBe(3);
@@ -199,10 +210,9 @@ describe('matchPatternResults', () => {
         }),
       },
     ]);
+
     expect(lineDecorations[0].messageClassName).toBe('error-class');
   });
-
-  // ── captureGroups ─────────────────────────────────────────────────────
 
   test('captureGroups emits one mark per named group instead of one for the whole match', () => {
     const { markDecorations } = matchPatternResults('key: value', [
@@ -215,13 +225,16 @@ describe('matchPatternResults', () => {
         },
       },
     ]);
+
     expect(markDecorations).toHaveLength(2);
-    const key = markDecorations.find(d => d.className === 'k')!;
-    const val = markDecorations.find(d => d.className === 'v')!;
-    expect(key.from).toBe(0);
-    expect(key.to).toBe(3);
-    expect(val.from).toBe(5);
-    expect(val.to).toBe(10);
+
+    const keyDecoration = markDecorations.find((decoration) => decoration.className === 'k')!;
+    const valueDecoration = markDecorations.find((decoration) => decoration.className === 'v')!;
+
+    expect(keyDecoration.from).toBe(0);
+    expect(keyDecoration.to).toBe(3);
+    expect(valueDecoration.from).toBe(5);
+    expect(valueDecoration.to).toBe(10);
   });
 
   test('captureGroups: unmatched optional group is skipped', () => {
@@ -235,6 +248,7 @@ describe('matchPatternResults', () => {
         },
       },
     ]);
+
     expect(markDecorations).toHaveLength(1);
     expect(markDecorations[0].className).toBe('w');
   });
@@ -258,15 +272,17 @@ describe('matchPatternResults', () => {
         },
       },
     ]);
-    const d = markDecorations[0];
-    expect(d.className).toBe('cls');
-    expect(d.bold).toBe(true);
-    expect(d.italic).toBe(true);
-    expect(d.color).toBe('red');
-    expect(d.background).toBe('blue');
-    expect(d.underline).toBe('wavy');
-    expect(d.underlineColor).toBe('green');
-    expect(d.attributes).toEqual({ 'data-x': '1' });
+
+    const decoration = markDecorations[0];
+
+    expect(decoration.className).toBe('cls');
+    expect(decoration.bold).toBe(true);
+    expect(decoration.italic).toBe(true);
+    expect(decoration.color).toBe('red');
+    expect(decoration.background).toBe('blue');
+    expect(decoration.underline).toBe('wavy');
+    expect(decoration.underlineColor).toBe('green');
+    expect(decoration.attributes).toEqual({ 'data-x': '1' });
   });
 
   test('captureGroups: multiple matches each produce group decorations', () => {
@@ -280,17 +296,19 @@ describe('matchPatternResults', () => {
         },
       },
     ]);
+
     expect(markDecorations).toHaveLength(4);
-    const names = markDecorations.filter(d => d.className === 'n');
-    const vals = markDecorations.filter(d => d.className === 'v');
-    expect(names[0].from).toBe(0);
-    expect(names[1].from).toBe(4);
-    expect(vals[0].from).toBe(2);
-    expect(vals[1].from).toBe(6);
+
+    const nameDecorations = markDecorations.filter((decoration) => decoration.className === 'n');
+    const valueDecorations = markDecorations.filter((decoration) => decoration.className === 'v');
+
+    expect(nameDecorations[0].from).toBe(0);
+    expect(nameDecorations[1].from).toBe(4);
+    expect(valueDecorations[0].from).toBe(2);
+    expect(valueDecorations[1].from).toBe(6);
   });
 
   test('captureGroups: d flag is added automatically even if absent from pattern', () => {
-    // The pattern has no flags — matchPatternResults must add both g and d
     const { markDecorations } = matchPatternResults('foo bar', [
       {
         id: 'p1',
@@ -298,6 +316,7 @@ describe('matchPatternResults', () => {
         captureGroups: { w: { className: 'w' } },
       },
     ]);
+
     expect(markDecorations).toHaveLength(2);
   });
 });

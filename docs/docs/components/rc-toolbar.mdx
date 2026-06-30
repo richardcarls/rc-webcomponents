@@ -1,0 +1,57 @@
+---
+title: rc-toolbar
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ToolbarDemo } from '@site/src/components/ComponentDemos';
+
+# rc-toolbar
+
+Toolbar that groups consumer-supplied controls into one tab stop with arrow-key navigation, following the [WAI-ARIA Toolbar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/).
+
+<AtAGlance
+  packageName="@rcarls/rc-toolbar"
+  tag="rc-toolbar"
+  native="Consumer supplies toolbar controls"
+  state="Roving focus only"
+  events={[]}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-toolbar
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-toolbar
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-toolbar/define';
+```
+
+## Live demo
+
+<ToolbarDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-toolbar" />

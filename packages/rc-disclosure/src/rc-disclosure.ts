@@ -3,6 +3,10 @@ export interface RCDisclosureToggleEvent {
   open: boolean;
 }
 
+const TOGGLE_EVENT = 'rc-disclosure-toggle';
+const DETAILS_SELECTOR = ':scope > details';
+const SUMMARY_SELECTOR = ':scope > summary';
+
 declare global {
   interface HTMLElementTagNameMap {
     'rc-disclosure': RCDisclosure;
@@ -10,17 +14,24 @@ declare global {
 }
 
 /**
- * Light behavioral wrapper for a direct child native `<details>` element.
+ * Disclosure wrapper for a native <details>/<summary> pair with controlled open state,
+ * following the WAI-ARIA Disclosure pattern.
  *
  * The browser keeps ownership of open/close behavior, keyboard support, and
- * accessibility. This element only mirrors state, emits a consistent custom
- * event, and optionally opens matching fragment targets.
+ * accessibility. This element mirrors state, emits a consistent custom event,
+ * and automatically opens when the URL hash matches any id within its subtree.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-disclosure rc-disclosure docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/ WAI-ARIA Disclosure pattern}
  *
  * @fires rc-disclosure-toggle - Fires when the child `<details>` toggles.
  */
 export class RCDisclosure extends HTMLElement {
-  private _details: HTMLDetailsElement | null = null;
   private _observer = new MutationObserver(() => this._setupDetails());
+
+  private _$details: HTMLDetailsElement | null = null;
+
+  private _scrollFrame = 0;
 
   static get observedAttributes(): string[] {
     return ['open', 'fragment'];
@@ -28,14 +39,18 @@ export class RCDisclosure extends HTMLElement {
 
   /** Current open state mirrored to the child `<details>`. */
   get open(): boolean {
-    return this._details?.open ?? this.hasAttribute('open');
+    return this._$details?.open ?? this.hasAttribute('open');
   }
 
   set open(value: boolean) {
     this._setOpen(value, true);
   }
 
-  /** Enable location-hash opening when the details/summary target matches. */
+  /**
+   * @deprecated No longer required. `rc-disclosure` now automatically opens and
+   * scrolls when the URL hash matches any id within its subtree. Will be removed
+   * in v1.0 release.
+   */
   get fragment(): boolean {
     return this.hasAttribute('fragment');
   }
@@ -48,90 +63,119 @@ export class RCDisclosure extends HTMLElement {
     this._observer.observe(this, { childList: true });
     window.addEventListener('hashchange', this._onHashChange);
     this._setupDetails();
-    this._openForCurrentHash();
   }
 
   disconnectedCallback(): void {
     this._observer.disconnect();
     window.removeEventListener('hashchange', this._onHashChange);
+    cancelAnimationFrame(this._scrollFrame);
     this._teardownDetails();
   }
 
   attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
-    if (oldValue === newValue) return;
-    if (name === 'open') this._syncDetailsOpen();
-    if (name === 'fragment') this._openForCurrentHash();
-  }
-
-  private _setupDetails(): void {
-    const details = this.querySelector<HTMLDetailsElement>(':scope > details');
-    if (details === this._details) return;
-
-    this._teardownDetails();
-    this._details = details;
-
-    if (!details) {
-      if (import.meta.env.DEV) {
-        console.warn(
-          '[rc-disclosure] No direct child <details> found. Place native ' +
-          '<details><summary>...</summary>...</details> inside <rc-disclosure>.',
-          this,
-        );
-      }
+    if (oldValue === newValue) {
       return;
     }
 
-    if (!details.id) details.id = crypto.randomUUID();
+    if (name === 'open') {
+      this._syncDetailsOpen();
 
-    const summary = details.querySelector<HTMLElement>(':scope > summary');
-    if (summary) summary.setAttribute('aria-controls', details.id);
+      return;
+    }
 
-    details.addEventListener('toggle', this._onToggle);
+    if (name === 'fragment') {
+      this._openForCurrentHash();
+    }
+  }
+
+  private _setupDetails(): void {
+    const $details = this.querySelector<HTMLDetailsElement>(DETAILS_SELECTOR);
+    if ($details === this._$details) {
+      return;
+    }
+
+    this._teardownDetails();
+    this._$details = $details;
+
+    if (!$details) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          '[rc-disclosure] No direct child <details> found. Place native ' +
+            '<details><summary>...</summary>...</details> inside <rc-disclosure>.',
+          this,
+        );
+      }
+
+      return;
+    }
+
+    if (!$details.id) {
+      $details.id = crypto.randomUUID();
+    }
+
+    const $summary = $details.querySelector<HTMLElement>(SUMMARY_SELECTOR);
+    $summary?.setAttribute('aria-controls', $details.id);
+
+    $details.addEventListener('toggle', this._onToggle);
     this._syncDetailsOpen();
-    this._reflectOpen(details.open);
+    this._reflectOpen($details.open);
     this._openForCurrentHash();
   }
 
   private _teardownDetails(): void {
-    const summary = this._details?.querySelector<HTMLElement>(':scope > summary');
-    summary?.removeAttribute('aria-controls');
+    const $summary = this._$details?.querySelector<HTMLElement>(SUMMARY_SELECTOR);
+    $summary?.removeAttribute('aria-controls');
 
-    this._details?.removeEventListener('toggle', this._onToggle);
-    this._details = null;
+    this._$details?.removeEventListener('toggle', this._onToggle);
+    this._$details = null;
   }
 
   private _syncDetailsOpen(): void {
-    const details = this._details;
-    if (!details) return;
+    const $details = this._$details;
+    if (!$details) {
+      return;
+    }
 
     const nextOpen = this.hasAttribute('open');
-    if (details.open !== nextOpen) details.open = nextOpen;
+    if ($details.open !== nextOpen) {
+      $details.open = nextOpen;
+    }
   }
 
   private _setOpen(value: boolean, reflect: boolean): void {
-    const details = this._details;
-    if (details && details.open !== value) details.open = value;
+    const $details = this._$details;
+    if ($details && $details.open !== value) {
+      $details.open = value;
+    }
+
     // _reflectOpen is called here for programmatic opens because the <details>
     // toggle event is async (queued task per HTML spec). _onToggle also calls
     // _reflectOpen for user-initiated clicks, but that arrives after a tick.
-    if (reflect) this._reflectOpen(value);
+    if (reflect) {
+      this._reflectOpen(value);
+    }
   }
 
   private _reflectOpen(value: boolean): void {
     if (value) {
-      if (!this.hasAttribute('open')) this.setAttribute('open', '');
+      if (!this.hasAttribute('open')) {
+        this.setAttribute('open', '');
+      }
+
       return;
     }
 
-    if (this.hasAttribute('open')) this.removeAttribute('open');
+    if (this.hasAttribute('open')) {
+      this.removeAttribute('open');
+    }
   }
 
   private _onToggle = (): void => {
-    const open = this._details?.open ?? false;
+    const open = this._$details?.open ?? false;
 
     this._reflectOpen(open);
     this.dispatchEvent(
-      new CustomEvent<RCDisclosureToggleEvent>('rc-disclosure-toggle', {
+      new CustomEvent<RCDisclosureToggleEvent>(TOGGLE_EVENT, {
         bubbles: true,
         composed: true,
         detail: { open },
@@ -144,18 +188,32 @@ export class RCDisclosure extends HTMLElement {
   };
 
   private _openForCurrentHash(): void {
-    if (!this.fragment || !location.hash) return;
+    if (!location.hash) {
+      return;
+    }
 
     const targetId = decodeURIComponent(location.hash.slice(1));
-    if (!targetId) return;
+    if (!targetId) {
+      return;
+    }
 
-    const details = this._details;
-    if (!details) return;
+    const $target = this.querySelector(`#${CSS.escape(targetId)}`);
+    if (!$target) {
+      return;
+    }
 
-    const summary = details.querySelector<HTMLElement>(':scope > summary');
-    if (details.id !== targetId && summary?.id !== targetId) return;
+    const wasOpen = this.open;
 
     this.open = true;
+
+    if (wasOpen) {
+      return;
+    }
+
+    cancelAnimationFrame(this._scrollFrame);
+    this._scrollFrame = requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView();
+    });
   }
 }
 

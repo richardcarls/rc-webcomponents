@@ -1,0 +1,65 @@
+---
+title: rc-accordion
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import {
+  SingleAccordionDemo,
+  MultipleAccordionDemo,
+  DisclosureAccordionDemo,
+} from '@site/src/components/AccordionDemos';
+
+# rc-accordion
+
+Accordion coordinator for child native `<details>` panels with single- or multiple-open behavior, following the [WAI-ARIA Accordion pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/).
+
+<AtAGlance
+  packageName="@rcarls/rc-accordion"
+  tag="rc-accordion"
+  native="Coordinates native details children"
+  state="Single or multiple open panels"
+  events={[]}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-accordion
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-accordion
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-accordion/define';
+```
+
+## Live demo
+
+<SingleAccordionDemo />
+
+<MultipleAccordionDemo />
+
+<DisclosureAccordionDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-accordion" />

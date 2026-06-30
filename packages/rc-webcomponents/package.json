@@ -3,19 +3,21 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
-  "description": "Aggregate package — all @rcarls WAI-ARIA compliant headless web components",
+  "version": "0.3.0",
+  "description": "Aggregate package that re-exports and defines the rc-webcomponents collection.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-webcomponents"
   },
-  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/",
   "license": "MIT",
   "type": "module",
   "files": [
     "dist",
-    "src/solid.d.ts"
+    "src/solid.d.ts",
+    "src/react.d.ts",
+    "themes"
   ],
   "module": "./dist/rc-webcomponents.js",
   "exports": {
@@ -34,36 +36,40 @@
     "./solid": {
       "types": "./src/solid.d.ts"
     },
-    "./themes/base.css": "../../themes/base.css"
+    "./react": {
+      "types": "./src/react.d.ts"
+    },
+    "./themes/base.css": "./themes/base.css"
   },
   "types": "./dist/types/index.d.ts",
   "sideEffects": [
-    "./dist/rc-webcomponents-define.js"
+    "./dist/rc-webcomponents-define.js",
+    "./themes/*.css"
   ],
   "scripts": {
-    "build": "tsc && vite build",
-    "yalc:publish": "yalc publish --push"
+    "build": "tsc && vite build"
   },
   "dependencies": {
-    "@rcarls/rc-accordion": "workspace:^",
-    "@rcarls/rc-app-bar": "workspace:^",
-    "@rcarls/rc-combobox": "workspace:^",
-    "@rcarls/rc-dialog": "workspace:^",
-    "@rcarls/rc-disclosure": "workspace:^",
-    "@rcarls/rc-fab": "workspace:^",
-    "@rcarls/rc-listbox": "workspace:^",
-    "@rcarls/rc-markdown-editor": "workspace:^",
-    "@rcarls/rc-menu": "workspace:^",
-    "@rcarls/rc-menu-button": "workspace:^",
-    "@rcarls/rc-menubar": "workspace:^",
-    "@rcarls/rc-range-slider": "workspace:^",
-    "@rcarls/rc-search-bar": "workspace:^",
-    "@rcarls/rc-select": "workspace:^",
-    "@rcarls/rc-slider": "workspace:^",
-    "@rcarls/rc-splitter": "workspace:^",
-    "@rcarls/rc-textarea": "workspace:^",
-    "@rcarls/rc-toolbar": "workspace:^",
-    "@rcarls/rc-transfer-list": "workspace:^"
+    "@rcarls/rc-accordion": "workspace:*",
+    "@rcarls/rc-app-bar": "workspace:*",
+    "@rcarls/rc-combobox": "workspace:*",
+    "@rcarls/rc-dialog": "workspace:*",
+    "@rcarls/rc-disclosure": "workspace:*",
+    "@rcarls/rc-fab": "workspace:*",
+    "@rcarls/rc-listbox": "workspace:*",
+    "@rcarls/rc-markdown-editor": "workspace:*",
+    "@rcarls/rc-menu": "workspace:*",
+    "@rcarls/rc-menu-button": "workspace:*",
+    "@rcarls/rc-menubar": "workspace:*",
+    "@rcarls/rc-range-slider": "workspace:*",
+    "@rcarls/rc-search-bar": "workspace:*",
+    "@rcarls/rc-select": "workspace:*",
+    "@rcarls/rc-slider": "workspace:*",
+    "@rcarls/rc-splitter": "workspace:*",
+    "@rcarls/rc-textarea": "workspace:*",
+    "@rcarls/rc-toolbar": "workspace:*",
+    "@rcarls/rc-transfer-list": "workspace:*",
+    "@rcarls/rc-virtual-canvas": "workspace:*"
   },
   "peerDependencies": {
     "lit": "^3.0.0"

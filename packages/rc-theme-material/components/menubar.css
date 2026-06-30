@@ -1,9 +1,24 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-menubar::part(root) {
-    box-shadow: var(--md-sys-elevation-level0, none);
+    box-shadow: var(--rc-shadow-level0, none);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menubar rc-menu-button > :is(button, [role='button'])[slot='trigger'] {
-    padding-inline: 1rem;
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menubar {
+    --rc-menubar-item-block-size: 2.5rem;
+    --rc-menubar-item-padding-block: 0.5rem;
+    --rc-menubar-item-padding-inline: 1rem;
+    --rc-menubar-item-border: 0;
+    --rc-menubar-item-radius: var(--md-sys-shape-corner-full, 999px);
+    --rc-menubar-item-background: transparent;
+    --rc-menubar-item-color: var(--md-sys-color-primary, CanvasText);
+    --rc-menubar-item-transition: background-color 150ms ease, color 150ms ease;
+    --rc-menubar-item-hover-background: color-mix(
+      in srgb,
+      var(--md-sys-color-primary, Highlight) 8%,
+      transparent
+    );
+    --rc-menubar-item-hover-color: var(--md-sys-color-primary, CanvasText);
+    --rc-menubar-item-open-background: var(--md-sys-color-secondary-container, ButtonFace);
+    --rc-menubar-item-open-color: var(--md-sys-color-on-secondary-container, ButtonText);
   }
 }

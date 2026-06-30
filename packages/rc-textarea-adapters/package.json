@@ -3,14 +3,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
-  "description": "Adapter factories for lezer, unified, and shiki tokenizers for rc-textarea",
+  "version": "0.3.0",
+  "description": "Adapter factories that connect Lezer, unified, and Shiki tokenizers to rc-textarea.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
     "directory": "packages/rc-textarea-adapters"
   },
-  "homepage": "https://github.com/richardcarls/rc-webcomponents#readme",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-textarea",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -20,18 +20,18 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/types/packages/rc-textarea-adapters/src/index.d.ts",
+        "types": "./dist/types/index.d.ts",
         "default": "./dist/rc-textarea-adapters.js"
       }
     }
   },
-  "types": "./dist/types/packages/rc-textarea-adapters/src/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "build": "tsc && vite build"
   },
   "dependencies": {
-    "@rcarls/rc-textarea": "workspace:^"
+    "@rcarls/rc-textarea": "workspace:*"
   },
   "peerDependencies": {
     "@lezer/common": ">=1.0.0",

@@ -1,0 +1,61 @@
+---
+title: rc-menubar
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { MenubarDemo } from '@site/src/components/ComponentDemos';
+
+# rc-menubar
+
+Menubar coordinator for `rc-menu-button` children with roving tabindex and submenu handoff, following the [WAI-ARIA Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/).
+
+<AtAGlance
+  packageName="@rcarls/rc-menubar"
+  tag="rc-menubar"
+  native="Consumer supplies menu buttons and menus"
+  state="Roving focus and submenu state"
+  events={[]}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-menubar
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-menubar
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-menubar/define';
+```
+
+## Live demo
+
+<MenubarDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+`rc-menubar` owns the menubar surface and maps `--rc-menubar-item-*` variables
+onto each child `rc-menu-button` trigger. This keeps top-level menubar items flat
+while standalone menu buttons can keep their own button-like defaults.
+
+## API
+
+<ApiTable tag="rc-menubar" />

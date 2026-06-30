@@ -1,0 +1,62 @@
+---
+title: rc-menu-button
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { MenuButtonDemo } from '@site/src/components/ComponentDemos';
+
+# rc-menu-button
+
+Trigger button that opens an `rc-menu` popup, following the [WAI-ARIA Menu Button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/).
+
+<AtAGlance
+  packageName="@rcarls/rc-menu-button"
+  tag="rc-menu-button"
+  native="Requires trigger and menu children"
+  state="Controlled or uncontrolled open state"
+  events={['rc-menu-button-toggle']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-menu-button
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-menu-button
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-menu-button/define';
+```
+
+## Live demo
+
+<MenuButtonDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+`rc-menu-button` keeps the consumer-supplied trigger in light DOM and styles it
+through inherited `--rc-menu-button-trigger-*` custom properties. The popup menu
+remains an `rc-menu`, so menu row styling continues through the `--rc-menu-*`
+contract.
+
+## API
+
+<ApiTable tag="rc-menu-button" />

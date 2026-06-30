@@ -13,10 +13,21 @@ dist-ssr
 custom-elements.json
 *.local
 
+# Local package demo scratch files
+/packages/*/*.html
+/packages/*/public/
+
 # VitePress build artifacts
 **/.vitepress/cache
 **/.vitepress/dist
 **/.vitepress/.temp
+
+# Docusaurus build artifacts
+**/.docusaurus
+**/build
+/docs/static/rc-webcomponents-dist/
+/docs/static/rc-theme-material/
+/docs/static/rc-theme-substrate/
 
 # Yarn Berry
 /.yarn/install-state.gz

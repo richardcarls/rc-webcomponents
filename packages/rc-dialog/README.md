@@ -1,8 +1,8 @@
 # `@rcarls/rc-dialog`
 
-A WAI-ARIA compliant web component that enhances a consumer-provided `<dialog>` element with drag, resize, cancelable close events, and light-dismiss. Built with [Lit 3](https://lit.dev).
+Draggable, resizable wrapper for a native `<dialog>`, following the [WAI-ARIA Dialog Modal pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/).
 
-The component is a **headless wrapper** — it injects no HTML of its own. Your `<dialog>` stays in the document's light DOM with full CSS and assistive-technology access.
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-dialog](https://richardcarls.github.io/rc-webcomponents/components/rc-dialog).
 
 ---
 
@@ -45,6 +45,9 @@ Place a `<dialog>` element directly inside `<rc-dialog>`. The inner `<dialog>` m
 
 | Property | Attribute | Type | Default | Description |
 |---|---|---|---|---|
+| `open` | `open` | `boolean` | — | Controlled open state. Setting to `true`/`false` opens/closes the dialog silently (no `rc-dialog-toggle` event). Reads the inner `<dialog>.open` value. |
+| `defaultOpen` | `default-open` | `boolean` | `false` | Uncontrolled initial open state. The component takes ownership after initialization. |
+| `modal` | — | `boolean` | `true` | Whether controlled `open` / `defaultOpen` opens as modal (`showModal`) or non-modal (`show`). No effect on direct `showModal()` / `show()` calls. JS property only — no attribute. |
 | `movable` | `movable` | `boolean` | `false` | Enable drag-to-move. Named `movable` (not `draggable`) to avoid colliding with the HTML `draggable` attribute. |
 | `moveHandle` | `move-handle` | `string` | `''` | CSS selector for the drag handle within the inner `<dialog>` (e.g. `'.titlebar'`). Defaults to the whole dialog. |
 | `moveBounds` | `move-bounds` | `'viewport' \| 'parent'` | `'viewport'` | Constrains drag within the viewport or the nearest positioned ancestor. |
@@ -78,6 +81,8 @@ returnValue: string  // The return value set when the dialog last closed.
 
 | Event | Cancelable | Detail | Description |
 |---|---|---|---|
+| `rc-dialog-open` | No | — | Fired when the dialog opens via `showModal()` or `show()`. |
+| `rc-dialog-toggle` | No | `{ open: boolean, returnValue: string }` | Fired when user or native interaction changes the open state. Not fired on silent host writes (`open` property). |
 | `rc-dialog-request-close` | **Yes** | `{ returnValue: string }` | Fired before close (Escape, backdrop click, or `requestClose()`). Call `preventDefault()` to block. |
 | `rc-dialog-cancel` | No | — | Fired after `rc-dialog-request-close` when the close was not prevented. Backward-compatible alias. |
 | `rc-dialog-close` | No | `{ returnValue: string }` | Fired after the dialog has closed. |
@@ -223,7 +228,7 @@ Use `role="alertdialog"` with `aria-describedby` pointing to the message text. A
 `<rc-dialog>` delegates entirely to the native `<dialog>` element:
 
 - **Focus trapping** — built into `showModal()` (Tab/Shift+Tab stays inside the dialog).
-- **Focus restoration** — the browser returns focus to the triggering element on close.
+- **Focus restoration** — `rc-dialog` captures the focused element before opening and restores focus to it on close. If the opener was removed from the DOM while the dialog was open, focus falls back to `document.body`.
 - **Escape to close** — native behaviour; routes through `rc-dialog-request-close` so guards still apply.
 - **`aria-modal`** — `showModal()` implies `aria-modal="true"` without an explicit attribute.
 

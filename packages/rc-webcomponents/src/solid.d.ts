@@ -15,8 +15,6 @@
 
 import type { RCTextareaPlugin } from '@rcarls/rc-textarea';
 
-// ---- Ref types --------------------------------------------------------------
-
 /** Public API surface of `<rc-disclosure>`. */
 export type RCDisclosureRef = HTMLElement & {
   open: boolean;
@@ -28,17 +26,20 @@ export type RCDisclosureToggleDetail = {
 };
 
 /** Public API surface of `<rc-accordion>`. */
-export type RCAccordionRef = HTMLElement;
+export type RCAccordionRef = HTMLElement & {
+  multiple: boolean;
+};
 
 /** Public API surface of `<rc-listbox>`. */
 export type RCListboxRef = HTMLElement & {
   multiple: boolean;
+  checkmark: boolean;
   filterStrategy: 'prefix' | 'contains' | ((label: string, query: string) => boolean);
   value: RCSelectValue;
   defaultValue: RCSelectValue | undefined;
-  options: RCSelectOption[];
-  readonly allOptions: ReadonlyArray<{ value: string; label: string; disabled?: boolean }>;
-  readonly filteredOptions: ReadonlyArray<{ value: string; label: string; disabled?: boolean }>;
+  options: RCListboxOption[];
+  readonly allOptions: ReadonlyArray<RCListboxOption>;
+  readonly filteredOptions: ReadonlyArray<RCListboxOption>;
   readonly selectedValues: string[];
   readonly navigableItems: Element[];
   toggleOption(value: string): void;
@@ -50,10 +51,23 @@ export type RCListboxRef = HTMLElement & {
 
 /** Public API surface of `<rc-select>`. */
 export type RCSelectOption = {
+  kind?: 'option';
   value: string;
   label: string;
   disabled?: boolean;
+  data?: unknown;
 };
+
+export type RCListboxActionOption<Action extends string = string> = {
+  kind: 'action';
+  action: Action;
+  value: string;
+  label: string;
+  disabled?: boolean;
+  data?: unknown;
+};
+
+export type RCListboxOption = RCSelectOption | RCListboxActionOption;
 
 export type RCSelectValue = string | string[];
 
@@ -63,11 +77,24 @@ export type RCSelectChangeDetail = {
   selectedOptions: RCSelectOption[];
 };
 
-export type RCListboxChangeDetail = RCSelectChangeDetail & {
+export type RCListboxSelectChangeDetail = RCSelectChangeDetail & {
+  reason: 'select';
   selected: boolean;
   optionValue: string;
-  option: RCSelectOption | null;
+  option: RCSelectOption;
 };
+
+export type RCListboxActionChangeDetail<Action extends string = string> = RCSelectChangeDetail & {
+  reason: 'action';
+  selected: false;
+  optionValue: string;
+  option: RCListboxActionOption<Action>;
+  action: Action;
+};
+
+export type RCListboxChangeDetail =
+  | RCListboxSelectChangeDetail
+  | RCListboxActionChangeDetail;
 
 export type RCSelectRef = HTMLElement & {
   open: boolean;
@@ -87,6 +114,10 @@ export type RCSelectRef = HTMLElement & {
 export type RCComboboxRef = RCSelectRef & {
   allowCreate: boolean;
   filterStrategy: 'prefix' | 'contains' | ((label: string, query: string) => boolean);
+};
+
+export type RCComboboxCreateDetail = {
+  text: string;
 };
 
 /** Public API surface of `<rc-dialog>`. */
@@ -114,6 +145,10 @@ export type RCDialogToggleDetail = {
   returnValue: string;
 };
 
+export type RCDialogCloseDetail = {
+  returnValue: string;
+};
+
 /** Public API surface of `<rc-menu>`. */
 export type RCMenuRef = HTMLElement & {
   label: string;
@@ -125,15 +160,41 @@ export type RCMenuActivateDetail = {
   text: string;
 };
 
+export type RCMenuCloseDetail = {
+  reason: 'escape';
+};
+
 /** Public API surface of `<rc-menu-button>`. */
+export type RCMenuButtonPlacement =
+  | 'top'
+  | 'top-start'
+  | 'top-end'
+  | 'bottom'
+  | 'bottom-start'
+  | 'bottom-end'
+  | 'left'
+  | 'left-start'
+  | 'left-end'
+  | 'right'
+  | 'right-start'
+  | 'right-end';
+
 export type RCMenuButtonRef = HTMLElement & {
   open: boolean | undefined;
   defaultOpen: boolean;
   orientation: 'horizontal' | 'vertical' | undefined;
+  placement: RCMenuButtonPlacement;
+};
+
+export type RCMenuButtonToggleDetail = {
+  open: boolean;
 };
 
 /** Public API surface of `<rc-menubar>`. */
-export type RCMenubarRef = HTMLElement;
+export type RCMenubarRef = HTMLElement & {
+  label: string;
+  orientation: 'horizontal' | 'vertical';
+};
 
 /** Public API surface of `<rc-toolbar>`. */
 export type RCToolbarRef = HTMLElement & {
@@ -169,11 +230,82 @@ export type RCTextareaRef = HTMLElement & {
   replaceSelection(text: string): void;
 };
 
-export type RCTextEditorRef = RCTextareaRef & {
+export type RCMarkdownEditorRef = HTMLElement & {
+  value: string;
+  defaultValue: string;
   toolbar: boolean;
-  markdown: boolean;
-  preview: boolean;
-  defaultPreview: boolean;
+  sourceMode: boolean;
+  defaultSourceMode: boolean;
+  readOnly: boolean;
+};
+
+export type RCMarkdownEditorFormats = {
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  code?: boolean;
+  link?: boolean;
+  heading?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | null;
+  blockquote?: boolean;
+  bulletList?: boolean;
+  orderedList?: boolean;
+  codeBlock?: boolean;
+  codeLanguage?: string | null;
+};
+
+export type RCMarkdownEditorChangeDetail = {
+  value: string;
+};
+
+export type RCMarkdownEditorModeChangeDetail = {
+  mode: 'rich' | 'source';
+};
+
+export type RCVirtualCanvasViewRect = Readonly<{
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}>;
+
+export type RCVirtualCanvasRenderDetail = {
+  time: DOMHighResTimeStamp;
+  reason: 'animation-frame' | 'viewport-change' | 'manual';
+  viewRect: RCVirtualCanvasViewRect;
+  contentRect: RCVirtualCanvasViewRect;
+};
+
+export type RCVirtualCanvasPointerDetail = {
+  type: string;
+  clientX: number;
+  clientY: number;
+  contentX: number;
+  contentY: number;
+  viewRect: RCVirtualCanvasViewRect;
+  button: number;
+  buttons: number;
+  altKey: boolean;
+  ctrlKey: boolean;
+  shiftKey: boolean;
+  metaKey: boolean;
+  sourceEvent: PointerEvent | MouseEvent;
+};
+
+export type RCVirtualCanvasRef = HTMLElement & {
+  contentWidth: number;
+  contentHeight: number;
+  autoResizeCanvas: boolean;
+  renderMode: 'continuous' | 'viewport-change' | 'manual';
+  imageRendering: 'auto' | 'crisp-edges' | 'pixelated';
+  readonly canvasScaleX: number;
+  readonly canvasScaleY: number;
+  getViewRect(): RCVirtualCanvasViewRect;
+  scrollToContent(x: number, y: number, options?: ScrollToOptions): void;
+  centerOnContent(x: number, y: number, options?: ScrollToOptions): void;
+  clientToContent(clientX: number, clientY: number): Readonly<{ x: number; y: number }>;
+  contentToClient(x: number, y: number): Readonly<{ x: number; y: number }>;
+  requestRender(reason?: 'animation-frame' | 'viewport-change' | 'manual'): void;
 };
 
 export type RCSliderRef = HTMLElement & {
@@ -187,6 +319,10 @@ export type RCSliderRef = HTMLElement & {
   display: 'float' | 'inline-start' | 'inline-end' | null;
   valueText: string;
   orientation: 'horizontal' | 'vertical';
+};
+
+export type RCSliderChangeDetail = {
+  value: number;
 };
 
 export type RCRangeSliderRef = HTMLElement & {
@@ -204,6 +340,10 @@ export type RCRangeSliderRef = HTMLElement & {
   orientation: 'horizontal' | 'vertical';
 };
 
+export type RCRangeSliderChangeDetail = {
+  value: [number, number];
+};
+
 export type RCTransferListOption = {
   value: string;
   label: string;
@@ -212,6 +352,7 @@ export type RCTransferListOption = {
 
 export type RCTransferListRef = HTMLElement & {
   multiple: boolean;
+  compact: boolean;
   availableLabel: string;
   selectedLabel: string;
   available: RCTransferListOption[];
@@ -222,6 +363,10 @@ export type RCTransferListRef = HTMLElement & {
   removeSelected(): void;
   clearSelected(): void;
   moveSelected(delta: number): void;
+};
+
+export type RCTransferListChangeDetail = {
+  selected: RCTransferListOption[];
 };
 
 /** Public API surface of `<rc-app-bar>`. */
@@ -250,7 +395,21 @@ export type RCSearchBarInputDetail = {
   value: string;
 };
 
-// ---- JSX augmentation -------------------------------------------------------
+export type RCSplitterChangeDetail = {
+  value: number;
+  valueText: string;
+};
+
+export type RCTextareaChangeDetail = {
+  value: string;
+};
+
+export type RCTextareaSelectDetail = {
+  selectionStart: number;
+  selectionEnd: number;
+};
+
+/** SolidJS JSX declarations for rc-webcomponents elements. */
 
 declare module 'solid-js' {
   namespace JSX {
@@ -263,18 +422,20 @@ declare module 'solid-js' {
 
       'rc-accordion': JSX.HTMLAttributes<RCAccordionRef> & {
         name?: string;
+        multiple?: boolean | string;
         'on:rc-disclosure-toggle'?: (e: CustomEvent<RCDisclosureToggleDetail>) => void;
       };
 
       'rc-listbox': JSX.HTMLAttributes<RCListboxRef> & {
         multiple?: boolean | string;
+        checkmark?: boolean | string;
         'filter-strategy'?: 'prefix' | 'contains';
         value?: RCSelectValue;
         defaultValue?: RCSelectValue;
-        options?: RCSelectOption[];
+        options?: RCListboxOption[];
         'prop:value'?: RCSelectValue | undefined;
         'prop:defaultValue'?: RCSelectValue | undefined;
-        'prop:options'?: RCSelectOption[] | undefined;
+        'prop:options'?: RCListboxOption[] | undefined;
         'on:rc-listbox-change'?: (e: CustomEvent<RCListboxChangeDetail>) => void;
       };
 
@@ -312,7 +473,7 @@ declare module 'solid-js' {
         'on:rc-select-change'?: (e: CustomEvent<RCSelectChangeDetail>) => void;
         'on:rc-select-open'?: (e: CustomEvent) => void;
         'on:rc-select-close'?: (e: CustomEvent) => void;
-        'on:rc-combobox-create'?: (e: CustomEvent<{ text: string }>) => void;
+        'on:rc-combobox-create'?: (e: CustomEvent<RCComboboxCreateDetail>) => void;
       };
 
       'rc-dialog': JSX.HTMLAttributes<RCDialogRef> & {
@@ -331,15 +492,15 @@ declare module 'solid-js' {
         'light-dismiss'?: boolean | string;
         'on:rc-dialog-open'?: (e: CustomEvent) => void;
         'on:rc-dialog-toggle'?: (e: CustomEvent<RCDialogToggleDetail>) => void;
-        'on:rc-dialog-close'?: (e: CustomEvent<{ returnValue: string }>) => void;
-        'on:rc-dialog-request-close'?: (e: CustomEvent<{ returnValue: string }>) => void;
+        'on:rc-dialog-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
+        'on:rc-dialog-request-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
         'on:rc-dialog-cancel'?: (e: CustomEvent) => void;
       };
 
       'rc-menu': JSX.HTMLAttributes<RCMenuRef> & {
         label?: string;
         'on:rc-menu-activate'?: (e: CustomEvent<RCMenuActivateDetail>) => void;
-        'on:rc-menu-close'?: (e: CustomEvent<{ reason: 'escape' }>) => void;
+        'on:rc-menu-close'?: (e: CustomEvent<RCMenuCloseDetail>) => void;
       };
 
       'rc-menu-button': JSX.HTMLAttributes<RCMenuButtonRef> & {
@@ -348,10 +509,14 @@ declare module 'solid-js' {
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
         orientation?: 'horizontal' | 'vertical';
-        'on:rc-menu-button-toggle'?: (e: CustomEvent<{ open: boolean }>) => void;
+        placement?: RCMenuButtonPlacement;
+        'on:rc-menu-button-toggle'?: (e: CustomEvent<RCMenuButtonToggleDetail>) => void;
       };
 
-      'rc-menubar': JSX.HTMLAttributes<RCMenubarRef>;
+      'rc-menubar': JSX.HTMLAttributes<RCMenubarRef> & {
+        label?: string;
+        orientation?: 'horizontal' | 'vertical';
+      };
 
       'rc-toolbar': JSX.HTMLAttributes<RCToolbarRef> & {
         label?: string;
@@ -372,8 +537,8 @@ declare module 'solid-js' {
         display?: 'float' | 'inline-start' | 'inline-end';
         'value-text'?: string;
         orientation?: 'horizontal' | 'vertical';
-        'on:rc-slider-input'?: (e: CustomEvent<{ value: number }>) => void;
-        'on:rc-slider-change'?: (e: CustomEvent<{ value: number }>) => void;
+        'on:rc-slider-input'?: (e: CustomEvent<RCSliderChangeDetail>) => void;
+        'on:rc-slider-change'?: (e: CustomEvent<RCSliderChangeDetail>) => void;
       };
 
       'rc-range-slider': JSX.HTMLAttributes<RCRangeSliderRef> & {
@@ -389,18 +554,20 @@ declare module 'solid-js' {
         'high-value-text'?: string;
         display?: 'float' | 'inline-start' | 'inline-end';
         orientation?: 'horizontal' | 'vertical';
-        'on:rc-range-slider-input'?: (e: CustomEvent<{ value: [number, number] }>) => void;
-        'on:rc-range-slider-change'?: (e: CustomEvent<{ value: [number, number] }>) => void;
+        'on:rc-range-slider-input'?: (e: CustomEvent<RCRangeSliderChangeDetail>) => void;
+        'on:rc-range-slider-change'?: (e: CustomEvent<RCRangeSliderChangeDetail>) => void;
       };
 
       'rc-transfer-list': JSX.HTMLAttributes<RCTransferListRef> & {
         multiple?: boolean | string;
+        compact?: boolean | string;
         'available-label'?: string;
         'selected-label'?: string;
+        'prop:compact'?: boolean | undefined;
         'prop:available'?: RCTransferListOption[] | undefined;
         'prop:selected'?: RCTransferListOption[] | undefined;
         'prop:defaultSelected'?: RCTransferListOption[] | undefined;
-        'on:rc-transfer-list-change'?: (e: CustomEvent<{ selected: RCTransferListOption[] }>) => void;
+        'on:rc-transfer-list-change'?: (e: CustomEvent<RCTransferListChangeDetail>) => void;
       };
 
       'rc-splitter': JSX.HTMLAttributes<RCSplitterRef> & {
@@ -414,7 +581,7 @@ declare module 'solid-js' {
         'prop:value'?: number | undefined;
         'prop:defaultValue'?: number | undefined;
         fixed?: boolean | string;
-        'on:rc-splitter-change'?: (e: CustomEvent<{ value: number; valueText: string }>) => void;
+        'on:rc-splitter-change'?: (e: CustomEvent<RCSplitterChangeDetail>) => void;
       };
 
       'rc-editor-toolbar': JSX.HTMLAttributes<HTMLElement> & {
@@ -422,34 +589,26 @@ declare module 'solid-js' {
         'on:rc-toolbar-action'?: (e: CustomEvent<{ action: string }>) => void;
       };
 
-      'rc-text-editor': JSX.HTMLAttributes<RCTextEditorRef> & {
+      'rc-markdown-editor': JSX.HTMLAttributes<RCMarkdownEditorRef> & {
         value?: string;
         defaultValue?: string;
-        plugin?: RCTextareaPlugin | null;
+        'default-value'?: string;
         'prop:value'?: string | undefined;
         'prop:defaultValue'?: string | undefined;
-        'prop:plugin'?: RCTextareaPlugin | null;
         toolbar?: boolean | string;
-        markdown?: boolean | string;
-        preview?: boolean | string;
-        'default-preview'?: boolean | string;
-        'prop:preview'?: boolean | undefined;
-        'prop:defaultPreview'?: boolean | undefined;
-        'line-numbers'?: boolean | string;
-        'list-numbers'?: boolean | string;
-        gutter?: boolean | string;
-        'word-wrap'?: boolean | string;
-        'auto-grow'?: boolean | string;
+        'source-mode'?: boolean | string;
+        'default-source-mode'?: boolean | string;
+        'prop:sourceMode'?: boolean | undefined;
+        'prop:defaultSourceMode'?: boolean | undefined;
         'read-only'?: boolean | string;
-        label?: string;
-        'on:rc-textarea-change'?: (e: CustomEvent<{ value: string }>) => void;
-        'on:rc-preview-change'?: (e: CustomEvent<{ preview: boolean }>) => void;
+        'on:rc-change'?: (e: CustomEvent<RCMarkdownEditorChangeDetail>) => void;
+        'on:rc-mode-change'?: (e: CustomEvent<RCMarkdownEditorModeChangeDetail>) => void;
+        'on:rc-formatting-change'?: (e: CustomEvent<RCMarkdownEditorFormats>) => void;
       };
 
       'rc-fab': JSX.HTMLAttributes<HTMLElement> & {
-        variant?: 'regular' | 'extended';
-        label?: string;
-        disabled?: boolean | string;
+        position?: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start' | string;
+        'scroll-reveal'?: boolean | string;
       };
 
       'rc-app-bar': JSX.HTMLAttributes<RCAppBarRef> & {
@@ -473,6 +632,16 @@ declare module 'solid-js' {
         'on:rc-search-bar-clear'?: (e: CustomEvent) => void;
       };
 
+      'rc-virtual-canvas': JSX.HTMLAttributes<RCVirtualCanvasRef> & {
+        contentWidth?: number | string;
+        contentHeight?: number | string;
+        'auto-resize-canvas'?: boolean | string;
+        'render-mode'?: 'continuous' | 'viewport-change' | 'manual';
+        'image-rendering'?: 'auto' | 'crisp-edges' | 'pixelated';
+        'on:rc-virtual-canvas-render'?: (e: CustomEvent<RCVirtualCanvasRenderDetail>) => void;
+        'on:rc-virtual-canvas-pointer'?: (e: CustomEvent<RCVirtualCanvasPointerDetail>) => void;
+      };
+
       'rc-textarea': JSX.HTMLAttributes<RCTextareaRef> & {
         value?: string;
         defaultValue?: string;
@@ -487,10 +656,10 @@ declare module 'solid-js' {
         'auto-grow'?: boolean | string;
         'read-only'?: boolean | string;
         label?: string;
-        'on:rc-textarea-change'?: (e: CustomEvent<{ value: string }>) => void;
+        'on:rc-textarea-change'?: (e: CustomEvent<RCTextareaChangeDetail>) => void;
         'on:rc-textarea-focus'?: (e: CustomEvent) => void;
         'on:rc-textarea-blur'?: (e: CustomEvent) => void;
-        'on:rc-textarea-select'?: (e: CustomEvent<{ selectionStart: number; selectionEnd: number }>) => void;
+        'on:rc-textarea-select'?: (e: CustomEvent<RCTextareaSelectDetail>) => void;
       };
     }
   }

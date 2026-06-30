@@ -1,0 +1,54 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-combobox {
+    display: inline-block;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-combobox::part(anchor) {
+    min-block-size: var(--rc-control-block-size, 2.5rem);
+    border: var(--rc-border, 1px solid ButtonBorder);
+    border-radius: var(--rc-control-radius, 0.5rem);
+    background: var(--rc-field, Field);
+    color: var(--rc-field-text, FieldText);
+    transition:
+      border-color var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease),
+      box-shadow var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-combobox::part(anchor):hover {
+    border-color: color-mix(in srgb, var(--rc-accent, Highlight) 55%, var(--rc-border-color));
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-combobox::part(anchor):focus-within {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-combobox::part(listbox) {
+    --rc-listbox-option-gap: var(--substrate-item-gap, 0.5rem);
+    --rc-listbox-option-min-block-size: 2.25rem;
+    --rc-listbox-option-padding-block: var(--substrate-item-padding-block, 0.55rem);
+    --rc-listbox-option-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+    --rc-listbox-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
+    --rc-listbox-hover-color: var(--rc-field-text, FieldText);
+    --rc-listbox-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+    --rc-listbox-active-color: var(--rc-field-text, FieldText);
+    --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
+    border: var(--rc-border, 1px solid ButtonBorder);
+    border-radius: var(--substrate-radius-lg, 0.75rem);
+    background: var(--substrate-surface-raised, Canvas);
+    box-shadow: var(--rc-shadow, none);
+    padding-block: 0.25rem;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-combobox::part(toggle) {
+    border-radius: var(--substrate-radius-sm, 0.25rem);
+    transition: background-color var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-combobox::part(toggle):hover,
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-combobox[open]::part(toggle) {
+    background: color-mix(in srgb, var(--rc-accent, Highlight) 12%, transparent);
+  }
+}

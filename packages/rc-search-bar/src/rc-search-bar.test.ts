@@ -13,16 +13,19 @@ function tick(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve));
 }
 
-function typeValue(input: HTMLInputElement, value: string): void {
-  input.value = value;
-  input.dispatchEvent(new Event('input', { bubbles: true }));
+function typeValue($input: HTMLInputElement, value: string): void {
+  $input.value = value;
+  $input.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-function clearButton(host: RCSearchBar): HTMLButtonElement {
-  const el = host.shadowRoot?.querySelector<HTMLButtonElement>('#clear');
-  if (!el) throw new Error('missing clear button');
+function clearButton($host: RCSearchBar): HTMLButtonElement {
+  const $button = $host.shadowRoot?.querySelector<HTMLButtonElement>('#clear');
 
-  return el;
+  if (!$button) {
+    throw new Error('missing clear button');
+  }
+
+  return $button;
 }
 
 test('progressive enhancement: the native input keeps its author attributes', async () => {
@@ -32,14 +35,15 @@ test('progressive enhancement: the native input keeps its author attributes', as
     </rc-search-bar>
   `);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
 
-  const input = host.querySelector<HTMLInputElement>('input[type="search"]');
-  expect(input?.isConnected).toBe(true);
-  expect(input?.getAttribute('name')).toBe('q');
-  expect(input?.getAttribute('id')).toBe('site-search');
-  expect(input?.getAttribute('placeholder')).toBe('Author placeholder');
+  const $input = $host.querySelector<HTMLInputElement>('input[type="search"]');
+
+  expect($input?.isConnected).toBe(true);
+  expect($input?.getAttribute('name')).toBe('q');
+  expect($input?.getAttribute('id')).toBe('site-search');
+  expect($input?.getAttribute('placeholder')).toBe('Author placeholder');
 });
 
 test('label association resolves through the native label registry', async () => {
@@ -52,12 +56,13 @@ test('label association resolves through the native label registry', async () =>
     </div>
   `);
 
-  const wrap = (await screen.getByTestId('wrap').element()) as HTMLElement;
+  const $wrap = (await screen.getByTestId('wrap').element()) as HTMLElement;
   await tick();
 
-  const label = wrap.querySelector<HTMLLabelElement>('label[for="labeled-search"]');
-  const input = wrap.querySelector<HTMLInputElement>('#labeled-search');
-  expect(label?.control).toBe(input);
+  const $label = $wrap.querySelector<HTMLLabelElement>('label[for="labeled-search"]');
+  const $input = $wrap.querySelector<HTMLInputElement>('#labeled-search');
+
+  expect($label?.control).toBe($input);
 });
 
 test('typing dispatches one debounced rc-search-bar-input with the final value', async () => {
@@ -67,16 +72,17 @@ test('typing dispatches one debounced rc-search-bar-input with the final value',
     </rc-search-bar>
   `);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
 
-  const input = host.querySelector<HTMLInputElement>('input')!;
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
   const onInput = vi.fn();
-  host.addEventListener('rc-search-bar-input', onInput);
 
-  typeValue(input, 't');
-  typeValue(input, 'to');
-  typeValue(input, 'tom');
+  $host.addEventListener('rc-search-bar-input', onInput);
+
+  typeValue($input, 't');
+  typeValue($input, 'to');
+  typeValue($input, 'tom');
 
   expect(onInput).not.toHaveBeenCalled();
 
@@ -91,15 +97,16 @@ test('debounce="0" dispatches synchronously per input', async () => {
     </rc-search-bar>
   `);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
 
-  const input = host.querySelector<HTMLInputElement>('input')!;
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
   const onInput = vi.fn();
-  host.addEventListener('rc-search-bar-input', onInput);
 
-  typeValue(input, 'a');
-  typeValue(input, 'ab');
+  $host.addEventListener('rc-search-bar-input', onInput);
+
+  typeValue($input, 'a');
+  typeValue($input, 'ab');
 
   expect(onInput).toHaveBeenCalledTimes(2);
   expect((onInput.mock.calls[1][0] as CustomEvent).detail).toEqual({ value: 'ab' });
@@ -112,31 +119,33 @@ test('clear empties the input, fires both events in order, and restores focus', 
     </rc-search-bar>
   `);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
 
-  const input = host.querySelector<HTMLInputElement>('input')!;
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
   const events: string[] = [];
-  host.addEventListener('rc-search-bar-clear', () => events.push('clear'));
-  host.addEventListener('rc-search-bar-input', (e) =>
+
+  $host.addEventListener('rc-search-bar-clear', () => events.push('clear'));
+  $host.addEventListener('rc-search-bar-input', (e) =>
     events.push(`input:${(e as CustomEvent).detail.value}`),
   );
 
-  typeValue(input, 'tomato');
-  await host.updateComplete;
+  typeValue($input, 'tomato');
+  await $host.updateComplete;
 
-  const clear = clearButton(host);
-  expect(clear.hidden).toBe(false);
+  const $clear = clearButton($host);
 
-  clear.click();
-  await host.updateComplete;
+  expect($clear.inert).toBe(false);
+
+  $clear.click();
+  await $host.updateComplete;
 
   // The pending debounced 'tomato' dispatch was cancelled by the clear.
-  expect(input.value).toBe('');
+  expect($input.value).toBe('');
   expect(events).toEqual(['clear', 'input:']);
-  expect(host.value).toBe('');
-  expect(clear.hidden).toBe(true);
-  await vi.waitFor(() => expect(document.activeElement).toBe(input));
+  expect($host.value).toBe('');
+  expect($clear.inert).toBe(true);
+  await vi.waitFor(() => expect(document.activeElement).toBe($input));
 
   // No late debounced dispatch arrives afterwards.
   await new Promise((resolve) => setTimeout(resolve, 80));
@@ -150,22 +159,23 @@ test('controlled value writes are silent; user typing still dispatches', async (
     </rc-search-bar>
   `);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
 
-  const input = host.querySelector<HTMLInputElement>('input')!;
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
   const onInput = vi.fn();
-  host.addEventListener('rc-search-bar-input', onInput);
 
-  host.value = 'pasta';
-  await host.updateComplete;
+  $host.addEventListener('rc-search-bar-input', onInput);
 
-  expect(input.value).toBe('pasta');
-  expect(host.value).toBe('pasta');
+  $host.value = 'pasta';
+  await $host.updateComplete;
+
+  expect($input.value).toBe('pasta');
+  expect($host.value).toBe('pasta');
   expect(onInput).not.toHaveBeenCalled();
-  expect(clearButton(host).hidden).toBe(false);
+  expect(clearButton($host).hidden).toBe(false);
 
-  typeValue(input, 'pasta sauce');
+  typeValue($input, 'pasta sauce');
   expect(onInput).toHaveBeenCalledTimes(1);
 });
 
@@ -180,22 +190,22 @@ test('defaultValue applies once and loses to author and host values', async () =
     </rc-search-bar>
   `);
 
-  const plain = (await screen.getByTestId('plain').element()) as RCSearchBar;
-  const authored = (await screen.getByTestId('authored').element()) as RCSearchBar;
+  const $plain = (await screen.getByTestId('plain').element()) as RCSearchBar;
+  const $authored = (await screen.getByTestId('authored').element()) as RCSearchBar;
   await tick();
 
-  expect(plain.querySelector('input')!.value).toBe('hint');
-  expect(plain.value).toBe('hint');
+  expect($plain.querySelector('input')!.value).toBe('hint');
+  expect($plain.value).toBe('hint');
 
   // Author value wins over defaultValue.
-  expect(authored.querySelector('input')!.value).toBe('author');
-  expect(authored.value).toBe('author');
+  expect($authored.querySelector('input')!.value).toBe('author');
+  expect($authored.value).toBe('author');
 
   // A host write wins over later defaultValue updates.
-  plain.value = 'host';
-  plain.defaultValue = 'other';
-  await plain.updateComplete;
-  expect(plain.querySelector('input')!.value).toBe('host');
+  $plain.value = 'host';
+  $plain.defaultValue = 'other';
+  await $plain.updateComplete;
+  expect($plain.querySelector('input')!.value).toBe('host');
 });
 
 test('pre-filled author value shows the clear button', async () => {
@@ -205,12 +215,12 @@ test('pre-filled author value shows the clear button', async () => {
     </rc-search-bar>
   `);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
-  await host.updateComplete;
+  await $host.updateComplete;
 
-  expect(host.value).toBe('prefilled');
-  expect(clearButton(host).hidden).toBe(false);
+  expect($host.value).toBe('prefilled');
+  expect(clearButton($host).hidden).toBe(false);
 });
 
 test('placeholder property mirrors only when the author set none', async () => {
@@ -223,21 +233,21 @@ test('placeholder property mirrors only when the author set none', async () => {
     </rc-search-bar>
   `);
 
-  const plain = (await screen.getByTestId('plain').element()) as RCSearchBar;
-  const authored = (await screen.getByTestId('authored').element()) as RCSearchBar;
+  const $plain = (await screen.getByTestId('plain').element()) as RCSearchBar;
+  const $authored = (await screen.getByTestId('authored').element()) as RCSearchBar;
   await tick();
 
-  expect(plain.querySelector('input')!.placeholder).toBe('Search 51 recipes');
-  expect(authored.querySelector('input')!.placeholder).toBe('Author');
+  expect($plain.querySelector('input')!.placeholder).toBe('Search 51 recipes');
+  expect($authored.querySelector('input')!.placeholder).toBe('Author');
 
   // Property updates keep mirroring (still respecting the author attribute).
-  plain.placeholder = 'Search 52 recipes';
-  await plain.updateComplete;
-  expect(plain.querySelector('input')!.placeholder).toBe('Search 52 recipes');
+  $plain.placeholder = 'Search 52 recipes';
+  await $plain.updateComplete;
+  expect($plain.querySelector('input')!.placeholder).toBe('Search 52 recipes');
 
-  authored.placeholder = 'Still mirrored?';
-  await authored.updateComplete;
-  expect(authored.querySelector('input')!.placeholder).toBe('Author');
+  $authored.placeholder = 'Still mirrored?';
+  await $authored.updateComplete;
+  expect($authored.querySelector('input')!.placeholder).toBe('Author');
 });
 
 test('the clear button tracks the disabled state of the input', async () => {
@@ -247,29 +257,30 @@ test('the clear button tracks the disabled state of the input', async () => {
     </rc-search-bar>
   `);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
-  await host.updateComplete;
+  await $host.updateComplete;
 
-  const input = host.querySelector<HTMLInputElement>('input')!;
-  expect(clearButton(host).disabled).toBe(true);
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
 
-  input.disabled = false;
-  await vi.waitFor(() => expect(clearButton(host).disabled).toBe(false));
+  expect(clearButton($host).disabled).toBe(true);
+
+  $input.disabled = false;
+  await vi.waitFor(() => expect(clearButton($host).disabled).toBe(false));
 });
 
 test('no slotted search input degrades silently with no chrome', async () => {
   const screen = render(html`<rc-search-bar data-testid="host"></rc-search-bar>`);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
-  await host.updateComplete;
+  await $host.updateComplete;
 
-  expect(host.value).toBe('');
-  expect(clearButton(host).hidden).toBe(true);
-  expect(getComputedStyle(host.shadowRoot!.querySelector('#leading')!).display).toBe('none');
+  expect($host.value).toBe('');
+  expect(clearButton($host).hidden).toBe(true);
+  expect(getComputedStyle($host.shadowRoot!.querySelector('#leading')!).display).toBe('none');
 
-  await expectNoA11yViolations(host);
+  await expectNoA11yViolations($host);
 });
 
 test('has no automated accessibility violations with a live clear button', async () => {
@@ -285,14 +296,14 @@ test('has no automated accessibility violations with a live clear button', async
     </div>
   `);
 
-  const wrap = (await screen.getByTestId('wrap').element()) as HTMLElement;
+  const $wrap = (await screen.getByTestId('wrap').element()) as HTMLElement;
   await tick();
 
-  const host = wrap.querySelector<RCSearchBar>('rc-search-bar')!;
-  await host.updateComplete;
-  expect(clearButton(host).hidden).toBe(false);
+  const $host = $wrap.querySelector<RCSearchBar>('rc-search-bar')!;
+  await $host.updateComplete;
+  expect(clearButton($host).hidden).toBe(false);
 
-  await expectNoA11yViolations(wrap);
+  await expectNoA11yViolations($wrap);
 });
 
 test('show-clear-on-focus: clear button shows on focus with no value, hides on blur', async () => {
@@ -302,20 +313,21 @@ test('show-clear-on-focus: clear button shows on focus with no value, hides on b
     </rc-search-bar>
   `);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
-  await host.updateComplete;
+  await $host.updateComplete;
 
-  const input = host.querySelector<HTMLInputElement>('input')!;
-  expect(clearButton(host).hidden).toBe(true);
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
 
-  input.dispatchEvent(new FocusEvent('focus'));
-  await host.updateComplete;
-  expect(clearButton(host).hidden).toBe(false);
+  expect(clearButton($host).inert).toBe(true);
 
-  input.dispatchEvent(new FocusEvent('blur'));
-  await host.updateComplete;
-  expect(clearButton(host).hidden).toBe(true);
+  $input.dispatchEvent(new FocusEvent('focus'));
+  await $host.updateComplete;
+  expect(clearButton($host).inert).toBe(false);
+
+  $input.dispatchEvent(new FocusEvent('blur'));
+  await $host.updateComplete;
+  expect(clearButton($host).inert).toBe(true);
 });
 
 test('show-clear-on-focus: clear while empty dispatches both events and stays focused', async () => {
@@ -325,28 +337,30 @@ test('show-clear-on-focus: clear while empty dispatches both events and stays fo
     </rc-search-bar>
   `);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
 
-  const input = host.querySelector<HTMLInputElement>('input')!;
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
   const events: string[] = [];
-  host.addEventListener('rc-search-bar-clear', () => events.push('clear'));
-  host.addEventListener('rc-search-bar-input', (e) =>
+
+  $host.addEventListener('rc-search-bar-clear', () => events.push('clear'));
+  $host.addEventListener('rc-search-bar-input', (e) =>
     events.push(`input:${(e as CustomEvent).detail.value}`),
   );
 
-  input.dispatchEvent(new FocusEvent('focus'));
-  await host.updateComplete;
+  $input.dispatchEvent(new FocusEvent('focus'));
+  await $host.updateComplete;
 
-  const clear = clearButton(host);
-  expect(clear.hidden).toBe(false);
+  const $clear = clearButton($host);
 
-  clear.click();
-  await host.updateComplete;
+  expect($clear.hidden).toBe(false);
+
+  $clear.click();
+  await $host.updateComplete;
 
   expect(events).toEqual(['clear', 'input:']);
-  expect(host.value).toBe('');
-  await vi.waitFor(() => expect(document.activeElement).toBe(input));
+  expect($host.value).toBe('');
+  await vi.waitFor(() => expect(document.activeElement).toBe($input));
 });
 
 test('allow-native-clear reflects as a boolean attribute', async () => {
@@ -356,13 +370,13 @@ test('allow-native-clear reflects as a boolean attribute', async () => {
     </rc-search-bar>
   `);
 
-  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
   await tick();
 
-  expect(host.hasAttribute('allow-native-clear')).toBe(true);
-  expect(host.allowNativeClear).toBe(true);
+  expect($host.hasAttribute('allow-native-clear')).toBe(true);
+  expect($host.allowNativeClear).toBe(true);
 
-  host.allowNativeClear = false;
-  await host.updateComplete;
-  expect(host.hasAttribute('allow-native-clear')).toBe(false);
+  $host.allowNativeClear = false;
+  await $host.updateComplete;
+  expect($host.hasAttribute('allow-native-clear')).toBe(false);
 });

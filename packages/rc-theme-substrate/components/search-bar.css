@@ -1,0 +1,28 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-search-bar {
+    display: inline-block;
+    --rc-search-bar-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-search-bar-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-search-bar-shadow: var(--substrate-shadow-sm, none);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-search-bar::part(root) {
+    background: var(--rc-field, Field);
+    transition:
+      border-color var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease),
+      box-shadow var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-search-bar:hover::part(root) {
+    border-color: color-mix(in srgb, var(--rc-accent, Highlight) 55%, var(--rc-border-color));
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-search-bar:focus-within::part(root) {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-search-bar > input[type='search']:focus-visible {
+    outline: none;
+  }
+}

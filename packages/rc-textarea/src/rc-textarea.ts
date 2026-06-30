@@ -1,16 +1,14 @@
 import { LitElement, html } from 'lit';
 import type { CSSResultGroup } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
+import { NativeChildController, warnMissingDirectChild } from '@rcarls/rc-common';
 
 import { styles } from './rc-textarea.styles.ts';
-import { V2Document, extractEditorText } from './document.ts';
-import {
-  saveSelection,
-  restoreSelection,
-  type SavedSelection,
-} from './selection.ts';
-import { mapOrClear, addDecoration, setDecorations } from './decoration.ts';
+import { RCDocument, getText } from './document.ts';
+import { saveSelection, restoreSelection, type SavedSelection } from './selection.ts';
+import { remapDecorations, addDecoration, setDecorations } from './decoration.ts';
 import { matchPatternResults } from './pattern-matcher.ts';
+
 import type {
   Decoration,
   DecorationInput,
@@ -22,7 +20,11 @@ import type {
 } from './types.ts';
 import { generateId } from './types.ts';
 
-// ── Undo entry ────────────────────────────────────────────────────────────────
+declare global {
+  interface HTMLElementTagNameMap {
+    'rc-textarea': RCTextarea;
+  }
+}
 
 interface UndoEntry {
   value: string;
@@ -32,22 +34,18 @@ interface UndoEntry {
 
 const MAX_UNDO = 100;
 
-// ── decorationsFromHtml utility ───────────────────────────────────────────────
-
 /**
- * Parse a highlight.js / prism.js HTML string (a flat tree of
- * `<span class="token ...">text</span>` elements) into `MarkDecoration`
- * objects covering the corresponding plain-text character ranges.
+ * Parse a highlight.js / prism.js -style HTML string (a flat tree of
+ * `<span class="token ...">text</span>` elements) into the supported
+ * `MarkDecoration` objects.
  *
  * Only `<span>` elements with a non-empty `className` generate decorations;
  * all other nodes (text, non-span elements) are walked for offset accounting
- * only. Nested spans produce decorations for every nesting level, so the
- * outermost span wins at render time via the "smallest decoration" rule in
- * `buildLineContent`.
+ * only.
  */
-function decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
+function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
+  const $tmp = document.createElement('div');
+  $tmp.innerHTML = html;
 
   const result: Omit<MarkDecoration, 'id'>[] = [];
   let charOffset = 0;
@@ -55,9 +53,13 @@ function decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
   function walk(node: Node): void {
     if (node.nodeType === Node.TEXT_NODE) {
       charOffset += (node as Text).length;
+
       return;
     }
-    if (!(node instanceof HTMLElement)) return;
+
+    if (!(node instanceof HTMLElement)) {
+      return;
+    }
 
     const isSpan = node.tagName === 'SPAN' && node.className;
     const startOffset = charOffset;
@@ -76,26 +78,51 @@ function decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
     }
   }
 
-  for (const child of tmp.childNodes) walk(child);
+  for (const child of $tmp.childNodes) {
+    walk(child);
+  }
+
   return result;
 }
 
-// ── RCTextarea ─────────────────────────────────────────────────────────────
-
 /**
- * Enhanced textarea with line decorations, gutter, and plugin API.
+ * Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.
  *
- * @slot - Accepts a native `<textarea>` element for form wiring and progressive enhancement.
- * @fires rc-textarea-change - Fired when the editor value changes
- * @fires rc-textarea-blur - Fired when the editor loses focus
- * @cssprop [--rc-textarea-border=1px solid ButtonBorder] - Border around the editor
- * @cssprop [--rc-textarea-border-radius=2px] - Border radius of the editor
- * @cssprop [--rc-textarea-background=Field] - Background color of the editor
+ * Provide a native `<textarea>` as the direct child when the component is
+ * editable. Read-only displays may be driven from `value` or `defaultValue`.
+ *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-textarea rc-textarea docs}
+ *
+ * @example Basic usage
+ * ```html
+ * <label for="editor">Source</label>
+ * <rc-textarea>
+ *   <textarea id="editor" name="source"></textarea>
+ * </rc-textarea>
+ * ```
+ *
+ * @example Controlled value (JavaScript)
+ * ```js
+ * const editor = document.querySelector('rc-textarea');
+ * editor.value = 'hello world';
+ * editor.addEventListener('rc-textarea-change', (e) => {
+ *   console.log(e.target.value);
+ * });
+ * ```
+ *
+ * @slot - Accepts a native `<textarea>` element for form wiring.
+ *
+ * @fires rc-textarea-change - Fired when the field value changes
+ * @fires rc-textarea-blur - Fired when the field loses focus
+ *
+ * @cssprop [--rc-textarea-border=1px solid ButtonBorder] - Border around the field
+ * @cssprop [--rc-textarea-border-radius=2px] - Border radius of the field
+ * @cssprop [--rc-textarea-background=Field] - Background color of the field
  * @cssprop [--rc-textarea-color=FieldText] - Text color; falls back through --rc-text
  * @cssprop [--rc-textarea-font-family=monospace] - Font family
  * @cssprop [--rc-textarea-font-size=1em] - Font size
  * @cssprop [--rc-textarea-line-height=1.5] - Line height
- * @cssprop [--rc-textarea-padding=0.5em] - Padding inside the editor area
+ * @cssprop [--rc-textarea-padding=0.5em] - Padding inside the field area
  * @cssprop [--rc-textarea-focus-outline=2px solid Highlight] - Focus ring outline
  * @cssprop [--rc-textarea-caret-color=FieldText] - Caret color
  * @cssprop [--rc-textarea-active-line-bg=transparent] - Active line highlight color
@@ -110,28 +137,83 @@ export class RCTextarea extends LitElement {
     delegatesFocus: true,
   };
 
-  // ── Observed properties ───────────────────────────────────────────────
-
+  /** Show sequential line numbers in the gutter. Enables the gutter implicitly. */
   @property({ type: Boolean, attribute: 'line-numbers', reflect: true })
   lineNumbers = false;
 
+  /**
+   * @deprecated Use a plugin with `LineDecoration.gutterContent` to implement
+   * sparse line numbering. This property will be removed before v1.0.
+   */
   @property({ type: Boolean, attribute: 'list-numbers', reflect: true })
-  listNumbers = false;
+  get listNumbers(): boolean {
+    return this._listNumbers;
+  }
 
+  set listNumbers(value: boolean) {
+    if (value) {
+      console.warn(
+        '[rc-textarea] `listNumbers` / `list-numbers` is deprecated and will be removed before v1.0. ' +
+          'Use a plugin with `LineDecoration.gutterContent` to implement sparse line numbering.',
+      );
+    }
+
+    const old = this._listNumbers;
+
+    this._listNumbers = value;
+    this.requestUpdate('listNumbers', old);
+  }
+
+  private _listNumbers = false;
+
+  /**
+   * Enable the gutter column without any built-in content.
+   *
+   * Plugins can populate individual cells via `LineDecoration.gutterContent`.
+   * For sequential line numbers use `lineNumbers` / `line-numbers` instead.
+   */
   @property({ type: Boolean, attribute: 'gutter', reflect: true })
   gutter = false;
 
+  /** Wrap long lines within the field to prevent horizontal overflow. */
   @property({ type: Boolean, attribute: 'word-wrap', reflect: true })
   wordWrap = false;
 
+  /** Allow the field to grow vertically with content to prevent vertical overflow. */
   @property({ type: Boolean, attribute: 'auto-grow', reflect: true })
   autoGrow = false;
 
+  /** Disable editing. The field renders as a styled read-only display. */
   @property({ type: Boolean, attribute: 'read-only', reflect: true })
   readOnly = false;
 
+  /**
+   * @deprecated Set `aria-label` on the slotted `<textarea>` instead, or
+   * associate a `<label>` element via its `for`/`id` pair. This property
+   * will be removed before v1.0.
+   */
   @property({ type: String })
-  label: string | null = null;
+  get label(): string | null {
+    return this._label;
+  }
+
+  set label(value: string | null) {
+    if (value) {
+      console.warn(
+        '[rc-textarea] `label` is deprecated and will be removed before v1.0. ' +
+          'Set `aria-label` on the slotted `<textarea>`, or associate a `<label>` ' +
+          'element via its `for`/`id` pair instead.',
+      );
+    }
+
+    const old = this._label;
+
+    this._label = value;
+
+    this.requestUpdate('label', old);
+  }
+
+  private _label: string | null = null;
 
   /** Declarative plugin hook for framework integrations. */
   @property({ attribute: false })
@@ -142,20 +224,24 @@ export class RCTextarea extends LitElement {
   /** Declarative plugin hook for framework integrations. */
   set plugin(plugin: RCTextareaPlugin | null) {
     const oldPlugin = this._pluginProperty;
-    if (plugin === oldPlugin) return;
+
+    if (plugin === oldPlugin) {
+      return;
+    }
 
     this._pluginProperty = plugin;
 
-    if (plugin) this.usePlugin(plugin);
-    else this.removePlugin();
+    if (plugin) {
+      this.usePlugin(plugin);
+    } else {
+      this.removePlugin();
+    }
 
     this.requestUpdate('plugin', oldPlugin);
   }
 
   /**
-   * Reactive decorations — set from outside the component without registering a plugin.
-   * Ideal for reactive frameworks (Solid, React 19+, Vue 3) where decorations are
-   * computed as reactive state and passed directly as a property:
+   * Imperatively set an external layer of decorations. Ideal for reactive frameworks.
    *
    * ```tsx
    * // Solid
@@ -179,29 +265,57 @@ export class RCTextarea extends LitElement {
     this.requestUpdate();
   }
 
-  // ── Internal state ────────────────────────────────────────────────────
+  @query('#editor', true)
+  protected _$editor!: HTMLElement;
+
+  @query('#gutter-cells', true)
+  protected _$gutterCells!: HTMLElement;
+
+  @query('slot', true)
+  protected _$slot!: HTMLSlotElement;
 
   private _value = '';
   private _defaultValue: string | undefined;
   private _initialValueResolved = false;
   private _valueSetByHost = false;
-  private _document: V2Document | null = null;
-  private _textareaRef: WeakRef<HTMLTextAreaElement> | null = null;
+  private _document: RCDocument | null = null;
+  private _$textareaRef: WeakRef<HTMLTextAreaElement> | null = null;
 
-  /** Plugin-owned decorations (set via PluginAPI.setDecorations / addDecoration). */
+  private readonly _textareaController = new NativeChildController<HTMLTextAreaElement>(this, {
+    selector: ':scope > textarea',
+    observe: true,
+    onChange: ($textarea, $previousTextarea) =>
+      this._setupTextarea($textarea, $previousTextarea),
+    onMissing: () => {
+      if (import.meta.env.DEV && !this.readOnly) {
+        warnMissingDirectChild(this, {
+          selector: ':scope > textarea',
+          message:
+            '[rc-textarea] No direct child <textarea> found. Place a native <textarea> inside <rc-textarea>.',
+        });
+      }
+    },
+  });
+
+  /** Plugin-owned decorations */
   protected _pluginDecorations = new Map<string, Decoration>();
+
   /** Pattern-generated decorations (rebuilt on each value change). */
   private _patternDecorations: Decoration[] = [];
-  /** Decorations set directly via the `decorations` property (reactive-framework-friendly). */
+
+  /** Imperative decorations (set directly via the `decorations` property) */
   private _externalDecorations: DecorationInput[] = [];
+
   /** Registered patterns. */
   private _patterns = new Map<string, TextPattern>();
 
   protected _plugin: RCTextareaPlugin | null = null;
   private _pluginProperty: RCTextareaPlugin | null = null;
   protected _pluginApi: RCTextareaPluginAPI | null = null;
+
   /** Sequence counter for async plugin safety (discard stale results). */
   private _pluginSeq = 0;
+
   /** Stylesheets adopted into the shadow root by the active plugin. */
   private _pluginSheets = new Set<CSSStyleSheet>();
 
@@ -210,59 +324,72 @@ export class RCTextarea extends LitElement {
   private _composing = false;
   private _isRendering = false;
 
-  /** The currently highlighted `.v2-line` element (active line). */
-  private _activeLine: HTMLElement | null = null;
+  /** The currently highlighted `.line` element (active line). */
+  private _$activeLine: HTMLElement | null = null;
+
   /** Callbacks registered via PluginAPI.onCursorMove(). */
   private _cursorCallbacks = new Set<(start: number, end: number) => void>();
 
   private _docSelectionChangeHandler = (): void => {
-    if (document.activeElement !== this) return;
+    if (document.activeElement !== this) {
+      return;
+    }
+
     this._onSelectionChange();
   };
 
-  /** Undo/redo stack — necessary because DOM rebuilds invalidate browser's native undo. */
+  /** Synthetic undo/redo stack (DOM rebuilds invalidate native undo) */
   private _undoStack: UndoEntry[] = [];
   private _undoIndex = -1;
 
   private _resizeObserver: ResizeObserver | null = null;
+
   /** Cached per-line gutter labels from the last render — reused by ResizeObserver. */
   private _gutterLabels: (string | null)[] = [];
 
-  // ── Public value property ─────────────────────────────────────────────
-
+  /**
+   * The current field value.
+   *
+   * Setting this property puts the component into
+   * controlled mode (host owns the value, changes are reflected
+   * immediately, no change events dispatched)
+   */
   @property({ type: String })
   get value(): string {
     return this._value;
   }
 
-  set value(v: string) {
+  set value(val: string) {
     const oldValue = this._value;
 
-    if (v === this._value) return;
+    if (val === this._value) {
+      return;
+    }
 
     this._valueSetByHost = true;
     this._initialValueResolved = true;
-    this._value = v;
+    this._value = val;
+
     this._syncTextareaValue();
     this._scheduleRender();
     this.requestUpdate('value', oldValue);
   }
 
-  /** Initial uncontrolled editor value. */
+  /** Initial uncontrolled value. */
   @property({ type: String })
   get defaultValue(): string | undefined {
     return this._defaultValue;
   }
 
-  /** Initial uncontrolled editor value. */
-  set defaultValue(v: string | undefined) {
+  set defaultValue(val: string | undefined) {
     const oldValue = this._defaultValue;
 
-    this._defaultValue = v;
+    this._defaultValue = val;
 
-    if (!this._valueSetByHost && !this._initialValueResolved && v !== undefined) {
-      this._value = v;
+    if (!this._valueSetByHost && !this._initialValueResolved && val !== undefined) {
+      this._value = val;
       this._initialValueResolved = true;
+
       this._syncTextareaValue();
       this._scheduleRender();
     }
@@ -270,66 +397,68 @@ export class RCTextarea extends LitElement {
     this.requestUpdate('defaultValue', oldValue);
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────
-
   override connectedCallback(): void {
     super.connectedCallback();
-    document.addEventListener(
-      'selectionchange',
-      this._docSelectionChangeHandler,
-    );
+
+    document.addEventListener('selectionchange', this._docSelectionChangeHandler);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    document.removeEventListener(
-      'selectionchange',
-      this._docSelectionChangeHandler,
-    );
+
+    document.removeEventListener('selectionchange', this._docSelectionChangeHandler);
+
     this._plugin?.destroy?.();
     this._plugin = null;
     this._pluginApi = null;
+
     this._clearPluginSheets();
+
     this._cursorCallbacks.clear();
     this._resizeObserver?.disconnect();
+    this._$textareaRef?.deref()?.removeEventListener('invalid', this._onTextareaInvalid);
+
     if (this._rafHandle !== null) {
       cancelAnimationFrame(this._rafHandle);
+
       this._rafHandle = null;
     }
   }
 
   override firstUpdated(): void {
-    const editorEl = this._getEditorEl();
-    if (editorEl) {
-      this._document = new V2Document(editorEl as HTMLDivElement);
-      this._bindEditorEvents(editorEl);
+    if (this._$editor) {
+      this._document = new RCDocument(this._$editor as HTMLDivElement);
+      this._bindEditorEvents(this._$editor);
     }
+
     this._resizeObserver = new ResizeObserver(() => {
       this._syncGutter();
       this._syncGutterHeights();
     });
+
     this._resizeObserver.observe(this);
 
-    // Render any value already set via defaultValue/value before first update.
-    // The slot-change path covers editable mode (slotted <textarea> triggers it);
-    // read-only mode has no slotted element so the render must be seeded here.
+    // In editable mode a slotted <textarea> fires slotchange, which calls
+    // _onSlotChange → _scheduleRender. In read-only mode no textarea is
+    // required, so slotchange may never fire; call _scheduleRender here to seed
+    // the first render when value/defaultValue was set before upgrade or connection.
     this._scheduleRender();
   }
 
   override updated(changed: Map<string, unknown>): void {
     if (changed.has('readOnly')) {
-      const editorEl = this._getEditorEl();
-      if (editorEl) editorEl.contentEditable = this.readOnly ? 'false' : 'true';
-      this._syncGutterHeights(); // re-sync gutter padding (#editor padding: 0 in read-only)
+      if (this._$editor) {
+        this._$editor.contentEditable = this.readOnly ? 'false' : 'true';
+      }
+
+      this._syncGutterHeights();
+      this._textareaController.sync();
     }
+
     if (changed.has('label')) {
-      const editorEl = this._getEditorEl();
-      if (editorEl && this.label)
-        editorEl.setAttribute('aria-label', this.label);
+      this._syncLabel();
     }
   }
-
-  // ── Template ──────────────────────────────────────────────────────────
 
   override render() {
     return html`
@@ -337,6 +466,7 @@ export class RCTextarea extends LitElement {
         <div id="gutter" part="gutter" aria-hidden="true">
           <div id="gutter-cells" part="gutter-cells"></div>
         </div>
+
         <div id="editor-area" part="editor-area">
           <div
             id="editor"
@@ -347,33 +477,36 @@ export class RCTextarea extends LitElement {
             spellcheck="false"
             autocorrect="off"
             autocapitalize="off"
-            aria-label=${this.label ?? ''}
           ></div>
+
           <slot @slotchange=${this._onSlotChange}></slot>
         </div>
       </div>
     `;
   }
 
-  // ── Slot change — lightDOM textarea wiring ────────────────────────────
-
   private _onSlotChange(): void {
-    const slot = this.shadowRoot?.querySelector(
-      'slot',
-    ) as HTMLSlotElement | null;
-    if (!slot) return;
+    this._textareaController.sync();
+  }
 
-    const textarea = slot
-      .assignedElements({ flatten: true })
-      .find(
-        (el): el is HTMLTextAreaElement => el instanceof HTMLTextAreaElement,
-      );
+  private _setupTextarea(
+    $textarea: HTMLTextAreaElement | null,
+    $previousTextarea?: HTMLTextAreaElement | null,
+  ): void {
+    if ($previousTextarea && $previousTextarea !== $textarea) {
+      $previousTextarea.removeEventListener('invalid', this._onTextareaInvalid);
+    }
 
-    if (!textarea) return;
-    this._textareaRef = new WeakRef(textarea);
+    if (!$textarea) {
+      this._$textareaRef = null;
+
+      return;
+    }
+
+    this._$textareaRef = new WeakRef($textarea);
 
     // Visually hide — keep in DOM for form submission
-    Object.assign(textarea.style, {
+    Object.assign($textarea.style, {
       position: 'absolute',
       width: '1px',
       height: '1px',
@@ -386,56 +519,58 @@ export class RCTextarea extends LitElement {
       pointerEvents: 'none',
       tabIndex: '-1',
     });
-    textarea.setAttribute('aria-hidden', 'true');
-    textarea.tabIndex = -1;
+
+    $textarea.setAttribute('aria-hidden', 'true');
+    $textarea.tabIndex = -1;
 
     // Sync attributes from textarea → editor ARIA / state
-    const editorEl = this._getEditorEl();
-    if (editorEl) {
-      if (!this.label && textarea.getAttribute('aria-label')) {
-        editorEl.setAttribute(
-          'aria-label',
-          textarea.getAttribute('aria-label')!,
-        );
+    if (this._$editor) {
+      this._syncLabel();
+
+      const placeholder = $textarea.getAttribute('placeholder');
+
+      if (placeholder) {
+        this._$editor.setAttribute('aria-placeholder', placeholder);
       }
-      const placeholder = textarea.getAttribute('placeholder');
-      if (placeholder) editorEl.setAttribute('aria-placeholder', placeholder);
     }
 
     // Adopt initial value from textarea after value/defaultValue precedence.
     if (!this._initialValueResolved) {
-      this._value = textarea.value;
+      this._value = $textarea.value;
       this._initialValueResolved = true;
     } else {
-      textarea.value = this._value;
+      $textarea.value = this._value;
     }
 
     // Wire up form validation feedback
-    textarea.addEventListener('invalid', () => {
-      const editorEl = this._getEditorEl();
-      if (editorEl) editorEl.setAttribute('aria-invalid', 'true');
-    });
+    $textarea.addEventListener('invalid', this._onTextareaInvalid);
 
     // Sync typography from textarea's computed style to editor
-    this._syncTypography(textarea);
+    this._syncTypography($textarea);
 
     this._scheduleRender();
   }
 
-  // ── Editor event binding ──────────────────────────────────────────────
+  private _onTextareaInvalid = (): void => {
+    if (this._$editor) {
+      this._$editor.setAttribute('aria-invalid', 'true');
+    }
+  };
 
-  private _bindEditorEvents(editorEl: HTMLElement): void {
-    editorEl.addEventListener('compositionstart', () => {
+  private _bindEditorEvents($editor: HTMLElement): void {
+    $editor.addEventListener('compositionstart', () => {
       this._composing = true;
     });
-    editorEl.addEventListener('compositionend', () => {
+
+    $editor.addEventListener('compositionend', () => {
       this._composing = false;
       this._onInput();
     });
-    editorEl.addEventListener('input', this._onInputEvent);
-    editorEl.addEventListener('keydown', this._onKeyDown);
-    editorEl.addEventListener('paste', this._onPaste);
-    editorEl.addEventListener('focus', () => {
+
+    $editor.addEventListener('input', this._onInputEvent);
+    $editor.addEventListener('keydown', this._onKeyDown);
+    $editor.addEventListener('paste', this._onPaste);
+    $editor.addEventListener('focus', () => {
       this.dispatchEvent(
         new CustomEvent('rc-textarea-focus', {
           bubbles: true,
@@ -443,151 +578,183 @@ export class RCTextarea extends LitElement {
         }),
       );
     });
-    editorEl.addEventListener('blur', () => {
+
+    $editor.addEventListener('blur', () => {
       this.dispatchEvent(
         new CustomEvent('rc-textarea-blur', {
           bubbles: true,
           composed: true,
         }),
       );
+
       // Clear active line when editor loses focus
-      this._activeLine?.classList.remove('v2-line--active');
-      this._activeLine = null;
+      this._$activeLine?.classList.remove('line--active');
+      this._$activeLine = null;
     });
-    // Selection tracking is handled by the document-level selectionchange listener
-    // added in connectedCallback — covers arrow keys, mouse, touch, and programmatic changes.
+
+    // Note: Selection tracking is handled by the document-level selectionchange listener
   }
 
   private _onInputEvent = (): void => {
-    if (!this._composing) this._onInput();
+    if (!this._composing) {
+      this._onInput();
+    }
   };
 
   private _onInput(): void {
-    const editorEl = this._getEditorEl();
-    if (!editorEl) return;
+    if (!this._$editor) {
+      return;
+    }
 
-    const newValue = extractEditorText(editorEl);
-    if (newValue === this._value) return;
+    const newValue = getText(this._$editor);
+
+    if (newValue === this._value) {
+      return;
+    }
 
     const oldValue = this._value;
-    const preEditSel = this._savedSelection; // capture before saveSelection() overwrites it
+    const preEditSelection = this._savedSelection;
 
     // Map existing plugin decorations through the text change
-    const mappedDecs = mapOrClear(
+    const mappedDecorations = remapDecorations(
       [...this._pluginDecorations.values()],
       oldValue,
       newValue,
     );
+
     this._pluginDecorations.clear();
-    for (const dec of mappedDecs) this._pluginDecorations.set(dec.id, dec);
+
+    for (const decoration of mappedDecorations) {
+      this._pluginDecorations.set(decoration.id, decoration);
+    }
 
     this._value = newValue;
     this._syncTextareaValue(true);
 
-    // Save cursor position AFTER the browser has processed the input
-    this._savedSelection = saveSelection(editorEl);
+    // Save cursor position after input settles
+    this._savedSelection = saveSelection(this._$editor);
 
-    // On the very first edit, capture the pre-edit state as the undo baseline so
-    // that the first Ctrl+Z can restore it. Without this, _undoIndex would be 0
-    // after the first push and _undo()'s `<= 0` guard would prevent any undo.
-    // Note: selectionchange fires AFTER input, so _savedSelection still holds the
-    // pre-edit cursor at this point (before saveSelection() overwrites it above).
+    // On the very first edit, capture the pre-edit state as the undo baseline
     if (this._undoStack.length === 0) {
+      // Note: selectionchange fires AFTER input, so _savedSelection still holds the
+      // pre-edit cursor at this point (before saveSelection() overwrites it above).
       this._undoStack.push({
         value: oldValue,
-        anchorOffset: preEditSel?.anchorOffset ?? 0,
-        focusOffset: preEditSel?.focusOffset ?? 0,
+        anchorOffset: preEditSelection?.anchorOffset ?? 0,
+        focusOffset: preEditSelection?.focusOffset ?? 0,
       });
       this._undoIndex = 0;
     }
 
     // Push to undo stack
     this._pushUndo(this._savedSelection);
-
     this._dispatchChange(newValue);
 
     this._scheduleRender();
   }
 
   private _onSelectionChange = (): void => {
-    const editorEl = this._getEditorEl();
-    if (!editorEl) return;
-    const sel = saveSelection(editorEl);
-    if (sel) {
-      this._savedSelection = sel;
+    if (!this._$editor) {
+      return;
+    }
+
+    const selection = saveSelection(this._$editor);
+
+    if (selection) {
+      this._savedSelection = selection;
       this.dispatchEvent(
         new CustomEvent('rc-textarea-select', {
           bubbles: true,
           composed: true,
           detail: {
-            selectionStart: sel.anchorOffset,
-            selectionEnd: sel.focusOffset,
+            selectionStart: selection.anchorOffset,
+            selectionEnd: selection.focusOffset,
           },
         }),
       );
+
       this._updateActiveLine();
-      const start = Math.min(sel.anchorOffset, sel.focusOffset);
-      const end = Math.max(sel.anchorOffset, sel.focusOffset);
-      for (const cb of this._cursorCallbacks) cb(start, end);
+
+      const start = Math.min(selection.anchorOffset, selection.focusOffset);
+      const end = Math.max(selection.anchorOffset, selection.focusOffset);
+
+      for (const callback of this._cursorCallbacks) {
+        callback(start, end);
+      }
     }
   };
 
   private _updateActiveLine(): void {
-    const editorEl = this._getEditorEl();
-    if (!editorEl) return;
-    // Chrome does not expose shadow-DOM selections via window.getSelection() —
-    // use shadowRoot.getSelection() when available (Chrome 53+), falling back to
-    // window.getSelection() for Firefox and other browsers.
-    const sel =
-      (this.shadowRoot as unknown as { getSelection?: () => Selection | null })
-        .getSelection?.() ?? window.getSelection();
-    let newActive: HTMLElement | null = null;
-    if (sel?.focusNode && editorEl.contains(sel.focusNode)) {
-      let node: Node | null = sel.focusNode;
-      while (node && node !== editorEl) {
-        if (node instanceof HTMLElement && node.classList.contains('v2-line')) {
-          newActive = node;
+    if (!this._$editor) {
+      return;
+    }
+
+    const selection =
+      (
+        this.shadowRoot as unknown as { /* (Chrome 53+) */ getSelection?: () => Selection | null }
+      ).getSelection?.() ?? window.getSelection();
+
+    let $line: HTMLElement | null = null;
+
+    if (selection?.focusNode && this._$editor.contains(selection.focusNode)) {
+      let node: Node | null = selection.focusNode;
+
+      while (node && node !== this._$editor) {
+        if (node instanceof HTMLElement && node.classList.contains('line')) {
+          $line = node;
+
           break;
         }
+
         node = node.parentNode;
       }
     }
-    if (newActive === this._activeLine) return;
-    this._activeLine?.classList.remove('v2-line--active');
-    this._activeLine = newActive;
-    this._activeLine?.classList.add('v2-line--active');
+
+    if ($line === this._$activeLine) {
+      return;
+    }
+
+    this._$activeLine?.classList.remove('line--active');
+    this._$activeLine = $line;
+    this._$activeLine?.classList.add('line--active');
 
     // Update active line number highlight
     this._updateActiveGutterCell();
   }
 
   private _updateActiveGutterCell(): void {
-    const gutterEl = this.shadowRoot?.getElementById('gutter-cells');
-    if (!gutterEl) return;
+    if (!this._$gutterCells) {
+      return;
+    }
 
     // Find and remove previous active state
-    const prevActive = gutterEl.querySelector('.gutter-cell--active');
-    if (prevActive) prevActive.classList.remove('gutter-cell--active');
+    const $previousActive = this._$gutterCells.querySelector('.gutter-cell--active');
+
+    if ($previousActive) {
+      $previousActive.classList.remove('gutter-cell--active');
+    }
 
     // Find line index and highlight corresponding line number
-    if (this._activeLine) {
-      const editorEl = this._getEditorEl();
-      if (!editorEl) return;
+    if (this._$activeLine) {
+      if (!this._$editor) {
+        return;
+      }
 
-      const allLines = editorEl.querySelectorAll('.v2-line');
-      for (let i = 0; i < allLines.length; i++) {
-        if (allLines[i] === this._activeLine) {
-          const lineNumberEl = gutterEl.children[i];
-          if (lineNumberEl) {
-            lineNumberEl.classList.add('gutter-cell--active');
+      const $lines = this._$editor.querySelectorAll('.line');
+
+      for (let i = 0; i < $lines.length; i++) {
+        if ($lines[i] === this._$activeLine) {
+          const $lineNumber = this._$gutterCells.children[i];
+
+          if ($lineNumber) {
+            $lineNumber.classList.add('gutter-cell--active');
           }
+
           break;
         }
       }
     }
   }
-
-  // ── Keyboard handling ─────────────────────────────────────────────────
 
   private _onKeyDown = (e: KeyboardEvent): void => {
     if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -613,27 +780,32 @@ export class RCTextarea extends LitElement {
   };
 
   protected _insertText(text: string): void {
-    const editorEl = this._getEditorEl();
-    if (!editorEl) return;
+    if (!this._$editor) {
+      return;
+    }
 
     // execCommand('insertText') does not handle \n — browsers create new divs
-    // that lack the 'v2-line' class, so extractEditorText() loses all content
+    // that lack the 'line' class, so getText() loses all content
     // after the first newline. Apply multi-line inserts directly to the value model.
     if (text.includes('\n')) {
-      const sel = saveSelection(editorEl) ?? this._savedSelection;
-      const anchor = Math.min(sel?.anchorOffset ?? 0, sel?.focusOffset ?? 0);
-      const focus = Math.max(sel?.anchorOffset ?? 0, sel?.focusOffset ?? 0);
+      const selection = saveSelection(this._$editor) ?? this._savedSelection;
+      const anchor = Math.min(selection?.anchorOffset ?? 0, selection?.focusOffset ?? 0);
+      const focus = Math.max(selection?.anchorOffset ?? 0, selection?.focusOffset ?? 0);
       const oldValue = this._value;
       const newValue = oldValue.slice(0, anchor) + text + oldValue.slice(focus);
       const newCursorOffset = anchor + text.length;
 
-      const mappedDecs = mapOrClear(
+      const mappedDecorations = remapDecorations(
         [...this._pluginDecorations.values()],
         oldValue,
         newValue,
       );
+
       this._pluginDecorations.clear();
-      for (const dec of mappedDecs) this._pluginDecorations.set(dec.id, dec);
+
+      for (const decoration of mappedDecorations) {
+        this._pluginDecorations.set(decoration.id, decoration);
+      }
 
       this._value = newValue;
       this._syncTextareaValue(true);
@@ -644,14 +816,16 @@ export class RCTextarea extends LitElement {
       if (this._undoStack.length === 0) {
         this._undoStack.push({
           value: oldValue,
-          anchorOffset: sel?.anchorOffset ?? 0,
-          focusOffset: sel?.focusOffset ?? 0,
+          anchorOffset: selection?.anchorOffset ?? 0,
+          focusOffset: selection?.focusOffset ?? 0,
         });
         this._undoIndex = 0;
       }
+
       this._pushUndo(this._savedSelection);
       this._dispatchChange(newValue);
       this._scheduleRender();
+
       return;
     }
 
@@ -671,22 +845,33 @@ export class RCTextarea extends LitElement {
    * anchor/focus offsets.
    */
   wrapSelection(prefix: string, suffix: string): void {
-    const editorEl = this._getEditorEl();
-    if (!editorEl) return;
+    if (!this._$editor) {
+      return;
+    }
 
-    const sel = saveSelection(editorEl) ?? this._savedSelection;
-    if (!sel || sel.anchorOffset === sel.focusOffset) return;
+    const selection = saveSelection(this._$editor) ?? this._savedSelection;
 
-    const start = Math.min(sel.anchorOffset, sel.focusOffset);
-    const end = Math.max(sel.anchorOffset, sel.focusOffset);
+    if (!selection || selection.anchorOffset === selection.focusOffset) {
+      return;
+    }
+
+    const start = Math.min(selection.anchorOffset, selection.focusOffset);
+    const end = Math.max(selection.anchorOffset, selection.focusOffset);
     const selected = this._value.slice(start, end);
     const oldValue = this._value;
-    const newValue =
-      oldValue.slice(0, start) + prefix + selected + suffix + oldValue.slice(end);
+    const newValue = oldValue.slice(0, start) + prefix + selected + suffix + oldValue.slice(end);
 
-    const mapped = mapOrClear([...this._pluginDecorations.values()], oldValue, newValue);
+    const mappedDecorations = remapDecorations(
+      [...this._pluginDecorations.values()],
+      oldValue,
+      newValue,
+    );
+
     this._pluginDecorations.clear();
-    for (const d of mapped) this._pluginDecorations.set(d.id, d);
+
+    for (const decoration of mappedDecorations) {
+      this._pluginDecorations.set(decoration.id, decoration);
+    }
 
     this._value = newValue;
     this._syncTextareaValue(true);
@@ -707,21 +892,22 @@ export class RCTextarea extends LitElement {
     this._insertText(text);
   }
 
-
-  // ── Paste handling ────────────────────────────────────────────────────
-
   private _onPaste = (e: ClipboardEvent): void => {
     e.preventDefault();
+
     const text = e.clipboardData?.getData('text/plain') ?? '';
-    if (!text) return;
+
+    if (!text) {
+      return;
+    }
+
     // Normalize line endings
     const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
     this._insertText(normalized);
   };
 
-  // ── Undo/Redo ─────────────────────────────────────────────────────────
-
-  /** Reset the undo/redo history. Call when the editor receives entirely new content. */
+  /** Reset the undo/redo history. Call when the field receives entirely new content. */
   clearHistory(): void {
     this._undoStack = [];
     this._undoIndex = -1;
@@ -733,21 +919,32 @@ export class RCTextarea extends LitElement {
       anchorOffset: sel?.anchorOffset ?? 0,
       focusOffset: sel?.focusOffset ?? 0,
     };
+
     // Truncate redo branch
     this._undoStack = this._undoStack.slice(0, this._undoIndex + 1);
     this._undoStack.push(entry);
-    if (this._undoStack.length > MAX_UNDO) this._undoStack.shift();
+
+    if (this._undoStack.length > MAX_UNDO) {
+      this._undoStack.shift();
+    }
+
     this._undoIndex = this._undoStack.length - 1;
   }
 
   private _undo(): void {
-    if (this._undoIndex <= 0) return;
+    if (this._undoIndex <= 0) {
+      return;
+    }
+
     this._undoIndex--;
     this._applyUndoEntry(this._undoStack[this._undoIndex]!);
   }
 
   private _redo(): void {
-    if (this._undoIndex >= this._undoStack.length - 1) return;
+    if (this._undoIndex >= this._undoStack.length - 1) {
+      return;
+    }
+
     this._undoIndex++;
     this._applyUndoEntry(this._undoStack[this._undoIndex]!);
   }
@@ -763,8 +960,11 @@ export class RCTextarea extends LitElement {
     this._scheduleRender();
   }
 
-  // ── Plugin API ────────────────────────────────────────────────────────
-
+  /**
+   * Register and mount a plugin imperatively.
+   * Replaces any currently active plugin. Prefer the `plugin` property for
+   * reactive-framework integrations.
+   */
   usePlugin(plugin: RCTextareaPlugin): void {
     this._plugin?.destroy?.();
     this._clearPluginSheets();
@@ -779,6 +979,7 @@ export class RCTextarea extends LitElement {
     this._scheduleRender();
   }
 
+  /** Unmount the active plugin, clear its decorations, and release its stylesheets. */
   removePlugin(): void {
     this._plugin?.destroy?.();
     this._clearPluginSheets();
@@ -806,23 +1007,34 @@ export class RCTextarea extends LitElement {
         return component._value;
       },
       get selectionStart() {
-        const s = component._savedSelection;
-        return s ? Math.min(s.anchorOffset, s.focusOffset) : 0;
+        const selection = component._savedSelection;
+
+        return selection ? Math.min(selection.anchorOffset, selection.focusOffset) : 0;
       },
       get selectionEnd() {
-        const s = component._savedSelection;
-        return s ? Math.max(s.anchorOffset, s.focusOffset) : 0;
+        const selection = component._savedSelection;
+
+        return selection ? Math.max(selection.anchorOffset, selection.focusOffset) : 0;
       },
       getCursorRect(): DOMRect | null {
-        const sel = window.getSelection();
-        if (!sel?.focusNode) return null;
-        const editorEl = component._getEditorEl();
-        if (!editorEl || !editorEl.contains(sel.focusNode)) return null;
+        const selection = window.getSelection();
+
+        if (!selection?.focusNode) {
+          return null;
+        }
+
+        if (!component._$editor || !component._$editor.contains(selection.focusNode)) {
+          return null;
+        }
+
         try {
-          const range = document.createRange();
-          range.setStart(sel.focusNode, sel.focusOffset);
-          range.collapse(true);
-          const rect = range.getBoundingClientRect();
+          const $range = document.createRange();
+
+          $range.setStart(selection.focusNode, selection.focusOffset);
+          $range.collapse(true);
+
+          const rect = $range.getBoundingClientRect();
+
           return rect.height > 0 ? rect : null;
         } catch {
           return null;
@@ -831,17 +1043,30 @@ export class RCTextarea extends LitElement {
       getWordAtCursor(): { word: string; from: number; to: number } | null {
         const offset = component._savedSelection?.focusOffset ?? 0;
         const text = component._value;
-        if (!text) return null;
+
+        if (!text) {
+          return null;
+        }
+
         let start = offset;
-        while (start > 0 && /\w/.test(text[start - 1]!)) start--;
+
+        while (start > 0 && /\w/.test(text[start - 1]!)) {
+          start--;
+        }
+
         let end = offset;
-        while (end < text.length && /\w/.test(text[end]!)) end++;
-        if (start === end) return null;
+
+        while (end < text.length && /\w/.test(text[end]!)) {
+          end++;
+        }
+
+        if (start === end) {
+          return null;
+        }
+
         return { word: text.slice(start, end), from: start, to: end };
       },
-      onCursorMove(
-        callback: (selectionStart: number, selectionEnd: number) => void,
-      ): () => void {
+      onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void {
         component._cursorCallbacks.add(callback);
         return () => {
           component._cursorCallbacks.delete(callback);
@@ -864,44 +1089,67 @@ export class RCTextarea extends LitElement {
         return [...component._pluginDecorations.values()];
       },
       scheduleUpdate(): void {
-        if (!component._isRendering) component._scheduleRender();
+        if (!component._isRendering) {
+          component._scheduleRender();
+        }
       },
       adoptStyleSheet(sheetOrCssText: CSSStyleSheet | string): CSSStyleSheet {
         let sheet: CSSStyleSheet;
+
         if (typeof sheetOrCssText === 'string') {
           sheet = new CSSStyleSheet();
           sheet.replaceSync(sheetOrCssText);
         } else {
           sheet = sheetOrCssText;
         }
-        const sr = component.shadowRoot;
-        if (sr && !sr.adoptedStyleSheets.includes(sheet)) {
-          sr.adoptedStyleSheets = [...sr.adoptedStyleSheets, sheet];
+
+        const $shadowRoot = component.shadowRoot;
+
+        if ($shadowRoot && !$shadowRoot.adoptedStyleSheets.includes(sheet)) {
+          $shadowRoot.adoptedStyleSheets = [...$shadowRoot.adoptedStyleSheets, sheet];
         }
+
         component._pluginSheets.add(sheet);
+
         return sheet;
       },
       removeStyleSheet(sheet: CSSStyleSheet): void {
-        const sr = component.shadowRoot;
-        if (sr) {
-          sr.adoptedStyleSheets = sr.adoptedStyleSheets.filter(
+        const $shadowRoot = component.shadowRoot;
+
+        if ($shadowRoot) {
+          $shadowRoot.adoptedStyleSheets = $shadowRoot.adoptedStyleSheets.filter(
             (s) => s !== sheet,
           );
         }
+
         component._pluginSheets.delete(sheet);
       },
+      parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
+        return parseDecorationsFromHtml(html);
+      },
+      /** @deprecated Use `parseDecorationsFromHtml` instead. */
       decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
-        return decorationsFromHtml(html);
+        return parseDecorationsFromHtml(html);
       },
       decorationsFromTokens(
         tokens: Token[],
         themeMap: Record<string, Omit<MarkDecoration, 'id' | 'type' | 'from' | 'to'>>,
       ): Omit<MarkDecoration, 'id'>[] {
         const result: Omit<MarkDecoration, 'id'>[] = [];
-        for (const t of tokens) {
-          const style = themeMap[t.type];
-          if (style) result.push({ type: 'mark', from: t.from, to: t.to, ...style });
+
+        for (const token of tokens) {
+          const style = themeMap[token.type];
+
+          if (style) {
+            result.push({
+              type: 'mark',
+              from: token.from,
+              to: token.to,
+              ...style,
+            });
+          }
         }
+
         return result;
       },
       insertText(text: string): void {
@@ -917,18 +1165,25 @@ export class RCTextarea extends LitElement {
   }
 
   private _clearPluginSheets(): void {
-    if (this._pluginSheets.size === 0) return;
-    const sr = this.shadowRoot;
-    if (sr) {
-      sr.adoptedStyleSheets = sr.adoptedStyleSheets.filter(
+    if (this._pluginSheets.size === 0) {
+      return;
+    }
+
+    const $shadowRoot = this.shadowRoot;
+
+    if ($shadowRoot) {
+      $shadowRoot.adoptedStyleSheets = $shadowRoot.adoptedStyleSheets.filter(
         (s) => !this._pluginSheets.has(s),
       );
     }
+
     this._pluginSheets.clear();
   }
 
-  // ── Pattern API ───────────────────────────────────────────────────────
-
+  /**
+   * Register a text pattern that generates decorations on every render pass.
+   * Returns the pattern ID, which can be passed to `removePattern` to unregister it.
+   */
   addPattern(pattern: Omit<TextPattern, 'id'>): string {
     const id = generateId();
     this._patterns.set(id, { ...pattern, id });
@@ -936,20 +1191,23 @@ export class RCTextarea extends LitElement {
     return id;
   }
 
+  /** Remove a previously registered pattern by the ID returned from `addPattern`. */
   removePattern(id: string): void {
     this._patterns.delete(id);
     this._scheduleRender();
   }
 
+  /** Remove all registered patterns and trigger a re-render. */
   clearPatterns(): void {
     this._patterns.clear();
     this._scheduleRender();
   }
 
-  // ── Render pipeline ───────────────────────────────────────────────────
-
   protected _scheduleRender(): void {
-    if (this._rafHandle !== null) return;
+    if (this._rafHandle !== null) {
+      return;
+    }
+
     this._rafHandle = requestAnimationFrame(() => {
       this._rafHandle = null;
       void this._performRender();
@@ -957,9 +1215,12 @@ export class RCTextarea extends LitElement {
   }
 
   private async _performRender(): Promise<void> {
-    if (!this._document) return;
+    if (!this._document) {
+      return;
+    }
 
     this._isRendering = true;
+
     // Snapshot the sequence counter so we can detect if a newer render was
     // scheduled while we were awaiting an async plugin. If the counters
     // diverge on resume, discard this render's results.
@@ -968,14 +1229,20 @@ export class RCTextarea extends LitElement {
     try {
       // Resolve display value: apply transform hook (read-only only) before everything else
       let renderValue = this._value;
+
       if (this._plugin && this._pluginApi && this._plugin.transform && this.readOnly) {
         const transformed = this._plugin.transform(this._value, this._pluginApi);
-        if (typeof transformed === 'string') renderValue = transformed;
+
+        if (typeof transformed === 'string') {
+          renderValue = transformed;
+        }
       }
 
       // Run pattern matcher
-      const { markDecorations: patMarkDecs, lineDecorations: patLineDecs } =
-        matchPatternResults(renderValue, [...this._patterns.values()]);
+      const { markDecorations: patMarkDecs, lineDecorations: patLineDecs } = matchPatternResults(
+        renderValue,
+        [...this._patterns.values()],
+      );
       this._patternDecorations = [
         ...patMarkDecs.map((d) => ({ ...d, id: generateId() })),
         ...patLineDecs.map((d) => ({ ...d, id: generateId() })),
@@ -987,17 +1254,25 @@ export class RCTextarea extends LitElement {
 
         if (this._plugin.update) {
           await this._plugin.update(renderValue, api);
-          if (renderSeq !== this._pluginSeq) return; // stale — newer render started
+
+          if (renderSeq !== this._pluginSeq) {
+            return;
+          }
         }
 
         if (this._plugin.highlight) {
           const html = await this._plugin.highlight(renderValue, api);
-          if (renderSeq !== this._pluginSeq) return;
+
+          if (renderSeq !== this._pluginSeq) {
+            return;
+          }
+
           if (typeof html === 'string') {
-            const decs = decorationsFromHtml(html);
+            const decorations = parseDecorationsFromHtml(html);
+
             // Add parsed decorations on top of existing plugin decorations
-            for (const d of decs) {
-              addDecoration(this._pluginDecorations, d);
+            for (const decoration of decorations) {
+              addDecoration(this._pluginDecorations, decoration);
             }
           }
         }
@@ -1011,18 +1286,19 @@ export class RCTextarea extends LitElement {
       ];
 
       // Rebuild the Parchment tree
-      const editorEl = this._getEditorEl();
-      if (!editorEl) return;
+      if (!this._$editor) {
+        return;
+      }
 
       this._document.build(renderValue, allDecorations);
 
       // Restore cursor
       if (this._savedSelection) {
-        restoreSelection(editorEl, this._savedSelection);
+        restoreSelection(this._$editor, this._savedSelection);
       }
 
       // Re-apply active line (DOM was rebuilt; old reference is stale)
-      this._activeLine = null;
+      this._$activeLine = null;
       this._updateActiveLine();
 
       // Update gutter
@@ -1033,21 +1309,23 @@ export class RCTextarea extends LitElement {
     }
   }
 
-  // ── Gutter ────────────────────────────────────────────────────────────
-
   /**
    * Compute the label string for each gutter cell based on the current gutter
-   * mode (`lineNumbers`, `listNumbers`, `gutter`) and any
+   * mode (`lineNumbers`, `listNumbers` (deprecated), `gutter`) and any
    * `LineDecoration.gutterContent` overrides in `allDecorations`.
    *
    * Returns one entry per line (same length as `value.split('\n')`):
    * - `string` — the label to display
    * - `null`   — render an empty cell
    */
-  private _computeGutterLabels(allDecorations: Decoration[], value = this._value): (string | null)[] {
+  private _computeGutterLabels(
+    allDecorations: Decoration[],
+    value = this._value,
+  ): (string | null)[] {
     const lines = value.split('\n');
 
     const overrides = new Map<number, string | null>();
+
     for (const dec of allDecorations) {
       if (dec.type === 'line' && dec.gutterContent !== undefined) {
         overrides.set(dec.line, dec.gutterContent);
@@ -1058,23 +1336,32 @@ export class RCTextarea extends LitElement {
     return lines.map((lineText, i) => {
       const lineNum = i + 1;
 
-      if (overrides.has(lineNum)) return overrides.get(lineNum)!;
+      if (overrides.has(lineNum)) {
+        return overrides.get(lineNum)!;
+      }
 
-      if (this.lineNumbers) return String(lineNum);
+      if (this.lineNumbers) {
+        return String(lineNum);
+      }
 
       if (this.listNumbers) {
-        if (lineText.trim() === '') return null;
+        if (lineText.trim() === '') {
+          return null;
+        }
+
         counter++;
+
         return `${counter}.`;
       }
 
-      return null; // `gutter` mode — empty by default, plugins fill via overrides
+      // `gutter` mode is empty by default, and plugins fill via overrides.
+      return null;
     });
   }
 
   /**
    * Synchronize the pixel height of each gutter cell to match the
-   * corresponding `.v2-line` element in the editor.
+   * corresponding `.line` element in the editor.
    *
    * In non-word-wrap mode the gutter uses a uniform `line-height` mirrored
    * from the editor's first line. In word-wrap mode each cell gets an explicit
@@ -1083,45 +1370,62 @@ export class RCTextarea extends LitElement {
    * gutter to compensate for browser UA overrides on contenteditable.
    */
   private _syncGutterHeights(): void {
-    const gutterEl = this.shadowRoot?.getElementById('gutter-cells');
-    const editorEl = this._getEditorEl();
-    if (!gutterEl || !editorEl) return;
+    if (!this._$gutterCells || !this._$editor) {
+      return;
+    }
 
     // Sync vertical padding from the editor's computed values.
     // Browser UA overrides (Chrome/Firefox on contenteditable) cause 0.5em to
     // resolve to different pixel values on the gutter vs the editor, producing
     // a constant vertical offset. The read-only rule (padding: 0 on #editor)
     // also needs the gutter to match — this one call covers both cases.
-    const cs = getComputedStyle(editorEl);
-    const pt = cs.paddingTop;
-    const pb = cs.paddingBottom;
-    if (gutterEl.style.paddingTop !== pt) gutterEl.style.paddingTop = pt;
-    if (gutterEl.style.paddingBottom !== pb) gutterEl.style.paddingBottom = pb;
+    const computedStyle = getComputedStyle(this._$editor);
+    const paddingTop = computedStyle.paddingTop;
+    const paddingBottom = computedStyle.paddingBottom;
 
-    const lineEls = editorEl.querySelectorAll<HTMLElement>('.v2-line');
-    const spans = gutterEl.children;
+    if (this._$gutterCells.style.paddingTop !== paddingTop) {
+      this._$gutterCells.style.paddingTop = paddingTop;
+    }
+
+    if (this._$gutterCells.style.paddingBottom !== paddingBottom) {
+      this._$gutterCells.style.paddingBottom = paddingBottom;
+    }
+
+    const $lineEls = this._$editor.querySelectorAll<HTMLElement>('.line');
+    const $spans = this._$gutterCells.children;
 
     if (!this.wordWrap) {
       // Chrome UA overrides line-height on contenteditable (even via var() fallback,
       // but not inline styles), giving the editor a different natural cell height
       // than the gutter's CSS 1.5× value. Mirror the first line's actual height.
-      if (lineEls.length > 0) {
-        const lhPx = `${lineEls[0].getBoundingClientRect().height}px`;
-        if (gutterEl.style.lineHeight !== lhPx) gutterEl.style.lineHeight = lhPx;
+      if ($lineEls.length > 0) {
+        const lineHeight = `${$lineEls[0].getBoundingClientRect().height}px`;
+
+        if (this._$gutterCells.style.lineHeight !== lineHeight) {
+          this._$gutterCells.style.lineHeight = lineHeight;
+        }
       }
-      for (let i = 0; i < spans.length; i++) {
-        (spans[i] as HTMLElement).style.height = '';
+
+      for (let i = 0; i < $spans.length; i++) {
+        ($spans[i] as HTMLElement).style.height = '';
       }
+
       return;
     }
 
     // word-wrap: per-span explicit heights drive alignment; clear any forced line-height.
-    if (gutterEl.style.lineHeight) gutterEl.style.lineHeight = '';
-    for (let i = 0; i < lineEls.length && i < spans.length; i++) {
-      const h = lineEls[i]!.getBoundingClientRect().height;
-      const hStr = `${h}px`;
-      const span = spans[i] as HTMLElement;
-      if (span.style.height !== hStr) span.style.height = hStr;
+    if (this._$gutterCells.style.lineHeight) {
+      this._$gutterCells.style.lineHeight = '';
+    }
+
+    for (let i = 0; i < $lineEls.length && i < $spans.length; i++) {
+      const height = $lineEls[i]!.getBoundingClientRect().height;
+      const heightStyle = `${height}px`;
+      const $span = $spans[i] as HTMLElement;
+
+      if ($span.style.height !== heightStyle) {
+        $span.style.height = heightStyle;
+      }
     }
   }
 
@@ -1132,39 +1436,83 @@ export class RCTextarea extends LitElement {
    * (called by the `ResizeObserver` without a new render pass).
    */
   private _syncGutter(labels?: (string | null)[]): void {
-    if (!this.lineNumbers && !this.listNumbers && !this.gutter) return;
+    if (!this.lineNumbers && !this.listNumbers && !this.gutter) {
+      return;
+    }
 
-    const gutterEl = this.shadowRoot?.getElementById('gutter-cells');
-    if (!gutterEl) return;
+    if (!this._$gutterCells) {
+      return;
+    }
 
-    if (labels !== undefined) this._gutterLabels = labels;
+    if (labels !== undefined) {
+      this._gutterLabels = labels;
+    }
+
     const current = this._gutterLabels;
 
     // Sync count
-    while (gutterEl.children.length < current.length) {
-      const span = document.createElement('span');
-      span.className = 'gutter-cell';
-      gutterEl.appendChild(span);
+    while (this._$gutterCells.children.length < current.length) {
+      const $span = document.createElement('span');
+
+      $span.className = 'gutter-cell';
+      this._$gutterCells.appendChild($span);
     }
-    while (gutterEl.children.length > current.length) {
-      gutterEl.removeChild(gutterEl.lastChild!);
+
+    while (this._$gutterCells.children.length > current.length) {
+      this._$gutterCells.removeChild(this._$gutterCells.lastChild!);
     }
 
     // Sync content (only write when changed)
     for (let i = 0; i < current.length; i++) {
       const label = current[i] ?? '';
-      const span = gutterEl.children[i] as HTMLElement;
-      if (span.textContent !== label) span.textContent = label;
+      const $span = this._$gutterCells.children[i] as HTMLElement;
+
+      if ($span.textContent !== label) {
+        $span.textContent = label;
+      }
     }
   }
 
-  // ── Typography sync ───────────────────────────────────────────────────
+  private _syncLabel(): void {
+    if (!this._$editor) {
+      return;
+    }
 
-  private _syncTypography(textarea: HTMLTextAreaElement): void {
-    const editorEl = this._getEditorEl();
-    if (!editorEl) return;
+    const $textarea = this._$textareaRef?.deref();
 
-    const cs = window.getComputedStyle(textarea);
+    const ariaLabel = $textarea?.getAttribute('aria-label');
+
+    if (ariaLabel) {
+      this._$editor.setAttribute('aria-label', ariaLabel);
+      return;
+    }
+
+    if ($textarea) {
+      const labelText = Array.from($textarea.labels ?? [])
+        .map(($l) => $l.textContent?.trim())
+        .filter(Boolean)
+        .join(' ');
+
+      if (labelText) {
+        this._$editor.setAttribute('aria-label', labelText);
+        return;
+      }
+    }
+
+    if (this._label) {
+      this._$editor.setAttribute('aria-label', this._label);
+      return;
+    }
+
+    this._$editor.removeAttribute('aria-label');
+  }
+
+  private _syncTypography($textarea: HTMLTextAreaElement): void {
+    if (!this._$editor) {
+      return;
+    }
+
+    const textareaStyle = window.getComputedStyle($textarea);
     const props: (keyof CSSStyleDeclaration)[] = [
       'fontFamily',
       'fontSize',
@@ -1179,27 +1527,27 @@ export class RCTextarea extends LitElement {
     ];
 
     // Only copy if the host hasn't set custom properties for these
-    const hostCs = window.getComputedStyle(this);
-    if (!hostCs.getPropertyValue('--rc-textarea-font-family')) {
+    const hostStyle = window.getComputedStyle(this);
+
+    if (!hostStyle.getPropertyValue('--rc-textarea-font-family')) {
       for (const prop of props) {
-        const value = cs[prop];
+        const value = textareaStyle[prop];
+
         if (value && typeof value === 'string') {
-          (editorEl.style as unknown as Record<string, string>)[
-            prop as string
-          ] = value;
+          (this._$editor.style as unknown as Record<string, string>)[prop as string] = value;
         }
       }
     }
   }
 
-  // ── Form integration ──────────────────────────────────────────────────
-
   protected _syncTextareaValue(fromUser = false): void {
-    const textarea = this._textareaRef?.deref();
-    if (textarea) {
-      textarea.value = this._value;
+    const $textarea = this._$textareaRef?.deref();
+
+    if ($textarea) {
+      $textarea.value = this._value;
+
       if (fromUser) {
-        textarea.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        $textarea.dispatchEvent(new InputEvent('input', { bubbles: true }));
       }
     }
   }
@@ -1212,17 +1560,5 @@ export class RCTextarea extends LitElement {
         detail: { value },
       }),
     );
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────────────
-
-  private _getEditorEl(): HTMLElement | null {
-    return this.shadowRoot?.getElementById('editor') as HTMLElement | null;
-  }
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'rc-textarea': RCTextarea;
   }
 }

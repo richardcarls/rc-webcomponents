@@ -1,0 +1,68 @@
+---
+title: rc-select
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import {
+  SingleSelectDemo,
+  MultiSelectDemo,
+  SelectFormDemo,
+  DynamicOptionsDemo,
+} from '@site/src/components/SelectDemos';
+
+# rc-select
+
+Select-only combobox backed by a native `<select>`, following the [WAI-ARIA Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
+
+<AtAGlance
+  packageName="@rcarls/rc-select"
+  tag="rc-select"
+  native="Requires a direct child native select"
+  state="Controlled or uncontrolled selection"
+  events={['rc-select-open', 'rc-select-close', 'rc-select-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-select
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-select
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-select/define';
+```
+
+## Live demo
+
+<SingleSelectDemo />
+
+<MultiSelectDemo />
+
+<SelectFormDemo />
+
+<DynamicOptionsDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-select" />

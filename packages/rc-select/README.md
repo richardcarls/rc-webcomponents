@@ -1,8 +1,8 @@
 # `@rcarls/rc-select`
 
-A headless select-only ARIA combobox built with Lit 3. The component keeps a
-native slotted `<select>` as the source of truth for form submission while
-rendering a custom trigger and popover listbox.
+Select-only combobox backed by a native `<select>`, following the [WAI-ARIA Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-select](https://richardcarls.github.io/rc-webcomponents/components/rc-select).
 
 ## Installation
 
@@ -30,7 +30,7 @@ import '@rcarls/rc-select/define';
 <label>
   Fruit
   <rc-select placeholder="Choose fruit">
-    <select slot="select" name="fruit">
+    <select name="fruit">
       <option value="">Choose fruit</option>
       <option value="apple">Apple</option>
       <option value="banana">Banana</option>

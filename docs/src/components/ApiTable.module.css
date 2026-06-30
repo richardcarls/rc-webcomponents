@@ -1,0 +1,59 @@
+.wrapper {
+  max-width: 100%;
+}
+
+.section {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.section h3 {
+  font-size: 1rem;
+  margin: 1.5rem 0 0.5rem;
+  padding: 0;
+  border: 0;
+}
+
+.section table {
+  width: 100%;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.section th,
+.section td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.section th {
+  white-space: nowrap;
+}
+
+.section code {
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.type {
+  color: var(--ifm-color-primary);
+}
+
+.na {
+  color: var(--ifm-color-emphasis-700);
+}
+
+.empty,
+.notFound {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--ifm-color-emphasis-300);
+  border-radius: 6px;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.875rem;
+}
+
+.notFound {
+  border-style: solid;
+}

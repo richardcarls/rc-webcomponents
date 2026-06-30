@@ -1,0 +1,59 @@
+---
+title: rc-search-bar
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { SearchBarDemo } from '@site/src/components/ComponentDemos';
+
+# rc-search-bar
+
+Search field wrapper for a native `<input type="search">` with icon chrome, clear button, and debounced events.
+
+<AtAGlance
+  packageName="@rcarls/rc-search-bar"
+  tag="rc-search-bar"
+  native="Requires a direct child native search input"
+  state="Controlled or uncontrolled search value"
+  events={['rc-search-bar-input', 'rc-search-bar-clear']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-search-bar
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-search-bar
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-search-bar/define';
+```
+
+## Live demo
+
+<SearchBarDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the
+shared preview controls on this page to compare inherited, light, and dark color
+schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-search-bar" />

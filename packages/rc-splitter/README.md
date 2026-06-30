@@ -1,6 +1,8 @@
 # `@rcarls/rc-splitter`
 
-A WAI-ARIA compliant resizable pane splitter implementing the [Window Splitter pattern](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/). Supports horizontal and vertical orientations, pixel and percentage modes, collapse/restore via keyboard, and full pointer and keyboard control. Built with [Lit 3](https://lit.dev).
+Resizable pane splitter with pointer, keyboard, and collapse/restore controls, following the [WAI-ARIA Window Splitter pattern](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/).
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-splitter](https://richardcarls.github.io/rc-webcomponents/components/rc-splitter).
 
 ---
 

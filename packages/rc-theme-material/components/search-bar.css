@@ -1,16 +1,22 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(root) {
     box-sizing: border-box;
-    box-shadow: var(--md-sys-elevation-level0, none);
-    transition: box-shadow 200ms ease, background-color 200ms ease;
+    transition:
+      box-shadow 200ms ease,
+      background-color 200ms ease;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar:hover::part(root) {
-    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 4%, var(--md-sys-color-surface-container-high, Field));
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 8%,
+      var(--md-sys-color-surface-container-high, Field)
+    );
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar[data-focus-visible]::part(root) {
-    box-shadow: var(--md-sys-elevation-level1, none);
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-search-bar[data-interaction-mode='keyboard']::part(root):focus-within {
+    box-shadow: var(--rc-shadow-level2, none);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(clear) {
@@ -18,6 +24,10 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(clear):hover {
-    background: color-mix(in srgb, var(--md-sys-color-on-surface-variant, CanvasText) 8%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface-variant, CanvasText) 8%,
+      transparent
+    );
   }
 }

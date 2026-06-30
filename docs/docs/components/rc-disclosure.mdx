@@ -1,0 +1,57 @@
+---
+title: rc-disclosure
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { DisclosureDemo } from '@site/src/components/ComponentDemos';
+
+# rc-disclosure
+
+Disclosure wrapper for a native `<details>`/`<summary>` pair with controlled open state, following the [WAI-ARIA Disclosure pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/).
+
+<AtAGlance
+  packageName="@rcarls/rc-disclosure"
+  tag="rc-disclosure"
+  native="Requires a native details child"
+  state="Controlled or uncontrolled open state"
+  events={['rc-disclosure-toggle']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-disclosure
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-disclosure
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-disclosure/define';
+```
+
+## Live demo
+
+<DisclosureDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-disclosure" />

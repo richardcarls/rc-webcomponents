@@ -18,6 +18,7 @@ export const toolbarStyles = css`
 
     &[aria-orientation='vertical'] {
       flex-direction: column;
+      border-radius: var(--rc-toolbar-vertical-radius, var(--rc-toolbar-radius, var(--rc-control-radius, 0)));
     }
 
     /* because :has(:focus-visible) doens't work across slot boundary */

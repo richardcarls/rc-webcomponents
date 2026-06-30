@@ -1,7 +1,8 @@
 # @rcarls/rc-textarea-adapters
 
-Adapter factories for lezer, unified, and shiki tokenizers for
-[@rcarls/rc-textarea](../rc-textarea/).
+Adapter factories that connect Lezer, unified, and Shiki tokenizers to `rc-textarea`.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-textarea](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea).
 
 Part of the [rc-webcomponents](https://github.com/richardcarls/rc-webcomponents) library.
 

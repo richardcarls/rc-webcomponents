@@ -1,0 +1,57 @@
+---
+title: rc-markdown-editor
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { MarkdownEditorDemo } from '@site/src/components/ComponentDemos';
+
+# rc-markdown-editor
+
+Rich/source Markdown editor with a formatting toolbar, backed by `rc-textarea`.
+
+<AtAGlance
+  packageName="@rcarls/rc-markdown-editor"
+  tag="rc-markdown-editor"
+  native="Requires a textarea child"
+  state="Native textarea value plus editor mode"
+  events={['rc-formatting-change', 'rc-change', 'rc-mode-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-markdown-editor
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-markdown-editor
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-markdown-editor/define';
+```
+
+## Live demo
+
+<MarkdownEditorDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-markdown-editor" />

@@ -1,23 +1,30 @@
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
-import { userEvent } from 'vitest/browser';
+import { userEvent, type Locator } from 'vitest/browser';
 
 import './define';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
+async function expectActiveMenuItem(item: Locator) {
+  const itemElement = item.element();
+  const menu = itemElement.closest('rc-menu');
+
+  expect(menu).toBeTruthy();
+  await expect.element(menu as HTMLElement).toHaveFocus();
+  await expect.element(item).toHaveAttribute('data-active');
+}
+
 test('RCMenuButton renders with correct ARIA attributes', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options" data-testid="menu">
-          <button>Cut</button>
-          <button>Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options" data-testid="menu">
+        <button>Cut</button>
+        <button>Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const host = screen.getByTestId('host');
   const trigger = screen.getByTestId('trigger');
@@ -32,17 +39,15 @@ test('RCMenuButton renders with correct ARIA attributes', async () => {
 });
 
 test('RCMenuButton has no automated accessibility violations', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger">Options</button>
-        <rc-menu label="Options">
-          <button>Cut</button>
-          <button>Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+        <button>Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const host = await screen.getByTestId('host').element();
 
@@ -52,17 +57,15 @@ test('RCMenuButton has no automated accessibility violations', async () => {
 test('RCMenuButton opens on Enter key', async () => {
   const toggleSpy = vi.fn();
 
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host" @rc-menu-button-toggle=${toggleSpy}>
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host" @rc-menu-button-toggle=${toggleSpy}>
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -77,8 +80,7 @@ test('RCMenuButton opens on Enter key', async () => {
   // Menu should be open
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
 
-  // First item should have focus
-  await expect.element(item1).toHaveFocus();
+  await expectActiveMenuItem(item1);
 
   // Toggle event fired
   expect(toggleSpy).toHaveBeenCalledTimes(1);
@@ -86,17 +88,15 @@ test('RCMenuButton opens on Enter key', async () => {
 });
 
 test('RCMenuButton opens on Space key', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -108,23 +108,20 @@ test('RCMenuButton opens on Space key', async () => {
 
   await userEvent.keyboard(' ');
 
-  // Menu should be open and first item focused
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(item1).toHaveFocus();
+  await expectActiveMenuItem(item1);
 });
 
 test('RCMenuButton opens on ArrowDown key and focuses first item', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -136,23 +133,20 @@ test('RCMenuButton opens on ArrowDown key and focuses first item', async () => {
 
   await userEvent.keyboard('{ArrowDown}');
 
-  // Menu should be open and first item focused
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(item1).toHaveFocus();
+  await expectActiveMenuItem(item1);
 });
 
 test('RCMenuButton opens on ArrowUp key and focuses last item', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item2 = screen.getByTestId('item-two');
@@ -164,24 +158,21 @@ test('RCMenuButton opens on ArrowUp key and focuses last item', async () => {
 
   await userEvent.keyboard('{ArrowUp}');
 
-  // Menu should be open and last item focused
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(item2).toHaveFocus();
+  await expectActiveMenuItem(item2);
 });
 
 test('RCMenuButton closes on Escape and returns focus to trigger', async () => {
   const toggleSpy = vi.fn();
 
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host" @rc-menu-button-toggle=${toggleSpy}>
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host" @rc-menu-button-toggle=${toggleSpy}>
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -190,7 +181,7 @@ test('RCMenuButton closes on Escape and returns focus to trigger', async () => {
   await userEvent.click(document.body);
   await userEvent.tab();
   await userEvent.keyboard('{Enter}');
-  await expect.element(item1).toHaveFocus();
+  await expectActiveMenuItem(item1);
 
   // Press Escape
   await userEvent.keyboard('{Escape}');
@@ -207,16 +198,14 @@ test('RCMenuButton closes on Escape and returns focus to trigger', async () => {
 });
 
 test('RCMenuButton closes on menu item activation', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -225,7 +214,7 @@ test('RCMenuButton closes on menu item activation', async () => {
   await userEvent.click(document.body);
   await userEvent.tab();
   await userEvent.keyboard('{Enter}');
-  await expect.element(item1).toHaveFocus();
+  await expectActiveMenuItem(item1);
 
   // Activate item with Enter
   await userEvent.keyboard('{Enter}');
@@ -238,16 +227,14 @@ test('RCMenuButton closes on menu item activation', async () => {
 });
 
 test('RCMenuButton toggles on trigger click', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button>Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
 
@@ -260,20 +247,63 @@ test('RCMenuButton toggles on trigger click', async () => {
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
 });
 
+test('RCMenuButton maps trigger styling variables to the slotted trigger', async () => {
+  const screen = render(html`
+    <rc-menu-button
+      data-testid="host"
+      style="
+          --rc-menu-button-trigger-background: rgb(1, 2, 3);
+          --rc-menu-button-trigger-color: rgb(4, 5, 6);
+          --rc-menu-button-trigger-open-background: rgb(7, 8, 9);
+          --rc-menu-button-trigger-open-color: rgb(10, 11, 12);
+          --rc-menu-button-trigger-padding-inline: 2rem;
+          --rc-menu-button-trigger-gap: 1rem;
+        "
+    >
+      <button slot="trigger" data-testid="trigger">
+        <span>Options</span>
+        <span aria-hidden="true">+</span>
+      </button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+
+  const host = screen.getByTestId('host').element() as any;
+  const trigger = screen.getByTestId('trigger').element() as HTMLElement;
+
+  await host.updateComplete;
+
+  let styles = getComputedStyle(trigger);
+
+  expect(styles.display).toBe('inline-flex');
+  expect(styles.backgroundColor).toBe('rgb(1, 2, 3)');
+  expect(styles.color).toBe('rgb(4, 5, 6)');
+  expect(styles.paddingInlineStart).toBe('32px');
+  expect(styles.gap).toBe('16px');
+
+  await screen.getByTestId('trigger').click();
+
+  styles = getComputedStyle(trigger);
+
+  expect(trigger.getAttribute('aria-expanded')).toBe('true');
+  expect(styles.backgroundColor).toBe('rgb(7, 8, 9)');
+  expect(styles.color).toBe('rgb(10, 11, 12)');
+});
+
 test('RCMenuButton closes on outside click', async () => {
-  const screen = render(
-    html`
-      <div>
-        <rc-menu-button data-testid="host">
-          <button slot="trigger" data-testid="trigger">Options</button>
-          <rc-menu label="Options">
-            <button>Cut</button>
-          </rc-menu>
-        </rc-menu-button>
-        <button data-testid="outside">Outside</button>
-      </div>
-    `,
-  );
+  const screen = render(html`
+    <div>
+      <rc-menu-button data-testid="host">
+        <button slot="trigger" data-testid="trigger">Options</button>
+        <rc-menu label="Options">
+          <button>Cut</button>
+        </rc-menu>
+      </rc-menu-button>
+      <button data-testid="outside">Outside</button>
+    </div>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const outside = screen.getByTestId('outside');
@@ -293,16 +323,14 @@ test('RCMenuButton closes on outside click', async () => {
 });
 
 test('RCMenuButton exposes open/close methods', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const host = screen.getByTestId('host');
   const trigger = screen.getByTestId('trigger');
@@ -316,7 +344,7 @@ test('RCMenuButton exposes open/close methods', async () => {
   await menuButton.updateComplete;
 
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(item1).toHaveFocus();
+  await expectActiveMenuItem(item1);
 
   // closeMenu() method
   menuButton.closeMenu();
@@ -327,17 +355,15 @@ test('RCMenuButton exposes open/close methods', async () => {
 });
 
 test('RCMenuButton vertical: opens on ArrowRight and focuses first item', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host" orientation="vertical">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host" orientation="vertical">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -349,23 +375,20 @@ test('RCMenuButton vertical: opens on ArrowRight and focuses first item', async 
 
   await userEvent.keyboard('{ArrowRight}');
 
-  // Menu should be open and first item focused
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(item1).toHaveFocus();
+  await expectActiveMenuItem(item1);
 });
 
 test('RCMenuButton vertical: opens on ArrowLeft and focuses last item', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host" orientation="vertical">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-          <button data-testid="item-two">Copy</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host" orientation="vertical">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+        <button data-testid="item-two">Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item2 = screen.getByTestId('item-two');
@@ -377,22 +400,19 @@ test('RCMenuButton vertical: opens on ArrowLeft and focuses last item', async ()
 
   await userEvent.keyboard('{ArrowLeft}');
 
-  // Menu should be open and last item focused
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(item2).toHaveFocus();
+  await expectActiveMenuItem(item2);
 });
 
 test('RCMenuButton vertical: ArrowDown/ArrowUp do not open menu', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host" orientation="vertical">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button data-testid="item-one">Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host" orientation="vertical">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button data-testid="item-one">Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const trigger = screen.getByTestId('trigger');
 
@@ -411,18 +431,16 @@ test('RCMenuButton vertical: ArrowDown/ArrowUp do not open menu', async () => {
 });
 
 test('RCMenuButton inherits orientation from parent with role="menubar"', async () => {
-  const screen = render(
-    html`
-      <div role="menubar" aria-orientation="vertical">
-        <rc-menu-button data-testid="host">
-          <button slot="trigger" data-testid="trigger">Options</button>
-          <rc-menu label="Options">
-            <button data-testid="item-one">Cut</button>
-          </rc-menu>
-        </rc-menu-button>
-      </div>
-    `,
-  );
+  const screen = render(html`
+    <div role="menubar" aria-orientation="vertical">
+      <rc-menu-button data-testid="host">
+        <button slot="trigger" data-testid="trigger">Options</button>
+        <rc-menu label="Options">
+          <button data-testid="item-one">Cut</button>
+        </rc-menu>
+      </rc-menu-button>
+    </div>
+  `);
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
@@ -435,20 +453,18 @@ test('RCMenuButton inherits orientation from parent with role="menubar"', async 
   // ArrowRight should open menu (inherited vertical orientation)
   await userEvent.keyboard('{ArrowRight}');
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(item1).toHaveFocus();
+  await expectActiveMenuItem(item1);
 });
 
 test('RCMenuButton reflects open attribute', async () => {
-  const screen = render(
-    html`
-      <rc-menu-button data-testid="host">
-        <button slot="trigger" data-testid="trigger">Options</button>
-        <rc-menu label="Options">
-          <button>Cut</button>
-        </rc-menu>
-      </rc-menu-button>
-    `,
-  );
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
 
   const host = screen.getByTestId('host');
   const trigger = screen.getByTestId('trigger');

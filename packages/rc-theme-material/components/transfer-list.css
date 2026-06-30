@@ -3,6 +3,21 @@
     --rc-transfer-list-gap: 1rem;
     --rc-transfer-list-panel-gap: 0.5rem;
     --rc-transfer-list-listbox-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
+    --rc-transfer-list-listbox-bg: var(--md-sys-color-surface, Canvas);
+    --rc-transfer-list-option-gap: 0.75rem;
+    --rc-transfer-list-option-padding-block: 0;
+    --rc-transfer-list-option-padding-inline: 0.75rem;
+    --rc-transfer-list-option-hover-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 8%,
+      transparent
+    );
+    --rc-transfer-list-option-hover-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-transfer-list-option-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-transfer-list-option-selected-color: var(
+      --md-sys-color-on-secondary-container,
+      HighlightText
+    );
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-transfer-list::part(panel) {
@@ -16,11 +31,35 @@
     font-weight: 500;
   }
 
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-transfer-list::part(listbox) {
+    border-radius: var(--md-sys-shape-corner-small, 0.25rem);
+    --rc-listbox-option-gap: 0.75rem;
+    --rc-listbox-option-min-block-size: 3rem;
+    --rc-listbox-option-padding-block: 0;
+    --rc-listbox-option-padding-inline: 0.75rem;
+    --rc-listbox-option-transition: background-color 150ms ease, color 150ms ease;
+    --rc-listbox-hover-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 8%,
+      transparent
+    );
+    --rc-listbox-hover-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-listbox-active-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 12%,
+      transparent
+    );
+    --rc-listbox-active-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-listbox-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-listbox-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
+    --rc-listbox-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-transfer-list::part(button) {
     min-block-size: 2.5rem;
     padding-inline: 1rem;
     border: 0;
-    border-radius: var(--md-sys-shape-corner-full, 999px);
+    border-radius: var(--md-sys-shape-corner-medium, 0.75rem);
     background: var(--md-sys-color-secondary-container, ButtonFace);
     color: var(--md-sys-color-on-secondary-container, ButtonText);
   }

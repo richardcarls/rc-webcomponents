@@ -1,0 +1,131 @@
+---
+title: Using with React
+---
+
+# Using with React
+
+## Setup
+
+Register elements once in your application entry point:
+
+```ts title="main.tsx"
+import '@rcarls/rc-webcomponents/define';
+import { createRoot } from 'react-dom/client';
+import { App } from './App';
+
+createRoot(document.getElementById('root')!).render(<App />);
+```
+
+## TypeScript JSX types
+
+Add a triple-slash reference once — for example, in `vite-env.d.ts`:
+
+```ts title="vite-env.d.ts"
+/// <reference types="vite/client" />
+/// <reference types="@rcarls/rc-webcomponents/react" />
+```
+
+This gives all `rc-*` elements proper attribute completions and ref types in
+JSX. You can also import ref and event detail types directly for use with
+`useRef` and `addEventListener`:
+
+```ts
+import type { RCSelectRef, RCSelectChangeDetail } from '@rcarls/rc-webcomponents/react';
+```
+
+## Elements in JSX
+
+Custom elements render in JSX like any HTML element. String attributes map
+directly:
+
+```tsx
+<rc-select placeholder="Choose one">
+  <select name="status">
+    <option value="draft">Draft</option>
+    <option value="published">Published</option>
+  </select>
+</rc-select>
+```
+
+Boolean attributes use a JSX boolean (no string needed in React):
+
+```tsx
+<rc-combobox allow-create placeholder="Add tags">
+  <select name="tags" multiple>
+    <option value="a">Alpha</option>
+  </select>
+</rc-combobox>
+```
+
+## Custom events
+
+Components dispatch custom DOM events with a structured `detail` payload.
+Use `addEventListener` in a `useEffect` to subscribe:
+
+```tsx
+import { useEffect, useRef } from 'react';
+import type { RCSelectRef, RCSelectChangeDetail } from '@rcarls/rc-webcomponents/react';
+
+function StatusPicker() {
+  const ref = useRef<RCSelectRef>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const handler = (e: Event) => {
+      const { value } = (e as CustomEvent<RCSelectChangeDetail>).detail;
+      console.log('selected:', value);
+    };
+
+    el.addEventListener('rc-select-change', handler);
+    return () => el.removeEventListener('rc-select-change', handler);
+  }, []);
+
+  return (
+    <rc-select ref={ref}>
+      <select name="status">
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+      </select>
+    </rc-select>
+  );
+}
+```
+
+Each component's page documents which events it dispatches and the shape of
+`event.detail`. All detail types are exported from `@rcarls/rc-webcomponents/react`.
+
+## Refs and imperative methods
+
+Some components expose methods for programmatic control. Use a ref typed with
+the exported ref type:
+
+```tsx
+import { useRef } from 'react';
+import type { RCDialogRef } from '@rcarls/rc-webcomponents/react';
+
+function ConfirmDialog() {
+  const ref = useRef<RCDialogRef>(null);
+
+  return (
+    <>
+      <button type="button" onClick={() => ref.current?.showModal()}>
+        Open
+      </button>
+      <rc-dialog ref={ref} movable resize="both">
+        <dialog aria-labelledby="title">
+          <strong id="title">Confirm</strong>
+          <button type="button" onClick={() => ref.current?.close('ok')}>
+            OK
+          </button>
+        </dialog>
+      </rc-dialog>
+    </>
+  );
+}
+```
+
+All ref types (`RCSelectRef`, `RCComboboxRef`, `RCDialogRef`, …) are exported
+from `@rcarls/rc-webcomponents/react` and document the full public API surface
+of each element.

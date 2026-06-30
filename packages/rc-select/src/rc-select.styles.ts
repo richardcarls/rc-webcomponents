@@ -18,12 +18,15 @@ export const selectStyles = css`
     flex-wrap: wrap;
     gap: var(--rc-select-gap, var(--rc-control-gap, 0.25em));
     min-block-size: var(--rc-select-control-block-size, var(--rc-control-block-size, auto));
-    padding: var(--rc-select-padding-block, var(--rc-control-padding-block, 0.25em))
-      var(--rc-select-padding-inline, var(--rc-control-padding-inline, 0.5em));
+    padding: var(--rc-select-padding-block, var(--rc-control-padding-block, 1px))
+      var(--rc-select-padding-inline, var(--rc-control-padding-inline, 4px));
     min-width: 8em;
     cursor: default;
     user-select: none;
-    border: var(--rc-select-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    border: var(
+      --rc-select-border,
+      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
+    );
     border-radius: var(--rc-select-radius, var(--rc-control-radius, var(--rc-radius-sm, 0.125em)));
     background: var(--rc-field, Field);
     color: var(--rc-field-text, FieldText);
@@ -50,9 +53,12 @@ export const selectStyles = css`
     white-space: nowrap;
   }
 
-  [part='toggle-icon'] {
+  [part='toggle-indicator'] {
     flex-shrink: 0;
-    font-size: 0.75em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--rc-select-toggle-indicator-size, 1.1em);
   }
 
   /* Chips — the whole chip is the remove button for a larger touch target */
@@ -60,9 +66,11 @@ export const selectStyles = css`
     display: inline-flex;
     align-items: center;
     gap: var(--rc-select-chip-gap, calc(var(--rc-control-gap, 0.25em) * 0.8));
-    padding: var(--rc-select-chip-padding-block, 0.1em)
-      var(--rc-select-chip-padding-inline, 0.3em);
-    border: var(--rc-select-chip-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    padding: var(--rc-select-chip-padding-block, 0.1em) var(--rc-select-chip-padding-inline, 0.3em);
+    border: var(
+      --rc-select-chip-border,
+      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
+    );
     border-radius: var(--rc-select-chip-radius, var(--rc-radius-md, 0.25em));
     background: var(--rc-button-bg, ButtonFace);
     color: var(--rc-button-text, ButtonText);
@@ -91,8 +99,8 @@ export const selectStyles = css`
     pointer-events: none;
   }
 
-  /* Hidden native select slot */
-  slot[name='select'] {
+  /* Hide the default slot — visually suppresses the slotted native <select> */
+  slot:not([name]) {
     display: none;
   }
 
@@ -101,44 +109,44 @@ export const selectStyles = css`
     max-height: var(--rc-select-max-height, 20em);
     overflow-y: auto;
     background: var(--rc-surface, Canvas);
-    border: var(--rc-select-listbox-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
+    border: var(
+      --rc-select-listbox-border,
+      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
+    );
     border-radius: var(--rc-select-listbox-radius, var(--rc-control-radius, 0));
-    box-shadow: var(--rc-select-shadow, var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)));
+    box-shadow: var(
+      --rc-select-shadow,
+      var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
+    );
     color: var(--rc-field-text, FieldText);
     padding-block: var(--rc-select-listbox-padding-block, var(--rc-control-padding-block, 0.25em));
+    --rc-listbox-option-gap: var(--rc-item-gap, 0.4em);
+    --rc-listbox-option-padding-block: var(--rc-item-padding-block, 0.3em);
+    --rc-listbox-option-padding-inline: var(--rc-item-padding-inline, 0.75em);
+    --rc-listbox-hover-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-hover-color: var(--rc-highlight-text, HighlightText);
+    --rc-listbox-active-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-active-color: var(--rc-highlight-text, HighlightText);
+    --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
+    --rc-listbox-disabled-opacity: var(--rc-disabled-opacity, 0.5);
 
     &:not(:popover-open) {
       display: none;
     }
   }
 
-  /* Options within the listbox */
-  rc-listbox [part~='option'] {
-    display: flex;
-    align-items: center;
-    gap: var(--rc-item-gap, 0.4em);
-    padding: var(--rc-item-padding-block, 0.3em) var(--rc-item-padding-inline, 0.75em);
-    cursor: default;
+  rc-listbox [part~='option'][hidden] {
+    display: none;
+  }
 
-    /* display: flex overrides [hidden]'s browser-default display:none — restore it explicitly */
-    &[hidden] { display: none; }
+  rc-listbox [part~='option'][data-active]:not([aria-disabled='true']) {
+    outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
+    outline-offset: -2px;
+  }
 
-    &:not([hidden]):not([aria-disabled='true']):hover {
-      background: var(--rc-highlight, Highlight);
-      color: var(--rc-highlight-text, HighlightText);
-    }
-
-    &[data-active]:not([aria-disabled='true']) {
-      background: var(--rc-highlight, Highlight);
-      color: var(--rc-highlight-text, HighlightText);
-      outline: var(--rc-focus-ring, 2px solid var(--rc-accent, Highlight));
-      outline-offset: -2px;
-    }
-
-    &[aria-disabled='true'] {
-      opacity: var(--rc-disabled-opacity, 0.5);
-      cursor: not-allowed;
-    }
+  rc-listbox [part~='option'][aria-disabled='true'] {
+    cursor: not-allowed;
   }
 
   /* Selection checkmark — reserves space whether visible or not */

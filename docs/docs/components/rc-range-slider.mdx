@@ -1,0 +1,57 @@
+---
+title: rc-range-slider
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { RangeSliderDemo } from '@site/src/components/ComponentDemos';
+
+# rc-range-slider
+
+Two-thumb range slider backed by native range inputs for min/max values, following the [WAI-ARIA Multi-Thumb Slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/).
+
+<AtAGlance
+  packageName="@rcarls/rc-range-slider"
+  tag="rc-range-slider"
+  native="Requires two native range input children"
+  state="Controlled or uncontrolled numeric tuple"
+  events={['rc-range-slider-input', 'rc-range-slider-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-range-slider
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-range-slider
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-range-slider/define';
+```
+
+## Live demo
+
+<RangeSliderDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-range-slider" />

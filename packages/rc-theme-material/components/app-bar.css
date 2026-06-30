@@ -1,13 +1,15 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar {
-    box-shadow: var(--md-sys-elevation-level0, none);
+    box-shadow: var(--rc-shadow-level0, none);
     font-family: var(--md-sys-typescale-title-large-font, inherit);
-    transition: box-shadow 200ms ease, translate 200ms ease;
+    transition:
+      box-shadow 200ms ease,
+      translate 200ms ease;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar[data-scrolled] {
     --rc-app-bar-bg: var(--md-sys-color-surface-container, Canvas);
-    box-shadow: var(--md-sys-elevation-level2, none);
+    box-shadow: var(--rc-shadow-level2, none);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar :is(button, [role='button']) {
@@ -20,7 +22,9 @@
     color: inherit;
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar :is(button, [role='button']):hover {
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-app-bar
+    :is(button, [role='button']):hover {
     background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
   }
 }

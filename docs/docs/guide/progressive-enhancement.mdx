@@ -1,0 +1,40 @@
+---
+title: Progressive enhancement
+---
+
+# Progressive enhancement
+
+`rc-webcomponents` components enhance native HTML instead of replacing it.
+Where a native element can own forms, labels, focus, keyboard behavior, or
+accessibility semantics, the component keeps that native element connected and
+builds additional behavior around it.
+
+## Native children stay authoritative
+
+Form-control wrappers require the consumer to provide the native child:
+
+```html
+<rc-select>
+  <select name="status">
+    <option>Draft</option>
+    <option>Published</option>
+  </select>
+</rc-select>
+```
+
+The native element remains in the DOM after upgrade. That preserves:
+
+- form submission through `name` and `value`
+- native label association
+- pre-upgrade interaction when JavaScript is slow or unavailable
+- familiar browser behavior for assistive technology
+
+## Enhancement is additive
+
+The custom element adds coordinated state, ARIA where native semantics are not
+enough, richer keyboard handling, and optional styling hooks. It does not remove
+the underlying browser capability.
+
+This rule applies throughout the docs demos. Inspect any demo in its default
+theme mode and you should see the component as a small enhancement over native
+browser controls, not as a framework-owned replacement.

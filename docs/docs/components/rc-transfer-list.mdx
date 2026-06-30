@@ -1,0 +1,69 @@
+---
+title: rc-transfer-list
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { TransferListDemo } from '@site/src/components/ComponentDemos';
+
+# rc-transfer-list
+
+Transfer list that enhances a native `<select multiple>` into available and selected panes.
+
+The component renders two listboxes and transfer/reorder actions in between.
+Available options are on the left, and selected options appear on the right. It
+is an older enterprise/admin UI pattern, but solves the specific problem of
+multiple selection within a large amount of options.
+
+Modern use cases include user and permissions management tasks, multi-select for
+columns / fields / filters and list re-ordering.
+
+Use `compact` when the surrounding layout should stack the available list,
+actions, and selected list in one column. The component does not switch layout
+automatically at viewport breakpoints.
+
+<AtAGlance
+  packageName="@rcarls/rc-transfer-list"
+  tag="rc-transfer-list"
+  native="Requires a native select child"
+  state="Native select selection"
+  events={['rc-transfer-list-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-transfer-list
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-transfer-list
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-transfer-list/define';
+```
+
+## Live demo
+
+<TransferListDemo />
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-transfer-list" />

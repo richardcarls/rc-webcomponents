@@ -1,39 +1,32 @@
 {
-  "name": "@rcarls/docs",
+  "name": "@rcarls/rc-docs",
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "vitepress dev .",
-    "build": "vitepress build .",
-    "build:checked": "yarn.cmd run -T cem:analyze && vitepress build .",
-    "preview": "vitepress preview ."
+    "dev": "node scripts/build-rc-define.mjs && docusaurus start --host 0.0.0.0",
+    "build": "node scripts/build-rc-define.mjs && docusaurus build",
+    "serve": "docusaurus serve"
   },
   "dependencies": {
-    "@rcarls/rc-accordion": "workspace:^",
-    "@rcarls/rc-app-bar": "workspace:^",
-    "@rcarls/rc-combobox": "workspace:^",
-    "@rcarls/rc-dialog": "workspace:^",
-    "@rcarls/rc-disclosure": "workspace:^",
-    "@rcarls/rc-fab": "workspace:^",
-    "@rcarls/rc-listbox": "workspace:^",
-    "@rcarls/rc-markdown-editor": "workspace:^",
-    "@rcarls/rc-menu": "workspace:^",
-    "@rcarls/rc-menu-button": "workspace:^",
-    "@rcarls/rc-menubar": "workspace:^",
-    "@rcarls/rc-range-slider": "workspace:^",
-    "@rcarls/rc-search-bar": "workspace:^",
-    "@rcarls/rc-select": "workspace:^",
-    "@rcarls/rc-slider": "workspace:^",
-    "@rcarls/rc-splitter": "workspace:^",
-    "@rcarls/rc-textarea": "workspace:^",
+    "@docusaurus/core": "^3.10.1",
+    "@docusaurus/preset-classic": "^3.10.1",
+    "@mdx-js/react": "^3.1.1",
+    "@rcarls/rc-textarea-plugin-markdown": "workspace:^",
     "@rcarls/rc-theme-material": "workspace:^",
-    "@rcarls/rc-toolbar": "workspace:^",
-    "@rcarls/rc-transfer-list": "workspace:^",
-    "@rcarls/rc-virtual-canvas": "workspace:^",
+    "@rcarls/rc-theme-substrate": "workspace:^",
     "@rcarls/rc-webcomponents": "workspace:^",
-    "lit": "^3.0.0"
+    "clsx": "^2.1.1",
+    "highlight.js": "^11.11.1",
+    "lit": "^3.0.0",
+    "prism-react-renderer": "^2.4.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "vitepress": "^1.6.3"
+    "@docusaurus/module-type-aliases": "^3.10.1",
+    "@docusaurus/tsconfig": "^3.10.1",
+    "@docusaurus/types": "^3.10.1",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0"
   }
 }
