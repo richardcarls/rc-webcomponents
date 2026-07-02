@@ -198,8 +198,11 @@ the docs dev server after rebuilding a dependency.
 
 ## Testing
 
-Tests run live DOM in a real Firefox browser via WebDriverIO and Vitest browser
-mode; there is no jsdom.
+Tests run live DOM in real browsers via Playwright and Vitest browser mode;
+there is no jsdom. Locally: Chromium and Firefox. In CI (`CI=true`): Chromium,
+Firefox, and WebKit. Browser config is shared via `vitest.browser.config.ts` at
+the repo root — add browsers or tweak options there instead of in per-package
+configs.
 
 ```ts
 import { html } from 'lit';
@@ -222,7 +225,7 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
   `label.control`.
 - Every component needs an `expectNoA11yViolations` test. For stateful widgets,
   audit the live open or active state, not only the resting state.
-- WebDriverIO locator `.click()` does not reliably reach native click listeners
+- Playwright locator `.click()` does not reliably reach native click listeners
   registered directly on the same element by a Lit directive. For directive-level
   click handlers, dispatch a bubbling `MouseEvent` on the element.
 - Use `(await el.element()).focus()` for programmatic focus. Avoid `.click()`
