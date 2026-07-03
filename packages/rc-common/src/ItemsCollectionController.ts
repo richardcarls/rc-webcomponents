@@ -414,7 +414,14 @@ export class ItemsCollectionController implements ReactiveController {
     if (!li || li.getAttribute('role') !== 'option') return;
     if (li.parentElement !== this._ul) return;
 
+    // Once this pointerdown is claimed as an option activation, stop it from
+    // continuing to bubble/compose past this point. Left unstopped, a composed
+    // event can still be observed by ancestors outside this component (e.g. a
+    // <label> wrapping an unrelated sibling control) and be reinterpreted as
+    // an interaction with something else entirely.
     e.preventDefault();
+    e.stopPropagation();
+
     const option = this.optionForElement(li);
 
     if (option) {

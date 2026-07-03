@@ -1,5 +1,14 @@
 # @rcarls/rc-transfer-list
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [88b4086]
+  - @rcarls/rc-common@0.3.2
+  - @rcarls/rc-listbox@0.3.2
+  - @rcarls/rc-toolbar@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes

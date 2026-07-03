@@ -222,6 +222,16 @@ combobox.value = ['apple', 'cherry'];
 
 **Controlled options**: call `event.preventDefault()` on `rc-combobox-create` and manage the `<option>` elements yourself (for example, in React state). After adding the option to the DOM, set `el.value` to include the new value. See [React: managing options as state](#react-managing-options-as-state) above.
 
+## Known Issues
+
+### Firefox for Android: `<label>`-wrapped multiple selects (worked around)
+
+On Firefox for Android (GeckoView), tapping anywhere within an ancestor `<label>`'s rendered "Geckoview and Fennec open select dropdown on tap of parent label; other browsers do not."  [Bugzilla 1475723](https://bugzilla.mozilla.org/show_bug.cgi?id=1475723)
+
+To workaround this bug, `rc-select` force-disables the slotted `<select multiple>` and hooks into the associated form's `submit` and `formdata` events to preserve constraint validation and form data participation.
+
+See the [rc-select Known Issues](./rc-select.mdx#known-issues) entry for consumer implications (pre-upgrade behavior, form submission, constraint validation).
+
 ## API
 
 <ApiTable tag="rc-combobox" />

@@ -63,6 +63,21 @@ import '@rcarls/rc-select/define';
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
+## Known Issues
+
+### Firefox for Android: `<label>`-wrapped multiple selects (countermeasure implemented)
+
+"Geckoview and Fennec open select dropdown on tap of parent label; other browsers do not."  [Bugzilla 1475723](https://bugzilla.mozilla.org/show_bug.cgi?id=1475723)
+
+To workaround this bug, `rc-select` force-disables the slotted `<select multiple>` and hooks into the associated form's `submit` and `formdata` events to preserve constraint validation and form data participation.
+
+Label activation on a disabled control is a spec-defined no-op, mitigating the issue while maintaining progressive enhancement with minimal lightdom meddling.
+
+However, there are two important caveats to this workaround:
+
+1. **No native validation bubble.** The browser cannot render its validation UI on a hidden control, so when submit-time enforcement finds the select invalid (e.g. `required` with nothing selected, or `setCustomValidity()`), the component cancels the submission, fires a cancelable `invalid` event on the select, and moves focus to the trigger. Call `preventDefault()` on the `invalid` event to supply your own error UI instead. `novalidate` forms, `formnovalidate` submitters, and `form.submit()` bypass enforcement, matching native scoping.
+2. **Disabling through the select is one-way after upgrade.** *Enabling* by removing the select's `disabled` (attribute or property) is captured: the component mirrors the intent and keeps the guard in place. But *disabling* through the select is not captured — the guard already holds the `disabled` attribute present, so re-setting it is indistinguishable from the guard's own writes. Set `disabled` on `<rc-select>` itself to disable the control after upgrade.
+
 ## API
 
 <ApiTable tag="rc-select" />

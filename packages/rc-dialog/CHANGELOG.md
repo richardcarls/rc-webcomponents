@@ -1,5 +1,12 @@
 # @rcarls/rc-dialog
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [88b4086]
+  - @rcarls/rc-common@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes
