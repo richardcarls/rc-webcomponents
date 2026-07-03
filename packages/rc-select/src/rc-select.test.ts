@@ -666,3 +666,191 @@ test('display="auto" resolves to chips on fine-pointer (mouse) devices', async (
     matchMediaSpy.mockRestore();
   }
 });
+
+test('picker guard: multiple slotted <select> is force-disabled without disabling the host', async () => {
+  // GeckoView (Firefox Android) opens a wrapped <select multiple>'s native picker
+  // for taps inside the ancestor <label>'s bounds (Mozilla bug 1475723); label
+  // activation on a disabled control is a spec no-op, so the guard disables it.
+  const screen = render(makeSelect({ multiple: true }));
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+  const $trigger = getTrigger(host);
+
+  expect($nativeSel.disabled).toBe(true);
+  expect(host.disabled).toBe(false);
+  expect($trigger.getAttribute('aria-disabled')).toBe('false');
+});
+
+test('picker guard: single-select slotted <select> is left enabled', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+
+  expect(host.querySelector('select')!.disabled).toBe(false);
+});
+
+test('picker guard: author-disabled multiple select still disables the host', async () => {
+  const screen = render(makeSelect({ multiple: true, disabled: true }));
+  const host = await getHost(screen);
+
+  expect(host.disabled).toBe(true);
+  expect(host.querySelector('select')!.disabled).toBe(true);
+});
+
+test('picker guard: multiple selection submits via formdata despite disabled select', async () => {
+  const screen = render(html`
+    <form>
+      <rc-select placeholder="Choose...">
+        <select aria-label="Tags" name="tags" multiple>
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+          <option value="cherry">Cherry</option>
+        </select>
+      </rc-select>
+    </form>
+  `);
+  const host = screen.container.querySelector('rc-select') as RCSelect;
+
+  await host.updateComplete;
+  await new Promise((r) => setTimeout(r, 0));
+
+  host.value = ['apple', 'cherry'];
+  await host.updateComplete;
+
+  const $form = screen.container.querySelector('form')!;
+  const data = new FormData($form);
+
+  expect(data.getAll('tags')).toEqual(['apple', 'cherry']);
+});
+
+test('picker guard: removing disabled from the select is captured as enable intent', async () => {
+  const screen = render(makeSelect({ multiple: true, disabled: true }));
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+
+  expect(host.disabled).toBe(true);
+
+  // Consumer enables the control through the slotted select (property or
+  // attribute — both reflect to the same attribute mutation).
+  $nativeSel.disabled = false;
+
+  // MutationObserver delivery is async
+  await new Promise((r) => setTimeout(r, 10));
+  await host.updateComplete;
+
+  expect(host.disabled).toBe(false);
+  expect($nativeSel.disabled).toBe(true);
+});
+
+test('picker guard: required multiple select blocks form submission when empty', async () => {
+  const screen = render(html`
+    <form>
+      <rc-select placeholder="Choose...">
+        <select aria-label="Tags" name="tags" multiple required>
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+        </select>
+      </rc-select>
+    </form>
+  `);
+  const host = screen.container.querySelector('rc-select') as RCSelect;
+
+  await host.updateComplete;
+  await new Promise((r) => setTimeout(r, 0));
+
+  const $form = screen.container.querySelector('form')!;
+  const $nativeSel = host.querySelector('select')!;
+  const invalidHandler = vi.fn();
+  let submitPrevented: boolean | null = null;
+
+  $nativeSel.addEventListener('invalid', invalidHandler);
+  $form.addEventListener('submit', (e) => {
+    submitPrevented = e.defaultPrevented;
+    e.preventDefault();
+  });
+
+  $form.requestSubmit();
+  await host.updateComplete;
+
+  expect(submitPrevented).toBe(true);
+  expect(invalidHandler).toHaveBeenCalledOnce();
+  expect(document.activeElement).toBe(host);
+});
+
+test('picker guard: required multiple select submits once a value is selected', async () => {
+  const screen = render(html`
+    <form>
+      <rc-select placeholder="Choose...">
+        <select aria-label="Tags" name="tags" multiple required>
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+        </select>
+      </rc-select>
+    </form>
+  `);
+  const host = screen.container.querySelector('rc-select') as RCSelect;
+
+  await host.updateComplete;
+  await new Promise((r) => setTimeout(r, 0));
+
+  host.value = ['banana'];
+  await host.updateComplete;
+
+  const $form = screen.container.querySelector('form')!;
+  let submitPrevented: boolean | null = null;
+
+  $form.addEventListener('submit', (e) => {
+    submitPrevented = e.defaultPrevented;
+    e.preventDefault();
+  });
+
+  $form.requestSubmit();
+  await host.updateComplete;
+
+  expect(submitPrevented).toBe(false);
+});
+
+test('picker guard: novalidate form skips submit-time constraint enforcement', async () => {
+  const screen = render(html`
+    <form novalidate>
+      <rc-select placeholder="Choose...">
+        <select aria-label="Tags" name="tags" multiple required>
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+        </select>
+      </rc-select>
+    </form>
+  `);
+  const host = screen.container.querySelector('rc-select') as RCSelect;
+
+  await host.updateComplete;
+  await new Promise((r) => setTimeout(r, 0));
+
+  const $form = screen.container.querySelector('form')!;
+  let submitPrevented: boolean | null = null;
+
+  $form.addEventListener('submit', (e) => {
+    submitPrevented = e.defaultPrevented;
+    e.preventDefault();
+  });
+
+  $form.requestSubmit();
+  await host.updateComplete;
+
+  expect(submitPrevented).toBe(false);
+});
+
+test('native <select> click has its default action suppressed', async () => {
+  // Regression test: some mobile browsers (observed on Firefox Android)
+  // still run a <label>'s click-forwarding activation behavior on the
+  // hidden native <select> — that algorithm doesn't check focusability or
+  // display, so it can reach the select and open its native picker UI
+  // unless the select's own click default action is suppressed.
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+
+  const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+  $nativeSel.dispatchEvent(clickEvent);
+
+  expect(clickEvent.defaultPrevented).toBe(true);
+});
