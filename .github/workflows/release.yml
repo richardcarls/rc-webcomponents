@@ -34,7 +34,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Install Playwright browsers
-        run: yarn playwright install --with-deps chromium firefox
+        run: yarn playwright install --with-deps chromium firefox webkit
 
       - name: Fetch release tags
         run: git fetch --tags --force
