@@ -566,3 +566,103 @@ test('adding <option> preserves current selection', async () => {
 
   expect(host.selectedValues).toEqual(['banana']);
 });
+
+test('touch pointerdown (pointerType: touch) selects an option and syncs native <select>', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+
+  host.openPopup();
+  await host.updateComplete;
+
+  const $listbox = host.renderRoot.querySelector('rc-listbox')!;
+
+  $listbox.querySelector<HTMLElement>('[data-value="banana"]')!.dispatchEvent(
+    new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true, cancelable: true }),
+  );
+  await host.updateComplete;
+
+  expect(host['_selectedValues'].has('banana')).toBe(true);
+  expect($nativeSel.value).toBe('banana');
+  expect(host.open).toBe(false);
+});
+
+test('touch pointerdown selects multiple options and syncs native <select>', async () => {
+  const screen = render(makeSelect({ multiple: true }));
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+
+  host.openPopup();
+  await host.updateComplete;
+
+  const $listbox = host.renderRoot.querySelector('rc-listbox')!;
+
+  for (const value of ['apple', 'banana']) {
+    $listbox.querySelector<HTMLElement>(`[data-value="${value}"]`)!.dispatchEvent(
+      new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true, cancelable: true }),
+    );
+  }
+  await host.updateComplete;
+
+  expect(host.selectedValues).toEqual(['apple', 'banana']);
+  expect(Array.from($nativeSel.selectedOptions).map((opt) => opt.value)).toEqual([
+    'apple',
+    'banana',
+  ]);
+});
+
+test('display="auto" resolves to compact on coarse-pointer (touch) devices', async () => {
+  const matchMediaSpy = vi
+    .spyOn(window, 'matchMedia')
+    .mockReturnValue({ matches: true } as unknown as MediaQueryList);
+
+  try {
+    const screen = render(makeSelect({ multiple: true }));
+    const host = await getHost(screen);
+
+    host.openPopup();
+    await host.updateComplete;
+
+    const $listbox = host.renderRoot.querySelector('rc-listbox')!;
+
+    for (const value of ['apple', 'banana']) {
+      $listbox.querySelector<HTMLElement>(`[data-value="${value}"]`)!.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, cancelable: true }),
+      );
+    }
+    await host.updateComplete;
+
+    expect(host.renderRoot.querySelectorAll('[part~="chip"]')).toHaveLength(0);
+
+    const $display = host.renderRoot.querySelector('[part="value-display"]')!;
+
+    expect($display.textContent).toContain('+');
+  } finally {
+    matchMediaSpy.mockRestore();
+  }
+});
+
+test('display="auto" resolves to chips on fine-pointer (mouse) devices', async () => {
+  const matchMediaSpy = vi
+    .spyOn(window, 'matchMedia')
+    .mockReturnValue({ matches: false } as unknown as MediaQueryList);
+
+  try {
+    const screen = render(makeSelect({ multiple: true }));
+    const host = await getHost(screen);
+
+    host.openPopup();
+    await host.updateComplete;
+
+    const $listbox = host.renderRoot.querySelector('rc-listbox')!;
+
+    $listbox
+      .querySelector<HTMLElement>('[data-value="apple"]')!
+      .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+    await host.updateComplete;
+
+    expect(host.renderRoot.querySelectorAll('[part~="chip"]')).toHaveLength(1);
+  } finally {
+    matchMediaSpy.mockRestore();
+  }
+});
