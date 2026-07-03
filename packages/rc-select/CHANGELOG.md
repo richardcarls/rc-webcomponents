@@ -1,5 +1,14 @@
 # @rcarls/rc-select
 
+## 0.3.2
+
+### Patch Changes
+
+- 88b4086: Fix Firefox for Android bug: `<label>`-wrapped multiple selects [Bugzilla 1475723](https://bugzilla.mozilla.org/show_bug.cgi?id=1475723)
+- Updated dependencies [88b4086]
+  - @rcarls/rc-common@0.3.2
+  - @rcarls/rc-listbox@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes

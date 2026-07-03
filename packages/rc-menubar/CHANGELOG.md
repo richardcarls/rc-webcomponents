@@ -1,5 +1,14 @@
 # @rcarls/rc-menubar
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [88b4086]
+  - @rcarls/rc-common@0.3.2
+  - @rcarls/rc-menu@0.3.2
+  - @rcarls/rc-menu-button@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes
