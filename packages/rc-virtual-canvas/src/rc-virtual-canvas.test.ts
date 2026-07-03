@@ -20,7 +20,9 @@ function getScrollRoot($host: RCVirtualCanvas) {
 }
 
 function lastRenderEvent(renderSpy: ReturnType<typeof vi.fn>) {
-  return renderSpy.mock.calls.at(-1)?.[0] as CustomEvent<RCVirtualCanvasRenderInit> | undefined;
+  return renderSpy.mock.calls[renderSpy.mock.calls.length - 1]?.[0] as
+    | CustomEvent<RCVirtualCanvasRenderInit>
+    | undefined;
 }
 
 test('RCVirtualCanvas dispatches rc-virtual-canvas-render with viewport and content detail', async () => {
@@ -53,6 +55,43 @@ test('RCVirtualCanvas dispatches rc-virtual-canvas-render with viewport and cont
   expect(event?.detail.viewRect.y).toBe(0);
   expect(event?.detail.reason).toBeTypeOf('string');
   expect(event?.detail.time).toBeTypeOf('number');
+});
+
+test('RCVirtualCanvas falls back when device-pixel-content-box observation is unsupported', async () => {
+  const observe = ResizeObserver.prototype.observe;
+  const observeSpy = vi
+    .spyOn(ResizeObserver.prototype, 'observe')
+    .mockImplementation(function (
+      this: ResizeObserver,
+      target: Element,
+      options?: ResizeObserverOptions,
+    ) {
+      if (options?.box === 'device-pixel-content-box') {
+        throw new TypeError('Unsupported box option');
+      }
+
+      return observe.call(this, target, options);
+    });
+  const renderSpy = vi.fn();
+
+  try {
+    render(html`
+      <rc-virtual-canvas data-testid="virtual-canvas" @rc-virtual-canvas-render=${renderSpy}>
+        <canvas style="width: 320px; height: 240px;"></canvas>
+      </rc-virtual-canvas>
+    `);
+
+    await vi.waitFor(() => {
+      expect(renderSpy).toHaveBeenCalled();
+    });
+
+    expect(observeSpy).toHaveBeenCalledWith(expect.any(HTMLCanvasElement), {
+      box: 'device-pixel-content-box',
+    });
+    expect(observeSpy).toHaveBeenCalledWith(expect.any(HTMLCanvasElement));
+  } finally {
+    observeSpy.mockRestore();
+  }
 });
 
 test('RCVirtualCanvas exposes immutable viewport snapshots', async () => {
@@ -204,7 +243,7 @@ test('RCVirtualCanvas dispatches pointer events with content coordinates and mod
     }),
   );
 
-  const event = pointerSpy.mock.calls.at(-1)?.[0] as
+  const event = pointerSpy.mock.calls[pointerSpy.mock.calls.length - 1]?.[0] as
     | CustomEvent<RCVirtualCanvasPointerInit>
     | undefined;
 
@@ -281,7 +320,7 @@ test('RCVirtualCanvas leaves slotted overlay pointer events to overlay content',
     }),
   );
 
-  const event = pointerSpy.mock.calls.at(-1)?.[0] as
+  const event = pointerSpy.mock.calls[pointerSpy.mock.calls.length - 1]?.[0] as
     | CustomEvent<RCVirtualCanvasPointerInit>
     | undefined;
 
@@ -459,7 +498,7 @@ test('RCVirtualCanvas schedules a fresh animation frame when reconnected with a 
 
     expect(requestAnimationFrameSpy).toHaveBeenCalledTimes(2);
 
-    const callback = animationFrameCallbacks.at(-1);
+    const callback = animationFrameCallbacks[animationFrameCallbacks.length - 1];
 
     if (!callback) {
       throw new Error('No animation frame was scheduled');

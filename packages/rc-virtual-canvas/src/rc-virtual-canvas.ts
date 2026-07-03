@@ -262,7 +262,7 @@ export class RCVirtualCanvas extends LitElement {
       (e.currentTarget as HTMLSlotElement)
         .assignedElements()
         .filter((el) => el instanceof HTMLCanvasElement)
-        .at(0) ?? null;
+        [0] ?? null;
 
     if (this._$canvas != null) {
       this._viewRect = {
@@ -273,11 +273,24 @@ export class RCVirtualCanvas extends LitElement {
       };
 
       this._syncCanvasBackingStore();
-      this._resizeObserver.observe(this._$canvas, {
-        box: 'device-pixel-content-box',
-      });
+      this._observeCanvasResize(this._$canvas);
 
       this._scheduleRender('viewport-change');
+    }
+  }
+
+  /** Observes canvas size with DPR-accurate boxes when the browser supports them */
+  protected _observeCanvasResize($canvas: HTMLCanvasElement) {
+    try {
+      this._resizeObserver.observe($canvas, {
+        box: 'device-pixel-content-box',
+      });
+    } catch (error) {
+      if (!(error instanceof TypeError)) {
+        throw error;
+      }
+
+      this._resizeObserver.observe($canvas);
     }
   }
 
