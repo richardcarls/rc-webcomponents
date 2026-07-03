@@ -447,3 +447,65 @@ test('toggle button click closes popup when open', async () => {
 
   expect($host.open).toBe(false);
 });
+
+test('touch pointerdown selects active option, closes popup, sets input value', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+
+  $host.openPopup();
+  await $host.updateComplete;
+
+  const $listbox = $host.renderRoot.querySelector('rc-listbox')!;
+
+  $listbox.querySelector<HTMLElement>('[data-value="apple"]')!.dispatchEvent(
+    new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true, cancelable: true }),
+  );
+  await $host.updateComplete;
+
+  expect($host.open).toBe(false);
+  expect($input.value).toBe('Apple');
+  expect($host.selectedValues).toEqual(['apple']);
+});
+
+test('composition input events (mobile IME) still filter the listbox', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+
+  // Simulate an intermediate composition update from a mobile IME keyboard
+  // (e.g. Gboard predictive text) — _handleInput doesn't special-case
+  // isComposing, so composition and committed input are handled identically.
+  $input.value = 'ba';
+  $input.dispatchEvent(
+    new InputEvent('input', { bubbles: true, isComposing: true, data: 'ba' }),
+  );
+  await $host.updateComplete;
+
+  const $listbox = $host.renderRoot.querySelector('rc-listbox')!;
+  const $apple = $listbox.querySelector<HTMLElement>('[data-value="apple"]')!;
+  const $banana = $listbox.querySelector<HTMLElement>('[data-value="banana"]')!;
+
+  expect($apple.hidden).toBe(true);
+  expect($banana.hidden).toBe(false);
+});
+
+test('autofill-style input event (inputType: insertReplacementText) is handled without error', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+
+  // Mobile autofill/contact-suggestion services can replace the whole field
+  // value in one InputEvent instead of a typed sequence.
+  $input.value = '123 Autofilled Ave';
+  $input.dispatchEvent(
+    new InputEvent('input', { bubbles: true, inputType: 'insertReplacementText' }),
+  );
+  await $host.updateComplete;
+
+  const $listbox = $host.renderRoot.querySelector('rc-listbox')!;
+  const $options = Array.from($listbox.querySelectorAll<HTMLElement>('[role="option"]'));
+
+  expect($host.open).toBe(true);
+  expect($options.every(($opt) => $opt.hidden)).toBe(true);
+});

@@ -185,6 +185,15 @@ export class RCSelect extends LitElement {
 
   private _selectionInitialized = false;
 
+  /** True while `_applyPickerGuard` has force-disabled the slotted multiple `<select>`. */
+  protected _pickerGuardActive = false;
+
+  /** Consumer's `disabled` state on the select before the picker guard forced it; restored on teardown. */
+  protected _pickerGuardConsumerDisabled = false;
+
+  /** Form currently carrying the picker guard's `formdata` listener. */
+  protected _pickerGuardForm: HTMLFormElement | null = null;
+
   /** Accumulated printable characters for type-ahead matching; cleared after 500 ms idle. */
   protected _typeAheadBuffer = '';
 
@@ -214,6 +223,14 @@ export class RCSelect extends LitElement {
 
     document.addEventListener('click', this._onDocClick, { capture: true });
     document.addEventListener('keydown', this._onDocKeyDown, { capture: true });
+
+    // Reconnect keeps the same select (NativeChildController only re-fires on
+    // identity change), so re-attach the guard's formdata listener directly.
+    const $select = this._selectRef?.deref();
+
+    if ($select && this._pickerGuardActive) {
+      this._syncFormListeners($select.form);
+    }
   }
 
   override disconnectedCallback() {
@@ -225,6 +242,7 @@ export class RCSelect extends LitElement {
     });
 
     this._mutationObserver?.disconnect();
+    this._syncFormListeners(null);
   }
 
   override updated(changed: PropertyValues) {
@@ -372,6 +390,135 @@ export class RCSelect extends LitElement {
   };
 
   /**
+   * Suppress the native `<select>`'s default click action
+   */
+  protected _onNativeSelectClick = (e: Event) => {
+    e.preventDefault();
+  };
+
+  /**
+   * Countermeasure for select["multiple"] bug in Firefox for Android / GeckoView.
+   *
+   * Works around a GeckoView bug where tapping anywhere inside an
+   * ancestor `<label>`'s bounds opens the native picker dialog of a wrapped
+   * `<select multiple>`, even though the select is hidden and the tap landed on this
+   * component's own UI.
+   *
+   * Label activation on a disabled control is a spec-defined no-op, so the slotted select
+   * is force-disabled after upgrade while it is `multiple`. A disabled select submits
+   * nothing, so form submission is restored by appending the current selection in a
+   * `formdata` listener on the owning form (`_handleFormData`). A disabled select is also
+   * barred from native constraint validation, so `_handleFormSubmit` enforces its
+   * `ValidityState` at submit time instead.
+   *
+   * Scoped to multiple selects: the single-select picker path is already suppressed by
+   * `_onNativeSelectClick`. Pre-upgrade behavior is unaffected — the guard
+   * only applies once the component initializes.
+   *
+   * @see https://bugzilla.mozilla.org/show_bug.cgi?id=1475723
+   */
+  protected _applyPickerGuard($select: HTMLSelectElement): void {
+    if ($select.multiple && !this._pickerGuardActive) {
+      this._pickerGuardActive = true;
+      this._pickerGuardConsumerDisabled = $select.disabled;
+
+      $select.disabled = true;
+    } else if (!$select.multiple && this._pickerGuardActive) {
+      this._pickerGuardActive = false;
+
+      $select.disabled = this._pickerGuardConsumerDisabled;
+    } else if ($select.multiple && !$select.disabled) {
+      // The guard holds `disabled` present, so only the consumer removes it —
+      // capture that as enable intent, mirror it on the host, and re-assert the
+      // guard. (The reverse — consumer setting disabled while guarded — is a
+      // same-value attribute write whose mutation record is indistinguishable
+      // from the guard's own writes; disabling is driven through the host
+      // instead.)
+      this._pickerGuardConsumerDisabled = false;
+      this.disabled = false;
+
+      $select.disabled = true;
+    }
+
+    this._syncFormListeners(this._pickerGuardActive ? $select.form : null);
+  }
+
+  /** Moves the picker guard's `formdata` and `submit` listeners to `$form`; pass `null` to detach. */
+  protected _syncFormListeners($form: HTMLFormElement | null): void {
+    if ($form === this._pickerGuardForm) {
+      return;
+    }
+
+    this._pickerGuardForm?.removeEventListener('formdata', this._handleFormData);
+    this._pickerGuardForm?.removeEventListener('submit', this._handleFormSubmit, {
+      capture: true,
+    });
+    this._pickerGuardForm = $form;
+
+    $form?.addEventListener('formdata', this._handleFormData);
+    // Capture so invalid submissions are cancelled before consumer submit handlers run.
+    $form?.addEventListener('submit', this._handleFormSubmit, { capture: true });
+  }
+
+  /**
+   * Appends the current selection to the owning form's entry list.
+   *
+   * Replaces the submission the select would have produced were it
+   * not force-disabled by `_applyPickerGuard`.
+   *
+   * Append-only: entries from other same-named controls in the form
+   * are left alone.
+   */
+  protected _handleFormData = (e: FormDataEvent) => {
+    const $select = this._selectRef?.deref();
+
+    if (!this._pickerGuardActive || !$select?.name) {
+      return;
+    }
+
+    for (const value of this.selectedValues) {
+      e.formData.append($select.name, value);
+    }
+  };
+
+  /**
+   * Enforces the slotted select's constraints at submit time.
+   *
+   * Mirrors native scoping: skipped for `novalidate`
+   * forms and `formnovalidate` submitters, and never runs for `form.submit()`
+   *
+   * The native validation bubble cannot render on a hidden control, so a
+   * cancelable `invalid` event is fired on the select (matching native
+   * reporting) and focus moves to the trigger unless the consumer cancels it.
+   */
+  protected _handleFormSubmit = (e: SubmitEvent) => {
+    const $select = this._selectRef?.deref();
+
+    if (!this._pickerGuardActive || !$select) {
+      return;
+    }
+
+    const $form = e.currentTarget as HTMLFormElement;
+    const $submitter = e.submitter as HTMLButtonElement | HTMLInputElement | null;
+
+    if ($form.noValidate || $submitter?.formNoValidate) {
+      return;
+    }
+
+    if ($select.validity.valid) {
+      return;
+    }
+
+    e.preventDefault();
+
+    const showFallbackUI = $select.dispatchEvent(new Event('invalid', { cancelable: true }));
+
+    if (showFallbackUI) {
+      this._$trigger?.focus();
+    }
+  };
+
+  /**
    * Resolves the slotted `<select>` on every `slotchange`, wires `_mutationObserver`,
    * and seeds initial state via `queueMicrotask` to stay safe inside framework reactive passes.
    */
@@ -383,11 +530,27 @@ export class RCSelect extends LitElement {
     // Disconnect synchronously so the old observer stops immediately.
     this._mutationObserver?.disconnect();
     this._mutationObserver = null;
+
+    const $previous = this._selectRef?.deref();
+
+    if ($previous) {
+      $previous.removeEventListener('click', this._onNativeSelectClick);
+
+      if (this._pickerGuardActive) {
+        $previous.disabled = this._pickerGuardConsumerDisabled;
+      }
+    }
+
+    this._pickerGuardActive = false;
+    this._syncFormListeners(null);
+
     this._selectRef = $select ? new WeakRef($select) : null;
 
     if (!$select) {
       return;
     }
+
+    $select.addEventListener('click', this._onNativeSelectClick);
 
     // Defer all DOM reads/mutations so this handler is instantaneous when
     // slotchange fires synchronously inside a framework reactive update pass
@@ -400,6 +563,7 @@ export class RCSelect extends LitElement {
       this.multiple = $select.multiple;
       this.disabled = $select.disabled;
       this._syncOptionsFromSelect($select);
+      this._applyPickerGuard($select);
 
       this._mutationObserver = new MutationObserver(() => {
         const $current = this._selectRef?.deref();
@@ -409,7 +573,14 @@ export class RCSelect extends LitElement {
         }
 
         this.multiple = $current.multiple;
-        this.disabled = $current.disabled;
+
+        // While the picker guard holds the select disabled, its `disabled`
+        // attribute reflects the guard, not author intent — don't echo it.
+        if (!this._pickerGuardActive) {
+          this.disabled = $current.disabled;
+        }
+
+        this._applyPickerGuard($current);
 
         if (this._propertyOptions !== undefined) {
           this._applySelectionFromCurrentSource();
