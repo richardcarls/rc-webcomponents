@@ -1,9 +1,13 @@
 import { LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+
 import {
   DragController,
   NativeChildController,
   ResizeController,
+  type ResizeDirection,
+  type ResizeLifecycleDetail,
+  type ResizeOrigin,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 
@@ -80,6 +84,25 @@ export class RCDialog extends LitElement {
   @property({ type: String, reflect: true })
   resize: 'none' | 'both' | 'horizontal' | 'vertical' = 'none';
 
+  /**
+   * Origin for resize edge hit-testing or explicit handles.
+   *
+   * Empty preserves the historical free edge-detection behavior.
+   */
+  @property({ type: String, attribute: 'resize-origin' })
+  resizeOrigin: ResizeOrigin = '';
+
+  /**
+   * CSS selector, scoped to the inner `<dialog>`, for one or more explicit
+   * resize handles.
+   *
+   * Handles may override host behavior with:
+   * - `data-rc-dialog-resize-axis="x|y|both"`
+   * - `data-rc-dialog-resize-origin="top|right|bottom|left|top-left|..."`
+   */
+  @property({ type: String, attribute: 'resize-handle' })
+  resizeHandle = '';
+
   /** Edge hit-test thickness in px for resize detection. */
   @property({ type: Number, attribute: 'resize-threshold' })
   resizeThreshold = 8;
@@ -134,6 +157,7 @@ export class RCDialog extends LitElement {
       }
     },
   });
+
   // Tracks which <dialog> has its listeners wired; used by _teardownDialog to
   // remove listeners even after the element is removed from the DOM.
   private _$wired: WeakRef<HTMLDialogElement> | null = null;
@@ -243,6 +267,7 @@ export class RCDialog extends LitElement {
   protected _setupDialog($dialog: HTMLDialogElement | null = this._$dialog) {
     if (!$dialog) {
       this._teardownDialog();
+
       return;
     }
 
@@ -312,14 +337,34 @@ export class RCDialog extends LitElement {
     }
 
     if (this.resize !== 'none') {
-      // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
-      new ResizeController(this, {
-        target: $dialog,
-        direction: this.resize,
-        threshold: this.resizeThreshold,
-        step: this.resizeStep,
-        bounds: this.moveBounds,
-      });
+      const handles = this._resizeHandles($dialog);
+
+      if (handles.length > 0) {
+        for (const handle of handles) {
+          // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
+          new ResizeController(this, {
+            target: $dialog,
+            direction: this._resizeDirectionForHandle(handle),
+            handle,
+            origin: this._resizeOriginForHandle(handle),
+            threshold: this.resizeThreshold,
+            step: this.resizeStep,
+            bounds: this.moveBounds,
+            onResizeEnd: (detail) => this._onResizeEnd(detail),
+          });
+        }
+      } else {
+        // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
+        new ResizeController(this, {
+          target: $dialog,
+          direction: this.resize,
+          origin: this.resizeOrigin,
+          threshold: this.resizeThreshold,
+          step: this.resizeStep,
+          bounds: this.moveBounds,
+          onResizeEnd: (detail) => this._onResizeEnd(detail),
+        });
+      }
     }
 
     if (this._controlledOpen !== undefined) {
@@ -443,12 +488,53 @@ export class RCDialog extends LitElement {
     }
   };
 
+  /** Hook for subclasses to respond after a resize gesture has settled. */
+  protected _onResizeEnd(_detail: ResizeLifecycleDetail): void {}
+
+  private _resizeHandles($dialog: HTMLDialogElement): Element[] {
+    if (!this.resizeHandle) {
+      return [];
+    }
+
+    try {
+      return [...$dialog.querySelectorAll(this.resizeHandle)];
+    } catch {
+      if (import.meta.env.DEV) {
+        console.warn('[rc-dialog] Invalid resize-handle selector.', this.resizeHandle);
+      }
+
+      return [];
+    }
+  }
+
+  private _resizeDirectionForHandle(handle: Element): ResizeDirection {
+    const axis = handle.getAttribute('data-rc-dialog-resize-axis');
+
+    switch (axis) {
+      case 'x':
+        return 'horizontal';
+      case 'y':
+        return 'vertical';
+      case 'both':
+        return 'both';
+      default:
+        return this.resize;
+    }
+  }
+
+  private _resizeOriginForHandle(handle: Element): ResizeOrigin {
+    return (
+      (handle.getAttribute('data-rc-dialog-resize-origin') as ResizeOrigin | null) ??
+      this.resizeOrigin
+    );
+  }
+
   /**
    * Opens or closes the inner `<dialog>` and returns `true` if state actually changed.
    *
-   * @param open - Whether to open (`true`) or close (`false`).
-   * @param silent - When `true`, suppresses the outgoing `rc-dialog-toggle` event.
-   * @param modal - Whether to call `showModal()` (`true`) or `show()` (`false`).
+   * @param open - whether to open (`true`) or close (`false`)
+   * @param silent - when `true`, suppresses the outgoing `rc-dialog-toggle` event
+   * @param modal - whether to call `showModal()` (`true`) or `show()` (`false`)
    */
   protected _applyOpen(open: boolean, silent: boolean, modal = true): boolean {
     const $dialog = this._$dialog;

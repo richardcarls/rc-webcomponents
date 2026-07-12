@@ -1,6 +1,7 @@
 # `@rcarls/rc-splitter`
 
-Resizable pane splitter with pointer, keyboard, and collapse/restore controls, following the [WAI-ARIA Window Splitter pattern](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/).
+Resizable pane splitter with pointer, keyboard, and collapse/restore controls, following the
+[WAI-ARIA Window Splitter pattern](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/).
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-splitter](https://richardcarls.github.io/rc-webcomponents/components/rc-splitter).
 
@@ -23,7 +24,8 @@ import { RCSplitter } from '@rcarls/rc-splitter';    // named class export
 
 ## Basic usage
 
-Place the primary pane in the default slot and the secondary pane in the `secondary` slot. The splitter takes up the full available space of its container.
+Place the primary pane in the default slot and the secondary pane in the `secondary` slot. The
+splitter takes up the full available space of its container.
 
 ```html
 <rc-splitter style="width: 100%; height: 400px;">
@@ -51,24 +53,25 @@ Vertical orientation:
 |---|---|---|---|---|
 | `label` | `label` | `string` | `'Splitter'` | Accessible label applied to the primary pane and used by the separator handle via `aria-labelledby`. |
 | `orientation` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Layout direction. `horizontal` = left/right panes; `vertical` = top/bottom panes. Reflects to attribute. |
-| `mode` | `mode` | `'length' \| 'percent'` | `'length'` | Unit for `value`. `length` = pixels of the primary pane; `percent` = percentage of total container size. |
+| `mode` | `mode` | `'length' \| 'percent' \| 'fixed'` | `'length'` | Unit and sizing behavior for `value`. `length` = pixels of the primary pane; `percent` = percentage of total container size; `fixed` = clampable px primary pane while the secondary pane flexes. |
 | `step` | `step` | `number` | `1` | Keyboard step size in the current unit (px or %). Shift multiplies by 10×. |
-| `value` | — | `number \| null` | `null` | Initial primary pane size. When `null`, the pane uses its natural size until first interaction. Setting via property updates the separator position. |
-| `fixed` | `fixed` | `boolean` | `false` | Disable resizing. The separator is rendered but non-interactive. |
+| `value` | None | `number \| null` | `null` | Initial primary pane size. When `null`, the pane uses its natural size until first interaction. Setting via property updates the separator position. |
+| `fixed` | `fixed` | `boolean` | `false` | Disable resizing. This legacy boolean locks interaction and is distinct from `mode="fixed"`. |
 
 ### CSS custom properties
 
 | Property | Default | Description |
 |---|---|---|
 | `--rc-splitter-separator-size` | `6px` | Thickness of the separator bar |
-| `--rc-splitter-separator-handle-size` | `100%` | Length of the drag handle within the separator (set to a smaller value to create a centred grab handle) |
+| `--rc-splitter-separator-handle-size` | `100%` | Length of the drag handle within the separator (set to a smaller value to create a centered grab handle) |
 | `--rc-splitter-separator-color` | `ButtonFace` | Background color of the separator bar |
 | `--rc-splitter-separator-border-inline-start` | `1px solid ButtonBorder` | Inline-start (left in LTR) border of the separator |
 | `--rc-splitter-separator-border-inline-end` | `1px solid ButtonBorder` | Inline-end (right in LTR) border of the separator |
 | `--rc-splitter-separator-border-block-start` | `1px solid ButtonBorder` | Block-start (top) border when `orientation="vertical"` |
 | `--rc-splitter-separator-border-block-end` | `1px solid ButtonBorder` | Block-end (bottom) border when `orientation="vertical"` |
 
-All color defaults use CSS system color keywords so they adapt automatically to the user's color scheme and forced-color modes.
+All color defaults use CSS system color keywords so they adapt automatically to the user's
+color scheme and forced-color modes.
 
 ### CSS parts
 
@@ -101,7 +104,7 @@ valueText: string               // Human-readable value string (e.g. "240px" or 
 
 ---
 
-## Keyboard behaviour
+## Keyboard behavior
 
 Focus the separator handle (click or Tab), then:
 
@@ -122,15 +125,15 @@ The separator handle implements the WAI-ARIA slider role pattern:
 
 | Attribute | Where | Value |
 |---|---|---|
-| `role="separator"` | Separator handle `div` | — |
+| `role="separator"` | Separator handle `div` | None |
 | `aria-label` | Primary pane | Value of `label` property |
 | `aria-orientation` | Separator handle | `"horizontal"` or `"vertical"` |
 | `aria-valuenow` | Separator handle | Current numeric value |
 | `aria-valuemin` | Separator handle | `0` |
 | `aria-valuemax` | Separator handle | Container width or height in current mode units |
-| `aria-valuetext` | Separator handle | Human-readable string (e.g. `"240px"`) |
-| `aria-controls` | Separator handle | `"primary"` — ID of the primary pane |
-| `aria-labelledby` | Separator handle | `"primary"` — uses the primary pane as label context |
+| `aria-valuetext` | Separator handle | Human-readable string (for example, `"240px"`) |
+| `aria-controls` | Separator handle | `"primary"`, the ID of the primary pane |
+| `aria-labelledby` | Separator handle | `"primary"`, using the primary pane as label context |
 | `tabindex="0"` | Separator handle | Always focusable |
 
 ---
@@ -158,4 +161,5 @@ The separator handle implements the WAI-ARIA slider role pattern:
 
 ## Browser support
 
-All modern browsers. Requires Web Components support (Chrome 67+, Firefox 63+, Safari 12.1+) and ResizeObserver (Chrome 64+, Firefox 69+, Safari 13.1+).
+All modern browsers. Requires Web Components support (Chrome 67+, Firefox 63+, Safari 12.1+)
+and ResizeObserver (Chrome 64+, Firefox 69+, Safari 13.1+).
