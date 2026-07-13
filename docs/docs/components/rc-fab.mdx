@@ -81,8 +81,7 @@ Add the `scroll-reveal` attribute to hide the FAB until the user has scrolled pa
 
 ```html
 <rc-fab scroll-reveal>
-  <button type="button" aria-label="Back to top"
-          onclick="scrollTo({ top: 0, behavior: 'smooth' })">
+  <button type="button" aria-label="Back to top" onclick="scrollTo({ top: 0, behavior: 'smooth' })">
     <span aria-hidden="true">↑</span>
   </button>
 </rc-fab>
@@ -249,7 +248,9 @@ scroll-up — entirely in CSS using a scroll-driven animation.
 }
 
 @keyframes fab-label-reveal {
-  to { max-width: 10rem; }
+  to {
+    max-width: 10rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -268,7 +269,9 @@ Add a smooth fade-in when the FAB is inserted into the DOM or when the
 
 ```css
 rc-fab {
-  transition: opacity 200ms ease, display 200ms;
+  transition:
+    opacity 200ms ease,
+    display 200ms;
   transition-behavior: allow-discrete;
 }
 
@@ -281,23 +284,15 @@ rc-fab {
 
 ### Material Design 3 FAB
 
-Override the circular default with Material's rounded-square shape and supply
-your design tokens.
+Apply `rc-theme-material` for Material defaults. Size classes stay in CSS rather
+than the component API:
 
-```css
-rc-fab {
-  --rc-fab-radius: 1rem;           /* MD3 FAB shape */
-  --rc-fab-bg: var(--md-sys-color-primary-container);
-  --rc-fab-color: var(--md-sys-color-on-primary-container);
-  --rc-fab-shadow:
-    0 1px 2px rgb(0 0 0 / 0.3),
-    0 2px 6px 2px rgb(0 0 0 / 0.15);
-  --rc-fab-shadow-hover:
-    0 2px 4px rgb(0 0 0 / 0.3),
-    0 4px 8px 3px rgb(0 0 0 / 0.15);
-  --rc-fab-size: 3.5rem;
-}
+```html
+<rc-fab class="rc-fab--large">
+  <button type="button" aria-label="Create">...</button>
+</rc-fab>
 ```
 
-For the large FAB variant set `--rc-fab-size: 6rem` and `--rc-fab-radius: 1.75rem`.
-For the extended FAB add text inside the button alongside the icon.
+Use `rc-fab--small` and `rc-fab--large` for Material size presets, or set
+`--rc-fab-size` and `--rc-fab-radius` directly. For an action menu, use
+[`rc-fab-menu`](/components/rc-fab-menu).

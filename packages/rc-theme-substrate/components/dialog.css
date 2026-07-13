@@ -16,7 +16,7 @@
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog > dialog::backdrop {
-    background: color-mix(in srgb, CanvasText 32%, transparent);
+    background: var(--rc-dialog-scrim, color-mix(in srgb, CanvasText 32%, transparent));
     transition: opacity var(--substrate-motion-duration-slow, 240ms)
       var(--substrate-motion-easing, ease);
   }

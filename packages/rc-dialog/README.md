@@ -93,6 +93,13 @@ returnValue: string  // The return value set when the dialog last closed.
 
 ---
 
+### Theming
+
+Set `--rc-dialog-scrim` on `<rc-dialog>` or a theme scope to customize the modal
+backdrop color. Theme packages consume this token in their `::backdrop` styles.
+
+---
+
 ## Examples
 
 ### Movable dialog with a drag handle

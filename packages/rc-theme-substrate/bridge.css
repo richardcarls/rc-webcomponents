@@ -33,6 +33,12 @@
     --rc-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
     --rc-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
     --rc-item-gap: var(--substrate-item-gap, 0.5rem);
+    --rc-list-item-gap: var(--rc-item-gap);
+    --rc-list-item-min-block-size: 2.25rem;
+    --rc-list-item-padding-block: var(--rc-item-padding-block);
+    --rc-list-item-padding-inline: var(--rc-item-padding-inline);
+    --rc-list-item-selected-bg: var(--rc-highlight, Highlight);
+    --rc-list-item-selected-color: var(--rc-highlight-text, HighlightText);
     --rc-radius-sm: var(--substrate-radius-sm, 0.25rem);
     --rc-radius-md: var(--substrate-radius-md, 0.5rem);
     --rc-control-radius: var(--substrate-radius-md, 0.5rem);
@@ -40,22 +46,23 @@
     --rc-focus-ring-offset: var(--substrate-focus-ring-offset, 2px);
     --rc-disabled-opacity: var(--substrate-disabled-opacity, 0.52);
     --rc-motion-duration: var(--substrate-motion-duration, 160ms);
+    --rc-dialog-scrim: color-mix(in srgb, CanvasText 32%, transparent);
   }
 
   .rc-theme-substrate rc-listbox,
   :host(.rc-theme-substrate) rc-listbox,
   .rc-theme-substrate rc-menu,
   :host(.rc-theme-substrate) rc-menu {
-    --rc-listbox-option-gap: var(--substrate-item-gap, 0.5rem);
-    --rc-listbox-option-min-block-size: 2.25rem;
-    --rc-listbox-option-padding-block: var(--substrate-item-padding-block, 0.55rem);
-    --rc-listbox-option-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+    --rc-listbox-option-gap: var(--rc-list-item-gap, 0.5rem);
+    --rc-listbox-option-min-block-size: var(--rc-list-item-min-block-size, 2.25rem);
+    --rc-listbox-option-padding-block: var(--rc-list-item-padding-block, 0.55rem);
+    --rc-listbox-option-padding-inline: var(--rc-list-item-padding-inline, 0.75rem);
     --rc-listbox-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
     --rc-listbox-hover-color: var(--rc-field-text, FieldText);
     --rc-listbox-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
     --rc-listbox-active-color: var(--rc-field-text, FieldText);
-    --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
-    --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
+    --rc-listbox-selected-bg: var(--rc-list-item-selected-bg, Highlight);
+    --rc-listbox-selected-color: var(--rc-list-item-selected-color, HighlightText);
   }
 
   .rc-theme-substrate rc-select,
@@ -85,11 +92,7 @@
     --rc-slider-progress-background: var(--rc-accent);
     --rc-slider-track-radius: 999px;
     --rc-range-slider-accent: var(--rc-accent);
-    --rc-range-slider-track-background: color-mix(
-      in srgb,
-      var(--rc-border-color) 70%,
-      transparent
-    );
+    --rc-range-slider-track-background: color-mix(in srgb, var(--rc-border-color) 70%, transparent);
     --rc-range-slider-thumb-background: var(--substrate-surface, Canvas);
     --rc-range-slider-thumb-border: var(--rc-accent);
     --rc-thumb-radius: 0.5625rem;

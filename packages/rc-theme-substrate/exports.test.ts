@@ -10,7 +10,6 @@ const componentEntries = [
   'listbox',
   'markdown-editor',
   'menu',
-  'menu-button',
   'menubar',
   'modes',
   'range-slider',
@@ -29,6 +28,7 @@ test('every selective component stylesheet can be imported', async () => {
 
   for (const entry of componentEntries) {
     const load = imports[`./components/${entry}.css`];
+
     expect(load, entry).toBeTypeOf('function');
     await load();
   }

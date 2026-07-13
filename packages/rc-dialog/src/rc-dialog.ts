@@ -53,6 +53,8 @@ declare global {
  * @fires rc-dialog-close - Mirrors the inner `<dialog>` close event.
  *   `detail: { returnValue: string }`
  *
+ * @cssprop [--rc-dialog-scrim=color-mix(in srgb, CanvasText 32%, transparent)] - Modal backdrop color.
+ *
  */
 export class RCDialog extends LitElement {
   override createRenderRoot() {

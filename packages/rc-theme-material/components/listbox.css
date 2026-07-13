@@ -12,7 +12,7 @@
     font-family: var(--md-sys-typescale-body-large-font, inherit);
     font-size: var(--md-sys-typescale-body-large-size, 1rem);
     line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
-    --rc-listbox-option-gap: 0.75rem;
+    --rc-listbox-option-gap: var(--rc-list-item-gap, 0.75rem);
     --rc-listbox-option-min-block-size: 3rem;
     --rc-listbox-option-padding-block: 0;
     --rc-listbox-option-padding-inline: 0.75rem;
@@ -34,7 +34,9 @@
     --rc-listbox-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-listbox[checkmark] [part~='option-checkmark'] {
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-listbox[checkmark]
+    [part~='option-checkmark'] {
     inline-size: 1.5rem;
     flex-shrink: 0;
     text-align: center;
