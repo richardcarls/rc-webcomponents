@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.3.2",
-  "description": "Search field wrapper for a native <input type=\"search\"> with icon chrome, clear button, and debounced events.",
+  "description": "Search field/view wrapper for a native <input type=\"search\"> with suggestions and debounced events.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",

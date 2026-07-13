@@ -68,7 +68,6 @@ fallbacks:
 | `rc-menu-button` | Trigger button that opens an `rc-menu` popup. |
 | `rc-menubar` | Menubar coordinator for `rc-menu-button` children. |
 | `rc-range-slider` | Two-thumb range slider backed by native range inputs. |
-| `rc-search-bar` | Search field wrapper for native `<input type="search">`. |
 | `rc-select` | Select-only combobox backed by a native `<select>`. |
 | `rc-slider` | Single-thumb slider backed by native `<input type="range">`. |
 | `rc-splitter` | Resizable pane splitter with pointer and keyboard controls. |
@@ -76,6 +75,7 @@ fallbacks:
 | `rc-toolbar` | Toolbar that groups controls into one tab stop. |
 | `rc-transfer-list` | Transfer list enhancing native `<select multiple>`. |
 | `rc-virtual-canvas` | Scrollable virtual canvas for large coordinate-space content. |
+| `rc-search-bar`      | Search field/view wrapper for native `<input type="search">`.        |
 
 ## Notes
 

@@ -10,14 +10,14 @@ import { SearchBarDemo } from '@site/src/components/ComponentDemos';
 
 # rc-search-bar
 
-Search field wrapper for a native `<input type="search">` with icon chrome, clear button, and debounced events.
+Search field/view wrapper for a native `<input type="search">` with icon chrome, clear button, suggestions, and debounced events.
 
 <AtAGlance
   packageName="@rcarls/rc-search-bar"
   tag="rc-search-bar"
   native="Requires a direct child native search input"
-  state="Controlled or uncontrolled search value"
-  events={['rc-search-bar-input', 'rc-search-bar-clear']}
+  state="Controlled or uncontrolled search value and search view"
+  events={['rc-search-bar-input', 'rc-search-bar-clear', 'rc-search-bar-toggle']}
   related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
 />
 
@@ -53,6 +53,30 @@ import '@rcarls/rc-search-bar/define';
 The default demo mode shows the component without a package theme. Use the
 shared preview controls on this page to compare inherited, light, and dark color
 schemes or to apply the optional Material theme only inside the demo frames.
+
+## Search view
+
+Set `variant="view"` to enable the expandable search view. The component keeps
+the direct child `<input type="search">` as the value, label, and form source of
+truth, while `open` / `default-open` control the view panel.
+
+Use the `suggestions` slot for rich Material-style rows. For simple text
+suggestions, the component can read the native input's `list` attribute and
+render the associated `<datalist><option>` values when the slot is empty.
+`<datalist>` remains a progressive enhancement path: browser styling,
+high-contrast behavior, and screen-reader announcement vary, so slotted
+suggestions are recommended when you need rich rows or tighter accessibility
+control.
+
+```html
+<rc-search-bar variant="view">
+  <input type="search" aria-label="Search recipes" list="recipe-suggestions" />
+  <datalist id="recipe-suggestions">
+    <option value="pasta" label="Pasta"></option>
+    <option value="tomato soup"></option>
+  </datalist>
+</rc-search-bar>
+```
 
 ## API
 
