@@ -42,6 +42,12 @@
     --rc-control-padding-inline: 1rem;
     --rc-control-gap: 0.5rem;
     --rc-control-radius: var(--md-sys-shape-corner-full, 1.25rem);
+    --rc-list-item-gap: 1rem;
+    --rc-list-item-min-block-size: 3rem;
+    --rc-list-item-padding-block: 0;
+    --rc-list-item-padding-inline: 1rem;
+    --rc-list-item-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-list-item-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
     --rc-toolbar-radius: var(--md-sys-shape-corner-large, 1rem);
     --rc-toolbar-vertical-radius: 0;
     --rc-item-padding-block: 0.75rem;
@@ -53,6 +59,7 @@
     --rc-focus-ring-offset: 2px;
     --rc-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
     --rc-motion-duration: 200ms;
+    --rc-dialog-scrim: color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent);
   }
 
   .rc-theme-material rc-select,
@@ -91,10 +98,10 @@
 
   .rc-theme-material rc-listbox,
   :host(.rc-theme-material) rc-listbox {
-    --rc-listbox-option-gap: 0.75rem;
-    --rc-listbox-option-min-block-size: 3rem;
-    --rc-listbox-option-padding-block: 0;
-    --rc-listbox-option-padding-inline: 0.75rem;
+    --rc-listbox-option-gap: var(--rc-list-item-gap, 0.75rem);
+    --rc-listbox-option-min-block-size: var(--rc-list-item-min-block-size, 3rem);
+    --rc-listbox-option-padding-block: var(--rc-list-item-padding-block, 0);
+    --rc-listbox-option-padding-inline: var(--rc-list-item-padding-inline, 0.75rem);
     --rc-listbox-option-transition: background-color 150ms ease, color 150ms ease;
     --rc-listbox-hover-bg: color-mix(
       in srgb,
@@ -108,8 +115,8 @@
       transparent
     );
     --rc-listbox-active-color: var(--md-sys-color-on-surface, CanvasText);
-    --rc-listbox-selected-bg: var(--md-sys-color-secondary-container, Highlight);
-    --rc-listbox-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
+    --rc-listbox-selected-bg: var(--rc-list-item-selected-bg, Highlight);
+    --rc-listbox-selected-color: var(--rc-list-item-selected-color, HighlightText);
     --rc-listbox-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
   }
 
@@ -251,6 +258,27 @@
     --rc-search-bar-input-font-size: var(
       --md-search-bar-input-text-size,
       var(--md-sys-typescale-body-large-size, 1rem)
+    );
+    --rc-search-bar-view-bg: var(
+      --md-search-view-container-color,
+      var(--md-sys-color-surface-container-high, Field)
+    );
+    --rc-search-bar-view-color: var(
+      --md-search-view-input-text-color,
+      var(--md-sys-color-on-surface, FieldText)
+    );
+    --rc-search-bar-view-radius: var(
+      --md-search-view-container-shape,
+      var(--md-sys-shape-corner-extra-large, 1.75rem)
+    );
+    --rc-search-bar-view-shadow: var(--rc-shadow-level3);
+    --rc-search-bar-view-padding-block: 0.5rem;
+    --rc-search-bar-suggestion-min-block-size: 3rem;
+    --rc-search-bar-suggestion-padding-inline: 1rem;
+    --rc-search-bar-suggestion-hover-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 8%,
+      transparent
     );
   }
 
@@ -419,10 +447,22 @@
     --rc-fab-shadow-hover: var(--rc-shadow-level4);
     --rc-fab-shadow-active: var(--rc-shadow-level3);
     --rc-fab-radius: var(--md-fab-container-shape, var(--md-sys-shape-corner-large, 1rem));
-    --rc-fab-font-family: var(--md-fab-label-text-font, var(--md-sys-typescale-label-large-font, inherit));
-    --rc-fab-font-size: var(--md-fab-label-text-size, var(--md-sys-typescale-label-large-size, 0.875rem));
-    --rc-fab-font-weight: var(--md-fab-label-text-weight, var(--md-sys-typescale-label-large-weight, 500));
-    --rc-fab-letter-spacing: var(--md-fab-label-text-tracking, var(--md-sys-typescale-label-large-tracking, 0.00625em));
+    --rc-fab-font-family: var(
+      --md-fab-label-text-font,
+      var(--md-sys-typescale-label-large-font, inherit)
+    );
+    --rc-fab-font-size: var(
+      --md-fab-label-text-size,
+      var(--md-sys-typescale-label-large-size, 0.875rem)
+    );
+    --rc-fab-font-weight: var(
+      --md-fab-label-text-weight,
+      var(--md-sys-typescale-label-large-weight, 500)
+    );
+    --rc-fab-letter-spacing: var(
+      --md-fab-label-text-tracking,
+      var(--md-sys-typescale-label-large-tracking, 0.00625em)
+    );
     --rc-fab-focus-ring: var(--rc-focus-ring);
     --rc-fab-focus-ring-offset: var(--rc-focus-ring-offset);
   }

@@ -1,0 +1,33 @@
+@layer rc-theme-material.components {
+  /*
+   * Material 3 state layers for interactive elements that already own their
+   * border radius. Uses currentColor so the layer follows each component's
+   * foreground token.
+   */
+  .rc-state-layer {
+    position: relative;
+  }
+
+  .rc-state-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms var(--md-sys-motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1));
+  }
+
+  .rc-state-layer:hover::after {
+    opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+  }
+
+  .rc-state-layer:focus-visible::after {
+    opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+  }
+
+  .rc-state-layer:active::after {
+    opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+  }
+}

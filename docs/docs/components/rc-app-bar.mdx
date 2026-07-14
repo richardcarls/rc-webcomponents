@@ -58,6 +58,27 @@ import '@rcarls/rc-app-bar/define';
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
+Material top app bar sizes are styling recipes, not public component variants.
+Keep the component structural with `variant="compact"` or `variant="expanded"`,
+then use `rc-theme-material` modifier classes to tune the token mapping:
+
+```html
+<rc-app-bar class="rc-app-bar--large" variant="expanded" scroll-behavior="collapse">
+  <button slot="leading" type="button" aria-label="Back">...</button>
+  <h1>Recipes</h1>
+</rc-app-bar>
+```
+
+Available Material helper classes are `rc-app-bar--center-aligned`,
+`rc-app-bar--medium`, and `rc-app-bar--large`. For custom collapse animation,
+read the component-owned `--rc-app-bar-collapse-progress` value in CSS:
+
+```css
+rc-app-bar .brand-mark {
+  opacity: calc(1 - var(--rc-app-bar-collapse-progress, 0));
+}
+```
+
 ## API
 
 <ApiTable tag="rc-app-bar" />

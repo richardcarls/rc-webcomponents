@@ -6,6 +6,17 @@ import './define';
 import type { RCDialog } from './rc-dialog.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
+function firePointerEvent(target: Element, type: string, init: PointerEventInit = {}) {
+  target.dispatchEvent(
+    new PointerEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      pointerId: 1,
+      ...init,
+    }),
+  );
+}
+
 // Helper: render an rc-dialog wrapping a <dialog> with a label
 function renderDialog(extraAttrs = '') {
   return render(html`
@@ -152,6 +163,7 @@ test('rc-dialog-request-close fires and is cancelable', async () => {
   // Now add a listener that prevents the close.
   requestCloseSpy.mockReset();
   cancelSpy.mockReset();
+
   host.addEventListener('rc-dialog-request-close', (e: Event) => e.preventDefault(), {
     once: true,
   });
@@ -248,6 +260,134 @@ test('show() fires rc-dialog-open', async () => {
 
   host.show();
   expect(openSpy).toHaveBeenCalledTimes(1);
+
+  host.close();
+});
+
+test('explicit resize handle grows top-origin vertical dialogs upward', async () => {
+  const screen = render(html`
+    <rc-dialog
+      data-testid="host"
+      resize="vertical"
+      resize-origin="top"
+      resize-handle="#resize-handle"
+    >
+      <dialog
+        aria-labelledby="t"
+        style="position: fixed; left: 100px; top: 100px; width: 320px; height: 220px; margin: 0;"
+      >
+        <span id="t">Title</span>
+        <button
+          id="resize-handle"
+          type="button"
+          data-rc-dialog-resize-axis="y"
+          data-rc-dialog-resize-origin="top"
+        >
+          Resize
+        </button>
+      </dialog>
+    </rc-dialog>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.show();
+
+  const dialog = host.querySelector('dialog') as HTMLDialogElement;
+  const handle = host.querySelector('#resize-handle') as HTMLButtonElement;
+  const start = dialog.getBoundingClientRect();
+
+  firePointerEvent(handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
+  firePointerEvent(handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 40 });
+  firePointerEvent(handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 40 });
+
+  const resized = dialog.getBoundingClientRect();
+
+  expect(Math.round(resized.height)).toBe(Math.round(start.height + 40));
+  expect(Math.round(resized.bottom)).toBe(Math.round(start.bottom));
+
+  host.close();
+});
+
+test('top-origin resize clamps to a CSS-only max-height instead of sliding the dialog', async () => {
+  const screen = render(html`
+    <rc-dialog
+      data-testid="host"
+      resize="vertical"
+      resize-origin="top"
+      resize-handle="#resize-handle"
+    >
+      <dialog
+        aria-labelledby="t"
+        style="position: fixed; left: 100px; top: 400px; width: 320px; height: 200px; max-height: 260px; margin: 0;"
+      >
+        <span id="t">Title</span>
+        <button
+          id="resize-handle"
+          type="button"
+          data-rc-dialog-resize-axis="y"
+          data-rc-dialog-resize-origin="top"
+        >
+          Resize
+        </button>
+      </dialog>
+    </rc-dialog>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.show();
+
+  const dialog = host.querySelector('dialog') as HTMLDialogElement;
+  const handle = host.querySelector('#resize-handle') as HTMLButtonElement;
+  const start = dialog.getBoundingClientRect();
+
+  // Drag far past the point where height would hit the 260px CSS max-height.
+  firePointerEvent(handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
+  firePointerEvent(handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 200 });
+  firePointerEvent(handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 200 });
+
+  const resized = dialog.getBoundingClientRect();
+
+  // Height clamps to the CSS max-height, and the bottom edge stays pinned —
+  // it must not keep sliding up as if the whole dialog were being dragged.
+  expect(Math.round(resized.height)).toBe(260);
+  expect(Math.round(resized.bottom)).toBe(Math.round(start.bottom));
+
+  host.close();
+});
+
+test('resize-origin constrains fallback edge resizing to the declared edge', async () => {
+  const screen = render(html`
+    <rc-dialog data-testid="host" resize="vertical" resize-origin="top">
+      <dialog
+        aria-labelledby="t"
+        style="position: fixed; left: 100px; top: 100px; width: 320px; height: 220px; margin: 0;"
+      >
+        <span id="t">Title</span>
+        <button>OK</button>
+      </dialog>
+    </rc-dialog>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.show();
+
+  const dialog = host.querySelector('dialog') as HTMLDialogElement;
+  const start = dialog.getBoundingClientRect();
+
+  firePointerEvent(dialog, 'pointerdown', { clientX: start.left + 20, clientY: start.top + 2 });
+  firePointerEvent(dialog, 'pointermove', { clientX: start.left + 20, clientY: start.top - 36 });
+  firePointerEvent(dialog, 'pointerup', { clientX: start.left + 20, clientY: start.top - 36 });
+
+  const resized = dialog.getBoundingClientRect();
+
+  expect(Math.round(resized.height)).toBe(Math.round(start.height + 38));
+  expect(Math.round(resized.bottom)).toBe(Math.round(start.bottom));
 
   host.close();
 });

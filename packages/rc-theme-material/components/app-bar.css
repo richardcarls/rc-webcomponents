@@ -27,4 +27,32 @@
     :is(button, [role='button']):hover {
     background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
   }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar.rc-app-bar--center-aligned {
+    --rc-app-bar-title-font-size: var(
+      --md-top-app-bar-headline-size,
+      var(--md-sys-typescale-title-large-size, inherit)
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-app-bar.rc-app-bar--center-aligned::part(title) {
+    text-align: center;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar.rc-app-bar--medium {
+    --rc-app-bar-expanded-title-font-size: var(
+      --md-medium-top-app-bar-headline-size,
+      var(--md-sys-typescale-headline-small-size, inherit)
+    );
+    --rc-app-bar-expanded-padding-block: 1rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar.rc-app-bar--large {
+    --rc-app-bar-expanded-title-font-size: var(
+      --md-large-top-app-bar-headline-size,
+      var(--md-sys-typescale-headline-medium-size, inherit)
+    );
+    --rc-app-bar-expanded-padding-block: 1.25rem;
+  }
 }

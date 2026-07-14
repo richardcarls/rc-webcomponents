@@ -12,7 +12,7 @@
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-transfer-list::part(listbox) {
-    --rc-listbox-option-gap: var(--substrate-item-gap, 0.5rem);
+    --rc-listbox-option-gap: var(--rc-list-item-gap, var(--substrate-item-gap, 0.5rem));
     --rc-listbox-option-min-block-size: 2.25rem;
     --rc-listbox-option-padding-block: var(--substrate-item-padding-block, 0.55rem);
     --rc-listbox-option-padding-inline: var(--substrate-item-padding-inline, 0.75rem);

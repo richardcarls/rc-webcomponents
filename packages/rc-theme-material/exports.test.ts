@@ -6,10 +6,10 @@ const componentEntries = [
   'combobox',
   'dialog',
   'disclosure',
+  'fab',
   'listbox',
   'markdown-editor',
   'menu',
-  'menu-button',
   'menubar',
   'range-slider',
   'search-bar',
@@ -27,7 +27,12 @@ test('every selective component stylesheet can be imported', async () => {
 
   for (const entry of componentEntries) {
     const load = imports[`./components/${entry}.css`];
+
     expect(load, entry).toBeTypeOf('function');
     await load();
   }
+});
+
+test('state-layer utility stylesheet can be imported', async () => {
+  await import('./state-layer.css');
 });

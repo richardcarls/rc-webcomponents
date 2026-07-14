@@ -14,4 +14,20 @@
       var(--rc-fab-bg, var(--md-sys-color-primary-container, ButtonFace))
     );
   }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab.rc-fab--small {
+    --rc-fab-size: 2.5rem;
+    --rc-fab-radius: var(
+      --md-fab-small-container-shape,
+      var(--md-sys-shape-corner-medium, 0.75rem)
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab.rc-fab--large {
+    --rc-fab-size: 6rem;
+    --rc-fab-radius: var(
+      --md-fab-large-container-shape,
+      var(--md-sys-shape-corner-extra-large, 1.75rem)
+    );
+  }
 }

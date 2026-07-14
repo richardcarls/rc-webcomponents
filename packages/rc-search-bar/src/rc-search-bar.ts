@@ -1,4 +1,4 @@
-import { LitElement, html, type PropertyValues } from 'lit';
+import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
@@ -7,10 +7,12 @@ import { NativeChildController, keyInteraction, warnMissingDirectChild } from '@
 import searchBarStyles from './rc-search-bar.styles';
 
 const _uaClearSheet = new CSSStyleSheet();
+
 _uaClearSheet.replaceSync(
   `rc-search-bar:not([allow-native-clear]) input[type="search"]::-webkit-search-cancel-button
    { -webkit-appearance: none; display: none; }`,
 );
+
 let _uaClearSuppressed = false;
 
 function _suppressUaClear(): void {
@@ -27,11 +29,38 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-search-bar': RCSearchBar;
   }
+
+  interface HTMLElementEventMap {
+    'rc-search-bar-input': CustomEvent<RCSearchBarInputDetail>;
+    'rc-search-bar-clear': CustomEvent<Record<string, never>>;
+    'rc-search-bar-toggle': CustomEvent<RCSearchBarToggleDetail>;
+    'rc-search-bar-suggestion-select': CustomEvent<RCSearchBarSuggestionSelectDetail>;
+  }
 }
 
 export interface RCSearchBarInputDetail {
   /** The native input's value at dispatch time. */
   value: string;
+}
+
+export interface RCSearchBarToggleDetail {
+  /** Whether the search view is open after the user action. */
+  open: boolean;
+}
+
+export interface RCSearchBarSuggestionSelectDetail {
+  /** Value written to the native search input. */
+  value: string;
+
+  /** Human-readable option label, when different from value. */
+  label: string;
+}
+
+export type RCSearchBarVariant = 'bar' | 'view';
+
+interface RCSearchBarSuggestion {
+  value: string;
+  label: string;
 }
 
 /**
@@ -55,10 +84,16 @@ export interface RCSearchBarInputDetail {
  * @slot leading - Decorative leading icon; mark it `aria-hidden="true"`
  * @slot trailing - Optional trailing content after the clear button
  * @slot clear-icon - Optional glyph replacing the default clear glyph
+ * @slot suggestions - Rich search view suggestions; takes precedence over
+ *   datalist-derived suggestions.
  *
  * @fires rc-search-bar-input - Debounced after typing, immediate on clear;
  *   `detail: { value }`
  * @fires rc-search-bar-clear - When the clear button is activated
+ * @fires rc-search-bar-toggle - When user interaction opens or closes the
+ *   search view; `detail: { open }`
+ * @fires rc-search-bar-suggestion-select - When a datalist-derived suggestion
+ *   is activated; `detail: { value, label }`
  *
  * @cssprop [--rc-search-bar-border=1px solid ButtonBorder] - Wrapper border; set to `none` in M3 theme (uses elevation instead)
  * @cssprop [--rc-search-bar-shadow=none] - Wrapper box-shadow for elevation; M3 theme sets Level 1 at rest
@@ -73,13 +108,28 @@ export interface RCSearchBarInputDetail {
  * @cssprop [--rc-search-bar-input-font-size] - Input font size (inherits when unset)
  * @cssprop [--rc-search-bar-input-font-family] - Input font family (inherits when unset)
  * @cssprop [--rc-search-bar-input-color] - Input text color (inherits when unset)
+ * @cssprop [--rc-search-bar-view-bg=var(--rc-search-bar-bg)] - Search view panel background
+ * @cssprop [--rc-search-bar-view-color=var(--rc-search-bar-color)] - Search view panel text color
+ * @cssprop [--rc-search-bar-view-radius=var(--rc-search-bar-radius)] - Search view panel radius
+ * @cssprop [--rc-search-bar-view-shadow=var(--rc-search-bar-shadow)] - Search view panel shadow
+ * @cssprop [--rc-search-bar-view-padding-block=0.5rem] - Search view suggestion list block padding
+ * @cssprop [--rc-search-bar-suggestion-min-block-size=2.75rem] - Datalist-derived suggestion row minimum block size
+ * @cssprop [--rc-search-bar-suggestion-padding-inline=1rem] - Datalist-derived suggestion inline padding
+ * @cssprop [--rc-search-bar-suggestion-hover-bg=ButtonFace] - Datalist-derived suggestion hover/focus background
  * @csspart root - The wrapper element
  * @csspart leading - Wrapper around the leading icon slot
  * @csspart trailing - Wrapper around the trailing slot
  * @csspart clear - The clear button
+ * @csspart view - Search view panel
+ * @csspart suggestions - Suggestions container
+ * @csspart suggestion - Datalist-derived suggestion button
  */
 export class RCSearchBar extends LitElement {
   static styles = [searchBarStyles];
+
+  /** Presentation mode: docked search bar or expandable search view. */
+  @property({ type: String, reflect: true })
+  variant: RCSearchBarVariant = 'bar';
 
   /** Debounce window in ms for `rc-search-bar-input`; `0` dispatches synchronously. */
   @property({ type: Number })
@@ -109,11 +159,14 @@ export class RCSearchBar extends LitElement {
     // actually reports (kept in sync by the MutationObserver).
     return this._disabledHost ?? this._inputDisabled;
   }
+
   set disabled(value: boolean) {
     const old = this.disabled;
+
     this._disabledHost = value;
 
     const $input = this._$input();
+
     if ($input) {
       $input.disabled = value;
     }
@@ -128,6 +181,12 @@ export class RCSearchBar extends LitElement {
    */
   @property({ type: String })
   placeholder?: string;
+
+  private _open = false;
+
+  private _defaultOpen = false;
+
+  private _openInitialized = false;
 
   private _value: string | undefined = undefined;
 
@@ -144,6 +203,8 @@ export class RCSearchBar extends LitElement {
 
   private _debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
+  private _$dataListRef: WeakRef<HTMLDataListElement> | null = null;
+
   @state()
   private _hasInput = false;
 
@@ -159,6 +220,12 @@ export class RCSearchBar extends LitElement {
   @state()
   private _inputDisabled = false;
 
+  @state()
+  private _hasSuggestionsSlot = false;
+
+  @state()
+  private _dataListSuggestions: RCSearchBarSuggestion[] = [];
+
   // Tracks the last value written via the disabled setter so the getter and
   // Lit's reflect can return it before the input is slotted.
   private _disabledHost: boolean | undefined = undefined;
@@ -168,6 +235,10 @@ export class RCSearchBar extends LitElement {
 
   private readonly _onInputFocus = (): void => {
     this._focused = true;
+
+    if (this.variant === 'view') {
+      this.showView();
+    }
   };
 
   private readonly _onInputBlur = (): void => {
@@ -179,12 +250,15 @@ export class RCSearchBar extends LitElement {
 
     if ($input) {
       this._inputDisabled = $input.disabled;
+      this._syncDataListSuggestions($input);
     }
   });
 
+  private readonly _dataListObserver = new MutationObserver(() => this._syncDataListSuggestions());
+
   private readonly _inputController = new NativeChildController<HTMLInputElement>(this, {
     selector: ':scope > input[type="search"]',
-    observe: true,
+    observe: { childList: true, attributes: true, attributeFilter: ['list'] },
     onChange: ($input, $previousInput) => this._setupInput($input, $previousInput),
     onMissing: () => {
       if (import.meta.env.DEV) {
@@ -198,6 +272,39 @@ export class RCSearchBar extends LitElement {
     },
   });
 
+  /** Whether the search view panel is open. Host writes are silent. */
+  @property({ type: Boolean, reflect: true })
+  get open(): boolean {
+    return this._open;
+  }
+
+  set open(value: boolean) {
+    const oldValue = this._open;
+
+    this._open = value;
+    this._openInitialized = true;
+
+    this.requestUpdate('open', oldValue);
+  }
+
+  /** Initial uncontrolled search view open state. */
+  @property({ type: Boolean, attribute: 'default-open' })
+  get defaultOpen(): boolean {
+    return this._defaultOpen;
+  }
+
+  set defaultOpen(value: boolean) {
+    const oldValue = this._defaultOpen;
+
+    this._defaultOpen = value;
+
+    if (!this._openInitialized) {
+      this._open = value;
+    }
+
+    this.requestUpdate('defaultOpen', oldValue);
+  }
+
   /**
    * The current search value. Reads from the native input when present.
    * Host writes are silent (no events) and win over slotted author values.
@@ -206,6 +313,7 @@ export class RCSearchBar extends LitElement {
   get value(): string {
     return this._$input()?.value ?? this._value ?? this._defaultValue ?? '';
   }
+
   set value(value: string) {
     const oldValue = this.value;
 
@@ -239,6 +347,7 @@ export class RCSearchBar extends LitElement {
     this._defaultValue = value;
 
     const $input = this._$input();
+
     if ($input && value !== undefined && !this._valueInitialized) {
       $input.value = value;
       this._hasValue = value.length > 0;
@@ -257,6 +366,7 @@ export class RCSearchBar extends LitElement {
     super.disconnectedCallback();
 
     this._focused = false;
+    this._open = false;
     this._cancelPendingInput();
 
     const $input = this._$input();
@@ -264,8 +374,10 @@ export class RCSearchBar extends LitElement {
     $input?.removeEventListener('input', this._onNativeInput);
     $input?.removeEventListener('focus', this._onInputFocus);
     $input?.removeEventListener('blur', this._onInputBlur);
+    $input?.removeEventListener('keydown', this._onNativeKeyDown);
 
     this._disabledObserver.disconnect();
+    this._dataListObserver.disconnect();
   }
 
   protected override updated(changed: PropertyValues<this>): void {
@@ -275,6 +387,13 @@ export class RCSearchBar extends LitElement {
       if ($input) {
         this._applyPlaceholder($input);
       }
+    }
+
+    if (changed.has('variant') && this.variant !== 'view' && this._open) {
+      const oldOpen = this._open;
+
+      this._open = false;
+      this.requestUpdate('open', oldOpen);
     }
   }
 
@@ -294,9 +413,11 @@ export class RCSearchBar extends LitElement {
       $previousInput.removeEventListener('input', this._onNativeInput);
       $previousInput.removeEventListener('focus', this._onInputFocus);
       $previousInput.removeEventListener('blur', this._onInputBlur);
+      $previousInput.removeEventListener('keydown', this._onNativeKeyDown);
     }
 
     this._disabledObserver.disconnect();
+    this._dataListObserver.disconnect();
     this._focused = false;
 
     this._$inputRef = $input ? new WeakRef($input) : null;
@@ -305,6 +426,8 @@ export class RCSearchBar extends LitElement {
 
     if (!$input) {
       this._hasValue = false;
+      this._dataListSuggestions = [];
+      this._$dataListRef = null;
 
       return;
     }
@@ -332,6 +455,7 @@ export class RCSearchBar extends LitElement {
 
       this._inputDisabled = $input.disabled;
       this._hasValue = $input.value.length > 0;
+      this._syncDataListSuggestions($input);
 
       if (
         import.meta.env.DEV &&
@@ -354,8 +478,9 @@ export class RCSearchBar extends LitElement {
     $input.addEventListener('input', this._onNativeInput);
     $input.addEventListener('focus', this._onInputFocus);
     $input.addEventListener('blur', this._onInputBlur);
+    $input.addEventListener('keydown', this._onNativeKeyDown);
 
-    this._disabledObserver.observe($input, { attributeFilter: ['disabled'] });
+    this._disabledObserver.observe($input, { attributeFilter: ['disabled', 'list'] });
   }
 
   private _applyPlaceholder($input: HTMLInputElement): void {
@@ -372,6 +497,13 @@ export class RCSearchBar extends LitElement {
     this._valueInitialized = true;
     this._hasValue = $input.value.length > 0;
     this._scheduleInputEvent($input.value);
+  };
+
+  private readonly _onNativeKeyDown = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape' && this.open) {
+      e.preventDefault();
+      this.closeView();
+    }
   };
 
   private _scheduleInputEvent(value: string): void {
@@ -408,6 +540,98 @@ export class RCSearchBar extends LitElement {
     );
   }
 
+  private _setUserOpen(open: boolean): void {
+    if (this._open === open) {
+      return;
+    }
+
+    const oldOpen = this._open;
+
+    this._open = open;
+    this._openInitialized = true;
+    this.requestUpdate('open', oldOpen);
+
+    this.dispatchEvent(
+      new CustomEvent<RCSearchBarToggleDetail>('rc-search-bar-toggle', {
+        bubbles: true,
+        composed: true,
+        detail: { open },
+      }),
+    );
+  }
+
+  /** Opens the search view and fires `rc-search-bar-toggle` when it changes. */
+  public showView(): void {
+    if (this.variant !== 'view' || this.disabled) {
+      return;
+    }
+
+    this._setUserOpen(true);
+  }
+
+  /** Closes the search view and fires `rc-search-bar-toggle` when it changes. */
+  public closeView(): void {
+    this._setUserOpen(false);
+  }
+
+  /** Toggles the search view and fires `rc-search-bar-toggle` when it changes. */
+  public toggleView(): void {
+    this.open ? this.closeView() : this.showView();
+  }
+
+  private _syncDataListSuggestions($input = this._$input()): void {
+    const $dataList = $input?.list ?? null;
+
+    if (this._$dataListRef?.deref() !== $dataList) {
+      this._dataListObserver.disconnect();
+      this._$dataListRef = $dataList ? new WeakRef($dataList) : null;
+
+      if ($dataList) {
+        this._dataListObserver.observe($dataList, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['value', 'label', 'disabled'],
+        });
+      }
+    }
+
+    this._dataListSuggestions = $dataList
+      ? Array.from($dataList.options)
+          .filter(($option) => !$option.disabled && $option.value)
+          .map(($option) => ({
+            value: $option.value,
+            label: $option.label || $option.textContent?.trim() || $option.value,
+          }))
+      : [];
+  }
+
+  private _selectDataListSuggestion(suggestion: RCSearchBarSuggestion): void {
+    const $input = this._$input();
+
+    if (!$input) {
+      return;
+    }
+
+    this._cancelPendingInput();
+
+    $input.value = suggestion.value;
+    this._valueInitialized = true;
+    this._hasValue = suggestion.value.length > 0;
+
+    this.dispatchEvent(
+      new CustomEvent<RCSearchBarSuggestionSelectDetail>('rc-search-bar-suggestion-select', {
+        bubbles: true,
+        composed: true,
+        detail: suggestion,
+      }),
+    );
+
+    this._dispatchInput(suggestion.value);
+    $input.focus();
+    this.closeView();
+  }
+
   private _handleClear(): void {
     const $input = this._$input();
 
@@ -429,6 +653,7 @@ export class RCSearchBar extends LitElement {
         detail: {},
       }),
     );
+
     this._dispatchInput('');
 
     // Refocus before the re-render hides the button, so focus never drops
@@ -438,7 +663,12 @@ export class RCSearchBar extends LitElement {
 
   protected override render() {
     return html`
-      <div id="root" part="root" class=${classMap({ empty: !this._hasInput })} ${keyInteraction({ attributeTarget: this })}>
+      <div
+        id="root"
+        part="root"
+        class=${classMap({ empty: !this._hasInput })}
+        ${keyInteraction({ attributeTarget: this })}
+      >
         <span
           id="leading"
           part="leading"
@@ -466,12 +696,53 @@ export class RCSearchBar extends LitElement {
           <slot name="trailing" @slotchange=${this._onTrailingSlotChange}></slot>
         </span>
       </div>
+      ${this._renderSearchView()}
     `;
   }
 
   /** Programmatically clears the value and fires rc-search-bar-clear + rc-search-bar-input. */
   public clear(): void {
     this._handleClear();
+  }
+
+  private _renderSearchView() {
+    if (this.variant !== 'view' || !this.open) {
+      return nothing;
+    }
+
+    const hasDataListSuggestions =
+      !this._hasSuggestionsSlot && this._dataListSuggestions.length > 0;
+    const empty = !this._hasSuggestionsSlot && !hasDataListSuggestions;
+
+    return html`
+      <div id="view">
+        <div
+          id="view-surface"
+          part="view"
+          ?hidden=${empty}
+          class=${classMap({
+            empty,
+          })}
+        >
+          <div id="suggestions" part="suggestions">
+            <slot name="suggestions" @slotchange=${this._onSuggestionsSlotChange}></slot>
+            ${hasDataListSuggestions
+              ? this._dataListSuggestions.map(
+                  (suggestion) => html`
+                    <button
+                      part="suggestion"
+                      type="button"
+                      @click=${() => this._selectDataListSuggestion(suggestion)}
+                    >
+                      <span>${suggestion.label}</span>
+                    </button>
+                  `,
+                )
+              : nothing}
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   private _onLeadingSlotChange(e: Event): void {
@@ -484,6 +755,12 @@ export class RCSearchBar extends LitElement {
     const $slot = e.target as HTMLSlotElement;
 
     this._hasTrailing = $slot.assignedElements().length > 0;
+  }
+
+  private _onSuggestionsSlotChange(e: Event): void {
+    const $slot = e.target as HTMLSlotElement;
+
+    this._hasSuggestionsSlot = $slot.assignedElements({ flatten: true }).length > 0;
   }
 }
 

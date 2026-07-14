@@ -44,33 +44,33 @@ at once:
 
 ```css
 :root {
-  --rc-accent: oklch(55% 0.2 250);       /* primary action color */
-  --rc-border-color: oklch(75% 0 0);     /* all component borders */
-  --rc-control-block-size: 2.5rem;       /* input / button height */
-  --rc-control-radius: 0.5rem;           /* border radius */
+  --rc-accent: oklch(55% 0.2 250); /* primary action color */
+  --rc-border-color: oklch(75% 0 0); /* all component borders */
+  --rc-control-block-size: 2.5rem; /* input / button height */
+  --rc-control-radius: 0.5rem; /* border radius */
   --rc-font-family: 'Inter', sans-serif;
 }
 ```
 
 Full token reference:
 
-| Token | Default | Controls |
-| --- | --- | --- |
-| `--rc-accent` | `Highlight` / `AccentColor` | Focus rings, selected states |
-| `--rc-surface` | `Canvas` | Surface backgrounds |
-| `--rc-field` | `Field` | Input field backgrounds |
-| `--rc-border-color` | `ButtonBorder` | All borders |
-| `--rc-border-width` | `1px` | All borders |
-| `--rc-control-block-size` | `2.25em` | Control height |
-| `--rc-control-padding-block` | `0.25em` | Control vertical padding |
-| `--rc-control-padding-inline` | `0.5em` | Control horizontal padding |
-| `--rc-control-radius` | `0.125em` | Control corner radius |
-| `--rc-radius-md` | `0.25em` | Larger radius (chips, badges) |
-| `--rc-font-family` | `inherit` | All component text |
-| `--rc-font-size` | `1em` | All component text |
-| `--rc-shadow` | `0 2px 8px …` | Popups and overlays |
-| `--rc-motion-duration` | `120ms` | All transitions |
-| `--rc-disabled-opacity` | `0.5` | Disabled state opacity |
+| Token                         | Default                     | Controls                      |
+| ----------------------------- | --------------------------- | ----------------------------- |
+| `--rc-accent`                 | `Highlight` / `AccentColor` | Focus rings, selected states  |
+| `--rc-surface`                | `Canvas`                    | Surface backgrounds           |
+| `--rc-field`                  | `Field`                     | Input field backgrounds       |
+| `--rc-border-color`           | `ButtonBorder`              | All borders                   |
+| `--rc-border-width`           | `1px`                       | All borders                   |
+| `--rc-control-block-size`     | `2.25em`                    | Control height                |
+| `--rc-control-padding-block`  | `0.25em`                    | Control vertical padding      |
+| `--rc-control-padding-inline` | `0.5em`                     | Control horizontal padding    |
+| `--rc-control-radius`         | `0.125em`                   | Control corner radius         |
+| `--rc-radius-md`              | `0.25em`                    | Larger radius (chips, badges) |
+| `--rc-font-family`            | `inherit`                   | All component text            |
+| `--rc-font-size`              | `1em`                       | All component text            |
+| `--rc-shadow`                 | `0 2px 8px …`               | Popups and overlays           |
+| `--rc-motion-duration`        | `120ms`                     | All transitions               |
+| `--rc-disabled-opacity`       | `0.5`                       | Disabled state opacity        |
 
 ## Per-component tokens
 
@@ -168,6 +168,10 @@ tokens:
 @import '@rcarls/rc-theme-material/bridge.css';
 @import '@rcarls/rc-theme-material/components.css';
 ```
+
+`components.css` includes the `.rc-state-layer` utility. Apply that class to
+interactive elements that already own their border radius when you want a
+CSS-only Material state layer.
 
 Apply the `rc-theme-material` class to a container to scope the theme:
 
