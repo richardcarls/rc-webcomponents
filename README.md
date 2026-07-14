@@ -98,6 +98,7 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-disclosure`](packages/rc-disclosure/) | Disclosure wrapper for a native `<details>`/`<summary>` pair with controlled open state | None |
 | [`rc-accordion`](packages/rc-accordion/) | Accordion coordinator for child native `<details>` panels with single- or multiple-open behavior | rc-disclosure |
 | [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable wrapper for a native `<dialog>` | rc-common |
+| [`rc-bottom-sheet`](packages/rc-bottom-sheet/) | Modal bottom-sheet wrapper for a native `<dialog>` | rc-dialog |
 | [`rc-fab`](packages/rc-fab/) | Sticky floating action button modeled after Material 3 Floating action button | rc-common |
 | [`rc-slider`](packages/rc-slider/) | Single-thumb slider backed by a native `<input type="range">` | rc-common |
 | [`rc-range-slider`](packages/rc-range-slider/) | Two-thumb range slider backed by native range inputs for min/max values | rc-common |

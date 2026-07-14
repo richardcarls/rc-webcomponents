@@ -1,0 +1,50 @@
+# `@rcarls/rc-bottom-sheet`
+
+Modal bottom-sheet wrapper for a native `<dialog>`.
+
+Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-bottom-sheet](https://richardcarls.github.io/rc-webcomponents/components/rc-bottom-sheet).
+
+## Installation
+
+```bash
+npm install @rcarls/rc-bottom-sheet
+```
+
+```bash
+yarn add @rcarls/rc-bottom-sheet
+```
+
+```js
+import '@rcarls/rc-bottom-sheet/define';
+```
+
+## Usage
+
+Place a `<dialog>` element directly inside `<rc-bottom-sheet>`. The inner dialog
+must have `aria-labelledby` or `aria-label`.
+
+```html
+<rc-bottom-sheet id="filters" snap-points="40dvh 70dvh 100dvh">
+  <dialog aria-label="Filter recipes">
+    <button
+      type="button"
+      data-rc-bottom-sheet-handle
+      data-rc-dialog-resize-axis="y"
+      data-rc-dialog-resize-origin="top"
+      aria-label="Resize sheet"
+    ></button>
+    <button value="close" formmethod="dialog">Done</button>
+  </dialog>
+</rc-bottom-sheet>
+
+<script type="module">
+  document.querySelector('#filters').showModal();
+</script>
+```
+
+`rc-bottom-sheet` inherits `rc-dialog` methods and events, including
+`showModal()`, `show()`, `close()`, `requestClose()`, `rc-dialog-toggle`, and
+`rc-dialog-request-close`. It defaults to light dismiss, vertical top-origin
+resize, and downward swipe-dismiss. Add an optional
+`[data-rc-bottom-sheet-handle]` element inside the dialog for an authored
+handle, and use `snap-points` to snap resized sheets to declared heights.

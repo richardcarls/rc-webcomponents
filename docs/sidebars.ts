@@ -45,10 +45,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Views',
       collapsible: false,
-      items: [
-        'components/rc-app-bar',
-        'components/rc-virtual-canvas',
-      ],
+      items: ['components/rc-app-bar', 'components/rc-virtual-canvas'],
     },
     {
       type: 'category',
@@ -56,6 +53,7 @@ const sidebars: SidebarsConfig = {
       collapsible: false,
       items: [
         'components/rc-dialog',
+        'components/rc-bottom-sheet',
         'components/rc-disclosure',
         'components/rc-markdown-editor',
         'components/rc-menu-button',

@@ -98,6 +98,14 @@
     --rc-thumb-radius: 0.5625rem;
   }
 
+  .rc-theme-substrate rc-bottom-sheet,
+  :host(.rc-theme-substrate) rc-bottom-sheet {
+    --rc-bottom-sheet-bg: var(--substrate-surface-raised, Canvas);
+    --rc-bottom-sheet-color: var(--rc-field-text, CanvasText);
+    --rc-bottom-sheet-radius: var(--substrate-radius-xl, 1rem) var(--substrate-radius-xl, 1rem) 0 0;
+    --rc-bottom-sheet-shadow: var(--substrate-shadow-lg, none);
+    --rc-bottom-sheet-scrim: var(--rc-dialog-scrim);
+  }
   @media (prefers-reduced-motion: reduce) {
     .rc-theme-substrate,
     :host(.rc-theme-substrate) {

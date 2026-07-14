@@ -6,6 +6,7 @@
     [
       "@rcarls/rc-accordion",
       "@rcarls/rc-app-bar",
+      "@rcarls/rc-bottom-sheet",
       "@rcarls/rc-combobox",
       "@rcarls/rc-common",
       "@rcarls/rc-dialog",

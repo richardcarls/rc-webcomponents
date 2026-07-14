@@ -69,9 +69,7 @@ export type RCListboxActionChangeDetail<Action extends string = string> = RCSele
   action: Action;
 };
 
-export type RCListboxChangeDetail =
-  | RCListboxSelectChangeDetail
-  | RCListboxActionChangeDetail;
+export type RCListboxChangeDetail = RCListboxSelectChangeDetail | RCListboxActionChangeDetail;
 
 export type RCComboboxCreateDetail = {
   text: string;
@@ -193,7 +191,106 @@ export type RCTextareaSelectDetail = {
   selectionEnd: number;
 };
 
+export type RCSwitchChangeDetail = {
+  checked: boolean;
+};
+
+export type RCSegmentedButtonChangeDetail = {
+  value: string;
+};
+
+export type RCChipVariant = 'assist' | 'filter' | 'input' | 'suggestion';
+
+export type RCChipChangeDetail = {
+  selected: boolean;
+};
+
+export type RCChipRemoveDetail = {
+  chip: HTMLElement;
+};
+
+export type RCSnackbarQueuePolicy = 'queue' | 'replace';
+export type RCSnackbarCloseReason = 'action' | 'api' | 'timeout' | 'replace' | 'clear';
+
+export type RCSnackbarShowOptions = {
+  message: string;
+  actionLabel?: string;
+  duration?: number;
+};
+
+export type RCSnackbarActionDetail = {
+  message: string;
+};
+
+export type RCSnackbarCloseDetail = {
+  reason: RCSnackbarCloseReason;
+  message: string;
+};
+
 // ── Ref types ────────────────────────────────────────────────────────────────
+
+/** Public API surface of `<rc-button>`. */
+export type RCButtonRef = HTMLElement & {
+  disabled: boolean;
+  pending: boolean;
+  progress: boolean;
+  selected: boolean;
+  iconOnly: boolean;
+  fullWidth: boolean;
+};
+
+/** Public API surface of `<rc-card>`. */
+export type RCCardRef = HTMLElement & {
+  selected: boolean;
+  disabled: boolean;
+  interactive: boolean;
+  actionTarget: string;
+};
+
+/** Public API surface of `<rc-switch>`. */
+export type RCSwitchRef = HTMLElement & {
+  checked: boolean;
+  defaultChecked: boolean;
+  disabled: boolean;
+  icons: boolean;
+  showOnlySelectedIcon: boolean;
+};
+
+/** Public API surface of `<rc-segmented-button>`. */
+export type RCSegmentedButtonRef = HTMLElement & {
+  value: string;
+  defaultValue: string;
+  disabled: boolean;
+  orientation: 'horizontal' | 'vertical';
+};
+
+/** Public API surface of `<rc-chip>`. */
+export type RCChipRef = HTMLElement & {
+  variant: RCChipVariant;
+  selected: boolean;
+  defaultSelected: boolean;
+  disabled: boolean;
+  removable: boolean;
+  removeLabel: string;
+};
+
+/** Public API surface of `<rc-chip-set>`. */
+export type RCChipSetRef = HTMLElement & {
+  label: string;
+  orientation: 'horizontal' | 'vertical';
+};
+
+/** Public API surface of `<rc-snackbar>`. */
+export type RCSnackbarRef = HTMLElement & {
+  open: boolean;
+  message: string;
+  actionLabel: string;
+  duration: number;
+  queuePolicy: RCSnackbarQueuePolicy;
+  show(message: string | RCSnackbarShowOptions): void;
+  close(reason?: RCSnackbarCloseReason): void;
+  clear(): void;
+};
 
 /** Public API surface of `<rc-disclosure>`. */
 export type RCDisclosureRef = HTMLElement & {
@@ -249,6 +346,17 @@ export type RCComboboxRef = RCSelectRef & {
 };
 
 /** Public API surface of `<rc-dialog>`. */
+export type RCDialogResizeOrigin =
+  | ''
+  | 'top'
+  | 'right'
+  | 'bottom'
+  | 'left'
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right';
+
 export type RCDialogRef = HTMLElement & {
   open: boolean | undefined;
   defaultOpen: boolean;
@@ -257,6 +365,8 @@ export type RCDialogRef = HTMLElement & {
   moveBounds: 'viewport' | 'parent';
   moveStep: number;
   resize: 'none' | 'both' | 'horizontal' | 'vertical';
+  resizeOrigin: RCDialogResizeOrigin;
+  resizeHandle: string;
   resizeThreshold: number;
   resizeStep: number;
   closedBy: 'any' | 'closerequest' | 'none' | '';
@@ -266,6 +376,12 @@ export type RCDialogRef = HTMLElement & {
   show(): void;
   close(returnValue?: string): void;
   requestClose(returnValue?: string): void;
+};
+
+/** Public API surface of `<rc-bottom-sheet>`. */
+export type RCBottomSheetRef = RCDialogRef & {
+  snapPoints: string;
+  swipeDismiss: boolean;
 };
 
 /** Public API surface of `<rc-menu>`. */
@@ -295,6 +411,38 @@ export type RCMenuButtonRef = HTMLElement & {
   placement: RCMenuButtonPlacement;
 };
 
+/** Public API surface of `<rc-fab-menu>`. */
+export type RCFabMenuRef = RCMenuButtonRef & {
+  position: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+};
+
+export type RCFabMenuToggleDetail = {
+  open: boolean;
+};
+
+/** Public API surface of `<rc-navigation-bar>`. */
+export type RCNavigationBarRef = HTMLElement & {
+  label: string;
+  activeSelector: string;
+  indicatorTarget: string;
+};
+
+/** Public API surface of `<rc-navigation-rail>`. */
+export type RCNavigationRailRef = RCNavigationBarRef & {
+  expanded: boolean;
+  defaultExpanded: boolean;
+  toggleable: boolean;
+  expandLabel: string;
+  collapseLabel: string;
+  expand(): void;
+  collapse(): void;
+  toggleExpanded(): void;
+};
+
+export type RCNavigationRailToggleDetail = {
+  expanded: boolean;
+};
+
 /** Public API surface of `<rc-menubar>`. */
 export type RCMenubarRef = HTMLElement & {
   label: string;
@@ -311,7 +459,7 @@ export type RCToolbarRef = HTMLElement & {
 export type RCSplitterRef = HTMLElement & {
   label: string;
   orientation: 'horizontal' | 'vertical';
-  mode: 'length' | 'percent';
+  mode: 'length' | 'percent' | 'fixed';
   step: number;
   value: number;
   defaultValue: number | undefined;
@@ -420,11 +568,17 @@ export type RCAppBarRef = HTMLElement & {
 
 /** Public API surface of `<rc-search-bar>`. */
 export type RCSearchBarRef = HTMLElement & {
+  variant: 'bar' | 'view';
+  open: boolean;
+  defaultOpen: boolean;
   value: string;
   defaultValue: string | undefined;
   debounce: number;
   clearLabel: string;
   placeholder: string | undefined;
+  showView(): void;
+  closeView(): void;
+  toggleView(): void;
 };
 
 // ── React JSX declarations ───────────────────────────────────────────────────
@@ -432,14 +586,76 @@ export type RCSearchBarRef = HTMLElement & {
 declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      'rc-disclosure': React.DetailedHTMLProps<React.HTMLAttributes<RCDisclosureRef>, RCDisclosureRef> & {
+      'rc-disclosure': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCDisclosureRef>,
+        RCDisclosureRef
+      > & {
         open?: boolean;
         fragment?: boolean;
       };
 
-      'rc-accordion': React.DetailedHTMLProps<React.HTMLAttributes<RCAccordionRef>, RCAccordionRef> & {
+      'rc-accordion': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCAccordionRef>,
+        RCAccordionRef
+      > & {
         name?: string;
         multiple?: boolean;
+      };
+
+      'rc-button': React.DetailedHTMLProps<React.HTMLAttributes<RCButtonRef>, RCButtonRef> & {
+        disabled?: boolean;
+        pending?: boolean;
+        progress?: boolean;
+        selected?: boolean;
+        'icon-only'?: boolean;
+        'full-width'?: boolean;
+      };
+
+      'rc-card': React.DetailedHTMLProps<React.HTMLAttributes<RCCardRef>, RCCardRef> & {
+        selected?: boolean;
+        disabled?: boolean;
+        interactive?: boolean;
+        'action-target'?: string;
+      };
+
+      'rc-switch': React.DetailedHTMLProps<React.HTMLAttributes<RCSwitchRef>, RCSwitchRef> & {
+        checked?: boolean;
+        'default-checked'?: boolean;
+        disabled?: boolean;
+        icons?: boolean;
+        'show-only-selected-icon'?: boolean;
+      };
+
+      'rc-segmented-button': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCSegmentedButtonRef>,
+        RCSegmentedButtonRef
+      > & {
+        value?: string;
+        'default-value'?: string;
+        disabled?: boolean;
+        orientation?: 'horizontal' | 'vertical';
+      };
+
+      'rc-chip': React.DetailedHTMLProps<React.HTMLAttributes<RCChipRef>, RCChipRef> & {
+        variant?: RCChipVariant;
+        selected?: boolean;
+        'default-selected'?: boolean;
+        disabled?: boolean;
+        removable?: boolean;
+        'remove-label'?: string;
+      };
+
+      'rc-chip-set': React.DetailedHTMLProps<React.HTMLAttributes<RCChipSetRef>, RCChipSetRef> & {
+        label?: string;
+        orientation?: 'horizontal' | 'vertical';
+      };
+
+      'rc-snackbar': React.DetailedHTMLProps<React.HTMLAttributes<RCSnackbarRef>, RCSnackbarRef> & {
+        open?: boolean;
+        message?: string;
+        'action-label'?: string;
+        duration?: number | string;
+        'queue-policy'?: RCSnackbarQueuePolicy;
       };
 
       'rc-listbox': React.DetailedHTMLProps<React.HTMLAttributes<RCListboxRef>, RCListboxRef> & {
@@ -483,21 +699,72 @@ declare module 'react' {
         'move-bounds'?: 'viewport' | 'parent';
         'move-step'?: number | string;
         resize?: 'none' | 'both' | 'horizontal' | 'vertical';
+        'resize-origin'?: RCDialogResizeOrigin;
+        'resize-handle'?: string;
         'resize-threshold'?: number | string;
         'resize-step'?: number | string;
         'closed-by'?: 'any' | 'closerequest' | 'none';
         'light-dismiss'?: boolean;
       };
 
+      'rc-bottom-sheet': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCBottomSheetRef>,
+        RCBottomSheetRef
+      > & {
+        open?: boolean;
+        'default-open'?: boolean;
+        'light-dismiss'?: boolean;
+        resize?: 'none' | 'both' | 'horizontal' | 'vertical';
+        'resize-origin'?: RCDialogResizeOrigin;
+        'resize-handle'?: string;
+        'resize-threshold'?: number | string;
+        'resize-step'?: number | string;
+        'snap-points'?: string;
+        'swipe-dismiss'?: boolean;
+      };
+
       'rc-menu': React.DetailedHTMLProps<React.HTMLAttributes<RCMenuRef>, RCMenuRef> & {
         label?: string;
       };
 
-      'rc-menu-button': React.DetailedHTMLProps<React.HTMLAttributes<RCMenuButtonRef>, RCMenuButtonRef> & {
+      'rc-menu-button': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCMenuButtonRef>,
+        RCMenuButtonRef
+      > & {
         open?: boolean;
         'default-open'?: boolean;
         orientation?: 'horizontal' | 'vertical';
         placement?: RCMenuButtonPlacement;
+      };
+
+      'rc-fab-menu': React.DetailedHTMLProps<React.HTMLAttributes<RCFabMenuRef>, RCFabMenuRef> & {
+        open?: boolean;
+        'default-open'?: boolean;
+        placement?: RCMenuButtonPlacement;
+        position?: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+      };
+
+      'rc-navigation-bar': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCNavigationBarRef>,
+        RCNavigationBarRef
+      > & {
+        label?: string;
+        'active-selector'?: string;
+        'indicator-target'?: string;
+      };
+
+      'rc-navigation-rail': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCNavigationRailRef>,
+        RCNavigationRailRef
+      > & {
+        label?: string;
+        expanded?: boolean;
+        'default-expanded'?: boolean;
+        toggleable?: boolean;
+        'expand-label'?: string;
+        'collapse-label'?: string;
+        'active-selector'?: string;
+        'indicator-target'?: string;
       };
 
       'rc-menubar': React.DetailedHTMLProps<React.HTMLAttributes<RCMenubarRef>, RCMenubarRef> & {
@@ -523,7 +790,10 @@ declare module 'react' {
         orientation?: 'horizontal' | 'vertical';
       };
 
-      'rc-range-slider': React.DetailedHTMLProps<React.HTMLAttributes<RCRangeSliderRef>, RCRangeSliderRef> & {
+      'rc-range-slider': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCRangeSliderRef>,
+        RCRangeSliderRef
+      > & {
         min?: number | string;
         max?: number | string;
         step?: number | string;
@@ -538,7 +808,10 @@ declare module 'react' {
         orientation?: 'horizontal' | 'vertical';
       };
 
-      'rc-transfer-list': React.DetailedHTMLProps<React.HTMLAttributes<RCTransferListRef>, RCTransferListRef> & {
+      'rc-transfer-list': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCTransferListRef>,
+        RCTransferListRef
+      > & {
         multiple?: boolean;
         compact?: boolean;
         'available-label'?: string;
@@ -558,11 +831,17 @@ declare module 'react' {
         fixed?: boolean;
       };
 
-      'rc-editor-toolbar': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+      'rc-editor-toolbar': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      > & {
         label?: string;
       };
 
-      'rc-markdown-editor': React.DetailedHTMLProps<React.HTMLAttributes<RCMarkdownEditorRef>, RCMarkdownEditorRef> & {
+      'rc-markdown-editor': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCMarkdownEditorRef>,
+        RCMarkdownEditorRef
+      > & {
         value?: string;
         'default-value'?: string;
         toolbar?: boolean;
@@ -584,7 +863,13 @@ declare module 'react' {
         scrollTarget?: Element | Document | Window | string | null;
       };
 
-      'rc-search-bar': React.DetailedHTMLProps<React.HTMLAttributes<RCSearchBarRef>, RCSearchBarRef> & {
+      'rc-search-bar': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCSearchBarRef>,
+        RCSearchBarRef
+      > & {
+        variant?: 'bar' | 'view';
+        open?: boolean;
+        'default-open'?: boolean;
         debounce?: number | string;
         'clear-label'?: string;
         placeholder?: string;
@@ -592,7 +877,10 @@ declare module 'react' {
         value?: string;
       };
 
-      'rc-virtual-canvas': React.DetailedHTMLProps<React.HTMLAttributes<RCVirtualCanvasRef>, RCVirtualCanvasRef> & {
+      'rc-virtual-canvas': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCVirtualCanvasRef>,
+        RCVirtualCanvasRef
+      > & {
         'content-width'?: number | string;
         'content-height'?: number | string;
         'auto-resize-canvas'?: boolean;

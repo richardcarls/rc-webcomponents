@@ -1,0 +1,105 @@
+---
+title: rc-bottom-sheet
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { BottomSheetDemo } from '@site/src/components/ComponentDemos';
+
+# rc-bottom-sheet
+
+Modal bottom-sheet wrapper for a native `<dialog>`, built on `rc-dialog`.
+
+<AtAGlance
+  packageName="@rcarls/rc-bottom-sheet"
+  tag="rc-bottom-sheet"
+  native="Requires a direct child native dialog"
+  state="Open state follows the native dialog"
+  events={[
+    'rc-dialog-open',
+    'rc-dialog-toggle',
+    'rc-dialog-request-close',
+    'rc-dialog-cancel',
+    'rc-dialog-close',
+  ]}
+  related={[
+    { label: 'rc-dialog', href: '/components/rc-dialog' },
+    { label: 'Theme previews', href: '/guide/theme-previews' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-bottom-sheet
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-bottom-sheet
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-bottom-sheet/define';
+```
+
+## Usage
+
+Place a `<dialog>` element directly inside `<rc-bottom-sheet>`. The inner
+dialog must have `aria-labelledby` or `aria-label`.
+
+```html
+<rc-bottom-sheet id="filters" snap-points="40dvh 70dvh 100dvh">
+  <dialog aria-label="Filter recipes">
+    <button
+      type="button"
+      data-rc-bottom-sheet-handle
+      data-rc-dialog-resize-axis="y"
+      data-rc-dialog-resize-origin="top"
+      aria-label="Resize sheet"
+    ></button>
+    <button value="done" formmethod="dialog">Done</button>
+  </dialog>
+</rc-bottom-sheet>
+```
+
+The element inherits `rc-dialog` methods and events, including `showModal()`,
+`close()`, `requestClose()`, `rc-dialog-toggle`, and
+`rc-dialog-request-close`. Bottom sheets default to light dismiss, vertical
+top-origin resize, and downward swipe-dismiss. Add an optional
+`[data-rc-bottom-sheet-handle]` element inside the dialog for a themed resize
+handle. Use `snap-points` to snap the sheet to declared CSS heights after
+resize gestures.
+
+## Live demo
+
+<BottomSheetDemo />
+
+## When to use
+
+Bottom sheets are a mobile-friendly alternative to `rc-dialog` for
+non-blocking, dismissible prompts — for example a newsletter/mailing-list
+signup or a general on-visit call-to-action. Docking to the bottom edge and
+supporting swipe-dismiss keeps the prompt reachable by thumb and easy to
+brush aside, where a centered `rc-dialog` modal would feel more disruptive
+on a small screen.
+
+## Theming
+
+`rc-theme-material` docks the dialog to the bottom edge, applies the Material
+surface and scrim tokens, and styles authored
+`[data-rc-bottom-sheet-handle]` handles.
+
+## API
+
+<ApiTable tag="rc-bottom-sheet" />

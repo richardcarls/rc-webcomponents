@@ -52,6 +52,7 @@
   "dependencies": {
     "@rcarls/rc-accordion": "workspace:*",
     "@rcarls/rc-app-bar": "workspace:*",
+    "@rcarls/rc-bottom-sheet": "workspace:*",
     "@rcarls/rc-combobox": "workspace:*",
     "@rcarls/rc-dialog": "workspace:*",
     "@rcarls/rc-disclosure": "workspace:*",

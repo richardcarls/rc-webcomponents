@@ -58,6 +58,7 @@ fallbacks:
 | -------------------- | -------------------------------------------------------------------- |
 | `rc-app-bar`         | App bar modeled after Material 3 Top app bar.                        |
 | `rc-accordion`       | Accordion coordinator for native `<details>` panels.                 |
+| `rc-bottom-sheet`    | Modal bottom-sheet wrapper for a native `<dialog>`.                  |
 | `rc-combobox`        | Editable combobox with filtering and optional allow-create behavior. |
 | `rc-dialog`          | Draggable, resizable wrapper for a native `<dialog>`.                |
 | `rc-disclosure`      | Disclosure wrapper for native `<details>`/`<summary>`.               |

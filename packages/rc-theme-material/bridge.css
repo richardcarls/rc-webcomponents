@@ -474,6 +474,18 @@
     --rc-splitter-handle-color: var(--md-sys-color-on-surface-variant, ButtonBorder);
   }
 
+  .rc-theme-material rc-bottom-sheet,
+  :host(.rc-theme-material) rc-bottom-sheet {
+    --rc-bottom-sheet-bg: var(--md-sys-color-surface-container-low, Canvas);
+    --rc-bottom-sheet-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-bottom-sheet-radius: var(--md-sys-shape-corner-extra-large, 1.75rem)
+      var(--md-sys-shape-corner-extra-large, 1.75rem) 0 0;
+    --rc-bottom-sheet-shadow: var(--rc-shadow-level3);
+    --rc-bottom-sheet-max-inline-size: 40rem;
+    --rc-bottom-sheet-max-block-size: 70dvh;
+    --rc-bottom-sheet-scrim: color-mix(in srgb, var(--md-sys-color-scrim, #000) 40%, transparent);
+    --rc-bottom-sheet-handle-color: var(--md-sys-color-outline-variant, GrayText);
+  }
   .rc-theme-material rc-virtual-canvas,
   :host(.rc-theme-material) rc-virtual-canvas {
     --rc-virtual-canvas-scrollbar-thumb-background: var(--md-sys-color-outline, ButtonFace);
