@@ -1,4 +1,5 @@
 import '@rcarls/rc-app-bar/define';
+import '@rcarls/rc-bottom-sheet/define';
 import '@rcarls/rc-combobox/define';
 import '@rcarls/rc-dialog/define';
 import '@rcarls/rc-disclosure/define';

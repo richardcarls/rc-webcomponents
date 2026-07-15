@@ -1,0 +1,56 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-bottom-sheet {
+    --rc-bottom-sheet-bg: var(--substrate-surface-raised, Canvas);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-bottom-sheet > dialog {
+    position: fixed;
+    inset: auto 0 0;
+    box-sizing: border-box;
+    inline-size: 100%;
+    max-inline-size: var(--rc-bottom-sheet-max-inline-size, 40rem);
+    max-block-size: var(--rc-bottom-sheet-max-block-size, 70dvh);
+    margin-block: 0;
+    margin-inline: auto;
+    padding: var(--rc-bottom-sheet-padding, 0 1rem calc(1rem + env(safe-area-inset-bottom, 0px)));
+    overflow: auto;
+    border: var(--rc-border, 1px solid ButtonBorder);
+    border-block-end: 0;
+    border-radius: var(--rc-bottom-sheet-radius, 1rem 1rem 0 0);
+    background: var(--rc-bottom-sheet-bg, var(--substrate-surface-raised, Canvas));
+    color: var(--rc-bottom-sheet-color, var(--rc-field-text, CanvasText));
+    box-shadow: var(--rc-bottom-sheet-shadow, var(--substrate-shadow-lg, none));
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-bottom-sheet > dialog::backdrop {
+    background: var(
+      --rc-bottom-sheet-scrim,
+      var(--rc-dialog-scrim, color-mix(in srgb, CanvasText 32%, transparent))
+    );
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-bottom-sheet
+    > dialog
+    [data-rc-bottom-sheet-handle] {
+    display: block;
+    inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
+    block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);
+    margin: var(--rc-bottom-sheet-handle-margin, 1rem auto 0.75rem);
+    padding: 0;
+    border: 0;
+    border-radius: var(--substrate-radius-pill, 999px);
+    background: var(--rc-bottom-sheet-handle-color, var(--rc-border-color, GrayText));
+    appearance: none;
+    cursor: ns-resize;
+    touch-action: none;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-bottom-sheet
+    > dialog
+    [data-rc-bottom-sheet-handle]:focus-visible {
+    outline: 0.125rem solid var(--rc-accent, Highlight);
+    outline-offset: 0.25rem;
+  }
+}

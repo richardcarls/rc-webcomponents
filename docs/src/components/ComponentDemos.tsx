@@ -1,9 +1,13 @@
 import type { CSSProperties } from 'react';
 import type * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import hljs from 'highlight.js/lib/core';
+import rust from 'highlight.js/lib/languages/rust';
 
 import type {
   RCAppBarRef,
+  RCBottomSheetRef,
+  RCBottomSheetSnapDetail,
   RCDialogRef,
   RCDisclosureRef,
   RCListboxRef,
@@ -11,42 +15,35 @@ import type {
   RCRangeSliderRef,
   RCSearchBarRef,
   RCSliderRef,
+  RCTextareaRef,
   RCTransferListChangeDetail,
   RCTransferListRef,
   RCVirtualCanvasRef,
   RCVirtualCanvasRenderDetail,
   RCVirtualCanvasPointerDetail,
 } from '@rcarls/rc-webcomponents/react';
+import type { RCTextareaPluginAPI } from '@rcarls/rc-textarea';
 
-import hljs from 'highlight.js/lib/core';
-import rust from 'highlight.js/lib/languages/rust';
 hljs.registerLanguage('rust', rust);
 
 import { createMarkdownPlugin } from '@rcarls/rc-textarea-plugin-markdown';
-
 import { DemoFrame } from './DemoFrame';
 
 type DetailEvent<T> = CustomEvent<T>;
 type EventLogTarget = HTMLElement | null;
 
-function useEventLog<T>(
-  target: EventLogTarget,
-  eventName: string,
-  format: (detail: T) => string,
-) {
+function useEventLog<T>(target: EventLogTarget, eventName: string, format: (detail: T) => string) {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
     const $element = target;
+
     if (!$element) {
       return;
     }
 
     const handleEvent = (event: Event) => {
-      setLog((current) => [
-        format((event as DetailEvent<T>).detail),
-        ...current,
-      ].slice(0, 8));
+      setLog((current) => [format((event as DetailEvent<T>).detail), ...current].slice(0, 8));
     };
 
     $element.addEventListener(eventName, handleEvent);
@@ -59,16 +56,71 @@ function useEventLog<T>(
   return log;
 }
 
-function EventLog({ entries, placeholder = 'Events will appear here...' }: {
+function EventLog({
+  entries,
+  placeholder = 'Events will appear here...',
+}: {
   entries: string[];
   placeholder?: string;
 }) {
   return (
     <div className="demo-event-log">
-      {entries.length
-        ? entries.map((entry, i) => <p key={i}>{entry}</p>)
-        : <p className="demo-placeholder">{placeholder}</p>}
+      {entries.length ? (
+        entries.map((entry, i) => <p key={i}>{entry}</p>)
+      ) : (
+        <p className="demo-placeholder">{placeholder}</p>
+      )}
     </div>
+  );
+}
+
+export function BottomSheetDemo() {
+  const [sheetEl, setSheetEl] = useState<RCBottomSheetRef | null>(null);
+  const log = useEventLog<RCBottomSheetSnapDetail>(
+    sheetEl,
+    'rc-bottom-sheet-snap',
+    ({ index, height, trigger }) =>
+      `rc-bottom-sheet-snap -> ${index} (${Math.round(height)}px, ${trigger})`,
+  );
+
+  return (
+    <DemoFrame>
+      <button type="button" onClick={() => sheetEl?.showModal()}>
+        Open filter sheet
+      </button>
+      <rc-bottom-sheet ref={setSheetEl} snap-points="240px 360px 480px" swipe-dismiss={false}>
+        <dialog aria-label="Filter recipes">
+          <button
+            type="button"
+            data-rc-bottom-sheet-handle
+            data-rc-dialog-resize-axis="y"
+            data-rc-dialog-resize-origin="top"
+            aria-label="Resize filter sheet"
+          ></button>
+          <div style={{ display: 'grid', gap: '0.75rem' }}>
+            <strong>Filter recipes</strong>
+            <label>
+              <input type="checkbox" /> Vegetarian
+            </label>
+            <label>
+              <input type="checkbox" /> Ready in 30 minutes
+            </label>
+            <div>
+              <button type="button" onClick={() => sheetEl?.snapTo(0)}>
+                Compact
+              </button>{' '}
+              <button type="button" onClick={() => sheetEl?.snapTo(2)}>
+                Expand
+              </button>{' '}
+              <button type="button" onClick={() => sheetEl?.close()}>
+                Done
+              </button>
+            </div>
+          </div>
+        </dialog>
+      </rc-bottom-sheet>
+      <EventLog entries={log} />
+    </DemoFrame>
   );
 }
 
@@ -107,14 +159,18 @@ export function AppBarDemo() {
           style={{ position: 'sticky', insetBlockStart: 0, zIndex: 1 }}
         >
           <button slot="leading" type="button" aria-label="Back">
-            <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+            <span className="material-symbols-outlined" aria-hidden="true">
+              arrow_back
+            </span>
           </button>
           <div>
             <strong>Recipes</strong>
             <small style={{ display: 'block' }}>Summer collection</small>
           </div>
           <button slot="trailing" type="button" aria-label="Edit">
-            <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+            <span className="material-symbols-outlined" aria-hidden="true">
+              edit
+            </span>
           </button>
         </rc-app-bar>
         <div style={{ padding: '1rem', display: 'grid', gap: '0.75rem' }}>
@@ -160,16 +216,17 @@ export function AppBarSearchDemo() {
     <DemoFrame>
       <rc-app-bar>
         <button slot="leading" type="button" aria-label="Open navigation">
-          <span className="material-symbols-outlined" aria-hidden="true">menu</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            menu
+          </span>
         </button>
-        <rc-search-bar
-          slot="center"
-          style={{ inlineSize: 'min(28rem, 100%)' }}
-        >
+        <rc-search-bar slot="center" style={{ inlineSize: 'min(28rem, 100%)' }}>
           <input type="search" aria-label="Search recipes" placeholder="Search recipes" />
         </rc-search-bar>
         <button slot="trailing" type="button" aria-label="Filter results">
-          <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            tune
+          </span>
         </button>
       </rc-app-bar>
     </DemoFrame>
@@ -181,15 +238,19 @@ export function ComboboxDemo() {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!comboEl) return;
+    if (!comboEl) {
+      return;
+    }
 
     const handleChange = (event: Event) => {
       const { value } = (event as CustomEvent<{ value: string | string[] }>).detail;
       const display = Array.isArray(value) ? value.join(', ') : value;
+
       setLog((current) => [`rc-select-change -> ${display}`, ...current].slice(0, 8));
     };
 
     comboEl.addEventListener('rc-select-change', handleChange);
+
     return () => comboEl.removeEventListener('rc-select-change', handleChange);
   }, [comboEl]);
 
@@ -198,7 +259,10 @@ export function ComboboxDemo() {
       <div className="demo-row">
         <label className="demo-col">
           <span>Ingredient</span>
-          <rc-combobox ref={(el) => setComboEl(el as HTMLElement | null)} placeholder="Choose an ingredient">
+          <rc-combobox
+            ref={(el) => setComboEl(el as HTMLElement | null)}
+            placeholder="Choose an ingredient"
+          >
             <select name="ingredient">
               <option value="carrot">Carrot</option>
               <option value="ginger">Ginger</option>
@@ -240,34 +304,64 @@ export function DialogDemo() {
   return (
     <DemoFrame>
       <p style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: 0 }}>
-        <button type="button" onClick={() => dialogEl?.showModal()}>Open draggable dialog</button>
-        <button type="button" onClick={() => confirmEl?.showModal()}>Open confirm dialog</button>
+        <button type="button" onClick={() => dialogEl?.showModal()}>
+          Open draggable dialog
+        </button>
+        <button type="button" onClick={() => confirmEl?.showModal()}>
+          Open confirm dialog
+        </button>
       </p>
-      <rc-dialog ref={(el) => setDialogEl(el as RCDialogRef | null)} movable move-handle="[data-titlebar]" resize="both">
+      <rc-dialog
+        ref={(el) => setDialogEl(el as RCDialogRef | null)}
+        movable
+        move-handle="[data-titlebar]"
+        resize="both"
+      >
         <dialog aria-labelledby="dialog-demo-title">
           <div data-titlebar style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <strong id="dialog-demo-title" style={{ flex: 1 }}>Native dialog</strong>
+            <strong id="dialog-demo-title" style={{ flex: 1 }}>
+              Native dialog
+            </strong>
             <button
               type="button"
               aria-label="Close"
-              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.125rem' }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0.125rem',
+              }}
               onClick={() => dialogEl?.close('dismiss')}
             >
-              <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '1rem' }}>close</span>
+              <span
+                className="material-symbols-outlined"
+                aria-hidden="true"
+                style={{ fontSize: '1rem' }}
+              >
+                close
+              </span>
             </button>
           </div>
           <p>Drag the titlebar, resize the edges, or press Escape.</p>
-          <button type="button" style={{ display: 'block', marginInlineStart: 'auto' }} onClick={() => dialogEl?.close('ok')}>OK</button>
+          <button
+            type="button"
+            style={{ display: 'block', marginInlineStart: 'auto' }}
+            onClick={() => dialogEl?.close('ok')}
+          >
+            OK
+          </button>
         </dialog>
       </rc-dialog>
       <rc-dialog ref={(el) => setConfirmEl(el as RCDialogRef | null)}>
         <dialog aria-label="Confirm delete" style={{ maxInlineSize: '24rem' }}>
-          <p style={{ marginBlockStart: 0 }}>
-            This will permanently delete the recipe. Continue?
-          </p>
+          <p style={{ marginBlockStart: 0 }}>This will permanently delete the recipe. Continue?</p>
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-            <button type="button" onClick={() => confirmEl?.close('cancel')}>Cancel</button>
-            <button type="button" onClick={() => confirmEl?.close('delete')}>Delete</button>
+            <button type="button" onClick={() => confirmEl?.close('cancel')}>
+              Cancel
+            </button>
+            <button type="button" onClick={() => confirmEl?.close('delete')}>
+              Delete
+            </button>
           </div>
         </dialog>
       </rc-dialog>
@@ -288,10 +382,24 @@ export function DisclosureDemo() {
         </details>
       </rc-disclosure>
       <p>
-        <button type="button" onClick={() => { if (disclosureRef.current) disclosureRef.current.open = true; }}>
+        <button
+          type="button"
+          onClick={() => {
+            if (disclosureRef.current) {
+              disclosureRef.current.open = true;
+            }
+          }}
+        >
           Open
         </button>{' '}
-        <button type="button" onClick={() => { if (disclosureRef.current) disclosureRef.current.open = false; }}>
+        <button
+          type="button"
+          onClick={() => {
+            if (disclosureRef.current) {
+              disclosureRef.current.open = false;
+            }
+          }}
+        >
           Close
         </button>
       </p>
@@ -338,11 +446,13 @@ export function FabDemo() {
           {/* Back-to-top FAB — hidden until 100 px into the demo scroll */}
           <rc-fab
             scroll-reveal
-            style={{
-              '--rc-fab-position': 'absolute',
-              '--rc-fab-scroll-threshold': '100px',
-              '--rc-fab-scroll-timeline': 'scroll(nearest block)',
-            } as CSSProperties}
+            style={
+              {
+                '--rc-fab-position': 'absolute',
+                '--rc-fab-scroll-threshold': '100px',
+                '--rc-fab-scroll-timeline': 'scroll(nearest block)',
+              } as CSSProperties
+            }
           >
             <button
               type="button"
@@ -359,7 +469,9 @@ export function FabDemo() {
             style={{ '--rc-fab-position': 'absolute' } as CSSProperties}
           >
             <button type="button">
-              <span className="material-symbols-outlined" aria-hidden="true">add</span>
+              <span className="material-symbols-outlined" aria-hidden="true">
+                add
+              </span>
               Create
             </button>
           </rc-fab>
@@ -373,14 +485,19 @@ export function ListboxDemo() {
   const [listboxEl, setListboxEl] = useState<RCListboxRef | null>(null);
   const seedListbox = useCallback((listbox: RCListboxRef | null) => {
     setListboxEl(listbox);
-    if (!listbox) return;
+
+    if (!listbox) {
+      return;
+    }
 
     async function applyOptions() {
       if (typeof customElements !== 'undefined') {
         await customElements.whenDefined('rc-listbox');
       }
 
-      if (!listbox.isConnected) return;
+      if (!listbox.isConnected) {
+        return;
+      }
 
       listbox.options = [
         { value: 'apples', label: 'Apples' },
@@ -391,6 +508,7 @@ export function ListboxDemo() {
         { value: 'figs', label: 'Figs' },
         { value: 'grapes', label: 'Grapes' },
       ];
+
       listbox.setSelectedValues(['berries']);
     }
 
@@ -455,16 +573,20 @@ export function MarkdownEditorDemo() {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!editorEl) return;
+    if (!editorEl) {
+      return;
+    }
 
     const handleChange = (e: Event) => {
       const { value = '' } = (e as CustomEvent<{ value?: string }>).detail;
       const preview = value.slice(0, 40).replace(/\n/g, '↵');
+
       setLog((prev) => [`rc-change -> ${preview}`, ...prev].slice(0, 8));
     };
 
     const handleModeChange = (e: Event) => {
       const { mode } = (e as CustomEvent<{ mode: string }>).detail;
+
       setLog((prev) => [`rc-mode-change -> ${mode}`, ...prev].slice(0, 8));
     };
 
@@ -501,9 +623,15 @@ export function MenuDemo() {
   return (
     <DemoFrame>
       <rc-menu ref={setMenuRef} label="Example menu">
-        <button type="button" value="new">New recipe</button>
-        <button type="button" value="duplicate">Duplicate</button>
-        <button type="button" value="delete" disabled>Delete</button>
+        <button type="button" value="new">
+          New recipe
+        </button>
+        <button type="button" value="duplicate">
+          Duplicate
+        </button>
+        <button type="button" value="delete" disabled>
+          Delete
+        </button>
       </rc-menu>
       <EventLog entries={log} />
     </DemoFrame>
@@ -530,19 +658,27 @@ export function MenuButtonDemo() {
   return (
     <DemoFrame>
       <rc-menu-button ref={setMenuButtonRef}>
-        <button slot="trigger" type="button">Actions</button>
+        <button slot="trigger" type="button">
+          Actions
+        </button>
         <rc-menu label="Actions">
           <button type="button" value="edit">
             <span>Edit</span>
             <span data-menu-shortcut>Ctrl+E</span>
           </button>
-          <button type="button" value="share">Share</button>
+          <button type="button" value="share">
+            Share
+          </button>
           <hr />
           <button type="button" role="menuitemcheckbox" aria-checked="true" value="show-details">
             Show details
           </button>
-          <button type="button" value="more" aria-haspopup="menu">More actions</button>
-          <button type="button" disabled>Archive</button>
+          <button type="button" value="more" aria-haspopup="menu">
+            More actions
+          </button>
+          <button type="button" disabled>
+            Archive
+          </button>
         </rc-menu>
       </rc-menu-button>
       <EventLog entries={[...activateLog, ...toggleLog]} />
@@ -566,7 +702,9 @@ export function MenubarDemo() {
     <DemoFrame>
       <rc-menubar ref={setMenubarRef} label="Recipe menu">
         <rc-menu-button>
-          <button slot="trigger" type="button">File</button>
+          <button slot="trigger" type="button">
+            File
+          </button>
           <rc-menu label="File">
             <button type="button" value="new">
               <span>New</span>
@@ -577,11 +715,15 @@ export function MenubarDemo() {
               <span data-menu-shortcut>Ctrl+O</span>
             </button>
             <hr />
-            <button type="button" value="close" disabled>Close</button>
+            <button type="button" value="close" disabled>
+              Close
+            </button>
           </rc-menu>
         </rc-menu-button>
         <rc-menu-button>
-          <button slot="trigger" type="button">Edit</button>
+          <button slot="trigger" type="button">
+            Edit
+          </button>
           <rc-menu label="Edit">
             <button type="button" value="undo">
               <span>Undo</span>
@@ -594,12 +736,19 @@ export function MenubarDemo() {
           </rc-menu>
         </rc-menu-button>
         <rc-menu-button>
-          <button slot="trigger" type="button">View</button>
+          <button slot="trigger" type="button">
+            View
+          </button>
           <rc-menu label="View">
             <button type="button" role="menuitemcheckbox" aria-checked="true" value="show-notes">
               Show notes
             </button>
-            <button type="button" role="menuitemcheckbox" aria-checked="false" value="compact-layout">
+            <button
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked="false"
+              value="compact-layout"
+            >
               Compact layout
             </button>
             <div role="group" aria-label="Sort order">
@@ -643,10 +792,13 @@ export function SearchBarDemo() {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!searchEl) return;
+    if (!searchEl) {
+      return;
+    }
 
     const onInput = (e: Event) => {
       const { value } = (e as CustomEvent<{ value: string }>).detail;
+
       setLog((prev) => [`rc-search-bar-input -> ${value}`, ...prev].slice(0, 8));
     };
 
@@ -666,14 +818,30 @@ export function SearchBarDemo() {
   return (
     <DemoFrame>
       <rc-search-bar ref={setSearchEl}>
-        <span slot="leading" aria-hidden="true" className="material-symbols-outlined">search</span>
+        <span slot="leading" aria-hidden="true" className="material-symbols-outlined">
+          search
+        </span>
         <input type="search" name="q" defaultValue="tomato" aria-label="Search recipes" />
       </rc-search-bar>
       <p>
-        <button type="button" onClick={() => { if (searchEl) searchEl.value = 'pasta'; }}>
+        <button
+          type="button"
+          onClick={() => {
+            if (searchEl) {
+              searchEl.value = 'pasta';
+            }
+          }}
+        >
           Set pasta
         </button>{' '}
-        <button type="button" onClick={() => { if (searchEl) searchEl.value = ''; }}>
+        <button
+          type="button"
+          onClick={() => {
+            if (searchEl) {
+              searchEl.value = '';
+            }
+          }}
+        >
           Clear
         </button>
       </p>
@@ -703,9 +871,14 @@ export function SliderDemo() {
 export function SplitterDemo() {
   return (
     <DemoFrame>
-      <rc-splitter label="Preview panes" style={{ blockSize: '12rem', border: '1px solid ButtonBorder' }}>
+      <rc-splitter
+        label="Preview panes"
+        style={{ blockSize: '12rem', border: '1px solid ButtonBorder' }}
+      >
         <div style={{ padding: '0.75rem' }}>Recipe</div>
-        <div slot="secondary" style={{ padding: '0.75rem' }}>Notes</div>
+        <div slot="secondary" style={{ padding: '0.75rem' }}>
+          Notes
+        </div>
       </rc-splitter>
     </DemoFrame>
   );
@@ -742,25 +915,31 @@ export function TextareaBasicDemo() {
   );
 }
 
-const MARKDOWN_SEED = '# Shopping list\n\n- **Carrots** — 1 bunch\n- *Ginger* — 2 cm piece\n- Garlic — 4 cloves\n\n> Buy organic where possible.';
+const MARKDOWN_SEED =
+  '# Shopping list\n\n- **Carrots** — 1 bunch\n- *Ginger* — 2 cm piece\n- Garlic — 4 cloves\n\n> Buy organic where possible.';
 
 export function TextareaMarkdownDemo() {
-  const [editor, setEditor] = useState<any>(null);
+  const [editor, setEditor] = useState<RCTextareaRef | null>(null);
   const [preview, setPreview] = useState('');
 
   useEffect(() => {
-    if (!editor) return;
+    if (!editor) {
+      return;
+    }
 
     const plugin = createMarkdownPlugin();
+
     editor.usePlugin(plugin);
     setPreview(plugin.getPreviewHtml(MARKDOWN_SEED));
 
     const onchange = (e: Event) => {
       const value = (e as CustomEvent<{ value: string }>).detail.value;
+
       setPreview(plugin.getPreviewHtml(value));
     };
 
     editor.addEventListener('rc-textarea-change', onchange);
+
     return () => editor.removeEventListener('rc-textarea-change', onchange);
   }, [editor]);
 
@@ -838,13 +1017,15 @@ const HLJS_DEMO_CSS = `
 `;
 
 export function TextareaHljsDemo() {
-  const [editor, setEditor] = useState<any>(null);
+  const [editor, setEditor] = useState<RCTextareaRef | null>(null);
 
   useEffect(() => {
-    if (!editor) return;
+    if (!editor) {
+      return;
+    }
 
     editor.usePlugin({
-      mount(api: any) {
+      mount(api: RCTextareaPluginAPI) {
         api.adoptStyleSheet(HLJS_DEMO_CSS);
       },
       highlight(value: string) {
@@ -859,18 +1040,21 @@ export function TextareaHljsDemo() {
         ref={setEditor}
         line-numbers
         auto-grow
-        style={{
-          '--rc-textarea-font-family': "'Fira Code', 'Cascadia Code', monospace",
-          '--rc-textarea-font-size': '13px',
-          '--rc-textarea-background': 'light-dark(#ffffff, #1e1e2e)',
-          '--rc-textarea-color': 'light-dark(#1f2937, #cdd6f4)',
-          '--rc-textarea-caret-color': 'light-dark(#2563eb, #89b4fa)',
-          '--rc-textarea-border': '1px solid light-dark(#cbd5e1, #313244)',
-          '--rc-textarea-active-line-bg': 'light-dark(rgb(37 99 235 / 0.08), rgb(255 255 255 / 0.04))',
-          '--rc-textarea-gutter-bg': 'light-dark(#f8fafc, #181825)',
-          '--rc-textarea-gutter-color': 'light-dark(#64748b, #6c7086)',
-          '--rc-textarea-gutter-border': '1px solid light-dark(#cbd5e1, #313244)',
-        } as CSSProperties}
+        style={
+          {
+            '--rc-textarea-font-family': "'Fira Code', 'Cascadia Code', monospace",
+            '--rc-textarea-font-size': '13px',
+            '--rc-textarea-background': 'light-dark(#ffffff, #1e1e2e)',
+            '--rc-textarea-color': 'light-dark(#1f2937, #cdd6f4)',
+            '--rc-textarea-caret-color': 'light-dark(#2563eb, #89b4fa)',
+            '--rc-textarea-border': '1px solid light-dark(#cbd5e1, #313244)',
+            '--rc-textarea-active-line-bg':
+              'light-dark(rgb(37 99 235 / 0.08), rgb(255 255 255 / 0.04))',
+            '--rc-textarea-gutter-bg': 'light-dark(#f8fafc, #181825)',
+            '--rc-textarea-gutter-color': 'light-dark(#64748b, #6c7086)',
+            '--rc-textarea-gutter-border': '1px solid light-dark(#cbd5e1, #313244)',
+          } as CSSProperties
+        }
       >
         <textarea rows={12} aria-label="Rust code editor" defaultValue={RUST_SNIPPET} />
       </rc-textarea>
@@ -885,14 +1069,20 @@ export function ToolbarDemo() {
     <DemoFrame>
       <rc-toolbar label="Formatting">
         <button type="button" aria-label="Bold" onClick={() => setClicked('Bold')}>
-          <span className="material-symbols-outlined" aria-hidden="true">format_bold</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            format_bold
+          </span>
         </button>
         <button type="button" aria-label="Italic" onClick={() => setClicked('Italic')}>
-          <span className="material-symbols-outlined" aria-hidden="true">format_italic</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            format_italic
+          </span>
         </button>
         <hr />
         <button type="button" aria-label="Link" onClick={() => setClicked('Link')}>
-          <span className="material-symbols-outlined" aria-hidden="true">link</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            link
+          </span>
         </button>
       </rc-toolbar>
       <p>{clicked}</p>
@@ -923,7 +1113,9 @@ export function TransferListDemo() {
       <rc-transfer-list ref={setTransferEl} multiple compact={compact ? true : undefined}>
         <select multiple aria-label="Available sections">
           <option value="breakfast">Breakfast</option>
-          <option value="dinner" selected>Dinner</option>
+          <option value="dinner" selected>
+            Dinner
+          </option>
           <option value="dessert">Dessert</option>
         </select>
       </rc-transfer-list>
@@ -944,18 +1136,28 @@ export function VirtualCanvasDemo() {
   const dotsRef = useRef<Array<{ x: number; y: number }>>([]);
 
   useEffect(() => {
-    if (!vcEl) return;
+    if (!vcEl) {
+      return;
+    }
 
     const vc = vcEl as RCVirtualCanvasRef;
+
     vc.contentWidth = VC_CONTENT_W;
     vc.contentHeight = VC_CONTENT_H;
 
     function drawGrid(e: Event) {
       const { viewRect } = (e as CustomEvent<RCVirtualCanvasRenderDetail>).detail;
       const canvas = canvasRef.current;
-      if (!canvas) return;
+
+      if (!canvas) {
+        return;
+      }
+
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+
+      if (!ctx) {
+        return;
+      }
 
       const scaleX = vc.canvasScaleX;
       const scaleY = vc.canvasScaleY;
@@ -970,32 +1172,40 @@ export function VirtualCanvasDemo() {
       ctx.beginPath();
       ctx.strokeStyle = '#dde1e7';
       ctx.lineWidth = 1;
+
       const minorX0 = Math.floor(viewRect.x / VC_MINOR) * VC_MINOR;
       const minorY0 = Math.floor(viewRect.y / VC_MINOR) * VC_MINOR;
+
       for (let x = minorX0; x <= viewRect.x + viewW + VC_MINOR; x += VC_MINOR) {
         ctx.moveTo(x - viewRect.x, 0);
         ctx.lineTo(x - viewRect.x, viewH);
       }
+
       for (let y = minorY0; y <= viewRect.y + viewH + VC_MINOR; y += VC_MINOR) {
         ctx.moveTo(0, y - viewRect.y);
         ctx.lineTo(viewW, y - viewRect.y);
       }
+
       ctx.stroke();
 
       // Major grid lines
       ctx.beginPath();
       ctx.strokeStyle = '#a8b0bc';
       ctx.lineWidth = 2;
+
       const majorX0 = Math.floor(viewRect.x / VC_MAJOR) * VC_MAJOR;
       const majorY0 = Math.floor(viewRect.y / VC_MAJOR) * VC_MAJOR;
+
       for (let x = majorX0; x <= viewRect.x + viewW + VC_MAJOR; x += VC_MAJOR) {
         ctx.moveTo(x - viewRect.x, 0);
         ctx.lineTo(x - viewRect.x, viewH);
       }
+
       for (let y = majorY0; y <= viewRect.y + viewH + VC_MAJOR; y += VC_MAJOR) {
         ctx.moveTo(0, y - viewRect.y);
         ctx.lineTo(viewW, y - viewRect.y);
       }
+
       ctx.stroke();
 
       // Coordinate labels at major intersections
@@ -1003,6 +1213,7 @@ export function VirtualCanvasDemo() {
       ctx.font = '11px monospace';
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
+
       for (let x = majorX0; x <= viewRect.x + viewW + VC_MAJOR; x += VC_MAJOR) {
         for (let y = majorY0; y <= viewRect.y + viewH + VC_MAJOR; y += VC_MAJOR) {
           ctx.fillText(`${x},${y}`, x - viewRect.x + 4, y - viewRect.y + 4);
@@ -1011,9 +1222,11 @@ export function VirtualCanvasDemo() {
 
       // Dots placed via clicks
       ctx.fillStyle = '#e53935';
+
       for (const dot of dotsRef.current) {
         const px = dot.x - viewRect.x;
         const py = dot.y - viewRect.y;
+
         if (px >= -8 && px <= viewW + 8 && py >= -8 && py <= viewH + 8) {
           ctx.beginPath();
           ctx.arc(px, py, 5, 0, Math.PI * 2);
@@ -1026,9 +1239,11 @@ export function VirtualCanvasDemo() {
 
     function handlePointer(e: Event) {
       const { type, contentX, contentY } = (e as CustomEvent<RCVirtualCanvasPointerDetail>).detail;
+
       if (overlayRef.current) {
         overlayRef.current.textContent = `${Math.round(contentX)}, ${Math.round(contentY)}`;
       }
+
       if (type === 'click') {
         dotsRef.current.push({ x: contentX, y: contentY });
         vc.requestRender();
@@ -1051,24 +1266,23 @@ export function VirtualCanvasDemo() {
         render-mode="viewport-change"
         style={{ display: 'block', blockSize: '14rem', inlineSize: '100%' }}
       >
-        <canvas
-          ref={canvasRef}
-          style={{ display: 'block', width: '100%', height: '100%' }}
-        />
+        <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
         <span
           ref={overlayRef}
           slot="overlay"
-          style={{
-            display: 'inline-block',
-            margin: '6px',
-            padding: '2px 6px',
-            background: 'Canvas',
-            color: 'CanvasText',
-            border: '1px solid ButtonBorder',
-            borderRadius: '3px',
-            font: '11px/1.4 monospace',
-            pointerEvents: 'none',
-          } as CSSProperties}
+          style={
+            {
+              display: 'inline-block',
+              margin: '6px',
+              padding: '2px 6px',
+              background: 'Canvas',
+              color: 'CanvasText',
+              border: '1px solid ButtonBorder',
+              borderRadius: '3px',
+              font: '11px/1.4 monospace',
+              pointerEvents: 'none',
+            } as CSSProperties
+          }
         >
           0, 0
         </span>
