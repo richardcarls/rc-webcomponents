@@ -30,6 +30,7 @@ import '@rcarls/rc-webcomponents/define';
 import {
   RCCombobox,
   RCDialog,
+  RCFabMenu,
   RCListbox,
   RcMarkdownEditor,
   RCMenu,
@@ -63,6 +64,7 @@ fallbacks:
 | `rc-dialog`          | Draggable, resizable wrapper for a native `<dialog>`.                |
 | `rc-disclosure`      | Disclosure wrapper for native `<details>`/`<summary>`.               |
 | `rc-fab`             | Sticky floating action button modeled after Material 3 FAB.          |
+| `rc-fab-menu`        | Floating action button menu wrapper for an `rc-menu` action surface. |
 | `rc-listbox`         | Listbox that keeps option DOM in light DOM.                          |
 | `rc-markdown-editor` | Rich/source Markdown editor backed by `rc-textarea`.                 |
 | `rc-menu`            | Menu popup for command surfaces.                                     |

@@ -17,6 +17,7 @@ const packages = [
   ],
   ['rc-app-bar', 'App bar modeled after Material 3 Top app bar', '/components/rc-app-bar'],
   ['rc-fab', 'Sticky floating action button modeled after Material 3 FAB', '/components/rc-fab'],
+  ['rc-fab-menu', 'Floating action button menu for rc-menu actions', '/components/rc-fab-menu'],
   [
     'rc-slider',
     'Single-thumb slider backed by native <input type="range">',

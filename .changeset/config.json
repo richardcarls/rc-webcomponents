@@ -12,6 +12,7 @@
       "@rcarls/rc-dialog",
       "@rcarls/rc-disclosure",
       "@rcarls/rc-fab",
+      "@rcarls/rc-fab-menu",
       "@rcarls/rc-listbox",
       "@rcarls/rc-markdown-editor",
       "@rcarls/rc-menu",

@@ -440,7 +440,9 @@
   }
 
   .rc-theme-material rc-fab,
-  :host(.rc-theme-material) rc-fab {
+  .rc-theme-material rc-fab-menu,
+  :host(.rc-theme-material) rc-fab,
+  :host(.rc-theme-material) rc-fab-menu {
     --rc-fab-bg: var(--md-fab-container-color, var(--md-sys-color-primary-container, ButtonFace));
     --rc-fab-color: var(--md-fab-icon-color, var(--md-sys-color-on-primary-container, ButtonText));
     --rc-fab-shadow: var(--rc-shadow-level3);

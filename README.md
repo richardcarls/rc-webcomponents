@@ -100,6 +100,7 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable wrapper for a native `<dialog>` | rc-common |
 | [`rc-bottom-sheet`](packages/rc-bottom-sheet/) | Modal bottom-sheet wrapper for a native `<dialog>` | rc-dialog |
 | [`rc-fab`](packages/rc-fab/) | Sticky floating action button modeled after Material 3 Floating action button | rc-common |
+| [`rc-fab-menu`](packages/rc-fab-menu/) | Floating action button menu wrapper for an `rc-menu` action surface | rc-menu-button, rc-menu |
 | [`rc-slider`](packages/rc-slider/) | Single-thumb slider backed by a native `<input type="range">` | rc-common |
 | [`rc-range-slider`](packages/rc-range-slider/) | Two-thumb range slider backed by native range inputs for min/max values | rc-common |
 | [`rc-transfer-list`](packages/rc-transfer-list/) | Transfer list that enhances a native `<select multiple>` into available and selected panes | rc-common, rc-listbox, rc-toolbar |

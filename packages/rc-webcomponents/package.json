@@ -57,6 +57,7 @@
     "@rcarls/rc-dialog": "workspace:*",
     "@rcarls/rc-disclosure": "workspace:*",
     "@rcarls/rc-fab": "workspace:*",
+    "@rcarls/rc-fab-menu": "workspace:*",
     "@rcarls/rc-listbox": "workspace:*",
     "@rcarls/rc-markdown-editor": "workspace:*",
     "@rcarls/rc-menu": "workspace:*",
