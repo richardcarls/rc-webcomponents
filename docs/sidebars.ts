@@ -20,6 +20,7 @@ const sidebars: SidebarsConfig = {
       collapsible: false,
       items: [
         'components/rc-fab',
+        'components/rc-fab-menu',
         'components/rc-select',
         'components/rc-combobox',
         'components/rc-search-bar',

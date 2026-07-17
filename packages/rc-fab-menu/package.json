@@ -1,0 +1,67 @@
+{
+  "name": "@rcarls/rc-fab-menu",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.3.2",
+  "description": "Floating action button menu wrapper for an rc-menu action surface.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-fab-menu"
+  },
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-fab-menu",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/rc-fab-menu.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/packages/rc-fab-menu/src/index.d.ts",
+        "default": "./dist/rc-fab-menu.js"
+      }
+    },
+    "./define": {
+      "import": {
+        "types": "./dist/types/packages/rc-fab-menu/src/define.d.ts",
+        "default": "./dist/rc-fab-menu-define.js"
+      }
+    }
+  },
+  "types": "./dist/types/packages/rc-fab-menu/src/index.d.ts",
+  "sideEffects": [
+    "./dist/rc-fab-menu-define.js"
+  ],
+  "customElements": "dist/custom-elements.json",
+  "scripts": {
+    "build": "tsc && vite build && cem analyze",
+    "cem:analyze": "cem analyze",
+    "preview": "vite preview",
+    "test:browser": "vitest --run",
+    "test:browser:chrome": "vitest --run --project=chromium",
+    "test:browser:firefox": "vitest --run --project=firefox"
+  },
+  "dependencies": {
+    "@rcarls/rc-common": "workspace:*",
+    "@rcarls/rc-menu": "workspace:*",
+    "@rcarls/rc-menu-button": "workspace:*"
+  },
+  "devDependencies": {
+    "@custom-elements-manifest/analyzer": "0.11.0",
+    "@vitest/browser-playwright": "4.1.5",
+    "lit": "^3.0.0",
+    "playwright": "^1.56.0",
+    "rollup": "^4.60.2",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.6",
+    "vitest-browser-lit": "^1.0.1"
+  },
+  "peerDependencies": {
+    "lit": "^3.0.0"
+  }
+}

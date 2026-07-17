@@ -11,6 +11,7 @@ import type {
   RCDialogRef,
   RCDisclosureRef,
   RCListboxRef,
+  RCMenuActivateDetail,
   RCMenuRef,
   RCRangeSliderRef,
   RCSearchBarRef,
@@ -119,6 +120,45 @@ export function BottomSheetDemo() {
           </div>
         </dialog>
       </rc-bottom-sheet>
+      <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+export function FabMenuDemo() {
+  const [menuEl, setMenuEl] = useState<HTMLElement | null>(null);
+  const log = useEventLog<RCMenuActivateDetail>(
+    menuEl,
+    'rc-menu-activate',
+    ({ value }) => `rc-menu-activate -> ${value}`,
+  );
+
+  return (
+    <DemoFrame>
+      <div
+        style={{
+          position: 'relative',
+          minBlockSize: '16rem',
+          border: '1px solid ButtonBorder',
+          overflow: 'clip',
+        }}
+      >
+        <rc-fab-menu
+          ref={setMenuEl}
+          style={{ '--rc-fab-menu-position-css': 'absolute' } as CSSProperties}
+        >
+          <button slot="trigger" type="button" aria-label="Create">
+            <span className="material-symbols-outlined" aria-hidden="true">
+              add
+            </span>
+          </button>
+          <rc-menu label="Create">
+            <button data-value="recipe">Recipe</button>
+            <button data-value="collection">Collection</button>
+            <button data-value="meal-plan">Meal plan</button>
+          </rc-menu>
+        </rc-fab-menu>
+      </div>
       <EventLog entries={log} />
     </DemoFrame>
   );

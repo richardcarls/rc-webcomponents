@@ -1,0 +1,12 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-fab-menu {
+    --rc-fab-menu-bg: var(--rc-accent, Highlight);
+    --rc-fab-menu-color: var(--rc-on-accent, HighlightText);
+    --rc-fab-menu-shadow: var(--substrate-shadow-raised, var(--rc-shadow-level2, none));
+    --rc-fab-menu-shadow-hover: var(--substrate-shadow-overlay, var(--rc-shadow-level3, none));
+    --rc-fab-menu-shadow-active: var(--substrate-shadow-raised, var(--rc-shadow-level2, none));
+    --rc-fab-menu-radius: var(--substrate-radius-lg, 1rem);
+    --rc-fab-menu-focus-ring: var(--rc-focus-ring);
+    --rc-fab-menu-focus-ring-offset: var(--rc-focus-ring-offset);
+  }
+}

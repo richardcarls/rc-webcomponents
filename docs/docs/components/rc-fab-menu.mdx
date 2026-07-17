@@ -1,0 +1,102 @@
+---
+title: rc-fab-menu
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { FabMenuDemo } from '@site/src/components/ComponentDemos';
+
+# rc-fab-menu
+
+Floating action button menu wrapper for an `rc-menu` action surface.
+
+Use this when a primary floating action needs a short menu of related commands.
+The component specializes `rc-menu-button`, so it keeps menu keyboard behavior,
+light dismiss, focus return, and anchor positioning while adding FAB placement
+and reveal styling.
+
+<AtAGlance
+  packageName="@rcarls/rc-fab-menu"
+  tag="rc-fab-menu"
+  native="Consumer-supplied trigger button plus rc-menu"
+  state="Controlled or uncontrolled open state inherited from rc-menu-button"
+  events={['rc-fab-menu-toggle', 'rc-menu-activate']}
+  related={[
+    { label: 'rc-fab', href: '/components/rc-fab' },
+    { label: 'rc-menu-button', href: '/components/rc-menu-button' },
+    { label: 'rc-menu', href: '/components/rc-menu' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-fab-menu
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-fab-menu
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-fab-menu/define';
+```
+
+## Usage
+
+Place a native trigger button in the `trigger` slot and an `rc-menu` in the
+default slot. Listen for `rc-menu-activate` on the menu or wrapper to handle the
+chosen action.
+
+```html
+<rc-fab-menu>
+  <button slot="trigger" type="button" aria-label="Create">
+    <span aria-hidden="true">+</span>
+  </button>
+
+  <rc-menu label="Create">
+    <button data-value="recipe">Recipe</button>
+    <button data-value="collection">Collection</button>
+  </rc-menu>
+</rc-fab-menu>
+```
+
+The trigger receives `aria-haspopup="menu"` and `aria-expanded` from the
+inherited menu-button behavior. The popup opens above the trigger by default
+with `placement="top-end"`.
+
+## Live demo
+
+<FabMenuDemo />
+
+## Material sizing
+
+Material FAB sizes are theme concerns rather than component API values. With
+`rc-theme-material`, use modifier classes on the host:
+
+```html
+<rc-fab-menu class="rc-fab--large">
+  <button slot="trigger" type="button" aria-label="Create">+</button>
+  <rc-menu label="Create">...</rc-menu>
+</rc-fab-menu>
+```
+
+The same `rc-fab--small` and `rc-fab--large` classes work on `rc-fab`.
+
+## API
+
+`rc-fab-menu` inherits `open`, `defaultOpen`, `placement`, `openMenu()`,
+`closeMenu()`, and `toggleMenu()` from `rc-menu-button`.
+
+<ApiTable tag="rc-fab-menu" />
