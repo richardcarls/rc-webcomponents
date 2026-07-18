@@ -19,6 +19,7 @@ const sidebars: SidebarsConfig = {
       label: 'Elements',
       collapsible: false,
       items: [
+        'components/rc-button',
         'components/rc-fab',
         'components/rc-fab-menu',
         'components/rc-select',

@@ -125,6 +125,61 @@ export function BottomSheetDemo() {
   );
 }
 
+export function ButtonDemo() {
+  const [selected, setSelected] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [progress, setProgress] = useState(false);
+
+  return (
+    <DemoFrame>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <rc-button selected={selected} pending={pending} progress={progress}>
+          <button type="button">
+            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              favorite
+            </span>
+            Save recipe
+          </button>
+        </rc-button>
+        <rc-button icon-only>
+          <button type="button" aria-label="Share recipe">
+            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              share
+            </span>
+          </button>
+        </rc-button>
+      </div>
+      <fieldset style={{ marginBlockStart: '1rem' }}>
+        <legend>Button state</legend>
+        <label>
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(event) => setSelected(event.currentTarget.checked)}
+          />{' '}
+          Selected
+        </label>{' '}
+        <label>
+          <input
+            type="checkbox"
+            checked={pending}
+            onChange={(event) => setPending(event.currentTarget.checked)}
+          />{' '}
+          Pending
+        </label>{' '}
+        <label>
+          <input
+            type="checkbox"
+            checked={progress}
+            onChange={(event) => setProgress(event.currentTarget.checked)}
+          />{' '}
+          Progress
+        </label>
+      </fieldset>
+    </DemoFrame>
+  );
+}
+
 export function FabMenuDemo() {
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null);
   const log = useEventLog<RCMenuActivateDetail>(

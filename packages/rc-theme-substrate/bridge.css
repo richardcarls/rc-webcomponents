@@ -30,6 +30,9 @@
     --rc-control-padding-block: var(--substrate-control-padding-block, 0.5rem);
     --rc-control-padding-inline: var(--substrate-control-padding-inline, 0.75rem);
     --rc-control-gap: var(--substrate-control-gap, 0.5rem);
+    --rc-button-color: var(--rc-button-text, ButtonText);
+    --rc-button-block-size: var(--rc-control-block-size);
+    --rc-button-radius: var(--rc-control-radius);
     --rc-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
     --rc-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
     --rc-item-gap: var(--substrate-item-gap, 0.5rem);

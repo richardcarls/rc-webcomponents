@@ -1,6 +1,7 @@
 export * from '@rcarls/rc-accordion';
 export * from '@rcarls/rc-app-bar';
 export * from '@rcarls/rc-bottom-sheet';
+export * from '@rcarls/rc-button';
 export * from '@rcarls/rc-combobox';
 export * from '@rcarls/rc-dialog';
 export * from '@rcarls/rc-disclosure';
