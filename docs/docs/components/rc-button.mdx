@@ -1,0 +1,81 @@
+---
+title: rc-button
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ButtonDemo } from '@site/src/components/ComponentDemos';
+
+# rc-button
+
+Progressive-enhancement button wrapper for a direct native `<button>`.
+
+`rc-button` keeps the real button in light DOM for forms, labels, keyboard
+behavior, and no-JavaScript fallback. The custom element adds reflected state
+attributes, icon/label presence hooks, and overlay parts for state-layer or
+progress effects.
+
+<AtAGlance
+  packageName="@rcarls/rc-button"
+  tag="rc-button"
+  native="Direct-child <button> element"
+  state="Declarative reflected button states"
+  events={[]}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-button
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-button
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-button/define';
+```
+
+## Markup
+
+```html
+<rc-button pending>
+  <button type="button">
+    <span data-rc-button-icon aria-hidden="true">+</span>
+    <span data-rc-button-label>Save</span>
+  </button>
+</rc-button>
+```
+
+Place icons, selected icons, progress-adjacent content, and visible labels
+inside the native button. `rc-button` never moves author nodes.
+
+## States
+
+Use reflected attributes such as `pending`, `progress`, `selected`,
+`icon-only`, and `full-width` as declarative hooks. `pending` and `progress`
+block activation and expose `aria-busy` when the author has not set it.
+
+Use `[data-rc-button-icon]` and `[data-rc-button-selected-icon]` inside the
+button for theme-driven selected icon switching.
+
+## Live demo
+
+<ButtonDemo />
+
+## API
+
+<ApiTable tag="rc-button" />

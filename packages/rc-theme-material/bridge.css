@@ -48,6 +48,10 @@
     --rc-list-item-padding-inline: 1rem;
     --rc-list-item-selected-bg: var(--md-sys-color-secondary-container, Highlight);
     --rc-list-item-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
+    --rc-button-bg: var(--md-sys-color-primary, ButtonFace);
+    --rc-button-color: var(--md-sys-color-on-primary, ButtonText);
+    --rc-button-block-size: var(--rc-control-block-size);
+    --rc-button-radius: var(--rc-control-radius);
     --rc-toolbar-radius: var(--md-sys-shape-corner-large, 1rem);
     --rc-toolbar-vertical-radius: 0;
     --rc-item-padding-block: 0.75rem;

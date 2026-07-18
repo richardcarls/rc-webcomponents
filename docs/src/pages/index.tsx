@@ -4,6 +4,7 @@ import Layout from '@theme/Layout';
 import styles from './index.module.css';
 
 const packages = [
+  ['rc-button', 'Progressive-enhancement wrapper for native <button>', '/components/rc-button'],
   ['rc-select', 'Select-only combobox backed by native <select>', '/components/rc-select'],
   [
     'rc-combobox',
