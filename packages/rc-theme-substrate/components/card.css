@@ -1,0 +1,22 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-card {
+    --rc-card-bg: var(--substrate-surface-raised, Canvas);
+    --rc-card-color: var(--substrate-on-surface, CanvasText);
+    --rc-card-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-card-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-card-shadow: var(--substrate-shadow-sm, none);
+    --rc-card-padding-block: 0.75rem;
+    --rc-card-padding-inline: 0.75rem;
+    --rc-card-state-layer-bg: currentColor;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-card[selected] {
+    box-shadow:
+      0 0 0 2px var(--rc-accent, Highlight),
+      var(--rc-card-shadow);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-card[disabled] {
+    opacity: var(--rc-disabled-opacity, 0.52);
+  }
+}

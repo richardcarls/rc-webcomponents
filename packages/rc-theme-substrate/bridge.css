@@ -33,6 +33,9 @@
     --rc-button-color: var(--rc-button-text, ButtonText);
     --rc-button-block-size: var(--rc-control-block-size);
     --rc-button-radius: var(--rc-control-radius);
+    --rc-card-bg: var(--substrate-surface-raised, Canvas);
+    --rc-card-color: var(--substrate-on-surface, CanvasText);
+    --rc-card-radius: var(--substrate-radius-lg, 0.75rem);
     --rc-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
     --rc-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
     --rc-item-gap: var(--substrate-item-gap, 0.5rem);

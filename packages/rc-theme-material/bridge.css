@@ -52,6 +52,9 @@
     --rc-button-color: var(--md-sys-color-on-primary, ButtonText);
     --rc-button-block-size: var(--rc-control-block-size);
     --rc-button-radius: var(--rc-control-radius);
+    --rc-card-bg: var(--md-sys-color-surface-container-low, Canvas);
+    --rc-card-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-card-radius: var(--md-sys-shape-corner-medium, 0.75rem);
     --rc-toolbar-radius: var(--md-sys-shape-corner-large, 1rem);
     --rc-toolbar-vertical-radius: 0;
     --rc-item-padding-block: 0.75rem;
