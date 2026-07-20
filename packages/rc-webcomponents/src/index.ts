@@ -13,6 +13,8 @@ export * from '@rcarls/rc-markdown-editor';
 export * from '@rcarls/rc-menu';
 export * from '@rcarls/rc-menu-button';
 export * from '@rcarls/rc-menubar';
+export * from '@rcarls/rc-navigation-bar';
+export * from '@rcarls/rc-navigation-rail';
 export * from '@rcarls/rc-range-slider';
 export * from '@rcarls/rc-search-bar';
 export * from '@rcarls/rc-select';

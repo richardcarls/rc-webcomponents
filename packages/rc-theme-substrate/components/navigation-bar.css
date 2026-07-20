@@ -1,0 +1,26 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-navigation-bar {
+    --rc-navigation-bar-bg: var(--rc-surface, Canvas);
+    --rc-navigation-bar-color: var(--rc-color, CanvasText);
+    --rc-navigation-bar-block-size: 4rem;
+    --rc-navigation-bar-padding-block: 0;
+    --rc-navigation-bar-padding-inline: 0;
+    --rc-navigation-bar-gap: 0;
+    --rc-navigation-bar-item-gap: 0.25rem;
+    --rc-navigation-bar-item-min-block-size: 3rem;
+    --rc-navigation-bar-item-padding-block: 0.5rem;
+    --rc-navigation-bar-item-padding-inline: var(--rc-item-padding-inline, 0.75rem);
+    --rc-navigation-bar-item-color: var(--rc-muted-color, CanvasText);
+    --rc-navigation-bar-active-color: var(--rc-accent, Highlight);
+    --rc-navigation-bar-indicator-bg: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 18%,
+      transparent
+    );
+    --rc-navigation-bar-indicator-radius: var(--rc-radius-pill, 9999px);
+    --rc-navigation-bar-indicator-duration: var(--rc-motion-duration, 180ms);
+    --rc-navigation-bar-indicator-easing: ease;
+    --rc-navigation-bar-focus-ring: var(--rc-focus-ring, 2px solid Highlight);
+    --rc-navigation-bar-focus-ring-offset: var(--rc-focus-ring-offset, 2px);
+  }
+}

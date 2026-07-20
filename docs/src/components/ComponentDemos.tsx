@@ -13,6 +13,8 @@ import type {
   RCListboxRef,
   RCMenuActivateDetail,
   RCMenuRef,
+  RCNavigationRailRef,
+  RCNavigationRailToggleDetail,
   RCRangeSliderRef,
   RCSearchBarRef,
   RCSliderRef,
@@ -255,6 +257,100 @@ export function FabMenuDemo() {
           </rc-menu>
         </rc-fab-menu>
       </div>
+      <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+const navigationDestinations = [
+  { href: '#recipes', label: 'Recipes', icon: 'restaurant' },
+  { href: '#shopping', label: 'Shopping', icon: 'shopping_cart' },
+  { href: '#settings', label: 'Settings', icon: 'settings' },
+];
+
+export function NavigationBarDemo() {
+  const [active, setActive] = useState('#recipes');
+
+  return (
+    <DemoFrame>
+      <rc-navigation-bar label="Demo navigation">
+        {navigationDestinations.map(({ href, label, icon }) => (
+          <a
+            key={href}
+            href={href}
+            aria-current={active === href ? 'page' : undefined}
+            onClick={(event) => {
+              event.preventDefault();
+              setActive(href);
+            }}
+          >
+            <span data-rc-navigation-icon className="material-symbols-outlined" aria-hidden="true">
+              {icon}
+            </span>
+            <span>{label}</span>
+          </a>
+        ))}
+      </rc-navigation-bar>
+      <p>
+        Current destination: {navigationDestinations.find(({ href }) => href === active)?.label}
+      </p>
+    </DemoFrame>
+  );
+}
+
+export function NavigationRailDemo() {
+  const [railEl, setRailEl] = useState<RCNavigationRailRef | null>(null);
+  const [active, setActive] = useState('#recipes');
+  const [expanded, setExpanded] = useState(false);
+  const log = useEventLog<RCNavigationRailToggleDetail>(
+    railEl,
+    'rc-navigation-rail-toggle',
+    ({ expanded: next }) => `rc-navigation-rail-toggle -> ${next}`,
+  );
+
+  useEffect(() => {
+    if (!railEl) {
+      return;
+    }
+
+    const handleToggle = (event: Event) => {
+      setExpanded((event as CustomEvent<RCNavigationRailToggleDetail>).detail.expanded);
+    };
+
+    railEl.addEventListener('rc-navigation-rail-toggle', handleToggle);
+
+    return () => railEl.removeEventListener('rc-navigation-rail-toggle', handleToggle);
+  }, [railEl]);
+
+  return (
+    <DemoFrame>
+      <rc-navigation-rail
+        ref={setRailEl}
+        label="Demo navigation"
+        toggleable
+        expanded={expanded}
+        style={{ minBlockSize: '22rem' }}
+      >
+        <strong slot="header" aria-hidden="true">
+          RT
+        </strong>
+        {navigationDestinations.map(({ href, label, icon }) => (
+          <a
+            key={href}
+            href={href}
+            aria-current={active === href ? 'page' : undefined}
+            onClick={(event) => {
+              event.preventDefault();
+              setActive(href);
+            }}
+          >
+            <span data-rc-navigation-icon className="material-symbols-outlined" aria-hidden="true">
+              {icon}
+            </span>
+            <span>{label}</span>
+          </a>
+        ))}
+      </rc-navigation-rail>
       <EventLog entries={log} />
     </DemoFrame>
   );

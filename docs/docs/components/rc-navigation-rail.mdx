@@ -1,0 +1,190 @@
+---
+title: rc-navigation-rail
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { NavigationRailDemo } from '@site/src/components/ComponentDemos';
+
+# rc-navigation-rail
+
+Navigation rail landmark that styles consumer-authored links.
+
+Use this for medium and expanded PWA layouts where native anchors should remain
+router friendly and work before custom element upgrade. The rail supports a
+controlled or uncontrolled expanded state, but the app still owns breakpoint
+policy.
+
+<AtAGlance
+  packageName="@rcarls/rc-navigation-rail"
+  tag="rc-navigation-rail"
+  native="Consumer-authored <a> links"
+  state="Controlled or uncontrolled expanded state"
+  events={['rc-navigation-rail-toggle']}
+  related={[
+    { label: 'rc-navigation-bar', href: '/components/rc-navigation-bar' },
+    { label: 'rc-app-bar', href: '/components/rc-app-bar' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-navigation-rail
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-navigation-rail
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-navigation-rail/define';
+```
+
+## Usage
+
+```html
+<rc-navigation-rail label="Main navigation" toggleable>
+  <span slot="header" class="brand-mark">RT</span>
+  <a href="/recipes" aria-current="page">
+    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+    <span>Recipes</span>
+  </a>
+  <a href="/shopping">
+    <span data-rc-navigation-icon aria-hidden="true">shopping_cart</span>
+    <span>Shopping</span>
+  </a>
+  <button slot="footer" type="button" aria-label="Settings">settings</button>
+</rc-navigation-rail>
+```
+
+## Live demo
+
+<NavigationRailDemo />
+
+## Expanded state
+
+Use `default-expanded` for uncontrolled initial state or bind `expanded` from
+your app. Programmatic property writes are silent. User interaction with the
+default or slotted toggle dispatches `rc-navigation-rail-toggle`.
+
+```html
+<rc-navigation-rail default-expanded toggleable>
+  <a href="/recipes" aria-current="page">Recipes</a>
+  <a href="/settings">Settings</a>
+</rc-navigation-rail>
+```
+
+## Custom toggle
+
+```html
+<rc-navigation-rail>
+  <button slot="toggle" type="button" aria-label="Toggle navigation">menu</button>
+  <a href="/recipes" aria-current="page">Recipes</a>
+</rc-navigation-rail>
+```
+
+## Adaptive navigation
+
+Keep compact-to-rail switching in app/layout code. The component does not own
+media queries, route matching, or persistence; it only styles the native links
+you render into it.
+
+Use the Material window classes from your app shell:
+
+| Window width       | App-owned navigation surface                             |
+| ------------------ | -------------------------------------------------------- |
+| `<600px` compact   | `rc-navigation-bar` in the bottom app chrome             |
+| `>=600px` medium   | collapsed `rc-navigation-rail` in the leading app chrome |
+| `>=840px` expanded | `rc-navigation-rail`, optionally expandable/persisted    |
+
+Share destination data and active-link logic between the bar and rail. Mark the
+current native link with `aria-current="page"`, or set `active-selector` to your
+router's active class.
+
+```html
+<!-- medium: >=600px -->
+<rc-navigation-rail label="Main navigation">
+  <a href="/recipes" aria-current="page">
+    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+    <span>Recipes</span>
+  </a>
+  <a href="/settings">
+    <span data-rc-navigation-icon aria-hidden="true">settings</span>
+    <span>Settings</span>
+  </a>
+</rc-navigation-rail>
+
+<!-- expanded: >=840px, app decides whether expansion is offered -->
+<rc-navigation-rail label="Main navigation" toggleable expanded>
+  <span slot="header" class="brand-mark">RT</span>
+  <a href="/recipes" aria-current="page">
+    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+    <span>Recipes</span>
+  </a>
+  <a href="/settings">
+    <span data-rc-navigation-icon aria-hidden="true">settings</span>
+    <span>Settings</span>
+  </a>
+</rc-navigation-rail>
+```
+
+Persist expanded state in the app, and only apply it while the expanded window
+class affords the wider rail:
+
+```js
+const key = 'app.navigation-rail-expanded';
+const isExpanded = matchMedia('(min-width: 840px)').matches;
+const rail = document.querySelector('rc-navigation-rail');
+
+rail.toggleable = isExpanded;
+rail.expanded = isExpanded && localStorage.getItem(key) === 'true';
+rail.addEventListener('rc-navigation-rail-toggle', (event) => {
+  localStorage.setItem(key, String(event.detail.expanded));
+});
+```
+
+The components expose stable surface and indicator parts so apps can opt into
+View Transitions:
+
+```css
+rc-navigation-bar,
+rc-navigation-rail {
+  view-transition-name: app-navigation;
+}
+
+rc-navigation-bar::part(indicator),
+rc-navigation-rail::part(indicator) {
+  view-transition-name: app-navigation-indicator;
+}
+```
+
+The rail's own collapsed/expanded state uses component-owned CSS transitions and
+snaps to the final state under reduced motion. More elaborate layout morphs,
+such as moving a FAB into the rail header, should use app-owned FLIP/Web
+Animations logic because the page owns those source and destination regions.
+
+## Material theme
+
+`rc-theme-material/components.css` applies Material 3 navigation rail metrics:
+80dp collapsed rail width, expanded row treatment, 56×32 collapsed indicators,
+state-layer hover treatment, label-medium/label-large typography, and reduced
+motion fallbacks.
+
+Recipe Tome still uses local Solid prototypes during the promotion branch; its
+consumer migration to these package components is a follow-up step.
+
+## API
+
+<ApiTable tag="rc-navigation-rail" />

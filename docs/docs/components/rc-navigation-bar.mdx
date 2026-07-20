@@ -1,0 +1,191 @@
+---
+title: rc-navigation-bar
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { NavigationBarDemo } from '@site/src/components/ComponentDemos';
+
+# rc-navigation-bar
+
+Bottom navigation landmark that styles consumer-authored links.
+
+Use this for compact PWA navigation where native anchors should remain router
+friendly and work before custom element upgrade. The component does not own
+routing or breakpoint policy; mark the current link with `aria-current="page"`
+or provide `active-selector` for router active classes.
+
+<AtAGlance
+  packageName="@rcarls/rc-navigation-bar"
+  tag="rc-navigation-bar"
+  native="Consumer-authored <a> links"
+  state="Current page comes from aria-current or active-selector"
+  events={[]}
+  related={[
+    { label: 'rc-navigation-rail', href: '/components/rc-navigation-rail' },
+    { label: 'rc-app-bar', href: '/components/rc-app-bar' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-navigation-bar
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-navigation-bar
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-navigation-bar/define';
+```
+
+## Usage
+
+```html
+<rc-navigation-bar label="Main navigation">
+  <a href="/recipes" aria-current="page">
+    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+    <span>Recipes</span>
+  </a>
+  <a href="/shopping">
+    <span data-rc-navigation-icon aria-hidden="true">shopping_cart</span>
+    <span>Shopping</span>
+  </a>
+  <a href="/settings">
+    <span data-rc-navigation-icon aria-hidden="true">settings</span>
+    <span>Settings</span>
+  </a>
+</rc-navigation-bar>
+```
+
+The active indicator measures `[data-rc-navigation-indicator]`, then
+`[data-rc-navigation-icon]`, then the active link itself. Use
+`indicator-target` when your markup needs a different measured element.
+
+## Live demo
+
+<NavigationBarDemo />
+
+## Router active classes
+
+```html
+<rc-navigation-bar active-selector="a.router-active">
+  <a class="router-active" href="/recipes">Recipes</a>
+  <a href="/settings">Settings</a>
+</rc-navigation-bar>
+```
+
+## Adaptive navigation
+
+Keep breakpoint policy in app/layout code. The navigation components do not own
+media queries, route matching, or persistence; they only style the native links
+you render into them.
+
+Use the Material window classes from your app shell:
+
+| Window width       | App-owned navigation surface                             |
+| ------------------ | -------------------------------------------------------- |
+| `<600px` compact   | `rc-navigation-bar` in the bottom app chrome             |
+| `>=600px` medium   | collapsed `rc-navigation-rail` in the leading app chrome |
+| `>=840px` expanded | `rc-navigation-rail`, optionally expandable/persisted    |
+
+Render both surfaces from the same destination data and mark the current native
+link in exactly one place, either with `aria-current="page"` or with a router
+class matched by `active-selector`.
+
+```js
+const destinations = [
+  { href: '/', label: 'Home', icon: 'home' },
+  { href: '/recipes', label: 'Recipes', icon: 'restaurant' },
+  { href: '/settings', label: 'Settings', icon: 'settings' },
+];
+
+const isMedium = matchMedia('(min-width: 600px)').matches;
+const isExpanded = matchMedia('(min-width: 840px)').matches;
+```
+
+```html
+<!-- compact: <600px -->
+<rc-navigation-bar label="Main navigation">
+  <a href="/recipes" aria-current="page">
+    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+    <span>Recipes</span>
+  </a>
+  <a href="/settings">
+    <span data-rc-navigation-icon aria-hidden="true">settings</span>
+    <span>Settings</span>
+  </a>
+</rc-navigation-bar>
+
+<!-- medium and expanded: >=600px -->
+<rc-navigation-rail label="Main navigation">
+  <a href="/recipes" aria-current="page">
+    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+    <span>Recipes</span>
+  </a>
+  <a href="/settings">
+    <span data-rc-navigation-icon aria-hidden="true">settings</span>
+    <span>Settings</span>
+  </a>
+</rc-navigation-rail>
+```
+
+At `>=840px`, let the app decide whether users may expand the rail and whether
+that preference is persisted:
+
+```js
+const key = 'app.navigation-rail-expanded';
+const rail = document.querySelector('rc-navigation-rail');
+
+rail.toggleable = isExpanded;
+rail.expanded = isExpanded && localStorage.getItem(key) === 'true';
+rail.addEventListener('rc-navigation-rail-toggle', (event) => {
+  localStorage.setItem(key, String(event.detail.expanded));
+});
+```
+
+When switching modes in an SPA, wrap the app-owned state update in
+`document.startViewTransition()` when available and assign stable transition
+names in CSS:
+
+```css
+rc-navigation-bar,
+rc-navigation-rail {
+  view-transition-name: app-navigation;
+}
+
+rc-navigation-bar::part(indicator),
+rc-navigation-rail::part(indicator) {
+  view-transition-name: app-navigation-indicator;
+}
+```
+
+For measured morphs across unrelated layout regions, use a FLIP/Web Animations
+helper in the app layer. That code needs page geometry and should stay outside
+the component core.
+
+## Material theme
+
+`rc-theme-material/components.css` applies Material 3 bottom navigation metrics:
+an 80dp surface, 64×32 active indicator targets, safe-area padding, label-medium
+typography, and state-layer hover treatment.
+
+Recipe Tome still uses local Solid prototypes during the promotion branch; its
+consumer migration to these package components is a follow-up step.
+
+## API
+
+<ApiTable tag="rc-navigation-bar" />

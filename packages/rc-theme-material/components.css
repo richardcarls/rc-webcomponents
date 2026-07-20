@@ -17,6 +17,8 @@
 @import './components/menu.css';
 @import './components/menu-button.css';
 @import './components/menubar.css';
+@import './components/navigation-bar.css';
+@import './components/navigation-rail.css';
 @import './components/toolbar.css';
 @import './components/slider.css';
 @import './components/range-slider.css';
