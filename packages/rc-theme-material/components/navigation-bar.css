@@ -1,0 +1,76 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-navigation-bar {
+    --rc-navigation-bar-bg: var(--md-sys-color-surface-container, Canvas);
+    --rc-navigation-bar-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-bar-block-size: calc(5rem + env(safe-area-inset-bottom, 0px));
+    --rc-navigation-bar-padding-block: 0 0;
+    --rc-navigation-bar-padding-inline: 0;
+    --rc-navigation-bar-item-min-block-size: 5rem;
+    --rc-navigation-bar-item-padding-block: 0.75rem 1rem;
+    --rc-navigation-bar-item-padding-inline: 0.75rem;
+    --rc-navigation-bar-item-gap: 0.25rem;
+    --rc-navigation-bar-item-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-bar-active-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-navigation-bar-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-navigation-bar-indicator-radius: var(--md-sys-shape-corner-full, 9999px);
+    --rc-navigation-bar-indicator-duration: var(--md-sys-motion-duration-short3, 150ms);
+    --rc-navigation-bar-indicator-easing: var(
+      --md-sys-motion-easing-standard,
+      cubic-bezier(0.2, 0, 0, 1)
+    );
+    --rc-navigation-bar-focus-ring: 2px solid var(--md-sys-color-primary, Highlight);
+    --rc-navigation-bar-focus-ring-offset: 2px;
+    padding-block-end: env(safe-area-inset-bottom, 0px);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-navigation-bar > a {
+    font-family: var(--md-sys-typescale-label-medium-font, inherit);
+    font-size: var(--md-sys-typescale-label-medium-size, 0.75rem);
+    font-weight: var(--md-sys-typescale-label-medium-weight, 500);
+    line-height: var(--md-sys-typescale-label-medium-line-height, 1rem);
+    letter-spacing: var(--md-sys-typescale-label-medium-tracking, 0.03125rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-navigation-bar
+    > a
+    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 4rem;
+    block-size: 2rem;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 1.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-navigation-bar
+    > a:hover
+    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText)
+        calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-navigation-bar
+    > a:active
+    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText)
+        calc(var(--md-sys-state-pressed-state-layer-opacity, 0.12) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-navigation-bar
+    > a[aria-current]:not([aria-current='false'])
+    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    color: var(--md-sys-color-on-secondary-container, CanvasText);
+  }
+}

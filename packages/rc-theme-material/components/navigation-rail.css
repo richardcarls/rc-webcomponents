@@ -1,0 +1,109 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-navigation-rail {
+    --rc-navigation-rail-bg: var(--md-sys-color-surface, Canvas);
+    --rc-navigation-rail-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-rail-inline-size: 5rem;
+    --rc-navigation-rail-expanded-inline-size: 16rem;
+    --rc-navigation-rail-padding-block: 0.75rem;
+    --rc-navigation-rail-padding-inline: 0.5rem;
+    --rc-navigation-rail-gap: 1rem;
+    --rc-navigation-rail-item-gap: 0.75rem;
+    --rc-navigation-rail-item-min-block-size: 3.5rem;
+    --rc-navigation-rail-expanded-item-min-block-size: 3.5rem;
+    --rc-navigation-rail-expanded-item-padding-inline: 1rem;
+    --rc-navigation-rail-item-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-rail-active-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-navigation-rail-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-navigation-rail-indicator-radius: var(--md-sys-shape-corner-full, 9999px);
+    --rc-navigation-rail-toggle-size: 3rem;
+    --rc-navigation-rail-toggle-radius: var(--md-sys-shape-corner-full, 9999px);
+    --rc-navigation-rail-toggle-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-rail-toggle-hover-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText)
+        calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
+    --rc-navigation-rail-duration: var(--md-sys-motion-duration-medium2, 300ms);
+    --rc-navigation-rail-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+    --rc-navigation-rail-indicator-duration: var(--md-sys-motion-duration-short3, 150ms);
+    --rc-navigation-rail-indicator-easing: var(
+      --md-sys-motion-easing-standard,
+      cubic-bezier(0.2, 0, 0, 1)
+    );
+    --rc-navigation-rail-focus-ring: 2px solid var(--md-sys-color-primary, Highlight);
+    --rc-navigation-rail-focus-ring-offset: 2px;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-navigation-rail > a {
+    font-family: var(--md-sys-typescale-label-medium-font, inherit);
+    font-size: var(--md-sys-typescale-label-medium-size, 0.75rem);
+    font-weight: var(--md-sys-typescale-label-medium-weight, 500);
+    line-height: var(--md-sys-typescale-label-medium-line-height, 1rem);
+    letter-spacing: var(--md-sys-typescale-label-medium-tracking, 0.03125rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-navigation-rail[expanded] > a {
+    font-family: var(--md-sys-typescale-label-large-font, inherit);
+    font-size: var(--md-sys-typescale-label-large-size, 0.875rem);
+    font-weight: var(--md-sys-typescale-label-large-weight, 500);
+    line-height: var(--md-sys-typescale-label-large-line-height, 1.25rem);
+    letter-spacing: var(--md-sys-typescale-label-large-tracking, 0.00625rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-navigation-rail
+    > a
+    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 3.5rem;
+    block-size: 2rem;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 1.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-navigation-rail[expanded]
+    > a
+    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    display: inline-flex;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    inline-size: 100%;
+    block-size: 3.5rem;
+    padding-inline: 1rem;
+    box-sizing: border-box;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-navigation-rail
+    > a:hover
+    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText)
+        calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-navigation-rail
+    > a:active
+    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText)
+        calc(var(--md-sys-state-pressed-state-layer-opacity, 0.12) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-navigation-rail
+    > a[aria-current]:not([aria-current='false'])
+    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    color: var(--md-sys-color-on-secondary-container, CanvasText);
+  }
+}

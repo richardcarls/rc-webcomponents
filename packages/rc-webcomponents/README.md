@@ -38,6 +38,8 @@ import {
   RCMenu,
   RCMenuButton,
   RCMenubar,
+  RCNavigationBar,
+  RCNavigationRail,
   RCSelect,
   RCSplitter,
   RCTextarea,
@@ -74,6 +76,8 @@ fallbacks:
 | `rc-menu`            | Menu popup for command surfaces.                                     |
 | `rc-menu-button`     | Trigger button that opens an `rc-menu` popup.                        |
 | `rc-menubar`         | Menubar coordinator for `rc-menu-button` children.                   |
+| `rc-navigation-bar`  | Bottom navigation landmark that styles consumer-authored links.      |
+| `rc-navigation-rail` | Navigation rail landmark that styles consumer-authored links.        |
 | `rc-range-slider`    | Two-thumb range slider backed by native range inputs.                |
 | `rc-search-bar`      | Search field/view wrapper for native `<input type="search">`.        |
 | `rc-select`          | Select-only combobox backed by a native `<select>`.                  |

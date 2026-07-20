@@ -18,6 +18,16 @@ const packages = [
     '/components/rc-search-bar',
   ],
   ['rc-app-bar', 'App bar modeled after Material 3 Top app bar', '/components/rc-app-bar'],
+  [
+    'rc-navigation-bar',
+    'Bottom navigation landmark for native links',
+    '/components/rc-navigation-bar',
+  ],
+  [
+    'rc-navigation-rail',
+    'Navigation rail landmark for native links',
+    '/components/rc-navigation-rail',
+  ],
   ['rc-fab', 'Sticky floating action button modeled after Material 3 FAB', '/components/rc-fab'],
   ['rc-fab-menu', 'Floating action button menu for rc-menu actions', '/components/rc-fab-menu'],
   [

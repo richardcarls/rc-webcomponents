@@ -20,6 +20,8 @@
       "@rcarls/rc-menu",
       "@rcarls/rc-menu-button",
       "@rcarls/rc-menubar",
+      "@rcarls/rc-navigation-bar",
+      "@rcarls/rc-navigation-rail",
       "@rcarls/rc-range-slider",
       "@rcarls/rc-search-bar",
       "@rcarls/rc-select",

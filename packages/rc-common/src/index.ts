@@ -8,6 +8,7 @@ export * from './ResizeController';
 export * from './AnchorController';
 export * from './ScrollObserverController';
 export * from './MutationObserverController';
+export * from './NavigationIndicatorController';
 export * from './RafScheduler';
 export * from './TypeaheadController';
 export * from './findNearestScrollAncestor';

@@ -12,6 +12,8 @@ import '@rcarls/rc-listbox/define';
 import '@rcarls/rc-menubar/define';
 import '@rcarls/rc-menu-button/define';
 import '@rcarls/rc-menu/define';
+import '@rcarls/rc-navigation-bar/define';
+import '@rcarls/rc-navigation-rail/define';
 import '@rcarls/rc-range-slider/define';
 import '@rcarls/rc-search-bar/define';
 import '@rcarls/rc-select/define';

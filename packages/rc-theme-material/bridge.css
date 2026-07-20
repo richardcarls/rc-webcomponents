@@ -446,6 +446,19 @@
     --rc-transfer-list-listbox-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
   }
 
+  .rc-theme-material rc-navigation-bar,
+  :host(.rc-theme-material) rc-navigation-bar {
+    --rc-navigation-bar-bg: var(--md-sys-color-surface-container, Canvas);
+    --rc-navigation-bar-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-bar-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
+  }
+
+  .rc-theme-material rc-navigation-rail,
+  :host(.rc-theme-material) rc-navigation-rail {
+    --rc-navigation-rail-bg: var(--md-sys-color-surface, Canvas);
+    --rc-navigation-rail-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-rail-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
+  }
   .rc-theme-material rc-fab,
   .rc-theme-material rc-fab-menu,
   :host(.rc-theme-material) rc-fab,

@@ -65,6 +65,8 @@
     "@rcarls/rc-menu": "workspace:*",
     "@rcarls/rc-menu-button": "workspace:*",
     "@rcarls/rc-menubar": "workspace:*",
+    "@rcarls/rc-navigation-bar": "workspace:*",
+    "@rcarls/rc-navigation-rail": "workspace:*",
     "@rcarls/rc-range-slider": "workspace:*",
     "@rcarls/rc-search-bar": "workspace:*",
     "@rcarls/rc-select": "workspace:*",
