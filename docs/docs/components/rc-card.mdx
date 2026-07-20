@@ -1,0 +1,84 @@
+---
+title: rc-card
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { CardDemo } from '@site/src/components/ComponentDemos';
+
+# rc-card
+
+Design-system-neutral card shell with structural slots and parts.
+
+`rc-card` owns card anatomy and layout affordances, but authors keep native
+anchors and buttons for semantics and keyboard access. Themes decide visual
+variants through tokens and selectors rather than a `variant` attribute.
+
+<AtAGlance
+  packageName="@rcarls/rc-card"
+  tag="rc-card"
+  native="Author-provided links and buttons"
+  state="Declarative selected/disabled/interactive hooks"
+  events={[]}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-card
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-card
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-card/define';
+```
+
+## Markup
+
+```html
+<rc-card interactive action-target="recipe-link">
+  <img slot="media" src="/recipe.jpg" alt="" />
+  <a id="recipe-link" slot="title" href="/recipes/apple-pie">Apple pie</a>
+  <p>Flaky crust, bright apples, and a little lemon.</p>
+  <button slot="actions" type="button">Save</button>
+</rc-card>
+```
+
+## Live demo
+
+<CardDemo />
+
+## Structure
+
+Slots cover `media`, `header`, `title`, `subtitle`, default body, `actions`,
+and `footer`. Matching parts and reflected `has-*` attributes let themes adapt
+spacing when regions are present or absent.
+
+For shelf/grid layouts, set card rows through `--rc-card-grid-template-rows`.
+Consumers can use subgrid on the host to align repeated cards across a parent
+grid.
+
+## Action Target
+
+`action-target="id"` forwards non-interactive surface clicks to a same-root
+anchor or button. It is pointer/tap convenience only; keyboard access and
+semantics remain on the real target element.
+
+## API
+
+<ApiTable tag="rc-card" />

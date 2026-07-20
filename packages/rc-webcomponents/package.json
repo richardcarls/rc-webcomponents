@@ -54,6 +54,7 @@
     "@rcarls/rc-app-bar": "workspace:*",
     "@rcarls/rc-bottom-sheet": "workspace:*",
     "@rcarls/rc-button": "workspace:*",
+    "@rcarls/rc-card": "workspace:*",
     "@rcarls/rc-combobox": "workspace:*",
     "@rcarls/rc-dialog": "workspace:*",
     "@rcarls/rc-disclosure": "workspace:*",

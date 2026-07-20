@@ -180,6 +180,47 @@ export function ButtonDemo() {
   );
 }
 
+export function CardDemo() {
+  const [message, setMessage] = useState('Activate the card surface or Save.');
+
+  return (
+    <DemoFrame>
+      <rc-card interactive action-target="demo-recipe-link" style={{ maxInlineSize: '22rem' }}>
+        <div
+          slot="media"
+          aria-hidden="true"
+          style={{
+            display: 'grid',
+            minBlockSize: '8rem',
+            placeItems: 'center',
+            background: 'color-mix(in srgb, Highlight 18%, Canvas)',
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '3rem' }}>
+            skillet
+          </span>
+        </div>
+        <a
+          id="demo-recipe-link"
+          slot="title"
+          href="#lemon-pasta"
+          onClick={(event) => {
+            event.preventDefault();
+            setMessage('Opened Lemon pasta.');
+          }}
+        >
+          Lemon pasta
+        </a>
+        <p>Silky pasta with lemon, pepper, and parmesan.</p>
+        <button slot="actions" type="button" onClick={() => setMessage('Saved Lemon pasta.')}>
+          Save
+        </button>
+      </rc-card>
+      <p aria-live="polite">{message}</p>
+    </DemoFrame>
+  );
+}
+
 export function FabMenuDemo() {
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null);
   const log = useEventLog<RCMenuActivateDetail>(

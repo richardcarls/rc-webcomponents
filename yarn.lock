@@ -4551,6 +4551,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-card@workspace:*, @rcarls/rc-card@workspace:packages/rc-card":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-card@workspace:packages/rc-card"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-combobox@workspace:*, @rcarls/rc-combobox@workspace:packages/rc-combobox":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-combobox@workspace:packages/rc-combobox"
@@ -5069,6 +5088,7 @@ __metadata:
     "@rcarls/rc-app-bar": "workspace:*"
     "@rcarls/rc-bottom-sheet": "workspace:*"
     "@rcarls/rc-button": "workspace:*"
+    "@rcarls/rc-card": "workspace:*"
     "@rcarls/rc-combobox": "workspace:*"
     "@rcarls/rc-dialog": "workspace:*"
     "@rcarls/rc-disclosure": "workspace:*"

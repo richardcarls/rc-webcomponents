@@ -8,6 +8,7 @@
       "@rcarls/rc-app-bar",
       "@rcarls/rc-bottom-sheet",
       "@rcarls/rc-button",
+      "@rcarls/rc-card",
       "@rcarls/rc-combobox",
       "@rcarls/rc-common",
       "@rcarls/rc-dialog",

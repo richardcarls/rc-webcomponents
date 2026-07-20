@@ -29,6 +29,7 @@ import '@rcarls/rc-webcomponents/define';
 ```ts
 import {
   RCButton,
+  RCCard,
   RCCombobox,
   RCDialog,
   RCFabMenu,
@@ -62,6 +63,7 @@ fallbacks:
 | `rc-accordion`       | Accordion coordinator for native `<details>` panels.                 |
 | `rc-bottom-sheet`    | Modal bottom-sheet wrapper for a native `<dialog>`.                  |
 | `rc-button`          | Progressive-enhancement wrapper for native `<button>`.               |
+| `rc-card`            | Design-system-neutral structural card shell.                         |
 | `rc-combobox`        | Editable combobox with filtering and optional allow-create behavior. |
 | `rc-dialog`          | Draggable, resizable wrapper for a native `<dialog>`.                |
 | `rc-disclosure`      | Disclosure wrapper for native `<details>`/`<summary>`.               |
