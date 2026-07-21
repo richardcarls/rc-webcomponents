@@ -92,6 +92,8 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-app-bar`](packages/rc-app-bar/) | App bar modeled after Material 3 Top app bar, with slots and optional scroll behavior | rc-common |
 | [`rc-button`](packages/rc-button/) | Progressive-enhancement wrapper for a direct native `<button>` with structural state affordances | None |
 | [`rc-card`](packages/rc-card/) | Design-system-neutral structural card shell with slots, parts, and optional action-target click forwarding | None |
+| [`rc-chip`](packages/rc-chip/) | Chip wrapper for native button-based actions, filters, and inputs | None |
+| [`rc-chip-set`](packages/rc-chip-set/) | Chip set coordinator for arrow-key navigation across chip controls | rc-common |
 | [`rc-splitter`](packages/rc-splitter/) | Resizable pane splitter with pointer, keyboard, and collapse/restore controls | rc-common |
 | [`rc-textarea`](packages/rc-textarea/) | Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks | rc-common |
 | [`rc-textarea-adapters`](packages/rc-textarea-adapters/) | Adapter factories that connect Lezer, unified, and Shiki tokenizers to `rc-textarea` | rc-textarea |

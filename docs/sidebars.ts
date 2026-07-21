@@ -20,6 +20,7 @@ const sidebars: SidebarsConfig = {
       collapsible: false,
       items: [
         'components/rc-button',
+        'components/rc-chip',
         'components/rc-fab',
         'components/rc-fab-menu',
         'components/rc-select',
@@ -37,6 +38,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'components/rc-accordion',
         'components/rc-card',
+        'components/rc-chip-set',
         'components/rc-listbox',
         'components/rc-menu',
         'components/rc-menubar',

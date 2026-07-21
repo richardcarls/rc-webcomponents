@@ -1,0 +1,19 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-chip {
+    --rc-chip-block-size: 2rem;
+    --rc-chip-padding-inline: 1rem;
+    --rc-chip-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
+    --rc-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
+    --rc-chip-bg: var(--md-sys-color-surface-container-low, ButtonFace);
+    --rc-chip-color: var(--md-sys-color-on-surface-variant, ButtonText);
+    --rc-chip-selected-border-color: transparent;
+    --rc-chip-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-chip-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
+    --rc-chip-focus-ring: var(--rc-focus-ring);
+    --rc-chip-focus-ring-offset: var(--rc-focus-ring-offset);
+    --rc-chip-disabled-opacity: var(--rc-disabled-opacity);
+    --rc-chip-remove-target-size: 1.5rem;
+    --rc-chip-remove-offset-inline: 0.25rem;
+    --rc-chip-removable-padding-inline-end: 2.25rem;
+  }
+}

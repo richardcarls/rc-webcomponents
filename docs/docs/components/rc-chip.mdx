@@ -1,0 +1,71 @@
+---
+title: rc-chip
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ChipDemo } from '@site/src/components/ComponentDemos';
+
+# rc-chip
+
+Chip wrapper for native button-based actions, filters, suggestions, and inputs.
+
+<AtAGlance
+  packageName="@rcarls/rc-chip"
+  tag="rc-chip"
+  native="Direct-child native button"
+  state="Selected/removable chip affordances"
+  events={['rc-chip-change', 'rc-chip-remove']}
+  related={[
+    { label: 'rc-chip-set', href: '/components/rc-chip-set' },
+    { label: 'Theme previews', href: '/guide/theme-previews' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-chip
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-chip
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-chip/define';
+```
+
+## Markup
+
+```html
+<rc-chip variant="filter">
+  <button type="button">Vegetarian</button>
+</rc-chip>
+
+<rc-chip variant="input" removable remove-label="Remove basil">
+  <button type="button">Basil</button>
+</rc-chip>
+```
+
+Filter chips toggle `selected` on user activation and add `aria-pressed` only
+when the author has not supplied stronger toggle semantics.
+
+## Live demo
+
+<ChipDemo />
+
+## API
+
+<ApiTable tag="rc-chip" />
