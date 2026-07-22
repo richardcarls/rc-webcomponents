@@ -6,6 +6,8 @@ import styles from './index.module.css';
 const packages = [
   ['rc-button', 'Progressive-enhancement wrapper for native <button>', '/components/rc-button'],
   ['rc-card', 'Design-system-neutral structural card shell', '/components/rc-card'],
+  ['rc-chip', 'Chip wrapper for native button-based controls', '/components/rc-chip'],
+  ['rc-chip-set', 'Chip set coordinator for arrow-key navigation', '/components/rc-chip-set'],
   ['rc-select', 'Select-only combobox backed by native <select>', '/components/rc-select'],
   [
     'rc-combobox',

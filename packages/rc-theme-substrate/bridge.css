@@ -36,6 +36,10 @@
     --rc-card-bg: var(--substrate-surface-raised, Canvas);
     --rc-card-color: var(--substrate-on-surface, CanvasText);
     --rc-card-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-chip-set-gap: var(--rc-control-gap, 0.5rem);
+    --rc-chip-block-size: 2rem;
+    --rc-chip-radius: var(--substrate-radius-md, 0.5rem);
+    --rc-chip-selected-bg: var(--rc-highlight, Highlight);
     --rc-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
     --rc-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
     --rc-item-gap: var(--substrate-item-gap, 0.5rem);

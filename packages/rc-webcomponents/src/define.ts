@@ -2,6 +2,8 @@ import '@rcarls/rc-app-bar/define';
 import '@rcarls/rc-bottom-sheet/define';
 import '@rcarls/rc-button/define';
 import '@rcarls/rc-card/define';
+import '@rcarls/rc-chip/define';
+import '@rcarls/rc-chip-set/define';
 import '@rcarls/rc-combobox/define';
 import '@rcarls/rc-dialog/define';
 import '@rcarls/rc-disclosure/define';

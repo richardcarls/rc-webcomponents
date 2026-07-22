@@ -1,0 +1,5 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-chip-set {
+    --rc-chip-set-gap: var(--rc-control-gap, 0.5rem);
+  }
+}

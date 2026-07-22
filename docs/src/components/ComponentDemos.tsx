@@ -223,6 +223,66 @@ export function CardDemo() {
   );
 }
 
+export function ChipDemo() {
+  const [toolbarEl, setToolbarEl] = useState<HTMLElement | null>(null);
+  const [log, setLog] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!toolbarEl) {
+      return;
+    }
+
+    const handleChange = (event: Event) => {
+      const chip = event.target as HTMLElement;
+      const { selected } = (event as CustomEvent<{ selected: boolean }>).detail;
+
+      setLog((current) =>
+        [
+          `${chip.textContent?.trim()} -> ${selected ? 'selected' : 'not selected'}`,
+          ...current,
+        ].slice(0, 8),
+      );
+    };
+
+    const handleRemove = (event: Event) => {
+      const chip = (event as CustomEvent<{ chip: HTMLElement }>).detail.chip;
+
+      setLog((current) => [`Removed ${chip.textContent?.trim()}`, ...current].slice(0, 8));
+    };
+
+    toolbarEl.addEventListener('rc-chip-change', handleChange);
+    toolbarEl.addEventListener('rc-chip-remove', handleRemove);
+
+    return () => {
+      toolbarEl.removeEventListener('rc-chip-change', handleChange);
+      toolbarEl.removeEventListener('rc-chip-remove', handleRemove);
+    };
+  }, [toolbarEl]);
+
+  return (
+    <DemoFrame>
+      <rc-toolbar
+        ref={setToolbarEl}
+        label="Recipe filters"
+        style={{ '--rc-toolbar-gap-inline': '0.5rem' } as CSSProperties}
+      >
+        <rc-chip variant="filter">
+          <button type="button">Quick</button>
+        </rc-chip>
+        <rc-chip variant="filter">
+          <button type="button">Vegetarian</button>
+        </rc-chip>
+        <rc-chip variant="input" removable>
+          <button type="button" aria-label="Remove basil">
+            Basil
+          </button>
+        </rc-chip>
+      </rc-toolbar>
+      <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
 export function FabMenuDemo() {
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null);
   const log = useEventLog<RCMenuActivateDetail>(
