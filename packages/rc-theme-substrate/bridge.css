@@ -40,6 +40,8 @@
     --rc-chip-block-size: 2rem;
     --rc-chip-radius: var(--substrate-radius-md, 0.5rem);
     --rc-chip-selected-bg: var(--rc-highlight, Highlight);
+    --rc-segmented-button-segment-min-block-size: var(--rc-control-block-size);
+    --rc-segmented-button-selected-bg: var(--rc-highlight, Highlight);
     --rc-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
     --rc-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
     --rc-item-gap: var(--substrate-item-gap, 0.5rem);

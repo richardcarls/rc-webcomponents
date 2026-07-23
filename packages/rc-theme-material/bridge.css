@@ -59,6 +59,8 @@
     --rc-chip-block-size: 2rem;
     --rc-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
     --rc-chip-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-segmented-button-segment-min-block-size: 2.5rem;
+    --rc-segmented-button-selected-bg: var(--md-sys-color-secondary-container, Highlight);
     --rc-toolbar-radius: var(--md-sys-shape-corner-large, 1rem);
     --rc-toolbar-vertical-radius: 0;
     --rc-item-padding-block: 0.75rem;

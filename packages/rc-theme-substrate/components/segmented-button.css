@@ -1,0 +1,16 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-segmented-button {
+    --rc-segmented-button-border: var(--rc-border);
+    --rc-segmented-button-radius: var(--rc-control-radius);
+    --rc-segmented-button-divider: var(--rc-border);
+    --rc-segmented-button-bg: var(--substrate-surface-raised, ButtonFace);
+    --rc-segmented-button-color: var(--substrate-on-surface, ButtonText);
+    --rc-segmented-button-selected-bg: var(--rc-highlight, Highlight);
+    --rc-segmented-button-selected-color: var(--rc-highlight-text, HighlightText);
+    --rc-segmented-button-segment-min-block-size: var(--rc-control-block-size, 2.5rem);
+    --rc-segmented-button-segment-padding-inline: var(--rc-control-padding-inline, 0.75rem);
+    --rc-segmented-button-focus-ring: var(--rc-focus-ring);
+    --rc-segmented-button-focus-ring-offset: -2px;
+    --rc-segmented-button-disabled-opacity: var(--rc-disabled-opacity);
+  }
+}

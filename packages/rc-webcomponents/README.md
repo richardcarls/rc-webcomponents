@@ -82,6 +82,7 @@ fallbacks:
 | `rc-navigation-rail` | Navigation rail landmark that styles consumer-authored links.        |
 | `rc-range-slider`    | Two-thumb range slider backed by native range inputs.                |
 | `rc-search-bar`      | Search field/view wrapper for native `<input type="search">`.        |
+| `rc-segmented-button` | Segmented radio group enhancer for native radios in a `<fieldset>`. |
 | `rc-select`          | Select-only combobox backed by a native `<select>`.                  |
 | `rc-slider`          | Single-thumb slider backed by native `<input type="range">`.         |
 | `rc-splitter`        | Resizable pane splitter with pointer and keyboard controls.          |

@@ -27,6 +27,7 @@
       "@rcarls/rc-range-slider",
       "@rcarls/rc-search-bar",
       "@rcarls/rc-select",
+      "@rcarls/rc-segmented-button",
       "@rcarls/rc-slider",
       "@rcarls/rc-splitter",
       "@rcarls/rc-textarea",

@@ -18,6 +18,7 @@ import '@rcarls/rc-navigation-bar/define';
 import '@rcarls/rc-navigation-rail/define';
 import '@rcarls/rc-range-slider/define';
 import '@rcarls/rc-search-bar/define';
+import '@rcarls/rc-segmented-button/define';
 import '@rcarls/rc-select/define';
 import '@rcarls/rc-slider/define';
 import '@rcarls/rc-splitter/define';
