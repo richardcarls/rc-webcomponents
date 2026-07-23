@@ -15,6 +15,11 @@ const packages = [
     '/components/rc-combobox',
   ],
   [
+    'rc-segmented-button',
+    'Segmented button group backed by native radio inputs',
+    '/components/rc-segmented-button',
+  ],
+  [
     'rc-search-bar',
     'Search field/view wrapper for native <input type="search">',
     '/components/rc-search-bar',

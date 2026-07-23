@@ -17,6 +17,7 @@ import type {
   RCNavigationRailToggleDetail,
   RCRangeSliderRef,
   RCSearchBarRef,
+  RCSegmentedButtonChangeDetail,
   RCSliderRef,
   RCTextareaRef,
   RCTransferListChangeDetail,
@@ -411,6 +412,51 @@ export function NavigationRailDemo() {
           </a>
         ))}
       </rc-navigation-rail>
+      <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+export function SegmentedButtonDemo() {
+  const [groupEl, setGroupEl] = useState<HTMLElement | null>(null);
+  const [value, setValue] = useState('medium');
+  const log = useEventLog<RCSegmentedButtonChangeDetail>(
+    groupEl,
+    'rc-segmented-button-change',
+    ({ value: next }) => `rc-segmented-button-change -> ${next}`,
+  );
+
+  useEffect(() => {
+    if (!groupEl) {
+      return;
+    }
+
+    const handleChange = (event: Event) => {
+      setValue((event as CustomEvent<RCSegmentedButtonChangeDetail>).detail.value);
+    };
+
+    groupEl.addEventListener('rc-segmented-button-change', handleChange);
+
+    return () => groupEl.removeEventListener('rc-segmented-button-change', handleChange);
+  }, [groupEl]);
+
+  return (
+    <DemoFrame>
+      <rc-segmented-button ref={setGroupEl}>
+        <fieldset>
+          <legend>Text size</legend>
+          <label>
+            <input type="radio" name="demo-text-size" value="small" /> Small
+          </label>
+          <label>
+            <input type="radio" name="demo-text-size" value="medium" defaultChecked /> Medium
+          </label>
+          <label>
+            <input type="radio" name="demo-text-size" value="large" /> Large
+          </label>
+        </fieldset>
+      </rc-segmented-button>
+      <p>Selected size: {value}</p>
       <EventLog entries={log} />
     </DemoFrame>
   );

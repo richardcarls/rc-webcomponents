@@ -71,6 +71,7 @@
     "@rcarls/rc-navigation-rail": "workspace:*",
     "@rcarls/rc-range-slider": "workspace:*",
     "@rcarls/rc-search-bar": "workspace:*",
+    "@rcarls/rc-segmented-button": "workspace:*",
     "@rcarls/rc-select": "workspace:*",
     "@rcarls/rc-slider": "workspace:*",
     "@rcarls/rc-splitter": "workspace:*",

@@ -1,0 +1,70 @@
+---
+title: rc-segmented-button
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { SegmentedButtonDemo } from '@site/src/components/ComponentDemos';
+
+# rc-segmented-button
+
+Segmented button group backed by native radio inputs.
+
+<AtAGlance
+  packageName="@rcarls/rc-segmented-button"
+  tag="rc-segmented-button"
+  native="Direct-child fieldset with radio inputs"
+  state="Controlled or uncontrolled selected value"
+  events={['rc-segmented-button-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-segmented-button
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-segmented-button
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-segmented-button/define';
+```
+
+## Markup
+
+```html
+<rc-segmented-button>
+  <fieldset>
+    <legend>Text size</legend>
+    <label><input type="radio" name="size" value="small" /> Small</label>
+    <label><input type="radio" name="size" value="medium" checked /> Medium</label>
+    <label><input type="radio" name="size" value="large" /> Large</label>
+  </fieldset>
+</rc-segmented-button>
+```
+
+The fieldset, legend, labels, and radios stay in light DOM for forms and
+no-JavaScript fallback. Arrow keys, Home, and End follow the APG radio group
+model.
+
+## Live demo
+
+<SegmentedButtonDemo />
+
+## API
+
+<ApiTable tag="rc-segmented-button" />
