@@ -19,6 +19,9 @@ import type {
   RCSearchBarRef,
   RCSegmentedButtonChangeDetail,
   RCSliderRef,
+  RCSnackbarActionDetail,
+  RCSnackbarCloseDetail,
+  RCSnackbarRef,
   RCTextareaRef,
   RCTransferListChangeDetail,
   RCTransferListRef,
@@ -458,6 +461,75 @@ export function SegmentedButtonDemo() {
       </rc-segmented-button>
       <p>Selected size: {value}</p>
       <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+export function SnackbarDemo() {
+  const [snackbarEl, setSnackbarEl] = useState<RCSnackbarRef | null>(null);
+  const actionLog = useEventLog<RCSnackbarActionDetail>(
+    snackbarEl,
+    'rc-snackbar-action',
+    ({ message }) => `rc-snackbar-action -> ${message}`,
+  );
+  const closeLog = useEventLog<RCSnackbarCloseDetail>(
+    snackbarEl,
+    'rc-snackbar-close',
+    ({ reason, message }) => `rc-snackbar-close -> ${reason}: ${message}`,
+  );
+
+  return (
+    <DemoFrame>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <button
+          type="button"
+          onClick={() => snackbarEl?.show({ message: 'Recipe saved', duration: 2500 })}
+        >
+          Show message
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            snackbarEl?.show({
+              message: 'Recipe deleted',
+              actionLabel: 'Undo',
+              duration: 0,
+            })
+          }
+        >
+          Show action
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (!snackbarEl) {
+              return;
+            }
+
+            snackbarEl.queuePolicy = 'queue';
+            snackbarEl.show({ message: 'First queued message', duration: 1200 });
+            snackbarEl.show({ message: 'Second queued message', duration: 1200 });
+          }}
+        >
+          Queue two
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (!snackbarEl) {
+              return;
+            }
+
+            snackbarEl.queuePolicy = 'replace';
+            snackbarEl.show({ message: 'Original message', duration: 3000 });
+            snackbarEl.show({ message: 'Replacement message', duration: 3000 });
+          }}
+        >
+          Replace
+        </button>
+      </div>
+      <rc-snackbar ref={setSnackbarEl}></rc-snackbar>
+      <EventLog entries={[...actionLog, ...closeLog]} />
     </DemoFrame>
   );
 }

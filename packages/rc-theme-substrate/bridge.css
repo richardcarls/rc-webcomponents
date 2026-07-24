@@ -42,6 +42,9 @@
     --rc-chip-selected-bg: var(--rc-highlight, Highlight);
     --rc-segmented-button-segment-min-block-size: var(--rc-control-block-size);
     --rc-segmented-button-selected-bg: var(--rc-highlight, Highlight);
+    --rc-snackbar-bg: var(--substrate-inverse-surface, CanvasText);
+    --rc-snackbar-color: var(--substrate-inverse-on-surface, Canvas);
+    --rc-snackbar-action-color: var(--substrate-inverse-primary, LinkText);
     --rc-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
     --rc-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
     --rc-item-gap: var(--substrate-item-gap, 0.5rem);

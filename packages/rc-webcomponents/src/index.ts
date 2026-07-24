@@ -22,6 +22,7 @@ export * from '@rcarls/rc-search-bar';
 export * from '@rcarls/rc-segmented-button';
 export * from '@rcarls/rc-select';
 export * from '@rcarls/rc-slider';
+export * from '@rcarls/rc-snackbar';
 export * from '@rcarls/rc-splitter';
 export * from '@rcarls/rc-textarea';
 export * from '@rcarls/rc-toolbar';

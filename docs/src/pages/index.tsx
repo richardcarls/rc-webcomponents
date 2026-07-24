@@ -72,6 +72,7 @@ const packages = [
     'Modal bottom-sheet wrapper for native <dialog>',
     '/components/rc-bottom-sheet',
   ],
+  ['rc-snackbar', 'Snackbar live-region host for brief status messages', '/components/rc-snackbar'],
   [
     'rc-disclosure',
     'Disclosure wrapper for native <details>/<summary>',

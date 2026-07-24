@@ -29,6 +29,7 @@
       "@rcarls/rc-select",
       "@rcarls/rc-segmented-button",
       "@rcarls/rc-slider",
+      "@rcarls/rc-snackbar",
       "@rcarls/rc-splitter",
       "@rcarls/rc-textarea",
       "@rcarls/rc-textarea-adapters",
