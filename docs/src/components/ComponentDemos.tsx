@@ -22,6 +22,7 @@ import type {
   RCSnackbarActionDetail,
   RCSnackbarCloseDetail,
   RCSnackbarRef,
+  RCSwitchChangeDetail,
   RCTextareaRef,
   RCTransferListChangeDetail,
   RCTransferListRef,
@@ -530,6 +531,43 @@ export function SnackbarDemo() {
       </div>
       <rc-snackbar ref={setSnackbarEl}></rc-snackbar>
       <EventLog entries={[...actionLog, ...closeLog]} />
+    </DemoFrame>
+  );
+}
+
+export function SwitchDemo() {
+  const [switchEl, setSwitchEl] = useState<HTMLElement | null>(null);
+  const [checked, setChecked] = useState(false);
+  const log = useEventLog<RCSwitchChangeDetail>(
+    switchEl,
+    'rc-switch-change',
+    ({ checked: next }) => `rc-switch-change -> ${next}`,
+  );
+
+  useEffect(() => {
+    if (!switchEl) {
+      return;
+    }
+
+    const handleChange = (event: Event) => {
+      setChecked((event as CustomEvent<RCSwitchChangeDetail>).detail.checked);
+    };
+
+    switchEl.addEventListener('rc-switch-change', handleChange);
+
+    return () => switchEl.removeEventListener('rc-switch-change', handleChange);
+  }, [switchEl]);
+
+  return (
+    <DemoFrame>
+      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <label htmlFor="demo-dark-mode">Dark mode</label>
+        <rc-switch ref={setSwitchEl}>
+          <input id="demo-dark-mode" name="darkMode" type="checkbox" />
+        </rc-switch>
+      </div>
+      <p>Dark mode is {checked ? 'on' : 'off'}.</p>
+      <EventLog entries={log} />
     </DemoFrame>
   );
 }

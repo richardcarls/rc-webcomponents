@@ -76,6 +76,7 @@
     "@rcarls/rc-slider": "workspace:*",
     "@rcarls/rc-snackbar": "workspace:*",
     "@rcarls/rc-splitter": "workspace:*",
+    "@rcarls/rc-switch": "workspace:*",
     "@rcarls/rc-textarea": "workspace:*",
     "@rcarls/rc-toolbar": "workspace:*",
     "@rcarls/rc-transfer-list": "workspace:*",

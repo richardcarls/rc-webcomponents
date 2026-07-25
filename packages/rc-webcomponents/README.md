@@ -87,6 +87,7 @@ fallbacks:
 | `rc-slider`          | Single-thumb slider backed by native `<input type="range">`.         |
 | `rc-snackbar`        | Live-region status-message host with queueing and optional action.   |
 | `rc-splitter`        | Resizable pane splitter with pointer and keyboard controls.          |
+| `rc-switch`          | Switch wrapper that enhances a native checkbox input.                |
 | `rc-textarea`        | Textarea wrapper with line decorations and plugin hooks.             |
 | `rc-toolbar`         | Toolbar that groups controls into one tab stop.                      |
 | `rc-transfer-list`   | Transfer list enhancing native `<select multiple>`.                  |

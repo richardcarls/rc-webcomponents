@@ -24,6 +24,7 @@ export * from '@rcarls/rc-select';
 export * from '@rcarls/rc-slider';
 export * from '@rcarls/rc-snackbar';
 export * from '@rcarls/rc-splitter';
+export * from '@rcarls/rc-switch';
 export * from '@rcarls/rc-textarea';
 export * from '@rcarls/rc-toolbar';
 export * from '@rcarls/rc-transfer-list';

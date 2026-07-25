@@ -26,6 +26,7 @@ const sidebars: SidebarsConfig = {
         'components/rc-select',
         'components/rc-combobox',
         'components/rc-search-bar',
+        'components/rc-switch',
         'components/rc-segmented-button',
         'components/rc-slider',
         'components/rc-range-slider',

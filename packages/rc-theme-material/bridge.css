@@ -59,6 +59,10 @@
     --rc-chip-block-size: 2rem;
     --rc-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
     --rc-chip-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-switch-track-inline-size: 3.25rem;
+    --rc-switch-track-block-size: 2rem;
+    --rc-switch-selected-track-bg: var(--md-sys-color-primary, Highlight);
+    --rc-switch-thumb-translate: 1.125rem;
     --rc-segmented-button-segment-min-block-size: 2.5rem;
     --rc-segmented-button-selected-bg: var(--md-sys-color-secondary-container, Highlight);
     --rc-snackbar-bg: var(--md-sys-color-inverse-surface, CanvasText);

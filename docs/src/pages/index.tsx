@@ -14,6 +14,7 @@ const packages = [
     'Editable combobox with filtering and optional allow-create behavior',
     '/components/rc-combobox',
   ],
+  ['rc-switch', 'Switch wrapper for native <input type="checkbox">', '/components/rc-switch'],
   [
     'rc-segmented-button',
     'Segmented button group backed by native radio inputs',

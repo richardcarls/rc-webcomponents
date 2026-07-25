@@ -31,6 +31,7 @@
       "@rcarls/rc-slider",
       "@rcarls/rc-snackbar",
       "@rcarls/rc-splitter",
+      "@rcarls/rc-switch",
       "@rcarls/rc-textarea",
       "@rcarls/rc-textarea-adapters",
       "@rcarls/rc-textarea-plugin-markdown",

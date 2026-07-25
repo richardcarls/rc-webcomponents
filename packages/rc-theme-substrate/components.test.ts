@@ -5,8 +5,10 @@ import './components.css';
 class BlockHostElement extends HTMLElement {
   constructor() {
     super();
+
     const shadowRoot = this.attachShadow({ mode: 'open' });
     const style = document.createElement('style');
+
     style.textContent = ':host { display: block; }';
     shadowRoot.append(style);
   }
@@ -15,7 +17,9 @@ class BlockHostElement extends HTMLElement {
 class BlockHostElementAlt extends BlockHostElement {}
 
 customElements.get('rc-slider') || customElements.define('rc-slider', BlockHostElement);
-customElements.get('rc-range-slider') || customElements.define('rc-range-slider', BlockHostElementAlt);
+
+customElements.get('rc-range-slider') ||
+  customElements.define('rc-range-slider', BlockHostElementAlt);
 
 afterEach(() => {
   document.body.replaceChildren();
@@ -23,8 +27,10 @@ afterEach(() => {
 
 function renderScope(): HTMLElement {
   const scope = document.createElement('div');
+
   scope.className = 'rc-theme-substrate';
   document.body.append(scope);
+
   return scope;
 }
 
@@ -44,16 +50,28 @@ test('aggregate component styles cover the reference styling surface', () => {
   const scope = renderScope();
   const expectations = new Map<string, [string, string]>([
     ['rc-listbox', ['display', 'block']],
+    ['rc-button', ['--rc-button-bg', '']],
+    ['rc-card', ['--rc-card-bg', '']],
+    ['rc-chip', ['--rc-chip-block-size', '2rem']],
+    ['rc-chip-set', ['--rc-chip-set-gap', '0.5rem']],
     ['rc-select', ['display', 'inline-block']],
+    ['rc-segmented-button', ['--rc-segmented-button-segment-min-block-size', '2.5rem']],
+    ['rc-switch', ['--rc-switch-track-inline-size', '3.25rem']],
+    ['rc-snackbar', ['--rc-snackbar-bg', '']],
     ['rc-combobox', ['display', 'inline-block']],
+    ['rc-bottom-sheet', ['--rc-bottom-sheet-bg', '']],
     ['rc-search-bar', ['display', 'inline-block']],
     ['rc-textarea', ['--rc-textarea-padding', '0.75rem']],
     ['rc-markdown-editor', ['--rme-padding', '0.75rem']],
     ['rc-transfer-list', ['--rc-transfer-list-gap', '1rem']],
     ['rc-app-bar', ['font-family', '']],
+    ['rc-fab', ['--rc-fab-bg', '']],
+    ['rc-fab-menu', ['--rc-fab-menu-bg', '']],
     ['rc-menu', ['display', 'inline-block']],
     ['rc-menu-button', ['display', 'inline-block']],
     ['rc-menubar', ['display', 'inline-block']],
+    ['rc-navigation-bar', ['--rc-navigation-bar-bg', '']],
+    ['rc-navigation-rail', ['--rc-navigation-rail-bg', '']],
     ['rc-toolbar', ['display', 'inline-block']],
     ['rc-slider', ['display', 'block']],
     ['rc-range-slider', ['display', 'block']],
@@ -65,16 +83,23 @@ test('aggregate component styles cover the reference styling surface', () => {
 
   for (const [tagName, [property, expected]] of expectations) {
     const element = document.createElement(tagName);
+
     scope.append(element);
+
     const value = getComputedStyle(element).getPropertyValue(property);
+
     expect(value, `${tagName} ${property}`).not.toBe('');
-    if (expected) expect(value).toBe(expected);
+
+    if (expected) {
+      expect(value).toBe(expected);
+    }
   }
 });
 
 test('contextual styles do not style unrelated native buttons', () => {
   const scope = renderScope();
   const button = document.createElement('button');
+
   scope.append(button);
 
   expect(getComputedStyle(button).borderRadius).toBe('0px');
@@ -83,27 +108,50 @@ test('contextual styles do not style unrelated native buttons', () => {
 test('app bars stack above adjacent themed content for anchored popups', () => {
   const scope = renderScope();
   const appBar = document.createElement('rc-app-bar');
+
   scope.append(appBar);
 
   expect(getComputedStyle(appBar).position).toBe('relative');
   expect(getComputedStyle(appBar).zIndex).toBe('1');
 });
 
+test('navigation surfaces expose the full reference token contract', () => {
+  const scope = renderScope();
+  const bar = document.createElement('rc-navigation-bar');
+  const rail = document.createElement('rc-navigation-rail');
+
+  scope.append(bar, rail);
+
+  const barStyles = getComputedStyle(bar);
+  const railStyles = getComputedStyle(rail);
+
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-block-size')).toBe('4rem');
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-item-padding-inline')).not.toBe('');
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-indicator-duration')).not.toBe('');
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-focus-ring')).not.toBe('');
+
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-inline-size')).toBe('5rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-expanded-inline-size')).toBe('15rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-toggle-size')).toBe('3rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-toggle-hover-bg')).not.toBe('');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-focus-ring')).not.toBe('');
+});
+
 test('menu button trigger keeps a default button background token', () => {
   const scope = renderScope();
   const menuButton = document.createElement('rc-menu-button');
+
   scope.append(menuButton);
 
   const styles = getComputedStyle(menuButton);
 
-  expect(styles.getPropertyValue('--rc-menu-button-trigger-background').trim()).toBe(
-    'ButtonFace',
-  );
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-background').trim()).toBe('ButtonFace');
 });
 
 test('splitter keeps default geometry and only adds themed color tokens', () => {
   const scope = renderScope();
   const splitter = document.createElement('rc-splitter');
+
   scope.append(splitter);
 
   const styles = getComputedStyle(splitter);
@@ -180,6 +228,34 @@ test('embedded listbox parts receive Substrate listbox option tokens', () => {
   }
 });
 
+test('authored list item classes receive the shared Substrate token contract', () => {
+  const scope = renderScope();
+  const list = document.createElement('ul');
+  const item = document.createElement('li');
+  const body = document.createElement('span');
+  const headline = document.createElement('span');
+  const supporting = document.createElement('span');
+
+  list.className = 'rc-list';
+  item.className = 'rc-list-item';
+  body.className = 'rc-list-item__body';
+  headline.className = 'rc-list-item__headline';
+  supporting.className = 'rc-list-item__supporting';
+  headline.textContent = 'Headline';
+  supporting.textContent = 'Supporting';
+  body.append(headline, supporting);
+  item.append(body);
+  list.append(item);
+  scope.append(list);
+
+  const itemStyles = getComputedStyle(item);
+
+  expect(itemStyles.display).toBe('flex');
+  expect(itemStyles.minBlockSize).toBe('36px');
+  expect(itemStyles.gap).not.toBe('');
+  expect(getComputedStyle(list).listStyleType).toBe('none');
+});
+
 test('disclosure and accordion styles keep native details as the styled surface', () => {
   const scope = renderScope();
   const disclosure = document.createElement('rc-disclosure');
@@ -191,12 +267,14 @@ test('disclosure and accordion styles keep native details as the styled surface'
       <div><p>Expanded content</p></div>
     </details>
   `;
+
   accordion.innerHTML = `
     <details>
       <summary>Direct item</summary>
       <div><p>Direct content</p></div>
     </details>
   `;
+
   scope.append(disclosure, accordion);
 
   const disclosureDetails = disclosure.querySelector('details');
