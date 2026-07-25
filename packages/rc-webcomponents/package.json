@@ -74,6 +74,7 @@
     "@rcarls/rc-segmented-button": "workspace:*",
     "@rcarls/rc-select": "workspace:*",
     "@rcarls/rc-slider": "workspace:*",
+    "@rcarls/rc-snackbar": "workspace:*",
     "@rcarls/rc-splitter": "workspace:*",
     "@rcarls/rc-textarea": "workspace:*",
     "@rcarls/rc-toolbar": "workspace:*",

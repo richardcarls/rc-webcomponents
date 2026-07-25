@@ -1,0 +1,69 @@
+---
+title: rc-snackbar
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { SnackbarDemo } from '@site/src/components/ComponentDemos';
+
+# rc-snackbar
+
+Snackbar live-region host for brief status messages and optional actions.
+
+<AtAGlance
+  packageName="@rcarls/rc-snackbar"
+  tag="rc-snackbar"
+  native="Polite status live region"
+  state="Imperative message queue"
+  events={['rc-snackbar-action', 'rc-snackbar-close']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-snackbar
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-snackbar
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-snackbar/define';
+```
+
+## Usage
+
+```html
+<rc-snackbar id="snackbar"></rc-snackbar>
+```
+
+```js
+document.querySelector('#snackbar').show({
+  message: 'Recipe saved',
+  actionLabel: 'Undo',
+});
+```
+
+Snackbars do not move focus. They announce through a polite status live region
+and queue messages by default.
+
+## Live demo
+
+<SnackbarDemo />
+
+## API
+
+<ApiTable tag="rc-snackbar" />

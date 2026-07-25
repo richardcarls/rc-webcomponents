@@ -85,6 +85,7 @@ fallbacks:
 | `rc-segmented-button` | Segmented radio group enhancer for native radios in a `<fieldset>`. |
 | `rc-select`          | Select-only combobox backed by a native `<select>`.                  |
 | `rc-slider`          | Single-thumb slider backed by native `<input type="range">`.         |
+| `rc-snackbar`        | Live-region status-message host with queueing and optional action.   |
 | `rc-splitter`        | Resizable pane splitter with pointer and keyboard controls.          |
 | `rc-textarea`        | Textarea wrapper with line decorations and plugin hooks.             |
 | `rc-toolbar`         | Toolbar that groups controls into one tab stop.                      |

@@ -5011,6 +5011,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-snackbar@workspace:*, @rcarls/rc-snackbar@workspace:packages/rc-snackbar":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-snackbar@workspace:packages/rc-snackbar"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-splitter@workspace:*, @rcarls/rc-splitter@workspace:packages/rc-splitter":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-splitter@workspace:packages/rc-splitter"
@@ -5206,6 +5225,7 @@ __metadata:
     "@rcarls/rc-segmented-button": "workspace:*"
     "@rcarls/rc-select": "workspace:*"
     "@rcarls/rc-slider": "workspace:*"
+    "@rcarls/rc-snackbar": "workspace:*"
     "@rcarls/rc-splitter": "workspace:*"
     "@rcarls/rc-textarea": "workspace:*"
     "@rcarls/rc-toolbar": "workspace:*"

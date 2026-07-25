@@ -24,6 +24,7 @@
 @import './components/toolbar.css';
 @import './components/segmented-button.css';
 @import './components/slider.css';
+@import './components/snackbar.css';
 @import './components/range-slider.css';
 @import './components/splitter.css';
 @import './components/dialog.css';
