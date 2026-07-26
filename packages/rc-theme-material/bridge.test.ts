@@ -17,7 +17,9 @@ function renderMaterialScope(): HTMLElement {
 
 test('bridge consumes application Material system tokens without defining them', () => {
   const scope = document.createElement('div');
+
   document.body.append(scope);
+
   const styles = getComputedStyle(scope);
 
   expect(styles.getPropertyValue('--md-sys-color-primary')).toBe('');
@@ -60,6 +62,7 @@ test('maps disabled, focus, hover, and active state contracts', () => {
   const slider = document.createElement('rc-range-slider');
 
   scope.append(slider);
+
   const styles = getComputedStyle(slider);
 
   expect(styles.getPropertyValue('--rc-disabled-opacity')).not.toBe('');
@@ -98,10 +101,14 @@ test('maps open menu surfaces without choosing a consumer button variant', () =>
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-padding-block')).toBe('0');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-hover-bg')).not.toBe('');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-submenu-indicator-color')).not.toBe('');
+
   expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-background')).toBe(
     'transparent',
   );
-  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-background')).not.toBe('');
+
+  expect(
+    getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-background'),
+  ).not.toBe('');
 });
 
 test('maps menubar item tokens through menu-button triggers', () => {
@@ -124,9 +131,12 @@ test('includes a forced-colors bridge', () => {
       if (rule instanceof CSSMediaRule && rule.conditionText.includes('forced-colors: active')) {
         return true;
       }
+
       return 'cssRules' in rule && includesForcedColors((rule as CSSGroupingRule).cssRules);
     });
-  const hasForcedColorsRule = [...document.styleSheets].some((sheet) => includesForcedColors(sheet.cssRules));
+  const hasForcedColorsRule = [...document.styleSheets].some((sheet) =>
+    includesForcedColors(sheet.cssRules),
+  );
 
   expect(hasForcedColorsRule).toBe(true);
 });
@@ -135,15 +145,24 @@ test('maps the supported core component set', () => {
   const scope = renderMaterialScope();
   const expectations = new Map<string, string>([
     ['rc-select', '--rc-select-radius'],
+    ['rc-button', '--rc-button-bg'],
+    ['rc-card', '--rc-card-bg'],
+    ['rc-chip', '--rc-chip-block-size'],
+    ['rc-chip-set', '--rc-chip-set-gap'],
+    ['div', '--rc-list-item-min-block-size'],
     ['rc-combobox', '--rc-combobox-radius'],
     ['rc-slider', '--rc-slider-progress-background'],
     ['rc-range-slider', '--rc-range-slider-accent'],
     ['rc-search-bar', '--rc-search-bar-bg'],
+    ['rc-bottom-sheet', '--rc-bottom-sheet-bg'],
     ['rc-app-bar', '--rc-app-bar-bg'],
     ['rc-menu', '--rc-menu-background'],
     ['rc-menu-button', '--rc-menu-button-trigger-radius'],
     ['rc-menubar', '--rc-menubar-background'],
     ['rc-toolbar', '--rc-toolbar-radius'],
+    ['rc-segmented-button', '--rc-segmented-button-segment-min-block-size'],
+    ['rc-switch', '--rc-switch-track-inline-size'],
+    ['rc-snackbar', '--rc-snackbar-bg'],
   ]);
 
   for (const [tagName, property] of expectations) {

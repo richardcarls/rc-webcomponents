@@ -1,0 +1,67 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) {
+    --rc-list-item-gap: var(--substrate-item-gap, 0.5rem);
+    --rc-list-item-min-block-size: 2.25rem;
+    --rc-list-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
+    --rc-list-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+    --rc-list-item-divider: 0;
+    --rc-list-item-bg: transparent;
+    --rc-list-item-color: var(--rc-field-text, FieldText);
+    --rc-list-item-supporting-color: var(--substrate-on-surface-muted, GrayText);
+    --rc-list-item-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
+    --rc-list-item-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+    --rc-list-item-selected-bg: var(--rc-highlight, Highlight);
+    --rc-list-item-selected-color: var(--rc-highlight-text, HighlightText);
+    --rc-list-item-disabled-opacity: var(--rc-disabled-opacity, 0.52);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--rc-list-item-gap);
+    min-block-size: var(--rc-list-item-min-block-size);
+    padding: var(--rc-list-item-padding-block) var(--rc-list-item-padding-inline);
+    border-block-end: var(--rc-list-item-divider);
+    background: var(--rc-list-item-bg);
+    color: var(--rc-list-item-color);
+    box-sizing: border-box;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list-item__start,
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list-item__trailing,
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list-item__end {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list-item__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-inline-size: 0;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list-item__supporting {
+    color: var(--rc-list-item-supporting-color);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-listbox,
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) [part~='listbox'] {
+    --rc-listbox-option-gap: var(--rc-list-item-gap);
+    --rc-listbox-option-min-block-size: var(--rc-list-item-min-block-size);
+    --rc-listbox-option-padding-block: var(--rc-list-item-padding-block);
+    --rc-listbox-option-padding-inline: var(--rc-list-item-padding-inline);
+    --rc-listbox-hover-bg: var(--rc-list-item-hover-bg);
+    --rc-listbox-active-bg: var(--rc-list-item-active-bg);
+    --rc-listbox-selected-bg: var(--rc-list-item-selected-bg);
+    --rc-listbox-selected-color: var(--rc-list-item-selected-color);
+    --rc-listbox-disabled-opacity: var(--rc-list-item-disabled-opacity);
+  }
+}
