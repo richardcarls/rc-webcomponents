@@ -1,5 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { DragGestureController, type DragGestureDetail } from './DragGestureController';
+
 export type ResizeDirection = 'none' | 'both' | 'horizontal' | 'vertical';
 
 type ResizeEdge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
@@ -24,6 +26,10 @@ export interface ResizeLifecycleDetail {
   height: number;
   deltaX: number;
   deltaY: number;
+  /** Recent horizontal pointer velocity in pixels per second. */
+  velocityX: number;
+  /** Recent vertical pointer velocity in pixels per second. */
+  velocityY: number;
 }
 
 export interface ResizeOptions {
@@ -52,6 +58,41 @@ export interface ResizeOptions {
 }
 
 /**
+ * Pins position and size as explicit border-box pixel values.
+ *
+ * Useful before any programmatic or drag-driven layout change so that:
+ * - UA centering styles (`inset:0; margin:auto` on `<dialog>`) don't fight
+ *   explicit left/top changes.
+ * - Changing width/height alone doesn't redistribute auto-margins and shift
+ *   the element.
+ * - box-sizing is known, so a subsequent `style.width = rect.width` is a
+ *   no-op visually.
+ *
+ * `ResizeController` calls this once per gesture; callers that mutate an
+ * element's position/size outside of an active resize gesture (e.g. a
+ * bottom sheet snapping to a point before the user has ever dragged it)
+ * should call it too, so the same box-model assumptions hold either way.
+ */
+export function pinElementBox(target: HTMLElement): DOMRect {
+  const rect = target.getBoundingClientRect();
+
+  if (getComputedStyle(target).position === 'static') {
+    target.style.position = 'fixed';
+  }
+
+  target.style.translate = 'none';
+  target.style.inset = 'auto';
+  target.style.margin = '0';
+  target.style.boxSizing = 'border-box';
+  target.style.left = `${rect.left}px`;
+  target.style.top = `${rect.top}px`;
+  target.style.width = `${rect.width}px`;
+  target.style.height = `${rect.height}px`;
+
+  return rect;
+}
+
+/**
  * Makes an element resizable via pointer (edge detection) and keyboard.
  *
  * Supports all 8 resize handles (n, s, e, w, ne, nw, se, sw) depending on
@@ -76,15 +117,15 @@ export class ResizeController implements ReactiveController {
     >;
 
   private _resizing: ResizeEdge | null = null;
-  private _startX = 0;
-  private _startY = 0;
   private _startW = 0;
   private _startH = 0;
   private _startLeft = 0;
   private _startTop = 0;
   private _lastDeltaX = 0;
   private _lastDeltaY = 0;
-  private _activeHandle: Element | null = null;
+  private _velocityX = 0;
+  private _velocityY = 0;
+  private _pendingEdge: ResizeEdge | null = null;
 
   // Effective minimums for the current resize gesture — the larger of the JS
   // option and the element's computed CSS min-width/min-height. Computed once
@@ -104,10 +145,7 @@ export class ResizeController implements ReactiveController {
   private _cornerBtn: HTMLButtonElement | null = null;
 
   private readonly _onPointerMove: (e: PointerEvent) => void;
-  private readonly _onPointerDown: (e: PointerEvent) => void;
-  private readonly _onPointerUp: (e: PointerEvent) => void;
-  private readonly _onPointerCancel: (e: PointerEvent) => void;
-  private readonly _onLostPointerCapture: (e: PointerEvent) => void;
+  private readonly _gesture: DragGestureController;
   private readonly _onPointerLeave: (e: PointerEvent) => void;
   private readonly _onKeyDown: (e: KeyboardEvent) => void;
 
@@ -126,12 +164,19 @@ export class ResizeController implements ReactiveController {
     };
 
     this._onPointerMove = this._handlePointerMove.bind(this);
-    this._onPointerDown = this._handlePointerDown.bind(this);
-    this._onPointerUp = this._handlePointerUp.bind(this);
-    this._onPointerCancel = this._cancelResize.bind(this);
-    this._onLostPointerCapture = this._cancelResize.bind(this);
     this._onPointerLeave = this._handlePointerLeave.bind(this);
     this._onKeyDown = this._handleKeyDown.bind(this);
+
+    this._gesture = new DragGestureController(host, {
+      target: () => this._handle() ?? this._target(),
+      capture: true,
+      stopPropagation: true,
+      canStart: (event) => this._canStartGesture(event),
+      onStart: (detail) => this._startGestureResize(detail),
+      onMove: (detail) => this._moveGestureResize(detail),
+      onEnd: (detail) => this._endGestureResize(detail),
+      onCancel: () => this._cancelResize(),
+    });
 
     host.addController(this);
   }
@@ -140,6 +185,7 @@ export class ResizeController implements ReactiveController {
     const previousHandle = this._opts.handle;
 
     Object.assign(this._opts, next);
+    this._gesture.setOptions({ target: () => this._handle() ?? this._target() });
 
     if (previousHandle !== this._opts.handle) {
       this._detachFromHandle(previousHandle);
@@ -161,11 +207,6 @@ export class ResizeController implements ReactiveController {
     const target = this._target();
 
     target.addEventListener('pointermove', this._onPointerMove as EventListener);
-    // Capture phase so this fires before any descendant handler (e.g. DragController
-    // listening on a child handle). When an edge is detected we stopPropagation,
-    // which prevents drag from starting on the same pointerdown.
-    target.addEventListener('pointerdown', this._onPointerDown as EventListener, { capture: true });
-    target.addEventListener('pointerup', this._onPointerUp as EventListener);
     target.addEventListener('pointerleave', this._onPointerLeave as EventListener);
     this._injectCornerButton();
   }
@@ -180,12 +221,6 @@ export class ResizeController implements ReactiveController {
     const target = this._target();
 
     target.removeEventListener('pointermove', this._onPointerMove as EventListener);
-
-    target.removeEventListener('pointerdown', this._onPointerDown as EventListener, {
-      capture: true,
-    });
-
-    target.removeEventListener('pointerup', this._onPointerUp as EventListener);
     target.removeEventListener('pointerleave', this._onPointerLeave as EventListener);
     this._removeCornerButton();
   }
@@ -203,7 +238,6 @@ export class ResizeController implements ReactiveController {
       return;
     }
 
-    handle.addEventListener('pointerdown', this._onPointerDown as EventListener);
     handle.addEventListener('keydown', this._onKeyDown as EventListener);
     (handle as HTMLElement).style.cursor = this._edgeCursor(this._handleEdge());
     (handle as HTMLElement).style.touchAction = 'none';
@@ -218,12 +252,7 @@ export class ResizeController implements ReactiveController {
       return;
     }
 
-    handle.removeEventListener('pointerdown', this._onPointerDown as EventListener);
     handle.removeEventListener('keydown', this._onKeyDown as EventListener);
-    handle.removeEventListener('pointermove', this._onPointerMove as EventListener);
-    handle.removeEventListener('pointerup', this._onPointerUp as EventListener);
-    handle.removeEventListener('pointercancel', this._onPointerCancel as EventListener);
-    handle.removeEventListener('lostpointercapture', this._onLostPointerCapture as EventListener);
   }
 
   private _injectCornerButton(): void {
@@ -505,75 +534,56 @@ export class ResizeController implements ReactiveController {
     return null;
   }
 
-  /**
-   * Pins position and size as explicit border-box pixel values.
-   *
-   * Required before any resize so that:
-   * - UA centering styles (`inset:0; margin:auto` on `<dialog>`) don't fight
-   *   explicit left/top changes on n/w edges.
-   * - Changing width/height alone doesn't redistribute auto-margins and shift
-   *   the element for e/s edges.
-   * - box-sizing is known, so `style.width = rect.width` is a no-op visually.
-   */
   private _pinPosition(target: HTMLElement): DOMRect {
-    const rect = target.getBoundingClientRect();
-
-    if (getComputedStyle(target).position === 'static') {
-      target.style.position = 'fixed';
-    }
-
-    target.style.translate = 'none';
-    target.style.inset = 'auto';
-    target.style.margin = '0';
-    target.style.boxSizing = 'border-box';
-    target.style.left = `${rect.left}px`;
-    target.style.top = `${rect.top}px`;
-    target.style.width = `${rect.width}px`;
-    target.style.height = `${rect.height}px`;
-
-    return rect;
+    return pinElementBox(target);
   }
 
-  private _handlePointerDown(e: PointerEvent): void {
+  private _canStartGesture(event: PointerEvent): boolean {
     if (this._opts.disabled) {
-      return;
+      return false;
     }
 
     const handle = this._handle();
-    const edge = handle ? this._handleEdge() : this._detectEdge(e);
+    const edge = handle ? this._handleEdge() : this._detectEdge(event);
 
-    if (!edge) {
+    this._pendingEdge = edge;
+
+    return edge !== null;
+  }
+
+  private _startGestureResize(_detail: DragGestureDetail): void {
+    if (!this._pendingEdge) {
       return;
     }
 
-    // We have capture-phase priority over any descendant handler (e.g. a drag
-    // handle inside this element). Claiming the event here ensures only one
-    // controller owns this pointer — no lostpointercapture race needed.
-    e.stopPropagation();
-
-    this._startResize(edge, e.clientX, e.clientY);
-
-    const captureTarget = handle ?? this._target();
-
-    this._activeHandle = handle;
-    captureTarget.setPointerCapture(e.pointerId);
-
-    if (handle) {
-      handle.addEventListener('pointermove', this._onPointerMove as EventListener);
-      handle.addEventListener('pointerup', this._onPointerUp as EventListener);
-      handle.addEventListener('pointercancel', this._onPointerCancel as EventListener);
-      handle.addEventListener('lostpointercapture', this._onLostPointerCapture as EventListener);
-    }
-
-    e.preventDefault();
+    this._velocityX = 0;
+    this._velocityY = 0;
+    this._startResize(this._pendingEdge);
   }
 
-  private _startResize(edge: ResizeEdge, startX: number, startY: number): void {
+  private _moveGestureResize(detail: DragGestureDetail): void {
+    if (!this._resizing) {
+      return;
+    }
+
+    this._lastDeltaX = detail.deltaX;
+    this._lastDeltaY = detail.deltaY;
+    this._velocityX = detail.velocityX;
+    this._velocityY = detail.velocityY;
+    this._applyDelta(this._resizing, detail.deltaX, detail.deltaY);
+    this._opts.onResize?.(this._lifecycleDetail('pointer'));
+  }
+
+  private _endGestureResize(detail: DragGestureDetail): void {
+    this._velocityX = detail.velocityX;
+    this._velocityY = detail.velocityY;
+    this._finishResize('pointer');
+  }
+
+  private _startResize(edge: ResizeEdge): void {
     const target = this._target();
     const rect = this._pinPosition(target);
 
-    this._startX = startX;
-    this._startY = startY;
     this._startW = rect.width;
     this._startH = rect.height;
     this._startLeft = rect.left;
@@ -622,21 +632,13 @@ export class ResizeController implements ReactiveController {
       height: target.getBoundingClientRect().height,
       deltaX: this._lastDeltaX,
       deltaY: this._lastDeltaY,
+      velocityX: inputType === 'pointer' ? this._velocityX : 0,
+      velocityY: inputType === 'pointer' ? this._velocityY : 0,
     };
   }
 
   private _handlePointerMove(e: PointerEvent): void {
     if (this._resizing) {
-      const dx = e.clientX - this._startX;
-      const dy = e.clientY - this._startY;
-      const edge = this._resizing;
-
-      this._lastDeltaX = dx;
-      this._lastDeltaY = dy;
-      this._applyDelta(edge, dx, dy);
-
-      this._opts.onResize?.(this._lifecycleDetail('pointer'));
-
       return;
     }
 
@@ -651,10 +653,6 @@ export class ResizeController implements ReactiveController {
     target.style.cursor = edge ? this._edgeCursor(edge) : '';
   }
 
-  private _handlePointerUp(_e: PointerEvent): void {
-    this._finishResize('pointer');
-  }
-
   private _finishResize(inputType: 'pointer' | 'keyboard'): void {
     if (!this._resizing) {
       return;
@@ -663,27 +661,13 @@ export class ResizeController implements ReactiveController {
     const detail = this._lifecycleDetail(inputType);
 
     this._resizing = null;
+    this._pendingEdge = null;
     this._opts.onResizeEnd?.(detail);
-    this._detachActiveHandleListeners();
   }
 
   private _cancelResize(): void {
     this._resizing = null;
-    this._detachActiveHandleListeners();
-  }
-
-  private _detachActiveHandleListeners(): void {
-    const handle = this._activeHandle;
-
-    if (!handle) {
-      return;
-    }
-
-    handle.removeEventListener('pointermove', this._onPointerMove as EventListener);
-    handle.removeEventListener('pointerup', this._onPointerUp as EventListener);
-    handle.removeEventListener('pointercancel', this._onPointerCancel as EventListener);
-    handle.removeEventListener('lostpointercapture', this._onLostPointerCapture as EventListener);
-    this._activeHandle = null;
+    this._pendingEdge = null;
   }
 
   private _handlePointerLeave(_e: PointerEvent): void {
@@ -726,8 +710,6 @@ export class ResizeController implements ReactiveController {
     }
 
     this._resizing = edge;
-    this._startX = 0;
-    this._startY = 0;
     this._startW = rect.width;
     this._startH = rect.height;
     this._startLeft = rect.left;

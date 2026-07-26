@@ -352,6 +352,8 @@ export class RCDialog extends LitElement {
             threshold: this.resizeThreshold,
             step: this.resizeStep,
             bounds: this.moveBounds,
+            onResizeStart: (detail) => this._onResizeStart(detail),
+            onResize: (detail) => this._onResize(detail),
             onResizeEnd: (detail) => this._onResizeEnd(detail),
           });
         }
@@ -364,6 +366,8 @@ export class RCDialog extends LitElement {
           threshold: this.resizeThreshold,
           step: this.resizeStep,
           bounds: this.moveBounds,
+          onResizeStart: (detail) => this._onResizeStart(detail),
+          onResize: (detail) => this._onResize(detail),
           onResizeEnd: (detail) => this._onResizeEnd(detail),
         });
       }
@@ -489,6 +493,12 @@ export class RCDialog extends LitElement {
       this.requestClose();
     }
   };
+
+  /** Hook for subclasses to respond when a resize gesture begins. */
+  protected _onResizeStart(_detail: ResizeLifecycleDetail): void {}
+
+  /** Hook for subclasses to respond to each resize update during an active gesture. */
+  protected _onResize(_detail: ResizeLifecycleDetail): void {}
 
   /** Hook for subclasses to respond after a resize gesture has settled. */
   protected _onResizeEnd(_detail: ResizeLifecycleDetail): void {}
