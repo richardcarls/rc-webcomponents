@@ -246,10 +246,24 @@ export type RCDialogRef = HTMLElement & {
   requestClose(returnValue?: string): void;
 };
 
+/** Detail shape for `rc-bottom-sheet-snap`. */
+export type RCBottomSheetSnapDetail = {
+  /** Index into the resolved snap-point list selected as the target. */
+  index: number;
+
+  /** Target height, in pixels. */
+  height: number;
+
+  /** Whether the snap came from a drag release or a `snapTo()` call. */
+  trigger: 'drag' | 'api';
+};
+
 /** Public API surface of `<rc-bottom-sheet>`. */
 export type RCBottomSheetRef = RCDialogRef & {
   snapPoints: string;
   swipeDismiss: boolean;
+  swipeVelocity: number;
+  snapTo(index: number, behavior?: 'animated' | 'instant'): void;
 };
 
 export type RCDialogToggleDetail = {
@@ -718,6 +732,8 @@ declare module 'solid-js' {
         defaultOpen?: boolean | string;
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
+        'prop:modal'?: boolean | undefined;
+        'prop:lightDismiss'?: boolean | undefined;
         movable?: boolean | string;
         'move-handle'?: string;
         'move-bounds'?: 'viewport' | 'parent';
@@ -741,6 +757,9 @@ declare module 'solid-js' {
         defaultOpen?: boolean | string;
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
+        'prop:modal'?: boolean | undefined;
+        'prop:lightDismiss'?: boolean | undefined;
+        'prop:swipeDismiss'?: boolean | undefined;
         'light-dismiss'?: boolean | string;
         resize?: 'none' | 'both' | 'horizontal' | 'vertical';
         'resize-origin'?: RCDialogResizeOrigin;
@@ -749,11 +768,13 @@ declare module 'solid-js' {
         'resize-step'?: number | string;
         'snap-points'?: string;
         'swipe-dismiss'?: boolean | string;
+        'swipe-velocity'?: number | string;
         'on:rc-dialog-open'?: (e: CustomEvent) => void;
         'on:rc-dialog-toggle'?: (e: CustomEvent<RCDialogToggleDetail>) => void;
         'on:rc-dialog-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
         'on:rc-dialog-request-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
         'on:rc-dialog-cancel'?: (e: CustomEvent) => void;
+        'on:rc-bottom-sheet-snap'?: (e: CustomEvent<RCBottomSheetSnapDetail>) => void;
       };
 
       'rc-menu': JSX.HTMLAttributes<RCMenuRef> & {

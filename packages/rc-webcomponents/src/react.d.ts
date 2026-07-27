@@ -84,6 +84,18 @@ export type RCDialogCloseDetail = {
   returnValue: string;
 };
 
+/** Detail shape for `rc-bottom-sheet-snap`. */
+export type RCBottomSheetSnapDetail = {
+  /** Index into the resolved snap-point list selected as the target. */
+  index: number;
+
+  /** Target height, in pixels. */
+  height: number;
+
+  /** Whether the snap came from a drag release or a `snapTo()` call. */
+  trigger: 'drag' | 'api';
+};
+
 export type RCMenuActivateDetail = {
   item: HTMLElement;
   value: string;
@@ -382,6 +394,8 @@ export type RCDialogRef = HTMLElement & {
 export type RCBottomSheetRef = RCDialogRef & {
   snapPoints: string;
   swipeDismiss: boolean;
+  swipeVelocity: number;
+  snapTo(index: number, behavior?: 'animated' | 'instant'): void;
 };
 
 /** Public API surface of `<rc-menu>`. */
@@ -727,6 +741,7 @@ declare module 'react' {
         'resize-step'?: number | string;
         'snap-points'?: string;
         'swipe-dismiss'?: boolean;
+        'swipe-velocity'?: number | string;
       };
 
       'rc-menu': React.DetailedHTMLProps<React.HTMLAttributes<RCMenuRef>, RCMenuRef> & {
