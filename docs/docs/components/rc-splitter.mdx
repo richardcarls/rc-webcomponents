@@ -69,6 +69,24 @@ resize:
 The legacy `fixed` boolean still means “disable resizing” and is distinct from
 `mode="fixed"`.
 
+### Anchored settling
+
+Set `snap-points` to ascending whitespace-separated values in the active mode's
+units. Slow releases settle to the nearest point, while a swipe of at least
+`swipe-velocity` (default `500` px/s) moves to the next point in that direction.
+Omit `snap-points` to keep pointer resizing continuous.
+
+```html
+<rc-splitter mode="percent" snap-points="25 50 75" value="50">
+  <section>Primary</section>
+  <section slot="secondary">Secondary</section>
+</rc-splitter>
+```
+
+Use `snapTo(index, 'animated')` to settle programmatically or
+`snapTo(index, 'instant')` without animation. Animated settling uses
+`--rc-splitter-snap-duration` (default `200ms`) and respects reduced motion.
+
 ### Collapsible panes
 
 Set the `collapsible` attribute to render a toggle button on the separator that collapses or expands the primary pane:

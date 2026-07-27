@@ -2,10 +2,13 @@ import { LitElement, html, nothing } from 'lit';
 import { property, state, query, queryAssignedElements } from 'lit/decorators.js';
 
 import {
+  DragGestureController,
+  findNearestSnapIndex,
+  findNextSnapIndex,
   keyInteraction,
   keyNavigation,
+  type DragGestureDetail,
   type KeyboardNavigationAction,
-  mouseMove,
 } from '@rcarls/rc-common';
 
 import splitterStyles from './rc-splitter.styles';
@@ -14,6 +17,10 @@ type SplitterOrientation = 'horizontal' | 'vertical';
 
 type SplitterMode = 'length' | 'percent' | 'fixed';
 
+const MIN_SWIPE_DISTANCE = 24;
+const DEFAULT_SNAP_DURATION_MS = 200;
+const SNAP_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
+
 declare global {
   interface HTMLElementTagNameMap {
     'rc-splitter': RCSplitter;
@@ -21,8 +28,8 @@ declare global {
 }
 
 /**
- * Resizable pane splitter with pointer, keyboard, and collapse/restore controls, following
- * the WAI-ARIA Window Splitter pattern.
+ * Resizable pane splitter with pointer, keyboard, anchored settling, and
+ * collapse/restore controls, following the WAI-ARIA Window Splitter pattern.
  *
  * Set `orientation="vertical"` for a vertical splitter
  *
@@ -43,6 +50,7 @@ declare global {
  * @cssprop [--rc-splitter-handle-fill=transparent] - background-color of the visual indicator; effective when --rc-splitter-handle-pattern is none (e.g. for a solid pill)
  * @cssprop [--rc-splitter-handle-hover-fill=transparent] - background-color of the visual indicator on hover; scoped to the indicator element only, not the full separator strip
  * @cssprop [--rc-splitter-handle-transition=0ms] - CSS transition duration/easing for the visual indicator's background-color changes
+ * @cssprop [--rc-splitter-snap-duration=200ms] - Duration of anchored settling after pointer release or `snapTo()`
  * @cssprop [--rc-splitter-collapse-button-size=20px] - Diameter of the collapse/expand toggle button
  * @cssprop [--rc-splitter-collapse-button-offset=8px] - Distance from the start edge of the separator to the collapse button center
  * @cssprop [--rc-splitter-collapse-button-bg=Canvas] - Collapse button background color
@@ -247,6 +255,17 @@ export class RCSplitter extends LitElement {
   @property({ type: Boolean })
   collapsible: boolean = false;
 
+  /**
+   * Ascending whitespace-separated snap points in the current mode's units.
+   * An empty value keeps pointer resizing continuous.
+   */
+  @property({ type: String, attribute: 'snap-points' })
+  snapPoints = '';
+
+  /** Minimum release velocity, in px/s, that qualifies as a swipe. */
+  @property({ type: Number, attribute: 'swipe-velocity' })
+  swipeVelocity = 500;
+
   /** A human-readable string representation of the value. */
   get valueText() {
     return `${this.value}${this.mode === 'percent' ? '%' : 'px'}`;
@@ -265,6 +284,9 @@ export class RCSplitter extends LitElement {
   @query('#primary', true)
   protected _$primary!: HTMLDivElement;
 
+  @query('#separator-handle', true)
+  protected _$separatorHandle!: HTMLDivElement;
+
   @queryAssignedElements()
   protected _$primaryElements!: Array<HTMLElement>;
 
@@ -272,6 +294,22 @@ export class RCSplitter extends LitElement {
   protected _$secondaryElements!: Array<HTMLElement>;
 
   protected _initialMax: number = 0;
+
+  private _gestureStartValue = 0;
+  private _gestureRestoreValue = 0;
+  private _activeSnapAnimation: Animation | null = null;
+  private readonly _reducedMotion =
+    typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+
+  private readonly _gesture = new DragGestureController(this, {
+    target: () => this._$separatorHandle,
+    axis: this.orientation === 'horizontal' ? 'x' : 'y',
+    focusOnStart: true,
+    onStart: (detail) => this._onGestureStart(detail),
+    onMove: (detail) => this._onGestureMove(detail),
+    onEnd: (detail) => this._onGestureEnd(detail),
+    onCancel: () => this._onGestureCancel(),
+  });
 
   protected _resizeObserver = new ResizeObserver(() => this._onResize());
 
@@ -307,7 +345,7 @@ export class RCSplitter extends LitElement {
     }
   }
 
-  protected _onPointerResize(e: MouseEvent) {
+  protected _onPointerResize(e: Pick<PointerEvent, 'clientX' | 'clientY'>) {
     if (this.fixed) {
       return;
     }
@@ -319,6 +357,155 @@ export class RCSplitter extends LitElement {
     } else {
       this._setUserValue(((e.clientX - clientRect.left) / clientRect.width) * this._maxValue);
     }
+  }
+
+  /**
+   * Settles at a declared snap point by zero-based index.
+   *
+   * Finite fractional indices are truncated and clamped. Calls without valid
+   * snap points or with a non-finite index have no effect.
+   *
+   * @param index - zero-based index into `snapPoints`
+   * @param behavior - whether to animate the movement
+   */
+  snapTo(index: number, behavior: 'animated' | 'instant' = 'animated'): void {
+    const points = this._resolvedSnapPoints();
+
+    if (!Number.isFinite(index) || points.length === 0) {
+      return;
+    }
+
+    const clampedIndex = Math.max(0, Math.min(Math.trunc(index), points.length - 1));
+
+    void this._settleToValue(points[clampedIndex], behavior);
+  }
+
+  private _onGestureStart(_detail: DragGestureDetail): void {
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
+    this._gestureStartValue = this.value;
+    this._gestureRestoreValue = this._lastValue;
+  }
+
+  private _onGestureMove(detail: DragGestureDetail): void {
+    this._onPointerResize({ clientX: detail.x, clientY: detail.y });
+  }
+
+  private _onGestureEnd(detail: DragGestureDetail): void {
+    const delta = this.orientation === 'horizontal' ? detail.deltaX : detail.deltaY;
+    const velocity = this.orientation === 'horizontal' ? detail.velocityX : detail.velocityY;
+    const decisive =
+      Math.abs(delta) >= MIN_SWIPE_DISTANCE && Math.abs(velocity) >= this.swipeVelocity;
+
+    if (decisive && this.collapsible) {
+      if (velocity < 0) {
+        const restoreValue =
+          this._gestureRestoreValue > this._effectiveMin
+            ? this._gestureRestoreValue
+            : this._gestureStartValue;
+
+        void this._settleToValue(this._effectiveMin, 'animated');
+        this._lastValue = restoreValue;
+
+        return;
+      }
+
+      if (this._gestureStartValue <= this._effectiveMin) {
+        void this._settleToValue(
+          Math.max(this._gestureRestoreValue, this._effectiveMin),
+          'animated',
+        );
+
+        return;
+      }
+    }
+
+    const points = this._resolvedSnapPoints();
+
+    if (points.length === 0) {
+      return;
+    }
+
+    const index = decisive
+      ? findNextSnapIndex(points, this._gestureStartValue, velocity > 0 ? 1 : -1)
+      : findNearestSnapIndex(points, this.value);
+
+    if (index >= 0) {
+      void this._settleToValue(points[index], 'animated');
+    }
+  }
+
+  private _onGestureCancel(): void {
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
+  }
+
+  private _resolvedSnapPoints(): number[] {
+    if (!this.snapPoints.trim()) {
+      return [];
+    }
+
+    return this.snapPoints
+      .trim()
+      .split(/\s+/)
+      .map(Number)
+      .filter(Number.isFinite)
+      .map((point) => Math.min(Math.max(point, this._effectiveMin), this._effectiveMax))
+      .filter((point, index, points) => index === 0 || point !== points[index - 1]);
+  }
+
+  private async _settleToValue(value: number, behavior: 'animated' | 'instant'): Promise<void> {
+    const $primary = this._$primary;
+    const fromSize =
+      this.orientation === 'horizontal'
+        ? $primary.getBoundingClientRect().width
+        : $primary.getBoundingClientRect().height;
+
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
+    this._setUserValue(value);
+    await this.updateComplete;
+
+    if (behavior === 'instant' || this._reducedMotion?.matches) {
+      return;
+    }
+
+    const toSize =
+      this.orientation === 'horizontal'
+        ? $primary.getBoundingClientRect().width
+        : $primary.getBoundingClientRect().height;
+
+    if (fromSize === toSize) {
+      return;
+    }
+
+    const property = this.orientation === 'horizontal' ? 'width' : 'height';
+    const animation = $primary.animate(
+      [{ [property]: `${fromSize}px` }, { [property]: `${toSize}px` }],
+      {
+        duration: this._snapDuration(),
+        easing: SNAP_EASING,
+      },
+    );
+
+    this._activeSnapAnimation = animation;
+
+    try {
+      await animation.finished;
+    } catch {
+      // A newer gesture or snap call owns the final visual state.
+    } finally {
+      if (this._activeSnapAnimation === animation) {
+        this._activeSnapAnimation = null;
+      }
+    }
+  }
+
+  private _snapDuration(): number {
+    const raw = getComputedStyle(this).getPropertyValue('--rc-splitter-snap-duration').trim();
+    const parsed = Number.parseFloat(raw);
+
+    return Number.isFinite(parsed) ? parsed : DEFAULT_SNAP_DURATION_MS;
   }
 
   protected _onPrimaryChange(_e: Event) {
@@ -415,11 +602,20 @@ export class RCSplitter extends LitElement {
 
   disconnectedCallback(): void {
     this._resizeObserver.disconnect();
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
     super.disconnectedCallback();
   }
 
   firstUpdated() {
     this._onResize();
+  }
+
+  protected updated(): void {
+    this._gesture.setOptions({
+      axis: this.orientation === 'horizontal' ? 'x' : 'y',
+      target: () => this._$separatorHandle,
+    });
   }
 
   render() {
@@ -464,7 +660,6 @@ export class RCSplitter extends LitElement {
           @keydown=${this._onCollapseKeydown}
           ${keyNavigation(this._onKeyboardResize)}
           ${keyInteraction()}
-          ${mouseMove(this._onPointerResize)}
           ?hidden=${!this._$secondaryElements.length}
         ></div>
       </div>

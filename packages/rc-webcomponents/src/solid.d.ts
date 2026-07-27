@@ -348,11 +348,17 @@ export type RCToolbarRef = HTMLElement & {
 export type RCSplitterRef = HTMLElement & {
   label: string;
   orientation: 'horizontal' | 'vertical';
-  mode: 'length' | 'percent';
+  mode: 'length' | 'percent' | 'fixed';
   step: number;
+  min: number;
+  max: number | undefined;
   value: number;
   defaultValue: number | undefined;
   fixed: boolean;
+  collapsible: boolean;
+  snapPoints: string;
+  swipeVelocity: number;
+  snapTo(index: number, behavior?: 'animated' | 'instant'): void;
 };
 
 export type RCTextareaRef = HTMLElement & {
@@ -858,12 +864,17 @@ declare module 'solid-js' {
         orientation?: 'horizontal' | 'vertical';
         mode?: 'length' | 'percent' | 'fixed';
         step?: number | string;
+        min?: number | string;
+        max?: number | string;
         value?: number | string;
         defaultValue?: number | string;
         'default-value'?: number | string;
         'prop:value'?: number | undefined;
         'prop:defaultValue'?: number | undefined;
         fixed?: boolean | string;
+        collapsible?: boolean | string;
+        'snap-points'?: string;
+        'swipe-velocity'?: number | string;
         'on:rc-splitter-change'?: (e: CustomEvent<RCSplitterChangeDetail>) => void;
       };
 

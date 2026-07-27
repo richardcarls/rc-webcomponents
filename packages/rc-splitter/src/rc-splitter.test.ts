@@ -20,6 +20,10 @@ async function focusSeparator(separator: HTMLElement): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function pressKey(target: HTMLElement, keyToken: string): Promise<void> {
   const key = keyToken.startsWith('{') && keyToken.endsWith('}') ? keyToken.slice(1, -1) : keyToken;
 
@@ -510,7 +514,7 @@ describe('RCSplitter', () => {
 
       const separator = await waitForInit(host);
 
-      // Set value near the max so 10× step would overshoot.
+      // Set value near the max so 10× step would overshoot
       const max = (host as unknown as { _effectiveMax: number })._effectiveMax;
 
       host.value = max - 20;
@@ -1957,6 +1961,165 @@ describe('RCSplitter', () => {
       await pressKey(separator, '{ArrowRight}');
 
       expect(host.value).toBe(360);
+    });
+  });
+
+  describe('anchored settling', () => {
+    test('snapTo() clamps finite indices and ignores non-finite indices', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          snap-points="0 100 240"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+
+      await host.updateComplete;
+      await waitForInit(host);
+
+      host.snapTo(8, 'instant');
+      await vi.waitFor(() => expect(host.value).toBe(240));
+
+      host.snapTo(Number.NaN, 'instant');
+      expect(host.value).toBe(240);
+    });
+
+    test('slow release settles at the nearest authored point', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          value="100"
+          snap-points="0 100 200 300"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+
+      await host.updateComplete;
+
+      const separator = await waitForInit(host);
+      const rect = host.getBoundingClientRect();
+
+      firePointerEvent(separator, 'pointerdown', {
+        clientX: rect.left + 100,
+        clientY: rect.top + 100,
+      });
+
+      firePointerEvent(separator, 'pointermove', {
+        clientX: rect.left + 135,
+        clientY: rect.top + 100,
+      });
+
+      firePointerEvent(separator, 'pointerup', {
+        clientX: rect.left + 135,
+        clientY: rect.top + 100,
+      });
+
+      await vi.waitFor(() => expect(host.value).toBe(100));
+    });
+
+    test('decisive swipe selects the next authored point', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          value="100"
+          snap-points="0 100 200 300"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+
+      await host.updateComplete;
+
+      const separator = await waitForInit(host);
+      const rect = host.getBoundingClientRect();
+
+      firePointerEvent(separator, 'pointerdown', {
+        clientX: rect.left + 100,
+        clientY: rect.top + 100,
+      });
+
+      await wait(12);
+
+      firePointerEvent(separator, 'pointermove', {
+        clientX: rect.left + 140,
+        clientY: rect.top + 100,
+      });
+
+      firePointerEvent(separator, 'pointerup', {
+        clientX: rect.left + 140,
+        clientY: rect.top + 100,
+      });
+
+      await vi.waitFor(() => expect(host.value).toBe(200));
+    });
+
+    test('collapsible splitter swipes to minimum and restores without snap points', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          collapsible
+          value="200"
+          style="width: 400px; height: 300px;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+
+      await host.updateComplete;
+
+      const separator = await waitForInit(host);
+      const rect = host.getBoundingClientRect();
+
+      firePointerEvent(separator, 'pointerdown', {
+        clientX: rect.left + 200,
+        clientY: rect.top + 100,
+      });
+
+      await wait(12);
+
+      firePointerEvent(separator, 'pointermove', {
+        clientX: rect.left + 150,
+        clientY: rect.top + 100,
+      });
+
+      firePointerEvent(separator, 'pointerup', {
+        clientX: rect.left + 150,
+        clientY: rect.top + 100,
+      });
+
+      await vi.waitFor(() => expect(host.value).toBe(0));
+
+      firePointerEvent(separator, 'pointerdown', {
+        clientX: rect.left,
+        clientY: rect.top + 100,
+      });
+
+      await wait(12);
+
+      firePointerEvent(separator, 'pointermove', {
+        clientX: rect.left + 50,
+        clientY: rect.top + 100,
+      });
+
+      firePointerEvent(separator, 'pointerup', {
+        clientX: rect.left + 50,
+        clientY: rect.top + 100,
+      });
+
+      await vi.waitFor(() => expect(host.value).toBe(200));
     });
   });
 });

@@ -461,9 +461,15 @@ export type RCSplitterRef = HTMLElement & {
   orientation: 'horizontal' | 'vertical';
   mode: 'length' | 'percent' | 'fixed';
   step: number;
+  min: number;
+  max: number | undefined;
   value: number;
   defaultValue: number | undefined;
   fixed: boolean;
+  collapsible: boolean;
+  snapPoints: string;
+  swipeVelocity: number;
+  snapTo(index: number, behavior?: 'animated' | 'instant'): void;
 };
 
 /** Public API surface of `<rc-slider>`. */
@@ -824,11 +830,16 @@ declare module 'react' {
       'rc-splitter': React.DetailedHTMLProps<React.HTMLAttributes<RCSplitterRef>, RCSplitterRef> & {
         label?: string;
         orientation?: 'horizontal' | 'vertical';
-        mode?: 'length' | 'percent';
+        mode?: 'length' | 'percent' | 'fixed';
         step?: number | string;
+        min?: number | string;
+        max?: number | string;
         value?: number | string;
         'default-value'?: number | string;
         fixed?: boolean;
+        collapsible?: boolean;
+        'snap-points'?: string;
+        'swipe-velocity'?: number | string;
       };
 
       'rc-editor-toolbar': React.DetailedHTMLProps<
