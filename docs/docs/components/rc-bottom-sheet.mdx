@@ -23,6 +23,7 @@ Modal bottom-sheet wrapper for a native `<dialog>`, built on `rc-dialog`.
     'rc-dialog-request-close',
     'rc-dialog-cancel',
     'rc-dialog-close',
+    'rc-bottom-sheet-snap',
   ]}
   related={[
     { label: 'rc-dialog', href: '/components/rc-dialog' },
@@ -81,6 +82,28 @@ top-origin resize, and downward swipe-dismiss. Add an optional
 handle. Use `snap-points` to snap the sheet to declared CSS heights after
 resize gestures.
 
+Declare snap points as CSS heights in ascending order. Slow releases settle at
+the nearest point. A decisive upward or downward swipe—`500` pixels per second
+by default—settles at the last or first point, respectively. When
+`swipe-dismiss` is enabled, dragging downward by at least `96` pixels requests
+close before velocity-based snapping applies.
+
+```js
+const sheet = document.querySelector('#filters');
+
+sheet.showModal();
+sheet.snapTo(1);
+
+sheet.addEventListener('rc-bottom-sheet-snap', (event) => {
+  console.log(event.detail);
+});
+```
+
+`snapTo()` clamps finite indices to the available range and ignores calls when
+there are no valid snap points. Pass `'instant'` as its second argument to
+skip animation. The component also skips animation when the user has enabled
+reduced motion.
+
 ## Live demo
 
 <BottomSheetDemo />
@@ -94,11 +117,25 @@ supporting swipe-dismiss keeps the prompt reachable by thumb and easy to
 brush aside, where a centered `rc-dialog` modal would feel more disruptive
 on a small screen.
 
+## Accessibility
+
+The direct child `<dialog>` owns dialog semantics, focus, labeling, and form
+behavior. Give it an accessible name with `aria-labelledby` or `aria-label`.
+Use `showModal()` when interaction outside the sheet must be unavailable and
+`show()` for a non-modal surface.
+
+The optional drag handle must be a focusable control with an accessible name.
+`rc-dialog` supplies keyboard resizing for the authored handle, so pointer
+dragging is not the only way to resize the sheet.
+
 ## Theming
 
 `rc-theme-material` docks the dialog to the bottom edge, applies the Material
 surface and scrim tokens, and styles authored
 `[data-rc-bottom-sheet-handle]` handles.
+
+Set `--rc-bottom-sheet-snap-duration` to a millisecond duration to customize
+settling. The default is `300ms`.
 
 ## API
 

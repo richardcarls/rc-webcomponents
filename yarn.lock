@@ -4517,6 +4517,7 @@ __metadata:
   resolution: "@rcarls/rc-bottom-sheet@workspace:packages/rc-bottom-sheet"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:*"
     "@rcarls/rc-dialog": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"

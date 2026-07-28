@@ -15,7 +15,12 @@ npm install @rcarls/rc-common
 ## Import
 
 ```js
-import { DragController, ResizeController, AnchorController } from '@rcarls/rc-common';
+import {
+  AnchorController,
+  DragController,
+  DragGestureController,
+  ResizeController,
+} from '@rcarls/rc-common';
 import {
   ActiveDescendantController,
   MutationObserverController,
@@ -25,7 +30,10 @@ import {
 } from '@rcarls/rc-common';
 import { RovingTabIndexMixin, keyInteraction, keyNavigation, mouseMove } from '@rcarls/rc-common';
 import {
+  findExtremeSnapIndex,
   findNearestScrollAncestor,
+  findNearestSnapIndex,
+  findNextSnapIndex,
   getDirectChild,
   getDirectChildren,
   isFocusable,
@@ -41,32 +49,48 @@ All exports are tree-shakeable (`sideEffects: false`).
 
 Check this inventory before adding package-local interaction or DOM utility code.
 
-| Export | Use for |
-|---|---|
-| `ActiveDescendantController` | Managing `aria-activedescendant` virtual focus in listbox / combobox patterns |
-| `AnchorController` | Positioning floating UI relative to an anchor with native CSS anchor positioning and polyfill fallback |
-| `DragController` | Pointer and keyboard drag-to-move behavior |
-| `KeyboardInteractionDirective` / `keyInteraction` | Tracking pointer vs keyboard interaction mode on a rendered element |
-| `KeyboardNavigationDirective` / `keyNavigation` | Mapping APG arrow-key models to navigation actions |
-| `MutationObserverController` | Lifecycle-safe `MutationObserver` wiring for light-DOM or shadow-DOM changes |
-| `MouseMoveDirective` / `mouseMove` | Pointermove callbacks while a pointer drag is active |
-| `NativeChildController`, `getDirectChild`, `getDirectChildren`, `warnMissingDirectChild` | Finding, validating, and tracking consumer-provided native light-DOM children |
-| `RafScheduler` | Coalescing repeated work into one animation frame and canceling on disconnect |
-| `ResizeController` | Pointer and keyboard resize behavior |
-| `RovingTabIndexMixin` | Roving tabindex for components whose child controls receive real DOM focus |
-| `ScrollObserverController` | Scroll threshold and delta observation for scroll-driven component state |
-| `TypeaheadController` | Printable-key buffering for composite widget typeahead |
-| `findNearestScrollAncestor` | Locating the nearest scrollable ancestor for scroll-driven behavior |
-| `isFocusable` | Filtering focusable items for keyboard navigation |
-| `snapToStep`, `valueToPercent` | Slider and range-slider numeric helpers |
+| Export                                                                                   | Use for                                                                                                |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `ActiveDescendantController`                                                             | Managing `aria-activedescendant` virtual focus in listbox / combobox patterns                          |
+| `AnchorController`                                                                       | Positioning floating UI relative to an anchor with native CSS anchor positioning and polyfill fallback |
+| `DragController`                                                                         | Pointer and keyboard drag-to-move behavior                                                             |
+| `DragGestureController`                                                                  | Single-pointer activation, capture, deltas, duration, and recent velocity                              |
+| `KeyboardInteractionDirective` / `keyInteraction`                                        | Tracking pointer vs keyboard interaction mode on a rendered element                                    |
+| `KeyboardNavigationDirective` / `keyNavigation`                                          | Mapping APG arrow-key models to navigation actions                                                     |
+| `MutationObserverController`                                                             | Lifecycle-safe `MutationObserver` wiring for light-DOM or shadow-DOM changes                           |
+| `MouseMoveDirective` / `mouseMove`                                                       | Pointermove callbacks while a pointer drag is active                                                   |
+| `NativeChildController`, `getDirectChild`, `getDirectChildren`, `warnMissingDirectChild` | Finding, validating, and tracking consumer-provided native light-DOM children                          |
+| `RafScheduler`                                                                           | Coalescing repeated work into one animation frame and canceling on disconnect                          |
+| `ResizeController`                                                                       | Pointer and keyboard resize behavior                                                                   |
+| `RovingTabIndexMixin`                                                                    | Roving tabindex for components whose child controls receive real DOM focus                             |
+| `ScrollObserverController`                                                               | Scroll threshold and delta observation for scroll-driven component state                               |
+| `TypeaheadController`                                                                    | Printable-key buffering for composite widget typeahead                                                 |
+| `findNearestScrollAncestor`                                                              | Locating the nearest scrollable ancestor for scroll-driven behavior                                    |
+| `findNearestSnapIndex`, `findNextSnapIndex`, `findExtremeSnapIndex`                      | Choosing numeric anchor indices without assigning component meaning                                    |
+| `isFocusable`                                                                            | Filtering focusable items for keyboard navigation                                                      |
+| `snapToStep`, `valueToPercent`                                                           | Slider and range-slider numeric helpers                                                                |
 
 ---
 
 ## API
 
+### `DragGestureController`
+
+A low-level `ReactiveController` for one primary pointer. Dedicated handles can
+activate immediately, while scrollable surfaces can wait for axis intent and
+reject movement dominated by the other axis. Lifecycle details include
+coordinates, cumulative deltas, duration, pointer metadata, and velocity from a
+100 ms recent-sample window.
+
+The controller owns pointer capture and cleanup, but leaves state changes,
+thresholds, logical direction, snapping, and action confirmation to its
+consumer.
+
 ### `DragController`
 
-A `ReactiveController` that adds pointer-driven drag-to-move to any `LitElement` host. Binds to a configurable handle element and constrains movement to viewport, parent, or a custom bounding element.
+A `ReactiveController` that adds pointer-driven drag-to-move to any `LitElement` host. It binds
+to a configurable handle and constrains movement to the viewport, parent, or a custom bounding
+element.
 
 ```ts
 import { LitElement } from 'lit';
@@ -75,29 +99,33 @@ import { DragController } from '@rcarls/rc-common';
 class MyPanel extends LitElement {
   private _drag = new DragController(this, {
     handle: () => this.shadowRoot!.querySelector('.titlebar')!,
-    bounds: 'viewport',   // 'viewport' | 'parent' | HTMLElement
-    step: 4,              // px per arrow-key press; Shift = 10×
+    bounds: 'viewport', // 'viewport' | 'parent' | HTMLElement
+    step: 4, // px per arrow-key press; Shift = 10×
   });
 }
 ```
 
-The controller pins explicit `top`/`left` on the host element the first time the user drags, clearing any centering transforms that would fight manual positioning. Pointer capture is used for reliable drag-end detection across shadow boundaries.
+The controller pins explicit `top` and `left` values on the host the first time the user drags,
+clearing centering transforms that would fight manual positioning. Pointer capture provides
+reliable drag-end detection across shadow boundaries.
 
 **Keyboard:** Arrow keys move by `step` px; Shift multiplies by 10.
 
 **Options:**
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `handle` | `() => HTMLElement \| null` | host element | Drag handle element or getter |
-| `bounds` | `'viewport' \| 'parent' \| HTMLElement` | `'viewport'` | Movement constraint boundary |
-| `step` | `number` | `4` | Arrow-key step in px |
+| Option   | Type                                    | Default      | Description                   |
+| -------- | --------------------------------------- | ------------ | ----------------------------- |
+| `handle` | `() => HTMLElement \| null`             | host element | Drag handle element or getter |
+| `bounds` | `'viewport' \| 'parent' \| HTMLElement` | `'viewport'` | Movement constraint boundary  |
+| `step`   | `number`                                | `4`          | Arrow-key step in px          |
 
 ---
 
 ### `ResizeController`
 
-A `ReactiveController` that adds pointer- and keyboard-driven resizing to any `LitElement` host. Detects cursor position relative to all 8 edges/corners and adjusts a configurable threshold band. Injects a small keyboard-accessible resize handle in the bottom-right corner.
+A `ReactiveController` that adds pointer- and keyboard-driven resizing to any `LitElement` host.
+It detects the cursor relative to all eight edges and corners with a configurable threshold band.
+It also injects a small keyboard-accessible handle in the bottom-right corner.
 
 ```ts
 import { LitElement } from 'lit';
@@ -105,26 +133,30 @@ import { ResizeController } from '@rcarls/rc-common';
 
 class MyPanel extends LitElement {
   private _resize = new ResizeController(this, {
-    threshold: 8,   // edge hit-test band in px (half inside, half outside)
-    step: 4,        // px per arrow-key press; Shift = 10×
+    threshold: 8, // edge hit-test band in px (half inside, half outside)
+    step: 4, // px per arrow-key press; Shift = 10×
   });
 }
 ```
 
-Works alongside `DragController` — `ResizeController` registers a capture-phase listener to intercept pointer events before the drag handler.
+It works alongside `DragController`: `ResizeController` registers a capture-phase listener that
+intercepts pointer events before the drag handler.
 
 **Options:**
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `threshold` | `number` | `8` | Edge detection band in px |
-| `step` | `number` | `4` | Arrow-key step in px |
+| Option      | Type     | Default | Description               |
+| ----------- | -------- | ------- | ------------------------- |
+| `threshold` | `number` | `8`     | Edge detection band in px |
+| `step`      | `number` | `4`     | Arrow-key step in px      |
 
 ---
 
 ### `AnchorController`
 
-A `ReactiveController` that positions a floating element relative to an anchor using [CSS Anchor Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning) with automatic polyfill fallback via [`@oddbird/css-anchor-positioning`](https://github.com/oddbird/css-anchor-positioning).
+A `ReactiveController` that positions a floating element relative to an anchor using
+[CSS Anchor Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning),
+with automatic fallback through
+[`@oddbird/css-anchor-positioning`](https://github.com/oddbird/css-anchor-positioning).
 
 ```ts
 import { LitElement } from 'lit';
@@ -138,21 +170,24 @@ class MyTooltip extends LitElement {
 }
 ```
 
-Injects a `<style>` block into `<head>` for the anchor-name / position-anchor declarations. Supports `@position-try` fallback blocks for automatic flip behavior (native browsers only; polyfill does not support position-try).
+It injects a `<style>` block into `<head>` for the `anchor-name` and `position-anchor`
+declarations. It supports `@position-try` fallback blocks for automatic flip behavior in native
+browsers; the polyfill does not support `position-try`.
 
 **Options:**
 
-| Option | Type | Description |
-|---|---|---|
-| `anchor` | `() => Element \| null` | The anchor element getter |
-| `floating` | `() => Element \| null` | The floating element getter |
-| `positionArea` | `string` | CSS `position-area` value (e.g. `'block-end span-inline'`) |
+| Option         | Type                    | Description                                                |
+| -------------- | ----------------------- | ---------------------------------------------------------- |
+| `anchor`       | `() => Element \| null` | The anchor element getter                                  |
+| `floating`     | `() => Element \| null` | The floating element getter                                |
+| `positionArea` | `string`                | CSS `position-area` value (for example, `'block-end span-inline'`) |
 
 ---
 
 ### `keyNavigation` directive
 
-An `AsyncDirective` that adds WAI-ARIA keyboard navigation to any element part. Detects the element's `role` to determine the correct navigation axis and delegates action names to a callback.
+An `AsyncDirective` that adds WAI-ARIA keyboard navigation to any element part. It detects the
+element's `role` to choose the navigation axis and delegates action names to a callback.
 
 ```ts
 import { keyNavigation } from '@rcarls/rc-common';
@@ -184,27 +219,29 @@ private _onNavigate(action: KeyboardNavigationAction) {
 
 Navigation axis is inferred automatically from the element's `role`:
 
-| Role | Default axis |
-|---|---|
-| `menu`, `listbox`, `tree` | Vertical (Up/Down) |
+| Role                            | Default axis            |
+| ------------------------------- | ----------------------- |
+| `menu`, `listbox`, `tree`       | Vertical (Up/Down)      |
 | `menubar`, `toolbar`, `tablist` | Horizontal (Left/Right) |
-| `grid`, `treegrid` | Both |
+| `grid`, `treegrid`              | Both                    |
 
 **Options:**
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `navigationAxis` | `'horizontal' \| 'vertical'` | auto from role | Override the navigation axis |
-| `handleNavAxis` | `boolean` | `true` | Respond to arrow keys on the nav axis |
-| `handleOpenAxis` | `boolean` | `false` | Respond to arrow keys on the perpendicular (open/close) axis |
-| `handleEscape` | `boolean` | `false` | Fire `'escape'` action on Escape key |
-| `handleActivate` | `boolean` | `false` | Fire `'activate'` action on Enter/Space |
+| Option           | Type                         | Default        | Description                                                  |
+| ---------------- | ---------------------------- | -------------- | ------------------------------------------------------------ |
+| `navigationAxis` | `'horizontal' \| 'vertical'` | auto from role | Override the navigation axis                                 |
+| `handleNavAxis`  | `boolean`                    | `true`         | Respond to arrow keys on the nav axis                        |
+| `handleOpenAxis` | `boolean`                    | `false`        | Respond to arrow keys on the perpendicular (open/close) axis |
+| `handleEscape`   | `boolean`                    | `false`        | Fire `'escape'` action on Escape key                         |
+| `handleActivate` | `boolean`                    | `false`        | Fire `'activate'` action on Enter/Space                      |
 
 ---
 
 ### `mouseMove` directive
 
-An `AsyncDirective` that fires a callback on pointer movement while a pointer drag is active. Designed for drag-to-resize handles that need continuous delta tracking while preserving the historical `mouseMove` export name.
+An `AsyncDirective` that fires a callback on pointer movement while a pointer drag is active. It
+supports drag-to-resize handles that need continuous delta tracking while preserving the
+historical `mouseMove` export name.
 
 ```ts
 import { mouseMove } from '@rcarls/rc-common';
@@ -219,13 +256,17 @@ private _onDrag(e: MouseEvent) {
 }
 ```
 
-Attaches `pointerdown` on the element, captures that pointer, then listens for `pointermove`, `pointerup`, `pointercancel`, and `lostpointercapture` on the same element for the active drag cycle. Focuses the handle element on pointerdown.
+It attaches `pointerdown` to the element, captures that pointer, then listens for `pointermove`,
+`pointerup`, `pointercancel`, and `lostpointercapture` on the same element for the active drag
+cycle. It focuses the handle on pointerdown.
 
 ---
 
 ### `isFocusable`
 
-A utility function that returns `true` if an element should participate in keyboard navigation. Checks native element types (`<button>`, `<input>`, `<a href>`, etc.) and the presence of a `tabindex` attribute. Disabled elements are always excluded.
+A utility function that returns `true` if an element should participate in keyboard navigation.
+It checks native element types, including `<button>`, `<input>`, and `<a href>`, plus the presence
+of a `tabindex` attribute. Disabled elements are always excluded.
 
 ```ts
 import { isFocusable, type FocusableElement } from '@rcarls/rc-common';
@@ -233,14 +274,15 @@ import { isFocusable, type FocusableElement } from '@rcarls/rc-common';
 const items = [...slot.assignedElements()].filter(isFocusable);
 ```
 
-Does **not** check `tabindex >= 0` — rc-common components mutate tabindex values during roving-tabindex management, so any `tabindex` attribute presence is the correct signal.
+It does **not** check whether `tabindex` is at least zero because rc-common components mutate
+tabindex values during roving-tabindex management. Any `tabindex` attribute is the correct signal.
 
 ---
 
 ## Browser support
 
-| Feature | Requirement |
-|---|---|
-| Controllers and directives | Any browser supporting Web Components + Pointer Events |
-| `AnchorController` (native) | Chrome 125+, Safari 18+, Firefox (in development) |
-| `AnchorController` (polyfilled) | Chrome 80+, Firefox 85+, Safari 14+ |
+| Feature                         | Requirement                                            |
+| ------------------------------- | ------------------------------------------------------ |
+| Controllers and directives      | Any browser supporting Web Components + Pointer Events |
+| `AnchorController` (native)     | Chrome 125+, Safari 18+, Firefox (in development)      |
+| `AnchorController` (polyfilled) | Chrome 80+, Firefox 85+, Safari 14+                    |

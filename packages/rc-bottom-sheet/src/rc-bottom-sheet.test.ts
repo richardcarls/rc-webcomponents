@@ -17,6 +17,10 @@ function firePointerEvent(target: Element, type: string, init: PointerEventInit 
   );
 }
 
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function renderSheet() {
   return render(html`
     <rc-bottom-sheet data-testid="host">
@@ -39,6 +43,7 @@ test('rc-bottom-sheet registers a native dialog wrapper with light dismiss by de
   expect($host.resizeOrigin).toBe('top');
   expect($host.resizeHandle).toBe('[data-rc-bottom-sheet-handle]');
   expect($host.swipeDismiss).toBe(true);
+  expect($host.swipeVelocity).toBe(500);
   expect($host.querySelector('dialog')).toBeInstanceOf(HTMLDialogElement);
 });
 
@@ -159,7 +164,8 @@ test('snap-points snaps to the nearest declared height on resize release', async
   firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 52 });
   firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 52 });
 
-  expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320);
+  // The settle now animates rather than applying instantly.
+  await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320));
 
   $host.close();
 });
@@ -220,6 +226,183 @@ test('swipe-dismiss=false prevents downward resize release from closing', async 
   firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top + 120 });
 
   expect($host.open).toBe(true);
+
+  $host.close();
+});
+
+test('a slow drag release settles to the nearest point gradually, not instantly', async () => {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="200px 320px 460px">
+      <dialog
+        aria-labelledby="sheet-title"
+        style="position: fixed; left: 100px; top: 240px; width: 360px; height: 280px; margin: 0;"
+      >
+        <h2 id="sheet-title">Filter recipes</h2>
+        <button type="button" data-rc-bottom-sheet-handle>Resize sheet</button>
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+  const $handle = $host.querySelector('[data-rc-bottom-sheet-handle]') as HTMLButtonElement;
+  const start = $dialog.getBoundingClientRect();
+
+  firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
+  await wait(500);
+  // Slow: 40px over ~500ms is ~80px/s, far below the default 500px/s swipe threshold.
+  firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 40 });
+  firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 40 });
+
+  // Sampled mid-animation: neither the pre-drag start nor the settled target,
+  // proving the settle is an animated transition rather than an instant jump.
+  await wait(60);
+
+  const midHeight = $dialog.getBoundingClientRect().height;
+
+  expect(midHeight).toBeGreaterThan(320);
+  expect(midHeight).toBeLessThan(460);
+
+  await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320));
+
+  $host.close();
+});
+
+test('a fast upward swipe jumps to the topmost snap point regardless of release proximity', async () => {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="200px 320px 460px">
+      <dialog
+        aria-labelledby="sheet-title"
+        style="position: fixed; left: 100px; top: 240px; width: 360px; height: 280px; margin: 0;"
+      >
+        <h2 id="sheet-title">Filter recipes</h2>
+        <button type="button" data-rc-bottom-sheet-handle>Resize sheet</button>
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+  const $handle = $host.querySelector('[data-rc-bottom-sheet-handle]') as HTMLButtonElement;
+  const start = $dialog.getBoundingClientRect();
+
+  firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
+  await wait(20);
+  // Fast: 40px in ~20ms is ~2000px/s, well past the 500px/s threshold. The
+  // release lands near the 320px point, which nearest-point would pick —
+  // the swipe should override that and jump to the topmost point instead.
+  firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 40 });
+  firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 40 });
+
+  await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(460));
+
+  $host.close();
+});
+
+test('a fast downward swipe collapses to the lowest snap point regardless of release proximity', async () => {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="200px 320px 460px" .swipeDismiss=${false}>
+      <dialog
+        aria-labelledby="sheet-title"
+        style="position: fixed; left: 100px; top: 100px; width: 360px; height: 420px; margin: 0;"
+      >
+        <h2 id="sheet-title">Filter recipes</h2>
+        <button type="button" data-rc-bottom-sheet-handle>Resize sheet</button>
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+  const $handle = $host.querySelector('[data-rc-bottom-sheet-handle]') as HTMLButtonElement;
+  const start = $dialog.getBoundingClientRect();
+
+  firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
+  await wait(20);
+  // Release lands near the 320px point; the fast downward swipe should
+  // override nearest-point selection and collapse all the way to 200px.
+  firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top + 40 });
+  firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top + 40 });
+
+  await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(200));
+
+  $host.close();
+});
+
+test('snapTo() settles to a specific index and fires rc-bottom-sheet-snap with an api trigger', async () => {
+  const snapSpy = vi.fn();
+  const screen = render(html`
+    <rc-bottom-sheet
+      data-testid="host"
+      snap-points="200px 320px 460px"
+      @rc-bottom-sheet-snap=${snapSpy}
+    >
+      <dialog
+        aria-labelledby="sheet-title"
+        style="position: fixed; left: 100px; top: 240px; width: 360px; height: 280px; margin: 0;"
+      >
+        <h2 id="sheet-title">Filter recipes</h2>
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $host.snapTo(2, 'instant');
+
+  expect(Math.round($dialog.getBoundingClientRect().height)).toBe(460);
+  expect(snapSpy).toHaveBeenCalledTimes(1);
+  expect(snapSpy.mock.calls[0][0].detail).toEqual({ index: 2, height: 460, trigger: 'api' });
+
+  $host.snapTo(0);
+  await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(200));
+  expect(snapSpy).toHaveBeenCalledTimes(2);
+  expect(snapSpy.mock.calls[1][0].detail).toEqual({ index: 0, height: 200, trigger: 'api' });
+
+  $host.close();
+});
+
+test('snapTo() clamps finite indices and ignores non-finite indices', async () => {
+  const snapSpy = vi.fn();
+  const screen = render(html`
+    <rc-bottom-sheet
+      data-testid="host"
+      snap-points="200px 320px 460px"
+      @rc-bottom-sheet-snap=${snapSpy}
+    >
+      <dialog aria-label="Filter recipes" style="height: 280px">
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  $host.snapTo(8.9, 'instant');
+  expect(snapSpy.mock.calls[0][0].detail).toEqual({ index: 2, height: 460, trigger: 'api' });
+
+  $host.snapTo(Number.NaN, 'instant');
+  $host.snapTo(Number.POSITIVE_INFINITY, 'instant');
+  expect(snapSpy).toHaveBeenCalledTimes(1);
 
   $host.close();
 });

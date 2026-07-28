@@ -47,4 +47,13 @@ must have `aria-labelledby` or `aria-label`.
 `rc-dialog-request-close`. It defaults to light dismiss, vertical top-origin
 resize, and downward swipe-dismiss. Add an optional
 `[data-rc-bottom-sheet-handle]` element inside the dialog for an authored
-handle, and use `snap-points` to snap resized sheets to declared heights.
+handle.
+
+List `snap-points` as CSS heights in ascending order. Slow drag releases
+settle at the nearest point; a swipe at `swipe-velocity` or faster settles at
+the first or last point. Settling animates unless the user prefers reduced
+motion.
+
+Call `snapTo(index)` to move programmatically. The
+`rc-bottom-sheet-snap` event reports the selected `index`, target `height`,
+and whether the trigger was a drag or API call.
