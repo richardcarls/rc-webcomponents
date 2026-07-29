@@ -40,13 +40,13 @@ export interface RCChipRemoveDetail {
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/button/ WAI-ARIA button pattern}
  *
  * @slot - A direct native `<button>` child, or `[data-rc-chip-label]` when `readonly`.
- * @slot remove-icon - Optional remove affordance icon.
+ * @slot remove-icon - Optional presentational remove icon.
  *
  * @fires rc-chip-change - Fired when a user toggles a filter chip.
- * @fires rc-chip-remove - Fired when a user activates the remove affordance.
+ * @fires rc-chip-remove - Fired when a user activates a removable chip's native button.
  *
  * @csspart state-layer - Overlay layer for hover, focus, pressed, ripple, or design-system effects.
- * @csspart remove - Remove affordance button.
+ * @csspart remove - Presentational trailing remove indicator.
  *
  * @attr variant - Chip variant: `assist`, `filter`, `input`, or `suggestion`.
  * @attr selected - Declarative selected state for filter/input chips.
@@ -54,7 +54,6 @@ export interface RCChipRemoveDetail {
  * @attr disabled - Mirrors disabled state to the native child button.
  * @attr readonly - Marks the chip as non-interactive display content.
  * @attr removable - Shows a trailing remove affordance.
- * @attr remove-label - Accessible label for the remove affordance.
  */
 export class RCChip extends LitElement {
   static override styles = chipStyles;
@@ -118,10 +117,6 @@ export class RCChip extends LitElement {
   @property({ type: Boolean, reflect: true })
   removable = false;
 
-  /** Accessible label for the remove affordance. */
-  @property({ type: String, attribute: 'remove-label' })
-  removeLabel = 'Remove';
-
   override disconnectedCallback(): void {
     this._button?.removeEventListener('click', this._handleButtonClick);
     this._buttonObserver?.disconnect();
@@ -138,7 +133,12 @@ export class RCChip extends LitElement {
       this._syncDisabled();
     }
 
-    if (changed.has('variant') || changed.has('selected') || changed.has('readonly')) {
+    if (
+      changed.has('variant') ||
+      changed.has('selected') ||
+      changed.has('readonly') ||
+      changed.has('removable')
+    ) {
       this._syncPressedState();
     }
   }
@@ -149,15 +149,9 @@ export class RCChip extends LitElement {
       <span part="state-layer" aria-hidden="true"></span>
       ${this.removable
         ? html`
-            <button
-              part="remove"
-              type="button"
-              aria-label=${this.removeLabel}
-              ?disabled=${this.disabled}
-              @click=${this._handleRemoveClick}
-            >
+            <span part="remove" aria-hidden="true">
               <slot name="remove-icon">×</slot>
-            </button>
+            </span>
           `
         : ''}
     `;
@@ -221,7 +215,17 @@ export class RCChip extends LitElement {
   }
 
   private readonly _handleButtonClick = (): void => {
-    if (this.disabled || this.readonly || this.variant !== 'filter') {
+    if (this.disabled || this.readonly) {
+      return;
+    }
+
+    if (this.removable) {
+      this._dispatchRemove();
+
+      return;
+    }
+
+    if (this.variant !== 'filter') {
       return;
     }
 
@@ -241,13 +245,7 @@ export class RCChip extends LitElement {
     );
   };
 
-  private _handleRemoveClick(event: MouseEvent): void {
-    event.stopPropagation();
-
-    if (this.disabled || this.readonly || !this.removable) {
-      return;
-    }
-
+  private _dispatchRemove(): void {
     this.dispatchEvent(
       new CustomEvent<RCChipRemoveDetail>('rc-chip-remove', {
         bubbles: true,
@@ -288,7 +286,7 @@ export class RCChip extends LitElement {
       (button.hasAttribute('aria-pressed') && !this._pressedOwned) ||
       (role ? TOGGLE_ROLES.has(role) : false);
 
-    if (!this.readonly && this.variant === 'filter' && !authorOwnsState) {
+    if (!this.readonly && !this.removable && this.variant === 'filter' && !authorOwnsState) {
       const pressed = this.selected ? 'true' : 'false';
 
       if (button.getAttribute('aria-pressed') !== pressed) {

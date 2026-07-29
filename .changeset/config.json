@@ -10,7 +10,6 @@
       "@rcarls/rc-button",
       "@rcarls/rc-card",
       "@rcarls/rc-chip",
-      "@rcarls/rc-chip-set",
       "@rcarls/rc-combobox",
       "@rcarls/rc-common",
       "@rcarls/rc-dialog",

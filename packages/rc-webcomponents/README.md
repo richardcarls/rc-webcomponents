@@ -67,7 +67,6 @@ fallbacks:
 | `rc-button`          | Progressive-enhancement wrapper for native `<button>`.               |
 | `rc-card`            | Design-system-neutral structural card shell.                         |
 | `rc-chip`            | Chip wrapper that preserves a native `<button>`.                     |
-| `rc-chip-set`        | Chip toolbar coordinator for arrow-key navigation.                   |
 | `rc-combobox`        | Editable combobox with filtering and optional allow-create behavior. |
 | `rc-dialog`          | Draggable, resizable wrapper for a native `<dialog>`.                |
 | `rc-disclosure`      | Disclosure wrapper for native `<details>`/`<summary>`.               |

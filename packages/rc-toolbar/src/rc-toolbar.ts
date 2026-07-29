@@ -24,7 +24,8 @@ declare global {
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-toolbar rc-toolbar docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/ WAI-ARIA Toolbar pattern}
  *
- * @slot Takes any number of child elements to display in the toolbar. Only focusable elements are navigable.
+ * @slot Takes any number of child controls or `rc-chip` elements to display in
+ *   the toolbar. Only focusable native controls are navigable.
  * @cssprop [--rc-toolbar-gap-inline=0.25em] - Gap between toolbar items
  * @cssprop [--rc-toolbar-padding-inline=calc(var(--rc-control-padding-inline) / 2)] - Horizontal padding on the toolbar container
  * @cssprop [--rc-toolbar-padding-block=calc(var(--rc-control-padding-block) / 2)] - Vertical padding on the toolbar container
@@ -59,7 +60,10 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   }
 
   private _syncTabStop(): void {
-    if (!this._lastFocused || isFocusable(this._lastFocused)) return;
+    if (!this._lastFocused || isFocusable(this._lastFocused)) {
+      return;
+    }
+
     this._lastFocused = undefined;
     this._initItems();
   }
@@ -74,8 +78,11 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     // Guard: only restore focus when the toolbar already contains it — prevents
     // focus-stealing when a toolbar mounts inside a larger component (e.g. rc-transfer-list).
     const target = this._lastFocused ?? this.firstItem;
+
     queueMicrotask(() => {
-      if (this.matches(':focus-within')) this.focusItem(target);
+      if (this.matches(':focus-within')) {
+        this.focusItem(target);
+      }
     });
   }
 
@@ -97,7 +104,15 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   }
 
   protected override _collectItems(slot: HTMLSlotElement): Element[] {
-    return slot.assignedElements().filter((el) => this._isToolbarItem(el));
+    return slot.assignedElements().flatMap((element) => {
+      if (element.localName === 'rc-chip') {
+        const button = element.querySelector(':scope > button');
+
+        return button ? [button] : [];
+      }
+
+      return this._isToolbarItem(element) ? [element] : [];
+    });
   }
 
   private _isToolbarItem(el: Element): boolean {
@@ -115,6 +130,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     }
 
     const role = el.getAttribute('role');
+
     if (
       role === 'button' ||
       role === 'checkbox' ||

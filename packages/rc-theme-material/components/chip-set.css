@@ -1,5 +1,0 @@
-@layer rc-theme-material.components {
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-chip-set {
-    --rc-chip-set-gap: 0.5rem;
-  }
-}

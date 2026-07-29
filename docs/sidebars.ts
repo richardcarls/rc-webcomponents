@@ -40,7 +40,6 @@ const sidebars: SidebarsConfig = {
       items: [
         'components/rc-accordion',
         'components/rc-card',
-        'components/rc-chip-set',
         'components/rc-listbox',
         'components/rc-menu',
         'components/rc-menubar',

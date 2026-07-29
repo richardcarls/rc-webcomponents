@@ -19,7 +19,7 @@ Chip wrapper for native button-based actions, filters, suggestions, and inputs.
   state="Selected/removable chip affordances"
   events={['rc-chip-change', 'rc-chip-remove']}
   related={[
-    { label: 'rc-chip-set', href: '/components/rc-chip-set' },
+    { label: 'rc-toolbar', href: '/components/rc-toolbar' },
     { label: 'Theme previews', href: '/guide/theme-previews' },
   ]}
 />
@@ -54,17 +54,48 @@ import '@rcarls/rc-chip/define';
   <button type="button">Vegetarian</button>
 </rc-chip>
 
-<rc-chip variant="input" removable remove-label="Remove basil">
-  <button type="button">Basil</button>
+<rc-chip variant="input" removable>
+  <button type="button" aria-label="Remove basil">Basil</button>
 </rc-chip>
 ```
 
 Filter chips toggle `selected` on user activation and add `aria-pressed` only
 when the author has not supplied stronger toggle semantics.
 
+For removable chips, the direct native button is the sole removal action and
+fires `rc-chip-remove`. The trailing remove icon is presentational, so it does
+not add another tab stop or duplicate button semantics.
+
 ## Live demo
 
 <ChipDemo />
+
+## Groups
+
+Compose interactive chips inside `rc-toolbar` when the group should form one
+tab stop with arrow-key navigation. Install and import
+`@rcarls/rc-toolbar/define` separately when you are not using the aggregate
+package:
+
+```html
+<rc-toolbar label="Recipe filters">
+  <rc-chip variant="filter">
+    <button type="button">Quick</button>
+  </rc-chip>
+  <rc-chip variant="filter">
+    <button type="button">Vegetarian</button>
+  </rc-chip>
+</rc-toolbar>
+```
+
+Toolbar layout does not wrap by default. A wrapping chip toolbar can opt in
+without changing its keyboard model:
+
+```css
+rc-toolbar::part(root) {
+  flex-wrap: wrap;
+}
+```
 
 ## API
 

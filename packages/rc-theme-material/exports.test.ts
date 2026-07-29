@@ -7,7 +7,6 @@ const componentEntries = [
   'button',
   'card',
   'chip',
-  'chip-set',
   'combobox',
   'dialog',
   'disclosure',

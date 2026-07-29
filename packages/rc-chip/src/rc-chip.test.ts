@@ -86,7 +86,7 @@ test('readonly chips accept non-interactive display content', async () => {
   expect(listener).not.toHaveBeenCalled();
 });
 
-test('remove affordance dispatches rc-chip-remove without removing the host', async () => {
+test('removable chip button dispatches rc-chip-remove without removing the host', async () => {
   const listener = vi.fn();
   const screen = render(html`
     <rc-chip data-testid="host" removable>
@@ -98,10 +98,50 @@ test('remove affordance dispatches rc-chip-remove without removing the host', as
   host.addEventListener('rc-chip-remove', listener);
 
   await flushChip(host);
-  (host.shadowRoot?.querySelector('[part="remove"]') as HTMLButtonElement).click();
+  host.querySelector('button')?.click();
 
   expect(host.isConnected).toBe(true);
   expect(listener).toHaveBeenCalledWith(expect.objectContaining({ detail: { chip: host } }));
+});
+
+test('removable chip indicator is presentational and adds no button semantics', async () => {
+  const screen = render(html`
+    <rc-chip data-testid="host" removable>
+      <button type="button" aria-label="Remove Quick">Quick</button>
+    </rc-chip>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCChip;
+
+  await flushChip(host);
+
+  const indicator = host.shadowRoot?.querySelector('[part="remove"]');
+
+  expect(indicator).toBeInstanceOf(HTMLSpanElement);
+  expect(indicator?.getAttribute('aria-hidden')).toBe('true');
+  expect(host.shadowRoot?.querySelectorAll('button')).toHaveLength(0);
+  await expectNoA11yViolations(host);
+});
+
+test('removable filter chips remove instead of toggling selected state', async () => {
+  const changeListener = vi.fn();
+  const removeListener = vi.fn();
+  const screen = render(html`
+    <rc-chip data-testid="host" variant="filter" removable>
+      <button type="button" aria-label="Remove Quick">Quick</button>
+    </rc-chip>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCChip;
+
+  host.addEventListener('rc-chip-change', changeListener);
+  host.addEventListener('rc-chip-remove', removeListener);
+
+  await flushChip(host);
+  host.querySelector('button')?.click();
+
+  expect(host.selected).toBe(false);
+  expect(host.querySelector('button')?.hasAttribute('aria-pressed')).toBe(false);
+  expect(changeListener).not.toHaveBeenCalled();
+  expect(removeListener).toHaveBeenCalledOnce();
 });
 
 test('does not overwrite author-owned pressed state', async () => {

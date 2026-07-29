@@ -1,6 +1,7 @@
 ---
 '@rcarls/rc-chip': minor
-'@rcarls/rc-chip-set': minor
+'@rcarls/rc-toolbar': minor
 ---
 
-Add chip and chip-set packages for native button-based chip controls.
+Add native button-based chip controls and let toolbars coordinate groups of
+interactive chips with roving focus.

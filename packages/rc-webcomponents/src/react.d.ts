@@ -282,14 +282,8 @@ export type RCChipRef = HTMLElement & {
   selected: boolean;
   defaultSelected: boolean;
   disabled: boolean;
+  readonly: boolean;
   removable: boolean;
-  removeLabel: string;
-};
-
-/** Public API surface of `<rc-chip-set>`. */
-export type RCChipSetRef = HTMLElement & {
-  label: string;
-  orientation: 'horizontal' | 'vertical';
 };
 
 /** Public API surface of `<rc-snackbar>`. */
@@ -661,13 +655,8 @@ declare module 'react' {
         selected?: boolean;
         'default-selected'?: boolean;
         disabled?: boolean;
+        readonly?: boolean;
         removable?: boolean;
-        'remove-label'?: string;
-      };
-
-      'rc-chip-set': React.DetailedHTMLProps<React.HTMLAttributes<RCChipSetRef>, RCChipSetRef> & {
-        label?: string;
-        orientation?: 'horizontal' | 'vertical';
       };
 
       'rc-snackbar': React.DetailedHTMLProps<React.HTMLAttributes<RCSnackbarRef>, RCSnackbarRef> & {

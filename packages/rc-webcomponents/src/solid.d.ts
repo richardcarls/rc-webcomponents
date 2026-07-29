@@ -83,12 +83,6 @@ export type RCChipRef = HTMLElement & {
   disabled: boolean;
   readonly: boolean;
   removable: boolean;
-  removeLabel: string;
-};
-
-export type RCChipSetRef = HTMLElement & {
-  label: string;
-  orientation: 'horizontal' | 'vertical';
 };
 
 export type RCSnackbarQueuePolicy = 'queue' | 'replace';
@@ -650,17 +644,10 @@ declare module 'solid-js' {
         disabled?: boolean | string;
         readonly?: boolean | string;
         removable?: boolean | string;
-        removeLabel?: string;
-        'remove-label'?: string;
         'prop:selected'?: boolean | undefined;
         'prop:defaultSelected'?: boolean | undefined;
         'on:rc-chip-change'?: (e: CustomEvent<RCChipChangeDetail>) => void;
         'on:rc-chip-remove'?: (e: CustomEvent<RCChipRemoveDetail>) => void;
-      };
-
-      'rc-chip-set': JSX.HTMLAttributes<RCChipSetRef> & {
-        label?: string;
-        orientation?: 'horizontal' | 'vertical';
       };
 
       'rc-snackbar': JSX.HTMLAttributes<RCSnackbarRef> & {

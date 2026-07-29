@@ -53,7 +53,6 @@ test('aggregate component styles cover the reference styling surface', () => {
     ['rc-button', ['--rc-button-bg', '']],
     ['rc-card', ['--rc-card-bg', '']],
     ['rc-chip', ['--rc-chip-block-size', '2rem']],
-    ['rc-chip-set', ['--rc-chip-set-gap', '0.5rem']],
     ['rc-select', ['display', 'inline-block']],
     ['rc-segmented-button', ['--rc-segmented-button-segment-min-block-size', '2.5rem']],
     ['rc-switch', ['--rc-switch-track-inline-size', '3.25rem']],

@@ -34,7 +34,6 @@ test('aggregate component styles cover every visual RC component', () => {
     ['rc-button', ['--rc-button-bg', '']],
     ['rc-card', ['--rc-card-bg', '']],
     ['rc-chip', ['--rc-chip-block-size', '2rem']],
-    ['rc-chip-set', ['--rc-chip-set-gap', '0.5rem']],
     ['rc-select', ['display', 'inline']],
     ['rc-segmented-button', ['--rc-segmented-button-segment-min-block-size', '2.5rem']],
     ['rc-switch', ['--rc-switch-track-inline-size', '3.25rem']],

@@ -56,7 +56,6 @@
     "@rcarls/rc-button": "workspace:*",
     "@rcarls/rc-card": "workspace:*",
     "@rcarls/rc-chip": "workspace:*",
-    "@rcarls/rc-chip-set": "workspace:*",
     "@rcarls/rc-combobox": "workspace:*",
     "@rcarls/rc-dialog": "workspace:*",
     "@rcarls/rc-disclosure": "workspace:*",

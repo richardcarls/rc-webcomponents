@@ -55,7 +55,6 @@
     --rc-card-bg: var(--md-sys-color-surface-container-low, Canvas);
     --rc-card-color: var(--md-sys-color-on-surface, CanvasText);
     --rc-card-radius: var(--md-sys-shape-corner-medium, 0.75rem);
-    --rc-chip-set-gap: 0.5rem;
     --rc-chip-block-size: 2rem;
     --rc-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
     --rc-chip-selected-bg: var(--md-sys-color-secondary-container, Highlight);

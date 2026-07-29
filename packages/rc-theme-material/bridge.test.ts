@@ -148,7 +148,6 @@ test('maps the supported core component set', () => {
     ['rc-button', '--rc-button-bg'],
     ['rc-card', '--rc-card-bg'],
     ['rc-chip', '--rc-chip-block-size'],
-    ['rc-chip-set', '--rc-chip-set-gap'],
     ['div', '--rc-list-item-min-block-size'],
     ['rc-combobox', '--rc-combobox-radius'],
     ['rc-slider', '--rc-slider-progress-background'],

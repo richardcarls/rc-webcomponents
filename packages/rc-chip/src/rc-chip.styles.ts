@@ -68,6 +68,7 @@ export const chipStyles = css`
 
   [part='remove'] {
     position: absolute;
+    pointer-events: none;
     inset-block: 0;
     inset-inline-end: var(--rc-chip-remove-offset-inline, 0.125rem);
     display: none;
@@ -80,7 +81,6 @@ export const chipStyles = css`
     background: transparent;
     color: inherit;
     font: inherit;
-    cursor: pointer;
   }
 
   :host([removable]) [part='remove'] {
@@ -91,10 +91,6 @@ export const chipStyles = css`
   :host([removable]) ::slotted(a),
   :host([removable]) ::slotted([data-rc-chip-label]) {
     padding-inline-end: var(--rc-chip-removable-padding-inline-end, 2rem);
-  }
-
-  :host([disabled]) [part='remove'] {
-    pointer-events: none;
   }
 
   @media (forced-colors: active) {
