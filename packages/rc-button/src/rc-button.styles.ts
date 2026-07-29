@@ -21,29 +21,23 @@ export const buttonStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--rc-button-gap, var(--rc-control-gap, 0.5rem));
-    min-block-size: var(--rc-button-block-size, var(--rc-control-block-size, 2.5rem));
-    min-inline-size: var(--rc-button-min-inline-size, 0);
-    inline-size: var(--rc-button-inline-size, auto);
-    padding-block: var(--rc-button-padding-block, var(--rc-control-padding-block, 0.5rem));
-    padding-inline: var(--rc-button-padding-inline, var(--rc-control-padding-inline, 1rem));
-    border: var(--rc-button-border, var(--rc-border, 1px solid ButtonBorder));
-    border-radius: var(--rc-button-radius, var(--rc-control-radius, 9999px));
-    background: var(--rc-button-bg, ButtonFace);
-    color: var(--rc-button-color, ButtonText);
-    box-shadow: var(--rc-button-shadow, none);
-    font: var(--rc-button-font, inherit);
-    text-decoration: none;
+    gap: var(--rc-button-gap);
+    min-block-size: var(--rc-button-block-size);
+    min-inline-size: var(--rc-button-min-inline-size);
+    inline-size: var(--rc-button-inline-size);
+    padding-block: var(--rc-button-padding-block, revert);
+    padding-inline: var(--rc-button-padding-inline, revert);
+    border: var(--rc-button-border, revert);
+    border-radius: var(--rc-button-radius, revert);
+    background: var(--rc-button-bg, revert);
+    color: var(--rc-button-color, revert);
+    box-shadow: var(--rc-button-shadow, revert);
+    font: var(--rc-button-font, revert);
     white-space: nowrap;
-    cursor: pointer;
     overflow: hidden;
     box-sizing: border-box;
-    transition: var(
-      --rc-button-transition,
-      background var(--rc-motion-duration, 200ms) ease,
-      color var(--rc-motion-duration, 200ms) ease,
-      box-shadow var(--rc-motion-duration, 200ms) ease
-    );
+    z-index: 0;
+    transition: var(--rc-button-transition, revert);
   }
 
   :host([full-width]) ::slotted(button) {
@@ -69,14 +63,14 @@ export const buttonStyles = css`
   }
 
   :host([disabled]) ::slotted(button) {
-    opacity: var(--rc-button-disabled-opacity, var(--rc-disabled-opacity, 0.5));
+    opacity: var(--rc-button-disabled-opacity, revert);
   }
 
   [part='state-layer'],
   [part='progress'] {
     position: absolute;
     inset: 0;
-    border-radius: var(--rc-button-radius, var(--rc-control-radius, 9999px));
+    border-radius: var(--rc-button-radius, 0);
     pointer-events: none;
   }
 

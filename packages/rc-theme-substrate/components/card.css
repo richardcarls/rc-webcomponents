@@ -7,7 +7,11 @@
     --rc-card-shadow: var(--substrate-shadow-sm, none);
     --rc-card-padding-block: 0.75rem;
     --rc-card-padding-inline: 0.75rem;
+    --rc-card-actions-gap: 0.5rem;
+    --rc-card-subtitle-color: color-mix(in srgb, currentColor 72%, transparent);
     --rc-card-state-layer-bg: currentColor;
+    --rc-card-hover-state-layer-opacity: 0.08;
+    --rc-card-pressed-state-layer-opacity: 0.12;
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-card[selected] {

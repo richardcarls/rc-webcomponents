@@ -8,6 +8,7 @@
       0 1px 3px 1px color-mix(in srgb, var(--md-sys-color-shadow, #000) 15%, transparent);
     --rc-card-padding-block: 1rem;
     --rc-card-padding-inline: 1rem;
+    --rc-card-actions-gap: 0.5rem;
     --rc-card-title-font: var(--md-sys-typescale-title-medium-weight, 500)
       var(--md-sys-typescale-title-medium-size, 1rem) /
       var(--md-sys-typescale-title-medium-line-height, 1.5rem)

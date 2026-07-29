@@ -48,13 +48,13 @@ export const navigationBarStyles = css`
     color: var(--rc-navigation-bar-item-color, inherit);
     font: inherit;
     text-align: center;
-    text-decoration: none;
+    text-decoration: var(--rc-navigation-bar-item-text-decoration, revert);
     outline-offset: var(--rc-navigation-bar-focus-ring-offset, 2px);
     -webkit-tap-highlight-color: transparent;
   }
 
   ::slotted(a:focus-visible) {
-    outline: var(--rc-navigation-bar-focus-ring, 2px solid Highlight);
+    outline: var(--rc-navigation-bar-focus-ring, revert);
   }
 
   ::slotted(a[aria-current]:not([aria-current='false'])) {
@@ -67,20 +67,18 @@ export const navigationBarStyles = css`
     inset-inline-start: 0;
     z-index: 0;
     box-sizing: border-box;
-    border-radius: var(--rc-navigation-bar-indicator-radius, 9999px);
-    background: var(
-      --rc-navigation-bar-indicator-bg,
-      color-mix(in srgb, Highlight 24%, transparent)
-    );
+    border: var(--rc-navigation-bar-indicator-border, 1px solid Highlight);
+    border-radius: var(--rc-navigation-bar-indicator-radius, 0);
+    background: var(--rc-navigation-bar-indicator-bg, transparent);
     pointer-events: none;
     transition:
-      transform var(--rc-navigation-bar-indicator-duration, 180ms)
+      transform var(--rc-navigation-bar-indicator-duration, 0ms)
         var(--rc-navigation-bar-indicator-easing, ease),
-      inline-size var(--rc-navigation-bar-indicator-duration, 180ms)
+      inline-size var(--rc-navigation-bar-indicator-duration, 0ms)
         var(--rc-navigation-bar-indicator-easing, ease),
-      block-size var(--rc-navigation-bar-indicator-duration, 180ms)
+      block-size var(--rc-navigation-bar-indicator-duration, 0ms)
         var(--rc-navigation-bar-indicator-easing, ease),
-      opacity var(--rc-navigation-bar-indicator-duration, 180ms) ease;
+      opacity var(--rc-navigation-bar-indicator-duration, 0ms) ease;
   }
 
   #indicator[hidden] {

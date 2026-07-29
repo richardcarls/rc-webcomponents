@@ -43,77 +43,58 @@ export const fabMenuStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--rc-fab-menu-trigger-gap, var(--rc-fab-gap, 0.5rem));
-    min-inline-size: var(--rc-fab-menu-size, var(--rc-fab-size, 3.5rem));
-    min-block-size: var(--rc-fab-menu-size, var(--rc-fab-size, 3.5rem));
-    padding-block: 0;
-    padding-inline: var(--rc-fab-menu-padding-inline, var(--rc-fab-padding-inline, 1rem));
-    appearance: none;
+    gap: var(--rc-fab-menu-trigger-gap);
+    min-inline-size: var(--rc-fab-menu-size);
+    min-block-size: var(--rc-fab-menu-size);
+    padding-block: var(--rc-fab-menu-padding-block, revert);
+    padding-inline: var(--rc-fab-menu-padding-inline, revert);
+    appearance: var(--rc-fab-menu-appearance, revert);
     box-sizing: border-box;
-    border: var(--rc-fab-menu-border, 0);
-    border-radius: var(--rc-fab-menu-radius, var(--rc-fab-radius, 9999px));
-    background: var(--rc-fab-menu-bg, var(--rc-fab-bg, ButtonFace));
-    color: var(--rc-fab-menu-color, var(--rc-fab-color, ButtonText));
-    box-shadow: var(--rc-fab-menu-shadow, var(--rc-fab-shadow, var(--rc-shadow-level2, none)));
-    font: inherit;
-    font-family: var(--rc-fab-menu-font-family, var(--rc-fab-font-family, inherit));
-    font-size: var(--rc-fab-menu-font-size, var(--rc-fab-font-size, 0.875rem));
-    font-weight: var(--rc-fab-menu-font-weight, var(--rc-fab-font-weight, 500));
-    letter-spacing: var(--rc-fab-menu-letter-spacing, var(--rc-fab-letter-spacing, 0.00625em));
+    border: var(--rc-fab-menu-border, revert);
+    border-radius: var(--rc-fab-menu-radius, revert);
+    background: var(--rc-fab-menu-bg, revert);
+    color: var(--rc-fab-menu-color, revert);
+    box-shadow: var(--rc-fab-menu-shadow, revert);
+    font: var(--rc-fab-menu-font, revert);
+    font-family: var(--rc-fab-menu-font-family, revert);
+    font-size: var(--rc-fab-menu-font-size, revert);
+    font-weight: var(--rc-fab-menu-font-weight, revert);
+    letter-spacing: var(--rc-fab-menu-letter-spacing, revert);
     white-space: nowrap;
-    text-decoration: none;
-    cursor: pointer;
-    user-select: none;
-    transition:
-      background var(--rc-fab-menu-transition-duration, var(--rc-fab-transition-duration, 200ms))
-        ease,
-      box-shadow var(--rc-fab-menu-transition-duration, var(--rc-fab-transition-duration, 200ms))
-        ease,
-      transform var(--rc-fab-menu-transition-duration, var(--rc-fab-transition-duration, 200ms))
-        ease;
+    text-decoration: var(--rc-fab-menu-text-decoration, revert);
+    user-select: var(--rc-fab-menu-user-select, revert);
+    transition: var(--rc-fab-menu-transition, revert);
   }
 
   slot[name='trigger']::slotted(button:hover),
   slot[name='trigger']::slotted([role='button']:hover) {
-    background: var(
-      --rc-fab-menu-bg-hover,
-      var(--rc-fab-bg-hover, var(--rc-fab-menu-bg, var(--rc-fab-bg, ButtonFace)))
-    );
-    box-shadow: var(
-      --rc-fab-menu-shadow-hover,
-      var(--rc-fab-shadow-hover, var(--rc-fab-menu-shadow, var(--rc-fab-shadow, none)))
-    );
+    background: var(--rc-fab-menu-bg-hover, revert);
+    box-shadow: var(--rc-fab-menu-shadow-hover, revert);
   }
 
   slot[name='trigger']::slotted(button[aria-expanded='true']),
   slot[name='trigger']::slotted([role='button'][aria-expanded='true']) {
-    background: var(
-      --rc-fab-menu-bg-open,
-      var(--rc-fab-menu-bg-hover, var(--rc-fab-bg-hover, var(--rc-fab-menu-bg, ButtonFace)))
-    );
-    box-shadow: var(
-      --rc-fab-menu-shadow-open,
-      var(--rc-fab-menu-shadow-hover, var(--rc-fab-shadow-hover, var(--rc-fab-menu-shadow, none)))
-    );
+    background: var(--rc-fab-menu-bg-open, revert);
+    box-shadow: var(--rc-fab-menu-shadow-open, revert);
   }
 
   slot[name='trigger']::slotted(button:active),
   slot[name='trigger']::slotted([role='button']:active) {
-    box-shadow: var(--rc-fab-menu-shadow-active, var(--rc-fab-shadow-active, none));
-    transform: var(--rc-fab-menu-active-transform, scale(0.96));
+    box-shadow: var(--rc-fab-menu-shadow-active, revert);
+    transform: var(--rc-fab-menu-active-transform, revert);
   }
 
   slot[name='trigger']::slotted(button:focus-visible),
   slot[name='trigger']::slotted([role='button']:focus-visible) {
-    outline: var(--rc-fab-menu-focus-ring, var(--rc-fab-focus-ring, 2px solid currentColor));
-    outline-offset: var(--rc-fab-menu-focus-ring-offset, var(--rc-fab-focus-ring-offset, 2px));
+    outline: var(--rc-fab-menu-focus-ring, revert);
+    outline-offset: var(--rc-fab-menu-focus-ring-offset, revert);
   }
 
   slot[name='trigger']::slotted(button:disabled),
   slot[name='trigger']::slotted([role='button'][aria-disabled='true']) {
-    opacity: var(--rc-fab-menu-disabled-opacity, var(--rc-fab-disabled-opacity, 0.38));
+    opacity: var(--rc-fab-menu-disabled-opacity, revert);
     pointer-events: none;
-    box-shadow: none;
+    box-shadow: var(--rc-fab-menu-disabled-shadow, revert);
   }
 
   #popup {
@@ -122,8 +103,8 @@ export const fabMenuStyles = css`
     scale: 1;
     transform-origin: var(--rc-fab-menu-popup-transform-origin, bottom right);
     transition:
-      opacity var(--rc-fab-menu-popup-duration, 160ms) ease,
-      scale var(--rc-fab-menu-popup-duration, 160ms) ease;
+      opacity var(--rc-fab-menu-popup-duration, 0ms) ease,
+      scale var(--rc-fab-menu-popup-duration, 0ms) ease;
   }
 
   #popup[hidden] {

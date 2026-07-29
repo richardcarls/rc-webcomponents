@@ -5,10 +5,17 @@
     --rc-snackbar-max-inline-size: 30rem;
     --rc-snackbar-padding-block: 0.75rem;
     --rc-snackbar-padding-inline: 1rem;
+    --rc-snackbar-border: 0;
     --rc-snackbar-radius: var(--substrate-radius-md, 0.5rem);
     --rc-snackbar-bg: var(--substrate-inverse-surface, CanvasText);
     --rc-snackbar-color: var(--substrate-inverse-on-surface, Canvas);
     --rc-snackbar-action-color: var(--substrate-inverse-primary, LinkText);
+    --rc-snackbar-action-border: 0;
+    --rc-snackbar-action-radius: 9999px;
+    --rc-snackbar-action-padding-block: 0.5rem;
+    --rc-snackbar-action-padding-inline: 0.75rem;
+    --rc-snackbar-action-bg: transparent;
+    --rc-snackbar-action-font: inherit;
     --rc-snackbar-shadow: var(--substrate-shadow-lg, var(--rc-shadow));
     --rc-snackbar-focus-ring: var(--rc-focus-ring);
     --rc-snackbar-focus-ring-offset: var(--rc-focus-ring-offset);

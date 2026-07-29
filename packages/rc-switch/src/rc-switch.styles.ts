@@ -3,8 +3,8 @@ import { css } from 'lit';
 export const switchStyles = css`
   :host {
     display: inline-grid;
-    inline-size: var(--rc-switch-track-inline-size, 3.25rem);
-    block-size: var(--rc-switch-track-block-size, 2rem);
+    inline-size: var(--rc-switch-track-inline-size);
+    block-size: var(--rc-switch-track-block-size);
     position: relative;
     color-scheme: inherit;
     vertical-align: middle;
@@ -15,17 +15,12 @@ export const switchStyles = css`
   }
 
   ::slotted(input[type='checkbox']) {
-    appearance: none;
+    appearance: var(--rc-switch-native-appearance, revert);
     grid-area: 1 / 1;
-    inline-size: 100%;
-    block-size: 100%;
-    margin: 0;
-    opacity: 0;
-    cursor: pointer;
-  }
-
-  :host([disabled]) ::slotted(input[type='checkbox']) {
-    cursor: not-allowed;
+    inline-size: var(--rc-switch-native-inline-size, revert);
+    block-size: var(--rc-switch-native-block-size, revert);
+    margin: var(--rc-switch-native-margin, revert);
+    opacity: var(--rc-switch-native-opacity, revert);
   }
 
   [part='track'],
@@ -37,6 +32,7 @@ export const switchStyles = css`
   }
 
   [part='track'] {
+    display: var(--rc-switch-decoration-display, none);
     border: var(--rc-switch-track-border, 2px solid ButtonBorder);
     border-radius: var(--rc-switch-track-radius, 9999px);
     background: var(--rc-switch-track-bg, ButtonFace);
@@ -46,6 +42,7 @@ export const switchStyles = css`
   }
 
   [part='thumb'] {
+    display: var(--rc-switch-decoration-display, none);
     align-self: center;
     justify-self: start;
     inline-size: var(--rc-switch-thumb-size, 1rem);
@@ -76,7 +73,7 @@ export const switchStyles = css`
   :host([icons]) [part='deselected-icon'],
   :host([icons][checked]) [part='selected-icon'],
   :host([show-only-selected-icon][checked]) [part='selected-icon'] {
-    display: grid;
+    display: var(--rc-switch-icon-display, none);
     place-items: center;
   }
 

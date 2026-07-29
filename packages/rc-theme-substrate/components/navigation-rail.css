@@ -15,19 +15,24 @@
     --rc-navigation-rail-item-padding-inline: 0.5rem;
     --rc-navigation-rail-expanded-item-padding-inline: var(--rc-item-padding-inline, 1rem);
     --rc-navigation-rail-item-color: var(--rc-muted-color, CanvasText);
+    --rc-navigation-rail-item-text-decoration: none;
     --rc-navigation-rail-active-color: var(--rc-accent, Highlight);
     --rc-navigation-rail-indicator-bg: color-mix(
       in srgb,
       var(--rc-accent, Highlight) 18%,
       transparent
     );
+    --rc-navigation-rail-indicator-border: 0;
     --rc-navigation-rail-indicator-radius: var(--rc-radius-pill, 9999px);
     --rc-navigation-rail-indicator-duration: var(--rc-motion-duration, 180ms);
     --rc-navigation-rail-indicator-easing: ease;
     --rc-navigation-rail-toggle-size: 3rem;
     --rc-navigation-rail-toggle-radius: var(--rc-radius-pill, 9999px);
+    --rc-navigation-rail-toggle-padding: 0;
+    --rc-navigation-rail-toggle-border: 0;
     --rc-navigation-rail-toggle-bg: transparent;
     --rc-navigation-rail-toggle-color: var(--rc-muted-color, CanvasText);
+    --rc-navigation-rail-toggle-font: inherit;
     --rc-navigation-rail-toggle-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
     --rc-navigation-rail-duration: var(--rc-motion-duration, 200ms);
     --rc-navigation-rail-easing: ease;

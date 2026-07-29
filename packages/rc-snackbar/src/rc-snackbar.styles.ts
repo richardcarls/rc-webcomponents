@@ -32,9 +32,10 @@ export const snackbarStyles = css`
     inline-size: min(100%, var(--rc-snackbar-max-inline-size, 30rem));
     padding-block: var(--rc-snackbar-padding-block, 0.5rem);
     padding-inline: var(--rc-snackbar-padding-inline, 1rem);
-    border-radius: var(--rc-snackbar-radius, 0.25rem);
-    background: var(--rc-snackbar-bg, CanvasText);
-    color: var(--rc-snackbar-color, Canvas);
+    border: var(--rc-snackbar-border, 1px solid CanvasText);
+    border-radius: var(--rc-snackbar-radius, 0);
+    background: var(--rc-snackbar-bg, Canvas);
+    color: var(--rc-snackbar-color, CanvasText);
     box-shadow: var(--rc-snackbar-shadow, none);
   }
 
@@ -45,14 +46,13 @@ export const snackbarStyles = css`
   [part='action'] {
     flex: 0 0 auto;
     display: none;
-    border: 0;
-    border-radius: var(--rc-snackbar-action-radius, 9999px);
-    padding-block: var(--rc-snackbar-action-padding-block, 0.5rem);
-    padding-inline: var(--rc-snackbar-action-padding-inline, 0.75rem);
-    background: transparent;
-    color: var(--rc-snackbar-action-color, Canvas);
-    font: inherit;
-    cursor: pointer;
+    border: var(--rc-snackbar-action-border, revert);
+    border-radius: var(--rc-snackbar-action-radius, revert);
+    padding-block: var(--rc-snackbar-action-padding-block, revert);
+    padding-inline: var(--rc-snackbar-action-padding-inline, revert);
+    background: var(--rc-snackbar-action-bg, revert);
+    color: var(--rc-snackbar-action-color, revert);
+    font: var(--rc-snackbar-action-font, revert);
   }
 
   :host([action-label]) [part='action'] {
@@ -60,8 +60,8 @@ export const snackbarStyles = css`
   }
 
   [part='action']:focus-visible {
-    outline: var(--rc-snackbar-focus-ring, 2px solid Highlight);
-    outline-offset: var(--rc-snackbar-focus-ring-offset, 2px);
+    outline: var(--rc-snackbar-focus-ring, revert);
+    outline-offset: var(--rc-snackbar-focus-ring-offset, revert);
   }
 
   @media (forced-colors: active) {

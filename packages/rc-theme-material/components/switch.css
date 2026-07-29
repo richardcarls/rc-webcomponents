@@ -1,5 +1,12 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-switch {
+    --rc-switch-native-appearance: none;
+    --rc-switch-native-inline-size: 100%;
+    --rc-switch-native-block-size: 100%;
+    --rc-switch-native-margin: 0;
+    --rc-switch-native-opacity: 0;
+    --rc-switch-decoration-display: block;
+    --rc-switch-icon-display: grid;
     --rc-switch-track-inline-size: 3.25rem;
     --rc-switch-track-block-size: 2rem;
     --rc-switch-track-border: 2px solid var(--md-sys-color-outline, ButtonBorder);

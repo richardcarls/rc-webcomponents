@@ -7,7 +7,7 @@ export const cardStyles = css`
     grid-template-rows: var(--rc-card-grid-template-rows, auto auto auto 1fr auto auto);
     min-inline-size: 0;
     border: var(--rc-card-border, 0);
-    border-radius: var(--rc-card-radius, var(--rc-radius-md, 0.75rem));
+    border-radius: var(--rc-card-radius, 0);
     background: var(--rc-card-bg, Canvas);
     color: var(--rc-card-color, CanvasText);
     box-shadow: var(--rc-card-shadow, none);
@@ -45,11 +45,11 @@ export const cardStyles = css`
   }
 
   :host([interactive]:not([disabled]):hover) [part='state-layer'] {
-    opacity: var(--rc-card-hover-state-layer-opacity, 0.08);
+    opacity: var(--rc-card-hover-state-layer-opacity, 0);
   }
 
   :host([interactive]:not([disabled]):active) [part='state-layer'] {
-    opacity: var(--rc-card-pressed-state-layer-opacity, 0.12);
+    opacity: var(--rc-card-pressed-state-layer-opacity, 0);
   }
 
   [part='media'],
@@ -71,14 +71,14 @@ export const cardStyles = css`
 
   [part='header'] {
     grid-row: var(--rc-card-header-grid-row, auto);
-    padding-block: var(--rc-card-header-padding-block, var(--rc-card-padding-block, 1rem) 0);
-    padding-inline: var(--rc-card-header-padding-inline, var(--rc-card-padding-inline, 1rem));
+    padding-block: var(--rc-card-header-padding-block, var(--rc-card-padding-block, 0) 0);
+    padding-inline: var(--rc-card-header-padding-inline, var(--rc-card-padding-inline, 0));
   }
 
   [part='title'] {
     grid-row: var(--rc-card-title-grid-row, auto);
-    padding-block: var(--rc-card-title-padding-block, var(--rc-card-padding-block, 1rem) 0);
-    padding-inline: var(--rc-card-title-padding-inline, var(--rc-card-padding-inline, 1rem));
+    padding-block: var(--rc-card-title-padding-block, var(--rc-card-padding-block, 0) 0);
+    padding-inline: var(--rc-card-title-padding-inline, var(--rc-card-padding-inline, 0));
     color: var(--rc-card-title-color, inherit);
     font: var(--rc-card-title-font, inherit);
   }
@@ -86,16 +86,16 @@ export const cardStyles = css`
   [part='subtitle'] {
     grid-row: var(--rc-card-subtitle-grid-row, auto);
     padding-block: var(--rc-card-subtitle-padding-block, 0);
-    padding-inline: var(--rc-card-subtitle-padding-inline, var(--rc-card-padding-inline, 1rem));
-    color: var(--rc-card-subtitle-color, color-mix(in srgb, currentColor 72%, transparent));
+    padding-inline: var(--rc-card-subtitle-padding-inline, var(--rc-card-padding-inline, 0));
+    color: var(--rc-card-subtitle-color, inherit);
     font: var(--rc-card-subtitle-font, inherit);
   }
 
   [part='body'] {
     grid-row: var(--rc-card-body-grid-row, auto);
     min-block-size: 0;
-    padding-block: var(--rc-card-body-padding-block, var(--rc-card-padding-block, 1rem));
-    padding-inline: var(--rc-card-body-padding-inline, var(--rc-card-padding-inline, 1rem));
+    padding-block: var(--rc-card-body-padding-block, var(--rc-card-padding-block, 0));
+    padding-inline: var(--rc-card-body-padding-inline, var(--rc-card-padding-inline, 0));
   }
 
   [part='actions'] {
@@ -103,15 +103,15 @@ export const cardStyles = css`
     display: flex;
     align-items: center;
     justify-content: var(--rc-card-actions-justify, flex-end);
-    gap: var(--rc-card-actions-gap, 0.5rem);
-    padding-block: var(--rc-card-actions-padding-block, 0 var(--rc-card-padding-block, 1rem));
-    padding-inline: var(--rc-card-actions-padding-inline, var(--rc-card-padding-inline, 1rem));
+    gap: var(--rc-card-actions-gap, 0);
+    padding-block: var(--rc-card-actions-padding-block, 0 var(--rc-card-padding-block, 0));
+    padding-inline: var(--rc-card-actions-padding-inline, var(--rc-card-padding-inline, 0));
   }
 
   [part='footer'] {
     grid-row: var(--rc-card-footer-grid-row, auto);
-    padding-block: var(--rc-card-footer-padding-block, 0 var(--rc-card-padding-block, 1rem));
-    padding-inline: var(--rc-card-footer-padding-inline, var(--rc-card-padding-inline, 1rem));
+    padding-block: var(--rc-card-footer-padding-block, 0 var(--rc-card-padding-block, 0));
+    padding-inline: var(--rc-card-footer-padding-inline, var(--rc-card-padding-inline, 0));
   }
 
   :host(:not([has-media])) [part='media'],

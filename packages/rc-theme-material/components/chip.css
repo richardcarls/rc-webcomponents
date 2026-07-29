@@ -1,11 +1,14 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-chip {
     --rc-chip-block-size: 2rem;
+    --rc-chip-gap: 0.5rem;
     --rc-chip-padding-inline: 1rem;
     --rc-chip-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
     --rc-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
     --rc-chip-bg: var(--md-sys-color-surface-container-low, ButtonFace);
     --rc-chip-color: var(--md-sys-color-on-surface-variant, ButtonText);
+    --rc-chip-font: inherit;
+    --rc-chip-text-decoration: none;
     --rc-chip-selected-border-color: transparent;
     --rc-chip-selected-bg: var(--md-sys-color-secondary-container, Highlight);
     --rc-chip-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);

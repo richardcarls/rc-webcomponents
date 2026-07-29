@@ -1,4 +1,22 @@
 @layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab {
+    --rc-fab-size: 3.5rem;
+    --rc-fab-gap: 0.5rem;
+    --rc-fab-padding-block: 0;
+    --rc-fab-padding-inline: 1rem;
+    --rc-fab-border: 0;
+    --rc-fab-bg-hover: var(--rc-fab-bg);
+    --rc-fab-active-transform: scale(0.96);
+    --rc-fab-focus-ring: var(--rc-focus-ring);
+    --rc-fab-focus-ring-offset: var(--rc-focus-ring-offset);
+    --rc-fab-disabled-opacity: var(--rc-disabled-opacity, 0.38);
+    --rc-fab-disabled-shadow: none;
+    --rc-fab-transition:
+      background var(--rc-motion-duration, 200ms) ease,
+      box-shadow var(--rc-motion-duration, 200ms) ease,
+      transform var(--rc-motion-duration, 200ms) ease;
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab > button:hover {
     background: color-mix(
       in srgb,

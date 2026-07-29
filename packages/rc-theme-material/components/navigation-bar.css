@@ -10,8 +10,10 @@
     --rc-navigation-bar-item-padding-inline: 0.75rem;
     --rc-navigation-bar-item-gap: 0.25rem;
     --rc-navigation-bar-item-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-bar-item-text-decoration: none;
     --rc-navigation-bar-active-color: var(--md-sys-color-on-surface, CanvasText);
     --rc-navigation-bar-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-navigation-bar-indicator-border: 0;
     --rc-navigation-bar-indicator-radius: var(--md-sys-shape-corner-full, 9999px);
     --rc-navigation-bar-indicator-duration: var(--md-sys-motion-duration-short3, 150ms);
     --rc-navigation-bar-indicator-easing: var(

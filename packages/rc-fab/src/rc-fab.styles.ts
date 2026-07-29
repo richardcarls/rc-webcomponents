@@ -34,52 +34,48 @@ export const fabStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--rc-fab-gap, 0.5rem);
+    gap: var(--rc-fab-gap);
 
-    min-width: var(--rc-fab-size, 3.5rem);
-    height: var(--rc-fab-size, 3.5rem);
-    padding-block: 0;
-    padding-inline: var(--rc-fab-padding-inline, 1rem);
+    min-width: var(--rc-fab-size);
+    height: var(--rc-fab-size);
+    padding-block: var(--rc-fab-padding-block, revert);
+    padding-inline: var(--rc-fab-padding-inline, revert);
 
-    background: var(--rc-fab-bg, ButtonFace);
-    color: var(--rc-fab-color, ButtonText);
+    background: var(--rc-fab-bg, revert);
+    color: var(--rc-fab-color, revert);
 
-    border: none;
-    border-radius: var(--rc-fab-radius, 9999px);
-    box-shadow: var(--rc-fab-shadow, var(--rc-shadow-level2, none));
+    border: var(--rc-fab-border, revert);
+    border-radius: var(--rc-fab-radius, revert);
+    box-shadow: var(--rc-fab-shadow, revert);
 
-    font-family: var(--rc-fab-font-family, var(--rc-font-family, inherit));
-    font-size: var(--rc-fab-font-size, var(--rc-font-size, 0.875rem));
-    font-weight: var(--rc-fab-font-weight, 500);
-    letter-spacing: var(--rc-fab-letter-spacing, 0.00625em);
+    font-family: var(--rc-fab-font-family, revert);
+    font-size: var(--rc-fab-font-size, revert);
+    font-weight: var(--rc-fab-font-weight, revert);
+    letter-spacing: var(--rc-fab-letter-spacing, revert);
     white-space: nowrap;
 
-    cursor: pointer;
-    transition:
-      background var(--rc-fab-transition-duration, var(--rc-motion-duration, 200ms)) ease,
-      box-shadow var(--rc-fab-transition-duration, var(--rc-motion-duration, 200ms)) ease,
-      transform var(--rc-fab-transition-duration, var(--rc-motion-duration, 200ms)) ease;
+    transition: var(--rc-fab-transition, revert);
   }
 
   :host(:has(button:hover)) ::slotted(button) {
-    background: var(--rc-fab-bg-hover, var(--rc-fab-bg, ButtonFace));
-    box-shadow: var(--rc-fab-shadow-hover, var(--rc-fab-shadow, var(--rc-shadow-level3, none)));
+    background: var(--rc-fab-bg-hover, revert);
+    box-shadow: var(--rc-fab-shadow-hover, revert);
   }
 
   :host(:has(button:active)) ::slotted(button) {
-    box-shadow: var(--rc-fab-shadow-active, none);
-    transform: scale(0.96);
+    box-shadow: var(--rc-fab-shadow-active, revert);
+    transform: var(--rc-fab-active-transform, revert);
   }
 
   :host(:has(button:focus-visible)) ::slotted(button) {
-    outline: var(--rc-fab-focus-ring, var(--rc-focus-ring, 2px solid currentColor));
-    outline-offset: var(--rc-fab-focus-ring-offset, var(--rc-focus-ring-offset, 2px));
+    outline: var(--rc-fab-focus-ring, revert);
+    outline-offset: var(--rc-fab-focus-ring-offset, revert);
   }
 
   :host(:has(button:disabled)) ::slotted(button) {
-    opacity: var(--rc-fab-disabled-opacity, var(--rc-disabled-opacity, 0.38));
+    opacity: var(--rc-fab-disabled-opacity, revert);
     pointer-events: none;
-    box-shadow: none;
+    box-shadow: var(--rc-fab-disabled-shadow, revert);
   }
 
   @keyframes rc-fab-scroll-reveal {

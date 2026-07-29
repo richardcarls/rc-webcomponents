@@ -62,25 +62,21 @@ export const navigationRailStyles = css`
     inline-size: var(--rc-navigation-rail-toggle-size, 3rem);
     block-size: var(--rc-navigation-rail-toggle-size, 3rem);
     margin-inline: auto;
-    padding: 0;
-    border: 0;
-    border-radius: var(--rc-navigation-rail-toggle-radius, 9999px);
-    background: var(--rc-navigation-rail-toggle-bg, transparent);
-    color: var(--rc-navigation-rail-toggle-color, inherit);
-    font: inherit;
-    cursor: pointer;
-    outline-offset: var(--rc-navigation-rail-focus-ring-offset, 2px);
+    padding: var(--rc-navigation-rail-toggle-padding, revert);
+    border: var(--rc-navigation-rail-toggle-border, revert);
+    border-radius: var(--rc-navigation-rail-toggle-radius, revert);
+    background: var(--rc-navigation-rail-toggle-bg, revert);
+    color: var(--rc-navigation-rail-toggle-color, revert);
+    font: var(--rc-navigation-rail-toggle-font, revert);
+    outline-offset: var(--rc-navigation-rail-focus-ring-offset, revert);
   }
 
   #default-toggle:focus-visible {
-    outline: var(--rc-navigation-rail-focus-ring, 2px solid Highlight);
+    outline: var(--rc-navigation-rail-focus-ring, revert);
   }
 
   #default-toggle:hover {
-    background: var(
-      --rc-navigation-rail-toggle-hover-bg,
-      color-mix(in srgb, currentColor 8%, transparent)
-    );
+    background: var(--rc-navigation-rail-toggle-hover-bg, revert);
   }
 
   nav {
@@ -118,13 +114,13 @@ export const navigationRailStyles = css`
     color: var(--rc-navigation-rail-item-color, inherit);
     font: inherit;
     text-align: center;
-    text-decoration: none;
+    text-decoration: var(--rc-navigation-rail-item-text-decoration, revert);
     outline-offset: var(--rc-navigation-rail-focus-ring-offset, 2px);
     -webkit-tap-highlight-color: transparent;
   }
 
   ::slotted(a:focus-visible) {
-    outline: var(--rc-navigation-rail-focus-ring, 2px solid Highlight);
+    outline: var(--rc-navigation-rail-focus-ring, revert);
   }
 
   :host([expanded]) ::slotted(a) {
@@ -144,20 +140,18 @@ export const navigationRailStyles = css`
     inset-inline-start: 0;
     z-index: 0;
     box-sizing: border-box;
-    border-radius: var(--rc-navigation-rail-indicator-radius, 9999px);
-    background: var(
-      --rc-navigation-rail-indicator-bg,
-      color-mix(in srgb, Highlight 24%, transparent)
-    );
+    border: var(--rc-navigation-rail-indicator-border, 1px solid Highlight);
+    border-radius: var(--rc-navigation-rail-indicator-radius, 0);
+    background: var(--rc-navigation-rail-indicator-bg, transparent);
     pointer-events: none;
     transition:
-      transform var(--rc-navigation-rail-indicator-duration, 180ms)
+      transform var(--rc-navigation-rail-indicator-duration, 0ms)
         var(--rc-navigation-rail-indicator-easing, ease),
-      inline-size var(--rc-navigation-rail-indicator-duration, 180ms)
+      inline-size var(--rc-navigation-rail-indicator-duration, 0ms)
         var(--rc-navigation-rail-indicator-easing, ease),
-      block-size var(--rc-navigation-rail-indicator-duration, 180ms)
+      block-size var(--rc-navigation-rail-indicator-duration, 0ms)
         var(--rc-navigation-rail-indicator-easing, ease),
-      opacity var(--rc-navigation-rail-indicator-duration, 180ms) ease;
+      opacity var(--rc-navigation-rail-indicator-duration, 0ms) ease;
   }
 
   #indicator[hidden] {

@@ -30,6 +30,42 @@ test('requires and preserves a direct native button child', async () => {
   expect(button?.value).toBe('save');
 });
 
+test('preserves native button appearance without theme tokens', async () => {
+  const screen = render(html`
+    <button data-testid="native" type="button">Native</button>
+    <rc-button data-testid="host">
+      <button type="button">Enhanced</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+  const nativeButton = await screen.getByTestId('native').element();
+
+  await flushButton(host);
+
+  const enhancedButton = host.querySelector('button')!;
+  const nativeStyles = getComputedStyle(nativeButton);
+  const enhancedStyles = getComputedStyle(enhancedButton);
+  const nativeProperties = [
+    'background-color',
+    'border-block-start-color',
+    'border-block-start-style',
+    'border-block-start-width',
+    'border-radius',
+    'color',
+    'font-family',
+    'font-size',
+    'font-weight',
+    'padding-block-start',
+    'padding-inline-start',
+  ] as const;
+
+  for (const property of nativeProperties) {
+    expect(enhancedStyles.getPropertyValue(property), property).toBe(
+      nativeStyles.getPropertyValue(property),
+    );
+  }
+});
+
 test('warns when the direct native button is missing', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   const screen = render(html`<rc-button data-testid="host"><span>Save</span></rc-button>`);

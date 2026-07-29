@@ -52,12 +52,40 @@
     --rc-button-color: var(--md-sys-color-on-primary, ButtonText);
     --rc-button-block-size: var(--rc-control-block-size);
     --rc-button-radius: var(--rc-control-radius);
+    --rc-button-border: 0;
+    --rc-button-padding-block: 0;
+    --rc-button-padding-inline: 1.5rem;
+    --rc-button-gap: var(--rc-control-gap);
+    --rc-button-font: 500 var(--md-sys-typescale-label-large-size, 0.875rem) /
+      var(--md-sys-typescale-label-large-line-height, 1.25rem) var(--rc-font-family);
+    --rc-button-hover-state-layer-opacity: 0.08;
+    --rc-button-focus-state-layer-opacity: 0.12;
+    --rc-button-pressed-state-layer-opacity: 0.12;
     --rc-card-bg: var(--md-sys-color-surface-container-low, Canvas);
     --rc-card-color: var(--md-sys-color-on-surface, CanvasText);
     --rc-card-radius: var(--md-sys-shape-corner-medium, 0.75rem);
+    --rc-card-padding-block: 1rem;
+    --rc-card-padding-inline: 1rem;
+    --rc-card-actions-gap: 0.5rem;
+    --rc-card-hover-state-layer-opacity: 0.08;
+    --rc-card-pressed-state-layer-opacity: 0.12;
     --rc-chip-block-size: 2rem;
+    --rc-chip-gap: 0.5rem;
+    --rc-chip-padding-inline: 1rem;
+    --rc-chip-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
     --rc-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
+    --rc-chip-bg: var(--md-sys-color-surface-container-low, ButtonFace);
+    --rc-chip-color: var(--md-sys-color-on-surface-variant, ButtonText);
+    --rc-chip-font: inherit;
+    --rc-chip-text-decoration: none;
     --rc-chip-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-switch-native-appearance: none;
+    --rc-switch-native-inline-size: 100%;
+    --rc-switch-native-block-size: 100%;
+    --rc-switch-native-margin: 0;
+    --rc-switch-native-opacity: 0;
+    --rc-switch-decoration-display: block;
+    --rc-switch-icon-display: grid;
     --rc-switch-track-inline-size: 3.25rem;
     --rc-switch-track-block-size: 2rem;
     --rc-switch-selected-track-bg: var(--md-sys-color-primary, Highlight);
@@ -66,7 +94,14 @@
     --rc-segmented-button-selected-bg: var(--md-sys-color-secondary-container, Highlight);
     --rc-snackbar-bg: var(--md-sys-color-inverse-surface, CanvasText);
     --rc-snackbar-color: var(--md-sys-color-inverse-on-surface, Canvas);
+    --rc-snackbar-border: 0;
     --rc-snackbar-action-color: var(--md-sys-color-inverse-primary, LinkText);
+    --rc-snackbar-action-border: 0;
+    --rc-snackbar-action-radius: 9999px;
+    --rc-snackbar-action-padding-block: 0.5rem;
+    --rc-snackbar-action-padding-inline: 0.75rem;
+    --rc-snackbar-action-bg: transparent;
+    --rc-snackbar-action-font: inherit;
     --rc-toolbar-radius: var(--md-sys-shape-corner-large, 1rem);
     --rc-toolbar-vertical-radius: 0;
     --rc-item-padding-block: 0.75rem;
@@ -462,14 +497,21 @@
   :host(.rc-theme-material) rc-navigation-bar {
     --rc-navigation-bar-bg: var(--md-sys-color-surface-container, Canvas);
     --rc-navigation-bar-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-bar-item-text-decoration: none;
     --rc-navigation-bar-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-navigation-bar-indicator-border: 0;
   }
 
   .rc-theme-material rc-navigation-rail,
   :host(.rc-theme-material) rc-navigation-rail {
     --rc-navigation-rail-bg: var(--md-sys-color-surface, Canvas);
     --rc-navigation-rail-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-rail-item-text-decoration: none;
     --rc-navigation-rail-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-navigation-rail-indicator-border: 0;
+    --rc-navigation-rail-toggle-padding: 0;
+    --rc-navigation-rail-toggle-border: 0;
+    --rc-navigation-rail-toggle-font: inherit;
   }
   .rc-theme-material rc-fab,
   .rc-theme-material rc-fab-menu,

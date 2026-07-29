@@ -1,11 +1,14 @@
 @layer rc-theme-substrate.components {
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-chip {
     --rc-chip-block-size: 2rem;
+    --rc-chip-gap: 0.5rem;
     --rc-chip-padding-inline: 0.75rem;
     --rc-chip-border: var(--rc-border);
     --rc-chip-radius: var(--substrate-radius-md, 0.5rem);
     --rc-chip-bg: var(--substrate-surface-raised, ButtonFace);
     --rc-chip-color: var(--substrate-on-surface, ButtonText);
+    --rc-chip-font: inherit;
+    --rc-chip-text-decoration: none;
     --rc-chip-selected-border-color: var(--rc-accent);
     --rc-chip-selected-bg: var(--rc-highlight, Highlight);
     --rc-chip-selected-color: var(--rc-highlight-text, HighlightText);

@@ -11,6 +11,9 @@
     --rc-button-font: var(--rc-font-weight, 400) var(--rc-font-size, 1em) /
       var(--rc-line-height, normal) var(--rc-font-family, inherit);
     --rc-button-state-layer-bg: currentColor;
+    --rc-button-hover-state-layer-opacity: 0.08;
+    --rc-button-focus-state-layer-opacity: 0.12;
+    --rc-button-pressed-state-layer-opacity: 0.12;
     --rc-button-state-layer-easing: var(--substrate-motion-easing, ease);
   }
 

@@ -18,52 +18,42 @@ export const chipStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--rc-chip-gap, 0.5rem);
-    min-block-size: var(--rc-chip-block-size, 2rem);
-    padding-block: var(--rc-chip-padding-block, 0);
-    padding-inline: var(--rc-chip-padding-inline, 0.75rem);
-    border: var(--rc-chip-border, 1px solid ButtonBorder);
-    border-radius: var(--rc-chip-radius, 0.5rem);
-    background: var(--rc-chip-bg, ButtonFace);
-    color: var(--rc-chip-color, ButtonText);
-    font: inherit;
-    text-decoration: none;
+    gap: var(--rc-chip-gap);
+    min-block-size: var(--rc-chip-block-size);
+    padding-block: var(--rc-chip-padding-block, revert);
+    padding-inline: var(--rc-chip-padding-inline, revert);
+    border: var(--rc-chip-border, revert);
+    border-radius: var(--rc-chip-radius, revert);
+    background: var(--rc-chip-bg, revert);
+    color: var(--rc-chip-color, revert);
+    font: var(--rc-chip-font, revert);
+    text-decoration: var(--rc-chip-text-decoration, revert);
     white-space: nowrap;
-  }
-
-  ::slotted(button),
-  ::slotted(a) {
-    cursor: pointer;
-  }
-
-  ::slotted([data-rc-chip-label]) {
-    cursor: default;
   }
 
   :host([selected]) ::slotted(button),
   :host([selected]) ::slotted(a),
   :host([selected]) ::slotted([data-rc-chip-label]) {
-    border-color: var(--rc-chip-selected-border-color, transparent);
-    background: var(--rc-chip-selected-bg, Highlight);
-    color: var(--rc-chip-selected-color, HighlightText);
+    border-color: var(--rc-chip-selected-border-color, revert);
+    background: var(--rc-chip-selected-bg, revert);
+    color: var(--rc-chip-selected-color, revert);
   }
 
   :host([disabled]) ::slotted(button) {
-    opacity: var(--rc-chip-disabled-opacity, 0.5);
-    cursor: not-allowed;
+    opacity: var(--rc-chip-disabled-opacity, revert);
   }
 
   :host(:focus-within) ::slotted(button),
   :host(:focus-within) ::slotted(a) {
-    outline: var(--rc-chip-focus-ring, 2px solid Highlight);
-    outline-offset: var(--rc-chip-focus-ring-offset, 2px);
+    outline: var(--rc-chip-focus-ring, revert);
+    outline-offset: var(--rc-chip-focus-ring-offset, revert);
   }
 
   [part='state-layer'] {
     pointer-events: none;
     position: absolute;
     inset: 0;
-    border-radius: var(--rc-chip-radius, 0.5rem);
+    border-radius: var(--rc-chip-radius, 0);
   }
 
   [part='remove'] {

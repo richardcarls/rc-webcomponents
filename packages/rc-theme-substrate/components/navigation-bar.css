@@ -11,12 +11,14 @@
     --rc-navigation-bar-item-padding-block: 0.5rem;
     --rc-navigation-bar-item-padding-inline: var(--rc-item-padding-inline, 0.75rem);
     --rc-navigation-bar-item-color: var(--rc-muted-color, CanvasText);
+    --rc-navigation-bar-item-text-decoration: none;
     --rc-navigation-bar-active-color: var(--rc-accent, Highlight);
     --rc-navigation-bar-indicator-bg: color-mix(
       in srgb,
       var(--rc-accent, Highlight) 18%,
       transparent
     );
+    --rc-navigation-bar-indicator-border: 0;
     --rc-navigation-bar-indicator-radius: var(--rc-radius-pill, 9999px);
     --rc-navigation-bar-indicator-duration: var(--rc-motion-duration, 180ms);
     --rc-navigation-bar-indicator-easing: ease;

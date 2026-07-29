@@ -12,12 +12,17 @@
     --rc-navigation-rail-expanded-item-min-block-size: 3.5rem;
     --rc-navigation-rail-expanded-item-padding-inline: 1rem;
     --rc-navigation-rail-item-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-rail-item-text-decoration: none;
     --rc-navigation-rail-active-color: var(--md-sys-color-on-surface, CanvasText);
     --rc-navigation-rail-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-navigation-rail-indicator-border: 0;
     --rc-navigation-rail-indicator-radius: var(--md-sys-shape-corner-full, 9999px);
     --rc-navigation-rail-toggle-size: 3rem;
     --rc-navigation-rail-toggle-radius: var(--md-sys-shape-corner-full, 9999px);
+    --rc-navigation-rail-toggle-padding: 0;
+    --rc-navigation-rail-toggle-border: 0;
     --rc-navigation-rail-toggle-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-rail-toggle-font: inherit;
     --rc-navigation-rail-toggle-hover-bg: color-mix(
       in srgb,
       var(--md-sys-color-on-surface, CanvasText)
