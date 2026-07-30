@@ -17,64 +17,99 @@ declare global {
 const LIGHT_DOM_CSS = `
 @layer rc-base {
   rc-segmented-button > fieldset {
-    display: inline-flex;
-    margin: 0;
-    padding: 0;
-    border: var(--rc-segmented-button-border, 1px solid ButtonBorder);
-    border-radius: var(--rc-segmented-button-radius, 9999px);
-    overflow: hidden;
+    display: var(--_rc-segmented-button-fieldset-display, revert);
+    margin: var(--_rc-segmented-button-fieldset-margin, revert);
+    padding: var(--_rc-segmented-button-fieldset-padding, revert);
+    border: var(--_rc-segmented-button-fieldset-border, revert);
+    border-radius: var(--_rc-segmented-button-fieldset-radius, revert);
+    overflow: var(--_rc-segmented-button-fieldset-overflow, revert);
   }
 
   rc-segmented-button[orientation='vertical'] > fieldset {
     flex-direction: column;
   }
 
+  rc-segmented-button > fieldset > legend {
+    position: var(--_rc-segmented-button-legend-position, revert);
+    inline-size: var(--_rc-segmented-button-legend-inline-size, revert);
+    block-size: var(--_rc-segmented-button-legend-block-size, revert);
+    margin: var(--_rc-segmented-button-legend-margin, revert);
+    padding: var(--_rc-segmented-button-legend-padding, revert);
+    border: var(--_rc-segmented-button-legend-border, revert);
+    overflow: var(--_rc-segmented-button-legend-overflow, revert);
+    clip: var(--_rc-segmented-button-legend-clip, revert);
+    white-space: var(--_rc-segmented-button-legend-white-space, revert);
+  }
+
   rc-segmented-button > fieldset > label {
-    display: inline-flex;
+    display: var(--_rc-segmented-button-segment-display, revert);
     align-items: center;
     justify-content: center;
-    gap: var(--rc-segmented-button-segment-gap, 0.5rem);
-    min-block-size: var(--rc-segmented-button-segment-min-block-size, 2.5rem);
-    padding-block: var(--rc-segmented-button-segment-padding-block, 0);
-    padding-inline: var(--rc-segmented-button-segment-padding-inline, 0.75rem);
-    color: var(--rc-segmented-button-color, CanvasText);
-    background: var(--rc-segmented-button-bg, Canvas);
-    cursor: pointer;
-    user-select: none;
+    gap: var(--rc-segmented-button-segment-gap);
+    min-block-size: var(--rc-segmented-button-segment-min-block-size);
+    padding-block: var(--rc-segmented-button-segment-padding-block, revert);
+    padding-inline: var(--rc-segmented-button-segment-padding-inline, revert);
+    border: var(--rc-segmented-button-border, revert);
+    color: var(--rc-segmented-button-color, revert);
+    background: var(--rc-segmented-button-bg, revert);
+    cursor: var(--_rc-segmented-button-segment-cursor, revert);
+    user-select: var(--_rc-segmented-button-segment-user-select, revert);
+  }
+
+  rc-segmented-button > fieldset > label:first-of-type {
+    border-start-start-radius: var(--rc-segmented-button-radius, revert);
+    border-end-start-radius: var(--rc-segmented-button-radius, revert);
+  }
+
+  rc-segmented-button > fieldset > label:last-of-type {
+    border-start-end-radius: var(--rc-segmented-button-radius, revert);
+    border-end-end-radius: var(--rc-segmented-button-radius, revert);
   }
 
   rc-segmented-button > fieldset > label + label {
-    border-inline-start: var(--rc-segmented-button-divider, 1px solid ButtonBorder);
+    border-inline-start: var(--rc-segmented-button-divider, revert);
   }
 
   rc-segmented-button[orientation='vertical'] > fieldset > label + label {
-    border-inline-start: 0;
-    border-block-start: var(--rc-segmented-button-divider, 1px solid ButtonBorder);
+    border-inline-start: var(--_rc-segmented-button-vertical-border-inline-start, revert);
+    border-block-start: var(--rc-segmented-button-divider, revert);
+  }
+
+  rc-segmented-button[orientation='vertical'] > fieldset > label:first-of-type {
+    border-start-start-radius: var(--rc-segmented-button-radius, revert);
+    border-start-end-radius: var(--rc-segmented-button-radius, revert);
+    border-end-start-radius: 0;
+  }
+
+  rc-segmented-button[orientation='vertical'] > fieldset > label:last-of-type {
+    border-start-end-radius: 0;
+    border-end-start-radius: var(--rc-segmented-button-radius, revert);
+    border-end-end-radius: var(--rc-segmented-button-radius, revert);
   }
 
   rc-segmented-button > fieldset > label:has(input[type='radio']:checked) {
-    color: var(--rc-segmented-button-selected-color, Canvas);
-    background: var(--rc-segmented-button-selected-bg, CanvasText);
+    color: var(--rc-segmented-button-selected-color, revert);
+    background: var(--rc-segmented-button-selected-bg, revert);
   }
 
   rc-segmented-button > fieldset > label:has(input[type='radio']:focus-visible) {
-    outline: var(--rc-segmented-button-focus-ring, 2px solid Highlight);
-    outline-offset: var(--rc-segmented-button-focus-ring-offset, -2px);
+    outline: var(--rc-segmented-button-focus-ring, revert);
+    outline-offset: var(--rc-segmented-button-focus-ring-offset, revert);
   }
 
   rc-segmented-button > fieldset > label:has(input[type='radio']:disabled),
   rc-segmented-button[disabled] > fieldset > label {
-    opacity: var(--rc-segmented-button-disabled-opacity, 0.5);
-    cursor: not-allowed;
+    opacity: var(--rc-segmented-button-disabled-opacity, revert);
+    cursor: var(--_rc-segmented-button-disabled-cursor, revert);
   }
 
   rc-segmented-button > fieldset > label > input[type='radio'] {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    margin: 0;
-    opacity: 0;
-    pointer-events: none;
+    position: var(--_rc-segmented-button-radio-position, revert);
+    inline-size: var(--_rc-segmented-button-radio-inline-size, revert);
+    block-size: var(--_rc-segmented-button-radio-block-size, revert);
+    margin: var(--_rc-segmented-button-radio-margin, revert);
+    opacity: var(--_rc-segmented-button-radio-opacity, revert);
+    pointer-events: var(--_rc-segmented-button-radio-pointer-events, revert);
   }
 
   rc-segmented-button > fieldset > label > [data-rc-segmented-button-selected-icon] {
@@ -82,7 +117,7 @@ const LIGHT_DOM_CSS = `
   }
 
   rc-segmented-button > fieldset > label:has(input[type='radio']:checked) > [data-rc-segmented-button-selected-icon] {
-    display: inline-grid;
+    display: var(--_rc-segmented-button-selected-icon-display, none);
     place-items: center;
   }
 }

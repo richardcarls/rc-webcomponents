@@ -104,6 +104,19 @@ test('contextual styles do not style unrelated native buttons', () => {
   expect(getComputedStyle(button).borderRadius).toBe('0px');
 });
 
+test('segmented buttons flatten native fieldset chrome for themed segments', () => {
+  const scope = renderScope();
+  const segmentedButton = document.createElement('rc-segmented-button');
+
+  scope.append(segmentedButton);
+
+  const styles = getComputedStyle(segmentedButton);
+
+  expect(styles.getPropertyValue('--_rc-segmented-button-fieldset-border')).toBe('0');
+  expect(styles.getPropertyValue('--_rc-segmented-button-legend-position')).toBe('absolute');
+  expect(styles.getPropertyValue('--_rc-segmented-button-radio-opacity')).toBe('0');
+});
+
 test('app bars stack above adjacent themed content for anchored popups', () => {
   const scope = renderScope();
   const appBar = document.createElement('rc-app-bar');

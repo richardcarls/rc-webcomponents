@@ -35,6 +35,43 @@ test('preserves a native fieldset and radio inputs', async () => {
   expect(host.value).toBe('medium');
 });
 
+test('preserves native fieldset, legend, and radio appearance without theme tokens', async () => {
+  const screen = render(html`
+    <fieldset data-testid="native-fieldset">
+      <legend>Native group</legend>
+      <label><input data-testid="native-radio" type="radio" /> Native</label>
+    </fieldset>
+    <rc-segmented-button data-testid="host">
+      <fieldset>
+        <legend>Enhanced group</legend>
+        <label><input type="radio" name="choice" value="enhanced" /> Enhanced</label>
+      </fieldset>
+    </rc-segmented-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCSegmentedButton;
+  const nativeFieldset = await screen.getByTestId('native-fieldset').element();
+  const nativeRadio = await screen.getByTestId('native-radio').element();
+
+  await flushSegmented(host);
+
+  const fieldset = host.querySelector('fieldset')!;
+  const legend = host.querySelector('legend')!;
+  const radio = host.querySelector('input')!;
+  const nativeFieldsetStyles = getComputedStyle(nativeFieldset);
+  const fieldsetStyles = getComputedStyle(fieldset);
+  const nativeRadioStyles = getComputedStyle(nativeRadio);
+  const radioStyles = getComputedStyle(radio);
+
+  expect(fieldsetStyles.display).toBe(nativeFieldsetStyles.display);
+  expect(fieldsetStyles.borderBlockStartStyle).toBe(nativeFieldsetStyles.borderBlockStartStyle);
+  expect(fieldsetStyles.borderBlockStartWidth).toBe(nativeFieldsetStyles.borderBlockStartWidth);
+  expect(fieldsetStyles.paddingBlockStart).toBe(nativeFieldsetStyles.paddingBlockStart);
+  expect(getComputedStyle(legend).position).toBe('static');
+  expect(radioStyles.position).toBe(nativeRadioStyles.position);
+  expect(radioStyles.opacity).toBe(nativeRadioStyles.opacity);
+  expect(radioStyles.inlineSize).toBe(nativeRadioStyles.inlineSize);
+});
+
 test('host value writes are silent and sync the checked radio', async () => {
   const listener = vi.fn();
   const screen = render(html`

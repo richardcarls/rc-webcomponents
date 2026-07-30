@@ -88,6 +88,19 @@ test('FAB Material size presets stay in CSS modifier classes', () => {
   expect(getComputedStyle(fabMenu).getPropertyValue('--rc-fab-menu-size')).toBe('6rem');
 });
 
+test('segmented buttons flatten native fieldset chrome for themed segments', () => {
+  const scope = renderScope();
+  const segmentedButton = document.createElement('rc-segmented-button');
+
+  scope.append(segmentedButton);
+
+  const styles = getComputedStyle(segmentedButton);
+
+  expect(styles.getPropertyValue('--_rc-segmented-button-fieldset-border')).toBe('0');
+  expect(styles.getPropertyValue('--_rc-segmented-button-legend-position')).toBe('absolute');
+  expect(styles.getPropertyValue('--_rc-segmented-button-radio-opacity')).toBe('0');
+});
+
 test('app bar Material size presets stay in CSS modifier classes', () => {
   const scope = renderScope();
   const appBar = document.createElement('rc-app-bar');

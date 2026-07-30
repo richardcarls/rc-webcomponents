@@ -1,8 +1,36 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-segmented-button {
+    --_rc-segmented-button-fieldset-display: inline-flex;
+    --_rc-segmented-button-fieldset-margin: 0;
+    --_rc-segmented-button-fieldset-padding: 0;
+    --_rc-segmented-button-fieldset-border: 0;
+    --_rc-segmented-button-fieldset-radius: 0;
+    --_rc-segmented-button-fieldset-overflow: visible;
+    --_rc-segmented-button-legend-position: absolute;
+    --_rc-segmented-button-legend-inline-size: 1px;
+    --_rc-segmented-button-legend-block-size: 1px;
+    --_rc-segmented-button-legend-margin: -1px;
+    --_rc-segmented-button-legend-padding: 0;
+    --_rc-segmented-button-legend-border: 0;
+    --_rc-segmented-button-legend-overflow: hidden;
+    --_rc-segmented-button-legend-clip: rect(0 0 0 0);
+    --_rc-segmented-button-legend-white-space: nowrap;
+    --_rc-segmented-button-segment-display: inline-flex;
+    --_rc-segmented-button-segment-cursor: pointer;
+    --_rc-segmented-button-segment-user-select: none;
+    --_rc-segmented-button-disabled-cursor: not-allowed;
+    --_rc-segmented-button-radio-position: absolute;
+    --_rc-segmented-button-radio-inline-size: 1px;
+    --_rc-segmented-button-radio-block-size: 1px;
+    --_rc-segmented-button-radio-margin: 0;
+    --_rc-segmented-button-radio-opacity: 0;
+    --_rc-segmented-button-radio-pointer-events: none;
+    --_rc-segmented-button-selected-icon-display: inline-grid;
+    --_rc-segmented-button-vertical-border-inline-start: 1px solid
+      var(--md-sys-color-outline, ButtonBorder);
     --rc-segmented-button-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
     --rc-segmented-button-radius: var(--md-sys-shape-corner-full, 9999px);
-    --rc-segmented-button-divider: 1px solid var(--md-sys-color-outline, ButtonBorder);
+    --rc-segmented-button-divider: 0;
     --rc-segmented-button-bg: var(--md-sys-color-surface, ButtonFace);
     --rc-segmented-button-color: var(--md-sys-color-on-surface, ButtonText);
     --rc-segmented-button-selected-bg: var(--md-sys-color-secondary-container, Highlight);
