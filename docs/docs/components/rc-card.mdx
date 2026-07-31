@@ -59,9 +59,9 @@ import '@rcarls/rc-card/define';
 </rc-card>
 ```
 
-The unthemed card is an undecorated content container. Apply a packaged theme
-or card tokens when the composition needs padding, shape, elevation, or state
-layers.
+The unthemed card provides one `rem` of body padding and otherwise remains an
+undecorated content container. Apply a packaged theme or card tokens when the
+composition needs a different spacing scale, shape, elevation, or state layers.
 
 ## Live demo
 
@@ -74,8 +74,9 @@ and `footer`. Matching parts and reflected `has-*` attributes let themes adapt
 spacing when regions are present or absent.
 
 For shelf/grid layouts, set card rows through `--rc-card-grid-template-rows`.
-Consumers can use subgrid on the host to align repeated cards across a parent
-grid.
+The demo spans each card across the parent grid's media, title, body, and action
+tracks, then uses `subgrid` on the hosts to align those regions across cards
+with different content.
 
 ## Action Target
 

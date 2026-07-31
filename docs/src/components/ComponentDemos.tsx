@@ -187,43 +187,136 @@ export function ButtonDemo() {
   );
 }
 
+const CARD_DEMO_CSS = `
+.card-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(12rem, 1fr));
+  grid-template-rows: auto auto 1fr auto;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 0.25rem;
+}
+
+.card-demo-grid rc-card {
+  grid-row: 1 / -1;
+  grid-template-rows: subgrid;
+  --rc-card-grid-template-rows: subgrid;
+  --rc-card-media-grid-row: 1;
+  --rc-card-title-grid-row: 2;
+  --rc-card-body-grid-row: 3;
+  --rc-card-actions-grid-row: 4;
+}
+
+.card-demo-media {
+  position: relative;
+  display: grid;
+  min-block-size: 8rem;
+  place-items: center;
+  background: color-mix(in srgb, Highlight 18%, Canvas);
+}
+
+.card-demo-media > .material-symbols-outlined {
+  font-size: 3rem;
+}
+
+.card-demo-favorite {
+  position: absolute;
+  inset-block-start: 0.5rem;
+  inset-inline-end: 0.5rem;
+}
+
+.card-demo-favorite[selected] .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.card-demo-grid .card-demo-minimal {
+  --rc-card-title-grid-row: 1 / 3;
+  --rc-card-body-grid-row: 3 / 5;
+}
+
+.card-demo-status {
+  margin-block-end: 0;
+}
+`;
+
 export function CardDemo() {
   const [message, setMessage] = useState('Activate the card surface or Save.');
+  const [favorite, setFavorite] = useState(false);
 
   return (
-    <DemoFrame>
-      <rc-card interactive action-target="demo-recipe-link" style={{ maxInlineSize: '22rem' }}>
-        <div
-          slot="media"
-          aria-hidden="true"
-          style={{
-            display: 'grid',
-            minBlockSize: '8rem',
-            placeItems: 'center',
-            background: 'color-mix(in srgb, Highlight 18%, Canvas)',
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '3rem' }}>
-            skillet
-          </span>
-        </div>
-        <a
-          id="demo-recipe-link"
-          slot="title"
-          href="#lemon-pasta"
-          onClick={(event) => {
-            event.preventDefault();
-            setMessage('Opened Lemon pasta.');
-          }}
-        >
-          Lemon pasta
-        </a>
-        <p>Silky pasta with lemon, pepper, and parmesan.</p>
-        <button slot="actions" type="button" onClick={() => setMessage('Saved Lemon pasta.')}>
-          Save
-        </button>
-      </rc-card>
-      <p aria-live="polite">{message}</p>
+    <DemoFrame defaultTheme="substrate">
+      <style>{CARD_DEMO_CSS}</style>
+      <div className="card-demo-grid">
+        <rc-card interactive action-target="demo-recipe-link">
+          <div slot="media" className="card-demo-media" aria-hidden="true">
+            <span className="material-symbols-outlined">skillet</span>
+          </div>
+          <a
+            id="demo-recipe-link"
+            slot="title"
+            href="#lemon-pasta"
+            onClick={(event) => {
+              event.preventDefault();
+              setMessage('Opened Lemon pasta.');
+            }}
+          >
+            Lemon pasta
+          </a>
+          <p>Silky pasta with lemon, pepper, and parmesan.</p>
+          <rc-button slot="actions">
+            <button type="button" onClick={() => setMessage('Saved Lemon pasta.')}>
+              Save
+            </button>
+          </rc-button>
+        </rc-card>
+
+        <rc-card>
+          <div slot="media" className="card-demo-media">
+            <span className="material-symbols-outlined" aria-hidden="true">
+              soup_kitchen
+            </span>
+            <rc-button className="card-demo-favorite" icon-only selected={favorite}>
+              <button
+                type="button"
+                aria-label={favorite ? 'Remove tomato soup from favorites' : 'Favorite tomato soup'}
+                aria-pressed={favorite}
+                onClick={() => {
+                  setFavorite((current) => !current);
+
+                  setMessage(
+                    `${favorite ? 'Removed' : 'Added'} Tomato soup ${
+                      favorite ? 'from' : 'to'
+                    } favorites.`,
+                  );
+                }}
+              >
+                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                  favorite
+                </span>
+              </button>
+            </rc-button>
+          </div>
+          <a
+            slot="title"
+            href="#tomato-soup"
+            onClick={(event) => {
+              event.preventDefault();
+              setMessage('Opened Tomato soup.');
+            }}
+          >
+            Tomato soup
+          </a>
+          <p>A classic soup card whose link and favorite button remain independent targets.</p>
+        </rc-card>
+
+        <rc-card className="card-demo-minimal">
+          <strong slot="title">Pantry note</strong>
+          <p>A minimal card can omit media and actions while sharing the same parent grid.</p>
+        </rc-card>
+      </div>
+      <p className="card-demo-status" aria-live="polite">
+        {message}
+      </p>
     </DemoFrame>
   );
 }

@@ -10,5 +10,5 @@ Design-system-neutral card shell with structural slots and parts.
 </rc-card>
 ```
 
-The host owns structure and layout only. Authors provide native anchors or
-buttons for semantics and keyboard access.
+The host owns structure and layout, including one `rem` of default body padding.
+Authors provide native anchors or buttons for semantics and keyboard access.

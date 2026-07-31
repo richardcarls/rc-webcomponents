@@ -61,6 +61,21 @@ test('renders neutral structural parts', async () => {
   }
 });
 
+test('applies default padding to direct body content', async () => {
+  const screen = render(html`
+    <rc-card data-testid="host">
+      <p data-testid="body">Body</p>
+    </rc-card>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCCard;
+  const body = await screen.getByTestId('body').element();
+
+  await flushCard(host);
+
+  expect(getComputedStyle(body).paddingBlockStart).toBe('16px');
+  expect(getComputedStyle(body).paddingInlineStart).toBe('16px');
+});
+
 test('supports shelf-style subgrid coordination through host layout tokens', async () => {
   const screen = render(html`
     <div style="display: grid; grid-template-rows: auto auto 1fr;">

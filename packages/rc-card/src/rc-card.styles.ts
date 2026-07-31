@@ -94,8 +94,6 @@ export const cardStyles = css`
   [part='body'] {
     grid-row: var(--rc-card-body-grid-row, auto);
     min-block-size: 0;
-    padding-block: var(--rc-card-body-padding-block, var(--rc-card-padding-block, 0));
-    padding-inline: var(--rc-card-body-padding-inline, var(--rc-card-padding-inline, 0));
   }
 
   [part='actions'] {
@@ -126,6 +124,11 @@ export const cardStyles = css`
   ::slotted([slot='media']) {
     display: block;
     inline-size: 100%;
+  }
+
+  ::slotted(:not([slot])) {
+    padding-block: var(--rc-card-body-padding-block, var(--rc-card-padding-block, 1rem));
+    padding-inline: var(--rc-card-body-padding-inline, var(--rc-card-padding-inline, 1rem));
   }
 
   @media (forced-colors: active) {
