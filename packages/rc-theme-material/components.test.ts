@@ -88,6 +88,20 @@ test('FAB Material size presets stay in CSS modifier classes', () => {
   expect(getComputedStyle(fabMenu).getPropertyValue('--rc-fab-menu-size')).toBe('6rem');
 });
 
+test('buttons enable Material state layers and pointer ripples', () => {
+  const scope = renderScope();
+  const button = document.createElement('rc-button');
+
+  scope.append(button);
+
+  const styles = getComputedStyle(button);
+
+  expect(styles.getPropertyValue('--rc-button-hover-state-layer-opacity')).not.toBe('0');
+  expect(styles.getPropertyValue('--rc-button-pressed-state-layer-opacity')).not.toBe('0');
+  expect(styles.getPropertyValue('--_rc-button-ripple-enabled')).toBe('1');
+  expect(styles.getPropertyValue('--_rc-button-ripple-duration')).not.toBe('');
+});
+
 test('segmented buttons flatten native fieldset chrome for themed segments', () => {
   const scope = renderScope();
   const segmentedButton = document.createElement('rc-segmented-button');

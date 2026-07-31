@@ -1,5 +1,6 @@
 import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
@@ -256,6 +257,79 @@ test('renders state-layer and progress parts', async () => {
 
   expect(host.shadowRoot?.querySelector('[part="state-layer"]')).not.toBeNull();
   expect(host.shadowRoot?.querySelector('[part="progress"]')).not.toBeNull();
+});
+
+test('shows themed hover state through the state-layer overlay', async () => {
+  const screen = render(html`
+    <rc-button
+      data-testid="host"
+      style="--rc-button-hover-state-layer-opacity: 0.25; --rc-button-state-layer-duration: 0ms"
+    >
+      <button type="button">Save</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+  await userEvent.hover(host.querySelector('button')!);
+
+  const stateLayer = host.shadowRoot?.querySelector<HTMLElement>('[part="state-layer"]');
+
+  if (!stateLayer) {
+    throw new Error('Expected the state-layer part to render.');
+  }
+
+  expect(getComputedStyle(stateLayer, '::before').opacity).toBe('0.25');
+});
+
+test('positions and starts an enabled ripple from primary pointer input', async () => {
+  const screen = render(html`
+    <rc-button
+      data-testid="host"
+      style="--_rc-button-ripple-enabled: 1; --_rc-button-ripple-duration: 10s"
+    >
+      <button type="button">Save</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  const button = host.querySelector('button')!;
+  const bounds = button.getBoundingClientRect();
+
+  button.dispatchEvent(
+    new PointerEvent('pointerdown', {
+      bubbles: true,
+      button: 0,
+      clientX: bounds.left + bounds.width / 4,
+      clientY: bounds.top + bounds.height / 2,
+      composed: true,
+      isPrimary: true,
+      pointerId: 1,
+      pointerType: 'touch',
+    }),
+  );
+
+  const stateLayer = host.shadowRoot?.querySelector<HTMLElement>('[part="state-layer"]');
+
+  if (!stateLayer) {
+    throw new Error('Expected the state-layer part to render.');
+  }
+
+  expect(stateLayer.hasAttribute('data-rippling')).toBe(true);
+
+  expect(Number.parseFloat(stateLayer.style.getPropertyValue('--_rc-button-ripple-x'))).toBeCloseTo(
+    bounds.width / 4,
+  );
+
+  expect(Number.parseFloat(stateLayer.style.getPropertyValue('--_rc-button-ripple-y'))).toBeCloseTo(
+    bounds.height / 2,
+  );
+
+  expect(
+    Number.parseFloat(stateLayer.style.getPropertyValue('--_rc-button-ripple-size')),
+  ).toBeGreaterThan(bounds.width);
 });
 
 test('has no automated accessibility violations', async () => {

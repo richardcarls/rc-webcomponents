@@ -90,6 +90,8 @@ export class RCButton extends LitElement {
 
   @query('slot') private _$slot!: HTMLSlotElement;
 
+  @query('[part="state-layer"]') private _$stateLayer!: HTMLElement;
+
   private _button: HTMLButtonElement | null = null;
   private _buttonObserver: MutationObserver | null = null;
   private _disabledOwned = false;
@@ -121,7 +123,11 @@ export class RCButton extends LitElement {
   protected override render() {
     return html`
       <slot @slotchange=${this._handleSlotChange}></slot>
-      <span part="state-layer" aria-hidden="true"></span>
+      <span
+        part="state-layer"
+        aria-hidden="true"
+        @animationend=${this._handleRippleAnimationEnd}
+      ></span>
       <span part="progress" aria-hidden="true"></span>
     `;
   }
@@ -299,9 +305,43 @@ export class RCButton extends LitElement {
     event.stopImmediatePropagation();
   }
 
+  private _startRipple(event: PointerEvent): void {
+    if (
+      !event.isPrimary ||
+      event.button !== 0 ||
+      this.disabled ||
+      this.pending ||
+      this.progress ||
+      !this._isChildButtonEvent(event) ||
+      !this._$stateLayer ||
+      getComputedStyle(this).getPropertyValue('--_rc-button-ripple-enabled').trim() !== '1'
+    ) {
+      return;
+    }
+
+    const bounds = this._button!.getBoundingClientRect();
+    const x = event.clientX - bounds.left;
+    const y = event.clientY - bounds.top;
+    const radius = Math.hypot(Math.max(x, bounds.width - x), Math.max(y, bounds.height - y));
+
+    this._$stateLayer.style.setProperty('--_rc-button-ripple-x', `${x}px`);
+    this._$stateLayer.style.setProperty('--_rc-button-ripple-y', `${y}px`);
+    this._$stateLayer.style.setProperty('--_rc-button-ripple-size', `${radius * 2}px`);
+    this._$stateLayer.removeAttribute('data-rippling');
+    this._$stateLayer.getBoundingClientRect();
+    this._$stateLayer.setAttribute('data-rippling', '');
+  }
+
+  private _handleRippleAnimationEnd(event: AnimationEvent): void {
+    if (event.animationName === 'rc-button-ripple') {
+      this._$stateLayer.removeAttribute('data-rippling');
+    }
+  }
+
   constructor() {
     super();
 
+    this.addEventListener('pointerdown', this._startRipple, { capture: true });
     this.addEventListener('click', this._blockActivation, { capture: true });
 
     this.addEventListener(

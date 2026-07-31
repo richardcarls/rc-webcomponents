@@ -75,28 +75,57 @@ export const buttonStyles = css`
   }
 
   [part='state-layer'] {
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  [part='state-layer']::before {
+    content: '';
+    position: absolute;
+    inset: 0;
     background: var(--rc-button-state-layer-bg, currentColor);
     opacity: 0;
     transition: opacity var(--rc-button-state-layer-duration, 150ms)
       var(--rc-button-state-layer-easing, ease);
   }
 
-  :host(:has(button:hover):not([disabled]):not([pending]):not([progress])) [part='state-layer'] {
-    opacity: var(--rc-button-hover-state-layer-opacity, 0.08);
+  [part='state-layer']::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: var(--_rc-button-ripple-x, 50%);
+    inset-block-start: var(--_rc-button-ripple-y, 50%);
+    inline-size: var(--_rc-button-ripple-size, 0);
+    block-size: var(--_rc-button-ripple-size, 0);
+    border-radius: 50%;
+    background: var(--_rc-button-ripple-color, currentColor);
+    opacity: 0;
+    pointer-events: none;
+    translate: -50% -50%;
+    scale: 0;
   }
 
-  :host(:has(button:focus-visible):not([disabled])) [part='state-layer'] {
-    opacity: var(--rc-button-focus-state-layer-opacity, 0.12);
+  [part='state-layer'][data-rippling]::after {
+    animation: rc-button-ripple var(--_rc-button-ripple-duration, 0ms)
+      var(--_rc-button-ripple-easing, ease-out);
   }
 
-  :host(:has(button:active):not([disabled]):not([pending]):not([progress])) [part='state-layer'] {
-    opacity: var(--rc-button-pressed-state-layer-opacity, 0.12);
+  :host(:hover:not([disabled]):not([pending]):not([progress])) [part='state-layer']::before {
+    opacity: var(--rc-button-hover-state-layer-opacity, 0);
+  }
+
+  :host(:focus-within:not([disabled])) [part='state-layer']::before {
+    opacity: var(--rc-button-focus-state-layer-opacity, 0);
+  }
+
+  :host(:active:not([disabled]):not([pending]):not([progress])) [part='state-layer']::before {
+    opacity: var(--rc-button-pressed-state-layer-opacity, 0);
   }
 
   [part='progress'] {
     display: none;
     place-items: center;
     color: var(--rc-button-progress-color, currentColor);
+    z-index: 2;
   }
 
   :host([pending]) [part='progress'],
@@ -122,7 +151,27 @@ export const buttonStyles = css`
     }
   }
 
+  @keyframes rc-button-ripple {
+    from {
+      opacity: var(--_rc-button-ripple-opacity, 0);
+      scale: 0;
+    }
+
+    70% {
+      opacity: var(--_rc-button-ripple-opacity, 0);
+    }
+
+    to {
+      opacity: 0;
+      scale: 1;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    [part='state-layer'][data-rippling]::after {
+      animation-duration: 0ms;
+    }
+
     [part='progress']::before {
       animation-duration: 2s;
     }
@@ -135,7 +184,7 @@ export const buttonStyles = css`
       color: ButtonText;
     }
 
-    [part='state-layer'] {
+    [part='state-layer']::before {
       background: Highlight;
     }
   }
