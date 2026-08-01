@@ -10,11 +10,13 @@ import { NavigationBarDemo } from '@site/src/components/ComponentDemos';
 
 # rc-navigation-bar
 
-Bottom navigation landmark that styles consumer-authored links.
+Bottom navigation layout that styles consumer-authored links.
 
 Use this for compact PWA navigation where native anchors should remain router
-friendly and work before custom element upgrade. The component does not own
-routing or breakpoint policy; mark the current link with `aria-current="page"`
+friendly and work before custom element upgrade. Wrap it in a native `<nav>` to
+provide navigation landmark semantics. The component deliberately provides no
+landmark role of its own because the app owns page structure and may render
+multiple navigation surfaces. Mark the current link with `aria-current="page"`
 or provide `active-selector` for router active classes.
 
 <AtAGlance
@@ -55,25 +57,39 @@ import '@rcarls/rc-navigation-bar/define';
 ## Usage
 
 ```html
-<rc-navigation-bar label="Main navigation">
-  <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-    <span>Recipes</span>
-  </a>
-  <a href="/shopping">
-    <span data-rc-navigation-icon aria-hidden="true">shopping_cart</span>
-    <span>Shopping</span>
-  </a>
-  <a href="/settings">
-    <span data-rc-navigation-icon aria-hidden="true">settings</span>
-    <span>Settings</span>
-  </a>
-</rc-navigation-bar>
+<nav aria-label="Main navigation">
+  <rc-navigation-bar>
+    <a href="/recipes" aria-current="page">
+      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+      <span>Recipes</span>
+    </a>
+    <a href="/shopping">
+      <span data-rc-navigation-icon aria-hidden="true">shopping_cart</span>
+      <span>Shopping</span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span>Settings</span>
+    </a>
+  </rc-navigation-bar>
+</nav>
 ```
+
+The native `<nav>` is the navigation landmark and owns its accessible label,
+just as `<search>` owns landmark semantics around `rc-search-bar`.
+`rc-navigation-bar` only provides layout, active-state styling, and indicator
+positioning.
 
 The active indicator measures `[data-rc-navigation-indicator]`, then
 `[data-rc-navigation-icon]`, then the active link itself. Use
 `indicator-target` when your markup needs a different measured element.
+The bundled themes set the tagged icon target's `line-height` equal to its
+`block-size`, keeping icon-font glyphs centered within the same box used for
+hover and indicator geometry. Native `<img>`, `<svg>`, and Iconify icons use that
+same target geometry without requiring a separate font offset. Set
+`--rc-navigation-bar-icon-line-height` on the bar to opt out or accommodate
+different font metrics; for example, use `1` to restore the icon font's em-based
+line height.
 
 ## Live demo
 
@@ -82,10 +98,12 @@ The active indicator measures `[data-rc-navigation-indicator]`, then
 ## Router active classes
 
 ```html
-<rc-navigation-bar active-selector="a.router-active">
-  <a class="router-active" href="/recipes">Recipes</a>
-  <a href="/settings">Settings</a>
-</rc-navigation-bar>
+<nav aria-label="Main navigation">
+  <rc-navigation-bar active-selector="a.router-active">
+    <a class="router-active" href="/recipes">Recipes</a>
+    <a href="/settings">Settings</a>
+  </rc-navigation-bar>
+</nav>
 ```
 
 ## Adaptive navigation
@@ -119,16 +137,18 @@ const isExpanded = matchMedia('(min-width: 840px)').matches;
 
 ```html
 <!-- compact: <600px -->
-<rc-navigation-bar label="Main navigation">
-  <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-    <span>Recipes</span>
-  </a>
-  <a href="/settings">
-    <span data-rc-navigation-icon aria-hidden="true">settings</span>
-    <span>Settings</span>
-  </a>
-</rc-navigation-bar>
+<nav aria-label="Main navigation">
+  <rc-navigation-bar>
+    <a href="/recipes" aria-current="page">
+      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+      <span>Recipes</span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span>Settings</span>
+    </a>
+  </rc-navigation-bar>
+</nav>
 
 <!-- medium and expanded: >=600px -->
 <rc-navigation-rail label="Main navigation">
@@ -179,9 +199,10 @@ the component core.
 
 ## Material theme
 
-`rc-theme-material/components.css` applies Material 3 bottom navigation metrics:
-an 80dp surface, 64×32 active indicator targets, safe-area padding, label-medium
-typography, and state-layer hover treatment.
+`rc-theme-material/components.css` applies the Material 3 bottom navigation
+metrics used by the official Material Components implementation: an 80dp
+surface, 64×32dp active indicator target, centered 24dp icon, safe-area padding,
+label-medium typography, and state-layer hover treatment.
 
 Recipe Tome still uses local Solid prototypes during the promotion branch; its
 consumer migration to these package components is a follow-up step.

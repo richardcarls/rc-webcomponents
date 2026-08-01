@@ -33,16 +33,20 @@ test('keeps consumer-authored links connected with author attributes intact', as
 
 test('has no automated accessibility violations with a current page link', async () => {
   const screen = render(html`
-    <rc-navigation-bar data-testid="host" label="Main navigation">
-      <a href="/recipes" aria-current="page">Recipes</a>
-      <a href="/settings">Settings</a>
-    </rc-navigation-bar>
+    <nav aria-label="Main navigation" data-testid="nav">
+      <rc-navigation-bar data-testid="host">
+        <a href="/recipes" aria-current="page">Recipes</a>
+        <a href="/settings">Settings</a>
+      </rc-navigation-bar>
+    </nav>
   `);
   const host = (await screen.getByTestId('host').element()) as RCNavigationBar;
+  const nav = await screen.getByTestId('nav').element();
 
   await host.updateComplete;
 
-  await expectNoA11yViolations(host);
+  expect(host.shadowRoot?.querySelector('nav, [role="navigation"]')).toBeNull();
+  await expectNoA11yViolations(nav);
 });
 
 test('positions the indicator on the aria-current link target', async () => {

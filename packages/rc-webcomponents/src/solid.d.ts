@@ -319,13 +319,13 @@ export type RCFabMenuToggleDetail = RCMenuButtonToggleDetail;
 
 /** Public API surface of `<rc-navigation-bar>`. */
 export type RCNavigationBarRef = HTMLElement & {
-  label: string;
   activeSelector: string;
   indicatorTarget: string;
 };
 
 /** Public API surface of `<rc-navigation-rail>`. */
 export type RCNavigationRailRef = RCNavigationBarRef & {
+  label: string;
   expanded: boolean;
   defaultExpanded: boolean;
   toggleable: boolean;
@@ -791,7 +791,6 @@ declare module 'solid-js' {
       };
 
       'rc-navigation-bar': JSX.HTMLAttributes<RCNavigationBarRef> & {
-        label?: string;
         activeSelector?: string;
         indicatorTarget?: string;
       };

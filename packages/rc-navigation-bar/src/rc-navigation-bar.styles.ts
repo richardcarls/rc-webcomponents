@@ -12,7 +12,7 @@ export const navigationBarStyles = css`
     display: none;
   }
 
-  nav {
+  [part='nav'] {
     position: relative;
     display: flex;
     align-items: stretch;

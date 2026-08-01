@@ -430,13 +430,13 @@ export type RCFabMenuToggleDetail = {
 
 /** Public API surface of `<rc-navigation-bar>`. */
 export type RCNavigationBarRef = HTMLElement & {
-  label: string;
   activeSelector: string;
   indicatorTarget: string;
 };
 
 /** Public API surface of `<rc-navigation-rail>`. */
 export type RCNavigationRailRef = RCNavigationBarRef & {
+  label: string;
   expanded: boolean;
   defaultExpanded: boolean;
   toggleable: boolean;
@@ -758,7 +758,6 @@ declare module 'react' {
         React.HTMLAttributes<RCNavigationBarRef>,
         RCNavigationBarRef
       > & {
-        label?: string;
         'active-selector'?: string;
         'indicator-target'?: string;
       };

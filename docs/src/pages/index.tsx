@@ -27,7 +27,7 @@ const packages = [
   ['rc-app-bar', 'App bar modeled after Material 3 Top app bar', '/components/rc-app-bar'],
   [
     'rc-navigation-bar',
-    'Bottom navigation landmark for native links',
+    'Bottom navigation layout for native links',
     '/components/rc-navigation-bar',
   ],
   [

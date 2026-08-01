@@ -431,24 +431,30 @@ export function NavigationBarDemo() {
 
   return (
     <DemoFrame>
-      <rc-navigation-bar label="Demo navigation">
-        {navigationDestinations.map(({ href, label, icon }) => (
-          <a
-            key={href}
-            href={href}
-            aria-current={active === href ? 'page' : undefined}
-            onClick={(event) => {
-              event.preventDefault();
-              setActive(href);
-            }}
-          >
-            <span data-rc-navigation-icon className="material-symbols-outlined" aria-hidden="true">
-              {icon}
-            </span>
-            <span>{label}</span>
-          </a>
-        ))}
-      </rc-navigation-bar>
+      <nav aria-label="Demo navigation">
+        <rc-navigation-bar>
+          {navigationDestinations.map(({ href, label, icon }) => (
+            <a
+              key={href}
+              href={href}
+              aria-current={active === href ? 'page' : undefined}
+              onClick={(event) => {
+                event.preventDefault();
+                setActive(href);
+              }}
+            >
+              <span
+                data-rc-navigation-icon
+                className="material-symbols-outlined"
+                aria-hidden="true"
+              >
+                {icon}
+              </span>
+              <span>{label}</span>
+            </a>
+          ))}
+        </rc-navigation-bar>
+      </nav>
       <p>
         Current destination: {navigationDestinations.find(({ href }) => href === active)?.label}
       </p>

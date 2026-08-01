@@ -104,7 +104,7 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-bottom-sheet`](packages/rc-bottom-sheet/) | Modal bottom-sheet wrapper for a native `<dialog>` | rc-dialog |
 | [`rc-fab`](packages/rc-fab/) | Sticky floating action button modeled after Material 3 Floating action button | rc-common |
 | [`rc-fab-menu`](packages/rc-fab-menu/) | Floating action button menu wrapper for an `rc-menu` action surface | rc-menu-button, rc-menu |
-| [`rc-navigation-bar`](packages/rc-navigation-bar/) | Bottom navigation landmark that styles consumer-authored links | rc-common |
+| [`rc-navigation-bar`](packages/rc-navigation-bar/) | Bottom navigation layout that styles consumer-authored links | rc-common |
 | [`rc-navigation-rail`](packages/rc-navigation-rail/) | Navigation rail landmark that styles consumer-authored links | rc-common |
 | [`rc-segmented-button`](packages/rc-segmented-button/) | Segmented button group backed by native radio inputs | None |
 | [`rc-snackbar`](packages/rc-snackbar/) | Live-region host for brief status messages and optional actions | None |

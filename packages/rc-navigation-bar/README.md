@@ -1,6 +1,6 @@
 # `@rcarls/rc-navigation-bar`
 
-Bottom navigation landmark that styles consumer-authored links.
+Bottom navigation layout that styles consumer-authored links.
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-navigation-bar](https://richardcarls.github.io/rc-webcomponents/components/rc-navigation-bar).
 
@@ -22,20 +22,24 @@ import '@rcarls/rc-navigation-bar/define';
 ## Basic usage
 
 ```html
-<rc-navigation-bar label="Main navigation">
-  <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-icon aria-hidden="true">R</span>
-    <span>Recipes</span>
-  </a>
-  <a href="/settings">
-    <span data-rc-navigation-icon aria-hidden="true">S</span>
-    <span>Settings</span>
-  </a>
-</rc-navigation-bar>
+<nav aria-label="Main navigation">
+  <rc-navigation-bar>
+    <a href="/recipes" aria-current="page">
+      <span data-rc-navigation-icon aria-hidden="true">R</span>
+      <span>Recipes</span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-icon aria-hidden="true">S</span>
+      <span>Settings</span>
+    </a>
+  </rc-navigation-bar>
+</nav>
 ```
 
-The component reads `aria-current` from the native links. Use `active-selector` when a router
-exposes active state through classes instead.
+The consumer-authored `<nav>` provides the navigation landmark and accessible
+label. `rc-navigation-bar` deliberately provides no landmark semantics. The
+component reads `aria-current` from the native links; use `active-selector`
+when a router exposes active state through classes instead.
 
 ## Adaptive usage
 
@@ -49,11 +53,10 @@ layout stay coordinated.
 
 | Property | Attribute | Type | Default | Description |
 | --- | --- | --- | --- | --- |
-| `label` | `label` | `string` | `'Primary navigation'` | Accessible label for the navigation landmark. |
 | `activeSelector` | `active-selector` | `string` | `a[aria-current]:not([aria-current="false"])` | Selector used to find the active link. |
 | `indicatorTarget` | `indicator-target` | `string` | `[data-rc-navigation-indicator], [data-rc-navigation-icon]` | Selector inside the active link used for indicator geometry. |
 
 | Part | Description |
 | --- | --- |
-| `nav` | Component-owned navigation landmark. |
+| `nav` | Navigation layout container. |
 | `indicator` | Active item indicator. |
