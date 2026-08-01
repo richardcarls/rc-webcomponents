@@ -149,6 +149,30 @@ test('navigation surfaces receive Material 3 dimensions', () => {
   expect(railStyles.getPropertyValue('--rc-navigation-rail-focus-ring')).not.toBe('');
 });
 
+test('navigation bar matches tagged target line height to its block size', () => {
+  const scope = renderScope();
+  const fontBar = document.createElement('rc-navigation-bar');
+  const svgBar = document.createElement('rc-navigation-bar');
+  const link = document.createElement('a');
+  const symbol = document.createElement('span');
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
+  symbol.dataset.rcNavigationIcon = '';
+  svg.dataset.rcNavigationIcon = '';
+  link.append(symbol);
+  fontBar.append(link);
+  svgBar.append(svg);
+  scope.append(fontBar, svgBar);
+
+  expect(getComputedStyle(symbol).lineHeight).toBe('32px');
+  expect(getComputedStyle(symbol).blockSize).toBe('32px');
+  expect(getComputedStyle(symbol).insetBlockStart).toBe('auto');
+  expect(getComputedStyle(svg).insetBlockStart).toBe('auto');
+
+  fontBar.style.setProperty('--rc-navigation-bar-icon-line-height', '1');
+  expect(getComputedStyle(symbol).lineHeight).toBe('24px');
+});
+
 test('contextual styles do not style unrelated native buttons', () => {
   const scope = renderScope();
   const button = document.createElement('button');
