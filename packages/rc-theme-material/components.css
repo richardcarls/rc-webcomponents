@@ -1,5 +1,6 @@
 @layer rc-theme-material.defaults, rc-theme-material.bridge, rc-theme-material.components;
 
+@import './components/icons.css';
 @import './components/listbox.css';
 @import './components/select.css';
 @import './components/combobox.css';

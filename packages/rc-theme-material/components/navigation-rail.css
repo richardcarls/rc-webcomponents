@@ -36,6 +36,7 @@
       --md-sys-motion-easing-standard,
       cubic-bezier(0.2, 0, 0, 1)
     );
+    --rc-icon-font-line-height: 2rem;
     --rc-navigation-rail-focus-ring: 2px solid var(--md-sys-color-primary, Highlight);
     --rc-navigation-rail-focus-ring-offset: 2px;
   }

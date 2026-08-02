@@ -37,6 +37,8 @@
     --rc-font-family: var(--md-sys-typescale-body-medium-font, inherit);
     --rc-font-size: var(--md-sys-typescale-body-medium-size, 0.875rem);
     --rc-line-height: var(--md-sys-typescale-body-medium-line-height, 1.25rem);
+    --rc-icon-font-size: 1.5rem;
+    --rc-icon-font-line-height: var(--rc-icon-font-size);
     --rc-control-block-size: 2.5rem;
     --rc-control-padding-block: 0.5rem;
     --rc-control-padding-inline: 1rem;

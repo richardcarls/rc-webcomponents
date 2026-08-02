@@ -43,12 +43,4 @@
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-button[icon-only] {
     --rc-button-icon-size: 2.5rem;
   }
-
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button [data-rc-button-icon],
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button [data-rc-button-selected-icon] {
-    display: inline-grid;
-    place-items: center;
-    font-size: 1.125rem;
-    line-height: 1;
-  }
 }

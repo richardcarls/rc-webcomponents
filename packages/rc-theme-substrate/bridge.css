@@ -26,6 +26,8 @@
     --rc-font-size: var(--substrate-font-size, 1em);
     --rc-font-weight: var(--substrate-font-weight, 400);
     --rc-line-height: var(--substrate-line-height, normal);
+    --rc-icon-font-size: 1.5rem;
+    --rc-icon-font-line-height: var(--rc-icon-font-size);
     --rc-control-block-size: var(--substrate-control-block-size, 2.5rem);
     --rc-control-padding-block: var(--substrate-control-padding-block, 0.5rem);
     --rc-control-padding-inline: var(--substrate-control-padding-inline, 0.75rem);

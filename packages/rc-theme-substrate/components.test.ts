@@ -149,28 +149,33 @@ test('navigation surfaces expose the full reference token contract', () => {
   expect(railStyles.getPropertyValue('--rc-navigation-rail-focus-ring')).not.toBe('');
 });
 
-test('navigation bar matches tagged target line height to its block size', () => {
+test('icon consumers share the theme icon-font convention', () => {
   const scope = renderScope();
-  const fontBar = document.createElement('rc-navigation-bar');
-  const svgBar = document.createElement('rc-navigation-bar');
-  const link = document.createElement('a');
-  const symbol = document.createElement('span');
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const bar = document.createElement('rc-navigation-bar');
+  const rail = document.createElement('rc-navigation-rail');
+  const button = document.createElement('rc-button');
+  const listIcon = document.createElement('span');
+  const barIcon = document.createElement('span');
+  const railIcon = document.createElement('span');
+  const buttonIcon = document.createElement('span');
 
-  symbol.dataset.rcNavigationIcon = '';
-  svg.dataset.rcNavigationIcon = '';
-  link.append(symbol);
-  fontBar.append(link);
-  svgBar.append(svg);
-  scope.append(fontBar, svgBar);
+  barIcon.dataset.rcNavigationIcon = '';
+  railIcon.dataset.rcNavigationIcon = '';
+  buttonIcon.dataset.rcButtonIcon = '';
+  listIcon.dataset.rcIcon = '';
+  bar.append(barIcon);
+  rail.append(railIcon);
+  button.append(buttonIcon);
+  scope.append(bar, rail, button, listIcon);
 
-  expect(getComputedStyle(symbol).lineHeight).toBe('40px');
-  expect(getComputedStyle(symbol).blockSize).toBe('40px');
-  expect(getComputedStyle(symbol).insetBlockStart).toBe('auto');
-  expect(getComputedStyle(svg).insetBlockStart).toBe('auto');
+  expect(getComputedStyle(buttonIcon).fontSize).toBe('24px');
+  expect(getComputedStyle(buttonIcon).lineHeight).toBe('24px');
+  expect(getComputedStyle(listIcon).lineHeight).toBe('24px');
+  expect(getComputedStyle(barIcon).lineHeight).toBe('40px');
+  expect(getComputedStyle(railIcon).lineHeight).toBe('40px');
 
-  fontBar.style.setProperty('--rc-navigation-bar-icon-line-height', '1');
-  expect(getComputedStyle(symbol).lineHeight).toBe('24px');
+  bar.style.setProperty('--rc-icon-font-line-height', '1');
+  expect(getComputedStyle(barIcon).lineHeight).toBe('24px');
 });
 
 test('menu button trigger keeps a default button background token', () => {
