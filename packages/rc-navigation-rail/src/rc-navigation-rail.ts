@@ -6,6 +6,77 @@ import { NavigationIndicatorController } from '@rcarls/rc-common';
 
 import navigationRailStyles from './rc-navigation-rail.styles.js';
 
+const LIGHT_DOM_CSS = `
+@layer rc-base {
+  rc-navigation-rail > a > [data-rc-navigation-icon] {
+    align-self: center;
+    vertical-align: middle;
+  }
+
+  rc-navigation-rail:not([expanded])
+    > a
+    > [data-rc-navigation-label] {
+    max-inline-size: var(--rc-navigation-rail-collapsed-label-inline-size, 4rem);
+    font-size: smaller;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  rc-navigation-rail > a > [data-rc-navigation-indicator] {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    max-inline-size: 100%;
+    vertical-align: middle;
+  }
+
+  rc-navigation-rail > a > [data-rc-navigation-indicator] > [data-rc-navigation-icon] {
+    flex: none;
+    vertical-align: middle;
+  }
+
+  rc-navigation-rail > a > [data-rc-navigation-indicator] > :not([data-rc-navigation-icon]) {
+    position: absolute;
+    inset-block-start: calc(100% + var(--rc-navigation-rail-link-gap, 0.25rem));
+    inset-inline-start: 50%;
+    inline-size: max-content;
+    max-inline-size: var(--rc-navigation-rail-collapsed-label-inline-size, 4rem);
+    font-size: smaller;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;
+    translate: -50% 0;
+  }
+
+  rc-navigation-rail[expanded] > a > [data-rc-navigation-indicator] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--rc-navigation-rail-link-gap, 0.25rem);
+  }
+
+  rc-navigation-rail[expanded]
+    > a
+    > [data-rc-navigation-indicator]
+    > :not([data-rc-navigation-icon]) {
+    position: static;
+    inline-size: auto;
+    max-inline-size: none;
+    font-size: inherit;
+    line-height: inherit;
+    text-align: start;
+    overflow-wrap: normal;
+    translate: none;
+  }
+
+  rc-navigation-rail
+    :is([data-rc-navigation-expand-icon], [data-rc-navigation-collapse-icon])[hidden] {
+    display: none !important;
+  }
+}
+`;
+
 declare global {
   interface HTMLElementTagNameMap {
     'rc-navigation-rail': RCNavigationRail;
@@ -35,14 +106,14 @@ export interface RCNavigationRailToggleDetail {
  * @slot default - Navigation links. Direct `<a>` children are recommended.
  * @slot header - Content above the navigation links.
  * @slot footer - Content pinned after the navigation links.
- * @slot toggle - Custom rail expand/collapse control.
+ * @slot toggle - Native `<button>` or `rc-button` expand/collapse control.
  *
  * @fires rc-navigation-rail-toggle - Fired when user interaction or a method toggles expanded state.
  *
  * @csspart root - The rail layout container.
  * @csspart nav - The component-owned navigation landmark.
  * @csspart indicator - The active item indicator.
- * @csspart toggle - The default toggle button.
+ * @csspart toggle - Toggle slot container.
  * @csspart header - Header slot container.
  * @csspart footer - Footer slot container.
  *
@@ -60,24 +131,43 @@ export interface RCNavigationRailToggleDetail {
  * @cssprop [--rc-navigation-rail-item-padding-block=0.25rem] - Item block-axis padding.
  * @cssprop [--rc-navigation-rail-item-padding-inline=0.5rem] - Collapsed item inline-axis padding.
  * @cssprop [--rc-navigation-rail-expanded-item-padding-inline=1rem] - Expanded item inline-axis padding.
+ * @cssprop [--rc-navigation-rail-collapsed-label-inline-size=4rem] - Collapsed label maximum inline size.
  * @cssprop [--rc-navigation-rail-item-color=inherit] - Resting item text color.
  * @cssprop [--rc-navigation-rail-active-color=inherit] - Active item text color.
  * @cssprop [--rc-navigation-rail-indicator-bg] - Active indicator background.
  * @cssprop [--rc-navigation-rail-indicator-radius=9999px] - Active indicator corner radius.
- * @cssprop [--rc-navigation-rail-toggle-size=3rem] - Default toggle square size.
- * @cssprop [--rc-navigation-rail-toggle-radius=9999px] - Default toggle corner radius.
- * @cssprop [--rc-navigation-rail-toggle-bg=transparent] - Default toggle background.
- * @cssprop [--rc-navigation-rail-toggle-color=inherit] - Default toggle text color.
- * @cssprop [--rc-navigation-rail-toggle-hover-bg] - Default toggle hover background.
+ * @cssprop [--rc-navigation-rail-toggle-size=3rem] - Toggle region minimum block size.
+ * @cssprop [--rc-navigation-rail-toggle-inline-offset=0.5rem] - Toggle control inline-start offset.
  * @cssprop [--rc-navigation-rail-duration=200ms] - Rail expand/collapse transition duration.
  * @cssprop [--rc-navigation-rail-easing=ease] - Rail expand/collapse transition easing.
  * @cssprop [--rc-navigation-rail-indicator-duration=180ms] - Active indicator transition duration.
  * @cssprop [--rc-navigation-rail-indicator-easing=ease] - Active indicator transition easing.
- * @cssprop [--rc-navigation-rail-focus-ring=2px solid Highlight] - Slotted link and default toggle focus outline.
+ * @cssprop [--rc-navigation-rail-focus-ring=2px solid Highlight] - Slotted link focus outline.
  * @cssprop [--rc-navigation-rail-focus-ring-offset=2px] - Slotted link outline offset.
  */
 export class RCNavigationRail extends LitElement {
   static override styles = [navigationRailStyles];
+
+  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
+
+  private static _ensureBaseStyles(root: Document | ShadowRoot): void {
+    if (RCNavigationRail._styledRoots.has(root)) {
+      return;
+    }
+
+    RCNavigationRail._styledRoots.add(root);
+
+    const $style = document.createElement('style');
+
+    $style.setAttribute('data-rc-light-dom-base', 'rc-navigation-rail');
+    $style.textContent = LIGHT_DOM_CSS;
+
+    if (root instanceof Document) {
+      root.head.append($style);
+    } else {
+      root.append($style);
+    }
+  }
 
   private _defaultExpanded = false;
   private _expanded: boolean | undefined;
@@ -123,18 +213,6 @@ export class RCNavigationRail extends LitElement {
     this.requestUpdate('defaultExpanded', oldValue);
   }
 
-  /** Render the default expand/collapse toggle when no custom toggle is slotted. */
-  @property({ type: Boolean, reflect: true })
-  toggleable = false;
-
-  /** Accessible label used by the default toggle while collapsed. */
-  @property({ type: String, attribute: 'expand-label' })
-  expandLabel = 'Expand navigation';
-
-  /** Accessible label used by the default toggle while expanded. */
-  @property({ type: String, attribute: 'collapse-label' })
-  collapseLabel = 'Collapse navigation';
-
   /** Selector used to find the active link. Defaults to `aria-current`. */
   @property({ type: String, attribute: 'active-selector' })
   activeSelector = 'a[aria-current]:not([aria-current="false"])';
@@ -143,7 +221,7 @@ export class RCNavigationRail extends LitElement {
   @property({ type: String, attribute: 'indicator-target' })
   indicatorTarget = '[data-rc-navigation-indicator], [data-rc-navigation-icon]';
 
-  @state() private _hasCustomToggle = false;
+  @state() private _hasToggle = false;
 
   @state() private _hasHeader = false;
 
@@ -162,6 +240,11 @@ export class RCNavigationRail extends LitElement {
     activeSelector: () => this.activeSelector,
     indicatorTargetSelector: () => this.indicatorTarget,
   });
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    RCNavigationRail._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
+  }
 
   /** Expands the rail and dispatches `rc-navigation-rail-toggle` when it changes. */
   expand(): void {
@@ -190,32 +273,22 @@ export class RCNavigationRail extends LitElement {
     ) {
       this._indicatorCtrl.sync();
     }
+
+    if (changed.has('expanded')) {
+      this._syncToggleButton();
+    }
   }
 
   protected override render() {
-    const toggleLabel = this.expanded ? this.collapseLabel : this.expandLabel;
-
     return html`
       <div id="root" part="root">
         <div
           id="toggle-wrap"
-          ?hidden=${!this.toggleable && !this._hasCustomToggle}
+          part="toggle"
+          ?hidden=${!this._hasToggle}
           @click=${this._handleToggleClick}
         >
           <slot name="toggle" @slotchange=${this._handleToggleSlotChange}></slot>
-          ${this.toggleable && !this._hasCustomToggle
-            ? html`
-                <button
-                  id="default-toggle"
-                  part="toggle"
-                  type="button"
-                  aria-label=${toggleLabel}
-                  aria-expanded=${this.expanded ? 'true' : 'false'}
-                >
-                  <span aria-hidden="true">${this.expanded ? '←' : '☰'}</span>
-                </button>
-              `
-            : null}
         </div>
         <div id="header" part="header" ?hidden=${!this._hasHeader}>
           <slot name="header" @slotchange=${this._handleHeaderSlotChange}></slot>
@@ -238,7 +311,8 @@ export class RCNavigationRail extends LitElement {
   private _handleToggleSlotChange(event: Event): void {
     const slot = event.currentTarget as HTMLSlotElement;
 
-    this._hasCustomToggle = slot.assignedElements({ flatten: true }).length > 0;
+    this._hasToggle = slot.assignedElements({ flatten: true }).length > 0;
+    this._syncToggleButton();
   }
 
   private _handleHeaderSlotChange(event: Event): void {
@@ -254,13 +328,42 @@ export class RCNavigationRail extends LitElement {
   }
 
   private _handleToggleClick(event: MouseEvent): void {
-    const target = event.target as Element | null;
+    const $target = event.target as Element | null;
 
-    if (!target?.closest('button, [role="button"], a[href]')) {
+    if (!$target?.closest('button')) {
       return;
     }
 
     this.toggleExpanded();
+  }
+
+  private _getToggleButton(): HTMLButtonElement | null {
+    const $toggle = this.querySelector<HTMLElement>(':scope > [slot="toggle"]');
+
+    if ($toggle instanceof HTMLButtonElement) {
+      return $toggle;
+    }
+
+    return $toggle?.querySelector(':scope > button') ?? null;
+  }
+
+  private _syncToggleButton(): void {
+    const $toggle = this.querySelector<HTMLElement>(':scope > [slot="toggle"]');
+    const $button = this._getToggleButton();
+
+    if ($toggle?.localName === 'rc-button') {
+      $toggle.toggleAttribute('selected', this.expanded);
+    }
+
+    $button?.setAttribute('aria-expanded', String(this.expanded));
+
+    $button
+      ?.querySelectorAll<HTMLElement>('[data-rc-navigation-expand-icon]')
+      .forEach(($icon) => ($icon.hidden = this.expanded));
+
+    $button
+      ?.querySelectorAll<HTMLElement>('[data-rc-navigation-collapse-icon]')
+      .forEach(($icon) => ($icon.hidden = !this.expanded));
   }
 
   private _setExpanded(expanded: boolean, notify: boolean): void {

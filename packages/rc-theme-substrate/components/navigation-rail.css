@@ -28,16 +28,36 @@
     --rc-navigation-rail-indicator-easing: ease;
     --rc-icon-font-line-height: 2.5rem;
     --rc-navigation-rail-toggle-size: 3rem;
-    --rc-navigation-rail-toggle-radius: var(--rc-radius-pill, 9999px);
-    --rc-navigation-rail-toggle-padding: 0;
-    --rc-navigation-rail-toggle-border: 0;
-    --rc-navigation-rail-toggle-bg: transparent;
-    --rc-navigation-rail-toggle-color: var(--rc-muted-color, CanvasText);
-    --rc-navigation-rail-toggle-font: inherit;
-    --rc-navigation-rail-toggle-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
+    --rc-navigation-rail-toggle-inline-offset: 0.5rem;
     --rc-navigation-rail-duration: var(--rc-motion-duration, 200ms);
     --rc-navigation-rail-easing: ease;
     --rc-navigation-rail-focus-ring: var(--rc-focus-ring, 2px solid Highlight);
     --rc-navigation-rail-focus-ring-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-navigation-rail > a {
+    inline-size: 100%;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-navigation-rail
+    > a
+    > :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    border-radius: var(--rc-radius-pill, 9999px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-navigation-rail[expanded]
+    > a
+    > :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    justify-content: flex-start;
+    gap: var(--rc-item-gap, 0.75rem);
+    inline-size: 100%;
+    block-size: 3.5rem;
+    padding-inline: var(--rc-item-padding-inline, 1rem);
+    box-sizing: border-box;
+    text-align: start;
   }
 }

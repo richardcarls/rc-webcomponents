@@ -328,9 +328,6 @@ export type RCNavigationRailRef = RCNavigationBarRef & {
   label: string;
   expanded: boolean;
   defaultExpanded: boolean;
-  toggleable: boolean;
-  expandLabel: string;
-  collapseLabel: string;
   expand(): void;
   collapse(): void;
   toggleExpanded(): void;
@@ -799,9 +796,6 @@ declare module 'solid-js' {
         label?: string;
         expanded?: boolean | string;
         defaultExpanded?: boolean | string;
-        toggleable?: boolean | string;
-        expandLabel?: string;
-        collapseLabel?: string;
         activeSelector?: string;
         indicatorTarget?: string;
         'prop:expanded'?: boolean | undefined;
