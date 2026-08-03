@@ -11,6 +11,7 @@ const componentEntries = [
   'dialog',
   'disclosure',
   'fab',
+  'icons',
   'list-item',
   'listbox',
   'fab-menu',

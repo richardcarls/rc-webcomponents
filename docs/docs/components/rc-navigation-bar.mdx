@@ -86,10 +86,11 @@ The active indicator measures `[data-rc-navigation-indicator]`, then
 The bundled themes set the tagged icon target's `line-height` equal to its
 `block-size`, keeping icon-font glyphs centered within the same box used for
 hover and indicator geometry. Native `<img>`, `<svg>`, and Iconify icons use that
-same target geometry without requiring a separate font offset. Set
-`--rc-navigation-bar-icon-line-height` on the bar to opt out or accommodate
-different font metrics; for example, use `1` to restore the icon font's em-based
-line height.
+same target geometry without requiring a separate font offset. The higher-order
+`--rc-icon-font-size` and `--rc-icon-font-line-height` theme tokens also apply to
+button, rail, and generic `[data-rc-icon]` markup. Override either token at the
+theme root or on one component; for example, set `--rc-icon-font-line-height: 1`
+to restore an icon font's em-based line height.
 
 ## Live demo
 

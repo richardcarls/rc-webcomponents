@@ -58,6 +58,12 @@ reference layer:
 @import '@rcarls/rc-theme-substrate/components/dialog.css';
 ```
 
+Tag general icon-font markup with `data-rc-icon`; component-specific markers
+such as `data-rc-button-icon` and `data-rc-navigation-icon` opt in
+automatically. The shared `--rc-icon-font-size` and
+`--rc-icon-font-line-height` tokens keep glyph geometry consistent and can be
+overridden at the theme boundary or on one component.
+
 ## View transitions
 
 Substrate includes stable CSS hooks for apps that opt into View Transitions,

@@ -70,6 +70,11 @@ unrelated application controls and follows design-token conventions.
 Fonts and icons are not bundled; websites and applications may provide
 [Roboto](https://fonts.google.com/specimen/Roboto) and
 [Material Symbols](https://fonts.google.com/icons) through other means.
+Tag general icon-font markup with `data-rc-icon`; component-specific markers
+such as `data-rc-button-icon` and `data-rc-navigation-icon` opt in
+automatically. The shared `--rc-icon-font-size` and
+`--rc-icon-font-line-height` tokens keep glyph geometry consistent and can be
+overridden at the theme boundary or on one component.
 
 [Material Web](material-web.dev) token names are used where a corresponding component
 exists. Search bar and top app bar mappings follow Material 3 token terminology and

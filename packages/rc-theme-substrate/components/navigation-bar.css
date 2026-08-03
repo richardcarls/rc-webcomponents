@@ -22,7 +22,7 @@
     --rc-navigation-bar-indicator-radius: var(--rc-radius-pill, 9999px);
     --rc-navigation-bar-indicator-duration: var(--rc-motion-duration, 180ms);
     --rc-navigation-bar-indicator-easing: ease;
-    --rc-navigation-bar-icon-line-height: 2.5rem;
+    --rc-icon-font-line-height: 2.5rem;
     --rc-navigation-bar-focus-ring: var(--rc-focus-ring, 2px solid Highlight);
     --rc-navigation-bar-focus-ring-offset: var(--rc-focus-ring-offset, 2px);
   }
@@ -36,12 +36,5 @@
     inline-size: 2.5rem;
     block-size: 2.5rem;
     border-radius: var(--rc-radius-pill, 9999px);
-    font-size: 1.5rem;
-    /*
-     * Unlayered icon-font boilerplate otherwise beats this layered theme rule.
-     * Keep the geometry invariant important, but let consumers opt out by
-     * overriding the normally-cascaded custom property.
-     */
-    line-height: var(--rc-navigation-bar-icon-line-height, 2.5rem) !important;
   }
 }

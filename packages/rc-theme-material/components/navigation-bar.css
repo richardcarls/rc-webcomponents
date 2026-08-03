@@ -20,7 +20,7 @@
       --md-sys-motion-easing-standard,
       cubic-bezier(0.2, 0, 0, 1)
     );
-    --rc-navigation-bar-icon-line-height: 2rem;
+    --rc-icon-font-line-height: 2rem;
     --rc-navigation-bar-focus-ring: 2px solid var(--md-sys-color-primary, Highlight);
     --rc-navigation-bar-focus-ring-offset: 2px;
     padding-block-end: env(safe-area-inset-bottom, 0px);
@@ -43,13 +43,6 @@
     inline-size: 4rem;
     block-size: 2rem;
     border-radius: var(--md-sys-shape-corner-full, 9999px);
-    font-size: 1.5rem;
-    /*
-     * Unlayered icon-font boilerplate otherwise beats this layered theme rule.
-     * Keep the geometry invariant important, but let consumers opt out by
-     * overriding the normally-cascaded custom property.
-     */
-    line-height: var(--rc-navigation-bar-icon-line-height, 2rem) !important;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))

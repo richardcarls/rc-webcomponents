@@ -26,6 +26,7 @@
     --rc-navigation-rail-indicator-radius: var(--rc-radius-pill, 9999px);
     --rc-navigation-rail-indicator-duration: var(--rc-motion-duration, 180ms);
     --rc-navigation-rail-indicator-easing: ease;
+    --rc-icon-font-line-height: 2.5rem;
     --rc-navigation-rail-toggle-size: 3rem;
     --rc-navigation-rail-toggle-radius: var(--rc-radius-pill, 9999px);
     --rc-navigation-rail-toggle-padding: 0;

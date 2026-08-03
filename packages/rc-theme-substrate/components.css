@@ -1,5 +1,6 @@
 @layer rc-theme-substrate.defaults, rc-theme-substrate.bridge, rc-theme-substrate.components;
 
+@import './components/icons.css';
 @import './components/listbox.css';
 @import './components/select.css';
 @import './components/combobox.css';
