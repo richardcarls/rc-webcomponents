@@ -144,8 +144,14 @@ test('navigation surfaces receive Material 3 dimensions', () => {
 
   expect(railStyles.getPropertyValue('--rc-navigation-rail-inline-size')).toBe('5rem');
   expect(railStyles.getPropertyValue('--rc-navigation-rail-expanded-inline-size')).toBe('16rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-item-padding-inline')).toBe('0.5rem');
+
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-expanded-item-padding-inline')).toBe(
+    '0.5rem',
+  );
+
   expect(railStyles.getPropertyValue('--rc-navigation-rail-indicator-bg')).not.toBe('');
-  expect(railStyles.getPropertyValue('--rc-navigation-rail-toggle-hover-bg')).not.toBe('');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-toggle-inline-offset')).toBe('1rem');
   expect(railStyles.getPropertyValue('--rc-navigation-rail-focus-ring')).not.toBe('');
 });
 

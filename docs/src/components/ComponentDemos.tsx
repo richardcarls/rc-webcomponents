@@ -491,13 +491,29 @@ export function NavigationRailDemo() {
       <rc-navigation-rail
         ref={setRailEl}
         label="Demo navigation"
-        toggleable
         expanded={expanded}
         style={{ minBlockSize: '22rem' }}
       >
-        <strong slot="header" aria-hidden="true">
-          RT
-        </strong>
+        <rc-button slot="toggle" icon-only>
+          <button type="button" aria-label="Toggle navigation">
+            <span
+              data-rc-button-icon
+              data-rc-navigation-expand-icon
+              className="material-symbols-outlined"
+              aria-hidden="true"
+            >
+              menu
+            </span>
+            <span
+              data-rc-button-selected-icon
+              data-rc-navigation-collapse-icon
+              className="material-symbols-outlined"
+              aria-hidden="true"
+            >
+              menu_open
+            </span>
+          </button>
+        </rc-button>
         {navigationDestinations.map(({ href, label, icon }) => (
           <a
             key={href}
@@ -508,14 +524,155 @@ export function NavigationRailDemo() {
               setActive(href);
             }}
           >
-            <span data-rc-navigation-icon className="material-symbols-outlined" aria-hidden="true">
-              {icon}
+            <span data-rc-navigation-indicator>
+              <span
+                data-rc-navigation-icon
+                className="material-symbols-outlined"
+                aria-hidden="true"
+              >
+                {icon}
+              </span>
+              <span>{label}</span>
             </span>
-            <span>{label}</span>
           </a>
         ))}
       </rc-navigation-rail>
       <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+export function AdaptiveNavigationDemo() {
+  const [active, setActive] = useState('#recipes');
+  const [showRail, setShowRail] = useState(false);
+
+  const switchLayout = () => {
+    const update = () => setShowRail((current) => !current);
+    const documentWithTransitions = document as Document & {
+      startViewTransition?: (callback: () => void) => void;
+    };
+
+    if (documentWithTransitions.startViewTransition) {
+      documentWithTransitions.startViewTransition(update);
+    } else {
+      update();
+    }
+  };
+
+  const renderLinks = (forRail: boolean) =>
+    navigationDestinations.map(({ href, label, icon }) => {
+      const iconElement = (
+        <span data-rc-navigation-icon className="material-symbols-outlined" aria-hidden="true">
+          {icon}
+        </span>
+      );
+
+      return (
+        <a
+          key={href}
+          href={href}
+          aria-current={active === href ? 'page' : undefined}
+          onClick={(event) => {
+            event.preventDefault();
+            setActive(href);
+          }}
+        >
+          {forRail ? (
+            <span data-rc-navigation-indicator>
+              {iconElement}
+              <span>{label}</span>
+            </span>
+          ) : (
+            <>
+              {iconElement}
+              <span>{label}</span>
+            </>
+          )}
+        </a>
+      );
+    });
+
+  return (
+    <DemoFrame>
+      <div
+        style={
+          {
+            display: 'grid',
+            gridTemplateColumns: showRail ? 'auto 1fr' : '1fr',
+            minBlockSize: '22rem',
+            border: '1px solid color-mix(in srgb, currentColor 20%, transparent)',
+            borderRadius: '1rem',
+            overflow: 'hidden',
+          } as CSSProperties
+        }
+      >
+        {showRail ? (
+          <rc-navigation-rail
+            label="Adaptive demo navigation"
+            style={{ viewTransitionName: 'adaptive-navigation' }}
+          >
+            <rc-fab
+              slot="header"
+              position="top-start"
+              style={{ '--rc-fab-position': 'static' } as CSSProperties}
+            >
+              <button type="button" aria-label="New recipe">
+                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                  add
+                </span>
+              </button>
+            </rc-fab>
+            {renderLinks(true)}
+          </rc-navigation-rail>
+        ) : null}
+        <main
+          style={{
+            position: 'relative',
+            display: 'grid',
+            alignContent: 'start',
+            gap: '1rem',
+            minInlineSize: 0,
+            padding: '1.5rem',
+          }}
+        >
+          <rc-button>
+            <button type="button" onClick={switchLayout}>
+              Switch to {showRail ? 'navigation bar' : 'navigation rail'}
+            </button>
+          </rc-button>
+          <h3 style={{ margin: 0 }}>
+            {navigationDestinations.find(({ href }) => href === active)?.label}
+          </h3>
+          <p style={{ margin: 0 }}>
+            The app owns the responsive switch while both navigation surfaces reuse the same
+            destinations and active state.
+          </p>
+          {!showRail ? (
+            <rc-fab
+              position="block-end"
+              style={
+                {
+                  '--rc-fab-position': 'absolute',
+                  viewTransitionName: 'adaptive-fab',
+                } as CSSProperties
+              }
+            >
+              <button type="button" aria-label="New recipe">
+                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                  add
+                </span>
+              </button>
+            </rc-fab>
+          ) : null}
+        </main>
+        {!showRail ? (
+          <nav aria-label="Adaptive demo navigation" style={{ gridColumn: '1 / -1' }}>
+            <rc-navigation-bar style={{ viewTransitionName: 'adaptive-navigation' }}>
+              {renderLinks(false)}
+            </rc-navigation-bar>
+          </nav>
+        ) : null}
+      </div>
     </DemoFrame>
   );
 }

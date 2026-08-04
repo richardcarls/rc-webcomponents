@@ -6,7 +6,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
 import { AtAGlance } from '@site/src/components/AtAGlance';
-import { NavigationRailDemo } from '@site/src/components/ComponentDemos';
+import { AdaptiveNavigationDemo, NavigationRailDemo } from '@site/src/components/ComponentDemos';
 
 # rc-navigation-rail
 
@@ -55,15 +55,36 @@ import '@rcarls/rc-navigation-rail/define';
 ## Usage
 
 ```html
-<rc-navigation-rail label="Main navigation" toggleable>
-  <span slot="header" class="brand-mark">RT</span>
+<rc-navigation-rail label="Main navigation">
+  <rc-button slot="toggle" icon-only>
+    <button type="button" aria-label="Toggle navigation">
+      <span
+        data-rc-button-icon
+        data-rc-navigation-expand-icon
+        class="material-symbols-outlined"
+        aria-hidden="true"
+        >menu</span
+      >
+      <span
+        data-rc-button-selected-icon
+        data-rc-navigation-collapse-icon
+        class="material-symbols-outlined"
+        aria-hidden="true"
+        >menu_open</span
+      >
+    </button>
+  </rc-button>
   <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-    <span>Recipes</span>
+    <span data-rc-navigation-indicator>
+      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+      <span>Recipes</span>
+    </span>
   </a>
   <a href="/shopping">
-    <span data-rc-navigation-icon aria-hidden="true">shopping_cart</span>
-    <span>Shopping</span>
+    <span data-rc-navigation-indicator>
+      <span data-rc-navigation-icon aria-hidden="true">shopping_cart</span>
+      <span>Shopping</span>
+    </span>
   </a>
   <button slot="footer" type="button" aria-label="Settings">settings</button>
 </rc-navigation-rail>
@@ -77,20 +98,49 @@ import '@rcarls/rc-navigation-rail/define';
 
 Use `default-expanded` for uncontrolled initial state or bind `expanded` from
 your app. Programmatic property writes are silent. User interaction with the
-default or slotted toggle dispatches `rc-navigation-rail-toggle`.
+slotted toggle dispatches `rc-navigation-rail-toggle`.
+
+The Material theme keeps each icon at 24px while its indicator target grows
+from 56×32px in the collapsed rail to the expanded row height. Both states use
+the same inline-start track so icons do not shift horizontally. Wrap each icon
+and label in `data-rc-navigation-indicator` so the expanded Material indicator
+contains both.
 
 ```html
-<rc-navigation-rail default-expanded toggleable>
+<rc-navigation-rail default-expanded>
+  <button slot="toggle" type="button" aria-label="Toggle navigation">
+    <span data-rc-navigation-expand-icon class="material-symbols-outlined" aria-hidden="true"
+      >menu</span
+    >
+    <span data-rc-navigation-collapse-icon class="material-symbols-outlined" aria-hidden="true"
+      >menu_open</span
+    >
+  </button>
   <a href="/recipes" aria-current="page">Recipes</a>
   <a href="/settings">Settings</a>
 </rc-navigation-rail>
 ```
 
-## Custom toggle
+## Collapse control
+
+Provide the collapse control in light DOM as either a native button or an
+`rc-button` wrapping a direct native button. The control remains a semantic,
+keyboard-operable button before custom element upgrade; the rail enhances it by
+synchronizing `aria-expanded`, switching the marked icons, and dispatching its
+toggle event. With `rc-button`, mark `menu` as `data-rc-button-icon` and
+`menu_open` as `data-rc-button-selected-icon`; the rail coordinates the
+wrapper's `selected` state.
 
 ```html
 <rc-navigation-rail>
-  <button slot="toggle" type="button" aria-label="Toggle navigation">menu</button>
+  <button slot="toggle" type="button" aria-label="Toggle navigation">
+    <span data-rc-navigation-expand-icon class="material-symbols-outlined" aria-hidden="true"
+      >menu</span
+    >
+    <span data-rc-navigation-collapse-icon class="material-symbols-outlined" aria-hidden="true"
+      >menu_open</span
+    >
+  </button>
   <a href="/recipes" aria-current="page">Recipes</a>
 </rc-navigation-rail>
 ```
@@ -113,29 +163,43 @@ Share destination data and active-link logic between the bar and rail. Mark the
 current native link with `aria-current="page"`, or set `active-selector` to your
 router's active class.
 
+<AdaptiveNavigationDemo />
+
 ```html
 <!-- medium: >=600px -->
 <rc-navigation-rail label="Main navigation">
   <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-    <span>Recipes</span>
+    <span data-rc-navigation-indicator>
+      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+      <span>Recipes</span>
+    </span>
   </a>
   <a href="/settings">
-    <span data-rc-navigation-icon aria-hidden="true">settings</span>
-    <span>Settings</span>
+    <span data-rc-navigation-indicator>
+      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span>Settings</span>
+    </span>
   </a>
 </rc-navigation-rail>
 
 <!-- expanded: >=840px, app decides whether expansion is offered -->
-<rc-navigation-rail label="Main navigation" toggleable expanded>
-  <span slot="header" class="brand-mark">RT</span>
+<rc-navigation-rail label="Main navigation" expanded>
+  <rc-fab slot="header" position="top-start" style="--rc-fab-position: static">
+    <button type="button" aria-label="New recipe">
+      <span data-rc-button-icon aria-hidden="true">add</span>
+    </button>
+  </rc-fab>
   <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-    <span>Recipes</span>
+    <span data-rc-navigation-indicator>
+      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+      <span>Recipes</span>
+    </span>
   </a>
   <a href="/settings">
-    <span data-rc-navigation-icon aria-hidden="true">settings</span>
-    <span>Settings</span>
+    <span data-rc-navigation-indicator>
+      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span>Settings</span>
+    </span>
   </a>
 </rc-navigation-rail>
 ```
@@ -148,7 +212,6 @@ const key = 'app.navigation-rail-expanded';
 const isExpanded = matchMedia('(min-width: 840px)').matches;
 const rail = document.querySelector('rc-navigation-rail');
 
-rail.toggleable = isExpanded;
 rail.expanded = isExpanded && localStorage.getItem(key) === 'true';
 rail.addEventListener('rc-navigation-rail-toggle', (event) => {
   localStorage.setItem(key, String(event.detail.expanded));
@@ -171,9 +234,9 @@ rc-navigation-rail::part(indicator) {
 ```
 
 The rail's own collapsed/expanded state uses component-owned CSS transitions and
-snaps to the final state under reduced motion. More elaborate layout morphs,
-such as moving a FAB into the rail header, should use app-owned FLIP/Web
-Animations logic because the page owns those source and destination regions.
+snaps to the final state under reduced motion. The adaptive example uses an
+app-owned View Transition to switch navigation surfaces and move the FAB from
+the page action position into the rail's generic header slot.
 
 ## Material theme
 

@@ -22,14 +22,22 @@ import '@rcarls/rc-navigation-rail/define';
 ## Basic usage
 
 ```html
-<rc-navigation-rail label="Main navigation" toggleable>
+<rc-navigation-rail label="Main navigation">
+  <button slot="toggle" type="button" aria-label="Toggle navigation">
+    <span data-rc-navigation-expand-icon aria-hidden="true">menu</span>
+    <span data-rc-navigation-collapse-icon aria-hidden="true">menu_open</span>
+  </button>
   <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-icon aria-hidden="true">R</span>
-    <span>Recipes</span>
+    <span data-rc-navigation-indicator>
+      <span data-rc-navigation-icon aria-hidden="true">R</span>
+      <span>Recipes</span>
+    </span>
   </a>
   <a href="/settings">
-    <span data-rc-navigation-icon aria-hidden="true">S</span>
-    <span>Settings</span>
+    <span data-rc-navigation-indicator>
+      <span data-rc-navigation-icon aria-hidden="true">S</span>
+      <span>Settings</span>
+    </span>
   </a>
 </rc-navigation-rail>
 ```
@@ -44,32 +52,29 @@ sync.
 
 ## Slots
 
-| Slot | Description |
-| --- | --- |
-| default | Navigation links. Direct `<a>` children are recommended. |
-| `header` | Content above the navigation links. |
-| `footer` | Content pinned after the navigation links. |
-| `toggle` | Custom expand/collapse control. |
+| Slot     | Description                                               |
+| -------- | --------------------------------------------------------- |
+| default  | Navigation links. Direct `<a>` children are recommended.  |
+| `header` | Content above the navigation links.                       |
+| `footer` | Content pinned after the navigation links.                |
+| `toggle` | Native `<button>` or `rc-button` expand/collapse control. |
 
 ## API
 
-| Property | Attribute | Type | Default | Description |
-| --- | --- | --- | --- | --- |
-| `label` | `label` | `string` | `'Primary navigation'` | Accessible label for the navigation landmark. |
-| `expanded` | `expanded` | `boolean` | `false` | Whether the rail is expanded. Host writes are silent. |
-| `defaultExpanded` | `default-expanded` | `boolean` | `false` | Initial expanded state for uncontrolled usage. |
-| `toggleable` | `toggleable` | `boolean` | `false` | Render the default expand/collapse toggle when no custom toggle is slotted. |
-| `expandLabel` | `expand-label` | `string` | `'Expand navigation'` | Accessible label used by the default toggle while collapsed. |
-| `collapseLabel` | `collapse-label` | `string` | `'Collapse navigation'` | Accessible label used by the default toggle while expanded. |
-| `activeSelector` | `active-selector` | `string` | `a[aria-current]:not([aria-current="false"])` | Selector used to find the active link. |
-| `indicatorTarget` | `indicator-target` | `string` | `[data-rc-navigation-indicator], [data-rc-navigation-icon]` | Selector inside the active link used for indicator geometry. |
+| Property          | Attribute          | Type      | Default                                                     | Description                                                  |
+| ----------------- | ------------------ | --------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| `label`           | `label`            | `string`  | `'Primary navigation'`                                      | Accessible label for the navigation landmark.                |
+| `expanded`        | `expanded`         | `boolean` | `false`                                                     | Whether the rail is expanded. Host writes are silent.        |
+| `defaultExpanded` | `default-expanded` | `boolean` | `false`                                                     | Initial expanded state for uncontrolled usage.               |
+| `activeSelector`  | `active-selector`  | `string`  | `a[aria-current]:not([aria-current="false"])`               | Selector used to find the active link.                       |
+| `indicatorTarget` | `indicator-target` | `string`  | `[data-rc-navigation-indicator], [data-rc-navigation-icon]` | Selector inside the active link used for indicator geometry. |
 
-| Method | Description |
-| --- | --- |
-| `expand()` | Expands the rail. |
-| `collapse()` | Collapses the rail. |
+| Method             | Description             |
+| ------------------ | ----------------------- |
+| `expand()`         | Expands the rail.       |
+| `collapse()`       | Collapses the rail.     |
 | `toggleExpanded()` | Toggles expanded state. |
 
-| Event | Detail | Description |
-| --- | --- | --- |
+| Event                       | Detail                  | Description                                                     |
+| --------------------------- | ----------------------- | --------------------------------------------------------------- |
 | `rc-navigation-rail-toggle` | `{ expanded: boolean }` | Fired when user interaction or a method toggles expanded state. |

@@ -37,17 +37,17 @@ export const navigationRailStyles = css`
   #footer {
     display: flex;
     flex-direction: column;
-    align-items: center;
   }
 
-  :host([expanded]) #toggle-wrap,
   :host([expanded]) #header,
   :host([expanded]) #footer {
     align-items: stretch;
   }
 
   #toggle-wrap {
+    align-items: flex-start;
     min-block-size: var(--rc-navigation-rail-toggle-size, 3rem);
+    padding-inline-start: var(--rc-navigation-rail-toggle-inline-offset, 0.5rem);
   }
 
   #toggle-wrap[hidden],
@@ -56,27 +56,13 @@ export const navigationRailStyles = css`
     display: none;
   }
 
-  #default-toggle {
-    display: inline-grid;
-    place-items: center;
-    inline-size: var(--rc-navigation-rail-toggle-size, 3rem);
-    block-size: var(--rc-navigation-rail-toggle-size, 3rem);
-    margin-inline: auto;
-    padding: var(--rc-navigation-rail-toggle-padding, revert);
-    border: var(--rc-navigation-rail-toggle-border, revert);
-    border-radius: var(--rc-navigation-rail-toggle-radius, revert);
-    background: var(--rc-navigation-rail-toggle-bg, revert);
-    color: var(--rc-navigation-rail-toggle-color, revert);
-    font: var(--rc-navigation-rail-toggle-font, revert);
-    outline-offset: var(--rc-navigation-rail-focus-ring-offset, revert);
+  ::slotted([slot='toggle']) {
+    flex: none;
   }
 
-  #default-toggle:focus-visible {
-    outline: var(--rc-navigation-rail-focus-ring, revert);
-  }
-
-  #default-toggle:hover {
-    background: var(--rc-navigation-rail-toggle-hover-bg, revert);
+  :host(:not([expanded])) ::slotted([data-rc-navigation-collapse-icon]),
+  :host([expanded]) ::slotted([data-rc-navigation-expand-icon]) {
+    display: none;
   }
 
   nav {

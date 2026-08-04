@@ -439,9 +439,6 @@ export type RCNavigationRailRef = RCNavigationBarRef & {
   label: string;
   expanded: boolean;
   defaultExpanded: boolean;
-  toggleable: boolean;
-  expandLabel: string;
-  collapseLabel: string;
   expand(): void;
   collapse(): void;
   toggleExpanded(): void;
@@ -769,9 +766,6 @@ declare module 'react' {
         label?: string;
         expanded?: boolean;
         'default-expanded'?: boolean;
-        toggleable?: boolean;
-        'expand-label'?: string;
-        'collapse-label'?: string;
         'active-selector'?: string;
         'indicator-target'?: string;
       };

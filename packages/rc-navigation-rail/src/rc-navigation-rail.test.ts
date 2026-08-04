@@ -48,7 +48,8 @@ test('hides empty optional regions', async () => {
 
 test('has no automated accessibility violations while collapsed and expanded', async () => {
   const screen = render(html`
-    <rc-navigation-rail data-testid="host" label="Main navigation" toggleable>
+    <rc-navigation-rail data-testid="host" label="Main navigation">
+      <button slot="toggle" type="button" aria-label="Toggle navigation">Menu</button>
       <a href="/recipes" aria-current="page">Recipes</a>
       <a href="/settings">Settings</a>
     </rc-navigation-rail>
@@ -160,26 +161,71 @@ test('supports default-expanded before controlled writes', async () => {
   expect(host.hasAttribute('expanded')).toBe(true);
 });
 
-test('default toggle dispatches rc-navigation-rail-toggle and updates expanded state', async () => {
+test('slotted native toggle stays connected and reflects expanded state', async () => {
   const toggleSpy = vi.fn();
   const screen = render(html`
-    <rc-navigation-rail data-testid="host" toggleable @rc-navigation-rail-toggle=${toggleSpy}>
+    <rc-navigation-rail data-testid="host" @rc-navigation-rail-toggle=${toggleSpy}>
+      <button slot="toggle" data-testid="toggle" type="button" aria-label="Toggle navigation">
+        <span data-rc-navigation-expand-icon>Menu</span>
+        <span data-rc-navigation-collapse-icon>Close</span>
+      </button>
       <a href="/recipes">Recipes</a>
     </rc-navigation-rail>
   `);
   const host = (await screen.getByTestId('host').element()) as RCNavigationRail;
+  const $button = (await screen.getByTestId('toggle').element()) as HTMLButtonElement;
 
   await host.updateComplete;
 
-  const button = host.shadowRoot?.querySelector<HTMLButtonElement>('#default-toggle');
+  expect($button.isConnected).toBe(true);
+  expect($button.getAttribute('aria-expanded')).toBe('false');
 
-  button?.click();
+  expect($button.querySelector<HTMLElement>('[data-rc-navigation-expand-icon]')?.hidden).toBe(
+    false,
+  );
+
+  expect($button.querySelector<HTMLElement>('[data-rc-navigation-collapse-icon]')?.hidden).toBe(
+    true,
+  );
+
+  $button.click();
 
   await host.updateComplete;
 
   expect(host.expanded).toBe(true);
+  expect($button.getAttribute('aria-expanded')).toBe('true');
+  expect($button.querySelector<HTMLElement>('[data-rc-navigation-expand-icon]')?.hidden).toBe(true);
+
+  expect($button.querySelector<HTMLElement>('[data-rc-navigation-collapse-icon]')?.hidden).toBe(
+    false,
+  );
+
   expect(toggleSpy).toHaveBeenCalledTimes(1);
   expect(toggleSpy.mock.calls[0]?.[0].detail.expanded).toBe(true);
+});
+
+test('coordinates selected state with an rc-button toggle wrapper', async () => {
+  const screen = render(html`
+    <rc-navigation-rail data-testid="host">
+      <rc-button slot="toggle" data-testid="toggle">
+        <button type="button" aria-label="Toggle navigation">Menu</button>
+      </rc-button>
+      <a href="/recipes">Recipes</a>
+    </rc-navigation-rail>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCNavigationRail;
+  const $toggle = await screen.getByTestId('toggle').element();
+  const $button = $toggle.querySelector('button');
+
+  await host.updateComplete;
+
+  expect($toggle.hasAttribute('selected')).toBe(false);
+
+  $button?.click();
+  await host.updateComplete;
+
+  expect(host.expanded).toBe(true);
+  expect($toggle.hasAttribute('selected')).toBe(true);
 });
 
 test('host property writes are silent', async () => {
@@ -200,10 +246,10 @@ test('host property writes are silent', async () => {
   expect(toggleSpy).not.toHaveBeenCalled();
 });
 
-test('custom toggle content can drive expanded state', async () => {
+test('ignores clicks outside the slotted native toggle button', async () => {
   const screen = render(html`
     <rc-navigation-rail data-testid="host">
-      <button slot="toggle" data-testid="toggle" type="button">Menu</button>
+      <span slot="toggle" data-testid="toggle">Menu</span>
       <a href="/recipes">Recipes</a>
     </rc-navigation-rail>
   `);
@@ -214,7 +260,7 @@ test('custom toggle content can drive expanded state', async () => {
   toggle.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
   await host.updateComplete;
 
-  expect(host.expanded).toBe(true);
+  expect(host.expanded).toBe(false);
 });
 
 test('snaps rail and indicator animation under reduced motion', () => {
