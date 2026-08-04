@@ -221,6 +221,10 @@ export type RCChipRemoveDetail = {
   chip: HTMLElement;
 };
 
+export type RCButtonToggleDetail = {
+  selected: boolean;
+};
+
 export type RCSnackbarQueuePolicy = 'queue' | 'replace';
 export type RCSnackbarCloseReason = 'action' | 'api' | 'timeout' | 'replace' | 'clear';
 
@@ -246,7 +250,10 @@ export type RCButtonRef = HTMLElement & {
   disabled: boolean;
   pending: boolean;
   progress: boolean;
+  progressValue: number | undefined;
+  toggle: boolean;
   selected: boolean;
+  defaultSelected: boolean;
   iconOnly: boolean;
   fullWidth: boolean;
 };
@@ -617,7 +624,10 @@ declare module 'react' {
         disabled?: boolean;
         pending?: boolean;
         progress?: boolean;
+        'progress-value'?: number | string;
+        toggle?: boolean;
         selected?: boolean;
+        'default-selected'?: boolean;
         'icon-only'?: boolean;
         'full-width'?: boolean;
       };

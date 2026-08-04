@@ -156,7 +156,7 @@ test('pending and progress expose busy state without clobbering author aria-busy
   expect(host.querySelector('button')?.getAttribute('aria-busy')).toBe('false');
 });
 
-test('pending blocks pointer activation while leaving the button focusable', async () => {
+test('pending disables the native button and blocks pointer activation', async () => {
   const onClick = vi.fn();
   const screen = render(html`
     <rc-button data-testid="host" pending>
@@ -171,12 +171,12 @@ test('pending blocks pointer activation while leaving the button focusable', asy
 
   button.click();
 
-  expect(button.disabled).toBe(false);
+  expect(button.disabled).toBe(true);
   expect(button.getAttribute('aria-busy')).toBe('true');
   expect(onClick).not.toHaveBeenCalled();
 });
 
-test('progress blocks keyboard activation', async () => {
+test('progress disables the native button and blocks keyboard activation', async () => {
   const onKeyDown = vi.fn();
   const screen = render(html`
     <rc-button data-testid="host" progress>
@@ -194,10 +194,51 @@ test('progress blocks keyboard activation', async () => {
     cancelable: true,
   });
 
-  host.querySelector('button')!.dispatchEvent(event);
+  const button = host.querySelector('button')!;
 
+  button.dispatchEvent(event);
+
+  expect(button.disabled).toBe(true);
   expect(event.defaultPrevented).toBe(true);
   expect(onKeyDown).not.toHaveBeenCalled();
+});
+
+test('busy states restore a component-owned disabled state', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host">
+      <button type="button">Save</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+  host.pending = true;
+  await flushButton(host);
+  expect(host.querySelector('button')?.disabled).toBe(true);
+
+  host.pending = false;
+  host.progress = true;
+  await flushButton(host);
+  expect(host.querySelector('button')?.disabled).toBe(true);
+
+  host.progress = false;
+  await flushButton(host);
+  expect(host.querySelector('button')?.disabled).toBe(false);
+});
+
+test('busy states preserve an author-owned disabled state', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host" progress>
+      <button type="button" disabled>Save</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+  host.progress = false;
+  await flushButton(host);
+
+  expect(host.querySelector('button')?.disabled).toBe(true);
 });
 
 test('reflects icon and label presence from immediate button children', async () => {
@@ -218,6 +259,221 @@ test('reflects icon and label presence from immediate button children', async ()
   expect(host.hasAttribute('has-selected-icon')).toBe(true);
   expect(host.hasAttribute('has-label')).toBe(true);
   expect(host.iconOnly).toBe(false);
+});
+
+test('selected icon switching follows controlled state and native button clicks', async () => {
+  const screen = render(html`
+    <style>
+      .icon-font {
+        display: inline-block;
+      }
+    </style>
+    <rc-button data-testid="host">
+      <button type="button">
+        <span class="icon-font" data-rc-button-icon aria-hidden="true">♡</span>
+        <span class="icon-font" data-rc-button-selected-icon aria-hidden="true">♥</span>
+        <span data-rc-button-label>Save</span>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  const icon = host.querySelector<HTMLElement>('[data-rc-button-icon]')!;
+  const selectedIcon = host.querySelector<HTMLElement>('[data-rc-button-selected-icon]')!;
+
+  expect(getComputedStyle(icon).display).not.toBe('none');
+  expect(getComputedStyle(selectedIcon).display).toBe('none');
+
+  host.selected = true;
+  await flushButton(host);
+
+  expect(getComputedStyle(icon).display).toBe('none');
+  expect(getComputedStyle(selectedIcon).display).not.toBe('none');
+
+  host.selected = false;
+  await flushButton(host);
+
+  host.querySelector('button')!.addEventListener('click', () => {
+    host.selected = !host.selected;
+  });
+
+  host.querySelector('button')!.click();
+  await flushButton(host);
+
+  expect(host.selected).toBe(true);
+  expect(getComputedStyle(icon).display).toBe('none');
+  expect(getComputedStyle(selectedIcon).display).not.toBe('none');
+});
+
+test('toggle buttons manage aria-pressed and uncontrolled selected state', async () => {
+  const listener = vi.fn();
+  const screen = render(html`
+    <rc-button data-testid="host" toggle>
+      <button type="button">
+        <span data-rc-button-icon aria-hidden="true">♡</span>
+        <span data-rc-button-selected-icon aria-hidden="true">♥</span>
+        <span data-rc-button-label>Save recipe</span>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+  const button = host.querySelector('button')!;
+  const label = button.textContent;
+
+  host.addEventListener('rc-button-toggle', listener);
+
+  await flushButton(host);
+  expect(host.selected).toBe(false);
+  expect(button.getAttribute('aria-pressed')).toBe('false');
+
+  button.click();
+  await flushButton(host);
+
+  expect(host.selected).toBe(true);
+  expect(host.hasAttribute('selected')).toBe(true);
+  expect(button.getAttribute('aria-pressed')).toBe('true');
+  expect(button.textContent).toBe(label);
+
+  expect(listener).toHaveBeenLastCalledWith(
+    expect.objectContaining({ detail: { selected: true } }),
+  );
+
+  button.click();
+  await flushButton(host);
+
+  expect(host.selected).toBe(false);
+  expect(host.hasAttribute('selected')).toBe(false);
+  expect(button.getAttribute('aria-pressed')).toBe('false');
+
+  expect(listener).toHaveBeenLastCalledWith(
+    expect.objectContaining({ detail: { selected: false } }),
+  );
+});
+
+test('toggle buttons retain native Enter and Space activation', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host" toggle>
+      <button type="button">Save recipe</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+  const button = host.querySelector('button')!;
+
+  await flushButton(host);
+  button.focus();
+  await userEvent.keyboard('{Enter}');
+  await flushButton(host);
+  expect(host.selected).toBe(true);
+
+  await userEvent.keyboard(' ');
+  await flushButton(host);
+  expect(host.selected).toBe(false);
+});
+
+test('default-selected initializes an uncontrolled toggle button', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host" toggle default-selected>
+      <button type="button">Save recipe</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  expect(host.selected).toBe(true);
+  expect(host.querySelector('button')?.getAttribute('aria-pressed')).toBe('true');
+
+  host.querySelector('button')?.click();
+  await flushButton(host);
+  expect(host.selected).toBe(false);
+});
+
+test('controlled toggle buttons request state without mutating selected', async () => {
+  const listener = vi.fn();
+  const screen = render(html`
+    <rc-button data-testid="host" toggle>
+      <button type="button">Save recipe</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+  const button = host.querySelector('button')!;
+
+  await flushButton(host);
+  host.selected = false;
+  host.addEventListener('rc-button-toggle', listener);
+  await flushButton(host);
+  button.click();
+  await flushButton(host);
+
+  expect(host.selected).toBe(false);
+  expect(button.getAttribute('aria-pressed')).toBe('false');
+  expect(listener).toHaveBeenCalledWith(expect.objectContaining({ detail: { selected: true } }));
+
+  listener.mockClear();
+  host.selected = true;
+  await flushButton(host);
+
+  expect(button.getAttribute('aria-pressed')).toBe('true');
+  expect(listener).not.toHaveBeenCalled();
+});
+
+test('ordinary buttons do not acquire toggle semantics', async () => {
+  const listener = vi.fn();
+  const screen = render(html`
+    <rc-button data-testid="host">
+      <button type="button">Save recipe</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  host.addEventListener('rc-button-toggle', listener);
+
+  await flushButton(host);
+  host.querySelector('button')?.click();
+
+  expect(host.selected).toBe(false);
+  expect(host.querySelector('button')?.hasAttribute('aria-pressed')).toBe(false);
+  expect(listener).not.toHaveBeenCalled();
+});
+
+test('canceled button activation does not toggle', async () => {
+  const listener = vi.fn();
+  const screen = render(html`
+    <rc-button data-testid="host" toggle>
+      <button type="button">Save recipe</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+  const button = host.querySelector('button')!;
+
+  button.addEventListener('click', (event) => event.preventDefault());
+  host.addEventListener('rc-button-toggle', listener);
+
+  await flushButton(host);
+  button.click();
+
+  expect(host.selected).toBe(false);
+  expect(button.getAttribute('aria-pressed')).toBe('false');
+  expect(listener).not.toHaveBeenCalled();
+});
+
+test('removing toggle restores an author-provided aria-pressed state', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host" toggle selected>
+      <button type="button" aria-pressed="false">Save recipe</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+  expect(host.querySelector('button')?.getAttribute('aria-pressed')).toBe('true');
+
+  host.toggle = false;
+  await flushButton(host);
+
+  expect(host.querySelector('button')?.getAttribute('aria-pressed')).toBe('false');
 });
 
 test('updates child classification after mutations', async () => {
@@ -247,7 +503,7 @@ test('updates child classification after mutations', async () => {
 
 test('renders state-layer and progress parts', async () => {
   const screen = render(html`
-    <rc-button data-testid="host" progress>
+    <rc-button data-testid="host" progress style="--rc-button-progress-color: rgb(1, 2, 3)">
       <button type="button">Save</button>
     </rc-button>
   `);
@@ -256,7 +512,40 @@ test('renders state-layer and progress parts', async () => {
   await flushButton(host);
 
   expect(host.shadowRoot?.querySelector('[part="state-layer"]')).not.toBeNull();
-  expect(host.shadowRoot?.querySelector('[part="progress"]')).not.toBeNull();
+
+  const progress = host.shadowRoot?.querySelector<HTMLElement>('[part="progress"]');
+
+  if (!progress) {
+    throw new Error('Expected the progress part to render.');
+  }
+
+  expect(getComputedStyle(host.querySelector('button')!).color).toBe('rgba(0, 0, 0, 0)');
+  expect(getComputedStyle(progress).color).toBe('rgb(1, 2, 3)');
+});
+
+test('renders a clamped determinate progress percentage', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host" progress progress-value="125">
+      <button type="button">Save</button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  const progress = host.shadowRoot?.querySelector<HTMLElement>('[part="progress"]');
+
+  expect(progress?.hasAttribute('data-determinate')).toBe(true);
+  expect(progress?.textContent).toBe('100%');
+
+  host.progressValue = -10;
+  await flushButton(host);
+  expect(progress?.textContent).toBe('0%');
+
+  host.progress = false;
+  await flushButton(host);
+  expect(progress?.hasAttribute('data-determinate')).toBe(false);
+  expect(progress?.textContent).toBe('');
 });
 
 test('shows themed hover state through the state-layer overlay', async () => {
@@ -344,5 +633,22 @@ test('has no automated accessibility violations', async () => {
   const host = (await screen.getByTestId('host').element()) as RCButton;
 
   await flushButton(host);
+  await expectNoA11yViolations(host);
+});
+
+test('selected toggle state has no automated accessibility violations', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host" toggle default-selected>
+      <button type="button">
+        <span data-rc-button-icon aria-hidden="true">♡</span>
+        <span data-rc-button-selected-icon aria-hidden="true">♥</span>
+        <span data-rc-button-label>Save recipe</span>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+  expect(host.querySelector('button')?.getAttribute('aria-pressed')).toBe('true');
   await expectNoA11yViolations(host);
 });

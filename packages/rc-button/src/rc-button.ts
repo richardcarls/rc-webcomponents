@@ -8,35 +8,57 @@ declare global {
   interface HTMLElementTagNameMap {
     'rc-button': RCButton;
   }
+
+  interface HTMLElementEventMap {
+    'rc-button-toggle': CustomEvent<RCButtonToggleDetail>;
+  }
 }
 
 const LIGHT_DOM_CSS = `
 @layer rc-base {
+  /*
+   * Icon-font utility classes commonly set display outside cascade layers.
+   * Hiding the inactive icon is structural, so it must win that declaration.
+   */
   rc-button[selected] > button > [data-rc-button-icon] {
-    display: none;
+    display: none !important;
   }
 
   rc-button:not([selected]) > button > [data-rc-button-selected-icon] {
-    display: none;
+    display: none !important;
   }
 }
 `;
 
 const ACTIVATION_KEYS = new Set(['Enter', ' ']);
 
+/** Detail payload for `rc-button-toggle`. */
+export interface RCButtonToggleDetail {
+  /** Requested selected state after user activation. */
+  selected: boolean;
+}
+
 /**
  * Structural button wrapper that preserves a direct native `<button>` child for
  * progressive enhancement, forms, labels, and keyboard behavior.
  *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-button rc-button docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/button/ WAI-ARIA button pattern}
+ *
  * @slot - A direct native `<button>` child.
+ *
+ * @fires rc-button-toggle - Fired when a user activates a button with `toggle`.
  *
  * @csspart state-layer - Overlay layer for hover, focus, pressed, ripple, or design-system effects.
  * @csspart progress - Non-interactive progress affordance overlay shown for `pending` or `progress`.
  *
  * @attr disabled - Mirrors disabled state to the native child button.
- * @attr pending - Blocks activation and exposes progress affordance while work is pending.
- * @attr progress - Blocks activation and exposes progress affordance.
- * @attr selected - Declarative selected state for theme styling and icon switching.
+ * @attr pending - Disables the native button and exposes an indeterminate progress affordance.
+ * @attr progress - Disables the native button and exposes a progress affordance.
+ * @attr progress-value - Optional determinate progress percentage, clamped from 0 through 100.
+ * @attr toggle - Opts the native child into APG toggle-button behavior.
+ * @attr selected - Controlled selected state for toggle semantics, styling, and icon switching.
+ * @attr default-selected - Initial selected state for uncontrolled toggle usage.
  * @attr icon-only - Removes label-oriented inline padding in supporting themes.
  * @attr full-width - Stretches the native child button to the host inline size.
  */
@@ -68,17 +90,55 @@ export class RCButton extends LitElement {
   @property({ type: Boolean, reflect: true })
   disabled = false;
 
-  /** Show progress affordance and block activation while preserving native focus behavior. */
+  /** Show an indeterminate progress affordance and disable the native button. */
   @property({ type: Boolean, reflect: true })
   pending = false;
 
-  /** Structural progress state; boolean/indeterminate in v1. */
+  /** Show a progress affordance and disable the native button. */
   @property({ type: Boolean, reflect: true })
   progress = false;
 
-  /** Declarative selected state for theme styling and icon switching. */
+  /** Optional determinate progress percentage, clamped from 0 through 100. */
+  @property({ type: Number, attribute: 'progress-value', reflect: true })
+  progressValue: number | undefined;
+
+  /** Opt the native child into APG toggle-button behavior. */
   @property({ type: Boolean, reflect: true })
-  selected = false;
+  toggle = false;
+
+  /** Controlled selected state. Host writes are silent. */
+  @property({ type: Boolean, reflect: true })
+  get selected(): boolean {
+    return this._selected ?? this._uncontrolledSelected ?? this._defaultSelected;
+  }
+
+  set selected(value: boolean | undefined) {
+    const oldValue = this.selected;
+
+    this._selected = value;
+    this._selectedInitialized = true;
+    this._syncPressedState();
+    this.requestUpdate('selected', oldValue);
+  }
+
+  /** Initial selected state for uncontrolled toggle usage. */
+  @property({ type: Boolean, attribute: 'default-selected' })
+  get defaultSelected(): boolean {
+    return this._defaultSelected;
+  }
+
+  set defaultSelected(value: boolean) {
+    const oldValue = this._defaultSelected;
+
+    this._defaultSelected = value;
+
+    if (!this._selectedInitialized && this._selected === undefined) {
+      this._syncPressedState();
+      this.requestUpdate('selected', oldValue);
+    }
+
+    this.requestUpdate('defaultSelected', oldValue);
+  }
 
   /** Icon-only layout hint. May also be reflected by child classification. */
   @property({ type: Boolean, attribute: 'icon-only', reflect: true })
@@ -92,10 +152,16 @@ export class RCButton extends LitElement {
 
   @query('[part="state-layer"]') private _$stateLayer!: HTMLElement;
 
+  private _selected: boolean | undefined;
+  private _defaultSelected = false;
+  private _uncontrolledSelected: boolean | undefined;
+  private _selectedInitialized = false;
   private _button: HTMLButtonElement | null = null;
   private _buttonObserver: MutationObserver | null = null;
   private _disabledOwned = false;
   private _ariaBusyOwned = false;
+  private _pressedOwned = false;
+  private _authorPressed: string | null = null;
   private _iconOnlyOwned = false;
   private _slotMicrotaskQueued = false;
 
@@ -118,9 +184,15 @@ export class RCButton extends LitElement {
     if (changed.has('disabled') || changed.has('pending') || changed.has('progress')) {
       this._syncNativeState();
     }
+
+    if (changed.has('toggle') || changed.has('selected')) {
+      this._syncPressedState();
+    }
   }
 
   protected override render() {
+    const progressPercentage = this._progressPercentage;
+
     return html`
       <slot @slotchange=${this._handleSlotChange}></slot>
       <span
@@ -128,8 +200,18 @@ export class RCButton extends LitElement {
         aria-hidden="true"
         @animationend=${this._handleRippleAnimationEnd}
       ></span>
-      <span part="progress" aria-hidden="true"></span>
+      <span part="progress" aria-hidden="true" ?data-determinate=${progressPercentage !== undefined}
+        >${progressPercentage === undefined ? '' : `${progressPercentage}%`}</span
+      >
     `;
+  }
+
+  private get _progressPercentage(): number | undefined {
+    if (!this.progress || !Number.isFinite(this.progressValue)) {
+      return undefined;
+    }
+
+    return Math.round(Math.min(100, Math.max(0, this.progressValue!)));
   }
 
   private _handleSlotChange(): void {
@@ -174,20 +256,25 @@ export class RCButton extends LitElement {
     if (nextButton === this._button) {
       this._classifyButton();
       this._syncNativeState();
+      this._syncPressedState();
 
       return;
     }
 
+    this._restorePressedState();
     this._buttonObserver?.disconnect();
     this._buttonObserver = null;
     this._button = nextButton;
     this._disabledOwned = false;
     this._ariaBusyOwned = false;
+    this._pressedOwned = false;
+    this._authorPressed = nextButton?.getAttribute('aria-pressed') ?? null;
 
     if (nextButton) {
       this._buttonObserver = new MutationObserver(() => {
         this._classifyButton();
         this._syncNativeState();
+        this._syncPressedState();
       });
 
       this._buttonObserver.observe(nextButton, {
@@ -200,6 +287,7 @@ export class RCButton extends LitElement {
 
     this._classifyButton();
     this._syncNativeState();
+    this._syncPressedState();
   }
 
   private _classifyButton(): void {
@@ -264,13 +352,15 @@ export class RCButton extends LitElement {
       return;
     }
 
-    if (this.disabled) {
+    const shouldDisable = this.disabled || this.pending || this.progress;
+
+    if (shouldDisable) {
       if (!button.disabled) {
         this._disabledOwned = true;
       }
 
       button.disabled = true;
-    } else if (this._disabledOwned) {
+    } else if (!shouldDisable && this._disabledOwned) {
       button.disabled = false;
       this._disabledOwned = false;
     }
@@ -286,6 +376,73 @@ export class RCButton extends LitElement {
       button.removeAttribute('aria-busy');
       this._ariaBusyOwned = false;
     }
+  }
+
+  private _syncPressedState(): void {
+    const button = this._button;
+
+    if (!button) {
+      return;
+    }
+
+    if (this.toggle) {
+      const pressed = this.selected ? 'true' : 'false';
+
+      if (button.getAttribute('aria-pressed') !== pressed) {
+        button.setAttribute('aria-pressed', pressed);
+      }
+
+      this._pressedOwned = true;
+    } else if (this._pressedOwned) {
+      this._restorePressedState();
+    }
+  }
+
+  private _restorePressedState(): void {
+    const button = this._button;
+
+    if (!button || !this._pressedOwned) {
+      return;
+    }
+
+    if (this._authorPressed === null) {
+      button.removeAttribute('aria-pressed');
+    } else {
+      button.setAttribute('aria-pressed', this._authorPressed);
+    }
+
+    this._pressedOwned = false;
+  }
+
+  private _handleToggleActivation(event: MouseEvent): void {
+    if (
+      !this.toggle ||
+      this.disabled ||
+      this.pending ||
+      this.progress ||
+      event.defaultPrevented ||
+      !this._isChildButtonEvent(event)
+    ) {
+      return;
+    }
+
+    const oldValue = this.selected;
+    const nextSelected = !oldValue;
+
+    if (this._selected === undefined) {
+      this._uncontrolledSelected = nextSelected;
+      this._selectedInitialized = true;
+      this._syncPressedState();
+      this.requestUpdate('selected', oldValue);
+    }
+
+    this.dispatchEvent(
+      new CustomEvent<RCButtonToggleDetail>('rc-button-toggle', {
+        bubbles: true,
+        composed: true,
+        detail: { selected: nextSelected },
+      }),
+    );
   }
 
   private _shouldBlockActivation(): boolean {
@@ -343,6 +500,7 @@ export class RCButton extends LitElement {
 
     this.addEventListener('pointerdown', this._startRipple, { capture: true });
     this.addEventListener('click', this._blockActivation, { capture: true });
+    this.addEventListener('click', this._handleToggleActivation);
 
     this.addEventListener(
       'keydown',
