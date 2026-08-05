@@ -30,7 +30,10 @@ export type RCButtonRef = HTMLElement & {
   disabled: boolean;
   pending: boolean;
   progress: boolean;
+  progressValue: number | undefined;
+  toggle: boolean;
   selected: boolean;
+  defaultSelected: boolean;
   iconOnly: boolean;
   fullWidth: boolean;
 };
@@ -74,6 +77,10 @@ export type RCChipChangeDetail = {
 
 export type RCChipRemoveDetail = {
   chip: HTMLElement;
+};
+
+export type RCButtonToggleDetail = {
+  selected: boolean;
 };
 
 export type RCChipRef = HTMLElement & {
@@ -598,9 +605,16 @@ declare module 'solid-js' {
         disabled?: boolean | string;
         pending?: boolean | string;
         progress?: boolean | string;
+        'progress-value'?: number | string;
+        toggle?: boolean | string;
         selected?: boolean | string;
+        defaultSelected?: boolean | string;
+        'default-selected'?: boolean | string;
         'icon-only'?: boolean | string;
         'full-width'?: boolean | string;
+        'prop:selected'?: boolean | undefined;
+        'prop:defaultSelected'?: boolean | undefined;
+        'on:rc-button-toggle'?: (e: CustomEvent<RCButtonToggleDetail>) => void;
       };
 
       'rc-card': JSX.HTMLAttributes<RCCardRef> & {

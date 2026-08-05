@@ -8,6 +8,8 @@ import type {
   RCAppBarRef,
   RCBottomSheetRef,
   RCBottomSheetSnapDetail,
+  RCButtonRef,
+  RCButtonToggleDetail,
   RCDialogRef,
   RCDisclosureRef,
   RCListboxRef,
@@ -133,19 +135,73 @@ export function BottomSheetDemo() {
 }
 
 export function ButtonDemo() {
+  const [buttonEl, setButtonEl] = useState<RCButtonRef | null>(null);
   const [selected, setSelected] = useState(false);
   const [pending, setPending] = useState(false);
   const [progress, setProgress] = useState(false);
+  const [progressValue, setProgressValue] = useState(0);
+  const setButtonRef = useCallback(
+    (element: HTMLElement | null) => setButtonEl(element as RCButtonRef | null),
+    [],
+  );
+
+  useEffect(() => {
+    if (!buttonEl) {
+      return;
+    }
+
+    const handleToggle = (event: Event) => {
+      setSelected((event as CustomEvent<RCButtonToggleDetail>).detail.selected);
+    };
+
+    buttonEl.addEventListener('rc-button-toggle', handleToggle);
+
+    return () => buttonEl.removeEventListener('rc-button-toggle', handleToggle);
+  }, [buttonEl]);
+
+  useEffect(() => {
+    if (!progress) {
+      setProgressValue(0);
+
+      return;
+    }
+
+    let value = 0;
+    const timer = window.setInterval(() => {
+      value = Math.min(100, value + 5);
+      setProgressValue(value);
+
+      if (value === 100) {
+        window.clearInterval(timer);
+      }
+    }, 125);
+
+    return () => window.clearInterval(timer);
+  }, [progress]);
 
   return (
     <DemoFrame>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <rc-button selected={selected} pending={pending} progress={progress}>
+        <rc-button
+          ref={setButtonRef}
+          toggle
+          selected={selected}
+          pending={pending}
+          progress={progress}
+          progress-value={progress ? progressValue : undefined}
+        >
           <button type="button">
             <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              favorite_border
+            </span>
+            <span
+              data-rc-button-selected-icon
+              className="material-symbols-outlined material-symbols-filled"
+              aria-hidden="true"
+            >
               favorite
             </span>
-            Save recipe
+            <span data-rc-button-label>Save recipe</span>
           </button>
         </rc-button>
         <rc-button icon-only>
@@ -170,7 +226,13 @@ export function ButtonDemo() {
           <input
             type="checkbox"
             checked={pending}
-            onChange={(event) => setPending(event.currentTarget.checked)}
+            onChange={(event) => {
+              setPending(event.currentTarget.checked);
+
+              if (event.currentTarget.checked) {
+                setProgress(false);
+              }
+            }}
           />{' '}
           Pending
         </label>{' '}
@@ -178,9 +240,15 @@ export function ButtonDemo() {
           <input
             type="checkbox"
             checked={progress}
-            onChange={(event) => setProgress(event.currentTarget.checked)}
+            onChange={(event) => {
+              setProgress(event.currentTarget.checked);
+
+              if (event.currentTarget.checked) {
+                setPending(false);
+              }
+            }}
           />{' '}
-          Progress
+          Progress (0–100%)
         </label>
       </fieldset>
     </DemoFrame>

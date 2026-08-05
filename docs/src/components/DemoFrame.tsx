@@ -4,6 +4,7 @@ import { useLocation } from '@docusaurus/router';
 import { createPortal } from 'react-dom';
 
 import { ClientOnly } from './ClientOnly';
+
 import styles from './DemoFrame.module.css';
 
 export type DemoFrameMode = 'auto' | 'light' | 'dark';
@@ -131,6 +132,10 @@ const STRUCTURAL_CSS = `
   -webkit-font-smoothing: antialiased;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
+
+.material-symbols-outlined.material-symbols-filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
 `;
 
 let structuralSheet: CSSStyleSheet | undefined;
@@ -188,6 +193,7 @@ function setPreviewState(next: Partial<DemoFramePreviewState>): void {
     ...previewSnapshot,
     state,
   };
+
   emitPreviewStateChange();
 }
 
@@ -197,6 +203,7 @@ function supportsConstructableStylesheets(shadowRoot: ShadowRoot): boolean {
 
 function createStylesheet(cssText: string): CSSStyleSheet {
   const sheet = new CSSStyleSheet();
+
   sheet.replaceSync(cssText);
 
   return sheet;
@@ -210,29 +217,44 @@ function getStructuralSheet(): CSSStyleSheet {
 
 function normalizeBaseUrl(baseUrl: string | undefined): string {
   const value = baseUrl || '/rc-webcomponents/';
+
   return value.endsWith('/') ? value : `${value}/`;
 }
 
 function docsAssetUrl(path: string): string {
   const runtimeWindow = window as DocusaurusRuntimeWindow;
+
   return `${normalizeBaseUrl(runtimeWindow.__docusaurus?.siteConfig?.baseUrl)}${path}`;
 }
 
 function injectSymbolFont(): void {
-  if (symbolFontInjected) return;
+  if (symbolFontInjected) {
+    return;
+  }
+
   symbolFontInjected = true;
+
   const $link = document.createElement('link');
+
   $link.rel = 'stylesheet';
+
   $link.href =
     'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap';
+
   document.head.append($link);
 }
 
 function injectMaterialFonts(): void {
   injectSymbolFont();
-  if (robotoFontInjected) return;
+
+  if (robotoFontInjected) {
+    return;
+  }
+
   robotoFontInjected = true;
+
   const $link = document.createElement('link');
+
   $link.rel = 'stylesheet';
   $link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap';
   document.head.append($link);
@@ -275,28 +297,44 @@ async function loadSubstrateSheet(): Promise<CSSStyleSheet> {
 }
 
 function themeClassName(theme: DemoFrameTheme): string {
-  if (theme === 'material') return 'rc-theme-material';
-  if (theme === 'substrate') return 'rc-theme-substrate';
+  if (theme === 'material') {
+    return 'rc-theme-material';
+  }
+
+  if (theme === 'substrate') {
+    return 'rc-theme-substrate';
+  }
 
   return '';
 }
 
 function loadThemeCss(theme: DemoFrameTheme): Promise<string> | undefined {
-  if (theme === 'material') return loadMaterialCss();
-  if (theme === 'substrate') return loadSubstrateCss();
+  if (theme === 'material') {
+    return loadMaterialCss();
+  }
+
+  if (theme === 'substrate') {
+    return loadSubstrateCss();
+  }
 
   return undefined;
 }
 
 function loadThemeSheet(theme: DemoFrameTheme): Promise<CSSStyleSheet> | undefined {
-  if (theme === 'material') return loadMaterialSheet();
-  if (theme === 'substrate') return loadSubstrateSheet();
+  if (theme === 'material') {
+    return loadMaterialSheet();
+  }
+
+  if (theme === 'substrate') {
+    return loadSubstrateSheet();
+  }
 
   return undefined;
 }
 
 function upsertFallbackStyle(shadowRoot: ShadowRoot, name: string, cssText: string): void {
   let $style = shadowRoot.querySelector<HTMLStyleElement>(`style[data-demo-frame="${name}"]`);
+
   if (!$style) {
     $style = document.createElement('style');
     $style.dataset.demoFrame = name;
@@ -316,6 +354,7 @@ function ShadowDemoSurface({ children, label, mode, theme }: ShadowDemoSurfacePr
 
   useEffect(() => {
     const $host = hostRef.current;
+
     if (!$host) {
       return;
     }
@@ -329,11 +368,13 @@ function ShadowDemoSurface({ children, label, mode, theme }: ShadowDemoSurfacePr
     }
 
     injectSymbolFont();
+
     const themeSheetPromise = loadThemeSheet(theme);
     const themeCssPromise = loadThemeCss(theme);
 
     if (supportsConstructableStylesheets(shadowRoot)) {
       const structural = getStructuralSheet();
+
       shadowRoot.adoptedStyleSheets = [structural];
       removeFallbackStyle(shadowRoot, 'structural');
       removeFallbackStyle(shadowRoot, 'theme');
@@ -423,6 +464,7 @@ export function DemoFrame({
   label = 'Live demo',
 }: DemoFrameProps) {
   const { pathname } = useLocation();
+
   ensurePreviewState(pathname, { mode: defaultMode, theme: defaultTheme });
 
   const {

@@ -62,6 +62,11 @@ export const buttonStyles = css`
     cursor: default;
   }
 
+  :host([pending]) ::slotted(button),
+  :host([progress]) ::slotted(button) {
+    color: var(--rc-button-busy-content-color, transparent);
+  }
+
   :host([disabled]) ::slotted(button) {
     opacity: var(--rc-button-disabled-opacity, revert);
   }
@@ -125,6 +130,8 @@ export const buttonStyles = css`
     display: none;
     place-items: center;
     color: var(--rc-button-progress-color, currentColor);
+    font: var(--rc-button-progress-font, 600 0.75rem / 1 sans-serif);
+    font-variant-numeric: tabular-nums;
     z-index: 2;
   }
 
@@ -143,6 +150,10 @@ export const buttonStyles = css`
     border-block-start-color: var(--rc-button-progress-active-color, currentColor);
     border-radius: 9999px;
     animation: rc-button-progress-spin 900ms linear infinite;
+  }
+
+  [part='progress'][data-determinate]::before {
+    display: none;
   }
 
   @keyframes rc-button-progress-spin {

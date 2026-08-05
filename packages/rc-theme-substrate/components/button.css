@@ -15,6 +15,7 @@
     --rc-button-focus-state-layer-opacity: 0.12;
     --rc-button-pressed-state-layer-opacity: 0.12;
     --rc-button-state-layer-easing: var(--substrate-motion-easing, ease);
+    --rc-button-progress-color: var(--rc-button-text, ButtonText);
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-button > button:focus-visible {
@@ -22,8 +23,18 @@
     outline-offset: var(--rc-focus-ring-offset, 2px);
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-button > button:disabled {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-button[disabled] > button:disabled {
     opacity: var(--rc-disabled-opacity, 0.52);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-button[progress][progress-value]::part(progress) {
+    inset: 0.25rem;
+    border: var(--rc-border, 1px solid ButtonBorder);
+    border-radius: calc(var(--rc-control-radius, 0.5rem) - 0.125rem);
+    background: color-mix(in srgb, var(--substrate-surface-raised, Canvas) 88%, currentColor);
+    font: 600 0.75rem / 1 var(--rc-font-family, inherit);
+    letter-spacing: 0.025em;
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-button[icon-only] {
