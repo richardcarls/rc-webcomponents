@@ -48,6 +48,9 @@ export interface RCChipRemoveDetail {
  * @csspart state-layer - Overlay layer for hover, focus, pressed, ripple, or design-system effects.
  * @csspart remove - Presentational trailing remove indicator.
  *
+ * @cssprop [--rc-chip-remove-icon-size=smaller] - Font size for a slotted remove icon.
+ * @cssprop --rc-chip-removable-padding-inline-end - Override for removable chip content end padding.
+ *
  * @attr variant - Chip variant: `assist`, `filter`, `input`, or `suggestion`.
  * @attr selected - Declarative selected state for filter/input chips.
  * @attr default-selected - Initial selected state for uncontrolled usage.

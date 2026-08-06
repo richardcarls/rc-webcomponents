@@ -18,7 +18,7 @@ export const chipStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--rc-chip-gap);
+    gap: var(--rc-chip-gap, 0px);
     min-block-size: var(--rc-chip-block-size);
     padding-block: var(--rc-chip-padding-block, revert);
     padding-inline: var(--rc-chip-padding-inline, revert);
@@ -77,10 +77,18 @@ export const chipStyles = css`
     display: inline-grid;
   }
 
+  ::slotted([slot='remove-icon']) {
+    /* Keep icon-font utility classes from overriding the chip's compact icon size. */
+    font-size: var(--rc-chip-remove-icon-size, smaller) !important;
+  }
+
   :host([removable]) ::slotted(button),
   :host([removable]) ::slotted(a),
   :host([removable]) ::slotted([data-rc-chip-label]) {
-    padding-inline-end: var(--rc-chip-removable-padding-inline-end, 2rem);
+    padding-inline-end: var(
+      --rc-chip-removable-padding-inline-end,
+      calc(var(--rc-chip-remove-target-size, 1.5rem) - var(--rc-chip-gap, 0px))
+    );
   }
 
   @media (forced-colors: active) {

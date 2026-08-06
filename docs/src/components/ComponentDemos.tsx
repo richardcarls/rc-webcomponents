@@ -442,6 +442,9 @@ export function ChipDemo() {
           <button type="button" aria-label="Remove basil">
             Basil
           </button>
+          <span slot="remove-icon" className="material-symbols-outlined" aria-hidden="true">
+            close
+          </span>
         </rc-chip>
       </rc-toolbar>
       <EventLog entries={log} />

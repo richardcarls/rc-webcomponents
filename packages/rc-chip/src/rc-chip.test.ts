@@ -27,6 +27,7 @@ test('preserves a direct native button child', async () => {
   expect(button.isConnected).toBe(true);
   expect(button.name).toBe('filter');
   expect(button.value).toBe('quick');
+  expect(getComputedStyle(button).gap).toBe('0px');
 });
 
 test('filter chips toggle selected state and dispatch change on user click', async () => {
@@ -108,6 +109,7 @@ test('removable chip indicator is presentational and adds no button semantics', 
   const screen = render(html`
     <rc-chip data-testid="host" removable>
       <button type="button" aria-label="Remove Quick">Quick</button>
+      <span slot="remove-icon" style="font-size: 1.5rem">close</span>
     </rc-chip>
   `);
   const host = (await screen.getByTestId('host').element()) as RCChip;
@@ -119,7 +121,31 @@ test('removable chip indicator is presentational and adds no button semantics', 
   expect(indicator).toBeInstanceOf(HTMLSpanElement);
   expect(indicator?.getAttribute('aria-hidden')).toBe('true');
   expect(host.shadowRoot?.querySelectorAll('button')).toHaveLength(0);
+
+  const removeIcon = host.querySelector<HTMLElement>('[slot="remove-icon"]')!;
+
+  expect(parseFloat(getComputedStyle(removeIcon).fontSize)).toBeLessThan(
+    parseFloat(getComputedStyle(host).fontSize),
+  );
+
   await expectNoA11yViolations(host);
+});
+
+test('removable chip end padding follows the remove target size minus the chip gap', async () => {
+  const screen = render(html`
+    <rc-chip
+      data-testid="host"
+      removable
+      style="--rc-chip-remove-target-size: 2rem; --rc-chip-gap: 0.25rem"
+    >
+      <button type="button" aria-label="Remove Quick">Quick</button>
+    </rc-chip>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCChip;
+
+  await flushChip(host);
+
+  expect(getComputedStyle(host.querySelector('button')!).paddingInlineEnd).toBe('28px');
 });
 
 test('removable filter chips remove instead of toggling selected state', async () => {

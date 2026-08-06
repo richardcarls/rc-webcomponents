@@ -54,7 +54,7 @@
     --rc-card-hover-state-layer-opacity: 0.08;
     --rc-card-pressed-state-layer-opacity: 0.12;
     --rc-chip-block-size: 2rem;
-    --rc-chip-gap: 0.5rem;
+    --rc-chip-gap: 0px;
     --rc-chip-padding-inline: 0.75rem;
     --rc-chip-border: var(--rc-border);
     --rc-chip-radius: var(--substrate-radius-md, 0.5rem);
