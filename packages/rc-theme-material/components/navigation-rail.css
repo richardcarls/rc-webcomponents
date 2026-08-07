@@ -34,6 +34,12 @@
     --rc-navigation-rail-focus-ring-offset: 2px;
   }
 
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-navigation-rail > rc-fab[slot='header'] {
+    --rc-fab-shadow: none;
+    --rc-fab-shadow-hover: none;
+    --rc-fab-shadow-active: none;
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-navigation-rail > a {
     align-items: flex-start;
     inline-size: 100%;

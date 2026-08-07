@@ -39,7 +39,10 @@ export const navigationRailStyles = css`
     flex-direction: column;
   }
 
-  :host([expanded]) #header,
+  #header {
+    align-items: center;
+  }
+
   :host([expanded]) #footer {
     align-items: stretch;
   }

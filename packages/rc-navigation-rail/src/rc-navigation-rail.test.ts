@@ -46,6 +46,27 @@ test('hides empty optional regions', async () => {
   expect(host.shadowRoot?.querySelector('#footer')?.hasAttribute('hidden')).toBe(true);
 });
 
+test('centers header content on the inline axis while collapsed and expanded', async () => {
+  const screen = render(html`
+    <rc-navigation-rail data-testid="host">
+      <span slot="header">Header</span>
+      <a href="/recipes">Recipes</a>
+    </rc-navigation-rail>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCNavigationRail;
+
+  await host.updateComplete;
+
+  const header = host.shadowRoot?.querySelector<HTMLElement>('#header');
+
+  expect(getComputedStyle(header!).alignItems).toBe('center');
+
+  host.expanded = true;
+  await host.updateComplete;
+
+  expect(getComputedStyle(header!).alignItems).toBe('center');
+});
+
 test('has no automated accessibility violations while collapsed and expanded', async () => {
   const screen = render(html`
     <rc-navigation-rail data-testid="host" label="Main navigation">

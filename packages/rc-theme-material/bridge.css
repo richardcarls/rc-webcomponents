@@ -515,6 +515,13 @@
     --rc-navigation-rail-toggle-border: 0;
     --rc-navigation-rail-toggle-font: inherit;
   }
+  .rc-theme-material rc-navigation-rail > rc-fab[slot='header'],
+  :host(.rc-theme-material) rc-navigation-rail > rc-fab[slot='header'] {
+    --rc-fab-shadow: none;
+    --rc-fab-shadow-hover: none;
+    --rc-fab-shadow-active: none;
+  }
+
   .rc-theme-material rc-fab,
   .rc-theme-material rc-fab-menu,
   :host(.rc-theme-material) rc-fab,

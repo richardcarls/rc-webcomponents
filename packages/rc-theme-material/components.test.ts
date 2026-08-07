@@ -155,6 +155,22 @@ test('navigation surfaces receive Material 3 dimensions', () => {
   expect(railStyles.getPropertyValue('--rc-navigation-rail-focus-ring')).not.toBe('');
 });
 
+test('navigation rail header FABs have no elevation', () => {
+  const scope = renderScope();
+  const rail = document.createElement('rc-navigation-rail');
+  const fab = document.createElement('rc-fab');
+
+  fab.slot = 'header';
+  rail.append(fab);
+  scope.append(rail);
+
+  const styles = getComputedStyle(fab);
+
+  expect(styles.getPropertyValue('--rc-fab-shadow')).toBe('none');
+  expect(styles.getPropertyValue('--rc-fab-shadow-hover')).toBe('none');
+  expect(styles.getPropertyValue('--rc-fab-shadow-active')).toBe('none');
+});
+
 test('icon consumers share the theme icon-font convention', () => {
   const scope = renderScope();
   const bar = document.createElement('rc-navigation-bar');
