@@ -116,15 +116,21 @@ export function BottomSheetDemo() {
               <input type="checkbox" /> Ready in 30 minutes
             </label>
             <div>
-              <button type="button" onClick={() => sheetEl?.snapTo(0)}>
-                Compact
-              </button>{' '}
-              <button type="button" onClick={() => sheetEl?.snapTo(2)}>
-                Expand
-              </button>{' '}
-              <button type="button" onClick={() => sheetEl?.close()}>
-                Done
-              </button>
+              <rc-button>
+                <button type="button" onClick={() => sheetEl?.snapTo(0)}>
+                  Compact
+                </button>
+              </rc-button>{' '}
+              <rc-button>
+                <button type="button" onClick={() => sheetEl?.snapTo(2)}>
+                  Expand
+                </button>
+              </rc-button>{' '}
+              <rc-button>
+                <button type="button" onClick={() => sheetEl?.close()}>
+                  Done
+                </button>
+              </rc-button>
             </div>
           </div>
         </dialog>

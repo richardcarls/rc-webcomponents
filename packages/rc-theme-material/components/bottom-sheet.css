@@ -1,6 +1,12 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-bottom-sheet {
-    --rc-bottom-sheet-bg: var(--md-sys-color-surface-container-low, Canvas);
+    --rc-bottom-sheet-bg: var(--md-sys-color-surface, Canvas);
+    --rc-bottom-sheet-handle-color: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface-variant, GrayText) 40%,
+      transparent
+    );
+    --rc-bottom-sheet-handle-radius: var(--md-sys-shape-corner-full, 999px);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-bottom-sheet > dialog {
@@ -16,16 +22,16 @@
     overflow: auto;
     border: 0;
     border-radius: var(--rc-bottom-sheet-radius, 1.75rem 1.75rem 0 0);
-    background: var(--rc-bottom-sheet-bg, var(--md-sys-color-surface-container-low, Canvas));
+    background: var(--rc-bottom-sheet-bg, var(--md-sys-color-surface, Canvas));
     color: var(--rc-bottom-sheet-color, var(--md-sys-color-on-surface, CanvasText));
-    box-shadow: var(--rc-bottom-sheet-shadow, var(--rc-shadow-level3, none));
+    box-shadow: var(--rc-bottom-sheet-shadow, var(--rc-shadow-level1, none));
     font-family: var(--md-sys-typescale-body-medium-font, inherit);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-bottom-sheet > dialog::backdrop {
     background: var(
       --rc-bottom-sheet-scrim,
-      var(--rc-dialog-scrim, color-mix(in srgb, var(--md-sys-color-scrim, #000) 40%, transparent))
+      var(--rc-dialog-scrim, color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent))
     );
   }
 
@@ -34,13 +40,14 @@
     > dialog
     [data-rc-bottom-sheet-handle] {
     display: block;
+    box-sizing: border-box;
     inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
     block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);
     margin: var(--rc-bottom-sheet-handle-margin, 1rem auto 0.75rem);
     padding: 0;
     border: 0;
-    border-radius: var(--md-sys-shape-corner-full, 999px);
-    background: var(--rc-bottom-sheet-handle-color, var(--md-sys-color-outline-variant, GrayText));
+    border-radius: var(--rc-bottom-sheet-handle-radius, 999px);
+    background: var(--rc-bottom-sheet-handle-color, GrayText);
     appearance: none;
     cursor: ns-resize;
     touch-action: none;
@@ -52,5 +59,52 @@
     [data-rc-bottom-sheet-handle]:focus-visible {
     outline: 0.125rem solid var(--md-sys-color-primary, Highlight);
     outline-offset: 0.25rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-bottom-sheet
+    > dialog
+    > :is(button, [role='button']):not([data-rc-bottom-sheet-handle]) {
+    min-block-size: 2.5rem;
+    padding-block: 0;
+    padding-inline: 1.5rem;
+    border: 0;
+    border-radius: var(--md-sys-shape-corner-full, 999px);
+    background: transparent;
+    color: var(--md-sys-color-primary, ButtonText);
+    font: var(--md-sys-typescale-label-large-weight, 500)
+      var(--md-sys-typescale-label-large-size, 0.875rem) /
+      var(--md-sys-typescale-label-large-line-height, 1.25rem)
+      var(--md-sys-typescale-label-large-font, inherit);
+    letter-spacing: var(--md-sys-typescale-label-large-tracking, 0.00625em);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-bottom-sheet
+    > dialog
+    > :is(button, [role='button']):not([data-rc-bottom-sheet-handle], :disabled):hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary, ButtonText) 8%, transparent);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-bottom-sheet
+    > dialog
+    > :is(button, [role='button']):not([data-rc-bottom-sheet-handle]):focus-visible {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-bottom-sheet
+    > dialog
+    > :is(button, [role='button']):not([data-rc-bottom-sheet-handle], :disabled):active {
+    background: color-mix(in srgb, var(--md-sys-color-primary, ButtonText) 12%, transparent);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-bottom-sheet
+    > dialog
+    > :is(button, [role='button']):not([data-rc-bottom-sheet-handle]):disabled {
+    opacity: var(--rc-disabled-opacity, 0.38);
   }
 }

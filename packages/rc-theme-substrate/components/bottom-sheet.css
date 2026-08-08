@@ -1,6 +1,8 @@
 @layer rc-theme-substrate.components {
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-bottom-sheet {
     --rc-bottom-sheet-bg: var(--substrate-surface-raised, Canvas);
+    --rc-bottom-sheet-handle-color: var(--rc-border-color, GrayText);
+    --rc-bottom-sheet-handle-radius: var(--substrate-radius-pill, 999px);
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-bottom-sheet > dialog {
@@ -39,8 +41,8 @@
     margin: var(--rc-bottom-sheet-handle-margin, 1rem auto 0.75rem);
     padding: 0;
     border: 0;
-    border-radius: var(--substrate-radius-pill, 999px);
-    background: var(--rc-bottom-sheet-handle-color, var(--rc-border-color, GrayText));
+    border-radius: var(--rc-bottom-sheet-handle-radius, 999px);
+    background: var(--rc-bottom-sheet-handle-color, GrayText);
     appearance: none;
     cursor: ns-resize;
     touch-action: none;

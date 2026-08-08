@@ -161,6 +161,8 @@
     --rc-bottom-sheet-radius: var(--substrate-radius-xl, 1rem) var(--substrate-radius-xl, 1rem) 0 0;
     --rc-bottom-sheet-shadow: var(--substrate-shadow-lg, none);
     --rc-bottom-sheet-scrim: var(--rc-dialog-scrim);
+    --rc-bottom-sheet-handle-color: var(--rc-border-color, GrayText);
+    --rc-bottom-sheet-handle-radius: var(--substrate-radius-pill, 999px);
   }
   @media (prefers-reduced-motion: reduce) {
     .rc-theme-substrate,

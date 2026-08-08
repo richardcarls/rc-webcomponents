@@ -45,9 +45,15 @@ must have `aria-labelledby` or `aria-label`.
 `rc-bottom-sheet` inherits `rc-dialog` methods and events, including
 `showModal()`, `show()`, `close()`, `requestClose()`, `rc-dialog-toggle`, and
 `rc-dialog-request-close`. It defaults to light dismiss, vertical top-origin
-resize, and downward swipe-dismiss. Add an optional
+resize, downward swipe-dismiss, and fixed positioning at the viewport's bottom
+edge. Add an optional
 `[data-rc-bottom-sheet-handle]` element inside the dialog for an authored
-handle.
+handle. Handles without a theme use the same centered 32 by 4 pixel pill
+geometry as the splitter-style drag indicator.
+
+For an embedded non-modal sheet, place the component in a positioned container,
+set `--rc-bottom-sheet-position: absolute`, and open it with `show()`. The sheet
+then docks to that container's block-end edge instead of the viewport.
 
 List `snap-points` as CSS heights in ascending order. Slow drag releases
 settle at the nearest point; a swipe at `swipe-velocity` or faster settles at

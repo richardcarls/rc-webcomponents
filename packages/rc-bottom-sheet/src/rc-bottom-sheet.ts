@@ -35,6 +35,44 @@ export interface RCBottomSheetSnapDetail {
 const DEFAULT_SNAP_DURATION_MS = 300;
 const SNAP_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
+const LIGHT_DOM_CSS = `
+@layer rc-base {
+  rc-bottom-sheet > dialog {
+    position: var(--rc-bottom-sheet-position, fixed);
+    inset-block-start: auto;
+    inset-block-end: var(--rc-bottom-sheet-inset-block-end, 0px);
+    inset-inline: var(--rc-bottom-sheet-inset-inline, 0px);
+    box-sizing: border-box;
+    inline-size: 100%;
+    max-inline-size: var(--rc-bottom-sheet-max-inline-size, 40rem);
+    max-block-size: var(--rc-bottom-sheet-max-block-size, 70dvh);
+    margin-block: 0;
+    margin-inline: auto;
+    overflow: auto;
+  }
+
+  rc-bottom-sheet > dialog [data-rc-bottom-sheet-handle] {
+    display: block;
+    box-sizing: border-box;
+    inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
+    block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);
+    margin: var(--rc-bottom-sheet-handle-margin, 1rem auto 0.75rem);
+    padding: 0;
+    border: 0;
+    border-radius: var(--rc-bottom-sheet-handle-radius, 999px);
+    background: var(--rc-bottom-sheet-handle-color, GrayText);
+    appearance: none;
+    cursor: ns-resize;
+    touch-action: none;
+  }
+
+  rc-bottom-sheet > dialog [data-rc-bottom-sheet-handle]:focus-visible {
+    outline: auto;
+    outline-offset: 0.25rem;
+  }
+}
+`;
+
 // Floor so a noisy near-zero-distance release can't misread as a decisive
 // fling; a real swipe travels at least this far even if it's very quick.
 const MIN_SWIPE_DISTANCE = 24;
@@ -45,8 +83,8 @@ const MIN_SWIPE_DISTANCE = 24;
  * The direct child `<dialog>` remains the semantic dialog surface and owns
  * content, labels, and form behavior. `rc-bottom-sheet` supplies the same
  * open/close lifecycle, focus restoration, cancel/request-close events, and
- * light-dismiss affordance as `rc-dialog`, while themes provide the docked
- * bottom-sheet presentation.
+ * light-dismiss affordance as `rc-dialog`. The component docks the sheet to
+ * the viewport block-end by default, while themes provide its visual surface.
  *
  * Dragging the resize handle past a decisive velocity in either direction
  * (a "swipe" or "fling," distinct from a slow deliberate drag) snaps
@@ -76,6 +114,9 @@ const MIN_SWIPE_DISTANCE = 24;
  * @cssprop [--rc-bottom-sheet-color=CanvasText] - Sheet text color.
  * @cssprop [--rc-bottom-sheet-radius=1rem 1rem 0 0] - Sheet corner radius.
  * @cssprop [--rc-bottom-sheet-shadow=none] - Sheet elevation shadow.
+ * @cssprop [--rc-bottom-sheet-position=fixed] - Positioning scheme. Use `absolute` with `show()` to dock a non-modal sheet to a positioned ancestor.
+ * @cssprop [--rc-bottom-sheet-inset-block-end=0px] - Distance from the positioning container's block-end edge.
+ * @cssprop [--rc-bottom-sheet-inset-inline=0px] - Inline-axis inset used with automatic margins.
  * @cssprop [--rc-bottom-sheet-max-inline-size=40rem] - Maximum sheet width.
  * @cssprop [--rc-bottom-sheet-max-block-size=70dvh] - Maximum sheet height.
  * @cssprop [--rc-bottom-sheet-padding=0 1rem 1rem] - Sheet padding.
@@ -83,12 +124,33 @@ const MIN_SWIPE_DISTANCE = 24;
  * @cssprop [--rc-bottom-sheet-handle-color=GrayText] - Resize handle color.
  * @cssprop [--rc-bottom-sheet-handle-inline-size=2rem] - Resize handle width.
  * @cssprop [--rc-bottom-sheet-handle-block-size=0.25rem] - Resize handle height.
+ * @cssprop [--rc-bottom-sheet-handle-radius=999px] - Resize handle corner radius.
  * @cssprop [--rc-bottom-sheet-handle-margin=1rem auto 0.75rem] - Resize handle margin.
  * @cssprop [--rc-bottom-sheet-snap-duration=300ms] - Duration of the settle animation
  *   after a drag release or `snapTo()` call.
  */
 export class RCBottomSheet extends RCDialog {
   private static readonly swipeDismissThreshold = 96;
+  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
+
+  private static _ensureBaseStyles(root: Document | ShadowRoot): void {
+    if (RCBottomSheet._styledRoots.has(root)) {
+      return;
+    }
+
+    RCBottomSheet._styledRoots.add(root);
+
+    const $style = document.createElement('style');
+
+    $style.setAttribute('data-rc-light-dom-base', 'rc-bottom-sheet');
+    $style.textContent = LIGHT_DOM_CSS;
+
+    if (root instanceof Document) {
+      root.head.append($style);
+    } else {
+      root.append($style);
+    }
+  }
 
   /**
    * Bottom sheets light-dismiss by default.
@@ -141,6 +203,11 @@ export class RCBottomSheet extends RCDialog {
     typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 
   private _activeSnapAnimation: Animation | null = null;
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    RCBottomSheet._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
+  }
 
   /**
    * Snaps to a declared target by zero-based index.

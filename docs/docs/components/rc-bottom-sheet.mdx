@@ -77,10 +77,19 @@ dialog must have `aria-labelledby` or `aria-label`.
 The element inherits `rc-dialog` methods and events, including `showModal()`,
 `close()`, `requestClose()`, `rc-dialog-toggle`, and
 `rc-dialog-request-close`. Bottom sheets default to light dismiss, vertical
-top-origin resize, and downward swipe-dismiss. Add an optional
+top-origin resize, downward swipe-dismiss, and fixed positioning at the
+viewport's bottom edge. Add an optional
 `[data-rc-bottom-sheet-handle]` element inside the dialog for a themed resize
 handle. Use `snap-points` to snap the sheet to declared CSS heights after
 resize gestures.
+
+Without a theme, the authored handle is centered on the inline axis and uses
+the same 32 by 4 pixel pill geometry as the splitter-style drag indicator.
+
+For an embedded non-modal sheet, place the component in a positioned
+container, set `--rc-bottom-sheet-position: absolute`, and open it with
+`show()`. The sheet then docks to that container's block-end edge rather than
+the viewport.
 
 Declare snap points as CSS heights in ascending order. Slow releases settle at
 the nearest point. A decisive upward or downward swipe—`500` pixels per second
@@ -130,9 +139,13 @@ dragging is not the only way to resize the sheet.
 
 ## Theming
 
-`rc-theme-material` docks the dialog to the bottom edge, applies the Material
-surface and scrim tokens, and styles authored
-`[data-rc-bottom-sheet-handle]` handles.
+The component docks the dialog to the bottom edge and centers authored
+`[data-rc-bottom-sheet-handle]` handles by default. `rc-theme-material`
+applies the Material surface, level-one elevation, scrim, 32 by 4 pixel drag
+handle, and text-button treatment to direct authored action buttons. Wrap
+actions nested in sheet content with `rc-button`, as in the live demo, so they
+receive the shared Material button treatment without affecting component-owned
+buttons such as those inside `rc-chip`.
 
 Set `--rc-bottom-sheet-snap-duration` to a millisecond duration to customize
 settling. The default is `300ms`.

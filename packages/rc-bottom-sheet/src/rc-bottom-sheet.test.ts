@@ -47,6 +47,84 @@ test('rc-bottom-sheet registers a native dialog wrapper with light dismiss by de
   expect($host.querySelector('dialog')).toBeInstanceOf(HTMLDialogElement);
 });
 
+test('un-themed sheets dock to the viewport block-end by default', async () => {
+  const screen = renderSheet();
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.showModal();
+
+  const $dialog = $host.querySelector('dialog')!;
+  const styles = getComputedStyle($dialog);
+  const rect = $dialog.getBoundingClientRect();
+
+  expect(styles.position).toBe('fixed');
+  expect(styles.insetBlockEnd).toBe('0px');
+  expect(styles.insetInlineStart).toBe('0px');
+  expect(styles.insetInlineEnd).toBe('0px');
+  expect(Math.round(rect.bottom)).toBe(window.innerHeight);
+
+  $host.close();
+});
+
+test('absolute non-modal sheets can dock to a positioned parent', async () => {
+  const screen = render(html`
+    <div data-testid="container" style="position: relative; inline-size: 24rem; block-size: 20rem;">
+      <rc-bottom-sheet data-testid="host" style="--rc-bottom-sheet-position: absolute">
+        <dialog aria-label="Filters">Filters</dialog>
+      </rc-bottom-sheet>
+    </div>
+  `);
+  const $container = await screen.getByTestId('container').element();
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog')!;
+
+  expect(getComputedStyle($dialog).position).toBe('absolute');
+
+  expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(
+    Math.round($container.getBoundingClientRect().bottom),
+  );
+
+  $host.close();
+});
+
+test('centers an un-themed splitter-style drag handle on the inline axis', async () => {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host">
+      <dialog aria-label="Filters">
+        <button type="button" data-rc-bottom-sheet-handle aria-label="Resize sheet"></button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.showModal();
+
+  const $dialog = $host.querySelector('dialog')!;
+  const $handle = $host.querySelector<HTMLElement>('[data-rc-bottom-sheet-handle]')!;
+  const dialogRect = $dialog.getBoundingClientRect();
+  const handleRect = $handle.getBoundingClientRect();
+  const styles = getComputedStyle($handle);
+
+  expect(handleRect.width).toBe(32);
+  expect(handleRect.height).toBe(4);
+
+  expect(Math.round(handleRect.left + handleRect.width / 2)).toBe(
+    Math.round(dialogRect.left + dialogRect.width / 2),
+  );
+
+  expect(styles.borderRadius).toBe('999px');
+  expect(styles.cursor).toBe('n-resize');
+  expect(styles.touchAction).toBe('none');
+
+  $host.close();
+});
+
 test('rc-bottom-sheet inherits showModal(), close(), and returnValue', async () => {
   const screen = renderSheet();
   const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
@@ -254,9 +332,10 @@ test('a slow drag release settles to the nearest point gradually, not instantly'
 
   firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
   await wait(500);
-  // Slow: 40px over ~500ms is ~80px/s, far below the default 500px/s swipe threshold.
-  firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 40 });
-  firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 40 });
+  // Slow: 80px over ~500ms is ~160px/s, far below the default 500px/s swipe threshold.
+  // Releasing at 360px keeps the sheet between the 320px and 460px snap points.
+  firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 80 });
+  firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 80 });
 
   // Sampled mid-animation: neither the pre-drag start nor the settled target,
   // proving the settle is an animated transition rather than an instant jump.
@@ -265,7 +344,7 @@ test('a slow drag release settles to the nearest point gradually, not instantly'
   const midHeight = $dialog.getBoundingClientRect().height;
 
   expect(midHeight).toBeGreaterThan(320);
-  expect(midHeight).toBeLessThan(460);
+  expect(midHeight).toBeLessThan(360);
 
   await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320));
 

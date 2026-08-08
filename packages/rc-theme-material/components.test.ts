@@ -102,6 +102,40 @@ test('buttons enable Material state layers and pointer ripples', () => {
   expect(styles.getPropertyValue('--_rc-button-ripple-duration')).not.toBe('');
 });
 
+test('bottom sheets preserve the drag handle geometry and style authored actions', () => {
+  const scope = renderScope();
+  const sheet = document.createElement('rc-bottom-sheet');
+  const dialog = document.createElement('dialog');
+  const handle = document.createElement('button');
+  const action = document.createElement('button');
+  const chip = document.createElement('rc-chip');
+  const chipButton = document.createElement('button');
+
+  scope.style.setProperty('--md-sys-color-primary', 'rgb(1, 2, 3)');
+  handle.dataset.rcBottomSheetHandle = '';
+  action.textContent = 'Done';
+  chipButton.textContent = 'Vegetarian';
+  chip.append(chipButton);
+  dialog.append(handle, action, chip);
+  sheet.append(dialog);
+  scope.append(sheet);
+
+  const dialogStyles = getComputedStyle(dialog);
+  const handleStyles = getComputedStyle(handle);
+  const actionStyles = getComputedStyle(action);
+  const chipButtonStyles = getComputedStyle(chipButton);
+
+  expect(dialogStyles.maxInlineSize).toBe('640px');
+  expect(handleStyles.inlineSize).toBe('32px');
+  expect(handleStyles.blockSize).toBe('4px');
+  expect(handleStyles.borderRadius).not.toBe('0px');
+  expect(actionStyles.minBlockSize).toBe('40px');
+  expect(actionStyles.paddingInlineStart).toBe('24px');
+  expect(actionStyles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(actionStyles.color).toBe('rgb(1, 2, 3)');
+  expect(chipButtonStyles.paddingInlineStart).not.toBe('24px');
+});
+
 test('segmented buttons flatten native fieldset chrome for themed segments', () => {
   const scope = renderScope();
   const segmentedButton = document.createElement('rc-segmented-button');
