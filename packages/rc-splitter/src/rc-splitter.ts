@@ -284,7 +284,7 @@ export class RCSplitter extends LitElement {
   @query('#primary', true)
   protected _$primary!: HTMLDivElement;
 
-  @query('#separator-handle', true)
+  @query('#separator-handle')
   protected _$separatorHandle!: HTMLDivElement;
 
   @queryAssignedElements()

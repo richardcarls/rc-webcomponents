@@ -846,20 +846,29 @@ describe('RCSplitter', () => {
       await host.updateComplete;
 
       const separator = await waitForInit(host);
-      const initialValue = host.value;
 
-      firePointerEvent(separator, 'pointerdown');
+      host.value = 100;
+      await host.updateComplete;
+      expect(host.value).toBe(100);
 
       const hostRect = host.getBoundingClientRect();
+
+      firePointerEvent(separator, 'pointerdown', {
+        clientX: hostRect.left + 100,
+        clientY: hostRect.top + 150,
+      });
 
       firePointerEvent(separator, 'pointermove', {
         clientX: hostRect.left + 300,
         clientY: hostRect.top + 150,
       });
 
-      firePointerEvent(separator, 'pointerup');
+      firePointerEvent(separator, 'pointerup', {
+        clientX: hostRect.left + 300,
+        clientY: hostRect.top + 150,
+      });
 
-      expect(host.value).not.toBe(initialValue);
+      expect(host.value).toBe(300);
     });
 
     test('pointer drag is prevented when fixed', async () => {
