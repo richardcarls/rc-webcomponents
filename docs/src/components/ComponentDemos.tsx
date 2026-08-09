@@ -1240,7 +1240,9 @@ export function FabDemo() {
               aria-label="Back to top"
               onClick={() => scrollerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
             >
-              ↑
+              <span className="material-symbols-outlined" aria-hidden="true">
+                vertical_align_top
+              </span>
             </button>
           </rc-fab>
 
