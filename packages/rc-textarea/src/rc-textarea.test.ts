@@ -12,7 +12,6 @@ import {
   getSlottedTextarea,
   waitRender,
 } from './test-helpers.ts';
-
 import './define';
 
 async function renderTextarea(
@@ -259,6 +258,7 @@ describe('RCTextarea — slotted textarea', () => {
         <textarea>preset text</textarea>
       </rc-textarea>
     `);
+
     await waitRender();
 
     expect(host.value).toBe('preset text');
@@ -271,6 +271,7 @@ describe('RCTextarea — slotted textarea', () => {
         <textarea .defaultValue=${'property seeded text'}></textarea>
       </rc-textarea>
     `);
+
     await waitRender();
 
     expect(host.value).toBe('property seeded text');
@@ -298,6 +299,7 @@ describe('RCTextarea — plugin API', () => {
     const host = await renderTextarea();
 
     let mountedApi: RCTextareaPluginAPI | null = null;
+
     host.usePlugin({
       mount(api) {
         mountedApi = api;
@@ -313,6 +315,7 @@ describe('RCTextarea — plugin API', () => {
   test('plugin.update() receives value and api on each render', async () => {
     const host = await renderTextarea();
     const calls: string[] = [];
+
     host.usePlugin({
       update(value) {
         calls.push(value);
@@ -415,6 +418,7 @@ describe('RCTextarea — plugin API', () => {
     const host = await renderTextarea();
 
     let destroyed = false;
+
     host.usePlugin({
       destroy() {
         destroyed = true;
@@ -430,6 +434,7 @@ describe('RCTextarea — plugin API', () => {
     const host = await renderTextarea();
 
     let oldDestroyed = false;
+
     host.usePlugin({
       destroy() {
         oldDestroyed = true;
@@ -445,6 +450,7 @@ describe('RCTextarea — plugin API', () => {
     const host = await renderTextarea();
 
     let adoptedSheet: CSSStyleSheet | null = null;
+
     host.usePlugin({
       mount(api) {
         adoptedSheet = api.adoptStyleSheet('.plugin-rule { color: red; }');
@@ -455,10 +461,57 @@ describe('RCTextarea — plugin API', () => {
     expect(host.shadowRoot!.adoptedStyleSheets).toContain(adoptedSheet);
   });
 
+  test('a declarative plugin assigned before connection mounts with its stylesheet', async () => {
+    const host = document.createElement('rc-textarea') as RCTextarea;
+    let mountCount = 0;
+    let sheet: CSSStyleSheet | null = null;
+
+    host.plugin = {
+      mount(api) {
+        mountCount++;
+        sheet = api.adoptStyleSheet('.preconnected-plugin { display: block; }');
+      },
+    };
+
+    expect(mountCount).toBe(0);
+
+    document.body.append(host);
+    await host.updateComplete;
+
+    expect(mountCount).toBe(1);
+    expect(host.shadowRoot!.adoptedStyleSheets).toContain(sheet);
+
+    host.remove();
+  });
+
+  test('reconnect remounts a declarative plugin and restores its stylesheet', async () => {
+    const host = await renderTextarea();
+    let mountCount = 0;
+    const sheets: CSSStyleSheet[] = [];
+
+    host.plugin = {
+      mount(api) {
+        mountCount++;
+        sheets.push(api.adoptStyleSheet('.reconnected-plugin { display: block; }'));
+      },
+    };
+
+    const parent = host.parentElement!;
+
+    host.remove();
+    parent.append(host);
+    await host.updateComplete;
+
+    expect(mountCount).toBe(2);
+    expect(host.shadowRoot!.adoptedStyleSheets).toContain(sheets[1]);
+    expect(host.shadowRoot!.adoptedStyleSheets).not.toContain(sheets[0]);
+  });
+
   test('removePlugin() removes adopted stylesheets', async () => {
     const host = await renderTextarea();
 
     let sheet: CSSStyleSheet | null = null;
+
     host.usePlugin({
       mount(api) {
         sheet = api.adoptStyleSheet('.rule { color: blue; }');
@@ -584,6 +637,7 @@ describe('RCTextarea — pattern API', () => {
       bold: true,
       color: '#ff0000',
     });
+
     host.value = 'this is bold text';
 
     await waitRender();
@@ -603,6 +657,7 @@ describe('RCTextarea — pattern API', () => {
       className: 'err-mark',
       createLineDecoration: () => ({ className: 'err-line' }),
     });
+
     host.value = 'ok\nERROR here\nok';
 
     await waitRender();
