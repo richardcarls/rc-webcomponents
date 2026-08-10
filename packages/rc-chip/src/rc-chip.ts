@@ -48,6 +48,13 @@ export interface RCChipRemoveDetail {
  * @csspart state-layer - Overlay layer for hover, focus, pressed, ripple, or design-system effects.
  * @csspart remove - Presentational trailing remove indicator.
  *
+ * @cssprop [--rc-chip-state-layer-color=currentColor] - Hover/focus/pressed state-layer color.
+ * @cssprop [--rc-chip-selected-state-layer-color=var(--rc-chip-state-layer-color)] - Selected chip state-layer color.
+ * @cssprop [--rc-chip-hover-state-layer-opacity=0.08] - Hover state-layer opacity.
+ * @cssprop [--rc-chip-focus-state-layer-opacity=0.12] - Focus state-layer opacity.
+ * @cssprop [--rc-chip-pressed-state-layer-opacity=0.12] - Pressed state-layer opacity.
+ * @cssprop [--rc-chip-state-layer-transition-duration=var(--rc-motion-effects-duration-fast,80ms)] - State-layer effects duration.
+ * @cssprop [--rc-chip-state-layer-transition-easing=var(--rc-motion-effects-easing-fast,ease-out)] - State-layer effects easing.
  * @cssprop [--rc-chip-remove-icon-size=smaller] - Font size for a slotted remove icon.
  * @cssprop --rc-chip-removable-padding-inline-end - Override for removable chip content end padding.
  *

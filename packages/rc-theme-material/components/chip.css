@@ -12,6 +12,13 @@
     --rc-chip-selected-border-color: transparent;
     --rc-chip-selected-bg: var(--md-sys-color-secondary-container, Highlight);
     --rc-chip-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
+    --rc-chip-state-layer-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-chip-selected-state-layer-color: var(--md-sys-color-on-secondary-container, CanvasText);
+    --rc-chip-hover-state-layer-opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+    --rc-chip-focus-state-layer-opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+    --rc-chip-pressed-state-layer-opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+    --rc-chip-state-layer-transition-duration: var(--rc-motion-effects-duration-fast, 150ms);
+    --rc-chip-state-layer-transition-easing: var(--rc-motion-effects-easing-fast, ease-out);
     --rc-chip-focus-ring: var(--rc-focus-ring);
     --rc-chip-focus-ring-offset: var(--rc-focus-ring-offset);
     --rc-chip-disabled-opacity: var(--rc-disabled-opacity);
