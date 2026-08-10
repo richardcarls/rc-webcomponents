@@ -49,3 +49,9 @@ test('every selective component stylesheet can be imported', async () => {
 test('state-layer utility stylesheet can be imported', async () => {
   await import('./state-layer.css');
 });
+
+test('aggregate Material entrypoints with motion mappings can be imported', async () => {
+  await import('./bridge.css');
+  await import('./defaults.css');
+  await import('./theme.css');
+});

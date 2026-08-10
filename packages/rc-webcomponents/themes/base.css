@@ -42,7 +42,19 @@
   --rc-focus-ring: auto;
   --rc-focus-ring-offset: 0;
   --rc-disabled-opacity: 0.5;
-  --rc-motion-duration: 120ms;
+  --rc-motion-effects-duration-fast: 80ms;
+  --rc-motion-effects-easing-fast: ease-out;
+  --rc-motion-effects-duration-default: 120ms;
+  --rc-motion-effects-easing-default: ease-out;
+  --rc-motion-effects-duration-slow: 200ms;
+  --rc-motion-effects-easing-slow: ease-out;
+  --rc-motion-spatial-duration-fast: 180ms;
+  --rc-motion-spatial-easing-fast: cubic-bezier(0.2, 0, 0, 1);
+  --rc-motion-spatial-duration-default: 300ms;
+  --rc-motion-spatial-easing-default: cubic-bezier(0.2, 0, 0, 1);
+  --rc-motion-spatial-duration-slow: 450ms;
+  --rc-motion-spatial-easing-slow: cubic-bezier(0.2, 0, 0, 1);
+  --rc-motion-duration: var(--rc-motion-effects-duration-default);
 
   --rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
 }
