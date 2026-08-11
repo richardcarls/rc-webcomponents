@@ -122,18 +122,33 @@ test('bottom sheets preserve the drag handle geometry and style authored actions
 
   const dialogStyles = getComputedStyle(dialog);
   const handleStyles = getComputedStyle(handle);
+  const handleIndicatorStyles = getComputedStyle(handle, '::before');
   const actionStyles = getComputedStyle(action);
   const chipButtonStyles = getComputedStyle(chipButton);
 
   expect(dialogStyles.maxInlineSize).toBe('640px');
-  expect(handleStyles.inlineSize).toBe('32px');
-  expect(handleStyles.blockSize).toBe('4px');
-  expect(handleStyles.borderRadius).not.toBe('0px');
+  expect(handleStyles.inlineSize).toBe('100%');
+  expect(handleStyles.minBlockSize).toBe('48px');
+  expect(handleIndicatorStyles.inlineSize).toBe('32px');
+  expect(handleIndicatorStyles.blockSize).toBe('4px');
+  expect(handleIndicatorStyles.borderRadius).not.toBe('0px');
   expect(actionStyles.minBlockSize).toBe('40px');
   expect(actionStyles.paddingInlineStart).toBe('24px');
   expect(actionStyles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   expect(actionStyles.color).toBe('rgb(1, 2, 3)');
   expect(chipButtonStyles.paddingInlineStart).not.toBe('24px');
+
+  expect(
+    getComputedStyle(chip).getPropertyValue('--rc-chip-pressed-state-layer-opacity').trim(),
+  ).not.toBe('');
+
+  expect(getComputedStyle(sheet).getPropertyValue('--rc-bottom-sheet-snap-duration').trim()).toBe(
+    '500ms',
+  );
+
+  expect(getComputedStyle(sheet).getPropertyValue('--rc-bottom-sheet-snap-easing').trim()).not.toBe(
+    '',
+  );
 });
 
 test('segmented buttons flatten native fieldset chrome for themed segments', () => {

@@ -49,7 +49,10 @@ resize, downward swipe-dismiss, and fixed positioning at the viewport's bottom
 edge. Add an optional
 `[data-rc-bottom-sheet-handle]` element inside the dialog for an authored
 handle. Handles without a theme use the same centered 32 by 4 pixel pill
-geometry as the splitter-style drag indicator.
+geometry as the splitter-style drag indicator inside a full-width, 48 pixel-high pointer
+target. Keep a direct-child handle at the top of the dialog so that target
+starts at the sheet's draggable edge; when authoring custom dialog padding,
+leave its block-start padding at zero.
 
 For an embedded non-modal sheet, place the component in a positioned container,
 set `--rc-bottom-sheet-position: absolute`, and open it with `show()`. The sheet
@@ -61,5 +64,11 @@ the first or last point. Settling animates unless the user prefers reduced
 motion.
 
 Call `snapTo(index)` to move programmatically. The
-`rc-bottom-sheet-snap` event reports the selected `index`, target `height`,
-and whether the trigger was a drag or API call.
+`rc-bottom-sheet-snap` event reports the selected `index`, effective target
+`height` after CSS size constraints, and whether the trigger was a drag or API
+call. Constrained targets remain docked to the same block-end edge.
+
+Set `--rc-bottom-sheet-snap-duration` and
+`--rc-bottom-sheet-snap-easing` on the dialog to customize its settle motion.
+Themes can map these to their own spatial motion tokens; reduced motion still
+settles instantly.

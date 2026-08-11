@@ -7,6 +7,12 @@
       transparent
     );
     --rc-bottom-sheet-handle-radius: var(--md-sys-shape-corner-full, 999px);
+    --rc-bottom-sheet-handle-target-block-size: 3rem;
+    --rc-bottom-sheet-snap-duration: var(--rc-motion-spatial-duration-default, 500ms);
+    --rc-bottom-sheet-snap-easing: var(
+      --rc-motion-spatial-easing-default,
+      cubic-bezier(0.2, 0, 0, 1)
+    );
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-bottom-sheet > dialog {
@@ -38,27 +44,43 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-bottom-sheet
     > dialog
-    [data-rc-bottom-sheet-handle] {
+    > [data-rc-bottom-sheet-handle] {
+    position: relative;
     display: block;
-    box-sizing: border-box;
-    inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
-    block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);
-    margin: var(--rc-bottom-sheet-handle-margin, 1rem auto 0.75rem);
+    inline-size: var(--rc-bottom-sheet-handle-target-inline-size, 100%);
+    min-block-size: var(--rc-bottom-sheet-handle-target-block-size, 3rem);
+    margin: var(--rc-bottom-sheet-handle-target-margin, 0);
     padding: 0;
     border: 0;
-    border-radius: var(--rc-bottom-sheet-handle-radius, 999px);
-    background: var(--rc-bottom-sheet-handle-color, GrayText);
+    border-radius: inherit;
+    background: transparent;
     appearance: none;
     cursor: ns-resize;
     touch-action: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-bottom-sheet
     > dialog
-    [data-rc-bottom-sheet-handle]:focus-visible {
+    > [data-rc-bottom-sheet-handle]::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
+    block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);
+    border-radius: var(--rc-bottom-sheet-handle-radius, 999px);
+    background: var(--rc-bottom-sheet-handle-color, GrayText);
+    translate: -50% -50%;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-bottom-sheet
+    > dialog
+    > [data-rc-bottom-sheet-handle]:focus-visible {
     outline: 0.125rem solid var(--md-sys-color-primary, Highlight);
-    outline-offset: 0.25rem;
+    outline-offset: -0.25rem;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
