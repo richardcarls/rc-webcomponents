@@ -4,7 +4,8 @@ Trigger button that opens an `rc-menu` popup, following the [WAI-ARIA Menu Butto
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-menu-button](https://richardcarls.github.io/rc-webcomponents/components/rc-menu-button).
 
-Wraps a trigger element and an `rc-menu` popup, wiring ARIA attributes, light-dismiss, and keyboard open/close automatically.
+Wraps a trigger element and an `rc-menu` popup, wiring ARIA attributes,
+light-dismiss, and keyboard open/close automatically.
 
 ---
 
@@ -32,6 +33,7 @@ Place a trigger element in the `trigger` slot and an `rc-menu` in the default sl
 ```html
 <rc-menu-button>
   <button slot="trigger">File</button>
+  <span slot="indicator" aria-hidden="true">›</span>
 
   <rc-menu label="File">
     <button>New</button>
@@ -41,7 +43,9 @@ Place a trigger element in the `trigger` slot and an `rc-menu` in the default sl
 </rc-menu-button>
 ```
 
-The component automatically sets `aria-haspopup="menu"` and `aria-expanded` on the trigger, and closes the menu when the user clicks outside or selects an item.
+The component automatically sets `aria-haspopup="menu"` and `aria-expanded` on
+the trigger, and closes the menu when the user clicks outside or selects an
+item.
 
 ---
 
@@ -66,13 +70,16 @@ The component automatically sets `aria-haspopup="menu"` and `aria-expanded` on t
 | `--rc-menu-button-trigger-radius` | `var(--rc-control-radius)` | Trigger border radius |
 | `--rc-menu-button-trigger-background` | `var(--rc-button-bg)` | Trigger background |
 | `--rc-menu-button-trigger-color` | `var(--rc-button-text)` | Trigger text color |
-| `--rc-menu-button-trigger-transition` | — | Trigger state transition |
+| `--rc-menu-button-trigger-transition` | `none` | Trigger state transition |
 | `--rc-menu-button-trigger-hover-background` | `color-mix(in srgb, Highlight 8%, transparent)` | Trigger hover background |
 | `--rc-menu-button-trigger-hover-color` | `inherit` | Trigger hover text color |
 | `--rc-menu-button-trigger-hover-border-color` | `currentColor` | Trigger hover border color |
 | `--rc-menu-button-trigger-open-background` | `color-mix(in srgb, Highlight 12%, transparent)` | Trigger background while the menu is open |
 | `--rc-menu-button-trigger-open-color` | `inherit` | Trigger text color while the menu is open |
 | `--rc-menu-button-trigger-open-border-color` | `currentColor` | Trigger border color while the menu is open |
+| `--rc-menu-button-indicator-size` | `1em` | Inline and block size reserved for the optional indicator |
+| `--rc-menu-button-indicator-color` | `currentColor` | Color of the optional indicator |
+| `--rc-menu-button-indicator-inset` | Trigger inline padding | Indicator distance from the trigger's inline end |
 | `--rc-menu-button-popup-z-index` | `1000` | `z-index` of the popup container |
 
 ### CSS parts
@@ -87,6 +94,7 @@ The component automatically sets `aria-haspopup="menu"` and `aria-expanded` on t
 | Slot | Description |
 |---|---|
 | `trigger` | The button (or other interactive element) that toggles the menu. Receives `aria-haspopup` and `aria-expanded` automatically. |
+| `indicator` | Optional author-supplied decorative submenu indicator. Rendered at the trigger's inline end with pointer events passed through to the trigger. |
 | *(default)* | The `rc-menu` to show as the popup. |
 
 ### Events
@@ -110,9 +118,10 @@ toggleMenu(): void
 
 ---
 
-## Keyboard behaviour
+## Keyboard behavior
 
-Keyboard handling depends on the resolved `orientation` (horizontal by default, or inherited from a parent menubar).
+Keyboard handling depends on the resolved `orientation` (horizontal by
+default, or inherited from a parent menubar).
 
 | Key | Condition | Action |
 |---|---|---|
@@ -142,7 +151,9 @@ Keyboard handling depends on the resolved `orientation` (horizontal by default, 
 Positioning when available and a viewport-aware fallback otherwise. Set the
 `placement` property or attribute to choose the preferred direction.
 
-**Light dismiss** is active at all times. A capture-phase `click` listener on `document` closes the menu whenever the click falls outside the component boundary (checked via `composedPath()`).
+**Light dismiss** is active at all times. A capture-phase `click` listener on
+`document` closes the menu whenever the click falls outside the component
+boundary (checked via `composedPath()`).
 
 ---
 

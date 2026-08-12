@@ -428,8 +428,6 @@
     --rc-menu-check-color: var(--md-sys-color-primary, Highlight);
     --rc-menu-shortcut-size: var(--md-sys-typescale-label-large-size, 0.875rem);
     --rc-menu-shortcut-color: var(--md-sys-color-on-surface-variant, GrayText);
-    --rc-menu-submenu-indicator-size: 1.25rem;
-    --rc-menu-submenu-indicator-color: var(--md-sys-color-on-surface-variant, CanvasText);
     --rc-menu-disabled-color: var(--md-sys-color-on-surface, GrayText);
     --rc-menu-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
     --rc-menu-separator-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
@@ -458,6 +456,8 @@
     --rc-menu-button-trigger-hover-color: var(--md-sys-color-primary, ButtonText);
     --rc-menu-button-trigger-open-background: var(--md-sys-color-secondary-container, ButtonFace);
     --rc-menu-button-trigger-open-color: var(--md-sys-color-on-secondary-container, ButtonText);
+    --rc-menu-button-indicator-size: 1.5rem;
+    --rc-menu-button-indicator-color: var(--md-sys-color-on-surface-variant, CanvasText);
   }
 
   .rc-theme-material rc-menubar,

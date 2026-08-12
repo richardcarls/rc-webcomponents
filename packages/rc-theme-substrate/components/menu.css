@@ -7,7 +7,6 @@
     --rc-menu-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
     --rc-menu-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
     --rc-menu-check-size: 1.25rem;
-    --rc-menu-submenu-indicator-color: var(--rc-accent, Highlight);
     display: inline-block;
     border: var(--rc-border, 1px solid ButtonBorder);
     border-radius: var(--substrate-radius-lg, 0.75rem);

@@ -345,7 +345,6 @@ test('standalone menu receives the Material item token contract', () => {
   expect(styles.getPropertyValue('--rc-menu-hover-bg')).not.toBe('');
   expect(styles.getPropertyValue('--rc-menu-active-bg')).not.toBe('');
   expect(styles.getPropertyValue('--rc-menu-check-size')).toBe('1.5rem');
-  expect(styles.getPropertyValue('--rc-menu-submenu-indicator-color')).not.toBe('');
 });
 
 test('menu button receives the Material trigger token contract', () => {
@@ -360,6 +359,7 @@ test('menu button receives the Material trigger token contract', () => {
   expect(styles.getPropertyValue('--rc-menu-button-trigger-color')).not.toBe('');
   expect(styles.getPropertyValue('--rc-menu-button-trigger-hover-background')).not.toBe('');
   expect(styles.getPropertyValue('--rc-menu-button-trigger-open-background')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-menu-button-indicator-color')).not.toBe('');
 });
 
 test('menubar receives the Material menu-button item token contract', () => {

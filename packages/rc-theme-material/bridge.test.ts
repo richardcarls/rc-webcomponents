@@ -114,7 +114,6 @@ test('maps open menu surfaces without choosing a consumer button variant', () =>
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-min-block-size')).toBe('3rem');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-padding-block')).toBe('0');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-hover-bg')).not.toBe('');
-  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-submenu-indicator-color')).not.toBe('');
 
   expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-background')).toBe(
     'transparent',
@@ -122,6 +121,10 @@ test('maps open menu surfaces without choosing a consumer button variant', () =>
 
   expect(
     getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-background'),
+  ).not.toBe('');
+
+  expect(
+    getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-indicator-color'),
   ).not.toBe('');
 });
 

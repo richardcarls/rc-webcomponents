@@ -12,6 +12,7 @@
       var(--rc-accent, Highlight) 16%,
       var(--rc-button-bg, ButtonFace)
     );
+    --rc-menu-button-indicator-color: var(--rc-accent, Highlight);
     display: inline-block;
   }
 }

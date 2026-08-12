@@ -32,6 +32,7 @@ export interface RCMenuButtonToggleEvent {
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/ WAI-ARIA Menu Button pattern}
  *
  * @slot trigger - The button element that triggers the menu
+ * @slot indicator - Optional decorative indicator rendered at the trigger's inline end
  * @slot default - The rc-menu element to display as popup
  *
  * @fires rc-menu-button-toggle - Fired when the menu opens or closes
@@ -51,6 +52,9 @@ export interface RCMenuButtonToggleEvent {
  * @cssprop [--rc-menu-button-trigger-open-background=color-mix(in srgb, Highlight 12%, transparent)] - Trigger background when the menu is open
  * @cssprop [--rc-menu-button-trigger-open-color=inherit] - Trigger text color when the menu is open
  * @cssprop [--rc-menu-button-trigger-open-border-color=currentColor] - Trigger border color when the menu is open
+ * @cssprop [--rc-menu-button-indicator-size=1em] - Inline and block size of the slotted indicator
+ * @cssprop [--rc-menu-button-indicator-color=currentColor] - Color of the slotted indicator
+ * @cssprop [--rc-menu-button-indicator-inset=var(--rc-menu-button-trigger-padding-inline)] - Indicator distance from the trigger's inline end
  * @cssprop [--rc-menu-button-popup-z-index=1000] - Z-index of the popup overlay
  *
  * @csspart root - The root container element
@@ -89,7 +93,9 @@ export class RCMenuButton extends LitElement {
   set open(value: boolean | undefined) {
     const oldValue = this._open;
 
-    if (value === undefined) return;
+    if (value === undefined) {
+      return;
+    }
 
     this._setOpen(value, false);
     this.requestUpdate('open', oldValue);
@@ -239,7 +245,9 @@ export class RCMenuButton extends LitElement {
    * @param focusTarget - which item receives initial focus when the menu opens
    */
   openMenu(focusTarget: 'first' | 'last' = 'first') {
-    if (this.open) return;
+    if (this.open) {
+      return;
+    }
 
     this._anchorCtrl.setOptions({ placement: this._effectivePlacement });
     this._setOpen(true, true);
@@ -258,7 +266,9 @@ export class RCMenuButton extends LitElement {
    * @param returnFocus - when `true`, returns focus to the trigger button after closing
    */
   closeMenu(returnFocus = true) {
-    if (!this.open) return;
+    if (!this.open) {
+      return;
+    }
 
     this._setOpen(false, true);
 
@@ -301,6 +311,13 @@ export class RCMenuButton extends LitElement {
     }
   }
 
+  /** Tracks optional indicator content so the trigger reserves its inline-end space. */
+  protected _handleIndicatorSlotChange(e: Event) {
+    const slot = e.currentTarget as HTMLSlotElement;
+
+    this.toggleAttribute('has-indicator', slot.assignedElements().length > 0);
+  }
+
   /**
    * Mirrors the host's `tabindex` attribute to the trigger button.
    *
@@ -314,7 +331,9 @@ export class RCMenuButton extends LitElement {
   protected _syncTriggerTabindex() {
     const $trigger = this._$trigger?.deref();
 
-    if (!$trigger) return;
+    if (!$trigger) {
+      return;
+    }
 
     if (this.getAttribute('tabindex') === '-1') {
       $trigger.setAttribute('tabindex', '-1');
@@ -338,6 +357,7 @@ export class RCMenuButton extends LitElement {
 
     if (!$trigger) {
       super.focus(options);
+
       return;
     }
 
@@ -468,6 +488,11 @@ export class RCMenuButton extends LitElement {
           @click=${this._handleTriggerClick}
         >
           <slot name="trigger" @slotchange=${this._handleTriggerSlotChange}></slot>
+          <slot
+            name="indicator"
+            aria-hidden="true"
+            @slotchange=${this._handleIndicatorSlotChange}
+          ></slot>
         </div>
 
         <div

@@ -106,15 +106,6 @@ const LIGHT_DOM_CSS = `
     white-space: nowrap;
   }
 
-  /* Submenu indicator for items that open a child menu. */
-  rc-menu [aria-haspopup='menu']::after,
-  rc-menu [aria-haspopup='true']::after {
-    content: var(--rc-menu-submenu-indicator-content, '›');
-    margin-inline-start: auto;
-    font-size: var(--rc-menu-submenu-indicator-size, 1em);
-    color: var(--rc-menu-submenu-indicator-color, currentColor);
-  }
-
   /* Separators */
   rc-menu [role='separator'],
   rc-menu hr {
@@ -166,7 +157,7 @@ const LIGHT_DOM_CSS = `
  *     add a visible `[data-group-label]` element as first child of the group for section headings.
  *   - `role="separator"` / `<hr>` produce horizontal dividers between sections.
  *   - Within any item, `[data-menu-shortcut]` elements are pushed to the inline-end edge for keyboard hints.
- *   - Items with `aria-haspopup="menu"` or `aria-haspopup="true"` get a trailing submenu indicator.
+ *   - Nested menu triggers supply their own trailing indicator through `rc-menu-button`'s `indicator` slot.
  *
  * @fires rc-menu-activate - Fired when a menu item is activated via keyboard (Enter/Space) or pointer click.
  * @fires rc-menu-close - Fired when Escape is pressed.
@@ -190,9 +181,6 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-menu-check-color=inherit] - Color of the check/radio symbol.
  * @cssprop [--rc-menu-shortcut-size=0.8em] - Font size of `[data-menu-shortcut]` labels.
  * @cssprop [--rc-menu-shortcut-color=GrayText] - Text color of `[data-menu-shortcut]` labels.
- * @cssprop [--rc-menu-submenu-indicator-content='›'] - Text content for submenu indicators.
- * @cssprop [--rc-menu-submenu-indicator-size=1em] - Font size of submenu indicators.
- * @cssprop [--rc-menu-submenu-indicator-color=currentColor] - Text color of submenu indicators.
  * @cssprop [--rc-menu-disabled-color=GrayText] - Disabled menu item text color.
  * @cssprop [--rc-menu-disabled-opacity=var(--rc-disabled-opacity)] - Disabled menu item opacity.
  * @cssprop [--rc-menu-separator-border=1px solid ButtonBorder] - Separator border.
@@ -298,7 +286,10 @@ export class RCMenu extends LitElement {
    * @param item - The element to make active. No-op when null or undefined.
    */
   focusItem(item?: Element | null): void {
-    if (!item) return;
+    if (!item) {
+      return;
+    }
+
     this.focus();
     this._activeDescendantCtrl.navigateToItem(item);
   }
@@ -343,16 +334,23 @@ export class RCMenu extends LitElement {
     for (const el of slot.assignedElements()) {
       const role = el.getAttribute('role');
 
-      if (role === 'separator') continue;
-
-      if (role === 'group') {
-        for (const child of el.children) {
-          if (isFocusable(child)) items.push(child);
-        }
+      if (role === 'separator') {
         continue;
       }
 
-      if (isFocusable(el)) items.push(el);
+      if (role === 'group') {
+        for (const child of el.children) {
+          if (isFocusable(child)) {
+            items.push(child);
+          }
+        }
+
+        continue;
+      }
+
+      if (isFocusable(el)) {
+        items.push(el);
+      }
     }
 
     return items;
@@ -456,6 +454,8 @@ export class RCMenu extends LitElement {
       }
 
       case 'Enter':
+      // Falls through so both activation keys share the same handler.
+
       case ' ': {
         e.preventDefault();
         e.stopPropagation();
