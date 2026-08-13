@@ -578,6 +578,7 @@ export class RCTextarea extends LitElement {
       this._onInput();
     });
 
+    $editor.addEventListener('beforeinput', this._onBeforeInput);
     $editor.addEventListener('input', this._onInputEvent);
     $editor.addEventListener('keydown', this._onKeyDown);
     $editor.addEventListener('paste', this._onPaste);
@@ -610,6 +611,19 @@ export class RCTextarea extends LitElement {
   private _onInputEvent = (): void => {
     if (!this._composing) {
       this._onInput();
+    }
+  };
+
+  private _onBeforeInput = (event: InputEvent): void => {
+    // Virtual keyboards may emit no keydown. Keep their browser-generated
+    // blocks out of the component's model-owned `.line` document as well.
+    if (
+      !this._composing &&
+      !event.isComposing &&
+      (event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak')
+    ) {
+      event.preventDefault();
+      this._insertText('\n');
     }
   };
 
@@ -771,6 +785,15 @@ export class RCTextarea extends LitElement {
   }
 
   private _onKeyDown = (e: KeyboardEvent): void => {
+    // Native contenteditable line breaks do not reliably retain `.line`, so
+    // apply physical-keyboard Enter through the plain-text model first.
+    if (e.key === 'Enter' && !this._composing && !e.isComposing) {
+      e.preventDefault();
+      this._insertText('\n');
+
+      return;
+    }
+
     if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
       this._insertText('\t');

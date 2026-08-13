@@ -1,5 +1,6 @@
 import { html, type TemplateResult } from 'lit';
 import { describe, expect, test } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
@@ -23,6 +24,18 @@ async function renderTextarea(
   await host.updateComplete;
 
   return host;
+}
+
+function placeCaretAtEnd($editor: HTMLElement): void {
+  const selection = window.getSelection()!;
+  const range = document.createRange();
+  const $lastLine = $editor.querySelector<HTMLElement>('.line:last-child')!;
+
+  $editor.focus();
+  range.selectNodeContents($lastLine);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
 
 describe('RCTextarea — basic rendering', () => {
@@ -134,6 +147,81 @@ describe('RCTextarea — value', () => {
 
     expect(lines).toHaveLength(3);
     expect(lines[1].querySelector('br')).not.toBeNull();
+  });
+
+  test('Enter at the end of a line immediately renders a trailing empty line', async () => {
+    const host = await renderTextarea();
+
+    host.value = '2 cups paprika';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+
+    placeCaretAtEnd(editor);
+
+    await userEvent.keyboard('{Enter}');
+
+    await waitRender();
+
+    const lines = editor.querySelectorAll('.line');
+
+    expect(host.value).toBe('2 cups paprika\n');
+    expect(lines).toHaveLength(2);
+    expect(lines[1].querySelector('br')).not.toBeNull();
+  });
+
+  test('consecutive Enter presses immediately render consecutive empty lines', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'Mix well.';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+
+    for (let i = 0; i < 2; i++) {
+      placeCaretAtEnd(editor);
+
+      await userEvent.keyboard('{Enter}');
+
+      await waitRender();
+    }
+
+    expect(host.value).toBe('Mix well.\n\n');
+    expect(editor.querySelectorAll('.line')).toHaveLength(3);
+  });
+
+  test('insertParagraph beforeinput creates a line without a keydown event', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'Virtual keyboard';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+    const selection = window.getSelection()!;
+    const range = document.createRange();
+
+    range.selectNodeContents(editor);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const event = new InputEvent('beforeinput', {
+      inputType: 'insertParagraph',
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    });
+
+    editor.dispatchEvent(event);
+
+    await waitRender();
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(host.value).toBe('Virtual keyboard\n');
+    expect(editor.querySelectorAll('.line')).toHaveLength(2);
   });
 });
 
