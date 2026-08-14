@@ -324,6 +324,23 @@ describe('RCTextarea — lineNumbers', () => {
 
     expect(getGutterCells(host).children.length).toBe(3);
   });
+
+  test('supports gutter typography independently from editor typography', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea
+        data-testid="host"
+        line-numbers
+        style="--rc-textarea-font-family: serif; --rc-textarea-gutter-font-family: monospace"
+      ></rc-textarea>
+    `);
+
+    host.value = 'line1\nline2';
+
+    await waitRender();
+
+    expect(getComputedStyle(getEditor(host)).fontFamily).toBe('serif');
+    expect(getComputedStyle(getGutterCells(host)).fontFamily).toBe('monospace');
+  });
 });
 
 describe('RCTextarea — slotted textarea', () => {

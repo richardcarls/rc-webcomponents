@@ -130,6 +130,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-gutter-bg=Canvas] - Gutter background color
  * @cssprop [--rc-textarea-gutter-color=GrayText] - Gutter text color
  * @cssprop [--rc-textarea-gutter-border=1px solid ButtonBorder] - Gutter right border
+ * @cssprop [--rc-textarea-gutter-font-family=var(--rc-textarea-font-family, monospace)] - Gutter font family
  */
 export class RCTextarea extends LitElement {
   static override styles: CSSResultGroup = styles;
