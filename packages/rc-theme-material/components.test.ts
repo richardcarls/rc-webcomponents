@@ -164,6 +164,26 @@ test('segmented buttons flatten native fieldset chrome for themed segments', () 
   expect(styles.getPropertyValue('--_rc-segmented-button-radio-opacity')).toBe('0');
 });
 
+test('switches retain Material geometry under flex pressure', () => {
+  const scope = renderScope();
+  const row = document.createElement('div');
+  const label = document.createElement('span');
+  const switchElement = document.createElement('rc-switch');
+
+  row.style.display = 'flex';
+  row.style.inlineSize = '1px';
+  label.textContent = 'A settings label that consumes the available inline space';
+  row.append(label, switchElement);
+  scope.append(row);
+
+  const styles = getComputedStyle(switchElement);
+
+  expect(styles.minInlineSize).toBe('52px');
+  expect(styles.minBlockSize).toBe('32px');
+  expect(styles.flexShrink).toBe('0');
+  expect(switchElement.getBoundingClientRect().width).toBe(52);
+});
+
 test('app bar Material size presets stay in CSS modifier classes', () => {
   const scope = renderScope();
   const appBar = document.createElement('rc-app-bar');

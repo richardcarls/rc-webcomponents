@@ -24,5 +24,10 @@
     --rc-switch-focus-ring-offset: var(--rc-focus-ring-offset);
     --rc-switch-disabled-opacity: var(--rc-disabled-opacity);
     --rc-switch-duration: var(--rc-motion-duration);
+
+    /* Keep long flex/grid siblings from shrinking the control below its track. */
+    min-inline-size: var(--rc-switch-track-inline-size) !important;
+    min-block-size: var(--rc-switch-track-block-size) !important;
+    flex-shrink: 0 !important;
   }
 }
