@@ -53,6 +53,22 @@ declare global {
  * @fires rc-dialog-close - Mirrors the inner `<dialog>` close event.
  *   `detail: { returnValue: string }`
  *
+ * @attr open - Controlled open state. Reads the inner `<dialog>.open` value.
+ * @attr default-open - Initial uncontrolled open state.
+ * @attr movable - Allow the dialog to be moved by dragging.
+ * @attr move-handle - CSS selector (within the inner `<dialog>`) for the drag handle element.
+ * @attr move-bounds - Bounds constraint for movement: `viewport` or `parent`.
+ * @attr move-step - Keyboard arrow-key step in px for moving.
+ * @attr resize - Enable resizing, mirroring the CSS `resize` property values.
+ * @attr resize-origin - Origin for resize edge hit-testing or explicit handles.
+ * @attr resize-handle - CSS selector, scoped to the inner `<dialog>`, for one or more explicit
+ *   resize handles.
+ * @attr resize-threshold - Edge hit-test thickness in px for resize detection.
+ * @attr resize-step - Keyboard arrow-key step in px for resizing.
+ * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute.
+ * @attr light-dismiss - When present and the dialog is modal, a click on the backdrop area calls
+ *   `requestClose()`.
+ *
  * @cssprop [--rc-dialog-scrim=color-mix(in srgb, CanvasText 32%, transparent)] - Modal backdrop color.
  *
  */
