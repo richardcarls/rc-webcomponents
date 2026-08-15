@@ -162,12 +162,15 @@ const LIGHT_DOM_CSS = `
  * @fires rc-menu-activate - Fired when a menu item is activated via keyboard (Enter/Space) or pointer click.
  * @fires rc-menu-close - Fired when Escape is pressed.
  *
+ * @attr label - Accessible label for the menu; synced to `aria-label` on the host.
+ *
  * @cssprop [--rc-menu-min-width=10em] - Minimum width of the menu panel.
  * @cssprop [--rc-menu-padding-block=0.25em] - Block (top/bottom) padding inside the panel.
  * @cssprop [--rc-menu-background=Canvas] - Background color; falls back through --rc-surface.
  * @cssprop [--rc-menu-border=1px solid ButtonBorder] - Border; falls back through --rc-border.
  * @cssprop [--rc-menu-radius=var(--rc-control-radius)] - Menu panel border radius.
  * @cssprop [--rc-menu-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Box shadow; falls back through --rc-shadow.
+ * @cssprop [--rc-menu-color=CanvasText] - Text color; falls back through --rc-field-text.
  * @cssprop [--rc-menu-item-min-block-size=0] - Minimum block size for menu item rows.
  * @cssprop [--rc-menu-item-padding-block=var(--rc-item-padding-block)] - Menu item block-axis padding.
  * @cssprop [--rc-menu-item-padding-inline=var(--rc-item-padding-inline)] - Menu item inline-axis padding.
