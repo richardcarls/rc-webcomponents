@@ -40,6 +40,42 @@ export interface RCSwitchChangeDetail {
  * @attr disabled - Mirrors disabled state to the native checkbox.
  * @attr icons - Shows both selected and deselected icon containers.
  * @attr show-only-selected-icon - Shows only the selected icon container.
+ *
+ * @cssprop [--rc-switch-track-inline-size] - Track inline size. No built-in default; a theme
+ *   must set this for the switch to render with a visible size.
+ * @cssprop [--rc-switch-track-block-size] - Track block size. No built-in default; a theme must
+ *   set this for the switch to render with a visible size.
+ * @cssprop [--rc-switch-native-appearance=revert] - Slotted native checkbox `appearance`.
+ * @cssprop [--rc-switch-native-inline-size=revert] - Slotted native checkbox inline size.
+ * @cssprop [--rc-switch-native-block-size=revert] - Slotted native checkbox block size.
+ * @cssprop [--rc-switch-native-margin=revert] - Slotted native checkbox margin.
+ * @cssprop [--rc-switch-native-opacity=revert] - Slotted native checkbox opacity.
+ * @cssprop [--rc-switch-decoration-display=none] - Display of the track/thumb/icon decoration.
+ *   Themes set this to `block` (or similar) to opt into the decorated switch look.
+ * @cssprop [--rc-switch-track-border=2px solid ButtonBorder] - Track border.
+ * @cssprop [--rc-switch-track-radius=9999px] - Track and thumb border radius.
+ * @cssprop [--rc-switch-track-bg=ButtonFace] - Unselected track background.
+ * @cssprop [--rc-switch-duration=150ms] - Track/thumb/icon transition duration.
+ * @cssprop [--rc-switch-easing=ease] - Track/thumb/icon transition easing.
+ * @cssprop [--rc-switch-thumb-size=1rem] - Unselected thumb inline and block size.
+ * @cssprop [--rc-switch-thumb-offset=0.375rem] - Thumb and icon inline start offset within the
+ *   track.
+ * @cssprop [--rc-switch-thumb-radius=9999px] - Thumb border radius.
+ * @cssprop [--rc-switch-thumb-bg=ButtonText] - Unselected thumb background.
+ * @cssprop [--rc-switch-icon-size=1rem] - Selected/deselected icon container size.
+ * @cssprop [--rc-switch-icon-color=Canvas] - Icon color.
+ * @cssprop [--rc-switch-icon-display=none] - Display of the active icon container when `icons`
+ *   or `show-only-selected-icon` is set.
+ * @cssprop [--rc-switch-selected-track-border-color=Highlight] - Selected track border color.
+ * @cssprop [--rc-switch-selected-track-bg=Highlight] - Selected track background.
+ * @cssprop [--rc-switch-selected-thumb-size=1.5rem] - Selected thumb inline and block size.
+ * @cssprop [--rc-switch-selected-thumb-bg=HighlightText] - Selected thumb background.
+ * @cssprop [--rc-switch-thumb-translate=1.125rem] - Inline-axis translation applied to the thumb
+ *   and icons when selected.
+ * @cssprop [--rc-switch-focus-ring=2px solid Highlight] - Track focus ring, shown on
+ *   focus-within.
+ * @cssprop [--rc-switch-focus-ring-offset=2px] - Track focus ring offset.
+ * @cssprop [--rc-switch-disabled-opacity=0.5] - Host opacity while `disabled`.
  */
 export class RCSwitch extends LitElement {
   static override styles = switchStyles;
