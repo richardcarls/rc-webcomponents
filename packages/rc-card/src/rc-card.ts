@@ -124,12 +124,12 @@ export class RCCard extends LitElement {
   @property({ type: String, attribute: 'action-target' })
   actionTarget = '';
 
-  @queryAssignedElements({ slot: 'media', flatten: true }) private _media!: Element[];
-  @queryAssignedElements({ slot: 'header', flatten: true }) private _header!: Element[];
-  @queryAssignedElements({ slot: 'title', flatten: true }) private _title!: Element[];
-  @queryAssignedElements({ slot: 'subtitle', flatten: true }) private _subtitle!: Element[];
-  @queryAssignedElements({ slot: 'actions', flatten: true }) private _actions!: Element[];
-  @queryAssignedElements({ slot: 'footer', flatten: true }) private _footer!: Element[];
+  @queryAssignedElements({ slot: 'media', flatten: true }) private _$media!: Element[];
+  @queryAssignedElements({ slot: 'header', flatten: true }) private _$header!: Element[];
+  @queryAssignedElements({ slot: 'title', flatten: true }) private _$title!: Element[];
+  @queryAssignedElements({ slot: 'subtitle', flatten: true }) private _$subtitle!: Element[];
+  @queryAssignedElements({ slot: 'actions', flatten: true }) private _$actions!: Element[];
+  @queryAssignedElements({ slot: 'footer', flatten: true }) private _$footer!: Element[];
 
   private _slotMicrotaskQueued = false;
 
@@ -171,12 +171,12 @@ export class RCCard extends LitElement {
 
   private _syncSlotPresence(): void {
     const bySlot: Record<SlotName, Element[]> = {
-      media: this._media ?? [],
-      header: this._header ?? [],
-      title: this._title ?? [],
-      subtitle: this._subtitle ?? [],
-      actions: this._actions ?? [],
-      footer: this._footer ?? [],
+      media: this._$media ?? [],
+      header: this._$header ?? [],
+      title: this._$title ?? [],
+      subtitle: this._$subtitle ?? [],
+      actions: this._$actions ?? [],
+      footer: this._$footer ?? [],
     };
 
     for (const slotName of SLOT_NAMES) {
@@ -192,11 +192,11 @@ export class RCCard extends LitElement {
     }
 
     const root = this.getRootNode();
-    const target =
+    const $target =
       root instanceof Document || root instanceof ShadowRoot ? root.getElementById(id) : null;
 
-    if (target instanceof HTMLAnchorElement || target instanceof HTMLButtonElement) {
-      return target;
+    if ($target instanceof HTMLAnchorElement || $target instanceof HTMLButtonElement) {
+      return $target;
     }
 
     if (import.meta.env.DEV) {
@@ -229,14 +229,14 @@ export class RCCard extends LitElement {
       return;
     }
 
-    const target = this._resolveActionTarget();
+    const $target = this._resolveActionTarget();
 
-    if (!target) {
+    if (!$target) {
       return;
     }
 
     event.preventDefault();
-    target.click();
+    $target.click();
   }
 
   constructor() {
