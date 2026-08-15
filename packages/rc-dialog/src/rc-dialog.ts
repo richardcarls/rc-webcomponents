@@ -161,7 +161,7 @@ export class RCDialog extends LitElement {
 
   private _controlledOpen: boolean | undefined = undefined;
   private _defaultOpen = false;
-  private readonly _dialogController = new NativeChildController<HTMLDialogElement>(this, {
+  protected readonly _dialogController = new NativeChildController<HTMLDialogElement>(this, {
     selector: ':scope > dialog',
     observe: true,
     onChange: ($dialog) => this._setupDialog($dialog),
@@ -178,8 +178,8 @@ export class RCDialog extends LitElement {
 
   // Tracks which <dialog> has its listeners wired; used by _teardownDialog to
   // remove listeners even after the element is removed from the DOM.
-  private _$wired: WeakRef<HTMLDialogElement> | null = null;
-  private _suppressNextCloseToggle = false;
+  protected _$wired: WeakRef<HTMLDialogElement> | null = null;
+  protected _suppressNextCloseToggle = false;
 
   /** The element that had focus when the dialog was opened; restored on close. */
   protected _$opener: Element | null = null;
@@ -355,16 +355,16 @@ export class RCDialog extends LitElement {
     }
 
     if (this.resize !== 'none') {
-      const handles = this._resizeHandles($dialog);
+      const $handles = this._resizeHandles($dialog);
 
-      if (handles.length > 0) {
-        for (const handle of handles) {
+      if ($handles.length > 0) {
+        for (const $handle of $handles) {
           // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
           new ResizeController(this, {
             target: $dialog,
-            direction: this._resizeDirectionForHandle(handle),
-            handle,
-            origin: this._resizeOriginForHandle(handle),
+            direction: this._resizeDirectionForHandle($handle),
+            handle: $handle,
+            origin: this._resizeOriginForHandle($handle),
             threshold: this.resizeThreshold,
             step: this.resizeStep,
             bounds: this.moveBounds,
@@ -519,7 +519,7 @@ export class RCDialog extends LitElement {
   /** Hook for subclasses to respond after a resize gesture has settled. */
   protected _onResizeEnd(_detail: ResizeLifecycleDetail): void {}
 
-  private _resizeHandles($dialog: HTMLDialogElement): Element[] {
+  protected _resizeHandles($dialog: HTMLDialogElement): Element[] {
     if (!this.resizeHandle) {
       return [];
     }
@@ -535,8 +535,8 @@ export class RCDialog extends LitElement {
     }
   }
 
-  private _resizeDirectionForHandle(handle: Element): ResizeDirection {
-    const axis = handle.getAttribute('data-rc-dialog-resize-axis');
+  protected _resizeDirectionForHandle($handle: Element): ResizeDirection {
+    const axis = $handle.getAttribute('data-rc-dialog-resize-axis');
 
     switch (axis) {
       case 'x':
@@ -550,9 +550,9 @@ export class RCDialog extends LitElement {
     }
   }
 
-  private _resizeOriginForHandle(handle: Element): ResizeOrigin {
+  protected _resizeOriginForHandle($handle: Element): ResizeOrigin {
     return (
-      (handle.getAttribute('data-rc-dialog-resize-origin') as ResizeOrigin | null) ??
+      ($handle.getAttribute('data-rc-dialog-resize-origin') as ResizeOrigin | null) ??
       this.resizeOrigin
     );
   }
