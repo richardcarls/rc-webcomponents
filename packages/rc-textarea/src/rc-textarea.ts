@@ -380,7 +380,7 @@ export class RCTextarea extends LitElement {
   }
 
   /** Initial uncontrolled value. */
-  @property({ type: String })
+  @property({ type: String, attribute: 'default-value' })
   get defaultValue(): string | undefined {
     return this._defaultValue;
   }

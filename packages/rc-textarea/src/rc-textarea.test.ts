@@ -90,6 +90,14 @@ describe('RCTextarea — value', () => {
     expect(host.value).toBe('');
   });
 
+  test('default-value attribute seeds the initial value', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" default-value="attribute seeded text"></rc-textarea>
+    `);
+
+    expect(host.value).toBe('attribute seeded text');
+  });
+
   test('setting value renders lines in the editor', async () => {
     const host = await renderTextarea();
 
