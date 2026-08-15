@@ -61,13 +61,58 @@ export interface RCButtonToggleDetail {
  * @attr default-selected - Initial selected state for uncontrolled toggle usage.
  * @attr icon-only - Removes label-oriented inline padding in supporting themes.
  * @attr full-width - Stretches the native child button to the host inline size.
+ * @attr [has-icon] - Present when the native button has a direct `[data-rc-button-icon]` child.
+ *   Use with CSS selectors (e.g. `rc-button[has-icon]`).
+ * @attr [has-selected-icon] - Present when the native button has a direct
+ *   `[data-rc-button-selected-icon]` child.
+ * @attr [has-label] - Present when the native button has visible label content, from either a
+ *   `[data-rc-button-label]` child or bare text.
+ *
+ * @cssprop [--rc-button-gap] - Gap between icon and label content.
+ * @cssprop [--rc-button-block-size] - Minimum button block size.
+ * @cssprop [--rc-button-min-inline-size] - Minimum button inline size.
+ * @cssprop [--rc-button-inline-size] - Button inline size.
+ * @cssprop [--rc-button-padding-block] - Button block-axis padding (defers to native button
+ *   padding when unset).
+ * @cssprop [--rc-button-padding-inline] - Button inline-axis padding (defers to native button
+ *   padding when unset).
+ * @cssprop [--rc-button-border] - Button border (defers to native button border when unset).
+ * @cssprop [--rc-button-radius] - Button and overlay border radius (defers to native button
+ *   radius when unset).
+ * @cssprop [--rc-button-bg] - Button background (defers to native button background when unset).
+ * @cssprop [--rc-button-color] - Button text color (defers to native button color when unset).
+ * @cssprop [--rc-button-shadow] - Button box shadow (defers to native button shadow when unset).
+ * @cssprop [--rc-button-font] - Button font shorthand (defers to native button font when unset).
+ * @cssprop [--rc-button-transition] - Button transition shorthand (defers to native button
+ *   transition when unset).
+ * @cssprop [--rc-button-icon-size] - Button inline and min-inline size when `icon-only`. Falls
+ *   back to `--rc-button-block-size`, then `--rc-control-block-size`, then `2.5rem`.
+ * @cssprop [--rc-button-disabled-opacity] - Disabled button opacity (defers to native disabled
+ *   styling when unset).
+ * @cssprop [--rc-button-busy-content-color=transparent] - Button text color while `pending` or
+ *   `progress`.
+ * @cssprop [--rc-button-state-layer-bg=currentColor] - State-layer overlay color.
+ * @cssprop [--rc-button-state-layer-duration=150ms] - State-layer opacity transition duration.
+ * @cssprop [--rc-button-state-layer-easing=ease] - State-layer opacity transition easing.
+ * @cssprop [--rc-button-hover-state-layer-opacity=0] - State-layer opacity on hover.
+ * @cssprop [--rc-button-focus-state-layer-opacity=0] - State-layer opacity on focus-within.
+ * @cssprop [--rc-button-pressed-state-layer-opacity=0] - State-layer opacity on active press.
+ * @cssprop [--rc-button-progress-color=currentColor] - Progress affordance color.
+ * @cssprop [--rc-button-progress-font=600 0.75rem / 1 sans-serif] - Determinate progress
+ *   percentage font.
+ * @cssprop [--rc-button-progress-size=1.25rem] - Indeterminate progress spinner diameter.
+ * @cssprop [--rc-button-progress-track-width=2px] - Indeterminate progress spinner stroke width.
+ * @cssprop [--rc-button-progress-track-color=color-mix(in srgb, currentColor 24%, transparent)] -
+ *   Indeterminate progress spinner track color.
+ * @cssprop [--rc-button-progress-active-color=currentColor] - Indeterminate progress spinner
+ *   active arc color.
  */
 export class RCButton extends LitElement {
   static override styles = buttonStyles;
 
-  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
+  protected static readonly _styledRoots = new Set<Document | ShadowRoot>();
 
-  private static _ensureBaseStyles(root: Document | ShadowRoot): void {
+  protected static _ensureBaseStyles(root: Document | ShadowRoot): void {
     if (RCButton._styledRoots.has(root)) {
       return;
     }
@@ -329,6 +374,7 @@ export class RCButton extends LitElement {
         continue;
       }
 
+      // data-rc-button-progress marks consumer content that must not count as a label.
       if (
         node.matches(
           '[data-rc-button-icon], [data-rc-button-selected-icon], [data-rc-button-progress], [aria-hidden="true"]',

@@ -314,6 +314,23 @@ test('reflects icon and label presence from immediate button children', async ()
   expect(host.iconOnly).toBe(false);
 });
 
+test('excludes data-rc-button-progress content from label detection', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host">
+      <button type="button">
+        <span data-rc-button-icon aria-hidden="true">+</span>
+        <span data-rc-button-progress aria-hidden="true">Saving…</span>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  expect(host.hasAttribute('has-label')).toBe(false);
+  expect(host.iconOnly).toBe(true);
+});
+
 test('selected icon switching follows controlled state and native button clicks', async () => {
   const screen = render(html`
     <style>

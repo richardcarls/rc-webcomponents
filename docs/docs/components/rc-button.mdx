@@ -64,6 +64,10 @@ import '@rcarls/rc-button/define';
 Place icons, selected icons, progress-adjacent content, and visible labels
 inside the native button. `rc-button` never moves author nodes.
 
+Mark custom progress-adjacent content with `data-rc-button-progress` so it is
+excluded from label detection, the same way `data-rc-button-icon` and
+`data-rc-button-selected-icon` are.
+
 ## States
 
 Use reflected attributes such as `pending`, `progress`, `selected`,
