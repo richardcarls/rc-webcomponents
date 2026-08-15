@@ -241,6 +241,59 @@ test('busy states preserve an author-owned disabled state', async () => {
   expect(host.querySelector('button')?.disabled).toBe(true);
 });
 
+test.each(['pending', 'progress'] as const)(
+  '%s does not repeat disabled writes from the button observer',
+  async (state) => {
+    const screen = render(html`
+      <rc-button data-testid="host">
+        <button type="button">Save</button>
+      </rc-button>
+    `);
+    const host = (await screen.getByTestId('host').element()) as RCButton;
+
+    await flushButton(host);
+
+    const $button = host.querySelector('button');
+
+    if (!$button) {
+      throw new Error('Expected a direct child button.');
+    }
+
+    const disabledDescriptor = Object.getOwnPropertyDescriptor(
+      HTMLButtonElement.prototype,
+      'disabled',
+    );
+    const getDisabled = disabledDescriptor?.get;
+    const setDisabled = disabledDescriptor?.set;
+
+    if (!getDisabled || !setDisabled) {
+      throw new Error('Expected HTMLButtonElement.disabled accessors.');
+    }
+
+    let disabledWrites = 0;
+
+    Object.defineProperty($button, 'disabled', {
+      configurable: true,
+      get: () => getDisabled.call($button),
+      set: (value: boolean) => {
+        disabledWrites++;
+
+        if (getDisabled.call($button) !== value) {
+          setDisabled.call($button, value);
+        }
+      },
+    });
+
+    host[state] = true;
+
+    await flushButton(host);
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    expect(disabledWrites).toBe(1);
+    expect($button.disabled).toBe(true);
+  },
+);
+
 test('reflects icon and label presence from immediate button children', async () => {
   const screen = render(html`
     <rc-button data-testid="host">

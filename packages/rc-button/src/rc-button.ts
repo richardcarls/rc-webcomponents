@@ -354,11 +354,10 @@ export class RCButton extends LitElement {
 
     const shouldDisable = this.disabled || this.pending || this.progress;
 
-    if (shouldDisable) {
-      if (!button.disabled) {
-        this._disabledOwned = true;
-      }
+    if (shouldDisable && !button.disabled) {
+      this._disabledOwned = true;
 
+      // Idempotent disabled writes queue mutation records and re-enter the button observer.
       button.disabled = true;
     } else if (!shouldDisable && this._disabledOwned) {
       button.disabled = false;
