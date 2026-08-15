@@ -1,14 +1,12 @@
 import { LitElement, html } from 'lit';
 import type { CSSResultGroup } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { NativeChildController, warnMissingDirectChild } from '@rcarls/rc-common';
 
-import { styles } from './rc-textarea.styles.ts';
+import { NativeChildController, warnMissingDirectChild } from '@rcarls/rc-common';
 import { RCDocument, getText } from './document.ts';
 import { saveSelection, restoreSelection, type SavedSelection } from './selection.ts';
 import { remapDecorations, addDecoration, setDecorations } from './decoration.ts';
 import { matchPatternResults } from './pattern-matcher.ts';
-
 import type {
   Decoration,
   DecorationInput,
@@ -19,6 +17,8 @@ import type {
   Token,
 } from './types.ts';
 import { generateId } from './types.ts';
+
+import { styles } from './rc-textarea.styles.ts';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -45,6 +45,7 @@ const MAX_UNDO = 100;
  */
 function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
   const $tmp = document.createElement('div');
+
   $tmp.innerHTML = html;
 
   const result: Omit<MarkDecoration, 'id'>[] = [];
@@ -129,6 +130,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-gutter-bg=Canvas] - Gutter background color
  * @cssprop [--rc-textarea-gutter-color=GrayText] - Gutter text color
  * @cssprop [--rc-textarea-gutter-border=1px solid ButtonBorder] - Gutter right border
+ * @cssprop [--rc-textarea-gutter-font-family=var(--rc-textarea-font-family, monospace)] - Gutter font family
  */
 export class RCTextarea extends LitElement {
   static override styles: CSSResultGroup = styles;
@@ -231,9 +233,12 @@ export class RCTextarea extends LitElement {
 
     this._pluginProperty = plugin;
 
-    if (plugin) {
+    // Framework property bindings can run before the element is connected.
+    // Mounting at that point adopts plugin sheets before Lit installs its
+    // static sheets, so the initial style adoption can be overwritten.
+    if (plugin && this.isConnected) {
       this.usePlugin(plugin);
-    } else {
+    } else if (!plugin) {
       this.removePlugin();
     }
 
@@ -284,8 +289,7 @@ export class RCTextarea extends LitElement {
   private readonly _textareaController = new NativeChildController<HTMLTextAreaElement>(this, {
     selector: ':scope > textarea',
     observe: true,
-    onChange: ($textarea, $previousTextarea) =>
-      this._setupTextarea($textarea, $previousTextarea),
+    onChange: ($textarea, $previousTextarea) => this._setupTextarea($textarea, $previousTextarea),
     onMissing: () => {
       if (import.meta.env.DEV && !this.readOnly) {
         warnMissingDirectChild(this, {
@@ -399,6 +403,14 @@ export class RCTextarea extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+
+    // Frameworks may temporarily move a custom element through a disconnected
+    // tree while preserving its property values. disconnectedCallback tears
+    // down plugin effects and styles; remount the still-assigned declarative
+    // plugin when the same element reconnects.
+    if (this._pluginProperty && !this._plugin) {
+      this.usePlugin(this._pluginProperty);
+    }
 
     document.addEventListener('selectionchange', this._docSelectionChangeHandler);
   }
@@ -567,9 +579,11 @@ export class RCTextarea extends LitElement {
       this._onInput();
     });
 
+    $editor.addEventListener('beforeinput', this._onBeforeInput);
     $editor.addEventListener('input', this._onInputEvent);
     $editor.addEventListener('keydown', this._onKeyDown);
     $editor.addEventListener('paste', this._onPaste);
+
     $editor.addEventListener('focus', () => {
       this.dispatchEvent(
         new CustomEvent('rc-textarea-focus', {
@@ -598,6 +612,19 @@ export class RCTextarea extends LitElement {
   private _onInputEvent = (): void => {
     if (!this._composing) {
       this._onInput();
+    }
+  };
+
+  private _onBeforeInput = (event: InputEvent): void => {
+    // Virtual keyboards may emit no keydown. Keep their browser-generated
+    // blocks out of the component's model-owned `.line` document as well.
+    if (
+      !this._composing &&
+      !event.isComposing &&
+      (event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak')
+    ) {
+      event.preventDefault();
+      this._insertText('\n');
     }
   };
 
@@ -643,6 +670,7 @@ export class RCTextarea extends LitElement {
         anchorOffset: preEditSelection?.anchorOffset ?? 0,
         focusOffset: preEditSelection?.focusOffset ?? 0,
       });
+
       this._undoIndex = 0;
     }
 
@@ -662,6 +690,7 @@ export class RCTextarea extends LitElement {
 
     if (selection) {
       this._savedSelection = selection;
+
       this.dispatchEvent(
         new CustomEvent('rc-textarea-select', {
           bubbles: true,
@@ -757,9 +786,19 @@ export class RCTextarea extends LitElement {
   }
 
   private _onKeyDown = (e: KeyboardEvent): void => {
+    // Native contenteditable line breaks do not reliably retain `.line`, so
+    // apply physical-keyboard Enter through the plain-text model first.
+    if (e.key === 'Enter' && !this._composing && !e.isComposing) {
+      e.preventDefault();
+      this._insertText('\n');
+
+      return;
+    }
+
     if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
       this._insertText('\t');
+
       return;
     }
 
@@ -771,8 +810,10 @@ export class RCTextarea extends LitElement {
     if (isUndo) {
       e.preventDefault();
       this._undo();
+
       return;
     }
+
     if (isRedo) {
       e.preventDefault();
       this._redo();
@@ -809,16 +850,19 @@ export class RCTextarea extends LitElement {
 
       this._value = newValue;
       this._syncTextareaValue(true);
+
       this._savedSelection = {
         anchorOffset: newCursorOffset,
         focusOffset: newCursorOffset,
       };
+
       if (this._undoStack.length === 0) {
         this._undoStack.push({
           value: oldValue,
           anchorOffset: selection?.anchorOffset ?? 0,
           focusOffset: selection?.focusOffset ?? 0,
         });
+
         this._undoIndex = 0;
       }
 
@@ -875,10 +919,12 @@ export class RCTextarea extends LitElement {
 
     this._value = newValue;
     this._syncTextareaValue(true);
+
     this._savedSelection = {
       anchorOffset: start + prefix.length,
       focusOffset: start + prefix.length + selected.length,
     };
+
     this._pushUndo(this._savedSelection);
     this._dispatchChange(newValue);
     this._scheduleRender();
@@ -951,10 +997,12 @@ export class RCTextarea extends LitElement {
 
   private _applyUndoEntry(entry: UndoEntry): void {
     this._value = entry.value;
+
     this._savedSelection = {
       anchorOffset: entry.anchorOffset,
       focusOffset: entry.focusOffset,
     };
+
     this._syncTextareaValue(true);
     this._dispatchChange(this._value);
     this._scheduleRender();
@@ -999,6 +1047,7 @@ export class RCTextarea extends LitElement {
   private _buildPluginApi(): RCTextareaPluginAPI {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const component = this;
+
     return {
       get host() {
         return component;
@@ -1068,6 +1117,7 @@ export class RCTextarea extends LitElement {
       },
       onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void {
         component._cursorCallbacks.add(callback);
+
         return () => {
           component._cursorCallbacks.delete(callback);
         };
@@ -1186,8 +1236,10 @@ export class RCTextarea extends LitElement {
    */
   addPattern(pattern: Omit<TextPattern, 'id'>): string {
     const id = generateId();
+
     this._patterns.set(id, { ...pattern, id });
     this._scheduleRender();
+
     return id;
   }
 
@@ -1243,6 +1295,7 @@ export class RCTextarea extends LitElement {
         renderValue,
         [...this._patterns.values()],
       );
+
       this._patternDecorations = [
         ...patMarkDecs.map((d) => ({ ...d, id: generateId() })),
         ...patLineDecs.map((d) => ({ ...d, id: generateId() })),
@@ -1333,6 +1386,7 @@ export class RCTextarea extends LitElement {
     }
 
     let counter = 0;
+
     return lines.map((lineText, i) => {
       const lineNum = i + 1;
 
@@ -1484,6 +1538,7 @@ export class RCTextarea extends LitElement {
 
     if (ariaLabel) {
       this._$editor.setAttribute('aria-label', ariaLabel);
+
       return;
     }
 
@@ -1495,12 +1550,14 @@ export class RCTextarea extends LitElement {
 
       if (labelText) {
         this._$editor.setAttribute('aria-label', labelText);
+
         return;
       }
     }
 
     if (this._label) {
       this._$editor.setAttribute('aria-label', this._label);
+
       return;
     }
 

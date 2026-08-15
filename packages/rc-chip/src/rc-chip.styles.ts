@@ -29,6 +29,7 @@ export const chipStyles = css`
     font: var(--rc-chip-font, revert);
     text-decoration: var(--rc-chip-text-decoration, revert);
     white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
   }
 
   :host([selected]) ::slotted(button),
@@ -54,6 +55,32 @@ export const chipStyles = css`
     position: absolute;
     inset: 0;
     border-radius: var(--rc-chip-radius, 0);
+    background: var(--rc-chip-state-layer-color, currentColor);
+    opacity: 0;
+    transition: opacity
+      var(--rc-chip-state-layer-transition-duration, var(--rc-motion-effects-duration-fast, 80ms))
+      var(--rc-chip-state-layer-transition-easing, var(--rc-motion-effects-easing-fast, ease-out));
+  }
+
+  :host([selected]) [part='state-layer'] {
+    background: var(
+      --rc-chip-selected-state-layer-color,
+      var(--rc-chip-state-layer-color, currentColor)
+    );
+  }
+
+  @media (hover: hover) {
+    :host(:not([disabled], [readonly]):hover) [part='state-layer'] {
+      opacity: var(--rc-chip-hover-state-layer-opacity, 0.08);
+    }
+  }
+
+  :host(:not([disabled], [readonly]):focus-within) [part='state-layer'] {
+    opacity: var(--rc-chip-focus-state-layer-opacity, 0.12);
+  }
+
+  :host(:not([disabled], [readonly]):active) [part='state-layer'] {
+    opacity: var(--rc-chip-pressed-state-layer-opacity, 0.12);
   }
 
   [part='remove'] {
@@ -92,6 +119,10 @@ export const chipStyles = css`
   }
 
   @media (forced-colors: active) {
+    [part='state-layer'] {
+      display: none;
+    }
+
     ::slotted(button),
     ::slotted(a),
     ::slotted([data-rc-chip-label]) {

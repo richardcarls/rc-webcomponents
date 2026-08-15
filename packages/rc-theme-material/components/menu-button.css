@@ -16,5 +16,7 @@
     --rc-menu-button-trigger-hover-color: var(--md-sys-color-primary, ButtonText);
     --rc-menu-button-trigger-open-background: var(--md-sys-color-secondary-container, ButtonFace);
     --rc-menu-button-trigger-open-color: var(--md-sys-color-on-secondary-container, ButtonText);
+    --rc-menu-button-indicator-size: 1.5rem;
+    --rc-menu-button-indicator-color: var(--md-sys-color-on-surface-variant, CanvasText);
   }
 }

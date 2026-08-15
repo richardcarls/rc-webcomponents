@@ -1,6 +1,8 @@
 # `@rcarls/rc-menu`
 
-Menu popup for command surfaces with keyboard navigation and typed activation events, following the [WAI-ARIA Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/).
+Menu popup for command surfaces with keyboard navigation and typed activation
+events, following the
+[WAI-ARIA Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/).
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-menu](https://richardcarls.github.io/rc-webcomponents/components/rc-menu).
 
@@ -23,7 +25,8 @@ import { RCMenu } from '@rcarls/rc-menu';    // named class export
 
 ## Basic usage
 
-Slot any focusable elements as menu items. Non-focusable elements (separators, headings) are rendered but excluded from keyboard navigation.
+Slot any focusable elements as menu items. Non-focusable elements (separators,
+headings) are rendered but excluded from keyboard navigation.
 
 ```html
 <rc-menu label="File">
@@ -35,7 +38,15 @@ Slot any focusable elements as menu items. Non-focusable elements (separators, h
 </rc-menu>
 ```
 
-`rc-menu` is typically used inside an [`rc-menu-button`](../rc-menu-button/README.md) or [`rc-menubar`](../rc-menubar/README.md), which handle positioning and trigger wiring. It can also be used standalone as a context menu.
+For a cascading item, use an [`rc-menu-button`](../rc-menu-button/README.md)
+and provide its visual affordance through the `indicator` slot. `rc-menu` does
+not generate an indicator glyph, so applications and themes retain control of
+iconography and writing-direction behavior.
+
+`rc-menu` is typically used inside an
+[`rc-menu-button`](../rc-menu-button/README.md) or
+[`rc-menubar`](../rc-menubar/README.md), which handle positioning and trigger
+wiring. It can also be used standalone as a context menu.
 
 ---
 
@@ -67,14 +78,14 @@ Slot any focusable elements as menu items. Non-focusable elements (separators, h
 
 | Slot | Description |
 |---|---|
-| *(default)* | Menu items. Only focusable elements participate in keyboard navigation. `<button>`, `<a href>`, elements with `tabindex`, and `<input>`/`<select>`/`<textarea>` are recognised as focusable; all others are skipped. |
+| *(default)* | Menu items. Only focusable elements participate in keyboard navigation. `<button>`, `<a href>`, elements with `tabindex`, and `<input>`/`<select>`/`<textarea>` are recognized as focusable; all others are skipped. |
 
 ### Events
 
 | Event | Bubbles | Cancelable | Detail | When |
 |---|---|---|---|---|
 | `rc-menu-activate` | Yes (composed) | No | `{ item: HTMLElement }` | User presses Enter or Space on a focused item |
-| `rc-menu-close` | Yes (composed) | No | — | User presses Escape |
+| `rc-menu-close` | Yes (composed) | No | None | User presses Escape |
 
 ### Public methods
 
@@ -97,7 +108,7 @@ previousItem: HTMLElement | undefined
 
 ---
 
-## Keyboard behaviour
+## Keyboard behavior
 
 | Key | Action |
 |---|---|
@@ -114,7 +125,7 @@ previousItem: HTMLElement | undefined
 
 | Attribute | Where | Value |
 |---|---|---|
-| `role="menu"` | Root `div` | — |
+| `role="menu"` | Root `div` | Menu role |
 | `aria-label` | Root `div` | Value of `label` property |
 | `role="menuitem"` | Each slotted focusable item | Set dynamically on slot change |
 | `tabindex="0"` | Active item | One item is tabbable at a time (roving tabindex) |

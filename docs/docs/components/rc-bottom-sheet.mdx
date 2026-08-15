@@ -83,8 +83,9 @@ viewport's bottom edge. Add an optional
 handle. Use `snap-points` to snap the sheet to declared CSS heights after
 resize gestures.
 
-Without a theme, the authored handle is centered on the inline axis and uses
-the same 32 by 4 pixel pill geometry as the splitter-style drag indicator.
+Without a theme, the authored handle uses the same 32 by 4 pixel pill geometry
+as the splitter-style drag indicator, centered inside a full-width, 48
+pixel-high target.
 
 For an embedded non-modal sheet, place the component in a positioned
 container, set `--rc-bottom-sheet-position: absolute`, and open it with
@@ -111,7 +112,9 @@ sheet.addEventListener('rc-bottom-sheet-snap', (event) => {
 `snapTo()` clamps finite indices to the available range and ignores calls when
 there are no valid snap points. Pass `'instant'` as its second argument to
 skip animation. The component also skips animation when the user has enabled
-reduced motion.
+reduced motion. Snap events report the effective rendered height after CSS
+minimum and maximum size constraints, and constrained targets remain docked to
+the sheet's block-end edge.
 
 ## Live demo
 
@@ -134,6 +137,9 @@ Use `showModal()` when interaction outside the sheet must be unavailable and
 `show()` for a non-modal surface.
 
 The optional drag handle must be a focusable control with an accessible name.
+Keep it as the dialog's first direct child and avoid adding dialog top padding
+so its 48 pixel target reaches the sheet's top edge.
+
 `rc-dialog` supplies keyboard resizing for the authored handle, so pointer
 dragging is not the only way to resize the sheet.
 
@@ -142,13 +148,17 @@ dragging is not the only way to resize the sheet.
 The component docks the dialog to the bottom edge and centers authored
 `[data-rc-bottom-sheet-handle]` handles by default. `rc-theme-material`
 applies the Material surface, level-one elevation, scrim, 32 by 4 pixel drag
-handle, and text-button treatment to direct authored action buttons. Wrap
-actions nested in sheet content with `rc-button`, as in the live demo, so they
+indicator within a 48 pixel target, and text-button treatment to direct
+authored action buttons. Wrap actions nested in sheet content with `rc-button`,
+as in the live demo, so they
 receive the shared Material button treatment without affecting component-owned
 buttons such as those inside `rc-chip`.
 
 Set `--rc-bottom-sheet-snap-duration` to a millisecond duration to customize
-settling. The default is `300ms`.
+settling. The default is `300ms`. Set `--rc-bottom-sheet-snap-easing` to a CSS
+easing function to customize the settle curve. The unthemed fallback is
+`cubic-bezier(0.4, 0, 0.2, 1)`; themes can map both properties to their spatial
+motion scheme.
 
 ## API
 

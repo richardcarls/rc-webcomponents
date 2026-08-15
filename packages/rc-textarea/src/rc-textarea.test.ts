@@ -1,5 +1,6 @@
 import { html, type TemplateResult } from 'lit';
 import { describe, expect, test } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
@@ -12,7 +13,6 @@ import {
   getSlottedTextarea,
   waitRender,
 } from './test-helpers.ts';
-
 import './define';
 
 async function renderTextarea(
@@ -24,6 +24,18 @@ async function renderTextarea(
   await host.updateComplete;
 
   return host;
+}
+
+function placeCaretAtEnd($editor: HTMLElement): void {
+  const selection = window.getSelection()!;
+  const range = document.createRange();
+  const $lastLine = $editor.querySelector<HTMLElement>('.line:last-child')!;
+
+  $editor.focus();
+  range.selectNodeContents($lastLine);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
 
 describe('RCTextarea — basic rendering', () => {
@@ -136,6 +148,81 @@ describe('RCTextarea — value', () => {
     expect(lines).toHaveLength(3);
     expect(lines[1].querySelector('br')).not.toBeNull();
   });
+
+  test('Enter at the end of a line immediately renders a trailing empty line', async () => {
+    const host = await renderTextarea();
+
+    host.value = '2 cups paprika';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+
+    placeCaretAtEnd(editor);
+
+    await userEvent.keyboard('{Enter}');
+
+    await waitRender();
+
+    const lines = editor.querySelectorAll('.line');
+
+    expect(host.value).toBe('2 cups paprika\n');
+    expect(lines).toHaveLength(2);
+    expect(lines[1].querySelector('br')).not.toBeNull();
+  });
+
+  test('consecutive Enter presses immediately render consecutive empty lines', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'Mix well.';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+
+    for (let i = 0; i < 2; i++) {
+      placeCaretAtEnd(editor);
+
+      await userEvent.keyboard('{Enter}');
+
+      await waitRender();
+    }
+
+    expect(host.value).toBe('Mix well.\n\n');
+    expect(editor.querySelectorAll('.line')).toHaveLength(3);
+  });
+
+  test('insertParagraph beforeinput creates a line without a keydown event', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'Virtual keyboard';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+    const selection = window.getSelection()!;
+    const range = document.createRange();
+
+    range.selectNodeContents(editor);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const event = new InputEvent('beforeinput', {
+      inputType: 'insertParagraph',
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    });
+
+    editor.dispatchEvent(event);
+
+    await waitRender();
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(host.value).toBe('Virtual keyboard\n');
+    expect(editor.querySelectorAll('.line')).toHaveLength(2);
+  });
 });
 
 describe('RCTextarea — readOnly', () => {
@@ -237,6 +324,23 @@ describe('RCTextarea — lineNumbers', () => {
 
     expect(getGutterCells(host).children.length).toBe(3);
   });
+
+  test('supports gutter typography independently from editor typography', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea
+        data-testid="host"
+        line-numbers
+        style="--rc-textarea-font-family: serif; --rc-textarea-gutter-font-family: monospace"
+      ></rc-textarea>
+    `);
+
+    host.value = 'line1\nline2';
+
+    await waitRender();
+
+    expect(getComputedStyle(getEditor(host)).fontFamily).toBe('serif');
+    expect(getComputedStyle(getGutterCells(host)).fontFamily).toBe('monospace');
+  });
 });
 
 describe('RCTextarea — slotted textarea', () => {
@@ -259,6 +363,7 @@ describe('RCTextarea — slotted textarea', () => {
         <textarea>preset text</textarea>
       </rc-textarea>
     `);
+
     await waitRender();
 
     expect(host.value).toBe('preset text');
@@ -271,6 +376,7 @@ describe('RCTextarea — slotted textarea', () => {
         <textarea .defaultValue=${'property seeded text'}></textarea>
       </rc-textarea>
     `);
+
     await waitRender();
 
     expect(host.value).toBe('property seeded text');
@@ -298,6 +404,7 @@ describe('RCTextarea — plugin API', () => {
     const host = await renderTextarea();
 
     let mountedApi: RCTextareaPluginAPI | null = null;
+
     host.usePlugin({
       mount(api) {
         mountedApi = api;
@@ -313,6 +420,7 @@ describe('RCTextarea — plugin API', () => {
   test('plugin.update() receives value and api on each render', async () => {
     const host = await renderTextarea();
     const calls: string[] = [];
+
     host.usePlugin({
       update(value) {
         calls.push(value);
@@ -415,6 +523,7 @@ describe('RCTextarea — plugin API', () => {
     const host = await renderTextarea();
 
     let destroyed = false;
+
     host.usePlugin({
       destroy() {
         destroyed = true;
@@ -430,6 +539,7 @@ describe('RCTextarea — plugin API', () => {
     const host = await renderTextarea();
 
     let oldDestroyed = false;
+
     host.usePlugin({
       destroy() {
         oldDestroyed = true;
@@ -445,6 +555,7 @@ describe('RCTextarea — plugin API', () => {
     const host = await renderTextarea();
 
     let adoptedSheet: CSSStyleSheet | null = null;
+
     host.usePlugin({
       mount(api) {
         adoptedSheet = api.adoptStyleSheet('.plugin-rule { color: red; }');
@@ -455,10 +566,57 @@ describe('RCTextarea — plugin API', () => {
     expect(host.shadowRoot!.adoptedStyleSheets).toContain(adoptedSheet);
   });
 
+  test('a declarative plugin assigned before connection mounts with its stylesheet', async () => {
+    const host = document.createElement('rc-textarea') as RCTextarea;
+    let mountCount = 0;
+    let sheet: CSSStyleSheet | null = null;
+
+    host.plugin = {
+      mount(api) {
+        mountCount++;
+        sheet = api.adoptStyleSheet('.preconnected-plugin { display: block; }');
+      },
+    };
+
+    expect(mountCount).toBe(0);
+
+    document.body.append(host);
+    await host.updateComplete;
+
+    expect(mountCount).toBe(1);
+    expect(host.shadowRoot!.adoptedStyleSheets).toContain(sheet);
+
+    host.remove();
+  });
+
+  test('reconnect remounts a declarative plugin and restores its stylesheet', async () => {
+    const host = await renderTextarea();
+    let mountCount = 0;
+    const sheets: CSSStyleSheet[] = [];
+
+    host.plugin = {
+      mount(api) {
+        mountCount++;
+        sheets.push(api.adoptStyleSheet('.reconnected-plugin { display: block; }'));
+      },
+    };
+
+    const parent = host.parentElement!;
+
+    host.remove();
+    parent.append(host);
+    await host.updateComplete;
+
+    expect(mountCount).toBe(2);
+    expect(host.shadowRoot!.adoptedStyleSheets).toContain(sheets[1]);
+    expect(host.shadowRoot!.adoptedStyleSheets).not.toContain(sheets[0]);
+  });
+
   test('removePlugin() removes adopted stylesheets', async () => {
     const host = await renderTextarea();
 
     let sheet: CSSStyleSheet | null = null;
+
     host.usePlugin({
       mount(api) {
         sheet = api.adoptStyleSheet('.rule { color: blue; }');
@@ -584,6 +742,7 @@ describe('RCTextarea — pattern API', () => {
       bold: true,
       color: '#ff0000',
     });
+
     host.value = 'this is bold text';
 
     await waitRender();
@@ -603,6 +762,7 @@ describe('RCTextarea — pattern API', () => {
       className: 'err-mark',
       createLineDecoration: () => ({ className: 'err-line' }),
     });
+
     host.value = 'ok\nERROR here\nok';
 
     await waitRender();

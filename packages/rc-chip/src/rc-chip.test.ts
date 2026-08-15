@@ -28,6 +28,33 @@ test('preserves a direct native button child', async () => {
   expect(button.name).toBe('filter');
   expect(button.value).toBe('quick');
   expect(getComputedStyle(button).gap).toBe('0px');
+
+  if (CSS.supports('-webkit-tap-highlight-color', 'transparent')) {
+    expect(getComputedStyle(button).getPropertyValue('-webkit-tap-highlight-color')).toBe(
+      'rgba(0, 0, 0, 0)',
+    );
+  }
+});
+
+test('uses its shape-clipped state layer for focus feedback', async () => {
+  const screen = render(html`
+    <rc-chip data-testid="host" variant="filter" style="--rc-chip-radius: 999px">
+      <button type="button">Quick</button>
+    </rc-chip>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCChip;
+
+  await flushChip(host);
+  host.querySelector('button')!.focus();
+
+  const stateLayer = host.shadowRoot?.querySelector<HTMLElement>('[part="state-layer"]');
+
+  if (!stateLayer) {
+    throw new Error('Expected the state-layer part to render.');
+  }
+
+  expect(getComputedStyle(stateLayer).borderRadius).not.toBe('0px');
+  await vi.waitFor(() => expect(getComputedStyle(stateLayer).opacity).toBe('0.12'));
 });
 
 test('filter chips toggle selected state and dispatch change on user click', async () => {

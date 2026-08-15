@@ -9,6 +9,8 @@ Chip wrapper for native button-based actions, filters, and inputs.
 ```
 
 The native button remains connected for keyboard behavior and progressive enhancement.
+Native tap highlighting is suppressed because the component's clipped state layer
+provides hover, focus, and pressed feedback within the chip shape.
 
 Use `rc-toolbar` when a group of interactive chips should form one tab stop
 with arrow-key navigation. Import `@rcarls/rc-toolbar/define` separately when

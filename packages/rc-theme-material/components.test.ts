@@ -122,18 +122,33 @@ test('bottom sheets preserve the drag handle geometry and style authored actions
 
   const dialogStyles = getComputedStyle(dialog);
   const handleStyles = getComputedStyle(handle);
+  const handleIndicatorStyles = getComputedStyle(handle, '::before');
   const actionStyles = getComputedStyle(action);
   const chipButtonStyles = getComputedStyle(chipButton);
 
   expect(dialogStyles.maxInlineSize).toBe('640px');
-  expect(handleStyles.inlineSize).toBe('32px');
-  expect(handleStyles.blockSize).toBe('4px');
-  expect(handleStyles.borderRadius).not.toBe('0px');
+  expect(handleStyles.inlineSize).toBe('100%');
+  expect(handleStyles.minBlockSize).toBe('48px');
+  expect(handleIndicatorStyles.inlineSize).toBe('32px');
+  expect(handleIndicatorStyles.blockSize).toBe('4px');
+  expect(handleIndicatorStyles.borderRadius).not.toBe('0px');
   expect(actionStyles.minBlockSize).toBe('40px');
   expect(actionStyles.paddingInlineStart).toBe('24px');
   expect(actionStyles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   expect(actionStyles.color).toBe('rgb(1, 2, 3)');
   expect(chipButtonStyles.paddingInlineStart).not.toBe('24px');
+
+  expect(
+    getComputedStyle(chip).getPropertyValue('--rc-chip-pressed-state-layer-opacity').trim(),
+  ).not.toBe('');
+
+  expect(getComputedStyle(sheet).getPropertyValue('--rc-bottom-sheet-snap-duration').trim()).toBe(
+    '500ms',
+  );
+
+  expect(getComputedStyle(sheet).getPropertyValue('--rc-bottom-sheet-snap-easing').trim()).not.toBe(
+    '',
+  );
 });
 
 test('segmented buttons flatten native fieldset chrome for themed segments', () => {
@@ -147,6 +162,26 @@ test('segmented buttons flatten native fieldset chrome for themed segments', () 
   expect(styles.getPropertyValue('--_rc-segmented-button-fieldset-border')).toBe('0');
   expect(styles.getPropertyValue('--_rc-segmented-button-legend-position')).toBe('absolute');
   expect(styles.getPropertyValue('--_rc-segmented-button-radio-opacity')).toBe('0');
+});
+
+test('switches retain Material geometry under flex pressure', () => {
+  const scope = renderScope();
+  const row = document.createElement('div');
+  const label = document.createElement('span');
+  const switchElement = document.createElement('rc-switch');
+
+  row.style.display = 'flex';
+  row.style.inlineSize = '1px';
+  label.textContent = 'A settings label that consumes the available inline space';
+  row.append(label, switchElement);
+  scope.append(row);
+
+  const styles = getComputedStyle(switchElement);
+
+  expect(styles.minInlineSize).toBe('52px');
+  expect(styles.minBlockSize).toBe('32px');
+  expect(styles.flexShrink).toBe('0');
+  expect(switchElement.getBoundingClientRect().width).toBe(52);
 });
 
 test('app bar Material size presets stay in CSS modifier classes', () => {
@@ -330,7 +365,6 @@ test('standalone menu receives the Material item token contract', () => {
   expect(styles.getPropertyValue('--rc-menu-hover-bg')).not.toBe('');
   expect(styles.getPropertyValue('--rc-menu-active-bg')).not.toBe('');
   expect(styles.getPropertyValue('--rc-menu-check-size')).toBe('1.5rem');
-  expect(styles.getPropertyValue('--rc-menu-submenu-indicator-color')).not.toBe('');
 });
 
 test('menu button receives the Material trigger token contract', () => {
@@ -345,6 +379,7 @@ test('menu button receives the Material trigger token contract', () => {
   expect(styles.getPropertyValue('--rc-menu-button-trigger-color')).not.toBe('');
   expect(styles.getPropertyValue('--rc-menu-button-trigger-hover-background')).not.toBe('');
   expect(styles.getPropertyValue('--rc-menu-button-trigger-open-background')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-menu-button-indicator-color')).not.toBe('');
 });
 
 test('menubar receives the Material menu-button item token contract', () => {

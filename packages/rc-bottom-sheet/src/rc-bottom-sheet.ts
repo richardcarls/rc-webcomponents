@@ -25,7 +25,7 @@ export interface RCBottomSheetSnapDetail {
   /** Index into the resolved `snap-points` list selected as the target. */
   index: number;
 
-  /** Target height, in pixels. */
+  /** Effective target height in pixels, after CSS size constraints. */
   height: number;
 
   /** Whether the snap came from a drag release or a `snapTo()` call. */
@@ -33,7 +33,7 @@ export interface RCBottomSheetSnapDetail {
 }
 
 const DEFAULT_SNAP_DURATION_MS = 300;
-const SNAP_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
+const DEFAULT_SNAP_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 const LIGHT_DOM_CSS = `
 @layer rc-base {
@@ -52,23 +52,40 @@ const LIGHT_DOM_CSS = `
   }
 
   rc-bottom-sheet > dialog [data-rc-bottom-sheet-handle] {
-    display: block;
     box-sizing: border-box;
-    inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
-    block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);
-    margin: var(--rc-bottom-sheet-handle-margin, 1rem auto 0.75rem);
-    padding: 0;
-    border: 0;
-    border-radius: var(--rc-bottom-sheet-handle-radius, 999px);
-    background: var(--rc-bottom-sheet-handle-color, GrayText);
-    appearance: none;
     cursor: ns-resize;
     touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  rc-bottom-sheet > dialog > [data-rc-bottom-sheet-handle] {
+    position: relative;
+    display: block;
+    inline-size: var(--rc-bottom-sheet-handle-target-inline-size, 100%);
+    min-block-size: var(--rc-bottom-sheet-handle-target-block-size, 3rem);
+    margin: var(--rc-bottom-sheet-handle-target-margin, 0);
+    padding: 0;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    appearance: none;
+  }
+
+  rc-bottom-sheet > dialog > [data-rc-bottom-sheet-handle]::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
+    block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);
+    border-radius: var(--rc-bottom-sheet-handle-radius, 999px);
+    background: var(--rc-bottom-sheet-handle-color, GrayText);
+    translate: -50% -50%;
   }
 
   rc-bottom-sheet > dialog [data-rc-bottom-sheet-handle]:focus-visible {
     outline: auto;
-    outline-offset: 0.25rem;
+    outline-offset: -0.25rem;
   }
 }
 `;
@@ -93,7 +110,8 @@ const MIN_SWIPE_DISTANCE = 24;
  * the release position was to some other point. Below that velocity, the
  * sheet settles to whichever declared snap point is nearest the release
  * height. All settling, whether from a drag or from `snapTo()`, animates
- * over `--rc-bottom-sheet-snap-duration` and is skipped for
+ * over `--rc-bottom-sheet-snap-duration`, follows
+ * `--rc-bottom-sheet-snap-easing`, and is skipped for
  * `prefers-reduced-motion: reduce`.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-bottom-sheet rc-bottom-sheet docs}
@@ -125,9 +143,13 @@ const MIN_SWIPE_DISTANCE = 24;
  * @cssprop [--rc-bottom-sheet-handle-inline-size=2rem] - Resize handle width.
  * @cssprop [--rc-bottom-sheet-handle-block-size=0.25rem] - Resize handle height.
  * @cssprop [--rc-bottom-sheet-handle-radius=999px] - Resize handle corner radius.
- * @cssprop [--rc-bottom-sheet-handle-margin=1rem auto 0.75rem] - Resize handle margin.
+ * @cssprop [--rc-bottom-sheet-handle-target-inline-size=100%] - Pointer target width for a direct-child handle.
+ * @cssprop [--rc-bottom-sheet-handle-target-block-size=3rem] - Pointer target height for a direct-child handle.
+ * @cssprop [--rc-bottom-sheet-handle-target-margin=0] - Margin around a direct-child handle target.
  * @cssprop [--rc-bottom-sheet-snap-duration=300ms] - Duration of the settle animation
  *   after a drag release or `snapTo()` call.
+ * @cssprop [--rc-bottom-sheet-snap-easing=cubic-bezier(0.4, 0, 0.2, 1)] - Easing
+ *   for the settle animation after a drag release or `snapTo()` call.
  */
 export class RCBottomSheet extends RCDialog {
   private static readonly swipeDismissThreshold = 96;
@@ -300,7 +322,25 @@ export class RCBottomSheet extends RCDialog {
     // consistently.
     const rect = pinElementBox($dialog);
     const clampedIndex = Math.max(0, Math.min(index, points.length - 1));
-    const targetHeight = points[clampedIndex];
+    const requestedHeight = points[clampedIndex];
+
+    // An in-flight animation wins over inline geometry in the cascade. Pin
+    // its current visual box before cancelling so the constrained target can
+    // be measured without jumping back to the prior snap point.
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
+
+    $dialog.style.height = `${requestedHeight}px`;
+
+    const targetHeight = $dialog.getBoundingClientRect().height;
+
+    // Restore the current visual box before applying or animating the target.
+    // CSS min/max block-size can make targetHeight differ from the authored
+    // snap point; anchoring from the effective height keeps the block-end edge
+    // fixed in either case.
+    $dialog.style.top = `${rect.top}px`;
+    $dialog.style.height = `${rect.height}px`;
+
     const targetTop = rect.bottom - targetHeight;
 
     this._applySnap($dialog, targetTop, targetHeight, behavior);
@@ -320,10 +360,9 @@ export class RCBottomSheet extends RCDialog {
     height: number,
     behavior: 'animated' | 'instant',
   ): void {
-    // Measure before cancelling any in-flight animation: cancelling reverts
-    // the element to its pre-animation inline style, so reading the rect
-    // first is what lets a re-triggered snap continue from the true current
-    // visual position instead of jumping back to where the last one began.
+    // Measure before cancelling any in-flight animation. `_snapToIndex()`
+    // normally pins and cancels first, while this ordering also keeps direct
+    // calls robust if applying a snap is refactored later.
     const fromRect = $dialog.getBoundingClientRect();
 
     this._activeSnapAnimation?.cancel();
@@ -345,7 +384,11 @@ export class RCBottomSheet extends RCDialog {
         { top: `${fromRect.top}px`, height: `${fromRect.height}px` },
         { top: `${top}px`, height: `${height}px` },
       ],
-      { duration: this._snapDuration($dialog), easing: SNAP_EASING, fill: 'forwards' },
+      {
+        duration: this._snapDuration($dialog),
+        easing: this._snapEasing($dialog),
+        fill: 'forwards',
+      },
     );
 
     this._activeSnapAnimation = animation;
@@ -372,6 +415,13 @@ export class RCBottomSheet extends RCDialog {
     const parsed = Number.parseFloat(raw);
 
     return Number.isFinite(parsed) ? parsed : DEFAULT_SNAP_DURATION_MS;
+  }
+
+  private _snapEasing($dialog: HTMLDialogElement): string {
+    return (
+      getComputedStyle($dialog).getPropertyValue('--rc-bottom-sheet-snap-easing').trim() ||
+      DEFAULT_SNAP_EASING
+    );
   }
 
   private _resolvedSnapPoints(): number[] {

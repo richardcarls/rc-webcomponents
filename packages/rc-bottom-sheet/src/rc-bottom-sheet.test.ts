@@ -92,7 +92,7 @@ test('absolute non-modal sheets can dock to a positioned parent', async () => {
   $host.close();
 });
 
-test('centers an un-themed splitter-style drag handle on the inline axis', async () => {
+test('gives an un-themed drag handle a large target around the centered visual indicator', async () => {
   const screen = render(html`
     <rc-bottom-sheet data-testid="host">
       <dialog aria-label="Filters">
@@ -110,15 +110,18 @@ test('centers an un-themed splitter-style drag handle on the inline axis', async
   const dialogRect = $dialog.getBoundingClientRect();
   const handleRect = $handle.getBoundingClientRect();
   const styles = getComputedStyle($handle);
+  const indicatorStyles = getComputedStyle($handle, '::before');
 
-  expect(handleRect.width).toBe(32);
-  expect(handleRect.height).toBe(4);
+  expect(handleRect.width).toBeGreaterThanOrEqual(44);
+  expect(handleRect.height).toBe(48);
 
   expect(Math.round(handleRect.left + handleRect.width / 2)).toBe(
     Math.round(dialogRect.left + dialogRect.width / 2),
   );
 
-  expect(styles.borderRadius).toBe('999px');
+  expect(indicatorStyles.width).toBe('32px');
+  expect(indicatorStyles.height).toBe('4px');
+  expect(indicatorStyles.borderRadius).toBe('999px');
   expect(styles.cursor).toBe('n-resize');
   expect(styles.touchAction).toBe('none');
 
@@ -455,6 +458,62 @@ test('snapTo() settles to a specific index and fires rc-bottom-sheet-snap with a
   expect(snapSpy).toHaveBeenCalledTimes(2);
   expect(snapSpy.mock.calls[1][0].detail).toEqual({ index: 0, height: 200, trigger: 'api' });
 
+  $host.close();
+});
+
+test('snap settling stays block-end anchored when CSS constrains the requested height', async () => {
+  const snapSpy = vi.fn();
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="200px 500px" @rc-bottom-sheet-snap=${snapSpy}>
+      <dialog aria-label="Filter recipes" style="height: 200px; max-block-size: 300px">
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.showModal();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+  const anchoredBottom = $dialog.getBoundingClientRect().bottom;
+
+  $host.snapTo(1, 'instant');
+
+  const settled = $dialog.getBoundingClientRect();
+
+  expect(Math.round(settled.height)).toBe(300);
+  expect(Math.round(settled.bottom)).toBe(Math.round(anchoredBottom));
+  expect(snapSpy.mock.calls[0][0].detail).toEqual({ index: 1, height: 300, trigger: 'api' });
+
+  $host.close();
+});
+
+test('snap settling consumes the authored easing token', async () => {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="200px 320px">
+      <dialog
+        aria-label="Filter recipes"
+        style="height: 240px; --rc-bottom-sheet-snap-easing: linear"
+      >
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+  const animateSpy = vi.spyOn($dialog, 'animate');
+
+  $host.snapTo(1);
+
+  expect(animateSpy).toHaveBeenCalledTimes(1);
+  expect((animateSpy.mock.calls[0][1] as KeyframeAnimationOptions).easing).toBe('linear');
+
+  animateSpy.mock.results[0].value.finish();
   $host.close();
 });
 

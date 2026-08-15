@@ -71,6 +71,20 @@ test('maps disabled, focus, hover, and active state contracts', () => {
   expect(styles.getPropertyValue('--rc-range-slider-thumb-active-background')).not.toBe('');
 });
 
+test('maps theme-neutral effects and spatial motion pairs', () => {
+  const scope = renderMaterialScope();
+  const styles = getComputedStyle(scope);
+
+  expect(styles.getPropertyValue('--rc-motion-effects-duration-fast').trim()).toBe('150ms');
+  expect(styles.getPropertyValue('--rc-motion-effects-duration-default').trim()).toBe('200ms');
+  expect(styles.getPropertyValue('--rc-motion-effects-duration-slow').trim()).toBe('300ms');
+  expect(styles.getPropertyValue('--rc-motion-effects-easing-default').trim()).not.toBe('');
+  expect(styles.getPropertyValue('--rc-motion-spatial-duration-fast').trim()).toBe('350ms');
+  expect(styles.getPropertyValue('--rc-motion-spatial-duration-default').trim()).toBe('500ms');
+  expect(styles.getPropertyValue('--rc-motion-spatial-duration-slow').trim()).toBe('700ms');
+  expect(styles.getPropertyValue('--rc-motion-spatial-easing-default').trim()).not.toBe('');
+});
+
 test('maps listbox selection to the selected container color role', () => {
   const scope = renderMaterialScope();
   const listbox = document.createElement('rc-listbox');
@@ -100,7 +114,6 @@ test('maps open menu surfaces without choosing a consumer button variant', () =>
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-min-block-size')).toBe('3rem');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-padding-block')).toBe('0');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-hover-bg')).not.toBe('');
-  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-submenu-indicator-color')).not.toBe('');
 
   expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-background')).toBe(
     'transparent',
@@ -108,6 +121,10 @@ test('maps open menu surfaces without choosing a consumer button variant', () =>
 
   expect(
     getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-background'),
+  ).not.toBe('');
+
+  expect(
+    getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-indicator-color'),
   ).not.toBe('');
 });
 

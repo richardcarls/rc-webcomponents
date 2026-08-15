@@ -1,7 +1,6 @@
 import { expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
-
 import { html } from 'lit';
 
 import './define';
@@ -26,10 +25,12 @@ test('RCMenu is an accessible menu', async () => {
   const item5 = screen.getByText('Select All');
 
   const menu = host.element() as RCMenu;
+
   await menu.updateComplete;
 
   // role="menu" and accessible name are on the host element
   const root = screen.getByRole('menu');
+
   await expect.element(root).toHaveAccessibleName('Test Menu');
 
   // Host is the focus container; tabindex="0" lets it receive keyboard focus
@@ -102,6 +103,7 @@ test('RCMenu injects flat light-DOM item styles and menu affordances', async () 
   `);
 
   const menu = screen.getByTestId('host').element() as RCMenu;
+
   await menu.updateComplete;
 
   const style = document.head.querySelector('style[data-rc-light-dom-base="rc-menu"]');
@@ -123,7 +125,7 @@ test('RCMenu injects flat light-DOM item styles and menu affordances', async () 
   expect(disabledStyles.appearance).toBe('none');
   expect(getComputedStyle(checked, '::before').content).not.toBe('none');
   expect(getComputedStyle(radio, '::before').content).not.toBe('none');
-  expect(getComputedStyle(submenu, '::after').content).not.toBe('none');
+  expect(getComputedStyle(submenu, '::after').content).toBe('none');
 });
 
 test('RCMenu dispatches rc-menu-activate on Enter and Space', async () => {
@@ -186,9 +188,7 @@ test('RCMenu toggles checkbox menu item checked state on activation', async () =
 
   const screen = render(html`
     <rc-menu label="View" data-testid="host" @rc-menu-activate=${activateSpy}>
-      <button type="button" role="menuitemcheckbox" value="notes" data-testid="notes">
-        Notes
-      </button>
+      <button type="button" role="menuitemcheckbox" value="notes" data-testid="notes">Notes</button>
     </rc-menu>
   `);
 
@@ -204,6 +204,7 @@ test('RCMenu toggles checkbox menu item checked state on activation', async () =
 
   expect(notes.getAttribute('aria-checked')).toBe('true');
   expect(getComputedStyle(notes, '::before').content).toBe('"✓"');
+
   expect(activateSpy).toHaveBeenLastCalledWith(
     expect.objectContaining({
       detail: expect.objectContaining({
@@ -218,6 +219,7 @@ test('RCMenu toggles checkbox menu item checked state on activation', async () =
 
   expect(notes.getAttribute('aria-checked')).toBe('false');
   expect(getComputedStyle(notes, '::before').content).toBe('""');
+
   expect(activateSpy).toHaveBeenLastCalledWith(
     expect.objectContaining({
       detail: expect.objectContaining({
@@ -233,15 +235,33 @@ test('RCMenu checks one radio menu item per group on activation', async () => {
   const screen = render(html`
     <rc-menu label="Sort" data-testid="host" @rc-menu-activate=${activateSpy}>
       <div role="group" aria-label="Sort order">
-        <button type="button" role="menuitemradio" aria-checked="true" value="recent" data-testid="recent">
+        <button
+          type="button"
+          role="menuitemradio"
+          aria-checked="true"
+          value="recent"
+          data-testid="recent"
+        >
           Recent
         </button>
-        <button type="button" role="menuitemradio" aria-checked="false" value="name" data-testid="name">
+        <button
+          type="button"
+          role="menuitemradio"
+          aria-checked="false"
+          value="name"
+          data-testid="name"
+        >
           Name
         </button>
       </div>
       <div role="group" aria-label="Density">
-        <button type="button" role="menuitemradio" aria-checked="true" value="comfortable" data-testid="comfortable">
+        <button
+          type="button"
+          role="menuitemradio"
+          aria-checked="true"
+          value="comfortable"
+          data-testid="comfortable"
+        >
           Comfortable
         </button>
       </div>
@@ -262,6 +282,7 @@ test('RCMenu checks one radio menu item per group on activation', async () => {
   expect(comfortable.getAttribute('aria-checked')).toBe('true');
   expect(getComputedStyle(recent, '::before').content).toBe('""');
   expect(getComputedStyle(name, '::before').content).toBe('"•"');
+
   expect(activateSpy).toHaveBeenLastCalledWith(
     expect.objectContaining({
       detail: expect.objectContaining({
@@ -333,6 +354,7 @@ test('RCMenu exposes focus methods', async () => {
   const item3 = screen.getByText('Paste');
 
   const menu = host.element() as RCMenu;
+
   await menu.updateComplete;
 
   menu.focusFirst();
