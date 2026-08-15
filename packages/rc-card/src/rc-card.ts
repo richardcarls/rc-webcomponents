@@ -47,7 +47,63 @@ type SlotName = (typeof SLOT_NAMES)[number];
  * @csspart footer - Footer region wrapper.
  * @csspart state-layer - Non-interactive overlay for hover/pressed/ripple effects.
  *
+ * @attr selected - Declarative selected state for theme styling.
+ * @attr disabled - Declarative disabled state. Disables action-target click forwarding.
+ * @attr interactive - Visual affordance for cards with an author-provided action target.
  * @attr action-target - ID of a same-root anchor or button that receives forwarded surface clicks.
+ * @attr [has-media] - Present when the `media` slot has assigned content.
+ * @attr [has-header] - Present when the `header` slot has assigned content.
+ * @attr [has-title] - Present when the `title` slot has assigned content.
+ * @attr [has-subtitle] - Present when the `subtitle` slot has assigned content.
+ * @attr [has-actions] - Present when the `actions` slot has assigned content.
+ * @attr [has-footer] - Present when the `footer` slot has assigned content.
+ *
+ * @cssprop [--rc-card-grid-template-rows=auto auto auto 1fr auto auto] - Grid template rows for
+ *   the host's structural regions.
+ * @cssprop [--rc-card-border=0] - Card border.
+ * @cssprop [--rc-card-radius=0] - Card border radius.
+ * @cssprop [--rc-card-bg=Canvas] - Card background.
+ * @cssprop [--rc-card-color=CanvasText] - Card text color.
+ * @cssprop [--rc-card-shadow=none] - Card box shadow.
+ * @cssprop [--rc-card-container-bg=transparent] - Background of the non-interactive container overlay.
+ * @cssprop [--rc-card-state-layer-bg=currentColor] - State-layer overlay color.
+ * @cssprop [--rc-card-state-layer-duration=150ms] - State-layer opacity transition duration.
+ * @cssprop [--rc-card-state-layer-easing=ease] - State-layer opacity transition easing.
+ * @cssprop [--rc-card-hover-state-layer-opacity=0] - State-layer opacity on hover (interactive
+ *   cards only).
+ * @cssprop [--rc-card-pressed-state-layer-opacity=0] - State-layer opacity on active press
+ *   (interactive cards only).
+ * @cssprop [--rc-card-padding-block] - Shared block-axis padding fallback for regions that don't
+ *   set their own `*-padding-block` property. Defers to each region's own default (0 for
+ *   header/title/subtitle/actions/footer, 1rem for body) when unset.
+ * @cssprop [--rc-card-padding-inline] - Shared inline-axis padding fallback for regions that
+ *   don't set their own `*-padding-inline` property. Defers to each region's own default (0 for
+ *   header/title/subtitle/actions/footer, 1rem for body) when unset.
+ * @cssprop [--rc-card-media-grid-row=auto] - Grid row for the media region.
+ * @cssprop [--rc-card-header-grid-row=auto] - Grid row for the header region.
+ * @cssprop [--rc-card-header-padding-block=var(--rc-card-padding-block, 0) 0] - Header block-axis padding.
+ * @cssprop [--rc-card-header-padding-inline=var(--rc-card-padding-inline, 0)] - Header inline-axis padding.
+ * @cssprop [--rc-card-title-grid-row=auto] - Grid row for the title region.
+ * @cssprop [--rc-card-title-padding-block=var(--rc-card-padding-block, 0) 0] - Title block-axis padding.
+ * @cssprop [--rc-card-title-padding-inline=var(--rc-card-padding-inline, 0)] - Title inline-axis padding.
+ * @cssprop [--rc-card-title-color=inherit] - Title text color.
+ * @cssprop [--rc-card-title-font=inherit] - Title font shorthand.
+ * @cssprop [--rc-card-subtitle-grid-row=auto] - Grid row for the subtitle region.
+ * @cssprop [--rc-card-subtitle-padding-block=0] - Subtitle block-axis padding.
+ * @cssprop [--rc-card-subtitle-padding-inline=var(--rc-card-padding-inline, 0)] - Subtitle inline-axis padding.
+ * @cssprop [--rc-card-subtitle-color=inherit] - Subtitle text color.
+ * @cssprop [--rc-card-subtitle-font=inherit] - Subtitle font shorthand.
+ * @cssprop [--rc-card-body-grid-row=auto] - Grid row for the body region.
+ * @cssprop [--rc-card-body-padding-block=var(--rc-card-padding-block, 1rem)] - Body block-axis padding.
+ * @cssprop [--rc-card-body-padding-inline=var(--rc-card-padding-inline, 1rem)] - Body inline-axis padding.
+ * @cssprop [--rc-card-actions-grid-row=auto] - Grid row for the actions region.
+ * @cssprop [--rc-card-actions-justify=flex-end] - Justify-content for the actions row.
+ * @cssprop [--rc-card-actions-gap=0] - Gap between action items.
+ * @cssprop [--rc-card-actions-padding-block=0 var(--rc-card-padding-block, 0)] - Actions block-axis padding.
+ * @cssprop [--rc-card-actions-padding-inline=var(--rc-card-padding-inline, 0)] - Actions inline-axis padding.
+ * @cssprop [--rc-card-footer-grid-row=auto] - Grid row for the footer region.
+ * @cssprop [--rc-card-footer-padding-block=0 var(--rc-card-padding-block, 0)] - Footer block-axis padding.
+ * @cssprop [--rc-card-footer-padding-inline=var(--rc-card-padding-inline, 0)] - Footer inline-axis padding.
  */
 export class RCCard extends LitElement {
   static override styles = cardStyles;
