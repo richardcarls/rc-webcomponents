@@ -116,6 +116,22 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @fires rc-textarea-change - Fired when the field value changes
  * @fires rc-textarea-blur - Fired when the field loses focus
  *
+ * @csspart root - The outer flex container wrapping the gutter and editor area.
+ * @csspart gutter - The gutter column container.
+ * @csspart gutter-cells - The gutter's line-label list.
+ * @csspart editor-area - The container positioning the editor over the slotted textarea.
+ * @csspart editor - The contenteditable field surface.
+ *
+ * @attr line-numbers - Show sequential line numbers in the gutter. Enables the gutter implicitly.
+ * @attr list-numbers - Deprecated alias for sparse line numbering; removed before v1.0.
+ * @attr gutter - Enable the gutter column without any built-in content.
+ * @attr word-wrap - Wrap long lines within the field to prevent horizontal overflow.
+ * @attr auto-grow - Allow the field to grow vertically with content to prevent vertical overflow.
+ * @attr read-only - Disable editing. The field renders as a styled read-only display.
+ * @attr label - Deprecated accessible-name override; removed before v1.0.
+ * @attr value - Current field value.
+ * @attr default-value - Initial uncontrolled value.
+ *
  * @cssprop [--rc-textarea-border=1px solid ButtonBorder] - Border around the field
  * @cssprop [--rc-textarea-border-radius=2px] - Border radius of the field
  * @cssprop [--rc-textarea-background=Field] - Background color of the field
@@ -131,6 +147,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-gutter-color=GrayText] - Gutter text color
  * @cssprop [--rc-textarea-gutter-border=1px solid ButtonBorder] - Gutter right border
  * @cssprop [--rc-textarea-gutter-font-family=var(--rc-textarea-font-family, monospace)] - Gutter font family
+ * @cssprop [--rc-textarea-gutter-padding-inline-end=0.75em] - Space between gutter labels and text
  */
 export class RCTextarea extends LitElement {
   static override styles: CSSResultGroup = styles;
@@ -144,6 +161,8 @@ export class RCTextarea extends LitElement {
   lineNumbers = false;
 
   /**
+   * Legacy alias for sparse (non-blank-line) list-style numbering.
+   *
    * @deprecated Use a plugin with `LineDecoration.gutterContent` to implement
    * sparse line numbering. This property will be removed before v1.0.
    */
@@ -190,6 +209,8 @@ export class RCTextarea extends LitElement {
   readOnly = false;
 
   /**
+   * Accessible-name override, applied to the editor's `aria-label`.
+   *
    * @deprecated Set `aria-label` on the slotted `<textarea>` instead, or
    * associate a `<label>` element via its `for`/`id` pair. This property
    * will be removed before v1.0.
@@ -1233,6 +1254,11 @@ export class RCTextarea extends LitElement {
   /**
    * Register a text pattern that generates decorations on every render pass.
    * Returns the pattern ID, which can be passed to `removePattern` to unregister it.
+   *
+   * @example
+   * const id = editor.addPattern({ pattern: /TODO/g, className: 'highlight-todo' });
+   * // Later:
+   * editor.removePattern(id);
    */
   addPattern(pattern: Omit<TextPattern, 'id'>): string {
     const id = generateId();
