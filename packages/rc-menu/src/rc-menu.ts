@@ -195,24 +195,24 @@ const LIGHT_DOM_CSS = `
 export class RCMenu extends LitElement {
   static styles = [menuStyles];
 
-  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
+  private static readonly _$styledRoots = new Set<Document | ShadowRoot>();
 
-  private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCMenu._styledRoots.has(root)) {
+  private static _ensureBaseStyles($root: Document | ShadowRoot): void {
+    if (RCMenu._$styledRoots.has($root)) {
       return;
     }
 
-    RCMenu._styledRoots.add(root);
+    RCMenu._$styledRoots.add($root);
 
-    const style = document.createElement('style');
+    const $style = document.createElement('style');
 
-    style.setAttribute('data-rc-light-dom-base', 'rc-menu');
-    style.textContent = LIGHT_DOM_CSS;
+    $style.setAttribute('data-rc-light-dom-base', 'rc-menu');
+    $style.textContent = LIGHT_DOM_CSS;
 
-    if (root instanceof Document) {
-      root.head.appendChild(style);
+    if ($root instanceof Document) {
+      $root.head.appendChild($style);
     } else {
-      root.appendChild(style);
+      $root.appendChild($style);
     }
   }
 
@@ -224,11 +224,11 @@ export class RCMenu extends LitElement {
   @property({ type: String })
   label = '';
 
-  protected _menuItems: Element[] = [];
+  protected _$menuItems: Element[] = [];
 
   protected readonly _activeDescendantCtrl = new ActiveDescendantController(this, {
     host: () => this,
-    items: () => this._menuItems,
+    items: () => this._$menuItems,
   });
 
   override connectedCallback(): void {
@@ -268,7 +268,7 @@ export class RCMenu extends LitElement {
 
   /** All navigable menu item elements in document order. */
   get items(): readonly Element[] {
-    return this._menuItems;
+    return this._$menuItems;
   }
 
   /** Move the virtual cursor and DOM focus to the first navigable item. */
@@ -286,15 +286,15 @@ export class RCMenu extends LitElement {
   /**
    * Move the virtual cursor to a specific item.
    *
-   * @param item - The element to make active. No-op when null or undefined.
+   * @param $item - The element to make active. No-op when null or undefined.
    */
-  focusItem(item?: Element | null): void {
-    if (!item) {
+  focusItem($item?: Element | null): void {
+    if (!$item) {
       return;
     }
 
     this.focus();
-    this._activeDescendantCtrl.navigateToItem(item);
+    this._activeDescendantCtrl.navigateToItem($item);
   }
 
   /**
@@ -316,9 +316,9 @@ export class RCMenu extends LitElement {
   }
 
   protected _onSlotChange(e: Event): void {
-    const slot = e.currentTarget as HTMLSlotElement;
+    const $slot = e.currentTarget as HTMLSlotElement;
 
-    this._menuItems = this._collectMenuItems(slot);
+    this._$menuItems = this._collectMenuItems($slot);
     this._initMenuItems();
   }
 
@@ -331,76 +331,76 @@ export class RCMenu extends LitElement {
    * participate in arrow-key navigation. Separators and non-focusable
    * container elements are excluded.
    */
-  protected _collectMenuItems(slot: HTMLSlotElement): Element[] {
-    const items: Element[] = [];
+  protected _collectMenuItems($slot: HTMLSlotElement): Element[] {
+    const $items: Element[] = [];
 
-    for (const el of slot.assignedElements()) {
-      const role = el.getAttribute('role');
+    for (const $el of $slot.assignedElements()) {
+      const role = $el.getAttribute('role');
 
       if (role === 'separator') {
         continue;
       }
 
       if (role === 'group') {
-        for (const child of el.children) {
-          if (isFocusable(child)) {
-            items.push(child);
+        for (const $child of $el.children) {
+          if (isFocusable($child)) {
+            $items.push($child);
           }
         }
 
         continue;
       }
 
-      if (isFocusable(el)) {
-        items.push(el);
+      if (isFocusable($el)) {
+        $items.push($el);
       }
     }
 
-    return items;
+    return $items;
   }
 
   protected _initMenuItems(): void {
-    this._menuItems.forEach((el) => {
-      const existingRole = el.getAttribute('role');
+    this._$menuItems.forEach(($el) => {
+      const existingRole = $el.getAttribute('role');
 
       // Preserve explicit roles; only assign the default when none is present.
       if (
         !existingRole ||
         !MENU_ITEM_ROLES.includes(existingRole as (typeof MENU_ITEM_ROLES)[number])
       ) {
-        el.setAttribute('role', 'menuitem');
+        $el.setAttribute('role', 'menuitem');
       }
 
-      el.setAttribute('tabindex', '-1');
+      $el.setAttribute('tabindex', '-1');
 
       if (
-        (el.getAttribute('role') === 'menuitemcheckbox' ||
-          el.getAttribute('role') === 'menuitemradio') &&
-        !el.hasAttribute('aria-checked')
+        ($el.getAttribute('role') === 'menuitemcheckbox' ||
+          $el.getAttribute('role') === 'menuitemradio') &&
+        !$el.hasAttribute('aria-checked')
       ) {
-        el.setAttribute('aria-checked', 'false');
+        $el.setAttribute('aria-checked', 'false');
       }
     });
   }
 
-  protected _applyCheckedState(item: HTMLElement): 'true' | 'false' | 'mixed' | undefined {
-    const role = item.getAttribute('role');
+  protected _applyCheckedState($item: HTMLElement): 'true' | 'false' | 'mixed' | undefined {
+    const role = $item.getAttribute('role');
 
     if (role === 'menuitemcheckbox') {
-      const checked = item.getAttribute('aria-checked') === 'true' ? 'false' : 'true';
+      const checked = $item.getAttribute('aria-checked') === 'true' ? 'false' : 'true';
 
-      item.setAttribute('aria-checked', checked);
+      $item.setAttribute('aria-checked', checked);
 
       return checked;
     }
 
     if (role === 'menuitemradio') {
-      const group = item.closest('[role="group"]');
-      const scope = group && this.contains(group) ? group : this;
+      const $group = $item.closest('[role="group"]');
+      const $scope = $group && this.contains($group) ? $group : this;
 
-      for (const radio of scope.querySelectorAll<HTMLElement>('[role="menuitemradio"]')) {
-        if (radio.closest('rc-menu') === this) {
-          radio.setAttribute('aria-checked', radio === item ? 'true' : 'false');
+      for (const $radio of $scope.querySelectorAll<HTMLElement>('[role="menuitemradio"]')) {
+        if ($radio.closest('rc-menu') === this) {
+          $radio.setAttribute('aria-checked', $radio === $item ? 'true' : 'false');
         }
       }
 
@@ -463,11 +463,11 @@ export class RCMenu extends LitElement {
         e.preventDefault();
         e.stopPropagation();
 
-        const active = this._activeDescendantCtrl.activeItem;
+        const $active = this._activeDescendantCtrl.activeItem;
 
-        if (active) {
+        if ($active) {
           // _onClick dispatches rc-menu-activate when the synthetic click bubbles up.
-          (active as HTMLElement).click();
+          ($active as HTMLElement).click();
         }
 
         break;
@@ -495,29 +495,29 @@ export class RCMenu extends LitElement {
   };
 
   protected _onClick = (e: MouseEvent): void => {
-    const target = e.target as Element;
-    const item = target.closest<HTMLElement>(
+    const $target = e.target as Element;
+    const $item = $target.closest<HTMLElement>(
       '[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"]',
     );
 
-    if (!item || !this.contains(item)) {
+    if (!$item || !this.contains($item)) {
       return;
     }
 
-    if (item.matches(':disabled, [aria-disabled="true"]')) {
+    if ($item.matches(':disabled, [aria-disabled="true"]')) {
       return;
     }
 
-    const checked = this._applyCheckedState(item);
+    const checked = this._applyCheckedState($item);
 
     this.dispatchEvent(
       new CustomEvent<RCMenuActivateEvent>('rc-menu-activate', {
         bubbles: true,
         composed: true,
         detail: {
-          item,
-          value: item.dataset.value ?? item.getAttribute('value') ?? '',
-          text: item.textContent?.trim() ?? '',
+          item: $item,
+          value: $item.dataset.value ?? $item.getAttribute('value') ?? '',
+          text: $item.textContent?.trim() ?? '',
           checked,
         },
       }),
