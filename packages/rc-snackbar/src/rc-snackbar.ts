@@ -62,6 +62,39 @@ export interface RCSnackbarCloseDetail {
  * @attr action-label - Optional action button label.
  * @attr duration - Auto-close duration in milliseconds.
  * @attr queue-policy - `queue` appends while open; `replace` closes the current message.
+ *
+ * @cssprop [--rc-snackbar-inset-inline=1rem] - Inline-axis inset from the viewport edge.
+ * @cssprop [--rc-snackbar-inset-block-end=1rem] - Block-end inset from the viewport edge, before
+ *   the safe-area inset.
+ * @cssprop [--rc-snackbar-z-index=1000] - Stacking order.
+ * @cssprop [--rc-snackbar-gap=0.5rem] - Gap between the message and action.
+ * @cssprop [--rc-snackbar-min-block-size=3rem] - Minimum surface block size.
+ * @cssprop [--rc-snackbar-max-inline-size=30rem] - Maximum surface inline size.
+ * @cssprop [--rc-snackbar-padding-block=0.5rem] - Surface block-axis padding.
+ * @cssprop [--rc-snackbar-padding-inline=1rem] - Surface inline-axis padding.
+ * @cssprop [--rc-snackbar-border=1px solid CanvasText] - Surface border.
+ * @cssprop [--rc-snackbar-radius=0] - Surface border radius.
+ * @cssprop [--rc-snackbar-bg=Canvas] - Surface background.
+ * @cssprop [--rc-snackbar-color=CanvasText] - Surface text color.
+ * @cssprop [--rc-snackbar-shadow=none] - Surface box shadow.
+ * @cssprop [--rc-snackbar-action-border] - Action button border; defers to native button
+ *   border when unset.
+ * @cssprop [--rc-snackbar-action-radius] - Action button border radius; defers to native button
+ *   radius when unset.
+ * @cssprop [--rc-snackbar-action-padding-block] - Action button block-axis padding; defers to
+ *   native button padding when unset.
+ * @cssprop [--rc-snackbar-action-padding-inline] - Action button inline-axis padding; defers to
+ *   native button padding when unset.
+ * @cssprop [--rc-snackbar-action-bg] - Action button background; defers to native button
+ *   background when unset.
+ * @cssprop [--rc-snackbar-action-color] - Action button text color; defers to native button
+ *   color when unset.
+ * @cssprop [--rc-snackbar-action-font] - Action button font shorthand; defers to native button
+ *   font when unset.
+ * @cssprop [--rc-snackbar-focus-ring] - Action button focus outline; defers to native focus
+ *   styling when unset.
+ * @cssprop [--rc-snackbar-focus-ring-offset] - Action button focus outline offset; defers to
+ *   native focus styling when unset.
  */
 export class RCSnackbar extends LitElement {
   static override styles = snackbarStyles;
@@ -112,7 +145,16 @@ export class RCSnackbar extends LitElement {
     `;
   }
 
-  /** Shows a message or queues it according to `queuePolicy`. */
+  /**
+   * Shows a message or queues it according to `queuePolicy`.
+   *
+   * @example
+   * snackbar.show({
+   *   message: 'Recipe saved',
+   *   actionLabel: 'Undo',
+   *   duration: 6000,
+   * });
+   */
   show(message: string | RCSnackbarShowOptions): void {
     const next = typeof message === 'string' ? { message } : message;
 
