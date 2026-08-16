@@ -217,14 +217,40 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-markdown-editor rc-markdown-editor docs}
  *
- * @fires rc-change          - Value changed. Detail: `{ value: string }`.
- * @fires rc-mode-change     - Mode toggled. Detail: `{ mode: EditorMode }`.
+ * @slot - Accepts a native `<textarea>` element (and optional `<label>`) for form wiring.
+ *
+ * @fires rc-change - Value changed. Detail: `{ value: string }`.
+ * @fires rc-mode-change - Mode toggled. Detail: `{ mode: EditorMode }`.
  * @fires rc-formatting-change - Active formats at cursor changed. Detail: `ActiveFormats`.
  *
- * @attr {boolean} toolbar       - Show the formatting toolbar (default: true).
- * @attr {boolean} source-mode   - Controlled: show the markdown source editor.
- * @attr {boolean} default-source-mode - Uncontrolled initial source-mode state.
- * @attr {boolean} read-only     - Make the editor read-only.
+ * @csspart toolbar - The `<rc-editor-toolbar>` element.
+ * @csspart rich-view - The contenteditable rich-text view.
+ *
+ * @attr toolbar - Show the formatting toolbar.
+ * @attr source-mode - Controlled: show the markdown source editor.
+ * @attr default-source-mode - Uncontrolled initial source-mode state.
+ * @attr read-only - Make the editor read-only.
+ * @attr value - Current Markdown value.
+ * @attr default-value - Initial uncontrolled Markdown value.
+ *
+ * @cssprop [--rme-font-family=inherit] - Font family of the rich-text view
+ * @cssprop [--rme-font-size=inherit] - Font size of the rich-text view
+ * @cssprop [--rme-line-height=1.6] - Line height of the rich-text view
+ * @cssprop [--rme-padding=0.75em 1em] - Padding inside the rich-text view
+ * @cssprop [--rme-background=Canvas] - Background color of the rich-text view
+ * @cssprop [--rme-color=CanvasText] - Text color of the rich-text view
+ * @cssprop [--rme-border=1px solid ButtonBorder] - Border around the rich-text view
+ * @cssprop [--rme-border-radius=0 0 4px 4px] - Border radius of the rich-text view
+ * @cssprop [--rme-focus-outline=2px solid Highlight] - Focus ring outline on the rich-text view
+ * @cssprop [--rme-src-font-family='Cascadia Code', 'Fira Code', ui-monospace, monospace] - Font family of the source editor
+ * @cssprop [--rme-toolbar-gap=1px] - Gap between toolbar buttons
+ * @cssprop [--rme-toolbar-button-size=2rem] - Minimum inline and block size of toolbar buttons
+ * @cssprop [--rme-src-heading-color=light-dark(#1d6fc4, #82b4f5)] - Source-mode heading token color
+ * @cssprop [--rme-src-code-color=light-dark(#c94a1a, #f09060)] - Source-mode inline/fenced code token color
+ * @cssprop [--rme-src-link-color=light-dark(#0370b0, #60b8e8)] - Source-mode link token color
+ * @cssprop [--rme-src-blockquote-color=light-dark(#2d7a42, #70b880)] - Source-mode blockquote token color
+ * @cssprop [--rme-src-list-color=light-dark(#7a5c0a, #d4ac48)] - Source-mode list marker token color
+ * @cssprop [--rme-src-dim-color=GrayText] - Source-mode strikethrough token color
  */
 export class RcMarkdownEditor extends LitElement {
   static override styles = rmeStyles;
@@ -233,6 +259,7 @@ export class RcMarkdownEditor extends LitElement {
   private _defaultValue = '';
   private _valueInitialized = false;
 
+  /** Initial uncontrolled Markdown value. */
   @property({ type: String, attribute: 'default-value' })
   get defaultValue(): string {
     return this._defaultValue;
@@ -268,6 +295,7 @@ export class RcMarkdownEditor extends LitElement {
   private _defaultSourceMode = false;
   private _sourceModeInitialized = false;
 
+  /** Initial uncontrolled source-mode state. */
   @property({ type: Boolean, attribute: 'default-source-mode' })
   get defaultSourceMode(): boolean {
     return this._defaultSourceMode;
