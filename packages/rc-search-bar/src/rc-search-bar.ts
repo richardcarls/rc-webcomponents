@@ -95,6 +95,18 @@ interface RCSearchBarSuggestion {
  * @fires rc-search-bar-suggestion-select - When a datalist-derived suggestion
  *   is activated; `detail: { value, label }`
  *
+ * @attr variant - Presentation mode: docked search bar or expandable search view.
+ * @attr debounce - Debounce window in ms for `rc-search-bar-input`; `0` dispatches synchronously.
+ * @attr clear-label - Accessible label for the clear button.
+ * @attr allow-native-clear - When set, leaves the browser's native WebKit cancel button visible.
+ * @attr show-clear-on-focus - When set, the clear button is visible whenever the input is focused.
+ * @attr disabled - Disables the component and mirrors the state to the slotted input.
+ * @attr placeholder - Placeholder mirrored onto the native input; a consumer `placeholder`
+ *   attribute on the input itself is always honored instead.
+ * @attr open - Whether the search view panel is open. Host writes are silent.
+ * @attr default-open - Initial uncontrolled search view open state.
+ * @attr default-value - Initial uncontrolled value hint, applied once.
+ *
  * @cssprop [--rc-search-bar-border=1px solid ButtonBorder] - Wrapper border; set to `none` in M3 theme (uses elevation instead)
  * @cssprop [--rc-search-bar-shadow=none] - Wrapper box-shadow for elevation; M3 theme sets Level 1 at rest
  * @cssprop [--rc-search-bar-bg=Field] - Wrapper background
@@ -112,6 +124,8 @@ interface RCSearchBarSuggestion {
  * @cssprop [--rc-search-bar-view-color=var(--rc-search-bar-color)] - Search view panel text color
  * @cssprop [--rc-search-bar-view-radius=var(--rc-search-bar-radius)] - Search view panel radius
  * @cssprop [--rc-search-bar-view-shadow=var(--rc-search-bar-shadow)] - Search view panel shadow
+ * @cssprop [--rc-search-bar-view-border=var(--rc-search-bar-border)] - Search view panel border
+ * @cssprop [--rc-search-bar-view-offset=0.25rem] - Gap between the search bar and the view panel below it
  * @cssprop [--rc-search-bar-view-padding-block=0.5rem] - Search view suggestion list block padding
  * @cssprop [--rc-search-bar-suggestion-min-block-size=2.75rem] - Datalist-derived suggestion row minimum block size
  * @cssprop [--rc-search-bar-suggestion-padding-inline=1rem] - Datalist-derived suggestion inline padding
