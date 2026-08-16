@@ -710,7 +710,7 @@ declare module 'solid-js' {
         disabled?: boolean | string;
         placeholder?: string;
         display?: 'auto' | 'chips' | 'compact';
-        allowcreate?: boolean | string;
+        'allow-create'?: boolean | string;
         'filter-strategy'?: 'prefix' | 'contains';
         value?: RCSelectValue;
         defaultValue?: RCSelectValue;
@@ -718,6 +718,7 @@ declare module 'solid-js' {
         'prop:value'?: RCSelectValue | undefined;
         'prop:defaultValue'?: RCSelectValue | undefined;
         'prop:options'?: RCSelectOption[] | undefined;
+        'prop:allowCreate'?: boolean | undefined;
         'on:rc-select-change'?: (e: CustomEvent<RCSelectChangeDetail>) => void;
         'on:rc-select-open'?: (e: CustomEvent) => void;
         'on:rc-select-close'?: (e: CustomEvent) => void;
