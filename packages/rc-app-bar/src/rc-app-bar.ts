@@ -38,6 +38,12 @@ export interface RCAppBarScrollDetail {
  * Controlled: assign `scrolled`; assigning `undefined` releases observation.
  * Host writes are silent.
  *
+ * Environment-driven state (scrolled, collapsed, hidden) is exposed as
+ * `data-scrolled`, `data-collapsed`, and `data-hidden` attributes with
+ * equivalent `:state(scrolled)`, `:state(collapsed)`, and `:state(hidden)`
+ * ElementInternals custom states. These are computed outputs, not settable
+ * attributes.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-app-bar rc-app-bar docs}
  * @see {@link https://m3.material.io/components/top-app-bar/overview Material 3 Top app bar}
  *
@@ -47,6 +53,10 @@ export interface RCAppBarScrollDetail {
  * @slot trailing - Trailing action controls
  * @fires rc-app-bar-scroll - When observed scroll state crosses the threshold;
  *   `detail: { scrolled }`
+ * @attr variant - Structural variant. `expanded` adds a flexible title row.
+ * @attr scroll-behavior - Visual response to observed scrolling: `pinned`, `collapse`, or `hide`.
+ * @attr scroll-target - CSS selector (or `"window"`) for the scroll container to observe.
+ * @attr scroll-threshold - Scroll offset in px past which the bar is scrolled (strict `>`).
  * @cssprop [--rc-app-bar-bg=Canvas] - Bar background
  * @cssprop [--rc-app-bar-color=CanvasText] - Bar text color
  * @cssprop [--rc-app-bar-compact-min-height=3rem] - Compact row minimum height
@@ -217,29 +227,29 @@ export class RCAppBar extends LitElement {
 
     this._resizeObserver.disconnect();
     ['#leading', '#title', '#center', '#trailing'].forEach((selector) => {
-      const element = this.shadowRoot?.querySelector<HTMLElement>(selector);
-      if (element) this._resizeObserver?.observe(element);
+      const $element = this.shadowRoot?.querySelector<HTMLElement>(selector);
+      if ($element) this._resizeObserver?.observe($element);
     });
   }
 
   private _measureLayout(): void {
-    const leading = this.shadowRoot?.querySelector<HTMLElement>('#leading');
-    const title = this.shadowRoot?.querySelector<HTMLElement>('#title');
-    const trailing = this.shadowRoot?.querySelector<HTMLElement>('#trailing');
-    if (!leading || !title || !trailing) return;
+    const $leading = this.shadowRoot?.querySelector<HTMLElement>('#leading');
+    const $title = this.shadowRoot?.querySelector<HTMLElement>('#title');
+    const $trailing = this.shadowRoot?.querySelector<HTMLElement>('#trailing');
+    if (!$leading || !$title || !$trailing) return;
 
-    const edgeSize = Math.max(leading.offsetWidth, trailing.offsetWidth);
+    const edgeSize = Math.max($leading.offsetWidth, $trailing.offsetWidth);
     this._setGeometryProperty('--_rc-app-bar-edge-size', `${edgeSize}px`);
 
     if (this.variant === 'expanded' && !this._collapsed) {
-      const nextDistance = title.offsetHeight;
+      const nextDistance = $title.offsetHeight;
       if (nextDistance > 0) {
-        const titleStyle = getComputedStyle(title);
+        const titleStyle = getComputedStyle($title);
         const padding =
           Number.parseFloat(titleStyle.paddingBlockStart) +
           Number.parseFloat(titleStyle.paddingBlockEnd);
-        const contentHeight = Math.max(title.offsetHeight - padding, 0);
-        const compactHeight = title.offsetTop;
+        const contentHeight = Math.max($title.offsetHeight - padding, 0);
+        const compactHeight = $title.offsetTop;
         const endpointCompactHeight = Math.max(compactHeight, contentHeight);
 
         this._collapseDistance = nextDistance;
@@ -378,10 +388,10 @@ export class RCAppBar extends LitElement {
   }
 
   private _onSlotChange(e: Event): void {
-    const slot = e.target as HTMLSlotElement;
-    const hasContent = slot.assignedElements({ flatten: true }).length > 0;
+    const $slot = e.target as HTMLSlotElement;
+    const hasContent = $slot.assignedElements({ flatten: true }).length > 0;
 
-    switch (slot.name) {
+    switch ($slot.name) {
       case 'leading':
         this._hasLeading = hasContent;
         break;
