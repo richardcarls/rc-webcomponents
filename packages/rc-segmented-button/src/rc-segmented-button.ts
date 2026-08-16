@@ -200,7 +200,7 @@ export class RCSegmentedButton extends LitElement {
   private _value = '';
   private _defaultValue = '';
   private _valueInitialized = false;
-  private _fieldset: HTMLFieldSetElement | null = null;
+  private _$fieldset: HTMLFieldSetElement | null = null;
   private _disabledOwned = false;
   private _slotMicrotaskQueued = false;
 
@@ -252,8 +252,8 @@ export class RCSegmentedButton extends LitElement {
   }
 
   override disconnectedCallback(): void {
-    this._fieldset?.removeEventListener('change', this._handleChange);
-    this._fieldset?.removeEventListener('keydown', this._handleKeyDown);
+    this._$fieldset?.removeEventListener('change', this._handleChange);
+    this._$fieldset?.removeEventListener('keydown', this._handleKeyDown);
     super.disconnectedCallback();
   }
 
@@ -288,16 +288,16 @@ export class RCSegmentedButton extends LitElement {
   }
 
   private _syncFieldset(): void {
-    const nextFieldset = this.querySelector<HTMLFieldSetElement>(':scope > fieldset');
+    const $nextFieldset = this.querySelector<HTMLFieldSetElement>(':scope > fieldset');
 
-    if (!nextFieldset && import.meta.env.DEV) {
+    if (!$nextFieldset && import.meta.env.DEV) {
       console.warn(
         '[rc-segmented-button] No direct child <fieldset> found. Place native radio inputs inside a fieldset.',
         this,
       );
     }
 
-    if (nextFieldset === this._fieldset) {
+    if ($nextFieldset === this._$fieldset) {
       this._syncInitialValue();
       this._applyValue(false);
       this._applyDisabled();
@@ -305,14 +305,14 @@ export class RCSegmentedButton extends LitElement {
       return;
     }
 
-    this._fieldset?.removeEventListener('change', this._handleChange);
-    this._fieldset?.removeEventListener('keydown', this._handleKeyDown);
-    this._fieldset = nextFieldset;
+    this._$fieldset?.removeEventListener('change', this._handleChange);
+    this._$fieldset?.removeEventListener('keydown', this._handleKeyDown);
+    this._$fieldset = $nextFieldset;
     this._disabledOwned = false;
 
-    if (nextFieldset) {
-      nextFieldset.addEventListener('change', this._handleChange);
-      nextFieldset.addEventListener('keydown', this._handleKeyDown);
+    if ($nextFieldset) {
+      $nextFieldset.addEventListener('change', this._handleChange);
+      $nextFieldset.addEventListener('keydown', this._handleKeyDown);
     }
 
     this._syncInitialValue();
@@ -325,38 +325,38 @@ export class RCSegmentedButton extends LitElement {
       return;
     }
 
-    const checked = this._radios.find((radio) => radio.checked);
+    const $checked = this._$radios.find(($radio) => $radio.checked);
 
-    if (checked) {
-      this._value = checked.value;
-      this._defaultValue = checked.defaultChecked ? checked.value : this._defaultValue;
+    if ($checked) {
+      this._value = $checked.value;
+      this._defaultValue = $checked.defaultChecked ? $checked.value : this._defaultValue;
     }
   }
 
-  private get _radios(): HTMLInputElement[] {
-    if (!this._fieldset) {
+  private get _$radios(): HTMLInputElement[] {
+    if (!this._$fieldset) {
       return [];
     }
 
     return Array.from(
-      this._fieldset.querySelectorAll<HTMLInputElement>(':scope input[type="radio"]'),
+      this._$fieldset.querySelectorAll<HTMLInputElement>(':scope input[type="radio"]'),
     );
   }
 
-  private _enabledRadios(): HTMLInputElement[] {
-    return this._radios.filter((radio) => !radio.disabled && !this.disabled);
+  private _$enabledRadios(): HTMLInputElement[] {
+    return this._$radios.filter(($radio) => !$radio.disabled && !this.disabled);
   }
 
   private readonly _handleChange = (event: Event): void => {
-    const target = event.target;
+    const $target = event.target;
 
-    if (!(target instanceof HTMLInputElement) || target.type !== 'radio' || !target.checked) {
+    if (!($target instanceof HTMLInputElement) || $target.type !== 'radio' || !$target.checked) {
       return;
     }
 
     const oldValue = this.value;
 
-    this._value = target.value;
+    this._value = $target.value;
     this._valueInitialized = true;
     this.requestUpdate('value', oldValue);
 
@@ -370,9 +370,9 @@ export class RCSegmentedButton extends LitElement {
   };
 
   private readonly _handleKeyDown = (event: KeyboardEvent): void => {
-    const target = event.target;
+    const $target = event.target;
 
-    if (!(target instanceof HTMLInputElement) || target.type !== 'radio') {
+    if (!($target instanceof HTMLInputElement) || $target.type !== 'radio') {
       return;
     }
 
@@ -383,59 +383,59 @@ export class RCSegmentedButton extends LitElement {
     const forwardKeys =
       this.orientation === 'vertical' ? ['ArrowDown'] : ['ArrowRight', 'ArrowDown'];
     const backwardKeys = this.orientation === 'vertical' ? ['ArrowUp'] : ['ArrowLeft', 'ArrowUp'];
-    const radios = this._enabledRadios();
-    const currentIndex = radios.indexOf(target);
+    const $radios = this._$enabledRadios();
+    const currentIndex = $radios.indexOf($target);
 
     if (currentIndex === -1) {
       return;
     }
 
-    let next: HTMLInputElement | undefined;
+    let $next: HTMLInputElement | undefined;
 
     if (forwardKeys.includes(event.key)) {
-      next = radios[(currentIndex + 1) % radios.length];
+      $next = $radios[(currentIndex + 1) % $radios.length];
     } else if (backwardKeys.includes(event.key)) {
-      next = radios[(currentIndex - 1 + radios.length) % radios.length];
+      $next = $radios[(currentIndex - 1 + $radios.length) % $radios.length];
     } else if (event.key === 'Home') {
-      next = radios[0];
+      $next = $radios[0];
     } else if (event.key === 'End') {
-      next = radios[radios.length - 1];
+      $next = $radios[$radios.length - 1];
     }
 
-    if (!next) {
+    if (!$next) {
       return;
     }
 
     event.preventDefault();
-    next.focus();
-    next.checked = true;
-    next.dispatchEvent(new Event('change', { bubbles: true }));
+    $next.focus();
+    $next.checked = true;
+    $next.dispatchEvent(new Event('change', { bubbles: true }));
   };
 
   private _applyValue(_writeDefault: boolean): void {
-    const radios = this._radios;
+    const $radios = this._$radios;
     const value = this.value;
 
-    for (const radio of radios) {
-      radio.checked = radio.value === value;
+    for (const $radio of $radios) {
+      $radio.checked = $radio.value === value;
     }
   }
 
   private _applyDisabled(): void {
-    const fieldset = this._fieldset;
+    const $fieldset = this._$fieldset;
 
-    if (!fieldset) {
+    if (!$fieldset) {
       return;
     }
 
     if (this.disabled) {
-      if (!fieldset.disabled) {
+      if (!$fieldset.disabled) {
         this._disabledOwned = true;
       }
 
-      fieldset.disabled = true;
+      $fieldset.disabled = true;
     } else if (this._disabledOwned) {
-      fieldset.disabled = false;
+      $fieldset.disabled = false;
       this._disabledOwned = false;
     }
   }
