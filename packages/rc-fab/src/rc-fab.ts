@@ -168,7 +168,9 @@ export class RCFab extends LitElement {
       this.removeAttribute('scroll-below-threshold');
     }
 
-    if (!this.scrollReveal || CSS.supports('animation-timeline: scroll()')) return;
+    if (!this.scrollReveal || CSS.supports('animation-timeline: scroll()')) {
+      return;
+    }
 
     const threshold = this._getThreshold();
 
