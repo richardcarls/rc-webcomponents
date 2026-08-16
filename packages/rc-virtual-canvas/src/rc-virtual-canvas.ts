@@ -172,7 +172,7 @@ export class RCVirtualCanvas extends LitElement {
     this._onPointerEvent(event);
 
   /** Pixel width of the virtual content */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'content-width' })
   set contentWidth(val: number) {
     const oldValue = this._contentWidth;
 
@@ -188,7 +188,7 @@ export class RCVirtualCanvas extends LitElement {
   protected _contentWidth: number = 0;
 
   /** Pixel height of the virtual content */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'content-height' })
   set contentHeight(val: number) {
     const oldValue = this._contentHeight;
 

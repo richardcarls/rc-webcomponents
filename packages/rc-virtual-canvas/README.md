@@ -27,15 +27,15 @@ import { RCVirtualCanvas } from '@rcarls/rc-virtual-canvas';    // named class e
 
 ## Basic usage
 
-Place a `<canvas>` inside the component. Set `contentWidth` and `contentHeight` to the
+Place a `<canvas>` inside the component. Set `content-width` and `content-height` to the
 total size of your virtual content. On each `rc-virtual-canvas-render` event, use
 `detail.viewRect` to determine which portion of that content is visible and draw accordingly.
 
 ```html
 <rc-virtual-canvas
   id="vc"
-  contentWidth="4000"
-  contentHeight="3000"
+  content-width="4000"
+  content-height="3000"
   style="width: 800px; height: 600px;"
 >
   <canvas id="canvas" width="800" height="600"></canvas>
@@ -67,8 +67,8 @@ that triggers native scroll events.
 
 | Property | Attribute | Type | Default | Description |
 |---|---|---|---|---|
-| `contentWidth` | `contentWidth` | `number` | `0` | Total pixel width of the virtual content |
-| `contentHeight` | `contentHeight` | `number` | `0` | Total pixel height of the virtual content |
+| `contentWidth` | `content-width` | `number` | `0` | Total pixel width of the virtual content |
+| `contentHeight` | `content-height` | `number` | `0` | Total pixel height of the virtual content |
 | `autoResizeCanvas` | `auto-resize-canvas` | `boolean` | `true` | Keeps the slotted canvas backing store aligned to the measured viewport |
 | `renderMode` | `render-mode` | `'continuous' \| 'viewport-change' \| 'manual'` | `'continuous'` | Controls when render events are dispatched |
 | `imageRendering` | `image-rendering` | `'auto' \| 'crisp-edges' \| 'pixelated'` | `'auto'` | Convenience value applied to the slotted canvas via `image-rendering` |
