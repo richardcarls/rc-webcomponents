@@ -166,7 +166,7 @@ export class RCSelect extends LitElement {
   protected _options: ListboxOption[] = [];
 
   /** WeakRef to the slotted `<select>`. Refreshed on every `slotchange`; `null` when absent. */
-  protected _selectRef: WeakRef<HTMLSelectElement> | null = null;
+  protected _$selectRef: WeakRef<HTMLSelectElement> | null = null;
 
   protected readonly _selectController = new NativeChildController<HTMLSelectElement>(this, {
     selector: ':scope > select',
@@ -238,7 +238,7 @@ export class RCSelect extends LitElement {
 
     // Reconnect keeps the same select (NativeChildController only re-fires on
     // identity change), so re-attach the guard's formdata listener directly.
-    const $select = this._selectRef?.deref();
+    const $select = this._$selectRef?.deref();
 
     if ($select && this._pickerGuardActive) {
       this._syncFormListeners($select.form);
@@ -482,7 +482,7 @@ export class RCSelect extends LitElement {
    * are left alone.
    */
   protected _handleFormData = (e: FormDataEvent) => {
-    const $select = this._selectRef?.deref();
+    const $select = this._$selectRef?.deref();
 
     if (!this._pickerGuardActive || !$select?.name) {
       return;
@@ -504,7 +504,7 @@ export class RCSelect extends LitElement {
    * reporting) and focus moves to the trigger unless the consumer cancels it.
    */
   protected _handleFormSubmit = (e: SubmitEvent) => {
-    const $select = this._selectRef?.deref();
+    const $select = this._$selectRef?.deref();
 
     if (!this._pickerGuardActive || !$select) {
       return;
@@ -543,7 +543,7 @@ export class RCSelect extends LitElement {
     this._mutationObserver?.disconnect();
     this._mutationObserver = null;
 
-    const $previous = this._selectRef?.deref();
+    const $previous = this._$selectRef?.deref();
 
     if ($previous) {
       $previous.removeEventListener('click', this._onNativeSelectClick);
@@ -556,7 +556,7 @@ export class RCSelect extends LitElement {
     this._pickerGuardActive = false;
     this._syncFormListeners(null);
 
-    this._selectRef = $select ? new WeakRef($select) : null;
+    this._$selectRef = $select ? new WeakRef($select) : null;
 
     if (!$select) {
       return;
@@ -578,7 +578,7 @@ export class RCSelect extends LitElement {
       this._applyPickerGuard($select);
 
       this._mutationObserver = new MutationObserver(() => {
-        const $current = this._selectRef?.deref();
+        const $current = this._$selectRef?.deref();
 
         if (!$current) {
           return;
@@ -673,7 +673,7 @@ export class RCSelect extends LitElement {
       return this._propertyOptions;
     }
 
-    const $select = this._selectRef?.deref();
+    const $select = this._$selectRef?.deref();
 
     return $select ? this._optionsFromSelect($select) : [];
   }
@@ -703,7 +703,7 @@ export class RCSelect extends LitElement {
 
   /** Returns values of currently selected `<option>` nodes; falls back to `selectedValues` when no native select is present. */
   protected _selectedValuesFromNativeSelect(): string[] {
-    const $select = this._selectRef?.deref();
+    const $select = this._$selectRef?.deref();
 
     if (!$select) {
       return this.selectedValues;
@@ -716,7 +716,7 @@ export class RCSelect extends LitElement {
 
   /** Returns values of `defaultSelected` `<option>` nodes (author `selected` attribute); falls back to `selectedValues`. */
   protected _defaultSelectedValuesFromNativeSelect(): string[] {
-    const $select = this._selectRef?.deref();
+    const $select = this._$selectRef?.deref();
 
     if (!$select) {
       return this.selectedValues;
@@ -735,7 +735,7 @@ export class RCSelect extends LitElement {
    * while writing to avoid re-entrant sync.
    */
   protected _mirrorOptionsToNativeSelect(): void {
-    const $select = this._selectRef?.deref();
+    const $select = this._$selectRef?.deref();
 
     if (!$select || this._propertyOptions === undefined) {
       return;
@@ -777,7 +777,7 @@ export class RCSelect extends LitElement {
 
     this._syncOptions(options);
 
-    const $select = this._selectRef?.deref();
+    const $select = this._$selectRef?.deref();
 
     if (!$select || Array.from($select.options).some(($opt) => $opt.value === option.value)) {
       return;
@@ -885,7 +885,7 @@ export class RCSelect extends LitElement {
 
   /** Flips `selected` on each `<option>` in the native `<select>` to match `_selectedValues`; no-op when no native select is present. */
   protected _syncNativeSelect() {
-    const $select = this._selectRef?.deref();
+    const $select = this._$selectRef?.deref();
 
     if (!$select) {
       return;
@@ -940,7 +940,7 @@ export class RCSelect extends LitElement {
 
   /** Looks up the display label for `value` from native `<select>` option text; returns `value` itself as a fallback. */
   protected _labelFor(value: string): string {
-    const $select = this._selectRef?.deref();
+    const $select = this._$selectRef?.deref();
 
     if ($select) {
       for (const $option of $select.options) {
