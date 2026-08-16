@@ -217,14 +217,40 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-markdown-editor rc-markdown-editor docs}
  *
- * @fires rc-change          - Value changed. Detail: `{ value: string }`.
- * @fires rc-mode-change     - Mode toggled. Detail: `{ mode: EditorMode }`.
+ * @slot - Accepts a native `<textarea>` element (and optional `<label>`) for form wiring.
+ *
+ * @fires rc-change - Value changed. Detail: `{ value: string }`.
+ * @fires rc-mode-change - Mode toggled. Detail: `{ mode: EditorMode }`.
  * @fires rc-formatting-change - Active formats at cursor changed. Detail: `ActiveFormats`.
  *
- * @attr {boolean} toolbar       - Show the formatting toolbar (default: true).
- * @attr {boolean} source-mode   - Controlled: show the markdown source editor.
- * @attr {boolean} default-source-mode - Uncontrolled initial source-mode state.
- * @attr {boolean} read-only     - Make the editor read-only.
+ * @csspart toolbar - The `<rc-editor-toolbar>` element.
+ * @csspart rich-view - The contenteditable rich-text view.
+ *
+ * @attr toolbar - Show the formatting toolbar.
+ * @attr source-mode - Controlled: show the markdown source editor.
+ * @attr default-source-mode - Uncontrolled initial source-mode state.
+ * @attr read-only - Make the editor read-only.
+ * @attr value - Current Markdown value.
+ * @attr default-value - Initial uncontrolled Markdown value.
+ *
+ * @cssprop [--rme-font-family=inherit] - Font family of the rich-text view
+ * @cssprop [--rme-font-size=inherit] - Font size of the rich-text view
+ * @cssprop [--rme-line-height=1.6] - Line height of the rich-text view
+ * @cssprop [--rme-padding=0.75em 1em] - Padding inside the rich-text view
+ * @cssprop [--rme-background=Canvas] - Background color of the rich-text view
+ * @cssprop [--rme-color=CanvasText] - Text color of the rich-text view
+ * @cssprop [--rme-border=1px solid ButtonBorder] - Border around the rich-text view
+ * @cssprop [--rme-border-radius=0 0 4px 4px] - Border radius of the rich-text view
+ * @cssprop [--rme-focus-outline=2px solid Highlight] - Focus ring outline on the rich-text view
+ * @cssprop [--rme-src-font-family='Cascadia Code', 'Fira Code', ui-monospace, monospace] - Font family of the source editor
+ * @cssprop [--rme-toolbar-gap=1px] - Gap between toolbar buttons
+ * @cssprop [--rme-toolbar-button-size=2rem] - Minimum inline and block size of toolbar buttons
+ * @cssprop [--rme-src-heading-color=light-dark(#1d6fc4, #82b4f5)] - Source-mode heading token color
+ * @cssprop [--rme-src-code-color=light-dark(#c94a1a, #f09060)] - Source-mode inline/fenced code token color
+ * @cssprop [--rme-src-link-color=light-dark(#0370b0, #60b8e8)] - Source-mode link token color
+ * @cssprop [--rme-src-blockquote-color=light-dark(#2d7a42, #70b880)] - Source-mode blockquote token color
+ * @cssprop [--rme-src-list-color=light-dark(#7a5c0a, #d4ac48)] - Source-mode list marker token color
+ * @cssprop [--rme-src-dim-color=GrayText] - Source-mode strikethrough token color
  */
 export class RcMarkdownEditor extends LitElement {
   static override styles = rmeStyles;
@@ -233,6 +259,7 @@ export class RcMarkdownEditor extends LitElement {
   private _defaultValue = '';
   private _valueInitialized = false;
 
+  /** Initial uncontrolled Markdown value. */
   @property({ type: String, attribute: 'default-value' })
   get defaultValue(): string {
     return this._defaultValue;
@@ -246,6 +273,8 @@ export class RcMarkdownEditor extends LitElement {
     }
   }
 
+  /** Current Markdown value. Host writes are silent. */
+  @property({ type: String })
   get value(): string {
     return this._value ?? this._defaultValue;
   }
@@ -266,6 +295,7 @@ export class RcMarkdownEditor extends LitElement {
   private _defaultSourceMode = false;
   private _sourceModeInitialized = false;
 
+  /** Initial uncontrolled source-mode state. */
   @property({ type: Boolean, attribute: 'default-source-mode' })
   get defaultSourceMode(): boolean {
     return this._defaultSourceMode;
@@ -281,6 +311,10 @@ export class RcMarkdownEditor extends LitElement {
     }
   }
 
+  /**
+   * Controlled: show the markdown source editor instead of the rich view.
+   * Host writes are silent; toolbar/keyboard toggles dispatch `rc-mode-change`.
+   */
   @property({ type: Boolean, reflect: true, attribute: 'source-mode' })
   get sourceMode(): boolean {
     return this._sourceMode ?? this._defaultSourceMode;
@@ -292,10 +326,6 @@ export class RcMarkdownEditor extends LitElement {
     this._sourceMode = v;
     this._sourceModeInitialized = true;
     this.requestUpdate('sourceMode', old);
-
-    if (old !== v) {
-      this._dispatchModeChange(v ? 'source' : 'rich');
-    }
   }
 
   /** Show the formatting toolbar. */
@@ -739,7 +769,10 @@ export class RcMarkdownEditor extends LitElement {
     const { action, headingLevel, codeLanguage } = e.detail;
 
     if (action === 'source') {
-      this.sourceMode = !this.sourceMode;
+      const nextSourceMode = !this.sourceMode;
+
+      this.sourceMode = nextSourceMode;
+      this._dispatchModeChange(nextSourceMode ? 'source' : 'rich');
 
       return;
     }
@@ -844,11 +877,11 @@ export class RcMarkdownEditor extends LitElement {
 
       case 'link': {
         const sel = window.getSelection();
-        const anchor = sel?.rangeCount ? sel.getRangeAt(0).commonAncestorContainer : null;
-        const $el = anchor
-          ? anchor.nodeType === Node.TEXT_NODE
-            ? (anchor as Text).parentElement
-            : (anchor as Element)
+        const $anchor = sel?.rangeCount ? sel.getRangeAt(0).commonAncestorContainer : null;
+        const $el = $anchor
+          ? $anchor.nodeType === Node.TEXT_NODE
+            ? ($anchor as Text).parentElement
+            : ($anchor as Element)
           : null;
 
         this._linkPopoverHref = $el?.closest<HTMLAnchorElement>('a[href]')?.href ?? '';
@@ -974,9 +1007,9 @@ export class RcMarkdownEditor extends LitElement {
       return;
     }
 
-    const anchor = sel.getRangeAt(0).commonAncestorContainer;
+    const $anchor = sel.getRangeAt(0).commonAncestorContainer;
     const $el: Element | null =
-      anchor.nodeType === Node.TEXT_NODE ? (anchor as Text).parentElement : (anchor as Element);
+      $anchor.nodeType === Node.TEXT_NODE ? ($anchor as Text).parentElement : ($anchor as Element);
 
     const $pre = $el?.closest('pre');
 
@@ -1085,9 +1118,9 @@ export class RcMarkdownEditor extends LitElement {
     }
 
     const range = sel.getRangeAt(0);
-    const anchor = range.commonAncestorContainer;
+    const $anchor = range.commonAncestorContainer;
     const $el: Element | null =
-      anchor.nodeType === Node.TEXT_NODE ? (anchor as Text).parentElement : (anchor as Element);
+      $anchor.nodeType === Node.TEXT_NODE ? ($anchor as Text).parentElement : ($anchor as Element);
 
     const $existingPre = $el?.closest('pre');
 
@@ -1141,7 +1174,11 @@ export class RcMarkdownEditor extends LitElement {
 
     if (e.shiftKey && e.key === 'S') {
       e.preventDefault();
-      this.sourceMode = !this.sourceMode;
+
+      const nextSourceMode = !this.sourceMode;
+
+      this.sourceMode = nextSourceMode;
+      this._dispatchModeChange(nextSourceMode ? 'source' : 'rich');
 
       return;
     }
@@ -1193,9 +1230,9 @@ export class RcMarkdownEditor extends LitElement {
     }
 
     const range = sel.getRangeAt(0);
-    const anchor = range.commonAncestorContainer;
+    const $anchor = range.commonAncestorContainer;
     const $el: Element | null =
-      anchor.nodeType === Node.TEXT_NODE ? (anchor as Text).parentElement : (anchor as Element);
+      $anchor.nodeType === Node.TEXT_NODE ? ($anchor as Text).parentElement : ($anchor as Element);
 
     if (!this._$richView?.contains($el)) {
       return;

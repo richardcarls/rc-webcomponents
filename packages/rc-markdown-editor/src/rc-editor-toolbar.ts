@@ -26,43 +26,72 @@ const HEADING_OPTIONS: Array<{ value: HeadingLevel | 'p'; label: string }> = [
  * `aria-pressed` on the corresponding buttons. Heading level is shown via an
  * `<rc-select>`. Code-block language is shown via a `<input>` when active.
  *
+ * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-markdown-editor rc-markdown-editor docs}
+ * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/ WAI-ARIA Toolbar pattern}
+ *
  * @fires rc-toolbar-action - When a formatting button or select is activated.
+ *
+ * @attr label - `aria-label` applied to the `[role="toolbar"]` container.
+ * @attr active-bold - Reflects Bold as active at the cursor.
+ * @attr active-italic - Reflects Italic as active at the cursor.
+ * @attr active-underline - Reflects Underline as active at the cursor.
+ * @attr active-strikethrough - Reflects Strikethrough as active at the cursor.
+ * @attr active-code - Reflects inline Code as active at the cursor.
+ * @attr active-link - Reflects Link as active at the cursor.
+ * @attr active-heading - Heading level active at the cursor, or absent for paragraph text.
+ * @attr active-blockquote - Reflects Blockquote as active at the cursor.
+ * @attr active-bullet-list - Reflects Bullet List as active at the cursor.
+ * @attr active-ordered-list - Reflects Ordered List as active at the cursor.
+ * @attr active-code-block - Reflects Code Block as active at the cursor.
+ * @attr code-language - Language of the code block at the cursor; absent when not in a code block.
+ * @attr source-mode - Whether the parent editor is in source mode.
  */
 export class RcEditorToolbar extends LitElement {
   /** `aria-label` applied to the `[role="toolbar"]` container. */
   @property({ type: String })
   label = 'Formatting';
 
+  /** Whether Bold formatting is active at the cursor. */
   @property({ type: Boolean, reflect: true, attribute: 'active-bold' })
   activeBold = false;
 
+  /** Whether Italic formatting is active at the cursor. */
   @property({ type: Boolean, reflect: true, attribute: 'active-italic' })
   activeItalic = false;
 
+  /** Whether Underline formatting is active at the cursor. */
   @property({ type: Boolean, reflect: true, attribute: 'active-underline' })
   activeUnderline = false;
 
+  /** Whether Strikethrough formatting is active at the cursor. */
   @property({ type: Boolean, reflect: true, attribute: 'active-strikethrough' })
   activeStrikethrough = false;
 
+  /** Whether inline Code formatting is active at the cursor. */
   @property({ type: Boolean, reflect: true, attribute: 'active-code' })
   activeCode = false;
 
+  /** Whether the cursor is inside a Link. */
   @property({ type: Boolean, reflect: true, attribute: 'active-link' })
   activeLink = false;
 
+  /** Heading level active at the cursor, or `null` for paragraph text. */
   @property({ attribute: 'active-heading' })
   activeHeading: HeadingLevel | null = null;
 
+  /** Whether the cursor is inside a Blockquote. */
   @property({ type: Boolean, reflect: true, attribute: 'active-blockquote' })
   activeBlockquote = false;
 
+  /** Whether the cursor is inside a Bullet List. */
   @property({ type: Boolean, reflect: true, attribute: 'active-bullet-list' })
   activeBulletList = false;
 
+  /** Whether the cursor is inside an Ordered List. */
   @property({ type: Boolean, reflect: true, attribute: 'active-ordered-list' })
   activeOrderedList = false;
 
+  /** Whether the cursor is inside a Code Block. */
   @property({ type: Boolean, reflect: true, attribute: 'active-code-block' })
   activeCodeBlock = false;
 
