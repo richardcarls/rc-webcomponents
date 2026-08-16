@@ -318,6 +318,19 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 - Commit messages must follow Conventional Commits. Use `!` before the colon for
   breaking changes, such as `feat(rc-slider)!: rename value attribute`.
+- Describe the repository outcome and its rationale, not the agent process or a
+  personal naming, visibility, or formatting convention. When a source-only
+  cleanup needs its own commit, prefer `style(<scope>): apply source formatting`
+  with a general no-behavior-change body; keep the individual style rules out of
+  the message.
+- Organize feature work per component or coherent concern. Do not invent
+  component families to batch unrelated work. For a single-developer workflow,
+  finish and merge one feature branch before starting the next unless the work
+  genuinely overlapped or Rick explicitly approved parallel branches.
+- Merge feature branches with `--no-ff` and use
+  `chore(<domain>): merge branch feature/<branch>` for the merge commit. Keep
+  small isolated fixes and documentation changes directly on `develop` when a
+  feature branch would add no useful narrative.
 - Meaningful package changes need a Changesets intent file. Use `yarn.cmd
   changeset` on Windows or `yarn changeset` on Linux/macOS.
 - Published packages are version-locked together through the Changesets fixed
