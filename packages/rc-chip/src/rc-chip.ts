@@ -108,7 +108,7 @@ export class RCChip extends LitElement {
   private _selected: boolean | undefined;
   private _defaultSelected = false;
   private _selectedInitialized = false;
-  private _button: HTMLButtonElement | null = null;
+  private _$button: HTMLButtonElement | null = null;
   private _buttonObserver: MutationObserver | null = null;
   private _disabledOwned = false;
   private _pressedOwned = false;
@@ -165,7 +165,7 @@ export class RCChip extends LitElement {
   removable = false;
 
   override disconnectedCallback(): void {
-    this._button?.removeEventListener('click', this._handleButtonClick);
+    this._$button?.removeEventListener('click', this._handleButtonClick);
     this._buttonObserver?.disconnect();
     this._buttonObserver = null;
     super.disconnectedCallback();
@@ -221,38 +221,38 @@ export class RCChip extends LitElement {
   }
 
   private _syncSlottedButton(): void {
-    const nextButton = this.querySelector<HTMLButtonElement>(':scope > button');
+    const $nextButton = this.querySelector<HTMLButtonElement>(':scope > button');
 
-    if (!nextButton && !this.readonly && import.meta.env.DEV) {
+    if (!$nextButton && !this.readonly && import.meta.env.DEV) {
       console.warn(
         '[rc-chip] No direct child <button> found. Place a native <button> inside <rc-chip>, or use readonly with a [data-rc-chip-label] child.',
         this,
       );
     }
 
-    if (nextButton === this._button) {
+    if ($nextButton === this._$button) {
       this._syncDisabled();
       this._syncPressedState();
 
       return;
     }
 
-    this._button?.removeEventListener('click', this._handleButtonClick);
+    this._$button?.removeEventListener('click', this._handleButtonClick);
     this._buttonObserver?.disconnect();
     this._buttonObserver = null;
-    this._button = nextButton;
+    this._$button = $nextButton;
     this._disabledOwned = false;
     this._pressedOwned = false;
 
-    if (nextButton) {
-      nextButton.addEventListener('click', this._handleButtonClick);
+    if ($nextButton) {
+      $nextButton.addEventListener('click', this._handleButtonClick);
 
       this._buttonObserver = new MutationObserver(() => {
         this._syncDisabled();
         this._syncPressedState();
       });
 
-      this._buttonObserver.observe(nextButton, {
+      this._buttonObserver.observe($nextButton, {
         attributeFilter: ['aria-pressed', 'role', 'disabled'],
       });
     }
@@ -303,46 +303,46 @@ export class RCChip extends LitElement {
   }
 
   private _syncDisabled(): void {
-    const button = this._button;
+    const $button = this._$button;
 
-    if (!button) {
+    if (!$button) {
       return;
     }
 
     if (this.disabled || this.readonly) {
-      if (!button.disabled) {
+      if (!$button.disabled) {
         this._disabledOwned = true;
       }
 
-      button.disabled = true;
+      $button.disabled = true;
     } else if (this._disabledOwned) {
-      button.disabled = false;
+      $button.disabled = false;
       this._disabledOwned = false;
     }
   }
 
   private _syncPressedState(): void {
-    const button = this._button;
+    const $button = this._$button;
 
-    if (!button) {
+    if (!$button) {
       return;
     }
 
-    const role = button.getAttribute('role');
+    const role = $button.getAttribute('role');
     const authorOwnsState =
-      (button.hasAttribute('aria-pressed') && !this._pressedOwned) ||
+      ($button.hasAttribute('aria-pressed') && !this._pressedOwned) ||
       (role ? TOGGLE_ROLES.has(role) : false);
 
     if (!this.readonly && !this.removable && this.variant === 'filter' && !authorOwnsState) {
       const pressed = this.selected ? 'true' : 'false';
 
-      if (button.getAttribute('aria-pressed') !== pressed) {
-        button.setAttribute('aria-pressed', pressed);
+      if ($button.getAttribute('aria-pressed') !== pressed) {
+        $button.setAttribute('aria-pressed', pressed);
       }
 
       this._pressedOwned = true;
     } else if (this._pressedOwned) {
-      button.removeAttribute('aria-pressed');
+      $button.removeAttribute('aria-pressed');
       this._pressedOwned = false;
     }
   }
