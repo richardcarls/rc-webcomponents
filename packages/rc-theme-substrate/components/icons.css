@@ -1,0 +1,19 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(
+      [data-rc-icon],
+      [data-rc-button-icon],
+      [data-rc-button-selected-icon],
+      [data-rc-navigation-icon]
+    ) {
+    display: inline-grid;
+    place-items: center;
+    font-size: var(--rc-icon-font-size, 1.5rem);
+    /*
+     * Unlayered icon-font boilerplate otherwise beats this layered theme rule.
+     * Keep the geometry invariant important, but let consumers opt out by
+     * overriding the normally-cascaded custom property.
+     */
+    line-height: var(--rc-icon-font-line-height, var(--rc-icon-font-size, 1.5rem)) !important;
+  }
+}

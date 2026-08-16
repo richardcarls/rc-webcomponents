@@ -18,7 +18,12 @@ export const menuButtonStyles = css`
   }
 
   #trigger-wrap {
-    display: contents;
+    position: relative;
+    display: inline-block;
+  }
+
+  :host([orientation='vertical']) #trigger-wrap {
+    display: block;
   }
 
   slot[name='trigger']::slotted(button),
@@ -67,6 +72,40 @@ export const menuButtonStyles = css`
   :host([orientation='vertical']) slot[name='trigger']::slotted([role='button']) {
     inline-size: 100%;
     text-align: start;
+  }
+
+  :host([has-indicator]) slot[name='trigger']::slotted(button),
+  :host([has-indicator]) slot[name='trigger']::slotted([role='button']) {
+    padding-inline-end: calc(
+      var(
+          --rc-menu-button-indicator-inset,
+          var(--rc-menu-button-trigger-padding-inline, var(--rc-control-padding-inline, 0.5em))
+        ) +
+        var(--rc-menu-button-indicator-size, 1em) +
+        var(--rc-menu-button-trigger-gap, var(--rc-item-gap, 0.5em))
+    );
+  }
+
+  slot[name='indicator'] {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: var(
+      --rc-menu-button-indicator-inset,
+      var(--rc-menu-button-trigger-padding-inline, var(--rc-control-padding-inline, 0.5em))
+    );
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--rc-menu-button-indicator-size, 1em);
+    block-size: var(--rc-menu-button-indicator-size, 1em);
+    color: var(--rc-menu-button-indicator-color, currentColor);
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  slot[name='indicator']::slotted(*) {
+    inline-size: 100%;
+    block-size: 100%;
   }
 
   #popup {

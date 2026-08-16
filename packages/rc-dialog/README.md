@@ -23,7 +23,9 @@ import { RCDialog } from '@rcarls/rc-dialog'; // named class export
 
 ## Basic usage
 
-Place a `<dialog>` element directly inside `<rc-dialog>`. The inner `<dialog>` must have `aria-labelledby` or `aria-label` to satisfy the [WAI-ARIA Dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/).
+Place a `<dialog>` element directly inside `<rc-dialog>`. The inner `<dialog>` must have
+`aria-labelledby` or `aria-label` to satisfy the
+[WAI-ARIA Dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/).
 
 ```html
 <rc-dialog id="my-dialog">
@@ -45,15 +47,17 @@ Place a `<dialog>` element directly inside `<rc-dialog>`. The inner `<dialog>` m
 
 | Property | Attribute | Type | Default | Description |
 |---|---|---|---|---|
-| `open` | `open` | `boolean` | — | Controlled open state. Setting to `true`/`false` opens/closes the dialog silently (no `rc-dialog-toggle` event). Reads the inner `<dialog>.open` value. |
+| `open` | `open` | `boolean` | None | Controlled open state. Setting to `true`/`false` opens/closes the dialog silently (no `rc-dialog-toggle` event). Reads the inner `<dialog>.open` value. |
 | `defaultOpen` | `default-open` | `boolean` | `false` | Uncontrolled initial open state. The component takes ownership after initialization. |
-| `modal` | — | `boolean` | `true` | Whether controlled `open` / `defaultOpen` opens as modal (`showModal`) or non-modal (`show`). No effect on direct `showModal()` / `show()` calls. JS property only — no attribute. |
+| `modal` | None | `boolean` | `true` | Whether controlled `open` / `defaultOpen` opens as modal (`showModal`) or non-modal (`show`). No effect on direct `showModal()` / `show()` calls. JS property only; no attribute. |
 | `movable` | `movable` | `boolean` | `false` | Enable drag-to-move. Named `movable` (not `draggable`) to avoid colliding with the HTML `draggable` attribute. |
-| `moveHandle` | `move-handle` | `string` | `''` | CSS selector for the drag handle within the inner `<dialog>` (e.g. `'.titlebar'`). Defaults to the whole dialog. |
+| `moveHandle` | `move-handle` | `string` | `''` | CSS selector for the drag handle within the inner `<dialog>` (for example, `'.titlebar'`). Defaults to the whole dialog. |
 | `moveBounds` | `move-bounds` | `'viewport' \| 'parent'` | `'viewport'` | Constrains drag within the viewport or the nearest positioned ancestor. |
 | `moveStep` | `move-step` | `number` | `4` | Keyboard arrow-key step in px when moving. Shift multiplies by 10×. |
 | `resize` | `resize` | `'none' \| 'both' \| 'horizontal' \| 'vertical'` | `'none'` | Enables edge/corner resizing, mirroring CSS `resize` semantics. |
-| `resizeThreshold` | `resize-threshold` | `number` | `8` | Edge hit-test band in px (straddles the border — half inside, half outside). |
+| `resizeOrigin` | `resize-origin` | `'' \| 'top' \| 'right' \| 'bottom' \| 'left' \| 'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right'` | `''` | Constrains fallback edge detection or supplies the default origin for explicit handles. Empty keeps free edge detection. |
+| `resizeHandle` | `resize-handle` | `string` | `''` | CSS selector for explicit resize handles within the inner `<dialog>`. Matching handles receive pointer and keyboard resize behavior. |
+| `resizeThreshold` | `resize-threshold` | `number` | `8` | Edge hit-test band in px (straddles the border, half inside and half outside). |
 | `resizeStep` | `resize-step` | `number` | `4` | Keyboard arrow-key step in px when resizing. Shift multiplies by 10×. |
 | `closedBy` | `closed-by` | `'any' \| 'closerequest' \| 'none' \| ''` | `''` | Proxied to the inner `<dialog closedby="...">` attribute (Chrome 134+, Safari 18.4+, Firefox 139+). `'any'` = Escape or backdrop click; `'closerequest'` = Escape only; `'none'` = programmatic only. |
 | `lightDismiss` | `light-dismiss` | `boolean` | `false` | JS fallback for backdrop-click dismissal. Detects clicks whose target is the `<dialog>` element itself and calls `requestClose()`. Works in all browsers alongside or instead of `closed-by`. |
@@ -81,11 +85,18 @@ returnValue: string  // The return value set when the dialog last closed.
 
 | Event | Cancelable | Detail | Description |
 |---|---|---|---|
-| `rc-dialog-open` | No | — | Fired when the dialog opens via `showModal()` or `show()`. |
+| `rc-dialog-open` | No | None | Fired when the dialog opens via `showModal()` or `show()`. |
 | `rc-dialog-toggle` | No | `{ open: boolean, returnValue: string }` | Fired when user or native interaction changes the open state. Not fired on silent host writes (`open` property). |
 | `rc-dialog-request-close` | **Yes** | `{ returnValue: string }` | Fired before close (Escape, backdrop click, or `requestClose()`). Call `preventDefault()` to block. |
-| `rc-dialog-cancel` | No | — | Fired after `rc-dialog-request-close` when the close was not prevented. Backward-compatible alias. |
+| `rc-dialog-cancel` | No | None | Fired after `rc-dialog-request-close` when the close was not prevented. Backward-compatible alias. |
 | `rc-dialog-close` | No | `{ returnValue: string }` | Fired after the dialog has closed. |
+
+---
+
+### Theming
+
+Set `--rc-dialog-scrim` on `<rc-dialog>` or a theme scope to customize the modal
+backdrop color. Theme packages consume this token in their `::backdrop` styles.
 
 ---
 
@@ -105,7 +116,8 @@ returnValue: string  // The return value set when the dialog last closed.
 </rc-dialog>
 ```
 
-Drag the `.titlebar` to reposition. Focus the titlebar and use **Arrow keys** to move it (Shift = 10× step).
+Drag the `.titlebar` to reposition. Focus the titlebar and use **Arrow keys** to move it
+(Shift = 10× step).
 
 ### Movable + resizable
 
@@ -117,7 +129,30 @@ Drag the `.titlebar` to reposition. Focus the titlebar and use **Arrow keys** to
 </rc-dialog>
 ```
 
-All 8 resize handles are active (n, s, e, w, ne, nw, se, sw). Opposite-edge handles anchor the far side and move `left`/`top`, mirroring OS-window resize semantics. A small keyboard-accessible resize button is injected at the bottom-right corner.
+All eight resize handles are active (top, right, bottom, left, and the four corners).
+Opposite-edge handles anchor the far side and move `left` or `top`, mirroring OS-window resize
+semantics. A small keyboard-accessible resize button is injected at the bottom-right corner.
+
+### Explicit resize handle
+
+```html
+<rc-dialog id="sheet-like" resize="vertical" resize-origin="top" resize-handle=".resize-handle">
+  <dialog aria-labelledby="sheet-title">
+    <button
+      type="button"
+      class="resize-handle"
+      data-rc-dialog-resize-axis="y"
+      data-rc-dialog-resize-origin="top"
+      aria-label="Resize"
+    ></button>
+    <h2 id="sheet-title">Filters</h2>
+  </dialog>
+</rc-dialog>
+```
+
+Use `data-rc-dialog-resize-axis="x|y|both"` and
+`data-rc-dialog-resize-origin="top|right|bottom|left|top-left|..."`
+on individual handles to override the host resize direction or origin.
 
 ### Minimal / no-header dialog
 
@@ -138,7 +173,8 @@ No titlebar or footer structure is required. Any layout is valid.
 
 ### Alert / confirm dialog
 
-Use `role="alertdialog"` with `aria-describedby` pointing to the message text. Assistive technology treats this with higher urgency.
+Use `role="alertdialog"` with `aria-describedby` pointing to the message text. Assistive
+technology treats this with higher urgency.
 
 ```html
 <rc-dialog id="confirm">
@@ -157,7 +193,8 @@ Use `role="alertdialog"` with `aria-describedby` pointing to the message text. A
 
 ### Native form integration
 
-`<form method="dialog">` submits to the dialog: the submit button's `value` becomes `returnValue` and the dialog closes — no JavaScript needed.
+`<form method="dialog">` submits to the dialog: the submit button's `value` becomes
+`returnValue`, and the dialog closes without JavaScript.
 
 ```html
 <rc-dialog id="dlg">
@@ -189,7 +226,7 @@ Use `role="alertdialog"` with `aria-describedby` pointing to the message text. A
       <button onclick="document.querySelector('#dlg').requestClose('cancel')">✕</button>
     </div>
     <textarea id="note" rows="5"></textarea>
-    <p id="warning" hidden role="alert">Unsaved changes — save or discard first.</p>
+    <p id="warning" hidden role="alert">Unsaved changes; save or discard first.</p>
     <div class="footer">
       <button onclick="note.value=''; dlg.close('discard')">Discard</button>
       <button onclick="dlg.close('save')">Save</button>
@@ -219,7 +256,9 @@ Use `role="alertdialog"` with `aria-describedby` pointing to the message text. A
 </rc-dialog>
 ```
 
-`closed-by="any"` delegates to the browser's native light-dismiss on supporting browsers. `light-dismiss` adds a JS click-on-backdrop fallback that works everywhere and routes through `requestClose()` (so close guards still apply).
+`closed-by="any"` delegates to the browser's native light-dismiss on supporting browsers.
+`light-dismiss` adds a JS click-on-backdrop fallback that works everywhere and routes through
+`requestClose()`, so close guards still apply.
 
 ---
 
@@ -227,20 +266,26 @@ Use `role="alertdialog"` with `aria-describedby` pointing to the message text. A
 
 `<rc-dialog>` delegates entirely to the native `<dialog>` element:
 
-- **Focus trapping** — built into `showModal()` (Tab/Shift+Tab stays inside the dialog).
-- **Focus restoration** — `rc-dialog` captures the focused element before opening and restores focus to it on close. If the opener was removed from the DOM while the dialog was open, focus falls back to `document.body`.
-- **Escape to close** — native behaviour; routes through `rc-dialog-request-close` so guards still apply.
-- **`aria-modal`** — `showModal()` implies `aria-modal="true"` without an explicit attribute.
+- **Focus trapping:** Built into `showModal()` (Tab/Shift+Tab stays inside the dialog).
+- **Focus restoration:** `rc-dialog` captures the focused element before opening and restores
+  focus to it on close. If the opener was removed from the DOM while the dialog was open, focus
+  falls back to `document.body`.
+- **Escape to close:** Native behavior routes through `rc-dialog-request-close` so guards still
+  apply.
+- **`aria-modal`:** `showModal()` implies `aria-modal="true"` without an explicit attribute.
 
-**Required:** The inner `<dialog>` must have `aria-labelledby` or `aria-label`. In development mode the component logs a console warning if either is absent.
+**Required:** The inner `<dialog>` must have `aria-labelledby` or `aria-label`. In development
+mode the component logs a console warning if either is absent.
 
-**Alert dialogs:** When `role="alertdialog"` is set, add `aria-describedby` pointing to the message text. A dev-mode warning fires if it is missing.
+**Alert dialogs:** When `role="alertdialog"` is set, add `aria-describedby` pointing to the
+message text. A dev-mode warning fires if it is missing.
 
 ---
 
 ## CSS layout for scrollable dialogs
 
-When the dialog needs scrollable body content (especially when resizable), use flex layout so the body grows and the header/footer stay fixed:
+When the dialog needs scrollable body content (especially when resizable), use flex layout so
+the body grows and the header/footer stay fixed:
 
 ```css
 dialog[open] {
@@ -261,7 +306,9 @@ dialog[open] {
 }
 ```
 
-> **Note:** `display: flex` must be scoped to `dialog[open]`, not `dialog`. Author styles take precedence over the UA `dialog:not([open]) { display: none }` rule — scoping to `[open]` prevents all dialogs from being visible on page load.
+> **Note:** `display: flex` must be scoped to `dialog[open]`, not `dialog`. Author styles take
+> precedence over the UA `dialog:not([open]) { display: none }` rule. Scoping to `[open]`
+> prevents all dialogs from being visible on page load.
 
 ---
 

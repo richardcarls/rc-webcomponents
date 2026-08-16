@@ -18,7 +18,10 @@ Toolbar that groups consumer-supplied controls into one tab stop with arrow-key 
   native="Consumer supplies toolbar controls"
   state="Roving focus only"
   events={[]}
-  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+  related={[
+    { label: 'rc-chip', href: '/components/rc-chip' },
+    { label: 'Theme previews', href: '/guide/theme-previews' },
+  ]}
 />
 
 ## Installation
@@ -47,6 +50,11 @@ import '@rcarls/rc-toolbar/define';
 ## Live demo
 
 <ToolbarDemo />
+
+Direct `rc-button` and `rc-chip` children participate through their native child
+buttons, so themed controls keep the toolbar's single roving tab stop. Icon-only
+buttons should use `data-rc-button-icon` inside the native button so button and
+theme geometry remain synchronized.
 
 ## Theming
 

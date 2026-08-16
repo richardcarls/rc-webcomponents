@@ -1,0 +1,127 @@
+---
+title: rc-button
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ButtonDemo } from '@site/src/components/ComponentDemos';
+
+# rc-button
+
+Progressive-enhancement button wrapper for a direct native `<button>`.
+
+`rc-button` keeps the real button in light DOM for forms, labels, keyboard
+behavior, and no-JavaScript fallback. The custom element adds reflected state
+attributes, icon/label presence hooks, and overlay parts for state-layer or
+progress effects.
+
+<AtAGlance
+  packageName="@rcarls/rc-button"
+  tag="rc-button"
+  native="Direct-child <button> element"
+  state="Controlled or uncontrolled toggle state"
+  events={['rc-button-toggle']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-button
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-button
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-button/define';
+```
+
+## Markup
+
+```html
+<rc-button toggle default-selected>
+  <button type="button">
+    <span data-rc-button-icon aria-hidden="true">♡</span>
+    <span data-rc-button-selected-icon aria-hidden="true">♥</span>
+    <span data-rc-button-label>Save</span>
+  </button>
+</rc-button>
+```
+
+Place icons, selected icons, progress-adjacent content, and visible labels
+inside the native button. `rc-button` never moves author nodes.
+
+Mark custom progress-adjacent content with `data-rc-button-progress` so it is
+excluded from label detection, the same way `data-rc-button-icon` and
+`data-rc-button-selected-icon` are.
+
+## States
+
+Use reflected attributes such as `pending`, `progress`, `selected`,
+`icon-only`, and `full-width` as declarative hooks. `pending` and `progress`
+disable the native button and expose `aria-busy` when the author has not set
+it. Use `pending` or boolean `progress` for an indeterminate affordance. Pair
+`progress` with `progress-value` for a determinate percentage from 0 through
+100; out-of-range values are clamped visually.
+
+Use `[data-rc-button-icon]` and `[data-rc-button-selected-icon]` inside the
+button for theme-driven selected icon switching.
+
+Add `toggle` to opt into the APG toggle-button pattern. In uncontrolled usage,
+`default-selected` supplies the initial state and user activation updates
+`selected`, `aria-pressed`, and the displayed icon. In controlled usage, set
+`selected` and update it from `rc-button-toggle`; the event's `selected` detail
+contains the requested next state. Host property writes are silent. Removing
+`toggle` removes component-owned toggle semantics.
+
+```js
+const favoriteButton = document.querySelector('rc-button[toggle]');
+
+favoriteButton.addEventListener('rc-button-toggle', (event) => {
+  favoriteButton.selected = event.detail.selected;
+});
+```
+
+## Accessibility
+
+Keep the native button's accessible label unchanged between states. The icons
+may change because they are presentational and marked `aria-hidden`, while the
+visible “Save recipe” label remains stable as required by the
+[APG button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/).
+
+`rc-button` writes `aria-pressed="true"` or `"false"` only after `toggle` opts
+the native child into toggle-button semantics. Enter and Space continue to use
+the native button's activation behavior, and focus remains on the button.
+
+Without a theme, the direct child keeps its native button appearance. The
+wrapper adds only layout and behavior until component tokens or a packaged
+theme opt into decorative styling.
+
+Substrate supplies hover, focus, and pressed state layers, and presents
+determinate progress as a numeric percentage. Material supplies the same
+interaction states, adds a reduced-motion-aware ripple originating at the
+pointer or touch position, and uses a compact circular progress affordance.
+
+## Live demo
+
+<ButtonDemo />
+
+The Save recipe button is controlled: both native button activation and the
+Selected checkbox update the same `selected` state.
+
+## API
+
+<ApiTable tag="rc-button" />

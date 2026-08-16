@@ -1,0 +1,44 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-button {
+    --rc-button-bg: var(--substrate-surface-raised, ButtonFace);
+    --rc-button-color: var(--rc-button-text, ButtonText);
+    --rc-button-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-button-radius: var(--rc-control-radius, 0.5rem);
+    --rc-button-block-size: var(--rc-control-block-size, 2.5rem);
+    --rc-button-padding-block: var(--rc-control-padding-block, 0.5rem);
+    --rc-button-padding-inline: var(--rc-control-padding-inline, 0.75rem);
+    --rc-button-gap: var(--rc-control-gap, 0.5rem);
+    --rc-button-font: var(--rc-font-weight, 400) var(--rc-font-size, 1em) /
+      var(--rc-line-height, normal) var(--rc-font-family, inherit);
+    --rc-button-state-layer-bg: currentColor;
+    --rc-button-hover-state-layer-opacity: 0.08;
+    --rc-button-focus-state-layer-opacity: 0.12;
+    --rc-button-pressed-state-layer-opacity: 0.12;
+    --rc-button-state-layer-easing: var(--substrate-motion-easing, ease);
+    --rc-button-progress-color: var(--rc-button-text, ButtonText);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-button > button:focus-visible {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-button[disabled] > button:disabled {
+    opacity: var(--rc-disabled-opacity, 0.52);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-button[progress][progress-value]::part(progress) {
+    inset: 0.25rem;
+    border: var(--rc-border, 1px solid ButtonBorder);
+    border-radius: calc(var(--rc-control-radius, 0.5rem) - 0.125rem);
+    background: color-mix(in srgb, var(--substrate-surface-raised, Canvas) 88%, currentColor);
+    font: 600 0.75rem / 1 var(--rc-font-family, inherit);
+    letter-spacing: 0.025em;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-button[icon-only] {
+    --rc-button-icon-size: var(--rc-control-block-size, 2.5rem);
+    --rc-icon-font-line-height: var(--rc-button-icon-size, 2.5rem);
+  }
+}

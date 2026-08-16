@@ -1,15 +1,4 @@
 import { defineConfig } from 'vitest/config';
-import { playwright } from '@vitest/browser-playwright';
+import { browserTestConfig } from '../../vitest.browser.config';
 
-export default defineConfig({
-  test: {
-    browser: {
-      enabled: true,
-      provider: playwright(),
-      instances: [
-        { browser: 'chromium' },
-        { browser: 'firefox' },
-      ],
-    },
-  },
-});
+export default defineConfig({ test: browserTestConfig });

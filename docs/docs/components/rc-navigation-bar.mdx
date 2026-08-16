@@ -1,0 +1,216 @@
+---
+title: rc-navigation-bar
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { NavigationBarDemo } from '@site/src/components/ComponentDemos';
+
+# rc-navigation-bar
+
+Bottom navigation layout that styles consumer-authored links.
+
+Use this for compact PWA navigation where native anchors should remain router
+friendly and work before custom element upgrade. Wrap it in a native `<nav>` to
+provide navigation landmark semantics. The component deliberately provides no
+landmark role of its own because the app owns page structure and may render
+multiple navigation surfaces. Mark the current link with `aria-current="page"`
+or provide `active-selector` for router active classes.
+
+<AtAGlance
+  packageName="@rcarls/rc-navigation-bar"
+  tag="rc-navigation-bar"
+  native="Consumer-authored <a> links"
+  state="Current page comes from aria-current or active-selector"
+  events={[]}
+  related={[
+    { label: 'rc-navigation-rail', href: '/components/rc-navigation-rail' },
+    { label: 'rc-app-bar', href: '/components/rc-app-bar' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-navigation-bar
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-navigation-bar
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-navigation-bar/define';
+```
+
+## Usage
+
+```html
+<nav aria-label="Main navigation">
+  <rc-navigation-bar>
+    <a href="/library" aria-current="page">
+      <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+      <span>Library</span>
+    </a>
+    <a href="/saved">
+      <span data-rc-navigation-icon aria-hidden="true">bookmark</span>
+      <span>Saved</span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span>Settings</span>
+    </a>
+  </rc-navigation-bar>
+</nav>
+```
+
+The native `<nav>` is the navigation landmark and owns its accessible label,
+just as `<search>` owns landmark semantics around `rc-search-bar`.
+`rc-navigation-bar` only provides layout, active-state styling, and indicator
+positioning.
+
+The active indicator measures `[data-rc-navigation-indicator]`, then
+`[data-rc-navigation-icon]`, then the active link itself. Use
+`indicator-target` when your markup needs a different measured element.
+The bundled themes set the tagged icon target's `line-height` equal to its
+`block-size`, keeping icon-font glyphs centered within the same box used for
+hover and indicator geometry. Native `<img>`, `<svg>`, and Iconify icons use that
+same target geometry without requiring a separate font offset. The higher-order
+`--rc-icon-font-size` and `--rc-icon-font-line-height` theme tokens also apply to
+button, rail, and generic `[data-rc-icon]` markup. Override either token at the
+theme root or on one component; for example, set `--rc-icon-font-line-height: 1`
+to restore an icon font's em-based line height.
+
+## Live demo
+
+<NavigationBarDemo />
+
+## Router active classes
+
+```html
+<nav aria-label="Main navigation">
+  <rc-navigation-bar active-selector="a.router-active">
+    <a class="router-active" href="/library">Library</a>
+    <a href="/settings">Settings</a>
+  </rc-navigation-bar>
+</nav>
+```
+
+## Adaptive navigation
+
+Keep breakpoint policy in app/layout code. The navigation components do not own
+media queries, route matching, or persistence; they only style the native links
+you render into them.
+
+Use the Material window classes from your app shell:
+
+| Window width       | App-owned navigation surface                             |
+| ------------------ | -------------------------------------------------------- |
+| `<600px` compact   | `rc-navigation-bar` in the bottom app chrome             |
+| `>=600px` medium   | collapsed `rc-navigation-rail` in the leading app chrome |
+| `>=840px` expanded | `rc-navigation-rail`, optionally expandable/persisted    |
+
+Render both surfaces from the same destination data and mark the current native
+link in exactly one place, either with `aria-current="page"` or with a router
+class matched by `active-selector`.
+
+```js
+const destinations = [
+  { href: '/', label: 'Home', icon: 'home' },
+  { href: '/library', label: 'Library', icon: 'local_library' },
+  { href: '/settings', label: 'Settings', icon: 'settings' },
+];
+
+const isMedium = matchMedia('(min-width: 600px)').matches;
+const isExpanded = matchMedia('(min-width: 840px)').matches;
+```
+
+```html
+<!-- compact: <600px -->
+<nav aria-label="Main navigation">
+  <rc-navigation-bar>
+    <a href="/library" aria-current="page">
+      <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+      <span>Library</span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span>Settings</span>
+    </a>
+  </rc-navigation-bar>
+</nav>
+
+<!-- medium and expanded: >=600px -->
+<nav aria-label="Main navigation">
+  <rc-navigation-rail>
+    <a href="/library" aria-current="page">
+      <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+      <span>Library</span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span>Settings</span>
+    </a>
+  </rc-navigation-rail>
+</nav>
+```
+
+At `>=840px`, let the app decide whether users may expand the rail and whether
+that preference is persisted:
+
+```js
+const key = 'app.navigation-rail-expanded';
+const rail = document.querySelector('rc-navigation-rail');
+
+rail.toggleable = isExpanded;
+rail.expanded = isExpanded && localStorage.getItem(key) === 'true';
+rail.addEventListener('rc-navigation-rail-toggle', (event) => {
+  localStorage.setItem(key, String(event.detail.expanded));
+});
+```
+
+When switching modes in an SPA, wrap the app-owned state update in
+`document.startViewTransition()` when available and assign stable transition
+names in CSS:
+
+```css
+rc-navigation-bar,
+rc-navigation-rail {
+  view-transition-name: app-navigation;
+}
+
+rc-navigation-bar::part(indicator),
+rc-navigation-rail::part(indicator) {
+  view-transition-name: app-navigation-indicator;
+}
+```
+
+For measured morphs across unrelated layout regions, use a FLIP/Web Animations
+helper in the app layer. That code needs page geometry and should stay outside
+the component core.
+
+## Material theme
+
+`rc-theme-material/components.css` applies the Material 3 bottom navigation
+metrics used by the official Material Components implementation: an 80dp
+surface, 64×32dp active indicator target, centered 24dp icon, safe-area padding,
+label-medium typography, and state-layer hover treatment.
+
+The Substrate theme highlights the active link itself and disables the moving
+indicator. The Material theme retains its separate animated indicator behind
+the icon target.
+
+## API
+
+<ApiTable tag="rc-navigation-bar" />

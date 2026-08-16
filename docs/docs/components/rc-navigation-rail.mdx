@@ -1,0 +1,271 @@
+---
+title: rc-navigation-rail
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { AdaptiveNavigationDemo, NavigationRailDemo } from '@site/src/components/ComponentDemos';
+
+# rc-navigation-rail
+
+Navigation rail layout that styles consumer-authored links.
+
+Use this for medium and expanded PWA layouts where native anchors should remain
+router friendly and work before custom element upgrade. Wrap it in a native
+`<nav>` to provide navigation landmark semantics; the component deliberately
+provides no landmark role of its own, matching `rc-navigation-bar`. The rail
+supports a controlled or uncontrolled expanded state, but the app still owns
+breakpoint policy.
+
+<AtAGlance
+  packageName="@rcarls/rc-navigation-rail"
+  tag="rc-navigation-rail"
+  native="Consumer-authored <a> links"
+  state="Controlled or uncontrolled expanded state"
+  events={['rc-navigation-rail-toggle']}
+  related={[
+    { label: 'rc-navigation-bar', href: '/components/rc-navigation-bar' },
+    { label: 'rc-app-bar', href: '/components/rc-app-bar' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-navigation-rail
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-navigation-rail
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-navigation-rail/define';
+```
+
+## Usage
+
+```html
+<nav aria-label="Main navigation">
+  <rc-navigation-rail>
+    <rc-button slot="toggle" icon-only>
+      <button type="button" aria-label="Toggle navigation">
+        <span
+          data-rc-button-icon
+          data-rc-navigation-expand-icon
+          class="material-symbols-outlined"
+          aria-hidden="true"
+          >menu</span
+        >
+        <span
+          data-rc-button-selected-icon
+          data-rc-navigation-collapse-icon
+          class="material-symbols-outlined"
+          aria-hidden="true"
+          >menu_open</span
+        >
+      </button>
+    </rc-button>
+    <a href="/library" aria-current="page">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+        <span>Library</span>
+      </span>
+    </a>
+    <a href="/saved">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">bookmark</span>
+        <span>Saved</span>
+      </span>
+    </a>
+    <button slot="footer" type="button" aria-label="Settings">settings</button>
+  </rc-navigation-rail>
+</nav>
+```
+
+The native `<nav>` is the navigation landmark and owns its accessible label,
+just as `<search>` owns landmark semantics around `rc-search-bar`.
+`rc-navigation-rail` only provides layout, active-state styling, and
+indicator positioning.
+
+## Live demo
+
+<NavigationRailDemo />
+
+## Expanded state
+
+Use `default-expanded` for uncontrolled initial state or bind `expanded` from
+your app. Programmatic property writes are silent. User interaction with the
+slotted toggle dispatches `rc-navigation-rail-toggle`.
+
+The Material theme keeps each icon at 24px while its indicator target grows
+from 56×32px in the collapsed rail to the expanded row height. Both states use
+the same inline-start track so icons do not shift horizontally. Wrap each icon
+and label in `data-rc-navigation-indicator` so the expanded Material indicator
+contains both.
+
+```html
+<nav aria-label="Main navigation">
+  <rc-navigation-rail default-expanded>
+    <button slot="toggle" type="button" aria-label="Toggle navigation">
+      <span data-rc-navigation-expand-icon class="material-symbols-outlined" aria-hidden="true"
+        >menu</span
+      >
+      <span data-rc-navigation-collapse-icon class="material-symbols-outlined" aria-hidden="true"
+        >menu_open</span
+      >
+    </button>
+    <a href="/library" aria-current="page">Library</a>
+    <a href="/settings">Settings</a>
+  </rc-navigation-rail>
+</nav>
+```
+
+## Collapse control
+
+Provide the collapse control in light DOM as either a native button or an
+`rc-button` wrapping a direct native button. The control remains a semantic,
+keyboard-operable button before custom element upgrade; the rail enhances it by
+synchronizing `aria-expanded`, switching the marked icons, and dispatching its
+toggle event. With `rc-button`, mark `menu` as `data-rc-button-icon` and
+`menu_open` as `data-rc-button-selected-icon`; the rail coordinates the
+wrapper's `selected` state.
+
+```html
+<nav aria-label="Main navigation">
+  <rc-navigation-rail>
+    <button slot="toggle" type="button" aria-label="Toggle navigation">
+      <span data-rc-navigation-expand-icon class="material-symbols-outlined" aria-hidden="true"
+        >menu</span
+      >
+      <span data-rc-navigation-collapse-icon class="material-symbols-outlined" aria-hidden="true"
+        >menu_open</span
+      >
+    </button>
+    <a href="/library" aria-current="page">Library</a>
+  </rc-navigation-rail>
+</nav>
+```
+
+## Adaptive navigation
+
+Keep compact-to-rail switching in app/layout code. The component does not own
+media queries, route matching, or persistence; it only styles the native links
+you render into it.
+
+Use the Material window classes from your app shell:
+
+| Window width       | App-owned navigation surface                             |
+| ------------------ | -------------------------------------------------------- |
+| `<600px` compact   | `rc-navigation-bar` in the bottom app chrome             |
+| `>=600px` medium   | collapsed `rc-navigation-rail` in the leading app chrome |
+| `>=840px` expanded | `rc-navigation-rail`, optionally expandable/persisted    |
+
+Share destination data and active-link logic between the bar and rail. Mark the
+current native link with `aria-current="page"`, or set `active-selector` to your
+router's active class.
+
+<AdaptiveNavigationDemo />
+
+```html
+<!-- medium: >=600px -->
+<nav aria-label="Main navigation">
+  <rc-navigation-rail>
+    <a href="/library" aria-current="page">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+        <span>Library</span>
+      </span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">settings</span>
+        <span>Settings</span>
+      </span>
+    </a>
+  </rc-navigation-rail>
+</nav>
+
+<!-- expanded: >=840px, app decides whether expansion is offered -->
+<nav aria-label="Main navigation">
+  <rc-navigation-rail expanded>
+    <rc-fab slot="header" position="top-start" style="--rc-fab-position: static">
+      <button type="button" aria-label="New note">
+        <span data-rc-button-icon aria-hidden="true">add</span>
+      </button>
+    </rc-fab>
+    <a href="/library" aria-current="page">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+        <span>Library</span>
+      </span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">settings</span>
+        <span>Settings</span>
+      </span>
+    </a>
+  </rc-navigation-rail>
+</nav>
+```
+
+Persist expanded state in the app, and only apply it while the expanded window
+class affords the wider rail:
+
+```js
+const key = 'app.navigation-rail-expanded';
+const isExpanded = matchMedia('(min-width: 840px)').matches;
+const rail = document.querySelector('rc-navigation-rail');
+
+rail.expanded = isExpanded && localStorage.getItem(key) === 'true';
+rail.addEventListener('rc-navigation-rail-toggle', (event) => {
+  localStorage.setItem(key, String(event.detail.expanded));
+});
+```
+
+The components expose stable surface and indicator parts so apps can opt into
+View Transitions:
+
+```css
+rc-navigation-bar,
+rc-navigation-rail {
+  view-transition-name: app-navigation;
+}
+
+rc-navigation-bar::part(indicator),
+rc-navigation-rail::part(indicator) {
+  view-transition-name: app-navigation-indicator;
+}
+```
+
+The rail's own collapsed/expanded state uses component-owned CSS transitions and
+snaps to the final state under reduced motion. The adaptive example uses an
+app-owned View Transition to switch navigation surfaces and move the FAB from
+the page action position into the rail's generic header slot.
+
+## Material theme
+
+`rc-theme-material/components.css` applies Material 3 navigation rail metrics:
+80dp collapsed rail width, expanded row treatment, 56×32 collapsed indicators,
+state-layer hover treatment, label-medium/label-large typography, and reduced
+motion fallbacks.
+
+The Substrate theme highlights the active link itself and disables the moving
+indicator. The Material theme retains its separate animated indicator behind
+the icon or expanded row target.
+
+## API
+
+<ApiTable tag="rc-navigation-rail" />

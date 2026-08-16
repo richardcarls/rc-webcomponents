@@ -11,7 +11,10 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-dialog > dialog::backdrop {
-    background: color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent);
+    background: var(
+      --rc-dialog-scrim,
+      color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent)
+    );
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))

@@ -1,33 +1,35 @@
-import { LitElement, html, nothing } from "lit";
-import {
-  property,
-  state,
-  query,
-  queryAssignedElements,
-} from "lit/decorators.js";
+import { LitElement, html, nothing } from 'lit';
+import { property, state, query, queryAssignedElements } from 'lit/decorators.js';
 
 import {
+  DragGestureController,
+  findNearestSnapIndex,
+  findNextSnapIndex,
   keyInteraction,
   keyNavigation,
+  type DragGestureDetail,
   type KeyboardNavigationAction,
-  mouseMove,
-} from "@rcarls/rc-common";
+} from '@rcarls/rc-common';
 
-import splitterStyles from "./rc-splitter.styles";
+import splitterStyles from './rc-splitter.styles';
 
-type SplitterOrientation = "horizontal" | "vertical";
+type SplitterOrientation = 'horizontal' | 'vertical';
 
-type SplitterMode = "length" | "percent";
+type SplitterMode = 'length' | 'percent' | 'fixed';
+
+const MIN_SWIPE_DISTANCE = 24;
+const DEFAULT_SNAP_DURATION_MS = 200;
+const SNAP_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 declare global {
   interface HTMLElementTagNameMap {
-    "rc-splitter": RCSplitter;
+    'rc-splitter': RCSplitter;
   }
 }
 
 /**
- * Resizable pane splitter with pointer, keyboard, and collapse/restore controls, following
- * the WAI-ARIA Window Splitter pattern.
+ * Resizable pane splitter with pointer, keyboard, anchored settling, and
+ * collapse/restore controls, following the WAI-ARIA Window Splitter pattern.
  *
  * Set `orientation="vertical"` for a vertical splitter
  *
@@ -36,6 +38,23 @@ declare global {
  *
  * @slot - Primary pane contents
  * @slot secondary - Secondary pane contents (optional)
+ *
+ * @fires rc-splitter-change - Fired when the separator position changes; `detail: { value, valueText }`
+ *
+ * @attr label - Accessible label applied to the primary pane and referenced by the separator
+ *   handle's `aria-labelledby`.
+ * @attr orientation - Layout direction: `horizontal` (left/right panes) or `vertical` (top/bottom panes).
+ * @attr mode - Value units and pane sizing behavior: `length`, `percent`, or `fixed`.
+ * @attr step - Keyboard resize step size, in the current mode's units.
+ * @attr min - Minimum primary pane size, in the current mode's units.
+ * @attr max - Maximum primary pane size, in the current mode's units. Defaults to the full
+ *   container size.
+ * @attr value - Current primary pane size. Host writes update silently.
+ * @attr default-value - Initial uncontrolled primary pane size.
+ * @attr fixed - Disables pointer and keyboard resizing without changing pane size.
+ * @attr collapsible - Renders a collapse/expand toggle button on the separator.
+ * @attr snap-points - Ascending whitespace-separated anchors, in the current mode's units.
+ * @attr swipe-velocity - Minimum release velocity, in px/s, that qualifies as a swipe.
  *
  * @cssprop [--rc-splitter-separator-size=6px] - Thickness of the separator bar
  * @cssprop [--rc-splitter-separator-handle-size=100%] - Length of the drag handle area within the separator (also the length of the visible indicator)
@@ -48,6 +67,7 @@ declare global {
  * @cssprop [--rc-splitter-handle-fill=transparent] - background-color of the visual indicator; effective when --rc-splitter-handle-pattern is none (e.g. for a solid pill)
  * @cssprop [--rc-splitter-handle-hover-fill=transparent] - background-color of the visual indicator on hover; scoped to the indicator element only, not the full separator strip
  * @cssprop [--rc-splitter-handle-transition=0ms] - CSS transition duration/easing for the visual indicator's background-color changes
+ * @cssprop [--rc-splitter-snap-duration=200ms] - Duration of anchored settling after pointer release or `snapTo()`
  * @cssprop [--rc-splitter-collapse-button-size=20px] - Diameter of the collapse/expand toggle button
  * @cssprop [--rc-splitter-collapse-button-offset=8px] - Distance from the start edge of the separator to the collapse button center
  * @cssprop [--rc-splitter-collapse-button-bg=Canvas] - Collapse button background color
@@ -69,15 +89,21 @@ export class RCSplitter extends LitElement {
 
   /** Accessible label for this splitter. Default label is 'Splitter'. */
   @property({ type: String })
-  label = "Splitter";
+  label = 'Splitter';
 
   /** Splitter orientation, for keyboard navigation and initial sizing. */
   @property({ type: String, reflect: true })
-  orientation: SplitterOrientation = "horizontal";
+  orientation: SplitterOrientation = 'horizontal';
 
-  /** Determines length units for min, max and step attributes, one of either `length` (default) or `percent` */
-  @property({ type: String })
-  mode: SplitterMode = "length";
+  /**
+   * Determines value units and pane sizing behavior.
+   *
+   * - `length` uses px for the primary pane size.
+   * - `percent` uses percentage points.
+   * - `fixed` uses px for a clampable fixed primary pane while the secondary pane flexes.
+   */
+  @property({ type: String, reflect: true })
+  mode: SplitterMode = 'length';
 
   /** The step size for resizing, in either pixels or percentage points depending on `mode`. */
   @property({ type: Number })
@@ -106,7 +132,7 @@ export class RCSplitter extends LitElement {
       this._setValue(val, false);
     }
 
-    this.requestUpdate("value", oldValue);
+    this.requestUpdate('value', oldValue);
   }
 
   /** The current splitter value, corresponding to the separator position, in either pixels or percentage points depending on `mode`. */
@@ -115,7 +141,7 @@ export class RCSplitter extends LitElement {
   }
 
   /** Initial uncontrolled splitter value. */
-  @property({ type: Number, attribute: "default-value" })
+  @property({ type: Number, attribute: 'default-value' })
   set defaultValue(val: number | undefined) {
     const oldValue = this._defaultValue;
 
@@ -125,7 +151,7 @@ export class RCSplitter extends LitElement {
       this._setValue(val, false);
     }
 
-    this.requestUpdate("defaultValue", oldValue);
+    this.requestUpdate('defaultValue', oldValue);
   }
 
   /** Initial uncontrolled splitter value. */
@@ -147,9 +173,7 @@ export class RCSplitter extends LitElement {
   }
 
   protected _toggleCollapse(): void {
-    this._setUserValue(
-      this._isCollapsed ? this._lastValue : this._effectiveMin,
-    );
+    this._setUserValue(this._isCollapsed ? this._lastValue : this._effectiveMin);
   }
 
   protected _onCollapseButtonClick(): void {
@@ -157,13 +181,18 @@ export class RCSplitter extends LitElement {
   }
 
   protected _onCollapseKeydown(e: KeyboardEvent): void {
-    if (!this.collapsible || this.fixed) return;
-    if (!e.ctrlKey && !e.metaKey) return;
+    if (!this.collapsible || this.fixed) {
+      return;
+    }
+
+    if (!e.ctrlKey && !e.metaKey) {
+      return;
+    }
 
     const isRelevantKey =
-      this.orientation === "horizontal"
-        ? e.key === "ArrowLeft" || e.key === "ArrowRight"
-        : e.key === "ArrowUp" || e.key === "ArrowDown";
+      this.orientation === 'horizontal'
+        ? e.key === 'ArrowLeft' || e.key === 'ArrowRight'
+        : e.key === 'ArrowUp' || e.key === 'ArrowDown';
 
     if (isRelevantKey) {
       e.preventDefault();
@@ -172,17 +201,17 @@ export class RCSplitter extends LitElement {
     }
   }
 
-  private get _collapseButtonIcon() {
-    const isHorizontal = this.orientation === "horizontal";
+  protected get _collapseButtonIcon() {
+    const isHorizontal = this.orientation === 'horizontal';
     // Chevron points LEFT/UP to collapse (separator moves toward primary),
     // RIGHT/DOWN to expand (separator moves away from primary).
     const d = isHorizontal
       ? this._isCollapsed
-        ? "M 3 1 L 7 5 L 3 9"
-        : "M 7 1 L 3 5 L 7 9"
+        ? 'M 3 1 L 7 5 L 3 9'
+        : 'M 7 1 L 3 5 L 7 9'
       : this._isCollapsed
-        ? "M 1 3 L 5 7 L 9 3"
-        : "M 1 7 L 5 3 L 9 7";
+        ? 'M 1 3 L 5 7 L 9 3'
+        : 'M 1 7 L 5 3 L 9 7';
 
     return html`<svg
       aria-hidden="true"
@@ -199,7 +228,7 @@ export class RCSplitter extends LitElement {
     </svg>`;
   }
 
-  private _setValue(val: number, dispatch: boolean): void {
+  protected _setValue(val: number, dispatch: boolean): void {
     const oldValue = this._value;
 
     this._value = Math.min(
@@ -209,7 +238,7 @@ export class RCSplitter extends LitElement {
 
     if (dispatch && this._value !== oldValue) {
       this.dispatchEvent(
-        new CustomEvent("rc-splitter-change", {
+        new CustomEvent('rc-splitter-change', {
           bubbles: true,
           composed: true,
           detail: { value: this._value, valueText: this.valueText },
@@ -218,22 +247,24 @@ export class RCSplitter extends LitElement {
     }
   }
 
-  private _setUserValue(val: number): void {
+  protected _setUserValue(val: number): void {
     this._valueInitialized = true;
     this._hostValue = undefined;
+
     // Capture the last position above the effective minimum before a user-driven
     // change so toggle-collapse can restore it. Internal resize callbacks use
     // _setValue directly and must not overwrite this.
     if (this._value > this._effectiveMin) {
       this._lastValue = this._value;
     }
+
     this._setValue(val, true);
   }
 
   @state()
   private _value: number = 0;
 
-  /** Toggles resizing ability */
+  /** Disables pointer and keyboard resizing without changing pane size. */
   @property({ type: Boolean })
   fixed: boolean = false;
 
@@ -241,9 +272,20 @@ export class RCSplitter extends LitElement {
   @property({ type: Boolean })
   collapsible: boolean = false;
 
+  /**
+   * Ascending whitespace-separated snap points in the current mode's units.
+   * An empty value keeps pointer resizing continuous.
+   */
+  @property({ type: String, attribute: 'snap-points' })
+  snapPoints = '';
+
+  /** Minimum release velocity, in px/s, that qualifies as a swipe. */
+  @property({ type: Number, attribute: 'swipe-velocity' })
+  swipeVelocity = 500;
+
   /** A human-readable string representation of the value. */
   get valueText() {
-    return `${this.value}${this.mode === "length" ? "px" : "%"}`;
+    return `${this.value}${this.mode === 'percent' ? '%' : 'px'}`;
   }
 
   @state()
@@ -256,16 +298,35 @@ export class RCSplitter extends LitElement {
   @state()
   protected _lastValue: number = 0;
 
-  @query("#primary", true)
+  @query('#primary', true)
   protected _$primary!: HTMLDivElement;
+
+  @query('#separator-handle')
+  protected _$separatorHandle!: HTMLDivElement;
 
   @queryAssignedElements()
   protected _$primaryElements!: Array<HTMLElement>;
 
-  @queryAssignedElements({ slot: "secondary" })
+  @queryAssignedElements({ slot: 'secondary' })
   protected _$secondaryElements!: Array<HTMLElement>;
 
   protected _initialMax: number = 0;
+
+  protected _gestureStartValue = 0;
+  protected _gestureRestoreValue = 0;
+  protected _activeSnapAnimation: Animation | null = null;
+  protected readonly _reducedMotion =
+    typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+
+  protected readonly _gesture = new DragGestureController(this, {
+    target: () => this._$separatorHandle,
+    axis: this.orientation === 'horizontal' ? 'x' : 'y',
+    focusOnStart: true,
+    onStart: (detail) => this._onGestureStart(detail),
+    onMove: (detail) => this._onGestureMove(detail),
+    onEnd: (detail) => this._onGestureEnd(detail),
+    onCancel: () => this._onGestureCancel(),
+  });
 
   protected _resizeObserver = new ResizeObserver(() => this._onResize());
 
@@ -275,25 +336,25 @@ export class RCSplitter extends LitElement {
     }
 
     switch (action) {
-      case "next":
+      case 'next':
         this._setUserValue(this.value + this.step);
         break;
-      case "prev":
+      case 'prev':
         this._setUserValue(this.value - this.step);
         break;
-      case "next-large":
+      case 'next-large':
         this._setUserValue(this.value + this.step * 10);
         break;
-      case "prev-large":
+      case 'prev-large':
         this._setUserValue(this.value - this.step * 10);
         break;
-      case "start":
+      case 'start':
         this._setUserValue(this._effectiveMin);
         break;
-      case "end":
+      case 'end':
         this._setUserValue(this._effectiveMax);
         break;
-      case "toggle":
+      case 'toggle':
         this._setUserValue(
           this.value === this._effectiveMin ? this._lastValue : this._effectiveMin,
         );
@@ -301,31 +362,176 @@ export class RCSplitter extends LitElement {
     }
   }
 
-  protected _onPointerResize(e: MouseEvent) {
+  protected _onPointerResize(e: Pick<PointerEvent, 'clientX' | 'clientY'>) {
     if (this.fixed) {
       return;
     }
 
     const clientRect = this.getBoundingClientRect();
 
-    if (this.orientation === "vertical") {
-      this._setUserValue(
-        ((e.clientY - clientRect.top) / clientRect.height) * this._maxValue,
-      );
+    if (this.orientation === 'vertical') {
+      this._setUserValue(((e.clientY - clientRect.top) / clientRect.height) * this._maxValue);
     } else {
-      this._setUserValue(
-        ((e.clientX - clientRect.left) / clientRect.width) * this._maxValue,
-      );
+      this._setUserValue(((e.clientX - clientRect.left) / clientRect.width) * this._maxValue);
     }
+  }
+
+  /**
+   * Settles at a declared snap point by zero-based index.
+   *
+   * Finite fractional indices are truncated and clamped. Calls without valid
+   * snap points or with a non-finite index have no effect.
+   *
+   * @param index - zero-based index into `snapPoints`
+   * @param behavior - whether to animate the movement
+   */
+  snapTo(index: number, behavior: 'animated' | 'instant' = 'animated'): void {
+    const points = this._resolvedSnapPoints();
+
+    if (!Number.isFinite(index) || points.length === 0) {
+      return;
+    }
+
+    const clampedIndex = Math.max(0, Math.min(Math.trunc(index), points.length - 1));
+
+    void this._settleToValue(points[clampedIndex], behavior);
+  }
+
+  protected _onGestureStart(_detail: DragGestureDetail): void {
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
+    this._gestureStartValue = this.value;
+    this._gestureRestoreValue = this._lastValue;
+  }
+
+  protected _onGestureMove(detail: DragGestureDetail): void {
+    this._onPointerResize({ clientX: detail.x, clientY: detail.y });
+  }
+
+  protected _onGestureEnd(detail: DragGestureDetail): void {
+    const delta = this.orientation === 'horizontal' ? detail.deltaX : detail.deltaY;
+    const velocity = this.orientation === 'horizontal' ? detail.velocityX : detail.velocityY;
+    const decisive =
+      Math.abs(delta) >= MIN_SWIPE_DISTANCE && Math.abs(velocity) >= this.swipeVelocity;
+
+    if (decisive && this.collapsible) {
+      if (velocity < 0) {
+        const restoreValue =
+          this._gestureRestoreValue > this._effectiveMin
+            ? this._gestureRestoreValue
+            : this._gestureStartValue;
+
+        void this._settleToValue(this._effectiveMin, 'animated');
+        this._lastValue = restoreValue;
+
+        return;
+      }
+
+      if (this._gestureStartValue <= this._effectiveMin) {
+        void this._settleToValue(
+          Math.max(this._gestureRestoreValue, this._effectiveMin),
+          'animated',
+        );
+
+        return;
+      }
+    }
+
+    const points = this._resolvedSnapPoints();
+
+    if (points.length === 0) {
+      return;
+    }
+
+    const index = decisive
+      ? findNextSnapIndex(points, this._gestureStartValue, velocity > 0 ? 1 : -1)
+      : findNearestSnapIndex(points, this.value);
+
+    if (index >= 0) {
+      void this._settleToValue(points[index], 'animated');
+    }
+  }
+
+  protected _onGestureCancel(): void {
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
+  }
+
+  protected _resolvedSnapPoints(): number[] {
+    if (!this.snapPoints.trim()) {
+      return [];
+    }
+
+    return this.snapPoints
+      .trim()
+      .split(/\s+/)
+      .map(Number)
+      .filter(Number.isFinite)
+      .map((point) => Math.min(Math.max(point, this._effectiveMin), this._effectiveMax))
+      .filter((point, index, points) => index === 0 || point !== points[index - 1]);
+  }
+
+  protected async _settleToValue(value: number, behavior: 'animated' | 'instant'): Promise<void> {
+    const $primary = this._$primary;
+    const fromSize =
+      this.orientation === 'horizontal'
+        ? $primary.getBoundingClientRect().width
+        : $primary.getBoundingClientRect().height;
+
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
+    this._setUserValue(value);
+    await this.updateComplete;
+
+    if (behavior === 'instant' || this._reducedMotion?.matches) {
+      return;
+    }
+
+    const toSize =
+      this.orientation === 'horizontal'
+        ? $primary.getBoundingClientRect().width
+        : $primary.getBoundingClientRect().height;
+
+    if (fromSize === toSize) {
+      return;
+    }
+
+    const property = this.orientation === 'horizontal' ? 'width' : 'height';
+    const animation = $primary.animate(
+      [{ [property]: `${fromSize}px` }, { [property]: `${toSize}px` }],
+      {
+        duration: this._snapDuration(),
+        easing: SNAP_EASING,
+      },
+    );
+
+    this._activeSnapAnimation = animation;
+
+    try {
+      await animation.finished;
+    } catch {
+      // A newer gesture or snap call owns the final visual state.
+    } finally {
+      if (this._activeSnapAnimation === animation) {
+        this._activeSnapAnimation = null;
+      }
+    }
+  }
+
+  protected _snapDuration(): number {
+    const raw = getComputedStyle(this).getPropertyValue('--rc-splitter-snap-duration').trim();
+    const parsed = Number.parseFloat(raw);
+
+    return Number.isFinite(parsed) ? parsed : DEFAULT_SNAP_DURATION_MS;
   }
 
   protected _onPrimaryChange(_e: Event) {
     queueMicrotask(() => {
-      if (this._$primaryElements.length < 2) return;
+      if (this._$primaryElements.length < 2) {
+        return;
+      }
 
-      this._$primaryElements
-        .slice(1)
-        .forEach((el) => el.setAttribute("slot", "secondary"));
+      this._$primaryElements.slice(1).forEach(($el) => $el.setAttribute('slot', 'secondary'));
     });
   }
 
@@ -335,49 +541,43 @@ export class RCSplitter extends LitElement {
         return;
       }
 
-      this._$secondaryElements.at(0)?.removeAttribute("slot");
+      this._$secondaryElements.at(0)?.removeAttribute('slot');
     });
   }
 
-  private _measureHostSize(axis: "inline" | "block"): number {
+  protected _measureHostSize(axis: 'inline' | 'block'): number {
     const clientRect = this.getBoundingClientRect();
-    const measuredSize = axis === "inline" ? clientRect.width : clientRect.height;
+    const measuredSize = axis === 'inline' ? clientRect.width : clientRect.height;
 
     if (measuredSize > 0) {
       return Math.ceil(measuredSize);
     }
 
     const computedStyle = getComputedStyle(this);
-    const fallbackSize =
-      axis === "inline" ? computedStyle.width : computedStyle.height;
+    const fallbackSize = axis === 'inline' ? computedStyle.width : computedStyle.height;
     const parsedFallbackSize = Number.parseFloat(fallbackSize);
 
-    return Number.isFinite(parsedFallbackSize)
-      ? Math.ceil(parsedFallbackSize)
-      : 0;
+    return Number.isFinite(parsedFallbackSize) ? Math.ceil(parsedFallbackSize) : 0;
   }
 
   protected _onResize() {
-    const el = this._$primaryElements.at(0);
-    const prevStyle = this._$primary.style.getPropertyValue("display");
+    const $el = this._$primaryElements.at(0);
+    const prevStyle = this._$primary.style.getPropertyValue('display');
 
     // Request animation frame to prevent layout paint jank.
     globalThis.requestAnimationFrame(() => {
       // Temporarily display the first light DOM element as a direct child for measurement.
-      this._$primary.style.setProperty("display", "contents");
+      this._$primary.style.setProperty('display', 'contents');
 
-      const clientRect =
-        el?.getBoundingClientRect() ?? this.getBoundingClientRect();
+      const clientRect = $el?.getBoundingClientRect() ?? this.getBoundingClientRect();
 
-      if (this.mode === "length") {
+      if (this.mode !== 'percent') {
         const measured =
-          this.orientation === "horizontal"
+          this.orientation === 'horizontal'
             ? // For horizontal splitters, just take the host width...
-              this._measureHostSize("inline")
+              this._measureHostSize('inline')
             : // ...otherwise try to use the first lightDOM element's auto height, and cache it
-              this._initialMax ||
-              Math.ceil(clientRect.height) ||
-              this._measureHostSize("block");
+              this._initialMax || Math.ceil(clientRect.height) || this._measureHostSize('block');
 
         // After initialization, ignore spurious zero measurements (e.g. during
         // Chromium's layout recalculation triggered by a secondary ResizeObserver
@@ -392,6 +592,7 @@ export class RCSplitter extends LitElement {
 
       if (!this._initialMax) {
         this._initialMax = this._maxValue;
+
         this._setValue(
           this._valueInitialized
             ? this._value
@@ -406,8 +607,8 @@ export class RCSplitter extends LitElement {
 
       // Restore previous display mode
       prevStyle
-        ? this._$primary.style.setProperty("display", prevStyle)
-        : this._$primary.style.removeProperty("display");
+        ? this._$primary.style.setProperty('display', prevStyle)
+        : this._$primary.style.removeProperty('display');
     });
   }
 
@@ -418,11 +619,20 @@ export class RCSplitter extends LitElement {
 
   disconnectedCallback(): void {
     this._resizeObserver.disconnect();
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
     super.disconnectedCallback();
   }
 
   firstUpdated() {
     this._onResize();
+  }
+
+  protected updated(): void {
+    this._gesture.setOptions({
+      axis: this.orientation === 'horizontal' ? 'x' : 'y',
+      target: () => this._$separatorHandle,
+    });
   }
 
   render() {
@@ -431,7 +641,7 @@ export class RCSplitter extends LitElement {
         id="primary"
         part="primary"
         aria-label=${this.label}
-        style=${this.orientation === "horizontal"
+        style=${this.orientation === 'horizontal'
           ? `width: ${this.valueText}`
           : `height: ${this.valueText}`}
         ?hidden=${this.value === this._minValue}
@@ -444,13 +654,13 @@ export class RCSplitter extends LitElement {
           ? html`<button
               id="collapse-button"
               part="collapse-button"
-              aria-label=${this._isCollapsed
-                ? `Expand ${this.label}`
-                : `Collapse ${this.label}`}
+              aria-label=${this._isCollapsed ? `Expand ${this.label}` : `Collapse ${this.label}`}
               aria-expanded=${String(!this._isCollapsed)}
               aria-controls="primary"
               @click=${this._onCollapseButtonClick}
-            >${this._collapseButtonIcon}</button>`
+            >
+              ${this._collapseButtonIcon}
+            </button>`
           : nothing}
         <div
           id="separator-handle"
@@ -467,7 +677,6 @@ export class RCSplitter extends LitElement {
           @keydown=${this._onCollapseKeydown}
           ${keyNavigation(this._onKeyboardResize)}
           ${keyInteraction()}
-          ${mouseMove(this._onPointerResize)}
           ?hidden=${!this._$secondaryElements.length}
         ></div>
       </div>
@@ -475,8 +684,7 @@ export class RCSplitter extends LitElement {
       <aside
         id="secondary"
         part="secondary"
-        ?hidden=${!this._$secondaryElements.length ||
-        this.value === this._maxValue}
+        ?hidden=${!this._$secondaryElements.length || this.value === this._maxValue}
       >
         <slot name="secondary" @slotchange=${this._onSecondaryChange}></slot>
       </aside>

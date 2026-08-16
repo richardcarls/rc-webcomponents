@@ -1,0 +1,59 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-card {
+    --rc-card-bg: var(--md-sys-color-surface-container-low, Canvas);
+    --rc-card-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-card-radius: var(--md-sys-shape-corner-medium, 0.75rem);
+    --rc-card-shadow:
+      0 1px 2px color-mix(in srgb, var(--md-sys-color-shadow, #000) 30%, transparent),
+      0 1px 3px 1px color-mix(in srgb, var(--md-sys-color-shadow, #000) 15%, transparent);
+    --rc-card-padding-block: 1rem;
+    --rc-card-padding-inline: 1rem;
+    --rc-card-actions-gap: 0.5rem;
+    --rc-card-title-font: var(--md-sys-typescale-title-medium-weight, 500)
+      var(--md-sys-typescale-title-medium-size, 1rem) /
+      var(--md-sys-typescale-title-medium-line-height, 1.5rem)
+      var(--md-sys-typescale-title-medium-font, inherit);
+    --rc-card-subtitle-font: var(--md-sys-typescale-body-medium-weight, 400)
+      var(--md-sys-typescale-body-medium-size, 0.875rem) /
+      var(--md-sys-typescale-body-medium-line-height, 1.25rem)
+      var(--md-sys-typescale-body-medium-font, inherit);
+    --rc-card-subtitle-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-card-state-layer-bg: var(--md-sys-color-on-surface, currentColor);
+    --rc-card-hover-state-layer-opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+    --rc-card-pressed-state-layer-opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-card[selected] {
+    box-shadow:
+      0 0 0 2px var(--md-sys-color-primary, Highlight),
+      var(--rc-card-shadow);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-card[disabled] {
+    opacity: var(--rc-disabled-opacity, 0.38);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-card > :is(h2, h3)[slot='title'] {
+    margin: 0;
+    color: var(--rc-card-title-color, inherit);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-card > h2[slot='title'] {
+    font-family: var(--md-sys-typescale-title-large-font, inherit);
+    font-size: var(--md-sys-typescale-title-large-size, 1.375rem);
+    font-weight: var(--md-sys-typescale-title-large-weight, 500);
+    line-height: var(--md-sys-typescale-title-large-line-height, 1.75rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-card > h3[slot='title'] {
+    font-family: var(--md-sys-typescale-title-medium-font, inherit);
+    font-size: var(--md-sys-typescale-title-medium-size, 1rem);
+    font-weight: var(--md-sys-typescale-title-medium-weight, 500);
+    line-height: var(--md-sys-typescale-title-medium-line-height, 1.5rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-card > :is(h2, h3)[slot='title'] > a {
+    color: inherit;
+    text-decoration: none;
+  }
+}

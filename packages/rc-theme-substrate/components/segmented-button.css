@@ -1,0 +1,43 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-segmented-button {
+    --_rc-segmented-button-fieldset-display: inline-flex;
+    --_rc-segmented-button-fieldset-margin: 0;
+    --_rc-segmented-button-fieldset-padding: 0;
+    --_rc-segmented-button-fieldset-border: 0;
+    --_rc-segmented-button-fieldset-radius: 0;
+    --_rc-segmented-button-fieldset-overflow: visible;
+    --_rc-segmented-button-legend-position: absolute;
+    --_rc-segmented-button-legend-inline-size: 1px;
+    --_rc-segmented-button-legend-block-size: 1px;
+    --_rc-segmented-button-legend-margin: -1px;
+    --_rc-segmented-button-legend-padding: 0;
+    --_rc-segmented-button-legend-border: 0;
+    --_rc-segmented-button-legend-overflow: hidden;
+    --_rc-segmented-button-legend-clip: rect(0 0 0 0);
+    --_rc-segmented-button-legend-white-space: nowrap;
+    --_rc-segmented-button-segment-display: inline-flex;
+    --_rc-segmented-button-segment-cursor: pointer;
+    --_rc-segmented-button-segment-user-select: none;
+    --_rc-segmented-button-disabled-cursor: not-allowed;
+    --_rc-segmented-button-radio-position: absolute;
+    --_rc-segmented-button-radio-inline-size: 1px;
+    --_rc-segmented-button-radio-block-size: 1px;
+    --_rc-segmented-button-radio-margin: 0;
+    --_rc-segmented-button-radio-opacity: 0;
+    --_rc-segmented-button-radio-pointer-events: none;
+    --_rc-segmented-button-selected-icon-display: inline-grid;
+    --_rc-segmented-button-vertical-border-inline-start: var(--rc-border);
+    --rc-segmented-button-border: var(--rc-border);
+    --rc-segmented-button-radius: var(--rc-control-radius);
+    --rc-segmented-button-divider: 0;
+    --rc-segmented-button-bg: var(--substrate-surface-raised, ButtonFace);
+    --rc-segmented-button-color: var(--substrate-on-surface, ButtonText);
+    --rc-segmented-button-selected-bg: var(--rc-highlight, Highlight);
+    --rc-segmented-button-selected-color: var(--rc-highlight-text, HighlightText);
+    --rc-segmented-button-segment-min-block-size: var(--rc-control-block-size, 2.5rem);
+    --rc-segmented-button-segment-padding-inline: var(--rc-control-padding-inline, 0.75rem);
+    --rc-segmented-button-focus-ring: var(--rc-focus-ring);
+    --rc-segmented-button-focus-ring-offset: -2px;
+    --rc-segmented-button-disabled-opacity: var(--rc-disabled-opacity);
+  }
+}

@@ -1,0 +1,43 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-navigation-bar {
+    --rc-navigation-bar-bg: var(--rc-surface, Canvas);
+    --rc-navigation-bar-color: var(--rc-color, CanvasText);
+    --rc-navigation-bar-block-size: 4rem;
+    --rc-navigation-bar-padding-block: 0;
+    --rc-navigation-bar-padding-inline: 0;
+    --rc-navigation-bar-gap: 0;
+    --rc-navigation-bar-item-gap: 0.25rem;
+    --rc-navigation-bar-item-min-block-size: 3rem;
+    --rc-navigation-bar-item-padding-block: 0.5rem;
+    --rc-navigation-bar-item-padding-inline: var(--rc-item-padding-inline, 0.75rem);
+    --rc-navigation-bar-item-color: var(--rc-muted-color, CanvasText);
+    --rc-navigation-bar-item-text-decoration: none;
+    --rc-navigation-bar-active-color: var(--rc-accent, Highlight);
+    --rc-navigation-bar-indicator-bg: transparent;
+    --rc-navigation-bar-indicator-border: 0;
+    --rc-navigation-bar-indicator-radius: 0;
+    --rc-navigation-bar-indicator-duration: 0ms;
+    --rc-navigation-bar-indicator-easing: ease;
+    --rc-icon-font-line-height: 2.5rem;
+    --rc-navigation-bar-focus-ring: var(--rc-focus-ring, 2px solid Highlight);
+    --rc-navigation-bar-focus-ring-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-navigation-bar
+    > a
+    :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    border-radius: var(--rc-radius-pill, 9999px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-navigation-bar
+    > a[aria-current]:not([aria-current='false']) {
+    border-radius: var(--rc-radius-md, 0.5rem);
+    background: color-mix(in srgb, var(--rc-accent, Highlight) 12%, transparent);
+  }
+}

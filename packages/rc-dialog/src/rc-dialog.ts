@@ -1,9 +1,13 @@
 import { LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+
 import {
   DragController,
   NativeChildController,
   ResizeController,
+  type ResizeDirection,
+  type ResizeLifecycleDetail,
+  type ResizeOrigin,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 
@@ -49,6 +53,24 @@ declare global {
  * @fires rc-dialog-close - Mirrors the inner `<dialog>` close event.
  *   `detail: { returnValue: string }`
  *
+ * @attr open - Controlled open state. Reads the inner `<dialog>.open` value.
+ * @attr default-open - Initial uncontrolled open state.
+ * @attr movable - Allow the dialog to be moved by dragging.
+ * @attr move-handle - CSS selector (within the inner `<dialog>`) for the drag handle element.
+ * @attr move-bounds - Bounds constraint for movement: `viewport` or `parent`.
+ * @attr move-step - Keyboard arrow-key step in px for moving.
+ * @attr resize - Enable resizing, mirroring the CSS `resize` property values.
+ * @attr resize-origin - Origin for resize edge hit-testing or explicit handles.
+ * @attr resize-handle - CSS selector, scoped to the inner `<dialog>`, for one or more explicit
+ *   resize handles.
+ * @attr resize-threshold - Edge hit-test thickness in px for resize detection.
+ * @attr resize-step - Keyboard arrow-key step in px for resizing.
+ * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute.
+ * @attr light-dismiss - When present and the dialog is modal, a click on the backdrop area calls
+ *   `requestClose()`.
+ *
+ * @cssprop [--rc-dialog-scrim=color-mix(in srgb, CanvasText 32%, transparent)] - Modal backdrop color.
+ *
  */
 export class RCDialog extends LitElement {
   override createRenderRoot() {
@@ -79,6 +101,25 @@ export class RCDialog extends LitElement {
   /** Enable resizing, mirroring the CSS `resize` property values. */
   @property({ type: String, reflect: true })
   resize: 'none' | 'both' | 'horizontal' | 'vertical' = 'none';
+
+  /**
+   * Origin for resize edge hit-testing or explicit handles.
+   *
+   * Empty preserves the historical free edge-detection behavior.
+   */
+  @property({ type: String, attribute: 'resize-origin' })
+  resizeOrigin: ResizeOrigin = '';
+
+  /**
+   * CSS selector, scoped to the inner `<dialog>`, for one or more explicit
+   * resize handles.
+   *
+   * Handles may override host behavior with:
+   * - `data-rc-dialog-resize-axis="x|y|both"`
+   * - `data-rc-dialog-resize-origin="top|right|bottom|left|top-left|..."`
+   */
+  @property({ type: String, attribute: 'resize-handle' })
+  resizeHandle = '';
 
   /** Edge hit-test thickness in px for resize detection. */
   @property({ type: Number, attribute: 'resize-threshold' })
@@ -120,7 +161,7 @@ export class RCDialog extends LitElement {
 
   private _controlledOpen: boolean | undefined = undefined;
   private _defaultOpen = false;
-  private readonly _dialogController = new NativeChildController<HTMLDialogElement>(this, {
+  protected readonly _dialogController = new NativeChildController<HTMLDialogElement>(this, {
     selector: ':scope > dialog',
     observe: true,
     onChange: ($dialog) => this._setupDialog($dialog),
@@ -134,10 +175,11 @@ export class RCDialog extends LitElement {
       }
     },
   });
+
   // Tracks which <dialog> has its listeners wired; used by _teardownDialog to
   // remove listeners even after the element is removed from the DOM.
-  private _$wired: WeakRef<HTMLDialogElement> | null = null;
-  private _suppressNextCloseToggle = false;
+  protected _$wired: WeakRef<HTMLDialogElement> | null = null;
+  protected _suppressNextCloseToggle = false;
 
   /** The element that had focus when the dialog was opened; restored on close. */
   protected _$opener: Element | null = null;
@@ -243,6 +285,7 @@ export class RCDialog extends LitElement {
   protected _setupDialog($dialog: HTMLDialogElement | null = this._$dialog) {
     if (!$dialog) {
       this._teardownDialog();
+
       return;
     }
 
@@ -312,14 +355,38 @@ export class RCDialog extends LitElement {
     }
 
     if (this.resize !== 'none') {
-      // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
-      new ResizeController(this, {
-        target: $dialog,
-        direction: this.resize,
-        threshold: this.resizeThreshold,
-        step: this.resizeStep,
-        bounds: this.moveBounds,
-      });
+      const $handles = this._resizeHandles($dialog);
+
+      if ($handles.length > 0) {
+        for (const $handle of $handles) {
+          // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
+          new ResizeController(this, {
+            target: $dialog,
+            direction: this._resizeDirectionForHandle($handle),
+            handle: $handle,
+            origin: this._resizeOriginForHandle($handle),
+            threshold: this.resizeThreshold,
+            step: this.resizeStep,
+            bounds: this.moveBounds,
+            onResizeStart: (detail) => this._onResizeStart(detail),
+            onResize: (detail) => this._onResize(detail),
+            onResizeEnd: (detail) => this._onResizeEnd(detail),
+          });
+        }
+      } else {
+        // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
+        new ResizeController(this, {
+          target: $dialog,
+          direction: this.resize,
+          origin: this.resizeOrigin,
+          threshold: this.resizeThreshold,
+          step: this.resizeStep,
+          bounds: this.moveBounds,
+          onResizeStart: (detail) => this._onResizeStart(detail),
+          onResize: (detail) => this._onResize(detail),
+          onResizeEnd: (detail) => this._onResizeEnd(detail),
+        });
+      }
     }
 
     if (this._controlledOpen !== undefined) {
@@ -443,12 +510,59 @@ export class RCDialog extends LitElement {
     }
   };
 
+  /** Hook for subclasses to respond when a resize gesture begins. */
+  protected _onResizeStart(_detail: ResizeLifecycleDetail): void {}
+
+  /** Hook for subclasses to respond to each resize update during an active gesture. */
+  protected _onResize(_detail: ResizeLifecycleDetail): void {}
+
+  /** Hook for subclasses to respond after a resize gesture has settled. */
+  protected _onResizeEnd(_detail: ResizeLifecycleDetail): void {}
+
+  protected _resizeHandles($dialog: HTMLDialogElement): Element[] {
+    if (!this.resizeHandle) {
+      return [];
+    }
+
+    try {
+      return [...$dialog.querySelectorAll(this.resizeHandle)];
+    } catch {
+      if (import.meta.env.DEV) {
+        console.warn('[rc-dialog] Invalid resize-handle selector.', this.resizeHandle);
+      }
+
+      return [];
+    }
+  }
+
+  protected _resizeDirectionForHandle($handle: Element): ResizeDirection {
+    const axis = $handle.getAttribute('data-rc-dialog-resize-axis');
+
+    switch (axis) {
+      case 'x':
+        return 'horizontal';
+      case 'y':
+        return 'vertical';
+      case 'both':
+        return 'both';
+      default:
+        return this.resize;
+    }
+  }
+
+  protected _resizeOriginForHandle($handle: Element): ResizeOrigin {
+    return (
+      ($handle.getAttribute('data-rc-dialog-resize-origin') as ResizeOrigin | null) ??
+      this.resizeOrigin
+    );
+  }
+
   /**
    * Opens or closes the inner `<dialog>` and returns `true` if state actually changed.
    *
-   * @param open - Whether to open (`true`) or close (`false`).
-   * @param silent - When `true`, suppresses the outgoing `rc-dialog-toggle` event.
-   * @param modal - Whether to call `showModal()` (`true`) or `show()` (`false`).
+   * @param open - whether to open (`true`) or close (`false`)
+   * @param silent - when `true`, suppresses the outgoing `rc-dialog-toggle` event
+   * @param modal - whether to call `showModal()` (`true`) or `show()` (`false`)
    */
   protected _applyOpen(open: boolean, silent: boolean, modal = true): boolean {
     const $dialog = this._$dialog;

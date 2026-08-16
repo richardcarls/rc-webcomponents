@@ -3,21 +3,33 @@ import { expect, test } from 'vitest';
 const componentEntries = [
   'accordion',
   'app-bar',
+  'bottom-sheet',
+  'button',
+  'card',
+  'chip',
   'combobox',
   'dialog',
   'disclosure',
   'fab',
+  'fab-menu',
+  'icons',
+  'list-item',
   'listbox',
   'markdown-editor',
   'menu',
   'menu-button',
   'menubar',
   'modes',
+  'navigation-bar',
+  'navigation-rail',
   'range-slider',
   'search-bar',
   'select',
+  'segmented-button',
   'slider',
+  'snackbar',
   'splitter',
+  'switch',
   'textarea',
   'toolbar',
   'transfer-list',
@@ -29,6 +41,7 @@ test('every selective component stylesheet can be imported', async () => {
 
   for (const entry of componentEntries) {
     const load = imports[`./components/${entry}.css`];
+
     expect(load, entry).toBeTypeOf('function');
     await load();
   }

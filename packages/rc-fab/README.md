@@ -61,11 +61,11 @@ import '@rcarls/rc-fab/define';
 | `--rc-fab-position` | `fixed` | CSS position value. Use `absolute` for layout-relative placement |
 | `--rc-fab-scroll-threshold` | `300px` | Scroll distance before the FAB appears (requires `scroll-reveal`) |
 | `--rc-fab-scroll-timeline` | `scroll(root block)` | Override scroll target for the CSS animation path (e.g. `scroll(nearest block)`) |
-| `--rc-fab-radius` | `9999px` | Border-radius. Default is pill-shaped. Use `50%` for a circle or `1rem` for Material rounded-square |
-| `--rc-fab-size` | `3.5rem` | Height and minimum width |
-| `--rc-fab-bg` | `ButtonFace` | Button background colour |
-| `--rc-fab-color` | `ButtonText` | Button foreground colour |
-| `--rc-fab-shadow` | `none` | Elevation shadow |
+| `--rc-fab-radius` | _(native)_ | Border-radius; defers to the native button's radius until set. Use `9999px` for pill-shaped, `50%` for a circle, or `1rem` for Material rounded-square |
+| `--rc-fab-size` | _(native)_ | Height and minimum width; defers to native button sizing until set (packaged themes set `3.5rem`) |
+| `--rc-fab-bg` | _(native)_ | Button background color; defers to the native button's background until set |
+| `--rc-fab-color` | _(native)_ | Button foreground color; defers to the native button's color until set |
+| `--rc-fab-shadow` | _(native)_ | Elevation shadow; defers to the native button's shadow until set |
 | `--rc-fab-inset-block` | `1.5rem` | Distance from the block-axis edge |
 | `--rc-fab-inset-inline` | `1.5rem` | Distance from the inline-axis edge |
 

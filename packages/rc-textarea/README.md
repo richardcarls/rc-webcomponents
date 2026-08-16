@@ -18,7 +18,7 @@ Made with [Lit](https://lit.dev) and [Parchment](https://github.com/quilljs/parc
 - **Plugin API** - imperative decoration control + highlight.js / prism.js HTML compatibility bridge
 - **Line numbers, word wrap, auto-grow** - declarative features for common use cases
 - **Progressive enhancement** - wraps a native `<textarea>` for form submission, label association
-- **Undo/redo** - durable internally-tracked undo stack
+- **Undo/redo** - durable internally tracked undo stack
 
 ---
 
@@ -242,23 +242,24 @@ The component reads inherited tokens where possible:
 
 ### Component Tokens
 
-| Token                                     | Default                               | Use                                   |
-| ----------------------------------------- | ------------------------------------- | ------------------------------------- |
-| `--rc-textarea-font-family`               | `monospace`                           | Editor and gutter font family.        |
-| `--rc-textarea-font-size`                 | `1em`                                 | Editor and gutter font size.          |
-| `--rc-textarea-line-height`               | `1.5`                                 | Editor and gutter line height.        |
-| `--rc-textarea-padding`                   | `0.5em`                               | Editor and gutter padding.            |
-| `--rc-textarea-background`                | `Field`                               | Field background.                     |
-| `--rc-textarea-color`                     | `var(--rc-text, FieldText)`           | Field text color.                     |
-| `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)` | Caret color.                          |
-| `--rc-textarea-border`                    | `1px solid ButtonBorder`              | Field border.                         |
-| `--rc-textarea-border-radius`             | `2px`                                 | Field corner radius.                  |
-| `--rc-textarea-focus-outline`             | `2px solid Highlight`                 | Focus ring.                           |
-| `--rc-textarea-active-line-bg`            | `transparent`                         | Active line background.               |
-| `--rc-textarea-gutter-bg`                 | `Canvas`                              | Gutter background.                    |
-| `--rc-textarea-gutter-color`              | `GrayText`                            | Gutter text color.                    |
-| `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`              | Gutter separator.                     |
-| `--rc-textarea-gutter-padding-inline-end` | `0.75em`                              | Space between gutter labels and text. |
+| Token                                     | Default                                     | Use                                   |
+| ----------------------------------------- | ------------------------------------------- | ------------------------------------- |
+| `--rc-textarea-font-family`               | `monospace`                                 | Editor font family.                   |
+| `--rc-textarea-font-size`                 | `1em`                                       | Editor and gutter font size.          |
+| `--rc-textarea-line-height`               | `1.5`                                       | Editor and gutter line height.        |
+| `--rc-textarea-padding`                   | `0.5em`                                     | Editor and gutter padding.            |
+| `--rc-textarea-background`                | `Field`                                     | Field background.                     |
+| `--rc-textarea-color`                     | `var(--rc-text, FieldText)`                 | Field text color.                     |
+| `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)`       | Caret color.                          |
+| `--rc-textarea-border`                    | `1px solid ButtonBorder`                    | Field border.                         |
+| `--rc-textarea-border-radius`             | `2px`                                       | Field corner radius.                  |
+| `--rc-textarea-focus-outline`             | `2px solid Highlight`                       | Focus ring.                           |
+| `--rc-textarea-active-line-bg`            | `transparent`                               | Active line background.               |
+| `--rc-textarea-gutter-bg`                 | `Canvas`                                    | Gutter background.                    |
+| `--rc-textarea-gutter-color`              | `GrayText`                                  | Gutter text color.                    |
+| `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`                    | Gutter separator.                     |
+| `--rc-textarea-gutter-font-family`        | `var(--rc-textarea-font-family, monospace)` | Gutter font family.                   |
+| `--rc-textarea-gutter-padding-inline-end` | `0.75em`                                    | Space between gutter labels and text. |
 
 ```css
 rc-textarea {

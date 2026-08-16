@@ -1,52 +1,59 @@
 import type { CSSProperties } from 'react';
 import type * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import hljs from 'highlight.js/lib/core';
+import rust from 'highlight.js/lib/languages/rust';
 
 import type {
   RCAppBarRef,
+  RCBottomSheetRef,
+  RCBottomSheetSnapDetail,
+  RCButtonRef,
+  RCButtonToggleDetail,
   RCDialogRef,
   RCDisclosureRef,
   RCListboxRef,
+  RCMenuActivateDetail,
   RCMenuRef,
+  RCNavigationRailRef,
+  RCNavigationRailToggleDetail,
   RCRangeSliderRef,
   RCSearchBarRef,
+  RCSegmentedButtonChangeDetail,
   RCSliderRef,
+  RCSnackbarActionDetail,
+  RCSnackbarCloseDetail,
+  RCSnackbarRef,
+  RCSwitchChangeDetail,
+  RCTextareaRef,
   RCTransferListChangeDetail,
   RCTransferListRef,
   RCVirtualCanvasRef,
   RCVirtualCanvasRenderDetail,
   RCVirtualCanvasPointerDetail,
 } from '@rcarls/rc-webcomponents/react';
+import type { RCTextareaPluginAPI } from '@rcarls/rc-textarea';
 
-import hljs from 'highlight.js/lib/core';
-import rust from 'highlight.js/lib/languages/rust';
 hljs.registerLanguage('rust', rust);
 
 import { createMarkdownPlugin } from '@rcarls/rc-textarea-plugin-markdown';
-
 import { DemoFrame } from './DemoFrame';
 
 type DetailEvent<T> = CustomEvent<T>;
 type EventLogTarget = HTMLElement | null;
 
-function useEventLog<T>(
-  target: EventLogTarget,
-  eventName: string,
-  format: (detail: T) => string,
-) {
+function useEventLog<T>(target: EventLogTarget, eventName: string, format: (detail: T) => string) {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
     const $element = target;
+
     if (!$element) {
       return;
     }
 
     const handleEvent = (event: Event) => {
-      setLog((current) => [
-        format((event as DetailEvent<T>).detail),
-        ...current,
-      ].slice(0, 8));
+      setLog((current) => [format((event as DetailEvent<T>).detail), ...current].slice(0, 8));
     };
 
     $element.addEventListener(eventName, handleEvent);
@@ -59,16 +66,872 @@ function useEventLog<T>(
   return log;
 }
 
-function EventLog({ entries, placeholder = 'Events will appear here...' }: {
+function EventLog({
+  entries,
+  placeholder = 'Events will appear here...',
+}: {
   entries: string[];
   placeholder?: string;
 }) {
   return (
     <div className="demo-event-log">
-      {entries.length
-        ? entries.map((entry, i) => <p key={i}>{entry}</p>)
-        : <p className="demo-placeholder">{placeholder}</p>}
+      {entries.length ? (
+        entries.map((entry, i) => <p key={i}>{entry}</p>)
+      ) : (
+        <p className="demo-placeholder">{placeholder}</p>
+      )}
     </div>
+  );
+}
+
+export function BottomSheetDemo() {
+  const [sheetEl, setSheetEl] = useState<RCBottomSheetRef | null>(null);
+  const log = useEventLog<RCBottomSheetSnapDetail>(
+    sheetEl,
+    'rc-bottom-sheet-snap',
+    ({ index, height, trigger }) =>
+      `rc-bottom-sheet-snap -> ${index} (${Math.round(height)}px, ${trigger})`,
+  );
+
+  return (
+    <DemoFrame>
+      <rc-button>
+        <button type="button" onClick={() => sheetEl?.showModal()}>
+          Open filter sheet
+        </button>
+      </rc-button>
+      <rc-bottom-sheet ref={setSheetEl} snap-points="240px 360px 480px" swipe-dismiss={false}>
+        <dialog aria-label="Filter projects">
+          <button
+            type="button"
+            data-rc-bottom-sheet-handle
+            data-rc-dialog-resize-axis="y"
+            data-rc-dialog-resize-origin="top"
+            aria-label="Resize filter sheet"
+          ></button>
+          <div style={{ display: 'grid', gap: '0.75rem' }}>
+            <strong>Filter projects</strong>
+            <label>
+              <input type="checkbox" /> Open assignments
+            </label>
+            <label>
+              <input type="checkbox" /> Due this week
+            </label>
+            <div>
+              <rc-button>
+                <button type="button" onClick={() => sheetEl?.snapTo(0)}>
+                  Compact
+                </button>
+              </rc-button>{' '}
+              <rc-button>
+                <button type="button" onClick={() => sheetEl?.snapTo(2)}>
+                  Expand
+                </button>
+              </rc-button>{' '}
+              <rc-button>
+                <button type="button" onClick={() => sheetEl?.close()}>
+                  Done
+                </button>
+              </rc-button>
+            </div>
+          </div>
+        </dialog>
+      </rc-bottom-sheet>
+      <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+export function ButtonDemo() {
+  const [buttonEl, setButtonEl] = useState<RCButtonRef | null>(null);
+  const [selected, setSelected] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [progress, setProgress] = useState(false);
+  const [progressValue, setProgressValue] = useState(0);
+  const setButtonRef = useCallback(
+    (element: HTMLElement | null) => setButtonEl(element as RCButtonRef | null),
+    [],
+  );
+
+  useEffect(() => {
+    if (!buttonEl) {
+      return;
+    }
+
+    const handleToggle = (event: Event) => {
+      setSelected((event as CustomEvent<RCButtonToggleDetail>).detail.selected);
+    };
+
+    buttonEl.addEventListener('rc-button-toggle', handleToggle);
+
+    return () => buttonEl.removeEventListener('rc-button-toggle', handleToggle);
+  }, [buttonEl]);
+
+  useEffect(() => {
+    if (!progress) {
+      setProgressValue(0);
+
+      return;
+    }
+
+    let value = 0;
+    const timer = window.setInterval(() => {
+      value = Math.min(100, value + 5);
+      setProgressValue(value);
+
+      if (value === 100) {
+        window.clearInterval(timer);
+      }
+    }, 125);
+
+    return () => window.clearInterval(timer);
+  }, [progress]);
+
+  return (
+    <DemoFrame>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <rc-button
+          ref={setButtonRef}
+          toggle
+          selected={selected}
+          pending={pending}
+          progress={progress}
+          progress-value={progress ? progressValue : undefined}
+        >
+          <button type="button">
+            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              favorite_border
+            </span>
+            <span
+              data-rc-button-selected-icon
+              className="material-symbols-outlined material-symbols-filled"
+              aria-hidden="true"
+            >
+              favorite
+            </span>
+            <span data-rc-button-label>Save recipe</span>
+          </button>
+        </rc-button>
+        <rc-button icon-only>
+          <button type="button" aria-label="Share recipe">
+            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              share
+            </span>
+          </button>
+        </rc-button>
+      </div>
+      <fieldset style={{ marginBlockStart: '1rem' }}>
+        <legend>Button state</legend>
+        <label>
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(event) => setSelected(event.currentTarget.checked)}
+          />{' '}
+          Selected
+        </label>{' '}
+        <label>
+          <input
+            type="checkbox"
+            checked={pending}
+            onChange={(event) => {
+              setPending(event.currentTarget.checked);
+
+              if (event.currentTarget.checked) {
+                setProgress(false);
+              }
+            }}
+          />{' '}
+          Pending
+        </label>{' '}
+        <label>
+          <input
+            type="checkbox"
+            checked={progress}
+            onChange={(event) => {
+              setProgress(event.currentTarget.checked);
+
+              if (event.currentTarget.checked) {
+                setPending(false);
+              }
+            }}
+          />{' '}
+          Progress (0–100%)
+        </label>
+      </fieldset>
+    </DemoFrame>
+  );
+}
+
+const CARD_DEMO_CSS = `
+.card-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(12rem, 1fr));
+  grid-template-rows: auto auto 1fr auto;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 0.25rem;
+}
+
+.card-demo-grid rc-card {
+  grid-row: 1 / -1;
+  grid-template-rows: subgrid;
+  --rc-card-grid-template-rows: subgrid;
+  --rc-card-media-grid-row: 1;
+  --rc-card-title-grid-row: 2;
+  --rc-card-body-grid-row: 3;
+  --rc-card-actions-grid-row: 4;
+}
+
+.card-demo-media {
+  position: relative;
+  display: grid;
+  min-block-size: 8rem;
+  place-items: center;
+  background: color-mix(in srgb, Highlight 18%, Canvas);
+}
+
+.card-demo-media > .material-symbols-outlined {
+  font-size: 3rem;
+}
+
+.card-demo-favorite {
+  position: absolute;
+  inset-block-start: 0.5rem;
+  inset-inline-end: 0.5rem;
+}
+
+.card-demo-favorite[selected] .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.card-demo-grid .card-demo-minimal {
+  --rc-card-title-grid-row: 1 / 3;
+  --rc-card-body-grid-row: 3 / 5;
+}
+
+.card-demo-grid :is(h2, h3)[slot='title'] {
+  margin: 0;
+}
+
+.card-demo-status {
+  margin-block-end: 0;
+}
+`;
+
+export function CardDemo() {
+  const [message, setMessage] = useState('Activate the card surface or save an article.');
+  const [favorite, setFavorite] = useState(false);
+
+  return (
+    <DemoFrame defaultTheme="substrate">
+      <style>{CARD_DEMO_CSS}</style>
+      <div className="card-demo-grid">
+        <rc-card interactive action-target="demo-article-link">
+          <div slot="media" className="card-demo-media" aria-hidden="true">
+            <span className="material-symbols-outlined">article</span>
+          </div>
+          <h2 slot="title">
+            <a
+              id="demo-article-link"
+              href="#resilient-interfaces"
+              onClick={(event) => {
+                event.preventDefault();
+                setMessage('Opened Designing resilient interfaces.');
+              }}
+            >
+              Designing resilient interfaces
+            </a>
+          </h2>
+          <p>Practical patterns for preserving native behavior while adding richer interactions.</p>
+          <rc-button slot="actions">
+            <button
+              type="button"
+              onClick={() => setMessage('Saved Designing resilient interfaces.')}
+            >
+              Save
+            </button>
+          </rc-button>
+        </rc-card>
+
+        <rc-card>
+          <div slot="media" className="card-demo-media">
+            <span className="material-symbols-outlined" aria-hidden="true">
+              motion_photos_on
+            </span>
+            <rc-button className="card-demo-favorite" icon-only selected={favorite}>
+              <button
+                type="button"
+                aria-label={
+                  favorite
+                    ? 'Remove A field guide to accessible motion from favorites'
+                    : 'Favorite A field guide to accessible motion'
+                }
+                aria-pressed={favorite}
+                onClick={() => {
+                  setFavorite((current) => !current);
+
+                  setMessage(
+                    `${favorite ? 'Removed' : 'Added'} A field guide to accessible motion ${
+                      favorite ? 'from' : 'to'
+                    } favorites.`,
+                  );
+                }}
+              >
+                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                  favorite_border
+                </span>
+                <span
+                  data-rc-button-selected-icon
+                  className="material-symbols-outlined material-symbols-filled"
+                  aria-hidden="true"
+                >
+                  favorite
+                </span>
+              </button>
+            </rc-button>
+          </div>
+          <h3 slot="title">
+            <a
+              href="#accessible-motion"
+              onClick={(event) => {
+                event.preventDefault();
+                setMessage('Opened A field guide to accessible motion.');
+              }}
+            >
+              A field guide to accessible motion
+            </a>
+          </h3>
+          <p>An article card whose link and favorite button remain independent targets.</p>
+        </rc-card>
+
+        <rc-card className="card-demo-minimal">
+          <h3 slot="title">Reading list</h3>
+          <p>A minimal card can omit media and actions while sharing the same parent grid.</p>
+        </rc-card>
+      </div>
+      <p className="card-demo-status" aria-live="polite">
+        {message}
+      </p>
+    </DemoFrame>
+  );
+}
+
+export function ChipDemo() {
+  const [toolbarEl, setToolbarEl] = useState<HTMLElement | null>(null);
+  const [log, setLog] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!toolbarEl) {
+      return;
+    }
+
+    const handleChange = (event: Event) => {
+      const chip = event.target as HTMLElement;
+      const { selected } = (event as CustomEvent<{ selected: boolean }>).detail;
+
+      setLog((current) =>
+        [
+          `${chip.textContent?.trim()} -> ${selected ? 'selected' : 'not selected'}`,
+          ...current,
+        ].slice(0, 8),
+      );
+    };
+
+    const handleRemove = (event: Event) => {
+      const chip = (event as CustomEvent<{ chip: HTMLElement }>).detail.chip;
+
+      setLog((current) => [`Removed ${chip.textContent?.trim()}`, ...current].slice(0, 8));
+    };
+
+    toolbarEl.addEventListener('rc-chip-change', handleChange);
+    toolbarEl.addEventListener('rc-chip-remove', handleRemove);
+
+    return () => {
+      toolbarEl.removeEventListener('rc-chip-change', handleChange);
+      toolbarEl.removeEventListener('rc-chip-remove', handleRemove);
+    };
+  }, [toolbarEl]);
+
+  return (
+    <DemoFrame>
+      <rc-toolbar
+        ref={setToolbarEl}
+        label="Recipe filters"
+        style={{ '--rc-toolbar-gap-inline': '0.5rem' } as CSSProperties}
+      >
+        <rc-chip variant="filter">
+          <button type="button">Quick</button>
+        </rc-chip>
+        <rc-chip variant="filter">
+          <button type="button">Vegetarian</button>
+        </rc-chip>
+        <rc-chip variant="input" removable>
+          <button type="button" aria-label="Remove basil">
+            Basil
+          </button>
+          <span slot="remove-icon" className="material-symbols-outlined" aria-hidden="true">
+            close
+          </span>
+        </rc-chip>
+      </rc-toolbar>
+      <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+export function FabMenuDemo() {
+  const [menuEl, setMenuEl] = useState<HTMLElement | null>(null);
+  const log = useEventLog<RCMenuActivateDetail>(
+    menuEl,
+    'rc-menu-activate',
+    ({ value }) => `rc-menu-activate -> ${value}`,
+  );
+
+  return (
+    <DemoFrame>
+      <div
+        style={{
+          position: 'relative',
+          minBlockSize: '16rem',
+          border: '1px solid ButtonBorder',
+          overflow: 'clip',
+        }}
+      >
+        <rc-fab-menu
+          ref={setMenuEl}
+          style={{ '--rc-fab-menu-position-css': 'absolute' } as CSSProperties}
+        >
+          <button slot="trigger" type="button" aria-label="Create">
+            <span className="material-symbols-outlined" aria-hidden="true">
+              add
+            </span>
+          </button>
+          <rc-menu label="Create">
+            <button data-value="recipe">Recipe</button>
+            <button data-value="collection">Collection</button>
+            <button data-value="meal-plan">Meal plan</button>
+          </rc-menu>
+        </rc-fab-menu>
+      </div>
+      <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+const navigationDestinations = [
+  { href: '#library', label: 'Library', icon: 'local_library' },
+  { href: '#saved', label: 'Saved', icon: 'bookmark' },
+  { href: '#settings', label: 'Settings', icon: 'settings' },
+];
+
+export function NavigationBarDemo() {
+  const [active, setActive] = useState('#library');
+
+  return (
+    <DemoFrame>
+      <nav aria-label="Demo navigation">
+        <rc-navigation-bar>
+          {navigationDestinations.map(({ href, label, icon }) => (
+            <a
+              key={href}
+              href={href}
+              aria-current={active === href ? 'page' : undefined}
+              onClick={(event) => {
+                event.preventDefault();
+                setActive(href);
+              }}
+            >
+              <span
+                data-rc-navigation-icon
+                className="material-symbols-outlined"
+                aria-hidden="true"
+              >
+                {icon}
+              </span>
+              <span>{label}</span>
+            </a>
+          ))}
+        </rc-navigation-bar>
+      </nav>
+      <p>
+        Current destination: {navigationDestinations.find(({ href }) => href === active)?.label}
+      </p>
+    </DemoFrame>
+  );
+}
+
+export function NavigationRailDemo() {
+  const [railEl, setRailEl] = useState<RCNavigationRailRef | null>(null);
+  const [active, setActive] = useState('#library');
+  const [expanded, setExpanded] = useState(false);
+  const log = useEventLog<RCNavigationRailToggleDetail>(
+    railEl,
+    'rc-navigation-rail-toggle',
+    ({ expanded: next }) => `rc-navigation-rail-toggle -> ${next}`,
+  );
+
+  useEffect(() => {
+    if (!railEl) {
+      return;
+    }
+
+    const handleToggle = (event: Event) => {
+      setExpanded((event as CustomEvent<RCNavigationRailToggleDetail>).detail.expanded);
+    };
+
+    railEl.addEventListener('rc-navigation-rail-toggle', handleToggle);
+
+    return () => railEl.removeEventListener('rc-navigation-rail-toggle', handleToggle);
+  }, [railEl]);
+
+  return (
+    <DemoFrame>
+      <nav aria-label="Demo navigation">
+        <rc-navigation-rail ref={setRailEl} expanded={expanded} style={{ minBlockSize: '22rem' }}>
+          <rc-button slot="toggle" icon-only>
+            <button type="button" aria-label="Toggle navigation">
+              <span
+                data-rc-button-icon
+                data-rc-navigation-expand-icon
+                className="material-symbols-outlined"
+                aria-hidden="true"
+              >
+                menu
+              </span>
+              <span
+                data-rc-button-selected-icon
+                data-rc-navigation-collapse-icon
+                className="material-symbols-outlined"
+                aria-hidden="true"
+              >
+                menu_open
+              </span>
+            </button>
+          </rc-button>
+          {navigationDestinations.map(({ href, label, icon }) => (
+            <a
+              key={href}
+              href={href}
+              aria-current={active === href ? 'page' : undefined}
+              onClick={(event) => {
+                event.preventDefault();
+                setActive(href);
+              }}
+            >
+              <span data-rc-navigation-indicator>
+                <span
+                  data-rc-navigation-icon
+                  className="material-symbols-outlined"
+                  aria-hidden="true"
+                >
+                  {icon}
+                </span>
+                <span>{label}</span>
+              </span>
+            </a>
+          ))}
+        </rc-navigation-rail>
+      </nav>
+      <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+export function AdaptiveNavigationDemo() {
+  const [active, setActive] = useState('#library');
+  const [showRail, setShowRail] = useState(false);
+
+  const switchLayout = () => {
+    const update = () => setShowRail((current) => !current);
+    const documentWithTransitions = document as Document & {
+      startViewTransition?: (callback: () => void) => void;
+    };
+
+    if (documentWithTransitions.startViewTransition) {
+      documentWithTransitions.startViewTransition(update);
+    } else {
+      update();
+    }
+  };
+
+  const renderLinks = (forRail: boolean) =>
+    navigationDestinations.map(({ href, label, icon }) => {
+      const iconElement = (
+        <span data-rc-navigation-icon className="material-symbols-outlined" aria-hidden="true">
+          {icon}
+        </span>
+      );
+
+      return (
+        <a
+          key={href}
+          href={href}
+          aria-current={active === href ? 'page' : undefined}
+          onClick={(event) => {
+            event.preventDefault();
+            setActive(href);
+          }}
+        >
+          {forRail ? (
+            <span data-rc-navigation-indicator>
+              {iconElement}
+              <span>{label}</span>
+            </span>
+          ) : (
+            <>
+              {iconElement}
+              <span>{label}</span>
+            </>
+          )}
+        </a>
+      );
+    });
+
+  return (
+    <DemoFrame>
+      <div
+        style={
+          {
+            display: 'grid',
+            gridTemplateColumns: showRail ? 'auto 1fr' : '1fr',
+            minBlockSize: '22rem',
+            border: '1px solid color-mix(in srgb, currentColor 20%, transparent)',
+            borderRadius: '1rem',
+            overflow: 'hidden',
+          } as CSSProperties
+        }
+      >
+        {showRail ? (
+          <nav aria-label="Adaptive demo navigation">
+            <rc-navigation-rail style={{ viewTransitionName: 'adaptive-navigation' }}>
+              <rc-fab
+                slot="header"
+                position="top-start"
+                style={{ '--rc-fab-position': 'static' } as CSSProperties}
+              >
+                <button type="button" aria-label="New note">
+                  <span
+                    data-rc-button-icon
+                    className="material-symbols-outlined"
+                    aria-hidden="true"
+                  >
+                    add
+                  </span>
+                </button>
+              </rc-fab>
+              {renderLinks(true)}
+            </rc-navigation-rail>
+          </nav>
+        ) : null}
+        <main
+          style={{
+            position: 'relative',
+            display: 'grid',
+            alignContent: 'start',
+            gap: '1rem',
+            minInlineSize: 0,
+            padding: '1.5rem',
+          }}
+        >
+          <rc-button>
+            <button type="button" onClick={switchLayout}>
+              Switch to {showRail ? 'navigation bar' : 'navigation rail'}
+            </button>
+          </rc-button>
+          <h3 style={{ margin: 0 }}>
+            {navigationDestinations.find(({ href }) => href === active)?.label}
+          </h3>
+          <p style={{ margin: 0 }}>
+            The app owns the responsive switch while both navigation surfaces reuse the same
+            destinations and active state.
+          </p>
+          {!showRail ? (
+            <rc-fab
+              position="block-end"
+              style={
+                {
+                  '--rc-fab-position': 'absolute',
+                  viewTransitionName: 'adaptive-fab',
+                } as CSSProperties
+              }
+            >
+              <button type="button" aria-label="New note">
+                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                  add
+                </span>
+              </button>
+            </rc-fab>
+          ) : null}
+        </main>
+        {!showRail ? (
+          <nav aria-label="Adaptive demo navigation" style={{ gridColumn: '1 / -1' }}>
+            <rc-navigation-bar style={{ viewTransitionName: 'adaptive-navigation' }}>
+              {renderLinks(false)}
+            </rc-navigation-bar>
+          </nav>
+        ) : null}
+      </div>
+    </DemoFrame>
+  );
+}
+
+export function SegmentedButtonDemo() {
+  const [groupEl, setGroupEl] = useState<HTMLElement | null>(null);
+  const [value, setValue] = useState('medium');
+  const log = useEventLog<RCSegmentedButtonChangeDetail>(
+    groupEl,
+    'rc-segmented-button-change',
+    ({ value: next }) => `rc-segmented-button-change -> ${next}`,
+  );
+
+  useEffect(() => {
+    if (!groupEl) {
+      return;
+    }
+
+    const handleChange = (event: Event) => {
+      setValue((event as CustomEvent<RCSegmentedButtonChangeDetail>).detail.value);
+    };
+
+    groupEl.addEventListener('rc-segmented-button-change', handleChange);
+
+    return () => groupEl.removeEventListener('rc-segmented-button-change', handleChange);
+  }, [groupEl]);
+
+  return (
+    <DemoFrame>
+      <rc-segmented-button ref={setGroupEl}>
+        <fieldset>
+          <legend>Text size</legend>
+          <label>
+            <input type="radio" name="demo-text-size" value="small" /> Small
+          </label>
+          <label>
+            <input type="radio" name="demo-text-size" value="medium" defaultChecked /> Medium
+          </label>
+          <label>
+            <input type="radio" name="demo-text-size" value="large" /> Large
+          </label>
+        </fieldset>
+      </rc-segmented-button>
+      <p>Selected size: {value}</p>
+      <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+export function SnackbarDemo() {
+  const [snackbarEl, setSnackbarEl] = useState<RCSnackbarRef | null>(null);
+  const actionLog = useEventLog<RCSnackbarActionDetail>(
+    snackbarEl,
+    'rc-snackbar-action',
+    ({ message }) => `rc-snackbar-action -> ${message}`,
+  );
+  const closeLog = useEventLog<RCSnackbarCloseDetail>(
+    snackbarEl,
+    'rc-snackbar-close',
+    ({ reason, message }) => `rc-snackbar-close -> ${reason}: ${message}`,
+  );
+
+  return (
+    <DemoFrame>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <rc-button>
+          <button
+            type="button"
+            onClick={() => snackbarEl?.show({ message: 'Draft saved', duration: 2500 })}
+          >
+            Show message
+          </button>
+        </rc-button>
+        <rc-button>
+          <button
+            type="button"
+            onClick={() =>
+              snackbarEl?.show({
+                message: 'Document archived',
+                actionLabel: 'Undo',
+                duration: 5000,
+              })
+            }
+          >
+            Show action
+          </button>
+        </rc-button>
+        <rc-button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!snackbarEl) {
+                return;
+              }
+
+              snackbarEl.queuePolicy = 'queue';
+              snackbarEl.show({ message: 'First queued message', duration: 1200 });
+              snackbarEl.show({ message: 'Second queued message', duration: 1200 });
+            }}
+          >
+            Queue two
+          </button>
+        </rc-button>
+        <rc-button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!snackbarEl) {
+                return;
+              }
+
+              snackbarEl.queuePolicy = 'replace';
+              snackbarEl.show({ message: 'Original message', duration: 3000 });
+              snackbarEl.show({ message: 'Replacement message', duration: 3000 });
+            }}
+          >
+            Replace
+          </button>
+        </rc-button>
+      </div>
+      <rc-snackbar ref={setSnackbarEl}></rc-snackbar>
+      <EventLog entries={[...actionLog, ...closeLog]} />
+    </DemoFrame>
+  );
+}
+
+export function SwitchDemo() {
+  const [switchEl, setSwitchEl] = useState<HTMLElement | null>(null);
+  const [checked, setChecked] = useState(false);
+  const log = useEventLog<RCSwitchChangeDetail>(
+    switchEl,
+    'rc-switch-change',
+    ({ checked: next }) => `rc-switch-change -> ${next}`,
+  );
+
+  useEffect(() => {
+    if (!switchEl) {
+      return;
+    }
+
+    const handleChange = (event: Event) => {
+      setChecked((event as CustomEvent<RCSwitchChangeDetail>).detail.checked);
+    };
+
+    switchEl.addEventListener('rc-switch-change', handleChange);
+
+    return () => switchEl.removeEventListener('rc-switch-change', handleChange);
+  }, [switchEl]);
+
+  return (
+    <DemoFrame>
+      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <label htmlFor="demo-dark-mode">Dark mode</label>
+        <rc-switch ref={setSwitchEl}>
+          <input id="demo-dark-mode" name="darkMode" type="checkbox" />
+        </rc-switch>
+      </div>
+      <p>Dark mode is {checked ? 'on' : 'off'}.</p>
+      <EventLog entries={log} />
+    </DemoFrame>
   );
 }
 
@@ -107,14 +970,18 @@ export function AppBarDemo() {
           style={{ position: 'sticky', insetBlockStart: 0, zIndex: 1 }}
         >
           <button slot="leading" type="button" aria-label="Back">
-            <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+            <span className="material-symbols-outlined" aria-hidden="true">
+              arrow_back
+            </span>
           </button>
           <div>
-            <strong>Recipes</strong>
-            <small style={{ display: 'block' }}>Summer collection</small>
+            <strong>Reading list</strong>
+            <small style={{ display: 'block' }}>Interface design</small>
           </div>
           <button slot="trailing" type="button" aria-label="Edit">
-            <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+            <span className="material-symbols-outlined" aria-hidden="true">
+              edit
+            </span>
           </button>
         </rc-app-bar>
         <div style={{ padding: '1rem', display: 'grid', gap: '0.75rem' }}>
@@ -122,8 +989,8 @@ export function AppBarDemo() {
             Scroll this panel to watch the expanded app bar collapse into its compact row.
           </p>
           {[
-            'Prep ingredients and group tasks before the kitchen gets busy.',
-            'Review active orders, pinned notes, and handoff details in one place.',
+            'Group related articles and notes before starting a focused reading session.',
+            'Review saved highlights, annotations, and follow-up ideas in one place.',
             'Let the expanded title collapse while primary actions remain available.',
             'Use the scrolled divider as a quiet boundary between controls and content.',
             'Return to the top to let the expanded title settle back into view.',
@@ -160,16 +1027,17 @@ export function AppBarSearchDemo() {
     <DemoFrame>
       <rc-app-bar>
         <button slot="leading" type="button" aria-label="Open navigation">
-          <span className="material-symbols-outlined" aria-hidden="true">menu</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            menu
+          </span>
         </button>
-        <rc-search-bar
-          slot="center"
-          style={{ inlineSize: 'min(28rem, 100%)' }}
-        >
-          <input type="search" aria-label="Search recipes" placeholder="Search recipes" />
+        <rc-search-bar slot="center" style={{ inlineSize: 'min(28rem, 100%)' }}>
+          <input type="search" aria-label="Search library" placeholder="Search library" />
         </rc-search-bar>
         <button slot="trailing" type="button" aria-label="Filter results">
-          <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            tune
+          </span>
         </button>
       </rc-app-bar>
     </DemoFrame>
@@ -181,15 +1049,19 @@ export function ComboboxDemo() {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!comboEl) return;
+    if (!comboEl) {
+      return;
+    }
 
     const handleChange = (event: Event) => {
       const { value } = (event as CustomEvent<{ value: string | string[] }>).detail;
       const display = Array.isArray(value) ? value.join(', ') : value;
+
       setLog((current) => [`rc-select-change -> ${display}`, ...current].slice(0, 8));
     };
 
     comboEl.addEventListener('rc-select-change', handleChange);
+
     return () => comboEl.removeEventListener('rc-select-change', handleChange);
   }, [comboEl]);
 
@@ -198,7 +1070,10 @@ export function ComboboxDemo() {
       <div className="demo-row">
         <label className="demo-col">
           <span>Ingredient</span>
-          <rc-combobox ref={(el) => setComboEl(el as HTMLElement | null)} placeholder="Choose an ingredient">
+          <rc-combobox
+            ref={(el) => setComboEl(el as HTMLElement | null)}
+            placeholder="Choose an ingredient"
+          >
             <select name="ingredient">
               <option value="carrot">Carrot</option>
               <option value="ginger">Ginger</option>
@@ -238,36 +1113,64 @@ export function DialogDemo() {
   );
 
   return (
-    <DemoFrame>
+    <DemoFrame defaultTheme="substrate">
       <p style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: 0 }}>
-        <button type="button" onClick={() => dialogEl?.showModal()}>Open draggable dialog</button>
-        <button type="button" onClick={() => confirmEl?.showModal()}>Open confirm dialog</button>
+        <rc-button>
+          <button type="button" onClick={() => dialogEl?.showModal()}>
+            Open draggable dialog
+          </button>
+        </rc-button>
+        <rc-button>
+          <button type="button" onClick={() => confirmEl?.showModal()}>
+            Open confirm dialog
+          </button>
+        </rc-button>
       </p>
-      <rc-dialog ref={(el) => setDialogEl(el as RCDialogRef | null)} movable move-handle="[data-titlebar]" resize="both">
+      <rc-dialog
+        ref={(el) => setDialogEl(el as RCDialogRef | null)}
+        movable
+        move-handle="[data-titlebar]"
+        resize="both"
+      >
         <dialog aria-labelledby="dialog-demo-title">
           <div data-titlebar style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <strong id="dialog-demo-title" style={{ flex: 1 }}>Native dialog</strong>
-            <button
-              type="button"
-              aria-label="Close"
-              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.125rem' }}
-              onClick={() => dialogEl?.close('dismiss')}
-            >
-              <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '1rem' }}>close</span>
-            </button>
+            <strong id="dialog-demo-title" style={{ flex: 1 }}>
+              Native dialog
+            </strong>
+            <rc-button icon-only>
+              <button type="button" aria-label="Close" onClick={() => dialogEl?.close('dismiss')}>
+                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                  close
+                </span>
+              </button>
+            </rc-button>
           </div>
           <p>Drag the titlebar, resize the edges, or press Escape.</p>
-          <button type="button" style={{ display: 'block', marginInlineStart: 'auto' }} onClick={() => dialogEl?.close('ok')}>OK</button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <rc-button>
+              <button type="button" onClick={() => dialogEl?.close('ok')}>
+                OK
+              </button>
+            </rc-button>
+          </div>
         </dialog>
       </rc-dialog>
       <rc-dialog ref={(el) => setConfirmEl(el as RCDialogRef | null)}>
         <dialog aria-label="Confirm delete" style={{ maxInlineSize: '24rem' }}>
           <p style={{ marginBlockStart: 0 }}>
-            This will permanently delete the recipe. Continue?
+            This will permanently delete the document. Continue?
           </p>
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-            <button type="button" onClick={() => confirmEl?.close('cancel')}>Cancel</button>
-            <button type="button" onClick={() => confirmEl?.close('delete')}>Delete</button>
+            <rc-button>
+              <button type="button" onClick={() => confirmEl?.close('cancel')}>
+                Cancel
+              </button>
+            </rc-button>
+            <rc-button>
+              <button type="button" onClick={() => confirmEl?.close('delete')}>
+                Delete
+              </button>
+            </rc-button>
           </div>
         </dialog>
       </rc-dialog>
@@ -288,10 +1191,24 @@ export function DisclosureDemo() {
         </details>
       </rc-disclosure>
       <p>
-        <button type="button" onClick={() => { if (disclosureRef.current) disclosureRef.current.open = true; }}>
+        <button
+          type="button"
+          onClick={() => {
+            if (disclosureRef.current) {
+              disclosureRef.current.open = true;
+            }
+          }}
+        >
           Open
         </button>{' '}
-        <button type="button" onClick={() => { if (disclosureRef.current) disclosureRef.current.open = false; }}>
+        <button
+          type="button"
+          onClick={() => {
+            if (disclosureRef.current) {
+              disclosureRef.current.open = false;
+            }
+          }}
+        >
           Close
         </button>
       </p>
@@ -338,18 +1255,22 @@ export function FabDemo() {
           {/* Back-to-top FAB — hidden until 100 px into the demo scroll */}
           <rc-fab
             scroll-reveal
-            style={{
-              '--rc-fab-position': 'absolute',
-              '--rc-fab-scroll-threshold': '100px',
-              '--rc-fab-scroll-timeline': 'scroll(nearest block)',
-            } as CSSProperties}
+            style={
+              {
+                '--rc-fab-position': 'absolute',
+                '--rc-fab-scroll-threshold': '100px',
+                '--rc-fab-scroll-timeline': 'scroll(nearest block)',
+              } as CSSProperties
+            }
           >
             <button
               type="button"
               aria-label="Back to top"
               onClick={() => scrollerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
             >
-              ↑
+              <span className="material-symbols-outlined" aria-hidden="true">
+                vertical_align_top
+              </span>
             </button>
           </rc-fab>
 
@@ -359,7 +1280,9 @@ export function FabDemo() {
             style={{ '--rc-fab-position': 'absolute' } as CSSProperties}
           >
             <button type="button">
-              <span className="material-symbols-outlined" aria-hidden="true">add</span>
+              <span className="material-symbols-outlined" aria-hidden="true">
+                add
+              </span>
               Create
             </button>
           </rc-fab>
@@ -373,14 +1296,19 @@ export function ListboxDemo() {
   const [listboxEl, setListboxEl] = useState<RCListboxRef | null>(null);
   const seedListbox = useCallback((listbox: RCListboxRef | null) => {
     setListboxEl(listbox);
-    if (!listbox) return;
+
+    if (!listbox) {
+      return;
+    }
 
     async function applyOptions() {
       if (typeof customElements !== 'undefined') {
         await customElements.whenDefined('rc-listbox');
       }
 
-      if (!listbox.isConnected) return;
+      if (!listbox.isConnected) {
+        return;
+      }
 
       listbox.options = [
         { value: 'apples', label: 'Apples' },
@@ -391,6 +1319,7 @@ export function ListboxDemo() {
         { value: 'figs', label: 'Figs' },
         { value: 'grapes', label: 'Grapes' },
       ];
+
       listbox.setSelectedValues(['berries']);
     }
 
@@ -455,16 +1384,20 @@ export function MarkdownEditorDemo() {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!editorEl) return;
+    if (!editorEl) {
+      return;
+    }
 
     const handleChange = (e: Event) => {
       const { value = '' } = (e as CustomEvent<{ value?: string }>).detail;
       const preview = value.slice(0, 40).replace(/\n/g, '↵');
+
       setLog((prev) => [`rc-change -> ${preview}`, ...prev].slice(0, 8));
     };
 
     const handleModeChange = (e: Event) => {
       const { mode } = (e as CustomEvent<{ mode: string }>).detail;
+
       setLog((prev) => [`rc-mode-change -> ${mode}`, ...prev].slice(0, 8));
     };
 
@@ -501,9 +1434,15 @@ export function MenuDemo() {
   return (
     <DemoFrame>
       <rc-menu ref={setMenuRef} label="Example menu">
-        <button type="button" value="new">New recipe</button>
-        <button type="button" value="duplicate">Duplicate</button>
-        <button type="button" value="delete" disabled>Delete</button>
+        <button type="button" value="new">
+          New recipe
+        </button>
+        <button type="button" value="duplicate">
+          Duplicate
+        </button>
+        <button type="button" value="delete" disabled>
+          Delete
+        </button>
       </rc-menu>
       <EventLog entries={log} />
     </DemoFrame>
@@ -530,19 +1469,27 @@ export function MenuButtonDemo() {
   return (
     <DemoFrame>
       <rc-menu-button ref={setMenuButtonRef}>
-        <button slot="trigger" type="button">Actions</button>
+        <button slot="trigger" type="button">
+          Actions
+        </button>
         <rc-menu label="Actions">
           <button type="button" value="edit">
             <span>Edit</span>
             <span data-menu-shortcut>Ctrl+E</span>
           </button>
-          <button type="button" value="share">Share</button>
+          <button type="button" value="share">
+            Share
+          </button>
           <hr />
           <button type="button" role="menuitemcheckbox" aria-checked="true" value="show-details">
             Show details
           </button>
-          <button type="button" value="more" aria-haspopup="menu">More actions</button>
-          <button type="button" disabled>Archive</button>
+          <button type="button" value="more" aria-haspopup="menu">
+            More actions
+          </button>
+          <button type="button" disabled>
+            Archive
+          </button>
         </rc-menu>
       </rc-menu-button>
       <EventLog entries={[...activateLog, ...toggleLog]} />
@@ -566,7 +1513,9 @@ export function MenubarDemo() {
     <DemoFrame>
       <rc-menubar ref={setMenubarRef} label="Recipe menu">
         <rc-menu-button>
-          <button slot="trigger" type="button">File</button>
+          <button slot="trigger" type="button">
+            File
+          </button>
           <rc-menu label="File">
             <button type="button" value="new">
               <span>New</span>
@@ -577,11 +1526,15 @@ export function MenubarDemo() {
               <span data-menu-shortcut>Ctrl+O</span>
             </button>
             <hr />
-            <button type="button" value="close" disabled>Close</button>
+            <button type="button" value="close" disabled>
+              Close
+            </button>
           </rc-menu>
         </rc-menu-button>
         <rc-menu-button>
-          <button slot="trigger" type="button">Edit</button>
+          <button slot="trigger" type="button">
+            Edit
+          </button>
           <rc-menu label="Edit">
             <button type="button" value="undo">
               <span>Undo</span>
@@ -594,12 +1547,19 @@ export function MenubarDemo() {
           </rc-menu>
         </rc-menu-button>
         <rc-menu-button>
-          <button slot="trigger" type="button">View</button>
+          <button slot="trigger" type="button">
+            View
+          </button>
           <rc-menu label="View">
             <button type="button" role="menuitemcheckbox" aria-checked="true" value="show-notes">
               Show notes
             </button>
-            <button type="button" role="menuitemcheckbox" aria-checked="false" value="compact-layout">
+            <button
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked="false"
+              value="compact-layout"
+            >
               Compact layout
             </button>
             <div role="group" aria-label="Sort order">
@@ -643,10 +1603,13 @@ export function SearchBarDemo() {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!searchEl) return;
+    if (!searchEl) {
+      return;
+    }
 
     const onInput = (e: Event) => {
       const { value } = (e as CustomEvent<{ value: string }>).detail;
+
       setLog((prev) => [`rc-search-bar-input -> ${value}`, ...prev].slice(0, 8));
     };
 
@@ -666,14 +1629,30 @@ export function SearchBarDemo() {
   return (
     <DemoFrame>
       <rc-search-bar ref={setSearchEl}>
-        <span slot="leading" aria-hidden="true" className="material-symbols-outlined">search</span>
+        <span slot="leading" aria-hidden="true" className="material-symbols-outlined">
+          search
+        </span>
         <input type="search" name="q" defaultValue="tomato" aria-label="Search recipes" />
       </rc-search-bar>
       <p>
-        <button type="button" onClick={() => { if (searchEl) searchEl.value = 'pasta'; }}>
+        <button
+          type="button"
+          onClick={() => {
+            if (searchEl) {
+              searchEl.value = 'pasta';
+            }
+          }}
+        >
           Set pasta
         </button>{' '}
-        <button type="button" onClick={() => { if (searchEl) searchEl.value = ''; }}>
+        <button
+          type="button"
+          onClick={() => {
+            if (searchEl) {
+              searchEl.value = '';
+            }
+          }}
+        >
           Clear
         </button>
       </p>
@@ -703,9 +1682,14 @@ export function SliderDemo() {
 export function SplitterDemo() {
   return (
     <DemoFrame>
-      <rc-splitter label="Preview panes" style={{ blockSize: '12rem', border: '1px solid ButtonBorder' }}>
-        <div style={{ padding: '0.75rem' }}>Recipe</div>
-        <div slot="secondary" style={{ padding: '0.75rem' }}>Notes</div>
+      <rc-splitter
+        label="Preview panes"
+        style={{ blockSize: '12rem', border: '1px solid ButtonBorder' }}
+      >
+        <div style={{ padding: '0.75rem' }}>Outline</div>
+        <div slot="secondary" style={{ padding: '0.75rem' }}>
+          Preview
+        </div>
       </rc-splitter>
     </DemoFrame>
   );
@@ -742,25 +1726,31 @@ export function TextareaBasicDemo() {
   );
 }
 
-const MARKDOWN_SEED = '# Shopping list\n\n- **Carrots** — 1 bunch\n- *Ginger* — 2 cm piece\n- Garlic — 4 cloves\n\n> Buy organic where possible.';
+const MARKDOWN_SEED =
+  '# Shopping list\n\n- **Carrots** — 1 bunch\n- *Ginger* — 2 cm piece\n- Garlic — 4 cloves\n\n> Buy organic where possible.';
 
 export function TextareaMarkdownDemo() {
-  const [editor, setEditor] = useState<any>(null);
+  const [editor, setEditor] = useState<RCTextareaRef | null>(null);
   const [preview, setPreview] = useState('');
 
   useEffect(() => {
-    if (!editor) return;
+    if (!editor) {
+      return;
+    }
 
     const plugin = createMarkdownPlugin();
+
     editor.usePlugin(plugin);
     setPreview(plugin.getPreviewHtml(MARKDOWN_SEED));
 
     const onchange = (e: Event) => {
       const value = (e as CustomEvent<{ value: string }>).detail.value;
+
       setPreview(plugin.getPreviewHtml(value));
     };
 
     editor.addEventListener('rc-textarea-change', onchange);
+
     return () => editor.removeEventListener('rc-textarea-change', onchange);
   }, [editor]);
 
@@ -838,13 +1828,15 @@ const HLJS_DEMO_CSS = `
 `;
 
 export function TextareaHljsDemo() {
-  const [editor, setEditor] = useState<any>(null);
+  const [editor, setEditor] = useState<RCTextareaRef | null>(null);
 
   useEffect(() => {
-    if (!editor) return;
+    if (!editor) {
+      return;
+    }
 
     editor.usePlugin({
-      mount(api: any) {
+      mount(api: RCTextareaPluginAPI) {
         api.adoptStyleSheet(HLJS_DEMO_CSS);
       },
       highlight(value: string) {
@@ -859,18 +1851,21 @@ export function TextareaHljsDemo() {
         ref={setEditor}
         line-numbers
         auto-grow
-        style={{
-          '--rc-textarea-font-family': "'Fira Code', 'Cascadia Code', monospace",
-          '--rc-textarea-font-size': '13px',
-          '--rc-textarea-background': 'light-dark(#ffffff, #1e1e2e)',
-          '--rc-textarea-color': 'light-dark(#1f2937, #cdd6f4)',
-          '--rc-textarea-caret-color': 'light-dark(#2563eb, #89b4fa)',
-          '--rc-textarea-border': '1px solid light-dark(#cbd5e1, #313244)',
-          '--rc-textarea-active-line-bg': 'light-dark(rgb(37 99 235 / 0.08), rgb(255 255 255 / 0.04))',
-          '--rc-textarea-gutter-bg': 'light-dark(#f8fafc, #181825)',
-          '--rc-textarea-gutter-color': 'light-dark(#64748b, #6c7086)',
-          '--rc-textarea-gutter-border': '1px solid light-dark(#cbd5e1, #313244)',
-        } as CSSProperties}
+        style={
+          {
+            '--rc-textarea-font-family': "'Fira Code', 'Cascadia Code', monospace",
+            '--rc-textarea-font-size': '13px',
+            '--rc-textarea-background': 'light-dark(#ffffff, #1e1e2e)',
+            '--rc-textarea-color': 'light-dark(#1f2937, #cdd6f4)',
+            '--rc-textarea-caret-color': 'light-dark(#2563eb, #89b4fa)',
+            '--rc-textarea-border': '1px solid light-dark(#cbd5e1, #313244)',
+            '--rc-textarea-active-line-bg':
+              'light-dark(rgb(37 99 235 / 0.08), rgb(255 255 255 / 0.04))',
+            '--rc-textarea-gutter-bg': 'light-dark(#f8fafc, #181825)',
+            '--rc-textarea-gutter-color': 'light-dark(#64748b, #6c7086)',
+            '--rc-textarea-gutter-border': '1px solid light-dark(#cbd5e1, #313244)',
+          } as CSSProperties
+        }
       >
         <textarea rows={12} aria-label="Rust code editor" defaultValue={RUST_SNIPPET} />
       </rc-textarea>
@@ -884,16 +1879,28 @@ export function ToolbarDemo() {
   return (
     <DemoFrame>
       <rc-toolbar label="Formatting">
-        <button type="button" aria-label="Bold" onClick={() => setClicked('Bold')}>
-          <span className="material-symbols-outlined" aria-hidden="true">format_bold</span>
-        </button>
-        <button type="button" aria-label="Italic" onClick={() => setClicked('Italic')}>
-          <span className="material-symbols-outlined" aria-hidden="true">format_italic</span>
-        </button>
+        <rc-button icon-only>
+          <button type="button" aria-label="Bold" onClick={() => setClicked('Bold')}>
+            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              format_bold
+            </span>
+          </button>
+        </rc-button>
+        <rc-button icon-only>
+          <button type="button" aria-label="Italic" onClick={() => setClicked('Italic')}>
+            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              format_italic
+            </span>
+          </button>
+        </rc-button>
         <hr />
-        <button type="button" aria-label="Link" onClick={() => setClicked('Link')}>
-          <span className="material-symbols-outlined" aria-hidden="true">link</span>
-        </button>
+        <rc-button icon-only>
+          <button type="button" aria-label="Link" onClick={() => setClicked('Link')}>
+            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              link
+            </span>
+          </button>
+        </rc-button>
       </rc-toolbar>
       <p>{clicked}</p>
     </DemoFrame>
@@ -923,7 +1930,9 @@ export function TransferListDemo() {
       <rc-transfer-list ref={setTransferEl} multiple compact={compact ? true : undefined}>
         <select multiple aria-label="Available sections">
           <option value="breakfast">Breakfast</option>
-          <option value="dinner" selected>Dinner</option>
+          <option value="dinner" selected>
+            Dinner
+          </option>
           <option value="dessert">Dessert</option>
         </select>
       </rc-transfer-list>
@@ -944,18 +1953,28 @@ export function VirtualCanvasDemo() {
   const dotsRef = useRef<Array<{ x: number; y: number }>>([]);
 
   useEffect(() => {
-    if (!vcEl) return;
+    if (!vcEl) {
+      return;
+    }
 
     const vc = vcEl as RCVirtualCanvasRef;
+
     vc.contentWidth = VC_CONTENT_W;
     vc.contentHeight = VC_CONTENT_H;
 
     function drawGrid(e: Event) {
       const { viewRect } = (e as CustomEvent<RCVirtualCanvasRenderDetail>).detail;
       const canvas = canvasRef.current;
-      if (!canvas) return;
+
+      if (!canvas) {
+        return;
+      }
+
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+
+      if (!ctx) {
+        return;
+      }
 
       const scaleX = vc.canvasScaleX;
       const scaleY = vc.canvasScaleY;
@@ -970,32 +1989,40 @@ export function VirtualCanvasDemo() {
       ctx.beginPath();
       ctx.strokeStyle = '#dde1e7';
       ctx.lineWidth = 1;
+
       const minorX0 = Math.floor(viewRect.x / VC_MINOR) * VC_MINOR;
       const minorY0 = Math.floor(viewRect.y / VC_MINOR) * VC_MINOR;
+
       for (let x = minorX0; x <= viewRect.x + viewW + VC_MINOR; x += VC_MINOR) {
         ctx.moveTo(x - viewRect.x, 0);
         ctx.lineTo(x - viewRect.x, viewH);
       }
+
       for (let y = minorY0; y <= viewRect.y + viewH + VC_MINOR; y += VC_MINOR) {
         ctx.moveTo(0, y - viewRect.y);
         ctx.lineTo(viewW, y - viewRect.y);
       }
+
       ctx.stroke();
 
       // Major grid lines
       ctx.beginPath();
       ctx.strokeStyle = '#a8b0bc';
       ctx.lineWidth = 2;
+
       const majorX0 = Math.floor(viewRect.x / VC_MAJOR) * VC_MAJOR;
       const majorY0 = Math.floor(viewRect.y / VC_MAJOR) * VC_MAJOR;
+
       for (let x = majorX0; x <= viewRect.x + viewW + VC_MAJOR; x += VC_MAJOR) {
         ctx.moveTo(x - viewRect.x, 0);
         ctx.lineTo(x - viewRect.x, viewH);
       }
+
       for (let y = majorY0; y <= viewRect.y + viewH + VC_MAJOR; y += VC_MAJOR) {
         ctx.moveTo(0, y - viewRect.y);
         ctx.lineTo(viewW, y - viewRect.y);
       }
+
       ctx.stroke();
 
       // Coordinate labels at major intersections
@@ -1003,6 +2030,7 @@ export function VirtualCanvasDemo() {
       ctx.font = '11px monospace';
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
+
       for (let x = majorX0; x <= viewRect.x + viewW + VC_MAJOR; x += VC_MAJOR) {
         for (let y = majorY0; y <= viewRect.y + viewH + VC_MAJOR; y += VC_MAJOR) {
           ctx.fillText(`${x},${y}`, x - viewRect.x + 4, y - viewRect.y + 4);
@@ -1011,9 +2039,11 @@ export function VirtualCanvasDemo() {
 
       // Dots placed via clicks
       ctx.fillStyle = '#e53935';
+
       for (const dot of dotsRef.current) {
         const px = dot.x - viewRect.x;
         const py = dot.y - viewRect.y;
+
         if (px >= -8 && px <= viewW + 8 && py >= -8 && py <= viewH + 8) {
           ctx.beginPath();
           ctx.arc(px, py, 5, 0, Math.PI * 2);
@@ -1026,9 +2056,11 @@ export function VirtualCanvasDemo() {
 
     function handlePointer(e: Event) {
       const { type, contentX, contentY } = (e as CustomEvent<RCVirtualCanvasPointerDetail>).detail;
+
       if (overlayRef.current) {
         overlayRef.current.textContent = `${Math.round(contentX)}, ${Math.round(contentY)}`;
       }
+
       if (type === 'click') {
         dotsRef.current.push({ x: contentX, y: contentY });
         vc.requestRender();
@@ -1051,24 +2083,23 @@ export function VirtualCanvasDemo() {
         render-mode="viewport-change"
         style={{ display: 'block', blockSize: '14rem', inlineSize: '100%' }}
       >
-        <canvas
-          ref={canvasRef}
-          style={{ display: 'block', width: '100%', height: '100%' }}
-        />
+        <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
         <span
           ref={overlayRef}
           slot="overlay"
-          style={{
-            display: 'inline-block',
-            margin: '6px',
-            padding: '2px 6px',
-            background: 'Canvas',
-            color: 'CanvasText',
-            border: '1px solid ButtonBorder',
-            borderRadius: '3px',
-            font: '11px/1.4 monospace',
-            pointerEvents: 'none',
-          } as CSSProperties}
+          style={
+            {
+              display: 'inline-block',
+              margin: '6px',
+              padding: '2px 6px',
+              background: 'Canvas',
+              color: 'CanvasText',
+              border: '1px solid ButtonBorder',
+              borderRadius: '3px',
+              font: '11px/1.4 monospace',
+              pointerEvents: 'none',
+            } as CSSProperties
+          }
         >
           0, 0
         </span>

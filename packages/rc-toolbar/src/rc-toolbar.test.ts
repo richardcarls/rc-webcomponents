@@ -4,21 +4,21 @@ import { html } from 'lit';
 
 import './define';
 import { userEvent } from 'vitest/browser';
+
+import type { RCToolbar } from './rc-toolbar';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 test('RCToolbar is an accessible toolbar', async () => {
-  const screen = render(
-    html`
-      <rc-toolbar data-testid="host">
-        <button data-testid="item-one">One</button>
-        <span data-testid="span">Ignore Me</span>
-        <button data-testid="item-two">Two</button>
-        <a href="#" data-testid="item-three">Three</a>
-        <button data-testid="item-four" disabled>Four</button>
-        <div role="button" tabindex="0" data-testid="item-five">Five</div>
-      </rc-toolbar>
-    `
-  );
+  const screen = render(html`
+    <rc-toolbar data-testid="host">
+      <button data-testid="item-one">One</button>
+      <span data-testid="span">Ignore Me</span>
+      <button data-testid="item-two">Two</button>
+      <a href="#" data-testid="item-three">Three</a>
+      <button data-testid="item-four" disabled>Four</button>
+      <div role="button" tabindex="0" data-testid="item-five">Five</div>
+    </rc-toolbar>
+  `);
 
   const host = screen.getByTestId('host');
   const root = screen.getByRole('toolbar');
@@ -108,7 +108,6 @@ test('RCToolbar is an accessible toolbar', async () => {
 
   await userEvent.keyboard('{ArrowUp}');
   await expect.element(item1).toHaveFocus();
-
 });
 
 test('RCToolbar has no automated accessibility violations', async () => {
@@ -123,6 +122,42 @@ test('RCToolbar has no automated accessibility violations', async () => {
   const host = await screen.getByTestId('host').element();
 
   await expectNoA11yViolations(host);
+});
+
+test('RCToolbar resolves native buttons inside directly slotted component wrappers', async () => {
+  const screen = render(html`
+    <rc-toolbar data-testid="host" label="Filters">
+      <rc-button>
+        <button type="button" data-testid="all">All</button>
+      </rc-button>
+      <rc-chip>
+        <button type="button" data-testid="quick">Quick</button>
+      </rc-chip>
+      <rc-chip>
+        <button type="button" data-testid="vegetarian">Vegetarian</button>
+      </rc-chip>
+    </rc-toolbar>
+  `);
+  const host = await screen.getByTestId('host').element();
+  const all = await screen.getByTestId('all').element();
+  const quick = await screen.getByTestId('quick').element();
+  const vegetarian = await screen.getByTestId('vegetarian').element();
+
+  await (host as RCToolbar).updateComplete;
+  await new Promise<void>((resolve) => queueMicrotask(resolve));
+
+  expect(all.getAttribute('tabindex')).toBe('0');
+  expect(quick.getAttribute('tabindex')).toBe('-1');
+  expect(vegetarian.getAttribute('tabindex')).toBe('-1');
+
+  all.focus();
+  await userEvent.keyboard('{ArrowRight}');
+
+  expect(document.activeElement).toBe(quick);
+
+  await userEvent.keyboard('{ArrowRight}');
+
+  expect(document.activeElement).toBe(vegetarian);
 });
 
 test('RCToolbar RTL horizontal navigation inverts arrow keys', async () => {

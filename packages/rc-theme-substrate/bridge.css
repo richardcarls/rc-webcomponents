@@ -26,13 +26,75 @@
     --rc-font-size: var(--substrate-font-size, 1em);
     --rc-font-weight: var(--substrate-font-weight, 400);
     --rc-line-height: var(--substrate-line-height, normal);
+    --rc-icon-font-size: 1.5rem;
+    --rc-icon-font-line-height: var(--rc-icon-font-size);
     --rc-control-block-size: var(--substrate-control-block-size, 2.5rem);
     --rc-control-padding-block: var(--substrate-control-padding-block, 0.5rem);
     --rc-control-padding-inline: var(--substrate-control-padding-inline, 0.75rem);
     --rc-control-gap: var(--substrate-control-gap, 0.5rem);
+    --rc-button-color: var(--rc-button-text, ButtonText);
+    --rc-button-block-size: var(--rc-control-block-size);
+    --rc-button-radius: var(--rc-control-radius);
+    --rc-button-border: var(--rc-border);
+    --rc-button-padding-block: var(--rc-control-padding-block);
+    --rc-button-padding-inline: var(--rc-control-padding-inline);
+    --rc-button-gap: var(--rc-control-gap);
+    --rc-button-font: var(--rc-font-weight) var(--rc-font-size) / var(--rc-line-height)
+      var(--rc-font-family);
+    --rc-button-hover-state-layer-opacity: 0.08;
+    --rc-button-focus-state-layer-opacity: 0.12;
+    --rc-button-pressed-state-layer-opacity: 0.12;
+    --rc-card-bg: var(--substrate-surface-raised, Canvas);
+    --rc-card-color: var(--substrate-on-surface, CanvasText);
+    --rc-card-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-card-padding-block: 0.75rem;
+    --rc-card-padding-inline: 0.75rem;
+    --rc-card-actions-gap: 0.5rem;
+    --rc-card-subtitle-color: color-mix(in srgb, currentColor 72%, transparent);
+    --rc-card-hover-state-layer-opacity: 0.08;
+    --rc-card-pressed-state-layer-opacity: 0.12;
+    --rc-chip-block-size: 2rem;
+    --rc-chip-gap: 0px;
+    --rc-chip-padding-inline: 0.75rem;
+    --rc-chip-border: var(--rc-border);
+    --rc-chip-radius: var(--substrate-radius-md, 0.5rem);
+    --rc-chip-bg: var(--substrate-surface-raised, ButtonFace);
+    --rc-chip-color: var(--substrate-on-surface, ButtonText);
+    --rc-chip-font: inherit;
+    --rc-chip-text-decoration: none;
+    --rc-chip-selected-bg: var(--rc-highlight, Highlight);
+    --rc-switch-native-appearance: none;
+    --rc-switch-native-inline-size: 100%;
+    --rc-switch-native-block-size: 100%;
+    --rc-switch-native-margin: 0;
+    --rc-switch-native-opacity: 0;
+    --rc-switch-decoration-display: block;
+    --rc-switch-icon-display: grid;
+    --rc-switch-track-inline-size: 3.25rem;
+    --rc-switch-track-block-size: 2rem;
+    --rc-switch-selected-track-bg: var(--rc-accent);
+    --rc-switch-thumb-translate: 1.125rem;
+    --rc-segmented-button-segment-min-block-size: var(--rc-control-block-size);
+    --rc-segmented-button-selected-bg: var(--rc-highlight, Highlight);
+    --rc-snackbar-bg: var(--substrate-inverse-surface, CanvasText);
+    --rc-snackbar-color: var(--substrate-inverse-on-surface, Canvas);
+    --rc-snackbar-border: 0;
+    --rc-snackbar-action-color: var(--substrate-inverse-on-surface, Canvas);
+    --rc-snackbar-action-border: 0;
+    --rc-snackbar-action-radius: 9999px;
+    --rc-snackbar-action-padding-block: 0.5rem;
+    --rc-snackbar-action-padding-inline: 0.75rem;
+    --rc-snackbar-action-bg: transparent;
+    --rc-snackbar-action-font: 650 0.875rem / 1.25 var(--rc-font-family, inherit);
     --rc-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
     --rc-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
     --rc-item-gap: var(--substrate-item-gap, 0.5rem);
+    --rc-list-item-gap: var(--rc-item-gap);
+    --rc-list-item-min-block-size: 2.25rem;
+    --rc-list-item-padding-block: var(--rc-item-padding-block);
+    --rc-list-item-padding-inline: var(--rc-item-padding-inline);
+    --rc-list-item-selected-bg: var(--rc-highlight, Highlight);
+    --rc-list-item-selected-color: var(--rc-highlight-text, HighlightText);
     --rc-radius-sm: var(--substrate-radius-sm, 0.25rem);
     --rc-radius-md: var(--substrate-radius-md, 0.5rem);
     --rc-control-radius: var(--substrate-radius-md, 0.5rem);
@@ -40,22 +102,23 @@
     --rc-focus-ring-offset: var(--substrate-focus-ring-offset, 2px);
     --rc-disabled-opacity: var(--substrate-disabled-opacity, 0.52);
     --rc-motion-duration: var(--substrate-motion-duration, 160ms);
+    --rc-dialog-scrim: color-mix(in srgb, CanvasText 32%, transparent);
   }
 
   .rc-theme-substrate rc-listbox,
   :host(.rc-theme-substrate) rc-listbox,
   .rc-theme-substrate rc-menu,
   :host(.rc-theme-substrate) rc-menu {
-    --rc-listbox-option-gap: var(--substrate-item-gap, 0.5rem);
-    --rc-listbox-option-min-block-size: 2.25rem;
-    --rc-listbox-option-padding-block: var(--substrate-item-padding-block, 0.55rem);
-    --rc-listbox-option-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+    --rc-listbox-option-gap: var(--rc-list-item-gap, 0.5rem);
+    --rc-listbox-option-min-block-size: var(--rc-list-item-min-block-size, 2.25rem);
+    --rc-listbox-option-padding-block: var(--rc-list-item-padding-block, 0.55rem);
+    --rc-listbox-option-padding-inline: var(--rc-list-item-padding-inline, 0.75rem);
     --rc-listbox-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
     --rc-listbox-hover-color: var(--rc-field-text, FieldText);
     --rc-listbox-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
     --rc-listbox-active-color: var(--rc-field-text, FieldText);
-    --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
-    --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
+    --rc-listbox-selected-bg: var(--rc-list-item-selected-bg, Highlight);
+    --rc-listbox-selected-color: var(--rc-list-item-selected-color, HighlightText);
   }
 
   .rc-theme-substrate rc-select,
@@ -85,16 +148,22 @@
     --rc-slider-progress-background: var(--rc-accent);
     --rc-slider-track-radius: 999px;
     --rc-range-slider-accent: var(--rc-accent);
-    --rc-range-slider-track-background: color-mix(
-      in srgb,
-      var(--rc-border-color) 70%,
-      transparent
-    );
+    --rc-range-slider-track-background: color-mix(in srgb, var(--rc-border-color) 70%, transparent);
     --rc-range-slider-thumb-background: var(--substrate-surface, Canvas);
     --rc-range-slider-thumb-border: var(--rc-accent);
     --rc-thumb-radius: 0.5625rem;
   }
 
+  .rc-theme-substrate rc-bottom-sheet,
+  :host(.rc-theme-substrate) rc-bottom-sheet {
+    --rc-bottom-sheet-bg: var(--substrate-surface-raised, Canvas);
+    --rc-bottom-sheet-color: var(--rc-field-text, CanvasText);
+    --rc-bottom-sheet-radius: var(--substrate-radius-xl, 1rem) var(--substrate-radius-xl, 1rem) 0 0;
+    --rc-bottom-sheet-shadow: var(--substrate-shadow-lg, none);
+    --rc-bottom-sheet-scrim: var(--rc-dialog-scrim);
+    --rc-bottom-sheet-handle-color: var(--rc-border-color, GrayText);
+    --rc-bottom-sheet-handle-radius: var(--substrate-radius-pill, 999px);
+  }
   @media (prefers-reduced-motion: reduce) {
     .rc-theme-substrate,
     :host(.rc-theme-substrate) {

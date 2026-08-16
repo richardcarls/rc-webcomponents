@@ -1,6 +1,8 @@
 # `@rcarls/rc-menu`
 
-Menu popup for command surfaces with keyboard navigation and typed activation events, following the [WAI-ARIA Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/).
+Menu popup for command surfaces with keyboard navigation and typed activation
+events, following the
+[WAI-ARIA Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/).
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-menu](https://richardcarls.github.io/rc-webcomponents/components/rc-menu).
 
@@ -15,113 +17,73 @@ npm install @rcarls/rc-menu
 ## Import
 
 ```js
-import '@rcarls/rc-menu';                    // side-effect: registers <rc-menu>
-import { RCMenu } from '@rcarls/rc-menu';    // named class export
+import '@rcarls/rc-menu/define';
+import { RCMenu } from '@rcarls/rc-menu';
 ```
+
+The `define` entry point registers `<rc-menu>`. The package root exports the
+class without registering the custom element.
 
 ---
 
 ## Basic usage
 
-Slot any focusable elements as menu items. Non-focusable elements (separators, headings) are rendered but excluded from keyboard navigation.
+Slot any focusable elements as menu items. Non-focusable elements (separators,
+headings) are rendered but excluded from keyboard navigation.
 
 ```html
 <rc-menu label="File">
-  <button>New</button>
-  <button>Open…</button>
-  <hr aria-hidden="true" />
-  <button disabled>Save</button>
-  <button>Save As…</button>
+  <button type="button" value="new">New</button>
+  <button type="button" value="open">Open…</button>
+  <hr />
+  <button type="button" disabled>Save</button>
+  <button type="button" value="save-as">Save As…</button>
 </rc-menu>
 ```
 
-`rc-menu` is typically used inside an [`rc-menu-button`](../rc-menu-button/README.md) or [`rc-menubar`](../rc-menubar/README.md), which handle positioning and trigger wiring. It can also be used standalone as a context menu.
+For a cascading item, use an [`rc-menu-button`](../rc-menu-button/README.md)
+and provide its visual affordance through the `indicator` slot. `rc-menu` does
+not generate an indicator glyph, so applications and themes retain control of
+iconography and writing-direction behavior.
 
----
+`rc-menu` is typically used inside an
+[`rc-menu-button`](../rc-menu-button/README.md) or
+[`rc-menubar`](../rc-menubar/README.md), which handle positioning and trigger
+wiring. It can also be used standalone as a context menu.
 
-## API
+## Interaction model
 
-### Properties / attributes
+DOM focus remains on the `rc-menu` host. Arrow keys, Home, and End move a
+virtual cursor exposed through `aria-activedescendant`; slotted menu items keep
+`tabindex="-1"`. The `focusFirst()`, `focusLast()`, `focusItem()`, and
+`focusItemAt()` methods use the same model: they focus the host and select an
+active item without moving DOM focus into that item.
 
-| Property | Attribute | Type | Default | Description |
-|---|---|---|---|---|
-| `label` | `label` | `string` | `''` | Value of the `aria-label` on the menu container. Required for accessibility when no visible label is present. |
+Direct focusable children become `role="menuitem"` entries unless they already
+use `menuitemcheckbox` or `menuitemradio`. A labeled `role="group"` may contain
+one level of related items. Checkbox and radio items maintain `aria-checked`,
+while `<hr>` and `role="separator"` elements remain outside navigation.
 
-### CSS custom properties
+## Events
 
-| Property | Default | Description |
-|---|---|---|
-| `--rc-menu-min-width` | `10em` | Minimum width of the menu container |
-| `--rc-menu-padding-block` | `0.25em` | Block-axis (top/bottom) padding inside the root |
-| `--rc-menu-background` | `Canvas` | Menu background color (system color keyword) |
-| `--rc-menu-border` | `1px solid ButtonBorder` | Menu border |
-| `--rc-menu-shadow` | `0 2px 8px rgba(0,0,0,0.15)` | Box shadow |
+Both events bubble across shadow boundaries and are not cancelable.
 
-### CSS parts
+| Event              | Detail                            | When                                                       |
+| ------------------ | --------------------------------- | ---------------------------------------------------------- |
+| `rc-menu-activate` | `{ item, value, text, checked? }` | Enter, Space, or a pointer click activates an enabled item |
+| `rc-menu-close`    | `{ reason: 'escape' }`            | Escape requests that the containing popup close            |
 
-| Part | Element | Description |
-|---|---|---|
-| `root` | `div[role="menu"]` | The inner menu container |
+`value` comes from `data-value` or `value`, `text` is the item's trimmed text
+content, and `checked` reports the resulting checkbox or radio state.
 
-### Slots
+## Styling
 
-| Slot | Description |
-|---|---|
-| *(default)* | Menu items. Only focusable elements participate in keyboard navigation. `<button>`, `<a href>`, elements with `tabindex`, and `<input>`/`<select>`/`<textarea>` are recognised as focusable; all others are skipped. |
+Menu items remain in light DOM. `rc-menu` injects their structural base styles
+once per containing document or shadow root under `@layer rc-base`; inherited
+`--rc-menu-*` custom properties customize the host and rows. The component does
+not expose CSS parts. Add keyboard hints with `[data-menu-shortcut]`, and provide
+nested-menu indicators through `rc-menu-button`'s `indicator` slot.
 
-### Events
-
-| Event | Bubbles | Cancelable | Detail | When |
-|---|---|---|---|---|
-| `rc-menu-activate` | Yes (composed) | No | `{ item: HTMLElement }` | User presses Enter or Space on a focused item |
-| `rc-menu-close` | Yes (composed) | No | — | User presses Escape |
-
-### Public methods
-
-```ts
-focusFirst(): void            // Focus the first navigable item
-focusLast(): void             // Focus the last navigable item
-focusItem(item: HTMLElement): void     // Focus a specific item
-focusItemAt(index: number): void       // Focus item at zero-based index
-```
-
-### Read-only getters
-
-```ts
-items: HTMLElement[]          // All currently navigable (focusable) slotted items
-firstItem: HTMLElement | undefined
-lastItem: HTMLElement | undefined
-nextItem: HTMLElement | undefined    // Relative to the currently focused item
-previousItem: HTMLElement | undefined
-```
-
----
-
-## Keyboard behaviour
-
-| Key | Action |
-|---|---|
-| `ArrowDown` | Focus next item (wraps) |
-| `ArrowUp` | Focus previous item (wraps) |
-| `Home` | Focus first item |
-| `End` | Focus last item |
-| `Enter` / `Space` | Activate focused item (fires `rc-menu-activate`) |
-| `Escape` | Fire `rc-menu-close` |
-
----
-
-## ARIA
-
-| Attribute | Where | Value |
-|---|---|---|
-| `role="menu"` | Root `div` | — |
-| `aria-label` | Root `div` | Value of `label` property |
-| `role="menuitem"` | Each slotted focusable item | Set dynamically on slot change |
-| `tabindex="0"` | Active item | One item is tabbable at a time (roving tabindex) |
-| `tabindex="-1"` | All other items | Removed from tab order |
-
----
-
-## Browser support
-
-All modern browsers. Requires Web Components support (Chrome 67+, Firefox 63+, Safari 12.1+).
+See the [component docs](https://richardcarls.github.io/rc-webcomponents/components/rc-menu)
+for the generated API reference, including attributes, methods, slots, events,
+and CSS custom properties.

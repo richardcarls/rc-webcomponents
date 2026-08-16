@@ -81,14 +81,44 @@ function parseAttr(s: string, defaultVal: number): number {
  * @fires rc-range-slider-input  - Fires while either thumb moves. Detail: `{ value }`.
  * @fires rc-range-slider-change - Fires when a thumb commits a new value. Detail: `{ value }`.
  *
+ * @attr min - Minimum slider value.
+ * @attr max - Maximum slider value.
+ * @attr step - Slider step.
+ * @attr disabled - Disables both thumbs and their hidden native input reflectors.
+ * @attr readonly - Prevents edits while preserving normal focus and display.
+ * @attr low-label - Accessible label for the low (min) thumb when the input does not provide one.
+ * @attr high-label - Accessible label for the high (max) thumb when the input does not provide
+ *   one.
+ * @attr low-value-text - Formatted screen-reader text for the low value. Falls back to the raw
+ *   number.
+ * @attr high-value-text - Formatted screen-reader text for the high value. Falls back to the raw
+ *   number.
+ * @attr display - Controls the live value display: absent (none), `float`, `inline-start`, or
+ *   `inline-end`.
+ * @attr orientation - Orientation, forwarded to the custom thumbs: `horizontal` or `vertical`.
+ *
  * @cssprop [--rc-range-slider-accent=Highlight] - Accent color for selected range, thumb border, focus, hover, and active states.
  * @cssprop [--rc-range-slider-gap=var(--rc-control-gap)] - Gap between track and inline value display.
  * @cssprop [--rc-range-slider-control-size=var(--rc-control-block-size)] - Track hit-area block size.
+ * @cssprop [--rc-range-slider-vertical-size=12.5rem] - Track length when `orientation="vertical"`.
+ * @cssprop [--rc-range-slider-track-size=0.1875rem] - Visual track thickness.
  * @cssprop [--rc-range-slider-track-background=color-mix(in srgb, CanvasText 25%, Canvas)] - Unselected track color.
  * @cssprop [--rc-range-slider-track-radius=var(--rc-control-radius)] - Track border radius.
+ * @cssprop [--rc-range-slider-range-background] - Filled selected-range color. Defaults to
+ *   `--rc-range-slider-accent` (`GrayText` when `disabled`).
  * @cssprop [--rc-range-slider-thumb-background=ButtonFace] - Thumb background color.
  * @cssprop [--rc-range-slider-thumb-border=var(--rc-range-slider-accent)] - Thumb border color.
  * @cssprop [--rc-range-slider-thumb-size=1.125rem] - Visual thumb inline/block size.
+ * @cssprop [--rc-range-slider-thumb-hover-background] - Thumb background on hover. Defaults to
+ *   `--rc-range-slider-accent` (`ButtonFace` when `disabled`).
+ * @cssprop [--rc-range-slider-thumb-hover-border] - Thumb border color on hover. Defaults to
+ *   `--rc-range-slider-accent` (`GrayText` when `disabled`).
+ * @cssprop [--rc-range-slider-thumb-active-background] - Thumb background while pressed. Defaults
+ *   to `--rc-range-slider-accent` (`ButtonFace` when `disabled`).
+ * @cssprop [--rc-range-slider-thumb-active-border] - Thumb border color while pressed. Defaults to
+ *   `--rc-range-slider-accent` (`GrayText` when `disabled`).
+ * @cssprop [--rc-range-slider-focus-outline] - Thumb focus ring color. Defaults to
+ *   `--rc-range-slider-accent` (`GrayText` when `disabled`).
  * @cssprop [--rc-range-slider-value-color=var(--rc-text-disabled)] - Value display text color.
  * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to align float value displays and range fill.
  * @cssprop [--rc-range-slider-float-value-block-offset=-1.4em] - Block-axis offset for horizontal float value displays.
@@ -396,8 +426,8 @@ export class RCRangeSlider extends LitElement {
   @state() private _lowValue = 0;
   @state() private _highValue = 100;
 
-  private _lowInput: HTMLInputElement | null = null;
-  private _highInput: HTMLInputElement | null = null;
+  private _$lowInput: HTMLInputElement | null = null;
+  private _$highInput: HTMLInputElement | null = null;
   private _dragThumb: RangeThumb | null = null;
   private _dragPointerId: number | null = null;
   private _addedHostRole = false;
@@ -435,9 +465,9 @@ export class RCRangeSlider extends LitElement {
   }
 
   override render() {
-    const lo = this._lowInput;
-    const hi = this._highInput;
-    if (!lo || !hi) return nothing;
+    const $lo = this._$lowInput;
+    const $hi = this._$highInput;
+    if (!$lo || !$hi) return nothing;
 
     const lowText = this.lowValueText || String(this._lowValue);
     const highText = this.highValueText || String(this._highValue);
@@ -501,11 +531,11 @@ export class RCRangeSlider extends LitElement {
 
   private _renderThumb(thumb: RangeThumb) {
     const isLow = thumb === "low";
-    const input = isLow ? this._lowInput : this._highInput;
+    const $input = isLow ? this._$lowInput : this._$highInput;
     const value = isLow ? this._lowValue : this._highValue;
     const valueText = isLow ? this.lowValueText : this.highValueText;
     const label = this._thumbLabel(thumb);
-    const labelledBy = input?.getAttribute("aria-labelledby");
+    const labelledBy = $input?.getAttribute("aria-labelledby");
 
     return html`
       <span
@@ -535,13 +565,13 @@ export class RCRangeSlider extends LitElement {
    * reflectors.
    */
   private _findInputs(): void {
-    const inputs = getDirectChildren<HTMLInputElement>(
+    const $inputs = getDirectChildren<HTMLInputElement>(
       this,
       ':scope > input[type="range"]',
     ).slice(0, 2);
 
-    if (inputs.length < 2) {
-      if (import.meta.env.DEV && inputs.length > 0) {
+    if ($inputs.length < 2) {
+      if (import.meta.env.DEV && $inputs.length > 0) {
         warnMissingDirectChild(this, {
           selector: ':scope > input[type="range"]',
           minimum: 2,
@@ -551,18 +581,18 @@ export class RCRangeSlider extends LitElement {
       return;
     }
 
-    const [lo, hi] = inputs as [HTMLInputElement, HTMLInputElement];
+    const [$lo, $hi] = $inputs as [HTMLInputElement, HTMLInputElement];
 
-    if (!this.hasAttribute("disabled") && (lo.disabled || hi.disabled)) {
+    if (!this.hasAttribute("disabled") && ($lo.disabled || $hi.disabled)) {
       this.disabled = true;
     }
 
-    this._lowInput = lo;
-    this._highInput = hi;
-    this._applyInitialValueToInputs(lo, hi);
+    this._$lowInput = $lo;
+    this._$highInput = $hi;
+    this._applyInitialValueToInputs($lo, $hi);
 
-    this._wireInput(lo, this._onLowInput, this._onLowChange);
-    this._wireInput(hi, this._onHighInput, this._onHighChange);
+    this._wireInput($lo, this._onLowInput, this._onLowChange);
+    this._wireInput($hi, this._onHighInput, this._onHighChange);
     this._syncInputReflectors();
   }
 
@@ -579,8 +609,8 @@ export class RCRangeSlider extends LitElement {
   }
 
   private get _nativeInputValue(): [number, number] {
-    const low = this._lowInput?.valueAsNumber;
-    const high = this._highInput?.valueAsNumber;
+    const low = this._$lowInput?.valueAsNumber;
+    const high = this._$highInput?.valueAsNumber;
 
     return [
       low === undefined || isNaN(low) ? this.min : low,
@@ -589,8 +619,8 @@ export class RCRangeSlider extends LitElement {
   }
 
   private _applyInitialValueToInputs(
-    lowInput: HTMLInputElement,
-    highInput: HTMLInputElement,
+    $lowInput: HTMLInputElement,
+    $highInput: HTMLInputElement,
   ): void {
     if (this._value !== undefined) {
       this._applyValueToInputs(this._value);
@@ -602,8 +632,8 @@ export class RCRangeSlider extends LitElement {
       return;
     }
 
-    const lowValue = lowInput.valueAsNumber;
-    const highValue = highInput.valueAsNumber;
+    const lowValue = $lowInput.valueAsNumber;
+    const highValue = $highInput.valueAsNumber;
 
     this._lowValue = isNaN(lowValue) ? this._min() : lowValue;
     this._highValue = isNaN(highValue) ? this._max() : highValue;
@@ -616,8 +646,8 @@ export class RCRangeSlider extends LitElement {
     this._lowValue = low;
     this._highValue = high;
 
-    if (this._lowInput) this._lowInput.value = String(low);
-    if (this._highInput) this._highInput.value = String(high);
+    if (this._$lowInput) this._$lowInput.value = String(low);
+    if (this._$highInput) this._$highInput.value = String(high);
   }
 
   private _setCurrentValue(value: [number, number]): void {
@@ -629,41 +659,41 @@ export class RCRangeSlider extends LitElement {
   }
 
   private _wireInput(
-    input: HTMLInputElement,
+    $input: HTMLInputElement,
     onInput: (e: Event) => void,
     onChange: (e: Event) => void,
   ): void {
-    input.addEventListener("input", onInput);
-    input.addEventListener("change", onChange);
+    $input.addEventListener("input", onInput);
+    $input.addEventListener("change", onChange);
   }
 
   private _unwireInputs(): void {
-    this._lowInput?.removeEventListener("input", this._onLowInput);
-    this._lowInput?.removeEventListener("change", this._onLowChange);
+    this._$lowInput?.removeEventListener("input", this._onLowInput);
+    this._$lowInput?.removeEventListener("change", this._onLowChange);
 
-    this._highInput?.removeEventListener("input", this._onHighInput);
-    this._highInput?.removeEventListener("change", this._onHighChange);
+    this._$highInput?.removeEventListener("input", this._onHighInput);
+    this._$highInput?.removeEventListener("change", this._onHighChange);
   }
 
   private _restoreInputs(): void {
-    for (const input of [this._lowInput, this._highInput]) {
-      input?.removeAttribute("aria-hidden");
-      input?.removeAttribute("tabindex");
-      input?.removeAttribute("data-rc-range-slider-reflector");
-      input?.style.removeProperty("display");
+    for (const $input of [this._$lowInput, this._$highInput]) {
+      $input?.removeAttribute("aria-hidden");
+      $input?.removeAttribute("tabindex");
+      $input?.removeAttribute("data-rc-range-slider-reflector");
+      $input?.style.removeProperty("display");
     }
   }
 
   private _syncInputReflectors(): void {
-    const lo = this._lowInput;
-    const hi = this._highInput;
-    if (!lo || !hi) return;
+    const $lo = this._$lowInput;
+    const $hi = this._$highInput;
+    if (!$lo || !$hi) return;
 
-    for (const input of [lo, hi]) {
-      input.disabled = this.disabled;
-      input.tabIndex = -1;
-      input.setAttribute("aria-hidden", "true");
-      input.setAttribute("data-rc-range-slider-reflector", "");
+    for (const $input of [$lo, $hi]) {
+      $input.disabled = this.disabled;
+      $input.tabIndex = -1;
+      $input.setAttribute("aria-hidden", "true");
+      $input.setAttribute("data-rc-range-slider-reflector", "");
     }
   }
 
@@ -680,8 +710,8 @@ export class RCRangeSlider extends LitElement {
       return;
     }
 
-    const input = e.currentTarget as HTMLInputElement;
-    this._setCurrentValue([input.valueAsNumber, this._highValue]);
+    const $input = e.currentTarget as HTMLInputElement;
+    this._setCurrentValue([$input.valueAsNumber, this._highValue]);
     this._dispatch("rc-range-slider-input", this.value);
   };
 
@@ -691,8 +721,8 @@ export class RCRangeSlider extends LitElement {
       return;
     }
 
-    const input = e.currentTarget as HTMLInputElement;
-    this._setCurrentValue([input.valueAsNumber, this._highValue]);
+    const $input = e.currentTarget as HTMLInputElement;
+    this._setCurrentValue([$input.valueAsNumber, this._highValue]);
     this._dispatch("rc-range-slider-change", this.value);
   };
 
@@ -702,8 +732,8 @@ export class RCRangeSlider extends LitElement {
       return;
     }
 
-    const input = e.currentTarget as HTMLInputElement;
-    this._setCurrentValue([this._lowValue, input.valueAsNumber]);
+    const $input = e.currentTarget as HTMLInputElement;
+    this._setCurrentValue([this._lowValue, $input.valueAsNumber]);
     this._dispatch("rc-range-slider-input", this.value);
   };
 
@@ -713,8 +743,8 @@ export class RCRangeSlider extends LitElement {
       return;
     }
 
-    const input = e.currentTarget as HTMLInputElement;
-    this._setCurrentValue([this._lowValue, input.valueAsNumber]);
+    const $input = e.currentTarget as HTMLInputElement;
+    this._setCurrentValue([this._lowValue, $input.valueAsNumber]);
     this._dispatch("rc-range-slider-change", this.value);
   };
 
@@ -781,7 +811,7 @@ export class RCRangeSlider extends LitElement {
     if (this.disabled || this.readonly || e.button !== 0) return;
 
     const thumb = this._nearestThumb(e);
-    const thumbEl = this._thumbElement(thumb);
+    const $thumbEl = this._$thumbElement(thumb);
     this._dragThumb = thumb;
     this._dragPointerId = e.pointerId;
 
@@ -791,7 +821,7 @@ export class RCRangeSlider extends LitElement {
     } catch {
       // Synthetic browser-test PointerEvents are not active pointer streams.
     }
-    thumbEl?.focus();
+    $thumbEl?.focus();
     this._setThumbValue(thumb, this._valueFromPointer(e, thumb));
     this._dispatch("rc-range-slider-input", this.value);
   }
@@ -816,7 +846,7 @@ export class RCRangeSlider extends LitElement {
       // Synthetic browser-test PointerEvents are not active pointer streams.
     }
     this._dispatch("rc-range-slider-change", this.value);
-    this._thumbElement(thumb)?.focus();
+    this._$thumbElement(thumb)?.focus();
   }
 
   private _onGroupPointerCancel(e: PointerEvent): void {
@@ -922,15 +952,15 @@ export class RCRangeSlider extends LitElement {
   }
 
   private _min(): number {
-    return parseAttr(this._lowInput?.min ?? "", this.min);
+    return parseAttr(this._$lowInput?.min ?? "", this.min);
   }
 
   private _max(): number {
-    return parseAttr(this._highInput?.max ?? "", this.max);
+    return parseAttr(this._$highInput?.max ?? "", this.max);
   }
 
   private _step(): number {
-    return parseAttr(this._lowInput?.step ?? "", this.step);
+    return parseAttr(this._$lowInput?.step ?? "", this.step);
   }
 
   private _groupRect(): DOMRect | null {
@@ -939,7 +969,7 @@ export class RCRangeSlider extends LitElement {
       ?.getBoundingClientRect() ?? null;
   }
 
-  private _thumbElement(thumb: RangeThumb): HTMLElement | null {
+  private _$thumbElement(thumb: RangeThumb): HTMLElement | null {
     return (
       this.shadowRoot?.querySelector<HTMLElement>(`[data-thumb="${thumb}"]`) ??
       null
@@ -947,12 +977,12 @@ export class RCRangeSlider extends LitElement {
   }
 
   private _thumbLabel(thumb: RangeThumb): string | null {
-    const input = thumb === "low" ? this._lowInput : this._highInput;
+    const $input = thumb === "low" ? this._$lowInput : this._$highInput;
     const fallback = thumb === "low" ? this.lowLabel : this.highLabel;
-    const explicitLabel = input?.getAttribute("aria-label");
+    const explicitLabel = $input?.getAttribute("aria-label");
     if (explicitLabel) return explicitLabel;
 
-    const nativeLabel = input?.labels?.[0]?.textContent?.trim();
+    const nativeLabel = $input?.labels?.[0]?.textContent?.trim();
     if (nativeLabel) return nativeLabel;
 
     return fallback || null;

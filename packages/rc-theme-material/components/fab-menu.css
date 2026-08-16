@@ -1,0 +1,85 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab-menu {
+    --rc-fab-menu-size: 3.5rem;
+    --rc-fab-menu-trigger-gap: 0.5rem;
+    --rc-fab-menu-padding-block: 0;
+    --rc-fab-menu-padding-inline: 1rem;
+    --rc-fab-menu-appearance: none;
+    --rc-fab-menu-border: 0;
+    --rc-fab-menu-bg: var(
+      --md-fab-container-color,
+      var(--md-sys-color-primary-container, ButtonFace)
+    );
+    --rc-fab-menu-color: var(
+      --md-fab-icon-color,
+      var(--md-sys-color-on-primary-container, ButtonText)
+    );
+    --rc-fab-menu-shadow: var(--rc-shadow-level3);
+    --rc-fab-menu-bg-hover: var(--rc-fab-menu-bg);
+    --rc-fab-menu-bg-open: var(--rc-fab-menu-bg-hover);
+    --rc-fab-menu-shadow-hover: var(--rc-shadow-level4);
+    --rc-fab-menu-shadow-open: var(--rc-fab-menu-shadow-hover);
+    --rc-fab-menu-shadow-active: var(--rc-shadow-level3);
+    --rc-fab-menu-radius: var(--md-fab-container-shape, var(--md-sys-shape-corner-large, 1rem));
+    --rc-fab-menu-font-family: var(
+      --md-fab-label-text-font,
+      var(--md-sys-typescale-label-large-font, inherit)
+    );
+    --rc-fab-menu-font-size: var(
+      --md-fab-label-text-size,
+      var(--md-sys-typescale-label-large-size, 0.875rem)
+    );
+    --rc-fab-menu-font-weight: var(
+      --md-fab-label-text-weight,
+      var(--md-sys-typescale-label-large-weight, 500)
+    );
+    --rc-fab-menu-letter-spacing: var(
+      --md-fab-label-text-tracking,
+      var(--md-sys-typescale-label-large-tracking, 0.00625em)
+    );
+    --rc-fab-menu-text-decoration: none;
+    --rc-fab-menu-user-select: none;
+    --rc-fab-menu-transition:
+      background var(--md-sys-motion-duration-short4, 200ms) ease,
+      box-shadow var(--md-sys-motion-duration-short4, 200ms) ease,
+      transform var(--md-sys-motion-duration-short4, 200ms) ease;
+    --rc-fab-menu-active-transform: scale(0.96);
+    --rc-fab-menu-disabled-opacity: 0.38;
+    --rc-fab-menu-disabled-shadow: none;
+    --rc-fab-menu-focus-ring: var(--rc-focus-ring);
+    --rc-fab-menu-focus-ring-offset: var(--rc-focus-ring-offset);
+    --rc-fab-menu-popup-duration: var(--md-sys-motion-duration-short3, 150ms);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab-menu > button:hover {
+    --rc-fab-menu-bg-hover: color-mix(
+      in srgb,
+      var(--md-fab-hover-icon-color, var(--md-sys-color-on-primary-container, ButtonText)) 8%,
+      var(--rc-fab-menu-bg, var(--md-sys-color-primary-container, ButtonFace))
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab-menu > button:active {
+    --rc-fab-menu-bg-open: color-mix(
+      in srgb,
+      var(--md-fab-pressed-icon-color, var(--md-sys-color-on-primary-container, ButtonText)) 12%,
+      var(--rc-fab-menu-bg, var(--md-sys-color-primary-container, ButtonFace))
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab-menu.rc-fab--small {
+    --rc-fab-menu-size: 2.5rem;
+    --rc-fab-menu-radius: var(
+      --md-fab-small-container-shape,
+      var(--md-sys-shape-corner-medium, 0.75rem)
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-fab-menu.rc-fab--large {
+    --rc-fab-menu-size: 6rem;
+    --rc-fab-menu-radius: var(
+      --md-fab-large-container-shape,
+      var(--md-sys-shape-corner-extra-large, 1.75rem)
+    );
+  }
+}

@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Shared controllers, directives, and DOM utilities for rc-webcomponents.",
   "repository": {
     "type": "git",

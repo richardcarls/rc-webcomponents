@@ -118,7 +118,7 @@ Place `rc-menu-button` elements as direct children. The menubar manages focus an
 ### Public methods
 
 ```ts
-focusItem(item?: HTMLElement | null): void
+focusItem($item?: HTMLElement | null): void
   // Focus a specific trigger element.
 
 closeActiveMenu(): void
@@ -128,12 +128,12 @@ closeActiveMenu(): void
 ### Read-only getters
 
 ```ts
-items: HTMLElement[]           // All trigger elements across all child rc-menu-buttons
-menuButtons: RCMenuButton[]    // All child rc-menu-button elements
-firstItem: HTMLElement | undefined
-lastItem: HTMLElement | undefined
-nextItem: HTMLElement | undefined    // Relative to last-focused trigger
-previousItem: HTMLElement | undefined
+$items: HTMLElement[]           // All trigger elements across all child rc-menu-buttons
+$menuButtons: RCMenuButton[]    // All child rc-menu-button elements
+$firstItem: HTMLElement | undefined
+$lastItem: HTMLElement | undefined
+$nextItem: HTMLElement | undefined    // Relative to last-focused trigger
+$previousItem: HTMLElement | undefined
 ```
 
 ---

@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Material 3 CSS theme and token bridge for rc-webcomponents.",
   "repository": {
     "type": "git",
@@ -22,6 +22,7 @@
     "./defaults.css": "./defaults.css",
     "./components.css": "./components.css",
     "./components/*.css": "./components/*.css",
+    "./state-layer.css": "./state-layer.css",
     "./theme.css": "./theme.css"
   },
   "files": [

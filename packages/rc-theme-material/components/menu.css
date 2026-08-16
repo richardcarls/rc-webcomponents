@@ -41,9 +41,6 @@
     /* Trailing shortcut labels (label-large) */
     --rc-menu-shortcut-size: var(--md-sys-typescale-label-large-size, 0.875rem);
     --rc-menu-shortcut-color: var(--md-sys-color-on-surface-variant, GrayText);
-    --rc-menu-submenu-indicator-size: 1.25rem;
-    --rc-menu-submenu-indicator-color: var(--md-sys-color-on-surface-variant, CanvasText);
-
     /* Dividers: outline-variant, full-width by default */
     --rc-menu-separator-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
     --rc-menu-separator-margin-block: 0.5rem;
@@ -62,8 +59,7 @@
   }
 
   /* Current item (navigation active / selected radio row) gets secondary-container */
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-menu [aria-current='true'] {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu [aria-current='true'] {
     background: var(--md-sys-color-secondary-container, Highlight);
     color: var(--md-sys-color-on-secondary-container, HighlightText);
   }
@@ -84,7 +80,10 @@
   /* Separators inside role="group" are inset by the item padding on both sides.
      This matches the M3 spec for grouped menus (e.g. radio group segments). */
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu [role='group'] > hr,
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu [role='group'] > [role='separator'] {
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-menu
+    [role='group']
+    > [role='separator'] {
     --rc-menu-separator-margin-inline: var(--rc-menu-item-padding-inline, 0.75rem);
   }
 }

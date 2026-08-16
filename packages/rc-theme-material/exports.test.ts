@@ -3,19 +3,32 @@ import { expect, test } from 'vitest';
 const componentEntries = [
   'accordion',
   'app-bar',
+  'bottom-sheet',
+  'button',
+  'card',
+  'chip',
   'combobox',
   'dialog',
   'disclosure',
+  'fab',
+  'icons',
+  'list-item',
   'listbox',
+  'fab-menu',
   'markdown-editor',
   'menu',
   'menu-button',
   'menubar',
+  'navigation-bar',
+  'navigation-rail',
   'range-slider',
   'search-bar',
   'select',
+  'segmented-button',
   'slider',
+  'snackbar',
   'splitter',
+  'switch',
   'textarea',
   'toolbar',
   'transfer-list',
@@ -27,7 +40,18 @@ test('every selective component stylesheet can be imported', async () => {
 
   for (const entry of componentEntries) {
     const load = imports[`./components/${entry}.css`];
+
     expect(load, entry).toBeTypeOf('function');
     await load();
   }
+});
+
+test('state-layer utility stylesheet can be imported', async () => {
+  await import('./state-layer.css');
+});
+
+test('aggregate Material entrypoints with motion mappings can be imported', async () => {
+  await import('./bridge.css');
+  await import('./defaults.css');
+  await import('./theme.css');
 });

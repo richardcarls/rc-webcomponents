@@ -63,31 +63,62 @@ declare global {
  * @slot default - The native `<button>` element. The button's own accessible
  *   name (text content or `aria-label`) serves as the FAB's accessible name.
  *
+ * @attr position - Viewport corner where the FAB is anchored.
+ * @attr scroll-reveal - Reveal the FAB only after the page scrolls past
+ *   `--rc-fab-scroll-threshold`.
+ * @attr [scroll-below-threshold] - Present when `scroll-reveal` is active and the page hasn't
+ *   scrolled past `--rc-fab-scroll-threshold` yet. Only used by the JS scroll-driven-animation
+ *   fallback; unused when the browser supports `animation-timeline: scroll()`.
+ *
  * @cssprop [--rc-fab-position=fixed] - CSS position value. Override to `absolute` for layout-relative placement or `sticky` for scroll-snapping.
  * @cssprop [--rc-fab-inset-block=1.5rem] - Distance from the block-axis edge.
  * @cssprop [--rc-fab-inset-inline=1.5rem] - Distance from the inline-axis edge.
  * @cssprop [--rc-fab-z-index=10] - Stacking order.
- * @cssprop [--rc-fab-bg=ButtonFace] - Button background colour.
- * @cssprop [--rc-fab-bg-hover=var(--rc-fab-bg)] - Hover background colour.
- * @cssprop [--rc-fab-color=ButtonText] - Button foreground colour.
- * @cssprop [--rc-fab-size=3.5rem] - Height and minimum width.
- * @cssprop [--rc-fab-radius=9999px] - Border-radius. Default is pill-shaped. Override to `50%` for a circle (icon-only), `1rem` for Material rounded-square, etc.
- * @cssprop [--rc-fab-shadow=none] - Elevation shadow.
- * @cssprop [--rc-fab-shadow-hover=var(--rc-fab-shadow)] - Hover shadow.
- * @cssprop [--rc-fab-shadow-active=none] - Pressed shadow.
- * @cssprop [--rc-fab-padding-inline=1rem] - Inline padding.
- * @cssprop [--rc-fab-gap=0.5rem] - Gap between icon and label text.
- * @cssprop [--rc-fab-font-family=inherit] - Font family for label text.
- * @cssprop [--rc-fab-font-size=0.875rem] - Font size for label text.
- * @cssprop [--rc-fab-font-weight=500] - Font weight for label text.
- * @cssprop [--rc-fab-letter-spacing=0.00625em] - Letter spacing for label text.
- * @cssprop [--rc-fab-focus-ring=2px solid currentColor] - Focus ring style.
- * @cssprop [--rc-fab-focus-ring-offset=2px] - Focus ring offset.
- * @cssprop [--rc-fab-disabled-opacity=0.38] - Opacity applied when the button is disabled.
- * @cssprop [--rc-fab-transition-duration=200ms] - Transition speed for hover and active states.
+ * @cssprop [--rc-fab-gap] - Gap between icon and label text. Unset by default; packaged themes
+ *   such as `rc-theme-material` set `0.5rem`.
+ * @cssprop [--rc-fab-size] - Minimum inline size and block size of the button. Unset by
+ *   default (native button sizing applies); packaged themes such as `rc-theme-material` set
+ *   `3.5rem`.
+ * @cssprop [--rc-fab-padding-block] - Button block-axis padding (defers to native button
+ *   padding when unset).
+ * @cssprop [--rc-fab-padding-inline] - Button inline-axis padding (defers to native button
+ *   padding when unset).
+ * @cssprop [--rc-fab-bg] - Button background (defers to native button background when unset).
+ * @cssprop [--rc-fab-color] - Button foreground color (defers to native button color when
+ *   unset).
+ * @cssprop [--rc-fab-border] - Button border (defers to native button border when unset).
+ * @cssprop [--rc-fab-radius] - Button border-radius (defers to native button radius when
+ *   unset). Override to `9999px` for pill-shaped, `50%` for a circle (icon-only), `1rem` for
+ *   Material rounded-square, etc.
+ * @cssprop [--rc-fab-shadow] - Elevation shadow (defers to native button shadow when unset).
+ * @cssprop [--rc-fab-font-family] - Font family for label text (defers to native button font
+ *   when unset).
+ * @cssprop [--rc-fab-font-size] - Font size for label text (defers to native button font when
+ *   unset).
+ * @cssprop [--rc-fab-font-weight] - Font weight for label text (defers to native button font
+ *   when unset).
+ * @cssprop [--rc-fab-letter-spacing] - Letter spacing for label text (defers to native button
+ *   styling when unset).
+ * @cssprop [--rc-fab-transition] - Transition shorthand for hover/active state changes (defers
+ *   to native button transition when unset).
+ * @cssprop [--rc-fab-bg-hover] - Hover background (defers to native `:hover` styling when
+ *   unset).
+ * @cssprop [--rc-fab-shadow-hover] - Hover shadow (defers to native `:hover` styling when
+ *   unset).
+ * @cssprop [--rc-fab-shadow-active] - Pressed shadow (defers to native `:active` styling when
+ *   unset).
+ * @cssprop [--rc-fab-active-transform] - Transform applied while pressed, e.g. `scale(0.96)`
+ *   (defers to native `:active` styling when unset).
+ * @cssprop [--rc-fab-focus-ring] - Focus ring style (defers to native `:focus-visible` styling
+ *   when unset).
+ * @cssprop [--rc-fab-focus-ring-offset] - Focus ring offset (defers to native `:focus-visible`
+ *   styling when unset).
+ * @cssprop [--rc-fab-disabled-opacity] - Opacity applied when the button is disabled (defers to
+ *   native `:disabled` styling when unset).
+ * @cssprop [--rc-fab-disabled-shadow] - Shadow applied when the button is disabled (defers to
+ *   native `:disabled` styling when unset).
  * @cssprop [--rc-fab-scroll-threshold=300px] - Scroll distance at which the FAB becomes fully visible. Requires the `scroll-reveal` attribute. The JS fallback reads this value once on connect; px units only.
  * @cssprop [--rc-fab-scroll-timeline=scroll(root block)] - The `animation-timeline` value used for scroll-reveal. Override to target a different scroller, e.g. `scroll(nearest block)` for embedded contexts. CSS path only; the JS fallback discovers the nearest scrollable ancestor automatically.
- *
  */
 export class RCFab extends LitElement {
   static override styles = fabStyles;
@@ -137,7 +168,9 @@ export class RCFab extends LitElement {
       this.removeAttribute('scroll-below-threshold');
     }
 
-    if (!this.scrollReveal || CSS.supports('animation-timeline: scroll()')) return;
+    if (!this.scrollReveal || CSS.supports('animation-timeline: scroll()')) {
+      return;
+    }
 
     const threshold = this._getThreshold();
 

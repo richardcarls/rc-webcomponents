@@ -54,15 +54,15 @@ submission and validation surface and is visually hidden after slot resolution.
 | `src/line-decorator.ts`          | `createLineDecoratorPlugin()` helper for line-relative decoration logic.                                                              |
 | `src/line-actions-controller.ts` | Controller for action UI anchored to editor lines.                                                                                    |
 | `src/types.ts`                   | Public interfaces and utility types.                                                                                                  |
-| `src/rc-textarea.styles.ts`      | Shadow DOM layout, parts, tokens, and internal decoration selectors.                                                                  |
+| `src/rc-textarea.styles.ts`      | shadow DOM layout, parts, tokens, and internal decoration selectors.                                                                  |
 
 ## Value Lifecycle
 
 `value`, `defaultValue`, and slotted textarea content have precedence:
 
 1. A host write to `value` wins and marks the component controlled.
-2. `defaultValue` seeds the internal value only before value initialization.
-3. Slotted textarea content seeds the internal value when neither `value` nor `defaultValue`
+1. `defaultValue` seeds the internal value only before value initialization.
+1. Slotted textarea content seeds the internal value when neither `value` nor `defaultValue`
    already initialized it.
 
 The initialization flags do not reset on reconnect. User edits update `_value`, sync the
@@ -73,11 +73,13 @@ textarea, dispatch `rc-textarea-change`, push undo state, and schedule a render.
 
 1. Browser editing, paste, or plugin text mutation changes the contenteditable surface or the
    value model.
-2. `_onInput()` extracts plain text with `getText()`, saves selection offsets, remaps existing
+   Enter and multiline paste use the value model directly because browser-generated
+   contenteditable blocks do not reliably preserve the editor's `.line` structure.
+1. `_onInput()` extracts plain text with `getText()`, saves selection offsets, remaps existing
    plugin decorations through the edit, syncs the slotted textarea, pushes undo state, and
    dispatches `rc-textarea-change`.
-3. `_scheduleRender()` batches work into one animation frame.
-4. `_performRender()` resolves the display value, runs patterns, runs the active plugin, merges
+1. `_scheduleRender()` batches work into one animation frame.
+1. `_performRender()` resolves the display value, runs patterns, runs the active plugin, merges
    all decoration sources, rebuilds the Parchment document, restores selection, reapplies active
    line state, and syncs gutter labels/heights.
 
@@ -89,8 +91,8 @@ Parchment tree shape. Preserve DOM node identity only where source code explicit
 Render-time decorations are merged in this order:
 
 1. Plugin-owned decorations in `_pluginDecorations`.
-2. Pattern-generated decorations in `_patternDecorations`.
-3. External decorations from the `decorations` property.
+1. Pattern-generated decorations in `_patternDecorations`.
+1. External decorations from the `decorations` property.
 
 Plugin decorations are mutable state owned by the active plugin API. Pattern decorations are
 fully recomputed from regexes on each render. External decorations are generated from the
@@ -107,10 +109,10 @@ property value and receive fresh IDs during render.
 `usePlugin(plugin)`:
 
 1. Calls `destroy()` on the current plugin.
-2. Clears plugin styles, plugin decorations, cursor callbacks, and stale async sequence state.
-3. Builds a live `RCTextareaPluginAPI`.
-4. Calls `plugin.mount(api)`.
-5. Schedules a render.
+1. Clears plugin styles, plugin decorations, cursor callbacks, and stale async sequence state.
+1. Builds a live `RCTextareaPluginAPI`.
+1. Calls `plugin.mount(api)`.
+1. Schedules a render.
 
 `removePlugin()` performs the same cleanup without mounting a replacement.
 

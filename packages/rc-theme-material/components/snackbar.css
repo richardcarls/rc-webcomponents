@@ -1,0 +1,23 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-snackbar {
+    --rc-snackbar-inset-block-end: calc(1rem + var(--rc-navigation-bar-block-size, 0px));
+    --rc-snackbar-min-block-size: 3rem;
+    --rc-snackbar-max-inline-size: 30rem;
+    --rc-snackbar-padding-block: 0.875rem;
+    --rc-snackbar-padding-inline: 1rem;
+    --rc-snackbar-border: 0;
+    --rc-snackbar-radius: var(--md-sys-shape-corner-extra-small, 0.25rem);
+    --rc-snackbar-bg: var(--md-sys-color-inverse-surface, CanvasText);
+    --rc-snackbar-color: var(--md-sys-color-inverse-on-surface, Canvas);
+    --rc-snackbar-action-color: var(--md-sys-color-inverse-primary, LinkText);
+    --rc-snackbar-action-border: 0;
+    --rc-snackbar-action-radius: var(--md-sys-shape-corner-full, 9999px);
+    --rc-snackbar-action-padding-block: 0.5rem;
+    --rc-snackbar-action-padding-inline: 0.75rem;
+    --rc-snackbar-action-bg: transparent;
+    --rc-snackbar-action-font: inherit;
+    --rc-snackbar-shadow: var(--rc-shadow-level3);
+    --rc-snackbar-focus-ring: 2px solid var(--md-sys-color-inverse-primary, Highlight);
+    --rc-snackbar-focus-ring-offset: 2px;
+  }
+}

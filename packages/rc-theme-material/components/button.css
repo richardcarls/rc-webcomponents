@@ -1,0 +1,57 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button {
+    --rc-button-bg: var(--md-sys-color-primary, ButtonFace);
+    --rc-button-color: var(--md-sys-color-on-primary, ButtonText);
+    --rc-button-border: 0;
+    --rc-button-radius: var(--md-sys-shape-corner-full, 9999px);
+    --rc-button-block-size: 2.5rem;
+    --rc-button-padding-block: 0;
+    --rc-button-padding-inline: 1.5rem;
+    --rc-button-gap: 0.5rem;
+    --rc-button-font: var(--md-sys-typescale-label-large-weight, 500)
+      var(--md-sys-typescale-label-large-size, 0.875rem) /
+      var(--md-sys-typescale-label-large-line-height, 1.25rem)
+      var(--md-sys-typescale-label-large-font, inherit);
+    --rc-button-state-layer-bg: var(--md-sys-color-on-primary, currentColor);
+    --rc-button-hover-state-layer-opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+    --rc-button-focus-state-layer-opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+    --rc-button-pressed-state-layer-opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+    --rc-button-state-layer-easing: var(
+      --md-sys-motion-easing-standard,
+      cubic-bezier(0.2, 0, 0, 1)
+    );
+    --_rc-button-ripple-enabled: 1;
+    --_rc-button-ripple-color: var(--md-sys-color-on-primary, currentColor);
+    --_rc-button-ripple-opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+    --_rc-button-ripple-duration: var(--md-sys-motion-duration-long1, 450ms);
+    --_rc-button-ripple-easing: var(
+      --md-sys-motion-easing-emphasized-decelerate,
+      cubic-bezier(0.05, 0.7, 0.1, 1)
+    );
+    --rc-button-progress-color: var(--md-sys-color-on-primary, ButtonText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button > button:focus-visible {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button[disabled] > button:disabled {
+    opacity: var(--rc-disabled-opacity, 0.38);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button[progress][progress-value]::part(progress) {
+    font-size: 0;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button[progress][progress-value]::part(progress)::before {
+    display: block;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button[icon-only] {
+    --rc-button-icon-size: 2.5rem;
+    --rc-icon-font-line-height: var(--rc-button-icon-size, 2.5rem);
+  }
+}

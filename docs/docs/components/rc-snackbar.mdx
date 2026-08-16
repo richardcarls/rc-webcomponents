@@ -1,0 +1,82 @@
+---
+title: rc-snackbar
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { SnackbarDemo } from '@site/src/components/ComponentDemos';
+
+# rc-snackbar
+
+`rc-snackbar` is a live-region host for brief status messages and optional actions.
+
+<AtAGlance
+  packageName="@rcarls/rc-snackbar"
+  tag="rc-snackbar"
+  native="Polite status live region"
+  state="Imperative message queue"
+  events={['rc-snackbar-action', 'rc-snackbar-close']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-snackbar
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-snackbar
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-snackbar/define';
+```
+
+## Usage
+
+```html
+<rc-snackbar id="snackbar"></rc-snackbar>
+```
+
+```js
+document.querySelector('#snackbar').show({
+  message: 'Document archived',
+  actionLabel: 'Undo',
+  duration: 5000,
+});
+```
+
+`rc-snackbar` does not move focus. It announces through a polite status live region
+and queues messages by default. Positive `duration` values auto-dismiss the
+visible message; use `0` only when the application deliberately owns dismissal.
+
+`open` reflects visibility and follows the library's controlled/uncontrolled
+convention: host writes are silent, and `default-open` seeds an initial
+visible state. `show()`, `close()`, and `clear()` remain the primary way to
+drive the queue and timer; write `open` directly only for advanced cases that
+don't need queueing, such as an initially visible component seeded from
+server-rendered `message`/`default-open` attributes.
+
+The theme-free surface uses system canvas colors and a plain border, while its
+action retains native button styling. Packaged themes provide the component's color,
+shape, spacing, and action treatment.
+
+## Live demo
+
+<SnackbarDemo />
+
+## API
+
+<ApiTable tag="rc-snackbar" />

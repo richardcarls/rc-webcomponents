@@ -248,10 +248,10 @@ function walkToOffset($node: Node, localOffset: number): DomPosition | null {
  */
 export function saveSelection($root: Element): SavedSelection | null {
   const $rootNode = $root.getRootNode();
-  const selection =
-    (
-      $rootNode as unknown as { /* Chrome 53+ */ getSelection?: () => Selection | null }
-    ).getSelection?.() ?? window.getSelection();
+  const $shadowGetSelection = (
+    $rootNode as unknown as { /* Chrome 53+ */ getSelection?: () => Selection | null }
+  ).getSelection;
+  const selection = $shadowGetSelection?.call($rootNode) ?? window.getSelection();
 
   if (!selection || selection.rangeCount === 0) {
     return null;
@@ -259,14 +259,42 @@ export function saveSelection($root: Element): SavedSelection | null {
 
   const range = selection.getRangeAt(0);
 
-  if (!$root.contains(range.commonAncestorContainer)) {
-    return null;
+  if ($root.contains(range.commonAncestorContainer)) {
+    return {
+      anchorOffset: domToTextOffset($root, range.startContainer, range.startOffset),
+      focusOffset: domToTextOffset($root, range.endContainer, range.endOffset),
+    };
   }
 
-  const anchorOffset = domToTextOffset($root, range.startContainer, range.startOffset);
-  const focusOffset = domToTextOffset($root, range.endContainer, range.endOffset);
+  // window.getSelection() does not resolve inside an open shadow root in
+  // WebKit — a plain Range from getRangeAt() reports a boundary scoped to
+  // the shadow host's own tree instead of a node inside $root, so the
+  // containment check above fails and every caret position would otherwise
+  // silently read back as "no selection". This only matters for browsers
+  // without Chrome's non-standard shadowRoot.getSelection() escape hatch
+  // (checked above), so fall back here to Selection.getComposedRanges()
+  // (Selection API Level 2; WebKit 17+), which returns a StaticRange whose
+  // endpoints are rescoped into the shadow tree we ask for.
+  if (
+    !$shadowGetSelection &&
+    $rootNode instanceof ShadowRoot &&
+    typeof selection.getComposedRanges === 'function'
+  ) {
+    const [composedRange] = selection.getComposedRanges({ shadowRoots: [$rootNode] });
 
-  return { anchorOffset, focusOffset };
+    if (
+      composedRange &&
+      $root.contains(composedRange.startContainer) &&
+      $root.contains(composedRange.endContainer)
+    ) {
+      return {
+        anchorOffset: domToTextOffset($root, composedRange.startContainer, composedRange.startOffset),
+        focusOffset: domToTextOffset($root, composedRange.endContainer, composedRange.endOffset),
+      };
+    }
+  }
+
+  return null;
 }
 
 /**

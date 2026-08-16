@@ -106,15 +106,6 @@ const LIGHT_DOM_CSS = `
     white-space: nowrap;
   }
 
-  /* Submenu indicator for items that open a child menu. */
-  rc-menu [aria-haspopup='menu']::after,
-  rc-menu [aria-haspopup='true']::after {
-    content: var(--rc-menu-submenu-indicator-content, '›');
-    margin-inline-start: auto;
-    font-size: var(--rc-menu-submenu-indicator-size, 1em);
-    color: var(--rc-menu-submenu-indicator-color, currentColor);
-  }
-
   /* Separators */
   rc-menu [role='separator'],
   rc-menu hr {
@@ -166,10 +157,12 @@ const LIGHT_DOM_CSS = `
  *     add a visible `[data-group-label]` element as first child of the group for section headings.
  *   - `role="separator"` / `<hr>` produce horizontal dividers between sections.
  *   - Within any item, `[data-menu-shortcut]` elements are pushed to the inline-end edge for keyboard hints.
- *   - Items with `aria-haspopup="menu"` or `aria-haspopup="true"` get a trailing submenu indicator.
+ *   - Nested menu triggers supply their own trailing indicator through `rc-menu-button`'s `indicator` slot.
  *
  * @fires rc-menu-activate - Fired when a menu item is activated via keyboard (Enter/Space) or pointer click.
  * @fires rc-menu-close - Fired when Escape is pressed.
+ *
+ * @attr label - Accessible label for the menu; synced to `aria-label` on the host.
  *
  * @cssprop [--rc-menu-min-width=10em] - Minimum width of the menu panel.
  * @cssprop [--rc-menu-padding-block=0.25em] - Block (top/bottom) padding inside the panel.
@@ -177,6 +170,7 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-menu-border=1px solid ButtonBorder] - Border; falls back through --rc-border.
  * @cssprop [--rc-menu-radius=var(--rc-control-radius)] - Menu panel border radius.
  * @cssprop [--rc-menu-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Box shadow; falls back through --rc-shadow.
+ * @cssprop [--rc-menu-color=CanvasText] - Text color; falls back through --rc-field-text.
  * @cssprop [--rc-menu-item-min-block-size=0] - Minimum block size for menu item rows.
  * @cssprop [--rc-menu-item-padding-block=var(--rc-item-padding-block)] - Menu item block-axis padding.
  * @cssprop [--rc-menu-item-padding-inline=var(--rc-item-padding-inline)] - Menu item inline-axis padding.
@@ -190,9 +184,6 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-menu-check-color=inherit] - Color of the check/radio symbol.
  * @cssprop [--rc-menu-shortcut-size=0.8em] - Font size of `[data-menu-shortcut]` labels.
  * @cssprop [--rc-menu-shortcut-color=GrayText] - Text color of `[data-menu-shortcut]` labels.
- * @cssprop [--rc-menu-submenu-indicator-content='›'] - Text content for submenu indicators.
- * @cssprop [--rc-menu-submenu-indicator-size=1em] - Font size of submenu indicators.
- * @cssprop [--rc-menu-submenu-indicator-color=currentColor] - Text color of submenu indicators.
  * @cssprop [--rc-menu-disabled-color=GrayText] - Disabled menu item text color.
  * @cssprop [--rc-menu-disabled-opacity=var(--rc-disabled-opacity)] - Disabled menu item opacity.
  * @cssprop [--rc-menu-separator-border=1px solid ButtonBorder] - Separator border.
@@ -204,24 +195,24 @@ const LIGHT_DOM_CSS = `
 export class RCMenu extends LitElement {
   static styles = [menuStyles];
 
-  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
+  private static readonly _$styledRoots = new Set<Document | ShadowRoot>();
 
-  private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCMenu._styledRoots.has(root)) {
+  private static _ensureBaseStyles($root: Document | ShadowRoot): void {
+    if (RCMenu._$styledRoots.has($root)) {
       return;
     }
 
-    RCMenu._styledRoots.add(root);
+    RCMenu._$styledRoots.add($root);
 
-    const style = document.createElement('style');
+    const $style = document.createElement('style');
 
-    style.setAttribute('data-rc-light-dom-base', 'rc-menu');
-    style.textContent = LIGHT_DOM_CSS;
+    $style.setAttribute('data-rc-light-dom-base', 'rc-menu');
+    $style.textContent = LIGHT_DOM_CSS;
 
-    if (root instanceof Document) {
-      root.head.appendChild(style);
+    if ($root instanceof Document) {
+      $root.head.appendChild($style);
     } else {
-      root.appendChild(style);
+      $root.appendChild($style);
     }
   }
 
@@ -233,11 +224,11 @@ export class RCMenu extends LitElement {
   @property({ type: String })
   label = '';
 
-  protected _menuItems: Element[] = [];
+  protected _$menuItems: Element[] = [];
 
   protected readonly _activeDescendantCtrl = new ActiveDescendantController(this, {
     host: () => this,
-    items: () => this._menuItems,
+    items: () => this._$menuItems,
   });
 
   override connectedCallback(): void {
@@ -277,7 +268,7 @@ export class RCMenu extends LitElement {
 
   /** All navigable menu item elements in document order. */
   get items(): readonly Element[] {
-    return this._menuItems;
+    return this._$menuItems;
   }
 
   /** Move the virtual cursor and DOM focus to the first navigable item. */
@@ -295,12 +286,15 @@ export class RCMenu extends LitElement {
   /**
    * Move the virtual cursor to a specific item.
    *
-   * @param item - The element to make active. No-op when null or undefined.
+   * @param $item - The element to make active. No-op when null or undefined.
    */
-  focusItem(item?: Element | null): void {
-    if (!item) return;
+  focusItem($item?: Element | null): void {
+    if (!$item) {
+      return;
+    }
+
     this.focus();
-    this._activeDescendantCtrl.navigateToItem(item);
+    this._activeDescendantCtrl.navigateToItem($item);
   }
 
   /**
@@ -322,9 +316,9 @@ export class RCMenu extends LitElement {
   }
 
   protected _onSlotChange(e: Event): void {
-    const slot = e.currentTarget as HTMLSlotElement;
+    const $slot = e.currentTarget as HTMLSlotElement;
 
-    this._menuItems = this._collectMenuItems(slot);
+    this._$menuItems = this._collectMenuItems($slot);
     this._initMenuItems();
   }
 
@@ -337,69 +331,76 @@ export class RCMenu extends LitElement {
    * participate in arrow-key navigation. Separators and non-focusable
    * container elements are excluded.
    */
-  protected _collectMenuItems(slot: HTMLSlotElement): Element[] {
-    const items: Element[] = [];
+  protected _collectMenuItems($slot: HTMLSlotElement): Element[] {
+    const $items: Element[] = [];
 
-    for (const el of slot.assignedElements()) {
-      const role = el.getAttribute('role');
+    for (const $el of $slot.assignedElements()) {
+      const role = $el.getAttribute('role');
 
-      if (role === 'separator') continue;
-
-      if (role === 'group') {
-        for (const child of el.children) {
-          if (isFocusable(child)) items.push(child);
-        }
+      if (role === 'separator') {
         continue;
       }
 
-      if (isFocusable(el)) items.push(el);
+      if (role === 'group') {
+        for (const $child of $el.children) {
+          if (isFocusable($child)) {
+            $items.push($child);
+          }
+        }
+
+        continue;
+      }
+
+      if (isFocusable($el)) {
+        $items.push($el);
+      }
     }
 
-    return items;
+    return $items;
   }
 
   protected _initMenuItems(): void {
-    this._menuItems.forEach((el) => {
-      const existingRole = el.getAttribute('role');
+    this._$menuItems.forEach(($el) => {
+      const existingRole = $el.getAttribute('role');
 
       // Preserve explicit roles; only assign the default when none is present.
       if (
         !existingRole ||
         !MENU_ITEM_ROLES.includes(existingRole as (typeof MENU_ITEM_ROLES)[number])
       ) {
-        el.setAttribute('role', 'menuitem');
+        $el.setAttribute('role', 'menuitem');
       }
 
-      el.setAttribute('tabindex', '-1');
+      $el.setAttribute('tabindex', '-1');
 
       if (
-        (el.getAttribute('role') === 'menuitemcheckbox' ||
-          el.getAttribute('role') === 'menuitemradio') &&
-        !el.hasAttribute('aria-checked')
+        ($el.getAttribute('role') === 'menuitemcheckbox' ||
+          $el.getAttribute('role') === 'menuitemradio') &&
+        !$el.hasAttribute('aria-checked')
       ) {
-        el.setAttribute('aria-checked', 'false');
+        $el.setAttribute('aria-checked', 'false');
       }
     });
   }
 
-  protected _applyCheckedState(item: HTMLElement): 'true' | 'false' | 'mixed' | undefined {
-    const role = item.getAttribute('role');
+  protected _applyCheckedState($item: HTMLElement): 'true' | 'false' | 'mixed' | undefined {
+    const role = $item.getAttribute('role');
 
     if (role === 'menuitemcheckbox') {
-      const checked = item.getAttribute('aria-checked') === 'true' ? 'false' : 'true';
+      const checked = $item.getAttribute('aria-checked') === 'true' ? 'false' : 'true';
 
-      item.setAttribute('aria-checked', checked);
+      $item.setAttribute('aria-checked', checked);
 
       return checked;
     }
 
     if (role === 'menuitemradio') {
-      const group = item.closest('[role="group"]');
-      const scope = group && this.contains(group) ? group : this;
+      const $group = $item.closest('[role="group"]');
+      const $scope = $group && this.contains($group) ? $group : this;
 
-      for (const radio of scope.querySelectorAll<HTMLElement>('[role="menuitemradio"]')) {
-        if (radio.closest('rc-menu') === this) {
-          radio.setAttribute('aria-checked', radio === item ? 'true' : 'false');
+      for (const $radio of $scope.querySelectorAll<HTMLElement>('[role="menuitemradio"]')) {
+        if ($radio.closest('rc-menu') === this) {
+          $radio.setAttribute('aria-checked', $radio === $item ? 'true' : 'false');
         }
       }
 
@@ -456,15 +457,17 @@ export class RCMenu extends LitElement {
       }
 
       case 'Enter':
+      // Falls through so both activation keys share the same handler.
+
       case ' ': {
         e.preventDefault();
         e.stopPropagation();
 
-        const active = this._activeDescendantCtrl.activeItem;
+        const $active = this._activeDescendantCtrl.activeItem;
 
-        if (active) {
+        if ($active) {
           // _onClick dispatches rc-menu-activate when the synthetic click bubbles up.
-          (active as HTMLElement).click();
+          ($active as HTMLElement).click();
         }
 
         break;
@@ -492,29 +495,29 @@ export class RCMenu extends LitElement {
   };
 
   protected _onClick = (e: MouseEvent): void => {
-    const target = e.target as Element;
-    const item = target.closest<HTMLElement>(
+    const $target = e.target as Element;
+    const $item = $target.closest<HTMLElement>(
       '[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"]',
     );
 
-    if (!item || !this.contains(item)) {
+    if (!$item || !this.contains($item)) {
       return;
     }
 
-    if (item.matches(':disabled, [aria-disabled="true"]')) {
+    if ($item.matches(':disabled, [aria-disabled="true"]')) {
       return;
     }
 
-    const checked = this._applyCheckedState(item);
+    const checked = this._applyCheckedState($item);
 
     this.dispatchEvent(
       new CustomEvent<RCMenuActivateEvent>('rc-menu-activate', {
         bubbles: true,
         composed: true,
         detail: {
-          item,
-          value: item.dataset.value ?? item.getAttribute('value') ?? '',
-          text: item.textContent?.trim() ?? '',
+          item: $item,
+          value: $item.dataset.value ?? $item.getAttribute('value') ?? '',
+          text: $item.textContent?.trim() ?? '',
           checked,
         },
       }),

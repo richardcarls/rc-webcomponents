@@ -3,7 +3,6 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-
 import './define';
 import type { RCSearchBar } from './rc-search-bar';
 
@@ -36,6 +35,7 @@ test('progressive enhancement: the native input keeps its author attributes', as
   `);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
 
   const $input = $host.querySelector<HTMLInputElement>('input[type="search"]');
@@ -57,6 +57,7 @@ test('label association resolves through the native label registry', async () =>
   `);
 
   const $wrap = (await screen.getByTestId('wrap').element()) as HTMLElement;
+
   await tick();
 
   const $label = $wrap.querySelector<HTMLLabelElement>('label[for="labeled-search"]');
@@ -73,6 +74,7 @@ test('typing dispatches one debounced rc-search-bar-input with the final value',
   `);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
 
   const $input = $host.querySelector<HTMLInputElement>('input')!;
@@ -98,6 +100,7 @@ test('debounce="0" dispatches synchronously per input', async () => {
   `);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
 
   const $input = $host.querySelector<HTMLInputElement>('input')!;
@@ -120,12 +123,14 @@ test('clear empties the input, fires both events in order, and restores focus', 
   `);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
 
   const $input = $host.querySelector<HTMLInputElement>('input')!;
   const events: string[] = [];
 
   $host.addEventListener('rc-search-bar-clear', () => events.push('clear'));
+
   $host.addEventListener('rc-search-bar-input', (e) =>
     events.push(`input:${(e as CustomEvent).detail.value}`),
   );
@@ -160,6 +165,7 @@ test('controlled value writes are silent; user typing still dispatches', async (
   `);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
 
   const $input = $host.querySelector<HTMLInputElement>('input')!;
@@ -192,6 +198,7 @@ test('defaultValue applies once and loses to author and host values', async () =
 
   const $plain = (await screen.getByTestId('plain').element()) as RCSearchBar;
   const $authored = (await screen.getByTestId('authored').element()) as RCSearchBar;
+
   await tick();
 
   expect($plain.querySelector('input')!.value).toBe('hint');
@@ -216,6 +223,7 @@ test('pre-filled author value shows the clear button', async () => {
   `);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
   await $host.updateComplete;
 
@@ -235,6 +243,7 @@ test('placeholder property mirrors only when the author set none', async () => {
 
   const $plain = (await screen.getByTestId('plain').element()) as RCSearchBar;
   const $authored = (await screen.getByTestId('authored').element()) as RCSearchBar;
+
   await tick();
 
   expect($plain.querySelector('input')!.placeholder).toBe('Search 51 recipes');
@@ -258,6 +267,7 @@ test('the clear button tracks the disabled state of the input', async () => {
   `);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
   await $host.updateComplete;
 
@@ -273,6 +283,7 @@ test('no slotted search input degrades silently with no chrome', async () => {
   const screen = render(html`<rc-search-bar data-testid="host"></rc-search-bar>`);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
   await $host.updateComplete;
 
@@ -297,9 +308,11 @@ test('has no automated accessibility violations with a live clear button', async
   `);
 
   const $wrap = (await screen.getByTestId('wrap').element()) as HTMLElement;
+
   await tick();
 
   const $host = $wrap.querySelector<RCSearchBar>('rc-search-bar')!;
+
   await $host.updateComplete;
   expect(clearButton($host).hidden).toBe(false);
 
@@ -314,6 +327,7 @@ test('show-clear-on-focus: clear button shows on focus with no value, hides on b
   `);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
   await $host.updateComplete;
 
@@ -338,12 +352,14 @@ test('show-clear-on-focus: clear while empty dispatches both events and stays fo
   `);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
 
   const $input = $host.querySelector<HTMLInputElement>('input')!;
   const events: string[] = [];
 
   $host.addEventListener('rc-search-bar-clear', () => events.push('clear'));
+
   $host.addEventListener('rc-search-bar-input', (e) =>
     events.push(`input:${(e as CustomEvent).detail.value}`),
   );
@@ -371,6 +387,7 @@ test('allow-native-clear reflects as a boolean attribute', async () => {
   `);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
   await tick();
 
   expect($host.hasAttribute('allow-native-clear')).toBe(true);
@@ -379,4 +396,189 @@ test('allow-native-clear reflects as a boolean attribute', async () => {
   $host.allowNativeClear = false;
   await $host.updateComplete;
   expect($host.hasAttribute('allow-native-clear')).toBe(false);
+});
+
+test('search view opens on focus and dispatches toggle events', async () => {
+  const toggleSpy = vi.fn();
+  const screen = render(html`
+    <rc-search-bar data-testid="host" variant="view" @rc-search-bar-toggle=${toggleSpy}>
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+  `);
+
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
+
+  $input.dispatchEvent(new FocusEvent('focus'));
+  await $host.updateComplete;
+
+  expect($host.open).toBe(true);
+  expect($host.shadowRoot!.querySelector('#view')).not.toBeNull();
+  expect(toggleSpy).toHaveBeenCalledTimes(1);
+  expect(toggleSpy.mock.calls[0][0].detail).toEqual({ open: true });
+
+  $input.dispatchEvent(
+    new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Escape' }),
+  );
+
+  await $host.updateComplete;
+
+  expect($host.open).toBe(false);
+  expect(toggleSpy).toHaveBeenCalledTimes(2);
+  expect(toggleSpy.mock.calls[1][0].detail).toEqual({ open: false });
+});
+
+test('controlled search view open writes are silent', async () => {
+  const toggleSpy = vi.fn();
+  const screen = render(html`
+    <rc-search-bar data-testid="host" variant="view" @rc-search-bar-toggle=${toggleSpy}>
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+  `);
+
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+
+  $host.open = true;
+  await $host.updateComplete;
+
+  expect($host.open).toBe(true);
+  expect($host.shadowRoot!.querySelector('#view')).not.toBeNull();
+  expect(toggleSpy).not.toHaveBeenCalled();
+});
+
+test('default-open initializes search view open state', async () => {
+  const screen = render(html`
+    <rc-search-bar data-testid="host" variant="view" default-open>
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+  `);
+
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+  await $host.updateComplete;
+
+  expect($host.open).toBe(true);
+  expect($host.shadowRoot!.querySelector('#view')).not.toBeNull();
+});
+
+test('consumer view part styles do not reveal an empty search view', async () => {
+  const screen = render(html`
+    <style>
+      rc-search-bar::part(view) {
+        display: block;
+        padding: 2rem;
+        border: 4px solid red;
+      }
+    </style>
+    <rc-search-bar data-testid="host" variant="view" default-open>
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+  `);
+
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+  await $host.updateComplete;
+
+  const $view = $host.shadowRoot!.querySelector<HTMLElement>('#view')!;
+  const $surface = $host.shadowRoot!.querySelector<HTMLElement>('#view-surface')!;
+
+  expect($view.getAttribute('part')).toBeNull();
+  expect($surface.getAttribute('part')).toBe('view');
+  expect(getComputedStyle($surface).display).toBe('none');
+});
+
+test('search view renders datalist suggestions when no suggestions slot is provided', async () => {
+  const screen = render(html`
+    <rc-search-bar data-testid="host" variant="view" default-open debounce="0">
+      <input type="search" aria-label="Search" list="recipes" />
+      <datalist id="recipes">
+        <option value="pasta" label="Pasta"></option>
+        <option value="tomato soup"></option>
+      </datalist>
+    </rc-search-bar>
+  `);
+
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+  await $host.updateComplete;
+
+  const $suggestions = $host.shadowRoot!.querySelectorAll<HTMLButtonElement>(
+    'button[part="suggestion"]',
+  );
+
+  expect($suggestions).toHaveLength(2);
+  expect($suggestions[0]!.textContent?.trim()).toBe('Pasta');
+  expect($suggestions[1]!.textContent?.trim()).toBe('tomato soup');
+});
+
+test('datalist suggestion selection writes the native input and dispatches events', async () => {
+  const inputSpy = vi.fn();
+  const selectSpy = vi.fn();
+  const screen = render(html`
+    <rc-search-bar
+      data-testid="host"
+      variant="view"
+      default-open
+      debounce="0"
+      @rc-search-bar-input=${inputSpy}
+      @rc-search-bar-suggestion-select=${selectSpy}
+    >
+      <input type="search" aria-label="Search" list="recipes" />
+      <datalist id="recipes">
+        <option value="pasta" label="Pasta"></option>
+      </datalist>
+    </rc-search-bar>
+  `);
+
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+  await $host.updateComplete;
+
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
+  const $suggestion = $host.shadowRoot!.querySelector<HTMLButtonElement>(
+    'button[part="suggestion"]',
+  )!;
+
+  $suggestion.click();
+  await $host.updateComplete;
+
+  expect($input.value).toBe('pasta');
+  expect($host.value).toBe('pasta');
+  expect($host.open).toBe(false);
+  expect(selectSpy).toHaveBeenCalledTimes(1);
+  expect(selectSpy.mock.calls[0][0].detail).toEqual({ value: 'pasta', label: 'Pasta' });
+  expect(inputSpy).toHaveBeenCalledTimes(1);
+  expect(inputSpy.mock.calls[0][0].detail).toEqual({ value: 'pasta' });
+});
+
+test('slotted search view suggestions take precedence over datalist suggestions', async () => {
+  const screen = render(html`
+    <rc-search-bar data-testid="host" variant="view" default-open>
+      <input type="search" aria-label="Search" list="recipes" />
+      <datalist id="recipes">
+        <option value="pasta" label="Pasta"></option>
+      </datalist>
+      <div slot="suggestions">Rich suggestion row</div>
+    </rc-search-bar>
+  `);
+
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+  await $host.updateComplete;
+
+  await vi.waitFor(() =>
+    expect($host.shadowRoot!.querySelector('slot[name="suggestions"]')).not.toBeNull(),
+  );
+
+  expect($host.shadowRoot!.querySelectorAll('button[part="suggestion"]')).toHaveLength(0);
 });

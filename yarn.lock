@@ -4512,6 +4512,84 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-bottom-sheet@workspace:*, @rcarls/rc-bottom-sheet@workspace:packages/rc-bottom-sheet":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-bottom-sheet@workspace:packages/rc-bottom-sheet"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:*"
+    "@rcarls/rc-dialog": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-button@workspace:*, @rcarls/rc-button@workspace:packages/rc-button":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-button@workspace:packages/rc-button"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-card@workspace:*, @rcarls/rc-card@workspace:packages/rc-card":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-card@workspace:packages/rc-card"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-chip@workspace:*, @rcarls/rc-chip@workspace:packages/rc-chip":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-chip@workspace:packages/rc-chip"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-combobox@workspace:*, @rcarls/rc-combobox@workspace:packages/rc-combobox":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-combobox@workspace:packages/rc-combobox"
@@ -4619,6 +4697,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-fab-menu@workspace:*, @rcarls/rc-fab-menu@workspace:packages/rc-fab-menu":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-fab-menu@workspace:packages/rc-fab-menu"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:*"
+    "@rcarls/rc-menu": "workspace:*"
+    "@rcarls/rc-menu-button": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-fab@workspace:*, @rcarls/rc-fab@workspace:packages/rc-fab":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-fab@workspace:packages/rc-fab"
@@ -4664,8 +4764,10 @@ __metadata:
   resolution: "@rcarls/rc-markdown-editor@workspace:packages/rc-markdown-editor"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-button": "workspace:*"
     "@rcarls/rc-select": "workspace:*"
     "@rcarls/rc-textarea": "workspace:*"
+    "@rcarls/rc-toolbar": "workspace:*"
     "@types/turndown": "npm:^5.0.5"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
@@ -4752,6 +4854,46 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-navigation-bar@workspace:*, @rcarls/rc-navigation-bar@workspace:packages/rc-navigation-bar":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-navigation-bar@workspace:packages/rc-navigation-bar"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-navigation-rail@workspace:*, @rcarls/rc-navigation-rail@workspace:packages/rc-navigation-rail":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-navigation-rail@workspace:packages/rc-navigation-rail"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-range-slider@workspace:*, @rcarls/rc-range-slider@workspace:packages/rc-range-slider":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-range-slider@workspace:packages/rc-range-slider"
@@ -4778,6 +4920,25 @@ __metadata:
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@rcarls/rc-common": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-segmented-button@workspace:*, @rcarls/rc-segmented-button@workspace:packages/rc-segmented-button":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-segmented-button@workspace:packages/rc-segmented-button"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4833,12 +4994,50 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-snackbar@workspace:*, @rcarls/rc-snackbar@workspace:packages/rc-snackbar":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-snackbar@workspace:packages/rc-snackbar"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-splitter@workspace:*, @rcarls/rc-splitter@workspace:packages/rc-splitter":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-splitter@workspace:packages/rc-splitter"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@rcarls/rc-common": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-switch@workspace:*, @rcarls/rc-switch@workspace:packages/rc-switch":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-switch@workspace:packages/rc-switch"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -5006,20 +5205,30 @@ __metadata:
   dependencies:
     "@rcarls/rc-accordion": "workspace:*"
     "@rcarls/rc-app-bar": "workspace:*"
+    "@rcarls/rc-bottom-sheet": "workspace:*"
+    "@rcarls/rc-button": "workspace:*"
+    "@rcarls/rc-card": "workspace:*"
+    "@rcarls/rc-chip": "workspace:*"
     "@rcarls/rc-combobox": "workspace:*"
     "@rcarls/rc-dialog": "workspace:*"
     "@rcarls/rc-disclosure": "workspace:*"
     "@rcarls/rc-fab": "workspace:*"
+    "@rcarls/rc-fab-menu": "workspace:*"
     "@rcarls/rc-listbox": "workspace:*"
     "@rcarls/rc-markdown-editor": "workspace:*"
     "@rcarls/rc-menu": "workspace:*"
     "@rcarls/rc-menu-button": "workspace:*"
     "@rcarls/rc-menubar": "workspace:*"
+    "@rcarls/rc-navigation-bar": "workspace:*"
+    "@rcarls/rc-navigation-rail": "workspace:*"
     "@rcarls/rc-range-slider": "workspace:*"
     "@rcarls/rc-search-bar": "workspace:*"
+    "@rcarls/rc-segmented-button": "workspace:*"
     "@rcarls/rc-select": "workspace:*"
     "@rcarls/rc-slider": "workspace:*"
+    "@rcarls/rc-snackbar": "workspace:*"
     "@rcarls/rc-splitter": "workspace:*"
+    "@rcarls/rc-switch": "workspace:*"
     "@rcarls/rc-textarea": "workspace:*"
     "@rcarls/rc-toolbar": "workspace:*"
     "@rcarls/rc-transfer-list": "workspace:*"

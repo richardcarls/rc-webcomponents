@@ -3,6 +3,7 @@ import { css } from 'lit';
 export const searchBarStyles = css`
   :host {
     display: inline-flex;
+    position: relative;
     color-scheme: inherit;
   }
 
@@ -18,15 +19,24 @@ export const searchBarStyles = css`
     gap: var(--rc-search-bar-gap, var(--rc-control-gap, 0.25em));
     block-size: var(--rc-search-bar-height, var(--rc-control-block-size, 2.5rem));
     padding-inline: var(--rc-search-bar-padding-inline, var(--rc-control-padding-inline, 0.75rem));
-    border: var(--rc-search-bar-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)));
-    border-radius: var(--rc-search-bar-radius, var(--rc-control-radius, var(--rc-radius-sm, 0.125em)));
+    border: var(
+      --rc-search-bar-border,
+      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
+    );
+    border-radius: var(
+      --rc-search-bar-radius,
+      var(--rc-control-radius, var(--rc-radius-sm, 0.125em))
+    );
     box-shadow: var(--rc-search-bar-shadow, none);
     background: var(--rc-search-bar-bg, var(--rc-field, Field));
     color: var(--rc-search-bar-color, var(--rc-field-text, FieldText));
     font-family: var(--rc-font-family, inherit);
     font-size: var(--rc-font-size, inherit);
     line-height: var(--rc-line-height, normal);
-    transition: background-color 120ms, border-color 120ms, box-shadow 120ms;
+    transition:
+      background-color 120ms,
+      border-color 120ms,
+      box-shadow 120ms;
   }
 
   :host([data-interaction-mode='keyboard']) #root:focus-within {
@@ -98,6 +108,72 @@ export const searchBarStyles = css`
   }
 
   #clear:focus-visible {
+    outline: var(--rc-focus-ring, auto);
+    outline-offset: var(--rc-focus-ring-offset, 0);
+  }
+
+  #view {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: calc(100% + var(--rc-search-bar-view-offset, 0.25rem));
+    inset-inline: 0;
+    min-inline-size: 100%;
+  }
+
+  #view-surface {
+    box-sizing: border-box;
+    padding-block: var(--rc-search-bar-view-padding-block, 0.5rem);
+    border: var(
+      --rc-search-bar-view-border,
+      var(--rc-search-bar-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)))
+    );
+    border-radius: var(
+      --rc-search-bar-view-radius,
+      var(--rc-search-bar-radius, var(--rc-control-radius, var(--rc-radius-sm, 0.125em)))
+    );
+    box-shadow: var(--rc-search-bar-view-shadow, var(--rc-search-bar-shadow, none));
+    background: var(--rc-search-bar-view-bg, var(--rc-search-bar-bg, var(--rc-field, Field)));
+    color: var(
+      --rc-search-bar-view-color,
+      var(--rc-search-bar-color, var(--rc-field-text, FieldText))
+    );
+    font-family: var(--rc-font-family, inherit);
+    font-size: var(--rc-font-size, inherit);
+  }
+
+  #view-surface.empty {
+    display: none;
+  }
+
+  #suggestions {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #suggestions ::slotted(*) {
+    min-inline-size: 0;
+  }
+
+  [part='suggestion'] {
+    display: flex;
+    align-items: center;
+    min-block-size: var(--rc-search-bar-suggestion-min-block-size, 2.75rem);
+    padding-block: 0;
+    padding-inline: var(--rc-search-bar-suggestion-padding-inline, 1rem);
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  [part='suggestion']:hover,
+  [part='suggestion']:focus-visible {
+    background: var(--rc-search-bar-suggestion-hover-bg, ButtonFace);
+  }
+
+  [part='suggestion']:focus-visible {
     outline: var(--rc-focus-ring, auto);
     outline-offset: var(--rc-focus-ring-offset, 0);
   }

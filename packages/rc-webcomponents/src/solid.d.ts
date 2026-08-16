@@ -25,6 +25,102 @@ export type RCDisclosureToggleDetail = {
   open: boolean;
 };
 
+/** Public API surface of `<rc-button>`. */
+export type RCButtonRef = HTMLElement & {
+  disabled: boolean;
+  pending: boolean;
+  progress: boolean;
+  progressValue: number | undefined;
+  toggle: boolean;
+  selected: boolean;
+  defaultSelected: boolean;
+  iconOnly: boolean;
+  fullWidth: boolean;
+};
+
+/** Public API surface of `<rc-card>`. */
+export type RCCardRef = HTMLElement & {
+  selected: boolean;
+  disabled: boolean;
+  interactive: boolean;
+  actionTarget: string;
+};
+
+export type RCSwitchChangeDetail = {
+  checked: boolean;
+};
+
+export type RCSwitchRef = HTMLElement & {
+  checked: boolean;
+  defaultChecked: boolean;
+  disabled: boolean;
+  icons: boolean;
+  showOnlySelectedIcon: boolean;
+};
+
+export type RCSegmentedButtonChangeDetail = {
+  value: string;
+};
+
+export type RCSegmentedButtonRef = HTMLElement & {
+  value: string;
+  defaultValue: string;
+  disabled: boolean;
+  orientation: 'horizontal' | 'vertical';
+};
+
+export type RCChipVariant = 'assist' | 'filter' | 'input' | 'suggestion';
+
+export type RCChipChangeDetail = {
+  selected: boolean;
+};
+
+export type RCChipRemoveDetail = {
+  chip: HTMLElement;
+};
+
+export type RCButtonToggleDetail = {
+  selected: boolean;
+};
+
+export type RCChipRef = HTMLElement & {
+  variant: RCChipVariant;
+  selected: boolean;
+  defaultSelected: boolean;
+  disabled: boolean;
+  readonly: boolean;
+  removable: boolean;
+};
+
+export type RCSnackbarQueuePolicy = 'queue' | 'replace';
+export type RCSnackbarCloseReason = 'action' | 'api' | 'timeout' | 'replace' | 'clear';
+
+export type RCSnackbarShowOptions = {
+  message: string;
+  actionLabel?: string;
+  duration?: number;
+};
+
+export type RCSnackbarActionDetail = {
+  message: string;
+};
+
+export type RCSnackbarCloseDetail = {
+  reason: RCSnackbarCloseReason;
+  message: string;
+};
+
+export type RCSnackbarRef = HTMLElement & {
+  open: boolean;
+  message: string;
+  actionLabel: string;
+  duration: number;
+  queuePolicy: RCSnackbarQueuePolicy;
+  show(message: string | RCSnackbarShowOptions): void;
+  close(reason?: RCSnackbarCloseReason): void;
+  clear(): void;
+};
+
 /** Public API surface of `<rc-accordion>`. */
 export type RCAccordionRef = HTMLElement & {
   multiple: boolean;
@@ -92,9 +188,7 @@ export type RCListboxActionChangeDetail<Action extends string = string> = RCSele
   action: Action;
 };
 
-export type RCListboxChangeDetail =
-  | RCListboxSelectChangeDetail
-  | RCListboxActionChangeDetail;
+export type RCListboxChangeDetail = RCListboxSelectChangeDetail | RCListboxActionChangeDetail;
 
 export type RCSelectRef = HTMLElement & {
   open: boolean;
@@ -121,6 +215,17 @@ export type RCComboboxCreateDetail = {
 };
 
 /** Public API surface of `<rc-dialog>`. */
+export type RCDialogResizeOrigin =
+  | ''
+  | 'top'
+  | 'right'
+  | 'bottom'
+  | 'left'
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right';
+
 export type RCDialogRef = HTMLElement & {
   open: boolean | undefined;
   defaultOpen: boolean;
@@ -129,6 +234,8 @@ export type RCDialogRef = HTMLElement & {
   moveBounds: 'viewport' | 'parent';
   moveStep: number;
   resize: 'none' | 'both' | 'horizontal' | 'vertical';
+  resizeOrigin: RCDialogResizeOrigin;
+  resizeHandle: string;
   resizeThreshold: number;
   resizeStep: number;
   closedBy: 'any' | 'closerequest' | 'none' | '';
@@ -138,6 +245,26 @@ export type RCDialogRef = HTMLElement & {
   show(): void;
   close(returnValue?: string): void;
   requestClose(returnValue?: string): void;
+};
+
+/** Detail shape for `rc-bottom-sheet-snap`. */
+export type RCBottomSheetSnapDetail = {
+  /** Index into the resolved snap-point list selected as the target. */
+  index: number;
+
+  /** Target height, in pixels. */
+  height: number;
+
+  /** Whether the snap came from a drag release or a `snapTo()` call. */
+  trigger: 'drag' | 'api';
+};
+
+/** Public API surface of `<rc-bottom-sheet>`. */
+export type RCBottomSheetRef = RCDialogRef & {
+  snapPoints: string;
+  swipeDismiss: boolean;
+  swipeVelocity: number;
+  snapTo(index: number, behavior?: 'animated' | 'instant'): void;
 };
 
 export type RCDialogToggleDetail = {
@@ -190,6 +317,32 @@ export type RCMenuButtonToggleDetail = {
   open: boolean;
 };
 
+/** Public API surface of `<rc-fab-menu>`. */
+export type RCFabMenuRef = RCMenuButtonRef & {
+  position: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+};
+
+export type RCFabMenuToggleDetail = RCMenuButtonToggleDetail;
+
+/** Public API surface of `<rc-navigation-bar>`. */
+export type RCNavigationBarRef = HTMLElement & {
+  activeSelector: string;
+  indicatorTarget: string;
+};
+
+/** Public API surface of `<rc-navigation-rail>`. */
+export type RCNavigationRailRef = RCNavigationBarRef & {
+  expanded: boolean;
+  defaultExpanded: boolean;
+  expand(): void;
+  collapse(): void;
+  toggleExpanded(): void;
+};
+
+export type RCNavigationRailToggleDetail = {
+  expanded: boolean;
+};
+
 /** Public API surface of `<rc-menubar>`. */
 export type RCMenubarRef = HTMLElement & {
   label: string;
@@ -206,11 +359,17 @@ export type RCToolbarRef = HTMLElement & {
 export type RCSplitterRef = HTMLElement & {
   label: string;
   orientation: 'horizontal' | 'vertical';
-  mode: 'length' | 'percent';
+  mode: 'length' | 'percent' | 'fixed';
   step: number;
+  min: number;
+  max: number | undefined;
   value: number;
   defaultValue: number | undefined;
   fixed: boolean;
+  collapsible: boolean;
+  snapPoints: string;
+  swipeVelocity: number;
+  snapTo(index: number, behavior?: 'animated' | 'instant'): void;
 };
 
 export type RCTextareaRef = HTMLElement & {
@@ -384,15 +543,30 @@ export type RCAppBarScrollDetail = {
 
 /** Public API surface of `<rc-search-bar>`. */
 export type RCSearchBarRef = HTMLElement & {
+  variant: 'bar' | 'view';
+  open: boolean;
+  defaultOpen: boolean;
   value: string;
   defaultValue: string | undefined;
   debounce: number;
   clearLabel: string;
   placeholder: string | undefined;
+  showView(): void;
+  closeView(): void;
+  toggleView(): void;
 };
 
 export type RCSearchBarInputDetail = {
   value: string;
+};
+
+export type RCSearchBarToggleDetail = {
+  open: boolean;
+};
+
+export type RCSearchBarSuggestionSelectDetail = {
+  value: string;
+  label: string;
 };
 
 export type RCSplitterChangeDetail = {
@@ -424,6 +598,80 @@ declare module 'solid-js' {
         name?: string;
         multiple?: boolean | string;
         'on:rc-disclosure-toggle'?: (e: CustomEvent<RCDisclosureToggleDetail>) => void;
+      };
+
+      'rc-button': JSX.HTMLAttributes<RCButtonRef> & {
+        disabled?: boolean | string;
+        pending?: boolean | string;
+        progress?: boolean | string;
+        'progress-value'?: number | string;
+        toggle?: boolean | string;
+        selected?: boolean | string;
+        defaultSelected?: boolean | string;
+        'default-selected'?: boolean | string;
+        'icon-only'?: boolean | string;
+        'full-width'?: boolean | string;
+        'prop:selected'?: boolean | undefined;
+        'prop:defaultSelected'?: boolean | undefined;
+        'on:rc-button-toggle'?: (e: CustomEvent<RCButtonToggleDetail>) => void;
+      };
+
+      'rc-card': JSX.HTMLAttributes<RCCardRef> & {
+        selected?: boolean | string;
+        disabled?: boolean | string;
+        interactive?: boolean | string;
+        'action-target'?: string;
+      };
+
+      'rc-switch': JSX.HTMLAttributes<RCSwitchRef> & {
+        checked?: boolean | string;
+        defaultChecked?: boolean | string;
+        'default-checked'?: boolean | string;
+        disabled?: boolean | string;
+        icons?: boolean | string;
+        'show-only-selected-icon'?: boolean | string;
+        'prop:checked'?: boolean | undefined;
+        'prop:defaultChecked'?: boolean | undefined;
+        'on:rc-switch-change'?: (e: CustomEvent<RCSwitchChangeDetail>) => void;
+      };
+
+      'rc-segmented-button': JSX.HTMLAttributes<RCSegmentedButtonRef> & {
+        value?: string;
+        defaultValue?: string;
+        'default-value'?: string;
+        disabled?: boolean | string;
+        orientation?: 'horizontal' | 'vertical';
+        'prop:value'?: string | undefined;
+        'prop:defaultValue'?: string | undefined;
+        'on:rc-segmented-button-change'?: (e: CustomEvent<RCSegmentedButtonChangeDetail>) => void;
+      };
+
+      'rc-chip': JSX.HTMLAttributes<RCChipRef> & {
+        variant?: RCChipVariant;
+        selected?: boolean | string;
+        defaultSelected?: boolean | string;
+        'default-selected'?: boolean | string;
+        disabled?: boolean | string;
+        readonly?: boolean | string;
+        removable?: boolean | string;
+        'prop:selected'?: boolean | undefined;
+        'prop:defaultSelected'?: boolean | undefined;
+        'on:rc-chip-change'?: (e: CustomEvent<RCChipChangeDetail>) => void;
+        'on:rc-chip-remove'?: (e: CustomEvent<RCChipRemoveDetail>) => void;
+      };
+
+      'rc-snackbar': JSX.HTMLAttributes<RCSnackbarRef> & {
+        open?: boolean | string;
+        message?: string;
+        actionLabel?: string;
+        'action-label'?: string;
+        duration?: number | string;
+        queuePolicy?: RCSnackbarQueuePolicy;
+        'queue-policy'?: RCSnackbarQueuePolicy;
+        'prop:open'?: boolean | undefined;
+        'prop:duration'?: number | undefined;
+        'on:rc-snackbar-action'?: (e: CustomEvent<RCSnackbarActionDetail>) => void;
+        'on:rc-snackbar-close'?: (e: CustomEvent<RCSnackbarCloseDetail>) => void;
       };
 
       'rc-listbox': JSX.HTMLAttributes<RCListboxRef> & {
@@ -462,7 +710,7 @@ declare module 'solid-js' {
         disabled?: boolean | string;
         placeholder?: string;
         display?: 'auto' | 'chips' | 'compact';
-        allowcreate?: boolean | string;
+        'allow-create'?: boolean | string;
         'filter-strategy'?: 'prefix' | 'contains';
         value?: RCSelectValue;
         defaultValue?: RCSelectValue;
@@ -470,6 +718,7 @@ declare module 'solid-js' {
         'prop:value'?: RCSelectValue | undefined;
         'prop:defaultValue'?: RCSelectValue | undefined;
         'prop:options'?: RCSelectOption[] | undefined;
+        'prop:allowCreate'?: boolean | undefined;
         'on:rc-select-change'?: (e: CustomEvent<RCSelectChangeDetail>) => void;
         'on:rc-select-open'?: (e: CustomEvent) => void;
         'on:rc-select-close'?: (e: CustomEvent) => void;
@@ -481,11 +730,15 @@ declare module 'solid-js' {
         defaultOpen?: boolean | string;
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
+        'prop:modal'?: boolean | undefined;
+        'prop:lightDismiss'?: boolean | undefined;
         movable?: boolean | string;
         'move-handle'?: string;
         'move-bounds'?: 'viewport' | 'parent';
         'move-step'?: number | string;
         resize?: 'none' | 'both' | 'horizontal' | 'vertical';
+        'resize-origin'?: RCDialogResizeOrigin;
+        'resize-handle'?: string;
         'resize-threshold'?: number | string;
         'resize-step'?: number | string;
         'closed-by'?: 'any' | 'closerequest' | 'none';
@@ -495,6 +748,31 @@ declare module 'solid-js' {
         'on:rc-dialog-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
         'on:rc-dialog-request-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
         'on:rc-dialog-cancel'?: (e: CustomEvent) => void;
+      };
+
+      'rc-bottom-sheet': JSX.HTMLAttributes<RCBottomSheetRef> & {
+        open?: boolean | string;
+        defaultOpen?: boolean | string;
+        'prop:open'?: boolean | undefined;
+        'prop:defaultOpen'?: boolean | undefined;
+        'prop:modal'?: boolean | undefined;
+        'prop:lightDismiss'?: boolean | undefined;
+        'prop:swipeDismiss'?: boolean | undefined;
+        'light-dismiss'?: boolean | string;
+        resize?: 'none' | 'both' | 'horizontal' | 'vertical';
+        'resize-origin'?: RCDialogResizeOrigin;
+        'resize-handle'?: string;
+        'resize-threshold'?: number | string;
+        'resize-step'?: number | string;
+        'snap-points'?: string;
+        'swipe-dismiss'?: boolean | string;
+        'swipe-velocity'?: number | string;
+        'on:rc-dialog-open'?: (e: CustomEvent) => void;
+        'on:rc-dialog-toggle'?: (e: CustomEvent<RCDialogToggleDetail>) => void;
+        'on:rc-dialog-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
+        'on:rc-dialog-request-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
+        'on:rc-dialog-cancel'?: (e: CustomEvent) => void;
+        'on:rc-bottom-sheet-snap'?: (e: CustomEvent<RCBottomSheetSnapDetail>) => void;
       };
 
       'rc-menu': JSX.HTMLAttributes<RCMenuRef> & {
@@ -511,6 +789,31 @@ declare module 'solid-js' {
         orientation?: 'horizontal' | 'vertical';
         placement?: RCMenuButtonPlacement;
         'on:rc-menu-button-toggle'?: (e: CustomEvent<RCMenuButtonToggleDetail>) => void;
+      };
+
+      'rc-fab-menu': JSX.HTMLAttributes<RCFabMenuRef> & {
+        open?: boolean | string;
+        defaultOpen?: boolean | string;
+        'prop:open'?: boolean | undefined;
+        'prop:defaultOpen'?: boolean | undefined;
+        placement?: RCMenuButtonPlacement;
+        position?: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start' | string;
+        'on:rc-fab-menu-toggle'?: (e: CustomEvent<RCFabMenuToggleDetail>) => void;
+      };
+
+      'rc-navigation-bar': JSX.HTMLAttributes<RCNavigationBarRef> & {
+        activeSelector?: string;
+        indicatorTarget?: string;
+      };
+
+      'rc-navigation-rail': JSX.HTMLAttributes<RCNavigationRailRef> & {
+        expanded?: boolean | string;
+        defaultExpanded?: boolean | string;
+        activeSelector?: string;
+        indicatorTarget?: string;
+        'prop:expanded'?: boolean | undefined;
+        'prop:defaultExpanded'?: boolean | undefined;
+        'on:rc-navigation-rail-toggle'?: (e: CustomEvent<RCNavigationRailToggleDetail>) => void;
       };
 
       'rc-menubar': JSX.HTMLAttributes<RCMenubarRef> & {
@@ -573,14 +876,19 @@ declare module 'solid-js' {
       'rc-splitter': JSX.HTMLAttributes<RCSplitterRef> & {
         label?: string;
         orientation?: 'horizontal' | 'vertical';
-        mode?: 'length' | 'percent';
+        mode?: 'length' | 'percent' | 'fixed';
         step?: number | string;
+        min?: number | string;
+        max?: number | string;
         value?: number | string;
         defaultValue?: number | string;
         'default-value'?: number | string;
         'prop:value'?: number | undefined;
         'prop:defaultValue'?: number | undefined;
         fixed?: boolean | string;
+        collapsible?: boolean | string;
+        'snap-points'?: string;
+        'swipe-velocity'?: number | string;
         'on:rc-splitter-change'?: (e: CustomEvent<RCSplitterChangeDetail>) => void;
       };
 
@@ -622,6 +930,11 @@ declare module 'solid-js' {
       };
 
       'rc-search-bar': JSX.HTMLAttributes<RCSearchBarRef> & {
+        variant?: 'bar' | 'view';
+        open?: boolean | string;
+        defaultOpen?: boolean | string;
+        'prop:open'?: boolean | undefined;
+        'prop:defaultOpen'?: boolean | undefined;
         debounce?: number | string;
         'clear-label'?: string;
         placeholder?: string;
@@ -630,6 +943,10 @@ declare module 'solid-js' {
         'prop:defaultValue'?: string | undefined;
         'on:rc-search-bar-input'?: (e: CustomEvent<RCSearchBarInputDetail>) => void;
         'on:rc-search-bar-clear'?: (e: CustomEvent) => void;
+        'on:rc-search-bar-toggle'?: (e: CustomEvent<RCSearchBarToggleDetail>) => void;
+        'on:rc-search-bar-suggestion-select'?: (
+          e: CustomEvent<RCSearchBarSuggestionSelectDetail>,
+        ) => void;
       };
 
       'rc-virtual-canvas': JSX.HTMLAttributes<RCVirtualCanvasRef> & {

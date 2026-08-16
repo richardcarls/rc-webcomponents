@@ -1,0 +1,168 @@
+---
+title: rc-bottom-sheet
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { BottomSheetDemo } from '@site/src/components/ComponentDemos';
+
+# rc-bottom-sheet
+
+Modal bottom-sheet wrapper for a native `<dialog>`, built on `rc-dialog`.
+
+<AtAGlance
+  packageName="@rcarls/rc-bottom-sheet"
+  tag="rc-bottom-sheet"
+  native="Requires a direct child native dialog"
+  state="Open state follows the native dialog"
+  events={[
+    'rc-dialog-open',
+    'rc-dialog-toggle',
+    'rc-dialog-request-close',
+    'rc-dialog-cancel',
+    'rc-dialog-close',
+    'rc-bottom-sheet-snap',
+  ]}
+  related={[
+    { label: 'rc-dialog', href: '/components/rc-dialog' },
+    { label: 'Theme previews', href: '/guide/theme-previews' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-bottom-sheet
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-bottom-sheet
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-bottom-sheet/define';
+```
+
+## Usage
+
+Place a `<dialog>` element directly inside `<rc-bottom-sheet>`. The inner
+dialog must have `aria-labelledby` or `aria-label`.
+
+```html
+<rc-bottom-sheet id="filters" snap-points="40dvh 70dvh 100dvh">
+  <dialog aria-label="Filter projects">
+    <button
+      type="button"
+      data-rc-bottom-sheet-handle
+      data-rc-dialog-resize-axis="y"
+      data-rc-dialog-resize-origin="top"
+      aria-label="Resize sheet"
+    ></button>
+    <button value="done" formmethod="dialog">Done</button>
+  </dialog>
+</rc-bottom-sheet>
+```
+
+The element inherits `rc-dialog` methods and events, including `showModal()`,
+`close()`, `requestClose()`, `rc-dialog-toggle`, and
+`rc-dialog-request-close`. Bottom sheets default to light dismiss, vertical
+top-origin resize, downward swipe-dismiss, and fixed positioning at the
+viewport's bottom edge. Add an optional
+`[data-rc-bottom-sheet-handle]` element inside the dialog for a themed resize
+handle. Use `snap-points` to snap the sheet to declared CSS heights after
+resize gestures.
+
+Without a theme, the authored handle uses a 32 by 4 pixel pill indicator,
+centered inside a full-width, 48 pixel-high target.
+
+The Substrate theme replaces that pill with the same three-dot visual language
+as its splitter handle while preserving the full-width pointer target. Material
+keeps the Material 3 pill indicator.
+
+For an embedded non-modal sheet, place the component in a positioned
+container, set `--rc-bottom-sheet-position: absolute`, and open it with
+`show()`. The sheet then docks to that container's block-end edge rather than
+the viewport.
+
+Declare snap points as CSS heights in ascending order. Slow releases settle at
+the nearest point. A decisive upward or downward swipe (`500` pixels per second
+by default) settles at the last or first point, respectively. When
+`swipe-dismiss` is enabled, dragging downward by at least `96` pixels requests
+close before velocity-based snapping applies.
+
+```js
+const sheet = document.querySelector('#filters');
+
+sheet.showModal();
+sheet.snapTo(1);
+
+sheet.addEventListener('rc-bottom-sheet-snap', (event) => {
+  console.log(event.detail);
+});
+```
+
+`snapTo()` clamps finite indices to the available range and ignores calls when
+there are no valid snap points. Pass `'instant'` as its second argument to
+skip animation. The component also skips animation when the user has enabled
+reduced motion. Snap events report the effective rendered height after CSS
+minimum and maximum size constraints, and constrained targets remain docked to
+the sheet's block-end edge.
+
+## Live demo
+
+<BottomSheetDemo />
+
+## When to use
+
+Bottom sheets are a mobile-friendly alternative to `rc-dialog` for
+non-blocking, dismissible prompts, such as a newsletter/mailing-list
+signup or a general on-visit call-to-action. Docking to the bottom edge and
+supporting swipe-dismiss keeps the prompt reachable by thumb and easy to
+brush aside, where a centered `rc-dialog` modal would feel more disruptive
+on a small screen.
+
+## Accessibility
+
+The direct child `<dialog>` owns dialog semantics, focus, labeling, and form
+behavior. Give it an accessible name with `aria-labelledby` or `aria-label`.
+Use `showModal()` when interaction outside the sheet must be unavailable and
+`show()` for a non-modal surface.
+
+The optional drag handle must be a focusable control with an accessible name.
+Keep it as the dialog's first direct child and avoid adding dialog top padding
+so its 48 pixel target reaches the sheet's top edge.
+
+`rc-dialog` supplies keyboard resizing for the authored handle, so pointer
+dragging is not the only way to resize the sheet.
+
+## Theming
+
+The component docks the dialog to the bottom edge and centers authored
+`[data-rc-bottom-sheet-handle]` handles by default. `rc-theme-material`
+applies the Material surface, level-one elevation, scrim, 32 by 4 pixel drag
+indicator within a 48 pixel target, and text-button treatment to direct
+authored action buttons. Wrap actions nested in sheet content with `rc-button`,
+as in the live demo, so they
+receive the shared Material button treatment without affecting component-owned
+buttons such as those inside `rc-chip`.
+
+Set `--rc-bottom-sheet-snap-duration` to a millisecond duration to customize
+settling. The default is `300ms`. Set `--rc-bottom-sheet-snap-easing` to a CSS
+easing function to customize the settle curve. The theme-free fallback is
+`cubic-bezier(0.4, 0, 0.2, 1)`; themes can map both properties to their spatial
+motion scheme.
+
+## API
+
+<ApiTable tag="rc-bottom-sheet" />

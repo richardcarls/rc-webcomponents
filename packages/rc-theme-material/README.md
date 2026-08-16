@@ -34,6 +34,16 @@ Selective component styles are also exported:
 @import '@rcarls/rc-theme-material/components/menu.css';
 ```
 
+The state-layer utility is included by `components.css` and `theme.css`, and is
+also exported separately for selective imports:
+
+```css
+@import '@rcarls/rc-theme-material/state-layer.css';
+```
+
+Apply `.rc-state-layer` to interactive elements that already define their own
+border radius when you want a CSS-only Material state layer.
+
 Theme styles are scoped under a `.rc-theme-material` class.
 
 ```html
@@ -53,13 +63,18 @@ bridge and component style layers:
 
 ## Theming scope
 
-The full style layer will style native controls when their intent is established
-by composition (e.g., menu items, button triggers, etc.). Otherwise, It never styles
-unrelated application controls and tries to follow design token conventions.
+The full style layer styles native controls when their intent is established by
+composition, for example menu items and button triggers. Otherwise, it does not style
+unrelated application controls and follows design-token conventions.
 
 Fonts and icons are not bundled; websites and applications may provide
 [Roboto](https://fonts.google.com/specimen/Roboto) and
 [Material Symbols](https://fonts.google.com/icons) through other means.
+Tag general icon-font markup with `data-rc-icon`; component-specific markers
+such as `data-rc-button-icon` and `data-rc-navigation-icon` opt in
+automatically. The shared `--rc-icon-font-size` and
+`--rc-icon-font-line-height` tokens keep glyph geometry consistent and can be
+overridden at the theme boundary or on one component.
 
 [Material Web](material-web.dev) token names are used where a corresponding component
 exists. Search bar and top app bar mappings follow Material 3 token terminology and

@@ -1,0 +1,70 @@
+---
+title: rc-switch
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { SwitchDemo } from '@site/src/components/ComponentDemos';
+
+# rc-switch
+
+Switch wrapper that enhances a native `<input type="checkbox">`.
+
+<AtAGlance
+  packageName="@rcarls/rc-switch"
+  tag="rc-switch"
+  native="Direct-child native checkbox"
+  state="Controlled or uncontrolled checked state"
+  events={['rc-switch-change']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-switch
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-switch
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-switch/define';
+```
+
+## Markup
+
+```html
+<label for="dark-mode">Dark mode</label>
+<rc-switch>
+  <input id="dark-mode" name="darkMode" type="checkbox" />
+</rc-switch>
+```
+
+The native checkbox stays in light DOM for labels, forms, validation, reset,
+and no-JavaScript fallback. `rc-switch` adds `role="switch"` only when the
+input does not already have a role.
+
+Without a theme, the native checkbox remains visible. Packaged themes hide its
+visual box and enable the component's track, thumb, icons, and motion while
+leaving the checkbox connected and interactive.
+
+## Live demo
+
+<SwitchDemo />
+
+## API
+
+<ApiTable tag="rc-switch" />

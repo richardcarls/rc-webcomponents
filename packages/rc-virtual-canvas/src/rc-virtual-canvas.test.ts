@@ -20,7 +20,9 @@ function getScrollRoot($host: RCVirtualCanvas) {
 }
 
 function lastRenderEvent(renderSpy: ReturnType<typeof vi.fn>) {
-  return renderSpy.mock.calls.at(-1)?.[0] as CustomEvent<RCVirtualCanvasRenderInit> | undefined;
+  return renderSpy.mock.calls[renderSpy.mock.calls.length - 1]?.[0] as
+    | CustomEvent<RCVirtualCanvasRenderInit>
+    | undefined;
 }
 
 test('RCVirtualCanvas dispatches rc-virtual-canvas-render with viewport and content detail', async () => {
@@ -29,8 +31,8 @@ test('RCVirtualCanvas dispatches rc-virtual-canvas-render with viewport and cont
   render(html`
     <rc-virtual-canvas
       data-testid="virtual-canvas"
-      contentWidth="800"
-      contentHeight="600"
+      content-width="800"
+      content-height="600"
       @rc-virtual-canvas-render=${renderSpy}
     >
       <canvas style="width: 320px; height: 240px;"></canvas>
@@ -55,13 +57,65 @@ test('RCVirtualCanvas dispatches rc-virtual-canvas-render with viewport and cont
   expect(event?.detail.time).toBeTypeOf('number');
 });
 
+test('RCVirtualCanvas maps content-width and content-height attributes to their properties', async () => {
+  const screen = render(html`
+    <rc-virtual-canvas data-testid="virtual-canvas" content-width="640" content-height="480">
+      <canvas style="width: 320px; height: 240px;"></canvas>
+    </rc-virtual-canvas>
+  `);
+
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
+
+  await $host.updateComplete;
+
+  expect($host.contentWidth).toBe(640);
+  expect($host.contentHeight).toBe(480);
+});
+
+test('RCVirtualCanvas falls back when device-pixel-content-box observation is unsupported', async () => {
+  const observe = ResizeObserver.prototype.observe;
+  const observeSpy = vi
+    .spyOn(ResizeObserver.prototype, 'observe')
+    .mockImplementation(function (
+      this: ResizeObserver,
+      target: Element,
+      options?: ResizeObserverOptions,
+    ) {
+      if (options?.box === 'device-pixel-content-box') {
+        throw new TypeError('Unsupported box option');
+      }
+
+      return observe.call(this, target, options);
+    });
+  const renderSpy = vi.fn();
+
+  try {
+    render(html`
+      <rc-virtual-canvas data-testid="virtual-canvas" @rc-virtual-canvas-render=${renderSpy}>
+        <canvas style="width: 320px; height: 240px;"></canvas>
+      </rc-virtual-canvas>
+    `);
+
+    await vi.waitFor(() => {
+      expect(renderSpy).toHaveBeenCalled();
+    });
+
+    expect(observeSpy).toHaveBeenCalledWith(expect.any(HTMLCanvasElement), {
+      box: 'device-pixel-content-box',
+    });
+    expect(observeSpy).toHaveBeenCalledWith(expect.any(HTMLCanvasElement));
+  } finally {
+    observeSpy.mockRestore();
+  }
+});
+
 test('RCVirtualCanvas exposes immutable viewport snapshots', async () => {
   const renderSpy = vi.fn();
   const screen = render(html`
     <rc-virtual-canvas
       data-testid="virtual-canvas"
-      contentWidth="800"
-      contentHeight="600"
+      content-width="800"
+      content-height="600"
       @rc-virtual-canvas-render=${renderSpy}
     >
       <canvas style="width: 320px; height: 240px;"></canvas>
@@ -87,8 +141,8 @@ test('RCVirtualCanvas scrolls and centers on content coordinates', async () => {
   const screen = render(html`
     <rc-virtual-canvas
       data-testid="virtual-canvas"
-      contentWidth="1000"
-      contentHeight="800"
+      content-width="1000"
+      content-height="800"
       render-mode="viewport-change"
       style="display: block; width: 200px; height: 100px;"
       @rc-virtual-canvas-render=${renderSpy}
@@ -124,8 +178,8 @@ test('RCVirtualCanvas maps client and content coordinates through the backing st
   const screen = render(html`
     <rc-virtual-canvas
       data-testid="virtual-canvas"
-      contentWidth="1000"
-      contentHeight="800"
+      content-width="1000"
+      content-height="800"
       .autoResizeCanvas=${false}
       render-mode="viewport-change"
       style="display: block; width: 200px; height: 100px;"
@@ -163,8 +217,8 @@ test('RCVirtualCanvas dispatches pointer events with content coordinates and mod
   const screen = render(html`
     <rc-virtual-canvas
       data-testid="virtual-canvas"
-      contentWidth="1000"
-      contentHeight="800"
+      content-width="1000"
+      content-height="800"
       .autoResizeCanvas=${false}
       render-mode="viewport-change"
       style="display: block; width: 200px; height: 100px;"
@@ -204,7 +258,7 @@ test('RCVirtualCanvas dispatches pointer events with content coordinates and mod
     }),
   );
 
-  const event = pointerSpy.mock.calls.at(-1)?.[0] as
+  const event = pointerSpy.mock.calls[pointerSpy.mock.calls.length - 1]?.[0] as
     | CustomEvent<RCVirtualCanvasPointerInit>
     | undefined;
 
@@ -281,7 +335,7 @@ test('RCVirtualCanvas leaves slotted overlay pointer events to overlay content',
     }),
   );
 
-  const event = pointerSpy.mock.calls.at(-1)?.[0] as
+  const event = pointerSpy.mock.calls[pointerSpy.mock.calls.length - 1]?.[0] as
     | CustomEvent<RCVirtualCanvasPointerInit>
     | undefined;
 
@@ -358,8 +412,8 @@ test('RCVirtualCanvas supports continuous, viewport-change, and manual render mo
       </rc-virtual-canvas>
       <rc-virtual-canvas
         data-testid="viewport"
-        contentWidth="500"
-        contentHeight="500"
+        content-width="500"
+        content-height="500"
         render-mode="viewport-change"
         style="display: block; width: 50px; height: 50px;"
         @rc-virtual-canvas-render=${viewportSpy}
@@ -459,7 +513,7 @@ test('RCVirtualCanvas schedules a fresh animation frame when reconnected with a 
 
     expect(requestAnimationFrameSpy).toHaveBeenCalledTimes(2);
 
-    const callback = animationFrameCallbacks.at(-1);
+    const callback = animationFrameCallbacks[animationFrameCallbacks.length - 1];
 
     if (!callback) {
       throw new Error('No animation frame was scheduled');

@@ -422,6 +422,18 @@ test('multiple: rc-select-change detail.value is an array', async () => {
   expect(handler.mock.calls[0][0].detail.selectedValues).toEqual(['apple']);
 });
 
+test('--rc-combobox-toggle-size controls the toggle button inline size', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+
+  $host.style.setProperty('--rc-combobox-toggle-size', '37px');
+  await $host.updateComplete;
+
+  const $toggle = $host.renderRoot.querySelector<HTMLButtonElement>('#toggle')!;
+
+  expect(getComputedStyle($toggle).inlineSize).toBe('37px');
+});
+
 test('toggle button click opens popup', async () => {
   const screen = render(makeCombobox());
   const $host = await getHost(screen);

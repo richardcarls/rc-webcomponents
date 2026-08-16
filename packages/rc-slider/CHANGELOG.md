@@ -1,5 +1,16 @@
 # @rcarls/rc-slider
 
+## 0.4.0
+
+### Patch Changes
+
+- f45b5ec: Document all `rc-slider` attributes and the `--rc-slider-vertical-size` CSS
+  custom property in the generated API reference.
+- Updated dependencies [e57277f]
+- Updated dependencies [ccca8e2]
+- Updated dependencies [037b1b3]
+  - @rcarls/rc-common@0.4.0
+
 ## 0.3.2
 
 ### Patch Changes

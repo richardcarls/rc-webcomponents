@@ -1,0 +1,90 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-bottom-sheet {
+    --rc-bottom-sheet-bg: var(--substrate-surface-raised, Canvas);
+    --rc-bottom-sheet-handle-color: var(--rc-border-color, GrayText);
+    --rc-bottom-sheet-handle-radius: var(--substrate-radius-pill, 999px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-bottom-sheet > dialog {
+    position: fixed;
+    inset: auto 0 0;
+    box-sizing: border-box;
+    inline-size: 100%;
+    max-inline-size: var(--rc-bottom-sheet-max-inline-size, 40rem);
+    max-block-size: var(--rc-bottom-sheet-max-block-size, 70dvh);
+    margin-block: 0;
+    margin-inline: auto;
+    padding: var(--rc-bottom-sheet-padding, 0 1rem calc(1rem + env(safe-area-inset-bottom, 0px)));
+    overflow: auto;
+    border: var(--rc-border, 1px solid ButtonBorder);
+    border-block-end: 0;
+    border-radius: var(--rc-bottom-sheet-radius, 1rem 1rem 0 0);
+    background: var(--rc-bottom-sheet-bg, var(--substrate-surface-raised, Canvas));
+    color: var(--rc-bottom-sheet-color, var(--rc-field-text, CanvasText));
+    box-shadow: var(--rc-bottom-sheet-shadow, var(--substrate-shadow-lg, none));
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-bottom-sheet > dialog::backdrop {
+    background: var(
+      --rc-bottom-sheet-scrim,
+      var(--rc-dialog-scrim, color-mix(in srgb, CanvasText 32%, transparent))
+    );
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-bottom-sheet
+    > dialog
+    [data-rc-bottom-sheet-handle] {
+    position: relative;
+    display: block;
+    inline-size: var(--rc-bottom-sheet-handle-target-inline-size, 100%);
+    min-block-size: var(--rc-bottom-sheet-handle-target-block-size, 3rem);
+    margin: var(--rc-bottom-sheet-handle-target-margin, 0);
+    padding: 0;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    appearance: none;
+    cursor: ns-resize;
+    touch-action: none;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-bottom-sheet
+    > dialog
+    [data-rc-bottom-sheet-handle]::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
+    block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);
+    border-radius: 0;
+    background-color: transparent;
+    background-image:
+      radial-gradient(
+        circle 1px at calc(50% - 5px) 50%,
+        var(--rc-bottom-sheet-handle-color, ButtonBorder) 100%,
+        transparent 100%
+      ),
+      radial-gradient(
+        circle 1px at 50% 50%,
+        var(--rc-bottom-sheet-handle-color, ButtonBorder) 100%,
+        transparent 100%
+      ),
+      radial-gradient(
+        circle 1px at calc(50% + 5px) 50%,
+        var(--rc-bottom-sheet-handle-color, ButtonBorder) 100%,
+        transparent 100%
+      );
+    translate: -50% -50%;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-bottom-sheet
+    > dialog
+    [data-rc-bottom-sheet-handle]:focus-visible {
+    outline: 0.125rem solid var(--rc-accent, Highlight);
+    outline-offset: 0.25rem;
+  }
+}

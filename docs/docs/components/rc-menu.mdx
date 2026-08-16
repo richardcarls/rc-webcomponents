@@ -2,6 +2,8 @@
 title: rc-menu
 ---
 
+<!-- markdownlint-disable MD033 -->
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import { ApiTable } from '@site/src/components/ApiTable';
@@ -10,13 +12,15 @@ import { MenuDemo } from '@site/src/components/ComponentDemos';
 
 # rc-menu
 
-Menu popup for command surfaces with keyboard navigation and typed activation events, following the [WAI-ARIA Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/).
+Menu popup for command surfaces with keyboard navigation and typed activation
+events, following the
+[WAI-ARIA Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/).
 
 <AtAGlance
   packageName="@rcarls/rc-menu"
   tag="rc-menu"
   native="Consumer supplies menu item controls"
-  state="Open/active item state"
+  state="Host focus with an active descendant"
   events={['rc-menu-activate', 'rc-menu-close']}
   related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
 />
@@ -48,9 +52,70 @@ import '@rcarls/rc-menu/define';
 
 <MenuDemo />
 
+## Interaction model
+
+`rc-menu` is the focus target and owns the `menu` role. It exposes the active
+slotted item through `aria-activedescendant` instead of moving DOM focus between
+items. Arrow Down and Arrow Up move the virtual cursor and wrap at the menu
+boundaries; Home and End select the first or last item. Enter, Space, and pointer
+interactions activate menu items, while Escape requests that the containing popup
+close.
+
+The public `focusFirst()`, `focusLast()`, `focusItem()`, and `focusItemAt()`
+methods follow the same model: each focuses the host and updates the virtual
+cursor. The read-only `items` getter returns the current navigable elements in
+document order.
+
+## Menu item content
+
+Direct focusable children become `menuitem` entries. Use
+`role="menuitemcheckbox"` or `role="menuitemradio"` with `aria-checked` for
+checked choices; activation updates the checked state before the activation
+event is dispatched. A labeled `role="group"` can contain one level of related
+items, and `<hr>` or `role="separator"` elements divide sections without joining
+keyboard navigation.
+
+```html
+<rc-menu label="View">
+  <button type="button" role="menuitemcheckbox" aria-checked="true" value="details">
+    Show details
+  </button>
+  <hr />
+  <button type="button" value="duplicate">
+    <span>Duplicate</span>
+    <kbd data-menu-shortcut>Ctrl+D</kbd>
+  </button>
+</rc-menu>
+```
+
+Nested menu triggers supply their own visual affordance through
+`rc-menu-button`'s `indicator` slot. `rc-menu` does not generate an indicator,
+leaving iconography and writing-direction behavior to the application or theme.
+
+## Events
+
+Both events bubble across shadow boundaries and are not cancelable.
+
+| Event              | Detail                            | When                                                       |
+| ------------------ | --------------------------------- | ---------------------------------------------------------- |
+| `rc-menu-activate` | `{ item, value, text, checked? }` | Enter, Space, or a pointer click activates an enabled item |
+| `rc-menu-close`    | `{ reason: 'escape' }`            | Escape requests that the containing popup close            |
+
+The activation `value` comes from `data-value` or `value`, `text` is the item's
+trimmed text content, and `checked` reports the resulting checkbox or radio
+state when applicable.
+
 ## Theming
 
-The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+The default demo mode shows the component without a package theme. Use the
+shared preview controls on this page to compare inherited, light, and dark color
+schemes or to apply the optional Material theme only inside the demo frames.
+
+Slotted rows remain in light DOM. `rc-menu` injects their structural base styles
+once per containing document or shadow root under `@layer rc-base`, so consumer
+styles outside that layer can override them. Inherited `--rc-menu-*` custom
+properties customize the host and rows; the component does not expose CSS
+parts. Add trailing keyboard hints with `[data-menu-shortcut]`.
 
 ## API
 

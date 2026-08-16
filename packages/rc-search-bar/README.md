@@ -1,6 +1,7 @@
 # `@rcarls/rc-search-bar`
 
-Search field wrapper for a native `<input type="search">` with icon chrome, clear button, and debounced events.
+Search field and view wrapper for a native `<input type="search">` with icon chrome, a clear
+button, suggestions, and debounced events.
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-search-bar](https://richardcarls.github.io/rc-webcomponents/components/rc-search-bar).
 
@@ -43,8 +44,8 @@ import { RCSearchBar } from '@rcarls/rc-search-bar';
 ```
 
 The component's shadow CSS already strips the slotted input's native border,
-background, and outline so it blends into the wrapper chrome — no consumer reset
-needed.
+background, and outline so it blends into the wrapper chrome without a consumer
+reset.
 
 The native WebKit cancel button is suppressed automatically. Set
 `allow-native-clear` to restore it.
@@ -57,7 +58,10 @@ The native WebKit cancel button is suppressed automatically. Set
 
 | Property           | Attribute             | Type                  | Default          | Description                                                                             |
 | ------------------ | --------------------- | --------------------- | ---------------- | --------------------------------------------------------------------------------------- |
-| `value`            | —                     | `string`              | `''`             | Current search value; reads from the native input, host writes are silent               |
+| `variant`          | `variant`             | `'bar' \| 'view'`     | `'bar'`          | Presentation mode: docked field or expandable search view                               |
+| `open`             | `open`                | `boolean`             | `false`          | Controlled search view open state; host writes are silent                               |
+| `defaultOpen`      | `default-open`        | `boolean`             | `false`          | Initial uncontrolled search view open state                                             |
+| `value`            | None                  | `string`              | `''`             | Current search value; reads from the native input, host writes are silent               |
 | `defaultValue`     | `default-value`       | `string \| undefined` | `undefined`      | Initial uncontrolled value hint, applied once                                           |
 | `debounce`         | `debounce`            | `number`              | `200`            | Debounce window in ms for `rc-search-bar-input`; `0` dispatches synchronously           |
 | `clearLabel`       | `clear-label`         | `string`              | `'Clear search'` | Accessible label for the clear button                                                   |
@@ -79,6 +83,19 @@ The native WebKit cancel button is suppressed automatically. Set
 | `--rc-search-bar-height`         | `var(--rc-control-block-size, 2.5rem)`      | Wrapper block size                        |
 | `--rc-search-bar-padding-inline` | `var(--rc-control-padding-inline, 0.75rem)` | Wrapper horizontal padding                |
 | `--rc-search-bar-gap`            | `var(--rc-control-gap, 0.25em)`             | Gap between icon, input, and clear button |
+| `--rc-search-bar-input-color`    | inherit                                     | Input text color                          |
+| `--rc-search-bar-input-font-family` | inherit                                  | Input font family                         |
+| `--rc-search-bar-input-font-size` | inherit                                    | Input font size                           |
+| `--rc-search-bar-view-bg`        | `var(--rc-search-bar-bg)`                   | Search view panel background              |
+| `--rc-search-bar-view-color`     | `var(--rc-search-bar-color)`                | Search view panel text color              |
+| `--rc-search-bar-view-radius`    | `var(--rc-search-bar-radius)`               | Search view panel radius                  |
+| `--rc-search-bar-view-shadow`    | `var(--rc-search-bar-shadow)`               | Search view panel elevation               |
+| `--rc-search-bar-view-border`    | `var(--rc-search-bar-border)`               | Search view panel border                  |
+| `--rc-search-bar-view-offset`    | `0.25rem`                                   | Gap between the search bar and the view panel below it |
+| `--rc-search-bar-view-padding-block` | `0.5rem`                                | Search view suggestion list block padding |
+| `--rc-search-bar-suggestion-min-block-size` | `2.75rem`                         | Datalist-derived suggestion row minimum block size |
+| `--rc-search-bar-suggestion-padding-inline` | `1rem`                            | Datalist-derived suggestion inline padding |
+| `--rc-search-bar-suggestion-hover-bg` | `ButtonFace`                         | Datalist-derived suggestion hover/focus background |
 
 ### CSS parts
 
@@ -86,7 +103,11 @@ The native WebKit cancel button is suppressed automatically. Set
 | --------- | ------------- | ------------------------------------ |
 | `root`    | wrapper `div` | The field chrome                     |
 | `leading` | `span`        | Wrapper around the leading icon slot |
+| `trailing` | `span`       | Wrapper around the trailing slot     |
 | `clear`   | `button`      | The clear button                     |
+| `view`    | `div`         | Search view panel                    |
+| `suggestions` | `div`     | Suggestions container                |
+| `suggestion` | `button`   | Datalist-derived suggestion button   |
 
 ### Slots
 
@@ -96,19 +117,33 @@ The native WebKit cancel button is suppressed automatically. Set
 | `leading`    | Decorative leading icon; mark it `aria-hidden="true"`                     |
 | `clear-icon` | Optional glyph replacing the default ✕ in the clear button                |
 | `trailing`   | Optional content after the clear button (supplementary badges or actions) |
+| `suggestions` | Rich search view suggestions; takes precedence over datalist suggestions |
 
 ### Events
 
 | Event                 | Detail              | Description                                                                  |
 | --------------------- | ------------------- | ---------------------------------------------------------------------------- |
-| `rc-search-bar-input` | `{ value: string }` | Debounced after typing; fired immediately (pending timer cancelled) on clear |
+| `rc-search-bar-input` | `{ value: string }` | Debounced after typing; fired immediately (pending timer canceled) on clear |
 | `rc-search-bar-clear` | `{}`                | Fired when the clear button is activated                                     |
+| `rc-search-bar-toggle` | `{ open: boolean }` | Fired when user interaction opens or closes the search view                  |
+| `rc-search-bar-suggestion-select` | `{ value: string, label: string }` | Fired when a datalist-derived suggestion is activated |
+
+### Search view suggestions
+
+Use `variant="view"` for the expandable search view. Rich Material-style
+suggestions should be rendered in the `suggestions` slot. For simple text
+suggestions, the component reads the native input's `list` attribute and renders
+the associated `<datalist><option>` values when the slot is empty.
+
+`<datalist>` remains a progressive-enhancement path with browser-dependent
+styling and accessibility behavior; prefer slotted suggestions when rows need
+icons, supporting text, actions, or stronger AT/styling control.
 
 ---
 
 ## Accessibility notes
 
-- The component writes no ARIA to the input — `type="search"` already exposes
+- The component writes no ARIA to the input because `type="search"` already exposes
   the `searchbox` role, and author labels are never overwritten. Label the
   input with `label[for]`, a wrapping `<label>`, or `aria-label`.
 - The component adds no `role="search"` landmark; wrap in `<search>` or

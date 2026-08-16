@@ -32,6 +32,7 @@ export interface RCMenuButtonToggleEvent {
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/ WAI-ARIA Menu Button pattern}
  *
  * @slot trigger - The button element that triggers the menu
+ * @slot indicator - Optional decorative indicator rendered at the trigger's inline end
  * @slot default - The rc-menu element to display as popup
  *
  * @fires rc-menu-button-toggle - Fired when the menu opens or closes
@@ -51,11 +52,19 @@ export interface RCMenuButtonToggleEvent {
  * @cssprop [--rc-menu-button-trigger-open-background=color-mix(in srgb, Highlight 12%, transparent)] - Trigger background when the menu is open
  * @cssprop [--rc-menu-button-trigger-open-color=inherit] - Trigger text color when the menu is open
  * @cssprop [--rc-menu-button-trigger-open-border-color=currentColor] - Trigger border color when the menu is open
+ * @cssprop [--rc-menu-button-indicator-size=1em] - Inline and block size of the slotted indicator
+ * @cssprop [--rc-menu-button-indicator-color=currentColor] - Color of the slotted indicator
+ * @cssprop [--rc-menu-button-indicator-inset=var(--rc-menu-button-trigger-padding-inline)] - Indicator distance from the trigger's inline end
  * @cssprop [--rc-menu-button-popup-z-index=1000] - Z-index of the popup overlay
  *
  * @csspart root - The root container element
  * @csspart popup - The popup container element
  *
+ * @attr open - Whether the menu popup is visible. Controlled mode: host writes silently.
+ * @attr default-open - Initial open state for uncontrolled mode. Ignored after the first
+ *   controlled write to `open`.
+ * @attr orientation - Arrow-key axis for opening the menu. Inherits from a parent
+ *   `rc-menubar` or `[role="menubar"]` when unset.
  * @attr placement - Preferred placement of the popup relative to the trigger.
  */
 export class RCMenuButton extends LitElement {
@@ -73,6 +82,7 @@ export class RCMenuButton extends LitElement {
 
   private _defaultOpen = false;
   private _open = false;
+  private _openInitialized = false;
 
   /**
    * Whether the menu is currently open.
@@ -89,8 +99,11 @@ export class RCMenuButton extends LitElement {
   set open(value: boolean | undefined) {
     const oldValue = this._open;
 
-    if (value === undefined) return;
+    if (value === undefined) {
+      return;
+    }
 
+    this._openInitialized = true;
     this._setOpen(value, false);
     this.requestUpdate('open', oldValue);
   }
@@ -112,7 +125,7 @@ export class RCMenuButton extends LitElement {
 
     this._defaultOpen = value;
 
-    if (value && !this._open) {
+    if (value && !this._openInitialized) {
       this._setOpen(true, false);
     }
 
@@ -239,7 +252,9 @@ export class RCMenuButton extends LitElement {
    * @param focusTarget - which item receives initial focus when the menu opens
    */
   openMenu(focusTarget: 'first' | 'last' = 'first') {
-    if (this.open) return;
+    if (this.open) {
+      return;
+    }
 
     this._anchorCtrl.setOptions({ placement: this._effectivePlacement });
     this._setOpen(true, true);
@@ -258,7 +273,9 @@ export class RCMenuButton extends LitElement {
    * @param returnFocus - when `true`, returns focus to the trigger button after closing
    */
   closeMenu(returnFocus = true) {
-    if (!this.open) return;
+    if (!this.open) {
+      return;
+    }
 
     this._setOpen(false, true);
 
@@ -291,14 +308,21 @@ export class RCMenuButton extends LitElement {
 
   /** Caches a weak reference to the first assigned trigger element and syncs its ARIA and tabindex state. */
   protected _handleTriggerSlotChange(e: Event) {
-    const slot = e.currentTarget as HTMLSlotElement;
-    const $trigger = slot.assignedElements()[0] as HTMLElement | undefined;
+    const $slot = e.currentTarget as HTMLSlotElement;
+    const $trigger = $slot.assignedElements()[0] as HTMLElement | undefined;
 
     if ($trigger) {
       this._$trigger = new WeakRef($trigger);
       this._syncTriggerAria();
       this._syncTriggerTabindex();
     }
+  }
+
+  /** Tracks optional indicator content so the trigger reserves its inline-end space. */
+  protected _handleIndicatorSlotChange(e: Event) {
+    const $slot = e.currentTarget as HTMLSlotElement;
+
+    this.toggleAttribute('has-indicator', $slot.assignedElements().length > 0);
   }
 
   /**
@@ -314,7 +338,9 @@ export class RCMenuButton extends LitElement {
   protected _syncTriggerTabindex() {
     const $trigger = this._$trigger?.deref();
 
-    if (!$trigger) return;
+    if (!$trigger) {
+      return;
+    }
 
     if (this.getAttribute('tabindex') === '-1') {
       $trigger.setAttribute('tabindex', '-1');
@@ -338,6 +364,7 @@ export class RCMenuButton extends LitElement {
 
     if (!$trigger) {
       super.focus(options);
+
       return;
     }
 
@@ -347,9 +374,9 @@ export class RCMenuButton extends LitElement {
 
   /** Caches a weak reference to the first assigned `rc-menu` element. */
   protected _handleMenuSlotChange(e: Event) {
-    const slot = e.currentTarget as HTMLSlotElement;
-    const elements = slot.assignedElements();
-    const $menu = elements.find((el) => el.tagName === 'RC-MENU') as RCMenu | undefined;
+    const $slot = e.currentTarget as HTMLSlotElement;
+    const $elements = $slot.assignedElements();
+    const $menu = $elements.find(($el) => $el.tagName === 'RC-MENU') as RCMenu | undefined;
 
     if ($menu) {
       this._$menu = new WeakRef($menu);
@@ -423,7 +450,7 @@ export class RCMenuButton extends LitElement {
     }
   }
 
-  private _setOpen(open: boolean, dispatch: boolean): void {
+  protected _setOpen(open: boolean, dispatch: boolean): void {
     if (this._open === open) {
       return;
     }
@@ -468,6 +495,11 @@ export class RCMenuButton extends LitElement {
           @click=${this._handleTriggerClick}
         >
           <slot name="trigger" @slotchange=${this._handleTriggerSlotChange}></slot>
+          <slot
+            name="indicator"
+            aria-hidden="true"
+            @slotchange=${this._handleIndicatorSlotChange}
+          ></slot>
         </div>
 
         <div

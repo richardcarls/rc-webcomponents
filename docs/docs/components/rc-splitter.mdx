@@ -52,6 +52,41 @@ import '@rcarls/rc-splitter/define';
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
+### Fixed pane mode
+
+Set `mode="fixed"` when the primary pane should be a clampable pixel width
+while the secondary pane remains fluid. This is useful for canonical
+list-detail layouts that start with a fixed list pane but still allow user
+resize:
+
+```html
+<rc-splitter mode="fixed" min="360" max="412" value="360">
+  <section>List</section>
+  <section slot="secondary">Detail</section>
+</rc-splitter>
+```
+
+The legacy `fixed` boolean still means “disable resizing” and is distinct from
+`mode="fixed"`.
+
+### Anchored settling
+
+Set `snap-points` to ascending whitespace-separated values in the active mode's
+units. Slow releases settle to the nearest point, while a swipe of at least
+`swipe-velocity` (default `500` px/s) moves to the next point in that direction.
+Omit `snap-points` to keep pointer resizing continuous.
+
+```html
+<rc-splitter mode="percent" snap-points="25 50 75" value="50">
+  <section>Primary</section>
+  <section slot="secondary">Secondary</section>
+</rc-splitter>
+```
+
+Use `snapTo(index, 'animated')` to settle programmatically or
+`snapTo(index, 'instant')` without animation. Animated settling uses
+`--rc-splitter-snap-duration` (default `200ms`) and respects reduced motion.
+
 ### Collapsible panes
 
 Set the `collapsible` attribute to render a toggle button on the separator that collapses or expands the primary pane:

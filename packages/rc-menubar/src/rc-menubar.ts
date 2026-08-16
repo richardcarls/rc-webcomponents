@@ -35,6 +35,10 @@ const IE_KEY_ALIASES: Record<string, string> = {
  *
  * @csspart root - The root container element
  *
+ * @attr label - Accessible label for the `role="menubar"` element.
+ * @attr orientation - Layout direction and keyboard navigation axis, propagated to
+ *   child `rc-menu-button` elements.
+ *
  * @cssprop [--rc-menubar-gap=var(--rc-control-gap)] - Gap between menu buttons
  * @cssprop [--rc-menubar-padding-inline=var(--rc-control-padding-inline)] - Inline-axis padding
  * @cssprop [--rc-menubar-padding-block=var(--rc-control-padding-block)] - Block-axis padding
@@ -137,7 +141,7 @@ export class RCMenubar extends LitElement {
   get $items(): HTMLElement[] {
     return this._$menuButtons
       .map((ref) => ref.deref())
-      .filter((el): el is RCMenuButton => el != null)
+      .filter(($el): $el is RCMenuButton => $el != null)
       .map(($mb) => this._$getTrigger($mb))
       .filter(($el): $el is HTMLElement => $el != null);
   }
@@ -146,7 +150,7 @@ export class RCMenubar extends LitElement {
   get $menuButtons(): RCMenuButton[] {
     return this._$menuButtons
       .map((ref) => ref.deref())
-      .filter((el): el is RCMenuButton => el != null);
+      .filter(($el): $el is RCMenuButton => $el != null);
   }
 
   /** First trigger element in the menubar. */
@@ -181,11 +185,11 @@ export class RCMenubar extends LitElement {
   /**
    * Moves focus to a trigger element.
    *
-   * @param item - trigger to focus; no-ops when `null` or `undefined`
+   * @param $item - trigger to focus; no-ops when `null` or `undefined`
    */
-  focusItem(item?: HTMLElement | null) {
-    if (item != null) {
-      item.focus();
+  focusItem($item?: HTMLElement | null) {
+    if ($item != null) {
+      $item.focus();
     }
   }
 
@@ -225,8 +229,8 @@ export class RCMenubar extends LitElement {
     // on second+ mount (shadow DOM already exists), so the handler must be
     // instantaneous to avoid interacting with the reactive system.
     this._$menuButtons = $elements
-      .filter((el): el is RCMenuButton => el.tagName === 'RC-MENU-BUTTON')
-      .map((el) => new WeakRef(el));
+      .filter(($el): $el is RCMenuButton => $el.tagName === 'RC-MENU-BUTTON')
+      .map(($el) => new WeakRef($el));
 
     queueMicrotask(() => {
       if (!this.isConnected) {

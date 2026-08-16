@@ -64,7 +64,10 @@ listbox.addEventListener('rc-listbox-change', (event) => {
 | Property / method | Type | Description |
 | --- | --- | --- |
 | `multiple` | `boolean` | Enables multi-selection and reflects `aria-multiselectable`. |
+| `checkmark` | `boolean` | Renders a checkmark indicator inside each option element. |
 | `filterStrategy` | `'prefix' \| 'contains' \| function` | Controls how `filterOptions()` matches labels. |
+| `value` | `string \| string[]` | Current selection. Host writes update silently. |
+| `defaultValue` | `string \| string[] \| undefined` | Initial uncontrolled selection. |
 | `options` | `ListboxOption[]` | Replaces the rendered option list. |
 | `allOptions` | `readonly ListboxOption[]` | All configured options. |
 | `filteredOptions` | `readonly ListboxOption[]` | Options currently passing the filter. |

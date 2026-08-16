@@ -1,0 +1,98 @@
+---
+title: rc-card
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { CardDemo } from '@site/src/components/ComponentDemos';
+
+# rc-card
+
+Design-system-neutral card shell with structural slots and parts.
+
+`rc-card` owns card anatomy and layout affordances, but authors keep native
+anchors and buttons for semantics and keyboard access. Themes decide visual
+variants through tokens and selectors rather than a `variant` attribute.
+
+<AtAGlance
+  packageName="@rcarls/rc-card"
+  tag="rc-card"
+  native="Author-provided links and buttons"
+  state="Declarative selected/disabled/interactive hooks"
+  events={[]}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-card
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-card
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-card/define';
+```
+
+## Markup
+
+```html
+<rc-card interactive action-target="article-link">
+  <img slot="media" src="/article-cover.jpg" alt="" />
+  <h2 slot="title">
+    <a id="article-link" href="/articles/resilient-interfaces">Resilient interfaces</a>
+  </h2>
+  <p>Patterns for preserving native behavior while adding richer interactions.</p>
+  <button slot="actions" type="button">Save</button>
+</rc-card>
+```
+
+The theme-free card provides one `rem` of body padding and otherwise remains an
+undecorated content container. Apply a packaged theme or card tokens when the
+composition needs a different spacing scale, shape, elevation, or state layers.
+
+## Live demo
+
+<CardDemo />
+
+## Structure
+
+Slots cover `media`, `header`, `title`, `subtitle`, default body, `actions`,
+and `footer`. Matching parts and reflected `has-*` attributes let themes adapt
+spacing when regions are present or absent.
+
+For shelf/grid layouts, set card rows through `--rc-card-grid-template-rows`.
+The demo spans each card across the parent grid's media, title, body, and action
+tracks, then uses `subgrid` on the hosts to align those regions across cards
+with different content.
+
+Card titles remain author-owned semantic content. The packaged themes normalize
+slotted `h2` and `h3` margins and map those ranks to card-appropriate title
+typography. The Material mapping follows the
+[Material 3 card specification](https://m3.material.io/components/cards/specs)
+and Android's semantic
+[Material 3 type scale](https://developer.android.com/develop/ui/compose/designsystems/material3#typography).
+
+## Action Target
+
+`action-target="id"` forwards non-interactive surface clicks to a same-root
+anchor or button. It is pointer/tap convenience only; keyboard access and
+semantics remain on the real target element.
+
+## API
+
+<ApiTable tag="rc-card" />

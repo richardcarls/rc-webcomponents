@@ -1,0 +1,107 @@
+---
+title: rc-chip
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ChipDemo } from '@site/src/components/ComponentDemos';
+
+# rc-chip
+
+Chip wrapper for native button-based actions, filters, suggestions, and inputs.
+
+<AtAGlance
+  packageName="@rcarls/rc-chip"
+  tag="rc-chip"
+  native="Direct-child native button"
+  state="Selected/removable chip affordances"
+  events={['rc-chip-change', 'rc-chip-remove']}
+  related={[
+    { label: 'rc-toolbar', href: '/components/rc-toolbar' },
+    { label: 'Theme previews', href: '/guide/theme-previews' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-chip
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-chip
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-chip/define';
+```
+
+## Markup
+
+```html
+<rc-chip variant="filter">
+  <button type="button">Vegetarian</button>
+</rc-chip>
+
+<rc-chip variant="input" removable>
+  <button type="button" aria-label="Remove basil">Basil</button>
+  <span slot="remove-icon" class="material-symbols-outlined" aria-hidden="true"> close </span>
+</rc-chip>
+```
+
+Filter chips toggle `selected` on user activation and add `aria-pressed` only
+when the author has not supplied stronger toggle semantics.
+
+For removable chips, the direct native button is the sole removal action and
+fires `rc-chip-remove`. The trailing remove icon is presentational, so it does
+not add another tab stop or duplicate button semantics.
+
+Without a theme, button and link chips retain their browser appearance.
+Packaged themes opt into chip sizing, shape, selection colors, and focus
+treatment.
+
+## Live demo
+
+<ChipDemo />
+
+## Groups
+
+Compose interactive chips inside `rc-toolbar` when the group should form one
+tab stop with arrow-key navigation. Install and import
+`@rcarls/rc-toolbar/define` separately when you are not using the aggregate
+package:
+
+```html
+<rc-toolbar label="Recipe filters">
+  <rc-chip variant="filter">
+    <button type="button">Quick</button>
+  </rc-chip>
+  <rc-chip variant="filter">
+    <button type="button">Vegetarian</button>
+  </rc-chip>
+</rc-toolbar>
+```
+
+Toolbar layout does not wrap by default. A wrapping chip toolbar can opt in
+without changing its keyboard model:
+
+```css
+rc-toolbar::part(root) {
+  flex-wrap: wrap;
+}
+```
+
+## API
+
+<ApiTable tag="rc-chip" />

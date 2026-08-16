@@ -28,7 +28,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Build, validate packages, and test
         run: yarn ci

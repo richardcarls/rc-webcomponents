@@ -37,13 +37,17 @@ declare global {
  *   the default insertion of the new option.
  *
  * @csspart anchor - Outer container (includes chips + input + toggle).
+ * @csspart chips - The chip group container (multiple mode).
  * @csspart chip - Individual chip (multiple mode).
  * @csspart chip-label - Text label inside a chip.
  * @csspart chip-remove - Remove button inside a chip.
  * @csspart input - The text input element.
  * @csspart toggle - The chevron toggle button.
+ * @csspart listbox - The `<rc-listbox>` popup element.
  *
- * @attr [allow-create] - When present, shows a "Create 'X'" option for unmatched input.
+ * @attr allow-create - When present, shows a "Create 'X'" option for unmatched input.
+ * @attr filter-strategy - How option labels are matched against typed input: `'contains'`
+ *   (default), `'prefix'`, or a custom predicate set via the `filterStrategy` JS property.
  *
  * @cssprop [--rc-combobox-max-height=20em] - Maximum popup height.
  * @cssprop [--rc-combobox-control-block-size=var(--rc-control-block-size)] - Anchor block size.
@@ -53,10 +57,16 @@ declare global {
  * @cssprop [--rc-combobox-radius=var(--rc-control-radius)] - Anchor border radius.
  * @cssprop [--rc-combobox-border=var(--rc-border)] - Anchor border.
  * @cssprop [--rc-combobox-listbox-radius=var(--rc-control-radius)] - Popup listbox border radius.
+ * @cssprop [--rc-combobox-listbox-border=var(--rc-border)] - Popup listbox border.
+ * @cssprop [--rc-combobox-shadow=var(--rc-shadow)] - Popup listbox box shadow.
  * @cssprop [--rc-combobox-listbox-padding-block=var(--rc-control-padding-block)] - Popup listbox block padding.
  * @cssprop [--rc-combobox-chip-radius=var(--rc-radius-md)] - Multi-select chip border radius.
  * @cssprop [--rc-combobox-chip-padding-block=0.1em] - Multi-select chip block-axis padding.
  * @cssprop [--rc-combobox-chip-padding-inline=0.3em] - Multi-select chip inline-axis padding.
+ * @cssprop [--rc-combobox-chip-gap=calc(var(--rc-control-gap, 0.25em) * 0.8)] - Gap between chip
+ *   label and remove icon.
+ * @cssprop [--rc-combobox-chip-border=var(--rc-border)] - Multi-select chip border.
+ * @cssprop [--rc-combobox-toggle-size=1.1em] - Inline size of the toggle button's icon area.
  */
 export class RCCombobox extends RCSelect {
   static override styles = comboboxStyles;

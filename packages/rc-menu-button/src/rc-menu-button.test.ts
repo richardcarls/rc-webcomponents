@@ -4,6 +4,7 @@ import { html } from 'lit';
 import { userEvent, type Locator } from 'vitest/browser';
 
 import './define';
+import type { RCMenuButton } from './rc-menu-button';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
 async function expectActiveMenuItem(item: Locator) {
@@ -36,6 +37,32 @@ test('RCMenuButton renders with correct ARIA attributes', async () => {
 
   // Menu element should exist
   await expect.element(menu).toBeInTheDocument();
+});
+
+test('RCMenuButton renders an author-supplied indicator inside the trigger bounds', async () => {
+  const screen = render(html`
+    <rc-menu-button data-testid="host" orientation="vertical">
+      <button slot="trigger" data-testid="trigger">Scale recipe</button>
+      <span slot="indicator" aria-hidden="true" data-testid="indicator">→</span>
+      <rc-menu label="Scale recipe">
+        <button>Double</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+
+  const host = screen.getByTestId('host').element() as RCMenuButton;
+  const trigger = screen.getByTestId('trigger').element() as HTMLButtonElement;
+  const indicator = screen.getByTestId('indicator').element() as HTMLElement;
+
+  await host.updateComplete;
+
+  expect(host).toHaveAttribute('has-indicator');
+  expect(host.shadowRoot?.querySelector('slot[name="indicator"]')).not.toBeNull();
+  expect(getComputedStyle(indicator).pointerEvents).toBe('none');
+
+  expect(parseFloat(getComputedStyle(trigger).paddingInlineEnd)).toBeGreaterThan(
+    parseFloat(getComputedStyle(trigger).paddingInlineStart),
+  );
 });
 
 test('RCMenuButton has no automated accessibility violations', async () => {
@@ -270,7 +297,7 @@ test('RCMenuButton maps trigger styling variables to the slotted trigger', async
     </rc-menu-button>
   `);
 
-  const host = screen.getByTestId('host').element() as any;
+  const host = screen.getByTestId('host').element() as RCMenuButton;
   const trigger = screen.getByTestId('trigger').element() as HTMLElement;
 
   await host.updateComplete;
@@ -336,7 +363,8 @@ test('RCMenuButton exposes open/close methods', async () => {
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
 
-  const menuButton = (await host.element()) as any;
+  const menuButton = (await host.element()) as RCMenuButton;
+
   await menuButton.updateComplete;
 
   // openMenu() method
@@ -454,6 +482,37 @@ test('RCMenuButton inherits orientation from parent with role="menubar"', async 
   await userEvent.keyboard('{ArrowRight}');
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
   await expectActiveMenuItem(item1);
+});
+
+test('RCMenuButton ignores default-open after an explicit controlled open=false write', async () => {
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+
+  const host = screen.getByTestId('host');
+  const trigger = screen.getByTestId('trigger');
+
+  const menuButton = (await host.element()) as RCMenuButton;
+
+  await menuButton.updateComplete;
+
+  // A controlled write of open=false (e.g. a React-style explicit boolean
+  // prop) must lock in controlled mode even though it matches the default.
+  menuButton.open = false;
+
+  // An uncontrolled default arriving afterward must not override the
+  // controlled write.
+  menuButton.defaultOpen = true;
+
+  await menuButton.updateComplete;
+
+  await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+  expect(menuButton.open).toBe(false);
 });
 
 test('RCMenuButton reflects open attribute', async () => {

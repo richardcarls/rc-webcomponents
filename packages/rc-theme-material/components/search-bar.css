@@ -30,4 +30,27 @@
       transparent
     );
   }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar[variant='view'] {
+    display: inline-flex;
+    inline-size: min(100%, var(--md-search-view-container-width, 45rem));
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar[variant='view']::part(root) {
+    position: relative;
+    z-index: 2;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(view) {
+    overflow: hidden;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(suggestion) {
+    gap: 1rem;
+    color: var(--md-sys-color-on-surface, CanvasText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(suggestion):hover {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
+  }
 }

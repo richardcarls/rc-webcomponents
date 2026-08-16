@@ -1,0 +1,28 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-switch {
+    --rc-switch-native-appearance: none;
+    --rc-switch-native-inline-size: 100%;
+    --rc-switch-native-block-size: 100%;
+    --rc-switch-native-margin: 0;
+    --rc-switch-native-opacity: 0;
+    --rc-switch-decoration-display: block;
+    --rc-switch-icon-display: grid;
+    --rc-switch-track-inline-size: 3.25rem;
+    --rc-switch-track-block-size: 2rem;
+    --rc-switch-track-border: var(--rc-border);
+    --rc-switch-track-radius: 9999px;
+    --rc-switch-track-bg: var(--substrate-surface-raised, ButtonFace);
+    --rc-switch-thumb-size: 1rem;
+    --rc-switch-thumb-offset: 0.375rem;
+    --rc-switch-thumb-bg: var(--substrate-on-surface-muted, ButtonText);
+    --rc-switch-selected-track-border-color: var(--rc-accent);
+    --rc-switch-selected-track-bg: var(--rc-accent);
+    --rc-switch-selected-thumb-size: 1.5rem;
+    --rc-switch-selected-thumb-bg: var(--substrate-on-primary, HighlightText);
+    --rc-switch-thumb-translate: 1.125rem;
+    --rc-switch-focus-ring: var(--rc-focus-ring);
+    --rc-switch-focus-ring-offset: var(--rc-focus-ring-offset);
+    --rc-switch-disabled-opacity: var(--rc-disabled-opacity);
+    --rc-switch-duration: var(--rc-motion-duration);
+  }
+}

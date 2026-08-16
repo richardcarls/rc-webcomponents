@@ -3,11 +3,40 @@
     --rme-background: var(--md-sys-color-surface, Canvas);
     --rme-color: var(--md-sys-color-on-surface, CanvasText);
     --rme-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
-    --rme-border-radius: 0 0 var(--md-sys-shape-corner-small, 0.5rem) var(--md-sys-shape-corner-small, 0.5rem);
+    --rme-border-radius: 0 0 var(--md-sys-shape-corner-small, 0.5rem)
+      var(--md-sys-shape-corner-small, 0.5rem);
     --rme-focus-outline: 2px solid var(--md-sys-color-primary, Highlight);
     --rme-padding: 1rem;
     --rme-toolbar-gap: 0.25rem;
     --rme-toolbar-button-size: 2.5rem;
+    --rme-toolbar-padding: 0.25rem;
+    --rme-toolbar-radius: var(--md-sys-shape-corner-small, 0.5rem)
+      var(--md-sys-shape-corner-small, 0.5rem) 0 0;
+    --rme-toolbar-background: var(--md-sys-color-surface-container, Canvas);
+    --rme-toolbar-color: var(--md-sys-color-on-surface, CanvasText);
+    --rme-toolbar-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
+    --rme-toolbar-button-color: var(--md-sys-color-on-surface-variant, ButtonText);
+    --rme-toolbar-button-border: 0;
+    --rme-toolbar-button-radius: var(--md-sys-shape-corner-full, 999px);
+    --rme-toolbar-button-active-background: var(--md-sys-color-secondary-container, Highlight);
+    --rme-toolbar-button-active-color: var(--md-sys-color-on-secondary-container, HighlightText);
+    --rme-toolbar-button-active-border: 0;
+    --rme-toolbar-button-hover-opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+    --rme-toolbar-button-focus-opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+    --rme-toolbar-button-pressed-opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+    --rme-toolbar-focus-outline: 2px solid var(--md-sys-color-primary, Highlight);
+    --rme-toolbar-focus-outline-offset: 1px;
+    --rme-toolbar-select-background: var(--md-sys-color-surface-container-highest, Field);
+    --rme-toolbar-select-color: var(--md-sys-color-on-surface, FieldText);
+    --rme-toolbar-select-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
+    --rme-toolbar-select-radius: var(--md-sys-shape-corner-extra-small, 0.25rem);
+    --rme-toolbar-select-active-background: var(--md-sys-color-secondary-container, Highlight);
+    --rme-toolbar-select-active-color: var(--md-sys-color-on-secondary-container, HighlightText);
+    --rme-toolbar-select-active-border-color: var(--md-sys-color-primary, Highlight);
+    --rme-toolbar-input-background: var(--md-sys-color-surface-container-highest, Field);
+    --rme-toolbar-input-color: var(--md-sys-color-on-surface, FieldText);
+    --rme-toolbar-input-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
+    --rme-toolbar-input-radius: var(--md-sys-shape-corner-extra-small, 0.25rem);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-markdown-editor::part(rich-view) {

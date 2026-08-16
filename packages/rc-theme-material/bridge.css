@@ -37,11 +37,80 @@
     --rc-font-family: var(--md-sys-typescale-body-medium-font, inherit);
     --rc-font-size: var(--md-sys-typescale-body-medium-size, 0.875rem);
     --rc-line-height: var(--md-sys-typescale-body-medium-line-height, 1.25rem);
+    --rc-icon-font-size: 1.5rem;
+    --rc-icon-font-line-height: var(--rc-icon-font-size);
     --rc-control-block-size: 2.5rem;
     --rc-control-padding-block: 0.5rem;
     --rc-control-padding-inline: 1rem;
     --rc-control-gap: 0.5rem;
     --rc-control-radius: var(--md-sys-shape-corner-full, 1.25rem);
+    --rc-list-item-gap: 1rem;
+    --rc-list-item-min-block-size: 3rem;
+    --rc-list-item-padding-block: 0;
+    --rc-list-item-padding-inline: 1rem;
+    --rc-list-item-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-list-item-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
+    --rc-button-bg: var(--md-sys-color-primary, ButtonFace);
+    --rc-button-color: var(--md-sys-color-on-primary, ButtonText);
+    --rc-button-block-size: var(--rc-control-block-size);
+    --rc-button-radius: var(--rc-control-radius);
+    --rc-button-border: 0;
+    --rc-button-padding-block: 0;
+    --rc-button-padding-inline: 1.5rem;
+    --rc-button-gap: var(--rc-control-gap);
+    --rc-button-font: 500 var(--md-sys-typescale-label-large-size, 0.875rem) /
+      var(--md-sys-typescale-label-large-line-height, 1.25rem) var(--rc-font-family);
+    --rc-button-hover-state-layer-opacity: 0.08;
+    --rc-button-focus-state-layer-opacity: 0.12;
+    --rc-button-pressed-state-layer-opacity: 0.12;
+    --rc-card-bg: var(--md-sys-color-surface-container-low, Canvas);
+    --rc-card-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-card-radius: var(--md-sys-shape-corner-medium, 0.75rem);
+    --rc-card-padding-block: 1rem;
+    --rc-card-padding-inline: 1rem;
+    --rc-card-actions-gap: 0.5rem;
+    --rc-card-hover-state-layer-opacity: 0.08;
+    --rc-card-pressed-state-layer-opacity: 0.12;
+    --rc-chip-block-size: 2rem;
+    --rc-chip-gap: 0px;
+    --rc-chip-padding-inline: 1rem;
+    --rc-chip-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
+    --rc-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
+    --rc-chip-bg: var(--md-sys-color-surface-container-low, ButtonFace);
+    --rc-chip-color: var(--md-sys-color-on-surface-variant, ButtonText);
+    --rc-chip-font: inherit;
+    --rc-chip-text-decoration: none;
+    --rc-chip-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-chip-state-layer-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-chip-selected-state-layer-color: var(--md-sys-color-on-secondary-container, CanvasText);
+    --rc-chip-hover-state-layer-opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+    --rc-chip-focus-state-layer-opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+    --rc-chip-pressed-state-layer-opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+    --rc-chip-state-layer-transition-duration: var(--rc-motion-effects-duration-fast, 150ms);
+    --rc-chip-state-layer-transition-easing: var(--rc-motion-effects-easing-fast, ease-out);
+    --rc-switch-native-appearance: none;
+    --rc-switch-native-inline-size: 100%;
+    --rc-switch-native-block-size: 100%;
+    --rc-switch-native-margin: 0;
+    --rc-switch-native-opacity: 0;
+    --rc-switch-decoration-display: block;
+    --rc-switch-icon-display: grid;
+    --rc-switch-track-inline-size: 3.25rem;
+    --rc-switch-track-block-size: 2rem;
+    --rc-switch-selected-track-bg: var(--md-sys-color-primary, Highlight);
+    --rc-switch-thumb-translate: 1.125rem;
+    --rc-segmented-button-segment-min-block-size: 2.5rem;
+    --rc-segmented-button-selected-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-snackbar-bg: var(--md-sys-color-inverse-surface, CanvasText);
+    --rc-snackbar-color: var(--md-sys-color-inverse-on-surface, Canvas);
+    --rc-snackbar-border: 0;
+    --rc-snackbar-action-color: var(--md-sys-color-inverse-primary, LinkText);
+    --rc-snackbar-action-border: 0;
+    --rc-snackbar-action-radius: 9999px;
+    --rc-snackbar-action-padding-block: 0.5rem;
+    --rc-snackbar-action-padding-inline: 0.75rem;
+    --rc-snackbar-action-bg: transparent;
+    --rc-snackbar-action-font: inherit;
     --rc-toolbar-radius: var(--md-sys-shape-corner-large, 1rem);
     --rc-toolbar-vertical-radius: 0;
     --rc-item-padding-block: 0.75rem;
@@ -52,7 +121,30 @@
     --rc-focus-ring: 2px solid var(--md-sys-color-primary, Highlight);
     --rc-focus-ring-offset: 2px;
     --rc-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
-    --rc-motion-duration: 200ms;
+    --rc-motion-effects-duration-fast: var(--md-sys-motion-duration-150, 150ms);
+    --rc-motion-effects-easing-fast: cubic-bezier(
+      var(--md-sys-motion-easing-standard-x0, 0.2),
+      var(--md-sys-motion-easing-standard-y0, 0),
+      var(--md-sys-motion-easing-standard-x1, 0),
+      var(--md-sys-motion-easing-standard-y1, 1)
+    );
+    --rc-motion-effects-duration-default: var(--md-sys-motion-duration-200, 200ms);
+    --rc-motion-effects-easing-default: var(--rc-motion-effects-easing-fast);
+    --rc-motion-effects-duration-slow: var(--md-sys-motion-duration-300, 300ms);
+    --rc-motion-effects-easing-slow: var(--rc-motion-effects-easing-fast);
+    --rc-motion-spatial-duration-fast: var(--md-sys-motion-duration-350, 350ms);
+    --rc-motion-spatial-easing-fast: cubic-bezier(
+      var(--md-sys-motion-easing-emphasized-x0, 0.2),
+      var(--md-sys-motion-easing-emphasized-y0, 0),
+      var(--md-sys-motion-easing-emphasized-x1, 0),
+      var(--md-sys-motion-easing-emphasized-y1, 1)
+    );
+    --rc-motion-spatial-duration-default: var(--md-sys-motion-duration-500, 500ms);
+    --rc-motion-spatial-easing-default: var(--rc-motion-spatial-easing-fast);
+    --rc-motion-spatial-duration-slow: var(--md-sys-motion-duration-700, 700ms);
+    --rc-motion-spatial-easing-slow: var(--rc-motion-spatial-easing-fast);
+    --rc-motion-duration: var(--rc-motion-effects-duration-default);
+    --rc-dialog-scrim: color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent);
   }
 
   .rc-theme-material rc-select,
@@ -91,10 +183,10 @@
 
   .rc-theme-material rc-listbox,
   :host(.rc-theme-material) rc-listbox {
-    --rc-listbox-option-gap: 0.75rem;
-    --rc-listbox-option-min-block-size: 3rem;
-    --rc-listbox-option-padding-block: 0;
-    --rc-listbox-option-padding-inline: 0.75rem;
+    --rc-listbox-option-gap: var(--rc-list-item-gap, 0.75rem);
+    --rc-listbox-option-min-block-size: var(--rc-list-item-min-block-size, 3rem);
+    --rc-listbox-option-padding-block: var(--rc-list-item-padding-block, 0);
+    --rc-listbox-option-padding-inline: var(--rc-list-item-padding-inline, 0.75rem);
     --rc-listbox-option-transition: background-color 150ms ease, color 150ms ease;
     --rc-listbox-hover-bg: color-mix(
       in srgb,
@@ -108,8 +200,8 @@
       transparent
     );
     --rc-listbox-active-color: var(--md-sys-color-on-surface, CanvasText);
-    --rc-listbox-selected-bg: var(--md-sys-color-secondary-container, Highlight);
-    --rc-listbox-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
+    --rc-listbox-selected-bg: var(--rc-list-item-selected-bg, Highlight);
+    --rc-listbox-selected-color: var(--rc-list-item-selected-color, HighlightText);
     --rc-listbox-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
   }
 
@@ -252,6 +344,27 @@
       --md-search-bar-input-text-size,
       var(--md-sys-typescale-body-large-size, 1rem)
     );
+    --rc-search-bar-view-bg: var(
+      --md-search-view-container-color,
+      var(--md-sys-color-surface-container-high, Field)
+    );
+    --rc-search-bar-view-color: var(
+      --md-search-view-input-text-color,
+      var(--md-sys-color-on-surface, FieldText)
+    );
+    --rc-search-bar-view-radius: var(
+      --md-search-view-container-shape,
+      var(--md-sys-shape-corner-extra-large, 1.75rem)
+    );
+    --rc-search-bar-view-shadow: var(--rc-shadow-level3);
+    --rc-search-bar-view-padding-block: 0.5rem;
+    --rc-search-bar-suggestion-min-block-size: 3rem;
+    --rc-search-bar-suggestion-padding-inline: 1rem;
+    --rc-search-bar-suggestion-hover-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 8%,
+      transparent
+    );
   }
 
   .rc-theme-material rc-app-bar,
@@ -315,8 +428,6 @@
     --rc-menu-check-color: var(--md-sys-color-primary, Highlight);
     --rc-menu-shortcut-size: var(--md-sys-typescale-label-large-size, 0.875rem);
     --rc-menu-shortcut-color: var(--md-sys-color-on-surface-variant, GrayText);
-    --rc-menu-submenu-indicator-size: 1.25rem;
-    --rc-menu-submenu-indicator-color: var(--md-sys-color-on-surface-variant, CanvasText);
     --rc-menu-disabled-color: var(--md-sys-color-on-surface, GrayText);
     --rc-menu-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
     --rc-menu-separator-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
@@ -345,6 +456,8 @@
     --rc-menu-button-trigger-hover-color: var(--md-sys-color-primary, ButtonText);
     --rc-menu-button-trigger-open-background: var(--md-sys-color-secondary-container, ButtonFace);
     --rc-menu-button-trigger-open-color: var(--md-sys-color-on-secondary-container, ButtonText);
+    --rc-menu-button-indicator-size: 1.5rem;
+    --rc-menu-button-indicator-color: var(--md-sys-color-on-surface-variant, CanvasText);
   }
 
   .rc-theme-material rc-menubar,
@@ -411,18 +524,59 @@
     --rc-transfer-list-listbox-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
   }
 
+  .rc-theme-material rc-navigation-bar,
+  :host(.rc-theme-material) rc-navigation-bar {
+    --rc-navigation-bar-bg: var(--md-sys-color-surface-container, Canvas);
+    --rc-navigation-bar-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-bar-item-text-decoration: none;
+    --rc-navigation-bar-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-navigation-bar-indicator-border: 0;
+  }
+
+  .rc-theme-material rc-navigation-rail,
+  :host(.rc-theme-material) rc-navigation-rail {
+    --rc-navigation-rail-bg: var(--md-sys-color-surface, Canvas);
+    --rc-navigation-rail-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-navigation-rail-item-text-decoration: none;
+    --rc-navigation-rail-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
+    --rc-navigation-rail-indicator-border: 0;
+    --rc-navigation-rail-toggle-padding: 0;
+    --rc-navigation-rail-toggle-border: 0;
+    --rc-navigation-rail-toggle-font: inherit;
+  }
+  .rc-theme-material rc-navigation-rail > rc-fab[slot='header'],
+  :host(.rc-theme-material) rc-navigation-rail > rc-fab[slot='header'] {
+    --rc-fab-shadow: none;
+    --rc-fab-shadow-hover: none;
+    --rc-fab-shadow-active: none;
+  }
+
   .rc-theme-material rc-fab,
-  :host(.rc-theme-material) rc-fab {
+  .rc-theme-material rc-fab-menu,
+  :host(.rc-theme-material) rc-fab,
+  :host(.rc-theme-material) rc-fab-menu {
     --rc-fab-bg: var(--md-fab-container-color, var(--md-sys-color-primary-container, ButtonFace));
     --rc-fab-color: var(--md-fab-icon-color, var(--md-sys-color-on-primary-container, ButtonText));
     --rc-fab-shadow: var(--rc-shadow-level3);
     --rc-fab-shadow-hover: var(--rc-shadow-level4);
     --rc-fab-shadow-active: var(--rc-shadow-level3);
     --rc-fab-radius: var(--md-fab-container-shape, var(--md-sys-shape-corner-large, 1rem));
-    --rc-fab-font-family: var(--md-fab-label-text-font, var(--md-sys-typescale-label-large-font, inherit));
-    --rc-fab-font-size: var(--md-fab-label-text-size, var(--md-sys-typescale-label-large-size, 0.875rem));
-    --rc-fab-font-weight: var(--md-fab-label-text-weight, var(--md-sys-typescale-label-large-weight, 500));
-    --rc-fab-letter-spacing: var(--md-fab-label-text-tracking, var(--md-sys-typescale-label-large-tracking, 0.00625em));
+    --rc-fab-font-family: var(
+      --md-fab-label-text-font,
+      var(--md-sys-typescale-label-large-font, inherit)
+    );
+    --rc-fab-font-size: var(
+      --md-fab-label-text-size,
+      var(--md-sys-typescale-label-large-size, 0.875rem)
+    );
+    --rc-fab-font-weight: var(
+      --md-fab-label-text-weight,
+      var(--md-sys-typescale-label-large-weight, 500)
+    );
+    --rc-fab-letter-spacing: var(
+      --md-fab-label-text-tracking,
+      var(--md-sys-typescale-label-large-tracking, 0.00625em)
+    );
     --rc-fab-focus-ring: var(--rc-focus-ring);
     --rc-fab-focus-ring-offset: var(--rc-focus-ring-offset);
   }
@@ -434,6 +588,23 @@
     --rc-splitter-handle-color: var(--md-sys-color-on-surface-variant, ButtonBorder);
   }
 
+  .rc-theme-material rc-bottom-sheet,
+  :host(.rc-theme-material) rc-bottom-sheet {
+    --rc-bottom-sheet-bg: var(--md-sys-color-surface, Canvas);
+    --rc-bottom-sheet-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-bottom-sheet-radius: var(--md-sys-shape-corner-extra-large, 1.75rem)
+      var(--md-sys-shape-corner-extra-large, 1.75rem) 0 0;
+    --rc-bottom-sheet-shadow: var(--rc-shadow-level1);
+    --rc-bottom-sheet-max-inline-size: 40rem;
+    --rc-bottom-sheet-max-block-size: 70dvh;
+    --rc-bottom-sheet-scrim: color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent);
+    --rc-bottom-sheet-handle-color: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface-variant, GrayText) 40%,
+      transparent
+    );
+    --rc-bottom-sheet-handle-radius: var(--md-sys-shape-corner-full, 999px);
+  }
   .rc-theme-material rc-virtual-canvas,
   :host(.rc-theme-material) rc-virtual-canvas {
     --rc-virtual-canvas-scrollbar-thumb-background: var(--md-sys-color-outline, ButtonFace);

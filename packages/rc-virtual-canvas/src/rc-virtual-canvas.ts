@@ -135,23 +135,44 @@ function createRectSnapshot(rect: RCVirtualCanvasViewRect) {
  *
  * @fires rc-virtual-canvas-render - Fires with viewport data when the canvas should redraw.
  * @fires rc-virtual-canvas-pointer - Fires pointer/mouse input mapped to virtual content coordinates.
+ *
+ * @csspart scroller - Internal scroll container that owns the virtual content scroll range.
+ * @csspart overlay - Viewport-positioned overlay container rendered inside the scroll container.
+ *
+ * @attr content-width - Total pixel width of the virtual content.
+ * @attr content-height - Total pixel height of the virtual content.
+ * @attr auto-resize-canvas - Keep the slotted canvas backing store aligned to the viewport.
+ * @attr render-mode - Controls when render events are dispatched.
+ * @attr image-rendering - Convenience `image-rendering` value applied to the slotted canvas.
+ *
+ * @cssprop [--rc-virtual-canvas-scrollbar-width=thin] - `scrollbar-width` of the internal
+ *   scroll container.
+ * @cssprop [--rc-virtual-canvas-scrollbar-size=auto] - WebKit scrollbar thickness.
+ * @cssprop [--rc-virtual-canvas-scrollbar-thumb-background=ButtonFace] - WebKit scrollbar
+ *   thumb color.
+ * @cssprop [--rc-virtual-canvas-scrollbar-button-background=ButtonFace] - WebKit scrollbar
+ *   button color.
+ * @cssprop [--rc-virtual-canvas-scrollbar-track-background=Canvas] - WebKit scrollbar
+ *   track color.
+ * @cssprop [--rc-virtual-canvas-image-rendering=auto] - `image-rendering` applied to the
+ *   slotted canvas; kept in sync with the `imageRendering` property.
  */
 export class RCVirtualCanvas extends LitElement {
   static styles = [virtualCanvasStyles];
 
-  private _rafHandle: number = 0;
-  private _pendingRenderReason?: RCVirtualCanvasRenderReason;
-  private readonly _handledPointerEvents = new WeakSet<Event>();
+  protected _rafHandle: number = 0;
+  protected _pendingRenderReason?: RCVirtualCanvasRenderReason;
+  protected readonly _handledPointerEvents = new WeakSet<Event>();
 
   // Stored bound reference so the same closure is used for scheduling and
   // cancellation — `bind()` returns a new function every call.
-  private readonly _boundUpdate = (time: DOMHighResTimeStamp) => this._update(time);
+  protected readonly _boundUpdate = (time: DOMHighResTimeStamp) => this._update(time);
 
-  private readonly _boundPointerEvent = (event: PointerEvent | MouseEvent) =>
+  protected readonly _boundPointerEvent = (event: PointerEvent | MouseEvent) =>
     this._onPointerEvent(event);
 
   /** Pixel width of the virtual content */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'content-width' })
   set contentWidth(val: number) {
     const oldValue = this._contentWidth;
 
@@ -164,10 +185,10 @@ export class RCVirtualCanvas extends LitElement {
   get contentWidth() {
     return this._contentWidth;
   }
-  protected _contentWidth: number = 0;
+  private _contentWidth: number = 0;
 
   /** Pixel height of the virtual content */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'content-height' })
   set contentHeight(val: number) {
     const oldValue = this._contentHeight;
 
@@ -180,7 +201,7 @@ export class RCVirtualCanvas extends LitElement {
   get contentHeight() {
     return this._contentHeight;
   }
-  protected _contentHeight: number = 0;
+  private _contentHeight: number = 0;
 
   /** When true, keep the slotted canvas backing store aligned to the viewport. */
   @property({ attribute: 'auto-resize-canvas', type: Boolean })
@@ -262,7 +283,7 @@ export class RCVirtualCanvas extends LitElement {
       (e.currentTarget as HTMLSlotElement)
         .assignedElements()
         .filter((el) => el instanceof HTMLCanvasElement)
-        .at(0) ?? null;
+        [0] ?? null;
 
     if (this._$canvas != null) {
       this._viewRect = {
@@ -273,11 +294,24 @@ export class RCVirtualCanvas extends LitElement {
       };
 
       this._syncCanvasBackingStore();
-      this._resizeObserver.observe(this._$canvas, {
-        box: 'device-pixel-content-box',
-      });
+      this._observeCanvasResize(this._$canvas);
 
       this._scheduleRender('viewport-change');
+    }
+  }
+
+  /** Observes canvas size with DPR-accurate boxes when the browser supports them */
+  protected _observeCanvasResize($canvas: HTMLCanvasElement) {
+    try {
+      this._resizeObserver.observe($canvas, {
+        box: 'device-pixel-content-box',
+      });
+    } catch (error) {
+      if (!(error instanceof TypeError)) {
+        throw error;
+      }
+
+      this._resizeObserver.observe($canvas);
     }
   }
 
@@ -456,10 +490,10 @@ export class RCVirtualCanvas extends LitElement {
     if (!shouldContinue) event.preventDefault();
   }
 
-  private _isOverlayEvent(event: Event): boolean {
+  protected _isOverlayEvent(event: Event): boolean {
     return event
       .composedPath()
-      .some((node) => node instanceof HTMLSlotElement && node.name === 'overlay');
+      .some(($node) => $node instanceof HTMLSlotElement && $node.name === 'overlay');
   }
 
   /**
@@ -562,7 +596,7 @@ export class RCVirtualCanvas extends LitElement {
     }
   }
 
-  private _scheduleRender(reason: RCVirtualCanvasRenderReason) {
+  protected _scheduleRender(reason: RCVirtualCanvasRenderReason) {
     if (this.renderMode === 'manual' && reason !== 'manual') {
       return;
     }
@@ -580,7 +614,7 @@ export class RCVirtualCanvas extends LitElement {
     this._rafHandle = window.requestAnimationFrame(this._boundUpdate);
   }
 
-  private _syncCanvasBackingStore() {
+  protected _syncCanvasBackingStore() {
     if (!this.autoResizeCanvas || this._$canvas == null) {
       return;
     }
@@ -597,7 +631,7 @@ export class RCVirtualCanvas extends LitElement {
     }
   }
 
-  private _getCanvasClientRect() {
+  protected _getCanvasClientRect() {
     if (this._$canvas == null) {
       return this.getBoundingClientRect();
     }
@@ -605,7 +639,7 @@ export class RCVirtualCanvas extends LitElement {
     return this._$canvas.getBoundingClientRect();
   }
 
-  private _getMeasuredCanvasWidth(fallbackWidth: number) {
+  protected _getMeasuredCanvasWidth(fallbackWidth: number) {
     if (!this.autoResizeCanvas && this._$canvas && this._$canvas.width > 0) {
       return this._$canvas.width;
     }
@@ -613,7 +647,7 @@ export class RCVirtualCanvas extends LitElement {
     return fallbackWidth;
   }
 
-  private _getMeasuredCanvasHeight(fallbackHeight: number) {
+  protected _getMeasuredCanvasHeight(fallbackHeight: number) {
     if (!this.autoResizeCanvas && this._$canvas && this._$canvas.height > 0) {
       return this._$canvas.height;
     }
@@ -621,11 +655,11 @@ export class RCVirtualCanvas extends LitElement {
     return fallbackHeight;
   }
 
-  private _getViewportScaleX(canvasRect: DOMRect) {
+  protected _getViewportScaleX(canvasRect: DOMRect) {
     return canvasRect.width > 0 ? this._viewRect.width / canvasRect.width : 1;
   }
 
-  private _getViewportScaleY(canvasRect: DOMRect) {
+  protected _getViewportScaleY(canvasRect: DOMRect) {
     return canvasRect.height > 0 ? this._viewRect.height / canvasRect.height : 1;
   }
 

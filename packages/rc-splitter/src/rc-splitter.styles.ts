@@ -40,9 +40,18 @@ export const splitterStyles = css`
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background-color: var(--rc-splitter-separator-color, color-mix(in srgb, ButtonBorder 35%, Canvas 65%));
-    border-left: var(--rc-splitter-separator-border-inline-start, var(--rc-splitter-keyline, 1px solid ButtonBorder));
-    border-right: var(--rc-splitter-separator-border-inline-end, var(--rc-splitter-keyline, 1px solid ButtonBorder));
+    background-color: var(
+      --rc-splitter-separator-color,
+      color-mix(in srgb, ButtonBorder 35%, Canvas 65%)
+    );
+    border-left: var(
+      --rc-splitter-separator-border-inline-start,
+      var(--rc-splitter-keyline, 1px solid ButtonBorder)
+    );
+    border-right: var(
+      --rc-splitter-separator-border-inline-end,
+      var(--rc-splitter-keyline, 1px solid ButtonBorder)
+    );
     /* z-index: 1 as a flex item stacks separator above pane siblings so the
        ::after touch-target circle (which extends past the strip) is hittable */
     z-index: 1;
@@ -53,8 +62,14 @@ export const splitterStyles = css`
       flex-direction: row;
       border-left: unset;
       border-right: unset;
-      border-top: var(--rc-splitter-separator-border-block-start, var(--rc-splitter-keyline, 1px solid ButtonBorder));
-      border-bottom: var(--rc-splitter-separator-border-block-end, var(--rc-splitter-keyline, 1px solid ButtonBorder));
+      border-top: var(
+        --rc-splitter-separator-border-block-start,
+        var(--rc-splitter-keyline, 1px solid ButtonBorder)
+      );
+      border-bottom: var(
+        --rc-splitter-separator-border-block-end,
+        var(--rc-splitter-keyline, 1px solid ButtonBorder)
+      );
     }
   }
 
@@ -96,6 +111,7 @@ export const splitterStyles = css`
   }
 
   #separator-handle {
+    touch-action: none;
     width: 100%;
     height: var(--rc-splitter-separator-handle-size, 100%);
     cursor: col-resize;
@@ -117,9 +133,21 @@ export const splitterStyles = css`
       background-color: var(--rc-splitter-handle-fill, transparent);
       background-image: var(
         --rc-splitter-handle-pattern,
-        radial-gradient(circle 1px at 50% calc(50% - 5px), var(--rc-splitter-handle-color, ButtonBorder) 100%, transparent 100%),
-        radial-gradient(circle 1px at 50% 50%, var(--rc-splitter-handle-color, ButtonBorder) 100%, transparent 100%),
-        radial-gradient(circle 1px at 50% calc(50% + 5px), var(--rc-splitter-handle-color, ButtonBorder) 100%, transparent 100%)
+        radial-gradient(
+          circle 1px at 50% calc(50% - 5px),
+          var(--rc-splitter-handle-color, ButtonBorder) 100%,
+          transparent 100%
+        ),
+        radial-gradient(
+          circle 1px at 50% 50%,
+          var(--rc-splitter-handle-color, ButtonBorder) 100%,
+          transparent 100%
+        ),
+        radial-gradient(
+          circle 1px at 50% calc(50% + 5px),
+          var(--rc-splitter-handle-color, ButtonBorder) 100%,
+          transparent 100%
+        )
       );
       border-radius: var(--rc-splitter-handle-border-radius, 0);
       pointer-events: none;
@@ -159,9 +187,21 @@ export const splitterStyles = css`
         height: var(--rc-splitter-handle-thickness, 4px);
         background-image: var(
           --rc-splitter-handle-pattern,
-          radial-gradient(circle 1px at calc(50% - 5px) 50%, var(--rc-splitter-handle-color, ButtonBorder) 100%, transparent 100%),
-          radial-gradient(circle 1px at 50% 50%, var(--rc-splitter-handle-color, ButtonBorder) 100%, transparent 100%),
-          radial-gradient(circle 1px at calc(50% + 5px) 50%, var(--rc-splitter-handle-color, ButtonBorder) 100%, transparent 100%)
+          radial-gradient(
+            circle 1px at calc(50% - 5px) 50%,
+            var(--rc-splitter-handle-color, ButtonBorder) 100%,
+            transparent 100%
+          ),
+          radial-gradient(
+            circle 1px at 50% 50%,
+            var(--rc-splitter-handle-color, ButtonBorder) 100%,
+            transparent 100%
+          ),
+          radial-gradient(
+            circle 1px at calc(50% + 5px) 50%,
+            var(--rc-splitter-handle-color, ButtonBorder) 100%,
+            transparent 100%
+          )
         );
       }
     }
