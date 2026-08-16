@@ -26,6 +26,8 @@ declare global {
  *
  * @slot Takes any number of child controls or `rc-chip` elements to display in
  *   the toolbar. Only focusable native controls are navigable.
+ * @attr label - Accessible label for this toolbar. Default label is 'Toolbar'.
+ * @attr orientation - Toolbar orientation, for keyboard navigation.
  * @cssprop [--rc-toolbar-gap-inline=0.25em] - Gap between toolbar items
  * @cssprop [--rc-toolbar-padding-inline=calc(var(--rc-control-padding-inline) / 2)] - Horizontal padding on the toolbar container
  * @cssprop [--rc-toolbar-padding-block=calc(var(--rc-control-padding-block) / 2)] - Vertical padding on the toolbar container
