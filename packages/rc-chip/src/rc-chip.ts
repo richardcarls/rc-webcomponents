@@ -48,15 +48,52 @@ export interface RCChipRemoveDetail {
  * @csspart state-layer - Overlay layer for hover, focus, pressed, ripple, or design-system effects.
  * @csspart remove - Presentational trailing remove indicator.
  *
+ * @cssprop [--rc-chip-gap=0px] - Gap between the slotted button/anchor/label's content.
+ * @cssprop [--rc-chip-block-size] - Minimum chip block size (defers to native button/anchor
+ *   sizing when unset).
+ * @cssprop [--rc-chip-padding-block] - Block-axis padding of the slotted button, anchor, or
+ *   label (defers to native padding when unset).
+ * @cssprop [--rc-chip-padding-inline] - Inline-axis padding of the slotted button, anchor, or
+ *   label (defers to native padding when unset).
+ * @cssprop [--rc-chip-border] - Border of the slotted button, anchor, or label (defers to
+ *   native border when unset).
+ * @cssprop [--rc-chip-radius] - Border radius of the slotted button/anchor/label and the
+ *   state-layer overlay (defers to native border-radius when unset; the state-layer overlay
+ *   falls back to 0).
+ * @cssprop [--rc-chip-bg] - Background of the slotted button, anchor, or label (defers to
+ *   native background when unset).
+ * @cssprop [--rc-chip-color] - Text color of the slotted button, anchor, or label (defers to
+ *   native color when unset).
+ * @cssprop [--rc-chip-font] - Font shorthand for the slotted button, anchor, or label (defers
+ *   to native font when unset).
+ * @cssprop [--rc-chip-text-decoration] - Text decoration for the slotted anchor (defers to
+ *   native text-decoration when unset).
+ * @cssprop [--rc-chip-selected-border-color] - Border color when `selected` (defers to native
+ *   styling when unset).
+ * @cssprop [--rc-chip-selected-bg] - Background when `selected` (defers to native styling when
+ *   unset).
+ * @cssprop [--rc-chip-selected-color] - Text color when `selected` (defers to native styling
+ *   when unset).
+ * @cssprop [--rc-chip-disabled-opacity] - Opacity of the slotted button when `disabled` (defers
+ *   to native disabled styling when unset).
+ * @cssprop [--rc-chip-focus-ring] - Outline shown while focus-within (defers to native focus
+ *   styling when unset).
+ * @cssprop [--rc-chip-focus-ring-offset] - Outline offset while focus-within (defers to native
+ *   focus styling when unset).
  * @cssprop [--rc-chip-state-layer-color=currentColor] - Hover/focus/pressed state-layer color.
- * @cssprop [--rc-chip-selected-state-layer-color=var(--rc-chip-state-layer-color)] - Selected chip state-layer color.
+ * @cssprop [--rc-chip-selected-state-layer-color=var(--rc-chip-state-layer-color, currentColor)] - Selected chip state-layer color.
  * @cssprop [--rc-chip-hover-state-layer-opacity=0.08] - Hover state-layer opacity.
  * @cssprop [--rc-chip-focus-state-layer-opacity=0.12] - Focus state-layer opacity.
  * @cssprop [--rc-chip-pressed-state-layer-opacity=0.12] - Pressed state-layer opacity.
  * @cssprop [--rc-chip-state-layer-transition-duration=var(--rc-motion-effects-duration-fast,80ms)] - State-layer effects duration.
  * @cssprop [--rc-chip-state-layer-transition-easing=var(--rc-motion-effects-easing-fast,ease-out)] - State-layer effects easing.
+ * @cssprop [--rc-chip-remove-offset-inline=0.125rem] - Inline offset of the remove indicator
+ *   from the chip edge.
+ * @cssprop [--rc-chip-remove-target-size=1.5rem] - Minimum inline and block size of the remove
+ *   indicator's hit target.
+ * @cssprop [--rc-chip-remove-radius=9999px] - Border radius of the remove indicator.
  * @cssprop [--rc-chip-remove-icon-size=smaller] - Font size for a slotted remove icon.
- * @cssprop --rc-chip-removable-padding-inline-end - Override for removable chip content end padding.
+ * @cssprop [--rc-chip-removable-padding-inline-end=calc(var(--rc-chip-remove-target-size, 1.5rem) - var(--rc-chip-gap, 0px))] - Override for removable chip content end padding.
  *
  * @attr variant - Chip variant: `assist`, `filter`, `input`, or `suggestion`.
  * @attr selected - Declarative selected state for filter/input chips.
@@ -71,7 +108,7 @@ export class RCChip extends LitElement {
   private _selected: boolean | undefined;
   private _defaultSelected = false;
   private _selectedInitialized = false;
-  private _button: HTMLButtonElement | null = null;
+  private _$button: HTMLButtonElement | null = null;
   private _buttonObserver: MutationObserver | null = null;
   private _disabledOwned = false;
   private _pressedOwned = false;
@@ -128,7 +165,7 @@ export class RCChip extends LitElement {
   removable = false;
 
   override disconnectedCallback(): void {
-    this._button?.removeEventListener('click', this._handleButtonClick);
+    this._$button?.removeEventListener('click', this._handleButtonClick);
     this._buttonObserver?.disconnect();
     this._buttonObserver = null;
     super.disconnectedCallback();
@@ -184,38 +221,38 @@ export class RCChip extends LitElement {
   }
 
   private _syncSlottedButton(): void {
-    const nextButton = this.querySelector<HTMLButtonElement>(':scope > button');
+    const $nextButton = this.querySelector<HTMLButtonElement>(':scope > button');
 
-    if (!nextButton && !this.readonly && import.meta.env.DEV) {
+    if (!$nextButton && !this.readonly && import.meta.env.DEV) {
       console.warn(
         '[rc-chip] No direct child <button> found. Place a native <button> inside <rc-chip>, or use readonly with a [data-rc-chip-label] child.',
         this,
       );
     }
 
-    if (nextButton === this._button) {
+    if ($nextButton === this._$button) {
       this._syncDisabled();
       this._syncPressedState();
 
       return;
     }
 
-    this._button?.removeEventListener('click', this._handleButtonClick);
+    this._$button?.removeEventListener('click', this._handleButtonClick);
     this._buttonObserver?.disconnect();
     this._buttonObserver = null;
-    this._button = nextButton;
+    this._$button = $nextButton;
     this._disabledOwned = false;
     this._pressedOwned = false;
 
-    if (nextButton) {
-      nextButton.addEventListener('click', this._handleButtonClick);
+    if ($nextButton) {
+      $nextButton.addEventListener('click', this._handleButtonClick);
 
       this._buttonObserver = new MutationObserver(() => {
         this._syncDisabled();
         this._syncPressedState();
       });
 
-      this._buttonObserver.observe(nextButton, {
+      this._buttonObserver.observe($nextButton, {
         attributeFilter: ['aria-pressed', 'role', 'disabled'],
       });
     }
@@ -266,46 +303,46 @@ export class RCChip extends LitElement {
   }
 
   private _syncDisabled(): void {
-    const button = this._button;
+    const $button = this._$button;
 
-    if (!button) {
+    if (!$button) {
       return;
     }
 
     if (this.disabled || this.readonly) {
-      if (!button.disabled) {
+      if (!$button.disabled) {
         this._disabledOwned = true;
       }
 
-      button.disabled = true;
+      $button.disabled = true;
     } else if (this._disabledOwned) {
-      button.disabled = false;
+      $button.disabled = false;
       this._disabledOwned = false;
     }
   }
 
   private _syncPressedState(): void {
-    const button = this._button;
+    const $button = this._$button;
 
-    if (!button) {
+    if (!$button) {
       return;
     }
 
-    const role = button.getAttribute('role');
+    const role = $button.getAttribute('role');
     const authorOwnsState =
-      (button.hasAttribute('aria-pressed') && !this._pressedOwned) ||
+      ($button.hasAttribute('aria-pressed') && !this._pressedOwned) ||
       (role ? TOGGLE_ROLES.has(role) : false);
 
     if (!this.readonly && !this.removable && this.variant === 'filter' && !authorOwnsState) {
       const pressed = this.selected ? 'true' : 'false';
 
-      if (button.getAttribute('aria-pressed') !== pressed) {
-        button.setAttribute('aria-pressed', pressed);
+      if ($button.getAttribute('aria-pressed') !== pressed) {
+        $button.setAttribute('aria-pressed', pressed);
       }
 
       this._pressedOwned = true;
     } else if (this._pressedOwned) {
-      button.removeAttribute('aria-pressed');
+      $button.removeAttribute('aria-pressed');
       this._pressedOwned = false;
     }
   }
