@@ -1,5 +1,19 @@
 # @rcarls/rc-listbox
 
+## 0.4.0
+
+### Patch Changes
+
+- 8944083: Document the `multiple`, `checkmark`, and `filter-strategy` attributes, add
+  real defaults to the eight `--rc-listbox-*` option-styling custom properties
+  that already had one in code but not in the JSDoc, add `@example` blocks to
+  the `options` setter and `appendOption()`, and add the missing `checkmark`,
+  `value`, and `defaultValue` rows to the README's API table.
+- Updated dependencies [e57277f]
+- Updated dependencies [ccca8e2]
+- Updated dependencies [037b1b3]
+  - @rcarls/rc-common@0.4.0
+
 ## 0.3.2
 
 ### Patch Changes

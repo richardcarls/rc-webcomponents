@@ -1,5 +1,17 @@
 # @rcarls/rc-app-bar
 
+## 0.4.0
+
+### Patch Changes
+
+- 468e009: Document `variant`, `scroll-behavior`, `scroll-target`, and `scroll-threshold`
+  attributes, and note the `data-scrolled`/`data-collapsed`/`data-hidden` and
+  `:state()` environment-driven output convention in the class JSDoc.
+- Updated dependencies [e57277f]
+- Updated dependencies [ccca8e2]
+- Updated dependencies [037b1b3]
+  - @rcarls/rc-common@0.4.0
+
 ## 0.3.2
 
 ### Patch Changes
