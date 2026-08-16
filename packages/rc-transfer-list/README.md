@@ -108,11 +108,15 @@ highlighted rows that can be reordered in that direction.
 | `--rc-transfer-list-panel-gap` | `var(--rc-control-gap, 0.35rem)` | Gap between a panel label and its listbox. |
 | `--rc-transfer-list-listbox-min-block-size` | `10rem` | Minimum block size for each listbox. |
 | `--rc-transfer-list-listbox-border` | `var(--rc-border, 1px solid ButtonBorder)` | Border around each listbox. |
+| `--rc-transfer-list-listbox-bg` | `var(--rc-surface, Canvas)` | Background of each listbox. |
+| `--rc-transfer-list-listbox-color` | `var(--rc-field-text, FieldText)` | Text color of each listbox. |
 | `--rc-transfer-list-option-gap` | `var(--rc-item-gap, 0.4em)` | Gap between option adornments and labels. |
 | `--rc-transfer-list-option-padding-block` | `var(--rc-item-padding-block, 0.3em)` | Block padding for option rows. |
 | `--rc-transfer-list-option-padding-inline` | `var(--rc-item-padding-inline, 0.75em)` | Inline padding for option rows. |
 | `--rc-transfer-list-option-selected-bg` | `var(--rc-highlight, Highlight)` | Selected option background. |
 | `--rc-transfer-list-option-selected-color` | `var(--rc-highlight-text, HighlightText)` | Selected option foreground. |
+| `--rc-transfer-list-option-hover-bg` | `var(--rc-transfer-list-option-selected-bg)` | Hovered/active option background. |
+| `--rc-transfer-list-option-hover-color` | `var(--rc-transfer-list-option-selected-color)` | Hovered/active option foreground. |
 
 | Part | Description |
 |---|---|
@@ -120,5 +124,17 @@ highlighted rows that can be reordered in that direction.
 | `panel` | Shared list panel surface. |
 | `available-panel` | Available/left panel. |
 | `selected-panel` | Selected/right panel. |
+| `label` | Shared panel label surface. |
+| `available-label` | Label for the available panel. |
+| `selected-label` | Label for the selected panel. |
+| `listbox` | Shared listbox surface. |
+| `available-listbox` | The available/left `rc-listbox`. |
+| `selected-listbox` | The selected/right `rc-listbox`. |
 | `actions` | Transfer action toolbar. |
 | `button` | Shared action button surface. |
+| `add-button` | Moves highlighted available options to the selected list. |
+| `add-all-button` | Moves every available option to the selected list. |
+| `remove-button` | Moves highlighted selected options back to the available list. |
+| `clear-button` | Moves every selected option back to the available list. |
+| `move-up-button` | Moves highlighted selected options up. |
+| `move-down-button` | Moves highlighted selected options down. |

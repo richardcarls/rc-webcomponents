@@ -41,22 +41,43 @@ declare global {
  *
  * @fires rc-transfer-list-change - Fires when the selected/right-hand list changes.
  *
+ * @attr multiple - Enable multi-selection in both lists.
+ * @attr compact - Stack the panels and action toolbar into a compact one-column layout.
+ * @attr available-label - Visible label for the available list.
+ * @attr selected-label - Visible label for the selected list.
+ *
  * @cssprop [--rc-transfer-list-gap=var(--rc-control-gap)] - Gap between panels and the action toolbar
  * @cssprop [--rc-transfer-list-panel-gap=var(--rc-control-gap)] - Gap between a panel label and its listbox
  * @cssprop [--rc-transfer-list-listbox-min-block-size=10rem] - Minimum block size for each listbox
  * @cssprop [--rc-transfer-list-listbox-border=var(--rc-border)] - Border around each listbox
+ * @cssprop [--rc-transfer-list-listbox-bg=var(--rc-surface)] - Background of each listbox
+ * @cssprop [--rc-transfer-list-listbox-color=var(--rc-field-text)] - Text color of each listbox
  * @cssprop [--rc-transfer-list-option-gap=var(--rc-item-gap)] - Gap between option adornments and labels
  * @cssprop [--rc-transfer-list-option-padding-block=var(--rc-item-padding-block)] - Block padding for option rows
  * @cssprop [--rc-transfer-list-option-padding-inline=var(--rc-item-padding-inline)] - Inline padding for option rows
  * @cssprop [--rc-transfer-list-option-selected-bg=var(--rc-highlight)] - Selected option background
  * @cssprop [--rc-transfer-list-option-selected-color=var(--rc-highlight-text)] - Selected option foreground
+ * @cssprop [--rc-transfer-list-option-hover-bg=var(--rc-transfer-list-option-selected-bg)] - Hovered/active option background
+ * @cssprop [--rc-transfer-list-option-hover-color=var(--rc-transfer-list-option-selected-color)] - Hovered/active option foreground
  *
  * @csspart root - Root layout wrapper. Reflects data-can-move-up/down.
  * @csspart panel - Shared list panel surface.
  * @csspart available-panel - Available/left panel. Reflects data-empty and data-has-selection.
  * @csspart selected-panel - Selected/right panel. Reflects data-empty and data-has-selection.
+ * @csspart label - Shared panel label surface.
+ * @csspart available-label - Label for the available panel.
+ * @csspart selected-label - Label for the selected panel.
+ * @csspart listbox - Shared listbox surface.
+ * @csspart available-listbox - The available/left `rc-listbox`.
+ * @csspart selected-listbox - The selected/right `rc-listbox`.
  * @csspart actions - Transfer action toolbar.
  * @csspart button - Shared action button surface.
+ * @csspart add-button - Moves highlighted available options to the selected list.
+ * @csspart add-all-button - Moves every available option to the selected list.
+ * @csspart remove-button - Moves highlighted selected options back to the available list.
+ * @csspart clear-button - Moves every selected option back to the available list.
+ * @csspart move-up-button - Moves highlighted selected options up.
+ * @csspart move-down-button - Moves highlighted selected options down.
  */
 export class RCTransferList extends LitElement {
   static override styles = transferListStyles;
