@@ -291,12 +291,12 @@ export class RCSlider extends LitElement {
   @property({ reflect: true }) orientation: "horizontal" | "vertical" =
     "horizontal";
 
-  private _nativeInput: HTMLInputElement | null = null;
+  private _$nativeInput: HTMLInputElement | null = null;
 
   private readonly _nativeInputController = new NativeChildController<HTMLInputElement>(this, {
     selector: ':scope > input[type="range"]',
     observe: true,
-    onChange: (input, previous) => this._setupInput(input, previous),
+    onChange: ($input, $previous) => this._setupInput($input, $previous),
     onMissing: () => {
       if (import.meta.env.DEV) {
         warnMissingDirectChild(this, {
@@ -313,16 +313,16 @@ export class RCSlider extends LitElement {
   }
 
   override updated(): void {
-    const input = this._nativeInput;
-    if (!input) return;
+    const $input = this._$nativeInput;
+    if (!$input) return;
 
-    input.disabled = this.disabled;
-    this._syncAriaAttributes(input);
+    $input.disabled = this.disabled;
+    this._syncAriaAttributes($input);
   }
 
   override render() {
-    const input = this._nativeInput;
-    if (!input) return nothing;
+    const $input = this._$nativeInput;
+    if (!$input) return nothing;
 
     const valueDisplay = html`
       <span
@@ -373,29 +373,29 @@ export class RCSlider extends LitElement {
   }
 
   private get _nativeInputValue(): number {
-    const value = this._nativeInput?.valueAsNumber;
+    const value = this._$nativeInput?.valueAsNumber;
     return value === undefined || isNaN(value) ? 0 : value;
   }
 
-  private _setupInput(input: HTMLInputElement | null, previous?: HTMLInputElement | null): void {
-    if (previous && previous !== input) {
-      this._unwireInput(previous);
+  private _setupInput($input: HTMLInputElement | null, $previous?: HTMLInputElement | null): void {
+    if ($previous && $previous !== $input) {
+      this._unwireInput($previous);
     }
 
-    if (!input) {
-      this._nativeInput = null;
+    if (!$input) {
+      this._$nativeInput = null;
       return;
     }
 
     // Mirror disabled state from the native input if not explicitly set on the host.
     // Pre-upgrade markup may carry <input disabled> before the component upgrades.
-    if (!this.hasAttribute("disabled") && input.disabled) {
+    if (!this.hasAttribute("disabled") && $input.disabled) {
       this.disabled = true;
     }
 
-    this._nativeInput = input;
-    this._applyInitialValueToInput(input);
-    this._wireInput(input);
+    this._$nativeInput = $input;
+    this._applyInitialValueToInput($input);
+    this._wireInput($input);
     this.requestUpdate();
   }
 
@@ -404,7 +404,7 @@ export class RCSlider extends LitElement {
     this.requestUpdate();
   };
 
-  private _applyInitialValueToInput(input: HTMLInputElement): void {
+  private _applyInitialValueToInput($input: HTMLInputElement): void {
     if (this._value !== undefined) {
       this._applyValueToInput(this._value);
       return;
@@ -415,47 +415,47 @@ export class RCSlider extends LitElement {
       return;
     }
 
-    const value = input.valueAsNumber;
+    const value = $input.valueAsNumber;
     if (!isNaN(value)) {
       this._defaultValue = value;
     }
   }
 
   private _applyValueToInput(value: number): void {
-    if (!this._nativeInput) return;
+    if (!this._$nativeInput) return;
 
-    this._nativeInput.value = String(value);
+    this._$nativeInput.value = String(value);
   }
 
-  private _wireInput(input: HTMLInputElement): void {
-    input.addEventListener("input", this._onInput);
-    input.addEventListener("change", this._onChange);
-    input.addEventListener("keydown", this._onKeydown);
+  private _wireInput($input: HTMLInputElement): void {
+    $input.addEventListener("input", this._onInput);
+    $input.addEventListener("change", this._onChange);
+    $input.addEventListener("keydown", this._onKeydown);
   }
 
-  private _unwireInput(input = this._nativeInput): void {
-    input?.removeEventListener("input", this._onInput);
-    input?.removeEventListener("change", this._onChange);
-    input?.removeEventListener("keydown", this._onKeydown);
+  private _unwireInput($input = this._$nativeInput): void {
+    $input?.removeEventListener("input", this._onInput);
+    $input?.removeEventListener("change", this._onChange);
+    $input?.removeEventListener("keydown", this._onKeydown);
   }
 
-  private _syncAriaAttributes(input: HTMLInputElement): void {
+  private _syncAriaAttributes($input: HTMLInputElement): void {
     if (this.valueText) {
-      input.setAttribute("aria-valuetext", this.valueText);
+      $input.setAttribute("aria-valuetext", this.valueText);
     } else {
-      input.removeAttribute("aria-valuetext");
+      $input.removeAttribute("aria-valuetext");
     }
 
     if (this.orientation === "vertical") {
-      input.setAttribute("aria-orientation", "vertical");
+      $input.setAttribute("aria-orientation", "vertical");
     } else {
-      input.removeAttribute("aria-orientation");
+      $input.removeAttribute("aria-orientation");
     }
 
     if (this.readonly) {
-      input.setAttribute("aria-readonly", "true");
+      $input.setAttribute("aria-readonly", "true");
     } else {
-      input.removeAttribute("aria-readonly");
+      $input.removeAttribute("aria-readonly");
     }
   }
 
@@ -471,14 +471,14 @@ export class RCSlider extends LitElement {
     e: Event,
     type: "rc-slider-input" | "rc-slider-change",
   ): void {
-    const input = e.currentTarget as HTMLInputElement;
+    const $input = e.currentTarget as HTMLInputElement;
 
     if (this.readonly) {
-      input.value = String(this.value);
+      $input.value = String(this.value);
       return;
     }
 
-    this._commitInputValue(input);
+    this._commitInputValue($input);
 
     this.dispatchEvent(
       new CustomEvent<RCSliderValueEvent>(type, {
@@ -494,12 +494,12 @@ export class RCSlider extends LitElement {
     if (e.key !== "PageUp" && e.key !== "PageDown") return;
 
     e.preventDefault();
-    const input = e.currentTarget as HTMLInputElement;
+    const $input = e.currentTarget as HTMLInputElement;
 
-    if (e.key === "PageUp") input.stepUp(10);
-    else input.stepDown(10);
+    if (e.key === "PageUp") $input.stepUp(10);
+    else $input.stepDown(10);
 
-    this._commitInputValue(input);
+    this._commitInputValue($input);
 
     this.dispatchEvent(
       new CustomEvent<RCSliderValueEvent>("rc-slider-input", {
@@ -510,22 +510,22 @@ export class RCSlider extends LitElement {
     );
   };
 
-  private _commitInputValue(input: HTMLInputElement): void {
+  private _commitInputValue($input: HTMLInputElement): void {
     const old = this.value;
 
-    this._value = input.valueAsNumber;
+    this._value = $input.valueAsNumber;
     this._valueInitialized = true;
 
     this.requestUpdate("value", old);
   }
 
   private _progressStyle(): string {
-    const input = this._nativeInput;
-    if (!input) return "";
+    const $input = this._$nativeInput;
+    if (!$input) return "";
 
-    const min = parseAttr(input.min, 0);
-    const max = parseAttr(input.max, 100);
-    const pct = valueToPercent(input.valueAsNumber, min, max) * 100;
+    const min = parseAttr($input.min, 0);
+    const max = parseAttr($input.max, 100);
+    const pct = valueToPercent($input.valueAsNumber, min, max) * 100;
 
     if (this.orientation === "vertical") {
       return `bottom:0%;height:${pct.toFixed(3)}%`;
@@ -535,12 +535,12 @@ export class RCSlider extends LitElement {
   }
 
   private _floatStyle(): string {
-    const input = this._nativeInput;
-    if (!input) return "";
+    const $input = this._$nativeInput;
+    if (!$input) return "";
 
-    const min = parseAttr(input.min, 0);
-    const max = parseAttr(input.max, 100);
-    const pct = valueToPercent(input.valueAsNumber, min, max);
+    const min = parseAttr($input.min, 0);
+    const max = parseAttr($input.max, 100);
+    const pct = valueToPercent($input.valueAsNumber, min, max);
     const k = (1 - pct * 2).toFixed(4);
 
     if (this.orientation === "vertical") {
