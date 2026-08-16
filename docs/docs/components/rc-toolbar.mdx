@@ -51,6 +51,11 @@ import '@rcarls/rc-toolbar/define';
 
 <ToolbarDemo />
 
+Direct `rc-button` and `rc-chip` children participate through their native child
+buttons, so themed controls keep the toolbar's single roving tab stop. Icon-only
+buttons should use `data-rc-button-icon` inside the native button so button and
+theme geometry remain synchronized.
+
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.

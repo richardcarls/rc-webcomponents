@@ -172,19 +172,24 @@ const LIGHT_DOM_CSS = `
  * @csspart option-checkmark - The checkmark `<span>` inside each option (when `checkmark` is true)
  * @csspart create-option - The "Create" option when allow-create is active
  *
+ * @attr multiple - Allow multiple selection. Reflected as `aria-multiselectable` on the host.
+ * @attr checkmark - Render a checkmark indicator inside each option element.
+ * @attr filter-strategy - How option labels are matched against the active filter text:
+ *   `prefix`, `contains`, or omit to keep the `contains` default. Function values are JS-only.
+ *
  * @cssprop [--rc-listbox-option-gap=0.25rem] - Gap between the checkmark and option label.
  * @cssprop [--rc-listbox-option-min-block-size=0px] - Minimum block size (height) of each option row.
  * @cssprop [--rc-listbox-option-padding-block=2px] - Block-axis padding of each option row.
  * @cssprop [--rc-listbox-option-padding-inline=4px] - Inline-axis padding of each option row.
  * @cssprop [--rc-listbox-option-transition] - CSS transition applied to each option row.
- * @cssprop [--rc-listbox-hover-bg] - Background of a hovered option.
- * @cssprop [--rc-listbox-hover-color] - Text color of a hovered option.
- * @cssprop [--rc-listbox-active-bg] - Background of the keyboard-active option.
- * @cssprop [--rc-listbox-active-color] - Text color of the keyboard-active option.
- * @cssprop [--rc-listbox-selected-bg] - Background of a selected option.
- * @cssprop [--rc-listbox-selected-color] - Text color of a selected option.
- * @cssprop [--rc-listbox-disabled-color] - Text color of a disabled option.
- * @cssprop [--rc-listbox-disabled-opacity] - Opacity of a disabled option.
+ * @cssprop [--rc-listbox-hover-bg=color-mix(in srgb, Highlight 8%, transparent)] - Background of a hovered option.
+ * @cssprop [--rc-listbox-hover-color=inherit] - Text color of a hovered option.
+ * @cssprop [--rc-listbox-active-bg=color-mix(in srgb, Highlight 8%, transparent)] - Background of the keyboard-active option.
+ * @cssprop [--rc-listbox-active-color=var(--rc-listbox-hover-color, inherit)] - Text color of the keyboard-active option.
+ * @cssprop [--rc-listbox-selected-bg=Highlight] - Background of a selected option.
+ * @cssprop [--rc-listbox-selected-color=HighlightText] - Text color of a selected option.
+ * @cssprop [--rc-listbox-disabled-color=GrayText] - Text color of a disabled option.
+ * @cssprop [--rc-listbox-disabled-opacity=1] - Opacity of a disabled option.
  */
 export class RCListbox extends LitElement {
   static override styles = css`
@@ -200,14 +205,14 @@ export class RCListbox extends LitElement {
     if (RCListbox._styledRoots.has(root)) return;
     RCListbox._styledRoots.add(root);
 
-    const style = document.createElement('style');
-    style.setAttribute('data-rc-light-dom-base', 'rc-listbox');
-    style.textContent = LIGHT_DOM_CSS;
+    const $style = document.createElement('style');
+    $style.setAttribute('data-rc-light-dom-base', 'rc-listbox');
+    $style.textContent = LIGHT_DOM_CSS;
 
     if (root instanceof Document) {
-      root.head.appendChild(style);
+      root.head.appendChild($style);
     } else {
-      root.appendChild(style);
+      root.appendChild($style);
     }
   }
 
@@ -238,7 +243,7 @@ export class RCListbox extends LitElement {
   private _defaultValue: string | string[] | undefined;
   private _value: string | string[] | undefined;
   private _selectionInitialized = false;
-  private _filterText = '';
+  protected _filterText = '';
 
   /** Unique ID prefix for all rendered option elements in this instance. */
   protected readonly _uid = `rc-lb-${++_uid}`;
@@ -313,13 +318,27 @@ export class RCListbox extends LitElement {
     return [...this._itemsCollectionCtrl.allOptions];
   }
 
-  /** Replace the full options list. */
+  /**
+   * Replace the full options list.
+   *
+   * @example
+   * listbox.options = [
+   *   { value: 'apple', label: 'Apple' },
+   *   { value: 'banana', label: 'Banana', disabled: true },
+   *   { kind: 'action', action: 'clear', value: 'clear', label: 'Clear selection' },
+   * ];
+   */
   set options(options: ListboxOption[]) {
     this._itemsCollectionCtrl.setOptions([...options]);
     this._applySelectionFromSource();
   }
 
-  /** Append a single option without replacing the list. */
+  /**
+   * Append a single option without replacing the list.
+   *
+   * @example
+   * listbox.appendOption({ value: 'cherry', label: 'Cherry' });
+   */
   appendOption(option: ListboxOption): void {
     this._itemsCollectionCtrl.appendOption(option);
   }
@@ -527,7 +546,7 @@ export class RCListbox extends LitElement {
   };
 
   /** Routes pointer activations from the controller. */
-  private _handleActivate(option: ListboxOption): void {
+  protected _handleActivate(option: ListboxOption): void {
     if (option.kind === 'action') {
       this._dispatchAction(option);
     } else {
@@ -610,9 +629,9 @@ export class RCListbox extends LitElement {
   }
 
   protected _activeOption(): ListboxOption | null {
-    const active = this._activeDescendantCtrl.activeItem;
+    const $active = this._activeDescendantCtrl.activeItem;
 
-    return active ? this._itemsCollectionCtrl.optionForElement(active) : null;
+    return $active ? this._itemsCollectionCtrl.optionForElement($active) : null;
   }
 
   /** Fires `rc-listbox-change` for a command/action row without mutating selection. */

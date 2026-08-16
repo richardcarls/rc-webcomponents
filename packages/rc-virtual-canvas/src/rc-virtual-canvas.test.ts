@@ -31,8 +31,8 @@ test('RCVirtualCanvas dispatches rc-virtual-canvas-render with viewport and cont
   render(html`
     <rc-virtual-canvas
       data-testid="virtual-canvas"
-      contentWidth="800"
-      contentHeight="600"
+      content-width="800"
+      content-height="600"
       @rc-virtual-canvas-render=${renderSpy}
     >
       <canvas style="width: 320px; height: 240px;"></canvas>
@@ -55,6 +55,21 @@ test('RCVirtualCanvas dispatches rc-virtual-canvas-render with viewport and cont
   expect(event?.detail.viewRect.y).toBe(0);
   expect(event?.detail.reason).toBeTypeOf('string');
   expect(event?.detail.time).toBeTypeOf('number');
+});
+
+test('RCVirtualCanvas maps content-width and content-height attributes to their properties', async () => {
+  const screen = render(html`
+    <rc-virtual-canvas data-testid="virtual-canvas" content-width="640" content-height="480">
+      <canvas style="width: 320px; height: 240px;"></canvas>
+    </rc-virtual-canvas>
+  `);
+
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
+
+  await $host.updateComplete;
+
+  expect($host.contentWidth).toBe(640);
+  expect($host.contentHeight).toBe(480);
 });
 
 test('RCVirtualCanvas falls back when device-pixel-content-box observation is unsupported', async () => {
@@ -99,8 +114,8 @@ test('RCVirtualCanvas exposes immutable viewport snapshots', async () => {
   const screen = render(html`
     <rc-virtual-canvas
       data-testid="virtual-canvas"
-      contentWidth="800"
-      contentHeight="600"
+      content-width="800"
+      content-height="600"
       @rc-virtual-canvas-render=${renderSpy}
     >
       <canvas style="width: 320px; height: 240px;"></canvas>
@@ -126,8 +141,8 @@ test('RCVirtualCanvas scrolls and centers on content coordinates', async () => {
   const screen = render(html`
     <rc-virtual-canvas
       data-testid="virtual-canvas"
-      contentWidth="1000"
-      contentHeight="800"
+      content-width="1000"
+      content-height="800"
       render-mode="viewport-change"
       style="display: block; width: 200px; height: 100px;"
       @rc-virtual-canvas-render=${renderSpy}
@@ -163,8 +178,8 @@ test('RCVirtualCanvas maps client and content coordinates through the backing st
   const screen = render(html`
     <rc-virtual-canvas
       data-testid="virtual-canvas"
-      contentWidth="1000"
-      contentHeight="800"
+      content-width="1000"
+      content-height="800"
       .autoResizeCanvas=${false}
       render-mode="viewport-change"
       style="display: block; width: 200px; height: 100px;"
@@ -202,8 +217,8 @@ test('RCVirtualCanvas dispatches pointer events with content coordinates and mod
   const screen = render(html`
     <rc-virtual-canvas
       data-testid="virtual-canvas"
-      contentWidth="1000"
-      contentHeight="800"
+      content-width="1000"
+      content-height="800"
       .autoResizeCanvas=${false}
       render-mode="viewport-change"
       style="display: block; width: 200px; height: 100px;"
@@ -397,8 +412,8 @@ test('RCVirtualCanvas supports continuous, viewport-change, and manual render mo
       </rc-virtual-canvas>
       <rc-virtual-canvas
         data-testid="viewport"
-        contentWidth="500"
-        contentHeight="500"
+        content-width="500"
+        content-height="500"
         render-mode="viewport-change"
         style="display: block; width: 50px; height: 50px;"
         @rc-virtual-canvas-render=${viewportSpy}

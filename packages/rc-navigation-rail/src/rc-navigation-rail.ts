@@ -25,8 +25,10 @@ const LIGHT_DOM_CSS = `
 
   rc-navigation-rail > a > [data-rc-navigation-indicator] {
     position: relative;
-    display: inline-grid;
-    place-items: center;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--rc-navigation-rail-link-gap, 0.25rem);
     max-inline-size: 100%;
     vertical-align: middle;
   }
@@ -36,38 +38,20 @@ const LIGHT_DOM_CSS = `
     vertical-align: middle;
   }
 
-  rc-navigation-rail > a > [data-rc-navigation-indicator] > :not([data-rc-navigation-icon]) {
-    position: absolute;
-    inset-block-start: calc(100% + var(--rc-navigation-rail-link-gap, 0.25rem));
-    inset-inline-start: 50%;
-    inline-size: max-content;
+  rc-navigation-rail:not([expanded])
+    > a
+    > [data-rc-navigation-indicator]
+    > :not([data-rc-navigation-icon]) {
     max-inline-size: var(--rc-navigation-rail-collapsed-label-inline-size, 4rem);
     font-size: smaller;
     line-height: 1.2;
     text-align: center;
     overflow-wrap: anywhere;
-    translate: -50% 0;
   }
 
   rc-navigation-rail[expanded] > a > [data-rc-navigation-indicator] {
-    display: inline-flex;
-    align-items: center;
+    flex-direction: row;
     justify-content: flex-start;
-    gap: var(--rc-navigation-rail-link-gap, 0.25rem);
-  }
-
-  rc-navigation-rail[expanded]
-    > a
-    > [data-rc-navigation-indicator]
-    > :not([data-rc-navigation-icon]) {
-    position: static;
-    inline-size: auto;
-    max-inline-size: none;
-    font-size: inherit;
-    line-height: inherit;
-    text-align: start;
-    overflow-wrap: normal;
-    translate: none;
   }
 
   rc-navigation-rail
@@ -94,11 +78,14 @@ export interface RCNavigationRailToggleDetail {
 }
 
 /**
- * Navigation rail landmark that styles consumer-authored links.
+ * Navigation rail layout that styles consumer-authored links.
  *
  * `rc-navigation-rail` preserves native `<a>` elements in light DOM for router
  * interop and progressive enhancement. Mark the current link with
  * `aria-current="page"` or provide `active-selector` for router active classes.
+ * Wrap the component in a consumer-authored `<nav>` when it represents a
+ * navigation landmark; `rc-navigation-rail` deliberately provides no landmark
+ * role of its own, matching `rc-navigation-bar`.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-navigation-rail rc-navigation-rail docs}
  * @see {@link https://m3.material.io/components/navigation-rail/overview Material 3 navigation rail}
@@ -111,11 +98,16 @@ export interface RCNavigationRailToggleDetail {
  * @fires rc-navigation-rail-toggle - Fired when user interaction or a method toggles expanded state.
  *
  * @csspart root - The rail layout container.
- * @csspart nav - The component-owned navigation landmark.
+ * @csspart nav - The navigation layout container.
  * @csspart indicator - The active item indicator.
  * @csspart toggle - Toggle slot container.
  * @csspart header - Header slot container.
  * @csspart footer - Footer slot container.
+ *
+ * @attr expanded - Whether the rail is expanded. Host writes are silent.
+ * @attr default-expanded - Initial expanded state for uncontrolled usage.
+ * @attr active-selector - Selector used to find the active link.
+ * @attr indicator-target - Selector inside the active link used for indicator geometry.
  *
  * @cssprop [--rc-navigation-rail-bg=Canvas] - Rail surface background.
  * @cssprop [--rc-navigation-rail-color=CanvasText] - Rail text color.
@@ -133,16 +125,21 @@ export interface RCNavigationRailToggleDetail {
  * @cssprop [--rc-navigation-rail-expanded-item-padding-inline=1rem] - Expanded item inline-axis padding.
  * @cssprop [--rc-navigation-rail-collapsed-label-inline-size=4rem] - Collapsed label maximum inline size.
  * @cssprop [--rc-navigation-rail-item-color=inherit] - Resting item text color.
- * @cssprop [--rc-navigation-rail-active-color=inherit] - Active item text color.
- * @cssprop [--rc-navigation-rail-indicator-bg] - Active indicator background.
- * @cssprop [--rc-navigation-rail-indicator-radius=9999px] - Active indicator corner radius.
+ * @cssprop [--rc-navigation-rail-item-text-decoration] - Slotted link text decoration (defers to
+ *   native anchor text-decoration when unset).
+ * @cssprop [--rc-navigation-rail-active-color] - Active item text color. Falls back to
+ *   `--rc-navigation-rail-item-color`, then `inherit`.
+ * @cssprop [--rc-navigation-rail-indicator-bg=transparent] - Active indicator background.
+ * @cssprop [--rc-navigation-rail-indicator-border=1px solid Highlight] - Active indicator border.
+ * @cssprop [--rc-navigation-rail-indicator-radius=0] - Active indicator corner radius.
  * @cssprop [--rc-navigation-rail-toggle-size=3rem] - Toggle region minimum block size.
  * @cssprop [--rc-navigation-rail-toggle-inline-offset=0.5rem] - Toggle control inline-start offset.
  * @cssprop [--rc-navigation-rail-duration=200ms] - Rail expand/collapse transition duration.
  * @cssprop [--rc-navigation-rail-easing=ease] - Rail expand/collapse transition easing.
- * @cssprop [--rc-navigation-rail-indicator-duration=180ms] - Active indicator transition duration.
+ * @cssprop [--rc-navigation-rail-indicator-duration=0ms] - Active indicator transition duration.
  * @cssprop [--rc-navigation-rail-indicator-easing=ease] - Active indicator transition easing.
- * @cssprop [--rc-navigation-rail-focus-ring=2px solid Highlight] - Slotted link focus outline.
+ * @cssprop [--rc-navigation-rail-focus-ring] - Slotted link focus outline (defers to native
+ *   outline when unset).
  * @cssprop [--rc-navigation-rail-focus-ring-offset=2px] - Slotted link outline offset.
  */
 export class RCNavigationRail extends LitElement {
@@ -173,10 +170,6 @@ export class RCNavigationRail extends LitElement {
   private _expanded: boolean | undefined;
   private _expandedInitialized = false;
 
-  /** Accessible label for the navigation landmark. */
-  @property({ type: String })
-  label = 'Primary navigation';
-
   /** Whether the rail is expanded. Host writes are silent. */
   @property({ type: Boolean, reflect: true })
   get expanded(): boolean {
@@ -184,10 +177,6 @@ export class RCNavigationRail extends LitElement {
   }
 
   set expanded(value: boolean | undefined) {
-    if (value === undefined) {
-      return;
-    }
-
     const oldValue = this.expanded;
 
     this._expanded = value;
@@ -229,7 +218,7 @@ export class RCNavigationRail extends LitElement {
 
   @query('slot:not([name])') private _$slot!: HTMLSlotElement;
 
-  @query('nav') private _$nav!: HTMLElement;
+  @query('[part="nav"]') private _$nav!: HTMLElement;
 
   @query('#indicator') private _$indicator!: HTMLElement;
 
@@ -293,10 +282,10 @@ export class RCNavigationRail extends LitElement {
         <div id="header" part="header" ?hidden=${!this._hasHeader}>
           <slot name="header" @slotchange=${this._handleHeaderSlotChange}></slot>
         </div>
-        <nav part="nav" aria-label=${this.label}>
+        <div part="nav">
           <div id="indicator" part="indicator" hidden></div>
           <slot @slotchange=${this._handleSlotChange}></slot>
-        </nav>
+        </div>
         <div id="footer" part="footer" ?hidden=${!this._hasFooter}>
           <slot name="footer" @slotchange=${this._handleFooterSlotChange}></slot>
         </div>
@@ -309,22 +298,22 @@ export class RCNavigationRail extends LitElement {
   }
 
   private _handleToggleSlotChange(event: Event): void {
-    const slot = event.currentTarget as HTMLSlotElement;
+    const $slot = event.currentTarget as HTMLSlotElement;
 
-    this._hasToggle = slot.assignedElements({ flatten: true }).length > 0;
+    this._hasToggle = $slot.assignedElements({ flatten: true }).length > 0;
     this._syncToggleButton();
   }
 
   private _handleHeaderSlotChange(event: Event): void {
-    const slot = event.currentTarget as HTMLSlotElement;
+    const $slot = event.currentTarget as HTMLSlotElement;
 
-    this._hasHeader = slot.assignedElements({ flatten: true }).length > 0;
+    this._hasHeader = $slot.assignedElements({ flatten: true }).length > 0;
   }
 
   private _handleFooterSlotChange(event: Event): void {
-    const slot = event.currentTarget as HTMLSlotElement;
+    const $slot = event.currentTarget as HTMLSlotElement;
 
-    this._hasFooter = slot.assignedElements({ flatten: true }).length > 0;
+    this._hasFooter = $slot.assignedElements({ flatten: true }).length > 0;
   }
 
   private _handleToggleClick(event: MouseEvent): void {

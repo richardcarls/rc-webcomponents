@@ -58,14 +58,14 @@ import '@rcarls/rc-app-bar/define';
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
-Material top app bar sizes are styling recipes, not public component variants.
+Material top app bar sizes are theme presets, not public component variants.
 Keep the component structural with `variant="compact"` or `variant="expanded"`,
 then use `rc-theme-material` modifier classes to tune the token mapping:
 
 ```html
 <rc-app-bar class="rc-app-bar--large" variant="expanded" scroll-behavior="collapse">
   <button slot="leading" type="button" aria-label="Back">...</button>
-  <h1>Recipes</h1>
+  <h1>Reading list</h1>
 </rc-app-bar>
 ```
 

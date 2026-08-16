@@ -116,6 +116,22 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @fires rc-textarea-change - Fired when the field value changes
  * @fires rc-textarea-blur - Fired when the field loses focus
  *
+ * @csspart root - The outer flex container wrapping the gutter and editor area.
+ * @csspart gutter - The gutter column container.
+ * @csspart gutter-cells - The gutter's line-label list.
+ * @csspart editor-area - The container positioning the editor over the slotted textarea.
+ * @csspart editor - The contenteditable field surface.
+ *
+ * @attr line-numbers - Show sequential line numbers in the gutter. Enables the gutter implicitly.
+ * @attr list-numbers - Deprecated alias for sparse line numbering; removed before v1.0.
+ * @attr gutter - Enable the gutter column without any built-in content.
+ * @attr word-wrap - Wrap long lines within the field to prevent horizontal overflow.
+ * @attr auto-grow - Allow the field to grow vertically with content to prevent vertical overflow.
+ * @attr read-only - Disable editing. The field renders as a styled read-only display.
+ * @attr label - Deprecated accessible-name override; removed before v1.0.
+ * @attr value - Current field value.
+ * @attr default-value - Initial uncontrolled value.
+ *
  * @cssprop [--rc-textarea-border=1px solid ButtonBorder] - Border around the field
  * @cssprop [--rc-textarea-border-radius=2px] - Border radius of the field
  * @cssprop [--rc-textarea-background=Field] - Background color of the field
@@ -131,6 +147,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-gutter-color=GrayText] - Gutter text color
  * @cssprop [--rc-textarea-gutter-border=1px solid ButtonBorder] - Gutter right border
  * @cssprop [--rc-textarea-gutter-font-family=var(--rc-textarea-font-family, monospace)] - Gutter font family
+ * @cssprop [--rc-textarea-gutter-padding-inline-end=0.75em] - Space between gutter labels and text
  */
 export class RCTextarea extends LitElement {
   static override styles: CSSResultGroup = styles;
@@ -144,6 +161,8 @@ export class RCTextarea extends LitElement {
   lineNumbers = false;
 
   /**
+   * Legacy alias for sparse (non-blank-line) list-style numbering.
+   *
    * @deprecated Use a plugin with `LineDecoration.gutterContent` to implement
    * sparse line numbering. This property will be removed before v1.0.
    */
@@ -190,6 +209,8 @@ export class RCTextarea extends LitElement {
   readOnly = false;
 
   /**
+   * Accessible-name override, applied to the editor's `aria-label`.
+   *
    * @deprecated Set `aria-label` on the slotted `<textarea>` instead, or
    * associate a `<label>` element via its `for`/`id` pair. This property
    * will be removed before v1.0.
@@ -283,10 +304,10 @@ export class RCTextarea extends LitElement {
   private _defaultValue: string | undefined;
   private _initialValueResolved = false;
   private _valueSetByHost = false;
-  private _document: RCDocument | null = null;
-  private _$textareaRef: WeakRef<HTMLTextAreaElement> | null = null;
+  protected _document: RCDocument | null = null;
+  protected _$textareaRef: WeakRef<HTMLTextAreaElement> | null = null;
 
-  private readonly _textareaController = new NativeChildController<HTMLTextAreaElement>(this, {
+  protected readonly _textareaController = new NativeChildController<HTMLTextAreaElement>(this, {
     selector: ':scope > textarea',
     observe: true,
     onChange: ($textarea, $previousTextarea) => this._setupTextarea($textarea, $previousTextarea),
@@ -305,36 +326,36 @@ export class RCTextarea extends LitElement {
   protected _pluginDecorations = new Map<string, Decoration>();
 
   /** Pattern-generated decorations (rebuilt on each value change). */
-  private _patternDecorations: Decoration[] = [];
+  protected _patternDecorations: Decoration[] = [];
 
   /** Imperative decorations (set directly via the `decorations` property) */
   private _externalDecorations: DecorationInput[] = [];
 
   /** Registered patterns. */
-  private _patterns = new Map<string, TextPattern>();
+  protected _patterns = new Map<string, TextPattern>();
 
   protected _plugin: RCTextareaPlugin | null = null;
   private _pluginProperty: RCTextareaPlugin | null = null;
   protected _pluginApi: RCTextareaPluginAPI | null = null;
 
   /** Sequence counter for async plugin safety (discard stale results). */
-  private _pluginSeq = 0;
+  protected _pluginSeq = 0;
 
   /** Stylesheets adopted into the shadow root by the active plugin. */
-  private _pluginSheets = new Set<CSSStyleSheet>();
+  protected _pluginSheets = new Set<CSSStyleSheet>();
 
   protected _savedSelection: SavedSelection | null = null;
-  private _rafHandle: number | null = null;
-  private _composing = false;
-  private _isRendering = false;
+  protected _rafHandle: number | null = null;
+  protected _composing = false;
+  protected _isRendering = false;
 
   /** The currently highlighted `.line` element (active line). */
-  private _$activeLine: HTMLElement | null = null;
+  protected _$activeLine: HTMLElement | null = null;
 
   /** Callbacks registered via PluginAPI.onCursorMove(). */
-  private _cursorCallbacks = new Set<(start: number, end: number) => void>();
+  protected _cursorCallbacks = new Set<(start: number, end: number) => void>();
 
-  private _docSelectionChangeHandler = (): void => {
+  protected _docSelectionChangeHandler = (): void => {
     if (document.activeElement !== this) {
       return;
     }
@@ -343,13 +364,13 @@ export class RCTextarea extends LitElement {
   };
 
   /** Synthetic undo/redo stack (DOM rebuilds invalidate native undo) */
-  private _undoStack: UndoEntry[] = [];
-  private _undoIndex = -1;
+  protected _undoStack: UndoEntry[] = [];
+  protected _undoIndex = -1;
 
-  private _resizeObserver: ResizeObserver | null = null;
+  protected _resizeObserver: ResizeObserver | null = null;
 
   /** Cached per-line gutter labels from the last render — reused by ResizeObserver. */
-  private _gutterLabels: (string | null)[] = [];
+  protected _gutterLabels: (string | null)[] = [];
 
   /**
    * The current field value.
@@ -380,7 +401,7 @@ export class RCTextarea extends LitElement {
   }
 
   /** Initial uncontrolled value. */
-  @property({ type: String })
+  @property({ type: String, attribute: 'default-value' })
   get defaultValue(): string | undefined {
     return this._defaultValue;
   }
@@ -497,11 +518,11 @@ export class RCTextarea extends LitElement {
     `;
   }
 
-  private _onSlotChange(): void {
+  protected _onSlotChange(): void {
     this._textareaController.sync();
   }
 
-  private _setupTextarea(
+  protected _setupTextarea(
     $textarea: HTMLTextAreaElement | null,
     $previousTextarea?: HTMLTextAreaElement | null,
   ): void {
@@ -563,13 +584,13 @@ export class RCTextarea extends LitElement {
     this._scheduleRender();
   }
 
-  private _onTextareaInvalid = (): void => {
+  protected _onTextareaInvalid = (): void => {
     if (this._$editor) {
       this._$editor.setAttribute('aria-invalid', 'true');
     }
   };
 
-  private _bindEditorEvents($editor: HTMLElement): void {
+  protected _bindEditorEvents($editor: HTMLElement): void {
     $editor.addEventListener('compositionstart', () => {
       this._composing = true;
     });
@@ -609,13 +630,13 @@ export class RCTextarea extends LitElement {
     // Note: Selection tracking is handled by the document-level selectionchange listener
   }
 
-  private _onInputEvent = (): void => {
+  protected _onInputEvent = (): void => {
     if (!this._composing) {
       this._onInput();
     }
   };
 
-  private _onBeforeInput = (event: InputEvent): void => {
+  protected _onBeforeInput = (event: InputEvent): void => {
     // Virtual keyboards may emit no keydown. Keep their browser-generated
     // blocks out of the component's model-owned `.line` document as well.
     if (
@@ -628,7 +649,7 @@ export class RCTextarea extends LitElement {
     }
   };
 
-  private _onInput(): void {
+  protected _onInput(): void {
     if (!this._$editor) {
       return;
     }
@@ -681,7 +702,7 @@ export class RCTextarea extends LitElement {
     this._scheduleRender();
   }
 
-  private _onSelectionChange = (): void => {
+  protected _onSelectionChange = (): void => {
     if (!this._$editor) {
       return;
     }
@@ -713,7 +734,7 @@ export class RCTextarea extends LitElement {
     }
   };
 
-  private _updateActiveLine(): void {
+  protected _updateActiveLine(): void {
     if (!this._$editor) {
       return;
     }
@@ -751,7 +772,7 @@ export class RCTextarea extends LitElement {
     this._updateActiveGutterCell();
   }
 
-  private _updateActiveGutterCell(): void {
+  protected _updateActiveGutterCell(): void {
     if (!this._$gutterCells) {
       return;
     }
@@ -785,7 +806,7 @@ export class RCTextarea extends LitElement {
     }
   }
 
-  private _onKeyDown = (e: KeyboardEvent): void => {
+  protected _onKeyDown = (e: KeyboardEvent): void => {
     // Native contenteditable line breaks do not reliably retain `.line`, so
     // apply physical-keyboard Enter through the plain-text model first.
     if (e.key === 'Enter' && !this._composing && !e.isComposing) {
@@ -938,7 +959,7 @@ export class RCTextarea extends LitElement {
     this._insertText(text);
   }
 
-  private _onPaste = (e: ClipboardEvent): void => {
+  protected _onPaste = (e: ClipboardEvent): void => {
     e.preventDefault();
 
     const text = e.clipboardData?.getData('text/plain') ?? '';
@@ -977,7 +998,7 @@ export class RCTextarea extends LitElement {
     this._undoIndex = this._undoStack.length - 1;
   }
 
-  private _undo(): void {
+  protected _undo(): void {
     if (this._undoIndex <= 0) {
       return;
     }
@@ -986,7 +1007,7 @@ export class RCTextarea extends LitElement {
     this._applyUndoEntry(this._undoStack[this._undoIndex]!);
   }
 
-  private _redo(): void {
+  protected _redo(): void {
     if (this._undoIndex >= this._undoStack.length - 1) {
       return;
     }
@@ -995,7 +1016,7 @@ export class RCTextarea extends LitElement {
     this._applyUndoEntry(this._undoStack[this._undoIndex]!);
   }
 
-  private _applyUndoEntry(entry: UndoEntry): void {
+  protected _applyUndoEntry(entry: UndoEntry): void {
     this._value = entry.value;
 
     this._savedSelection = {
@@ -1044,7 +1065,7 @@ export class RCTextarea extends LitElement {
    * `mount()` call. Each getter delegates to the component's live state so the
    * API stays accurate across render frames without needing to be rebuilt.
    */
-  private _buildPluginApi(): RCTextareaPluginAPI {
+  protected _buildPluginApi(): RCTextareaPluginAPI {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const component = this;
 
@@ -1214,7 +1235,7 @@ export class RCTextarea extends LitElement {
     };
   }
 
-  private _clearPluginSheets(): void {
+  protected _clearPluginSheets(): void {
     if (this._pluginSheets.size === 0) {
       return;
     }
@@ -1233,6 +1254,11 @@ export class RCTextarea extends LitElement {
   /**
    * Register a text pattern that generates decorations on every render pass.
    * Returns the pattern ID, which can be passed to `removePattern` to unregister it.
+   *
+   * @example
+   * const id = editor.addPattern({ pattern: /TODO/g, className: 'highlight-todo' });
+   * // Later:
+   * editor.removePattern(id);
    */
   addPattern(pattern: Omit<TextPattern, 'id'>): string {
     const id = generateId();
@@ -1266,7 +1292,7 @@ export class RCTextarea extends LitElement {
     });
   }
 
-  private async _performRender(): Promise<void> {
+  protected async _performRender(): Promise<void> {
     if (!this._document) {
       return;
     }
@@ -1371,7 +1397,7 @@ export class RCTextarea extends LitElement {
    * - `string` — the label to display
    * - `null`   — render an empty cell
    */
-  private _computeGutterLabels(
+  protected _computeGutterLabels(
     allDecorations: Decoration[],
     value = this._value,
   ): (string | null)[] {
@@ -1423,7 +1449,7 @@ export class RCTextarea extends LitElement {
    * Also copies the editor's computed `paddingTop`/`paddingBottom` to the
    * gutter to compensate for browser UA overrides on contenteditable.
    */
-  private _syncGutterHeights(): void {
+  protected _syncGutterHeights(): void {
     if (!this._$gutterCells || !this._$editor) {
       return;
     }
@@ -1489,7 +1515,7 @@ export class RCTextarea extends LitElement {
    * `_gutterLabels` is updated first; otherwise the cached labels are reused
    * (called by the `ResizeObserver` without a new render pass).
    */
-  private _syncGutter(labels?: (string | null)[]): void {
+  protected _syncGutter(labels?: (string | null)[]): void {
     if (!this.lineNumbers && !this.listNumbers && !this.gutter) {
       return;
     }
@@ -1527,7 +1553,7 @@ export class RCTextarea extends LitElement {
     }
   }
 
-  private _syncLabel(): void {
+  protected _syncLabel(): void {
     if (!this._$editor) {
       return;
     }
@@ -1564,7 +1590,7 @@ export class RCTextarea extends LitElement {
     this._$editor.removeAttribute('aria-label');
   }
 
-  private _syncTypography($textarea: HTMLTextAreaElement): void {
+  protected _syncTypography($textarea: HTMLTextAreaElement): void {
     if (!this._$editor) {
       return;
     }

@@ -40,12 +40,17 @@ declare global {
  * @cssprop [--rc-navigation-bar-item-padding-block=0.5rem] - Item block-axis padding.
  * @cssprop [--rc-navigation-bar-item-padding-inline=0.75rem] - Item inline-axis padding.
  * @cssprop [--rc-navigation-bar-item-color=inherit] - Resting item text color.
- * @cssprop [--rc-navigation-bar-active-color=inherit] - Active item text color.
- * @cssprop [--rc-navigation-bar-indicator-bg] - Active indicator background.
- * @cssprop [--rc-navigation-bar-indicator-radius=9999px] - Active indicator corner radius.
- * @cssprop [--rc-navigation-bar-indicator-duration=180ms] - Active indicator transition duration.
+ * @cssprop [--rc-navigation-bar-item-text-decoration] - Slotted link text decoration (defers to
+ *   native anchor text-decoration when unset).
+ * @cssprop [--rc-navigation-bar-active-color] - Active item text color. Falls back to
+ *   `--rc-navigation-bar-item-color`, then `inherit`.
+ * @cssprop [--rc-navigation-bar-indicator-bg=transparent] - Active indicator background.
+ * @cssprop [--rc-navigation-bar-indicator-border=1px solid Highlight] - Active indicator border.
+ * @cssprop [--rc-navigation-bar-indicator-radius=0] - Active indicator corner radius.
+ * @cssprop [--rc-navigation-bar-indicator-duration=0ms] - Active indicator transition duration.
  * @cssprop [--rc-navigation-bar-indicator-easing=ease] - Active indicator transition easing.
- * @cssprop [--rc-navigation-bar-focus-ring=2px solid Highlight] - Slotted link focus outline.
+ * @cssprop [--rc-navigation-bar-focus-ring] - Slotted link focus outline (defers to native
+ *   outline when unset).
  * @cssprop [--rc-navigation-bar-focus-ring-offset=2px] - Slotted link outline offset.
  *
  * @attr active-selector - Selector used to find the active link.

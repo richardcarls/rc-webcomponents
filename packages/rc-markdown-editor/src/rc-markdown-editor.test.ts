@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { html } from 'lit';
 import { render } from 'vitest-browser-lit';
 
@@ -6,6 +6,17 @@ import './define.ts';
 import type { RcMarkdownEditor } from './rc-markdown-editor.ts';
 
 describe('RcMarkdownEditor value ownership', () => {
+  test('value attribute seeds the initial value declaratively', async () => {
+    const screen = render(html`
+      <rc-markdown-editor value="## Attribute Seeded" data-testid="host"></rc-markdown-editor>
+    `);
+    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+
+    await host.updateComplete;
+
+    expect(host.value).toBe('## Attribute Seeded');
+  });
+
   test('ignores initialization changes from the hidden source editor', async () => {
     const initialValue = '## Storage\nKeep chilled.';
     const screen = render(html`
@@ -80,5 +91,63 @@ describe('RcMarkdownEditor value ownership', () => {
     await host.updateComplete;
 
     expect(source).toHaveAttribute('read-only');
+  });
+});
+
+describe('RcMarkdownEditor source mode', () => {
+  test('setting sourceMode programmatically is silent (no rc-mode-change)', async () => {
+    const screen = render(html`
+      <rc-markdown-editor data-testid="host">
+        <label for="notes">Recipe Notes</label>
+        <textarea id="notes" name="notes"></textarea>
+      </rc-markdown-editor>
+    `);
+    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+
+    await host.updateComplete;
+
+    const onModeChange = vi.fn();
+
+    host.addEventListener('rc-mode-change', onModeChange);
+    host.sourceMode = true;
+
+    await host.updateComplete;
+
+    expect(host.sourceMode).toBe(true);
+    expect(onModeChange).not.toHaveBeenCalled();
+  });
+
+  test('toggling source mode via keyboard shortcut dispatches rc-mode-change', async () => {
+    const screen = render(html`
+      <rc-markdown-editor data-testid="host">
+        <label for="notes">Recipe Notes</label>
+        <textarea id="notes" name="notes"></textarea>
+      </rc-markdown-editor>
+    `);
+    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+
+    await host.updateComplete;
+
+    const received: string[] = [];
+
+    host.addEventListener('rc-mode-change', (e) => {
+      received.push((e as CustomEvent<{ mode: string }>).detail.mode);
+    });
+
+    const richView = host.shadowRoot!.querySelector<HTMLElement>('#rich-view')!;
+
+    richView.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'S',
+        ctrlKey: true,
+        shiftKey: true,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      }),
+    );
+
+    expect(host.sourceMode).toBe(true);
+    expect(received).toEqual(['source']);
   });
 });

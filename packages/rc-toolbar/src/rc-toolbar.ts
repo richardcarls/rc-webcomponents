@@ -24,11 +24,15 @@ declare global {
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-toolbar rc-toolbar docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/ WAI-ARIA Toolbar pattern}
  *
- * @slot Takes any number of child controls or `rc-chip` elements to display in
- *   the toolbar. Only focusable native controls are navigable.
+ * @slot Takes any number of child controls, `rc-button`, or `rc-chip` elements
+ *   to display in the toolbar. Direct native controls and the native buttons
+ *   inside supported wrappers are navigable.
+ * @attr label - Accessible label for this toolbar. Default label is 'Toolbar'.
+ * @attr orientation - Toolbar orientation, for keyboard navigation.
  * @cssprop [--rc-toolbar-gap-inline=0.25em] - Gap between toolbar items
  * @cssprop [--rc-toolbar-padding-inline=calc(var(--rc-control-padding-inline) / 2)] - Horizontal padding on the toolbar container
  * @cssprop [--rc-toolbar-padding-block=calc(var(--rc-control-padding-block) / 2)] - Vertical padding on the toolbar container
+ * @cssprop [--rc-toolbar-flex-wrap=nowrap] - Whether toolbar items wrap onto multiple lines
  * @cssprop [--rc-toolbar-radius=var(--rc-control-radius)] - Toolbar container border radius
  * @cssprop [--rc-toolbar-vertical-radius=var(--rc-toolbar-radius)] - Toolbar container border radius when orientation is vertical; falls back to `--rc-toolbar-radius`
  * @csspart root - The toolbar container element
@@ -47,7 +51,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   @query('#root', true)
   protected _$root!: HTMLDivElement;
 
-  private readonly _disabledObserver = new MutationObserver(() => this._syncTabStop());
+  protected readonly _disabledObserver = new MutationObserver(() => this._syncTabStop());
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -59,7 +63,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     this._disabledObserver.disconnect();
   }
 
-  private _syncTabStop(): void {
+  protected _syncTabStop(): void {
     if (!this._lastFocused || isFocusable(this._lastFocused)) {
       return;
     }
@@ -77,11 +81,11 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     // update cycle, which can cause the update to hang.
     // Guard: only restore focus when the toolbar already contains it — prevents
     // focus-stealing when a toolbar mounts inside a larger component (e.g. rc-transfer-list).
-    const target = this._lastFocused ?? this.firstItem;
+    const $target = this._lastFocused ?? this.firstItem;
 
     queueMicrotask(() => {
       if (this.matches(':focus-within')) {
-        this.focusItem(target);
+        this.focusItem($target);
       }
     });
   }
@@ -103,33 +107,33 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     }
   }
 
-  protected override _collectItems(slot: HTMLSlotElement): Element[] {
-    return slot.assignedElements().flatMap((element) => {
-      if (element.localName === 'rc-chip') {
-        const button = element.querySelector(':scope > button');
+  protected override _collectItems($slot: HTMLSlotElement): Element[] {
+    return $slot.assignedElements().flatMap(($element) => {
+      if ($element.matches('rc-button, rc-chip')) {
+        const $button = $element.querySelector(':scope > button');
 
-        return button ? [button] : [];
+        return $button ? [$button] : [];
       }
 
-      return this._isToolbarItem(element) ? [element] : [];
+      return this._isToolbarItem($element) ? [$element] : [];
     });
   }
 
-  private _isToolbarItem(el: Element): boolean {
+  protected _isToolbarItem($el: Element): boolean {
     if (
-      el instanceof HTMLButtonElement ||
-      el instanceof HTMLInputElement ||
-      el instanceof HTMLSelectElement ||
-      el instanceof HTMLTextAreaElement
+      $el instanceof HTMLButtonElement ||
+      $el instanceof HTMLInputElement ||
+      $el instanceof HTMLSelectElement ||
+      $el instanceof HTMLTextAreaElement
     ) {
       return true;
     }
 
-    if (el instanceof HTMLAnchorElement || el instanceof HTMLAreaElement) {
-      return el.hasAttribute('href');
+    if ($el instanceof HTMLAnchorElement || $el instanceof HTMLAreaElement) {
+      return $el.hasAttribute('href');
     }
 
-    const role = el.getAttribute('role');
+    const role = $el.getAttribute('role');
 
     if (
       role === 'button' ||
@@ -145,7 +149,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
       return true;
     }
 
-    return isFocusable(el);
+    return isFocusable($el);
   }
 
   protected render() {

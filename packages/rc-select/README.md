@@ -49,9 +49,9 @@ import '@rcarls/rc-select/define';
 | `disabled` | `boolean` | Mirrors the slotted `<select disabled>` state. |
 | `placeholder` | `string` | Text shown when no value is selected. |
 | `display` | `'auto' \| 'chips' \| 'compact'` | Controls multi-select display. |
+| `value` | `string \| string[]` | Controlled selection. Programmatic writes apply silently. |
 | `openPopup()` | `void` | Opens the listbox popover. |
 | `closePopup(returnFocus?)` | `void` | Closes the listbox and optionally restores focus. |
-| `setSelected(values)` | `void` | Replaces selection without relying on mutation observation. |
 
 ## Events
 

@@ -68,7 +68,7 @@ export const navigationRailStyles = css`
     display: none;
   }
 
-  nav {
+  [part='nav'] {
     position: relative;
     display: flex;
     flex: 1 1 auto;
@@ -120,7 +120,7 @@ export const navigationRailStyles = css`
   }
 
   ::slotted(a[aria-current]:not([aria-current='false'])) {
-    color: var(--rc-navigation-rail-active-color, var(--rc-navigation-rail-item-color, inherit));
+    color: var(--rc-navigation-rail-active-color, LinkText);
   }
 
   #indicator {

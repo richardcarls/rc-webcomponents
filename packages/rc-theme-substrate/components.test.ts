@@ -127,11 +127,32 @@ test('app bars stack above adjacent themed content for anchored popups', () => {
   expect(getComputedStyle(appBar).zIndex).toBe('1');
 });
 
+test('card heading slots use compact article-title typography', () => {
+  const scope = renderScope();
+  const card = document.createElement('rc-card');
+  const heading2 = document.createElement('h2');
+  const heading3 = document.createElement('h3');
+
+  heading2.slot = 'title';
+  heading3.slot = 'title';
+  card.append(heading2, heading3);
+  scope.append(card);
+
+  expect(getComputedStyle(heading2).fontSize).toBe('20px');
+  expect(getComputedStyle(heading3).fontSize).toBe('16px');
+});
+
 test('navigation surfaces expose the full reference token contract', () => {
   const scope = renderScope();
   const bar = document.createElement('rc-navigation-bar');
   const rail = document.createElement('rc-navigation-rail');
+  const barLink = document.createElement('a');
+  const railLink = document.createElement('a');
 
+  barLink.setAttribute('aria-current', 'page');
+  railLink.setAttribute('aria-current', 'page');
+  bar.append(barLink);
+  rail.append(railLink);
   scope.append(bar, rail);
 
   const barStyles = getComputedStyle(bar);
@@ -139,14 +160,19 @@ test('navigation surfaces expose the full reference token contract', () => {
 
   expect(barStyles.getPropertyValue('--rc-navigation-bar-block-size')).toBe('4rem');
   expect(barStyles.getPropertyValue('--rc-navigation-bar-item-padding-inline')).not.toBe('');
-  expect(barStyles.getPropertyValue('--rc-navigation-bar-indicator-duration')).not.toBe('');
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-indicator-duration')).toBe('0ms');
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-indicator-bg')).toBe('transparent');
   expect(barStyles.getPropertyValue('--rc-navigation-bar-focus-ring')).not.toBe('');
+  expect(getComputedStyle(barLink).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
 
-  expect(railStyles.getPropertyValue('--rc-navigation-rail-inline-size')).toBe('5rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-inline-size')).toBe('6rem');
   expect(railStyles.getPropertyValue('--rc-navigation-rail-expanded-inline-size')).toBe('15rem');
   expect(railStyles.getPropertyValue('--rc-navigation-rail-toggle-size')).toBe('3rem');
   expect(railStyles.getPropertyValue('--rc-navigation-rail-toggle-inline-offset')).toBe('0.5rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-indicator-duration')).toBe('0ms');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-indicator-bg')).toBe('transparent');
   expect(railStyles.getPropertyValue('--rc-navigation-rail-focus-ring')).not.toBe('');
+  expect(getComputedStyle(railLink).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
 });
 
 test('icon consumers share the theme icon-font convention', () => {
@@ -159,6 +185,7 @@ test('icon consumers share the theme icon-font convention', () => {
   const railIcon = document.createElement('span');
   const buttonIcon = document.createElement('span');
 
+  button.setAttribute('icon-only', '');
   barIcon.dataset.rcNavigationIcon = '';
   railIcon.dataset.rcNavigationIcon = '';
   buttonIcon.dataset.rcButtonIcon = '';
@@ -169,7 +196,7 @@ test('icon consumers share the theme icon-font convention', () => {
   scope.append(bar, rail, button, listIcon);
 
   expect(getComputedStyle(buttonIcon).fontSize).toBe('24px');
-  expect(getComputedStyle(buttonIcon).lineHeight).toBe('24px');
+  expect(getComputedStyle(buttonIcon).lineHeight).toBe('40px');
   expect(getComputedStyle(listIcon).lineHeight).toBe('24px');
   expect(getComputedStyle(barIcon).lineHeight).toBe('40px');
   expect(getComputedStyle(railIcon).lineHeight).toBe('40px');
@@ -200,6 +227,42 @@ test('splitter keeps default geometry and only adds themed color tokens', () => 
   expect(styles.getPropertyValue('--rc-splitter-separator-size')).toBe('');
   expect(styles.getPropertyValue('--rc-splitter-separator-color')).not.toBe('');
   expect(styles.getPropertyValue('--rc-splitter-handle-color')).not.toBe('');
+});
+
+test('bottom sheet uses the splitter-style three-dot drag handle', () => {
+  const scope = renderScope();
+  const sheet = document.createElement('rc-bottom-sheet');
+  const dialog = document.createElement('dialog');
+  const handle = document.createElement('button');
+
+  handle.dataset.rcBottomSheetHandle = '';
+  dialog.append(handle);
+  sheet.append(dialog);
+  scope.append(sheet);
+
+  const handleStyles = getComputedStyle(handle);
+  const indicatorStyles = getComputedStyle(handle, '::before');
+
+  expect(handleStyles.inlineSize).toBe('100%');
+  expect(handleStyles.minBlockSize).toBe('48px');
+  expect(handleStyles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(indicatorStyles.backgroundImage).toContain('radial-gradient');
+  expect(indicatorStyles.borderRadius).toBe('0px');
+});
+
+test('snackbar action inherits the inverse-surface text color', () => {
+  const scope = renderScope();
+  const snackbar = document.createElement('rc-snackbar');
+
+  scope.append(snackbar);
+
+  const styles = getComputedStyle(snackbar);
+
+  expect(styles.getPropertyValue('--rc-snackbar-action-color')).toBe(
+    styles.getPropertyValue('--rc-snackbar-color'),
+  );
+
+  expect(styles.getPropertyValue('--rc-snackbar-action-font')).toContain('650');
 });
 
 test('contextual toolbar controls receive Substrate state styling', () => {

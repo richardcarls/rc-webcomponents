@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.3.2",
-  "description": "Navigation rail landmark that styles consumer-authored links.",
+  "description": "Navigation rail layout that styles consumer-authored links.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",

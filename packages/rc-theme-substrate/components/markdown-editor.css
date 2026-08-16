@@ -6,7 +6,32 @@
     --rme-background: var(--rc-field, Field);
     --rme-color: var(--rc-field-text, FieldText);
     --rme-toolbar-background: var(--substrate-surface-raised, Canvas);
+    --rme-toolbar-color: var(--substrate-on-surface, CanvasText);
     --rme-toolbar-border: var(--rc-border, 1px solid ButtonBorder);
+    --rme-toolbar-gap: 0.125rem;
+    --rme-toolbar-padding: 0.25rem;
+    --rme-toolbar-radius: var(--substrate-radius-lg, 0.75rem) var(--substrate-radius-lg, 0.75rem) 0
+      0;
+    --rme-toolbar-button-size: var(--rc-control-block-size, 2.5rem);
+    --rme-toolbar-button-color: var(--substrate-on-surface, ButtonText);
+    --rme-toolbar-button-border: 1px solid transparent;
+    --rme-toolbar-button-radius: var(--substrate-radius-md, 0.5rem);
+    --rme-toolbar-button-active-background: var(--substrate-primary-container, Highlight);
+    --rme-toolbar-button-active-color: var(--substrate-on-primary-container, HighlightText);
+    --rme-toolbar-button-active-border: 1px solid var(--substrate-primary, Highlight);
+    --rme-toolbar-focus-outline: var(--rc-focus-ring, 2px solid Highlight);
+    --rme-toolbar-focus-outline-offset: var(--rc-focus-ring-offset, 2px);
+    --rme-toolbar-select-background: var(--substrate-field, Field);
+    --rme-toolbar-select-color: var(--substrate-on-surface, FieldText);
+    --rme-toolbar-select-border: var(--rc-border, 1px solid ButtonBorder);
+    --rme-toolbar-select-radius: var(--substrate-radius-sm, 0.25rem);
+    --rme-toolbar-select-active-background: var(--substrate-primary-container, Highlight);
+    --rme-toolbar-select-active-color: var(--substrate-on-primary-container, HighlightText);
+    --rme-toolbar-select-active-border-color: var(--substrate-primary, Highlight);
+    --rme-toolbar-input-background: var(--substrate-field, Field);
+    --rme-toolbar-input-color: var(--substrate-on-surface, FieldText);
+    --rme-toolbar-input-border: var(--rc-border, 1px solid ButtonBorder);
+    --rme-toolbar-input-radius: var(--substrate-radius-sm, 0.25rem);
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-markdown-editor::part(rich-view) {

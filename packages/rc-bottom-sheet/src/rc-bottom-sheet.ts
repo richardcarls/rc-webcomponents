@@ -128,6 +128,20 @@ const MIN_SWIPE_DISTANCE = 24;
  * @fires rc-bottom-sheet-snap - Fires when a drag release or `snapTo()` call
  *   selects a snap target. `detail: { index, height, trigger }`
  *
+ * @attr light-dismiss - When present, a click on the backdrop area calls `requestClose()`.
+ *   Present by default; inherited from `rc-dialog`.
+ * @attr resize - Enables edge resizing, mirroring the CSS `resize` property values.
+ *   Defaults to `vertical`; inherited from `rc-dialog`.
+ * @attr resize-origin - Origin for resize edge hit-testing or explicit handles. Defaults to
+ *   `top`; inherited from `rc-dialog`.
+ * @attr resize-handle - CSS selector, scoped to the inner `<dialog>`, for explicit resize
+ *   handles. Defaults to `[data-rc-bottom-sheet-handle]`; inherited from `rc-dialog`.
+ * @attr snap-points - Whitespace-separated CSS heights, in ascending order, addressable by
+ *   `snapTo()` and settled to on drag release.
+ * @attr swipe-dismiss - Whether a decisive downward swipe of at least 96 pixels requests close.
+ * @attr swipe-velocity - Minimum release velocity, in pixels per second, that counts as a
+ *   decisive swipe rather than a slow deliberate drag.
+ *
  * @cssprop [--rc-bottom-sheet-bg=Canvas] - Sheet surface background.
  * @cssprop [--rc-bottom-sheet-color=CanvasText] - Sheet text color.
  * @cssprop [--rc-bottom-sheet-radius=1rem 1rem 0 0] - Sheet corner radius.

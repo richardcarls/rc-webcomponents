@@ -59,13 +59,13 @@ import '@rcarls/rc-navigation-bar/define';
 ```html
 <nav aria-label="Main navigation">
   <rc-navigation-bar>
-    <a href="/recipes" aria-current="page">
-      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-      <span>Recipes</span>
+    <a href="/library" aria-current="page">
+      <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+      <span>Library</span>
     </a>
-    <a href="/shopping">
-      <span data-rc-navigation-icon aria-hidden="true">shopping_cart</span>
-      <span>Shopping</span>
+    <a href="/saved">
+      <span data-rc-navigation-icon aria-hidden="true">bookmark</span>
+      <span>Saved</span>
     </a>
     <a href="/settings">
       <span data-rc-navigation-icon aria-hidden="true">settings</span>
@@ -101,7 +101,7 @@ to restore an icon font's em-based line height.
 ```html
 <nav aria-label="Main navigation">
   <rc-navigation-bar active-selector="a.router-active">
-    <a class="router-active" href="/recipes">Recipes</a>
+    <a class="router-active" href="/library">Library</a>
     <a href="/settings">Settings</a>
   </rc-navigation-bar>
 </nav>
@@ -128,7 +128,7 @@ class matched by `active-selector`.
 ```js
 const destinations = [
   { href: '/', label: 'Home', icon: 'home' },
-  { href: '/recipes', label: 'Recipes', icon: 'restaurant' },
+  { href: '/library', label: 'Library', icon: 'local_library' },
   { href: '/settings', label: 'Settings', icon: 'settings' },
 ];
 
@@ -140,9 +140,9 @@ const isExpanded = matchMedia('(min-width: 840px)').matches;
 <!-- compact: <600px -->
 <nav aria-label="Main navigation">
   <rc-navigation-bar>
-    <a href="/recipes" aria-current="page">
-      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-      <span>Recipes</span>
+    <a href="/library" aria-current="page">
+      <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+      <span>Library</span>
     </a>
     <a href="/settings">
       <span data-rc-navigation-icon aria-hidden="true">settings</span>
@@ -152,16 +152,18 @@ const isExpanded = matchMedia('(min-width: 840px)').matches;
 </nav>
 
 <!-- medium and expanded: >=600px -->
-<rc-navigation-rail label="Main navigation">
-  <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-    <span>Recipes</span>
-  </a>
-  <a href="/settings">
-    <span data-rc-navigation-icon aria-hidden="true">settings</span>
-    <span>Settings</span>
-  </a>
-</rc-navigation-rail>
+<nav aria-label="Main navigation">
+  <rc-navigation-rail>
+    <a href="/library" aria-current="page">
+      <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+      <span>Library</span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span>Settings</span>
+    </a>
+  </rc-navigation-rail>
+</nav>
 ```
 
 At `>=840px`, let the app decide whether users may expand the rail and whether
@@ -205,8 +207,9 @@ metrics used by the official Material Components implementation: an 80dp
 surface, 64×32dp active indicator target, centered 24dp icon, safe-area padding,
 label-medium typography, and state-layer hover treatment.
 
-Recipe Tome still uses local Solid prototypes during the promotion branch; its
-consumer migration to these package components is a follow-up step.
+The Substrate theme highlights the active link itself and disables the moving
+indicator. The Material theme retains its separate animated indicator behind
+the icon target.
 
 ## API
 

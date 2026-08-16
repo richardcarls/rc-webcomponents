@@ -51,11 +51,12 @@ Vertical orientation:
 </rc-toolbar>
 ```
 
-Directly slotted `rc-chip` elements participate through their native child
-buttons:
+Directly slotted `rc-button` and `rc-chip` elements participate through their
+native child buttons:
 
 ```html
-<rc-toolbar label="Recipe filters">
+<rc-toolbar label="Filters">
+  <rc-button><button type="button">All</button></rc-button>
   <rc-chip variant="filter"><button type="button">Quick</button></rc-chip>
   <rc-chip variant="filter"><button type="button">Vegetarian</button></rc-chip>
 </rc-toolbar>
@@ -67,10 +68,10 @@ buttons:
 
 ### Properties / attributes
 
-| Property      | Attribute     | Type                         | Default        | Description                                                                             |
-| ------------- | ------------- | ---------------------------- | -------------- | --------------------------------------------------------------------------------------- |
+| Property      | Attribute     | Type                         | Default        | Description                                                                            |
+| ------------- | ------------- | ---------------------------- | -------------- | -------------------------------------------------------------------------------------- |
 | `label`       | `label`       | `string`                     | `'Toolbar'`    | `aria-label` for the toolbar. Required; no visible label is rendered by the component. |
-| `orientation` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Layout direction and keyboard navigation axis.                                          |
+| `orientation` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Layout direction and keyboard navigation axis.                                         |
 
 ### CSS custom properties
 
@@ -79,6 +80,7 @@ buttons:
 | `--rc-toolbar-gap-inline`      | `0.25em`                   | Gap between toolbar items                       |
 | `--rc-toolbar-padding-inline`  | `0.25em`                   | Horizontal padding on the toolbar container     |
 | `--rc-toolbar-padding-block`   | `0.125em`                  | Vertical padding on the toolbar container       |
+| `--rc-toolbar-flex-wrap`       | `nowrap`                   | Whether toolbar items wrap onto multiple lines  |
 | `--rc-toolbar-radius`          | `var(--rc-control-radius)` | Toolbar container border radius                 |
 | `--rc-toolbar-vertical-radius` | `var(--rc-toolbar-radius)` | Border radius override for vertical orientation |
 
@@ -90,9 +92,9 @@ buttons:
 
 ### Slots
 
-| Slot        | Description                                                                                                                                                                                    |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(default)_ | Toolbar controls. Focusable elements (`<button>`, `<input>`, `<select>`, `<a href>`, elements with `tabindex`) participate in roving-tabindex navigation. All others are rendered but skipped. |
+| Slot        | Description                                                                                                                                                                                                                                                       |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _(default)_ | Toolbar controls. Focusable elements (`<button>`, `<input>`, `<select>`, `<a href>`, elements with `tabindex`) and native buttons inside direct `rc-button` or `rc-chip` wrappers participate in roving-tabindex navigation. All others are rendered but skipped. |
 
 ### Events
 

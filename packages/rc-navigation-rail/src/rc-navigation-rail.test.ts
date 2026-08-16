@@ -69,20 +69,41 @@ test('centers header content on the inline axis while collapsed and expanded', a
 
 test('has no automated accessibility violations while collapsed and expanded', async () => {
   const screen = render(html`
-    <rc-navigation-rail data-testid="host" label="Main navigation">
-      <button slot="toggle" type="button" aria-label="Toggle navigation">Menu</button>
-      <a href="/recipes" aria-current="page">Recipes</a>
-      <a href="/settings">Settings</a>
-    </rc-navigation-rail>
+    <nav aria-label="Main navigation" data-testid="nav">
+      <rc-navigation-rail data-testid="host">
+        <button slot="toggle" type="button" aria-label="Toggle navigation">Menu</button>
+        <a href="/recipes" aria-current="page">Recipes</a>
+        <a href="/settings">Settings</a>
+      </rc-navigation-rail>
+    </nav>
   `);
   const host = (await screen.getByTestId('host').element()) as RCNavigationRail;
+  const nav = await screen.getByTestId('nav').element();
 
   await host.updateComplete;
-  await expectNoA11yViolations(host);
+
+  expect(host.shadowRoot?.querySelector('nav, [role="navigation"]')).toBeNull();
+  await expectNoA11yViolations(nav);
 
   host.expanded = true;
   await host.updateComplete;
-  await expectNoA11yViolations(host);
+  await expectNoA11yViolations(nav);
+});
+
+test('uses a distinct system highlight color for the current link by default', async () => {
+  const screen = render(html`
+    <rc-navigation-rail data-testid="host">
+      <a href="/library" aria-current="page" data-testid="current">Library</a>
+      <a href="/settings" data-testid="other">Settings</a>
+    </rc-navigation-rail>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCNavigationRail;
+  const current = await screen.getByTestId('current').element();
+  const other = await screen.getByTestId('other').element();
+
+  await host.updateComplete;
+
+  expect(getComputedStyle(current).color).not.toBe(getComputedStyle(other).color);
 });
 
 test('positions the indicator on the aria-current link target', async () => {
@@ -176,6 +197,30 @@ test('supports default-expanded before controlled writes', async () => {
   `);
   const host = (await screen.getByTestId('host').element()) as RCNavigationRail;
 
+  await host.updateComplete;
+
+  expect(host.expanded).toBe(true);
+  expect(host.hasAttribute('expanded')).toBe(true);
+});
+
+test('assigning expanded to undefined releases control back to default-expanded', async () => {
+  const screen = render(html`
+    <rc-navigation-rail data-testid="host" default-expanded>
+      <a href="/recipes">Recipes</a>
+    </rc-navigation-rail>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCNavigationRail;
+
+  await host.updateComplete;
+
+  expect(host.expanded).toBe(true);
+
+  host.expanded = false;
+  await host.updateComplete;
+
+  expect(host.expanded).toBe(false);
+
+  host.expanded = undefined;
   await host.updateComplete;
 
   expect(host.expanded).toBe(true);

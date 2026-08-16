@@ -61,13 +61,58 @@ export interface RCButtonToggleDetail {
  * @attr default-selected - Initial selected state for uncontrolled toggle usage.
  * @attr icon-only - Removes label-oriented inline padding in supporting themes.
  * @attr full-width - Stretches the native child button to the host inline size.
+ * @attr [has-icon] - Present when the native button has a direct `[data-rc-button-icon]` child.
+ *   Use with CSS selectors (e.g. `rc-button[has-icon]`).
+ * @attr [has-selected-icon] - Present when the native button has a direct
+ *   `[data-rc-button-selected-icon]` child.
+ * @attr [has-label] - Present when the native button has visible label content, from either a
+ *   `[data-rc-button-label]` child or bare text.
+ *
+ * @cssprop [--rc-button-gap] - Gap between icon and label content.
+ * @cssprop [--rc-button-block-size] - Minimum button block size.
+ * @cssprop [--rc-button-min-inline-size] - Minimum button inline size.
+ * @cssprop [--rc-button-inline-size] - Button inline size.
+ * @cssprop [--rc-button-padding-block] - Button block-axis padding (defers to native button
+ *   padding when unset).
+ * @cssprop [--rc-button-padding-inline] - Button inline-axis padding (defers to native button
+ *   padding when unset).
+ * @cssprop [--rc-button-border] - Button border (defers to native button border when unset).
+ * @cssprop [--rc-button-radius] - Button and overlay border radius (defers to native button
+ *   radius when unset).
+ * @cssprop [--rc-button-bg] - Button background (defers to native button background when unset).
+ * @cssprop [--rc-button-color] - Button text color (defers to native button color when unset).
+ * @cssprop [--rc-button-shadow] - Button box shadow (defers to native button shadow when unset).
+ * @cssprop [--rc-button-font] - Button font shorthand (defers to native button font when unset).
+ * @cssprop [--rc-button-transition] - Button transition shorthand (defers to native button
+ *   transition when unset).
+ * @cssprop [--rc-button-icon-size] - Button inline and min-inline size when `icon-only`. Falls
+ *   back to `--rc-button-block-size`, then `--rc-control-block-size`, then `2.5rem`.
+ * @cssprop [--rc-button-disabled-opacity] - Disabled button opacity (defers to native disabled
+ *   styling when unset).
+ * @cssprop [--rc-button-busy-content-color=transparent] - Button text color while `pending` or
+ *   `progress`.
+ * @cssprop [--rc-button-state-layer-bg=currentColor] - State-layer overlay color.
+ * @cssprop [--rc-button-state-layer-duration=150ms] - State-layer opacity transition duration.
+ * @cssprop [--rc-button-state-layer-easing=ease] - State-layer opacity transition easing.
+ * @cssprop [--rc-button-hover-state-layer-opacity=0] - State-layer opacity on hover.
+ * @cssprop [--rc-button-focus-state-layer-opacity=0] - State-layer opacity on focus-within.
+ * @cssprop [--rc-button-pressed-state-layer-opacity=0] - State-layer opacity on active press.
+ * @cssprop [--rc-button-progress-color=currentColor] - Progress affordance color.
+ * @cssprop [--rc-button-progress-font=600 0.75rem / 1 sans-serif] - Determinate progress
+ *   percentage font.
+ * @cssprop [--rc-button-progress-size=1.25rem] - Indeterminate progress spinner diameter.
+ * @cssprop [--rc-button-progress-track-width=2px] - Indeterminate progress spinner stroke width.
+ * @cssprop [--rc-button-progress-track-color=color-mix(in srgb, currentColor 24%, transparent)] -
+ *   Indeterminate progress spinner track color.
+ * @cssprop [--rc-button-progress-active-color=currentColor] - Indeterminate progress spinner
+ *   active arc color.
  */
 export class RCButton extends LitElement {
   static override styles = buttonStyles;
 
-  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
+  protected static readonly _styledRoots = new Set<Document | ShadowRoot>();
 
-  private static _ensureBaseStyles(root: Document | ShadowRoot): void {
+  protected static _ensureBaseStyles(root: Document | ShadowRoot): void {
     if (RCButton._styledRoots.has(root)) {
       return;
     }
@@ -148,22 +193,22 @@ export class RCButton extends LitElement {
   @property({ type: Boolean, attribute: 'full-width', reflect: true })
   fullWidth = false;
 
-  @query('slot') private _$slot!: HTMLSlotElement;
+  @query('slot') protected _$slot!: HTMLSlotElement;
 
-  @query('[part="state-layer"]') private _$stateLayer!: HTMLElement;
+  @query('[part="state-layer"]') protected _$stateLayer!: HTMLElement;
 
   private _selected: boolean | undefined;
   private _defaultSelected = false;
   private _uncontrolledSelected: boolean | undefined;
   private _selectedInitialized = false;
-  private _button: HTMLButtonElement | null = null;
-  private _buttonObserver: MutationObserver | null = null;
-  private _disabledOwned = false;
-  private _ariaBusyOwned = false;
-  private _pressedOwned = false;
-  private _authorPressed: string | null = null;
-  private _iconOnlyOwned = false;
-  private _slotMicrotaskQueued = false;
+  protected _$button: HTMLButtonElement | null = null;
+  protected _buttonObserver: MutationObserver | null = null;
+  protected _disabledOwned = false;
+  protected _ariaBusyOwned = false;
+  protected _pressedOwned = false;
+  protected _authorPressed: string | null = null;
+  protected _iconOnlyOwned = false;
+  protected _slotMicrotaskQueued = false;
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -206,7 +251,7 @@ export class RCButton extends LitElement {
     `;
   }
 
-  private get _progressPercentage(): number | undefined {
+  protected get _progressPercentage(): number | undefined {
     if (!this.progress || !Number.isFinite(this.progressValue)) {
       return undefined;
     }
@@ -214,7 +259,7 @@ export class RCButton extends LitElement {
     return Math.round(Math.min(100, Math.max(0, this.progressValue!)));
   }
 
-  private _handleSlotChange(): void {
+  protected _handleSlotChange(): void {
     if (this._slotMicrotaskQueued) {
       return;
     }
@@ -232,7 +277,7 @@ export class RCButton extends LitElement {
     });
   }
 
-  private _syncSlottedButton(): void {
+  protected _syncSlottedButton(): void {
     const nextButton =
       this._$slot
         ?.assignedElements({ flatten: true })
@@ -253,7 +298,7 @@ export class RCButton extends LitElement {
       );
     }
 
-    if (nextButton === this._button) {
+    if (nextButton === this._$button) {
       this._classifyButton();
       this._syncNativeState();
       this._syncPressedState();
@@ -264,7 +309,7 @@ export class RCButton extends LitElement {
     this._restorePressedState();
     this._buttonObserver?.disconnect();
     this._buttonObserver = null;
-    this._button = nextButton;
+    this._$button = nextButton;
     this._disabledOwned = false;
     this._ariaBusyOwned = false;
     this._pressedOwned = false;
@@ -290,8 +335,8 @@ export class RCButton extends LitElement {
     this._syncPressedState();
   }
 
-  private _classifyButton(): void {
-    const button = this._button;
+  protected _classifyButton(): void {
+    const button = this._$button;
     const hasIcon = !!button?.querySelector(':scope > [data-rc-button-icon]');
     const hasSelectedIcon = !!button?.querySelector(':scope > [data-rc-button-selected-icon]');
     const hasLabel = this._hasLabel(button);
@@ -311,7 +356,7 @@ export class RCButton extends LitElement {
     }
   }
 
-  private _hasLabel(button: HTMLButtonElement | null): boolean {
+  protected _hasLabel(button: HTMLButtonElement | null): boolean {
     if (!button) {
       return false;
     }
@@ -329,6 +374,7 @@ export class RCButton extends LitElement {
         continue;
       }
 
+      // data-rc-button-progress marks consumer content that must not count as a label.
       if (
         node.matches(
           '[data-rc-button-icon], [data-rc-button-selected-icon], [data-rc-button-progress], [aria-hidden="true"]',
@@ -345,8 +391,8 @@ export class RCButton extends LitElement {
     return false;
   }
 
-  private _syncNativeState(): void {
-    const button = this._button;
+  protected _syncNativeState(): void {
+    const button = this._$button;
 
     if (!button) {
       return;
@@ -354,11 +400,10 @@ export class RCButton extends LitElement {
 
     const shouldDisable = this.disabled || this.pending || this.progress;
 
-    if (shouldDisable) {
-      if (!button.disabled) {
-        this._disabledOwned = true;
-      }
+    if (shouldDisable && !button.disabled) {
+      this._disabledOwned = true;
 
+      // Idempotent disabled writes queue mutation records and re-enter the button observer.
       button.disabled = true;
     } else if (!shouldDisable && this._disabledOwned) {
       button.disabled = false;
@@ -378,8 +423,8 @@ export class RCButton extends LitElement {
     }
   }
 
-  private _syncPressedState(): void {
-    const button = this._button;
+  protected _syncPressedState(): void {
+    const button = this._$button;
 
     if (!button) {
       return;
@@ -398,8 +443,8 @@ export class RCButton extends LitElement {
     }
   }
 
-  private _restorePressedState(): void {
-    const button = this._button;
+  protected _restorePressedState(): void {
+    const button = this._$button;
 
     if (!button || !this._pressedOwned) {
       return;
@@ -414,7 +459,7 @@ export class RCButton extends LitElement {
     this._pressedOwned = false;
   }
 
-  private _handleToggleActivation(event: MouseEvent): void {
+  protected _handleToggleActivation(event: MouseEvent): void {
     if (
       !this.toggle ||
       this.disabled ||
@@ -445,15 +490,15 @@ export class RCButton extends LitElement {
     );
   }
 
-  private _shouldBlockActivation(): boolean {
+  protected _shouldBlockActivation(): boolean {
     return this.pending || this.progress;
   }
 
-  private _isChildButtonEvent(event: Event): boolean {
-    return !!this._button && event.composedPath().includes(this._button);
+  protected _isChildButtonEvent(event: Event): boolean {
+    return !!this._$button && event.composedPath().includes(this._$button);
   }
 
-  private _blockActivation(event: Event): void {
+  protected _blockActivation(event: Event): void {
     if (!this._shouldBlockActivation() || !this._isChildButtonEvent(event)) {
       return;
     }
@@ -462,7 +507,7 @@ export class RCButton extends LitElement {
     event.stopImmediatePropagation();
   }
 
-  private _startRipple(event: PointerEvent): void {
+  protected _startRipple(event: PointerEvent): void {
     if (
       !event.isPrimary ||
       event.button !== 0 ||
@@ -476,7 +521,7 @@ export class RCButton extends LitElement {
       return;
     }
 
-    const bounds = this._button!.getBoundingClientRect();
+    const bounds = this._$button!.getBoundingClientRect();
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
     const radius = Math.hypot(Math.max(x, bounds.width - x), Math.max(y, bounds.height - y));
@@ -489,7 +534,7 @@ export class RCButton extends LitElement {
     this._$stateLayer.setAttribute('data-rippling', '');
   }
 
-  private _handleRippleAnimationEnd(event: AnimationEvent): void {
+  protected _handleRippleAnimationEnd(event: AnimationEvent): void {
     if (event.animationName === 'rc-button-ripple') {
       this._$stateLayer.removeAttribute('data-rippling');
     }

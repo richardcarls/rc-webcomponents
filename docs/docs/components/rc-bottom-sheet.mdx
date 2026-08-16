@@ -61,7 +61,7 @@ dialog must have `aria-labelledby` or `aria-label`.
 
 ```html
 <rc-bottom-sheet id="filters" snap-points="40dvh 70dvh 100dvh">
-  <dialog aria-label="Filter recipes">
+  <dialog aria-label="Filter projects">
     <button
       type="button"
       data-rc-bottom-sheet-handle
@@ -83,9 +83,12 @@ viewport's bottom edge. Add an optional
 handle. Use `snap-points` to snap the sheet to declared CSS heights after
 resize gestures.
 
-Without a theme, the authored handle uses the same 32 by 4 pixel pill geometry
-as the splitter-style drag indicator, centered inside a full-width, 48
-pixel-high target.
+Without a theme, the authored handle uses a 32 by 4 pixel pill indicator,
+centered inside a full-width, 48 pixel-high target.
+
+The Substrate theme replaces that pill with the same three-dot visual language
+as its splitter handle while preserving the full-width pointer target. Material
+keeps the Material 3 pill indicator.
 
 For an embedded non-modal sheet, place the component in a positioned
 container, set `--rc-bottom-sheet-position: absolute`, and open it with
@@ -93,8 +96,8 @@ container, set `--rc-bottom-sheet-position: absolute`, and open it with
 the viewport.
 
 Declare snap points as CSS heights in ascending order. Slow releases settle at
-the nearest point. A decisive upward or downward swipe—`500` pixels per second
-by default—settles at the last or first point, respectively. When
+the nearest point. A decisive upward or downward swipe (`500` pixels per second
+by default) settles at the last or first point, respectively. When
 `swipe-dismiss` is enabled, dragging downward by at least `96` pixels requests
 close before velocity-based snapping applies.
 
@@ -123,7 +126,7 @@ the sheet's block-end edge.
 ## When to use
 
 Bottom sheets are a mobile-friendly alternative to `rc-dialog` for
-non-blocking, dismissible prompts — for example a newsletter/mailing-list
+non-blocking, dismissible prompts, such as a newsletter/mailing-list
 signup or a general on-visit call-to-action. Docking to the bottom edge and
 supporting swipe-dismiss keeps the prompt reachable by thumb and easy to
 brush aside, where a centered `rc-dialog` modal would feel more disruptive
@@ -156,7 +159,7 @@ buttons such as those inside `rc-chip`.
 
 Set `--rc-bottom-sheet-snap-duration` to a millisecond duration to customize
 settling. The default is `300ms`. Set `--rc-bottom-sheet-snap-easing` to a CSS
-easing function to customize the settle curve. The unthemed fallback is
+easing function to customize the settle curve. The theme-free fallback is
 `cubic-bezier(0.4, 0, 0.2, 1)`; themes can map both properties to their spatial
 motion scheme.
 

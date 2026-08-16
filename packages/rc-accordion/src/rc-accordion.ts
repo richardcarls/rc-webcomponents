@@ -29,7 +29,10 @@ declare global {
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-accordion rc-accordion docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/accordion/ WAI-ARIA Accordion pattern}
  *
- * @attr {boolean} multiple - Allows more than one panel open at a time.
+ * @attr multiple - Allows more than one panel open at a time.
+ * @attr name - Group name mirrored onto each managed native `<details>` element's own
+ *   `name` attribute (native details name-grouping), so long as `multiple` is not set.
+ *   Child `<details>` elements that already declare their own `name` are left alone.
  */
 export class RCAccordion extends HTMLElement {
   private _$managedGroupNames = new Map<HTMLDetailsElement, string>();

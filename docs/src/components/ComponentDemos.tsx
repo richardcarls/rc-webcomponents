@@ -95,11 +95,13 @@ export function BottomSheetDemo() {
 
   return (
     <DemoFrame>
-      <button type="button" onClick={() => sheetEl?.showModal()}>
-        Open filter sheet
-      </button>
+      <rc-button>
+        <button type="button" onClick={() => sheetEl?.showModal()}>
+          Open filter sheet
+        </button>
+      </rc-button>
       <rc-bottom-sheet ref={setSheetEl} snap-points="240px 360px 480px" swipe-dismiss={false}>
-        <dialog aria-label="Filter recipes">
+        <dialog aria-label="Filter projects">
           <button
             type="button"
             data-rc-bottom-sheet-handle
@@ -108,12 +110,12 @@ export function BottomSheetDemo() {
             aria-label="Resize filter sheet"
           ></button>
           <div style={{ display: 'grid', gap: '0.75rem' }}>
-            <strong>Filter recipes</strong>
+            <strong>Filter projects</strong>
             <label>
-              <input type="checkbox" /> Vegetarian
+              <input type="checkbox" /> Open assignments
             </label>
             <label>
-              <input type="checkbox" /> Ready in 30 minutes
+              <input type="checkbox" /> Due this week
             </label>
             <div>
               <rc-button>
@@ -308,37 +310,45 @@ const CARD_DEMO_CSS = `
   --rc-card-body-grid-row: 3 / 5;
 }
 
+.card-demo-grid :is(h2, h3)[slot='title'] {
+  margin: 0;
+}
+
 .card-demo-status {
   margin-block-end: 0;
 }
 `;
 
 export function CardDemo() {
-  const [message, setMessage] = useState('Activate the card surface or Save.');
+  const [message, setMessage] = useState('Activate the card surface or save an article.');
   const [favorite, setFavorite] = useState(false);
 
   return (
     <DemoFrame defaultTheme="substrate">
       <style>{CARD_DEMO_CSS}</style>
       <div className="card-demo-grid">
-        <rc-card interactive action-target="demo-recipe-link">
+        <rc-card interactive action-target="demo-article-link">
           <div slot="media" className="card-demo-media" aria-hidden="true">
-            <span className="material-symbols-outlined">skillet</span>
+            <span className="material-symbols-outlined">article</span>
           </div>
-          <a
-            id="demo-recipe-link"
-            slot="title"
-            href="#lemon-pasta"
-            onClick={(event) => {
-              event.preventDefault();
-              setMessage('Opened Lemon pasta.');
-            }}
-          >
-            Lemon pasta
-          </a>
-          <p>Silky pasta with lemon, pepper, and parmesan.</p>
+          <h2 slot="title">
+            <a
+              id="demo-article-link"
+              href="#resilient-interfaces"
+              onClick={(event) => {
+                event.preventDefault();
+                setMessage('Opened Designing resilient interfaces.');
+              }}
+            >
+              Designing resilient interfaces
+            </a>
+          </h2>
+          <p>Practical patterns for preserving native behavior while adding richer interactions.</p>
           <rc-button slot="actions">
-            <button type="button" onClick={() => setMessage('Saved Lemon pasta.')}>
+            <button
+              type="button"
+              onClick={() => setMessage('Saved Designing resilient interfaces.')}
+            >
               Save
             </button>
           </rc-button>
@@ -347,44 +357,56 @@ export function CardDemo() {
         <rc-card>
           <div slot="media" className="card-demo-media">
             <span className="material-symbols-outlined" aria-hidden="true">
-              soup_kitchen
+              motion_photos_on
             </span>
             <rc-button className="card-demo-favorite" icon-only selected={favorite}>
               <button
                 type="button"
-                aria-label={favorite ? 'Remove tomato soup from favorites' : 'Favorite tomato soup'}
+                aria-label={
+                  favorite
+                    ? 'Remove A field guide to accessible motion from favorites'
+                    : 'Favorite A field guide to accessible motion'
+                }
                 aria-pressed={favorite}
                 onClick={() => {
                   setFavorite((current) => !current);
 
                   setMessage(
-                    `${favorite ? 'Removed' : 'Added'} Tomato soup ${
+                    `${favorite ? 'Removed' : 'Added'} A field guide to accessible motion ${
                       favorite ? 'from' : 'to'
                     } favorites.`,
                   );
                 }}
               >
                 <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                  favorite_border
+                </span>
+                <span
+                  data-rc-button-selected-icon
+                  className="material-symbols-outlined material-symbols-filled"
+                  aria-hidden="true"
+                >
                   favorite
                 </span>
               </button>
             </rc-button>
           </div>
-          <a
-            slot="title"
-            href="#tomato-soup"
-            onClick={(event) => {
-              event.preventDefault();
-              setMessage('Opened Tomato soup.');
-            }}
-          >
-            Tomato soup
-          </a>
-          <p>A classic soup card whose link and favorite button remain independent targets.</p>
+          <h3 slot="title">
+            <a
+              href="#accessible-motion"
+              onClick={(event) => {
+                event.preventDefault();
+                setMessage('Opened A field guide to accessible motion.');
+              }}
+            >
+              A field guide to accessible motion
+            </a>
+          </h3>
+          <p>An article card whose link and favorite button remain independent targets.</p>
         </rc-card>
 
         <rc-card className="card-demo-minimal">
-          <strong slot="title">Pantry note</strong>
+          <h3 slot="title">Reading list</h3>
           <p>A minimal card can omit media and actions while sharing the same parent grid.</p>
         </rc-card>
       </div>
@@ -498,13 +520,13 @@ export function FabMenuDemo() {
 }
 
 const navigationDestinations = [
-  { href: '#recipes', label: 'Recipes', icon: 'restaurant' },
-  { href: '#shopping', label: 'Shopping', icon: 'shopping_cart' },
+  { href: '#library', label: 'Library', icon: 'local_library' },
+  { href: '#saved', label: 'Saved', icon: 'bookmark' },
   { href: '#settings', label: 'Settings', icon: 'settings' },
 ];
 
 export function NavigationBarDemo() {
-  const [active, setActive] = useState('#recipes');
+  const [active, setActive] = useState('#library');
 
   return (
     <DemoFrame>
@@ -541,7 +563,7 @@ export function NavigationBarDemo() {
 
 export function NavigationRailDemo() {
   const [railEl, setRailEl] = useState<RCNavigationRailRef | null>(null);
-  const [active, setActive] = useState('#recipes');
+  const [active, setActive] = useState('#library');
   const [expanded, setExpanded] = useState(false);
   const log = useEventLog<RCNavigationRailToggleDetail>(
     railEl,
@@ -565,62 +587,59 @@ export function NavigationRailDemo() {
 
   return (
     <DemoFrame>
-      <rc-navigation-rail
-        ref={setRailEl}
-        label="Demo navigation"
-        expanded={expanded}
-        style={{ minBlockSize: '22rem' }}
-      >
-        <rc-button slot="toggle" icon-only>
-          <button type="button" aria-label="Toggle navigation">
-            <span
-              data-rc-button-icon
-              data-rc-navigation-expand-icon
-              className="material-symbols-outlined"
-              aria-hidden="true"
-            >
-              menu
-            </span>
-            <span
-              data-rc-button-selected-icon
-              data-rc-navigation-collapse-icon
-              className="material-symbols-outlined"
-              aria-hidden="true"
-            >
-              menu_open
-            </span>
-          </button>
-        </rc-button>
-        {navigationDestinations.map(({ href, label, icon }) => (
-          <a
-            key={href}
-            href={href}
-            aria-current={active === href ? 'page' : undefined}
-            onClick={(event) => {
-              event.preventDefault();
-              setActive(href);
-            }}
-          >
-            <span data-rc-navigation-indicator>
+      <nav aria-label="Demo navigation">
+        <rc-navigation-rail ref={setRailEl} expanded={expanded} style={{ minBlockSize: '22rem' }}>
+          <rc-button slot="toggle" icon-only>
+            <button type="button" aria-label="Toggle navigation">
               <span
-                data-rc-navigation-icon
+                data-rc-button-icon
+                data-rc-navigation-expand-icon
                 className="material-symbols-outlined"
                 aria-hidden="true"
               >
-                {icon}
+                menu
               </span>
-              <span>{label}</span>
-            </span>
-          </a>
-        ))}
-      </rc-navigation-rail>
+              <span
+                data-rc-button-selected-icon
+                data-rc-navigation-collapse-icon
+                className="material-symbols-outlined"
+                aria-hidden="true"
+              >
+                menu_open
+              </span>
+            </button>
+          </rc-button>
+          {navigationDestinations.map(({ href, label, icon }) => (
+            <a
+              key={href}
+              href={href}
+              aria-current={active === href ? 'page' : undefined}
+              onClick={(event) => {
+                event.preventDefault();
+                setActive(href);
+              }}
+            >
+              <span data-rc-navigation-indicator>
+                <span
+                  data-rc-navigation-icon
+                  className="material-symbols-outlined"
+                  aria-hidden="true"
+                >
+                  {icon}
+                </span>
+                <span>{label}</span>
+              </span>
+            </a>
+          ))}
+        </rc-navigation-rail>
+      </nav>
       <EventLog entries={log} />
     </DemoFrame>
   );
 }
 
 export function AdaptiveNavigationDemo() {
-  const [active, setActive] = useState('#recipes');
+  const [active, setActive] = useState('#library');
   const [showRail, setShowRail] = useState(false);
 
   const switchLayout = () => {
@@ -684,23 +703,26 @@ export function AdaptiveNavigationDemo() {
         }
       >
         {showRail ? (
-          <rc-navigation-rail
-            label="Adaptive demo navigation"
-            style={{ viewTransitionName: 'adaptive-navigation' }}
-          >
-            <rc-fab
-              slot="header"
-              position="top-start"
-              style={{ '--rc-fab-position': 'static' } as CSSProperties}
-            >
-              <button type="button" aria-label="New recipe">
-                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
-                  add
-                </span>
-              </button>
-            </rc-fab>
-            {renderLinks(true)}
-          </rc-navigation-rail>
+          <nav aria-label="Adaptive demo navigation">
+            <rc-navigation-rail style={{ viewTransitionName: 'adaptive-navigation' }}>
+              <rc-fab
+                slot="header"
+                position="top-start"
+                style={{ '--rc-fab-position': 'static' } as CSSProperties}
+              >
+                <button type="button" aria-label="New note">
+                  <span
+                    data-rc-button-icon
+                    className="material-symbols-outlined"
+                    aria-hidden="true"
+                  >
+                    add
+                  </span>
+                </button>
+              </rc-fab>
+              {renderLinks(true)}
+            </rc-navigation-rail>
+          </nav>
         ) : null}
         <main
           style={{
@@ -734,7 +756,7 @@ export function AdaptiveNavigationDemo() {
                 } as CSSProperties
               }
             >
-              <button type="button" aria-label="New recipe">
+              <button type="button" aria-label="New note">
                 <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
                   add
                 </span>
@@ -815,52 +837,60 @@ export function SnackbarDemo() {
   return (
     <DemoFrame>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <button
-          type="button"
-          onClick={() => snackbarEl?.show({ message: 'Recipe saved', duration: 2500 })}
-        >
-          Show message
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            snackbarEl?.show({
-              message: 'Recipe deleted',
-              actionLabel: 'Undo',
-              duration: 0,
-            })
-          }
-        >
-          Show action
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (!snackbarEl) {
-              return;
+        <rc-button>
+          <button
+            type="button"
+            onClick={() => snackbarEl?.show({ message: 'Draft saved', duration: 2500 })}
+          >
+            Show message
+          </button>
+        </rc-button>
+        <rc-button>
+          <button
+            type="button"
+            onClick={() =>
+              snackbarEl?.show({
+                message: 'Document archived',
+                actionLabel: 'Undo',
+                duration: 5000,
+              })
             }
+          >
+            Show action
+          </button>
+        </rc-button>
+        <rc-button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!snackbarEl) {
+                return;
+              }
 
-            snackbarEl.queuePolicy = 'queue';
-            snackbarEl.show({ message: 'First queued message', duration: 1200 });
-            snackbarEl.show({ message: 'Second queued message', duration: 1200 });
-          }}
-        >
-          Queue two
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (!snackbarEl) {
-              return;
-            }
+              snackbarEl.queuePolicy = 'queue';
+              snackbarEl.show({ message: 'First queued message', duration: 1200 });
+              snackbarEl.show({ message: 'Second queued message', duration: 1200 });
+            }}
+          >
+            Queue two
+          </button>
+        </rc-button>
+        <rc-button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!snackbarEl) {
+                return;
+              }
 
-            snackbarEl.queuePolicy = 'replace';
-            snackbarEl.show({ message: 'Original message', duration: 3000 });
-            snackbarEl.show({ message: 'Replacement message', duration: 3000 });
-          }}
-        >
-          Replace
-        </button>
+              snackbarEl.queuePolicy = 'replace';
+              snackbarEl.show({ message: 'Original message', duration: 3000 });
+              snackbarEl.show({ message: 'Replacement message', duration: 3000 });
+            }}
+          >
+            Replace
+          </button>
+        </rc-button>
       </div>
       <rc-snackbar ref={setSnackbarEl}></rc-snackbar>
       <EventLog entries={[...actionLog, ...closeLog]} />
@@ -945,8 +975,8 @@ export function AppBarDemo() {
             </span>
           </button>
           <div>
-            <strong>Recipes</strong>
-            <small style={{ display: 'block' }}>Summer collection</small>
+            <strong>Reading list</strong>
+            <small style={{ display: 'block' }}>Interface design</small>
           </div>
           <button slot="trailing" type="button" aria-label="Edit">
             <span className="material-symbols-outlined" aria-hidden="true">
@@ -959,8 +989,8 @@ export function AppBarDemo() {
             Scroll this panel to watch the expanded app bar collapse into its compact row.
           </p>
           {[
-            'Prep ingredients and group tasks before the kitchen gets busy.',
-            'Review active orders, pinned notes, and handoff details in one place.',
+            'Group related articles and notes before starting a focused reading session.',
+            'Review saved highlights, annotations, and follow-up ideas in one place.',
             'Let the expanded title collapse while primary actions remain available.',
             'Use the scrolled divider as a quiet boundary between controls and content.',
             'Return to the top to let the expanded title settle back into view.',
@@ -1002,7 +1032,7 @@ export function AppBarSearchDemo() {
           </span>
         </button>
         <rc-search-bar slot="center" style={{ inlineSize: 'min(28rem, 100%)' }}>
-          <input type="search" aria-label="Search recipes" placeholder="Search recipes" />
+          <input type="search" aria-label="Search library" placeholder="Search library" />
         </rc-search-bar>
         <button slot="trailing" type="button" aria-label="Filter results">
           <span className="material-symbols-outlined" aria-hidden="true">
@@ -1083,14 +1113,18 @@ export function DialogDemo() {
   );
 
   return (
-    <DemoFrame>
+    <DemoFrame defaultTheme="substrate">
       <p style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: 0 }}>
-        <button type="button" onClick={() => dialogEl?.showModal()}>
-          Open draggable dialog
-        </button>
-        <button type="button" onClick={() => confirmEl?.showModal()}>
-          Open confirm dialog
-        </button>
+        <rc-button>
+          <button type="button" onClick={() => dialogEl?.showModal()}>
+            Open draggable dialog
+          </button>
+        </rc-button>
+        <rc-button>
+          <button type="button" onClick={() => confirmEl?.showModal()}>
+            Open confirm dialog
+          </button>
+        </rc-button>
       </p>
       <rc-dialog
         ref={(el) => setDialogEl(el as RCDialogRef | null)}
@@ -1103,46 +1137,40 @@ export function DialogDemo() {
             <strong id="dialog-demo-title" style={{ flex: 1 }}>
               Native dialog
             </strong>
-            <button
-              type="button"
-              aria-label="Close"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '0.125rem',
-              }}
-              onClick={() => dialogEl?.close('dismiss')}
-            >
-              <span
-                className="material-symbols-outlined"
-                aria-hidden="true"
-                style={{ fontSize: '1rem' }}
-              >
-                close
-              </span>
-            </button>
+            <rc-button icon-only>
+              <button type="button" aria-label="Close" onClick={() => dialogEl?.close('dismiss')}>
+                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+                  close
+                </span>
+              </button>
+            </rc-button>
           </div>
           <p>Drag the titlebar, resize the edges, or press Escape.</p>
-          <button
-            type="button"
-            style={{ display: 'block', marginInlineStart: 'auto' }}
-            onClick={() => dialogEl?.close('ok')}
-          >
-            OK
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <rc-button>
+              <button type="button" onClick={() => dialogEl?.close('ok')}>
+                OK
+              </button>
+            </rc-button>
+          </div>
         </dialog>
       </rc-dialog>
       <rc-dialog ref={(el) => setConfirmEl(el as RCDialogRef | null)}>
         <dialog aria-label="Confirm delete" style={{ maxInlineSize: '24rem' }}>
-          <p style={{ marginBlockStart: 0 }}>This will permanently delete the recipe. Continue?</p>
+          <p style={{ marginBlockStart: 0 }}>
+            This will permanently delete the document. Continue?
+          </p>
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-            <button type="button" onClick={() => confirmEl?.close('cancel')}>
-              Cancel
-            </button>
-            <button type="button" onClick={() => confirmEl?.close('delete')}>
-              Delete
-            </button>
+            <rc-button>
+              <button type="button" onClick={() => confirmEl?.close('cancel')}>
+                Cancel
+              </button>
+            </rc-button>
+            <rc-button>
+              <button type="button" onClick={() => confirmEl?.close('delete')}>
+                Delete
+              </button>
+            </rc-button>
           </div>
         </dialog>
       </rc-dialog>
@@ -1658,9 +1686,9 @@ export function SplitterDemo() {
         label="Preview panes"
         style={{ blockSize: '12rem', border: '1px solid ButtonBorder' }}
       >
-        <div style={{ padding: '0.75rem' }}>Recipe</div>
+        <div style={{ padding: '0.75rem' }}>Outline</div>
         <div slot="secondary" style={{ padding: '0.75rem' }}>
-          Notes
+          Preview
         </div>
       </rc-splitter>
     </DemoFrame>
@@ -1851,22 +1879,28 @@ export function ToolbarDemo() {
   return (
     <DemoFrame>
       <rc-toolbar label="Formatting">
-        <button type="button" aria-label="Bold" onClick={() => setClicked('Bold')}>
-          <span className="material-symbols-outlined" aria-hidden="true">
-            format_bold
-          </span>
-        </button>
-        <button type="button" aria-label="Italic" onClick={() => setClicked('Italic')}>
-          <span className="material-symbols-outlined" aria-hidden="true">
-            format_italic
-          </span>
-        </button>
+        <rc-button icon-only>
+          <button type="button" aria-label="Bold" onClick={() => setClicked('Bold')}>
+            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              format_bold
+            </span>
+          </button>
+        </rc-button>
+        <rc-button icon-only>
+          <button type="button" aria-label="Italic" onClick={() => setClicked('Italic')}>
+            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              format_italic
+            </span>
+          </button>
+        </rc-button>
         <hr />
-        <button type="button" aria-label="Link" onClick={() => setClicked('Link')}>
-          <span className="material-symbols-outlined" aria-hidden="true">
-            link
-          </span>
-        </button>
+        <rc-button icon-only>
+          <button type="button" aria-label="Link" onClick={() => setClicked('Link')}>
+            <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
+              link
+            </span>
+          </button>
+        </rc-button>
       </rc-toolbar>
       <p>{clicked}</p>
     </DemoFrame>

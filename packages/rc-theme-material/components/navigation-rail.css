@@ -83,13 +83,22 @@
     text-align: start;
   }
 
+  /*
+   * MD3 collapsed items keep a fixed-size pill behind the icon only; the
+   * caption label renders below it, detached from the pill's own box.
+   */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-navigation-rail:not([expanded])
     > a
     > [data-rc-navigation-indicator]
     > :not([data-rc-navigation-icon]) {
+    position: absolute;
+    inset-block-start: calc(100% + var(--rc-navigation-rail-link-gap, 0.25rem));
+    inset-inline-start: 50%;
+    inline-size: max-content;
     font-size: var(--md-sys-typescale-label-medium-size, 0.75rem);
     line-height: var(--md-sys-typescale-label-medium-line-height, 1rem);
+    translate: -50% 0;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))

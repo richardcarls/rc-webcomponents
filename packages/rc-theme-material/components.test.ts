@@ -102,6 +102,23 @@ test('buttons enable Material state layers and pointer ripples', () => {
   expect(styles.getPropertyValue('--_rc-button-ripple-duration')).not.toBe('');
 });
 
+test('card heading slots follow the Material title type scale', () => {
+  const scope = renderScope();
+  const card = document.createElement('rc-card');
+  const heading2 = document.createElement('h2');
+  const heading3 = document.createElement('h3');
+
+  heading2.slot = 'title';
+  heading3.slot = 'title';
+  card.append(heading2, heading3);
+  scope.append(card);
+
+  expect(getComputedStyle(heading2).fontSize).toBe('22px');
+  expect(getComputedStyle(heading2).lineHeight).toBe('28px');
+  expect(getComputedStyle(heading3).fontSize).toBe('16px');
+  expect(getComputedStyle(heading3).lineHeight).toBe('24px');
+});
+
 test('bottom sheets preserve the drag handle geometry and style authored actions', () => {
   const scope = renderScope();
   const sheet = document.createElement('rc-bottom-sheet');
@@ -250,6 +267,7 @@ test('icon consumers share the theme icon-font convention', () => {
   const railIcon = document.createElement('span');
   const buttonIcon = document.createElement('span');
 
+  button.setAttribute('icon-only', '');
   barIcon.dataset.rcNavigationIcon = '';
   railIcon.dataset.rcNavigationIcon = '';
   buttonIcon.dataset.rcButtonIcon = '';
@@ -260,7 +278,7 @@ test('icon consumers share the theme icon-font convention', () => {
   scope.append(bar, rail, button, listIcon);
 
   expect(getComputedStyle(buttonIcon).fontSize).toBe('24px');
-  expect(getComputedStyle(buttonIcon).lineHeight).toBe('24px');
+  expect(getComputedStyle(buttonIcon).lineHeight).toBe('40px');
   expect(getComputedStyle(listIcon).lineHeight).toBe('24px');
   expect(getComputedStyle(barIcon).lineHeight).toBe('32px');
   expect(getComputedStyle(railIcon).lineHeight).toBe('32px');
