@@ -172,19 +172,24 @@ const LIGHT_DOM_CSS = `
  * @csspart option-checkmark - The checkmark `<span>` inside each option (when `checkmark` is true)
  * @csspart create-option - The "Create" option when allow-create is active
  *
+ * @attr multiple - Allow multiple selection. Reflected as `aria-multiselectable` on the host.
+ * @attr checkmark - Render a checkmark indicator inside each option element.
+ * @attr filter-strategy - How option labels are matched against the active filter text:
+ *   `prefix`, `contains`, or omit to keep the `contains` default. Function values are JS-only.
+ *
  * @cssprop [--rc-listbox-option-gap=0.25rem] - Gap between the checkmark and option label.
  * @cssprop [--rc-listbox-option-min-block-size=0px] - Minimum block size (height) of each option row.
  * @cssprop [--rc-listbox-option-padding-block=2px] - Block-axis padding of each option row.
  * @cssprop [--rc-listbox-option-padding-inline=4px] - Inline-axis padding of each option row.
  * @cssprop [--rc-listbox-option-transition] - CSS transition applied to each option row.
- * @cssprop [--rc-listbox-hover-bg] - Background of a hovered option.
- * @cssprop [--rc-listbox-hover-color] - Text color of a hovered option.
- * @cssprop [--rc-listbox-active-bg] - Background of the keyboard-active option.
- * @cssprop [--rc-listbox-active-color] - Text color of the keyboard-active option.
- * @cssprop [--rc-listbox-selected-bg] - Background of a selected option.
- * @cssprop [--rc-listbox-selected-color] - Text color of a selected option.
- * @cssprop [--rc-listbox-disabled-color] - Text color of a disabled option.
- * @cssprop [--rc-listbox-disabled-opacity] - Opacity of a disabled option.
+ * @cssprop [--rc-listbox-hover-bg=color-mix(in srgb, Highlight 8%, transparent)] - Background of a hovered option.
+ * @cssprop [--rc-listbox-hover-color=inherit] - Text color of a hovered option.
+ * @cssprop [--rc-listbox-active-bg=color-mix(in srgb, Highlight 8%, transparent)] - Background of the keyboard-active option.
+ * @cssprop [--rc-listbox-active-color=var(--rc-listbox-hover-color, inherit)] - Text color of the keyboard-active option.
+ * @cssprop [--rc-listbox-selected-bg=Highlight] - Background of a selected option.
+ * @cssprop [--rc-listbox-selected-color=HighlightText] - Text color of a selected option.
+ * @cssprop [--rc-listbox-disabled-color=GrayText] - Text color of a disabled option.
+ * @cssprop [--rc-listbox-disabled-opacity=1] - Opacity of a disabled option.
  */
 export class RCListbox extends LitElement {
   static override styles = css`
@@ -313,13 +318,27 @@ export class RCListbox extends LitElement {
     return [...this._itemsCollectionCtrl.allOptions];
   }
 
-  /** Replace the full options list. */
+  /**
+   * Replace the full options list.
+   *
+   * @example
+   * listbox.options = [
+   *   { value: 'apple', label: 'Apple' },
+   *   { value: 'banana', label: 'Banana', disabled: true },
+   *   { kind: 'action', action: 'clear', value: 'clear', label: 'Clear selection' },
+   * ];
+   */
   set options(options: ListboxOption[]) {
     this._itemsCollectionCtrl.setOptions([...options]);
     this._applySelectionFromSource();
   }
 
-  /** Append a single option without replacing the list. */
+  /**
+   * Append a single option without replacing the list.
+   *
+   * @example
+   * listbox.appendOption({ value: 'cherry', label: 'Cherry' });
+   */
   appendOption(option: ListboxOption): void {
     this._itemsCollectionCtrl.appendOption(option);
   }
