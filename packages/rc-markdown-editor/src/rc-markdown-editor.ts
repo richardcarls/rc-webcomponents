@@ -877,11 +877,11 @@ export class RcMarkdownEditor extends LitElement {
 
       case 'link': {
         const sel = window.getSelection();
-        const anchor = sel?.rangeCount ? sel.getRangeAt(0).commonAncestorContainer : null;
-        const $el = anchor
-          ? anchor.nodeType === Node.TEXT_NODE
-            ? (anchor as Text).parentElement
-            : (anchor as Element)
+        const $anchor = sel?.rangeCount ? sel.getRangeAt(0).commonAncestorContainer : null;
+        const $el = $anchor
+          ? $anchor.nodeType === Node.TEXT_NODE
+            ? ($anchor as Text).parentElement
+            : ($anchor as Element)
           : null;
 
         this._linkPopoverHref = $el?.closest<HTMLAnchorElement>('a[href]')?.href ?? '';
@@ -1007,9 +1007,9 @@ export class RcMarkdownEditor extends LitElement {
       return;
     }
 
-    const anchor = sel.getRangeAt(0).commonAncestorContainer;
+    const $anchor = sel.getRangeAt(0).commonAncestorContainer;
     const $el: Element | null =
-      anchor.nodeType === Node.TEXT_NODE ? (anchor as Text).parentElement : (anchor as Element);
+      $anchor.nodeType === Node.TEXT_NODE ? ($anchor as Text).parentElement : ($anchor as Element);
 
     const $pre = $el?.closest('pre');
 
@@ -1118,9 +1118,9 @@ export class RcMarkdownEditor extends LitElement {
     }
 
     const range = sel.getRangeAt(0);
-    const anchor = range.commonAncestorContainer;
+    const $anchor = range.commonAncestorContainer;
     const $el: Element | null =
-      anchor.nodeType === Node.TEXT_NODE ? (anchor as Text).parentElement : (anchor as Element);
+      $anchor.nodeType === Node.TEXT_NODE ? ($anchor as Text).parentElement : ($anchor as Element);
 
     const $existingPre = $el?.closest('pre');
 
@@ -1230,9 +1230,9 @@ export class RcMarkdownEditor extends LitElement {
     }
 
     const range = sel.getRangeAt(0);
-    const anchor = range.commonAncestorContainer;
+    const $anchor = range.commonAncestorContainer;
     const $el: Element | null =
-      anchor.nodeType === Node.TEXT_NODE ? (anchor as Text).parentElement : (anchor as Element);
+      $anchor.nodeType === Node.TEXT_NODE ? ($anchor as Text).parentElement : ($anchor as Element);
 
     if (!this._$richView?.contains($el)) {
       return;
