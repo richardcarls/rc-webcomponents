@@ -117,6 +117,12 @@ export interface RCNavigationRailToggleDetail {
  * @csspart header - Header slot container.
  * @csspart footer - Footer slot container.
  *
+ * @attr label - Accessible label for the navigation landmark.
+ * @attr expanded - Whether the rail is expanded. Host writes are silent.
+ * @attr default-expanded - Initial expanded state for uncontrolled usage.
+ * @attr active-selector - Selector used to find the active link.
+ * @attr indicator-target - Selector inside the active link used for indicator geometry.
+ *
  * @cssprop [--rc-navigation-rail-bg=Canvas] - Rail surface background.
  * @cssprop [--rc-navigation-rail-color=CanvasText] - Rail text color.
  * @cssprop [--rc-navigation-rail-inline-size=5rem] - Collapsed rail inline size.
@@ -133,16 +139,21 @@ export interface RCNavigationRailToggleDetail {
  * @cssprop [--rc-navigation-rail-expanded-item-padding-inline=1rem] - Expanded item inline-axis padding.
  * @cssprop [--rc-navigation-rail-collapsed-label-inline-size=4rem] - Collapsed label maximum inline size.
  * @cssprop [--rc-navigation-rail-item-color=inherit] - Resting item text color.
- * @cssprop [--rc-navigation-rail-active-color=inherit] - Active item text color.
- * @cssprop [--rc-navigation-rail-indicator-bg] - Active indicator background.
- * @cssprop [--rc-navigation-rail-indicator-radius=9999px] - Active indicator corner radius.
+ * @cssprop [--rc-navigation-rail-item-text-decoration] - Slotted link text decoration (defers to
+ *   native anchor text-decoration when unset).
+ * @cssprop [--rc-navigation-rail-active-color] - Active item text color. Falls back to
+ *   `--rc-navigation-rail-item-color`, then `inherit`.
+ * @cssprop [--rc-navigation-rail-indicator-bg=transparent] - Active indicator background.
+ * @cssprop [--rc-navigation-rail-indicator-border=1px solid Highlight] - Active indicator border.
+ * @cssprop [--rc-navigation-rail-indicator-radius=0] - Active indicator corner radius.
  * @cssprop [--rc-navigation-rail-toggle-size=3rem] - Toggle region minimum block size.
  * @cssprop [--rc-navigation-rail-toggle-inline-offset=0.5rem] - Toggle control inline-start offset.
  * @cssprop [--rc-navigation-rail-duration=200ms] - Rail expand/collapse transition duration.
  * @cssprop [--rc-navigation-rail-easing=ease] - Rail expand/collapse transition easing.
- * @cssprop [--rc-navigation-rail-indicator-duration=180ms] - Active indicator transition duration.
+ * @cssprop [--rc-navigation-rail-indicator-duration=0ms] - Active indicator transition duration.
  * @cssprop [--rc-navigation-rail-indicator-easing=ease] - Active indicator transition easing.
- * @cssprop [--rc-navigation-rail-focus-ring=2px solid Highlight] - Slotted link focus outline.
+ * @cssprop [--rc-navigation-rail-focus-ring] - Slotted link focus outline (defers to native
+ *   outline when unset).
  * @cssprop [--rc-navigation-rail-focus-ring-offset=2px] - Slotted link outline offset.
  */
 export class RCNavigationRail extends LitElement {
