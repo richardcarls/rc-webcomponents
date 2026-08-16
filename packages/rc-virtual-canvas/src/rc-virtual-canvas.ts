@@ -135,6 +135,27 @@ function createRectSnapshot(rect: RCVirtualCanvasViewRect) {
  *
  * @fires rc-virtual-canvas-render - Fires with viewport data when the canvas should redraw.
  * @fires rc-virtual-canvas-pointer - Fires pointer/mouse input mapped to virtual content coordinates.
+ *
+ * @csspart scroller - Internal scroll container that owns the virtual content scroll range.
+ * @csspart overlay - Viewport-positioned overlay container rendered inside the scroll container.
+ *
+ * @attr content-width - Total pixel width of the virtual content.
+ * @attr content-height - Total pixel height of the virtual content.
+ * @attr auto-resize-canvas - Keep the slotted canvas backing store aligned to the viewport.
+ * @attr render-mode - Controls when render events are dispatched.
+ * @attr image-rendering - Convenience `image-rendering` value applied to the slotted canvas.
+ *
+ * @cssprop [--rc-virtual-canvas-scrollbar-width=thin] - `scrollbar-width` of the internal
+ *   scroll container.
+ * @cssprop [--rc-virtual-canvas-scrollbar-size=auto] - WebKit scrollbar thickness.
+ * @cssprop [--rc-virtual-canvas-scrollbar-thumb-background=ButtonFace] - WebKit scrollbar
+ *   thumb color.
+ * @cssprop [--rc-virtual-canvas-scrollbar-button-background=ButtonFace] - WebKit scrollbar
+ *   button color.
+ * @cssprop [--rc-virtual-canvas-scrollbar-track-background=Canvas] - WebKit scrollbar
+ *   track color.
+ * @cssprop [--rc-virtual-canvas-image-rendering=auto] - `image-rendering` applied to the
+ *   slotted canvas; kept in sync with the `imageRendering` property.
  */
 export class RCVirtualCanvas extends LitElement {
   static styles = [virtualCanvasStyles];
