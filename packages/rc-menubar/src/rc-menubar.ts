@@ -35,6 +35,10 @@ const IE_KEY_ALIASES: Record<string, string> = {
  *
  * @csspart root - The root container element
  *
+ * @attr label - Accessible label for the `role="menubar"` element.
+ * @attr orientation - Layout direction and keyboard navigation axis, propagated to
+ *   child `rc-menu-button` elements.
+ *
  * @cssprop [--rc-menubar-gap=var(--rc-control-gap)] - Gap between menu buttons
  * @cssprop [--rc-menubar-padding-inline=var(--rc-control-padding-inline)] - Inline-axis padding
  * @cssprop [--rc-menubar-padding-block=var(--rc-control-padding-block)] - Block-axis padding
