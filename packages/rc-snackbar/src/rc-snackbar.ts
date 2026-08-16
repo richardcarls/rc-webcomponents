@@ -57,7 +57,8 @@ export interface RCSnackbarCloseDetail {
  * @csspart message - Message text.
  * @csspart action - Optional action button.
  *
- * @attr open - Whether a snackbar is currently visible.
+ * @attr open - Whether a snackbar is currently visible. Host writes are silent.
+ * @attr default-open - Initial visible state for uncontrolled usage.
  * @attr message - Visible snackbar message.
  * @attr action-label - Optional action button label.
  * @attr duration - Auto-close duration in milliseconds.
@@ -103,9 +104,42 @@ export class RCSnackbar extends LitElement {
   private _timer: number | undefined;
   private _lastMessage = '';
 
-  /** Whether the snackbar is currently visible. */
+  private _open: boolean | undefined;
+  private _defaultOpen = false;
+  private _openInitialized = false;
+
+  /** Whether the snackbar is currently visible. Host writes are silent. */
   @property({ type: Boolean, reflect: true })
-  open = false;
+  get open(): boolean {
+    return this._open ?? this._defaultOpen;
+  }
+
+  set open(value: boolean | undefined) {
+    const oldValue = this.open;
+
+    this._open = value;
+    this._openInitialized = true;
+    this.requestUpdate('open', oldValue);
+  }
+
+  /** Initial visible state for uncontrolled usage, such as an already-queued
+   * message shown on first render. */
+  @property({ type: Boolean, attribute: 'default-open' })
+  get defaultOpen(): boolean {
+    return this._defaultOpen;
+  }
+
+  set defaultOpen(value: boolean) {
+    const oldValue = this._defaultOpen;
+
+    this._defaultOpen = value;
+
+    if (!this._openInitialized && this._open === undefined) {
+      this.requestUpdate('open', oldValue);
+    }
+
+    this.requestUpdate('defaultOpen', oldValue);
+  }
 
   /** Visible message text. */
   @property({ type: String, reflect: true })
