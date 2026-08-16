@@ -308,8 +308,8 @@ export class RCMenuButton extends LitElement {
 
   /** Caches a weak reference to the first assigned trigger element and syncs its ARIA and tabindex state. */
   protected _handleTriggerSlotChange(e: Event) {
-    const slot = e.currentTarget as HTMLSlotElement;
-    const $trigger = slot.assignedElements()[0] as HTMLElement | undefined;
+    const $slot = e.currentTarget as HTMLSlotElement;
+    const $trigger = $slot.assignedElements()[0] as HTMLElement | undefined;
 
     if ($trigger) {
       this._$trigger = new WeakRef($trigger);
@@ -320,9 +320,9 @@ export class RCMenuButton extends LitElement {
 
   /** Tracks optional indicator content so the trigger reserves its inline-end space. */
   protected _handleIndicatorSlotChange(e: Event) {
-    const slot = e.currentTarget as HTMLSlotElement;
+    const $slot = e.currentTarget as HTMLSlotElement;
 
-    this.toggleAttribute('has-indicator', slot.assignedElements().length > 0);
+    this.toggleAttribute('has-indicator', $slot.assignedElements().length > 0);
   }
 
   /**
@@ -374,9 +374,9 @@ export class RCMenuButton extends LitElement {
 
   /** Caches a weak reference to the first assigned `rc-menu` element. */
   protected _handleMenuSlotChange(e: Event) {
-    const slot = e.currentTarget as HTMLSlotElement;
-    const elements = slot.assignedElements();
-    const $menu = elements.find((el) => el.tagName === 'RC-MENU') as RCMenu | undefined;
+    const $slot = e.currentTarget as HTMLSlotElement;
+    const $elements = $slot.assignedElements();
+    const $menu = $elements.find(($el) => $el.tagName === 'RC-MENU') as RCMenu | undefined;
 
     if ($menu) {
       this._$menu = new WeakRef($menu);
@@ -450,7 +450,7 @@ export class RCMenuButton extends LitElement {
     }
   }
 
-  private _setOpen(open: boolean, dispatch: boolean): void {
+  protected _setOpen(open: boolean, dispatch: boolean): void {
     if (this._open === open) {
       return;
     }
