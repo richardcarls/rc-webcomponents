@@ -316,22 +316,22 @@ export class RCNavigationRail extends LitElement {
   }
 
   private _handleToggleSlotChange(event: Event): void {
-    const slot = event.currentTarget as HTMLSlotElement;
+    const $slot = event.currentTarget as HTMLSlotElement;
 
-    this._hasToggle = slot.assignedElements({ flatten: true }).length > 0;
+    this._hasToggle = $slot.assignedElements({ flatten: true }).length > 0;
     this._syncToggleButton();
   }
 
   private _handleHeaderSlotChange(event: Event): void {
-    const slot = event.currentTarget as HTMLSlotElement;
+    const $slot = event.currentTarget as HTMLSlotElement;
 
-    this._hasHeader = slot.assignedElements({ flatten: true }).length > 0;
+    this._hasHeader = $slot.assignedElements({ flatten: true }).length > 0;
   }
 
   private _handleFooterSlotChange(event: Event): void {
-    const slot = event.currentTarget as HTMLSlotElement;
+    const $slot = event.currentTarget as HTMLSlotElement;
 
-    this._hasFooter = slot.assignedElements({ flatten: true }).length > 0;
+    this._hasFooter = $slot.assignedElements({ flatten: true }).length > 0;
   }
 
   private _handleToggleClick(event: MouseEvent): void {
