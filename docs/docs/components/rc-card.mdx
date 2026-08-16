@@ -51,15 +51,17 @@ import '@rcarls/rc-card/define';
 ## Markup
 
 ```html
-<rc-card interactive action-target="recipe-link">
-  <img slot="media" src="/recipe.jpg" alt="" />
-  <a id="recipe-link" slot="title" href="/recipes/apple-pie">Apple pie</a>
-  <p>Flaky crust, bright apples, and a little lemon.</p>
+<rc-card interactive action-target="article-link">
+  <img slot="media" src="/article-cover.jpg" alt="" />
+  <h2 slot="title">
+    <a id="article-link" href="/articles/resilient-interfaces">Resilient interfaces</a>
+  </h2>
+  <p>Patterns for preserving native behavior while adding richer interactions.</p>
   <button slot="actions" type="button">Save</button>
 </rc-card>
 ```
 
-The unthemed card provides one `rem` of body padding and otherwise remains an
+The theme-free card provides one `rem` of body padding and otherwise remains an
 undecorated content container. Apply a packaged theme or card tokens when the
 composition needs a different spacing scale, shape, elevation, or state layers.
 
@@ -77,6 +79,13 @@ For shelf/grid layouts, set card rows through `--rc-card-grid-template-rows`.
 The demo spans each card across the parent grid's media, title, body, and action
 tracks, then uses `subgrid` on the hosts to align those regions across cards
 with different content.
+
+Card titles remain author-owned semantic content. The packaged themes normalize
+slotted `h2` and `h3` margins and map those ranks to card-appropriate title
+typography. The Material mapping follows the
+[Material 3 card specification](https://m3.material.io/components/cards/specs)
+and Android's semantic
+[Material 3 type scale](https://developer.android.com/develop/ui/compose/designsystems/material3#typography).
 
 ## Action Target
 

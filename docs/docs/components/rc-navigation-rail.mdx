@@ -77,16 +77,16 @@ import '@rcarls/rc-navigation-rail/define';
         >
       </button>
     </rc-button>
-    <a href="/recipes" aria-current="page">
+    <a href="/library" aria-current="page">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-        <span>Recipes</span>
+        <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+        <span>Library</span>
       </span>
     </a>
-    <a href="/shopping">
+    <a href="/saved">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">shopping_cart</span>
-        <span>Shopping</span>
+        <span data-rc-navigation-icon aria-hidden="true">bookmark</span>
+        <span>Saved</span>
       </span>
     </a>
     <button slot="footer" type="button" aria-label="Settings">settings</button>
@@ -126,7 +126,7 @@ contains both.
         >menu_open</span
       >
     </button>
-    <a href="/recipes" aria-current="page">Recipes</a>
+    <a href="/library" aria-current="page">Library</a>
     <a href="/settings">Settings</a>
   </rc-navigation-rail>
 </nav>
@@ -153,7 +153,7 @@ wrapper's `selected` state.
         >menu_open</span
       >
     </button>
-    <a href="/recipes" aria-current="page">Recipes</a>
+    <a href="/library" aria-current="page">Library</a>
   </rc-navigation-rail>
 </nav>
 ```
@@ -182,10 +182,10 @@ router's active class.
 <!-- medium: >=600px -->
 <nav aria-label="Main navigation">
   <rc-navigation-rail>
-    <a href="/recipes" aria-current="page">
+    <a href="/library" aria-current="page">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-        <span>Recipes</span>
+        <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+        <span>Library</span>
       </span>
     </a>
     <a href="/settings">
@@ -201,14 +201,14 @@ router's active class.
 <nav aria-label="Main navigation">
   <rc-navigation-rail expanded>
     <rc-fab slot="header" position="top-start" style="--rc-fab-position: static">
-      <button type="button" aria-label="New recipe">
+      <button type="button" aria-label="New note">
         <span data-rc-button-icon aria-hidden="true">add</span>
       </button>
     </rc-fab>
-    <a href="/recipes" aria-current="page">
+    <a href="/library" aria-current="page">
       <span data-rc-navigation-indicator>
-        <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-        <span>Recipes</span>
+        <span data-rc-navigation-icon aria-hidden="true">local_library</span>
+        <span>Library</span>
       </span>
     </a>
     <a href="/settings">
@@ -262,8 +262,9 @@ the page action position into the rail's generic header slot.
 state-layer hover treatment, label-medium/label-large typography, and reduced
 motion fallbacks.
 
-Recipe Tome still uses local Solid prototypes during the promotion branch; its
-consumer migration to these package components is a follow-up step.
+The Substrate theme highlights the active link itself and disables the moving
+indicator. The Material theme retains its separate animated indicator behind
+the icon or expanded row target.
 
 ## API
 

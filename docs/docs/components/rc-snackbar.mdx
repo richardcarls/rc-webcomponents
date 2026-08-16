@@ -10,7 +10,7 @@ import { SnackbarDemo } from '@site/src/components/ComponentDemos';
 
 # rc-snackbar
 
-Snackbar live-region host for brief status messages and optional actions.
+`rc-snackbar` is a live-region host for brief status messages and optional actions.
 
 <AtAGlance
   packageName="@rcarls/rc-snackbar"
@@ -52,23 +52,25 @@ import '@rcarls/rc-snackbar/define';
 
 ```js
 document.querySelector('#snackbar').show({
-  message: 'Recipe saved',
+  message: 'Document archived',
   actionLabel: 'Undo',
+  duration: 5000,
 });
 ```
 
-Snackbars do not move focus. They announce through a polite status live region
-and queue messages by default.
+`rc-snackbar` does not move focus. It announces through a polite status live region
+and queues messages by default. Positive `duration` values auto-dismiss the
+visible message; use `0` only when the application deliberately owns dismissal.
 
 `open` reflects visibility and follows the library's controlled/uncontrolled
 convention: host writes are silent, and `default-open` seeds an initial
 visible state. `show()`, `close()`, and `clear()` remain the primary way to
 drive the queue and timer; write `open` directly only for advanced cases that
-don't need queueing, such as an initially visible snackbar seeded from
+don't need queueing, such as an initially visible component seeded from
 server-rendered `message`/`default-open` attributes.
 
-The unthemed surface uses system canvas colors and a plain border, while its
-action retains native button styling. Packaged themes provide snackbar color,
+The theme-free surface uses system canvas colors and a plain border, while its
+action retains native button styling. Packaged themes provide the component's color,
 shape, spacing, and action treatment.
 
 ## Live demo
