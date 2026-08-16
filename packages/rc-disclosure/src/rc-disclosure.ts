@@ -25,6 +25,9 @@ declare global {
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/ WAI-ARIA Disclosure pattern}
  *
  * @fires rc-disclosure-toggle - Fires when the child `<details>` toggles.
+ *
+ * @attr open - Current open state mirrored to the child `<details>`.
+ * @attr fragment - Deprecated legacy opt-in for URL-fragment auto-open; removed before v1.0.
  */
 export class RCDisclosure extends HTMLElement {
   private _observer = new MutationObserver(() => this._setupDetails());
@@ -47,6 +50,8 @@ export class RCDisclosure extends HTMLElement {
   }
 
   /**
+   * Legacy manual opt-in for URL-fragment auto-open.
+   *
    * @deprecated No longer required. `rc-disclosure` now automatically opens and
    * scrolls when the URL hash matches any id within its subtree. Will be removed
    * in v1.0 release.
