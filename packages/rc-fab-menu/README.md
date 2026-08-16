@@ -41,12 +41,13 @@ standalone menu package.
 
 ## API
 
-`rc-fab-menu` inherits `open`, `defaultOpen`, `placement`, `openMenu()`, `closeMenu()`, and
-`toggleMenu()` from `rc-menu-button`.
+`rc-fab-menu` inherits `open`, `defaultOpen`, `openMenu()`, `closeMenu()`, and `toggleMenu()`
+from `rc-menu-button` unchanged. It also overrides `placement`'s default (see below).
 
-| Property   | Attribute  | Type                                                         | Default        | Description                                    |
-| ---------- | ---------- | ------------------------------------------------------------ | -------------- | ---------------------------------------------- |
-| `position` | `position` | `'bottom-end' \| 'bottom-start' \| 'top-end' \| 'top-start'` | `'bottom-end'` | Viewport corner where the trigger is anchored. |
+| Property    | Attribute   | Type                                                         | Default        | Description                                                                                                                   |
+| ----------- | ----------- | ------------------------------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `position`  | `position`  | `'bottom-end' \| 'bottom-start' \| 'top-end' \| 'top-start'` | `'bottom-end'` | Viewport corner where the trigger is anchored.                                                                                |
+| `placement` | `placement` | `AnchorPlacement`                                             | `'top-end'`    | Preferred popup placement. Overrides `rc-menu-button`'s `'bottom-start'` default so the action menu opens above the trigger. |
 
 | Event                | Detail              | Description                                                  |
 | -------------------- | ------------------- | ------------------------------------------------------------ |
@@ -56,15 +57,15 @@ standalone menu package.
 
 The default styling is design-system neutral and follows the `rc-fab` token names where possible.
 
-| CSS custom property            | Default                              | Description                                  |
-| ------------------------------ | ------------------------------------ | -------------------------------------------- |
-| `--rc-fab-menu-position-css`   | `fixed`                              | CSS position value for the floating wrapper. |
-| `--rc-fab-menu-inset-block`    | `var(--rc-fab-inset-block, 1.5rem)`  | Distance from the block-axis edge.           |
-| `--rc-fab-menu-inset-inline`   | `var(--rc-fab-inset-inline, 1.5rem)` | Distance from the inline-axis edge.          |
-| `--rc-fab-menu-size`           | `var(--rc-fab-size, 3.5rem)`         | Trigger minimum inline and block size.       |
-| `--rc-fab-menu-radius`         | `var(--rc-fab-radius, 9999px)`       | Trigger border radius.                       |
-| `--rc-fab-menu-bg`             | `var(--rc-fab-bg, ButtonFace)`       | Trigger background.                          |
-| `--rc-fab-menu-color`          | `var(--rc-fab-color, ButtonText)`    | Trigger foreground.                          |
-| `--rc-fab-menu-popup-duration` | `160ms`                              | Popup reveal transition duration.            |
+| CSS custom property            | Default  | Description                                                                     |
+| ------------------------------ | -------- | ------------------------------------------------------------------------------- |
+| `--rc-fab-menu-position-css`   | `fixed`  | CSS position value for the floating wrapper.                                    |
+| `--rc-fab-menu-inset-block`    | `1.5rem` | Distance from the block-axis edge; falls back through `--rc-fab-inset-block`.   |
+| `--rc-fab-menu-inset-inline`   | `1.5rem` | Distance from the inline-axis edge; falls back through `--rc-fab-inset-inline`. |
+| `--rc-fab-menu-size`           | (none)   | Trigger minimum inline and block size. Set explicitly or apply a theme.         |
+| `--rc-fab-menu-radius`         | (none)   | Trigger border radius, deferring to native button radius when unset.            |
+| `--rc-fab-menu-bg`             | (none)   | Trigger background, deferring to native button background when unset.           |
+| `--rc-fab-menu-color`          | (none)   | Trigger foreground, deferring to native button color when unset.                |
+| `--rc-fab-menu-popup-duration` | `0ms`    | Popup reveal transition duration.                                               |
 
 Use `::part(popup)` for popup container refinements and theme `rc-menu` for action rows.

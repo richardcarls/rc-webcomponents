@@ -103,7 +103,7 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable wrapper for a native `<dialog>` | rc-common |
 | [`rc-bottom-sheet`](packages/rc-bottom-sheet/) | Modal bottom-sheet wrapper for a native `<dialog>` | rc-dialog |
 | [`rc-fab`](packages/rc-fab/) | Sticky floating action button modeled after Material 3 Floating action button | rc-common |
-| [`rc-fab-menu`](packages/rc-fab-menu/) | Floating action button menu wrapper for an `rc-menu` action surface | rc-menu-button, rc-menu |
+| [`rc-fab-menu`](packages/rc-fab-menu/) | Floating action button menu wrapper for an `rc-menu` action surface | rc-common, rc-menu, rc-menu-button |
 | [`rc-navigation-bar`](packages/rc-navigation-bar/) | Bottom navigation layout that styles consumer-authored links | rc-common |
 | [`rc-navigation-rail`](packages/rc-navigation-rail/) | Navigation rail landmark that styles consumer-authored links | rc-common |
 | [`rc-segmented-button`](packages/rc-segmented-button/) | Segmented button group backed by native radio inputs | None |
