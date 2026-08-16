@@ -40,6 +40,42 @@ export interface RCSwitchChangeDetail {
  * @attr disabled - Mirrors disabled state to the native checkbox.
  * @attr icons - Shows both selected and deselected icon containers.
  * @attr show-only-selected-icon - Shows only the selected icon container.
+ *
+ * @cssprop [--rc-switch-track-inline-size] - Track inline size. No built-in default; a theme
+ *   must set this for the switch to render with a visible size.
+ * @cssprop [--rc-switch-track-block-size] - Track block size. No built-in default; a theme must
+ *   set this for the switch to render with a visible size.
+ * @cssprop [--rc-switch-native-appearance=revert] - Slotted native checkbox `appearance`.
+ * @cssprop [--rc-switch-native-inline-size=revert] - Slotted native checkbox inline size.
+ * @cssprop [--rc-switch-native-block-size=revert] - Slotted native checkbox block size.
+ * @cssprop [--rc-switch-native-margin=revert] - Slotted native checkbox margin.
+ * @cssprop [--rc-switch-native-opacity=revert] - Slotted native checkbox opacity.
+ * @cssprop [--rc-switch-decoration-display=none] - Display of the track/thumb/icon decoration.
+ *   Themes set this to `block` (or similar) to opt into the decorated switch look.
+ * @cssprop [--rc-switch-track-border=2px solid ButtonBorder] - Track border.
+ * @cssprop [--rc-switch-track-radius=9999px] - Track and thumb border radius.
+ * @cssprop [--rc-switch-track-bg=ButtonFace] - Unselected track background.
+ * @cssprop [--rc-switch-duration=150ms] - Track/thumb/icon transition duration.
+ * @cssprop [--rc-switch-easing=ease] - Track/thumb/icon transition easing.
+ * @cssprop [--rc-switch-thumb-size=1rem] - Unselected thumb inline and block size.
+ * @cssprop [--rc-switch-thumb-offset=0.375rem] - Thumb and icon inline start offset within the
+ *   track.
+ * @cssprop [--rc-switch-thumb-radius=9999px] - Thumb border radius.
+ * @cssprop [--rc-switch-thumb-bg=ButtonText] - Unselected thumb background.
+ * @cssprop [--rc-switch-icon-size=1rem] - Selected/deselected icon container size.
+ * @cssprop [--rc-switch-icon-color=Canvas] - Icon color.
+ * @cssprop [--rc-switch-icon-display=none] - Display of the active icon container when `icons`
+ *   or `show-only-selected-icon` is set.
+ * @cssprop [--rc-switch-selected-track-border-color=Highlight] - Selected track border color.
+ * @cssprop [--rc-switch-selected-track-bg=Highlight] - Selected track background.
+ * @cssprop [--rc-switch-selected-thumb-size=1.5rem] - Selected thumb inline and block size.
+ * @cssprop [--rc-switch-selected-thumb-bg=HighlightText] - Selected thumb background.
+ * @cssprop [--rc-switch-thumb-translate=1.125rem] - Inline-axis translation applied to the thumb
+ *   and icons when selected.
+ * @cssprop [--rc-switch-focus-ring=2px solid Highlight] - Track focus ring, shown on
+ *   focus-within.
+ * @cssprop [--rc-switch-focus-ring-offset=2px] - Track focus ring offset.
+ * @cssprop [--rc-switch-disabled-opacity=0.5] - Host opacity while `disabled`.
  */
 export class RCSwitch extends LitElement {
   static override styles = switchStyles;
@@ -47,9 +83,9 @@ export class RCSwitch extends LitElement {
   private _checked: boolean | undefined;
   private _defaultChecked = false;
   private _checkedInitialized = false;
-  private _input: HTMLInputElement | null = null;
+  private _$input: HTMLInputElement | null = null;
   private _inputObserver: MutationObserver | null = null;
-  private _form: HTMLFormElement | null = null;
+  private _$form: HTMLFormElement | null = null;
   private _roleOwned = false;
   private _disabledOwned = false;
   private _slotMicrotaskQueued = false;
@@ -144,16 +180,16 @@ export class RCSwitch extends LitElement {
   }
 
   private _syncNativeInput(): void {
-    const nextInput = this.querySelector<HTMLInputElement>(':scope > input[type="checkbox"]');
+    const $nextInput = this.querySelector<HTMLInputElement>(':scope > input[type="checkbox"]');
 
-    if (!nextInput && import.meta.env.DEV) {
+    if (!$nextInput && import.meta.env.DEV) {
       console.warn(
         '[rc-switch] No direct child <input type="checkbox"> found. Place a native checkbox inside <rc-switch>.',
         this,
       );
     }
 
-    if (nextInput === this._input) {
+    if ($nextInput === this._$input) {
       this._applyNativeSemantics();
       this._applyChecked(false);
       this._applyDisabled();
@@ -161,28 +197,28 @@ export class RCSwitch extends LitElement {
       return;
     }
 
-    this._input?.removeEventListener('change', this._handleNativeChange);
+    this._$input?.removeEventListener('change', this._handleNativeChange);
     this._inputObserver?.disconnect();
     this._inputObserver = null;
-    this._input = nextInput;
+    this._$input = $nextInput;
     this._roleOwned = false;
     this._disabledOwned = false;
-    this._setForm(nextInput?.form ?? null);
+    this._setForm($nextInput?.form ?? null);
 
-    if (nextInput) {
+    if ($nextInput) {
       if (!this._checkedInitialized && this._checked === undefined) {
-        this._defaultChecked = nextInput.defaultChecked || nextInput.checked;
-        this._checked = nextInput.checked;
+        this._defaultChecked = $nextInput.defaultChecked || $nextInput.checked;
+        this._checked = $nextInput.checked;
       }
 
-      nextInput.addEventListener('change', this._handleNativeChange);
+      $nextInput.addEventListener('change', this._handleNativeChange);
 
       this._inputObserver = new MutationObserver(() => {
         this._applyNativeSemantics();
         this._syncFromNative();
       });
 
-      this._inputObserver.observe(nextInput, {
+      this._inputObserver.observe($nextInput, {
         attributeFilter: ['checked', 'disabled', 'role'],
       });
     }
@@ -205,76 +241,76 @@ export class RCSwitch extends LitElement {
   };
 
   private _syncFromNative(): void {
-    const input = this._input;
+    const $input = this._$input;
 
-    if (!input) {
+    if (!$input) {
       return;
     }
 
     const oldValue = this.checked;
 
-    this._checked = input.checked;
+    this._checked = $input.checked;
     this._checkedInitialized = true;
-    this.toggleAttribute('checked', input.checked);
+    this.toggleAttribute('checked', $input.checked);
     this.requestUpdate('checked', oldValue);
   }
 
   private _applyNativeSemantics(): void {
-    const input = this._input;
+    const $input = this._$input;
 
-    if (!input) {
+    if (!$input) {
       return;
     }
 
-    if (!input.hasAttribute('role')) {
-      input.setAttribute('role', 'switch');
+    if (!$input.hasAttribute('role')) {
+      $input.setAttribute('role', 'switch');
       this._roleOwned = true;
-    } else if (this._roleOwned && input.getAttribute('role') !== 'switch') {
+    } else if (this._roleOwned && $input.getAttribute('role') !== 'switch') {
       this._roleOwned = false;
     }
   }
 
   private _applyChecked(writeDefault: boolean): void {
-    const input = this._input;
+    const $input = this._$input;
 
-    if (!input) {
+    if (!$input) {
       this.toggleAttribute('checked', this.checked);
 
       return;
     }
 
-    input.checked = this.checked;
+    $input.checked = this.checked;
 
     if (writeDefault) {
-      input.defaultChecked = this._defaultChecked;
+      $input.defaultChecked = this._defaultChecked;
     }
 
-    this.toggleAttribute('checked', input.checked);
+    this.toggleAttribute('checked', $input.checked);
   }
 
   private _applyDisabled(): void {
-    const input = this._input;
+    const $input = this._$input;
 
-    if (!input) {
+    if (!$input) {
       return;
     }
 
     if (this.disabled) {
-      if (!input.disabled) {
+      if (!$input.disabled) {
         this._disabledOwned = true;
       }
 
-      input.disabled = true;
+      $input.disabled = true;
     } else if (this._disabledOwned) {
-      input.disabled = false;
+      $input.disabled = false;
       this._disabledOwned = false;
     }
   }
 
-  private _setForm(form: HTMLFormElement | null): void {
-    this._form?.removeEventListener('reset', this._handleFormReset);
-    this._form = form;
-    this._form?.addEventListener('reset', this._handleFormReset);
+  private _setForm($form: HTMLFormElement | null): void {
+    this._$form?.removeEventListener('reset', this._handleFormReset);
+    this._$form = $form;
+    this._$form?.addEventListener('reset', this._handleFormReset);
   }
 
   private readonly _handleFormReset = (): void => {
