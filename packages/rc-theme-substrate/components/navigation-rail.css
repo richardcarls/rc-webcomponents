@@ -2,7 +2,7 @@
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-navigation-rail {
     --rc-navigation-rail-bg: var(--rc-surface, Canvas);
     --rc-navigation-rail-color: var(--rc-color, CanvasText);
-    --rc-navigation-rail-inline-size: 5rem;
+    --rc-navigation-rail-inline-size: 6rem;
     --rc-navigation-rail-expanded-inline-size: 15rem;
     --rc-navigation-rail-padding-block: 0.75rem;
     --rc-navigation-rail-padding-inline: 0.5rem;
@@ -42,10 +42,16 @@
     background: color-mix(in srgb, var(--rc-accent, Highlight) 12%, transparent);
   }
 
+  /*
+   * Size the icon itself (whether a direct `<a>` child or nested in
+   * [data-rc-navigation-indicator]) rather than the indicator wrapper, so the
+   * wrapper stays sized to its normal-flow content (icon + label) and the
+   * active-state background above wraps the whole item, not just the icon.
+   */
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-navigation-rail
+    rc-navigation-rail:not([expanded])
     > a
-    > :where([data-rc-navigation-icon], [data-rc-navigation-indicator]) {
+    [data-rc-navigation-icon] {
     inline-size: 2.5rem;
     block-size: 2.5rem;
     border-radius: var(--rc-radius-pill, 9999px);

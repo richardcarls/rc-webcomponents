@@ -25,8 +25,10 @@ const LIGHT_DOM_CSS = `
 
   rc-navigation-rail > a > [data-rc-navigation-indicator] {
     position: relative;
-    display: inline-grid;
-    place-items: center;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--rc-navigation-rail-link-gap, 0.25rem);
     max-inline-size: 100%;
     vertical-align: middle;
   }
@@ -36,38 +38,20 @@ const LIGHT_DOM_CSS = `
     vertical-align: middle;
   }
 
-  rc-navigation-rail > a > [data-rc-navigation-indicator] > :not([data-rc-navigation-icon]) {
-    position: absolute;
-    inset-block-start: calc(100% + var(--rc-navigation-rail-link-gap, 0.25rem));
-    inset-inline-start: 50%;
-    inline-size: max-content;
+  rc-navigation-rail:not([expanded])
+    > a
+    > [data-rc-navigation-indicator]
+    > :not([data-rc-navigation-icon]) {
     max-inline-size: var(--rc-navigation-rail-collapsed-label-inline-size, 4rem);
     font-size: smaller;
     line-height: 1.2;
     text-align: center;
     overflow-wrap: anywhere;
-    translate: -50% 0;
   }
 
   rc-navigation-rail[expanded] > a > [data-rc-navigation-indicator] {
-    display: inline-flex;
-    align-items: center;
+    flex-direction: row;
     justify-content: flex-start;
-    gap: var(--rc-navigation-rail-link-gap, 0.25rem);
-  }
-
-  rc-navigation-rail[expanded]
-    > a
-    > [data-rc-navigation-indicator]
-    > :not([data-rc-navigation-icon]) {
-    position: static;
-    inline-size: auto;
-    max-inline-size: none;
-    font-size: inherit;
-    line-height: inherit;
-    text-align: start;
-    overflow-wrap: normal;
-    translate: none;
   }
 
   rc-navigation-rail

@@ -165,7 +165,7 @@ test('navigation surfaces expose the full reference token contract', () => {
   expect(barStyles.getPropertyValue('--rc-navigation-bar-focus-ring')).not.toBe('');
   expect(getComputedStyle(barLink).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
 
-  expect(railStyles.getPropertyValue('--rc-navigation-rail-inline-size')).toBe('5rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-inline-size')).toBe('6rem');
   expect(railStyles.getPropertyValue('--rc-navigation-rail-expanded-inline-size')).toBe('15rem');
   expect(railStyles.getPropertyValue('--rc-navigation-rail-toggle-size')).toBe('3rem');
   expect(railStyles.getPropertyValue('--rc-navigation-rail-toggle-inline-offset')).toBe('0.5rem');
