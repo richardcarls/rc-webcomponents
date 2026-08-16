@@ -143,6 +143,35 @@ export interface RCSegmentedButtonChangeDetail {
  * @attr default-value - Initial selected value for uncontrolled usage.
  * @attr disabled - Mirrors disabled state to the native fieldset.
  * @attr orientation - Keyboard orientation: `horizontal` or `vertical`.
+ *
+ * @cssprop [--rc-segmented-button-segment-gap] - Gap between segment icon and label content
+ *   (defers to native label layout when unset).
+ * @cssprop [--rc-segmented-button-segment-min-block-size] - Minimum segment block size (defers
+ *   to native label layout when unset).
+ * @cssprop [--rc-segmented-button-segment-padding-block=revert] - Segment block-axis padding
+ *   (defers to native label padding when unset).
+ * @cssprop [--rc-segmented-button-segment-padding-inline=revert] - Segment inline-axis padding
+ *   (defers to native label padding when unset).
+ * @cssprop [--rc-segmented-button-border=revert] - Segment border (defers to native label border
+ *   when unset).
+ * @cssprop [--rc-segmented-button-color=revert] - Segment text color (defers to native label
+ *   color when unset).
+ * @cssprop [--rc-segmented-button-bg=revert] - Segment background (defers to native label
+ *   background when unset).
+ * @cssprop [--rc-segmented-button-radius=revert] - Rounded corner radius on the first and last
+ *   segments (defers to native label styling when unset).
+ * @cssprop [--rc-segmented-button-divider=revert] - Border between adjacent segments (defers to
+ *   native label styling when unset).
+ * @cssprop [--rc-segmented-button-selected-color=revert] - Segment text color when its radio is
+ *   checked (defers to native label color when unset).
+ * @cssprop [--rc-segmented-button-selected-bg=revert] - Segment background when its radio is
+ *   checked (defers to native label background when unset).
+ * @cssprop [--rc-segmented-button-focus-ring=revert] - Segment outline when its radio is
+ *   focus-visible (defers to native focus styling when unset).
+ * @cssprop [--rc-segmented-button-focus-ring-offset=revert] - Segment outline offset when its
+ *   radio is focus-visible (defers to native focus styling when unset).
+ * @cssprop [--rc-segmented-button-disabled-opacity=revert] - Segment opacity when its radio is
+ *   disabled, or when the host is `disabled` (defers to native disabled styling when unset).
  */
 export class RCSegmentedButton extends LitElement {
   static override styles = segmentedButtonStyles;
