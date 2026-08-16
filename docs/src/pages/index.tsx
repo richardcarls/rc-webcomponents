@@ -32,7 +32,7 @@ const packages = [
   ],
   [
     'rc-navigation-rail',
-    'Navigation rail landmark for native links',
+    'Navigation rail layout for native links',
     '/components/rc-navigation-rail',
   ],
   ['rc-fab', 'Sticky floating action button modeled after Material 3 FAB', '/components/rc-fab'],

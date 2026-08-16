@@ -68,7 +68,7 @@ export const navigationRailStyles = css`
     display: none;
   }
 
-  nav {
+  [part='nav'] {
     position: relative;
     display: flex;
     flex: 1 1 auto;

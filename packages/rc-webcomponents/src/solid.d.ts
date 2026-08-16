@@ -332,7 +332,6 @@ export type RCNavigationBarRef = HTMLElement & {
 
 /** Public API surface of `<rc-navigation-rail>`. */
 export type RCNavigationRailRef = RCNavigationBarRef & {
-  label: string;
   expanded: boolean;
   defaultExpanded: boolean;
   expand(): void;
@@ -807,7 +806,6 @@ declare module 'solid-js' {
       };
 
       'rc-navigation-rail': JSX.HTMLAttributes<RCNavigationRailRef> & {
-        label?: string;
         expanded?: boolean | string;
         defaultExpanded?: boolean | string;
         activeSelector?: string;

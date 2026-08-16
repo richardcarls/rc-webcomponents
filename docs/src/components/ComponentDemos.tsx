@@ -565,55 +565,56 @@ export function NavigationRailDemo() {
 
   return (
     <DemoFrame>
-      <rc-navigation-rail
-        ref={setRailEl}
-        label="Demo navigation"
-        expanded={expanded}
-        style={{ minBlockSize: '22rem' }}
-      >
-        <rc-button slot="toggle" icon-only>
-          <button type="button" aria-label="Toggle navigation">
-            <span
-              data-rc-button-icon
-              data-rc-navigation-expand-icon
-              className="material-symbols-outlined"
-              aria-hidden="true"
-            >
-              menu
-            </span>
-            <span
-              data-rc-button-selected-icon
-              data-rc-navigation-collapse-icon
-              className="material-symbols-outlined"
-              aria-hidden="true"
-            >
-              menu_open
-            </span>
-          </button>
-        </rc-button>
-        {navigationDestinations.map(({ href, label, icon }) => (
-          <a
-            key={href}
-            href={href}
-            aria-current={active === href ? 'page' : undefined}
-            onClick={(event) => {
-              event.preventDefault();
-              setActive(href);
-            }}
-          >
-            <span data-rc-navigation-indicator>
+      <nav aria-label="Demo navigation">
+        <rc-navigation-rail
+          ref={setRailEl}
+          expanded={expanded}
+          style={{ minBlockSize: '22rem' }}
+        >
+          <rc-button slot="toggle" icon-only>
+            <button type="button" aria-label="Toggle navigation">
               <span
-                data-rc-navigation-icon
+                data-rc-button-icon
+                data-rc-navigation-expand-icon
                 className="material-symbols-outlined"
                 aria-hidden="true"
               >
-                {icon}
+                menu
               </span>
-              <span>{label}</span>
-            </span>
-          </a>
-        ))}
-      </rc-navigation-rail>
+              <span
+                data-rc-button-selected-icon
+                data-rc-navigation-collapse-icon
+                className="material-symbols-outlined"
+                aria-hidden="true"
+              >
+                menu_open
+              </span>
+            </button>
+          </rc-button>
+          {navigationDestinations.map(({ href, label, icon }) => (
+            <a
+              key={href}
+              href={href}
+              aria-current={active === href ? 'page' : undefined}
+              onClick={(event) => {
+                event.preventDefault();
+                setActive(href);
+              }}
+            >
+              <span data-rc-navigation-indicator>
+                <span
+                  data-rc-navigation-icon
+                  className="material-symbols-outlined"
+                  aria-hidden="true"
+                >
+                  {icon}
+                </span>
+                <span>{label}</span>
+              </span>
+            </a>
+          ))}
+        </rc-navigation-rail>
+      </nav>
       <EventLog entries={log} />
     </DemoFrame>
   );
@@ -684,23 +685,26 @@ export function AdaptiveNavigationDemo() {
         }
       >
         {showRail ? (
-          <rc-navigation-rail
-            label="Adaptive demo navigation"
-            style={{ viewTransitionName: 'adaptive-navigation' }}
-          >
-            <rc-fab
-              slot="header"
-              position="top-start"
-              style={{ '--rc-fab-position': 'static' } as CSSProperties}
-            >
-              <button type="button" aria-label="New recipe">
-                <span data-rc-button-icon className="material-symbols-outlined" aria-hidden="true">
-                  add
-                </span>
-              </button>
-            </rc-fab>
-            {renderLinks(true)}
-          </rc-navigation-rail>
+          <nav aria-label="Adaptive demo navigation">
+            <rc-navigation-rail style={{ viewTransitionName: 'adaptive-navigation' }}>
+              <rc-fab
+                slot="header"
+                position="top-start"
+                style={{ '--rc-fab-position': 'static' } as CSSProperties}
+              >
+                <button type="button" aria-label="New recipe">
+                  <span
+                    data-rc-button-icon
+                    className="material-symbols-outlined"
+                    aria-hidden="true"
+                  >
+                    add
+                  </span>
+                </button>
+              </rc-fab>
+              {renderLinks(true)}
+            </rc-navigation-rail>
+          </nav>
         ) : null}
         <main
           style={{

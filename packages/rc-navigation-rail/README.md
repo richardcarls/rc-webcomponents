@@ -1,6 +1,6 @@
 # `@rcarls/rc-navigation-rail`
 
-Navigation rail landmark that styles consumer-authored links.
+Navigation rail layout that styles consumer-authored links.
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-navigation-rail](https://richardcarls.github.io/rc-webcomponents/components/rc-navigation-rail).
 
@@ -22,25 +22,30 @@ import '@rcarls/rc-navigation-rail/define';
 ## Basic usage
 
 ```html
-<rc-navigation-rail label="Main navigation">
-  <button slot="toggle" type="button" aria-label="Toggle navigation">
-    <span data-rc-navigation-expand-icon aria-hidden="true">menu</span>
-    <span data-rc-navigation-collapse-icon aria-hidden="true">menu_open</span>
-  </button>
-  <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-indicator>
-      <span data-rc-navigation-icon aria-hidden="true">R</span>
-      <span>Recipes</span>
-    </span>
-  </a>
-  <a href="/settings">
-    <span data-rc-navigation-indicator>
-      <span data-rc-navigation-icon aria-hidden="true">S</span>
-      <span>Settings</span>
-    </span>
-  </a>
-</rc-navigation-rail>
+<nav aria-label="Main navigation">
+  <rc-navigation-rail>
+    <button slot="toggle" type="button" aria-label="Toggle navigation">
+      <span data-rc-navigation-expand-icon aria-hidden="true">menu</span>
+      <span data-rc-navigation-collapse-icon aria-hidden="true">menu_open</span>
+    </button>
+    <a href="/recipes" aria-current="page">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">R</span>
+        <span>Recipes</span>
+      </span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">S</span>
+        <span>Settings</span>
+      </span>
+    </a>
+  </rc-navigation-rail>
+</nav>
 ```
+
+The consumer-authored `<nav>` provides the navigation landmark and accessible
+label. `rc-navigation-rail` deliberately provides no landmark semantics.
 
 ## Adaptive usage
 
@@ -63,7 +68,6 @@ sync.
 
 | Property          | Attribute          | Type      | Default                                                     | Description                                                  |
 | ----------------- | ------------------ | --------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
-| `label`           | `label`            | `string`  | `'Primary navigation'`                                      | Accessible label for the navigation landmark.                |
 | `expanded`        | `expanded`         | `boolean` | `false`                                                     | Whether the rail is expanded. Host writes are silent.        |
 | `defaultExpanded` | `default-expanded` | `boolean` | `false`                                                     | Initial expanded state for uncontrolled usage.               |
 | `activeSelector`  | `active-selector`  | `string`  | `a[aria-current]:not([aria-current="false"])`               | Selector used to find the active link.                       |

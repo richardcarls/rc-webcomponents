@@ -78,7 +78,7 @@ fallbacks:
 | `rc-menu-button`     | Trigger button that opens an `rc-menu` popup.                        |
 | `rc-menubar`         | Menubar coordinator for `rc-menu-button` children.                   |
 | `rc-navigation-bar`  | Bottom navigation layout that styles consumer-authored links.        |
-| `rc-navigation-rail` | Navigation rail landmark that styles consumer-authored links.        |
+| `rc-navigation-rail` | Navigation rail layout that styles consumer-authored links.          |
 | `rc-range-slider`    | Two-thumb range slider backed by native range inputs.                |
 | `rc-search-bar`      | Search field/view wrapper for native `<input type="search">`.        |
 | `rc-segmented-button` | Segmented radio group enhancer for native radios in a `<fieldset>`. |

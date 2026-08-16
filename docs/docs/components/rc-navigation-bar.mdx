@@ -152,16 +152,18 @@ const isExpanded = matchMedia('(min-width: 840px)').matches;
 </nav>
 
 <!-- medium and expanded: >=600px -->
-<rc-navigation-rail label="Main navigation">
-  <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-    <span>Recipes</span>
-  </a>
-  <a href="/settings">
-    <span data-rc-navigation-icon aria-hidden="true">settings</span>
-    <span>Settings</span>
-  </a>
-</rc-navigation-rail>
+<nav aria-label="Main navigation">
+  <rc-navigation-rail>
+    <a href="/recipes" aria-current="page">
+      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+      <span>Recipes</span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-icon aria-hidden="true">settings</span>
+      <span>Settings</span>
+    </a>
+  </rc-navigation-rail>
+</nav>
 ```
 
 At `>=840px`, let the app decide whether users may expand the rail and whether

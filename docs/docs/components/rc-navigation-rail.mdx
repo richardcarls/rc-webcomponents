@@ -10,12 +10,14 @@ import { AdaptiveNavigationDemo, NavigationRailDemo } from '@site/src/components
 
 # rc-navigation-rail
 
-Navigation rail landmark that styles consumer-authored links.
+Navigation rail layout that styles consumer-authored links.
 
 Use this for medium and expanded PWA layouts where native anchors should remain
-router friendly and work before custom element upgrade. The rail supports a
-controlled or uncontrolled expanded state, but the app still owns breakpoint
-policy.
+router friendly and work before custom element upgrade. Wrap it in a native
+`<nav>` to provide navigation landmark semantics; the component deliberately
+provides no landmark role of its own, matching `rc-navigation-bar`. The rail
+supports a controlled or uncontrolled expanded state, but the app still owns
+breakpoint policy.
 
 <AtAGlance
   packageName="@rcarls/rc-navigation-rail"
@@ -55,40 +57,47 @@ import '@rcarls/rc-navigation-rail/define';
 ## Usage
 
 ```html
-<rc-navigation-rail label="Main navigation">
-  <rc-button slot="toggle" icon-only>
-    <button type="button" aria-label="Toggle navigation">
-      <span
-        data-rc-button-icon
-        data-rc-navigation-expand-icon
-        class="material-symbols-outlined"
-        aria-hidden="true"
-        >menu</span
-      >
-      <span
-        data-rc-button-selected-icon
-        data-rc-navigation-collapse-icon
-        class="material-symbols-outlined"
-        aria-hidden="true"
-        >menu_open</span
-      >
-    </button>
-  </rc-button>
-  <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-indicator>
-      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-      <span>Recipes</span>
-    </span>
-  </a>
-  <a href="/shopping">
-    <span data-rc-navigation-indicator>
-      <span data-rc-navigation-icon aria-hidden="true">shopping_cart</span>
-      <span>Shopping</span>
-    </span>
-  </a>
-  <button slot="footer" type="button" aria-label="Settings">settings</button>
-</rc-navigation-rail>
+<nav aria-label="Main navigation">
+  <rc-navigation-rail>
+    <rc-button slot="toggle" icon-only>
+      <button type="button" aria-label="Toggle navigation">
+        <span
+          data-rc-button-icon
+          data-rc-navigation-expand-icon
+          class="material-symbols-outlined"
+          aria-hidden="true"
+          >menu</span
+        >
+        <span
+          data-rc-button-selected-icon
+          data-rc-navigation-collapse-icon
+          class="material-symbols-outlined"
+          aria-hidden="true"
+          >menu_open</span
+        >
+      </button>
+    </rc-button>
+    <a href="/recipes" aria-current="page">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+        <span>Recipes</span>
+      </span>
+    </a>
+    <a href="/shopping">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">shopping_cart</span>
+        <span>Shopping</span>
+      </span>
+    </a>
+    <button slot="footer" type="button" aria-label="Settings">settings</button>
+  </rc-navigation-rail>
+</nav>
 ```
+
+The native `<nav>` is the navigation landmark and owns its accessible label,
+just as `<search>` owns landmark semantics around `rc-search-bar`.
+`rc-navigation-rail` only provides layout, active-state styling, and
+indicator positioning.
 
 ## Live demo
 
@@ -107,18 +116,20 @@ and label in `data-rc-navigation-indicator` so the expanded Material indicator
 contains both.
 
 ```html
-<rc-navigation-rail default-expanded>
-  <button slot="toggle" type="button" aria-label="Toggle navigation">
-    <span data-rc-navigation-expand-icon class="material-symbols-outlined" aria-hidden="true"
-      >menu</span
-    >
-    <span data-rc-navigation-collapse-icon class="material-symbols-outlined" aria-hidden="true"
-      >menu_open</span
-    >
-  </button>
-  <a href="/recipes" aria-current="page">Recipes</a>
-  <a href="/settings">Settings</a>
-</rc-navigation-rail>
+<nav aria-label="Main navigation">
+  <rc-navigation-rail default-expanded>
+    <button slot="toggle" type="button" aria-label="Toggle navigation">
+      <span data-rc-navigation-expand-icon class="material-symbols-outlined" aria-hidden="true"
+        >menu</span
+      >
+      <span data-rc-navigation-collapse-icon class="material-symbols-outlined" aria-hidden="true"
+        >menu_open</span
+      >
+    </button>
+    <a href="/recipes" aria-current="page">Recipes</a>
+    <a href="/settings">Settings</a>
+  </rc-navigation-rail>
+</nav>
 ```
 
 ## Collapse control
@@ -132,17 +143,19 @@ toggle event. With `rc-button`, mark `menu` as `data-rc-button-icon` and
 wrapper's `selected` state.
 
 ```html
-<rc-navigation-rail>
-  <button slot="toggle" type="button" aria-label="Toggle navigation">
-    <span data-rc-navigation-expand-icon class="material-symbols-outlined" aria-hidden="true"
-      >menu</span
-    >
-    <span data-rc-navigation-collapse-icon class="material-symbols-outlined" aria-hidden="true"
-      >menu_open</span
-    >
-  </button>
-  <a href="/recipes" aria-current="page">Recipes</a>
-</rc-navigation-rail>
+<nav aria-label="Main navigation">
+  <rc-navigation-rail>
+    <button slot="toggle" type="button" aria-label="Toggle navigation">
+      <span data-rc-navigation-expand-icon class="material-symbols-outlined" aria-hidden="true"
+        >menu</span
+      >
+      <span data-rc-navigation-collapse-icon class="material-symbols-outlined" aria-hidden="true"
+        >menu_open</span
+      >
+    </button>
+    <a href="/recipes" aria-current="page">Recipes</a>
+  </rc-navigation-rail>
+</nav>
 ```
 
 ## Adaptive navigation
@@ -167,41 +180,45 @@ router's active class.
 
 ```html
 <!-- medium: >=600px -->
-<rc-navigation-rail label="Main navigation">
-  <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-indicator>
-      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-      <span>Recipes</span>
-    </span>
-  </a>
-  <a href="/settings">
-    <span data-rc-navigation-indicator>
-      <span data-rc-navigation-icon aria-hidden="true">settings</span>
-      <span>Settings</span>
-    </span>
-  </a>
-</rc-navigation-rail>
+<nav aria-label="Main navigation">
+  <rc-navigation-rail>
+    <a href="/recipes" aria-current="page">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+        <span>Recipes</span>
+      </span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">settings</span>
+        <span>Settings</span>
+      </span>
+    </a>
+  </rc-navigation-rail>
+</nav>
 
 <!-- expanded: >=840px, app decides whether expansion is offered -->
-<rc-navigation-rail label="Main navigation" expanded>
-  <rc-fab slot="header" position="top-start" style="--rc-fab-position: static">
-    <button type="button" aria-label="New recipe">
-      <span data-rc-button-icon aria-hidden="true">add</span>
-    </button>
-  </rc-fab>
-  <a href="/recipes" aria-current="page">
-    <span data-rc-navigation-indicator>
-      <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
-      <span>Recipes</span>
-    </span>
-  </a>
-  <a href="/settings">
-    <span data-rc-navigation-indicator>
-      <span data-rc-navigation-icon aria-hidden="true">settings</span>
-      <span>Settings</span>
-    </span>
-  </a>
-</rc-navigation-rail>
+<nav aria-label="Main navigation">
+  <rc-navigation-rail expanded>
+    <rc-fab slot="header" position="top-start" style="--rc-fab-position: static">
+      <button type="button" aria-label="New recipe">
+        <span data-rc-button-icon aria-hidden="true">add</span>
+      </button>
+    </rc-fab>
+    <a href="/recipes" aria-current="page">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">restaurant</span>
+        <span>Recipes</span>
+      </span>
+    </a>
+    <a href="/settings">
+      <span data-rc-navigation-indicator>
+        <span data-rc-navigation-icon aria-hidden="true">settings</span>
+        <span>Settings</span>
+      </span>
+    </a>
+  </rc-navigation-rail>
+</nav>
 ```
 
 Persist expanded state in the app, and only apply it while the expanded window

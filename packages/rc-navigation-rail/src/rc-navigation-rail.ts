@@ -94,11 +94,14 @@ export interface RCNavigationRailToggleDetail {
 }
 
 /**
- * Navigation rail landmark that styles consumer-authored links.
+ * Navigation rail layout that styles consumer-authored links.
  *
  * `rc-navigation-rail` preserves native `<a>` elements in light DOM for router
  * interop and progressive enhancement. Mark the current link with
  * `aria-current="page"` or provide `active-selector` for router active classes.
+ * Wrap the component in a consumer-authored `<nav>` when it represents a
+ * navigation landmark; `rc-navigation-rail` deliberately provides no landmark
+ * role of its own, matching `rc-navigation-bar`.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-navigation-rail rc-navigation-rail docs}
  * @see {@link https://m3.material.io/components/navigation-rail/overview Material 3 navigation rail}
@@ -111,13 +114,12 @@ export interface RCNavigationRailToggleDetail {
  * @fires rc-navigation-rail-toggle - Fired when user interaction or a method toggles expanded state.
  *
  * @csspart root - The rail layout container.
- * @csspart nav - The component-owned navigation landmark.
+ * @csspart nav - The navigation layout container.
  * @csspart indicator - The active item indicator.
  * @csspart toggle - Toggle slot container.
  * @csspart header - Header slot container.
  * @csspart footer - Footer slot container.
  *
- * @attr label - Accessible label for the navigation landmark.
  * @attr expanded - Whether the rail is expanded. Host writes are silent.
  * @attr default-expanded - Initial expanded state for uncontrolled usage.
  * @attr active-selector - Selector used to find the active link.
@@ -184,10 +186,6 @@ export class RCNavigationRail extends LitElement {
   private _expanded: boolean | undefined;
   private _expandedInitialized = false;
 
-  /** Accessible label for the navigation landmark. */
-  @property({ type: String })
-  label = 'Primary navigation';
-
   /** Whether the rail is expanded. Host writes are silent. */
   @property({ type: Boolean, reflect: true })
   get expanded(): boolean {
@@ -236,7 +234,7 @@ export class RCNavigationRail extends LitElement {
 
   @query('slot:not([name])') private _$slot!: HTMLSlotElement;
 
-  @query('nav') private _$nav!: HTMLElement;
+  @query('[part="nav"]') private _$nav!: HTMLElement;
 
   @query('#indicator') private _$indicator!: HTMLElement;
 
@@ -300,10 +298,10 @@ export class RCNavigationRail extends LitElement {
         <div id="header" part="header" ?hidden=${!this._hasHeader}>
           <slot name="header" @slotchange=${this._handleHeaderSlotChange}></slot>
         </div>
-        <nav part="nav" aria-label=${this.label}>
+        <div part="nav">
           <div id="indicator" part="indicator" hidden></div>
           <slot @slotchange=${this._handleSlotChange}></slot>
-        </nav>
+        </div>
         <div id="footer" part="footer" ?hidden=${!this._hasFooter}>
           <slot name="footer" @slotchange=${this._handleFooterSlotChange}></slot>
         </div>
