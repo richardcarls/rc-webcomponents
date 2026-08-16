@@ -49,7 +49,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   @query('#root', true)
   protected _$root!: HTMLDivElement;
 
-  private readonly _disabledObserver = new MutationObserver(() => this._syncTabStop());
+  protected readonly _disabledObserver = new MutationObserver(() => this._syncTabStop());
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -61,7 +61,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     this._disabledObserver.disconnect();
   }
 
-  private _syncTabStop(): void {
+  protected _syncTabStop(): void {
     if (!this._lastFocused || isFocusable(this._lastFocused)) {
       return;
     }
@@ -79,11 +79,11 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     // update cycle, which can cause the update to hang.
     // Guard: only restore focus when the toolbar already contains it — prevents
     // focus-stealing when a toolbar mounts inside a larger component (e.g. rc-transfer-list).
-    const target = this._lastFocused ?? this.firstItem;
+    const $target = this._lastFocused ?? this.firstItem;
 
     queueMicrotask(() => {
       if (this.matches(':focus-within')) {
-        this.focusItem(target);
+        this.focusItem($target);
       }
     });
   }
@@ -105,33 +105,33 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
     }
   }
 
-  protected override _collectItems(slot: HTMLSlotElement): Element[] {
-    return slot.assignedElements().flatMap((element) => {
-      if (element.localName === 'rc-chip') {
-        const button = element.querySelector(':scope > button');
+  protected override _collectItems($slot: HTMLSlotElement): Element[] {
+    return $slot.assignedElements().flatMap(($element) => {
+      if ($element.localName === 'rc-chip') {
+        const $button = $element.querySelector(':scope > button');
 
-        return button ? [button] : [];
+        return $button ? [$button] : [];
       }
 
-      return this._isToolbarItem(element) ? [element] : [];
+      return this._isToolbarItem($element) ? [$element] : [];
     });
   }
 
-  private _isToolbarItem(el: Element): boolean {
+  protected _isToolbarItem($el: Element): boolean {
     if (
-      el instanceof HTMLButtonElement ||
-      el instanceof HTMLInputElement ||
-      el instanceof HTMLSelectElement ||
-      el instanceof HTMLTextAreaElement
+      $el instanceof HTMLButtonElement ||
+      $el instanceof HTMLInputElement ||
+      $el instanceof HTMLSelectElement ||
+      $el instanceof HTMLTextAreaElement
     ) {
       return true;
     }
 
-    if (el instanceof HTMLAnchorElement || el instanceof HTMLAreaElement) {
-      return el.hasAttribute('href');
+    if ($el instanceof HTMLAnchorElement || $el instanceof HTMLAreaElement) {
+      return $el.hasAttribute('href');
     }
 
-    const role = el.getAttribute('role');
+    const role = $el.getAttribute('role');
 
     if (
       role === 'button' ||
@@ -147,7 +147,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
       return true;
     }
 
-    return isFocusable(el);
+    return isFocusable($el);
   }
 
   protected render() {
