@@ -182,6 +182,30 @@ test('supports default-expanded before controlled writes', async () => {
   expect(host.hasAttribute('expanded')).toBe(true);
 });
 
+test('assigning expanded to undefined releases control back to default-expanded', async () => {
+  const screen = render(html`
+    <rc-navigation-rail data-testid="host" default-expanded>
+      <a href="/recipes">Recipes</a>
+    </rc-navigation-rail>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCNavigationRail;
+
+  await host.updateComplete;
+
+  expect(host.expanded).toBe(true);
+
+  host.expanded = false;
+  await host.updateComplete;
+
+  expect(host.expanded).toBe(false);
+
+  host.expanded = undefined;
+  await host.updateComplete;
+
+  expect(host.expanded).toBe(true);
+  expect(host.hasAttribute('expanded')).toBe(true);
+});
+
 test('slotted native toggle stays connected and reflects expanded state', async () => {
   const toggleSpy = vi.fn();
   const screen = render(html`

@@ -184,10 +184,6 @@ export class RCNavigationRail extends LitElement {
   }
 
   set expanded(value: boolean | undefined) {
-    if (value === undefined) {
-      return;
-    }
-
     const oldValue = this.expanded;
 
     this._expanded = value;
