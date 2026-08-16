@@ -28,14 +28,14 @@ async function renderTextarea(
 
 function placeCaretAtEnd($editor: HTMLElement): void {
   const selection = window.getSelection()!;
-  const range = document.createRange();
   const $lastLine = $editor.querySelector<HTMLElement>('.line:last-child')!;
 
+  // Selection.collapse() sets the caret directly; WebKit does not reliably
+  // register a Range built with selectNodeContents()/addRange() on an editor
+  // that was not already the focused element (rangeCount stays 0), which
+  // silently falls back to the "no selection" insertion path.
   $editor.focus();
-  range.selectNodeContents($lastLine);
-  range.collapse(false);
-  selection.removeAllRanges();
-  selection.addRange(range);
+  selection.collapse($lastLine, $lastLine.childNodes.length);
 }
 
 describe('RCTextarea — basic rendering', () => {
@@ -209,12 +209,11 @@ describe('RCTextarea — value', () => {
 
     const editor = getEditor(host);
     const selection = window.getSelection()!;
-    const range = document.createRange();
 
-    range.selectNodeContents(editor);
-    range.collapse(false);
-    selection.removeAllRanges();
-    selection.addRange(range);
+    // See placeCaretAtEnd(): collapse() (not a manually addRange()'d Range)
+    // is what reliably registers in WebKit for a focused contenteditable.
+    editor.focus();
+    selection.collapse(editor, editor.childNodes.length);
 
     const event = new InputEvent('beforeinput', {
       inputType: 'insertParagraph',
