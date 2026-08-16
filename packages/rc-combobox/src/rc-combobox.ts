@@ -57,6 +57,7 @@ declare global {
  * @cssprop [--rc-combobox-chip-radius=var(--rc-radius-md)] - Multi-select chip border radius.
  * @cssprop [--rc-combobox-chip-padding-block=0.1em] - Multi-select chip block-axis padding.
  * @cssprop [--rc-combobox-chip-padding-inline=0.3em] - Multi-select chip inline-axis padding.
+ * @cssprop [--rc-combobox-toggle-size=1.1em] - Inline size of the toggle button's icon area.
  */
 export class RCCombobox extends RCSelect {
   static override styles = comboboxStyles;
