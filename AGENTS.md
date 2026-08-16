@@ -333,6 +333,9 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
   feature branch would add no useful narrative.
 - Meaningful package changes need a Changesets intent file. Use `yarn.cmd
   changeset` on Windows or `yarn changeset` on Linux/macOS.
+- Before pushing, rename generated Changeset files from random-word sequences to
+  short, descriptive kebab-case slugs that identify the package, behavior, or
+  concern.
 - Published packages are version-locked together through the Changesets fixed
   group. A single release bump moves the package set together.
 - Use `yarn.cmd validate:packages` for package metadata, aggregate coverage, and
