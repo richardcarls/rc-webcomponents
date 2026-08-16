@@ -283,6 +283,10 @@ export class RcMarkdownEditor extends LitElement {
     }
   }
 
+  /**
+   * Controlled: show the markdown source editor instead of the rich view.
+   * Host writes are silent; toolbar/keyboard toggles dispatch `rc-mode-change`.
+   */
   @property({ type: Boolean, reflect: true, attribute: 'source-mode' })
   get sourceMode(): boolean {
     return this._sourceMode ?? this._defaultSourceMode;
@@ -294,10 +298,6 @@ export class RcMarkdownEditor extends LitElement {
     this._sourceMode = v;
     this._sourceModeInitialized = true;
     this.requestUpdate('sourceMode', old);
-
-    if (old !== v) {
-      this._dispatchModeChange(v ? 'source' : 'rich');
-    }
   }
 
   /** Show the formatting toolbar. */
@@ -741,7 +741,10 @@ export class RcMarkdownEditor extends LitElement {
     const { action, headingLevel, codeLanguage } = e.detail;
 
     if (action === 'source') {
-      this.sourceMode = !this.sourceMode;
+      const nextSourceMode = !this.sourceMode;
+
+      this.sourceMode = nextSourceMode;
+      this._dispatchModeChange(nextSourceMode ? 'source' : 'rich');
 
       return;
     }
@@ -1143,7 +1146,11 @@ export class RcMarkdownEditor extends LitElement {
 
     if (e.shiftKey && e.key === 'S') {
       e.preventDefault();
-      this.sourceMode = !this.sourceMode;
+
+      const nextSourceMode = !this.sourceMode;
+
+      this.sourceMode = nextSourceMode;
+      this._dispatchModeChange(nextSourceMode ? 'source' : 'rich');
 
       return;
     }
