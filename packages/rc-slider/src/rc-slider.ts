@@ -74,9 +74,23 @@ function parseAttr(s: string, defaultVal: number): number {
  * @fires rc-slider-input  - Fires continuously while the value changes. Detail: `{ value }`.
  * @fires rc-slider-change - Fires when the committed value changes (on release). Detail: `{ value }`.
  *
+ * @attr min - Minimum slider value.
+ * @attr max - Maximum slider value.
+ * @attr step - Slider step.
+ * @attr value - Current slider value. Host writes are silent.
+ * @attr default-value - Initial uncontrolled slider value. Has no effect after the first user
+ *   interaction or `value` write.
+ * @attr disabled - Disables the underlying input.
+ * @attr readonly - Prevents edits while preserving normal display. Not a native range attribute.
+ * @attr display - Controls the live value display: absent (none), `float`, `inline-start`, or
+ *   `inline-end`.
+ * @attr value-text - Screen-reader value text, forwarded as `aria-valuetext` on the native input.
+ * @attr orientation - Orientation, forwarded to `aria-orientation`: `horizontal` or `vertical`.
+ *
  * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to position the float value display.
  * @cssprop [--rc-slider-gap=var(--rc-control-gap)] - Gap between track and inline value display.
  * @cssprop [--rc-slider-control-size=var(--rc-control-block-size)] - Track hit-area block size.
+ * @cssprop [--rc-slider-vertical-size=12.5rem] - Track length when `orientation="vertical"`.
  * @cssprop [--rc-slider-track-size=0.1875rem] - Visual track thickness.
  * @cssprop [--rc-slider-track-background=CanvasText] - Unfilled track color.
  * @cssprop [--rc-slider-track-opacity=0.25] - Unfilled track opacity.
