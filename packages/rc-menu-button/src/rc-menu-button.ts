@@ -77,6 +77,7 @@ export class RCMenuButton extends LitElement {
 
   private _defaultOpen = false;
   private _open = false;
+  private _openInitialized = false;
 
   /**
    * Whether the menu is currently open.
@@ -97,6 +98,7 @@ export class RCMenuButton extends LitElement {
       return;
     }
 
+    this._openInitialized = true;
     this._setOpen(value, false);
     this.requestUpdate('open', oldValue);
   }
@@ -118,7 +120,7 @@ export class RCMenuButton extends LitElement {
 
     this._defaultOpen = value;
 
-    if (value && !this._open) {
+    if (value && !this._openInitialized) {
       this._setOpen(true, false);
     }
 

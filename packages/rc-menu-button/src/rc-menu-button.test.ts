@@ -484,6 +484,37 @@ test('RCMenuButton inherits orientation from parent with role="menubar"', async 
   await expectActiveMenuItem(item1);
 });
 
+test('RCMenuButton ignores default-open after an explicit controlled open=false write', async () => {
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+
+  const host = screen.getByTestId('host');
+  const trigger = screen.getByTestId('trigger');
+
+  const menuButton = (await host.element()) as RCMenuButton;
+
+  await menuButton.updateComplete;
+
+  // A controlled write of open=false (e.g. a React-style explicit boolean
+  // prop) must lock in controlled mode even though it matches the default.
+  menuButton.open = false;
+
+  // An uncontrolled default arriving afterward must not override the
+  // controlled write.
+  menuButton.defaultOpen = true;
+
+  await menuButton.updateComplete;
+
+  await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+  expect(menuButton.open).toBe(false);
+});
+
 test('RCMenuButton reflects open attribute', async () => {
   const screen = render(html`
     <rc-menu-button data-testid="host">
