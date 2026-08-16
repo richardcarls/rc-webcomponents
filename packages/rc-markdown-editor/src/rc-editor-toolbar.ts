@@ -1,14 +1,14 @@
-import { LitElement, html, nothing } from 'lit';
+import { LitElement, html, nothing, type SVGTemplateResult, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
+import '@rcarls/rc-button/define';
 import '@rcarls/rc-select/define';
-
+import '@rcarls/rc-toolbar/define';
 import { icons } from './icons.ts';
 import type { EditorToolbarAction, EditorToolbarActionDetail, HeadingLevel } from './types.ts';
 
-
 const HEADING_OPTIONS: Array<{ value: HeadingLevel | 'p'; label: string }> = [
-  { value: 'p',  label: 'Paragraph' },
+  { value: 'p', label: 'Paragraph' },
   { value: 'h1', label: 'Heading 1' },
   { value: 'h2', label: 'Heading 2' },
   { value: 'h3', label: 'Heading 3' },
@@ -17,10 +17,10 @@ const HEADING_OPTIONS: Array<{ value: HeadingLevel | 'p'; label: string }> = [
   { value: 'h6', label: 'Heading 6' },
 ];
 
-
 /**
- * Formatting toolbar for `<rc-markdown-editor>`. Renders into its own light DOM
- * so the parent shadow stylesheet can reach `rc-editor-toolbar button` directly.
+ * Formatting toolbar for `<rc-markdown-editor>`. Renders themed `rc-button`,
+ * `rc-select`, and `rc-toolbar` controls into its own light DOM so the parent
+ * editor can provide their shared appearance.
  *
  * Active-format properties are set by the parent editor and reflected as
  * `aria-pressed` on the corresponding buttons. Heading level is shown via an
@@ -31,7 +31,7 @@ const HEADING_OPTIONS: Array<{ value: HeadingLevel | 'p'; label: string }> = [
  *
  * @fires rc-toolbar-action - When a formatting button or select is activated.
  *
- * @attr label - `aria-label` applied to the `[role="toolbar"]` container.
+ * @attr label - Accessible label applied to the `rc-toolbar` container.
  * @attr active-bold - Reflects Bold as active at the cursor.
  * @attr active-italic - Reflects Italic as active at the cursor.
  * @attr active-underline - Reflects Underline as active at the cursor.
@@ -47,7 +47,7 @@ const HEADING_OPTIONS: Array<{ value: HeadingLevel | 'p'; label: string }> = [
  * @attr source-mode - Whether the parent editor is in source mode.
  */
 export class RcEditorToolbar extends LitElement {
-  /** `aria-label` applied to the `[role="toolbar"]` container. */
+  /** Accessible label applied to the `rc-toolbar` container. */
   @property({ type: String })
   label = 'Formatting';
 
@@ -109,17 +109,20 @@ export class RcEditorToolbar extends LitElement {
   @state()
   protected _langInputValue = '';
 
-  override createRenderRoot() {
+  override createRenderRoot(): HTMLElement {
     return this;
   }
 
-  override updated(changed: Map<string, unknown>) {
+  override updated(changed: Map<string, unknown>): void {
     if (changed.has('codeLanguage') && this.codeLanguage !== null) {
       this._langInputValue = this.codeLanguage;
     }
   }
 
-  protected _dispatch(action: EditorToolbarAction, extra?: Partial<EditorToolbarActionDetail>) {
+  protected _dispatch(
+    action: EditorToolbarAction,
+    extra?: Partial<EditorToolbarActionDetail>,
+  ): void {
     this.dispatchEvent(
       new CustomEvent<EditorToolbarActionDetail>('rc-toolbar-action', {
         bubbles: true,
@@ -131,12 +134,17 @@ export class RcEditorToolbar extends LitElement {
 
   protected _onClick = (e: MouseEvent) => {
     const $btn = (e.target as Element).closest<HTMLButtonElement>('button[data-action]');
-    if (!$btn) return;
+
+    if (!$btn) {
+      return;
+    }
+
     this._dispatch($btn.dataset['action'] as EditorToolbarAction);
   };
 
   protected _onHeadingChange = (e: Event) => {
     const value = (e as CustomEvent<{ value: string }>).detail.value as HeadingLevel | 'p';
+
     this._dispatch('heading', { headingLevel: value === 'p' ? null : value });
   };
 
@@ -155,35 +163,61 @@ export class RcEditorToolbar extends LitElement {
     }
   };
 
-  override render() {
-    const p = (v: boolean) => String(v) as 'true' | 'false';
-
+  protected _renderActionButton(
+    action: EditorToolbarAction,
+    label: string,
+    title: string,
+    active: boolean,
+    icon: SVGTemplateResult,
+  ): TemplateResult {
     return html`
-      <div role="toolbar" aria-label=${this.label} @click=${this._onClick}>
+      <rc-button icon-only class=${active ? 'toolbar-active' : nothing}>
+        <button
+          type="button"
+          data-action=${action}
+          title=${title}
+          aria-label=${label}
+          aria-pressed=${String(active)}
+        >
+          <span data-rc-button-icon>${icon}</span>
+        </button>
+      </rc-button>
+    `;
+  }
 
-        <button type="button" data-action="bold"
-          title="Bold (Ctrl+B)" aria-label="Bold" aria-pressed=${p(this.activeBold)}
-        >${icons.bold}</button>
-
-        <button type="button" data-action="italic"
-          title="Italic (Ctrl+I)" aria-label="Italic" aria-pressed=${p(this.activeItalic)}
-        >${icons.italic}</button>
-
-        <button type="button" data-action="underline"
-          title="Underline (Ctrl+U)" aria-label="Underline" aria-pressed=${p(this.activeUnderline)}
-        >${icons.underline}</button>
-
-        <button type="button" data-action="strikethrough"
-          title="Strikethrough" aria-label="Strikethrough" aria-pressed=${p(this.activeStrikethrough)}
-        >${icons.strikethrough}</button>
-
-        <button type="button" data-action="code"
-          title="Inline Code (Ctrl+\`)" aria-label="Inline Code" aria-pressed=${p(this.activeCode)}
-        >${icons.code}</button>
-
-        <button type="button" data-action="link"
-          title="Link (Ctrl+K)" aria-label="Link" aria-pressed=${p(this.activeLink)}
-        >${icons.link}</button>
+  override render() {
+    return html`
+      <rc-toolbar label=${this.label} @click=${this._onClick}>
+        ${this._renderActionButton('bold', 'Bold', 'Bold (Ctrl+B)', this.activeBold, icons.bold)}
+        ${this._renderActionButton(
+          'italic',
+          'Italic',
+          'Italic (Ctrl+I)',
+          this.activeItalic,
+          icons.italic,
+        )}
+        ${this._renderActionButton(
+          'underline',
+          'Underline',
+          'Underline (Ctrl+U)',
+          this.activeUnderline,
+          icons.underline,
+        )}
+        ${this._renderActionButton(
+          'strikethrough',
+          'Strikethrough',
+          'Strikethrough',
+          this.activeStrikethrough,
+          icons.strikethrough,
+        )}
+        ${this._renderActionButton(
+          'code',
+          'Inline Code',
+          'Inline Code (Ctrl+`)',
+          this.activeCode,
+          icons.code,
+        )}
+        ${this._renderActionButton('link', 'Link', 'Link (Ctrl+K)', this.activeLink, icons.link)}
 
         <rc-select
           title="Heading level"
@@ -193,49 +227,64 @@ export class RcEditorToolbar extends LitElement {
           @rc-select-change=${this._onHeadingChange}
         >
           <select aria-label="Heading level">
-            ${HEADING_OPTIONS.map(({ value, label }) => html`
-              <option value=${value}>${label}</option>
-            `)}
+            ${HEADING_OPTIONS.map(
+              ({ value, label }) => html` <option value=${value}>${label}</option> `,
+            )}
           </select>
         </rc-select>
 
-        <button type="button" data-action="blockquote"
-          title="Blockquote" aria-label="Blockquote" aria-pressed=${p(this.activeBlockquote)}
-        >${icons.blockquote}</button>
-
-        <button type="button" data-action="bullet-list"
-          title="Bullet List" aria-label="Bullet List" aria-pressed=${p(this.activeBulletList)}
-        >${icons.bulletList}</button>
-
-        <button type="button" data-action="ordered-list"
-          title="Ordered List" aria-label="Ordered List" aria-pressed=${p(this.activeOrderedList)}
-        >${icons.orderedList}</button>
-
-        <button type="button" data-action="code-block"
-          title="Code Block" aria-label="Code Block" aria-pressed=${p(this.activeCodeBlock)}
-        >${icons.codeBlock}</button>
-
-        ${this.activeCodeBlock && this.codeLanguage !== null ? html`
-          <input
-            type="text"
-            class="lang-input"
-            aria-label="Code block language"
-            placeholder="Language"
-            title="Syntax language (e.g. TypeScript, Rust)"
-            .value=${this._langInputValue}
-            @input=${this._onLangInput}
-            @blur=${this._onLangCommit}
-            @keydown=${this._onLangKeyDown}
-            @click=${(e: Event) => e.stopPropagation()}
-          />
-        ` : nothing}
-
-        <button type="button" data-action="source"
-          title="Toggle Markdown Source (Ctrl+Shift+S)" aria-label="Source Mode"
-          aria-pressed=${p(this.sourceMode)}
-        >${icons.source}</button>
-
-      </div>
+        ${this._renderActionButton(
+          'blockquote',
+          'Blockquote',
+          'Blockquote',
+          this.activeBlockquote,
+          icons.blockquote,
+        )}
+        ${this._renderActionButton(
+          'bullet-list',
+          'Bullet List',
+          'Bullet List',
+          this.activeBulletList,
+          icons.bulletList,
+        )}
+        ${this._renderActionButton(
+          'ordered-list',
+          'Ordered List',
+          'Ordered List',
+          this.activeOrderedList,
+          icons.orderedList,
+        )}
+        ${this._renderActionButton(
+          'code-block',
+          'Code Block',
+          'Code Block',
+          this.activeCodeBlock,
+          icons.codeBlock,
+        )}
+        ${this.activeCodeBlock && this.codeLanguage !== null
+          ? html`
+              <input
+                type="text"
+                class="lang-input"
+                aria-label="Code block language"
+                placeholder="Language"
+                title="Syntax language (e.g. TypeScript, Rust)"
+                .value=${this._langInputValue}
+                @input=${this._onLangInput}
+                @blur=${this._onLangCommit}
+                @keydown=${this._onLangKeyDown}
+                @click=${(e: Event) => e.stopPropagation()}
+              />
+            `
+          : nothing}
+        ${this._renderActionButton(
+          'source',
+          'Source Mode',
+          'Toggle Markdown Source (Ctrl+Shift+S)',
+          this.sourceMode,
+          icons.source,
+        )}
+      </rc-toolbar>
     `;
   }
 }

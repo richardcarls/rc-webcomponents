@@ -124,9 +124,12 @@ test('RCToolbar has no automated accessibility violations', async () => {
   await expectNoA11yViolations(host);
 });
 
-test('RCToolbar resolves the native buttons inside directly slotted rc-chip elements', async () => {
+test('RCToolbar resolves native buttons inside directly slotted component wrappers', async () => {
   const screen = render(html`
-    <rc-toolbar data-testid="host" label="Recipe filters">
+    <rc-toolbar data-testid="host" label="Filters">
+      <rc-button>
+        <button type="button" data-testid="all">All</button>
+      </rc-button>
       <rc-chip>
         <button type="button" data-testid="quick">Quick</button>
       </rc-chip>
@@ -136,16 +139,22 @@ test('RCToolbar resolves the native buttons inside directly slotted rc-chip elem
     </rc-toolbar>
   `);
   const host = await screen.getByTestId('host').element();
+  const all = await screen.getByTestId('all').element();
   const quick = await screen.getByTestId('quick').element();
   const vegetarian = await screen.getByTestId('vegetarian').element();
 
   await (host as RCToolbar).updateComplete;
   await new Promise<void>((resolve) => queueMicrotask(resolve));
 
-  expect(quick.getAttribute('tabindex')).toBe('0');
+  expect(all.getAttribute('tabindex')).toBe('0');
+  expect(quick.getAttribute('tabindex')).toBe('-1');
   expect(vegetarian.getAttribute('tabindex')).toBe('-1');
 
-  quick.focus();
+  all.focus();
+  await userEvent.keyboard('{ArrowRight}');
+
+  expect(document.activeElement).toBe(quick);
+
   await userEvent.keyboard('{ArrowRight}');
 
   expect(document.activeElement).toBe(vegetarian);
