@@ -186,7 +186,7 @@ const handleReset = () => {
 
 ### Selection
 
-**Uncontrolled** (default): the component owns selection after mount. Use `<option selected>` or `default-value` / `defaultValue` for the initial value. Listen to `rc-select-change` to observe changes.
+**Uncontrolled** (default): the component owns selection after mount. Use `<option selected>` or the `defaultValue` property for the initial value — `defaultValue` accepts `string | string[]` and has no HTML attribute form. Listen to `rc-select-change` to observe changes.
 
 ```html
 <!-- initial selection via native attribute -->
@@ -226,7 +226,7 @@ combobox.value = ['apple', 'cherry'];
 
 ### Firefox for Android: `<label>`-wrapped multiple selects (worked around)
 
-On Firefox for Android (GeckoView), tapping anywhere within an ancestor `<label>`'s rendered "Geckoview and Fennec open select dropdown on tap of parent label; other browsers do not."  [Bugzilla 1475723](https://bugzilla.mozilla.org/show_bug.cgi?id=1475723)
+On Firefox for Android (GeckoView), tapping anywhere within an ancestor `<label>`'s bounds opens the native picker dialog for a wrapped `<select multiple>`, even though the select is hidden: "Geckoview and Fennec open select dropdown on tap of parent label; other browsers do not."  [Bugzilla 1475723](https://bugzilla.mozilla.org/show_bug.cgi?id=1475723)
 
 To workaround this bug, `rc-select` force-disables the slotted `<select multiple>` and hooks into the associated form's `submit` and `formdata` events to preserve constraint validation and form data participation.
 
