@@ -39,6 +39,23 @@ declare global {
  * @slot - Primary pane contents
  * @slot secondary - Secondary pane contents (optional)
  *
+ * @fires rc-splitter-change - Fired when the separator position changes; `detail: { value, valueText }`
+ *
+ * @attr label - Accessible label applied to the primary pane and referenced by the separator
+ *   handle's `aria-labelledby`.
+ * @attr orientation - Layout direction: `horizontal` (left/right panes) or `vertical` (top/bottom panes).
+ * @attr mode - Value units and pane sizing behavior: `length`, `percent`, or `fixed`.
+ * @attr step - Keyboard resize step size, in the current mode's units.
+ * @attr min - Minimum primary pane size, in the current mode's units.
+ * @attr max - Maximum primary pane size, in the current mode's units. Defaults to the full
+ *   container size.
+ * @attr value - Current primary pane size. Host writes update silently.
+ * @attr default-value - Initial uncontrolled primary pane size.
+ * @attr fixed - Disables pointer and keyboard resizing without changing pane size.
+ * @attr collapsible - Renders a collapse/expand toggle button on the separator.
+ * @attr snap-points - Ascending whitespace-separated anchors, in the current mode's units.
+ * @attr swipe-velocity - Minimum release velocity, in px/s, that qualifies as a swipe.
+ *
  * @cssprop [--rc-splitter-separator-size=6px] - Thickness of the separator bar
  * @cssprop [--rc-splitter-separator-handle-size=100%] - Length of the drag handle area within the separator (also the length of the visible indicator)
  * @cssprop [--rc-splitter-separator-color=color-mix(in srgb, ButtonBorder 35%, Canvas 65%)] - Separator background color
