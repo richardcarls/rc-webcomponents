@@ -13,14 +13,10 @@
     --rc-navigation-bar-item-color: var(--rc-muted-color, CanvasText);
     --rc-navigation-bar-item-text-decoration: none;
     --rc-navigation-bar-active-color: var(--rc-accent, Highlight);
-    --rc-navigation-bar-indicator-bg: color-mix(
-      in srgb,
-      var(--rc-accent, Highlight) 18%,
-      transparent
-    );
+    --rc-navigation-bar-indicator-bg: transparent;
     --rc-navigation-bar-indicator-border: 0;
-    --rc-navigation-bar-indicator-radius: var(--rc-radius-pill, 9999px);
-    --rc-navigation-bar-indicator-duration: var(--rc-motion-duration, 180ms);
+    --rc-navigation-bar-indicator-radius: 0;
+    --rc-navigation-bar-indicator-duration: 0ms;
     --rc-navigation-bar-indicator-easing: ease;
     --rc-icon-font-line-height: 2.5rem;
     --rc-navigation-bar-focus-ring: var(--rc-focus-ring, 2px solid Highlight);
@@ -36,5 +32,12 @@
     inline-size: 2.5rem;
     block-size: 2.5rem;
     border-radius: var(--rc-radius-pill, 9999px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-navigation-bar
+    > a[aria-current]:not([aria-current='false']) {
+    border-radius: var(--rc-radius-md, 0.5rem);
+    background: color-mix(in srgb, var(--rc-accent, Highlight) 12%, transparent);
   }
 }

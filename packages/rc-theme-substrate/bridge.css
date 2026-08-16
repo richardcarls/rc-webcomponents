@@ -79,13 +79,13 @@
     --rc-snackbar-bg: var(--substrate-inverse-surface, CanvasText);
     --rc-snackbar-color: var(--substrate-inverse-on-surface, Canvas);
     --rc-snackbar-border: 0;
-    --rc-snackbar-action-color: var(--substrate-inverse-primary, LinkText);
+    --rc-snackbar-action-color: var(--substrate-inverse-on-surface, Canvas);
     --rc-snackbar-action-border: 0;
     --rc-snackbar-action-radius: 9999px;
     --rc-snackbar-action-padding-block: 0.5rem;
     --rc-snackbar-action-padding-inline: 0.75rem;
     --rc-snackbar-action-bg: transparent;
-    --rc-snackbar-action-font: inherit;
+    --rc-snackbar-action-font: 650 0.875rem / 1.25 var(--rc-font-family, inherit);
     --rc-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
     --rc-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
     --rc-item-gap: var(--substrate-item-gap, 0.5rem);

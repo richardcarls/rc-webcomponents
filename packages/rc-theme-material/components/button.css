@@ -52,5 +52,6 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-button[icon-only] {
     --rc-button-icon-size: 2.5rem;
+    --rc-icon-font-line-height: var(--rc-button-icon-size, 2.5rem);
   }
 }

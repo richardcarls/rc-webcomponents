@@ -90,6 +90,22 @@ test('has no automated accessibility violations while collapsed and expanded', a
   await expectNoA11yViolations(nav);
 });
 
+test('uses a distinct system highlight color for the current link by default', async () => {
+  const screen = render(html`
+    <rc-navigation-rail data-testid="host">
+      <a href="/library" aria-current="page" data-testid="current">Library</a>
+      <a href="/settings" data-testid="other">Settings</a>
+    </rc-navigation-rail>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCNavigationRail;
+  const current = await screen.getByTestId('current').element();
+  const other = await screen.getByTestId('other').element();
+
+  await host.updateComplete;
+
+  expect(getComputedStyle(current).color).not.toBe(getComputedStyle(other).color);
+});
+
 test('positions the indicator on the aria-current link target', async () => {
   const screen = render(html`
     <rc-navigation-rail data-testid="host">

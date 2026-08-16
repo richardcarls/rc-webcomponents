@@ -39,5 +39,6 @@
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-button[icon-only] {
     --rc-button-icon-size: var(--rc-control-block-size, 2.5rem);
+    --rc-icon-font-line-height: var(--rc-button-icon-size, 2.5rem);
   }
 }

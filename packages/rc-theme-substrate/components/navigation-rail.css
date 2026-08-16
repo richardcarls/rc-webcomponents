@@ -17,14 +17,10 @@
     --rc-navigation-rail-item-color: var(--rc-muted-color, CanvasText);
     --rc-navigation-rail-item-text-decoration: none;
     --rc-navigation-rail-active-color: var(--rc-accent, Highlight);
-    --rc-navigation-rail-indicator-bg: color-mix(
-      in srgb,
-      var(--rc-accent, Highlight) 18%,
-      transparent
-    );
+    --rc-navigation-rail-indicator-bg: transparent;
     --rc-navigation-rail-indicator-border: 0;
-    --rc-navigation-rail-indicator-radius: var(--rc-radius-pill, 9999px);
-    --rc-navigation-rail-indicator-duration: var(--rc-motion-duration, 180ms);
+    --rc-navigation-rail-indicator-radius: 0;
+    --rc-navigation-rail-indicator-duration: 0ms;
     --rc-navigation-rail-indicator-easing: ease;
     --rc-icon-font-line-height: 2.5rem;
     --rc-navigation-rail-toggle-size: 3rem;
@@ -37,6 +33,13 @@
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-navigation-rail > a {
     inline-size: 100%;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-navigation-rail
+    > a[aria-current]:not([aria-current='false']) {
+    border-radius: var(--rc-radius-md, 0.5rem);
+    background: color-mix(in srgb, var(--rc-accent, Highlight) 12%, transparent);
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))

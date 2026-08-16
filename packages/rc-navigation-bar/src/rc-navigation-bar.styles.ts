@@ -58,7 +58,7 @@ export const navigationBarStyles = css`
   }
 
   ::slotted(a[aria-current]:not([aria-current='false'])) {
-    color: var(--rc-navigation-bar-active-color, var(--rc-navigation-bar-item-color, inherit));
+    color: var(--rc-navigation-bar-active-color, LinkText);
   }
 
   #indicator {
