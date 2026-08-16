@@ -60,6 +60,11 @@ export interface RCMenuButtonToggleEvent {
  * @csspart root - The root container element
  * @csspart popup - The popup container element
  *
+ * @attr open - Whether the menu popup is visible. Controlled mode: host writes silently.
+ * @attr default-open - Initial open state for uncontrolled mode. Ignored after the first
+ *   controlled write to `open`.
+ * @attr orientation - Arrow-key axis for opening the menu. Inherits from a parent
+ *   `rc-menubar` or `[role="menubar"]` when unset.
  * @attr placement - Preferred placement of the popup relative to the trigger.
  */
 export class RCMenuButton extends LitElement {
@@ -77,6 +82,7 @@ export class RCMenuButton extends LitElement {
 
   private _defaultOpen = false;
   private _open = false;
+  private _openInitialized = false;
 
   /**
    * Whether the menu is currently open.
@@ -97,6 +103,7 @@ export class RCMenuButton extends LitElement {
       return;
     }
 
+    this._openInitialized = true;
     this._setOpen(value, false);
     this.requestUpdate('open', oldValue);
   }
@@ -118,7 +125,7 @@ export class RCMenuButton extends LitElement {
 
     this._defaultOpen = value;
 
-    if (value && !this._open) {
+    if (value && !this._openInitialized) {
       this._setOpen(true, false);
     }
 
@@ -301,8 +308,8 @@ export class RCMenuButton extends LitElement {
 
   /** Caches a weak reference to the first assigned trigger element and syncs its ARIA and tabindex state. */
   protected _handleTriggerSlotChange(e: Event) {
-    const slot = e.currentTarget as HTMLSlotElement;
-    const $trigger = slot.assignedElements()[0] as HTMLElement | undefined;
+    const $slot = e.currentTarget as HTMLSlotElement;
+    const $trigger = $slot.assignedElements()[0] as HTMLElement | undefined;
 
     if ($trigger) {
       this._$trigger = new WeakRef($trigger);
@@ -313,9 +320,9 @@ export class RCMenuButton extends LitElement {
 
   /** Tracks optional indicator content so the trigger reserves its inline-end space. */
   protected _handleIndicatorSlotChange(e: Event) {
-    const slot = e.currentTarget as HTMLSlotElement;
+    const $slot = e.currentTarget as HTMLSlotElement;
 
-    this.toggleAttribute('has-indicator', slot.assignedElements().length > 0);
+    this.toggleAttribute('has-indicator', $slot.assignedElements().length > 0);
   }
 
   /**
@@ -367,9 +374,9 @@ export class RCMenuButton extends LitElement {
 
   /** Caches a weak reference to the first assigned `rc-menu` element. */
   protected _handleMenuSlotChange(e: Event) {
-    const slot = e.currentTarget as HTMLSlotElement;
-    const elements = slot.assignedElements();
-    const $menu = elements.find((el) => el.tagName === 'RC-MENU') as RCMenu | undefined;
+    const $slot = e.currentTarget as HTMLSlotElement;
+    const $elements = $slot.assignedElements();
+    const $menu = $elements.find(($el) => $el.tagName === 'RC-MENU') as RCMenu | undefined;
 
     if ($menu) {
       this._$menu = new WeakRef($menu);
@@ -443,7 +450,7 @@ export class RCMenuButton extends LitElement {
     }
   }
 
-  private _setOpen(open: boolean, dispatch: boolean): void {
+  protected _setOpen(open: boolean, dispatch: boolean): void {
     if (this._open === open) {
       return;
     }

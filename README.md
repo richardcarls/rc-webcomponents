@@ -87,7 +87,7 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-select`](packages/rc-select/) | Select-only combobox backed by a native `<select>` | rc-common, rc-listbox |
 | [`rc-combobox`](packages/rc-combobox/) | Editable combobox with filtering and optional allow-create behavior | rc-common, rc-listbox, rc-select |
 | [`rc-menu-button`](packages/rc-menu-button/) | Trigger button that opens an `rc-menu` popup | rc-common, rc-menu |
-| [`rc-menubar`](packages/rc-menubar/) | Menubar coordinator for `rc-menu-button` children with roving tabindex and submenu handoff | rc-common, rc-menu-button |
+| [`rc-menubar`](packages/rc-menubar/) | Menubar coordinator for `rc-menu-button` children with roving tabindex and submenu handoff | rc-common, rc-menu, rc-menu-button |
 | [`rc-toolbar`](packages/rc-toolbar/) | Toolbar that groups consumer-supplied controls into one tab stop with arrow-key navigation | rc-common |
 | [`rc-app-bar`](packages/rc-app-bar/) | App bar modeled after Material 3 Top app bar, with slots and optional scroll behavior | rc-common |
 | [`rc-button`](packages/rc-button/) | Progressive-enhancement wrapper for a direct native `<button>` with structural state affordances | None |
@@ -103,7 +103,7 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-dialog`](packages/rc-dialog/) | Draggable, resizable wrapper for a native `<dialog>` | rc-common |
 | [`rc-bottom-sheet`](packages/rc-bottom-sheet/) | Modal bottom-sheet wrapper for a native `<dialog>` | rc-dialog |
 | [`rc-fab`](packages/rc-fab/) | Sticky floating action button modeled after Material 3 Floating action button | rc-common |
-| [`rc-fab-menu`](packages/rc-fab-menu/) | Floating action button menu wrapper for an `rc-menu` action surface | rc-menu-button, rc-menu |
+| [`rc-fab-menu`](packages/rc-fab-menu/) | Floating action button menu wrapper for an `rc-menu` action surface | rc-common, rc-menu, rc-menu-button |
 | [`rc-navigation-bar`](packages/rc-navigation-bar/) | Bottom navigation layout that styles consumer-authored links | rc-common |
 | [`rc-navigation-rail`](packages/rc-navigation-rail/) | Navigation rail landmark that styles consumer-authored links | rc-common |
 | [`rc-segmented-button`](packages/rc-segmented-button/) | Segmented button group backed by native radio inputs | None |
