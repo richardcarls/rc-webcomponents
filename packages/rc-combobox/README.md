@@ -127,8 +127,10 @@ form.addEventListener('submit', (event) => {
 
 ## Controlled vs Uncontrolled
 
-**Uncontrolled (default):** set `<option selected>` or `default-value` for the initial value;
-the component owns selection thereafter. Listen to `rc-select-change` to observe changes.
+**Uncontrolled (default):** set `<option selected>` or the `defaultValue` property for the
+initial value; the component owns selection thereafter. Listen to `rc-select-change` to observe
+changes. `defaultValue` accepts `string | string[]` and has no HTML attribute form — set it as a
+JS property.
 
 **Controlled:** write `el.value` (the property) to drive selection programmatically. Writes are
 silent — no `rc-select-change` is dispatched. Update `el.value` in response to `rc-select-change`
