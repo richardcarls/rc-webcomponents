@@ -246,6 +246,8 @@ export class RcMarkdownEditor extends LitElement {
     }
   }
 
+  /** Current Markdown value. Host writes are silent. */
+  @property({ type: String })
   get value(): string {
     return this._value ?? this._defaultValue;
   }

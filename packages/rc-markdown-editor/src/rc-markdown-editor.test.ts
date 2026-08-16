@@ -6,6 +6,17 @@ import './define.ts';
 import type { RcMarkdownEditor } from './rc-markdown-editor.ts';
 
 describe('RcMarkdownEditor value ownership', () => {
+  test('value attribute seeds the initial value declaratively', async () => {
+    const screen = render(html`
+      <rc-markdown-editor value="## Attribute Seeded" data-testid="host"></rc-markdown-editor>
+    `);
+    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+
+    await host.updateComplete;
+
+    expect(host.value).toBe('## Attribute Seeded');
+  });
+
   test('ignores initialization changes from the hidden source editor', async () => {
     const initialValue = '## Storage\nKeep chilled.';
     const screen = render(html`
