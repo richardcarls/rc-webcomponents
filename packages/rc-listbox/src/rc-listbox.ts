@@ -205,14 +205,14 @@ export class RCListbox extends LitElement {
     if (RCListbox._styledRoots.has(root)) return;
     RCListbox._styledRoots.add(root);
 
-    const style = document.createElement('style');
-    style.setAttribute('data-rc-light-dom-base', 'rc-listbox');
-    style.textContent = LIGHT_DOM_CSS;
+    const $style = document.createElement('style');
+    $style.setAttribute('data-rc-light-dom-base', 'rc-listbox');
+    $style.textContent = LIGHT_DOM_CSS;
 
     if (root instanceof Document) {
-      root.head.appendChild(style);
+      root.head.appendChild($style);
     } else {
-      root.appendChild(style);
+      root.appendChild($style);
     }
   }
 
@@ -243,7 +243,7 @@ export class RCListbox extends LitElement {
   private _defaultValue: string | string[] | undefined;
   private _value: string | string[] | undefined;
   private _selectionInitialized = false;
-  private _filterText = '';
+  protected _filterText = '';
 
   /** Unique ID prefix for all rendered option elements in this instance. */
   protected readonly _uid = `rc-lb-${++_uid}`;
@@ -546,7 +546,7 @@ export class RCListbox extends LitElement {
   };
 
   /** Routes pointer activations from the controller. */
-  private _handleActivate(option: ListboxOption): void {
+  protected _handleActivate(option: ListboxOption): void {
     if (option.kind === 'action') {
       this._dispatchAction(option);
     } else {
@@ -629,9 +629,9 @@ export class RCListbox extends LitElement {
   }
 
   protected _activeOption(): ListboxOption | null {
-    const active = this._activeDescendantCtrl.activeItem;
+    const $active = this._activeDescendantCtrl.activeItem;
 
-    return active ? this._itemsCollectionCtrl.optionForElement(active) : null;
+    return $active ? this._itemsCollectionCtrl.optionForElement($active) : null;
   }
 
   /** Fires `rc-listbox-change` for a command/action row without mutating selection. */
