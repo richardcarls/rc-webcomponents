@@ -64,7 +64,14 @@ declare global {
  * @csspart chip-remove - Remove button inside a chip.
  * @csspart value-display - The text label showing selected value(s).
  * @csspart toggle-indicator - The open/close indicator container.
+ * @csspart listbox - The `<rc-listbox>` popup element.
  *
+ * @attr open - Reflects whether the popup listbox is open.
+ * @attr multiple - Enables selection of multiple options simultaneously.
+ * @attr disabled - Disables the trigger and prevents the popup from opening.
+ * @attr placeholder - Text shown in the trigger when no value is selected.
+ * @attr display - Controls how selected values appear in the trigger: `'auto'`,
+ *   `'chips'`, or `'compact'`.
  * @attr [has-value] - Present when one or more options are selected. Use with CSS
  *   selectors (e.g. `rc-select[has-value]`) for floating-label wrappers.
  *
@@ -76,10 +83,15 @@ declare global {
  * @cssprop [--rc-select-radius=var(--rc-control-radius)] - Trigger border radius.
  * @cssprop [--rc-select-border=var(--rc-border)] - Trigger border.
  * @cssprop [--rc-select-listbox-radius=var(--rc-control-radius)] - Popup listbox border radius.
+ * @cssprop [--rc-select-listbox-border=var(--rc-border)] - Popup listbox border.
+ * @cssprop [--rc-select-shadow=var(--rc-shadow)] - Popup listbox box shadow.
  * @cssprop [--rc-select-listbox-padding-block=var(--rc-control-padding-block)] - Popup listbox block padding.
  * @cssprop [--rc-select-chip-radius=var(--rc-radius-md)] - Multi-select chip border radius.
  * @cssprop [--rc-select-chip-padding-block=0.1em] - Multi-select chip block-axis padding.
  * @cssprop [--rc-select-chip-padding-inline=0.3em] - Multi-select chip inline-axis padding.
+ * @cssprop [--rc-select-chip-gap=calc(var(--rc-control-gap, 0.25em) * 0.8)] - Gap between chip
+ *   label and remove icon.
+ * @cssprop [--rc-select-chip-border=var(--rc-border)] - Multi-select chip border.
  * @cssprop [--rc-select-toggle-indicator-size=1.1em] - Inline size of the toggle indicator container.
  */
 export class RCSelect extends LitElement {
