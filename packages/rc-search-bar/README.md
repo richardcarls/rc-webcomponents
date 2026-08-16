@@ -83,9 +83,19 @@ The native WebKit cancel button is suppressed automatically. Set
 | `--rc-search-bar-height`         | `var(--rc-control-block-size, 2.5rem)`      | Wrapper block size                        |
 | `--rc-search-bar-padding-inline` | `var(--rc-control-padding-inline, 0.75rem)` | Wrapper horizontal padding                |
 | `--rc-search-bar-gap`            | `var(--rc-control-gap, 0.25em)`             | Gap between icon, input, and clear button |
+| `--rc-search-bar-input-color`    | inherit                                     | Input text color                          |
+| `--rc-search-bar-input-font-family` | inherit                                  | Input font family                         |
+| `--rc-search-bar-input-font-size` | inherit                                    | Input font size                           |
 | `--rc-search-bar-view-bg`        | `var(--rc-search-bar-bg)`                   | Search view panel background              |
+| `--rc-search-bar-view-color`     | `var(--rc-search-bar-color)`                | Search view panel text color              |
 | `--rc-search-bar-view-radius`    | `var(--rc-search-bar-radius)`               | Search view panel radius                  |
 | `--rc-search-bar-view-shadow`    | `var(--rc-search-bar-shadow)`               | Search view panel elevation               |
+| `--rc-search-bar-view-border`    | `var(--rc-search-bar-border)`               | Search view panel border                  |
+| `--rc-search-bar-view-offset`    | `0.25rem`                                   | Gap between the search bar and the view panel below it |
+| `--rc-search-bar-view-padding-block` | `0.5rem`                                | Search view suggestion list block padding |
+| `--rc-search-bar-suggestion-min-block-size` | `2.75rem`                         | Datalist-derived suggestion row minimum block size |
+| `--rc-search-bar-suggestion-padding-inline` | `1rem`                            | Datalist-derived suggestion inline padding |
+| `--rc-search-bar-suggestion-hover-bg` | `ButtonFace`                         | Datalist-derived suggestion hover/focus background |
 
 ### CSS parts
 
@@ -93,6 +103,7 @@ The native WebKit cancel button is suppressed automatically. Set
 | --------- | ------------- | ------------------------------------ |
 | `root`    | wrapper `div` | The field chrome                     |
 | `leading` | `span`        | Wrapper around the leading icon slot |
+| `trailing` | `span`       | Wrapper around the trailing slot     |
 | `clear`   | `button`      | The clear button                     |
 | `view`    | `div`         | Search view panel                    |
 | `suggestions` | `div`     | Suggestions container                |
