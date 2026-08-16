@@ -1,5 +1,20 @@
 # @rcarls/rc-common
 
+## 0.4.0
+
+### Minor Changes
+
+- ccca8e2: Add navigation bar and rail packages with shared active-indicator positioning.
+- 037b1b3: Add shared drag gesture measurement and numeric snap helpers, migrate bottom
+  sheet settling to the shared velocity lifecycle, and add anchored settling and
+  swipe-to-collapse behavior to splitters.
+
+### Patch Changes
+
+- e57277f: Add Material 3 search-view, fixed-pane splitter, dialog scrim, and resize enhancements.
+
+  `rc-search-bar` now supports `variant="view"`, controlled/default open state, search-view methods, a rich `suggestions` slot, and datalist-derived text suggestions. `rc-splitter` adds `mode="fixed"` for clampable pixel primary panes. `rc-common` now honors CSS max-size constraints during resize gestures, and `rc-dialog` exposes a scrim token plus resize handle/origin hooks used by themed surfaces.
+
 ## 0.3.2
 
 ### Patch Changes
