@@ -60,6 +60,11 @@ export interface RCMenuButtonToggleEvent {
  * @csspart root - The root container element
  * @csspart popup - The popup container element
  *
+ * @attr open - Whether the menu popup is visible. Controlled mode: host writes silently.
+ * @attr default-open - Initial open state for uncontrolled mode. Ignored after the first
+ *   controlled write to `open`.
+ * @attr orientation - Arrow-key axis for opening the menu. Inherits from a parent
+ *   `rc-menubar` or `[role="menubar"]` when unset.
  * @attr placement - Preferred placement of the popup relative to the trigger.
  */
 export class RCMenuButton extends LitElement {

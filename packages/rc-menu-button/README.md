@@ -55,8 +55,10 @@ item.
 
 | Property | Attribute | Type | Default | Description |
 |---|---|---|---|---|
-| `open` | `open` | `boolean` | `false` | Whether the menu popup is visible. Reflects to attribute. |
+| `open` | `open` | `boolean` | `false` | Whether the menu popup is visible. Reflects to attribute. Controlled mode: host writes silently. |
+| `defaultOpen` | `default-open` | `boolean` | `false` | Initial open state for uncontrolled mode. Ignored after the first controlled write to `open`. |
 | `orientation` | `orientation` | `'horizontal' \| 'vertical' \| undefined` | `undefined` | Arrow-key axis for opening the menu. When unset, inherited from a parent `rc-menubar` or `[role="menubar"]` element. Falls back to `'horizontal'`. |
+| `placement` | `placement` | `AnchorPlacement` | `'bottom-start'` | Preferred placement of the popup relative to the trigger. Switches to `'right-start'` under vertical orientation unless explicitly overridden. |
 
 ### CSS custom properties
 
