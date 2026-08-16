@@ -81,14 +81,44 @@ function parseAttr(s: string, defaultVal: number): number {
  * @fires rc-range-slider-input  - Fires while either thumb moves. Detail: `{ value }`.
  * @fires rc-range-slider-change - Fires when a thumb commits a new value. Detail: `{ value }`.
  *
+ * @attr min - Minimum slider value.
+ * @attr max - Maximum slider value.
+ * @attr step - Slider step.
+ * @attr disabled - Disables both thumbs and their hidden native input reflectors.
+ * @attr readonly - Prevents edits while preserving normal focus and display.
+ * @attr low-label - Accessible label for the low (min) thumb when the input does not provide one.
+ * @attr high-label - Accessible label for the high (max) thumb when the input does not provide
+ *   one.
+ * @attr low-value-text - Formatted screen-reader text for the low value. Falls back to the raw
+ *   number.
+ * @attr high-value-text - Formatted screen-reader text for the high value. Falls back to the raw
+ *   number.
+ * @attr display - Controls the live value display: absent (none), `float`, `inline-start`, or
+ *   `inline-end`.
+ * @attr orientation - Orientation, forwarded to the custom thumbs: `horizontal` or `vertical`.
+ *
  * @cssprop [--rc-range-slider-accent=Highlight] - Accent color for selected range, thumb border, focus, hover, and active states.
  * @cssprop [--rc-range-slider-gap=var(--rc-control-gap)] - Gap between track and inline value display.
  * @cssprop [--rc-range-slider-control-size=var(--rc-control-block-size)] - Track hit-area block size.
+ * @cssprop [--rc-range-slider-vertical-size=12.5rem] - Track length when `orientation="vertical"`.
+ * @cssprop [--rc-range-slider-track-size=0.1875rem] - Visual track thickness.
  * @cssprop [--rc-range-slider-track-background=color-mix(in srgb, CanvasText 25%, Canvas)] - Unselected track color.
  * @cssprop [--rc-range-slider-track-radius=var(--rc-control-radius)] - Track border radius.
+ * @cssprop [--rc-range-slider-range-background] - Filled selected-range color. Defaults to
+ *   `--rc-range-slider-accent` (`GrayText` when `disabled`).
  * @cssprop [--rc-range-slider-thumb-background=ButtonFace] - Thumb background color.
  * @cssprop [--rc-range-slider-thumb-border=var(--rc-range-slider-accent)] - Thumb border color.
  * @cssprop [--rc-range-slider-thumb-size=1.125rem] - Visual thumb inline/block size.
+ * @cssprop [--rc-range-slider-thumb-hover-background] - Thumb background on hover. Defaults to
+ *   `--rc-range-slider-accent` (`ButtonFace` when `disabled`).
+ * @cssprop [--rc-range-slider-thumb-hover-border] - Thumb border color on hover. Defaults to
+ *   `--rc-range-slider-accent` (`GrayText` when `disabled`).
+ * @cssprop [--rc-range-slider-thumb-active-background] - Thumb background while pressed. Defaults
+ *   to `--rc-range-slider-accent` (`ButtonFace` when `disabled`).
+ * @cssprop [--rc-range-slider-thumb-active-border] - Thumb border color while pressed. Defaults to
+ *   `--rc-range-slider-accent` (`GrayText` when `disabled`).
+ * @cssprop [--rc-range-slider-focus-outline] - Thumb focus ring color. Defaults to
+ *   `--rc-range-slider-accent` (`GrayText` when `disabled`).
  * @cssprop [--rc-range-slider-value-color=var(--rc-text-disabled)] - Value display text color.
  * @cssprop [--rc-thumb-radius=9px] - Half the thumb width; used to align float value displays and range fill.
  * @cssprop [--rc-range-slider-float-value-block-offset=-1.4em] - Block-axis offset for horizontal float value displays.
