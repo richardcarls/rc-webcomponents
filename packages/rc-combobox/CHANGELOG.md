@@ -1,5 +1,13 @@
 # @rcarls/rc-combobox
 
+## 0.4.1
+
+### Patch Changes
+
+- @rcarls/rc-common@0.4.1
+- @rcarls/rc-listbox@0.4.1
+- @rcarls/rc-select@0.4.1
+
 ## 0.4.0
 
 ### Patch Changes

@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Progressive-enhancement button wrapper with structural state affordances.",
   "repository": {
     "type": "git",
