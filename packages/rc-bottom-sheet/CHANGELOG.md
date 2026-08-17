@@ -1,5 +1,12 @@
 # @rcarls/rc-bottom-sheet
 
+## 0.4.1
+
+### Patch Changes
+
+- @rcarls/rc-common@0.4.1
+- @rcarls/rc-dialog@0.4.1
+
 ## 0.4.0
 
 ### Minor Changes

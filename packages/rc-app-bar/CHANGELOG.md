@@ -1,5 +1,11 @@
 # @rcarls/rc-app-bar
 
+## 0.4.1
+
+### Patch Changes
+
+- @rcarls/rc-common@0.4.1
+
 ## 0.4.0
 
 ### Patch Changes
