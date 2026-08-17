@@ -125,6 +125,9 @@ This project uses Yarn 4.x (Berry) workspaces and plug-and-play (PnP).
 Vite builds ESM and UMD output plus type declarations. Tests run with Vitest and WebdriverIO.
 The documentation site uses Docusaurus.
 
+Maintainers should follow the [tag-driven npm release runbook](RELEASING.md) when versioning or
+publishing the synchronized workspace packages.
+
 > **Note:** Use the root `build` script to build all workspace packages in topological order.
 > Rebuild package dependencies before running tests.
 

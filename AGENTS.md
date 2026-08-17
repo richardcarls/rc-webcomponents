@@ -342,3 +342,7 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
   dry-run pack export validation.
 - Use `yarn.cmd validate:release` only on a release merge commit to verify the
   exact tag, fixed-group versions, and absence of pending changesets.
+- Follow `RELEASING.md` for the protected-tag and npm Trusted Publishing flow.
+  Yarn must pack the workspaces to rewrite `workspace:*`; the npm CLI must
+  publish the resulting tarballs so it can perform the OIDC exchange. Never add
+  an npm token fallback to the release workflow.

@@ -11,7 +11,12 @@ function git(root, ...args) {
   execFileSync('git', ['-C', root, ...args], { stdio: 'ignore' });
 }
 
-function createReleaseRepo({ packageVersion = '1.2.3', tag, pendingChangeset = false }) {
+function createReleaseRepo({
+  packageVersion = '1.2.3',
+  tag,
+  pendingChangeset = false,
+  releaseOnMain = true,
+}) {
   const root = mkdtempSync(join(tmpdir(), 'rc-release-validation-'));
 
   mkdirSync(join(root, 'packages', 'example'), { recursive: true });
@@ -29,8 +34,18 @@ function createReleaseRepo({ packageVersion = '1.2.3', tag, pendingChangeset = f
   git(root, 'init');
   git(root, 'config', 'user.name', 'Test User');
   git(root, 'config', 'user.email', 'test@example.com');
+  git(root, 'config', 'commit.gpgsign', 'false');
   git(root, 'add', '.');
   git(root, 'commit', '-m', 'chore: release');
+
+  if (!releaseOnMain) {
+    git(root, 'update-ref', 'refs/remotes/origin/main', 'HEAD');
+    writeFileSync(join(root, 'release-marker.txt'), 'release\n');
+    git(root, 'add', '.');
+    git(root, 'commit', '-m', 'chore: release candidate');
+  } else {
+    git(root, 'update-ref', 'refs/remotes/origin/main', 'HEAD');
+  }
 
   if (tag) {
     git(root, 'tag', tag);
@@ -40,10 +55,16 @@ function createReleaseRepo({ packageVersion = '1.2.3', tag, pendingChangeset = f
 }
 
 function validate(root) {
-  return spawnSync(process.execPath, [validator], {
+  const result = spawnSync(process.execPath, [validator], {
     cwd: root,
     encoding: 'utf8',
   });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  return result;
 }
 
 test('accepts an exact semantic tag matching all package versions', () => {
@@ -56,7 +77,7 @@ test('rejects a release commit without an exact tag', () => {
   const result = validate(createReleaseRepo({}));
 
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /exact semantic-version tag/);
+  assert.match(result.stderr, /exact stable semantic-version tag/);
 });
 
 test('rejects a tag that does not match package versions', () => {
@@ -71,4 +92,18 @@ test('rejects pending changesets', () => {
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /pending changesets remain/);
+});
+
+test('rejects prerelease tags', () => {
+  const result = validate(createReleaseRepo({ tag: 'v1.2.3-beta.1' }));
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /not a stable semantic version/);
+});
+
+test('rejects a tagged commit that is not contained in origin main', () => {
+  const result = validate(createReleaseRepo({ releaseOnMain: false, tag: 'v1.2.3' }));
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /must be contained in origin\/main/);
 });
