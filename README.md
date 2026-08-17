@@ -8,6 +8,8 @@ Components are fully typed and developed primarily with [Lit](https://lit.dev).
 
 **[Documentation and component demos](https://richardcarls.github.io/rc-webcomponents/)**
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E4P62596QR)
+
 ## Design principles
 
 These principles guide every component in the collection. Web applications need fundamental
