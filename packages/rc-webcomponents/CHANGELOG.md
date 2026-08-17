@@ -1,5 +1,48 @@
 # @rcarls/rc-webcomponents
 
+## 0.4.1
+
+### Patch Changes
+
+- 27ed8b6: Fix internal `workspace:*` dependency ranges shipping unresolved in published packages.
+  `changeset publish` shells out to plain `npm publish` for any package manager other than
+  pnpm, which doesn't understand Yarn's `workspace:` protocol, so every previously published
+  version referenced sibling packages as the literal string `workspace:*` (uninstallable
+  outside this workspace). Releases now let Yarn pack each workspace so those ranges become
+  real versions, then publish the resulting tarballs with npm's CLI through GitHub Actions
+  Trusted Publishing. The flow verifies registry metadata and provenance and safely resumes a
+  partially completed release.
+  - @rcarls/rc-accordion@0.4.1
+  - @rcarls/rc-app-bar@0.4.1
+  - @rcarls/rc-bottom-sheet@0.4.1
+  - @rcarls/rc-button@0.4.1
+  - @rcarls/rc-card@0.4.1
+  - @rcarls/rc-chip@0.4.1
+  - @rcarls/rc-combobox@0.4.1
+  - @rcarls/rc-dialog@0.4.1
+  - @rcarls/rc-disclosure@0.4.1
+  - @rcarls/rc-fab@0.4.1
+  - @rcarls/rc-fab-menu@0.4.1
+  - @rcarls/rc-listbox@0.4.1
+  - @rcarls/rc-markdown-editor@0.4.1
+  - @rcarls/rc-menu@0.4.1
+  - @rcarls/rc-menu-button@0.4.1
+  - @rcarls/rc-menubar@0.4.1
+  - @rcarls/rc-navigation-bar@0.4.1
+  - @rcarls/rc-navigation-rail@0.4.1
+  - @rcarls/rc-range-slider@0.4.1
+  - @rcarls/rc-search-bar@0.4.1
+  - @rcarls/rc-select@0.4.1
+  - @rcarls/rc-segmented-button@0.4.1
+  - @rcarls/rc-slider@0.4.1
+  - @rcarls/rc-snackbar@0.4.1
+  - @rcarls/rc-splitter@0.4.1
+  - @rcarls/rc-switch@0.4.1
+  - @rcarls/rc-textarea@0.4.1
+  - @rcarls/rc-toolbar@0.4.1
+  - @rcarls/rc-transfer-list@0.4.1
+  - @rcarls/rc-virtual-canvas@0.4.1
+
 ## 0.4.0
 
 ### Patch Changes

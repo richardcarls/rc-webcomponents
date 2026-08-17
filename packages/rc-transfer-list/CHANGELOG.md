@@ -1,5 +1,13 @@
 # @rcarls/rc-transfer-list
 
+## 0.4.1
+
+### Patch Changes
+
+- @rcarls/rc-common@0.4.1
+- @rcarls/rc-listbox@0.4.1
+- @rcarls/rc-toolbar@0.4.1
+
 ## 0.4.0
 
 ### Patch Changes

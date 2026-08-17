@@ -1,5 +1,11 @@
 # @rcarls/rc-textarea-adapters
 
+## 0.4.1
+
+### Patch Changes
+
+- @rcarls/rc-textarea@0.4.1
+
 ## 0.4.0
 
 ### Patch Changes
