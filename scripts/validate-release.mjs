@@ -5,7 +5,11 @@ import { join } from 'node:path';
 const root = process.cwd();
 
 function git(...args) {
-  return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+  return execFileSync('git', args, {
+    cwd: root,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  }).trim();
 }
 
 const errors = [];
@@ -14,11 +18,26 @@ let tag = '';
 try {
   tag = git('describe', '--tags', '--exact-match', 'HEAD');
 } catch {
-  errors.push('HEAD must have an exact semantic-version tag before publishing');
+  errors.push('HEAD must have an exact stable semantic-version tag before publishing');
 }
 
-if (tag && !/^v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(tag)) {
-  errors.push(`HEAD tag is not a semantic version: ${tag}`);
+if (tag && !/^v\d+\.\d+\.\d+$/.test(tag)) {
+  errors.push(`HEAD tag is not a stable semantic version: ${tag}`);
+}
+
+try {
+  git('rev-parse', '--verify', 'origin/main');
+
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', 'HEAD', 'origin/main'], {
+      cwd: root,
+      stdio: 'ignore',
+    });
+  } catch {
+    errors.push('tagged release commit must be contained in origin/main');
+  }
+} catch {
+  errors.push('origin/main must be available for release validation');
 }
 
 const expectedVersion = tag.replace(/^v/, '');
@@ -34,8 +53,9 @@ for (const directory of packageDirs) {
   }
 }
 
-const pendingChangesets = readdirSync(join(root, '.changeset'))
-  .filter((name) => name.endsWith('.md') && name !== 'README.md');
+const pendingChangesets = readdirSync(join(root, '.changeset')).filter(
+  (name) => name.endsWith('.md') && name !== 'README.md',
+);
 
 if (pendingChangesets.length > 0) {
   errors.push(`pending changesets remain: ${pendingChangesets.join(', ')}`);
