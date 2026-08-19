@@ -122,6 +122,15 @@ export class RCDisclosure extends HTMLElement {
     $summary?.setAttribute('aria-controls', $details.id);
 
     $details.addEventListener('toggle', this._onToggle);
+
+    // If the host hasn't been given an explicit initial `open` of its own,
+    // adopt whatever the wrapped <details> markup already says instead of
+    // silently forcing it closed on connect — plain `<details open>`
+    // should still behave the way it always has when nothing overrides it.
+    if (!this.hasAttribute('open') && $details.open) {
+      this._reflectOpen(true);
+    }
+
     this._syncDetailsOpen();
     this._reflectOpen($details.open);
     this._openForCurrentHash();
