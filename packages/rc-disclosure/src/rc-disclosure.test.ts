@@ -43,6 +43,41 @@ test('rc-disclosure mirrors native toggle state', async () => {
   expect(toggleSpy).toHaveBeenCalledOnce();
 });
 
+test('rc-disclosure adopts an initial open <details> when the host has no open attribute of its own', async () => {
+  const screen = render(html`
+    <rc-disclosure data-testid="host">
+      <details open>
+        <summary>Status</summary>
+        <p>Body</p>
+      </details>
+    </rc-disclosure>
+  `);
+
+  const $host = screen.getByTestId('host').element() as RCDisclosure;
+  const $details = $host.querySelector('details') as HTMLDetailsElement;
+
+  expect($details.open).toBe(true);
+  expect($host.open).toBe(true);
+  expect($host.hasAttribute('open')).toBe(true);
+});
+
+test('rc-disclosure stays closed when neither the host nor the details specify open', async () => {
+  const screen = render(html`
+    <rc-disclosure data-testid="host">
+      <details>
+        <summary>Status</summary>
+        <p>Body</p>
+      </details>
+    </rc-disclosure>
+  `);
+
+  const $host = screen.getByTestId('host').element() as RCDisclosure;
+  const $details = $host.querySelector('details') as HTMLDetailsElement;
+
+  expect($details.open).toBe(false);
+  expect($host.open).toBe(false);
+});
+
 test('rc-disclosure opens matching fragment targets', async () => {
   const screen = render(html`
     <rc-disclosure data-testid="host">
