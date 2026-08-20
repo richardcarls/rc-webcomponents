@@ -42,6 +42,11 @@ const config: Config = {
         { label: 'Theme previews', to: '/guide/theme-previews' },
         { label: 'Components', to: '/components/rc-select' },
         {
+          href: 'https://ko-fi.com/rcarls',
+          label: 'Donate',
+          position: 'right',
+        },
+        {
           href: 'https://github.com/richardcarls/rc-webcomponents',
           label: 'GitHub',
           position: 'right',

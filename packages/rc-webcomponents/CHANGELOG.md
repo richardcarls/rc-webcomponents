@@ -1,5 +1,42 @@
 # @rcarls/rc-webcomponents
 
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies [5178dcc]
+- Updated dependencies [b12bf1b]
+  - @rcarls/rc-bottom-sheet@0.4.2
+  - @rcarls/rc-disclosure@0.4.2
+  - @rcarls/rc-accordion@0.4.2
+  - @rcarls/rc-app-bar@0.4.2
+  - @rcarls/rc-button@0.4.2
+  - @rcarls/rc-card@0.4.2
+  - @rcarls/rc-chip@0.4.2
+  - @rcarls/rc-combobox@0.4.2
+  - @rcarls/rc-dialog@0.4.2
+  - @rcarls/rc-fab@0.4.2
+  - @rcarls/rc-fab-menu@0.4.2
+  - @rcarls/rc-listbox@0.4.2
+  - @rcarls/rc-markdown-editor@0.4.2
+  - @rcarls/rc-menu@0.4.2
+  - @rcarls/rc-menu-button@0.4.2
+  - @rcarls/rc-menubar@0.4.2
+  - @rcarls/rc-navigation-bar@0.4.2
+  - @rcarls/rc-navigation-rail@0.4.2
+  - @rcarls/rc-range-slider@0.4.2
+  - @rcarls/rc-search-bar@0.4.2
+  - @rcarls/rc-select@0.4.2
+  - @rcarls/rc-segmented-button@0.4.2
+  - @rcarls/rc-slider@0.4.2
+  - @rcarls/rc-snackbar@0.4.2
+  - @rcarls/rc-splitter@0.4.2
+  - @rcarls/rc-switch@0.4.2
+  - @rcarls/rc-textarea@0.4.2
+  - @rcarls/rc-toolbar@0.4.2
+  - @rcarls/rc-transfer-list@0.4.2
+  - @rcarls/rc-virtual-canvas@0.4.2
+
 ## 0.4.1
 
 ### Patch Changes

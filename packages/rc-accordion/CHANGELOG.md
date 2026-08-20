@@ -1,5 +1,12 @@
 # @rcarls/rc-accordion
 
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies [b12bf1b]
+  - @rcarls/rc-disclosure@0.4.2
+
 ## 0.4.1
 
 ### Patch Changes

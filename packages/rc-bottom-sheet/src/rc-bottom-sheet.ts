@@ -4,7 +4,6 @@ import { RCDialog } from '@rcarls/rc-dialog';
 import {
   findExtremeSnapIndex,
   findNearestSnapIndex,
-  pinElementBox,
   type ResizeDirection,
   type ResizeLifecycleDetail,
   type ResizeOrigin,
@@ -93,6 +92,37 @@ const LIGHT_DOM_CSS = `
 // Floor so a noisy near-zero-distance release can't misread as a decisive
 // fling; a real swipe travels at least this far even if it's very quick.
 const MIN_SWIPE_DISTANCE = 24;
+
+/**
+ * Pins only the block-axis (top/height) geometry as inline styles, leaving
+ * the inline axis (left/width) to CSS. `@rcarls/rc-common`'s
+ * `pinElementBox` pins all four edges — appropriate for its own drag-resize
+ * gesture math, where the inline axis can genuinely change — but a bottom
+ * sheet only ever resizes/repositions along the block axis; its own
+ * `LIGHT_DOM_CSS` deliberately leaves the inline axis owned by
+ * `inset-inline`/`inline-size` custom properties (e.g. so a host page can
+ * confine a sheet to a layout pane narrower than the viewport). Pinning
+ * `left`/`width` here would freeze whatever the *unconfined* box happened
+ * to measure at pin time as an inline style, which — having higher
+ * cascade priority than any stylesheet rule — permanently overrides that
+ * confinement regardless of specificity or layers.
+ */
+function pinBlockBox(target: HTMLElement): DOMRect {
+  const rect = target.getBoundingClientRect();
+
+  if (getComputedStyle(target).position === 'static') {
+    target.style.position = 'fixed';
+  }
+
+  target.style.translate = 'none';
+  target.style.insetBlockStart = 'auto';
+  target.style.marginBlock = '0';
+  target.style.boxSizing = 'border-box';
+  target.style.top = `${rect.top}px`;
+  target.style.height = `${rect.height}px`;
+
+  return rect;
+}
 
 /**
  * Modal bottom-sheet wrapper for a native `<dialog>`, built on `rc-dialog`.
@@ -240,9 +270,31 @@ export class RCBottomSheet extends RCDialog {
 
   private _activeSnapAnimation: Animation | null = null;
 
+  // Snap-point heights are resolved from the *current* viewport at the
+  // moment a snap is applied (dvh units, or a probe-element measurement for
+  // other CSS units) and then frozen as inline styles by pinBlockBox — nothing
+  // re-derives them afterward. A window resize/maximize/restore while a
+  // sheet is open (without the user dragging it) otherwise leaves it pinned
+  // to stale pre-resize geometry. Track the last-applied index so a resize
+  // can re-run the same snap against fresh geometry.
+  private _lastSnapIndex: number | null = null;
+  private readonly _onWindowResize = (): void => {
+    if (!this.open || this._lastSnapIndex === null) {
+      return;
+    }
+
+    this._snapToIndex(this._lastSnapIndex, 'instant', 'api');
+  };
+
   override connectedCallback(): void {
     super.connectedCallback();
     RCBottomSheet._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
+    window.addEventListener('resize', this._onWindowResize);
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    window.removeEventListener('resize', this._onWindowResize);
   }
 
   /**
@@ -330,13 +382,14 @@ export class RCBottomSheet extends RCDialog {
       return;
     }
 
-    // Pinning (border-box, explicit left/top/width/height) is normally
-    // established by the first drag gesture; snapTo() must do the same so a
-    // sheet that has never been dragged still measures and sets height
-    // consistently.
-    const rect = pinElementBox($dialog);
+    // Pinning (border-box, explicit top/height) is normally established by
+    // the first drag gesture; snapTo() must do the same so a sheet that has
+    // never been dragged still measures and sets height consistently.
+    const rect = pinBlockBox($dialog);
     const clampedIndex = Math.max(0, Math.min(index, points.length - 1));
     const requestedHeight = points[clampedIndex];
+
+    this._lastSnapIndex = clampedIndex;
 
     // An in-flight animation wins over inline geometry in the cascade. Pin
     // its current visual box before cancelling so the constrained target can

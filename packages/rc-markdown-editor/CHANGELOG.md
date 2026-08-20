@@ -1,5 +1,14 @@
 # @rcarls/rc-markdown-editor
 
+## 0.4.2
+
+### Patch Changes
+
+- @rcarls/rc-button@0.4.2
+- @rcarls/rc-select@0.4.2
+- @rcarls/rc-textarea@0.4.2
+- @rcarls/rc-toolbar@0.4.2
+
 ## 0.4.1
 
 ### Patch Changes
