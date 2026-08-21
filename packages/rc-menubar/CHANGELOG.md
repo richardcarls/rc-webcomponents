@@ -1,5 +1,13 @@
 # @rcarls/rc-menubar
 
+## 0.4.2
+
+### Patch Changes
+
+- @rcarls/rc-common@0.4.2
+- @rcarls/rc-menu@0.4.2
+- @rcarls/rc-menu-button@0.4.2
+
 ## 0.4.1
 
 ### Patch Changes
