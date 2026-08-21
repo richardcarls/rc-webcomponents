@@ -489,6 +489,47 @@ test('snap settling stays block-end anchored when CSS constrains the requested h
   $host.close();
 });
 
+test('window resize re-derives a pinned snap from the current CSS-driven position, not the stale pinned box', async () => {
+  const snapSpy = vi.fn();
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="132px 400px" @rc-bottom-sheet-snap=${snapSpy}>
+      <dialog aria-label="Nutrition" style="position: fixed; inset-block-end: 0px; left: 0; right: 0; margin: 0;">
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $host.snapTo(0, 'instant');
+  expect(snapSpy).toHaveBeenCalledTimes(1);
+
+  // Simulate a viewport shrink that a stale pin wouldn't reflect: pretend
+  // the sheet is still pinned somewhere higher up (as if a since-resized
+  // viewport used to be much taller). A correct re-derivation on resize
+  // must not simply trust this stale inline top — it should fall back to
+  // the dialog's own CSS-driven (inset-block-end: 0) position first.
+  $dialog.style.top = '50px';
+
+  window.dispatchEvent(new Event('resize'));
+
+  await vi.waitFor(() => expect(snapSpy).toHaveBeenCalledTimes(2));
+  expect(snapSpy.mock.calls[1][0].detail).toEqual({ index: 0, height: 132, trigger: 'api' });
+
+  const resettled = $dialog.getBoundingClientRect();
+
+  // Re-anchored to the viewport block-end, not left dangling at the
+  // corrupted stale top.
+  expect(Math.round(resettled.bottom)).toBe(Math.round(window.innerHeight));
+  expect(Math.round(resettled.height)).toBe(132);
+
+  $host.close();
+});
+
 test('snap settling consumes the authored easing token', async () => {
   const screen = render(html`
     <rc-bottom-sheet data-testid="host" snap-points="200px 320px">
