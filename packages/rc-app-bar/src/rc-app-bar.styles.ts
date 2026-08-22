@@ -61,6 +61,15 @@ export const appBarStyles = css`
     overflow: clip;
   }
 
+  /* M3: without a navigation icon, the headline aligns with the start
+   * margin of the content below the bar, not the bar's own edge padding
+   * (which is calibrated for the icon button's touch target, not bare
+   * text). Only applies when the leading slot is genuinely empty — the
+   * adjacent #leading.empty marker already exists for the .empty class. */
+  #leading.empty + #title {
+    padding-inline-start: var(--rc-app-bar-title-start-padding, 0px);
+  }
+
   /* Compact-row title: all non-expanded states and the collapsed endpoint. */
   :host(:not([variant='expanded'])) #title ::slotted(*),
   :host([variant='expanded'][data-collapsed]) #title ::slotted(*) {

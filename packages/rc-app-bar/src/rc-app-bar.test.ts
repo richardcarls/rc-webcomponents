@@ -95,6 +95,40 @@ test('expanded title row uses the title content natural height', async () => {
   expect(host.style.getPropertyValue('--_rc-app-bar-collapse-distance')).not.toBe('');
 });
 
+test('title-start-padding is unset when a leading icon is present', async () => {
+  const screen = render(html`
+    <rc-app-bar data-testid="host" style="--rc-app-bar-title-start-padding: 24px">
+      <button slot="leading" aria-label="Back">&larr;</button>
+      <span data-testid="title">Page title</span>
+    </rc-app-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  await host.updateComplete;
+
+  // _hasLeading (and the shadow #leading.empty class it drives) updates from
+  // the slot's own 'slotchange' event, which fires asynchronously — a tick
+  // after updateComplete, not within it.
+  await vi.waitFor(() => {
+    expect(getComputedStyle(shadowEl(host, '#title')).paddingInlineStart).toBe('0px');
+  });
+});
+
+test('title-start-padding applies when the leading slot is empty', async () => {
+  const screen = render(html`
+    <rc-app-bar data-testid="host" style="--rc-app-bar-title-start-padding: 24px">
+      <span data-testid="title">Page title</span>
+    </rc-app-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  await host.updateComplete;
+
+  await vi.waitFor(() => {
+    expect(getComputedStyle(shadowEl(host, '#title')).paddingInlineStart).toBe('24px');
+  });
+});
+
 test('center slot remains at the host midpoint with asymmetric edge controls', async () => {
   const screen = render(html`
     <rc-app-bar data-testid="host" style="width: 600px">
