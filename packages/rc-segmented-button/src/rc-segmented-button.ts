@@ -45,7 +45,7 @@ const LIGHT_DOM_CSS = `
     display: var(--_rc-segmented-button-segment-display, revert);
     align-items: center;
     justify-content: center;
-    gap: var(--rc-segmented-button-segment-gap);
+    gap: var(--rc-segmented-button-segment-gap, 0.5em);
     min-block-size: var(--rc-segmented-button-segment-min-block-size);
     padding-block: var(--rc-segmented-button-segment-padding-block, revert);
     padding-inline: var(--rc-segmented-button-segment-padding-inline, revert);
@@ -112,13 +112,31 @@ const LIGHT_DOM_CSS = `
     pointer-events: var(--_rc-segmented-button-radio-pointer-events, revert);
   }
 
+  /* Always reserved (never display:none) so a segment's width doesn't
+     change between checked/unchecked — only visibility toggles. A fixed
+     inline-size keeps the reserved width deterministic regardless of the
+     icon's own intrinsic size. */
   rc-segmented-button > fieldset > label > [data-rc-segmented-button-selected-icon] {
-    display: none;
+    display: var(--_rc-segmented-button-selected-icon-display, inline-grid);
+    inline-size: var(--rc-segmented-button-selected-icon-size, 1.25em);
+    place-items: center;
+    visibility: hidden;
   }
 
   rc-segmented-button > fieldset > label:has(input[type='radio']:checked) > [data-rc-segmented-button-selected-icon] {
-    display: var(--_rc-segmented-button-selected-icon-display, none);
-    place-items: center;
+    visibility: visible;
+  }
+
+  /* Mirrors the selected-icon slot's reserved width on the opposite side,
+     so the label text stays centered instead of leaning toward the
+     always-reserved leading icon slot. Logical inline-size + scoping via
+     :has() (only labels that opt into the checkmark pattern get a mirror)
+     keeps this RTL-correct and backward compatible for consumers not
+     using the selected-icon slot at all. */
+  rc-segmented-button > fieldset > label:has([data-rc-segmented-button-selected-icon])::after {
+    content: '';
+    inline-size: var(--rc-segmented-button-selected-icon-size, 1.25em);
+    visibility: hidden;
   }
 }
 `;
@@ -144,8 +162,10 @@ export interface RCSegmentedButtonChangeDetail {
  * @attr disabled - Mirrors disabled state to the native fieldset.
  * @attr orientation - Keyboard orientation: `horizontal` or `vertical`.
  *
- * @cssprop [--rc-segmented-button-segment-gap] - Gap between segment icon and label content
- *   (defers to native label layout when unset).
+ * @cssprop [--rc-segmented-button-segment-gap=0.5em] - Gap between segment icon and label content.
+ * @cssprop [--rc-segmented-button-selected-icon-size=1.25em] - Reserved inline-size of the
+ *   selected-icon slot (and its opposite-side mirror spacer) — constant regardless of checked
+ *   state, so segment width doesn't change on selection.
  * @cssprop [--rc-segmented-button-segment-min-block-size] - Minimum segment block size (defers
  *   to native label layout when unset).
  * @cssprop [--rc-segmented-button-segment-padding-block=revert] - Segment block-axis padding

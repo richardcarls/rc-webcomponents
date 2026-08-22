@@ -36,6 +36,7 @@
     --rc-segmented-button-selected-color: var(--rc-highlight-text, HighlightText);
     --rc-segmented-button-segment-min-block-size: var(--rc-control-block-size, 2.5rem);
     --rc-segmented-button-segment-padding-inline: var(--rc-control-padding-inline, 0.75rem);
+    --rc-segmented-button-segment-gap: 0.5em;
     --rc-segmented-button-focus-ring: var(--rc-focus-ring);
     --rc-segmented-button-focus-ring-offset: -2px;
     --rc-segmented-button-disabled-opacity: var(--rc-disabled-opacity);
