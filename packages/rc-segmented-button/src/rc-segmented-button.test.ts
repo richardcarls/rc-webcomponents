@@ -72,6 +72,60 @@ test('preserves native fieldset, legend, and radio appearance without theme toke
   expect(radioStyles.inlineSize).toBe(nativeRadioStyles.inlineSize);
 });
 
+test('selected-icon slot reserves constant width, regardless of checked state', async () => {
+  const screen = render(html`
+    <rc-segmented-button
+      data-testid="host"
+      style="
+        --_rc-segmented-button-segment-display: inline-flex;
+        --_rc-segmented-button-radio-position: absolute;
+        --_rc-segmented-button-radio-inline-size: 1px;
+        --_rc-segmented-button-radio-block-size: 1px;
+        --_rc-segmented-button-radio-margin: -1px;
+        --_rc-segmented-button-radio-opacity: 0;
+      "
+    >
+      <fieldset>
+        <legend>Size</legend>
+        <label data-testid="unchecked-label">
+          <input type="radio" name="size-icon" value="small" />
+          <span data-testid="unchecked-icon" data-rc-segmented-button-selected-icon>✓</span>
+          <span>Same label</span>
+        </label>
+        <label data-testid="checked-label">
+          <input type="radio" name="size-icon" value="medium" checked />
+          <span data-testid="checked-icon" data-rc-segmented-button-selected-icon>✓</span>
+          <span>Same label</span>
+        </label>
+      </fieldset>
+    </rc-segmented-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCSegmentedButton;
+
+  await flushSegmented(host);
+
+  const uncheckedLabel = await screen.getByTestId('unchecked-label').element();
+  const checkedLabel = await screen.getByTestId('checked-label').element();
+  const uncheckedIcon = await screen.getByTestId('unchecked-icon').element();
+  const checkedIcon = await screen.getByTestId('checked-icon').element();
+
+  // Same reserved width either way — no display:none on the unchecked slot.
+  expect(getComputedStyle(uncheckedIcon).inlineSize).toBe(getComputedStyle(checkedIcon).inlineSize);
+  expect(getComputedStyle(uncheckedIcon).visibility).toBe('hidden');
+  expect(getComputedStyle(checkedIcon).visibility).toBe('visible');
+
+  // Both labels end up the same width — the whole point of reserving the slot.
+  expect(uncheckedLabel.getBoundingClientRect().width).toBeCloseTo(
+    checkedLabel.getBoundingClientRect().width,
+    0,
+  );
+
+  // Trailing mirror spacer exists and matches the icon slot's width.
+  const uncheckedAfterWidth = getComputedStyle(uncheckedLabel, '::after').inlineSize;
+
+  expect(uncheckedAfterWidth).toBe(getComputedStyle(uncheckedIcon).inlineSize);
+});
+
 test('host value writes are silent and sync the checked radio', async () => {
   const listener = vi.fn();
   const screen = render(html`
