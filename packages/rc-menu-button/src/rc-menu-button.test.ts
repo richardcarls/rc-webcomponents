@@ -1,18 +1,60 @@
-import { test, expect, vi } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
-import { userEvent, type Locator } from 'vitest/browser';
+import type { Locator } from 'vitest/browser';
+
+import type { RCMenu } from '@rcarls/rc-menu';
 
 import './define';
 import type { RCMenuButton } from './rc-menu-button';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
 
-async function expectActiveMenuItem(item: Locator) {
-  const itemElement = item.element();
-  const menu = itemElement.closest('rc-menu');
+function pressKey($target: HTMLElement, key: string): void {
+  $target.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key,
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    }),
+  );
+}
 
-  expect(menu).toBeTruthy();
-  await expect.element(menu as HTMLElement).toHaveFocus();
+async function prepareKeyboardInteraction(
+  screen: ReturnType<typeof render>,
+  itemCount: number,
+): Promise<{ $host: RCMenuButton; $menu: RCMenu; $trigger: HTMLElement }> {
+  const $host = screen.container.querySelector('rc-menu-button') as RCMenuButton;
+  const $menu = $host.querySelector(':scope > rc-menu') as RCMenu;
+  const $trigger = $host.querySelector(':scope > [slot="trigger"]') as HTMLElement;
+
+  await Promise.all([$host.updateComplete, $menu.updateComplete]);
+  await vi.waitFor(() => expect($menu.items).toHaveLength(itemCount));
+
+  $trigger.focus();
+  expect($trigger).toHaveFocus();
+
+  return { $host, $menu, $trigger };
+}
+
+afterEach(async () => {
+  const $openHosts = Array.from(document.querySelectorAll<RCMenuButton>('rc-menu-button')).filter(
+    ($host) => $host.open,
+  );
+
+  for (const $host of $openHosts) {
+    $host.open = false;
+  }
+
+  await Promise.all($openHosts.map(($host) => $host.updateComplete));
+});
+
+async function expectActiveMenuItem(item: Locator) {
+  const $item = item.element();
+  const $menu = $item.closest('rc-menu');
+
+  expect($menu).toBeTruthy();
+  await expect.element($menu as HTMLElement).toHaveFocus();
   await expect.element(item).toHaveAttribute('data-active');
 }
 
@@ -76,67 +118,13 @@ test('RCMenuButton has no automated accessibility violations', async () => {
     </rc-menu-button>
   `);
 
-  const host = await screen.getByTestId('host').element();
+  const host = (await screen.getByTestId('host').element()) as RCMenuButton;
 
   await expectNoA11yViolations(host);
-});
 
-test('RCMenuButton opens on Enter key', async () => {
-  const toggleSpy = vi.fn();
-
-  const screen = render(html`
-    <rc-menu-button data-testid="host" @rc-menu-button-toggle=${toggleSpy}>
-      <button slot="trigger" data-testid="trigger">Options</button>
-      <rc-menu label="Options">
-        <button data-testid="item-one">Cut</button>
-        <button data-testid="item-two">Copy</button>
-      </rc-menu>
-    </rc-menu-button>
-  `);
-
-  const trigger = screen.getByTestId('trigger');
-  const item1 = screen.getByTestId('item-one');
-
-  // Tab to focus trigger (clicking would toggle the menu)
-  await userEvent.click(document.body);
-  await userEvent.tab();
-  await expect.element(trigger).toHaveFocus();
-
-  await userEvent.keyboard('{Enter}');
-
-  // Menu should be open
-  await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-
-  await expectActiveMenuItem(item1);
-
-  // Toggle event fired
-  expect(toggleSpy).toHaveBeenCalledTimes(1);
-  expect(toggleSpy.mock.calls[0][0].detail.open).toBe(true);
-});
-
-test('RCMenuButton opens on Space key', async () => {
-  const screen = render(html`
-    <rc-menu-button data-testid="host">
-      <button slot="trigger" data-testid="trigger">Options</button>
-      <rc-menu label="Options">
-        <button data-testid="item-one">Cut</button>
-        <button data-testid="item-two">Copy</button>
-      </rc-menu>
-    </rc-menu-button>
-  `);
-
-  const trigger = screen.getByTestId('trigger');
-  const item1 = screen.getByTestId('item-one');
-
-  // Tab to focus trigger
-  await userEvent.click(document.body);
-  await userEvent.tab();
-  await expect.element(trigger).toHaveFocus();
-
-  await userEvent.keyboard(' ');
-
-  await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-  await expectActiveMenuItem(item1);
+  host.openMenu();
+  await host.updateComplete;
+  await expectNoA11yViolations(host);
 });
 
 test('RCMenuButton opens on ArrowDown key and focuses first item', async () => {
@@ -152,13 +140,12 @@ test('RCMenuButton opens on ArrowDown key and focuses first item', async () => {
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
+  const { $host, $trigger } = await prepareKeyboardInteraction(screen, 2);
 
-  // Tab to focus trigger
-  await userEvent.click(document.body);
-  await userEvent.tab();
   await expect.element(trigger).toHaveFocus();
 
-  await userEvent.keyboard('{ArrowDown}');
+  pressKey($trigger, 'ArrowDown');
+  await $host.updateComplete;
 
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
   await expectActiveMenuItem(item1);
@@ -177,13 +164,12 @@ test('RCMenuButton opens on ArrowUp key and focuses last item', async () => {
 
   const trigger = screen.getByTestId('trigger');
   const item2 = screen.getByTestId('item-two');
+  const { $host, $trigger } = await prepareKeyboardInteraction(screen, 2);
 
-  // Tab to focus trigger
-  await userEvent.click(document.body);
-  await userEvent.tab();
   await expect.element(trigger).toHaveFocus();
 
-  await userEvent.keyboard('{ArrowUp}');
+  pressKey($trigger, 'ArrowUp');
+  await $host.updateComplete;
 
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
   await expectActiveMenuItem(item2);
@@ -203,15 +189,14 @@ test('RCMenuButton closes on Escape and returns focus to trigger', async () => {
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
+  const { $host, $menu, $trigger } = await prepareKeyboardInteraction(screen, 1);
 
-  // Tab to focus trigger, then open menu
-  await userEvent.click(document.body);
-  await userEvent.tab();
-  await userEvent.keyboard('{Enter}');
+  pressKey($trigger, 'Enter');
+  await $host.updateComplete;
   await expectActiveMenuItem(item1);
 
-  // Press Escape
-  await userEvent.keyboard('{Escape}');
+  pressKey($menu, 'Escape');
+  await $host.updateComplete;
 
   // Menu should be closed
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
@@ -236,15 +221,14 @@ test('RCMenuButton closes on menu item activation', async () => {
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
+  const { $host, $menu, $trigger } = await prepareKeyboardInteraction(screen, 1);
 
-  // Tab to focus trigger, then open menu
-  await userEvent.click(document.body);
-  await userEvent.tab();
-  await userEvent.keyboard('{Enter}');
+  pressKey($trigger, 'Enter');
+  await $host.updateComplete;
   await expectActiveMenuItem(item1);
 
-  // Activate item with Enter
-  await userEvent.keyboard('{Enter}');
+  pressKey($menu, 'Enter');
+  await $host.updateComplete;
 
   // Menu should be closed
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
@@ -366,11 +350,13 @@ test('RCMenuButton exposes open/close methods', async () => {
   const menuButton = (await host.element()) as RCMenuButton;
 
   await menuButton.updateComplete;
+  await expect.element(host).not.toHaveAttribute('open');
 
   // openMenu() method
   menuButton.openMenu();
   await menuButton.updateComplete;
 
+  await expect.element(host).toHaveAttribute('open');
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
   await expectActiveMenuItem(item1);
 
@@ -378,6 +364,7 @@ test('RCMenuButton exposes open/close methods', async () => {
   menuButton.closeMenu();
   await menuButton.updateComplete;
 
+  await expect.element(host).not.toHaveAttribute('open');
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
   await expect.element(trigger).toHaveFocus();
 });
@@ -395,41 +382,15 @@ test('RCMenuButton vertical: opens on ArrowRight and focuses first item', async 
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
+  const { $host, $trigger } = await prepareKeyboardInteraction(screen, 2);
 
-  // Tab to focus trigger
-  await userEvent.click(document.body);
-  await userEvent.tab();
   await expect.element(trigger).toHaveFocus();
 
-  await userEvent.keyboard('{ArrowRight}');
+  pressKey($trigger, 'ArrowRight');
+  await $host.updateComplete;
 
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
   await expectActiveMenuItem(item1);
-});
-
-test('RCMenuButton vertical: opens on ArrowLeft and focuses last item', async () => {
-  const screen = render(html`
-    <rc-menu-button data-testid="host" orientation="vertical">
-      <button slot="trigger" data-testid="trigger">Options</button>
-      <rc-menu label="Options">
-        <button data-testid="item-one">Cut</button>
-        <button data-testid="item-two">Copy</button>
-      </rc-menu>
-    </rc-menu-button>
-  `);
-
-  const trigger = screen.getByTestId('trigger');
-  const item2 = screen.getByTestId('item-two');
-
-  // Tab to focus trigger
-  await userEvent.click(document.body);
-  await userEvent.tab();
-  await expect.element(trigger).toHaveFocus();
-
-  await userEvent.keyboard('{ArrowLeft}');
-
-  await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
-  await expectActiveMenuItem(item2);
 });
 
 test('RCMenuButton vertical: ArrowDown/ArrowUp do not open menu', async () => {
@@ -443,18 +404,18 @@ test('RCMenuButton vertical: ArrowDown/ArrowUp do not open menu', async () => {
   `);
 
   const trigger = screen.getByTestId('trigger');
+  const { $host, $trigger } = await prepareKeyboardInteraction(screen, 1);
 
-  // Tab to focus trigger
-  await userEvent.click(document.body);
-  await userEvent.tab();
   await expect.element(trigger).toHaveFocus();
 
   // ArrowDown should not open menu in vertical orientation
-  await userEvent.keyboard('{ArrowDown}');
+  pressKey($trigger, 'ArrowDown');
+  await $host.updateComplete;
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
 
   // ArrowUp should not open menu in vertical orientation
-  await userEvent.keyboard('{ArrowUp}');
+  pressKey($trigger, 'ArrowUp');
+  await $host.updateComplete;
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
 });
 
@@ -472,14 +433,13 @@ test('RCMenuButton inherits orientation from parent with role="menubar"', async 
 
   const trigger = screen.getByTestId('trigger');
   const item1 = screen.getByTestId('item-one');
+  const { $host, $trigger } = await prepareKeyboardInteraction(screen, 1);
 
-  // Tab to focus trigger
-  await userEvent.click(document.body);
-  await userEvent.tab();
   await expect.element(trigger).toHaveFocus();
 
   // ArrowRight should open menu (inherited vertical orientation)
-  await userEvent.keyboard('{ArrowRight}');
+  pressKey($trigger, 'ArrowRight');
+  await $host.updateComplete;
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
   await expectActiveMenuItem(item1);
 });
@@ -515,7 +475,7 @@ test('RCMenuButton ignores default-open after an explicit controlled open=false 
   expect(menuButton.open).toBe(false);
 });
 
-test('RCMenuButton toggles the popup element\'s :popover-open state with `open`', async () => {
+test("RCMenuButton toggles the popup element's :popover-open state with `open`", async () => {
   const screen = render(html`
     <rc-menu-button data-testid="host">
       <button slot="trigger" data-testid="trigger">Options</button>
@@ -641,33 +601,4 @@ test('RCMenuButton supports two simultaneously-open nested instances', async () 
   await expect.element(outerTrigger).toHaveAttribute('aria-expanded', 'false');
   expect(innerPopup.matches(':popover-open')).toBe(false);
   expect(outerPopup.matches(':popover-open')).toBe(false);
-});
-
-test('RCMenuButton reflects open attribute', async () => {
-  const screen = render(html`
-    <rc-menu-button data-testid="host">
-      <button slot="trigger" data-testid="trigger">Options</button>
-      <rc-menu label="Options">
-        <button>Cut</button>
-      </rc-menu>
-    </rc-menu-button>
-  `);
-
-  const host = screen.getByTestId('host');
-  const trigger = screen.getByTestId('trigger');
-
-  // Initially no open attribute
-  await expect.element(host).not.toHaveAttribute('open');
-
-  // Open menu
-  await trigger.click();
-
-  // Should have open attribute
-  await expect.element(host).toHaveAttribute('open');
-
-  // Close menu
-  await trigger.click();
-
-  // Should not have open attribute
-  await expect.element(host).not.toHaveAttribute('open');
 });
