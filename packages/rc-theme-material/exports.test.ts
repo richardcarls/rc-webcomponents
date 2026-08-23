@@ -35,7 +35,7 @@ const componentEntries = [
   'virtual-canvas',
 ] as const;
 
-test('every selective component stylesheet can be imported', async () => {
+test('all selective, utility, and aggregate Material stylesheets can be imported', async () => {
   const imports = import.meta.glob('./components/*.css');
 
   for (const entry of componentEntries) {
@@ -44,13 +44,8 @@ test('every selective component stylesheet can be imported', async () => {
     expect(load, entry).toBeTypeOf('function');
     await load();
   }
-});
 
-test('state-layer utility stylesheet can be imported', async () => {
   await import('./state-layer.css');
-});
-
-test('aggregate Material entrypoints with motion mappings can be imported', async () => {
   await import('./bridge.css');
   await import('./defaults.css');
   await import('./theme.css');
