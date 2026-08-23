@@ -82,7 +82,6 @@ item.
 | `--rc-menu-button-indicator-size` | `1em` | Inline and block size reserved for the optional indicator |
 | `--rc-menu-button-indicator-color` | `currentColor` | Color of the optional indicator |
 | `--rc-menu-button-indicator-inset` | Trigger inline padding | Indicator distance from the trigger's inline end |
-| `--rc-menu-button-popup-z-index` | `1000` | `z-index` of the popup container |
 
 ### CSS parts
 

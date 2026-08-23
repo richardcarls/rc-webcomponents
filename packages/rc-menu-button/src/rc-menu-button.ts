@@ -55,7 +55,6 @@ export interface RCMenuButtonToggleEvent {
  * @cssprop [--rc-menu-button-indicator-size=1em] - Inline and block size of the slotted indicator
  * @cssprop [--rc-menu-button-indicator-color=currentColor] - Color of the slotted indicator
  * @cssprop [--rc-menu-button-indicator-inset=var(--rc-menu-button-trigger-padding-inline)] - Indicator distance from the trigger's inline end
- * @cssprop [--rc-menu-button-popup-z-index=1000] - Z-index of the popup overlay
  *
  * @csspart root - The root container element
  * @csspart popup - The popup container element
@@ -443,6 +442,15 @@ export class RCMenuButton extends LitElement {
 
     if (changedProperties.has('open')) {
       this._syncTriggerAria();
+
+      // A pending update can flush after the host (and its shadow tree) has
+      // already been disconnected — e.g. a framework unmounting this element
+      // in the same tick as an `open` change. togglePopover() throws
+      // InvalidStateError on a disconnected popover, so guard on connectivity
+      // rather than letting that reach the caller.
+      if (this._$popup?.isConnected) {
+        this._$popup.togglePopover(this.open);
+      }
     }
 
     if (changedProperties.has('placement') || changedProperties.has('orientation')) {
@@ -505,7 +513,7 @@ export class RCMenuButton extends LitElement {
         <div
           id="popup"
           part="popup"
-          ?hidden=${!this.open}
+          popover="manual"
           @rc-menu-close=${this._handleMenuClose}
           @rc-menu-activate=${this._handleMenuActivate}
         >

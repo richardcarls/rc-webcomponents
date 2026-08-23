@@ -109,11 +109,12 @@ export const menuButtonStyles = css`
   }
 
   #popup {
-    z-index: var(--rc-menu-button-popup-z-index, 1000);
-  }
-
-  #popup[hidden] {
-    display: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    overflow: visible;
+    color: inherit;
   }
 `;
 
