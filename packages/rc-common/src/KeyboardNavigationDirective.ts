@@ -184,21 +184,13 @@ class KeyboardNavigationDirective extends AsyncDirective {
 
   /**
    * @param _cb - Callback function invoked with the navigation action
-   * @param _options - Options object or deprecated boolean (deprecated).
-   * @deprecated Passing a boolean as the second parameter is deprecated.
-   *             Use an options object instead.
+   * @param _options - Keyboard navigation behavior options.
    */
-  render(
-    _cb: (action: KeyboardNavigationAction) => void,
-    _options?: KeyNavigationOptions | boolean,
-  ) {
+  render(_cb: (action: KeyboardNavigationAction) => void, _options?: KeyNavigationOptions) {
     return nothing;
   }
 
-  update(
-    part: ElementPart,
-    [cb, optionsOrBoolean]: Parameters<this['render']>,
-  ) {
+  update(part: ElementPart, [cb, options]: Parameters<this['render']>) {
     // Init listeners once on first connection
     if (this.isConnected && this._element?.deref() === undefined) {
       this._element = new WeakRef(part.element);
@@ -208,18 +200,7 @@ class KeyboardNavigationDirective extends AsyncDirective {
     // Always update callback and options (supports reactive property changes)
     this._callback = cb.bind(part.options?.host ?? part.element);
 
-    // Handle deprecated boolean parameter (previously controlled useInteractionModeAttr)
-    if (typeof optionsOrBoolean === 'boolean') {
-      if (import.meta.env?.DEV) {
-        console.warn(
-          '[keyNavigation] Passing a boolean as the second parameter is deprecated. ' +
-            'Use an options object instead.',
-        );
-      }
-      this._options = {};
-    } else {
-      this._options = { ...optionsOrBoolean };
-    }
+    this._options = { ...options };
   }
 
   override disconnected(): void {

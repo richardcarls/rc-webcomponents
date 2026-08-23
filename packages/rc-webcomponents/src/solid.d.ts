@@ -18,7 +18,6 @@ import type { RCTextareaPlugin } from '@rcarls/rc-textarea';
 /** Public API surface of `<rc-disclosure>`. */
 export type RCDisclosureRef = HTMLElement & {
   open: boolean;
-  fragment: boolean;
 };
 
 export type RCDisclosureToggleDetail = {
@@ -377,12 +376,10 @@ export type RCTextareaRef = HTMLElement & {
   defaultValue: string | undefined;
   plugin: RCTextareaPlugin | null;
   lineNumbers: boolean;
-  listNumbers: boolean;
   gutter: boolean;
   wordWrap: boolean;
   autoGrow: boolean;
   readOnly: boolean;
-  label: string | null;
   usePlugin(plugin: RCTextareaPlugin): void;
   removePlugin(): void;
   wrapSelection(prefix: string, suffix: string): void;
@@ -590,7 +587,6 @@ declare module 'solid-js' {
     interface IntrinsicElements {
       'rc-disclosure': JSX.HTMLAttributes<RCDisclosureRef> & {
         open?: boolean | string;
-        fragment?: boolean | string;
         'on:rc-disclosure-toggle'?: (e: CustomEvent<RCDisclosureToggleDetail>) => void;
       };
 
@@ -967,12 +963,10 @@ declare module 'solid-js' {
         'prop:defaultValue'?: string | undefined;
         'prop:plugin'?: RCTextareaPlugin | null;
         'line-numbers'?: boolean | string;
-        'list-numbers'?: boolean | string;
         gutter?: boolean | string;
         'word-wrap'?: boolean | string;
         'auto-grow'?: boolean | string;
         'read-only'?: boolean | string;
-        label?: string;
         'on:rc-textarea-change'?: (e: CustomEvent<RCTextareaChangeDetail>) => void;
         'on:rc-textarea-focus'?: (e: CustomEvent) => void;
         'on:rc-textarea-blur'?: (e: CustomEvent) => void;

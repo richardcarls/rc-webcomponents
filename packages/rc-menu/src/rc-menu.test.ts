@@ -1,11 +1,21 @@
 import { expect, test, vi } from 'vitest';
-import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
 import './define';
 import type { RCMenu } from './rc-menu';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+
+function pressKey($target: HTMLElement, key: string): void {
+  $target.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key,
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    }),
+  );
+}
 
 test('RCMenu is an accessible menu', async () => {
   const screen = render(html`
@@ -48,37 +58,37 @@ test('RCMenu is an accessible menu', async () => {
   await expect.element(item1).toHaveAttribute('data-active');
 
   // ArrowDown moves the virtual cursor; DOM focus stays on the host
-  await userEvent.keyboard('{ArrowDown}');
+  pressKey(menu, 'ArrowDown');
   await expect.element(item2).toHaveAttribute('data-active');
   await expect.element(root).toHaveFocus();
 
-  await userEvent.keyboard('{ArrowDown}');
+  pressKey(menu, 'ArrowDown');
   await expect.element(screen.getByText('Paste')).toHaveAttribute('data-active');
 
-  await userEvent.keyboard('{ArrowDown}');
+  pressKey(menu, 'ArrowDown');
   await expect.element(item5).toHaveAttribute('data-active'); // skips disabled item4
 
-  await userEvent.keyboard('{ArrowDown}');
+  pressKey(menu, 'ArrowDown');
   await expect.element(item1).toHaveAttribute('data-active'); // wraps to first
 
   // ArrowUp navigation
-  await userEvent.keyboard('{ArrowUp}');
+  pressKey(menu, 'ArrowUp');
   await expect.element(item5).toHaveAttribute('data-active'); // wraps to last
 
-  await userEvent.keyboard('{ArrowUp}');
+  pressKey(menu, 'ArrowUp');
   await expect.element(screen.getByText('Paste')).toHaveAttribute('data-active');
 
-  await userEvent.keyboard('{ArrowUp}');
+  pressKey(menu, 'ArrowUp');
   await expect.element(item2).toHaveAttribute('data-active');
 
-  await userEvent.keyboard('{ArrowUp}');
+  pressKey(menu, 'ArrowUp');
   await expect.element(item1).toHaveAttribute('data-active');
 
   // Home and End keys
-  await userEvent.keyboard('{End}');
+  pressKey(menu, 'End');
   await expect.element(item5).toHaveAttribute('data-active');
 
-  await userEvent.keyboard('{Home}');
+  pressKey(menu, 'Home');
   await expect.element(item1).toHaveAttribute('data-active');
 
   // Pointer click clears the keyboard cursor (no :focus-visible outline)
@@ -150,16 +160,17 @@ test('RCMenu dispatches rc-menu-activate on Enter and Space', async () => {
   await expect.element(item1).toHaveAttribute('data-active');
 
   // Enter activates the active item
-  await userEvent.keyboard('{Enter}');
+  pressKey(menu, 'Enter');
 
   expect(activateSpy).toHaveBeenCalledTimes(1);
   expect(activateSpy.mock.calls[0][0].detail.item).toBe(item1.element());
 
-  // Navigate to item2 and activate with Space
-  await userEvent.keyboard('{ArrowDown}');
+  // Re-establish the public cursor after activation, then move to item2.
+  menu.focusFirst();
+  pressKey(menu, 'ArrowDown');
   await expect.element(item2).toHaveAttribute('data-active');
 
-  await userEvent.keyboard(' ');
+  pressKey(menu, ' ');
 
   expect(activateSpy).toHaveBeenCalledTimes(2);
   expect(activateSpy.mock.calls[1][0].detail.item).toBe(item2.element());
@@ -309,7 +320,7 @@ test('RCMenu updates checkbox state when activated by keyboard', async () => {
   await menu.updateComplete;
 
   menu.focusFirst();
-  await userEvent.keyboard(' ');
+  pressKey(menu, ' ');
 
   expect(notes.getAttribute('aria-checked')).toBe('true');
   expect(getComputedStyle(notes, '::before').content).toBe('"✓"');
@@ -334,7 +345,7 @@ test('RCMenu dispatches rc-menu-close on Escape', async () => {
   menu.focusFirst();
   await expect.element(item1).toHaveAttribute('data-active');
 
-  await userEvent.keyboard('{Escape}');
+  pressKey(menu, 'Escape');
 
   expect(closeSpy).toHaveBeenCalledTimes(1);
 });

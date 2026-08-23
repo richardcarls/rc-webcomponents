@@ -167,8 +167,7 @@ from the restored value. The stack is capped at `MAX_UNDO` entries.
 
 ## Gutter Synchronization
 
-The gutter is shadow DOM and `aria-hidden`. It can be enabled by `lineNumbers`, deprecated
-`listNumbers`, or `gutter`.
+The gutter is shadow DOM and `aria-hidden`. It can be enabled by `lineNumbers` or `gutter`.
 
 `_computeGutterLabels()` produces one label per logical line, accounting for built-in modes and
 `LineDecoration.gutterContent` overrides. `_syncGutter()` mutates only the cell count and text
@@ -194,10 +193,9 @@ are implementation details, except that plugin authors may target them through
 Default colors use system colors. Keep new default styles forced-colors-safe and prefer
 inherited custom properties over fixed palette choices.
 
-## Deprecated Compatibility Surface
+## Gutter And Naming Guidance
 
-`listNumbers` / `list-numbers` and `label` are kept for compatibility and warn when used. New
-docs and examples should prefer:
+Use the current public APIs directly:
 
 - `lineNumbers` for sequential numbering.
 - `gutter` plus `LineDecoration.gutterContent` for sparse or custom gutter content.

@@ -124,7 +124,9 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 
 This project uses Yarn 4.x (Berry) workspaces and plug-and-play (PnP).
 
-Vite builds ESM and UMD output plus type declarations. Tests run with Vitest and WebdriverIO.
+Vite builds ESM and UMD output plus type declarations. Tests run with Vitest Browser Mode and
+Playwright. The default local suite uses Chromium; `yarn test:full` runs Chromium, Firefox, and
+WebKit sequentially to bound browser-session resource use. CI always runs the full browser matrix.
 The documentation site uses Docusaurus.
 
 Maintainers should follow the [tag-driven npm release runbook](RELEASING.md) when versioning or

@@ -196,8 +196,8 @@ export function ThemePreviewShowcase() {
 
             <section className="theme-preview-panel">
               <h2 className="demo-section-heading">Notes</h2>
-              <rc-textarea ref={textareaRef} label="Notes" line-numbers>
-                <textarea defaultValue={NOTES_MD} />
+              <rc-textarea ref={textareaRef} line-numbers>
+                <textarea aria-label="Notes" defaultValue={NOTES_MD} />
               </rc-textarea>
             </section>
           </aside>

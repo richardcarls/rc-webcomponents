@@ -1,5 +1,12 @@
 # @rcarls/rc-disclosure
 
+## 0.5.0
+
+### Minor Changes
+
+- 689340c: Remove pre-1.0 deprecated APIs: the boolean `keyNavigation` option, `rc-disclosure.fragment`,
+  `rc-textarea.listNumbers`, `rc-textarea.label`, and `decorationsFromHtml`.
+
 ## 0.4.2
 
 ### Patch Changes

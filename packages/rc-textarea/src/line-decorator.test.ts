@@ -22,7 +22,6 @@ function makeApi(overrides: Partial<RCTextareaPluginAPI> = {}): RCTextareaPlugin
     adoptStyleSheet: () => new CSSStyleSheet(),
     removeStyleSheet: () => {},
     parseDecorationsFromHtml: () => [],
-    decorationsFromHtml: () => [],
     decorationsFromTokens: () => [],
     insertText: () => {},
     wrapSelection: () => {},

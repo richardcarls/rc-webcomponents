@@ -302,11 +302,6 @@ export interface RCTextareaPluginAPI {
   parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
 
   /**
-   * @deprecated Use `parseDecorationsFromHtml` instead.
-   */
-  decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
-
-  /**
    * Convert a flat token array from an external tokenizer (lezer, tree-sitter, shiki, moo, etc.)
    * into `DecorationInput` objects using a theme map keyed by `token.type`.
    *

@@ -43,75 +43,64 @@ test('rc-disclosure mirrors native toggle state', async () => {
   expect(toggleSpy).toHaveBeenCalledOnce();
 });
 
-test('rc-disclosure adopts an initial open <details> when the host has no open attribute of its own', async () => {
+test('rc-disclosure adopts native initial open and closed states', async () => {
   const screen = render(html`
-    <rc-disclosure data-testid="host">
+    <rc-disclosure data-testid="open-host">
       <details open>
-        <summary>Status</summary>
+        <summary>Open status</summary>
         <p>Body</p>
       </details>
     </rc-disclosure>
-  `);
-
-  const $host = screen.getByTestId('host').element() as RCDisclosure;
-  const $details = $host.querySelector('details') as HTMLDetailsElement;
-
-  expect($details.open).toBe(true);
-  expect($host.open).toBe(true);
-  expect($host.hasAttribute('open')).toBe(true);
-});
-
-test('rc-disclosure stays closed when neither the host nor the details specify open', async () => {
-  const screen = render(html`
-    <rc-disclosure data-testid="host">
+    <rc-disclosure data-testid="closed-host">
       <details>
-        <summary>Status</summary>
+        <summary>Closed status</summary>
         <p>Body</p>
       </details>
     </rc-disclosure>
   `);
 
-  const $host = screen.getByTestId('host').element() as RCDisclosure;
-  const $details = $host.querySelector('details') as HTMLDetailsElement;
+  const $openHost = screen.getByTestId('open-host').element() as RCDisclosure;
+  const $openDetails = $openHost.querySelector('details') as HTMLDetailsElement;
+  const $closedHost = screen.getByTestId('closed-host').element() as RCDisclosure;
+  const $closedDetails = $closedHost.querySelector('details') as HTMLDetailsElement;
 
-  expect($details.open).toBe(false);
-  expect($host.open).toBe(false);
+  expect($openDetails.open).toBe(true);
+  expect($openHost.open).toBe(true);
+  expect($openHost.hasAttribute('open')).toBe(true);
+  expect($closedDetails.open).toBe(false);
+  expect($closedHost.open).toBe(false);
 });
 
-test('rc-disclosure opens matching fragment targets', async () => {
+test('rc-disclosure opens when the hash matches details or a descendant', async () => {
   const screen = render(html`
-    <rc-disclosure data-testid="host">
-      <details id="status-panel">
-        <summary>Status</summary>
+    <rc-disclosure data-testid="details-host">
+      <details id="details-target">
+        <summary>Details target</summary>
         <p>Body</p>
+      </details>
+    </rc-disclosure>
+    <rc-disclosure data-testid="descendant-host">
+      <details>
+        <summary>Descendant target</summary>
+        <p id="descendant-target">Body</p>
       </details>
     </rc-disclosure>
   `);
 
-  const $host = screen.getByTestId('host').element() as RCDisclosure;
+  const $detailsHost = screen.getByTestId('details-host').element() as RCDisclosure;
+  const $descendantHost = screen.getByTestId('descendant-host').element() as RCDisclosure;
 
-  history.replaceState(null, '', '#status-panel');
+  history.replaceState(null, '', '#details-target');
   window.dispatchEvent(new HashChangeEvent('hashchange'));
 
-  expect($host.open).toBe(true);
-});
+  expect($detailsHost.open).toBe(true);
 
-test('rc-disclosure opens when hash matches a descendant element id', async () => {
-  const screen = render(html`
-    <rc-disclosure data-testid="host">
-      <details>
-        <summary>Status</summary>
-        <p id="deep-target">Body</p>
-      </details>
-    </rc-disclosure>
-  `);
-
-  const $host = screen.getByTestId('host').element() as RCDisclosure;
-
-  history.replaceState(null, '', '#deep-target');
+  history.replaceState(null, '', '#descendant-target');
   window.dispatchEvent(new HashChangeEvent('hashchange'));
 
-  expect($host.open).toBe(true);
+  expect($descendantHost.open).toBe(true);
+
+  history.replaceState(null, '', location.pathname + location.search);
 });
 
 test('rc-disclosure injects aria-controls linking summary to details', async () => {

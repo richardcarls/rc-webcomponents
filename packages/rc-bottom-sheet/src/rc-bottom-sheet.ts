@@ -283,6 +283,20 @@ export class RCBottomSheet extends RCDialog {
       return;
     }
 
+    // _snapToIndex re-measures via pinBlockBox's getBoundingClientRect(),
+    // but that reads back whatever is *currently rendered* — the stale
+    // pin from before this resize, still anchored to the old viewport.
+    // For a fixed-height snap point (no dvh in play) that stale box's
+    // bottom edge is unchanged, so re-deriving from it would compute the
+    // exact same (now wrong) target. Clear the previous pin first so the
+    // dialog reverts to its CSS-driven position (inset-block-end-anchored)
+    // before re-measuring, the same as an as-yet-never-snapped sheet.
+    const $dialog = this._$dialog;
+
+    $dialog?.style.removeProperty('top');
+    $dialog?.style.removeProperty('height');
+    $dialog?.style.removeProperty('inset-block-start');
+
     this._snapToIndex(this._lastSnapIndex, 'instant', 'api');
   };
 

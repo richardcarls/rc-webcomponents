@@ -32,11 +32,13 @@ function renderSheet() {
   `);
 }
 
-test('rc-bottom-sheet registers a native dialog wrapper with light dismiss by default', async () => {
+test('rc-bottom-sheet defaults and inherited dialog lifecycle integrate through the native child', async () => {
   const screen = renderSheet();
   const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+  const toggleSpy = vi.fn();
 
   await $host.updateComplete;
+  $host.addEventListener('rc-dialog-toggle', toggleSpy);
 
   expect($host.lightDismiss).toBe(true);
   expect($host.resize).toBe('vertical');
@@ -45,6 +47,18 @@ test('rc-bottom-sheet registers a native dialog wrapper with light dismiss by de
   expect($host.swipeDismiss).toBe(true);
   expect($host.swipeVelocity).toBe(500);
   expect($host.querySelector('dialog')).toBeInstanceOf(HTMLDialogElement);
+
+  $host.showModal();
+  expect($host.open).toBe(true);
+  expect(toggleSpy).toHaveBeenCalledTimes(1);
+  expect(toggleSpy.mock.calls[0][0].detail).toEqual({ open: true, returnValue: '' });
+
+  $host.close('done');
+  await vi.waitFor(() => expect(toggleSpy).toHaveBeenCalledTimes(2));
+
+  expect($host.open).toBe(false);
+  expect($host.returnValue).toBe('done');
+  expect(toggleSpy.mock.calls[1][0].detail).toEqual({ open: false, returnValue: 'done' });
 });
 
 test('un-themed sheets dock to the viewport block-end by default', async () => {
@@ -126,42 +140,6 @@ test('gives an un-themed drag handle a large target around the centered visual i
   expect(styles.touchAction).toBe('none');
 
   $host.close();
-});
-
-test('rc-bottom-sheet inherits showModal(), close(), and returnValue', async () => {
-  const screen = renderSheet();
-  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
-
-  await $host.updateComplete;
-
-  $host.showModal();
-  expect($host.open).toBe(true);
-
-  $host.close('done');
-  expect($host.open).toBe(false);
-  expect($host.returnValue).toBe('done');
-});
-
-test('rc-bottom-sheet dispatches inherited dialog toggle events', async () => {
-  const toggleSpy = vi.fn();
-  const screen = render(html`
-    <rc-bottom-sheet data-testid="host" @rc-dialog-toggle=${toggleSpy}>
-      <dialog aria-label="Filter recipes">
-        <button>Done</button>
-      </dialog>
-    </rc-bottom-sheet>
-  `);
-  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
-
-  await $host.updateComplete;
-
-  $host.showModal();
-  expect(toggleSpy).toHaveBeenCalledTimes(1);
-  expect(toggleSpy.mock.calls[0][0].detail).toEqual({ open: true, returnValue: '' });
-
-  $host.close();
-  await vi.waitFor(() => expect(toggleSpy).toHaveBeenCalledTimes(2));
-  expect(toggleSpy.mock.calls[1][0].detail).toEqual({ open: false, returnValue: '' });
 });
 
 test('rc-bottom-sheet has no automated accessibility violations while open', async () => {
@@ -485,6 +463,47 @@ test('snap settling stays block-end anchored when CSS constrains the requested h
   expect(Math.round(settled.height)).toBe(300);
   expect(Math.round(settled.bottom)).toBe(Math.round(anchoredBottom));
   expect(snapSpy.mock.calls[0][0].detail).toEqual({ index: 1, height: 300, trigger: 'api' });
+
+  $host.close();
+});
+
+test('window resize re-derives a pinned snap from the current CSS-driven position, not the stale pinned box', async () => {
+  const snapSpy = vi.fn();
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="132px 400px" @rc-bottom-sheet-snap=${snapSpy}>
+      <dialog aria-label="Nutrition" style="position: fixed; inset-block-end: 0px; left: 0; right: 0; margin: 0;">
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $host.snapTo(0, 'instant');
+  expect(snapSpy).toHaveBeenCalledTimes(1);
+
+  // Simulate a viewport shrink that a stale pin wouldn't reflect: pretend
+  // the sheet is still pinned somewhere higher up (as if a since-resized
+  // viewport used to be much taller). A correct re-derivation on resize
+  // must not simply trust this stale inline top — it should fall back to
+  // the dialog's own CSS-driven (inset-block-end: 0) position first.
+  $dialog.style.top = '50px';
+
+  window.dispatchEvent(new Event('resize'));
+
+  await vi.waitFor(() => expect(snapSpy).toHaveBeenCalledTimes(2));
+  expect(snapSpy.mock.calls[1][0].detail).toEqual({ index: 0, height: 132, trigger: 'api' });
+
+  const resettled = $dialog.getBoundingClientRect();
+
+  // Re-anchored to the viewport block-end, not left dangling at the
+  // corrupted stale top.
+  expect(Math.round(resettled.bottom)).toBe(Math.round(window.innerHeight));
+  expect(Math.round(resettled.height)).toBe(132);
 
   $host.close();
 });

@@ -126,9 +126,8 @@ editor.usePlugin({
 | `auto-grow`    | `autoGrow`    | Let the field grow vertically with content.                                         |
 | `read-only`    | `readOnly`    | Render selectable, non-editable content.                                            |
 
-`list-numbers` and `label` still exist for compatibility but are deprecated. Prefer a plugin
-with `LineDecoration.gutterContent` for sparse numbering, and put accessible names on the
-slotted textarea with `aria-label` or a real `<label for="...">`.
+Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
+the slotted textarea with `aria-label` or a real `<label for="...">`.
 
 ### JavaScript properties
 
@@ -489,8 +488,6 @@ interface RCTextareaPluginAPI {
 
   // HTML / token bridges
   parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
-  /** @deprecated Use parseDecorationsFromHtml */
-  decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
   decorationsFromTokens(
     tokens: Token[],
     themeMap: Record<string, Omit<MarkDecoration, 'id' | 'type' | 'from' | 'to'>>,
@@ -955,10 +952,9 @@ through `api.adoptStyleSheet()`.
 Default colors use system colors. New default styles should be forced-colors-safe and prefer
 inherited custom properties over fixed palette choices.
 
-### Deprecated compatibility surface
+### Gutter and naming guidance
 
-`listNumbers` / `list-numbers` and `label` are kept for compatibility but warn when used.
-Prefer:
+Use the current public APIs directly:
 
 - `lineNumbers` for sequential numbering.
 - `gutter` plus `LineDecoration.gutterContent` for sparse or custom gutter content.

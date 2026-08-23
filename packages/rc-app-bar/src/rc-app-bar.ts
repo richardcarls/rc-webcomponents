@@ -63,6 +63,7 @@ export interface RCAppBarScrollDetail {
  * @cssprop [--rc-app-bar-expanded-padding-block=0.75em] - Expanded title padding
  * @cssprop [--rc-app-bar-padding-inline=0.75em] - Horizontal padding
  * @cssprop [--rc-app-bar-gap=0.5em] - Gap between regions
+ * @cssprop [--rc-app-bar-title-start-padding=0px] - Extra title inline-start padding used only when the leading slot is empty (M3: align with content below when there's no navigation icon)
  * @cssprop [--rc-app-bar-transition-duration=200ms] - Endpoint and hide duration
  * @cssprop [--rc-app-bar-scroll-divider=1px solid GrayText] - Scrolled divider
  * @cssprop [--rc-app-bar-collapse-progress=0] - Collapse animation progress 0–1; read-only
