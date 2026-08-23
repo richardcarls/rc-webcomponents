@@ -515,6 +515,134 @@ test('RCMenuButton ignores default-open after an explicit controlled open=false 
   expect(menuButton.open).toBe(false);
 });
 
+test('RCMenuButton toggles the popup element\'s :popover-open state with `open`', async () => {
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+
+  const host = screen.getByTestId('host');
+  const trigger = screen.getByTestId('trigger');
+
+  const menuButton = (await host.element()) as RCMenuButton;
+  const popup = menuButton.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  expect(popup.matches(':popover-open')).toBe(false);
+
+  await trigger.click();
+  await menuButton.updateComplete;
+
+  expect(popup.matches(':popover-open')).toBe(true);
+
+  await trigger.click();
+  await menuButton.updateComplete;
+
+  expect(popup.matches(':popover-open')).toBe(false);
+});
+
+test('RCMenuButton popup escapes an ancestor with overflow: hidden', async () => {
+  const screen = render(html`
+    <div
+      data-testid="clip-wrapper"
+      style="overflow: hidden; height: 40px; z-index: 0; position: relative;"
+    >
+      <rc-menu-button data-testid="host">
+        <button slot="trigger" data-testid="trigger">Options</button>
+        <rc-menu label="Options">
+          <button>Cut</button>
+          <button>Copy</button>
+        </rc-menu>
+      </rc-menu-button>
+    </div>
+  `);
+
+  const host = screen.getByTestId('host');
+  const trigger = screen.getByTestId('trigger');
+  const wrapper = screen.getByTestId('clip-wrapper').element() as HTMLElement;
+
+  const menuButton = (await host.element()) as RCMenuButton;
+
+  await trigger.click();
+  await menuButton.updateComplete;
+
+  const popup = menuButton.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  expect(popup.matches(':popover-open')).toBe(true);
+
+  const wrapperRect = wrapper.getBoundingClientRect();
+  const popupRect = popup.getBoundingClientRect();
+
+  // The popup is promoted to the top layer, so its painted bounds extend
+  // below the clipping wrapper's bottom edge instead of being clipped to it.
+  expect(popupRect.bottom).toBeGreaterThan(wrapperRect.bottom);
+});
+
+test('RCMenuButton supports two simultaneously-open nested instances', async () => {
+  // A nested rc-menu-button is itself a focusable child of the outer rc-menu,
+  // so the outer's own click-delegation (rc-menu's `_onClick`) would treat any
+  // click inside the nested instance as activating the nested instance's own
+  // `role="menuitem"`, closing the outer menu. Consumers nesting rc-menu-button
+  // as a cascading submenu trigger stop propagation on the nested trigger's
+  // click for this reason; mirrored here so this test exercises the same
+  // shape of markup a real submenu cascade uses.
+  const screen = render(html`
+    <rc-menu-button data-testid="outer-host">
+      <button slot="trigger" data-testid="outer-trigger">Outer</button>
+      <rc-menu label="Outer">
+        <rc-menu-button data-testid="inner-host" @click=${(e: MouseEvent) => e.stopPropagation()}>
+          <button slot="trigger" data-testid="inner-trigger">Inner</button>
+          <rc-menu label="Inner">
+            <button data-testid="inner-item">Inner item</button>
+          </rc-menu>
+        </rc-menu-button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+
+  const outerHost = screen.getByTestId('outer-host');
+  const outerTrigger = screen.getByTestId('outer-trigger');
+  const innerHost = screen.getByTestId('inner-host');
+  const innerTrigger = screen.getByTestId('inner-trigger');
+  const innerItem = screen.getByTestId('inner-item');
+
+  const outerMenuButton = (await outerHost.element()) as RCMenuButton;
+  const innerMenuButton = (await innerHost.element()) as RCMenuButton;
+
+  // Open the outer menu, exposing the inner trigger.
+  await outerTrigger.click();
+  await outerMenuButton.updateComplete;
+
+  await expect.element(outerTrigger).toHaveAttribute('aria-expanded', 'true');
+
+  // Open the nested submenu while the outer stays open.
+  await innerTrigger.click();
+  await innerMenuButton.updateComplete;
+
+  const outerPopup = outerMenuButton.shadowRoot?.querySelector('#popup') as HTMLElement;
+  const innerPopup = innerMenuButton.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  // Both instances report an open top-layer popup simultaneously.
+  expect(outerPopup.matches(':popover-open')).toBe(true);
+  expect(innerPopup.matches(':popover-open')).toBe(true);
+
+  // The inner popup stays interactable while both are open: the click
+  // actually reaches the innermost item rather than being blocked or
+  // obscured by top-layer paint/stacking order. Activation then cascades
+  // rc-menu-activate through every ancestor popup's listener, closing the
+  // whole chain — the same established cascade-collapse behavior as a
+  // single-level menu.
+  await innerItem.click();
+
+  await expect.element(innerTrigger).toHaveAttribute('aria-expanded', 'false');
+  await expect.element(outerTrigger).toHaveAttribute('aria-expanded', 'false');
+  expect(innerPopup.matches(':popover-open')).toBe(false);
+  expect(outerPopup.matches(':popover-open')).toBe(false);
+});
+
 test('RCMenuButton reflects open attribute', async () => {
   const screen = render(html`
     <rc-menu-button data-testid="host">
