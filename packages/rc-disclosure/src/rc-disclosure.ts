@@ -27,7 +27,6 @@ declare global {
  * @fires rc-disclosure-toggle - Fires when the child `<details>` toggles.
  *
  * @attr open - Current open state mirrored to the child `<details>`.
- * @attr fragment - Deprecated legacy opt-in for URL-fragment auto-open; removed before v1.0.
  */
 export class RCDisclosure extends HTMLElement {
   private _observer = new MutationObserver(() => this._setupDetails());
@@ -37,7 +36,7 @@ export class RCDisclosure extends HTMLElement {
   private _scrollFrame = 0;
 
   static get observedAttributes(): string[] {
-    return ['open', 'fragment'];
+    return ['open'];
   }
 
   /** Current open state mirrored to the child `<details>`. */
@@ -47,21 +46,6 @@ export class RCDisclosure extends HTMLElement {
 
   set open(value: boolean) {
     this._setOpen(value, true);
-  }
-
-  /**
-   * Legacy manual opt-in for URL-fragment auto-open.
-   *
-   * @deprecated No longer required. `rc-disclosure` now automatically opens and
-   * scrolls when the URL hash matches any id within its subtree. Will be removed
-   * in v1.0 release.
-   */
-  get fragment(): boolean {
-    return this.hasAttribute('fragment');
-  }
-
-  set fragment(value: boolean) {
-    this.toggleAttribute('fragment', value);
   }
 
   connectedCallback(): void {
@@ -77,20 +61,12 @@ export class RCDisclosure extends HTMLElement {
     this._teardownDetails();
   }
 
-  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+  attributeChangedCallback(_name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue === newValue) {
       return;
     }
 
-    if (name === 'open') {
-      this._syncDetailsOpen();
-
-      return;
-    }
-
-    if (name === 'fragment') {
-      this._openForCurrentHash();
-    }
+    this._syncDetailsOpen();
   }
 
   private _setupDetails(): void {
