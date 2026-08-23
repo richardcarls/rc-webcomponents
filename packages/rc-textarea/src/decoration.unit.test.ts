@@ -54,7 +54,7 @@ describe('mapDecorationsThroughChange', () => {
   }
 
   function widget(id: string, offset: number): WidgetDecoration {
-    return { id, type: 'widget', offset, create: () => document.createElement('span') };
+    return { id, type: 'widget', offset, create: () => ({}) as HTMLElement };
   }
 
   test('mark before the edit is unchanged', () => {
