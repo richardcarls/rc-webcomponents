@@ -15,6 +15,20 @@ export default defineConfig({
     rollupOptions: {
       // Exclude lit packages from bundling
       external: [/^@?lit(-\w+)?($|\/.+)/],
+      output: {
+        // UMD global names for the externalized lit submodules. Nothing
+        // actually consumes this UMD build via <script>-tag globals (the
+        // package's "main" points here only for CJS require() interop), so
+        // these names just need to be stable and unique, silencing Rollup's
+        // "No name was provided... guessing" warning.
+        globals: {
+          lit: 'lit',
+          'lit/directive.js': 'litDirective',
+          'lit/async-directive.js': 'litAsyncDirective',
+          'lit/decorators.js': 'litDecorators',
+          'lit/directives/if-defined.js': 'litIfDefined',
+        },
+      },
     },
   },
 });
