@@ -16,7 +16,11 @@ import {
 import './define';
 
 async function renderTextarea(
-  template: TemplateResult = html`<rc-textarea data-testid="host"></rc-textarea>`,
+  template: TemplateResult = html`
+    <rc-textarea data-testid="host">
+      <textarea name="notes" aria-label="Notes"></textarea>
+    </rc-textarea>
+  `,
 ): Promise<RCTextarea> {
   const screen = render(template);
   const host = screen.getByTestId('host').element() as RCTextarea;
@@ -39,47 +43,25 @@ function placeCaretAtEnd($editor: HTMLElement): void {
 }
 
 describe('RCTextarea — basic rendering', () => {
-  test('renders the #editor contenteditable div', async () => {
-    const host = await renderTextarea(html`
-      <rc-textarea data-testid="host" style="width: 400px; height: 200px;"></rc-textarea>
-    `);
+  test('renders the accessible editor defaults', async () => {
+    const host = await renderTextarea();
     const editor = getEditor(host);
 
     expect(editor).not.toBeNull();
-  });
-
-  test('editor has role="textbox" and aria-multiline="true"', async () => {
-    const host = await renderTextarea();
-    const editor = getEditor(host);
-
     expect(editor.getAttribute('role')).toBe('textbox');
     expect(editor.getAttribute('aria-multiline')).toBe('true');
-  });
-
-  test('has no automated accessibility violations', async () => {
-    const host = await renderTextarea(html`
-      <rc-textarea data-testid="host" label="Notes"></rc-textarea>
-    `);
-
-    await expectNoA11yViolations(host);
-  });
-
-  test('editor is contenteditable by default', async () => {
-    const host = await renderTextarea();
-    const editor = getEditor(host);
-
     expect(editor.contentEditable).toBe('true');
-  });
-
-  test('spellcheck and autocorrect are disabled on the editor', async () => {
-    const host = await renderTextarea();
-    const editor = getEditor(host);
-
     expect(editor.spellcheck).toBe(false);
     expect(editor.getAttribute('autocorrect')).toBe('off');
 
     // Firefox normalizes autocapitalize="off" to "none".
     expect(['off', 'none']).toContain(editor.getAttribute('autocapitalize'));
+  });
+
+  test('has no automated accessibility violations', async () => {
+    const host = await renderTextarea();
+
+    await expectNoA11yViolations(host);
   });
 });
 
@@ -92,13 +74,15 @@ describe('RCTextarea — value', () => {
 
   test('default-value attribute seeds the initial value', async () => {
     const host = await renderTextarea(html`
-      <rc-textarea data-testid="host" default-value="attribute seeded text"></rc-textarea>
+      <rc-textarea data-testid="host" default-value="attribute seeded text">
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
     `);
 
     expect(host.value).toBe('attribute seeded text');
   });
 
-  test('setting value renders lines in the editor', async () => {
+  test('value renders single, multiline, and empty-line content', async () => {
     const host = await renderTextarea();
 
     host.value = 'hello world';
@@ -110,51 +94,17 @@ describe('RCTextarea — value', () => {
 
     expect(lines).toHaveLength(1);
     expect(lines[0].textContent).toBe('hello world');
-  });
 
-  test('multiline value creates one .line per line', async () => {
-    const host = await renderTextarea();
-
-    host.value = 'line one\nline two\nline three';
+    host.value = 'line one\n\nline three';
 
     await waitRender();
 
-    const lines = getEditor(host).querySelectorAll('.line');
+    const multiline = getEditor(host).querySelectorAll('.line');
 
-    expect(lines).toHaveLength(3);
-    expect(lines[0].textContent).toBe('line one');
-    expect(lines[1].textContent).toBe('line two');
-    expect(lines[2].textContent).toBe('line three');
-  });
-
-  test('setting the same value twice leaves rendered content intact', async () => {
-    const host = await renderTextarea();
-
-    host.value = 'hello';
-
-    await waitRender();
-
-    const firstLine = getEditor(host).querySelector('.line');
-
-    host.value = 'hello';
-
-    await waitRender();
-
-    expect(getEditor(host).querySelector('.line')?.textContent).toBe('hello');
-    expect(firstLine).not.toBeNull();
-  });
-
-  test('empty line in the middle renders a <br> for cursor placement', async () => {
-    const host = await renderTextarea();
-
-    host.value = 'a\n\nb';
-
-    await waitRender();
-
-    const lines = getEditor(host).querySelectorAll('.line');
-
-    expect(lines).toHaveLength(3);
-    expect(lines[1].querySelector('br')).not.toBeNull();
+    expect(multiline).toHaveLength(3);
+    expect(multiline[0].textContent).toBe('line one');
+    expect(multiline[1].querySelector('br')).not.toBeNull();
+    expect(multiline[2].textContent).toBe('line three');
   });
 
   test('Enter at the end of a line immediately renders a trailing empty line', async () => {
@@ -233,16 +183,18 @@ describe('RCTextarea — value', () => {
 });
 
 describe('RCTextarea — readOnly', () => {
-  test('readOnly=true sets contentEditable to false', async () => {
+  test('readOnly controls contentEditable in both directions', async () => {
     const host = await renderTextarea(html`
-      <rc-textarea data-testid="host" read-only></rc-textarea>
+      <rc-textarea data-testid="host" read-only>
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
     `);
 
     expect(getEditor(host).contentEditable).toBe('false');
-  });
 
-  test('setting readOnly programmatically updates contentEditable', async () => {
-    const host = await renderTextarea();
+    host.readOnly = false;
+
+    await host.updateComplete;
 
     expect(getEditor(host).contentEditable).toBe('true');
 
@@ -252,42 +204,35 @@ describe('RCTextarea — readOnly', () => {
 
     expect(getEditor(host).contentEditable).toBe('false');
   });
-
-  test('toggling readOnly off restores contentEditable to true', async () => {
-    const host = await renderTextarea(html`
-      <rc-textarea data-testid="host" read-only></rc-textarea>
-    `);
-
-    host.readOnly = false;
-
-    await host.updateComplete;
-
-    expect(getEditor(host).contentEditable).toBe('true');
-  });
 });
 
-describe('RCTextarea — label', () => {
-  test('label property sets aria-label on the editor', async () => {
-    const host = await renderTextarea();
-
-    host.label = 'My editor';
-
-    await host.updateComplete;
-
-    expect(getEditor(host).getAttribute('aria-label')).toBe('My editor');
-  });
-
-  test('label attribute sets aria-label at initial render', async () => {
+describe('RCTextarea — accessible name', () => {
+  test('copies aria-label from the native textarea', async () => {
     const host = await renderTextarea(html`
-      <rc-textarea data-testid="host" label="Code editor"></rc-textarea>
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Code editor"></textarea>
+      </rc-textarea>
     `);
 
+    expect(getEditor(host).getAttribute('aria-label')).toBe('Code editor');
+  });
+
+  test('copies an associated native label while preserving the label relationship', async () => {
+    const host = await renderTextarea(html`
+      <label for="code-editor">Code editor</label>
+      <rc-textarea data-testid="host">
+        <textarea id="code-editor" name="source"></textarea>
+      </rc-textarea>
+    `);
+    const $textarea = getSlottedTextarea(host);
+
+    expect($textarea.labels?.[0]?.textContent).toBe('Code editor');
     expect(getEditor(host).getAttribute('aria-label')).toBe('Code editor');
   });
 });
 
 describe('RCTextarea — lineNumbers', () => {
-  test('lineNumbers=false: gutter has no line-number spans', async () => {
+  test('lineNumbers creates and updates one gutter cell per line', async () => {
     const host = await renderTextarea();
 
     host.value = 'a\nb\nc';
@@ -295,13 +240,8 @@ describe('RCTextarea — lineNumbers', () => {
     await waitRender();
 
     expect(getGutterCells(host).children.length).toBe(0);
-  });
 
-  test('lineNumbers=true: gutter gets one span per line', async () => {
-    const host = await renderTextarea(html`
-      <rc-textarea data-testid="host" line-numbers></rc-textarea>
-    `);
-
+    host.lineNumbers = true;
     host.value = 'line1\nline2\nline3';
 
     await waitRender();
@@ -312,24 +252,12 @@ describe('RCTextarea — lineNumbers', () => {
     expect(lineNumbers.children[0].textContent).toBe('1');
     expect(lineNumbers.children[1].textContent).toBe('2');
     expect(lineNumbers.children[2].textContent).toBe('3');
-  });
 
-  test('adding a line adds a line-number span', async () => {
-    const host = await renderTextarea(html`
-      <rc-textarea data-testid="host" line-numbers></rc-textarea>
-    `);
-
-    host.value = 'line1\nline2';
+    host.value = 'line1\nline2\nline3\nline4';
 
     await waitRender();
 
-    expect(getGutterCells(host).children.length).toBe(2);
-
-    host.value = 'line1\nline2\nline3';
-
-    await waitRender();
-
-    expect(getGutterCells(host).children.length).toBe(3);
+    expect(getGutterCells(host).children.length).toBe(4);
   });
 
   test('supports gutter typography independently from editor typography', async () => {
@@ -338,7 +266,9 @@ describe('RCTextarea — lineNumbers', () => {
         data-testid="host"
         line-numbers
         style="--rc-textarea-font-family: serif; --rc-textarea-gutter-font-family: monospace"
-      ></rc-textarea>
+      >
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
     `);
 
     host.value = 'line1\nline2';
@@ -441,74 +371,51 @@ describe('RCTextarea — plugin API', () => {
     expect(calls).toContain('hello');
   });
 
-  test('mark decoration from plugin renders a span in the editor', async () => {
-    const host = await renderTextarea();
-
-    host.usePlugin({
-      update(_value, api) {
-        api.setDecorations([{ type: 'mark', from: 0, to: 5, className: 'plugin-mark' }]);
-      },
-    });
-
-    host.value = 'hello world';
-
-    await waitRender();
-
-    const mark = getEditor(host).querySelector('.plugin-mark');
-
-    expect(mark).not.toBeNull();
-    expect(mark!.textContent).toBe('hello');
-  });
-
-  test('line decoration from plugin applies className to the line div', async () => {
-    const host = await renderTextarea();
-
-    host.usePlugin({
-      update(_value, api) {
-        api.setDecorations([{ type: 'line', line: 2, className: 'error-line' }]);
-      },
-    });
-
-    host.value = 'first\nsecond\nthird';
-
-    await waitRender();
-
-    const lines = getEditor(host).querySelectorAll('.line');
-
-    expect(lines[1].classList.contains('error-line')).toBe(true);
-    expect(lines[0].classList.contains('error-line')).toBe(false);
-  });
-
-  test('line decoration message is set as data-message attribute', async () => {
+  test('plugin mark and line decorations render their public attributes', async () => {
     const host = await renderTextarea();
 
     host.usePlugin({
       update(_value, api) {
         api.setDecorations([
+          { type: 'mark', from: 0, to: 5, className: 'plugin-mark' },
           {
             type: 'line',
-            line: 1,
+            line: 2,
+            className: 'error-line',
             message: 'Unused variable',
           },
         ]);
       },
     });
 
-    host.value = 'let x = 1;';
+    host.value = 'hello\nsecond';
 
     await waitRender();
 
-    const lineElement = getEditor(host).querySelector('.line') as HTMLElement;
+    const mark = getEditor(host).querySelector('.plugin-mark');
+    const lines = getEditor(host).querySelectorAll<HTMLElement>('.line');
 
-    expect(lineElement.dataset.message).toContain('Unused variable');
+    expect(mark).not.toBeNull();
+    expect(mark!.textContent).toBe('hello');
+    expect(lines[1].classList.contains('error-line')).toBe(true);
+    expect(lines[0].classList.contains('error-line')).toBe(false);
+    expect(lines[1].dataset.message).toContain('Unused variable');
   });
 
-  test('removePlugin() cleans up decorations', async () => {
+  test('removePlugin() destroys the plugin and cleans up decorations and stylesheets', async () => {
     const host = await renderTextarea();
+    let destroyed = false;
+    let sheet: CSSStyleSheet | null = null;
 
     host.usePlugin({
+      mount(api) {
+        sheet = api.adoptStyleSheet('.to-remove { color: blue; }');
+      },
       update(_value, api) {
         api.setDecorations([{ type: 'mark', from: 0, to: 5, className: 'to-remove' }]);
+      },
+      destroy() {
+        destroyed = true;
       },
     });
 
@@ -517,6 +424,7 @@ describe('RCTextarea — plugin API', () => {
     await waitRender();
 
     expect(getEditor(host).querySelector('.to-remove')).not.toBeNull();
+    expect(host.shadowRoot!.adoptedStyleSheets).toContain(sheet);
 
     host.removePlugin();
     host.value = 'hello world';
@@ -524,22 +432,8 @@ describe('RCTextarea — plugin API', () => {
     await waitRender();
 
     expect(getEditor(host).querySelector('.to-remove')).toBeNull();
-  });
-
-  test('plugin.destroy() is called on removePlugin()', async () => {
-    const host = await renderTextarea();
-
-    let destroyed = false;
-
-    host.usePlugin({
-      destroy() {
-        destroyed = true;
-      },
-    });
-
-    host.removePlugin();
-
     expect(destroyed).toBe(true);
+    expect(host.shadowRoot!.adoptedStyleSheets).not.toContain(sheet);
   });
 
   test('replacing a plugin calls destroy() on the old one', async () => {
@@ -558,25 +452,14 @@ describe('RCTextarea — plugin API', () => {
     expect(oldDestroyed).toBe(true);
   });
 
-  test('api.adoptStyleSheet() adds a stylesheet to the shadow root', async () => {
-    const host = await renderTextarea();
-
-    let adoptedSheet: CSSStyleSheet | null = null;
-
-    host.usePlugin({
-      mount(api) {
-        adoptedSheet = api.adoptStyleSheet('.plugin-rule { color: red; }');
-      },
-    });
-
-    expect(adoptedSheet).not.toBeNull();
-    expect(host.shadowRoot!.adoptedStyleSheets).toContain(adoptedSheet);
-  });
-
   test('a declarative plugin assigned before connection mounts with its stylesheet', async () => {
     const host = document.createElement('rc-textarea') as RCTextarea;
+    const $textarea = document.createElement('textarea');
     let mountCount = 0;
     let sheet: CSSStyleSheet | null = null;
+
+    $textarea.setAttribute('aria-label', 'Notes');
+    host.append($textarea);
 
     host.plugin = {
       mount(api) {
@@ -619,24 +502,6 @@ describe('RCTextarea — plugin API', () => {
     expect(host.shadowRoot!.adoptedStyleSheets).not.toContain(sheets[0]);
   });
 
-  test('removePlugin() removes adopted stylesheets', async () => {
-    const host = await renderTextarea();
-
-    let sheet: CSSStyleSheet | null = null;
-
-    host.usePlugin({
-      mount(api) {
-        sheet = api.adoptStyleSheet('.rule { color: blue; }');
-      },
-    });
-
-    expect(host.shadowRoot!.adoptedStyleSheets).toContain(sheet);
-
-    host.removePlugin();
-
-    expect(host.shadowRoot!.adoptedStyleSheets).not.toContain(sheet);
-  });
-
   test('api.parseDecorationsFromHtml() parses highlight.js-style spans', async () => {
     const host = await renderTextarea();
 
@@ -677,27 +542,33 @@ describe('RCTextarea — plugin API', () => {
 });
 
 describe('RCTextarea — pattern API', () => {
-  test('addPattern() returns a string id', async () => {
+  test('addPattern() returns an id and renders mark formatting and line decorations', async () => {
     const host = await renderTextarea();
 
-    const id = host.addPattern({ pattern: /hello/g, className: 'hi' });
+    const id = host.addPattern({
+      pattern: /ERROR/g,
+      className: 'error-mark',
+      bold: true,
+      color: '#ff0000',
+      createLineDecoration: () => ({ className: 'error-line' }),
+    });
 
     expect(typeof id).toBe('string');
     expect(id.length).toBeGreaterThan(0);
-  });
 
-  test('addPattern() renders mark spans for matching text', async () => {
-    const host = await renderTextarea();
-
-    host.addPattern({ pattern: /hello/g, className: 'hi-mark' });
-    host.value = 'hello world';
+    host.value = 'ok\nERROR here\nok';
 
     await waitRender();
 
-    const mark = getEditor(host).querySelector('.hi-mark');
+    const mark = getEditor(host).querySelector('.error-mark') as HTMLElement | null;
+    const lines = getEditor(host).querySelectorAll('.line');
 
     expect(mark).not.toBeNull();
-    expect(mark!.textContent).toBe('hello');
+    expect(mark!.textContent).toBe('ERROR');
+    expect(mark!.style.fontWeight).toBe('bold');
+    expect(mark!.style.color).toBe('rgb(255, 0, 0)');
+    expect(lines[1].classList.contains('error-line')).toBe(true);
+    expect(lines[0].classList.contains('error-line')).toBe(false);
   });
 
   test('removePattern() removes its decorations from subsequent renders', async () => {
@@ -738,46 +609,6 @@ describe('RCTextarea — pattern API', () => {
 
     expect(getEditor(host).querySelector('.foo-mark')).toBeNull();
     expect(getEditor(host).querySelector('.bar-mark')).toBeNull();
-  });
-
-  test('pattern with formatting properties renders inline styles', async () => {
-    const host = await renderTextarea();
-
-    host.addPattern({
-      pattern: /bold/g,
-      className: 'bold-mark',
-      bold: true,
-      color: '#ff0000',
-    });
-
-    host.value = 'this is bold text';
-
-    await waitRender();
-
-    const mark = getEditor(host).querySelector('.bold-mark') as HTMLElement | null;
-
-    expect(mark).not.toBeNull();
-    expect(mark!.style.fontWeight).toBe('bold');
-    expect(mark!.style.color).toBe('rgb(255, 0, 0)');
-  });
-
-  test('createLineDecoration on a pattern applies class to the correct line', async () => {
-    const host = await renderTextarea();
-
-    host.addPattern({
-      pattern: /ERROR/g,
-      className: 'err-mark',
-      createLineDecoration: () => ({ className: 'err-line' }),
-    });
-
-    host.value = 'ok\nERROR here\nok';
-
-    await waitRender();
-
-    const lines = getEditor(host).querySelectorAll('.line');
-
-    expect(lines[1].classList.contains('err-line')).toBe(true);
-    expect(lines[0].classList.contains('err-line')).toBe(false);
   });
 });
 
@@ -853,12 +684,15 @@ describe('RCTextarea — decoration edge cases', () => {
     expect(mark!.getAttribute('title')).toBe('built-in');
   });
 
-  test('out-of-range mark decoration does not crash', async () => {
+  test('out-of-range decorations are ignored', async () => {
     const host = await renderTextarea();
 
     host.usePlugin({
       update(_value, api) {
-        api.setDecorations([{ type: 'mark', from: 100, to: 200, className: 'oob' }]);
+        api.setDecorations([
+          { type: 'mark', from: 100, to: 200, className: 'oob' },
+          { type: 'line', line: 99, className: 'ghost' },
+        ]);
       },
     });
 
@@ -867,74 +701,35 @@ describe('RCTextarea — decoration edge cases', () => {
     await waitRender();
 
     expect(getEditor(host).querySelector('.oob')).toBeNull();
-  });
-
-  test('out-of-range line decoration does not crash', async () => {
-    const host = await renderTextarea();
-
-    host.usePlugin({
-      update(_value, api) {
-        api.setDecorations([{ type: 'line', line: 99, className: 'ghost' }]);
-      },
-    });
-
-    host.value = 'just one line';
-
-    await waitRender();
-
     expect(getEditor(host).querySelector('.ghost')).toBeNull();
   });
 });
 
 describe('RCTextarea — paste', () => {
-  test('pasting single-line text into an empty editor sets the value', async () => {
+  test('pasting into an empty editor preserves text and normalizes line endings', async () => {
     const host = await renderTextarea();
+    const cases = [
+      { pasted: 'hello world', expected: 'hello world', lines: 1 },
+      {
+        pasted: 'line one\nline two\nline three',
+        expected: 'line one\nline two\nline three',
+        lines: 3,
+      },
+      { pasted: 'first\r\nsecond\r\nthird', expected: 'first\nsecond\nthird', lines: 3 },
+      { pasted: 'a\rb\rc', expected: 'a\nb\nc', lines: 3 },
+    ];
 
-    simulatePaste(getEditor(host), 'hello world');
+    for (const { pasted, expected, lines } of cases) {
+      host.value = '';
+      await waitRender();
+      window.getSelection()?.removeAllRanges();
 
-    await waitRender();
+      simulatePaste(getEditor(host), pasted);
+      await waitRender();
 
-    expect(host.value).toBe('hello world');
-    expect(getEditor(host).querySelectorAll('.line')).toHaveLength(1);
-  });
-
-  test('pasting multi-line text into an empty editor preserves newlines', async () => {
-    const host = await renderTextarea();
-
-    simulatePaste(getEditor(host), 'line one\nline two\nline three');
-
-    await waitRender();
-
-    expect(host.value).toBe('line one\nline two\nline three');
-
-    const lines = getEditor(host).querySelectorAll('.line');
-
-    expect(lines).toHaveLength(3);
-    expect(lines[0].textContent).toBe('line one');
-    expect(lines[1].textContent).toBe('line two');
-    expect(lines[2].textContent).toBe('line three');
-  });
-
-  test('pasting text with \\r\\n line endings normalizes to \\n', async () => {
-    const host = await renderTextarea();
-
-    simulatePaste(getEditor(host), 'first\r\nsecond\r\nthird');
-
-    await waitRender();
-
-    expect(host.value).toBe('first\nsecond\nthird');
-    expect(getEditor(host).querySelectorAll('.line')).toHaveLength(3);
-  });
-
-  test('pasting text with legacy \\r line endings normalizes to \\n', async () => {
-    const host = await renderTextarea();
-
-    simulatePaste(getEditor(host), 'a\rb\rc');
-
-    await waitRender();
-
-    expect(host.value).toBe('a\nb\nc');
-    expect(getEditor(host).querySelectorAll('.line')).toHaveLength(3);
+      expect(host.value).toBe(expected);
+      expect(getEditor(host).querySelectorAll('.line')).toHaveLength(lines);
+    }
   });
 
   test('pasting multi-line text fires rc-textarea-change with the full value', async () => {

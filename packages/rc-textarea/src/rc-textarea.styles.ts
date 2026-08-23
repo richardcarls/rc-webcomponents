@@ -33,7 +33,6 @@ export const styles = css`
   }
 
   :host([line-numbers]) #gutter,
-  :host([list-numbers]) #gutter,
   :host([gutter]) #gutter {
     display: block;
   }

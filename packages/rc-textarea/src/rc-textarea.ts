@@ -123,12 +123,10 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @csspart editor - The contenteditable field surface.
  *
  * @attr line-numbers - Show sequential line numbers in the gutter. Enables the gutter implicitly.
- * @attr list-numbers - Deprecated alias for sparse line numbering; removed before v1.0.
  * @attr gutter - Enable the gutter column without any built-in content.
  * @attr word-wrap - Wrap long lines within the field to prevent horizontal overflow.
  * @attr auto-grow - Allow the field to grow vertically with content to prevent vertical overflow.
  * @attr read-only - Disable editing. The field renders as a styled read-only display.
- * @attr label - Deprecated accessible-name override; removed before v1.0.
  * @attr value - Current field value.
  * @attr default-value - Initial uncontrolled value.
  *
@@ -161,33 +159,6 @@ export class RCTextarea extends LitElement {
   lineNumbers = false;
 
   /**
-   * Legacy alias for sparse (non-blank-line) list-style numbering.
-   *
-   * @deprecated Use a plugin with `LineDecoration.gutterContent` to implement
-   * sparse line numbering. This property will be removed before v1.0.
-   */
-  @property({ type: Boolean, attribute: 'list-numbers', reflect: true })
-  get listNumbers(): boolean {
-    return this._listNumbers;
-  }
-
-  set listNumbers(value: boolean) {
-    if (value) {
-      console.warn(
-        '[rc-textarea] `listNumbers` / `list-numbers` is deprecated and will be removed before v1.0. ' +
-          'Use a plugin with `LineDecoration.gutterContent` to implement sparse line numbering.',
-      );
-    }
-
-    const old = this._listNumbers;
-
-    this._listNumbers = value;
-    this.requestUpdate('listNumbers', old);
-  }
-
-  private _listNumbers = false;
-
-  /**
    * Enable the gutter column without any built-in content.
    *
    * Plugins can populate individual cells via `LineDecoration.gutterContent`.
@@ -207,36 +178,6 @@ export class RCTextarea extends LitElement {
   /** Disable editing. The field renders as a styled read-only display. */
   @property({ type: Boolean, attribute: 'read-only', reflect: true })
   readOnly = false;
-
-  /**
-   * Accessible-name override, applied to the editor's `aria-label`.
-   *
-   * @deprecated Set `aria-label` on the slotted `<textarea>` instead, or
-   * associate a `<label>` element via its `for`/`id` pair. This property
-   * will be removed before v1.0.
-   */
-  @property({ type: String })
-  get label(): string | null {
-    return this._label;
-  }
-
-  set label(value: string | null) {
-    if (value) {
-      console.warn(
-        '[rc-textarea] `label` is deprecated and will be removed before v1.0. ' +
-          'Set `aria-label` on the slotted `<textarea>`, or associate a `<label>` ' +
-          'element via its `for`/`id` pair instead.',
-      );
-    }
-
-    const old = this._label;
-
-    this._label = value;
-
-    this.requestUpdate('label', old);
-  }
-
-  private _label: string | null = null;
 
   /** Declarative plugin hook for framework integrations. */
   @property({ attribute: false })
@@ -462,6 +403,7 @@ export class RCTextarea extends LitElement {
     if (this._$editor) {
       this._document = new RCDocument(this._$editor as HTMLDivElement);
       this._bindEditorEvents(this._$editor);
+      this._syncLabel();
     }
 
     this._resizeObserver = new ResizeObserver(() => {
@@ -486,10 +428,6 @@ export class RCTextarea extends LitElement {
 
       this._syncGutterHeights();
       this._textareaController.sync();
-    }
-
-    if (changed.has('label')) {
-      this._syncLabel();
     }
   }
 
@@ -1198,10 +1136,6 @@ export class RCTextarea extends LitElement {
       parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
         return parseDecorationsFromHtml(html);
       },
-      /** @deprecated Use `parseDecorationsFromHtml` instead. */
-      decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
-        return parseDecorationsFromHtml(html);
-      },
       decorationsFromTokens(
         tokens: Token[],
         themeMap: Record<string, Omit<MarkDecoration, 'id' | 'type' | 'from' | 'to'>>,
@@ -1390,7 +1324,7 @@ export class RCTextarea extends LitElement {
 
   /**
    * Compute the label string for each gutter cell based on the current gutter
-   * mode (`lineNumbers`, `listNumbers` (deprecated), `gutter`) and any
+   * mode (`lineNumbers`, `gutter`) and any
    * `LineDecoration.gutterContent` overrides in `allDecorations`.
    *
    * Returns one entry per line (same length as `value.split('\n')`):
@@ -1411,9 +1345,7 @@ export class RCTextarea extends LitElement {
       }
     }
 
-    let counter = 0;
-
-    return lines.map((lineText, i) => {
+    return lines.map((_, i) => {
       const lineNum = i + 1;
 
       if (overrides.has(lineNum)) {
@@ -1422,16 +1354,6 @@ export class RCTextarea extends LitElement {
 
       if (this.lineNumbers) {
         return String(lineNum);
-      }
-
-      if (this.listNumbers) {
-        if (lineText.trim() === '') {
-          return null;
-        }
-
-        counter++;
-
-        return `${counter}.`;
       }
 
       // `gutter` mode is empty by default, and plugins fill via overrides.
@@ -1516,7 +1438,7 @@ export class RCTextarea extends LitElement {
    * (called by the `ResizeObserver` without a new render pass).
    */
   protected _syncGutter(labels?: (string | null)[]): void {
-    if (!this.lineNumbers && !this.listNumbers && !this.gutter) {
+    if (!this.lineNumbers && !this.gutter) {
       return;
     }
 
@@ -1579,12 +1501,6 @@ export class RCTextarea extends LitElement {
 
         return;
       }
-    }
-
-    if (this._label) {
-      this._$editor.setAttribute('aria-label', this._label);
-
-      return;
     }
 
     this._$editor.removeAttribute('aria-label');
