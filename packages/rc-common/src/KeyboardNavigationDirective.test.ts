@@ -1,341 +1,175 @@
-import { test, expect, vi } from 'vitest';
-import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
-import { userEvent } from 'vitest/browser';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { expect, test, vi } from 'vitest';
+import { render } from 'vitest-browser-lit';
 
-import { keyNavigation } from './KeyboardNavigationDirective';
+import {
+  keyNavigation,
+  type KeyboardNavigationAction,
+  type KeyNavigationOptions,
+} from './KeyboardNavigationDirective';
 
+function renderTarget(
+  role: string,
+  callback: (action: KeyboardNavigationAction) => void,
+  options?: KeyNavigationOptions,
+  orientation?: 'horizontal' | 'vertical',
+): HTMLElement {
+  const screen = render(html`
+    <div
+      role=${role}
+      aria-orientation=${ifDefined(orientation)}
+      tabindex="0"
+      ${keyNavigation(callback, options)}
+    ></div>
+  `);
 
-// ─── Axis auto-detection ──────────────────────────────────────────────────────
+  return screen.container.querySelector<HTMLElement>('[role]')!;
+}
 
-test('keyNavigation: role=menu uses vertical axis (ArrowDown → next)', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('menu');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowDown}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('next');
-});
-
-test('keyNavigation: role=menu uses vertical axis (ArrowUp → prev)', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('menu');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowUp}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('prev');
-});
-
-test('keyNavigation: role=toolbar uses horizontal axis (ArrowRight → next)', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="toolbar" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('toolbar');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowRight}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('next');
-});
-
-test('keyNavigation: role=toolbar uses horizontal axis (ArrowLeft → prev)', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="toolbar" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('toolbar');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowLeft}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('prev');
-});
-
-test('keyNavigation: role=menubar uses horizontal axis (ArrowRight → next)', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="menubar" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('menubar');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowRight}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('next');
-});
-
-
-// ─── Shift+Arrow → next-large / prev-large ───────────────────────────────────
-
-test('keyNavigation: Shift+ArrowRight → next-large on horizontal axis', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="toolbar" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('toolbar');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{Shift>}{ArrowRight}{/Shift}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('next-large');
-});
-
-test('keyNavigation: Shift+ArrowLeft → prev-large on horizontal axis', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="toolbar" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('toolbar');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{Shift>}{ArrowLeft}{/Shift}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('prev-large');
-});
-
-test('keyNavigation: Shift+ArrowDown → next-large on vertical axis', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('menu');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{Shift>}{ArrowDown}{/Shift}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('next-large');
-});
-
-test('keyNavigation: Shift+ArrowUp → prev-large on vertical axis', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('menu');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{Shift>}{ArrowUp}{/Shift}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('prev-large');
-});
-
-
-// ─── role=separator axis (perpendicular to bar) ──────────────────────────────
-
-test('keyNavigation: role=separator default (horizontal bar) uses vertical axis (ArrowDown → next)', async () => {
-  const cb = vi.fn();
-  // No aria-orientation set → implicit horizontal bar → vertical keyboard axis
-  const screen = render(html`<div role="separator" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('separator');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowDown}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('next');
-});
-
-test('keyNavigation: role=separator aria-orientation="vertical" uses horizontal axis (ArrowRight → next)', async () => {
-  const cb = vi.fn();
-  // Vertical bar → horizontal keyboard axis (Left/Right)
-  const screen = render(html`<div role="separator" aria-orientation="vertical" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('separator');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowRight}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('next');
-});
-
-test('keyNavigation: role=separator aria-orientation="horizontal" uses vertical axis (ArrowUp → prev)', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="separator" aria-orientation="horizontal" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('separator');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowUp}');
-
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('prev');
-});
-
-
-// ─── navigationAxis option override ──────────────────────────────────────────
-
-test('keyNavigation: navigationAxis option overrides role-based detection', async () => {
-  const cb = vi.fn();
-  // role=menu would normally be vertical, but we override to horizontal
-  const screen = render(
-    html`<div role="menu" tabindex="0" ${keyNavigation(cb, { navigationAxis: 'horizontal' })}></div>`
+function press($target: HTMLElement, key: string, shiftKey = false): void {
+  $target.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key,
+      shiftKey,
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    }),
   );
-  const el = screen.getByRole('menu');
+}
 
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowRight}');
+test('keyNavigation derives the navigation axis from menu, toolbar, and menubar roles', () => {
+  const menuCB = vi.fn();
+  const $menu = renderTarget('menu', menuCB);
 
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('next');
+  press($menu, 'ArrowDown');
+  press($menu, 'ArrowUp');
+
+  expect(menuCB.mock.calls).toEqual([['next'], ['prev']]);
+
+  for (const role of ['toolbar', 'menubar']) {
+    const callback = vi.fn();
+    const $target = renderTarget(role, callback);
+
+    press($target, 'ArrowRight');
+    press($target, 'ArrowLeft');
+
+    expect(callback.mock.calls).toEqual([['next'], ['prev']]);
+  }
 });
 
+test('keyNavigation derives separator axes and honors an explicit override', () => {
+  const defaultCB = vi.fn();
+  const $defaultSeparator = renderTarget('separator', defaultCB);
 
-// ─── Home / End ───────────────────────────────────────────────────────────────
+  press($defaultSeparator, 'ArrowDown');
+  expect(defaultCB).toHaveBeenCalledWith('next');
 
-test('keyNavigation: Home → start', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('menu');
+  const verticalCB = vi.fn();
+  const $verticalSeparator = renderTarget('separator', verticalCB, undefined, 'vertical');
 
-  (await el.element()).focus();
-  await userEvent.keyboard('{Home}');
+  press($verticalSeparator, 'ArrowRight');
+  expect(verticalCB).toHaveBeenCalledWith('next');
 
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('start');
+  const overrideCB = vi.fn();
+  const $overriddenMenu = renderTarget('menu', overrideCB, { navigationAxis: 'horizontal' });
+
+  press($overriddenMenu, 'ArrowRight');
+  expect(overrideCB).toHaveBeenCalledWith('next');
 });
 
-test('keyNavigation: End → end', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('menu');
+test('keyNavigation maps shifted arrows to large-step actions on both axes', () => {
+  const horizontalCB = vi.fn();
+  const $toolbar = renderTarget('toolbar', horizontalCB);
 
-  (await el.element()).focus();
-  await userEvent.keyboard('{End}');
+  press($toolbar, 'ArrowRight', true);
+  press($toolbar, 'ArrowLeft', true);
 
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('end');
+  expect(horizontalCB.mock.calls).toEqual([['next-large'], ['prev-large']]);
+
+  const verticalCB = vi.fn();
+  const $menu = renderTarget('menu', verticalCB);
+
+  press($menu, 'ArrowDown', true);
+  press($menu, 'ArrowUp', true);
+
+  expect(verticalCB.mock.calls).toEqual([['next-large'], ['prev-large']]);
 });
 
+test('keyNavigation maps Home and End to range endpoints', () => {
+  const callback = vi.fn();
+  const $menu = renderTarget('menu', callback);
 
-// ─── Escape handling ──────────────────────────────────────────────────────────
+  press($menu, 'Home');
+  press($menu, 'End');
 
-test('keyNavigation: Escape does nothing without handleEscape', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('menu');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{Escape}');
-
-  expect(cb).not.toHaveBeenCalled();
+  expect(callback.mock.calls).toEqual([['start'], ['end']]);
 });
 
-test('keyNavigation: handleEscape dispatches escape action', async () => {
-  const cb = vi.fn();
-  const screen = render(
-    html`<div role="menu" tabindex="0" ${keyNavigation(cb, { handleEscape: true })}></div>`
-  );
-  const el = screen.getByRole('menu');
+test('keyNavigation gates Escape behind handleEscape', () => {
+  const defaultCB = vi.fn();
+  const $defaultMenu = renderTarget('menu', defaultCB);
 
-  (await el.element()).focus();
-  await userEvent.keyboard('{Escape}');
+  press($defaultMenu, 'Escape');
+  expect(defaultCB).not.toHaveBeenCalled();
 
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('escape');
+  const enabledCB = vi.fn();
+  const $enabledMenu = renderTarget('menu', enabledCB, { handleEscape: true });
+
+  press($enabledMenu, 'Escape');
+  expect(enabledCB).toHaveBeenCalledWith('escape');
 });
 
+test('keyNavigation maps activation keys according to handleActivate', () => {
+  const defaultCB = vi.fn();
+  const $defaultMenu = renderTarget('menu', defaultCB);
 
-// ─── Activate handling ────────────────────────────────────────────────────────
+  press($defaultMenu, 'Enter');
+  press($defaultMenu, ' ');
 
-test('keyNavigation: Enter dispatches toggle without handleActivate', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('menu');
+  expect(defaultCB.mock.calls).toEqual([['toggle']]);
 
-  (await el.element()).focus();
-  await userEvent.keyboard('{Enter}');
-  expect(cb).toHaveBeenNthCalledWith(1, 'toggle');
+  const enabledCB = vi.fn();
+  const $enabledMenu = renderTarget('menu', enabledCB, { handleActivate: true });
 
-  await userEvent.keyboard('{Enter}');
-  expect(cb).toHaveBeenNthCalledWith(2, 'toggle');
+  press($enabledMenu, 'Enter');
+  press($enabledMenu, ' ');
+
+  expect(enabledCB.mock.calls).toEqual([['activate'], ['activate']]);
 });
 
-test('keyNavigation: handleActivate maps Enter → activate', async () => {
-  const cb = vi.fn();
-  const screen = render(
-    html`<div role="menu" tabindex="0" ${keyNavigation(cb, { handleActivate: true })}></div>`
-  );
-  const el = screen.getByRole('menu');
+test('keyNavigation suppresses navigation actions when handleNavAxis is false', () => {
+  const callback = vi.fn();
+  const $menu = renderTarget('menu', callback, { handleNavAxis: false });
 
-  (await el.element()).focus();
-  await userEvent.keyboard('{Enter}');
+  for (const key of ['ArrowDown', 'ArrowUp', 'Home', 'End']) {
+    press($menu, key);
+  }
 
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('activate');
+  expect(callback).not.toHaveBeenCalled();
 });
 
-test('keyNavigation: handleActivate maps Space → activate', async () => {
-  const cb = vi.fn();
-  const screen = render(
-    html`<div role="menu" tabindex="0" ${keyNavigation(cb, { handleActivate: true })}></div>`
-  );
-  const el = screen.getByRole('menu');
+test('keyNavigation maps the perpendicular open axis in both orientations', () => {
+  const verticalCB = vi.fn();
+  const $menu = renderTarget('menu', verticalCB, {
+    handleNavAxis: false,
+    handleOpenAxis: true,
+  });
 
-  (await el.element()).focus();
-  await userEvent.keyboard(' ');
+  press($menu, 'ArrowRight');
+  press($menu, 'ArrowLeft');
 
-  expect(cb).toHaveBeenCalledOnce();
-  expect(cb).toHaveBeenCalledWith('activate');
+  expect(verticalCB.mock.calls).toEqual([['open-to-first'], ['open-to-last']]);
+
+  const horizontalCB = vi.fn();
+  const $toolbar = renderTarget('toolbar', horizontalCB, {
+    handleNavAxis: false,
+    handleOpenAxis: true,
+  });
+
+  press($toolbar, 'ArrowDown');
+  press($toolbar, 'ArrowUp');
+
+  expect(horizontalCB.mock.calls).toEqual([['open-to-first'], ['open-to-last']]);
 });
-
-test('keyNavigation: Space does nothing without handleActivate', async () => {
-  const cb = vi.fn();
-  const screen = render(html`<div role="menu" tabindex="0" ${keyNavigation(cb)}></div>`);
-  const el = screen.getByRole('menu');
-
-  (await el.element()).focus();
-  await userEvent.keyboard(' ');
-
-  expect(cb).not.toHaveBeenCalled();
-});
-
-
-// ─── handleNavAxis / handleOpenAxis ──────────────────────────────────────────
-
-test('keyNavigation: handleNavAxis=false suppresses next/prev/start/end', async () => {
-  const cb = vi.fn();
-  const screen = render(
-    html`<div role="menu" tabindex="0" ${keyNavigation(cb, { handleNavAxis: false })}></div>`
-  );
-  const el = screen.getByRole('menu');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowDown}');
-  await userEvent.keyboard('{ArrowUp}');
-  await userEvent.keyboard('{Home}');
-  await userEvent.keyboard('{End}');
-
-  expect(cb).not.toHaveBeenCalled();
-});
-
-test('keyNavigation: handleOpenAxis dispatches open-to-first and open-to-last', async () => {
-  const cb = vi.fn();
-  // role=menu is vertical; open axis is horizontal (ArrowRight/ArrowLeft)
-  const screen = render(
-    html`<div role="menu" tabindex="0" ${keyNavigation(cb, { handleNavAxis: false, handleOpenAxis: true })}></div>`
-  );
-  const el = screen.getByRole('menu');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowRight}');
-  expect(cb).toHaveBeenNthCalledWith(1, 'open-to-first');
-
-  await userEvent.keyboard('{ArrowLeft}');
-  expect(cb).toHaveBeenNthCalledWith(2, 'open-to-last');
-});
-
-test('keyNavigation: horizontal open axis maps ArrowDown → open-to-first', async () => {
-  const cb = vi.fn();
-  // role=toolbar is horizontal; open axis is vertical (ArrowDown/ArrowUp)
-  const screen = render(
-    html`<div role="toolbar" tabindex="0" ${keyNavigation(cb, { handleNavAxis: false, handleOpenAxis: true })}></div>`
-  );
-  const el = screen.getByRole('toolbar');
-
-  (await el.element()).focus();
-  await userEvent.keyboard('{ArrowDown}');
-  expect(cb).toHaveBeenCalledWith('open-to-first');
-
-  await userEvent.keyboard('{ArrowUp}');
-  expect(cb).toHaveBeenCalledWith('open-to-last');
-});
-

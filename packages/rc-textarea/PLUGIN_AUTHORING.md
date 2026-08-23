@@ -105,7 +105,6 @@ interface RCTextareaPluginAPI {
   removeStyleSheet(sheet: CSSStyleSheet): void;
 
   parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
-  decorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[];
   decorationsFromTokens(
     tokens: Token[],
     themeMap: Record<string, Omit<MarkDecoration, 'id' | 'type' | 'from' | 'to'>>,
@@ -116,8 +115,6 @@ interface RCTextareaPluginAPI {
   replaceSelection(text: string): void;
 }
 ```
-
-`decorationsFromHtml()` is deprecated. Use `parseDecorationsFromHtml()` for new code.
 
 ### Text Mutation
 

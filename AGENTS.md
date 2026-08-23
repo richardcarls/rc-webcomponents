@@ -258,6 +258,7 @@ yarn.cmd workspace @rcarls/<package> run build
 yarn.cmd workspace @rcarls/<package> run test:browser
 yarn.cmd build
 yarn.cmd test
+yarn.cmd test:full
 yarn.cmd validate:packages
 ```
 
@@ -267,12 +268,14 @@ yarn workspace @rcarls/<package> run build
 yarn workspace @rcarls/<package> run test:browser
 yarn build
 yarn test
+yarn test:full
 yarn validate:packages
 ```
 
 New package `test:browser` scripts must include `--run` (`vitest --run`). Without it
-Vitest defaults to watch mode on Linux and the root `test` script hangs waiting for
-each workspace to exit.
+Vitest defaults to watch mode. The root `test` script runs the shared test projects with
+Chromium locally; use `test:full` for the full local browser matrix, sequenced one browser at a
+time to bound resource use.
 
 The root `build` script runs workspaces topologically. For targeted package work,
 rebuild changed dependencies before running tests in packages that consume them.
@@ -282,10 +285,11 @@ the docs dev server after rebuilding a dependency.
 ## Testing
 
 Tests run live DOM in real browsers via Playwright and Vitest browser mode;
-there is no jsdom. Locally: Chromium and Firefox. In CI (`CI=true`): Chromium,
-Firefox, and WebKit. Browser config is shared via `vitest.browser.config.ts` at
-the repo root — add browsers or tweak options there instead of in per-package
-configs.
+there is no jsdom. Locally, the root suite and package suites default to Chromium.
+Use `yarn test:full` for Chromium, Firefox, and WebKit; CI always uses that same
+sequential full matrix. Browser settings are shared via `vitest.browser.config.ts`, and
+the root `vitest.config.ts` separates ordinary, geometry-sensitive, theme, and
+browser-independent tests with bounded concurrency.
 
 ```ts
 import { html } from 'lit';

@@ -1698,8 +1698,8 @@ export function SplitterDemo() {
 export function TextareaDemo() {
   return (
     <DemoFrame>
-      <rc-textarea label="Notes" line-numbers>
-        <textarea defaultValue={'TODO: test seasoning\nSimmer until tender.'} />
+      <rc-textarea line-numbers>
+        <textarea aria-label="Notes" defaultValue={'TODO: test seasoning\nSimmer until tender.'} />
       </rc-textarea>
     </DemoFrame>
   );

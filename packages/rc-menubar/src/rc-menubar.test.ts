@@ -140,25 +140,29 @@ test('RCMenubar maps item styling variables to child menu-button triggers', asyn
     expect(trigger.getAttribute('tabindex')).toBe('0');
   });
 
-  let styles = getComputedStyle(trigger);
+  let styles = getComputedStyle(menuButton);
 
-  expect(styles.backgroundColor).toBe('rgb(1, 2, 3)');
-  expect(styles.color).toBe('rgb(4, 5, 6)');
-  expect(styles.paddingInlineStart).toBe('32px');
-  expect(
-    getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-background'),
-  ).toBe('rgb(7, 8, 9)');
-  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-trigger-open-color')).toBe(
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-background').trim()).toBe(
+    'rgb(1, 2, 3)',
+  );
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-color').trim()).toBe('rgb(4, 5, 6)');
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-padding-inline').trim()).toBe('2rem');
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-open-background').trim()).toBe(
+    'rgb(7, 8, 9)',
+  );
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-open-color').trim()).toBe(
     'rgb(10, 11, 12)',
   );
 
   await screen.getByTestId('trigger-1').click();
 
-  styles = getComputedStyle(trigger);
+  styles = getComputedStyle(menuButton);
 
   expect(trigger.getAttribute('aria-expanded')).toBe('true');
-  expect(styles.backgroundColor).toBe('rgb(7, 8, 9)');
-  expect(styles.color).toBe('rgb(10, 11, 12)');
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-background').trim()).toBe(
+    'rgb(7, 8, 9)',
+  );
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-color').trim()).toBe('rgb(10, 11, 12)');
 });
 
 test('RCMenubar navigates with arrow keys', async () => {

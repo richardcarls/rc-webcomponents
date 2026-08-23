@@ -93,9 +93,8 @@ When the user edits, the slotted textarea is kept in sync and dispatches a nativ
 | `auto-grow`    | `autoGrow`    | Let the field grow vertically with content.                                         |
 | `read-only`    | `readOnly`    | Render selectable, non-editable content.                                            |
 
-`list-numbers` and `label` still exist for compatibility but are deprecated. Prefer a plugin
-with `LineDecoration.gutterContent` for sparse numbering, and put accessible names on the
-slotted textarea with `aria-label` or a real `<label for="...">`.
+Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
+the slotted textarea with `aria-label` or a real `<label for="...">`.
 
 The main JavaScript-only properties are:
 

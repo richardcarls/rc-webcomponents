@@ -308,7 +308,6 @@ export type RCSnackbarRef = HTMLElement & {
 /** Public API surface of `<rc-disclosure>`. */
 export type RCDisclosureRef = HTMLElement & {
   open: boolean;
-  fragment: boolean;
 };
 
 /** Public API surface of `<rc-accordion>`. */
@@ -535,12 +534,10 @@ export type RCTextareaRef = HTMLElement & {
   defaultValue: string | undefined;
   plugin: RCTextareaPlugin | null;
   lineNumbers: boolean;
-  listNumbers: boolean;
   gutter: boolean;
   wordWrap: boolean;
   autoGrow: boolean;
   readOnly: boolean;
-  label: string | null;
   usePlugin(plugin: RCTextareaPlugin): void;
   removePlugin(): void;
   wrapSelection(prefix: string, suffix: string): void;
@@ -608,7 +605,6 @@ declare module 'react' {
         RCDisclosureRef
       > & {
         open?: boolean;
-        fragment?: boolean;
       };
 
       'rc-accordion': React.DetailedHTMLProps<
@@ -909,13 +905,10 @@ declare module 'react' {
         'default-value'?: string;
         plugin?: RCTextareaPlugin | null;
         'line-numbers'?: boolean;
-        'list-numbers'?: boolean;
         gutter?: boolean;
         'word-wrap'?: boolean;
         'auto-grow'?: boolean;
         'read-only'?: boolean;
-        /** @deprecated Set `aria-label` on the slotted `<textarea>` or use a `<label for>` pair instead. */
-        label?: string;
       };
     }
   }
