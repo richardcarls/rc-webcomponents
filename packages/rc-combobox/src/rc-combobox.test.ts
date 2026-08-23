@@ -460,7 +460,41 @@ test('toggle button click closes popup when open', async () => {
   expect($host.open).toBe(false);
 });
 
-test('touch pointerdown selects active option, closes popup, sets input value', async () => {
+test('touch tap (pointerdown + pointerup) selects active option, closes popup, sets input value', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+
+  $host.openPopup();
+  await $host.updateComplete;
+
+  const $listbox = $host.renderRoot.querySelector('rc-listbox')!;
+  const $option = $listbox.querySelector<HTMLElement>('[data-value="apple"]')!;
+
+  $option.dispatchEvent(
+    new PointerEvent('pointerdown', {
+      pointerType: 'touch',
+      pointerId: 0,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  $option.dispatchEvent(
+    new PointerEvent('pointerup', {
+      pointerType: 'touch',
+      pointerId: 0,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  await $host.updateComplete;
+
+  expect($host.open).toBe(false);
+  expect($input.value).toBe('Apple');
+  expect($host.selectedValues).toEqual(['apple']);
+});
+
+test('touch pointerdown alone (no pointerup) does not select, so scrolling is not intercepted', async () => {
   const screen = render(makeCombobox());
   const $host = await getHost(screen);
   const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
@@ -471,13 +505,18 @@ test('touch pointerdown selects active option, closes popup, sets input value', 
   const $listbox = $host.renderRoot.querySelector('rc-listbox')!;
 
   $listbox.querySelector<HTMLElement>('[data-value="apple"]')!.dispatchEvent(
-    new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true, cancelable: true }),
+    new PointerEvent('pointerdown', {
+      pointerType: 'touch',
+      pointerId: 0,
+      bubbles: true,
+      cancelable: true,
+    }),
   );
   await $host.updateComplete;
 
-  expect($host.open).toBe(false);
-  expect($input.value).toBe('Apple');
-  expect($host.selectedValues).toEqual(['apple']);
+  expect($host.open).toBe(true);
+  expect($input.value).not.toBe('Apple');
+  expect($host.selectedValues).toEqual([]);
 });
 
 test('composition input events (mobile IME) still filter the listbox', async () => {

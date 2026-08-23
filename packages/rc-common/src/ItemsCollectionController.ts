@@ -64,6 +64,20 @@ export class ItemsCollectionController implements ReactiveController {
   private _checkmark = false;
   private _optionsInitialized = false;
 
+  /**
+   * Movement (in CSS pixels) beyond which a pending touch activation is
+   * treated as a scroll gesture instead of a tap.
+   */
+  private static readonly _TOUCH_TAP_THRESHOLD = 10;
+
+  /** Touch pointerdown awaiting pointerup to confirm a tap versus a scroll. */
+  private _pendingTouchActivation: {
+    pointerId: number;
+    li: HTMLLIElement;
+    startX: number;
+    startY: number;
+  } | null = null;
+
   constructor(
     host: ReactiveControllerHost & Element,
     options: ItemsCollectionControllerOptions,
@@ -77,6 +91,9 @@ export class ItemsCollectionController implements ReactiveController {
 
   hostConnected(): void {
     this._host.addEventListener('pointerdown', this._onPointerDown);
+    this._host.addEventListener('pointermove', this._onPointerMove);
+    this._host.addEventListener('pointerup', this._onPointerUp);
+    this._host.addEventListener('pointercancel', this._onPointerCancel);
     if (!this._optionsInitialized) {
       this._bootstrapFromDom();
     }
@@ -84,6 +101,10 @@ export class ItemsCollectionController implements ReactiveController {
 
   hostDisconnected(): void {
     this._host.removeEventListener('pointerdown', this._onPointerDown);
+    this._host.removeEventListener('pointermove', this._onPointerMove);
+    this._host.removeEventListener('pointerup', this._onPointerUp);
+    this._host.removeEventListener('pointercancel', this._onPointerCancel);
+    this._pendingTouchActivation = null;
   }
 
   // -- Accessors --
@@ -406,19 +427,24 @@ export class ItemsCollectionController implements ReactiveController {
     return label.startsWith(query);
   }
 
-  private _onPointerDown = (e: Event): void => {
-    const target = e.target as Element | null;
-    if (!target) return;
+  private _resolveOptionLi(target: Element | null): HTMLLIElement | null {
+    if (!target) return null;
 
-    const li = target.closest<HTMLElement>('li[data-value]');
-    if (!li || li.getAttribute('role') !== 'option') return;
-    if (li.parentElement !== this._ul) return;
+    const li = target.closest<HTMLLIElement>('li[data-value]');
+    if (!li || li.getAttribute('role') !== 'option') return null;
+    if (li.parentElement !== this._ul) return null;
 
-    // Once this pointerdown is claimed as an option activation, stop it from
-    // continuing to bubble/compose past this point. Left unstopped, a composed
-    // event can still be observed by ancestors outside this component (e.g. a
-    // <label> wrapping an unrelated sibling control) and be reinterpreted as
-    // an interaction with something else entirely.
+    return li;
+  }
+
+  /**
+   * Claims a pointer event as an option activation: stops it from continuing
+   * to bubble/compose past this point (left unstopped, a composed event can
+   * still be observed by ancestors outside this component — e.g. a <label>
+   * wrapping an unrelated sibling control — and be reinterpreted as an
+   * interaction with something else entirely), then activates the option.
+   */
+  private _activateLi(li: HTMLLIElement, e: Event): void {
     e.preventDefault();
     e.stopPropagation();
 
@@ -426,6 +452,71 @@ export class ItemsCollectionController implements ReactiveController {
 
     if (option) {
       this._onActivate(option);
+    }
+  }
+
+  private _onPointerDown = (e: Event): void => {
+    const pointerEvent = e as PointerEvent;
+    const li = this._resolveOptionLi(pointerEvent.target as Element | null);
+    if (!li) return;
+
+    // Touch input can't distinguish a tap from the start of a scroll drag
+    // until the pointer either lifts near where it started (a tap) or moves
+    // past a scroll threshold (a drag). Defer activation to pointerup and
+    // leave this pointerdown alone so the browser's native scroll can still
+    // take over — claiming it here (as we do for mouse/pen below) would
+    // preventDefault() the touch's default pan behavior and toggle the
+    // option under the finger before any scroll gesture could start.
+    if (pointerEvent.pointerType === 'touch') {
+      // Only track one pending touch activation at a time; a second
+      // simultaneous touch is ignored rather than displacing the first.
+      if (this._pendingTouchActivation) return;
+
+      this._pendingTouchActivation = {
+        pointerId: pointerEvent.pointerId,
+        li,
+        startX: pointerEvent.clientX,
+        startY: pointerEvent.clientY,
+      };
+      return;
+    }
+
+    // Mouse/pen: claim immediately. Activating on pointerdown (rather than
+    // waiting for click) matters here so the option commits before a host
+    // blur triggered by the same interaction can close the popup first.
+    this._activateLi(li, pointerEvent);
+  };
+
+  private _onPointerMove = (e: Event): void => {
+    const pending = this._pendingTouchActivation;
+    const pointerEvent = e as PointerEvent;
+    if (!pending || pointerEvent.pointerId !== pending.pointerId) return;
+
+    const distance = Math.hypot(
+      pointerEvent.clientX - pending.startX,
+      pointerEvent.clientY - pending.startY,
+    );
+
+    if (distance > ItemsCollectionController._TOUCH_TAP_THRESHOLD) {
+      // Moved past the tap threshold; this is a scroll, not an activation.
+      // Leave it unclaimed so the browser's native scroll keeps running.
+      this._pendingTouchActivation = null;
+    }
+  };
+
+  private _onPointerUp = (e: Event): void => {
+    const pending = this._pendingTouchActivation;
+    const pointerEvent = e as PointerEvent;
+    if (!pending || pointerEvent.pointerId !== pending.pointerId) return;
+
+    this._pendingTouchActivation = null;
+    this._activateLi(pending.li, pointerEvent);
+  };
+
+  private _onPointerCancel = (e: Event): void => {
+    const pointerEvent = e as PointerEvent;
+    if (this._pendingTouchActivation?.pointerId === pointerEvent.pointerId) {
+      this._pendingTouchActivation = null;
     }
   };
 }

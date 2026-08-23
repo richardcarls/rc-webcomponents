@@ -567,7 +567,52 @@ test('adding <option> preserves current selection', async () => {
   expect(host.selectedValues).toEqual(['banana']);
 });
 
-test('touch pointerdown (pointerType: touch) selects an option and syncs native <select>', async () => {
+/** Dispatches a tap (pointerdown followed by pointerup) at a fixed point for touch input. */
+function dispatchTouchTap(
+  $el: HTMLElement,
+  { pointerId = 0, x = 0, y = 0 }: { pointerId?: number; x?: number; y?: number } = {},
+): void {
+  $el.dispatchEvent(
+    new PointerEvent('pointerdown', {
+      pointerType: 'touch',
+      pointerId,
+      clientX: x,
+      clientY: y,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  $el.dispatchEvent(
+    new PointerEvent('pointerup', {
+      pointerType: 'touch',
+      pointerId,
+      clientX: x,
+      clientY: y,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+}
+
+test('touch tap (pointerdown + pointerup) selects an option and syncs native <select>', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+
+  host.openPopup();
+  await host.updateComplete;
+
+  const $listbox = host.renderRoot.querySelector('rc-listbox')!;
+
+  dispatchTouchTap($listbox.querySelector<HTMLElement>('[data-value="banana"]')!);
+  await host.updateComplete;
+
+  expect(host['_selectedValues'].has('banana')).toBe(true);
+  expect($nativeSel.value).toBe('banana');
+  expect(host.open).toBe(false);
+});
+
+test('touch pointerdown alone (no pointerup) does not select, so scrolling is not intercepted', async () => {
   const screen = render(makeSelect());
   const host = await getHost(screen);
   const $nativeSel = host.querySelector('select')!;
@@ -578,16 +623,69 @@ test('touch pointerdown (pointerType: touch) selects an option and syncs native 
   const $listbox = host.renderRoot.querySelector('rc-listbox')!;
 
   $listbox.querySelector<HTMLElement>('[data-value="banana"]')!.dispatchEvent(
-    new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true, cancelable: true }),
+    new PointerEvent('pointerdown', {
+      pointerType: 'touch',
+      pointerId: 0,
+      bubbles: true,
+      cancelable: true,
+    }),
   );
   await host.updateComplete;
 
-  expect(host['_selectedValues'].has('banana')).toBe(true);
-  expect($nativeSel.value).toBe('banana');
-  expect(host.open).toBe(false);
+  expect(host['_selectedValues'].has('banana')).toBe(false);
+  expect($nativeSel.value).not.toBe('banana');
+  expect(host.open).toBe(true);
 });
 
-test('touch pointerdown selects multiple options and syncs native <select>', async () => {
+test('touch drag past the tap threshold cancels the pending activation (scroll, not select)', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+
+  host.openPopup();
+  await host.updateComplete;
+
+  const $listbox = host.renderRoot.querySelector('rc-listbox')!;
+  const $option = $listbox.querySelector<HTMLElement>('[data-value="banana"]')!;
+
+  $option.dispatchEvent(
+    new PointerEvent('pointerdown', {
+      pointerType: 'touch',
+      pointerId: 0,
+      clientX: 0,
+      clientY: 0,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  $option.dispatchEvent(
+    new PointerEvent('pointermove', {
+      pointerType: 'touch',
+      pointerId: 0,
+      clientX: 0,
+      clientY: 40,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  $option.dispatchEvent(
+    new PointerEvent('pointerup', {
+      pointerType: 'touch',
+      pointerId: 0,
+      clientX: 0,
+      clientY: 40,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  await host.updateComplete;
+
+  expect(host['_selectedValues'].has('banana')).toBe(false);
+  expect($nativeSel.value).not.toBe('banana');
+  expect(host.open).toBe(true);
+});
+
+test('touch tap selects multiple options and syncs native <select>', async () => {
   const screen = render(makeSelect({ multiple: true }));
   const host = await getHost(screen);
   const $nativeSel = host.querySelector('select')!;
@@ -598,9 +696,7 @@ test('touch pointerdown selects multiple options and syncs native <select>', asy
   const $listbox = host.renderRoot.querySelector('rc-listbox')!;
 
   for (const value of ['apple', 'banana']) {
-    $listbox.querySelector<HTMLElement>(`[data-value="${value}"]`)!.dispatchEvent(
-      new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true, cancelable: true }),
-    );
+    dispatchTouchTap($listbox.querySelector<HTMLElement>(`[data-value="${value}"]`)!);
   }
   await host.updateComplete;
 
