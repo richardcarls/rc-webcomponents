@@ -1,5 +1,20 @@
 # @rcarls/rc-common
 
+## 0.5.0
+
+### Minor Changes
+
+- 689340c: Remove pre-1.0 deprecated APIs: the boolean `keyNavigation` option, `rc-disclosure.fragment`,
+  `rc-textarea.listNumbers`, `rc-textarea.label`, and `decorationsFromHtml`.
+
+### Patch Changes
+
+- 4ae2ef0: Fix `ItemsCollectionController` (used by `rc-listbox`, and transitively by
+  `rc-select` and `rc-combobox`) toggling an option on the first touch contact
+  instead of letting a scrollable options list scroll. Touch activation now
+  waits for `pointerup` within a 10px tap threshold; a larger move cancels the
+  pending activation. Mouse and pen still activate on `pointerdown`.
+
 ## 0.4.2
 
 ## 0.4.1

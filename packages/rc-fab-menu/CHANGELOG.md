@@ -1,5 +1,16 @@
 # @rcarls/rc-fab-menu
 
+## 0.5.0
+
+### Patch Changes
+
+- Updated dependencies [4ae2ef0]
+- Updated dependencies [d33b92f]
+- Updated dependencies [689340c]
+  - @rcarls/rc-common@0.5.0
+  - @rcarls/rc-menu-button@0.5.0
+  - @rcarls/rc-menu@0.5.0
+
 ## 0.4.2
 
 ### Patch Changes

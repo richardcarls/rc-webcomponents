@@ -1,5 +1,50 @@
 # @rcarls/rc-webcomponents
 
+## 0.5.0
+
+### Minor Changes
+
+- 689340c: Remove pre-1.0 deprecated APIs: the boolean `keyNavigation` option, `rc-disclosure.fragment`,
+  `rc-textarea.listNumbers`, `rc-textarea.label`, and `decorationsFromHtml`.
+
+### Patch Changes
+
+- Updated dependencies [d440edc]
+- Updated dependencies [ba65db7]
+- Updated dependencies [d33b92f]
+- Updated dependencies [7c68235]
+- Updated dependencies [689340c]
+  - @rcarls/rc-app-bar@0.5.0
+  - @rcarls/rc-bottom-sheet@0.5.0
+  - @rcarls/rc-menu-button@0.5.0
+  - @rcarls/rc-segmented-button@0.5.0
+  - @rcarls/rc-disclosure@0.5.0
+  - @rcarls/rc-textarea@0.5.0
+  - @rcarls/rc-combobox@0.5.0
+  - @rcarls/rc-dialog@0.5.0
+  - @rcarls/rc-fab@0.5.0
+  - @rcarls/rc-fab-menu@0.5.0
+  - @rcarls/rc-listbox@0.5.0
+  - @rcarls/rc-menu@0.5.0
+  - @rcarls/rc-menubar@0.5.0
+  - @rcarls/rc-navigation-bar@0.5.0
+  - @rcarls/rc-navigation-rail@0.5.0
+  - @rcarls/rc-range-slider@0.5.0
+  - @rcarls/rc-search-bar@0.5.0
+  - @rcarls/rc-select@0.5.0
+  - @rcarls/rc-slider@0.5.0
+  - @rcarls/rc-splitter@0.5.0
+  - @rcarls/rc-toolbar@0.5.0
+  - @rcarls/rc-transfer-list@0.5.0
+  - @rcarls/rc-accordion@0.5.0
+  - @rcarls/rc-markdown-editor@0.5.0
+  - @rcarls/rc-button@0.5.0
+  - @rcarls/rc-card@0.5.0
+  - @rcarls/rc-chip@0.5.0
+  - @rcarls/rc-snackbar@0.5.0
+  - @rcarls/rc-switch@0.5.0
+  - @rcarls/rc-virtual-canvas@0.5.0
+
 ## 0.4.2
 
 ### Patch Changes
