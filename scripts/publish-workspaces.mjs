@@ -32,8 +32,15 @@ const REGISTRY_FIELDS = [
   'repository',
   'dist.attestations',
 ];
-const DEFAULT_POLL_ATTEMPTS = 12;
-const DEFAULT_POLL_DELAY_MS = 5_000;
+// npm sometimes prints "Your package is being processed and may take a few
+// minutes to become available" right after a successful publish; the SLSA
+// provenance attestation can lag the package itself by more than a minute.
+// A confirmed instance: @rcarls/rc-bottom-sheet@0.5.0 published fine but its
+// provenance didn't index for several minutes, well past the previous 60s
+// budget (12 x 5s), which failed the whole release run even though nothing
+// was actually wrong. 30 x 10s gives ~5 minutes, matching npm's own estimate.
+const DEFAULT_POLL_ATTEMPTS = 30;
+const DEFAULT_POLL_DELAY_MS = 10_000;
 const PUBLISHED_DEPENDENCY_FIELDS = ['dependencies', 'optionalDependencies', 'peerDependencies'];
 
 function sleep(milliseconds) {
