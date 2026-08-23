@@ -1,5 +1,20 @@
 # @rcarls/rc-menu-button
 
+## 0.5.0
+
+### Minor Changes
+
+- d33b92f: Use the native Popover API for the popup panel instead of a `hidden` attribute
+  and `z-index`. Removes `--rc-menu-button-popup-z-index`; stacking is now
+  governed by top-layer insertion order.
+
+### Patch Changes
+
+- Updated dependencies [4ae2ef0]
+- Updated dependencies [689340c]
+  - @rcarls/rc-common@0.5.0
+  - @rcarls/rc-menu@0.5.0
+
 ## 0.4.2
 
 ### Patch Changes
