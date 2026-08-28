@@ -23,6 +23,7 @@ import {
 } from '@rcarls/rc-common';
 import {
   ActiveDescendantController,
+  ClickDelegateController,
   MutationObserverController,
   RafScheduler,
   ScrollObserverController,
@@ -30,12 +31,14 @@ import {
 } from '@rcarls/rc-common';
 import { RovingTabIndexMixin, keyInteraction, keyNavigation, mouseMove } from '@rcarls/rc-common';
 import {
+  delegateClickTo,
   findExtremeSnapIndex,
   findNearestScrollAncestor,
   findNearestSnapIndex,
   findNextSnapIndex,
   getDirectChild,
   getDirectChildren,
+  isEventFromInteractiveDescendant,
   isFocusable,
   snapToStep,
   valueToPercent,
@@ -53,6 +56,7 @@ Check this inventory before adding package-local interaction or DOM utility code
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `ActiveDescendantController`                                                             | Managing `aria-activedescendant` virtual focus in listbox / combobox patterns                          |
 | `AnchorController`                                                                       | Positioning floating UI relative to an anchor with native CSS anchor positioning and polyfill fallback |
+| `ClickDelegateController` / `delegateClickTo`                                            | Extending plain pointer clicks on a host to a same-root native anchor or button target                 |
 | `DragController`                                                                         | Pointer and keyboard drag-to-move behavior                                                             |
 | `DragGestureController`                                                                  | Single-pointer activation, capture, deltas, duration, and recent velocity                              |
 | `KeyboardInteractionDirective` / `keyInteraction`                                        | Tracking pointer vs keyboard interaction mode on a rendered element                                    |
@@ -68,6 +72,7 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `findNearestScrollAncestor`                                                              | Locating the nearest scrollable ancestor for scroll-driven behavior                                    |
 | `findNearestSnapIndex`, `findNextSnapIndex`, `findExtremeSnapIndex`                      | Choosing numeric anchor indices without assigning component meaning                                    |
 | `isFocusable`                                                                            | Filtering focusable items for keyboard navigation                                                      |
+| `isEventFromInteractiveDescendant`                                                       | Detecting composed clicks already owned by a nested interactive control                                |
 | `snapToStep`, `valueToPercent`                                                           | Slider and range-slider numeric helpers                                                                |
 
 ---
@@ -176,10 +181,10 @@ browsers; the polyfill does not support `position-try`.
 
 **Options:**
 
-| Option         | Type                    | Description                                                |
-| -------------- | ----------------------- | ---------------------------------------------------------- |
-| `anchor`       | `() => Element \| null` | The anchor element getter                                  |
-| `floating`     | `() => Element \| null` | The floating element getter                                |
+| Option         | Type                    | Description                                                        |
+| -------------- | ----------------------- | ------------------------------------------------------------------ |
+| `anchor`       | `() => Element \| null` | The anchor element getter                                          |
+| `floating`     | `() => Element \| null` | The floating element getter                                        |
 | `positionArea` | `string`                | CSS `position-area` value (for example, `'block-end span-inline'`) |
 
 ---
@@ -234,6 +239,34 @@ Navigation axis is inferred automatically from the element's `role`:
 | `handleOpenAxis` | `boolean`                    | `false`        | Respond to arrow keys on the perpendicular (open/close) axis |
 | `handleEscape`   | `boolean`                    | `false`        | Fire `'escape'` action on Escape key                         |
 | `handleActivate` | `boolean`                    | `false`        | Fire `'activate'` action on Enter/Space                      |
+
+---
+
+### Click delegation
+
+`ClickDelegateController` extends plain primary clicks on a host surface to an
+author-provided native anchor or button. It leaves clicks on nested interactive
+content alone and rejects modifier-qualified or non-primary clicks because a
+synthetic `.click()` cannot preserve alternate browser activation behavior.
+
+```ts
+import { LitElement } from 'lit';
+
+import { ClickDelegateController } from '@rcarls/rc-common';
+
+class ActionRow extends LitElement {
+  constructor() {
+    super();
+    new ClickDelegateController(this, {
+      target: () => this.querySelector<HTMLElement>(':scope > a[href], :scope > button'),
+      disabled: () => this.hasAttribute('disabled'),
+    });
+  }
+}
+```
+
+Use `delegateClickTo()` directly for a non-Lit host. The target remains its own
+keyboard tab stop; delegation extends pointer reach only.
 
 ---
 
