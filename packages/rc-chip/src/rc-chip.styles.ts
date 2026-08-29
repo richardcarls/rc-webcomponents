@@ -4,8 +4,30 @@ export const chipStyles = css`
   :host {
     display: inline-grid;
     position: relative;
+    place-items: center;
+    min-block-size: var(--rc-chip-touch-target-block-size, 3rem);
     color-scheme: inherit;
     vertical-align: middle;
+    /*
+     * Zero by default. Unlike rc-button's touch-target inflation (opt-in via
+     * icon-only), a chip's accessible touch-target minimum applies
+     * unconditionally, so it's a common fit inside a height-constrained
+     * field -- rc-search-bar's or rc-combobox's multi-select value area, say
+     * -- where 3rem per chip would force the field taller than its own
+     * content needs. A theme or consumer sets one of these on a chip that
+     * sits at a real block-axis edge (no neighbor on that side within the
+     * field) to let the touch target overlap into the field's own block
+     * padding instead of also reserving layout space there. The same
+     * pattern as rc-button's, rc-menu-button's, and rc-adaptive-menu's own
+     * touch-target overlap tokens, but on the block axis: a chip's own
+     * touch-target inflation is vertical, not horizontal.
+     */
+    margin-block-start: calc(-1 * var(--rc-chip-touch-target-overlap-block-start, 0px));
+    margin-block-end: calc(-1 * var(--rc-chip-touch-target-overlap-block-end, 0px));
+  }
+
+  :host([readonly]) {
+    min-block-size: var(--rc-chip-block-size, auto);
   }
 
   :host([hidden]) {
@@ -14,6 +36,7 @@ export const chipStyles = css`
 
   ::slotted(button),
   ::slotted(a),
+  ::slotted(label),
   ::slotted([data-rc-chip-label]) {
     display: inline-flex;
     align-items: center;
@@ -34,6 +57,7 @@ export const chipStyles = css`
 
   :host([selected]) ::slotted(button),
   :host([selected]) ::slotted(a),
+  :host([selected]) ::slotted(label),
   :host([selected]) ::slotted([data-rc-chip-label]) {
     border-color: var(--rc-chip-selected-border-color, revert);
     background: var(--rc-chip-selected-bg, revert);
@@ -45,7 +69,8 @@ export const chipStyles = css`
   }
 
   :host(:focus-within) ::slotted(button),
-  :host(:focus-within) ::slotted(a) {
+  :host(:focus-within) ::slotted(a),
+  :host(:focus-within) ::slotted(label) {
     outline: var(--rc-chip-focus-ring, revert);
     outline-offset: var(--rc-chip-focus-ring-offset, revert);
   }
@@ -53,7 +78,11 @@ export const chipStyles = css`
   [part='state-layer'] {
     pointer-events: none;
     position: absolute;
-    inset: 0;
+    z-index: 2;
+    inset-inline: 0;
+    inset-block-start: 50%;
+    block-size: var(--rc-chip-block-size, 100%);
+    translate: 0 -50%;
     border-radius: var(--rc-chip-radius, 0);
     background: var(--rc-chip-state-layer-color, currentColor);
     opacity: 0;
@@ -85,14 +114,15 @@ export const chipStyles = css`
 
   [part='remove'] {
     position: absolute;
+    z-index: 3;
     pointer-events: none;
-    inset-block: 0;
+    inset-block-start: 50%;
     inset-inline-end: var(--rc-chip-remove-offset-inline, 0.125rem);
     display: none;
     place-items: center;
     min-inline-size: var(--rc-chip-remove-target-size, 1.5rem);
     min-block-size: var(--rc-chip-remove-target-size, 1.5rem);
-    margin: auto 0;
+    translate: 0 -50%;
     border: 0;
     border-radius: var(--rc-chip-remove-radius, 9999px);
     background: transparent;
@@ -111,6 +141,7 @@ export const chipStyles = css`
 
   :host([removable]) ::slotted(button),
   :host([removable]) ::slotted(a),
+  :host([removable]) ::slotted(label),
   :host([removable]) ::slotted([data-rc-chip-label]) {
     padding-inline-end: var(
       --rc-chip-removable-padding-inline-end,
@@ -125,6 +156,7 @@ export const chipStyles = css`
 
     ::slotted(button),
     ::slotted(a),
+    ::slotted(label),
     ::slotted([data-rc-chip-label]) {
       border-color: ButtonBorder;
       background: ButtonFace;
@@ -133,6 +165,7 @@ export const chipStyles = css`
 
     :host([selected]) ::slotted(button),
     :host([selected]) ::slotted(a),
+    :host([selected]) ::slotted(label),
     :host([selected]) ::slotted([data-rc-chip-label]) {
       border-color: Highlight;
       background: Highlight;
