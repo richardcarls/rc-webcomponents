@@ -17,6 +17,92 @@ declare global {
 
 const TOGGLE_ROLES = new Set(['checkbox', 'menuitemcheckbox', 'menuitemradio', 'radio', 'switch']);
 
+const LIGHT_DOM_CSS = `
+rc-chip > :is(button, a, label, [data-rc-chip-label]) {
+  position: relative;
+  display: inline-flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rc-chip-gap, 0px);
+  min-block-size: var(--rc-chip-block-size, revert);
+  margin: 0;
+  padding-block: var(--rc-chip-padding-block, revert);
+  padding-inline: var(--rc-chip-padding-inline, revert);
+  border: var(--rc-chip-border, revert);
+  border-radius: var(--rc-chip-radius, revert);
+  background: var(--rc-chip-bg, revert);
+  color: var(--rc-chip-color, revert);
+  font: var(--rc-chip-font, revert);
+  text-decoration: var(--rc-chip-text-decoration, revert);
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+rc-chip:not([readonly]) > :is(button, a, label)::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset-block: calc(
+    (var(--rc-chip-touch-target-block-size, 3rem) - max(100%, var(--rc-chip-block-size, 0px))) /
+      -2
+  );
+  inset-inline: 0;
+  border-radius: inherit;
+}
+
+rc-chip[selected] > :is(button, a, label, [data-rc-chip-label]),
+rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):checked) {
+  border-color: var(--rc-chip-selected-border-color, revert);
+  background: var(--rc-chip-selected-bg, revert);
+  color: var(--rc-chip-selected-color, revert);
+}
+
+rc-chip[disabled] > :is(button, label),
+rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):disabled) {
+  opacity: var(--rc-chip-disabled-opacity, revert);
+}
+
+rc-chip > :is(button, a):focus-visible,
+rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):focus-visible) {
+  outline: var(--rc-chip-focus-ring, revert);
+  outline-offset: var(--rc-chip-focus-ring-offset, revert);
+}
+
+rc-chip > label > input:is([type='checkbox'], [type='radio']) {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+rc-chip[removable] > :is(button, a, label, [data-rc-chip-label]) {
+  padding-inline-end: var(
+    --rc-chip-removable-padding-inline-end,
+    calc(var(--rc-chip-remove-target-size, 1.5rem) - var(--rc-chip-gap, 0px))
+  );
+}
+
+@media (forced-colors: active) {
+  rc-chip > :is(button, a, label, [data-rc-chip-label]) {
+    border-color: ButtonBorder;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+
+  rc-chip[selected] > :is(button, a, label, [data-rc-chip-label]),
+  rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):checked) {
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+`;
+
 /** Supported chip variants. */
 export type RCChipVariant = 'assist' | 'filter' | 'input' | 'suggestion';
 
@@ -33,13 +119,16 @@ export interface RCChipRemoveDetail {
 }
 
 /**
- * Chip wrapper that preserves a direct native `<button>` child for interactive
- * chips and accepts a direct `[data-rc-chip-label]` child for read-only chips.
+ * Chip wrapper that preserves a direct native `<button>` child for action chips,
+ * a direct `<a href>` for navigation chips, or a direct `<label>` containing a
+ * native checkbox/radio for filter chips. Read-only chips accept a direct
+ * `[data-rc-chip-label]` child.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-chip rc-chip docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/button/ WAI-ARIA button pattern}
  *
- * @slot - A direct native `<button>` child, or `[data-rc-chip-label]` when `readonly`.
+ * @slot - A direct native `<button>` child, `<a href>`, native-backed filter
+ *   `<label>`, or `[data-rc-chip-label]` when `readonly`.
  * @slot remove-icon - Optional presentational remove icon.
  *
  * @fires rc-chip-change - Fired when a user toggles a filter chip.
@@ -51,6 +140,14 @@ export interface RCChipRemoveDetail {
  * @cssprop [--rc-chip-gap=0px] - Gap between the slotted button/anchor/label's content.
  * @cssprop [--rc-chip-block-size] - Minimum chip block size (defers to native button/anchor
  *   sizing when unset).
+ * @cssprop [--rc-chip-touch-target-block-size=3rem] - Minimum interactive touch target size.
+ * @cssprop [--rc-chip-touch-target-overlap-block-start=0px] - Zero by default. A theme or
+ *   consumer sets this on a chip that sits at a real block-axis leading edge (no neighbor on
+ *   that side), such as inside a height-constrained field, to let its touch-target inflation
+ *   overlap into whatever sits just outside the host instead of also reserving layout space
+ *   there.
+ * @cssprop [--rc-chip-touch-target-overlap-block-end=0px] - The block-axis trailing-edge
+ *   counterpart to `--rc-chip-touch-target-overlap-block-start`.
  * @cssprop [--rc-chip-padding-block] - Block-axis padding of the slotted button, anchor, or
  *   label (defers to native padding when unset).
  * @cssprop [--rc-chip-padding-inline] - Inline-axis padding of the slotted button, anchor, or
@@ -105,11 +202,35 @@ export interface RCChipRemoveDetail {
 export class RCChip extends LitElement {
   static override styles = chipStyles;
 
+  private static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
+
+  private static _ensureBaseStyles(root: Document | ShadowRoot): void {
+    if (RCChip._styledRoots.has(root)) {
+      return;
+    }
+
+    RCChip._styledRoots.add(root);
+
+    const $style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
+
+    $style.setAttribute('data-rc-light-dom-base', 'rc-chip');
+    $style.textContent = LIGHT_DOM_CSS;
+
+    if (root instanceof Document) {
+      root.head.append($style);
+    } else {
+      root.append($style);
+    }
+  }
+
   private _selected: boolean | undefined;
   private _defaultSelected = false;
+  private _uncontrolledSelected: boolean | undefined;
   private _selectedInitialized = false;
   private _$button: HTMLButtonElement | null = null;
-  private _buttonObserver: MutationObserver | null = null;
+  private _$input: HTMLInputElement | null = null;
+  private _$form: HTMLFormElement | null = null;
+  private _controlObserver: MutationObserver | null = null;
   private _disabledOwned = false;
   private _pressedOwned = false;
   private _slotMicrotaskQueued = false;
@@ -121,7 +242,7 @@ export class RCChip extends LitElement {
   /** Current selected state. Host writes are silent. */
   @property({ type: Boolean, reflect: true })
   get selected(): boolean {
-    return this._selected ?? this._defaultSelected;
+    return this._selected ?? this._uncontrolledSelected ?? this._defaultSelected;
   }
 
   set selected(value: boolean | undefined) {
@@ -129,6 +250,7 @@ export class RCChip extends LitElement {
 
     this._selected = value;
     this._selectedInitialized = true;
+    this._syncCheckedState();
     this._syncPressedState();
     this.requestUpdate('selected', oldValue);
   }
@@ -144,7 +266,11 @@ export class RCChip extends LitElement {
 
     this._defaultSelected = value;
 
-    if (!this._selectedInitialized && this._selected === undefined) {
+    if (
+      !this._selectedInitialized &&
+      this._selected === undefined &&
+      this._uncontrolledSelected === undefined
+    ) {
       this._syncPressedState();
       this.requestUpdate('selected', oldValue);
     }
@@ -164,11 +290,23 @@ export class RCChip extends LitElement {
   @property({ type: Boolean, reflect: true })
   removable = false;
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    RCChip._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
+  }
+
   override disconnectedCallback(): void {
     this._$button?.removeEventListener('click', this._handleButtonClick);
-    this._buttonObserver?.disconnect();
-    this._buttonObserver = null;
+    this._$input?.removeEventListener('change', this._handleNativeChange);
+    this._$form?.removeEventListener('reset', this._handleFormReset);
+    this._controlObserver?.disconnect();
+    this._controlObserver = null;
     super.disconnectedCallback();
+  }
+
+  /** Synchronizes uncontrolled filter state from the direct native input. @internal */
+  syncNativeSelection(): void {
+    this._syncCheckedFromNative();
   }
 
   protected override firstUpdated(): void {
@@ -187,6 +325,10 @@ export class RCChip extends LitElement {
       changed.has('removable')
     ) {
       this._syncPressedState();
+    }
+
+    if (changed.has('selected')) {
+      this._syncCheckedState();
     }
   }
 
@@ -222,44 +364,110 @@ export class RCChip extends LitElement {
 
   private _syncSlottedButton(): void {
     const $nextButton = this.querySelector<HTMLButtonElement>(':scope > button');
+    const $anchor = this.querySelector<HTMLAnchorElement>(':scope > a[href]');
+    const $label = this.querySelector<HTMLLabelElement>(':scope > label');
+    const $nextInput =
+      $label?.querySelector<HTMLInputElement>(
+        ':scope > input:is([type="checkbox"], [type="radio"])',
+      ) ?? null;
 
-    if (!$nextButton && !this.readonly && import.meta.env.DEV) {
+    if (!$nextButton && !$anchor && !$nextInput && !this.readonly && import.meta.env.DEV) {
       console.warn(
-        '[rc-chip] No direct child <button> found. Place a native <button> inside <rc-chip>, or use readonly with a [data-rc-chip-label] child.',
+        '[rc-chip] No supported direct child found. Place a native <button>, <a href>, or a <label> containing a direct checkbox/radio inside <rc-chip>, or use readonly with a [data-rc-chip-label] child.',
         this,
       );
     }
 
-    if ($nextButton === this._$button) {
+    if ($label && !$nextInput && !this.readonly && import.meta.env.DEV) {
+      console.warn(
+        '[rc-chip] A direct child <label> must contain a direct <input type="checkbox"> or <input type="radio">.',
+        $label,
+      );
+    }
+
+    if ($nextButton === this._$button && $nextInput === this._$input) {
       this._syncDisabled();
+      this._syncCheckedState();
       this._syncPressedState();
 
       return;
     }
 
     this._$button?.removeEventListener('click', this._handleButtonClick);
-    this._buttonObserver?.disconnect();
-    this._buttonObserver = null;
+    this._$input?.removeEventListener('change', this._handleNativeChange);
+    this._$form?.removeEventListener('reset', this._handleFormReset);
+    this._controlObserver?.disconnect();
+    this._controlObserver = null;
     this._$button = $nextButton;
+    this._$input = $nextInput;
+    this._$form = $nextInput?.form ?? null;
     this._disabledOwned = false;
     this._pressedOwned = false;
 
     if ($nextButton) {
       $nextButton.addEventListener('click', this._handleButtonClick);
+    }
 
-      this._buttonObserver = new MutationObserver(() => {
+    if ($nextInput) {
+      if (this._selected === undefined && this._uncontrolledSelected === undefined) {
+        const oldValue = this.selected;
+
+        this._uncontrolledSelected = $nextInput.checked;
+        this._selectedInitialized = true;
+        this.requestUpdate('selected', oldValue);
+      } else {
+        this._syncCheckedState();
+      }
+
+      $nextInput.addEventListener('change', this._handleNativeChange);
+      this._$form?.addEventListener('reset', this._handleFormReset);
+    }
+
+    const $observedControl = $nextInput ?? $nextButton;
+
+    if ($observedControl) {
+      this._controlObserver = new MutationObserver(() => {
         this._syncDisabled();
+        this._syncCheckedFromNative();
         this._syncPressedState();
       });
 
-      this._buttonObserver.observe($nextButton, {
-        attributeFilter: ['aria-pressed', 'role', 'disabled'],
+      this._controlObserver.observe($observedControl, {
+        attributeFilter: ['aria-pressed', 'role', 'disabled', 'checked'],
       });
     }
 
     this._syncDisabled();
+    this._syncCheckedState();
     this._syncPressedState();
   }
+
+  private readonly _handleNativeChange = (): void => {
+    const $input = this._$input;
+
+    if (!$input || this.disabled || this.readonly) {
+      return;
+    }
+
+    const oldValue = this.selected;
+    const requestedSelected = $input.checked;
+
+    if (this._selected === undefined) {
+      this._uncontrolledSelected = requestedSelected;
+      this._selectedInitialized = true;
+      this.requestUpdate('selected', oldValue);
+    } else {
+      this._syncCheckedState();
+    }
+
+    this.dispatchEvent(
+      new CustomEvent<RCChipChangeDetail>('rc-chip-change', {
+        bubbles: true,
+        composed: true,
+        detail: { selected: requestedSelected },
+      }),
+    );
+  };
 
   private readonly _handleButtonClick = (): void => {
     if (this.disabled || this.readonly) {
@@ -276,18 +484,29 @@ export class RCChip extends LitElement {
       return;
     }
 
-    const oldValue = this.selected;
+    // Menu-backed filter chips expose filter affordance, but their menu owns
+    // the eventual selected state. Preserve that author-controlled behavior.
+    const hasPopup = this._$button?.getAttribute('aria-haspopup');
 
-    this._selected = !this.selected;
-    this._selectedInitialized = true;
-    this._syncPressedState();
-    this.requestUpdate('selected', oldValue);
+    if (hasPopup && hasPopup !== 'false') {
+      return;
+    }
+
+    const oldValue = this.selected;
+    const requestedSelected = !oldValue;
+
+    if (this._selected === undefined) {
+      this._uncontrolledSelected = requestedSelected;
+      this._selectedInitialized = true;
+      this._syncPressedState();
+      this.requestUpdate('selected', oldValue);
+    }
 
     this.dispatchEvent(
       new CustomEvent<RCChipChangeDetail>('rc-chip-change', {
         bubbles: true,
         composed: true,
-        detail: { selected: this.selected },
+        detail: { selected: requestedSelected },
       }),
     );
   };
@@ -303,23 +522,53 @@ export class RCChip extends LitElement {
   }
 
   private _syncDisabled(): void {
-    const $button = this._$button;
+    const $control = this._$input ?? this._$button;
 
-    if (!$button) {
+    if (!$control) {
       return;
     }
 
     if (this.disabled || this.readonly) {
-      if (!$button.disabled) {
+      if (!$control.disabled) {
         this._disabledOwned = true;
       }
 
-      $button.disabled = true;
+      $control.disabled = true;
     } else if (this._disabledOwned) {
-      $button.disabled = false;
+      $control.disabled = false;
       this._disabledOwned = false;
     }
   }
+
+  private _syncCheckedState(): void {
+    const $input = this._$input;
+
+    if ($input && $input.checked !== this.selected) {
+      $input.checked = this.selected;
+    }
+  }
+
+  private _syncCheckedFromNative(): void {
+    const $input = this._$input;
+
+    if (!$input || $input.checked === this.selected) {
+      return;
+    }
+
+    const oldValue = this.selected;
+
+    if (this._selected === undefined) {
+      this._uncontrolledSelected = $input.checked;
+      this._selectedInitialized = true;
+      this.requestUpdate('selected', oldValue);
+    } else {
+      this._syncCheckedState();
+    }
+  }
+
+  private readonly _handleFormReset = (): void => {
+    queueMicrotask(() => this._syncCheckedFromNative());
+  };
 
   private _syncPressedState(): void {
     const $button = this._$button;
