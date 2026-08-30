@@ -1,39 +1,39 @@
 {
-  "name": "@rcarls/rc-card",
+  "name": "@rcarls/rc-list",
   "publishConfig": {
     "access": "public"
   },
   "version": "0.5.0",
-  "description": "Design-system-neutral card shell with structural slots and parts.",
+  "description": "Shared-column list rows with native-backed selection patterns.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
-    "directory": "packages/rc-card"
+    "directory": "packages/rc-list"
   },
-  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-card",
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-list",
   "license": "MIT",
   "type": "module",
   "files": [
     "dist"
   ],
-  "module": "./dist/rc-card.js",
+  "module": "./dist/rc-list.js",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/types/packages/rc-card/src/index.d.ts",
-        "default": "./dist/rc-card.js"
+        "types": "./dist/types/packages/rc-list/src/index.d.ts",
+        "default": "./dist/rc-list.js"
       }
     },
     "./define": {
       "import": {
-        "types": "./dist/types/packages/rc-card/src/define.d.ts",
-        "default": "./dist/rc-card-define.js"
+        "types": "./dist/types/packages/rc-list/src/define.d.ts",
+        "default": "./dist/rc-list-define.js"
       }
     }
   },
-  "types": "./dist/types/packages/rc-card/src/index.d.ts",
+  "types": "./dist/types/packages/rc-list/src/index.d.ts",
   "sideEffects": [
-    "./dist/rc-card-define.js"
+    "./dist/rc-list-define.js"
   ],
   "customElements": "dist/custom-elements.json",
   "scripts": {
