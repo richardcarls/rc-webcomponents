@@ -1,5 +1,7 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, type PropertyValues } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
+
+import { ClickDelegateController } from '@rcarls/rc-common';
 
 import cardStyles from './rc-card.styles.js';
 
@@ -8,18 +10,6 @@ declare global {
     'rc-card': RCCard;
   }
 }
-
-const INTERACTIVE_SELECTOR = [
-  'a[href]',
-  'button',
-  'input',
-  'select',
-  'textarea',
-  'summary',
-  '[role="button"]',
-  '[role="link"]',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
 
 const SLOT_NAMES = ['media', 'header', 'title', 'subtitle', 'actions', 'footer'] as const;
 
@@ -206,42 +196,31 @@ export class RCCard extends LitElement {
     return null;
   }
 
-  private _eventStartedInInteractiveDescendant(event: Event): boolean {
-    for (const entry of event.composedPath()) {
-      if (entry === this) {
-        return false;
-      }
-
-      if (entry instanceof Element && entry.matches(INTERACTIVE_SELECTOR)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  private _handleClick(event: MouseEvent): void {
-    if (this.disabled || event.defaultPrevented || event.button !== 0) {
-      return;
-    }
-
-    if (this._eventStartedInInteractiveDescendant(event)) {
-      return;
-    }
-
-    const $target = this._resolveActionTarget();
-
-    if (!$target) {
-      return;
-    }
-
-    event.preventDefault();
-    $target.click();
-  }
-
   constructor() {
     super();
-    this.addEventListener('click', (event) => this._handleClick(event as MouseEvent));
+
+    new ClickDelegateController(this, {
+      target: () => this._resolveActionTarget(),
+      disabled: () => this.disabled,
+    });
+  }
+
+  protected override updated(changed: PropertyValues<this>): void {
+    if (!import.meta.env.DEV) {
+      return;
+    }
+
+    if (!changed.has('interactive') && !changed.has('actionTarget')) {
+      return;
+    }
+
+    if (this.interactive && !this.actionTarget.trim()) {
+      console.warn(
+        `[rc-card] interactive is set with no action-target, so surface clicks have ` +
+          `nothing to forward to. Set action-target to a same-root <a> or <button>.`,
+        this,
+      );
+    }
   }
 }
 

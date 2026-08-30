@@ -169,6 +169,48 @@ test('action-target warns for missing or non-interactive targets', async () => {
   warn.mockRestore();
 });
 
+test('warns when interactive has no action-target at all', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const screen = render(html`
+    <rc-card data-testid="host" interactive>
+      <a slot="title" href="/recipes/pie">Apple pie</a>
+    </rc-card>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCCard;
+
+  await flushCard(host);
+
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('[rc-card] interactive is set with no action-target'),
+    host,
+  );
+
+  warn.mockRestore();
+});
+
+test('does not warn when action-target is set or interactive is off', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const screen = render(html`
+    <div>
+      <rc-card data-testid="wired" interactive action-target="wired-link">
+        <a id="wired-link" slot="title" href="/recipes/pie">Apple pie</a>
+      </rc-card>
+      <rc-card data-testid="passive">
+        <a slot="title" href="/recipes/pie">Apple pie</a>
+      </rc-card>
+    </div>
+  `);
+  const wired = (await screen.getByTestId('wired').element()) as RCCard;
+  const passive = (await screen.getByTestId('passive').element()) as RCCard;
+
+  await flushCard(wired);
+  await flushCard(passive);
+
+  expect(warn).not.toHaveBeenCalled();
+
+  warn.mockRestore();
+});
+
 test('has no automated accessibility violations', async () => {
   const screen = render(html`
     <rc-card data-testid="host" action-target="recipe-link" interactive>

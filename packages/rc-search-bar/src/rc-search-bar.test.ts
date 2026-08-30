@@ -46,6 +46,42 @@ test('progressive enhancement: the native input keeps its author attributes', as
   expect($input?.getAttribute('placeholder')).toBe('Author placeholder');
 });
 
+test('host-scoped light DOM reset keeps native input chrome inside the search surface', async () => {
+  const screen = render(html`
+    <style>
+      input[type='search'] {
+        min-block-size: 56px;
+        padding: 12px;
+        border: 3px solid red;
+        background: red;
+      }
+
+      input[type='search']:focus-visible {
+        outline: 4px solid red;
+        box-shadow: 0 0 0 4px red;
+      }
+    </style>
+    <rc-search-bar data-testid="host">
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+
+  const input = host.querySelector<HTMLInputElement>('input')!;
+
+  input.focus();
+
+  const style = getComputedStyle(input);
+
+  expect(style.borderTopWidth).toBe('0px');
+  expect(style.paddingTop).toBe('0px');
+  expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(style.outlineStyle).toBe('none');
+  expect(style.boxShadow).toBe('none');
+});
+
 test('label association resolves through the native label registry', async () => {
   const screen = render(html`
     <div data-testid="wrap">
