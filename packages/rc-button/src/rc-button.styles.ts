@@ -4,6 +4,7 @@ export const buttonStyles = css`
   :host {
     position: relative;
     display: inline-grid;
+    place-items: center;
     vertical-align: middle;
   }
 
@@ -16,7 +17,55 @@ export const buttonStyles = css`
     inline-size: 100%;
   }
 
-  ::slotted(button) {
+  /*
+   * Icon-only buttons can render visually smaller than the accessible
+   * minimum touch target (e.g. MD3's 40dp "small" icon button, or a 32dp
+   * expressive extra-small size). These are floors, not fixed sizes: a
+   * larger visual button (medium/large/extra-large sizes) already clears
+   * them and is unaffected. The host grows to reserve the space; the
+   * visible child button stays centered at its own size via place-items
+   * above, and the actual larger hit region comes from the light-DOM
+   * hit-slop pseudo-element in rc-button.ts. Mirrors rc-chip's
+   * touch-target-block-size host-affordance pattern.
+   */
+  :host([icon-only]) {
+    min-block-size: var(--rc-button-touch-target-block-size, 3rem);
+    min-inline-size: var(
+      --rc-button-touch-target-inline-size,
+      var(--rc-button-touch-target-block-size, 3rem)
+    );
+    /*
+     * Zero by default: an icon-only button's touch-target inflation reserves
+     * real layout space on both sides, correct when it has real neighbors.
+     * At an actual edge (e.g. a toolbar's trailing-most icon), a theme or
+     * consumer sets one or both of these to let that reserved space overlap
+     * into whatever sits just outside the host (typically a container's own
+     * edge padding) instead of adding to it — a plain token, not something
+     * this component decides on its own or exposes as a mode to switch. A
+     * negative margin on that side pulls the host's own footprint back by
+     * the given amount; the light-DOM hit-slop pseudo-element below is
+     * unaffected by host margin and still extends the full touch target, so
+     * the actual clickable region keeps its accessible size, just visually
+     * overlapping the reclaimed space rather than adding to it. Only
+     * sensible at an edge — setting this on a button with a real neighbor
+     * on that side overlaps its touch target too.
+     */
+    margin-inline-start: calc(-1 * var(--rc-button-touch-target-overlap-inline-start, 0px));
+    margin-inline-end: calc(-1 * var(--rc-button-touch-target-overlap-inline-end, 0px));
+  }
+
+  /*
+   * a[href] alongside button: a real navigation link is a legitimate direct
+   * child too (rc-menu-button and rc-adaptive-menu already treat "native
+   * button or link" as one contract; rc-button's own JSDoc undersold this
+   * as button-only). Scoped to this rule and the full-width one below,
+   * both pure visual/layout styling with no dependency on button-specific
+   * IDL state — icon-only sizing, the touch-target hit-slop pseudo, and
+   * the disabled/pending/progress treatments below stay button-only since
+   * those assume a real HTMLButtonElement (disabled, a live progress
+   * takeover) an anchor doesn't have.
+   */
+  ::slotted(:is(button, a[href])) {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -40,7 +89,7 @@ export const buttonStyles = css`
     transition: var(--rc-button-transition, revert);
   }
 
-  :host([full-width]) ::slotted(button) {
+  :host([full-width]) ::slotted(:is(button, a[href])) {
     inline-size: 100%;
   }
 
@@ -54,6 +103,7 @@ export const buttonStyles = css`
       var(--rc-button-block-size, var(--rc-control-block-size, 2.5rem))
     );
     padding-inline: 0;
+    overflow: visible;
   }
 
   :host([disabled]) ::slotted(button),
@@ -189,7 +239,7 @@ export const buttonStyles = css`
   }
 
   @media (forced-colors: active) {
-    ::slotted(button) {
+    ::slotted(:is(button, a[href])) {
       border-color: ButtonBorder;
       background: ButtonFace;
       color: ButtonText;
