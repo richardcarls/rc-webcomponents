@@ -1,6 +1,7 @@
 # @rcarls/rc-button
 
-Progressive-enhancement button wrapper with structural state affordances.
+Progressive-enhancement action wrapper for a direct native `<button>` or
+`<a href>` child, with structural state affordances for buttons.
 
 ```html
 <rc-button toggle default-selected>

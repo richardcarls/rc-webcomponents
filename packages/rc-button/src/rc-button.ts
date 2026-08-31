@@ -27,6 +27,33 @@ const LIGHT_DOM_CSS = `
   rc-button:not([selected]) > button > [data-rc-button-selected-icon] {
     display: none !important;
   }
+
+  /*
+   * Expands an icon-only button's clickable region beyond its visible box
+   * up to the accessible touch-target minimum, the same way rc-chip does:
+   * an absolutely-positioned, invisible pseudo-element on the actual
+   * interactive element (not the host) extends the hit area symmetrically.
+   * The button already has position: relative from the shadow-scoped
+   * ::slotted(button) rule. max(100%, size) keeps this a no-op once the
+   * visible button already meets or exceeds the touch target (medium,
+   * large, and extra-large icon-button sizes), rather than shrinking it.
+   */
+  rc-button[icon-only] > button::before {
+    content: '';
+    position: absolute;
+    inset-block: calc(
+      (
+          var(--rc-button-touch-target-block-size, 3rem) -
+            max(100%, var(--rc-button-block-size, 0px))
+        ) / -2
+    );
+    inset-inline: calc(
+      (
+          var(--rc-button-touch-target-inline-size, var(--rc-button-touch-target-block-size, 3rem)) -
+            max(100%, var(--rc-button-icon-size, var(--rc-button-block-size, 0px)))
+        ) / -2
+    );
+  }
 }
 `;
 
@@ -39,13 +66,21 @@ export interface RCButtonToggleDetail {
 }
 
 /**
- * Structural button wrapper that preserves a direct native `<button>` child for
- * progressive enhancement, forms, labels, and keyboard behavior.
+ * Structural action wrapper that preserves a direct native `<button>` or
+ * `<a href>` child for progressive enhancement and native interaction.
+ *
+ * A direct native `<a href>` child gets the same visual/layout styling
+ * (border, padding, background, `full-width`) for a genuine navigation
+ * action styled as a button. `icon-only` sizing, the touch-target hit-slop,
+ * and the `disabled`/`pending`/`progress` states stay button-only — those
+ * assume a real `HTMLButtonElement` (a native `disabled` state, a progress
+ * affordance that takes over the button's content) an anchor doesn't have.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-button rc-button docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/button/ WAI-ARIA button pattern}
  *
- * @slot - A direct native `<button>` child.
+ * @slot - A direct native `<button>` child, or a direct `<a href>` for a
+ *   navigation action (visual/layout styling only — see above).
  *
  * @fires rc-button-toggle - Fired when a user activates a button with `toggle`.
  *
@@ -61,8 +96,9 @@ export interface RCButtonToggleDetail {
  * @attr default-selected - Initial selected state for uncontrolled toggle usage.
  * @attr icon-only - Removes label-oriented inline padding in supporting themes.
  * @attr full-width - Stretches the native child button to the host inline size.
- * @attr [has-icon] - Present when the native button has a direct `[data-rc-button-icon]` child.
- *   Use with CSS selectors (e.g. `rc-button[has-icon]`).
+ * @attr [has-icon] - Present when the native button has a direct marked icon or an inferred
+ *   icon element without visible label content. Use with CSS selectors (e.g.
+ *   `rc-button[has-icon]`).
  * @attr [has-selected-icon] - Present when the native button has a direct
  *   `[data-rc-button-selected-icon]` child.
  * @attr [has-label] - Present when the native button has visible label content, from either a
@@ -87,6 +123,19 @@ export interface RCButtonToggleDetail {
  *   transition when unset).
  * @cssprop [--rc-button-icon-size] - Button inline and min-inline size when `icon-only`. Falls
  *   back to `--rc-button-block-size`, then `--rc-control-block-size`, then `2.5rem`.
+ * @cssprop [--rc-button-touch-target-block-size=3rem] - Minimum accessible touch target block
+ *   size for an `icon-only` button. A floor, not a fixed size: has no effect once
+ *   `--rc-button-block-size` already meets or exceeds it. Grows the host (reserving layout
+ *   space) and the light-DOM hit-slop (the actual larger clickable region) together; the
+ *   visible child button itself stays at its own size, centered.
+ * @cssprop [--rc-button-touch-target-inline-size] - Minimum accessible touch target inline size
+ *   for an `icon-only` button. Defers to `--rc-button-touch-target-block-size` when unset.
+ * @cssprop [--rc-button-touch-target-overlap-inline-start=0px] - Zero by default. A theme or
+ *   consumer sets this on an `icon-only` button that sits at a real leading edge (no neighbor on
+ *   that side) to let its touch-target inflation overlap into whatever sits just outside the
+ *   host, such as a container's own edge padding, instead of also reserving layout space there.
+ * @cssprop [--rc-button-touch-target-overlap-inline-end=0px] - The trailing-edge counterpart to
+ *   `--rc-button-touch-target-overlap-inline-start`.
  * @cssprop [--rc-button-disabled-opacity] - Disabled button opacity (defers to native disabled
  *   styling when unset).
  * @cssprop [--rc-button-busy-content-color=transparent] - Button text color while `pending` or
@@ -110,7 +159,7 @@ export interface RCButtonToggleDetail {
 export class RCButton extends LitElement {
   static override styles = buttonStyles;
 
-  protected static readonly _styledRoots = new Set<Document | ShadowRoot>();
+  protected static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
 
   protected static _ensureBaseStyles(root: Document | ShadowRoot): void {
     if (RCButton._styledRoots.has(root)) {
@@ -119,15 +168,15 @@ export class RCButton extends LitElement {
 
     RCButton._styledRoots.add(root);
 
-    const style = document.createElement('style');
+    const $style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
 
-    style.setAttribute('data-rc-light-dom-base', 'rc-button');
-    style.textContent = LIGHT_DOM_CSS;
+    $style.setAttribute('data-rc-light-dom-base', 'rc-button');
+    $style.textContent = LIGHT_DOM_CSS;
 
     if (root instanceof Document) {
-      root.head.append(style);
+      root.head.append($style);
     } else {
-      root.append(style);
+      root.append($style);
     }
   }
 
@@ -278,27 +327,37 @@ export class RCButton extends LitElement {
   }
 
   protected _syncSlottedButton(): void {
-    const nextButton =
+    const $nextButton =
       this._$slot
         ?.assignedElements({ flatten: true })
         .find(
           (element): element is HTMLButtonElement =>
             element instanceof HTMLButtonElement && element.parentElement === this,
         ) ?? null;
+    const $nextAnchor =
+      this._$slot
+        ?.assignedElements({ flatten: true })
+        .find(
+          ($element): $element is HTMLAnchorElement =>
+            $element instanceof HTMLAnchorElement &&
+            $element.hasAttribute('href') &&
+            $element.parentElement === this,
+        ) ?? null;
 
-    if (!nextButton && import.meta.env.DEV) {
-      const misplaced = this.querySelector(
+    if (!$nextButton && !$nextAnchor && import.meta.env.DEV) {
+      const $misplaced = this.querySelector(
         ':scope > [data-rc-button-icon], :scope > [data-rc-button-selected-icon], :scope > [data-rc-button-label]',
       );
 
       console.warn(
-        misplaced
+        $misplaced
           ? '[rc-button] Place icon and label markers inside the direct child <button>; rc-button will not move author nodes.'
-          : '[rc-button] No direct child <button> found. Place a native <button> inside <rc-button>.',
+          : '[rc-button] No supported direct child found. Place a native <button> or <a href> inside <rc-button>.',
+        this,
       );
     }
 
-    if (nextButton === this._$button) {
+    if ($nextButton === this._$button) {
       this._classifyButton();
       this._syncNativeState();
       this._syncPressedState();
@@ -309,20 +368,20 @@ export class RCButton extends LitElement {
     this._restorePressedState();
     this._buttonObserver?.disconnect();
     this._buttonObserver = null;
-    this._$button = nextButton;
+    this._$button = $nextButton;
     this._disabledOwned = false;
     this._ariaBusyOwned = false;
     this._pressedOwned = false;
-    this._authorPressed = nextButton?.getAttribute('aria-pressed') ?? null;
+    this._authorPressed = $nextButton?.getAttribute('aria-pressed') ?? null;
 
-    if (nextButton) {
+    if ($nextButton) {
       this._buttonObserver = new MutationObserver(() => {
         this._classifyButton();
         this._syncNativeState();
         this._syncPressedState();
       });
 
-      this._buttonObserver.observe(nextButton, {
+      this._buttonObserver.observe($nextButton, {
         attributes: true,
         childList: true,
         subtree: true,
@@ -336,16 +395,25 @@ export class RCButton extends LitElement {
   }
 
   protected _classifyButton(): void {
-    const button = this._$button;
-    const hasIcon = !!button?.querySelector(':scope > [data-rc-button-icon]');
-    const hasSelectedIcon = !!button?.querySelector(':scope > [data-rc-button-selected-icon]');
-    const hasLabel = this._hasLabel(button);
+    const $button = this._$button;
+    const hasMarkedIcon = !!$button?.querySelector(':scope > [data-rc-button-icon]');
+    const hasSelectedIcon = !!$button?.querySelector(':scope > [data-rc-button-selected-icon]');
+    const hasLabel = this._hasLabel($button);
+    // `data-rc-button-icon` is an opt-in marker, easy for a consumer's own
+    // icon wrapper to omit; a labelless button with element content that
+    // carries no visible text (an <svg>, an <iconify-icon>, and similar) is
+    // unambiguously icon-only. Falling back to this keeps classification
+    // (and, downstream, icon-only sizing) working without requiring the
+    // marker. Text-backed icon fonts remain ambiguous and should use the
+    // marker or an explicit `icon-only` attribute.
+    const hasUnmarkedIcon = !hasLabel && this._hasAnyElementChild($button);
+    const hasIcon = hasMarkedIcon || hasUnmarkedIcon;
 
     this.toggleAttribute('has-icon', hasIcon);
     this.toggleAttribute('has-selected-icon', hasSelectedIcon);
     this.toggleAttribute('has-label', hasLabel);
 
-    if (button && hasIcon && !hasLabel) {
+    if ($button && hasIcon && !hasLabel) {
       if (!this.iconOnly) {
         this._iconOnlyOwned = true;
         this.iconOnly = true;
@@ -356,34 +424,48 @@ export class RCButton extends LitElement {
     }
   }
 
-  protected _hasLabel(button: HTMLButtonElement | null): boolean {
-    if (!button) {
+  protected _hasAnyElementChild($button: HTMLButtonElement | null): boolean {
+    if (!$button) {
       return false;
     }
 
-    if (button.querySelector(':scope > [data-rc-button-label]')) {
+    for (const $node of $button.childNodes) {
+      if ($node instanceof Element) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  protected _hasLabel($button: HTMLButtonElement | null): boolean {
+    if (!$button) {
+      return false;
+    }
+
+    if ($button.querySelector(':scope > [data-rc-button-label]')) {
       return true;
     }
 
-    for (const node of button.childNodes) {
-      if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+    for (const $node of $button.childNodes) {
+      if ($node.nodeType === Node.TEXT_NODE && $node.textContent?.trim()) {
         return true;
       }
 
-      if (!(node instanceof HTMLElement)) {
+      if (!($node instanceof Element)) {
         continue;
       }
 
       // data-rc-button-progress marks consumer content that must not count as a label.
       if (
-        node.matches(
+        $node.matches(
           '[data-rc-button-icon], [data-rc-button-selected-icon], [data-rc-button-progress], [aria-hidden="true"]',
         )
       ) {
         continue;
       }
 
-      if (node.textContent?.trim()) {
+      if ($node.textContent?.trim()) {
         return true;
       }
     }
