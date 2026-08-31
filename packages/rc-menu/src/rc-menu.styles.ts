@@ -2,6 +2,7 @@ import { css } from 'lit';
 
 export const menuStyles = css`
   :host {
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     min-width: var(--rc-menu-min-width, 10em);
@@ -17,7 +18,11 @@ export const menuStyles = css`
     font-family: var(--rc-font-family, inherit);
     font-size: var(--rc-font-size, inherit);
     line-height: var(--rc-line-height, normal);
-    overflow: hidden;
+    max-inline-size: var(--rc-menu-max-inline-size, calc(100dvi - 0.5rem));
+    max-block-size: var(--rc-menu-max-block-size, calc(100dvb - 0.5rem));
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
   }
 
   :host(:focus-visible) {
