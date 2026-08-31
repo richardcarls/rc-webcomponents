@@ -133,9 +133,30 @@ test('RCMenu injects flat light-DOM item styles and menu affordances', async () 
   expect(disabledStyles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   expect(disabledStyles.borderBlockStartStyle).toBe('none');
   expect(disabledStyles.appearance).toBe('none');
-  expect(getComputedStyle(checked, '::before').content).not.toBe('none');
-  expect(getComputedStyle(radio, '::before').content).not.toBe('none');
+  expect(getComputedStyle(checked, '::after').content).not.toBe('none');
+  expect(getComputedStyle(radio, '::after').content).not.toBe('none');
   expect(getComputedStyle(submenu, '::after').content).toBe('none');
+});
+
+test('RCMenu constrains tall content and scrolls within its viewport-aware panel', async () => {
+  const screen = render(html`
+    <rc-menu label="Long menu" data-testid="host" style="--rc-menu-max-block-size: 96px">
+      ${Array.from(
+        { length: 8 },
+        (_, index) => html`<button type="button">Action ${index + 1}</button>`,
+      )}
+    </rc-menu>
+  `);
+  const menu = screen.getByTestId('host').element() as RCMenu;
+
+  await menu.updateComplete;
+
+  const styles = getComputedStyle(menu);
+
+  expect(menu.getBoundingClientRect().height).toBeLessThanOrEqual(96);
+  expect(menu.scrollHeight).toBeGreaterThan(menu.clientHeight);
+  expect(styles.overflowY).toBe('auto');
+  expect(styles.overscrollBehaviorY).toBe('contain');
 });
 
 test('RCMenu dispatches rc-menu-activate on Enter and Space', async () => {
@@ -209,12 +230,12 @@ test('RCMenu toggles checkbox menu item checked state on activation', async () =
   await menu.updateComplete;
 
   expect(notes.getAttribute('aria-checked')).toBe('false');
-  expect(getComputedStyle(notes, '::before').content).toBe('""');
+  expect(getComputedStyle(notes, '::after').content).toBe('""');
 
   await screen.getByTestId('notes').click();
 
   expect(notes.getAttribute('aria-checked')).toBe('true');
-  expect(getComputedStyle(notes, '::before').content).toBe('"✓"');
+  expect(getComputedStyle(notes, '::after').content).toBe('"✓"');
 
   expect(activateSpy).toHaveBeenLastCalledWith(
     expect.objectContaining({
@@ -229,7 +250,7 @@ test('RCMenu toggles checkbox menu item checked state on activation', async () =
   await screen.getByTestId('notes').click();
 
   expect(notes.getAttribute('aria-checked')).toBe('false');
-  expect(getComputedStyle(notes, '::before').content).toBe('""');
+  expect(getComputedStyle(notes, '::after').content).toBe('""');
 
   expect(activateSpy).toHaveBeenLastCalledWith(
     expect.objectContaining({
@@ -291,8 +312,8 @@ test('RCMenu checks one radio menu item per group on activation', async () => {
   expect(recent.getAttribute('aria-checked')).toBe('false');
   expect(name.getAttribute('aria-checked')).toBe('true');
   expect(comfortable.getAttribute('aria-checked')).toBe('true');
-  expect(getComputedStyle(recent, '::before').content).toBe('""');
-  expect(getComputedStyle(name, '::before').content).toBe('"•"');
+  expect(getComputedStyle(recent, '::after').content).toBe('""');
+  expect(getComputedStyle(name, '::after').content).toBe('"•"');
 
   expect(activateSpy).toHaveBeenLastCalledWith(
     expect.objectContaining({
@@ -323,7 +344,27 @@ test('RCMenu updates checkbox state when activated by keyboard', async () => {
   pressKey(menu, ' ');
 
   expect(notes.getAttribute('aria-checked')).toBe('true');
-  expect(getComputedStyle(notes, '::before').content).toBe('"✓"');
+  expect(getComputedStyle(notes, '::after').content).toBe('"✓"');
+});
+
+test('RCMenu groups a shortcut and selection indicator at the trailing edge', async () => {
+  const screen = render(html`
+    <rc-menu label="View" data-testid="host">
+      <button type="button" role="menuitemcheckbox" aria-checked="true" data-testid="notes">
+        <span>Notes</span>
+        <span data-menu-shortcut data-testid="shortcut">Ctrl+N</span>
+      </button>
+    </rc-menu>
+  `);
+  const $menu = screen.getByTestId('host').element() as RCMenu;
+  const $notes = screen.getByTestId('notes').element() as HTMLElement;
+  const $shortcut = screen.getByTestId('shortcut').element() as HTMLElement;
+
+  await $menu.updateComplete;
+
+  expect(parseFloat(getComputedStyle($shortcut).marginInlineStart)).toBeGreaterThan(0);
+  expect(getComputedStyle($notes, '::after').marginInlineStart).toBe('0px');
+  expect(getComputedStyle($notes, '::after').content).toBe('"✓"');
 });
 
 test('RCMenu dispatches rc-menu-close on Escape', async () => {
