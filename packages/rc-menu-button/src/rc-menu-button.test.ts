@@ -4,7 +4,6 @@ import { html } from 'lit';
 import type { Locator } from 'vitest/browser';
 
 import type { RCMenu } from '@rcarls/rc-menu';
-
 import './define';
 import type { RCMenuButton } from './rc-menu-button';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
@@ -105,6 +104,33 @@ test('RCMenuButton renders an author-supplied indicator inside the trigger bound
   expect(parseFloat(getComputedStyle(trigger).paddingInlineEnd)).toBeGreaterThan(
     parseFloat(getComputedStyle(trigger).paddingInlineStart),
   );
+});
+
+test('RCMenuButton vertical trigger spans a flex-stretched menu row', async () => {
+  const screen = render(html`
+    <div style="display: flex; flex-direction: column; inline-size: 200px">
+      <rc-menu-button data-testid="host" orientation="vertical">
+        <button slot="trigger" data-testid="trigger">View</button>
+        <span slot="indicator" aria-hidden="true">→</span>
+        <rc-menu label="View">
+          <button>Grid</button>
+        </rc-menu>
+      </rc-menu-button>
+    </div>
+  `);
+  const host = screen.getByTestId('host').element() as RCMenuButton;
+  const trigger = screen.getByTestId('trigger').element() as HTMLButtonElement;
+
+  await host.updateComplete;
+
+  const root = host.shadowRoot?.querySelector<HTMLElement>('#root');
+  const triggerWrap = host.shadowRoot?.querySelector<HTMLElement>('#trigger-wrap');
+  const hostWidth = host.getBoundingClientRect().width;
+
+  expect(hostWidth).toBeCloseTo(200);
+  expect(root!.getBoundingClientRect().width).toBeCloseTo(hostWidth);
+  expect(triggerWrap!.getBoundingClientRect().width).toBeCloseTo(hostWidth);
+  expect(trigger.getBoundingClientRect().width).toBeCloseTo(hostWidth);
 });
 
 test('RCMenuButton has no automated accessibility violations', async () => {
@@ -301,6 +327,117 @@ test('RCMenuButton maps trigger styling variables to the slotted trigger', async
   expect(trigger.getAttribute('aria-expanded')).toBe('true');
   expect(styles.backgroundColor).toBe('rgb(7, 8, 9)');
   expect(styles.color).toBe('rgb(10, 11, 12)');
+});
+
+test('keeps a 32px visible icon-only trigger inside a 48px interactive wrapper', async () => {
+  const screen = render(html`
+    <rc-menu-button
+      data-testid="host"
+      icon-only
+      style="--rc-menu-button-trigger-block-size: 32px; --rc-menu-button-icon-size: 32px;"
+    >
+      <button slot="trigger" data-testid="trigger" aria-label="More actions">+</button>
+      <rc-menu label="More actions">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+
+  const host = screen.getByTestId('host').element() as RCMenuButton;
+  const trigger = screen.getByTestId('trigger').element() as HTMLElement;
+
+  await host.updateComplete;
+
+  const triggerWrap = host.shadowRoot?.querySelector('#trigger-wrap') as HTMLElement;
+  const wrapRect = triggerWrap.getBoundingClientRect();
+  const triggerRect = trigger.getBoundingClientRect();
+
+  expect(wrapRect.height).toBeCloseTo(48);
+  expect(wrapRect.width).toBeCloseTo(48);
+  expect(triggerRect.height).toBeCloseTo(32);
+  expect(triggerRect.width).toBeCloseTo(32);
+
+  const targetX = wrapRect.left + 2;
+  const targetY = wrapRect.top + wrapRect.height / 2;
+
+  expect(targetX).toBeLessThan(triggerRect.left);
+  expect(document.elementFromPoint(targetX, targetY)).toBe(trigger);
+});
+
+test('does not grow a visible icon-only trigger that already meets the touch target', async () => {
+  const screen = render(html`
+    <rc-menu-button
+      data-testid="host"
+      icon-only
+      style="--rc-menu-button-trigger-block-size: 56px; --rc-menu-button-icon-size: 56px;"
+    >
+      <button slot="trigger" aria-label="More actions">+</button>
+      <rc-menu label="More actions">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+
+  const host = screen.getByTestId('host').element() as RCMenuButton;
+
+  await host.updateComplete;
+
+  const triggerWrap = host.shadowRoot?.querySelector('#trigger-wrap') as HTMLElement;
+  const wrapRect = triggerWrap.getBoundingClientRect();
+
+  expect(wrapRect.height).toBeCloseTo(56);
+  expect(wrapRect.width).toBeCloseTo(56);
+});
+
+test('--rc-menu-button-touch-target-overlap-inline-end shifts a 32px icon-only trigger flush with a flex-end container edge', async () => {
+  const screen = render(html`
+    <div data-testid="row" style="display:flex; justify-content:flex-end; width:200px;">
+      <rc-menu-button
+        data-testid="host"
+        icon-only
+        style="
+          --rc-menu-button-trigger-block-size: 32px;
+          --rc-menu-button-icon-size: 32px;
+          --rc-menu-button-touch-target-overlap-inline-end: 8px;
+        "
+      >
+        <button slot="trigger" data-testid="trigger" aria-label="More actions">+</button>
+        <rc-menu label="More actions">
+          <button>Cut</button>
+        </rc-menu>
+      </rc-menu-button>
+    </div>
+  `);
+
+  const host = screen.getByTestId('host').element() as RCMenuButton;
+  const row = screen.getByTestId('row').element() as HTMLElement;
+  const trigger = screen.getByTestId('trigger').element() as HTMLElement;
+
+  await host.updateComplete;
+
+  const triggerWrap = host.shadowRoot?.querySelector('#trigger-wrap') as HTMLElement;
+
+  expect(getComputedStyle(triggerWrap).marginInlineEnd).toBe('-8px');
+  expect(getComputedStyle(triggerWrap).marginInlineStart).toBe('0px');
+
+  const rowRect = row.getBoundingClientRect();
+  const triggerRect = trigger.getBoundingClientRect();
+
+  // The 8px the touch target would otherwise reserve past the visible
+  // trigger is given back, so the visible trigger lands flush with the
+  // row's own trailing edge instead of 8px short of it.
+  expect(triggerRect.right).toBeCloseTo(rowRect.right);
+
+  // A point just past the visible trigger -- outside the row's own
+  // boundary, in the space it just reclaimed -- still resolves to the
+  // trigger: the light-DOM hit-slop pseudo-element is anchored to the
+  // trigger itself and unaffected by the wrapper's margin, so the actual
+  // clickable region keeps its full accessible size regardless.
+  const targetX = triggerRect.right + 2;
+  const targetY = triggerRect.top + triggerRect.height / 2;
+
+  expect(targetX).toBeGreaterThan(rowRect.right);
+  expect(document.elementFromPoint(targetX, targetY)).toBe(trigger);
 });
 
 test('RCMenuButton closes on outside click', async () => {
@@ -502,6 +639,29 @@ test("RCMenuButton toggles the popup element's :popover-open state with `open`",
   await menuButton.updateComplete;
 
   expect(popup.matches(':popover-open')).toBe(false);
+});
+
+test('RCMenuButton positions the popup after it becomes visible', async () => {
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCMenuButton;
+  const $popup = $host.shadowRoot?.querySelector('#popup') as HTMLElement;
+  const anchorController = ($host as unknown as { _anchorCtrl: { update: () => void } })
+    ._anchorCtrl;
+  const updateSpy = vi.spyOn(anchorController, 'update').mockImplementation(() => {
+    expect($popup.matches(':popover-open')).toBe(true);
+  });
+
+  $host.openMenu();
+  await $host.updateComplete;
+
+  expect(updateSpy).toHaveBeenCalledOnce();
 });
 
 test('RCMenuButton popup escapes an ancestor with overflow: hidden', async () => {

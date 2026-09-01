@@ -15,6 +15,7 @@ export const menuButtonStyles = css`
 
   :host([orientation='vertical']) #root {
     display: block;
+    inline-size: 100%;
   }
 
   #trigger-wrap {
@@ -24,10 +25,73 @@ export const menuButtonStyles = css`
 
   :host([orientation='vertical']) #trigger-wrap {
     display: block;
+    inline-size: 100%;
+  }
+
+  /*
+   * Icon-only triggers (e.g. a toolbar's overflow button) can render
+   * visually smaller than the accessible 48dp touch-target minimum,
+   * especially at a narrow width. This is a floor, not a fixed size: a
+   * trigger already at or above it (the default width, or a labeled
+   * trigger) is unaffected. #trigger-wrap reserves the layout space and
+   * centers the (possibly smaller) slotted trigger within it; the actual
+   * larger hit region comes from the light-DOM hit-slop pseudo-element in
+   * rc-menu-button.ts. Mirrors rc-button's own touch-target affordance.
+   *
+   * Scoped to [icon-only] rather than applied unconditionally: switching
+   * #trigger-wrap to a flex/grid container would blockify the slotted
+   * trigger's own inline-flex display (its getComputedStyle().display
+   * becomes "flex", per the CSS Display spec's flex-item blockification —
+   * harmless for layout, since a flex item is sized by its container's
+   * flex algorithm regardless of its own inline/block outer type, but an
+   * observable change other callers shouldn't have to account for).
+   */
+  :host([icon-only]) #trigger-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--rc-menu-button-touch-target-block-size, 3rem);
+    min-inline-size: var(
+      --rc-menu-button-touch-target-inline-size,
+      var(--rc-menu-button-touch-target-block-size, 3rem)
+    );
+    /*
+     * Zero by default. A theme or consumer sets one of these on a trigger
+     * that sits at a real edge (no neighbor on that side) to let the
+     * touch-target inflation above overlap into whatever sits just outside
+     * the host instead of also reserving layout space there. Mirrors
+     * rc-button's own --rc-button-touch-target-overlap-inline-* tokens.
+     */
+    margin-inline-start: calc(-1 * var(--rc-menu-button-touch-target-overlap-inline-start, 0px));
+    margin-inline-end: calc(-1 * var(--rc-menu-button-touch-target-overlap-inline-end, 0px));
+  }
+
+  :host([icon-only][orientation='vertical']) #trigger-wrap {
+    display: flex;
+  }
+
+  /*
+   * Icon-only trigger width: square by default (matches its own block
+   * size), or a distinct value for a narrower/wider variant. Padding is
+   * cleared since an icon-only trigger centers its (typically single) icon
+   * child via the flex alignment above rather than via inline padding.
+   */
+  :host([icon-only]) slot[name='trigger']::slotted(button),
+  :host([icon-only]) slot[name='trigger']::slotted([role='button']) {
+    inline-size: var(
+      --rc-menu-button-icon-size,
+      var(--rc-menu-button-trigger-block-size, var(--rc-control-block-size, 2.25em))
+    );
+    min-inline-size: var(
+      --rc-menu-button-icon-size,
+      var(--rc-menu-button-trigger-block-size, var(--rc-control-block-size, 2.25em))
+    );
+    padding-inline: 0;
   }
 
   slot[name='trigger']::slotted(button),
   slot[name='trigger']::slotted([role='button']) {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
