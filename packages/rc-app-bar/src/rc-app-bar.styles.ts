@@ -32,7 +32,15 @@ export const appBarStyles = css`
     color: inherit;
   }
 
-  #root[data-has-center] {
+  /*
+   * Opt-in: mirrors the leading/trailing edges (measured in JS — see
+   * _measureLayout) so center content stays exactly viewport-centered
+   * regardless of asymmetric side content. The default (this attribute
+   * absent) instead falls through to the plain 3-column grid above, same as
+   * a bare title — #center just fills the flexible middle column, capped
+   * and self-centered within it via --rc-app-bar-center-max-inline-size.
+   */
+  :host([center-symmetric]) #root[data-has-center] {
     grid-template-columns:
       var(--_rc-app-bar-edge-size)
       minmax(0, 1fr)
@@ -85,6 +93,16 @@ export const appBarStyles = css`
     grid-column: 2;
     grid-row: 1;
     justify-self: center;
+    /*
+     * Default (uncapped): 100% of the flexible column, i.e. fills it
+     * edge-to-edge, same as any other content in that column. Once a
+     * consumer sets --rc-app-bar-center-max-inline-size below the column's
+     * own width, this centers within the leftover space instead -- deliberately
+     * not written as justify-self: stretch plus max-inline-size, which falls
+     * back to start-alignment once the max-width constraint applies rather
+     * than centering.
+     */
+    inline-size: min(100%, var(--rc-app-bar-center-max-inline-size, 100%));
   }
 
   #trailing {
@@ -93,11 +111,12 @@ export const appBarStyles = css`
     justify-self: end;
   }
 
-  #root[data-has-center] #center {
+  :host([center-symmetric]) #root[data-has-center] #center {
     grid-column: 3;
+    inline-size: auto;
   }
 
-  #root[data-has-center] #trailing {
+  :host([center-symmetric]) #root[data-has-center] #trailing {
     grid-column: 5;
   }
 
@@ -122,8 +141,7 @@ export const appBarStyles = css`
   }
 
   :host([variant='expanded'][data-collapsed]) #title {
-    animation: rc-app-bar-title-in var(--rc-app-bar-transition-duration, 200ms)
-      ease;
+    animation: rc-app-bar-title-in var(--rc-app-bar-transition-duration, 200ms) ease;
   }
 
   #scroll-shadow {
@@ -154,9 +172,11 @@ export const appBarStyles = css`
   }
 
   /*
-   * Narrow-viewport fallback for the center-slot layout.
+   * Narrow-viewport fallback for center-symmetric mode only -- the default
+   * (center-symmetric absent) never needs this, its plain 3-column grid
+   * already behaves this way at every width.
    *
-   * The default data-has-center grid forces both outer columns to
+   * The center-symmetric grid forces both outer columns to
    * --_rc-app-bar-edge-size px (= max of leading/trailing widths) so that the
    * center slot stays perfectly symmetric. On screens ≤ 480 px that symmetry
    * can push the total width past the viewport. Below the threshold:
@@ -168,13 +188,14 @@ export const appBarStyles = css`
    * trailing) are unchanged, so no JS or placement CSS needs to change.
    */
   @container (max-inline-size: 480px) {
-    #root[data-has-center] {
+    :host([center-symmetric]) #root[data-has-center] {
       grid-template-columns: auto 0 minmax(0, 1fr) 0 auto;
     }
 
-    #root[data-has-center] #center {
+    :host([center-symmetric]) #root[data-has-center] #center {
       justify-self: stretch;
       justify-content: flex-end;
+      inline-size: auto;
     }
   }
 `;
