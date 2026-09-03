@@ -306,6 +306,7 @@ export class RCCombobox extends RCSelect {
 
       case 'Enter': {
         e.preventDefault();
+
         const active = this._activeDescendantCtrl.activeItem;
 
         if (active) {
@@ -372,9 +373,7 @@ export class RCCombobox extends RCSelect {
   }
 
   private _focusLastChipRemove() {
-    const $buttons = Array.from(
-      this.renderRoot.querySelectorAll<HTMLButtonElement>('button[part~="chip"]'),
-    );
+    const $buttons = this._$chipButtons();
 
     $buttons[$buttons.length - 1]?.focus();
   }
