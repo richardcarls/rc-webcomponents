@@ -41,7 +41,15 @@ export const comboboxStyles = css`
     }
   }
 
-  /* Chips — the whole chip is the remove button for a larger touch target */
+  [part='chips'] {
+    flex: 0 1 auto;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    --rc-chip-group-column-gap: var(--rc-combobox-gap, var(--rc-control-gap, 0.25em));
+    --rc-chip-group-row-gap: 0;
+  }
+
+  /* Input-chip chrome; rc-chip keeps the native button as the removal action. */
   [part='chip'] {
     display: inline-flex;
     align-items: center;
@@ -70,7 +78,7 @@ export const comboboxStyles = css`
     }
   }
 
-  /* Decorative × icon inside the chip — no interaction, aria-hidden */
+  /* Decorative × icon inside the chip — no interaction, aria-hidden. */
   [part='chip-remove'] {
     display: inline-flex;
     align-items: center;

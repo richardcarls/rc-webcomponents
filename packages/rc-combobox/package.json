@@ -45,6 +45,7 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
+    "@rcarls/rc-chip-group": "workspace:*",
     "@rcarls/rc-common": "workspace:*",
     "@rcarls/rc-listbox": "workspace:*",
     "@rcarls/rc-select": "workspace:*"
