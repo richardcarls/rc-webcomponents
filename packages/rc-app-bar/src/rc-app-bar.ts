@@ -49,7 +49,10 @@ export interface RCAppBarScrollDetail {
  *
  * @slot leading - Leading navigation or controls; accepts multiple children
  * @slot - The single title region; may contain title and subtitle markup
- * @slot center - Content kept at the exact horizontal center, such as search
+ * @slot center - Content such as search, kept within the flexible middle column between
+ *   leading and trailing. Fills that column by default, capped and self-centered within it via
+ *   `--rc-app-bar-center-max-inline-size`; add `center-symmetric` for exact viewport centering
+ *   regardless of asymmetric leading/trailing content instead.
  * @slot trailing - Trailing action controls
  * @fires rc-app-bar-scroll - When observed scroll state crosses the threshold;
  *   `detail: { scrolled }`
@@ -57,12 +60,18 @@ export interface RCAppBarScrollDetail {
  * @attr scroll-behavior - Visual response to observed scrolling: `pinned`, `collapse`, or `hide`.
  * @attr scroll-target - CSS selector (or `"window"`) for the scroll container to observe.
  * @attr scroll-threshold - Scroll offset in px past which the bar is scrolled (strict `>`).
+ * @attr center-symmetric - Opt-in: mirrors leading/trailing edge widths so `slot="center"`
+ *   content stays exactly viewport-centered. Default: fills the flexible middle column instead,
+ *   centered within available space once capped by `--rc-app-bar-center-max-inline-size`.
  * @cssprop [--rc-app-bar-bg=Canvas] - Bar background
  * @cssprop [--rc-app-bar-color=CanvasText] - Bar text color
  * @cssprop [--rc-app-bar-compact-min-height=3rem] - Compact row minimum height
  * @cssprop [--rc-app-bar-expanded-padding-block=0.75em] - Expanded title padding
  * @cssprop [--rc-app-bar-padding-inline=0.75em] - Horizontal padding
  * @cssprop [--rc-app-bar-gap=0.5em] - Gap between regions
+ * @cssprop [--rc-app-bar-center-max-inline-size=100%] - Max width of `slot="center"` content
+ *   before it centers within the available space instead of filling it. No effect when
+ *   `center-symmetric` is set.
  * @cssprop [--rc-app-bar-title-start-padding=0px] - Extra title inline-start padding used only when the leading slot is empty (M3: align with content below when there's no navigation icon)
  * @cssprop [--rc-app-bar-transition-duration=200ms] - Endpoint and hide duration
  * @cssprop [--rc-app-bar-scroll-divider=1px solid GrayText] - Scrolled divider
@@ -82,6 +91,17 @@ export class RCAppBar extends LitElement {
   /** Structural variant. `expanded` adds a flexible title row. */
   @property({ type: String, reflect: true })
   variant: RCAppBarVariant = 'compact';
+
+  /**
+   * Opt-in: mirrors the leading/trailing edge widths so `slot="center"`
+   * content stays exactly viewport-centered regardless of asymmetric side
+   * content. Default (absent): center content fills the flexible middle
+   * column like a plain title, capped and self-centered within it via
+   * `--rc-app-bar-center-max-inline-size` -- centered within the available
+   * space between leading and trailing, not mirrored to the viewport.
+   */
+  @property({ type: Boolean, attribute: 'center-symmetric', reflect: true })
+  centerSymmetric = false;
 
   /** Visual response to observed scrolling. */
   @property({ type: String, attribute: 'scroll-behavior', reflect: true })
@@ -138,6 +158,7 @@ export class RCAppBar extends LitElement {
     onChange: (scrolled) => {
       this._observedScrolled = scrolled;
       this._syncVisualState();
+
       this.dispatchEvent(
         new CustomEvent<RCAppBarScrollDetail>('rc-app-bar-scroll', {
           bubbles: true,
@@ -157,6 +178,7 @@ export class RCAppBar extends LitElement {
   get scrolled(): boolean {
     return this._scrolled ?? this._observedScrolled;
   }
+
   set scrolled(value: boolean | undefined) {
     const oldValue = this.scrolled;
 
@@ -174,6 +196,10 @@ export class RCAppBar extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     this._connectResizeObserver();
+
+    if (this.hasUpdated) {
+      this._queueLayoutMeasure();
+    }
   }
 
   override disconnectedCallback(): void {
@@ -198,38 +224,49 @@ export class RCAppBar extends LitElement {
 
   protected override firstUpdated(): void {
     this._observeLayout();
-    this._measureLayout();
+    this._queueLayoutMeasure();
     this._syncScrollObserver();
     this._syncVisualState();
   }
 
   protected override updated(changed: PropertyValues): void {
     this._observeLayout();
+
     if (
       changed.has('variant') ||
+      changed.has('centerSymmetric') ||
       changed.has('_hasLeading') ||
       changed.has('_hasCenter') ||
       changed.has('_hasTrailing')
     ) {
-      this._measureLayout();
+      this._queueLayoutMeasure();
     }
+
     this._syncStateOutputs();
   }
 
   private _connectResizeObserver(): void {
-    if (!('ResizeObserver' in globalThis)) return;
+    if (!('ResizeObserver' in globalThis)) {
+      return;
+    }
 
     this._resizeObserver ??= new ResizeObserver(() => this._queueLayoutMeasure());
     this._observeLayout();
   }
 
   private _observeLayout(): void {
-    if (!this._resizeObserver) return;
+    if (!this._resizeObserver) {
+      return;
+    }
 
     this._resizeObserver.disconnect();
+
     ['#leading', '#title', '#center', '#trailing'].forEach((selector) => {
       const $element = this.shadowRoot?.querySelector<HTMLElement>(selector);
-      if ($element) this._resizeObserver?.observe($element);
+
+      if ($element) {
+        this._resizeObserver?.observe($element);
+      }
     });
   }
 
@@ -237,27 +274,36 @@ export class RCAppBar extends LitElement {
     const $leading = this.shadowRoot?.querySelector<HTMLElement>('#leading');
     const $title = this.shadowRoot?.querySelector<HTMLElement>('#title');
     const $trailing = this.shadowRoot?.querySelector<HTMLElement>('#trailing');
-    if (!$leading || !$title || !$trailing) return;
 
-    const edgeSize = Math.max($leading.offsetWidth, $trailing.offsetWidth);
-    this._setGeometryProperty('--_rc-app-bar-edge-size', `${edgeSize}px`);
+    if (!$leading || !$title || !$trailing) {
+      return;
+    }
 
-    if (this.variant === 'expanded' && !this._collapsed) {
-      const nextDistance = $title.offsetHeight;
-      if (nextDistance > 0) {
-        const titleStyle = getComputedStyle($title);
-        const padding =
-          Number.parseFloat(titleStyle.paddingBlockStart) +
-          Number.parseFloat(titleStyle.paddingBlockEnd);
-        const contentHeight = Math.max($title.offsetHeight - padding, 0);
-        const compactHeight = $title.offsetTop;
-        const endpointCompactHeight = Math.max(compactHeight, contentHeight);
+    const shouldMeasureCollapse = this.variant === 'expanded' && !this._collapsed;
+    const nextDistance = shouldMeasureCollapse ? $title.offsetHeight : 0;
+    const titleStyle = nextDistance > 0 ? getComputedStyle($title) : null;
+    // Resolve live computed-style values before the first inline geometry write.
+    const paddingBlockStart = titleStyle ? Number.parseFloat(titleStyle.paddingBlockStart) : 0;
+    const paddingBlockEnd = titleStyle ? Number.parseFloat(titleStyle.paddingBlockEnd) : 0;
+    const compactHeight = nextDistance > 0 ? $title.offsetTop : 0;
 
-        this._collapseDistance = nextDistance;
-        this._collapseOffsetDistance = compactHeight - (endpointCompactHeight - contentHeight) / 2;
-        this._setGeometryProperty('--_rc-app-bar-collapse-distance', `${nextDistance}px`);
-        this._applyCollapseGeometry();
-      }
+    // Only meaningful for center-symmetric mode's mirrored-edge grid; skip
+    // the reads entirely otherwise.
+    if (this.centerSymmetric) {
+      const edgeSize = Math.max($leading.offsetWidth, $trailing.offsetWidth);
+
+      this._setGeometryProperty('--_rc-app-bar-edge-size', `${edgeSize}px`);
+    }
+
+    if (titleStyle) {
+      const padding = paddingBlockStart + paddingBlockEnd;
+      const contentHeight = Math.max(nextDistance - padding, 0);
+      const endpointCompactHeight = Math.max(compactHeight, contentHeight);
+
+      this._collapseDistance = nextDistance;
+      this._collapseOffsetDistance = compactHeight - (endpointCompactHeight - contentHeight) / 2;
+      this._setGeometryProperty('--_rc-app-bar-collapse-distance', `${nextDistance}px`);
+      this._applyCollapseGeometry();
     }
   }
 
@@ -278,10 +324,18 @@ export class RCAppBar extends LitElement {
 
   private _resolveScrollTarget(): ScrollObserverTarget | null {
     const target = this.scrollTarget;
-    if (target === null || target === undefined) return null;
 
-    if (typeof target !== 'string') return target;
-    if (target === 'window') return window;
+    if (target === null || target === undefined) {
+      return null;
+    }
+
+    if (typeof target !== 'string') {
+      return target;
+    }
+
+    if (target === 'window') {
+      return window;
+    }
 
     try {
       return this.ownerDocument?.querySelector(target) ?? null;
@@ -291,18 +345,24 @@ export class RCAppBar extends LitElement {
   }
 
   private _onObservedScroll(scrollTop: number, delta: number): void {
-    if (this._scrolled !== undefined) return;
+    if (this._scrolled !== undefined) {
+      return;
+    }
 
     if (this.scrollBehavior === 'collapse' && this.variant === 'expanded') {
-      if (this._collapseDistance <= 0) return;
+      if (this._collapseDistance <= 0) {
+        return;
+      }
 
       const distance = this._collapseDistance;
       let progress = Math.min(Math.max(scrollTop / distance, 0), 1);
+
       if (this._reducedMotion?.matches) {
         progress = scrollTop > this.scrollThreshold ? 1 : 0;
       } else {
         progress = progress >= 0.999 ? 1 : progress;
       }
+
       this._setCollapseProgress(progress);
     } else {
       this._setCollapseProgress(0);
@@ -324,12 +384,16 @@ export class RCAppBar extends LitElement {
       if (this.scrollBehavior !== 'collapse' || this.variant !== 'expanded') {
         this._setCollapseProgress(0);
       }
-      if (this.scrollBehavior !== 'hide') this._setHidden(false);
+
+      if (this.scrollBehavior !== 'hide') {
+        this._setHidden(false);
+      }
 
       return;
     }
 
     const collapse = this.variant === 'expanded' && this.scrollBehavior === 'collapse';
+
     this._setCollapseProgress(collapse && this.scrolled ? 1 : 0);
     this._setHidden(false);
   }
@@ -340,12 +404,15 @@ export class RCAppBar extends LitElement {
     this._applyCollapseGeometry();
 
     const collapsed = progress >= 1;
-    if (collapsed === this._collapsed) return;
+
+    if (collapsed === this._collapsed) {
+      return;
+    }
 
     this._collapsed = collapsed;
     this.toggleAttribute('data-collapsed', collapsed);
     this._setCustomState('collapsed', collapsed);
-    this._measureLayout();
+    this._queueLayoutMeasure();
   }
 
   private _applyCollapseGeometry(): void {
@@ -358,13 +425,17 @@ export class RCAppBar extends LitElement {
   }
 
   private _setGeometryProperty(name: string, value: string): void {
-    if (this.style.getPropertyValue(name) === value) return;
+    if (this.style.getPropertyValue(name) === value) {
+      return;
+    }
 
     this.style.setProperty(name, value);
   }
 
   private _setHidden(hidden: boolean): void {
-    if (hidden === this._hidden) return;
+    if (hidden === this._hidden) {
+      return;
+    }
 
     this._hidden = hidden;
     this.toggleAttribute('data-hidden', hidden);
@@ -379,7 +450,9 @@ export class RCAppBar extends LitElement {
   }
 
   private _setCustomState(name: string, active: boolean): void {
-    if (!this._internals.states) return;
+    if (!this._internals.states) {
+      return;
+    }
 
     if (active) {
       this._internals.states.add(name);
@@ -406,7 +479,7 @@ export class RCAppBar extends LitElement {
         break;
     }
 
-    queueMicrotask(() => this._measureLayout());
+    this._queueLayoutMeasure();
   }
 
   protected override render() {
