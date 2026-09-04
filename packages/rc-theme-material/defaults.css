@@ -149,10 +149,22 @@
     --md-ref-palette-neutral-variant100: #ffffffff;
     /* Neutral 0 */
     --md-ref-palette-neutral0: #000000ff;
+    /* Neutral 4 */
+    --md-ref-palette-neutral4: #0f0e11ff;
+    /* Neutral 6 */
+    --md-ref-palette-neutral6: #141317ff;
     /* Neutral 10 */
     --md-ref-palette-neutral10: #1c1b1fff;
+    /* Neutral 12 */
+    --md-ref-palette-neutral12: #211f23ff;
+    /* Neutral 17 */
+    --md-ref-palette-neutral17: #2b292eff;
     /* Neutral 20 */
     --md-ref-palette-neutral20: #313033ff;
+    /* Neutral 22 */
+    --md-ref-palette-neutral22: #363438ff;
+    /* Neutral 24 */
+    --md-ref-palette-neutral24: #3b383dff;
     /* Neutral 30 */
     --md-ref-palette-neutral30: #484649ff;
     /* Neutral 40 */
@@ -165,10 +177,20 @@
     --md-ref-palette-neutral70: #aeaaaeff;
     /* Neutral 80 */
     --md-ref-palette-neutral80: #c9c5caff;
+    /* Neutral 87 */
+    --md-ref-palette-neutral87: #ded8deff;
     /* Neutral 90 */
     --md-ref-palette-neutral90: #e6e1e5ff;
+    /* Neutral 92 */
+    --md-ref-palette-neutral92: #ece6ecff;
+    /* Neutral 94 */
+    --md-ref-palette-neutral94: #f2ecf2ff;
     /* Neutral 95 */
     --md-ref-palette-neutral95: #f4eff4ff;
+    /* Neutral 96 */
+    --md-ref-palette-neutral96: #f8f2f8ff;
+    /* Neutral 98 */
+    --md-ref-palette-neutral98: #fdf8fdff;
     /* Neutral 99 */
     --md-ref-palette-neutral99: #fffbfeff;
     /* Neutral 100 */
@@ -723,14 +745,29 @@
       var(--md-ref-palette-tertiary40),
       var(--md-ref-palette-tertiary80)
     );
+    /* Tertiary fixed — persistent color, same value in both themes */
+    --md-sys-color-tertiary-fixed: var(--md-ref-palette-tertiary90);
+    /* On tertiary fixed */
+    --md-sys-color-on-tertiary-fixed: var(--md-ref-palette-tertiary10);
+    /* Tertiary fixed dim */
+    --md-sys-color-tertiary-fixed-dim: var(--md-ref-palette-tertiary80);
+    /* On tertiary fixed variant */
+    --md-sys-color-on-tertiary-fixed-variant: var(--md-ref-palette-tertiary30);
     /* Shadow */
     --md-sys-color-shadow: var(--md-ref-palette-neutral0);
+    /* Scrim */
+    --md-sys-color-scrim: var(--md-ref-palette-neutral0);
     /* Error */
     --md-sys-color-error: light-dark(var(--md-ref-palette-error40), var(--md-ref-palette-error80));
     /* Outline */
     --md-sys-color-outline: light-dark(
       var(--md-ref-palette-neutral-variant50),
       var(--md-ref-palette-neutral-variant60)
+    );
+    /* Outline variant */
+    --md-sys-color-outline-variant: light-dark(
+      var(--md-ref-palette-neutral-variant80),
+      var(--md-ref-palette-neutral-variant30)
     );
     /* On background */
     --md-sys-color-on-background: light-dark(
@@ -739,8 +776,8 @@
     );
     /* Background */
     --md-sys-color-background: light-dark(
-      var(--md-ref-palette-neutral99),
-      var(--md-ref-palette-neutral10)
+      var(--md-ref-palette-neutral98),
+      var(--md-ref-palette-neutral6)
     );
     /* Inverse on surface */
     --md-sys-color-inverse-on-surface: light-dark(
@@ -767,35 +804,45 @@
       var(--md-ref-palette-neutral-variant90),
       var(--md-ref-palette-neutral-variant30)
     );
+    /* Surface dim */
+    --md-sys-color-surface-dim: light-dark(
+      var(--md-ref-palette-neutral87),
+      var(--md-ref-palette-neutral6)
+    );
     /* Surface */
     --md-sys-color-surface: light-dark(
-      var(--md-ref-palette-neutral99),
-      var(--md-ref-palette-neutral10)
+      var(--md-ref-palette-neutral98),
+      var(--md-ref-palette-neutral6)
+    );
+    /* Surface bright */
+    --md-sys-color-surface-bright: light-dark(
+      var(--md-ref-palette-neutral98),
+      var(--md-ref-palette-neutral24)
     );
     /* Surface container lowest (near-white / near-black) */
     --md-sys-color-surface-container-lowest: light-dark(
       var(--md-ref-palette-neutral100),
-      var(--md-ref-palette-neutral10)
+      var(--md-ref-palette-neutral4)
     );
     /* Surface container low */
     --md-sys-color-surface-container-low: light-dark(
-      var(--md-ref-palette-neutral99),
+      var(--md-ref-palette-neutral96),
       var(--md-ref-palette-neutral10)
     );
     /* Surface container — used for menus, sheets, and elevated surfaces */
     --md-sys-color-surface-container: light-dark(
-      var(--md-ref-palette-neutral95),
-      var(--md-ref-palette-neutral20)
+      var(--md-ref-palette-neutral94),
+      var(--md-ref-palette-neutral12)
     );
     /* Surface container high */
     --md-sys-color-surface-container-high: light-dark(
-      var(--md-ref-palette-neutral90),
-      var(--md-ref-palette-neutral20)
+      var(--md-ref-palette-neutral92),
+      var(--md-ref-palette-neutral17)
     );
     /* Surface container highest — used for text fields and chips */
     --md-sys-color-surface-container-highest: light-dark(
       var(--md-ref-palette-neutral90),
-      var(--md-ref-palette-neutral20)
+      var(--md-ref-palette-neutral22)
     );
     /* On secondary container */
     --md-sys-color-on-secondary-container: light-dark(
@@ -817,6 +864,14 @@
       var(--md-ref-palette-secondary40),
       var(--md-ref-palette-secondary80)
     );
+    /* Secondary fixed — persistent color, same value in both themes */
+    --md-sys-color-secondary-fixed: var(--md-ref-palette-secondary90);
+    /* On secondary fixed */
+    --md-sys-color-on-secondary-fixed: var(--md-ref-palette-secondary10);
+    /* Secondary fixed dim */
+    --md-sys-color-secondary-fixed-dim: var(--md-ref-palette-secondary80);
+    /* On secondary fixed variant */
+    --md-sys-color-on-secondary-fixed-variant: var(--md-ref-palette-secondary30);
     /* Inverse primary */
     --md-sys-color-inverse-primary: light-dark(
       var(--md-ref-palette-primary80),
@@ -842,18 +897,86 @@
       var(--md-ref-palette-primary40),
       var(--md-ref-palette-primary80)
     );
+    /* Primary fixed — persistent color, same value in both themes */
+    --md-sys-color-primary-fixed: var(--md-ref-palette-primary90);
+    /* On primary fixed */
+    --md-sys-color-on-primary-fixed: var(--md-ref-palette-primary10);
+    /* Primary fixed dim */
+    --md-sys-color-primary-fixed-dim: var(--md-ref-palette-primary80);
+    /* On primary fixed variant */
+    --md-sys-color-on-primary-fixed-variant: var(--md-ref-palette-primary30);
   }
 
+  /*
+   * Forced-colors (Windows High Contrast) coverage for every role defined
+   * above. Deliberately collapses to a few tiers rather than one system
+   * color per role: forced-colors mode exists to strip semantic hue in
+   * favor of the user's chosen palette, so distinguishing e.g. tertiary
+   * from error by color here would work against that intent.
+   *   - True accent (primary and its container/fixed/inverse variants):
+   *     a Highlight fill with HighlightText content, everywhere.
+   *   - Secondary emphasis (secondary, tertiary, error, and each one's
+   *     container/fixed variants): styled as a plain control instead of
+   *     color-coded by family. The "plain" role in each triple (secondary,
+   *     tertiary, error) is also the one components use as a fill for
+   *     their own filled variant (see rc-button's danger/filled styling),
+   *     so it takes the fill/content pairing ButtonText fill with
+   *     ButtonFace content; the *-container/*-fixed roles are always
+   *     read as a soft background, so they get the inverse pairing:
+   *     ButtonFace fill with ButtonText content.
+   *   - Surfaces (background/surface and every container/dim/bright
+   *     tier, surface-variant): a Canvas fill with CanvasText content,
+   *     except surface-container-highest which stays Field (text
+   *     fields, chips).
+   *   - Borders: ButtonBorder.
+   * Elevation shadows are zeroed throughout, since tonal/shadow elevation
+   * isn't part of the forced-colors palette either.
+   */
   @media (forced-colors: active) {
     .rc-theme-material,
     :host(.rc-theme-material) {
+      /* Accent tier */
       --md-sys-color-primary: Highlight;
       --md-sys-color-on-primary: HighlightText;
       --md-sys-color-primary-container: Highlight;
       --md-sys-color-on-primary-container: HighlightText;
+      --md-sys-color-primary-fixed: Highlight;
+      --md-sys-color-primary-fixed-dim: Highlight;
+      --md-sys-color-on-primary-fixed: HighlightText;
+      --md-sys-color-on-primary-fixed-variant: HighlightText;
+      --md-sys-color-inverse-primary: Canvas;
+
+      /* Secondary-emphasis tier: secondary, tertiary, and error all
+         styled as plain controls rather than color-coded */
+      --md-sys-color-secondary: ButtonText;
+      --md-sys-color-on-secondary: ButtonFace;
       --md-sys-color-secondary-container: ButtonFace;
       --md-sys-color-on-secondary-container: ButtonText;
+      --md-sys-color-secondary-fixed: ButtonFace;
+      --md-sys-color-secondary-fixed-dim: ButtonFace;
+      --md-sys-color-on-secondary-fixed: ButtonText;
+      --md-sys-color-on-secondary-fixed-variant: ButtonText;
+      --md-sys-color-tertiary: ButtonText;
+      --md-sys-color-on-tertiary: ButtonFace;
+      --md-sys-color-tertiary-container: ButtonFace;
+      --md-sys-color-on-tertiary-container: ButtonText;
+      --md-sys-color-tertiary-fixed: ButtonFace;
+      --md-sys-color-tertiary-fixed-dim: ButtonFace;
+      --md-sys-color-on-tertiary-fixed: ButtonText;
+      --md-sys-color-on-tertiary-fixed-variant: ButtonText;
+      --md-sys-color-error: ButtonText;
+      --md-sys-color-on-error: ButtonFace;
+      --md-sys-color-error-container: ButtonFace;
+      --md-sys-color-on-error-container: ButtonText;
+
+      /* Surface tier */
+      --md-sys-color-background: Canvas;
+      --md-sys-color-on-background: CanvasText;
       --md-sys-color-surface: Canvas;
+      --md-sys-color-surface-variant: Canvas;
+      --md-sys-color-surface-dim: Canvas;
+      --md-sys-color-surface-bright: Canvas;
+      --md-sys-color-surface-container-lowest: Canvas;
       --md-sys-color-surface-container-low: Canvas;
       --md-sys-color-surface-container: Canvas;
       --md-sys-color-surface-container-high: Canvas;
@@ -862,11 +985,17 @@
       --md-sys-color-on-surface-variant: CanvasText;
       --md-sys-color-inverse-surface: CanvasText;
       --md-sys-color-inverse-on-surface: Canvas;
+
+      /* Borders */
       --md-sys-color-outline: ButtonBorder;
       --md-sys-color-outline-variant: ButtonBorder;
+
+      /* Elevation: shadows carry no meaning under forced colors */
       --md-sys-elevation-level1: 0px;
       --md-sys-elevation-level2: 0px;
       --md-sys-elevation-level3: 0px;
+      --md-sys-elevation-level4: 0px;
+      --md-sys-elevation-level5: 0px;
     }
   }
 }

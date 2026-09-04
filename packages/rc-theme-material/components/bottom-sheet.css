@@ -1,6 +1,6 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-bottom-sheet {
-    --rc-bottom-sheet-bg: var(--md-sys-color-surface, Canvas);
+    --rc-bottom-sheet-bg: var(--md-sys-color-surface-container-low, Canvas);
     --rc-bottom-sheet-handle-color: color-mix(
       in srgb,
       var(--md-sys-color-on-surface-variant, GrayText) 40%,
@@ -28,7 +28,7 @@
     overflow: auto;
     border: 0;
     border-radius: var(--rc-bottom-sheet-radius, 1.75rem 1.75rem 0 0);
-    background: var(--rc-bottom-sheet-bg, var(--md-sys-color-surface, Canvas));
+    background: var(--rc-bottom-sheet-bg, var(--md-sys-color-surface-container-low, Canvas));
     color: var(--rc-bottom-sheet-color, var(--md-sys-color-on-surface, CanvasText));
     box-shadow: var(--rc-bottom-sheet-shadow, var(--rc-shadow-level1, none));
     font-family: var(--md-sys-typescale-body-medium-font, inherit);
@@ -41,10 +41,13 @@
     );
   }
 
+  /* Descendant (not child) combinator: consuming apps may nest the handle
+     inside their own peek-content wrapper (e.g. grouped with a summary
+     row) rather than placing it as a direct child of dialog. */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-bottom-sheet
     > dialog
-    > [data-rc-bottom-sheet-handle] {
+    [data-rc-bottom-sheet-handle] {
     position: relative;
     display: block;
     inline-size: var(--rc-bottom-sheet-handle-target-inline-size, 100%);
@@ -63,7 +66,7 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-bottom-sheet
     > dialog
-    > [data-rc-bottom-sheet-handle]::before {
+    [data-rc-bottom-sheet-handle]::before {
     content: '';
     position: absolute;
     inset-block-start: 50%;
@@ -78,7 +81,7 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-bottom-sheet
     > dialog
-    > [data-rc-bottom-sheet-handle]:focus-visible {
+    [data-rc-bottom-sheet-handle]:focus-visible {
     outline: 0.125rem solid var(--md-sys-color-primary, Highlight);
     outline-offset: -0.25rem;
   }

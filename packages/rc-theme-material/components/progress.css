@@ -1,0 +1,10 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-progress::part(value-display) {
+    color: var(--md-sys-color-on-surface-variant, GrayText);
+    font-size: var(--md-sys-typescale-label-small-size, 0.75rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-progress[disabled] {
+    opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
+  }
+}

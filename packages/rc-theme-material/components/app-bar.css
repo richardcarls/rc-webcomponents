@@ -12,19 +12,59 @@
     box-shadow: var(--rc-shadow-level2, none);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar :is(button, [role='button']) {
-    inline-size: 3rem;
-    block-size: 3rem;
-    padding: 0.75rem;
+  /*
+   * A bare <button>/[role=button] dropped directly into an rc-app-bar's
+   * leading or trailing action slot gets full M3 icon-button treatment on
+   * its own — MD3 "Small" icon button: 40dp visual container / 24dp icon —
+   * without needing rc-button. Scoped to a *direct* child
+   * (`>`, not a descendant combinator): a button nested inside an
+   * `rc-button`/`rc-menu-button` slotted here is several levels deeper in
+   * the light DOM and already has its own correct sizing from that
+   * component's own theming; a descendant selector here would reach
+   * straight through and fight it.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-app-bar
+    > :is(button, [role='button']):is([slot='leading'], [slot='trailing']) {
+    box-sizing: border-box;
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    padding: 0;
     border: 0;
     border-radius: var(--md-sys-shape-corner-full, 999px);
     background: transparent;
     color: inherit;
   }
 
+  /* Accessible touch-target floor, decoupled from the visual size above —
+     the same affordance rc-button's own icon-only buttons provide. A
+     no-op once the visible button already meets or exceeds it. */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-app-bar
-    :is(button, [role='button']):hover {
+    > :is(button, [role='button']):is([slot='leading'], [slot='trailing'])::before {
+    content: '';
+    position: absolute;
+    inset: calc((3rem - max(100%, 2.5rem)) / -2);
+  }
+
+  /* Sizes the button's own content (typically a single icon) to the MD3
+     icon-button glyph size, regardless of whether it carries a marker
+     attribute — a direct child of an app-bar action button is
+     unambiguously its icon. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-app-bar
+    > :is(button, [role='button']):is([slot='leading'], [slot='trailing'])
+    > * {
+    font-size: 1.5rem;
+    line-height: 1.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-app-bar
+    > :is(button, [role='button']):is([slot='leading'], [slot='trailing']):hover {
     background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
   }
 

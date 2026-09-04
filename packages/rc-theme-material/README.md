@@ -52,6 +52,27 @@ Theme styles are scoped under a `.rc-theme-material` class.
 </body>
 ```
 
+### Button variants and tones
+
+The default `rc-button` treatment is filled. Use `rc-button--tonal`,
+`rc-button--outlined`, or `rc-button--text` for the other Material emphasis
+levels. Icon-only buttons use `rc-icon-button--standard`,
+`rc-icon-button--tonal`, or `rc-icon-button--outlined`.
+
+Add `data-tone="danger"` to any of those variants for the corresponding error
+or error-container color roles. These classes and data attributes are theme
+hooks; they do not change the component's native-button behavior or public API.
+
+```html
+<rc-button class="rc-button--tonal">
+  <button type="button">Save draft</button>
+</rc-button>
+
+<rc-button class="rc-button--outlined" data-tone="danger">
+  <button type="button">Delete</button>
+</rc-button>
+```
+
 ### Full standalone Material 3 theme
 
 Includes bundled light and dark Material 3 token defaults and the full
@@ -75,6 +96,35 @@ such as `data-rc-button-icon` and `data-rc-navigation-icon` opt in
 automatically. The shared `--rc-icon-font-size` and
 `--rc-icon-font-line-height` tokens keep glyph geometry consistent and can be
 overridden at the theme boundary or on one component.
+
+### Icon-button modifiers
+
+Apply these classes to `rc-button[icon-only]` to use the Material 3 expressive
+container and icon sizes. The default, unmodified size is small: a `2.5rem`
+container with a `1.5rem` icon.
+
+| Class                    | Container |      Icon |
+| ------------------------ | --------: | --------: |
+| `rc-button--extra-small` |    `2rem` | `1.25rem` |
+| `rc-button--medium`      |  `3.5rem` |  `1.5rem` |
+| `rc-button--large`       |    `6rem` |    `2rem` |
+| `rc-button--extra-large` |  `8.5rem` |  `2.5rem` |
+
+Combine a size class with `rc-button--narrow` or `rc-button--wide` to select
+that size's narrower or wider container width without changing its height or
+icon size. `rc-menu-button[icon-only]` supports `rc-menu-button--narrow` for a
+`2rem`-wide small trigger. The component packages continue to reserve a `3rem`
+activation area around visual containers smaller than that target.
+
+`rc-adaptive-menu` uses the same Material small narrow geometry for its
+overflow trigger: a `2rem × 2.5rem` visible container centered in the
+component-owned `3rem × 3rem` activation area. The theme also aligns overflow
+rows with Material menu geometry while leaving the component's controlled or
+uncontrolled `open` contract unchanged.
+
+Direct native buttons in an `rc-app-bar`'s `leading` and `trailing` slots also
+receive the Material small icon-button geometry. Controls nested in an
+`rc-button` or `rc-menu-button` keep their component-owned sizing.
 
 [Material Web](material-web.dev) token names are used where a corresponding component
 exists. Search bar and top app bar mappings follow Material 3 token terminology and
