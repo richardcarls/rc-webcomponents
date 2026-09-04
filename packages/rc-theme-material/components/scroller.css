@@ -1,0 +1,7 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-scroller {
+    --rc-scroller-content-padding-inline: 1rem;
+    --rc-scroller-content-max-inline-size: 75rem;
+    --rc-scroller-scrollbar-width: thin;
+  }
+}

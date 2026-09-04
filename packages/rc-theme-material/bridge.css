@@ -259,6 +259,24 @@
     --rc-thumb-radius: calc(var(--md-slider-handle-width, 1.25rem) / 2);
   }
 
+  .rc-theme-material rc-progress,
+  :host(.rc-theme-material) rc-progress {
+    --rc-progress-track-background: var(
+      --md-linear-progress-track-color,
+      var(--md-sys-color-surface-container-highest, CanvasText)
+    );
+    --rc-progress-track-opacity: 1;
+    --rc-progress-track-radius: var(
+      --md-linear-progress-track-shape,
+      var(--md-sys-shape-corner-full, 999px)
+    );
+    --rc-progress-fill-background: var(
+      --md-linear-progress-active-indicator-color,
+      var(--md-sys-color-primary, Highlight)
+    );
+    --rc-progress-value-color: var(--md-sys-color-on-surface-variant, GrayText);
+  }
+
   .rc-theme-material rc-range-slider,
   :host(.rc-theme-material) rc-range-slider {
     --rc-range-slider-accent: var(

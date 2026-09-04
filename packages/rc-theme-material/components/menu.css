@@ -34,7 +34,7 @@
     );
     --rc-menu-active-color: var(--md-sys-color-on-surface, CanvasText);
 
-    /* Check/radio indicator — M3 leading icon slot is 24dp wide */
+    /* Check/radio indicator — M3 trailing indicator column is 24dp wide */
     --rc-menu-check-size: 1.5rem;
     --rc-menu-check-color: var(--md-sys-color-primary, Highlight);
 
@@ -56,6 +56,35 @@
   /* M3 uses the state-layer cursor, not a container focus ring ------------- */
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu:focus-visible {
     outline: none;
+  }
+
+  /*
+   * M3 baseline menu items are rectangular full-width rows (unlike a
+   * standalone rc-button, which is a pill) — rc-menu's own structural CSS
+   * intentionally leaves shape undecided (it's a themed concern), so claim
+   * it explicitly here rather than leaving items to whatever shape a
+   * consumer's own incidental button styling might otherwise supply.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-menu
+    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio']) {
+    border-radius: 0;
+  }
+
+  /*
+   * Sizes an item's own leading icon to the M3 menu leading-icon size.
+   * Unlike an icon-only rc-button, a menu item routinely combines an icon
+   * *and* a label (they aren't mutually exclusive), so "first child" isn't
+   * a safe stand-in for "the icon" here the way it is there — this only
+   * sizes content the consumer has actually marked as an icon.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-menu
+    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])
+    :is([data-rc-icon], [data-rc-menu-leading], [data-rc-menu-icon]) {
+    flex: none;
+    font-size: 1.5rem;
+    line-height: 1.5rem;
   }
 
   /* Current item (navigation active / selected radio row) gets secondary-container */

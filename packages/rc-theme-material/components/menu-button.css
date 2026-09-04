@@ -19,4 +19,105 @@
     --rc-menu-button-indicator-size: 1.5rem;
     --rc-menu-button-indicator-color: var(--md-sys-color-on-surface-variant, CanvasText);
   }
+
+  /*
+   * MD3 "Small" icon button sizing (40dp square trigger / 24dp icon) for an
+   * icon-only rc-menu-button trigger — e.g. an app bar's overflow button.
+   * rc-menu-button's own touch-target affordance (min-inline/block-size
+   * 3rem on the trigger wrapper, plus the light-DOM hit-slop) makes up the
+   * difference to the 48dp minimum tap target on its own.
+   * https://m3.material.io/components/icon-buttons/specs
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu-button[icon-only] {
+    --rc-menu-button-trigger-block-size: 2.5rem;
+    --rc-menu-button-trigger-padding-block: 0;
+    --rc-menu-button-trigger-padding-inline: 0;
+    --rc-menu-button-trigger-gap: 0;
+    --rc-menu-button-icon-size: 2.5rem;
+  }
+
+  /* Adaptive overflow keeps the authored menu label in the trigger, so the
+     shared label marker is the one direct child that is not icon content. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-menu-button[icon-only]
+    > [slot='trigger']
+    > :not([data-rc-menu-label]) {
+    font-size: var(--rc-icon-button-icon-font-size, 1.5rem);
+    line-height: var(--rc-icon-button-icon-font-size, 1.5rem) !important;
+  }
+
+  /*
+   * Narrow width: trims the trigger's inline size (32dp, the MD3 "Small"
+   * narrow-width spec value) without changing its height. Suits a dense
+   * context that already has an unambiguous, self-labeling icon and no
+   * neighbors it needs to align widths with — an app bar's trailing
+   * overflow trigger is the canonical case, so this also defaults the
+   * trailing-edge overlap token: (3rem default touch target - 2rem icon
+   * size) / 2, giving back exactly what the touch target would otherwise
+   * reserve past the visible trigger. Trailing-edge only, matching the
+   * "trailing overflow trigger" framing above -- see rc-button's own
+   * narrow-variant comment for why only one side defaults.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-menu-button.rc-menu-button--narrow[icon-only] {
+    --rc-menu-button-icon-size: 2rem;
+    --rc-menu-button-touch-target-overlap-inline-end: 0.5rem;
+  }
+
+  /*
+   * A submenu trigger (a cascading menu item that opens a nested rc-menu)
+   * is still an rc-menu-button underneath, but MD3 treats it as a menu row
+   * with a trailing disclosure chevron — not as its own standalone pill
+   * control. The base rule above (and rc-menu-button's own defaults) style
+   * it as the latter: a primary-colored, pill-shaped, independently-padded
+   * trigger, layered on top of whatever geometry rc-menu's own item CSS
+   * (menu.css / rc-base) tries to apply to the same element by virtue of
+   * its role="menuitem" — hence the mismatched shape and the icon sitting
+   * at a different inset than its sibling rows.
+   *
+   * The consumer marks this case the same way rc-menu itself expects a
+   * cascading item to be marked (role="menuitem" — see menu.css and
+   * rc-menu's own light-DOM CSS), so key every geometry/color token here
+   * off rc-menu's own item, hover, and active tokens (--rc-menu-item-...,
+   * --rc-menu-hover-..., --rc-menu-active-...) instead of hand-matching
+   * values that could drift out of sync with a sibling plain-button item
+   * later.
+   * https://m3.material.io/components/menus/specs
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu-button[role='menuitem'] {
+    font-family: var(--md-sys-typescale-body-large-font, inherit);
+    font-size: var(--md-sys-typescale-body-large-size, 1rem);
+    font-weight: 400;
+
+    --rc-menu-button-trigger-block-size: var(--rc-menu-item-min-block-size, 3rem);
+    --rc-menu-button-trigger-padding-block: var(--rc-menu-item-padding-block, 0);
+    --rc-menu-button-trigger-padding-inline: var(--rc-menu-item-padding-inline, 0.75rem);
+    --rc-menu-button-trigger-gap: var(--rc-menu-item-gap, 0.75rem);
+    --rc-menu-button-trigger-radius: 0;
+    --rc-menu-button-trigger-border: 0;
+    --rc-menu-button-trigger-background: transparent;
+    --rc-menu-button-trigger-color: inherit;
+    --rc-menu-button-trigger-hover-background: var(--rc-menu-hover-bg);
+    --rc-menu-button-trigger-hover-color: var(--rc-menu-hover-color, inherit);
+    --rc-menu-button-trigger-open-background: var(--rc-menu-active-bg);
+    --rc-menu-button-trigger-open-color: var(--rc-menu-active-color, inherit);
+  }
+
+  /*
+   * rc-menu's own light-DOM CSS (rc-base, an even-higher-priority layer
+   * than this one — it's registered at custom-element-connect time,
+   * after every static stylesheet) matches *any* role="menuitem" element
+   * for its generic item padding, which includes this host itself, not
+   * just plain-button items. Left alone, that stacks on top of the
+   * trigger-inline padding bridged above: the host absorbs one
+   * --rc-menu-item-padding-inline, then the trigger button absorbs
+   * another, doubling the icon's inset versus a sibling row. The host
+   * itself isn't a visible surface — all padding belongs on the one
+   * real, visible trigger button — so it needs to contribute zero here,
+   * which (since rc-base doesn't mark its own padding !important) is
+   * only reachable with !important of our own.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu-button[role='menuitem'] {
+    padding-inline: 0 !important;
+  }
 }

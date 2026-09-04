@@ -1,11 +1,6 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material))
-    :where(
-      [data-rc-icon],
-      [data-rc-button-icon],
-      [data-rc-button-selected-icon],
-      [data-rc-navigation-icon]
-    ) {
+    :where([data-rc-icon], [data-rc-navigation-icon]) {
     display: inline-grid;
     place-items: center;
     font-size: var(--rc-icon-font-size, 1.5rem);
@@ -15,5 +10,43 @@
      * overriding the normally-cascaded custom property.
      */
     line-height: var(--rc-icon-font-line-height, var(--rc-icon-font-size, 1.5rem)) !important;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    :where([data-rc-button-icon], [data-rc-button-selected-icon], [data-rc-chip-icon]) {
+    display: inline-grid;
+    place-items: center;
+    font-size: var(--rc-compact-icon-font-size, 1.125rem);
+    line-height: var(
+      --rc-compact-icon-font-line-height,
+      var(--rc-compact-icon-font-size, 1.125rem)
+    ) !important;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button[icon-only]
+    :where([data-rc-button-icon], [data-rc-button-selected-icon]) {
+    font-size: var(--rc-icon-button-icon-font-size, 1.5rem);
+    line-height: var(--rc-icon-button-icon-font-size, 1.5rem) !important;
+  }
+
+  /*
+   * An icon-only button's marker attributes (above) are an opt-in contract:
+   * a consumer's icon element has to know to carry `data-rc-button-icon`.
+   * When it doesn't (an <svg>, an <iconify-icon>, and similar),
+   * that icon would otherwise silently inherit the button's label font-size
+   * instead of the icon-button icon size. rc-button only sets `icon-only`
+   * once it classifies the native button as icon-having and label-less, so
+   * its direct children are icon content unless a responsive composition
+   * exposes an authored `[data-rc-menu-label]`; size every other direct
+   * child as an icon. The explicit marker rule above still matters for an
+   * icon nested one level deeper than a direct child.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button[icon-only]
+    > button
+    > :not([data-rc-menu-label]) {
+    font-size: var(--rc-icon-button-icon-font-size, 1.5rem);
+    line-height: var(--rc-icon-button-icon-font-size, 1.5rem) !important;
   }
 }

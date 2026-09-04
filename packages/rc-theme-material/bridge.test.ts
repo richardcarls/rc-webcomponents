@@ -168,6 +168,7 @@ test('maps the supported core component set', () => {
     ['div', '--rc-list-item-min-block-size'],
     ['rc-combobox', '--rc-combobox-radius'],
     ['rc-slider', '--rc-slider-progress-background'],
+    ['rc-progress', '--rc-progress-fill-background'],
     ['rc-range-slider', '--rc-range-slider-accent'],
     ['rc-search-bar', '--rc-search-bar-bg'],
     ['rc-bottom-sheet', '--rc-bottom-sheet-bg'],

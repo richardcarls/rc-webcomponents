@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "rc-theme-material rendered constraints",
+  "version": 1,
+  "sources": {
+    "material3": "https://m3.material.io/",
+    "lists": "https://m3.material.io/components/lists/specs",
+    "buttons": "https://m3.material.io/components/buttons/specs",
+    "iconButtons": "https://m3.material.io/components/icon-buttons/specs",
+    "iconButtonsExpressive": "https://github.com/material-components/material-components-android/blob/master/lib/java/com/google/android/material/button/res/values/styles.xml",
+    "menus": "https://m3.material.io/components/menus/specs"
+  },
+  "constraints": [
+    {
+      "id": "list.inline-content-padding",
+      "selector": "rc-list > rc-list-item",
+      "variants": ["standard", "segmented"],
+      "geometry": {
+        "contentInlineStart": "16px",
+        "contentInlineEnd": "16px"
+      },
+      "source": "lists"
+    },
+    {
+      "id": "list.leading-icon",
+      "selector": "rc-list-item > [slot='leading'][data-rc-list-leading]",
+      "geometry": {
+        "inlineSize": "24px",
+        "blockSize": "24px",
+        "iconSize": "24px"
+      },
+      "source": "lists"
+    },
+    {
+      "id": "button.small-container",
+      "selector": "rc-button:not([icon-only])",
+      "geometry": {
+        "minBlockSize": "40px"
+      },
+      "typography": {
+        "role": "label-large"
+      },
+      "source": "buttons"
+    },
+    {
+      "id": "icon-button.small",
+      "selector": "rc-button[icon-only]",
+      "geometry": {
+        "containerInlineSize": "40px",
+        "containerBlockSize": "40px",
+        "iconSize": "24px",
+        "minTouchTarget": "48px"
+      },
+      "source": "iconButtons"
+    },
+    {
+      "id": "adaptive-menu.overflow-trigger",
+      "selector": "rc-adaptive-menu::part(overflow-trigger)",
+      "variants": ["small", "narrow"],
+      "geometry": {
+        "containerInlineSize": "32px",
+        "containerBlockSize": "40px",
+        "iconSize": "24px",
+        "minTouchTarget": "48px"
+      },
+      "source": "iconButtonsExpressive"
+    },
+    {
+      "id": "menu.item",
+      "selector": "rc-menu [role^='menuitem'], rc-adaptive-menu > [data-rc-action-overflowed]",
+      "geometry": {
+        "minBlockSize": "48px",
+        "paddingInlineStart": "12px",
+        "paddingInlineEnd": "12px",
+        "contentGap": "12px",
+        "leadingIconSize": "24px"
+      },
+      "typography": {
+        "role": "body-large",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "lineHeight": "24px",
+        "tracking": "0.5px"
+      },
+      "source": "menus"
+    },
+    {
+      "id": "adaptive-menu.viewport-containment",
+      "selector": "rc-adaptive-menu::part(popup)",
+      "behavior": {
+        "maxInlineSize": "viewport - 8px",
+        "maxBlockSize": "viewport - 8px",
+        "overflow": "auto",
+        "overscrollBehavior": "contain"
+      },
+      "source": "menus"
+    }
+  ]
+}
