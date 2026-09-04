@@ -1,5 +1,6 @@
 import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+
 import {
   ActiveDescendantController,
   AnchorController,
@@ -249,6 +250,7 @@ export class RCSelect extends LitElement {
     super.disconnectedCallback();
 
     document.removeEventListener('click', this._onDocClick, { capture: true });
+
     document.removeEventListener('keydown', this._onDocKeyDown, {
       capture: true,
     });
@@ -462,9 +464,11 @@ export class RCSelect extends LitElement {
     }
 
     this._pickerGuardForm?.removeEventListener('formdata', this._handleFormData);
+
     this._pickerGuardForm?.removeEventListener('submit', this._handleFormSubmit, {
       capture: true,
     });
+
     this._pickerGuardForm = $form;
 
     $form?.addEventListener('formdata', this._handleFormData);
@@ -602,6 +606,7 @@ export class RCSelect extends LitElement {
 
         this._syncOptionsFromSelect($current);
       });
+
       this._mutationObserver.observe($select, {
         childList: true,
         subtree: true,
@@ -833,6 +838,7 @@ export class RCSelect extends LitElement {
 
     if (detail.reason === 'action') {
       e.stopPropagation();
+
       return;
     }
 
@@ -984,6 +990,7 @@ export class RCSelect extends LitElement {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
+
         if (!this.open) {
           this.openPopup();
           this._activeDescendantCtrl.navigateToFirst();
@@ -994,6 +1001,7 @@ export class RCSelect extends LitElement {
 
       case 'ArrowUp':
         e.preventDefault();
+
         if (!this.open) {
           this.openPopup();
           this._activeDescendantCtrl.navigateToLast();
@@ -1019,6 +1027,7 @@ export class RCSelect extends LitElement {
       case ' ':
       case 'Enter':
         e.preventDefault();
+
         if (!this.open) {
           this.openPopup();
           this._activeDescendantCtrl.navigateToFirst();
@@ -1113,9 +1122,11 @@ export class RCSelect extends LitElement {
     $buttons[this._chipNavIndex].focus();
   }
 
-  /** Queries all `button[part~="chip"]` elements in `renderRoot`; order matches DOM order. */
+  /** Queries all native remove buttons inside input chips; order matches DOM order. */
   protected _$chipButtons(): HTMLButtonElement[] {
-    return Array.from(this.renderRoot.querySelectorAll<HTMLButtonElement>('button[part~="chip"]'));
+    return Array.from(
+      this.renderRoot.querySelectorAll<HTMLButtonElement>('rc-chip > button[part~="chip"]'),
+    );
   }
 
   /**
@@ -1131,6 +1142,7 @@ export class RCSelect extends LitElement {
     switch (e.key) {
       case 'ArrowLeft':
         e.preventDefault();
+
         if (this._chipNavIndex > 0) {
           this._chipNavIndex--;
           $buttons[this._chipNavIndex]?.focus();
@@ -1139,6 +1151,7 @@ export class RCSelect extends LitElement {
 
       case 'ArrowRight':
         e.preventDefault();
+
         if (this._chipNavIndex < $buttons.length - 1) {
           this._chipNavIndex++;
           $buttons[this._chipNavIndex]?.focus();
@@ -1230,31 +1243,38 @@ export class RCSelect extends LitElement {
     `;
   }
 
-  /** Renders the chip group `<span>` with one `<button>` per selected value for multi-select chip display mode. */
+  /** Renders selected values as removable input chips inside the shared chip-group layout. */
   protected _renderChips() {
     return html`
-      <span part="chips" role="group" aria-label="Selected items">
+      <rc-chip-group part="chips" kind="generic" layout="wrap" aria-label="Selected items">
         ${[...this._selectedValues].map((value) => {
           const label = this._labelFor(value);
+
           return html`
-            <button
-              type="button"
-              part="chip"
+            <rc-chip
+              variant="input"
+              removable
               data-value=${value}
-              tabindex="-1"
-              aria-label=${`Remove ${label}`}
-              @click=${(e: MouseEvent) => {
-                e.stopPropagation();
+              @rc-chip-remove=${(event: Event) => {
+                event.stopPropagation();
                 this._removeValue(value);
               }}
-              @keydown=${(e: KeyboardEvent) => this._handleChipKeyDown(e, value)}
             >
-              <span part="chip-label">${label}</span
-              ><span part="chip-remove" aria-hidden="true">&#215;</span>
-            </button>
+              <button
+                type="button"
+                part="chip"
+                tabindex="-1"
+                aria-label=${`Remove ${label}`}
+                @click=${(event: MouseEvent) => event.stopPropagation()}
+                @keydown=${(event: KeyboardEvent) => this._handleChipKeyDown(event, value)}
+              >
+                <span part="chip-label">${label}</span>
+              </button>
+              <span slot="remove-icon" part="chip-remove" aria-hidden="true">&#215;</span>
+            </rc-chip>
           `;
         })}
-      </span>
+      </rc-chip-group>
     `;
   }
 }
