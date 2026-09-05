@@ -154,6 +154,15 @@
     --rc-thumb-radius: 0.5625rem;
   }
 
+  .rc-theme-substrate rc-progress,
+  :host(.rc-theme-substrate) rc-progress {
+    --rc-progress-track-background: color-mix(in srgb, var(--rc-border-color) 70%, transparent);
+    --rc-progress-track-opacity: 1;
+    --rc-progress-track-radius: 999px;
+    --rc-progress-fill-background: var(--rc-accent);
+    --rc-progress-value-color: var(--substrate-on-surface-muted, GrayText);
+  }
+
   .rc-theme-substrate rc-bottom-sheet,
   :host(.rc-theme-substrate) rc-bottom-sheet {
     --rc-bottom-sheet-bg: var(--substrate-surface-raised, Canvas);
