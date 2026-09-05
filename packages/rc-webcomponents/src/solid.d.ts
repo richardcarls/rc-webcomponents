@@ -45,6 +45,32 @@ export type RCCardRef = HTMLElement & {
   actionTarget: string;
 };
 
+export type RCScrollerAxis = 'block' | 'inline' | 'both';
+export type RCScrollerLayout = 'none' | 'content';
+
+/** Public API surface of `<rc-scroller>`. */
+export type RCScrollerRef = HTMLElement & {
+  axis: RCScrollerAxis;
+  layout: RCScrollerLayout;
+};
+
+export type RCListVariant = 'standard' | 'segmented';
+export type RCListSelection = 'none' | 'single' | 'multiple';
+
+/** Public API surface of `<rc-list>`. */
+export type RCListRef = HTMLElement & {
+  variant: RCListVariant;
+  selection: RCListSelection;
+};
+
+/** Public API surface of `<rc-list-item>`. */
+export type RCListItemRef = HTMLElement & {
+  selected: boolean;
+  disabled: boolean;
+  interactive: boolean;
+  actionTarget: string;
+};
+
 export type RCSwitchChangeDetail = {
   checked: boolean;
 };
@@ -78,6 +104,14 @@ export type RCChipRemoveDetail = {
   chip: HTMLElement;
 };
 
+export type RCChipGroupLayout = 'auto' | 'wrap' | 'scroll';
+export type RCChipGroupKind = 'generic' | 'assist' | 'filter';
+export type RCChipGroupSelection = 'none' | 'single' | 'multiple';
+
+export type RCChipGroupToggleDetail = {
+  expanded: boolean;
+};
+
 export type RCButtonToggleDetail = {
   selected: boolean;
 };
@@ -89,6 +123,18 @@ export type RCChipRef = HTMLElement & {
   disabled: boolean;
   readonly: boolean;
   removable: boolean;
+};
+
+export type RCChipGroupRef = HTMLElement & {
+  layout: RCChipGroupLayout;
+  maxRows: number;
+  kind: RCChipGroupKind;
+  selection: RCChipGroupSelection;
+  expanded: boolean;
+  defaultExpanded: boolean;
+  label: string;
+  showAllLabel: string;
+  showLessLabel: string;
 };
 
 export type RCSnackbarQueuePolicy = 'queue' | 'replace';
@@ -290,6 +336,26 @@ export type RCMenuCloseDetail = {
   reason: 'escape';
 };
 
+export type RCAdaptiveMenuToggleDetail = {
+  open: boolean;
+};
+
+/** Public API surface of `<rc-adaptive-menu>`. */
+export type RCAdaptiveMenuRef = HTMLElement & {
+  label: string;
+  maxShown: number;
+  open: boolean;
+  defaultOpen: boolean;
+  orientation: 'horizontal' | 'vertical';
+  overflowLabel: string;
+  readonly $actions: HTMLElement[];
+  readonly $promotedActions: HTMLElement[];
+  readonly $overflowedActions: HTMLElement[];
+  openMenu(focus?: 'first' | 'last' | 'none'): void;
+  closeMenu(returnFocus?: boolean): void;
+  toggleMenu(focus?: 'first' | 'last' | 'none'): void;
+};
+
 /** Public API surface of `<rc-menu-button>`. */
 export type RCMenuButtonPlacement =
   | 'top'
@@ -481,6 +547,17 @@ export type RCSliderChangeDetail = {
   value: number;
 };
 
+export type RCProgressRef = HTMLElement & {
+  readonly max: number;
+  value: number;
+  defaultValue: number | undefined;
+  indeterminate: boolean;
+  disabled: boolean;
+  display: 'inline-start' | 'inline-end' | 'overlay' | null;
+  valueText: string;
+  orientation: 'horizontal' | 'vertical';
+};
+
 export type RCRangeSliderRef = HTMLElement & {
   min: number;
   max: number;
@@ -571,6 +648,31 @@ export type RCSplitterChangeDetail = {
   valueText: string;
 };
 
+export type RCCarouselChangeTrigger = 'api' | 'button' | 'keyboard' | 'swipe';
+
+/** Detail shape for `rc-carousel-change`. */
+export type RCCarouselChangeDetail = {
+  index: number;
+  trigger: RCCarouselChangeTrigger;
+};
+
+/** Public API surface of `<rc-carousel>`. */
+export type RCCarouselRef = HTMLElement & {
+  activeIndex: number | undefined;
+  defaultActiveIndex: number;
+  loop: boolean;
+  navigation: boolean;
+  pagination: boolean;
+  variant: 'hero' | 'multi-browse';
+  mouseDragging: boolean;
+  next(): void;
+  previous(): void;
+  goToIndex(index: number, instant?: boolean): void;
+};
+
+/** Public API surface of `<rc-carousel-item>`. */
+export type RCCarouselItemRef = HTMLElement;
+
 export type RCTextareaChangeDetail = {
   value: string;
 };
@@ -617,6 +719,45 @@ declare module 'solid-js' {
         disabled?: boolean | string;
         interactive?: boolean | string;
         'action-target'?: string;
+        'prop:actionTarget'?: string | undefined;
+      };
+
+      'rc-scroller': JSX.HTMLAttributes<RCScrollerRef> & {
+        axis?: RCScrollerAxis;
+        layout?: RCScrollerLayout;
+      };
+
+      'rc-carousel': JSX.HTMLAttributes<RCCarouselRef> & {
+        'active-index'?: number | string;
+        defaultActiveIndex?: number | string;
+        'default-active-index'?: number | string;
+        loop?: boolean | string;
+        navigation?: boolean | string;
+        pagination?: boolean | string;
+        variant?: 'hero' | 'multi-browse';
+        mouseDragging?: boolean | string;
+        'mouse-dragging'?: boolean | string;
+        'prop:activeIndex'?: number | undefined;
+        'prop:defaultActiveIndex'?: number | undefined;
+        'on:rc-carousel-change'?: (e: CustomEvent<RCCarouselChangeDetail>) => void;
+      };
+
+      'rc-carousel-item': JSX.HTMLAttributes<RCCarouselItemRef>;
+
+      'rc-list': JSX.HTMLAttributes<RCListRef> & {
+        variant?: RCListVariant;
+        selection?: RCListSelection;
+      };
+
+      'rc-list-item': JSX.HTMLAttributes<RCListItemRef> & {
+        selected?: boolean | string;
+        disabled?: boolean | string;
+        interactive?: boolean | string;
+        'action-target'?: string;
+        'prop:selected'?: boolean | undefined;
+        'prop:disabled'?: boolean | undefined;
+        'prop:interactive'?: boolean | undefined;
+        'prop:actionTarget'?: string | undefined;
       };
 
       'rc-switch': JSX.HTMLAttributes<RCSwitchRef> & {
@@ -654,6 +795,22 @@ declare module 'solid-js' {
         'prop:defaultSelected'?: boolean | undefined;
         'on:rc-chip-change'?: (e: CustomEvent<RCChipChangeDetail>) => void;
         'on:rc-chip-remove'?: (e: CustomEvent<RCChipRemoveDetail>) => void;
+      };
+
+      'rc-chip-group': JSX.HTMLAttributes<RCChipGroupRef> & {
+        layout?: RCChipGroupLayout;
+        'max-rows'?: number | string;
+        kind?: RCChipGroupKind;
+        selection?: RCChipGroupSelection;
+        expanded?: boolean | string;
+        defaultExpanded?: boolean | string;
+        'default-expanded'?: boolean | string;
+        label?: string;
+        'show-all-label'?: string;
+        'show-less-label'?: string;
+        'prop:expanded'?: boolean | undefined;
+        'prop:defaultExpanded'?: boolean | undefined;
+        'on:rc-chip-group-toggle'?: (e: CustomEvent<RCChipGroupToggleDetail>) => void;
       };
 
       'rc-snackbar': JSX.HTMLAttributes<RCSnackbarRef> & {
@@ -777,6 +934,18 @@ declare module 'solid-js' {
         'on:rc-menu-close'?: (e: CustomEvent<RCMenuCloseDetail>) => void;
       };
 
+      'rc-adaptive-menu': JSX.HTMLAttributes<RCAdaptiveMenuRef> & {
+        label?: string;
+        'max-shown'?: number | string;
+        open?: boolean | string;
+        defaultOpen?: boolean | string;
+        'prop:open'?: boolean | undefined;
+        'prop:defaultOpen'?: boolean | undefined;
+        orientation?: 'horizontal' | 'vertical';
+        'overflow-label'?: string;
+        'on:rc-adaptive-menu-toggle'?: (e: CustomEvent<RCAdaptiveMenuToggleDetail>) => void;
+      };
+
       'rc-menu-button': JSX.HTMLAttributes<RCMenuButtonRef> & {
         open?: boolean | string;
         defaultOpen?: boolean | string;
@@ -784,6 +953,7 @@ declare module 'solid-js' {
         'prop:defaultOpen'?: boolean | undefined;
         orientation?: 'horizontal' | 'vertical';
         placement?: RCMenuButtonPlacement;
+        'icon-only'?: boolean | string;
         'on:rc-menu-button-toggle'?: (e: CustomEvent<RCMenuButtonToggleDetail>) => void;
       };
 
@@ -838,6 +1008,20 @@ declare module 'solid-js' {
         orientation?: 'horizontal' | 'vertical';
         'on:rc-slider-input'?: (e: CustomEvent<RCSliderChangeDetail>) => void;
         'on:rc-slider-change'?: (e: CustomEvent<RCSliderChangeDetail>) => void;
+      };
+
+      'rc-progress': JSX.HTMLAttributes<RCProgressRef> & {
+        value?: number | string;
+        defaultValue?: number | string;
+        'default-value'?: number | string;
+        'prop:value'?: number | undefined;
+        'prop:defaultValue'?: number | undefined;
+        indeterminate?: boolean | string;
+        disabled?: boolean | string;
+        display?: 'inline-start' | 'inline-end' | 'overlay';
+        'value-text'?: string;
+        orientation?: 'horizontal' | 'vertical';
+        'on:rc-progress-complete'?: (e: CustomEvent<Record<string, never>>) => void;
       };
 
       'rc-range-slider': JSX.HTMLAttributes<RCRangeSliderRef> & {
