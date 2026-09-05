@@ -1,0 +1,6 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-progress::part(value-display) {
+    color: var(--substrate-on-surface-muted, GrayText);
+    font-variant-numeric: tabular-nums;
+  }
+}

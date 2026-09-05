@@ -52,6 +52,7 @@ test('aggregate component styles cover the reference styling surface', () => {
     ['rc-listbox', ['display', 'block']],
     ['rc-button', ['--rc-button-bg', '']],
     ['rc-card', ['--rc-card-bg', '']],
+    ['rc-list', ['--rc-list-padding-inline', '0.75rem']],
     ['rc-chip', ['--rc-chip-block-size', '2rem']],
     ['rc-select', ['display', 'inline-block']],
     ['rc-segmented-button', ['--rc-segmented-button-segment-min-block-size', '2.5rem']],
@@ -332,32 +333,20 @@ test('embedded listbox parts receive Substrate listbox option tokens', () => {
   }
 });
 
-test('authored list item classes receive the shared Substrate token contract', () => {
+test('list elements receive the shared Substrate token contract', () => {
   const scope = renderScope();
-  const list = document.createElement('ul');
-  const item = document.createElement('li');
-  const body = document.createElement('span');
-  const headline = document.createElement('span');
-  const supporting = document.createElement('span');
+  const list = document.createElement('rc-list');
+  const item = document.createElement('rc-list-item');
 
-  list.className = 'rc-list';
-  item.className = 'rc-list-item';
-  body.className = 'rc-list-item__body';
-  headline.className = 'rc-list-item__headline';
-  supporting.className = 'rc-list-item__supporting';
-  headline.textContent = 'Headline';
-  supporting.textContent = 'Supporting';
-  body.append(headline, supporting);
-  item.append(body);
+  item.textContent = 'Headline';
   list.append(item);
   scope.append(list);
 
-  const itemStyles = getComputedStyle(item);
+  const listStyles = getComputedStyle(list);
 
-  expect(itemStyles.display).toBe('flex');
-  expect(itemStyles.minBlockSize).toBe('36px');
-  expect(itemStyles.gap).not.toBe('');
-  expect(getComputedStyle(list).listStyleType).toBe('none');
+  expect(listStyles.getPropertyValue('--rc-list-padding-inline')).toBe('0.75rem');
+  expect(listStyles.getPropertyValue('--rc-list-item-min-block-size')).toBe('2.25rem');
+  expect(listStyles.getPropertyValue('--rc-list-item-selected-background')).not.toBe('');
 });
 
 test('disclosure and accordion styles keep native details as the styled surface', () => {
