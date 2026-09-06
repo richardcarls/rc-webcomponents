@@ -1,0 +1,104 @@
+---
+title: rc-chip-group
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ChipGroupDemo } from '@site/src/components/ComponentDemos';
+
+# rc-chip-group
+
+Adaptive wrapping and horizontal-scrolling layout for chip collections and
+arbitrary direct children.
+
+<AtAGlance
+  packageName="@rcarls/rc-chip-group"
+  tag="rc-chip-group"
+  native="Author-owned fieldset and radio/checkbox controls"
+  state="Auto overflow disclosure and optional assist roving focus"
+  events={['rc-chip-group-toggle']}
+  related={[
+    { label: 'rc-chip', href: '/components/rc-chip' },
+    { label: 'rc-toolbar', href: '/components/rc-toolbar' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-chip-group
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-chip-group
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-chip-group/define';
+```
+
+The define entry also registers `rc-chip`, which the group uses for its
+internal Show all/Show less action.
+
+## Native filter markup
+
+Keep fieldset, legend, form value, and selection semantics native:
+
+```html
+<fieldset>
+  <legend>Recipe scope</legend>
+  <rc-chip-group kind="filter" selection="single">
+    <rc-chip>
+      <label><input type="radio" name="scope" value="all" checked />All</label>
+    </rc-chip>
+    <rc-chip>
+      <label><input type="radio" name="scope" value="favorites" />Favorites</label>
+    </rc-chip>
+  </rc-chip-group>
+</fieldset>
+```
+
+Use `selection="multiple"` with checkboxes. Use `selection="none"` for
+menu-backed filter buttons with `aria-haspopup`; their menu owns the eventual
+selection.
+
+## Live demo
+
+<ChipGroupDemo />
+
+## Adaptive layout
+
+`layout="auto"` is the default. The group first measures its natural wrapped
+layout. When the content needs more than `max-rows="2"`, it becomes one
+horizontally scrolling row and inserts a leading **Show all** action. Expanded
+content returns to natural wrapping and the same action becomes **Show less**.
+The action uses the MDI tune icon and a vertical separator to distinguish the
+disclosure control from the authored chip collection.
+
+Use `layout="wrap"` to always wrap or `layout="scroll"` to always keep one
+horizontal row. The component uses actual rendered rows, so container size,
+text scaling, localization, and consumer content all participate in the
+decision without device-pixel-ratio special cases.
+
+## Coordination modes
+
+- `kind="generic"` is layout-only and accepts any direct `HTMLElement`.
+- `kind="assist"` exposes a labeled toolbar with one tab stop and horizontal
+  arrow/Home/End navigation.
+- `kind="filter"` synchronizes native radio/checkbox state to direct
+  `rc-chip` children. Put the group inside an author-owned fieldset.
+
+## API
+
+<ApiTable tag="rc-chip-group" />

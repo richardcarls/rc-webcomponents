@@ -57,6 +57,17 @@ through inherited `--rc-menu-button-trigger-*` custom properties. The popup menu
 remains an `rc-menu`, so menu row styling continues through the `--rc-menu-*`
 contract.
 
+Add `icon-only` when the trigger has no visible label. Supporting themes can
+then size the visible trigger with `--rc-menu-button-icon-size` while preserving
+an independently configurable activation area through the
+`--rc-menu-button-touch-target-*` properties.
+
+At an edge with no neighbor on that side, such as a toolbar's trailing-most
+trigger, `--rc-menu-button-touch-target-overlap-inline-start` and
+`-inline-end` (zero by default) let a theme or consumer give that reserved
+space back so the visible trigger sits flush with the edge instead — the
+same pattern as [`rc-button`'s own touch-target overlap tokens](/components/rc-button#states).
+
 ## API
 
 <ApiTable tag="rc-menu-button" />

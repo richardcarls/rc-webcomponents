@@ -182,5 +182,17 @@ Apply the `rc-theme-material` class to a container to scope the theme:
 </div>
 ```
 
+For `rc-button[icon-only]`, Material supplies
+`rc-button--extra-small`, `rc-button--medium`, `rc-button--large`, and
+`rc-button--extra-large` size classes. Combine them with
+`rc-button--narrow` or `rc-button--wide` to change the container width while
+keeping the selected height and icon size. The unmodified size is the Material
+small icon button. `rc-menu-button[icon-only]` also supports
+`rc-menu-button--narrow` for a narrow small trigger. All visually compact
+variants retain the component package's independent `3rem` activation area.
+Direct native buttons in an `rc-app-bar`'s `leading` and `trailing` slots use
+the same small icon-button geometry, while nested component controls retain
+their own sizing.
+
 See [Theme previews](./theme-previews) to compare components with and without
 the Material theme applied.

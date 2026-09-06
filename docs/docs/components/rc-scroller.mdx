@@ -1,0 +1,112 @@
+---
+title: rc-scroller
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ScrollerDemo } from '@site/src/components/ComponentDemos';
+
+# rc-scroller
+
+Native scroll region with an optional centered content layout and fullbleed
+track. The custom element host is the scrollport, so native scrolling APIs,
+events, restoration, and observers work without reaching into shadow DOM.
+
+<AtAGlance
+  packageName="@rcarls/rc-scroller"
+  tag="rc-scroller"
+  native="Custom element host is the native scrollport"
+  state="Declarative axis and layout"
+  events={['scroll (native)']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-scroller
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-scroller
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-scroller/define';
+```
+
+## Markup
+
+```html
+<rc-scroller layout="content" role="region" aria-label="Recipes">
+  <header data-rc-scroller-span="fullbleed">Recipes</header>
+  <article>Apple pie</article>
+</rc-scroller>
+```
+
+Give the host a definite block size, or place it in a layout that provides one,
+when it should scroll. `axis` accepts `block` (the default), `inline`, or
+`both`. The component does not add a landmark, accessible name, or tab stop;
+authors add those semantics only when the surrounding document needs them.
+
+## Live demo
+
+<ScrollerDemo />
+
+## Content layout
+
+Set `layout="content"` to place direct children on a centered content track.
+The track uses `--rc-scroller-content-padding-inline` for its minimum gutters
+and `--rc-scroller-content-max-inline-size` for its maximum width. A direct
+child with `data-rc-scroller-span="fullbleed"` spans the entire available
+inline size while preserving source order.
+
+Without `layout="content"`, the component only establishes a native
+scrollport. It does not impose padding or child layout.
+
+## Scroll-boundary state
+
+`at-block-start`, `at-block-end`, `at-inline-start`, and `at-inline-end` are
+reflected, read-only attributes: present when scrolled to (within a few
+pixels of) that edge on an enabled axis, or when that axis isn't scrollable
+at all (nothing more to reveal counts as already at both of its edges).
+Style an edge affordance from outside the shadow root by targeting the
+attribute directly, for example an edge-fade mask on an inline scroller:
+
+```css
+rc-scroller[axis='inline'] {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 24px,
+    black calc(100% - 24px),
+    transparent
+  );
+}
+
+rc-scroller[axis='inline'][at-inline-start] {
+  mask-image: linear-gradient(to right, black calc(100% - 24px), transparent);
+}
+
+rc-scroller[axis='inline'][at-inline-end] {
+  mask-image: linear-gradient(to right, transparent, black 24px);
+}
+```
+
+The component only tracks and reflects this state: it makes no visual
+decision of its own about how, or whether, to show it.
+
+## API
+
+<ApiTable tag="rc-scroller" />

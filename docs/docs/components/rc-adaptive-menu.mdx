@@ -1,0 +1,130 @@
+---
+title: rc-adaptive-menu
+---
+
+<!-- markdownlint-disable MD033 -->
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { AdaptiveMenuDemo } from '@site/src/components/ComponentDemos';
+
+# rc-adaptive-menu
+
+Priority-aware action toolbar that preserves authored controls while moving
+lower-priority actions into an overflow menu.
+
+<AtAGlance
+  packageName="@rcarls/rc-adaptive-menu"
+  tag="rc-adaptive-menu"
+  native="Consumer supplies buttons, links, or supported rc wrappers"
+  state="Controlled or uncontrolled open state"
+  events={['rc-adaptive-menu-toggle']}
+  related={[
+    { label: 'rc-menu', href: '/components/rc-menu' },
+    { label: 'rc-toolbar', href: '/components/rc-toolbar' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-adaptive-menu
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-adaptive-menu
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-adaptive-menu/define';
+```
+
+## Live demo
+
+Change "Max shown" to see actions move between the toolbar and overflow menu.
+Clicking either presentation invokes the same authored control.
+
+<AdaptiveMenuDemo />
+
+## Action contract
+
+Actions must be direct native buttons or links, or direct `rc-button`,
+`rc-chip`, or `rc-menu-button` wrappers. Larger numeric `data-priority` values
+are promoted first, up to `max-shown` authored actions; DOM order breaks ties.
+An authored `slot="overflow"` keeps an action overflow-only, regardless of
+`max-shown`.
+
+`max-shown` is a static declarative cap, re-evaluated whenever it or an
+authored action's `data-priority` changes. The component performs no runtime
+size measurement of any kind, so promoted actions are not guaranteed to
+visually fit any particular container. A consumer whose promoted count needs
+to react to available space, such as a responsive breakpoint or a window size
+class, owns that decision and writes the resulting `max-shown` value down.
+
+The component preserves node identity. It re-slots the original action and
+temporarily owns its menu `role` and `tabindex`, restoring authored values when
+the action is promoted, removed, or the component disconnects. There are no
+generated action proxies.
+
+Themes can align action contents with `rc-menu` through these shared markers:
+
+- `data-rc-menu-leading`
+- `data-rc-menu-label`
+- `data-rc-menu-trailing`
+- `data-rc-menu-shortcut`
+
+## Open state
+
+Use `default-open` to seed uncontrolled state. In controlled usage, write
+`open` and respond to `rc-adaptive-menu-toggle`; the event's `detail.open`
+contains the state requested by pointer or keyboard interaction. Host writes
+and calls to `openMenu()`, `closeMenu()`, or `toggleMenu()` are silent.
+
+```html
+<rc-adaptive-menu id="actions" max-shown="2">
+  <button type="button">Edit</button>
+  <button type="button">Archive</button>
+  <button type="button">Delete</button>
+</rc-adaptive-menu>
+
+<script>
+  const menu = document.querySelector('#actions');
+
+  menu.addEventListener('rc-adaptive-menu-toggle', (event) => {
+    menu.open = event.detail.open;
+  });
+</script>
+```
+
+The `$actions`, `$promotedActions`, and `$overflowedActions` getters return
+the current original elements in light-DOM order.
+
+## Accessibility
+
+The promoted controls follow the APG toolbar pattern, including orientation-
+aware and right-to-left arrow navigation. Overflowed controls use menu-item
+roles, vertical menu navigation, Escape dismissal, light dismissal, and focus
+return. Without the Popover API, the same interaction remains available through
+an explicitly positioned fallback popup.
+
+The overflow trigger's own accessible touch target is conventionally the
+trailing-most control in a toolbar, so it commonly leaves dead space before
+the container's own edge padding. `--rc-adaptive-menu-touch-target-overlap-inline-end`
+(zero by default) lets a theme or consumer give that space back so the
+trigger sits flush with the edge instead — the same pattern as
+[`rc-button`'s own touch-target overlap tokens](/components/rc-button#states).
+
+## API
+
+<ApiTable tag="rc-adaptive-menu" />
