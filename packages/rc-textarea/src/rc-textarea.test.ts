@@ -63,6 +63,58 @@ describe('RCTextarea — basic rendering', () => {
 
     await expectNoA11yViolations(host);
   });
+
+  test('word-wrap lets the host shrink inside a narrow grid', async () => {
+    const host = await renderTextarea(html`
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr); inline-size: 16rem">
+        <rc-textarea data-testid="host" word-wrap>
+          <textarea aria-label="Notes"></textarea>
+        </rc-textarea>
+      </div>
+    `);
+
+    host.value = `https://example.com/${'unbroken-path-segment-'.repeat(20)}`;
+
+    await waitRender();
+
+    const $grid = host.parentElement;
+    const $editor = getEditor(host);
+
+    if (!$grid) {
+      throw new Error('Expected the textarea grid fixture');
+    }
+
+    expect(host.clientWidth).toBe($grid.clientWidth);
+    expect(host.scrollWidth).toBeLessThanOrEqual(host.clientWidth);
+    expect($editor.scrollWidth).toBeLessThanOrEqual($editor.clientWidth);
+    expect(getComputedStyle($editor).whiteSpace).toBe('pre-wrap');
+  });
+
+  test('non-wrapping content scrolls inside a constrained host', async () => {
+    const host = await renderTextarea(html`
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr); inline-size: 16rem">
+        <rc-textarea data-testid="host">
+          <textarea aria-label="Notes"></textarea>
+        </rc-textarea>
+      </div>
+    `);
+
+    host.value = `https://example.com/${'unbroken-path-segment-'.repeat(20)}`;
+
+    await waitRender();
+
+    const $grid = host.parentElement;
+    const $editor = getEditor(host);
+
+    if (!$grid) {
+      throw new Error('Expected the textarea grid fixture');
+    }
+
+    expect(host.clientWidth).toBe($grid.clientWidth);
+    expect(host.scrollWidth).toBeLessThanOrEqual(host.clientWidth);
+    expect($editor.scrollWidth).toBeGreaterThan($editor.clientWidth);
+    expect(getComputedStyle($editor).whiteSpace).toBe('pre');
+  });
 });
 
 describe('RCTextarea — value', () => {
