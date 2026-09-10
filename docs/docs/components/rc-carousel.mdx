@@ -15,10 +15,10 @@ import { CarouselDemo } from '@site/src/components/ComponentDemos';
 Swipeable slide carousel following the [WAI-ARIA APG Carousel
 pattern](https://www.w3.org/WAI/ARIA/apg/patterns/carousel/), built on native
 CSS scroll-snap rather than a hand-rolled drag engine. `rc-carousel` is the
-track and chrome (navigation buttons, a slide-picker, MD3 `hero`/
-`multi-browse` sizing); `rc-carousel-item` is the slide wrapper, keeping
-authored light-DOM content — images with real alt text, interactive
-controls — directly available to assistive technology.
+track and chrome (navigation buttons, a slide-picker, and consumer-controlled
+slide sizing); `rc-carousel-item` is the slide wrapper, keeping authored
+light-DOM content — images with real alt text, interactive controls — directly
+available to assistive technology.
 
 <AtAGlance
   packageName="@rcarls/rc-carousel"
@@ -121,12 +121,36 @@ once a clone settles into view, so the wrap is invisible. Without `loop`,
 navigation buttons show `aria-disabled="true"` at the boundary instead of
 being removed from the tab sequence — see [Accessibility](#accessibility).
 
-## Variants
+## Slide sizing
 
-`variant="hero"` (default) shows one slide at a time; `variant="multi-browse"`
-peeks several slides at once for scanning a larger collection. Both resolve a
-default `--rc-carousel-slide-size`; set that custom property directly for
-full control over slide sizing (Shoelace's `calc()`-formula model).
+The default `--rc-carousel-slide-size: calc(100% - 4rem)` shows one large
+slide with a peek of the next. Set the token directly for a multi-browse or
+full-width layout:
+
+```css
+.recipe-carousel {
+  --rc-carousel-slide-size: min(75%, 300px);
+}
+```
+
+Because the token is pure track geometry, a consumer container query can adapt
+it without changing carousel state, keyboard behavior, or accessibility:
+
+```css
+.carousel-region {
+  container-type: inline-size;
+}
+
+.carousel-region rc-carousel {
+  --rc-carousel-slide-size: 100%;
+}
+
+@container (min-width: 40rem) {
+  .carousel-region rc-carousel {
+    --rc-carousel-slide-size: min(40%, 300px);
+  }
+}
+```
 
 MD3's `center-aligned hero`, `full-screen`, and vertical orientation are
 deliberate non-goals for now — neither current consumer needs them, and

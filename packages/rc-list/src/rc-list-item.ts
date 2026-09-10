@@ -65,8 +65,17 @@ declare global {
  * @cssprop [--rc-list-item-box-shadow=none] - Row shadow.
  * @cssprop [--rc-list-item-divider=0] - Divider border shorthand.
  * @cssprop [--rc-list-item-divider-inset-inline=0] - Divider inline inset.
+ * @cssprop [--rc-list-item-grid-template-rows=auto] - Internal row track definition.
+ * @cssprop [--rc-list-item-row-gap=0] - Gap between internal row tracks.
+ * @cssprop [--rc-list-item-leading-grid-column=leading-start / leading-end] - Leading region column placement.
+ * @cssprop [--rc-list-item-leading-grid-row=auto] - Leading region row placement.
+ * @cssprop [--rc-list-item-content-grid-column=content-start / content-end] - Content region column placement.
+ * @cssprop [--rc-list-item-content-grid-row=auto] - Content region row placement.
  * @cssprop [--rc-list-item-content-white-space=nowrap] - Content wrapping behavior.
  * @cssprop [--rc-list-item-content-text-overflow=ellipsis] - Content overflow marker.
+ * @cssprop [--rc-list-item-trailing-grid-column=trailing-start / trailing-end] - Trailing region column placement.
+ * @cssprop [--rc-list-item-trailing-grid-row=auto] - Trailing region row placement.
+ * @cssprop [--rc-list-item-trailing-justify-self=end] - Trailing region alignment within its grid area.
  * @cssprop [--rc-list-item-state-layer-color=currentColor] - Interaction state layer color.
  * @cssprop [--rc-list-item-hover-state-layer-opacity=0.08] - Hover state opacity.
  * @cssprop [--rc-list-item-focus-state-layer-opacity=0.1] - Focus state opacity.

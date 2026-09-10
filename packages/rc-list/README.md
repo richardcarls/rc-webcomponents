@@ -58,5 +58,29 @@ Content truncates with an ellipsis by default. Set
 `--rc-list-item-content-white-space: normal` where multi-line content is
 intended.
 
+The shared column sizes and each item's region placement are CSS custom
+properties. Consumers can coordinate them from a container query without
+changing the row's source order, interaction, or semantics. For example,
+collapse the shared trailing track and place trailing metadata below content:
+
+```css
+.list-region {
+  container-type: inline-size;
+}
+
+@container (max-width: 24rem) {
+  .list-region rc-list {
+    --rc-list-trailing-size: 0;
+    --rc-list-trailing-gap: 0;
+    --rc-list-item-grid-template-rows: auto auto;
+    --rc-list-item-leading-grid-row: 1 / -1;
+    --rc-list-item-content-grid-row: 1;
+    --rc-list-item-trailing-grid-column: content-start / content-end;
+    --rc-list-item-trailing-grid-row: 2;
+    --rc-list-item-trailing-justify-self: start;
+  }
+}
+```
+
 Import `@rcarls/rc-list` to use the classes without registering them, or import
 `@rcarls/rc-list/define` to register `<rc-list>` and `<rc-list-item>`.

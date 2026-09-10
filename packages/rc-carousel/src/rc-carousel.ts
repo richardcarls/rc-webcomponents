@@ -82,18 +82,14 @@ const SETTLE_DEBOUNCE_MS = 120;
  *   loop, unless a consumer opts in.
  * @attr navigation - Shows previous/next buttons.
  * @attr pagination - Shows a slide-picker button group.
- * @attr variant - `hero` (default) or `multi-browse` MD3 layout strategy.
  * @attr mouse-dragging - Enables click-and-drag scrolling with a mouse.
  *   Touch/pen already get native scroll-snap physics; off by default.
- *   Resolves a default `--rc-carousel-slide-size`; set that directly
- *   instead for full control.
  *
  * @cssprop [--rc-carousel-color=CanvasText] - Carousel foreground color.
  * @cssprop [--rc-carousel-gap=8px] - Space between slides.
  * @cssprop [--rc-carousel-slide-size=calc(100% - 4rem)] - Rendered size of
- *   each slide along the scroll axis. `variant="multi-browse"` resolves a
- *   different default (`min(75%, 300px)`, several peeking slides at once);
- *   set this directly for full control either way.
+ *   each slide along the scroll axis. Set this directly or from a consumer
+ *   container query to coordinate hero and multi-browse layouts.
  * @cssprop [--rc-carousel-navigation-button-size=40px] - Previous/next
  *   button diameter.
  * @cssprop [--rc-carousel-navigation-button-background=color-mix(in srgb, CanvasText 12%, transparent)] -
@@ -149,16 +145,6 @@ export class RCCarousel extends LitElement {
   /** Shows a slide-picker button group. */
   @property({ type: Boolean, reflect: true })
   pagination = false;
-
-  /**
-   * MD3 layout strategy. `hero` shows one large slide with a small peek of
-   * the next (spotlighting one item at a time); `multi-browse` shows
-   * several peeking slides at once for scanning a larger collection. Both
-   * resolve a default `--rc-carousel-slide-size`; set that custom property
-   * directly instead for full control over slide sizing.
-   */
-  @property({ type: String, reflect: true })
-  variant: 'hero' | 'multi-browse' = 'hero';
 
   /**
    * Enables click-and-drag scrolling with a mouse — native scroll-snap

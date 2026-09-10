@@ -96,6 +96,11 @@ export type RCBottomSheetSnapDetail = {
   trigger: 'drag' | 'api';
 };
 
+export type RCBottomSheetResizeStartDetail = {
+  height: number;
+  inputType: 'pointer' | 'keyboard';
+};
+
 export type RCMenuActivateDetail = {
   item: HTMLElement;
   value: string;
@@ -691,7 +696,6 @@ export type RCCarouselRef = HTMLElement & {
   loop: boolean;
   navigation: boolean;
   pagination: boolean;
-  variant: 'hero' | 'multi-browse';
   mouseDragging: boolean;
   next(): void;
   previous(): void;
@@ -752,7 +756,6 @@ declare module 'react' {
         loop?: boolean;
         navigation?: boolean;
         pagination?: boolean;
-        variant?: 'hero' | 'multi-browse';
         'mouse-dragging'?: boolean;
         'onrc-carousel-change'?: (event: CustomEvent<RCCarouselChangeDetail>) => void;
       };
@@ -891,6 +894,9 @@ declare module 'react' {
         'snap-points'?: string;
         'swipe-dismiss'?: boolean;
         'swipe-velocity'?: number | string;
+        'onrc-bottom-sheet-resize-start'?: (
+          event: CustomEvent<RCBottomSheetResizeStartDetail>,
+        ) => void;
       };
 
       'rc-menu': React.DetailedHTMLProps<React.HTMLAttributes<RCMenuRef>, RCMenuRef> & {

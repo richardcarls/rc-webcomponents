@@ -307,6 +307,11 @@ export type RCBottomSheetSnapDetail = {
   trigger: 'drag' | 'api';
 };
 
+export type RCBottomSheetResizeStartDetail = {
+  height: number;
+  inputType: 'pointer' | 'keyboard';
+};
+
 /** Public API surface of `<rc-bottom-sheet>`. */
 export type RCBottomSheetRef = RCDialogRef & {
   snapPoints: string;
@@ -666,7 +671,6 @@ export type RCCarouselRef = HTMLElement & {
   loop: boolean;
   navigation: boolean;
   pagination: boolean;
-  variant: 'hero' | 'multi-browse';
   mouseDragging: boolean;
   next(): void;
   previous(): void;
@@ -738,7 +742,6 @@ declare module 'solid-js' {
         loop?: boolean | string;
         navigation?: boolean | string;
         pagination?: boolean | string;
-        variant?: 'hero' | 'multi-browse';
         mouseDragging?: boolean | string;
         'mouse-dragging'?: boolean | string;
         'prop:activeIndex'?: number | undefined;
@@ -929,6 +932,9 @@ declare module 'solid-js' {
         'on:rc-dialog-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
         'on:rc-dialog-request-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
         'on:rc-dialog-cancel'?: (e: CustomEvent) => void;
+        'on:rc-bottom-sheet-resize-start'?: (
+          e: CustomEvent<RCBottomSheetResizeStartDetail>,
+        ) => void;
         'on:rc-bottom-sheet-snap'?: (e: CustomEvent<RCBottomSheetSnapDetail>) => void;
       };
 

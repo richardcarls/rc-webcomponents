@@ -39,7 +39,9 @@ declare global {
  *
  * @cssprop [--rc-list-padding-inline=0] - Shared inline content padding.
  * @cssprop [--rc-list-padding-block=0] - List block padding.
+ * @cssprop [--rc-list-leading-size=minmax(0, max-content)] - Shared leading column size when any visible item has leading content.
  * @cssprop [--rc-list-leading-gap=1rem] - Gap after the leading column.
+ * @cssprop [--rc-list-trailing-size=minmax(0, max-content)] - Shared trailing column size when any visible item has trailing content.
  * @cssprop [--rc-list-trailing-gap=1rem] - Gap before the trailing column.
  * @cssprop [--rc-list-row-gap=0] - Gap between rows.
  *
