@@ -301,6 +301,30 @@ test('pagination renders one button per real slide (not clones), reflecting the 
   expect(buttons[0]?.getAttribute('aria-current')).toBe('false');
 });
 
+test('does not schedule a reactive update from firstUpdated', async () => {
+  const warn = vi.spyOn(console, 'warn');
+  const screen = render(html`
+    <rc-carousel data-testid="carousel" aria-label="Featured recipes" pagination>
+      <rc-carousel-item>One</rc-carousel-item>
+      <rc-carousel-item>Two</rc-carousel-item>
+    </rc-carousel>
+  `);
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+
+  await settle(carousel);
+
+  expect(
+    warn.mock.calls.some((args) =>
+      args.some(
+        (arg) =>
+          typeof arg === 'string' && arg.includes('scheduled an update after an update completed'),
+      ),
+    ),
+  ).toBe(false);
+
+  warn.mockRestore();
+});
+
 test('mouse-dragging is off by default, so a pointer drag on the track does not scroll it', async () => {
   const screen = render(html`
     <rc-carousel data-testid="carousel" style="inline-size: 20rem; block-size: 10rem">
@@ -388,6 +412,7 @@ test('a drag across interactive slide content suppresses the trailing click, but
 
   const track = carousel.renderRoot.querySelector<HTMLElement>('#track')!;
   const button = (await screen.getByTestId('slide-button').element()) as HTMLButtonElement;
+
   const clicked = vi.fn();
 
   button.addEventListener('click', clicked);
@@ -400,6 +425,7 @@ test('a drag across interactive slide content suppresses the trailing click, but
   firePointerEvent(track, 'pointerdown', { clientX: 300, clientY: 20 });
   firePointerEvent(track, 'pointermove', { clientX: 200, clientY: 20 });
   firePointerEvent(track, 'pointerup', { clientX: 200, clientY: 20 });
+
   button.dispatchEvent(
     new MouseEvent('click', { bubbles: true, cancelable: true, composed: true }),
   );

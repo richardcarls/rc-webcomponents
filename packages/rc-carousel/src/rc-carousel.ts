@@ -129,11 +129,9 @@ export class RCCarousel extends LitElement {
   @query('#track') private _trackEl?: HTMLDivElement;
   @query('slot:not([name])') private _slotEl?: HTMLSlotElement;
 
-  // @state so that firstUpdated's initial _syncItems() (populating this
-  // from empty) triggers the re-render that both the pagination button
-  // list and _canStep's boundary-disabled check depend on — render()'s
-  // very first pass runs before firstUpdated, with this still empty.
-  @state() private _items: RCCarouselItem[] = [];
+  // Seeded from direct children during connection so the first render can
+  // build pagination without changing reactive state from firstUpdated().
+  private _items: RCCarouselItem[] = [];
   private _cloneItems: RCCarouselItem[] = [];
   private _mounted = false;
   private _suppressSync = false;
@@ -279,6 +277,9 @@ export class RCCarousel extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
 
+    this._items = this._directItems();
+    this._setItemPositions();
+
     if (!this.hasAttribute('role')) {
       this.setAttribute('role', 'group');
     }
@@ -311,7 +312,6 @@ export class RCCarousel extends LitElement {
       }
     }
 
-    this._syncItems();
     this._scrollToIndex(this.activeIndex, true);
     this._mounted = true;
   }
@@ -496,6 +496,19 @@ export class RCCarousel extends LitElement {
     this._syncItems();
   };
 
+  private _directItems(): RCCarouselItem[] {
+    return Array.from(this.children).filter(
+      (el): el is RCCarouselItem =>
+        el.tagName === 'RC-CAROUSEL-ITEM' && !el.hasAttribute('data-clone'),
+    );
+  }
+
+  private _setItemPositions(): void {
+    this._items.forEach((item, index) => {
+      item.position = `${index + 1} of ${this._items.length}`;
+    });
+  }
+
   /**
    * Prepending/appending the loop clones below is itself a light-DOM
    * mutation on this host, which re-fires `slotchange` (asynchronously) —
@@ -520,10 +533,11 @@ export class RCCarousel extends LitElement {
     const hasClones = this._cloneItems.length > 0;
 
     this._items = nextItems;
+    this._setItemPositions();
 
-    this._items.forEach((item, index) => {
-      item.position = `${index + 1} of ${this._items.length}`;
-    });
+    if (itemsChanged && this._mounted) {
+      this.requestUpdate();
+    }
 
     if (!itemsChanged && wantsClones === hasClones) {
       return;
