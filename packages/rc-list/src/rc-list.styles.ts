@@ -18,12 +18,12 @@ export const listStyles = css`
 
   :host([has-leading]) {
     --_rc-list-leading-gap: var(--rc-list-leading-gap, 1rem);
-    --_rc-list-leading-size: minmax(0, max-content);
+    --_rc-list-leading-size: var(--rc-list-leading-size, minmax(0, max-content));
   }
 
   :host([has-trailing]) {
     --_rc-list-trailing-gap: var(--rc-list-trailing-gap, 1rem);
-    --_rc-list-trailing-size: minmax(0, max-content);
+    --_rc-list-trailing-size: var(--rc-list-trailing-size, minmax(0, max-content));
   }
 
   [part='list'] {

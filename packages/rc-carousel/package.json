@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.1.0",
-  "description": "WAI-ARIA APG carousel pattern built on native CSS scroll-snap, with MD3 hero/multi-browse variants.",
+  "description": "WAI-ARIA APG carousel pattern built on native CSS scroll-snap and consumer-controlled slide sizing.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",

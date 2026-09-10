@@ -37,10 +37,6 @@ export const carouselStyles = css`
     display: none;
   }
 
-  :host([variant='multi-browse']) #track {
-    grid-auto-columns: var(--rc-carousel-slide-size, min(75%, 300px));
-  }
-
   :host([mouse-dragging]) #track {
     cursor: grab;
   }

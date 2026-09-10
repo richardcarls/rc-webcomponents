@@ -47,6 +47,13 @@ short and tell the tool to read `AGENTS.md` before project work.
   defaults, CSS system colors, and forced-colors-safe state indicators.
 - Runtime measurement may write inline geometry styles, such as splitter sizes.
   Decorative styles belong in static CSS, CSS custom properties, or CSS parts.
+- Expose CSS custom properties for responsive changes that only alter geometry,
+  tracks, or placement while preserving regions, source order, semantics, and
+  interaction. Keep modes declarative when they change ARIA, keyboard behavior,
+  pointer math, focus, popup placement, rendered controls, or light-DOM
+  re-slotting. Do not read computed custom properties in component JavaScript
+  as hidden behavioral inputs; consumers should write the public property or
+  attribute from their own responsive state.
 - Use Pointer Events for pointer interaction. Avoid mouse-only logic and
   hardcoded responsive breakpoints inside component behavior.
 - Shared interaction behavior belongs in `rc-common` as Lit directives or

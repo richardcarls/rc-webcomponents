@@ -666,7 +666,6 @@ export type RCCarouselRef = HTMLElement & {
   loop: boolean;
   navigation: boolean;
   pagination: boolean;
-  variant: 'hero' | 'multi-browse';
   mouseDragging: boolean;
   next(): void;
   previous(): void;
@@ -738,7 +737,6 @@ declare module 'solid-js' {
         loop?: boolean | string;
         navigation?: boolean | string;
         pagination?: boolean | string;
-        variant?: 'hero' | 'multi-browse';
         mouseDragging?: boolean | string;
         'mouse-dragging'?: boolean | string;
         'prop:activeIndex'?: number | undefined;

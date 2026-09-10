@@ -20,10 +20,10 @@ Give the host a definite `inline-size`/`block-size` (`navigation` and
 uncontrolled property convention; settling reports the new index via
 `rc-carousel-change` (`detail: { index, trigger }`). `loop` wraps
 seamlessly past the first/last slide via cloned lead/trail slides, rather
-than a discontinuous index jump. `variant="hero"` (default) shows one slide
-at a time; `variant="multi-browse"` peeks several. `mouse-dragging` adds
-desktop click-and-drag scrolling, with drag-vs-click disambiguation so
-interactive slide content stays clickable.
+than a discontinuous index jump. Set `--rc-carousel-slide-size` directly or
+from a consumer container query to coordinate hero, multi-browse, and other
+layouts. `mouse-dragging` adds desktop click-and-drag scrolling, with
+drag-vs-click disambiguation so interactive slide content stays clickable.
 
 Navigation and pagination buttons use `aria-disabled`, never native
 `disabled`, so a boundary stays Tab-reachable. Off-screen and peeking

@@ -20,7 +20,9 @@ export const listItemStyles = css`
     box-sizing: border-box;
     grid-column: 1 / -1;
     grid-template-columns: subgrid;
+    grid-template-rows: var(--rc-list-item-grid-template-rows, auto);
     align-items: center;
+    row-gap: var(--rc-list-item-row-gap, 0);
     min-block-size: var(--rc-list-item-min-block-size, 3rem);
     min-inline-size: 0;
     padding-block: var(--rc-list-item-padding-block, 0.5rem);
@@ -56,19 +58,22 @@ export const listItemStyles = css`
   }
 
   [part='leading'] {
-    grid-column: leading-start / leading-end;
+    grid-column: var(--rc-list-item-leading-grid-column, leading-start / leading-end);
+    grid-row: var(--rc-list-item-leading-grid-row, auto);
   }
 
   [part='content'] {
-    grid-column: content-start / content-end;
+    grid-column: var(--rc-list-item-content-grid-column, content-start / content-end);
+    grid-row: var(--rc-list-item-content-grid-row, auto);
     overflow: hidden;
     text-overflow: var(--rc-list-item-content-text-overflow, ellipsis);
     white-space: var(--rc-list-item-content-white-space, nowrap);
   }
 
   [part='trailing'] {
-    grid-column: trailing-start / trailing-end;
-    justify-self: end;
+    grid-column: var(--rc-list-item-trailing-grid-column, trailing-start / trailing-end);
+    grid-row: var(--rc-list-item-trailing-grid-row, auto);
+    justify-self: var(--rc-list-item-trailing-justify-self, end);
   }
 
   [part='leading'][hidden],

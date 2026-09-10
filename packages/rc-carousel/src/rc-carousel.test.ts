@@ -504,9 +504,13 @@ test('aria-busy reflects an in-flight settle and clears once it commits', async 
   );
 });
 
-test('loop clones the lead/trail slides under the multi-browse variant too', async () => {
+test('consumer slide sizing composes with loop clones', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel" variant="multi-browse" loop>
+    <rc-carousel
+      data-testid="carousel"
+      loop
+      style="inline-size: 20rem; block-size: 10rem; --rc-carousel-slide-size: min(75%, 300px)"
+    >
       <rc-carousel-item>One</rc-carousel-item>
       <rc-carousel-item>Two</rc-carousel-item>
       <rc-carousel-item>Three</rc-carousel-item>
@@ -516,7 +520,48 @@ test('loop clones the lead/trail slides under the multi-browse variant too', asy
 
   await settle(carousel);
 
+  const track = carousel.renderRoot.querySelector<HTMLElement>('#track');
+
+  if (!track) {
+    throw new Error('Expected the carousel track to render.');
+  }
+
   expect(carousel.querySelectorAll('[data-clone]')).toHaveLength(2);
+  expect(getComputedStyle(track).gridAutoColumns).toBe('min(75%, 300px)');
+});
+
+test('inherits slide sizing from a consumer container query', async () => {
+  const screen = render(html`
+    <style>
+      .carousel-region {
+        container-type: inline-size;
+        inline-size: 20rem;
+      }
+
+      @container (max-width: 24rem) {
+        .carousel-region rc-carousel {
+          --rc-carousel-slide-size: 100%;
+        }
+      }
+    </style>
+    <div class="carousel-region">
+      <rc-carousel data-testid="carousel" style="inline-size: 20rem; block-size: 10rem">
+        <rc-carousel-item>One</rc-carousel-item>
+        <rc-carousel-item>Two</rc-carousel-item>
+      </rc-carousel>
+    </div>
+  `);
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+
+  await settle(carousel);
+
+  const track = carousel.renderRoot.querySelector<HTMLElement>('#track');
+
+  if (!track) {
+    throw new Error('Expected the carousel track to render.');
+  }
+
+  expect(getComputedStyle(track).gridAutoColumns).toBe('100%');
 });
 
 test('has no unexpected overflow at rest or with navigation/pagination interactive', async () => {

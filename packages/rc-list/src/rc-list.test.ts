@@ -72,6 +72,55 @@ test('collapses globally unused optional columns', async () => {
   expect(item.getAttribute('role')).toBe('listitem');
 });
 
+test('supports consumer container queries that stack trailing content', async () => {
+  const screen = render(html`
+    <style>
+      .list-container {
+        container-type: inline-size;
+        inline-size: 18rem;
+      }
+
+      @container (max-width: 20rem) {
+        rc-list {
+          --rc-list-trailing-size: 0;
+          --rc-list-trailing-gap: 0;
+          --rc-list-item-grid-template-rows: auto auto;
+          --rc-list-item-row-gap: 0.25rem;
+          --rc-list-item-leading-grid-row: 1 / -1;
+          --rc-list-item-content-grid-row: 1;
+          --rc-list-item-trailing-grid-column: content-start / content-end;
+          --rc-list-item-trailing-grid-row: 2;
+          --rc-list-item-trailing-justify-self: start;
+        }
+      }
+    </style>
+    <div class="list-container">
+      <rc-list data-testid="list">
+        <rc-list-item data-testid="item">
+          <span slot="leading">A</span>
+          Alpha
+          <span slot="trailing">Supporting text</span>
+        </rc-list-item>
+      </rc-list>
+    </div>
+  `);
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const item = (await screen.getByTestId('item').element()) as RCListItem;
+
+  await settle(list);
+
+  const content = item.shadowRoot?.querySelector<HTMLElement>('[part="content"]');
+  const trailing = item.shadowRoot?.querySelector<HTMLElement>('[part="trailing"]');
+
+  if (!content || !trailing) {
+    throw new Error('Expected the content and trailing list-item regions to render.');
+  }
+
+  expect(trailing.getBoundingClientRect().top).toBeGreaterThan(content.getBoundingClientRect().top);
+  expect(trailing.getBoundingClientRect().left).toBeCloseTo(content.getBoundingClientRect().left);
+  expect(getComputedStyle(trailing).justifySelf).toBe('start');
+});
+
 test('preserves author-provided host roles', async () => {
   const screen = render(html`
     <rc-list data-testid="list" role="group">

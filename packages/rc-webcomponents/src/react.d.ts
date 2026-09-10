@@ -691,7 +691,6 @@ export type RCCarouselRef = HTMLElement & {
   loop: boolean;
   navigation: boolean;
   pagination: boolean;
-  variant: 'hero' | 'multi-browse';
   mouseDragging: boolean;
   next(): void;
   previous(): void;
@@ -752,7 +751,6 @@ declare module 'react' {
         loop?: boolean;
         navigation?: boolean;
         pagination?: boolean;
-        variant?: 'hero' | 'multi-browse';
         'mouse-dragging'?: boolean;
         'onrc-carousel-change'?: (event: CustomEvent<RCCarouselChangeDetail>) => void;
       };
