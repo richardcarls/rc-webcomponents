@@ -279,7 +279,10 @@ export type RCButtonRef = HTMLElement & {
 };
 
 /** Public API surface of `<rc-card>`. */
+export type RCCardOrientation = 'vertical' | 'horizontal';
+
 export type RCCardRef = HTMLElement & {
+  orientation: RCCardOrientation;
   selected: boolean;
   disabled: boolean;
   interactive: boolean;
@@ -731,6 +734,7 @@ declare module 'react' {
       };
 
       'rc-card': React.DetailedHTMLProps<React.HTMLAttributes<RCCardRef>, RCCardRef> & {
+        orientation?: RCCardOrientation;
         selected?: boolean;
         disabled?: boolean;
         interactive?: boolean;

@@ -12,6 +12,16 @@ async function flushCard(host: RCCard): Promise<void> {
   await host.updateComplete;
 }
 
+function getPart(host: RCCard, partName: string): HTMLElement {
+  const $part = host.shadowRoot?.querySelector<HTMLElement>(`[part="${partName}"]`);
+
+  if (!$part) {
+    throw new Error(`Missing rc-card part: ${partName}`);
+  }
+
+  return $part;
+}
+
 test('reflects slot presence attributes', async () => {
   const screen = render(html`
     <rc-card data-testid="host">
@@ -76,13 +86,110 @@ test('applies default padding to direct body content', async () => {
   expect(getComputedStyle(body).paddingInlineStart).toBe('16px');
 });
 
-test('supports shelf-style subgrid coordination through host layout tokens', async () => {
+test('lays out every structural region in horizontal orientation', async () => {
   const screen = render(html`
-    <div style="display: grid; grid-template-rows: auto auto 1fr;">
+    <rc-card data-testid="host" orientation="horizontal" style="inline-size: 400px;">
+      <div slot="media">Media</div>
+      <div slot="header">Header</div>
+      <h2 slot="title">Recipe</h2>
+      <p slot="subtitle">Dinner</p>
+      <p>Body</p>
+      <button slot="actions" type="button">Save</button>
+      <small slot="footer">Updated today</small>
+    </rc-card>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCCard;
+
+  await flushCard(host);
+
+  const [mediaWidth, contentWidth] = getComputedStyle(host)
+    .gridTemplateColumns.split(' ')
+    .map(Number.parseFloat);
+
+  expect(host.orientation).toBe('horizontal');
+  expect(mediaWidth).toBeCloseTo(160, 0);
+  expect(contentWidth).toBeCloseTo(240, 0);
+
+  const expectedPlacements = {
+    media: ['1', '-1', '1'],
+    header: ['1', 'auto', '2'],
+    title: ['2', 'auto', '2'],
+    subtitle: ['3', 'auto', '2'],
+    body: ['4', 'auto', '2'],
+    actions: ['5', 'auto', '2'],
+    footer: ['6', 'auto', '2'],
+  } as const;
+
+  for (const [partName, [rowStart, rowEnd, columnStart]] of Object.entries(expectedPlacements)) {
+    const styles = getComputedStyle(getPart(host, partName));
+
+    expect(styles.gridRowStart, partName).toBe(rowStart);
+    expect(styles.gridRowEnd, partName).toBe(rowEnd);
+    expect(styles.gridColumnStart, partName).toBe(columnStart);
+  }
+});
+
+test('collapses a horizontal card without media to one content column', async () => {
+  const screen = render(html`
+    <rc-card data-testid="host" orientation="horizontal" style="inline-size: 400px;">
+      <h2 slot="title">Recipe</h2>
+      <p>Body</p>
+    </rc-card>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCCard;
+
+  await flushCard(host);
+
+  expect(getComputedStyle(host).gridTemplateColumns).toBe('400px');
+
+  expect(getComputedStyle(getPart(host, 'title')).gridColumnStart).toBe('1');
+});
+
+test('lets public grid tokens override horizontal defaults', async () => {
+  const screen = render(html`
+    <rc-card
+      data-testid="host"
+      orientation="horizontal"
+      style="
+        inline-size: 400px;
+        --rc-card-grid-template-columns: 1fr 1fr;
+        --rc-card-media-grid-column: 2;
+        --rc-card-title-grid-column: 1;
+      "
+    >
+      <div slot="media">Media</div>
+      <h2 slot="title">Recipe</h2>
+    </rc-card>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCCard;
+
+  await flushCard(host);
+
+  expect(getComputedStyle(host).gridTemplateColumns).toBe('200px 200px');
+
+  expect(getComputedStyle(getPart(host, 'media')).gridColumnStart).toBe('2');
+
+  expect(getComputedStyle(getPart(host, 'title')).gridColumnStart).toBe('1');
+});
+
+test('supports shelf-style row and column subgrid coordination through layout tokens', async () => {
+  const screen = render(html`
+    <div style="display: grid; grid-template: auto auto 1fr / 8rem minmax(0, 1fr);">
       <rc-card
         data-testid="host"
-        style="grid-row: 1 / -1; grid-template-rows: subgrid; --rc-card-grid-template-rows: subgrid;"
+        style="
+          grid-area: 1 / 1 / -1 / -1;
+          --rc-card-grid-template-rows: subgrid;
+          --rc-card-grid-template-columns: subgrid;
+          --rc-card-media-grid-row: 1 / -1;
+          --rc-card-media-grid-column: 1;
+          --rc-card-title-grid-row: 1;
+          --rc-card-title-grid-column: 2;
+          --rc-card-body-grid-row: 2 / -1;
+          --rc-card-body-grid-column: 2;
+        "
       >
+        <div slot="media">Media</div>
         <h2 slot="title">Recipe</h2>
         <p>Body</p>
       </rc-card>
@@ -93,6 +200,7 @@ test('supports shelf-style subgrid coordination through host layout tokens', asy
   await flushCard(host);
 
   expect(getComputedStyle(host).gridTemplateRows).not.toBe('');
+  expect(getComputedStyle(host).gridTemplateColumns).not.toBe('');
   expect(getComputedStyle(host).display).toBe('grid');
 });
 

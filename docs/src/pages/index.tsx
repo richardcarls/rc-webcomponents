@@ -9,7 +9,7 @@ const packages = [
     'Progressive-enhancement wrapper for native buttons or anchors',
     '/components/rc-button',
   ],
-  ['rc-card', 'Design-system-neutral structural card shell', '/components/rc-card'],
+  ['rc-card', 'Vertical and horizontal structural card shell', '/components/rc-card'],
   [
     'rc-scroller',
     'Native scroll region with optional content and fullbleed layout',

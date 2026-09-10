@@ -38,7 +38,10 @@ export type RCButtonRef = HTMLElement & {
 };
 
 /** Public API surface of `<rc-card>`. */
+export type RCCardOrientation = 'vertical' | 'horizontal';
+
 export type RCCardRef = HTMLElement & {
+  orientation: RCCardOrientation;
   selected: boolean;
   disabled: boolean;
   interactive: boolean;
@@ -715,6 +718,7 @@ declare module 'solid-js' {
       };
 
       'rc-card': JSX.HTMLAttributes<RCCardRef> & {
+        orientation?: RCCardOrientation;
         selected?: boolean | string;
         disabled?: boolean | string;
         interactive?: boolean | string;

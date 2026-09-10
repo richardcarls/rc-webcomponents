@@ -1,6 +1,6 @@
 # @rcarls/rc-card
 
-Design-system-neutral card shell with structural slots and parts.
+Design-system-neutral vertical and horizontal card shell with structural slots and parts.
 
 ```html
 <rc-card interactive action-target="recipe-link">
@@ -12,3 +12,7 @@ Design-system-neutral card shell with structural slots and parts.
 
 The host owns structure and layout, including one `rem` of default body padding.
 Authors provide native anchors or buttons for semantics and keyboard access.
+
+Set `orientation="horizontal"` for a two-column card with a two-fifths media
+column. Every structural row and column remains configurable through the
+component's public grid custom properties.

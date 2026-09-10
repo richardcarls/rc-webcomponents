@@ -5,6 +5,8 @@ import { ClickDelegateController } from '@rcarls/rc-common';
 
 import cardStyles from './rc-card.styles.js';
 
+export type RCCardOrientation = 'vertical' | 'horizontal';
+
 declare global {
   interface HTMLElementTagNameMap {
     'rc-card': RCCard;
@@ -41,6 +43,7 @@ type SlotName = (typeof SLOT_NAMES)[number];
  * @attr disabled - Declarative disabled state. Disables action-target click forwarding.
  * @attr interactive - Visual affordance for cards with an author-provided action target.
  * @attr action-target - ID of a same-root anchor or button that receives forwarded surface clicks.
+ * @attr orientation - Structural layout direction: `vertical` or `horizontal`.
  * @attr [has-media] - Present when the `media` slot has assigned content.
  * @attr [has-header] - Present when the `header` slot has assigned content.
  * @attr [has-title] - Present when the `title` slot has assigned content.
@@ -50,6 +53,8 @@ type SlotName = (typeof SLOT_NAMES)[number];
  *
  * @cssprop [--rc-card-grid-template-rows=auto auto auto 1fr auto auto] - Grid template rows for
  *   the host's structural regions.
+ * @cssprop [--rc-card-grid-template-columns=minmax(0, 1fr)] - Grid template columns for the
+ *   host's structural regions. Horizontal cards default to `minmax(0, 2fr) minmax(0, 3fr)`.
  * @cssprop [--rc-card-border=0] - Card border.
  * @cssprop [--rc-card-radius=0] - Card border radius.
  * @cssprop [--rc-card-bg=Canvas] - Card background.
@@ -70,33 +75,44 @@ type SlotName = (typeof SLOT_NAMES)[number];
  *   don't set their own `*-padding-inline` property. Defers to each region's own default (0 for
  *   header/title/subtitle/actions/footer, 1rem for body) when unset.
  * @cssprop [--rc-card-media-grid-row=auto] - Grid row for the media region.
+ * @cssprop [--rc-card-media-grid-column=auto] - Grid column for the media region.
  * @cssprop [--rc-card-header-grid-row=auto] - Grid row for the header region.
+ * @cssprop [--rc-card-header-grid-column=auto] - Grid column for the header region.
  * @cssprop [--rc-card-header-padding-block=var(--rc-card-padding-block, 0) 0] - Header block-axis padding.
  * @cssprop [--rc-card-header-padding-inline=var(--rc-card-padding-inline, 0)] - Header inline-axis padding.
  * @cssprop [--rc-card-title-grid-row=auto] - Grid row for the title region.
+ * @cssprop [--rc-card-title-grid-column=auto] - Grid column for the title region.
  * @cssprop [--rc-card-title-padding-block=var(--rc-card-padding-block, 0) 0] - Title block-axis padding.
  * @cssprop [--rc-card-title-padding-inline=var(--rc-card-padding-inline, 0)] - Title inline-axis padding.
  * @cssprop [--rc-card-title-color=inherit] - Title text color.
  * @cssprop [--rc-card-title-font=inherit] - Title font shorthand.
  * @cssprop [--rc-card-subtitle-grid-row=auto] - Grid row for the subtitle region.
+ * @cssprop [--rc-card-subtitle-grid-column=auto] - Grid column for the subtitle region.
  * @cssprop [--rc-card-subtitle-padding-block=0] - Subtitle block-axis padding.
  * @cssprop [--rc-card-subtitle-padding-inline=var(--rc-card-padding-inline, 0)] - Subtitle inline-axis padding.
  * @cssprop [--rc-card-subtitle-color=inherit] - Subtitle text color.
  * @cssprop [--rc-card-subtitle-font=inherit] - Subtitle font shorthand.
  * @cssprop [--rc-card-body-grid-row=auto] - Grid row for the body region.
+ * @cssprop [--rc-card-body-grid-column=auto] - Grid column for the body region.
  * @cssprop [--rc-card-body-padding-block=var(--rc-card-padding-block, 1rem)] - Body block-axis padding.
  * @cssprop [--rc-card-body-padding-inline=var(--rc-card-padding-inline, 1rem)] - Body inline-axis padding.
  * @cssprop [--rc-card-actions-grid-row=auto] - Grid row for the actions region.
+ * @cssprop [--rc-card-actions-grid-column=auto] - Grid column for the actions region.
  * @cssprop [--rc-card-actions-justify=flex-end] - Justify-content for the actions row.
  * @cssprop [--rc-card-actions-gap=0] - Gap between action items.
  * @cssprop [--rc-card-actions-padding-block=0 var(--rc-card-padding-block, 0)] - Actions block-axis padding.
  * @cssprop [--rc-card-actions-padding-inline=var(--rc-card-padding-inline, 0)] - Actions inline-axis padding.
  * @cssprop [--rc-card-footer-grid-row=auto] - Grid row for the footer region.
+ * @cssprop [--rc-card-footer-grid-column=auto] - Grid column for the footer region.
  * @cssprop [--rc-card-footer-padding-block=0 var(--rc-card-padding-block, 0)] - Footer block-axis padding.
  * @cssprop [--rc-card-footer-padding-inline=var(--rc-card-padding-inline, 0)] - Footer inline-axis padding.
  */
 export class RCCard extends LitElement {
   static override styles = cardStyles;
+
+  /** Structural layout direction. */
+  @property({ reflect: true })
+  orientation: RCCardOrientation = 'vertical';
 
   /** Declarative selected state for theme styling. */
   @property({ type: Boolean, reflect: true })

@@ -318,6 +318,15 @@ const CARD_DEMO_CSS = `
 .card-demo-status {
   margin-block-end: 0;
 }
+
+.card-demo-horizontal {
+  max-inline-size: 32rem;
+  margin-block-start: 1rem;
+}
+
+.card-demo-horizontal [slot='media'] {
+  block-size: 100%;
+}
 `;
 
 const SCROLLER_DEMO_CSS = `
@@ -539,6 +548,13 @@ export function CardDemo() {
           <p>A minimal card can omit media and actions while sharing the same parent grid.</p>
         </rc-card>
       </div>
+      <rc-card className="card-demo-horizontal" orientation="horizontal">
+        <div slot="media" className="card-demo-media" aria-hidden="true">
+          <span className="material-symbols-outlined">restaurant</span>
+        </div>
+        <h3 slot="title">Horizontal card</h3>
+        <p>Media spans a two-fifths leading column while content uses the remaining space.</p>
+      </rc-card>
       <p className="card-demo-status" aria-live="polite">
         {message}
       </p>
