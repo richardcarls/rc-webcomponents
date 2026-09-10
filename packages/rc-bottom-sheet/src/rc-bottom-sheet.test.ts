@@ -106,6 +106,107 @@ test('absolute non-modal sheets can dock to a positioned parent', async () => {
   $host.close();
 });
 
+test('snapTo keeps a fixed sheet docked inside a layout-containing ancestor', async () => {
+  const resizeStartSpy = vi.fn();
+  const screen = render(html`
+    <div data-testid="container" style="position: fixed; inset: 6rem 1rem 2rem; contain: layout;">
+      <rc-bottom-sheet
+        data-testid="host"
+        snap-points="132px 320px"
+        @rc-bottom-sheet-resize-start=${resizeStartSpy}
+      >
+        <dialog
+          aria-label="Nutrition"
+          style="inset-block-end: 0; margin: 0; --rc-bottom-sheet-snap-duration: 50ms;"
+        >
+          Nutrition
+          <button type="button" data-rc-bottom-sheet-handle>Resize sheet</button>
+        </dialog>
+      </rc-bottom-sheet>
+    </div>
+  `);
+  const $container = await screen.getByTestId('container').element();
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  $host.snapTo(0, 'instant');
+
+  const $dialog = $host.querySelector('dialog');
+  const $handle = $host.querySelector('[data-rc-bottom-sheet-handle]');
+
+  expect($dialog).not.toBeNull();
+  expect($handle).not.toBeNull();
+
+  if (!$dialog || !$handle) {
+    throw new Error('Expected the nutrition dialog and resize handle to render.');
+  }
+
+  expect(Math.round($dialog.getBoundingClientRect().height)).toBe(132);
+
+  expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(
+    Math.round($container.getBoundingClientRect().bottom),
+  );
+
+  const peek = $dialog.getBoundingClientRect();
+
+  firePointerEvent($handle, 'pointerdown', { clientY: peek.top });
+
+  expect(resizeStartSpy).toHaveBeenCalledTimes(1);
+
+  expect(resizeStartSpy.mock.calls[0][0].detail).toEqual({
+    height: 132,
+    inputType: 'pointer',
+  });
+
+  expect(Math.round($dialog.getBoundingClientRect().top)).toBe(Math.round(peek.top));
+
+  expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(peek.bottom));
+
+  firePointerEvent($handle, 'pointermove', { clientY: peek.top + 1 });
+
+  expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(peek.bottom));
+
+  firePointerEvent($handle, 'pointerup', { clientY: peek.top + 1 });
+  $host.snapTo(1);
+
+  await vi.waitFor(() => {
+    expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320);
+  });
+
+  expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320);
+
+  expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(
+    Math.round($container.getBoundingClientRect().bottom),
+  );
+
+  const expanded = $dialog.getBoundingClientRect();
+
+  firePointerEvent($handle, 'pointerdown', { clientY: expanded.top });
+
+  expect(Math.round($dialog.getBoundingClientRect().top)).toBe(Math.round(expanded.top));
+
+  expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(expanded.bottom));
+
+  firePointerEvent($handle, 'pointermove', { clientY: expanded.top + 1 });
+
+  expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(expanded.bottom));
+
+  firePointerEvent($handle, 'pointerup', { clientY: expanded.top + 1 });
+  $host.snapTo(0);
+
+  await vi.waitFor(() => {
+    expect(Math.round($dialog.getBoundingClientRect().height)).toBe(132);
+  });
+
+  expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(
+    Math.round($container.getBoundingClientRect().bottom),
+  );
+
+  $host.close();
+});
+
 test('gives an un-themed drag handle a large target around the centered visual indicator', async () => {
   const screen = render(html`
     <rc-bottom-sheet data-testid="host">
@@ -368,8 +469,14 @@ test('a fast upward swipe jumps to the topmost snap point regardless of release 
 });
 
 test('a fast downward swipe collapses to the lowest snap point regardless of release proximity', async () => {
+  const snapSpy = vi.fn();
   const screen = render(html`
-    <rc-bottom-sheet data-testid="host" snap-points="200px 320px 460px" .swipeDismiss=${false}>
+    <rc-bottom-sheet
+      data-testid="host"
+      snap-points="200px 320px 460px"
+      .swipeDismiss=${false}
+      @rc-bottom-sheet-snap=${snapSpy}
+    >
       <dialog
         aria-labelledby="sheet-title"
         style="position: fixed; left: 100px; top: 100px; width: 360px; height: 420px; margin: 0;"
@@ -396,7 +503,11 @@ test('a fast downward swipe collapses to the lowest snap point regardless of rel
   firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top + 40 });
   firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top + 40 });
 
+  expect(snapSpy).not.toHaveBeenCalled();
+
   await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(200));
+  await vi.waitFor(() => expect(snapSpy).toHaveBeenCalledTimes(1));
+  expect(snapSpy.mock.calls[0][0].detail).toEqual({ index: 0, height: 200, trigger: 'drag' });
 
   $host.close();
 });
@@ -432,9 +543,49 @@ test('snapTo() settles to a specific index and fires rc-bottom-sheet-snap with a
   expect(snapSpy.mock.calls[0][0].detail).toEqual({ index: 2, height: 460, trigger: 'api' });
 
   $host.snapTo(0);
+
+  // Animated snaps report settled state, not the target selected at the
+  // beginning of the transition.
+  expect(snapSpy).toHaveBeenCalledTimes(1);
+
   await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(200));
-  expect(snapSpy).toHaveBeenCalledTimes(2);
+  await vi.waitFor(() => expect(snapSpy).toHaveBeenCalledTimes(2));
   expect(snapSpy.mock.calls[1][0].detail).toEqual({ index: 0, height: 200, trigger: 'api' });
+
+  $host.close();
+});
+
+test('an interrupted snap animation does not report a stale settled target', async () => {
+  const snapSpy = vi.fn();
+  const screen = render(html`
+    <rc-bottom-sheet
+      data-testid="host"
+      snap-points="200px 320px 460px"
+      @rc-bottom-sheet-snap=${snapSpy}
+    >
+      <dialog aria-label="Filter recipes" style="height: 460px">
+        <button>Done</button>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+  const animateSpy = vi.spyOn($dialog, 'animate');
+
+  $host.snapTo(0);
+  $host.snapTo(1);
+
+  expect(animateSpy).toHaveBeenCalledTimes(2);
+  expect(snapSpy).not.toHaveBeenCalled();
+
+  animateSpy.mock.results[1].value.finish();
+
+  await vi.waitFor(() => expect(snapSpy).toHaveBeenCalledTimes(1));
+  expect(snapSpy.mock.calls[0][0].detail).toEqual({ index: 1, height: 320, trigger: 'api' });
 
   $host.close();
 });
@@ -471,7 +622,10 @@ test('window resize re-derives a pinned snap from the current CSS-driven positio
   const snapSpy = vi.fn();
   const screen = render(html`
     <rc-bottom-sheet data-testid="host" snap-points="132px 400px" @rc-bottom-sheet-snap=${snapSpy}>
-      <dialog aria-label="Nutrition" style="position: fixed; inset-block-end: 0px; left: 0; right: 0; margin: 0;">
+      <dialog
+        aria-label="Nutrition"
+        style="position: fixed; inset-block-end: 0px; left: 0; right: 0; margin: 0;"
+      >
         <button>Done</button>
       </dialog>
     </rc-bottom-sheet>

@@ -307,6 +307,11 @@ export type RCBottomSheetSnapDetail = {
   trigger: 'drag' | 'api';
 };
 
+export type RCBottomSheetResizeStartDetail = {
+  height: number;
+  inputType: 'pointer' | 'keyboard';
+};
+
 /** Public API surface of `<rc-bottom-sheet>`. */
 export type RCBottomSheetRef = RCDialogRef & {
   snapPoints: string;
@@ -927,6 +932,9 @@ declare module 'solid-js' {
         'on:rc-dialog-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
         'on:rc-dialog-request-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
         'on:rc-dialog-cancel'?: (e: CustomEvent) => void;
+        'on:rc-bottom-sheet-resize-start'?: (
+          e: CustomEvent<RCBottomSheetResizeStartDetail>,
+        ) => void;
         'on:rc-bottom-sheet-snap'?: (e: CustomEvent<RCBottomSheetSnapDetail>) => void;
       };
 

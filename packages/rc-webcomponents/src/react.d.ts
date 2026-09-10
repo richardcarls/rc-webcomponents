@@ -96,6 +96,11 @@ export type RCBottomSheetSnapDetail = {
   trigger: 'drag' | 'api';
 };
 
+export type RCBottomSheetResizeStartDetail = {
+  height: number;
+  inputType: 'pointer' | 'keyboard';
+};
+
 export type RCMenuActivateDetail = {
   item: HTMLElement;
   value: string;
@@ -889,6 +894,9 @@ declare module 'react' {
         'snap-points'?: string;
         'swipe-dismiss'?: boolean;
         'swipe-velocity'?: number | string;
+        'onrc-bottom-sheet-resize-start'?: (
+          event: CustomEvent<RCBottomSheetResizeStartDetail>,
+        ) => void;
       };
 
       'rc-menu': React.DetailedHTMLProps<React.HTMLAttributes<RCMenuRef>, RCMenuRef> & {

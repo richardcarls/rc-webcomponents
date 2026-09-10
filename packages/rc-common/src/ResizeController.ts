@@ -75,6 +75,15 @@ export interface ResizeOptions {
  */
 export function pinElementBox(target: HTMLElement): DOMRect {
   const rect = target.getBoundingClientRect();
+  const offsetParent = target.offsetParent as HTMLElement | null;
+  const localLeft = offsetParent
+    ? rect.left - offsetParent.getBoundingClientRect().left
+      - offsetParent.clientLeft + offsetParent.scrollLeft
+    : rect.left;
+  const localTop = offsetParent
+    ? rect.top - offsetParent.getBoundingClientRect().top
+      - offsetParent.clientTop + offsetParent.scrollTop
+    : rect.top;
 
   if (getComputedStyle(target).position === 'static') {
     target.style.position = 'fixed';
@@ -84,8 +93,8 @@ export function pinElementBox(target: HTMLElement): DOMRect {
   target.style.inset = 'auto';
   target.style.margin = '0';
   target.style.boxSizing = 'border-box';
-  target.style.left = `${rect.left}px`;
-  target.style.top = `${rect.top}px`;
+  target.style.left = `${localLeft}px`;
+  target.style.top = `${localTop}px`;
   target.style.width = `${rect.width}px`;
   target.style.height = `${rect.height}px`;
 
@@ -586,8 +595,12 @@ export class ResizeController implements ReactiveController {
 
     this._startW = rect.width;
     this._startH = rect.height;
-    this._startLeft = rect.left;
-    this._startTop = rect.top;
+    // pinElementBox writes coordinates in the target's actual containing
+    // block. Keep subsequent pointer deltas in that same coordinate space;
+    // DOMRect left/top are viewport-relative and would reintroduce the
+    // ancestor offset on the first move.
+    this._startLeft = Number.parseFloat(target.style.left);
+    this._startTop = Number.parseFloat(target.style.top);
     this._lastDeltaX = 0;
     this._lastDeltaY = 0;
     this._resizing = edge;
