@@ -4,8 +4,6 @@
 '@rcarls/rc-webcomponents': minor
 ---
 
-<!-- markdownlint-disable MD041 -->
-
 Add an APG carousel built on native CSS scroll snap, with optional navigation,
 pagination, mouse dragging, looping, and consumer-controlled slide sizing.
 Preserve controlled active-index behavior after rejected swipes, keep visual

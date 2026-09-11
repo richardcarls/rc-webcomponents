@@ -3,8 +3,6 @@
 '@rcarls/rc-list': patch
 ---
 
-<!-- markdownlint-disable MD041 -->
-
 Warn in development when `rc-card`/`rc-list-item` has `interactive` set but
 no way to resolve a click target: no `action-target`, and for
 `rc-list-item`, no native child checkbox/radio either. Surface clicks

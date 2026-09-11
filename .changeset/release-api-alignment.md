@@ -11,8 +11,6 @@
 '@rcarls/rc-webcomponents': patch
 ---
 
-<!-- markdownlint-disable MD041 -->
-
 Align component metadata, aggregate framework typings, development-time native-child
 validation, controlled menu state, package declarations, and public documentation before the
 next release.

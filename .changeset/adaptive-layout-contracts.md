@@ -4,8 +4,6 @@
 '@rcarls/rc-webcomponents': minor
 ---
 
-<!-- markdownlint-disable MD041 -->
-
 Add coordinated list and list-item layout tokens so container queries can
 stack unchanged content regions while preserving shared subgrid alignment.
 

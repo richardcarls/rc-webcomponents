@@ -3,8 +3,6 @@
 '@rcarls/rc-common': patch
 ---
 
-<!-- markdownlint-disable MD041 -->
-
 Keep resize pinning, drag origins, and snapped bottom sheets correctly
 positioned when a layout-containing ancestor establishes a non-viewport
 containing block. Report animated snap changes only after the sheet settles so
