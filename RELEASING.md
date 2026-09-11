@@ -79,8 +79,10 @@ Inspect the diff immediately after `version:packages`. Every public package must
 stable version, internal source ranges must remain `workspace:*`, and all pending intent files
 must be consumed. Stop if Changesets computes an unexpected version.
 
-The publishing dry run creates and inspects every package tarball. It must report the dependency
-order and show no remaining `workspace:` range; it never reads or writes the npm registry.
+The publishing dry run creates and inspects every package tarball, then performs read-only npm
+lookups to confirm every public package name already exists. It must report the dependency order,
+show no remaining `workspace:` range, and stop the release if any package still needs its initial
+manual bootstrap publish. It never writes to the npm registry.
 
 ## Merge, tag, and publish
 

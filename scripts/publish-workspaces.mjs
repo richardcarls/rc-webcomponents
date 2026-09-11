@@ -124,6 +124,41 @@ export function queryRegistryPackage({ cwd, env, name, version }) {
   return interpretRegistryResult(result, args);
 }
 
+export function queryRegistryPackageName({ cwd, env, name }) {
+  const args = ['view', name, 'name', '--json', '--registry', NPM_REGISTRY];
+  const result = spawnCommand('npm', args, {
+    cwd,
+    encoding: 'utf8',
+    env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  return interpretRegistryPackageNameResult(result, args, name);
+}
+
+export function interpretRegistryPackageNameResult(result, args = ['view'], name) {
+  if (result.status === 0) {
+    const payload = parseJsonObject(result.stdout);
+    const names = Array.isArray(payload) ? payload : [payload];
+
+    if (names.length !== 1 || names[0] !== name) {
+      throw new Error(`npm view returned unexpected package name data for ${name}`);
+    }
+
+    return { state: 'found' };
+  }
+
+  if (npmErrorCode(result) === 'E404') {
+    return { state: 'missing' };
+  }
+
+  throw commandFailure('npm', args, result);
+}
+
 export function interpretRegistryResult(result, args = ['view']) {
   if (result.status === 0) {
     return { metadata: normalizeRegistryMetadata(parseJsonObject(result.stdout)), state: 'found' };
@@ -393,6 +428,14 @@ export function createPublisherOperations({ env, runtimeDirectory }) {
       });
     },
 
+    queryPackageName(workspace) {
+      return queryRegistryPackageName({
+        cwd: runtimeDirectory,
+        env: npmEnvironment,
+        name: workspace.name,
+      });
+    },
+
     sleep,
   };
 }
@@ -456,8 +499,10 @@ export async function executePublication({
     failed: [],
     published: [],
     raceRecovered: [],
+    registered: [],
     skipped: [],
     unattempted: [],
+    unregistered: [],
     validated: [],
   };
 
@@ -469,6 +514,16 @@ export async function executePublication({
         validatePackedManifest({ internalNames, manifest: packed.manifest, workspace });
         summary.validated.push(workspace.name);
         log.log(`validated packed artifact: ${workspace.name}@${workspace.manifest.version}`);
+
+        const registration = await operations.queryPackageName(workspace);
+
+        if (registration.state === 'found') {
+          summary.registered.push(workspace.name);
+          log.log(`npm package exists: ${workspace.name}`);
+        } else {
+          summary.unregistered.push(workspace.name);
+          log.log(`npm package requires bootstrap: ${workspace.name}`);
+        }
 
         continue;
       }
@@ -538,6 +593,16 @@ export async function executePublication({
     }
   }
 
+  if (summary.unregistered.length > 0) {
+    const error = new Error(
+      `npm package bootstrap required: ${summary.unregistered.join(', ')}. Run yarn bootstrap:packages before versioning the release.`,
+    );
+
+    error.publicationSummary = summary;
+
+    throw error;
+  }
+
   return summary;
 }
 
@@ -546,6 +611,8 @@ export function printPublicationSummary(summary, log = console) {
 
   for (const [label, names] of [
     ['packed and validated', summary.validated],
+    ['registered package names', summary.registered],
+    ['bootstrap required', summary.unregistered],
     ['published', summary.published],
     ['already published', summary.skipped],
     ['race recovered', summary.raceRecovered],

@@ -5,7 +5,6 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-
 import { c as createTar } from 'tar';
 
 import {
@@ -14,6 +13,7 @@ import {
   expectedPublishedRange,
   hasSlsaProvenance,
   inspectPackedManifest,
+  interpretRegistryPackageNameResult,
   interpretRegistryResult,
   normalizeRegistryMetadata,
   validatePackedManifest,
@@ -85,10 +85,12 @@ test('discovers only the public workspaces returned by Yarn', (context) => {
   context.after(() => rmSync(root, { recursive: true }));
   mkdirSync(publicDirectory, { recursive: true });
   mkdirSync(privateDirectory, { recursive: true });
+
   writeFileSync(
     join(publicDirectory, 'package.json'),
     JSON.stringify({ name: '@example/public', version: VERSION }),
   );
+
   writeFileSync(
     join(privateDirectory, 'package.json'),
     JSON.stringify({ name: '@example/private', private: true, version: VERSION }),
@@ -117,6 +119,7 @@ test('validates one fixed group and sorts runtime dependencies first', (context)
 
   context.after(() => rmSync(root, { recursive: true }));
   mkdirSync(join(root, '.changeset'));
+
   writeFileSync(
     join(root, '.changeset', 'config.json'),
     JSON.stringify({ fixed: [[aggregate.name, foundation.name]] }),
@@ -130,6 +133,7 @@ test('validates one fixed group and sorts runtime dependencies first', (context)
     }),
     VERSION,
   );
+
   assert.deepEqual(
     topologicallySortWorkspaces([aggregate, foundation]).map(({ name }) => name),
     [foundation.name, aggregate.name],
@@ -142,6 +146,7 @@ test('rejects prerelease and mismatched synchronized workspace versions', (conte
 
   context.after(() => rmSync(root, { recursive: true }));
   mkdirSync(join(root, '.changeset'));
+
   writeFileSync(
     join(root, '.changeset', 'config.json'),
     JSON.stringify({ fixed: [[workspace.name]] }),
@@ -158,6 +163,7 @@ test('rejects prerelease and mismatched synchronized workspace versions', (conte
   );
 
   workspace.manifest.version = '1.2.3-beta.1';
+
   assert.throws(
     () => validateWorkspaceConfiguration({ root, workspaces: [workspace] }),
     /version must be a stable X\.Y\.Z release/,
@@ -212,6 +218,7 @@ test('preserves explicit internal peer ranges while pinning workspace star range
 
   assert.equal(expectedPublishedRange('workspace:*', VERSION), VERSION);
   assert.equal(expectedPublishedRange('workspace:>=1.0.0 <2.0.0', VERSION), '>=1.0.0 <2.0.0');
+
   assert.doesNotThrow(() =>
     validatePackedManifest({
       internalNames: new Set([foundation.name, plugin.name]),
@@ -232,18 +239,22 @@ test('requires an exact tag, OIDC context, and no token credentials for live pub
   };
 
   assert.equal(assertLiveEnvironment(environment), VERSION);
+
   assert.throws(
     () => assertLiveEnvironment({ ...environment, NODE_AUTH_TOKEN: 'legacy-token' }),
     /Refusing token fallback.*NODE_AUTH_TOKEN/,
   );
+
   assert.throws(
     () => assertLiveEnvironment({ ...environment, npm_config_password: 'legacy-password' }),
     /Refusing token fallback.*npm_config_password/,
   );
+
   assert.throws(
     () => assertLiveEnvironment({ ...environment, NPM_CONFIG_OTP: '123456' }),
     /Refusing token fallback.*NPM_CONFIG_OTP/,
   );
+
   assert.throws(
     () => assertLiveEnvironment({ ...environment, GITHUB_REF_NAME: 'v1.2.3-beta.1' }),
     /stable vX\.Y\.Z/,
@@ -259,6 +270,7 @@ test('treats only npm E404 responses as unpublished versions', () => {
     }),
     { state: 'missing' },
   );
+
   assert.throws(
     () =>
       interpretRegistryResult({
@@ -267,6 +279,50 @@ test('treats only npm E404 responses as unpublished versions', () => {
         stdout: '',
       }),
     /E401/,
+  );
+});
+
+test('recognizes existing package names and treats only E404 as unregistered', () => {
+  const packageName = '@example/package';
+
+  assert.deepEqual(
+    interpretRegistryPackageNameResult(
+      {
+        status: 0,
+        stderr: '',
+        stdout: JSON.stringify([packageName]),
+      },
+      ['view', packageName],
+      packageName,
+    ),
+    { state: 'found' },
+  );
+
+  assert.deepEqual(
+    interpretRegistryPackageNameResult(
+      {
+        status: 1,
+        stderr: JSON.stringify({ error: { code: 'E404' } }),
+        stdout: '',
+      },
+      ['view', packageName],
+      packageName,
+    ),
+    { state: 'missing' },
+  );
+
+  assert.throws(
+    () =>
+      interpretRegistryPackageNameResult(
+        {
+          status: 0,
+          stderr: '',
+          stdout: JSON.stringify(['@example/other-package']),
+        },
+        ['view', packageName],
+        packageName,
+      ),
+    /unexpected package name data/,
   );
 });
 
@@ -287,10 +343,11 @@ test('normalizes npm view arrays and dotted provenance fields', () => {
   assert.throws(() => normalizeRegistryMetadata([]), /0 metadata entries/);
 });
 
-test('dry run packs every workspace without registry reads or publish attempts', async () => {
+test('dry run packs every workspace and verifies its package name without publishing', async () => {
   const foundation = createWorkspace('foundation');
   const aggregate = createWorkspace('aggregate', { [foundation.name]: 'workspace:*' });
   const packed = [];
+  const queried = [];
 
   const summary = await executePublication({
     dryRun: true,
@@ -305,14 +362,58 @@ test('dry run packs every workspace without registry reads or publish attempts',
         assert.fail('dry run must not publish');
       },
       query() {
-        assert.fail('dry run must not read the registry');
+        assert.fail('dry run must not query the target release version');
+      },
+      queryPackageName(workspace) {
+        queried.push(workspace.name);
+
+        return { state: 'found' };
       },
     },
     workspaces: [aggregate, foundation],
   });
 
   assert.deepEqual(packed, [foundation.name, aggregate.name]);
+  assert.deepEqual(queried, packed);
+  assert.deepEqual(summary.registered, packed);
+  assert.deepEqual(summary.unregistered, []);
   assert.deepEqual(summary.validated, packed);
+});
+
+test('dry run reports every package name that requires bootstrap', async () => {
+  const foundation = createWorkspace('foundation');
+  const aggregate = createWorkspace('aggregate', { [foundation.name]: 'workspace:*' });
+  const queried = [];
+
+  await assert.rejects(
+    executePublication({
+      dryRun: true,
+      log: quietLog,
+      operations: {
+        async pack(workspace) {
+          return { manifest: packedManifest(workspace), tarballPath: `${workspace.name}.tgz` };
+        },
+        publish() {
+          assert.fail('dry run must not publish');
+        },
+        queryPackageName(workspace) {
+          queried.push(workspace.name);
+
+          return { state: 'missing' };
+        },
+      },
+      workspaces: [aggregate, foundation],
+    }),
+    (error) => {
+      assert.match(error.message, /npm package bootstrap required.*foundation.*aggregate/);
+      assert.deepEqual(error.publicationSummary.unregistered, [foundation.name, aggregate.name]);
+      assert.deepEqual(error.publicationSummary.validated, [foundation.name, aggregate.name]);
+
+      return true;
+    },
+  );
+
+  assert.deepEqual(queried, [foundation.name, aggregate.name]);
 });
 
 test('skips verified versions and publishes only missing packages in dependency order', async () => {
@@ -335,6 +436,7 @@ test('skips verified versions and publishes only missing packages in dependency 
       },
       async query(workspace) {
         calls.push(`query:${workspace.name}`);
+
         const count = (queryCounts.get(workspace.name) ?? 0) + 1;
 
         queryCounts.set(workspace.name, count);
@@ -354,6 +456,7 @@ test('skips verified versions and publishes only missing packages in dependency 
 
   assert.deepEqual(summary.skipped, [foundation.name]);
   assert.deepEqual(summary.published, [aggregate.name]);
+
   assert.deepEqual(calls, [
     `query:${foundation.name}`,
     `query:${aggregate.name}`,
