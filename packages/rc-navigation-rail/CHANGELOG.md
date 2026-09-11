@@ -1,5 +1,14 @@
 # @rcarls/rc-navigation-rail
 
+## 0.6.0
+
+### Patch Changes
+
+- Updated dependencies [6683eb9]
+- Updated dependencies [ee7ba6c]
+- Updated dependencies [30eb232]
+  - @rcarls/rc-common@0.6.0
+
 ## 0.5.0
 
 ### Patch Changes

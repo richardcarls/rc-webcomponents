@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Design-system-neutral native scroll region with optional content and fullbleed layout tracks.",
   "repository": {
     "type": "git",

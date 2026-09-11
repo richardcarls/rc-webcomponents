@@ -16,6 +16,7 @@ import {
   interpretRegistryPackageNameResult,
   interpretRegistryResult,
   normalizeRegistryMetadata,
+  parseProvenanceExceptions,
   validatePackedManifest,
 } from './publish-workspaces.mjs';
 import {
@@ -258,6 +259,59 @@ test('requires an exact tag, OIDC context, and no token credentials for live pub
   assert.throws(
     () => assertLiveEnvironment({ ...environment, GITHUB_REF_NAME: 'v1.2.3-beta.1' }),
     /stable vX\.Y\.Z/,
+  );
+
+  const recoveryEnvironment = {
+    ...environment,
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    GITHUB_REF_NAME: 'main',
+    GITHUB_REF_TYPE: 'branch',
+    RC_RELEASE_TAG: 'v1.2.3',
+  };
+
+  assert.equal(assertLiveEnvironment(recoveryEnvironment), VERSION);
+
+  assert.throws(
+    () => assertLiveEnvironment({ ...recoveryEnvironment, GITHUB_EVENT_NAME: 'push' }),
+    /restricted to manually dispatched recovery runs/,
+  );
+});
+
+test('restricts provenance exceptions to exact recovery package versions', () => {
+  const workspace = createWorkspace('package');
+  const environment = {
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    RC_ALLOW_MISSING_PROVENANCE: `${workspace.name}@${VERSION}`,
+    RC_RELEASE_TAG: `v${VERSION}`,
+  };
+
+  assert.deepEqual(
+    parseProvenanceExceptions({
+      env: environment,
+      expectedVersion: VERSION,
+      workspaces: [workspace],
+    }),
+    new Set([`${workspace.name}@${VERSION}`]),
+  );
+
+  assert.throws(
+    () =>
+      parseProvenanceExceptions({
+        env: { ...environment, RC_ALLOW_MISSING_PROVENANCE: `${workspace.name}@1.2.4` },
+        expectedVersion: VERSION,
+        workspaces: [workspace],
+      }),
+    /Invalid provenance exception/,
+  );
+
+  assert.throws(
+    () =>
+      parseProvenanceExceptions({
+        env: { ...environment, GITHUB_EVENT_NAME: 'push' },
+        expectedVersion: VERSION,
+        workspaces: [workspace],
+      }),
+    /restricted to manually dispatched recovery runs/,
   );
 });
 
@@ -527,6 +581,38 @@ test('polls until registry provenance becomes visible', async () => {
   assert.equal(queryCount, 2);
   assert.equal(sleepCount, 1);
   assert.equal(hasSlsaProvenance(registryManifest(workspace)), true);
+});
+
+test('skips an immutable manual publish only with its exact provenance exception', async () => {
+  const workspace = createWorkspace('package');
+  const packageSpec = `${workspace.name}@${VERSION}`;
+  let queryCount = 0;
+
+  const summary = await executePublication({
+    dryRun: false,
+    log: quietLog,
+    operations: {
+      async query() {
+        queryCount += 1;
+
+        return {
+          metadata: registryManifest(workspace, { provenance: false }),
+          state: 'found',
+        };
+      },
+      async sleep() {
+        assert.fail('an approved immutable manual publish must not poll for provenance');
+      },
+    },
+    pollAttempts: 2,
+    pollDelayMs: 0,
+    provenanceExceptions: new Set([packageSpec]),
+    workspaces: [workspace],
+  });
+
+  assert.deepEqual(summary.skipped, [workspace.name]);
+  assert.deepEqual(summary.provenanceExceptions, [packageSpec]);
+  assert.equal(queryCount, 1);
 });
 
 test('stops provenance polling after the configured attempt bound', async () => {

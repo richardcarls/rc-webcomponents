@@ -1,5 +1,28 @@
 # @rcarls/rc-card
 
+## 0.6.0
+
+### Minor Changes
+
+- f099b02: Add declarative horizontal cards with a two-fifths media column and symmetric
+  row and column grid coordination properties.
+
+### Patch Changes
+
+- a108336: Warn in development when `rc-card`/`rc-list-item` has `interactive` set but
+  no way to resolve a click target: no `action-target`, and for
+  `rc-list-item`, no native child checkbox/radio either. Surface clicks
+  silently go nowhere in that state; the warning now says so at the point
+  the row or card is set up wrong, instead of leaving it to be discovered
+  by a user tapping a dead row or card.
+- 6683eb9: Add shared, lifecycle-safe click delegation and let interactive list items
+  forward plain surface clicks to same-root native action targets while
+  preserving nested and modified clicks.
+- Updated dependencies [6683eb9]
+- Updated dependencies [ee7ba6c]
+- Updated dependencies [30eb232]
+  - @rcarls/rc-common@0.6.0
+
 ## 0.5.0
 
 ## 0.4.2

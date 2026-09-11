@@ -128,12 +128,25 @@ After the workflow succeeds:
 ## Resume a partial release
 
 Do not create a replacement tag for a transient failure. Open the `Publish to npm` workflow,
-choose **Run workflow**, and select the original `vX.Y.Z` tag. The publisher verifies and skips
-correct packages, then publishes only missing versions.
+choose **Run workflow**, select the original `vX.Y.Z` tag, and enter that same tag as the release
+tag. Leave the provenance exception empty. The publisher verifies and skips correct packages,
+then publishes only missing versions.
 
 Registry, authentication, parsing, or invalid immutable-version errors stop the run immediately.
 If an existing version contains incorrect metadata, it cannot be overwritten; correct the issue
 in a new patch release.
+
+If a release version was published manually before Trusted Publishing was configured, npm cannot
+replace that immutable version or attach provenance afterward. First merge an approved recovery
+hotfix to `main`. Then manually run the workflow from `main`, enter the original `vX.Y.Z` release
+tag, and enter each affected package as an exact comma-separated `@scope/name@X.Y.Z` provenance
+exception. The workflow validates the published manifest before skipping the exception and
+continues publishing any missing packages through OIDC.
+
+Recovery runs accept only release-workflow, publisher, validation, test, and release-guide changes
+between the release tag and the selected `main` commit. Normal tag-triggered runs cannot use
+provenance exceptions. The exception records an unavoidable provenance gap for that immutable
+version; the package's next release must publish through Trusted Publishing normally.
 
 ## Disable automation-token publishing
 

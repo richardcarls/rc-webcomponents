@@ -1,5 +1,21 @@
 # @rcarls/rc-markdown-editor
 
+## 0.6.0
+
+### Patch Changes
+
+- Updated dependencies [ffcbf11]
+- Updated dependencies [7adbd76]
+- Updated dependencies [30eb232]
+- Updated dependencies [53baa54]
+- Updated dependencies [53baa54]
+- Updated dependencies [985067e]
+- Updated dependencies [57370e4]
+  - @rcarls/rc-select@0.6.0
+  - @rcarls/rc-button@0.6.0
+  - @rcarls/rc-textarea@0.6.0
+  - @rcarls/rc-toolbar@0.6.0
+
 ## 0.5.0
 
 ### Patch Changes
