@@ -16,7 +16,7 @@ Consumers can decorate the track with a real named slot:
 ```html
 <rc-slider>
   <span slot="track-background" class="threshold-bands"></span>
-  <input type="range" min="0" max="100" value="40">
+  <input type="range" min="0" max="100" value="40" />
 </rc-slider>
 ```
 
@@ -27,7 +27,7 @@ The component exposes `root`, `control`, `track`, `progress`, and
 Native input styling stays with the consumer:
 
 ```css
-rc-slider > input[type="range"] {
+rc-slider > input[type='range'] {
   appearance: auto;
 }
 ```

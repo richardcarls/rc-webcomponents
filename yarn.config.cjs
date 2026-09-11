@@ -1,6 +1,6 @@
 /** @typedef { import('@yarnpkg/types').Yarn.Constraints.Context } Context */
 
-const { defineConfig } = require("@yarnpkg/types");
+const { defineConfig } = require('@yarnpkg/types');
 
 module.exports = defineConfig({
   // Enforce consistent dependency version for shared deps
@@ -17,7 +17,7 @@ module.exports = defineConfig({
  */
 const enforcePrivateFlag = async ({ Yarn }) => {
   for (const workspace of Yarn.workspaces()) {
-    workspace.set("private", true);
+    workspace.set('private', true);
   }
 };
 
@@ -27,7 +27,7 @@ const enforcePrivateFlag = async ({ Yarn }) => {
  * @param {Context} ctx
  */
 function enforceSharedDepVersions({ Yarn }) {
-  const root = Yarn.workspace({ ident: "@rcarls/workspace-root" }) ?? undefined;
+  const root = Yarn.workspace({ ident: '@rcarls/workspace-root' }) ?? undefined;
 
   for (const dependency of Yarn.dependencies()) {
     if (dependency.type === `peerDependencies`) continue;

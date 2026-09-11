@@ -22,9 +22,7 @@
     background: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-toolbar
-    > button[aria-pressed='true'] {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-toolbar > button[aria-pressed='true'] {
     background: var(--rc-highlight, Highlight);
     color: var(--rc-highlight-text, HighlightText);
   }

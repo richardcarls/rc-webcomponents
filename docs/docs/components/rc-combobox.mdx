@@ -126,7 +126,9 @@ return (
   <rc-combobox ref={comboRef} allow-create placeholder="Add a framework…">
     <select name="frameworks" multiple>
       {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
       ))}
     </select>
   </rc-combobox>
@@ -140,8 +142,8 @@ return (
 Keep `options` (permanent) and `pendingOptions` (session-only) as separate state. Render both into the `<select>` so React controls all `<option>` elements. On submit, move the newly created selections into `options` with `setOptions`:
 
 ```tsx
-const [options, setOptions] = useState(persistedOptions);   // permanent
-const [pendingOptions, setPendingOptions] = useState([]);   // session-only
+const [options, setOptions] = useState(persistedOptions); // permanent
+const [pendingOptions, setPendingOptions] = useState([]); // session-only
 const pendingValue = useRef(null);
 
 const handleCreate = (e) => {
@@ -174,10 +176,18 @@ const handleReset = () => {
 // JSX: render persisted and pending options separately.
 <rc-combobox ref={comboRef} allow-create>
   <select name="labels" multiple>
-    {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-    {pendingOptions.map((o) => <option key={`p-${o.value}`} value={o.value}>{o.label}</option>)}
+    {options.map((o) => (
+      <option key={o.value} value={o.value}>
+        {o.label}
+      </option>
+    ))}
+    {pendingOptions.map((o) => (
+      <option key={`p-${o.value}`} value={o.value}>
+        {o.label}
+      </option>
+    ))}
   </select>
-</rc-combobox>
+</rc-combobox>;
 ```
 
 <ComboboxCreateFormDemo />
@@ -226,7 +236,7 @@ combobox.value = ['apple', 'cherry'];
 
 ### Firefox for Android: `<label>`-wrapped multiple selects (worked around)
 
-On Firefox for Android (GeckoView), tapping anywhere within an ancestor `<label>`'s bounds opens the native picker dialog for a wrapped `<select multiple>`, even though the select is hidden: "Geckoview and Fennec open select dropdown on tap of parent label; other browsers do not."  [Bugzilla 1475723](https://bugzilla.mozilla.org/show_bug.cgi?id=1475723)
+On Firefox for Android (GeckoView), tapping anywhere within an ancestor `<label>`'s bounds opens the native picker dialog for a wrapped `<select multiple>`, even though the select is hidden: "Geckoview and Fennec open select dropdown on tap of parent label; other browsers do not." [Bugzilla 1475723](https://bugzilla.mozilla.org/show_bug.cgi?id=1475723)
 
 To workaround this bug, `rc-select` force-disables the slotted `<select multiple>` and hooks into the associated form's `submit` and `formdata` events to preserve constraint validation and form data participation.
 

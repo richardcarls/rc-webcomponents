@@ -46,10 +46,7 @@
     display: none;
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-disclosure
-    > details
-    > summary::after {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure > details > summary::after {
     content: '';
     inline-size: 0.5rem;
     block-size: 0.5rem;
@@ -69,17 +66,11 @@
     translate: 0 -0.125rem;
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-disclosure
-    > details
-    > summary:hover {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure > details > summary:hover {
     background: color-mix(in srgb, var(--rc-accent, Highlight) 8%, transparent);
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-disclosure
-    > details
-    > :not(summary) {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure > details > :not(summary) {
     display: flow-root;
     padding-inline: 0.875rem;
     opacity: 1;
@@ -101,8 +92,7 @@
       opacity: 0;
       overflow: clip;
       transition:
-        block-size var(--substrate-motion-duration-slow, 240ms)
-          var(--substrate-motion-easing, ease),
+        block-size var(--substrate-motion-duration-slow, 240ms) var(--substrate-motion-easing, ease),
         content-visibility var(--substrate-motion-duration-slow, 240ms)
           var(--substrate-motion-easing, ease) allow-discrete,
         opacity var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);

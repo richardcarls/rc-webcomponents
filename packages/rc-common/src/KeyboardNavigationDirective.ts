@@ -78,17 +78,13 @@ class KeyboardNavigationDirective extends AsyncDirective {
       case 'toolbar':
       case 'menubar':
         // Horizontal by default
-        return this._element?.deref()?.ariaOrientation === 'vertical'
-          ? 'vertical'
-          : 'horizontal';
+        return this._element?.deref()?.ariaOrientation === 'vertical' ? 'vertical' : 'horizontal';
 
       case 'separator':
         // Navigation axis is perpendicular to the bar orientation.
         // ARIA default bar orientation is horizontal → keyboard axis is vertical (Up/Down).
         // A vertical bar (aria-orientation="vertical") → keyboard axis is horizontal (Left/Right).
-        return this._element?.deref()?.ariaOrientation === 'vertical'
-          ? 'horizontal'
-          : 'vertical';
+        return this._element?.deref()?.ariaOrientation === 'vertical' ? 'horizontal' : 'vertical';
 
       case 'scrollbar':
       case 'tree':
@@ -96,9 +92,7 @@ class KeyboardNavigationDirective extends AsyncDirective {
       case 'menu':
       default:
         // Vertical by default
-        return this._element?.deref()?.ariaOrientation === 'horizontal'
-          ? 'horizontal'
-          : 'vertical';
+        return this._element?.deref()?.ariaOrientation === 'horizontal' ? 'horizontal' : 'vertical';
     }
   }
 
@@ -106,9 +100,7 @@ class KeyboardNavigationDirective extends AsyncDirective {
     super(partInfo);
 
     if (partInfo.type !== PartType.ELEMENT) {
-      throw new Error(
-        'The `keyNavigation` directive must be used on an element.',
-      );
+      throw new Error('The `keyNavigation` directive must be used on an element.');
     }
   }
 

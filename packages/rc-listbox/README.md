@@ -61,30 +61,30 @@ listbox.addEventListener('rc-listbox-change', (event) => {
 
 ## API
 
-| Property / method | Type | Description |
-| --- | --- | --- |
-| `multiple` | `boolean` | Enables multi-selection and reflects `aria-multiselectable`. |
-| `checkmark` | `boolean` | Renders a checkmark indicator inside each option element. |
-| `filterStrategy` | `'prefix' \| 'contains' \| function` | Controls how `filterOptions()` matches labels. |
-| `value` | `string \| string[]` | Current selection. Host writes update silently. |
-| `defaultValue` | `string \| string[] \| undefined` | Initial uncontrolled selection. |
-| `options` | `ListboxOption[]` | Replaces the rendered option list. |
-| `allOptions` | `readonly ListboxOption[]` | All configured options. |
-| `filteredOptions` | `readonly ListboxOption[]` | Options currently passing the filter. |
-| `selectedValues` | `string[]` | Current selected values. |
-| `appendOption(opt)` | `void` | Adds one option. |
-| `setSelectedValues(values)` | `void` | Replaces selection without firing an event. |
-| `toggleOption(value)` | `void` | Toggles selection and fires `rc-listbox-change`. |
-| `clearSelection()` | `void` | Clears selected values. |
-| `filterOptions(text)` | `void` | Filters visible options. |
-| `clearFilter()` | `void` | Clears the active filter. |
-| `navigableItems` | `Element[]` | Visible, enabled options for active-descendant navigation. |
-| `setCreateOption(label)` | `void` | Shows or hides the synthetic create option. |
+| Property / method           | Type                                 | Description                                                  |
+| --------------------------- | ------------------------------------ | ------------------------------------------------------------ |
+| `multiple`                  | `boolean`                            | Enables multi-selection and reflects `aria-multiselectable`. |
+| `checkmark`                 | `boolean`                            | Renders a checkmark indicator inside each option element.    |
+| `filterStrategy`            | `'prefix' \| 'contains' \| function` | Controls how `filterOptions()` matches labels.               |
+| `value`                     | `string \| string[]`                 | Current selection. Host writes update silently.              |
+| `defaultValue`              | `string \| string[] \| undefined`    | Initial uncontrolled selection.                              |
+| `options`                   | `ListboxOption[]`                    | Replaces the rendered option list.                           |
+| `allOptions`                | `readonly ListboxOption[]`           | All configured options.                                      |
+| `filteredOptions`           | `readonly ListboxOption[]`           | Options currently passing the filter.                        |
+| `selectedValues`            | `string[]`                           | Current selected values.                                     |
+| `appendOption(opt)`         | `void`                               | Adds one option.                                             |
+| `setSelectedValues(values)` | `void`                               | Replaces selection without firing an event.                  |
+| `toggleOption(value)`       | `void`                               | Toggles selection and fires `rc-listbox-change`.             |
+| `clearSelection()`          | `void`                               | Clears selected values.                                      |
+| `filterOptions(text)`       | `void`                               | Filters visible options.                                     |
+| `clearFilter()`             | `void`                               | Clears the active filter.                                    |
+| `navigableItems`            | `Element[]`                          | Visible, enabled options for active-descendant navigation.   |
+| `setCreateOption(label)`    | `void`                               | Shows or hides the synthetic create option.                  |
 
 ## Events
 
-| Event | Detail | Description |
-| --- | --- | --- |
+| Event               | Detail                                                                                  | Description                                      |
+| ------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------ |
 | `rc-listbox-change` | `{ reason: 'select'; value; selected; option } \| { reason: 'action'; action; option }` | Fires when an option or action row is activated. |
 
 ## Accessibility

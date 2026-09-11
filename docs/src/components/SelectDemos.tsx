@@ -28,7 +28,10 @@ export function SingleSelectDemo() {
       <div className="demo-row">
         <div className="demo-col">
           <label>Country</label>
-          <rc-select ref={(el) => setSelectEl(el as HTMLElement | null)} placeholder="Choose a country...">
+          <rc-select
+            ref={(el) => setSelectEl(el as HTMLElement | null)}
+            placeholder="Choose a country..."
+          >
             <select name="country">
               <option value="">Choose a country...</option>
               <option value="us">United States</option>
@@ -52,13 +55,19 @@ export function SingleSelectDemo() {
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
-              <option value="critical" disabled>Critical (unavailable)</option>
+              <option value="critical" disabled>
+                Critical (unavailable)
+              </option>
             </select>
           </rc-select>
         </div>
       </div>
       <div className="demo-event-log">
-        {log.length ? log.map((message) => <p key={message}>{message}</p>) : <p className="demo-placeholder">Events will appear here...</p>}
+        {log.length ? (
+          log.map((message) => <p key={message}>{message}</p>)
+        ) : (
+          <p className="demo-placeholder">Events will appear here...</p>
+        )}
       </div>
     </DemoFrame>
   );
@@ -101,7 +110,11 @@ export function MultiSelectDemo() {
         </div>
       </div>
       <div className="demo-event-log">
-        {log.length ? log.map((message) => <p key={message}>{message}</p>) : <p className="demo-placeholder">Events will appear here...</p>}
+        {log.length ? (
+          log.map((message) => <p key={message}>{message}</p>)
+        ) : (
+          <p className="demo-placeholder">Events will appear here...</p>
+        )}
       </div>
     </DemoFrame>
   );
@@ -169,7 +182,9 @@ export function DynamicOptionsDemo() {
             <option value="item2">Item 2</option>
           </select>
         </rc-select>
-        <button type="button" onClick={addDynamicOption}>Add option</button>
+        <button type="button" onClick={addDynamicOption}>
+          Add option
+        </button>
       </div>
     </DemoFrame>
   );

@@ -1,7 +1,11 @@
 import type * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
-import type { RCComboboxCreateDetail, RCComboboxRef, RCSelectChangeDetail } from '@rcarls/rc-webcomponents/react';
+import type {
+  RCComboboxCreateDetail,
+  RCComboboxRef,
+  RCSelectChangeDetail,
+} from '@rcarls/rc-webcomponents/react';
 
 import { DemoFrame } from './DemoFrame';
 
@@ -78,9 +82,11 @@ export function ComboboxAllowCreateValidationDemo() {
         <p style={{ color: 'red', margin: '0.25rem 0 0', fontSize: '0.875rem' }}>{error}</p>
       )}
       <div className="demo-event-log">
-        {log.length
-          ? log.map((entry) => <p key={entry}>{entry}</p>)
-          : <p className="demo-placeholder">Create events will appear here…</p>}
+        {log.length ? (
+          log.map((entry) => <p key={entry}>{entry}</p>)
+        ) : (
+          <p className="demo-placeholder">Create events will appear here…</p>
+        )}
       </div>
     </DemoFrame>
   );
@@ -135,7 +141,11 @@ export function ComboboxCreateReactDemo() {
     if (!value || !comboEl) return;
     pendingValue.current = null;
 
-    const current = Array.isArray(comboEl.value) ? comboEl.value : comboEl.value ? [comboEl.value] : [];
+    const current = Array.isArray(comboEl.value)
+      ? comboEl.value
+      : comboEl.value
+        ? [comboEl.value]
+        : [];
     if (!current.includes(value)) {
       const next = [...current, value];
       comboEl.value = next;
@@ -188,8 +198,8 @@ type LabelOption = { value: string; label: string };
  */
 export function ComboboxCreateFormDemo() {
   const [comboEl, setComboEl] = useState<RCComboboxRef | null>(null);
-  const [options, setOptions] = useState<LabelOption[]>(INITIAL_LABELS);       // permanent
-  const [pendingOptions, setPendingOptions] = useState<LabelOption[]>([]);      // session-only
+  const [options, setOptions] = useState<LabelOption[]>(INITIAL_LABELS); // permanent
+  const [pendingOptions, setPendingOptions] = useState<LabelOption[]>([]); // session-only
   const [output, setOutput] = useState('');
   const pendingValue = useRef<string | null>(null);
 
@@ -214,7 +224,11 @@ export function ComboboxCreateFormDemo() {
     if (!value || !comboEl) return;
     pendingValue.current = null;
 
-    const current = Array.isArray(comboEl.value) ? comboEl.value : comboEl.value ? [comboEl.value] : [];
+    const current = Array.isArray(comboEl.value)
+      ? comboEl.value
+      : comboEl.value
+        ? [comboEl.value]
+        : [];
     if (!current.includes(value)) {
       comboEl.value = [...current, value];
     }

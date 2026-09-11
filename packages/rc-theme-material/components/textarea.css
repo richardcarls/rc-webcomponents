@@ -7,14 +7,20 @@
     --rc-textarea-padding: 1rem;
     --rc-textarea-focus-outline: 2px solid var(--md-sys-color-primary, Highlight);
     --rc-textarea-caret-color: var(--md-sys-color-primary, FieldText);
-    --rc-textarea-active-line-bg: color-mix(in srgb, var(--md-sys-color-primary, Highlight) 8%, transparent);
+    --rc-textarea-active-line-bg: color-mix(
+      in srgb,
+      var(--md-sys-color-primary, Highlight) 8%,
+      transparent
+    );
     --rc-textarea-gutter-bg: var(--md-sys-color-surface-container, Canvas);
     --rc-textarea-gutter-color: var(--md-sys-color-on-surface-variant, GrayText);
     --rc-textarea-gutter-border: 1px solid var(--md-sys-color-outline-variant, ButtonBorder);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-textarea::part(root) {
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-textarea::part(root):hover {

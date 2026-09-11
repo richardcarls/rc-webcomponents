@@ -131,13 +131,13 @@ the slotted textarea with `aria-label` or a real `<label for="...">`.
 
 ### JavaScript properties
 
-| Property                          | Type                       | Description                                                               |
-| --------------------------------- | -------------------------- | ------------------------------------------------------------------------- |
-| `value`                           | `string`                   | Current plain-text value. Host writes are silent.                         |
-| `defaultValue`                    | `string \| undefined`      | Initial uncontrolled value.                                               |
-| `plugin`                          | `RCTextareaPlugin \| null` | Declarative plugin hook for reactive frameworks.                          |
-| `decorations`                     | `DecorationInput[]`        | External decoration layer merged with plugin and pattern decorations.     |
-| `selectionStart` / `selectionEnd` | `number`                   | Current plain-text selection offsets (read-only).                         |
+| Property                          | Type                       | Description                                                           |
+| --------------------------------- | -------------------------- | --------------------------------------------------------------------- |
+| `value`                           | `string`                   | Current plain-text value. Host writes are silent.                     |
+| `defaultValue`                    | `string \| undefined`      | Initial uncontrolled value.                                           |
+| `plugin`                          | `RCTextareaPlugin \| null` | Declarative plugin hook for reactive frameworks.                      |
+| `decorations`                     | `DecorationInput[]`        | External decoration layer merged with plugin and pattern decorations. |
+| `selectionStart` / `selectionEnd` | `number`                   | Current plain-text selection offsets (read-only).                     |
 
 ## Events
 
@@ -158,13 +158,13 @@ editor.addEventListener('rc-textarea-change', (e) => {
 
 ## Keyboard Behavior
 
-| Key                               | Behavior                                              |
-| --------------------------------- | ----------------------------------------------------- |
-| `Tab`                             | Inserts `\t`.                                         |
-| `Ctrl/Cmd+Z`                      | Undo.                                                 |
-| `Ctrl/Cmd+Y` / `Ctrl/Cmd+Shift+Z` | Redo.                                                 |
-| `Paste`                           | Inserts plain text only; normalizes line endings.     |
-| `Enter`                           | Inserts a line break.                                 |
+| Key                               | Behavior                                          |
+| --------------------------------- | ------------------------------------------------- |
+| `Tab`                             | Inserts `\t`.                                     |
+| `Ctrl/Cmd+Z`                      | Undo.                                             |
+| `Ctrl/Cmd+Y` / `Ctrl/Cmd+Shift+Z` | Redo.                                             |
+| `Paste`                           | Inserts plain text only; normalizes line endings. |
+| `Enter`                           | Inserts a line break.                             |
 
 ## Theming
 
@@ -238,7 +238,7 @@ Patterns can also style named capture groups and add line diagnostics:
 editor.addPattern({
   pattern: /^(?<key>\w[\w-]*):\s*(?<value>.+)$/gm,
   captureGroups: {
-    key:   { bold: true, color: 'var(--editor-key-color)' },
+    key: { bold: true, color: 'var(--editor-key-color)' },
     value: { color: 'var(--editor-value-color)' },
   },
   createLineDecoration: () => ({ className: 'config-line' }),
@@ -357,8 +357,8 @@ Styles a character range `[from, to)`.
 interface MarkDecoration {
   id: string;
   type: 'mark';
-  from: number;        // inclusive, 0-based character offset
-  to: number;          // exclusive
+  from: number; // inclusive, 0-based character offset
+  to: number; // exclusive
   className?: string;
   bold?: boolean;
   italic?: boolean;
@@ -371,9 +371,7 @@ interface MarkDecoration {
 ```
 
 ```ts
-api.setDecorations([
-  { type: 'mark', from: 0, to: 5, className: 'keyword', bold: true },
-]);
+api.setDecorations([{ type: 'mark', from: 0, to: 5, className: 'keyword', bold: true }]);
 ```
 
 ### LineDecoration
@@ -384,9 +382,9 @@ Adds a class, gutter label, or diagnostic message to a logical line.
 interface LineDecoration {
   id: string;
   type: 'line';
-  line: number;               // 1-based
+  line: number; // 1-based
   className?: string;
-  message?: string;           // rendered via ::after — not in selection or clipboard
+  message?: string; // rendered via ::after — not in selection or clipboard
   messageClassName?: string;
   attributes?: Record<string, string>;
   gutterContent?: string | null; // string: custom label; null: suppress; undefined: use default
@@ -429,7 +427,7 @@ interface WidgetDecoration {
   id: string;
   type: 'widget';
   offset: number;
-  create(): HTMLElement;      // called on every render — return a new element each time
+  create(): HTMLElement; // called on every render — return a new element each time
   side?: 'before' | 'after';
 }
 ```
@@ -523,11 +521,11 @@ hover tooltips.
 `insertText()`, `wrapSelection()`, and `replaceSelection()` update the value, sync the slotted
 textarea, dispatch `rc-textarea-change`, and schedule a render.
 
-```ts
+````ts
 api.insertText('```\n\n```');
-api.wrapSelection('**', '**');    // no-op when selection is collapsed
+api.wrapSelection('**', '**'); // no-op when selection is collapsed
 api.replaceSelection('[replaced]');
-```
+````
 
 ### Stylesheet injection
 
@@ -566,7 +564,7 @@ editor.usePlugin({
     api.setDecorations(
       api.decorationsFromTokens(tokens, {
         keyword: { bold: true, color: 'var(--editor-syntax-keyword)' },
-        string:  { color: 'var(--editor-syntax-string)' },
+        string: { color: 'var(--editor-syntax-string)' },
         comment: { italic: true, color: 'var(--editor-syntax-comment)' },
       }),
     );
@@ -589,8 +587,8 @@ decorations in a single `setDecorations()` call.
 import { matchPatternResults } from '@rcarls/rc-textarea';
 
 const patterns = [
-  { id: 'kw-fn',  pattern: /\bfunction\b/g, bold: true, className: 'keyword' },
-  { id: 'kw-ret', pattern: /\breturn\b/g,   bold: true, className: 'keyword' },
+  { id: 'kw-fn', pattern: /\bfunction\b/g, bold: true, className: 'keyword' },
+  { id: 'kw-ret', pattern: /\breturn\b/g, bold: true, className: 'keyword' },
 ];
 
 editor.usePlugin({

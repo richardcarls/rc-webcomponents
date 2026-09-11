@@ -78,10 +78,7 @@ export class ItemsCollectionController implements ReactiveController {
     startY: number;
   } | null = null;
 
-  constructor(
-    host: ReactiveControllerHost & Element,
-    options: ItemsCollectionControllerOptions,
-  ) {
+  constructor(host: ReactiveControllerHost & Element, options: ItemsCollectionControllerOptions) {
     this._host = host;
     this._idPrefix = options.idPrefix;
     this._onInitFromDom = options.onInitFromDom;
@@ -292,8 +289,7 @@ export class ItemsCollectionController implements ReactiveController {
       const value =
         li.getAttribute('data-value') ?? li.getAttribute('value') ?? li.textContent?.trim() ?? '';
       const label = li.textContent?.trim() ?? '';
-      const disabled =
-        li.hasAttribute('disabled') || li.getAttribute('aria-disabled') === 'true';
+      const disabled = li.hasAttribute('disabled') || li.getAttribute('aria-disabled') === 'true';
 
       options.push({ value, label, disabled });
 
@@ -374,9 +370,7 @@ export class ItemsCollectionController implements ReactiveController {
   }
 
   private _syncCheckmarks(): void {
-    const allLis = this._createLi
-      ? [...this._liElements, this._createLi]
-      : [...this._liElements];
+    const allLis = this._createLi ? [...this._liElements, this._createLi] : [...this._liElements];
 
     for (const li of allLis) {
       if (this._checkmark) {
