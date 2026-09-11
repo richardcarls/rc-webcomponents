@@ -1,1 +1,1 @@
-export * from './rc-splitter';
+export * from './rc-splitter.js';

@@ -2,7 +2,7 @@ import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 import './define.js';
 
@@ -62,7 +62,9 @@ test('transfer-list option tokens flow into both listbox option rows', async () 
   host.style.setProperty('--rc-transfer-list-option-padding-inline', '7px');
   await host.updateComplete;
 
-  const $options = [...shadow(host).querySelectorAll('rc-listbox [role="option"]')] as HTMLElement[];
+  const $options = [
+    ...shadow(host).querySelectorAll('rc-listbox [role="option"]'),
+  ] as HTMLElement[];
 
   expect($options).toHaveLength(2);
 
@@ -189,13 +191,15 @@ test('rc-transfer-list reflects empty and selection states', async () => {
   expect(availablePanel?.hasAttribute('data-empty')).toBe(false);
   expect(selectedPanel?.hasAttribute('data-empty')).toBe(true);
 
-  shadow(host).querySelector('rc-listbox')?.dispatchEvent(
-    new CustomEvent('rc-listbox-change', {
-      bubbles: true,
-      composed: true,
-      detail: { value: ['factory'] },
-    }),
-  );
+  shadow(host)
+    .querySelector('rc-listbox')
+    ?.dispatchEvent(
+      new CustomEvent('rc-listbox-change', {
+        bubbles: true,
+        composed: true,
+        detail: { value: ['factory'] },
+      }),
+    );
   await host.updateComplete;
 
   expect(availablePanel?.hasAttribute('data-has-selection')).toBe(true);
@@ -215,7 +219,9 @@ test('rc-transfer-list visibly highlights selected listbox options by default', 
   shadow(host).querySelector('rc-listbox')?.setSelectedValues(['factory']);
   await host.updateComplete;
 
-  const $option = shadow(host).querySelector('[role="option"][aria-selected="true"]') as HTMLElement;
+  const $option = shadow(host).querySelector(
+    '[role="option"][aria-selected="true"]',
+  ) as HTMLElement;
   const style = getComputedStyle($option);
 
   expect(style.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
@@ -260,13 +266,15 @@ test('rc-transfer-list reflects reorder capability states', async () => {
   ];
   await host.updateComplete;
 
-  shadow(host).querySelectorAll('rc-listbox')[1]?.dispatchEvent(
-    new CustomEvent('rc-listbox-change', {
-      bubbles: true,
-      composed: true,
-      detail: { value: ['mine'] },
-    }),
-  );
+  shadow(host)
+    .querySelectorAll('rc-listbox')[1]
+    ?.dispatchEvent(
+      new CustomEvent('rc-listbox-change', {
+        bubbles: true,
+        composed: true,
+        detail: { value: ['mine'] },
+      }),
+    );
   await host.updateComplete;
 
   const root = shadow(host).querySelector('[part="root"]');

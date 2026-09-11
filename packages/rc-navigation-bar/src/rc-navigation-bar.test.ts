@@ -2,11 +2,11 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define';
-import type { RCNavigationBar } from './rc-navigation-bar';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCNavigationBar } from './rc-navigation-bar.js';
 
-import { navigationBarStyles } from './rc-navigation-bar.styles';
+import { navigationBarStyles } from './rc-navigation-bar.styles.js';
 
 const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 

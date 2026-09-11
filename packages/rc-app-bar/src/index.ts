@@ -1,1 +1,1 @@
-export * from './rc-app-bar';
+export * from './rc-app-bar.js';

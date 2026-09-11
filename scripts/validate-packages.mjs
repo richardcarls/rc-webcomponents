@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { extname, join, relative, resolve, sep } from 'node:path';
 
 const root = process.cwd();
 const packagesRoot = join(root, 'packages');
@@ -29,14 +29,11 @@ function collectExportTargets(value) {
 
 function packedFiles(packageName) {
   const command = process.platform === 'win32' ? 'cmd.exe' : 'yarn';
-  const args = process.platform === 'win32'
-    ? ['/d', '/s', '/c', 'yarn.cmd', 'workspace', packageName, 'pack', '--dry-run', '--json']
-    : ['workspace', packageName, 'pack', '--dry-run', '--json'];
-  const output = execFileSync(
-    command,
-    args,
-    { cwd: root, encoding: 'utf8' },
-  );
+  const args =
+    process.platform === 'win32'
+      ? ['/d', '/s', '/c', 'yarn.cmd', 'workspace', packageName, 'pack', '--dry-run', '--json']
+      : ['workspace', packageName, 'pack', '--dry-run', '--json'];
+  const output = execFileSync(command, args, { cwd: root, encoding: 'utf8' });
 
   return new Set(
     output
@@ -68,8 +65,33 @@ function validatePackedTarget(packageName, directory, files, target, label) {
   }
 }
 
+function validatePackedDeclarations(packageName, directory, files) {
+  const declarationFiles = [...files].filter((file) => file.endsWith('.d.ts'));
+
+  for (const file of declarationFiles) {
+    if (/(?:^|\/)(?:[^/]*\.test|test-helpers?)\.d\.ts$/.test(file)) {
+      errors.push(`${packageName}: packed test declaration/helper: ${file}`);
+    }
+
+    const source = readFileSync(join(directory, file), 'utf8');
+    const relativeImports = source.matchAll(
+      /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s*)['"](\.[^'"]+)['"]/g,
+    );
+
+    for (const match of relativeImports) {
+      const specifier = match[1];
+
+      if (specifier.endsWith('.ts') || specifier.endsWith('.tsx') || !extname(specifier)) {
+        errors.push(`${packageName}: ${file} has invalid relative import: ${specifier}`);
+      }
+    }
+  }
+}
+
 for (const { directory, manifest } of packages) {
   const files = packedFiles(manifest.name);
+
+  validatePackedDeclarations(manifest.name, directory, files);
 
   for (const [exportName, value] of Object.entries(manifest.exports ?? {})) {
     for (const target of collectExportTargets(value)) {
@@ -100,7 +122,9 @@ for (const packageName of fixedGroup) {
 }
 
 const aggregateDirectory = join(packagesRoot, 'rc-webcomponents');
-const aggregateManifest = JSON.parse(readFileSync(join(aggregateDirectory, 'package.json'), 'utf8'));
+const aggregateManifest = JSON.parse(
+  readFileSync(join(aggregateDirectory, 'package.json'), 'utf8'),
+);
 const aggregateIndex = readFileSync(join(aggregateDirectory, 'src/index.ts'), 'utf8');
 const aggregateDefine = readFileSync(join(aggregateDirectory, 'src/define.ts'), 'utf8');
 const infrastructurePackages = new Set([
@@ -125,7 +149,10 @@ for (const { manifest } of packages) {
     errors.push(`${manifest.name}: missing from aggregate class exports`);
   }
 
-  if (manifest.exports?.['./define'] && !aggregateDefine.includes(`import '${manifest.name}/define';`)) {
+  if (
+    manifest.exports?.['./define'] &&
+    !aggregateDefine.includes(`import '${manifest.name}/define';`)
+  ) {
     errors.push(`${manifest.name}: missing from aggregate define imports`);
   }
 }

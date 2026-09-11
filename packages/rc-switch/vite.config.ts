@@ -3,7 +3,13 @@ import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
-  plugins: [dts({ outDir: 'dist/types' })],
+  plugins: [
+    dts({
+      outDir: 'dist/types',
+      entryRoot: resolve(__dirname, '../..'),
+      exclude: ['src/**/*.test.ts', 'src/**/test-helpers.ts'],
+    }),
+  ],
   publicDir: process.env.NODE_ENV === 'production' ? false : resolve(__dirname, 'public'),
   build: {
     sourcemap: true,

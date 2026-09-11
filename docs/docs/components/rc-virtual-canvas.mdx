@@ -19,7 +19,7 @@ content rectangles. Consumers draw only what is visible.
 <AtAGlance
   packageName="@rcarls/rc-virtual-canvas"
   tag="rc-virtual-canvas"
-  native="Canvas and overlay content"
+  native="Requires a direct child native canvas"
   state="Virtual scroll geometry"
   events={['rc-virtual-canvas-pointer', 'rc-virtual-canvas-render']}
   related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
@@ -52,6 +52,10 @@ import '@rcarls/rc-virtual-canvas/define';
 
 <VirtualCanvasDemo />
 
+The native `<canvas>` must be a direct child of `rc-virtual-canvas`. Keeping it in light DOM
+preserves the consumer's drawing surface and accessible fallback content before and after the
+custom element upgrades.
+
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
@@ -64,10 +68,10 @@ The default demo mode shows the component without a package theme. Use the share
 
 These are computed getters exposed for rendering convenience — they do not appear in the generated API table above.
 
-| Property | Type | Description |
-|---|---|---|
+| Property       | Type     | Description                                                                                                                                                                                                                       |
+| -------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `canvasScaleX` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the x-axis. Equals `devicePixelRatio` when `autoResizeCanvas` is true. Use this as the x-scale factor in `ctx.scale()` to convert the canvas context to CSS pixel space. |
-| `canvasScaleY` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the y-axis. |
+| `canvasScaleY` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the y-axis.                                                                                                                                                              |
 
 ### Zoom and scale
 

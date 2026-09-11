@@ -4,8 +4,8 @@ import { property, state } from 'lit/decorators.js';
 import '@rcarls/rc-button/define';
 import '@rcarls/rc-select/define';
 import '@rcarls/rc-toolbar/define';
-import { icons } from './icons.ts';
-import type { EditorToolbarAction, EditorToolbarActionDetail, HeadingLevel } from './types.ts';
+import { icons } from './icons.js';
+import type { EditorToolbarAction, EditorToolbarActionDetail, HeadingLevel } from './types.js';
 
 const HEADING_OPTIONS: Array<{ value: HeadingLevel | 'p'; label: string }> = [
   { value: 'p', label: 'Paragraph' },

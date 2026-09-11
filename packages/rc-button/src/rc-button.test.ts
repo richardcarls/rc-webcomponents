@@ -3,9 +3,9 @@ import { expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define.ts';
-import type { RCButton } from './rc-button.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCButton } from './rc-button.js';
 
 async function flushButton(host: RCButton): Promise<void> {
   await host.updateComplete;

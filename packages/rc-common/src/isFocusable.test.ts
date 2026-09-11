@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 
-import { isFocusable } from './isFocusable';
+import { isFocusable } from './isFocusable.js';
 
 // ─── Natively focusable elements ────────────────────────────────────────────
 

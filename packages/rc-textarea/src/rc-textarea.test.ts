@@ -3,17 +3,17 @@ import { describe, expect, test } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import type { RCTextarea } from './rc-textarea.ts';
-import type { RCTextareaPluginAPI } from './types.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import type { RCTextarea } from './rc-textarea.js';
+import type { RCTextareaPluginAPI } from './types.js';
 import {
   getEditor,
   getGutterCells,
   simulatePaste,
   getSlottedTextarea,
   waitRender,
-} from './test-helpers.ts';
-import './define';
+} from './test-helpers.js';
+import './define.js';
 
 async function renderTextarea(
   template: TemplateResult = html`

@@ -4,9 +4,9 @@ import { html } from 'lit';
 import type { Locator } from 'vitest/browser';
 
 import type { RCMenu } from '@rcarls/rc-menu';
-import './define';
-import type { RCMenuButton } from './rc-menu-button';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import './define.js';
+import type { RCMenuButton } from './rc-menu-button.js';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 function pressKey($target: HTMLElement, key: string): void {
   $target.dispatchEvent(
@@ -610,6 +610,37 @@ test('RCMenuButton ignores default-open after an explicit controlled open=false 
 
   await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
   expect(menuButton.open).toBe(false);
+});
+
+test('RCMenuButton releases controlled open state back to default-open', async () => {
+  const toggleSpy = vi.fn();
+  const screen = render(html`
+    <rc-menu-button
+      data-testid="host"
+      default-open
+      @rc-menu-button-toggle=${toggleSpy as EventListener}
+    >
+      <button slot="trigger" data-testid="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+  const host = screen.getByTestId('host');
+  const trigger = screen.getByTestId('trigger');
+  const menuButton = (await host.element()) as RCMenuButton;
+
+  await menuButton.updateComplete;
+  menuButton.open = false;
+  await menuButton.updateComplete;
+  await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+
+  menuButton.open = undefined;
+  await menuButton.updateComplete;
+
+  expect(menuButton.open).toBe(true);
+  await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
+  expect(toggleSpy).not.toHaveBeenCalled();
 });
 
 test("RCMenuButton toggles the popup element's :popover-open state with `open`", async () => {

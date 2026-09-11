@@ -17,5 +17,11 @@ export default defineConfig({
       external: [/^@?lit(-\w+)?($|\/.+)/, /^@rcarls\/.+/],
     },
   },
-  plugins: [dts({ outDir: 'dist/types' })],
+  plugins: [
+    dts({
+      outDir: 'dist/types',
+      entryRoot: resolve(__dirname, 'src'),
+      exclude: ['src/**/*.test.ts', 'src/**/test-helpers.ts'],
+    }),
+  ],
 });

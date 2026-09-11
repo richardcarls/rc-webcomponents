@@ -1,1 +1,1 @@
-export * from './rc-navigation-bar';
+export * from './rc-navigation-bar.js';

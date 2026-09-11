@@ -8,8 +8,8 @@
  *
  * @see {@link https://github.com/quilljs/parchment Parchment on GitHub}
  */
-import { RCScrollBlot, RCBlockBlot, RCInlineBlot, RCWidgetBlot, createRegistry } from './blots.ts';
-import type { Decoration, MarkDecoration, LineDecoration, WidgetDecoration } from './types.ts';
+import { RCScrollBlot, RCBlockBlot, RCInlineBlot, RCWidgetBlot, createRegistry } from './blots.js';
+import type { Decoration, MarkDecoration, LineDecoration, WidgetDecoration } from './types.js';
 
 /**
  * Builds the child DOM of a line element given the line text, absolute line

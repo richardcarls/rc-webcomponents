@@ -2,11 +2,11 @@ import { test, expect } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './define';
+import './define.js';
 import { userEvent } from 'vitest/browser';
 
-import type { RCToolbar } from './rc-toolbar';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import type { RCToolbar } from './rc-toolbar.js';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 test('RCToolbar is an accessible toolbar', async () => {
   const screen = render(html`

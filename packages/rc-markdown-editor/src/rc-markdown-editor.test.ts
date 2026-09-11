@@ -2,8 +2,8 @@ import { describe, expect, test, vi } from 'vitest';
 import { html } from 'lit';
 import { render } from 'vitest-browser-lit';
 
-import './define.ts';
-import type { RcMarkdownEditor } from './rc-markdown-editor.ts';
+import './define.js';
+import type { RcMarkdownEditor } from './rc-markdown-editor.js';
 
 describe('RcMarkdownEditor value ownership', () => {
   test('value attribute seeds the initial value declaratively', async () => {

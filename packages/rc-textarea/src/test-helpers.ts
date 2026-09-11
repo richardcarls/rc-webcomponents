@@ -1,4 +1,4 @@
-import type { RCTextarea } from './rc-textarea.ts';
+import type { RCTextarea } from './rc-textarea.js';
 
 export function getEditor(host: RCTextarea): HTMLDivElement {
   return host.shadowRoot!.querySelector('#editor') as HTMLDivElement;

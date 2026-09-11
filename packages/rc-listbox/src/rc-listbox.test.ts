@@ -3,9 +3,9 @@ import { render } from 'vitest-browser-lit';
 
 import { html } from 'lit';
 
-import './define';
-import type { RCListbox } from './rc-listbox';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import './define.js';
+import type { RCListbox } from './rc-listbox.js';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 const OPTIONS = [
   { value: 'apple', label: 'Apple' },

@@ -206,17 +206,21 @@ rc-app-bar.glass::part(root) {
 
 ### CSS custom properties
 
-| Property                              | Default              | Description                                                                                                                                        |
-| ------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--rc-app-bar-bg`                     | `Canvas`             | Bar background                                                                                                                                     |
-| `--rc-app-bar-color`                  | `CanvasText`         | Bar text color                                                                                                                                     |
-| `--rc-app-bar-compact-min-height`     | `3rem`               | Compact row minimum height                                                                                                                         |
-| `--rc-app-bar-expanded-padding-block` | `0.75em`             | Expanded title block padding                                                                                                                       |
-| `--rc-app-bar-padding-inline`         | `0.75em`             | Horizontal padding                                                                                                                                 |
-| `--rc-app-bar-gap`                    | `0.5em`              | Gap between regions                                                                                                                                |
-| `--rc-app-bar-center-max-inline-size` | `100%`               | Max width of `slot="center"` content before it centers within the available space instead of filling it. No effect when `center-symmetric` is set. |
-| `--rc-app-bar-transition-duration`    | `200ms`              | Endpoint and hide transition duration                                                                                                              |
-| `--rc-app-bar-scroll-divider`         | `1px solid GrayText` | Scrolled separator border                                                                                                                          |
+| Property                                | Default              | Description                                                                                                                                        |
+| --------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--rc-app-bar-bg`                       | `Canvas`             | Bar background                                                                                                                                     |
+| `--rc-app-bar-color`                    | `CanvasText`         | Bar text color                                                                                                                                     |
+| `--rc-app-bar-compact-min-height`       | `3rem`               | Compact row minimum height                                                                                                                         |
+| `--rc-app-bar-expanded-padding-block`   | `0.75em`             | Expanded title block padding                                                                                                                       |
+| `--rc-app-bar-padding-inline`           | `0.75em`             | Horizontal padding                                                                                                                                 |
+| `--rc-app-bar-gap`                      | `0.5em`              | Gap between regions                                                                                                                                |
+| `--rc-app-bar-center-max-inline-size`   | `100%`               | Max width of `slot="center"` content before it centers within the available space instead of filling it. No effect when `center-symmetric` is set. |
+| `--rc-app-bar-title-start-padding`      | `0px`                | Extra title inline-start padding when the leading slot is empty                                                                                    |
+| `--rc-app-bar-transition-duration`      | `200ms`              | Endpoint and hide transition duration                                                                                                              |
+| `--rc-app-bar-scroll-divider`           | `1px solid GrayText` | Scrolled separator border                                                                                                                          |
+| `--rc-app-bar-collapse-progress`        | `0`                  | Read-only collapse animation progress from 0 through 1                                                                                             |
+| `--rc-app-bar-title-font-size`          | unset                | Optional compact-row title font size; inherits when unset                                                                                          |
+| `--rc-app-bar-expanded-title-font-size` | unset                | Optional expanded-row title font size; inherits when unset                                                                                         |
 
 ### CSS parts
 

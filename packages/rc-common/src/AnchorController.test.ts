@@ -3,7 +3,7 @@ import type { ReactiveControllerHost } from 'lit';
 import { test, expect } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { AnchorController } from './AnchorController';
+import { AnchorController } from './AnchorController.js';
 
 type FakeHost = ReactiveControllerHost;
 

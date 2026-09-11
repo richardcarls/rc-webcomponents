@@ -68,6 +68,8 @@ declare global {
  * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute.
  * @attr light-dismiss - When present and the dialog is modal, a click on the backdrop area calls
  *   `requestClose()`.
+ * @prop modal - Whether controlled open state uses `showModal()` instead of `show()`.
+ *   JavaScript property only; no attribute is observed.
  *
  * @cssprop [--rc-dialog-scrim=color-mix(in srgb, CanvasText 32%, transparent)] - Modal backdrop color.
  *
@@ -152,6 +154,7 @@ export class RCDialog extends LitElement {
   /**
    * Whether to open as modal with controlled open. Default: `true`.
    */
+  @property({ attribute: false })
   modal = true;
 
   /** The inner `<dialog>` element, resolved from the direct light-DOM child. */

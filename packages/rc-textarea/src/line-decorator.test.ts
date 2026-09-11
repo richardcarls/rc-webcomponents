@@ -1,7 +1,7 @@
 import { test, expect, describe, vi } from 'vitest';
 
-import { createLineDecoratorPlugin } from './line-decorator.ts';
-import type { LineDecoratorPlugin, DecorationInput, RCTextareaPluginAPI } from './types.ts';
+import { createLineDecoratorPlugin } from './line-decorator.js';
+import type { LineDecoratorPlugin, DecorationInput, RCTextareaPluginAPI } from './types.js';
 
 // Minimal mock of RCTextareaPluginAPI
 function makeApi(overrides: Partial<RCTextareaPluginAPI> = {}): RCTextareaPluginAPI {

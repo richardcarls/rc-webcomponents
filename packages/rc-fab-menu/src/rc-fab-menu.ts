@@ -132,13 +132,13 @@ export class RCFabMenu extends RCMenuButton {
   @property({ reflect: true })
   override placement: AnchorPlacement = 'top-end';
 
-  /** Dispatches the `rc-fab-menu-toggle` bubbling composed event with the current open state. */
-  protected override _dispatchToggle(): void {
+  /** Dispatches the `rc-fab-menu-toggle` bubbling composed event with the requested open state. */
+  protected override _dispatchToggle(open = this.open): void {
     this.dispatchEvent(
       new CustomEvent<RCFabMenuToggleEvent>('rc-fab-menu-toggle', {
         bubbles: true,
         composed: true,
-        detail: { open: this.open },
+        detail: { open },
       }),
     );
   }

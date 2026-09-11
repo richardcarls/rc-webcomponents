@@ -2,22 +2,19 @@ import { html } from 'lit';
 import { expect, test } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { pinElementBox } from './ResizeController';
+import { pinElementBox } from './ResizeController.js';
 
 test('pinElementBox preserves visual geometry inside a containing block', async () => {
   const screen = render(html`
-    <div
-      data-testid="container"
-      style="position: fixed; inset: 6rem 1rem 2rem; contain: layout;"
-    >
+    <div data-testid="container" style="position: fixed; inset: 6rem 1rem 2rem; contain: layout;">
       <div
         data-testid="target"
         style="position: fixed; inset: auto 0 0; inline-size: 12rem; block-size: 8rem;"
       ></div>
     </div>
   `);
-  const $container = await screen.getByTestId('container').element() as HTMLElement;
-  const $target = await screen.getByTestId('target').element() as HTMLElement;
+  const $container = (await screen.getByTestId('container').element()) as HTMLElement;
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
   const before = $target.getBoundingClientRect();
 
   pinElementBox($target);

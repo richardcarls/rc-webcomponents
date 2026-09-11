@@ -1,4 +1,4 @@
-import type { RCTextareaPluginAPI, DecorationInput } from './types.ts';
+import type { RCTextareaPluginAPI, DecorationInput } from './types.js';
 
 export interface LineAction {
   /** Stable identifier used for action-set change detection. */

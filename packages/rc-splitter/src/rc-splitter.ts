@@ -11,7 +11,7 @@ import {
   type KeyboardNavigationAction,
 } from '@rcarls/rc-common';
 
-import splitterStyles from './rc-splitter.styles';
+import splitterStyles from './rc-splitter.styles.js';
 
 type SplitterOrientation = 'horizontal' | 'vertical';
 

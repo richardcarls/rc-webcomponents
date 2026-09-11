@@ -1,1 +1,1 @@
-export * from './rc-adaptive-menu';
+export * from './rc-adaptive-menu.js';

@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 
 import { ActiveDescendantController, isFocusable } from '@rcarls/rc-common';
 
-import menuStyles from './rc-menu.styles';
+import menuStyles from './rc-menu.styles.js';
 
 declare global {
   interface HTMLElementTagNameMap {

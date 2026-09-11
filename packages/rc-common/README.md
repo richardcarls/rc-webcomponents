@@ -19,6 +19,8 @@ import {
   AnchorController,
   DragController,
   DragGestureController,
+  ItemsCollectionController,
+  NavigationIndicatorController,
   ResizeController,
 } from '@rcarls/rc-common';
 import {
@@ -32,6 +34,7 @@ import {
 import { RovingTabIndexMixin, keyInteraction, keyNavigation, mouseMove } from '@rcarls/rc-common';
 import {
   delegateClickTo,
+  DEFAULT_INTERACTIVE_SELECTOR,
   findExtremeSnapIndex,
   findNearestScrollAncestor,
   findNearestSnapIndex,
@@ -40,6 +43,7 @@ import {
   getDirectChildren,
   isEventFromInteractiveDescendant,
   isFocusable,
+  pinElementBox,
   snapToStep,
   valueToPercent,
   warnMissingDirectChild,
@@ -59,10 +63,12 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `ClickDelegateController` / `delegateClickTo`                                            | Extending plain pointer clicks on a host to a same-root native anchor or button target                 |
 | `DragController`                                                                         | Pointer and keyboard drag-to-move behavior                                                             |
 | `DragGestureController`                                                                  | Single-pointer activation, capture, deltas, duration, and recent velocity                              |
+| `ItemsCollectionController`                                                              | Filtering selectable and action items while preserving their distinct option kinds                     |
 | `KeyboardInteractionDirective` / `keyInteraction`                                        | Tracking pointer vs keyboard interaction mode on a rendered element                                    |
 | `KeyboardNavigationDirective` / `keyNavigation`                                          | Mapping APG arrow-key models to navigation actions                                                     |
 | `MutationObserverController`                                                             | Lifecycle-safe `MutationObserver` wiring for light-DOM or shadow-DOM changes                           |
 | `MouseMoveDirective` / `mouseMove`                                                       | Pointermove callbacks while a pointer drag is active                                                   |
+| `NavigationIndicatorController`                                                          | Positioning a shared visual indicator against the current navigation item                              |
 | `NativeChildController`, `getDirectChild`, `getDirectChildren`, `warnMissingDirectChild` | Finding, validating, and tracking consumer-provided native light-DOM children                          |
 | `RafScheduler`                                                                           | Coalescing repeated work into one animation frame and canceling on disconnect                          |
 | `ResizeController`                                                                       | Pointer and keyboard resize behavior                                                                   |
@@ -73,6 +79,8 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `findNearestSnapIndex`, `findNextSnapIndex`, `findExtremeSnapIndex`                      | Choosing numeric anchor indices without assigning component meaning                                    |
 | `isFocusable`                                                                            | Filtering focusable items for keyboard navigation                                                      |
 | `isEventFromInteractiveDescendant`                                                       | Detecting composed clicks already owned by a nested interactive control                                |
+| `DEFAULT_INTERACTIVE_SELECTOR`                                                           | Reusing the default selector used to identify nested interactive descendants                           |
+| `pinElementBox`                                                                          | Converting an element's rendered box into explicit inline geometry for resize interactions             |
 | `snapToStep`, `valueToPercent`                                                           | Slider and range-slider numeric helpers                                                                |
 
 ---

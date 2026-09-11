@@ -4,7 +4,7 @@ import { render } from 'vitest-browser-lit';
 
 import type { RCDisclosure } from '@rcarls/rc-disclosure';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 import './define.js';
 import type { RCAccordion } from './rc-accordion.js';

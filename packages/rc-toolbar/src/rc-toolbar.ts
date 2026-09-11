@@ -9,7 +9,7 @@ import {
   RovingTabIndexMixin,
 } from '@rcarls/rc-common';
 
-import toolbarStyles from './rc-toolbar.styles';
+import toolbarStyles from './rc-toolbar.styles.js';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -24,7 +24,7 @@ declare global {
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-toolbar rc-toolbar docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/ WAI-ARIA Toolbar pattern}
  *
- * @slot Takes any number of child controls, `rc-button`, or `rc-chip` elements
+ * @slot - Takes any number of child controls, `rc-button`, or `rc-chip` elements
  *   to display in the toolbar. Direct native controls and the native buttons
  *   inside supported wrappers are navigable.
  * @attr label - Accessible label for this toolbar. Default label is 'Toolbar'.

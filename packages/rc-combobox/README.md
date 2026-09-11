@@ -1,8 +1,11 @@
 # `@rcarls/rc-combobox`
 
-Editable combobox with filtering and optional allow-create behavior, configured from native option data and following the [WAI-ARIA Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
+Editable combobox with filtering and optional allow-create behavior, configured
+from native option data and following the
+[WAI-ARIA Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
 
-Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-combobox](https://richardcarls.github.io/rc-webcomponents/components/rc-combobox).
+Docs:
+[https://richardcarls.github.io/rc-webcomponents/components/rc-combobox](https://richardcarls.github.io/rc-webcomponents/components/rc-combobox).
 
 Extends `rc-select` with a text input and wraps a native slotted `<select>`.
 
@@ -44,7 +47,8 @@ import '@rcarls/rc-combobox/define';
 ## Allow Create
 
 Add `allow-create` to show a **"Create 'X'"** option when the typed text has no exact match.
-Selecting it inserts the new option into the native `<select>`, selects it, and fires `rc-combobox-create`.
+Selecting it inserts the new option into the native `<select>`, selects it, and
+fires `rc-combobox-create`.
 
 ```html
 <rc-combobox allow-create placeholder="Add tag">
@@ -66,7 +70,7 @@ combobox.addEventListener('rc-combobox-create', (event) => {
 });
 ```
 
-### React — managing options as state
+### React: managing options as state
 
 Call `preventDefault()` and add the new item to your React state instead. After React renders
 the new `<option>`, set `el.value` in a `useEffect` to select it:
@@ -103,7 +107,7 @@ useEffect(() => {
 }, [options]);
 ```
 
-### Form usage — ephemeral options until committed
+### Form usage: ephemeral options until committed
 
 By default, created options are added to the native `<select>` and appear in `FormData` on submit
 but are discarded on page reload. To persist them on submit, track them alongside the option list:
@@ -113,7 +117,7 @@ const pending = new Set();
 
 combobox.addEventListener('rc-combobox-create', (event) => {
   pending.add(event.detail.text.trim());
-  // Default runs — option is inserted and selected.
+  // Default runs, so the option is inserted and selected.
 });
 
 form.addEventListener('submit', (event) => {
@@ -129,39 +133,54 @@ form.addEventListener('submit', (event) => {
 
 **Uncontrolled (default):** set `<option selected>` or the `defaultValue` property for the
 initial value; the component owns selection thereafter. Listen to `rc-select-change` to observe
-changes. `defaultValue` accepts `string | string[]` and has no HTML attribute form — set it as a
+changes. `defaultValue` accepts `string | string[]` and has no HTML attribute form; set it as a
 JS property.
 
 **Controlled:** write `el.value` (the property) to drive selection programmatically. Writes are
-silent — no `rc-select-change` is dispatched. Update `el.value` in response to `rc-select-change`
+silent, so no `rc-select-change` is dispatched. Update `el.value` in response to `rc-select-change`
 to keep external state in sync.
 
 ```js
-combobox.value = 'banana';                // single
-combobox.value = ['apple', 'cherry'];     // multiple
+combobox.value = 'banana'; // single
+combobox.value = ['apple', 'cherry']; // multiple
 ```
 
 For `allow-create`, the same split applies to options:
 
-- **Uncontrolled options:** let the default behavior add the new `<option>` to the native `<select>`.
-- **Controlled options:** call `event.preventDefault()` on `rc-combobox-create` and manage `<option>`
-  elements yourself (e.g., in React state), then set `el.value` to include the new value.
+- **Uncontrolled options:** let the default behavior add the new `<option>` to
+  the native `<select>`.
+- **Controlled options:** call `event.preventDefault()` on
+  `rc-combobox-create` and manage `<option>` elements yourself (for example, in
+  React state), then set `el.value` to include the new value.
 
 ## API
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `allowCreate` | `boolean` | Shows a create option for unmatched input. |
-| `filterStrategy` | `'prefix' \| 'contains' \| function` | Controls option filtering. |
-| `multiple` | `boolean` | Inherited from `rc-select`; supports chip rendering. |
-| `placeholder` | `string` | Input placeholder when no value is selected. |
+| Property         | Type                                 | Description                                                                |
+| ---------------- | ------------------------------------ | -------------------------------------------------------------------------- |
+| `allowCreate`    | `boolean`                            | Shows a create option for unmatched input.                                 |
+| `filterStrategy` | `'prefix' \| 'contains' \| function` | Controls option filtering.                                                 |
+| `open`           | `boolean`                            | Inherited from `rc-select`; reflects whether the popup is open.            |
+| `multiple`       | `boolean`                            | Inherited from `rc-select`; enables multiple selection and chip rendering. |
+| `disabled`       | `boolean`                            | Inherited from `rc-select`; disables the input and popup trigger.          |
+| `placeholder`    | `string`                             | Inherited from `rc-select`; input placeholder when no value is selected.   |
+| `display`        | `'auto' \| 'chips' \| 'compact'`     | Inherited from `rc-select`; controls multiple-value presentation.          |
+| `value`          | `string \| string[]`                 | Inherited from `rc-select`; live selection. Host writes are silent.        |
+| `defaultValue`   | `string \| string[] \| undefined`    | Inherited JS-only initial value for uncontrolled usage.                    |
+| `options`        | `ListboxOption[] \| undefined`       | Inherited JS-only option-data override.                                    |
+| `selectedValues` | `string[]`                           | Inherited read-only snapshot of selected values.                           |
+
+The inherited `openPopup()` and `closePopup()` methods control the popup
+imperatively. Like other host-driven writes, these calls do not dispatch a
+selection-change event.
 
 ## Events
 
-| Event | Detail | Description |
-| --- | --- | --- |
-| `rc-combobox-create` | `{ text: string }` | Cancelable event fired before a new option is inserted. |
-| `rc-select-change` | `{ value: string \| string[] }` | Inherited selection-change event. |
+| Event                | Detail                          | Description                                             |
+| -------------------- | ------------------------------- | ------------------------------------------------------- |
+| `rc-combobox-create` | `{ text: string }`              | Cancelable event fired before a new option is inserted. |
+| `rc-select-change`   | `{ value: string \| string[] }` | Inherited selection-change event.                       |
+| `rc-select-open`     | none                            | Inherited event fired when the popup opens.             |
+| `rc-select-close`    | none                            | Inherited event fired when the popup closes.            |
 
 ## Accessibility
 

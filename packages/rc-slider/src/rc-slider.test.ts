@@ -1,7 +1,7 @@
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 import './define.js';
 import type { RCSlider } from './rc-slider.js';
@@ -9,7 +9,7 @@ import type { RCSlider } from './rc-slider.js';
 test('rc-slider renders progress fill', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" display="float">
-      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -21,7 +21,7 @@ test('rc-slider renders progress fill', async () => {
 test('rc-slider renders float value display using value-text', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" display="float" value-text="25 of 100">
-      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -33,7 +33,7 @@ test('rc-slider renders float value display using value-text', async () => {
 test('rc-slider keeps the native input in the DOM after upgrade', async () => {
   const screen = render(html`
     <rc-slider data-testid="host">
-      <input type="range" name="fuel" min="0" max="100" value="40" aria-label="Fuel">
+      <input type="range" name="fuel" min="0" max="100" value="40" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -54,7 +54,7 @@ test('rc-slider leaves the consumer native input in light DOM', async () => {
         part="consumer-part"
         value="40"
         aria-label="Fuel"
-      >
+      />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -69,7 +69,7 @@ test('rc-slider renders track-background slot before progress', async () => {
   const screen = render(html`
     <rc-slider data-testid="host">
       <span slot="track-background" data-testid="background"></span>
-      <input type="range" min="0" max="100" value="40" aria-label="Fuel">
+      <input type="range" min="0" max="100" value="40" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -89,7 +89,7 @@ test('rc-slider renders track-background slot before progress', async () => {
 test('rc-slider reflects styling state on the root part', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" readonly disabled value-text="25 of 100">
-      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -105,12 +105,8 @@ test('rc-slider fires input and change events', async () => {
   const inputSpy = vi.fn();
   const changeSpy = vi.fn();
   const screen = render(html`
-    <rc-slider
-      data-testid="host"
-      @rc-slider-input=${inputSpy}
-      @rc-slider-change=${changeSpy}
-    >
-      <input type="range" value="5" aria-label="Fuel">
+    <rc-slider data-testid="host" @rc-slider-input=${inputSpy} @rc-slider-change=${changeSpy}>
+      <input type="range" value="5" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -128,7 +124,7 @@ test('rc-slider fires input and change events', async () => {
 test('rc-slider input event updates rendered progress and value display', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" display="inline-end">
-      <input type="range" min="0" max="100" value="5" aria-label="Fuel">
+      <input type="range" min="0" max="100" value="5" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -147,7 +143,7 @@ test('rc-slider input event updates rendered progress and value display', async 
 test('rc-slider readonly suppresses value updates', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" readonly>
-      <input type="range" value="5" aria-label="Fuel">
+      <input type="range" value="5" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -164,7 +160,7 @@ test('rc-slider readonly suppresses value updates', async () => {
 test('rc-slider exposes aria-valuetext and aria-orientation via updated()', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" value-text="Low" orientation="vertical">
-      <input type="range" value="25" aria-label="Volume">
+      <input type="range" value="25" aria-label="Volume" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -180,7 +176,7 @@ test('rc-slider native for/id label association survives component upgrade', asy
     <div data-testid="wrapper">
       <label for="test-slider-input">Volume</label>
       <rc-slider data-testid="host">
-        <input id="test-slider-input" type="range" value="50">
+        <input id="test-slider-input" type="range" value="50" />
       </rc-slider>
     </div>
   `);
@@ -200,7 +196,7 @@ test('rc-slider Page Down adjusts value by 10 and fires rc-slider-input', async 
   const inputSpy = vi.fn();
   const screen = render(html`
     <rc-slider data-testid="host" @rc-slider-input=${inputSpy}>
-      <input type="range" min="0" max="100" value="50" aria-label="Volume">
+      <input type="range" min="0" max="100" value="50" aria-label="Volume" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -216,7 +212,7 @@ test('rc-slider Page Down adjusts value by 10 and fires rc-slider-input', async 
 test('rc-slider progress fill reflects initial value at first render', async () => {
   const screen = render(html`
     <rc-slider data-testid="host">
-      <input type="range" min="0" max="100" value="25" aria-label="Fuel">
+      <input type="range" min="0" max="100" value="25" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -229,7 +225,7 @@ test('rc-slider progress fill reflects initial value at first render', async () 
 test('rc-slider disabled syncs to native input', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" .disabled=${true}>
-      <input type="range" aria-label="Fuel">
+      <input type="range" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -243,7 +239,7 @@ test('rc-slider Page Up adjusts value by 10 and fires rc-slider-input', async ()
   const inputSpy = vi.fn();
   const screen = render(html`
     <rc-slider data-testid="host" @rc-slider-input=${inputSpy}>
-      <input type="range" min="0" max="100" value="50" aria-label="Volume">
+      <input type="range" min="0" max="100" value="50" aria-label="Volume" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -259,7 +255,7 @@ test('rc-slider Page Up adjusts value by 10 and fires rc-slider-input', async ()
 test('rc-slider display="inline-end" renders value display', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" display="inline-end">
-      <input type="range" min="0" max="100" value="75" aria-label="Volume">
+      <input type="range" min="0" max="100" value="75" aria-label="Volume" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -273,7 +269,7 @@ test('rc-slider display="inline-end" renders value display', async () => {
 test('rc-slider has no automated accessibility violations', async () => {
   const screen = render(html`
     <rc-slider data-testid="host">
-      <input type="range" value="5" aria-label="Fuel">
+      <input type="range" value="5" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -284,7 +280,7 @@ test('rc-slider has no automated accessibility violations', async () => {
 test('rc-slider defaultValue sets initial value without controlling', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" default-value="30">
-      <input type="range" min="0" max="100" value="5" aria-label="Fuel">
+      <input type="range" min="0" max="100" value="5" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -298,7 +294,7 @@ test('rc-slider defaultValue sets initial value without controlling', async () =
 test('rc-slider controlled value overrides defaultValue', async () => {
   const screen = render(html`
     <rc-slider data-testid="host" default-value="30">
-      <input type="range" min="0" max="100" value="5" aria-label="Fuel">
+      <input type="range" min="0" max="100" value="5" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -313,7 +309,7 @@ test('rc-slider user input in uncontrolled mode updates value and fires rc-slide
   const changeSpy = vi.fn();
   const screen = render(html`
     <rc-slider data-testid="host" default-value="10" @rc-slider-change=${changeSpy}>
-      <input type="range" min="0" max="100" value="5" aria-label="Fuel">
+      <input type="range" min="0" max="100" value="5" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;
@@ -331,7 +327,7 @@ test('rc-slider user input in uncontrolled mode updates value and fires rc-slide
 test('rc-slider without defaultValue falls back to 0', async () => {
   const screen = render(html`
     <rc-slider data-testid="host">
-      <input type="range" min="0" max="100" value="0" aria-label="Fuel">
+      <input type="range" min="0" max="100" value="0" aria-label="Fuel" />
     </rc-slider>
   `);
   const host = screen.getByTestId('host').element() as RCSlider;

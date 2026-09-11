@@ -72,6 +72,19 @@ import '@rcarls/rc-accordion/define';
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
+## Accessibility
+
+Keep each managed native `<details>` element as a direct child, or wrap it in a
+direct-child `rc-disclosure`, with a native `<summary>` as its first child. The
+native elements retain disclosure semantics, focus, and Enter/Space activation.
+
+After upgrade, Arrow Up and Arrow Down move focus between summaries and wrap at
+the ends; Home and End move to the first and last summary. By default, opening a
+panel closes its open siblings. Add `multiple` when more than one panel may stay
+open. The optional `name` attribute is mirrored to managed native `<details>`
+children to preserve native exclusive grouping; author-provided child names are
+left unchanged.
+
 ## API
 
 <ApiTable tag="rc-accordion" />

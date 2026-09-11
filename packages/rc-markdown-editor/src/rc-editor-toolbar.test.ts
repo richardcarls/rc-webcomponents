@@ -2,10 +2,10 @@ import { test, expect, describe } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './define.ts';
-import type { RcEditorToolbar } from './rc-editor-toolbar.ts';
-import type { EditorToolbarActionDetail } from './types.ts';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import './define.js';
+import type { RcEditorToolbar } from './rc-editor-toolbar.js';
+import type { EditorToolbarActionDetail } from './types.js';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 describe('RcEditorToolbar', () => {
   test('renders 11 default buttons plus heading select', async () => {

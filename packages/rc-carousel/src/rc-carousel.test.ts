@@ -2,11 +2,11 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import { unexpectedOverflow } from '../../../test-helpers/rendered-ui.ts';
-import './define.ts';
-import type { RCCarousel } from './rc-carousel.ts';
-import type { RCCarouselChangeDetail } from './rc-carousel.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { unexpectedOverflow } from '../../../test-helpers/rendered-ui.js';
+import './define.js';
+import type { RCCarousel } from './rc-carousel.js';
+import type { RCCarouselChangeDetail } from './rc-carousel.js';
 
 async function settle(carousel: RCCarousel): Promise<void> {
   await carousel.updateComplete;

@@ -8,7 +8,7 @@
  * @see https://github.com/quilljs/parchment
  */
 import { Registry, ScrollBlot, BlockBlot, InlineBlot, EmbedBlot } from 'parchment';
-import type { MarkDecoration } from './types.ts';
+import type { MarkDecoration } from './types.js';
 
 export { Registry };
 

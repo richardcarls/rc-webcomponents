@@ -8,7 +8,7 @@ import {
   type ScrollObserverTarget,
 } from '@rcarls/rc-common';
 
-import appBarStyles from './rc-app-bar.styles';
+import appBarStyles from './rc-app-bar.styles.js';
 
 declare global {
   interface HTMLElementTagNameMap {
