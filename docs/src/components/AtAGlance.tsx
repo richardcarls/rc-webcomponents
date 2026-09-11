@@ -29,11 +29,15 @@ export function AtAGlance({
     <dl className={styles.root} aria-label="Component summary">
       <div>
         <dt>Package</dt>
-        <dd><code>{packageName}</code></dd>
+        <dd>
+          <code>{packageName}</code>
+        </dd>
       </div>
       <div>
         <dt>Element</dt>
-        <dd><code>{`<${tag}>`}</code></dd>
+        <dd>
+          <code>{`<${tag}>`}</code>
+        </dd>
       </div>
       <div>
         <dt>Native dependency</dt>
@@ -46,14 +50,18 @@ export function AtAGlance({
       <div>
         <dt>Main events</dt>
         <dd>
-          {events.length ? events.map((eventName) => <code key={eventName}>{eventName}</code>) : 'None'}
+          {events.length
+            ? events.map((eventName) => <code key={eventName}>{eventName}</code>)
+            : 'None'}
         </dd>
       </div>
       <div>
         <dt>Related</dt>
         <dd>
           {related.map((item) => (
-            <Link key={item.href} to={item.href}>{item.label}</Link>
+            <Link key={item.href} to={item.href}>
+              {item.label}
+            </Link>
           ))}
           {!hasThemePreviewLink && <Link to="/guide/theme-previews">Theme previews</Link>}
         </dd>

@@ -1,6 +1,18 @@
 @layer rc-theme-material.components {
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-dialog > dialog {
     max-inline-size: min(35rem, calc(100vw - 3rem));
+    /* A native <dialog>'s own default max-block-size/overflow:auto is what
+     * would otherwise constrain a tall dialog's height, but Chromium does
+     * not reliably clip a scrolling element's own border-radius once it
+     * actually needs to scroll (confirmed: a short dialog renders correctly
+     * rounded on every edge; the same dialog forced to overflow its
+     * available height loses the radius on whichever edge sits at the
+     * scroll boundary). Setting an explicit max-block-size plus
+     * overflow: hidden here replaces that reliance: this outer surface
+     * never itself scrolls, so its own corners always clip correctly, and
+     * a scrollable dialog instead scrolls a dedicated inner region. */
+    max-block-size: calc(100dvh - 3rem);
+    overflow: hidden;
     padding: 1.5rem;
     border: 0;
     border-radius: var(--md-sys-shape-corner-extra-large, 1.75rem);
@@ -17,10 +29,59 @@
     );
   }
 
+  /*
+   * Fallback styling for plain, unwrapped buttons in dialog content or
+   * actions. Descendants of a defined custom element are excluded because
+   * that wrapper owns its native control's presentation. The :where() list
+   * identifies native grouping elements that commonly organize dialog
+   * content; unlike autonomous custom elements, they should not suppress
+   * the fallback treatment.
+   */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-dialog
     > dialog
-    :is(button, [role='button']) {
+    :is(button, [role='button']):not(
+      rc-dialog
+        > dialog
+        :defined:not(
+          :where(
+            address,
+            article,
+            aside,
+            blockquote,
+            dd,
+            details,
+            div,
+            dl,
+            dt,
+            fieldset,
+            figcaption,
+            figure,
+            footer,
+            form,
+            header,
+            hgroup,
+            li,
+            main,
+            menu,
+            nav,
+            ol,
+            p,
+            search,
+            section,
+            span,
+            table,
+            tbody,
+            td,
+            tfoot,
+            th,
+            thead,
+            tr,
+            ul
+          )
+        )
+        *
+    ) {
     min-block-size: 2.5rem;
     padding-inline: 1.5rem;
     border: 0;

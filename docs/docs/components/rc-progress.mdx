@@ -1,0 +1,75 @@
+---
+title: rc-progress
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ProgressDemo } from '@site/src/components/ComponentDemos';
+
+# rc-progress
+
+Native `<progress>` enhancer with a formatted value display, a restylable track/fill, and a
+built-in fix for the indeterminate/undefined-binding footgun.
+
+<AtAGlance
+  packageName="@rcarls/rc-progress"
+  tag="rc-progress"
+  native="Requires a native progress child"
+  state="Controlled or uncontrolled numeric value"
+  events={['rc-progress-complete']}
+  related={[
+    { label: 'rc-slider', href: '/components/rc-slider' },
+    { label: 'rc-dialog', href: '/components/rc-dialog' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-progress
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-progress
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-progress/define';
+```
+
+## Live demo
+
+<ProgressDemo />
+
+## Determinate vs. indeterminate
+
+Binding `undefined` to a live `<progress>.value` throws. Toggle the `indeterminate`
+attribute instead: the component removes and restores the native element's `value`
+attribute for you, so you never have to reach for that binding yourself.
+
+## Doing one job
+
+`rc-progress` does not render a dialog, own any phase state, or assume anything about
+where it's placed. It composes cleanly with `rc-dialog`, a card, or an inline status
+row: bring your own chrome, and let `rc-progress` handle the bar.
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared
+preview controls on this page to compare inherited, light, and dark color schemes or
+to apply the optional Material theme only inside the demo frames.
+
+## API
+
+<ApiTable tag="rc-progress" />

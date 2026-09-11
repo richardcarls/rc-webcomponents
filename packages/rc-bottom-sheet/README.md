@@ -61,12 +61,15 @@ then docks to that container's block-end edge instead of the viewport.
 List `snap-points` as CSS heights in ascending order. Slow drag releases
 settle at the nearest point; a swipe at `swipe-velocity` or faster settles at
 the first or last point. Settling animates unless the user prefers reduced
-motion.
+motion. `rc-bottom-sheet-resize-start` fires as an interactive resize begins,
+before the sheet geometry changes, so consumers can prepare content that the
+drag will reveal.
 
 Call `snapTo(index)` to move programmatically. The
-`rc-bottom-sheet-snap` event reports the selected `index`, effective target
-`height` after CSS size constraints, and whether the trigger was a drag or API
-call. Constrained targets remain docked to the same block-end edge.
+`rc-bottom-sheet-snap` event fires after the sheet has settled and reports the
+selected `index`, effective target `height` after CSS size constraints, and
+whether the trigger was a drag or API call. Interrupted animations do not emit
+a stale event. Constrained targets remain docked to the same block-end edge.
 
 Set `--rc-bottom-sheet-snap-duration` and
 `--rc-bottom-sheet-snap-easing` on the dialog to customize its settle motion.

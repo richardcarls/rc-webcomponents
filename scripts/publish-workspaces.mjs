@@ -4,7 +4,6 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
 import { x as extractTar } from 'tar';
 
 import {
@@ -32,8 +31,15 @@ const REGISTRY_FIELDS = [
   'repository',
   'dist.attestations',
 ];
-const DEFAULT_POLL_ATTEMPTS = 12;
-const DEFAULT_POLL_DELAY_MS = 5_000;
+// npm sometimes prints "Your package is being processed and may take a few
+// minutes to become available" right after a successful publish; the SLSA
+// provenance attestation can lag the package itself by more than a minute.
+// A confirmed instance: @rcarls/rc-bottom-sheet@0.5.0 published fine but its
+// provenance didn't index for several minutes, well past the previous 60s
+// budget (12 x 5s), which failed the whole release run even though nothing
+// was actually wrong. 30 x 10s gives ~5 minutes, matching npm's own estimate.
+const DEFAULT_POLL_ATTEMPTS = 30;
+const DEFAULT_POLL_DELAY_MS = 10_000;
 const PUBLISHED_DEPENDENCY_FIELDS = ['dependencies', 'optionalDependencies', 'peerDependencies'];
 
 function sleep(milliseconds) {
@@ -150,6 +156,7 @@ export function hasSlsaProvenance(metadata) {
 
 export function validatePublishedManifest({
   internalNames,
+  internalVersions,
   manifest,
   packageName,
   requireProvenance = false,
@@ -182,7 +189,10 @@ export function validatePublishedManifest({
         continue;
       }
 
-      const expectedRange = expectedPublishedRange(sourceRange, version);
+      const expectedRange = expectedPublishedRange(
+        sourceRange,
+        internalVersions?.get(dependencyName) ?? version,
+      );
       const publishedRange = manifest?.[field]?.[dependencyName];
 
       if (publishedRange !== expectedRange) {
@@ -218,9 +228,10 @@ export function expectedPublishedRange(sourceRange, version) {
     : sourceRange;
 }
 
-export function validatePackedManifest({ internalNames, manifest, workspace }) {
+export function validatePackedManifest({ internalNames, internalVersions, manifest, workspace }) {
   validatePublishedManifest({
     internalNames,
+    internalVersions,
     manifest,
     packageName: workspace.name,
     sourceManifest: workspace.manifest,
@@ -230,6 +241,7 @@ export function validatePackedManifest({ internalNames, manifest, workspace }) {
 
 export function inspectPackedManifest({ extractDirectory, packageName, tarballPath }) {
   mkdirSync(extractDirectory, { recursive: true });
+
   extractTar({
     cwd: extractDirectory,
     file: tarballPath,
@@ -417,6 +429,7 @@ async function waitForVerifiedPackage({
     await operations.sleep(pollDelayMs);
 
     const result = await operations.query(workspace);
+
     metadata = result.state === 'found' ? result.metadata : undefined;
   }
 
@@ -471,6 +484,7 @@ export async function executePublication({
           pollDelayMs,
           workspace,
         });
+
         summary.skipped.push(workspace.name);
         log.log(`skip (published and verified): ${workspace.name}@${workspace.manifest.version}`);
 
@@ -499,6 +513,7 @@ export async function executePublication({
           pollDelayMs,
           workspace,
         });
+
         summary.raceRecovered.push(workspace.name);
         log.log(`publish race recovered: ${workspace.name}@${workspace.manifest.version}`);
 
@@ -512,6 +527,7 @@ export async function executePublication({
         pollDelayMs,
         workspace,
       });
+
       summary.published.push(workspace.name);
     } catch (error) {
       summary.failed.push(workspace.name);

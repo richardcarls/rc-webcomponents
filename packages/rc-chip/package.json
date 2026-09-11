@@ -3,8 +3,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.5.0",
-  "description": "Chip wrapper for native button-based actions, filters, and inputs.",
+  "version": "0.6.0",
+  "description": "Chip wrapper for native actions, links, filters, and inputs.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",

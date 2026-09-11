@@ -51,12 +51,12 @@ layout stay coordinated.
 
 ## API
 
-| Property | Attribute | Type | Default | Description |
-| --- | --- | --- | --- | --- |
-| `activeSelector` | `active-selector` | `string` | `a[aria-current]:not([aria-current="false"])` | Selector used to find the active link. |
+| Property          | Attribute          | Type     | Default                                                     | Description                                                  |
+| ----------------- | ------------------ | -------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| `activeSelector`  | `active-selector`  | `string` | `a[aria-current]:not([aria-current="false"])`               | Selector used to find the active link.                       |
 | `indicatorTarget` | `indicator-target` | `string` | `[data-rc-navigation-indicator], [data-rc-navigation-icon]` | Selector inside the active link used for indicator geometry. |
 
-| Part | Description |
-| --- | --- |
-| `nav` | Navigation layout container. |
-| `indicator` | Active item indicator. |
+| Part        | Description                  |
+| ----------- | ---------------------------- |
+| `nav`       | Navigation layout container. |
+| `indicator` | Active item indicator.       |

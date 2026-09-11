@@ -23,6 +23,7 @@ Modal bottom-sheet wrapper for a native `<dialog>`, built on `rc-dialog`.
     'rc-dialog-request-close',
     'rc-dialog-cancel',
     'rc-dialog-close',
+    'rc-bottom-sheet-resize-start',
     'rc-bottom-sheet-snap',
   ]}
   related={[
@@ -101,6 +102,10 @@ by default) settles at the last or first point, respectively. When
 `swipe-dismiss` is enabled, dragging downward by at least `96` pixels requests
 close before velocity-based snapping applies.
 
+`rc-bottom-sheet-resize-start` fires before an interactive resize changes the
+sheet geometry. Consumers can use it to prepare content that an expansion drag
+will progressively reveal.
+
 ```js
 const sheet = document.querySelector('#filters');
 
@@ -117,7 +122,9 @@ there are no valid snap points. Pass `'instant'` as its second argument to
 skip animation. The component also skips animation when the user has enabled
 reduced motion. Snap events report the effective rendered height after CSS
 minimum and maximum size constraints, and constrained targets remain docked to
-the sheet's block-end edge.
+the sheet's block-end edge. Animated snaps emit only after the settle motion
+finishes; an interrupted animation does not emit a stale target. This makes the
+event a safe point for discrete content or accessibility-state changes.
 
 ## Live demo
 

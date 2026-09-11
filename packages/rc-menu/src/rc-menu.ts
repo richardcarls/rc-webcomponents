@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 
 import { ActiveDescendantController, isFocusable } from '@rcarls/rc-common';
 
-import menuStyles from './rc-menu.styles';
+import menuStyles from './rc-menu.styles.js';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -38,6 +38,7 @@ const LIGHT_DOM_CSS = `
   rc-menu [role='menuitemradio'],
   rc-menu button:disabled {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     gap: var(--rc-menu-item-gap, var(--rc-item-gap, 0.5em));
     min-block-size: var(--rc-menu-item-min-block-size, 0px);
@@ -74,33 +75,65 @@ const LIGHT_DOM_CSS = `
     color: var(--rc-menu-active-color, inherit);
   }
 
-  /* Check/radio indicator — ::before acts as a fixed-width leading column.
-     Content is empty (unchecked) or a Unicode symbol (checked/mixed).
-     Semantic state is conveyed by aria-checked; the visual symbol is decorative. */
-  rc-menu [role='menuitemcheckbox']::before,
-  rc-menu [role='menuitemradio']::before {
+  /* Check/radio indicator — ::after acts as a fixed-width trailing column,
+     pushed to the item's inline-end regardless of label length (same
+     positioning as the [data-rc-menu-shortcut] slot below). Trailing rather
+     than leading so it coexists with a leading icon a consumer supplies for
+     the item itself (a radio/checkbox item's own icon and its checked state
+     are different things; leading is already spoken for). Content is empty
+     (unchecked) or a Unicode symbol (checked/mixed). Semantic state is
+     conveyed by aria-checked; the visual symbol is decorative. */
+  rc-menu [role='menuitemcheckbox']::after,
+  rc-menu [role='menuitemradio']::after {
     content: '';
     flex: 0 0 var(--rc-menu-check-size, 1.25em);
+    margin-inline-start: auto;
     text-align: center;
     line-height: 1;
     color: var(--rc-menu-check-color, inherit);
   }
 
-  rc-menu [role='menuitemcheckbox'][aria-checked='true']::before {
+  /* A shortcut owns the auto margin when both trailing affordances exist,
+     keeping the shortcut and selection indicator in one end-aligned group. */
+  rc-menu [role='menuitemcheckbox']:has(:is([data-rc-menu-shortcut], [data-menu-shortcut]))::after,
+  rc-menu [role='menuitemradio']:has(:is([data-rc-menu-shortcut], [data-menu-shortcut]))::after {
+    margin-inline-start: 0;
+  }
+
+  rc-menu [role='menuitemcheckbox'][aria-checked='true']::after {
     content: '✓';
   }
 
-  rc-menu [role='menuitemcheckbox'][aria-checked='mixed']::before {
+  rc-menu [role='menuitemcheckbox'][aria-checked='mixed']::after {
     content: '−';
   }
 
-  rc-menu [role='menuitemradio'][aria-checked='true']::before {
+  rc-menu [role='menuitemradio'][aria-checked='true']::after {
     content: '•';
   }
 
+  rc-menu [data-rc-menu-leading],
+  rc-menu [data-rc-menu-trailing] {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  rc-menu [data-rc-menu-label] {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+
   /* Trailing label — keyboard shortcut or hint, pushed to the inline-end of the item */
+  rc-menu [data-rc-menu-trailing],
+  rc-menu [data-rc-menu-shortcut],
   rc-menu [data-menu-shortcut] {
     margin-inline-start: auto;
+  }
+
+  rc-menu [data-rc-menu-shortcut],
+  rc-menu [data-menu-shortcut] {
     font-size: var(--rc-menu-shortcut-size, 0.8em);
     color: var(--rc-menu-shortcut-color, GrayText);
     white-space: nowrap;
@@ -151,12 +184,15 @@ const LIGHT_DOM_CSS = `
  *
  * @slot default - Menu items, groups, and separators. Supported content model:
  *   - Focusable elements (`<button>`, `<a>`, `[tabindex]`) become navigable `role="menuitem"` entries.
- *   - `role="menuitemcheckbox"` / `role="menuitemradio"` elements get a leading indicator column via `::before`;
- *     `aria-checked` is initialized when missing and updated on activation.
+ *   - `role="menuitemcheckbox"` / `role="menuitemradio"` elements get a trailing indicator column via `::after`
+ *     (coexists with a leading icon the item supplies itself); `aria-checked` is initialized when missing and
+ *     updated on activation.
  *   - `role="group"` divs group related items; label them with `aria-label` or `aria-labelledby`. Optionally
  *     add a visible `[data-group-label]` element as first child of the group for section headings.
  *   - `role="separator"` / `<hr>` produce horizontal dividers between sections.
- *   - Within any item, `[data-menu-shortcut]` elements are pushed to the inline-end edge for keyboard hints.
+ *   - Within any item, use `[data-rc-menu-leading]`, `[data-rc-menu-label]`, and
+ *     `[data-rc-menu-trailing]` to identify content columns. `[data-rc-menu-shortcut]`
+ *     (and the legacy `[data-menu-shortcut]`) is pushed to the inline-end edge.
  *   - Nested menu triggers supply their own trailing indicator through `rc-menu-button`'s `indicator` slot.
  *
  * @fires rc-menu-activate - Fired when a menu item is activated via keyboard (Enter/Space) or pointer click.
@@ -171,6 +207,8 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-menu-radius=var(--rc-control-radius)] - Menu panel border radius.
  * @cssprop [--rc-menu-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Box shadow; falls back through --rc-shadow.
  * @cssprop [--rc-menu-color=CanvasText] - Text color; falls back through --rc-field-text.
+ * @cssprop [--rc-menu-max-inline-size=calc(100dvi - 0.5rem)] - Viewport-aware maximum inline size.
+ * @cssprop [--rc-menu-max-block-size=calc(100dvb - 0.5rem)] - Viewport-aware maximum block size; taller menus scroll.
  * @cssprop [--rc-menu-item-min-block-size=0] - Minimum block size for menu item rows.
  * @cssprop [--rc-menu-item-padding-block=var(--rc-item-padding-block)] - Menu item block-axis padding.
  * @cssprop [--rc-menu-item-padding-inline=var(--rc-item-padding-inline)] - Menu item inline-axis padding.
@@ -180,10 +218,10 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-menu-hover-color=inherit] - Pointer-hover text color.
  * @cssprop [--rc-menu-active-bg=color-mix(in srgb, Highlight 8%, transparent)] - Virtual-cursor active background.
  * @cssprop [--rc-menu-active-color=inherit] - Virtual-cursor active text color.
- * @cssprop [--rc-menu-check-size=1.25em] - Width of the leading indicator column for checkbox/radio items.
+ * @cssprop [--rc-menu-check-size=1.25em] - Width of the trailing indicator column for checkbox/radio items.
  * @cssprop [--rc-menu-check-color=inherit] - Color of the check/radio symbol.
- * @cssprop [--rc-menu-shortcut-size=0.8em] - Font size of `[data-menu-shortcut]` labels.
- * @cssprop [--rc-menu-shortcut-color=GrayText] - Text color of `[data-menu-shortcut]` labels.
+ * @cssprop [--rc-menu-shortcut-size=0.8em] - Font size of `[data-rc-menu-shortcut]` labels.
+ * @cssprop [--rc-menu-shortcut-color=GrayText] - Text color of `[data-rc-menu-shortcut]` labels.
  * @cssprop [--rc-menu-disabled-color=GrayText] - Disabled menu item text color.
  * @cssprop [--rc-menu-disabled-opacity=var(--rc-disabled-opacity)] - Disabled menu item opacity.
  * @cssprop [--rc-menu-separator-border=1px solid ButtonBorder] - Separator border.

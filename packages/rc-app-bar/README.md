@@ -1,6 +1,8 @@
 # `@rcarls/rc-app-bar`
 
-App bar modeled after the [Material 3 Top app bar](https://m3.material.io/components/top-app-bar/overview), with leading, title, center, trailing regions and optional scroll behavior.
+App bar modeled after the
+[Material 3 Top app bar](https://m3.material.io/components/top-app-bar/overview),
+with leading, title, center, trailing regions and optional scroll behavior.
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-app-bar](https://richardcarls.github.io/rc-webcomponents/components/rc-app-bar).
 
@@ -41,11 +43,7 @@ duplicated while the bar changes layout.
 comes from the title content rather than a Material-specific fixed size.
 
 ```html
-<rc-app-bar
-  variant="expanded"
-  scroll-behavior="collapse"
-  scroll-target="#content"
->
+<rc-app-bar variant="expanded" scroll-behavior="collapse" scroll-target="#content">
   <button slot="leading" aria-label="Back">&larr;</button>
   <div>
     <strong>Slow-Roasted Tomato Pasta</strong>
@@ -65,14 +63,14 @@ Scroll behaviors are exclusive:
 
 The component never consumes, stops, or rewrites the document's scroll.
 
-## Exact-center composition
+## Center-slot composition
 
-The optional `center` slot remains at the host's geometric midpoint even when
-leading and trailing controls have different widths. This is useful for
-desktop controls or an [`rc-search-bar`](../rc-search-bar/):
+The optional `center` slot, useful for desktop controls or an
+[`rc-search-bar`](../rc-search-bar/), fills the flexible space between leading
+and trailing by default:
 
 ```html
-<rc-app-bar>
+<rc-app-bar style="--rc-app-bar-center-max-inline-size: 32rem;">
   <button slot="leading">Back</button>
   <span>Recipes</span>
   <rc-search-bar slot="center" placeholder="Search recipes">
@@ -81,6 +79,28 @@ desktop controls or an [`rc-search-bar`](../rc-search-bar/):
   <button slot="trailing" aria-label="Account">Account</button>
 </rc-app-bar>
 ```
+
+Uncapped, it stretches edge-to-edge like any other content in that space. Set
+`--rc-app-bar-center-max-inline-size` and it centers within the available
+space once it hits that width instead of continuing to stretch (centered
+between wherever leading ends and trailing begins, not on the bar's own
+viewport midpoint).
+
+For a control that must sit at the bar's exact geometric midpoint regardless
+of asymmetric leading/trailing widths, add `center-symmetric`:
+
+```html
+<rc-app-bar center-symmetric>
+  <button slot="leading">Long leading label</button>
+  <span>Recipes</span>
+  <rc-search-bar slot="center">...</rc-search-bar>
+  <button slot="trailing" aria-label="Account">Account</button>
+</rc-app-bar>
+```
+
+This mirrors the leading/trailing edge widths so the center slot stays
+viewport-centered even when the two sides differ, at the cost of extra reserved
+space on whichever side is narrower.
 
 Title and center content may coexist. The title is constrained before it can
 overlap the centered content. Without center content, the title uses all space
@@ -186,16 +206,21 @@ rc-app-bar.glass::part(root) {
 
 ### CSS custom properties
 
-| Property | Default | Description |
-| --- | --- | --- |
-| `--rc-app-bar-bg` | `Canvas` | Bar background |
-| `--rc-app-bar-color` | `CanvasText` | Bar text color |
-| `--rc-app-bar-compact-min-height` | `3rem` | Compact row minimum height |
-| `--rc-app-bar-expanded-padding-block` | `0.75em` | Expanded title block padding |
-| `--rc-app-bar-padding-inline` | `0.75em` | Horizontal padding |
-| `--rc-app-bar-gap` | `0.5em` | Gap between regions |
-| `--rc-app-bar-transition-duration` | `200ms` | Endpoint and hide transition duration |
-| `--rc-app-bar-scroll-divider` | `1px solid GrayText` | Scrolled separator border |
+| Property                                | Default              | Description                                                                                                                                        |
+| --------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--rc-app-bar-bg`                       | `Canvas`             | Bar background                                                                                                                                     |
+| `--rc-app-bar-color`                    | `CanvasText`         | Bar text color                                                                                                                                     |
+| `--rc-app-bar-compact-min-height`       | `3rem`               | Compact row minimum height                                                                                                                         |
+| `--rc-app-bar-expanded-padding-block`   | `0.75em`             | Expanded title block padding                                                                                                                       |
+| `--rc-app-bar-padding-inline`           | `0.75em`             | Horizontal padding                                                                                                                                 |
+| `--rc-app-bar-gap`                      | `0.5em`              | Gap between regions                                                                                                                                |
+| `--rc-app-bar-center-max-inline-size`   | `100%`               | Max width of `slot="center"` content before it centers within the available space instead of filling it. No effect when `center-symmetric` is set. |
+| `--rc-app-bar-title-start-padding`      | `0px`                | Extra title inline-start padding when the leading slot is empty                                                                                    |
+| `--rc-app-bar-transition-duration`      | `200ms`              | Endpoint and hide transition duration                                                                                                              |
+| `--rc-app-bar-scroll-divider`           | `1px solid GrayText` | Scrolled separator border                                                                                                                          |
+| `--rc-app-bar-collapse-progress`        | `0`                  | Read-only collapse animation progress from 0 through 1                                                                                             |
+| `--rc-app-bar-title-font-size`          | unset                | Optional compact-row title font size; inherits when unset                                                                                          |
+| `--rc-app-bar-expanded-title-font-size` | unset                | Optional expanded-row title font size; inherits when unset                                                                                         |
 
 ### CSS parts
 

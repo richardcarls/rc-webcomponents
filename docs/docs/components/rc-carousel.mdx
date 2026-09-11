@@ -1,0 +1,205 @@
+---
+title: rc-carousel
+---
+
+<!-- markdownlint-disable MD033 -->
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { CarouselDemo } from '@site/src/components/ComponentDemos';
+
+# rc-carousel
+
+Swipeable slide carousel following the [WAI-ARIA APG Carousel
+pattern](https://www.w3.org/WAI/ARIA/apg/patterns/carousel/), built on native
+CSS scroll-snap rather than a hand-rolled drag engine. `rc-carousel` is the
+track and chrome (navigation buttons, a slide-picker, and consumer-controlled
+slide sizing); `rc-carousel-item` is the slide wrapper, keeping authored
+light-DOM content — images with real alt text, interactive controls — directly
+available to assistive technology.
+
+<AtAGlance
+  packageName="@rcarls/rc-carousel"
+  tag="rc-carousel"
+  native="rc-carousel-item children are slotted light DOM"
+  state="Controlled or uncontrolled active-index"
+  events={['rc-carousel-change']}
+  related={[
+    { label: 'rc-scroller', href: '/components/rc-scroller' },
+    { label: 'rc-adaptive-menu', href: '/components/rc-adaptive-menu' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-carousel
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-carousel
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-carousel/define';
+```
+
+## Markup
+
+```html
+<rc-carousel navigation pagination loop aria-label="Recipe photos">
+  <rc-carousel-item><img src="/pie.jpg" alt="Apple pie, sliced" /></rc-carousel-item>
+  <rc-carousel-item><img src="/risotto.jpg" alt="Mushroom risotto" /></rc-carousel-item>
+</rc-carousel>
+```
+
+Give the host a definite `inline-size`/`block-size` (or place it in a layout
+that provides one) — `navigation` and `pagination` are absolutely positioned
+over the track, so an unsized host's auto height is just its content's own
+line height, too short for them not to overhang.
+
+## Live demo
+
+<CarouselDemo />
+
+## Active slide
+
+`active-index`/`default-active-index` follow this monorepo's controlled/
+uncontrolled property convention. Host writes and calls to `next()`,
+`previous()`, and `goToIndex(index, instant?)` are silent in controlled
+usage — settling reports the new index back through `rc-carousel-change`
+(`detail: { index, trigger }`, `trigger` one of `'api' | 'button' |
+'keyboard' | 'swipe'`) and the consumer feeds it back in.
+
+```html
+<rc-carousel id="photos" active-index="0">
+  <rc-carousel-item>One</rc-carousel-item>
+  <rc-carousel-item>Two</rc-carousel-item>
+</rc-carousel>
+
+<script>
+  const carousel = document.querySelector('#photos');
+
+  carousel.addEventListener('rc-carousel-change', (event) => {
+    carousel.activeIndex = event.detail.index;
+  });
+</script>
+```
+
+Uncontrolled usage only needs `default-active-index`; the component tracks
+its own active slide from there.
+
+## Navigation and pagination
+
+`navigation` renders previous/next buttons; `pagination` renders an APG
+"grouped" slide-picker (a `role="group"` of plain buttons with
+`aria-current`, not `role="tablist"` — see [Accessibility](#accessibility)).
+Both step through `next()`/`previous()`/`goToIndex()` under the hood and
+report `trigger: 'button'`.
+
+Arrow keys move focus-independent of a rendered picker: with focus on the
+track, ArrowLeft/ArrowRight (RTL-aware) step one slide and Home/End jump to
+the first/last, reporting `trigger: 'keyboard'`.
+
+## Loop
+
+`loop` wraps past the first/last slide back to the other end, seamlessly —
+not a discontinuous index jump. It clones the lead and trail slides
+(Shoelace's proven technique) and instantly re-anchors to the real slide
+once a clone settles into view, so the wrap is invisible. Without `loop`,
+navigation buttons show `aria-disabled="true"` at the boundary instead of
+being removed from the tab sequence — see [Accessibility](#accessibility).
+
+## Slide sizing
+
+The default `--rc-carousel-slide-size: calc(100% - 4rem)` shows one large
+slide with a peek of the next. Set the token directly for a multi-browse or
+full-width layout:
+
+```css
+.recipe-carousel {
+  --rc-carousel-slide-size: min(75%, 300px);
+}
+```
+
+Because the token is pure track geometry, a consumer container query can adapt
+it without changing carousel state, keyboard behavior, or accessibility:
+
+```css
+.carousel-region {
+  container-type: inline-size;
+}
+
+.carousel-region rc-carousel {
+  --rc-carousel-slide-size: 100%;
+}
+
+@container (min-width: 40rem) {
+  .carousel-region rc-carousel {
+    --rc-carousel-slide-size: min(40%, 300px);
+  }
+}
+```
+
+MD3's `center-aligned hero`, `full-screen`, and vertical orientation are
+deliberate non-goals for now — neither current consumer needs them, and
+nothing here forecloses adding them later.
+
+## Mouse dragging
+
+`mouse-dragging` adds desktop click-and-drag scrolling. Touch and pen
+already get native scroll-snap physics; a mouse has no built-in equivalent.
+A real drag still ends in a native `click` on release, wherever the pointer
+lands — often unrelated slide content the drag scrolled past, not a
+deliberate activation of it — so a drag that moves far enough to activate
+(clearing an 8px threshold) suppresses exactly that one trailing click,
+matching Shoelace's own `sl-carousel` handling of the same edge case.
+Releasing with enough velocity pre-nudges to the next slide in that
+direction (a "decisive swipe") rather than settling back to where the drag
+started.
+
+## Accessibility
+
+The host defaults to `role="group"` with `aria-roledescription="carousel"`
+(APG allows either `region` or `group` depending on page IA — override
+`role` if the surrounding document calls for a landmark). Each
+`rc-carousel-item` gets `role="group"` and `aria-roledescription="slide"`,
+plus an auto-computed "Slide N of M" `aria-label` when left unlabeled — an
+authored `aria-label` (e.g. describing a photo's actual content) always
+wins. Off-screen and peeking slides get `aria-hidden`/`inert` via an
+`IntersectionObserver`, so their interactive descendants (a "Start timer"
+button, a link) aren't Tab-reachable while inactive.
+
+Navigation and pagination buttons use `aria-disabled` at a boundary, never
+native `disabled` — native `disabled` removes a button from the Tab
+sequence entirely, so a keyboard or screen-reader user reaching the end
+could no longer even locate it to confirm they're there. This is APG's own
+stated preference for the analogous case.
+
+The picker is APG's "grouped" (non-tab) style only — a `role="group"` of
+plain buttons with `aria-current` on the active one, not `role="tablist"`/
+`role="tabpanel"`. The tabbed variant is a deliberate omission: Shoelace's
+own accessibility-PR history found it hitting real shadow-DOM-boundary ARIA
+cross-reference failures, including non-recognition by some screen readers
+entirely.
+
+The track carries `aria-busy`/`aria-atomic` while a settle or programmatic
+scroll is in flight, cleared on settle — a less disruptive alternative to
+toggling `aria-live`, which Shoelace's own PR #1218 found could interrupt a
+screen reader's virtual cursor mid-navigation.
+
+## API
+
+<ApiTable tag="rc-carousel" />
+<ApiTable tag="rc-carousel-item" />

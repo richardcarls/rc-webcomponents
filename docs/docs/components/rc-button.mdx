@@ -10,7 +10,8 @@ import { ButtonDemo } from '@site/src/components/ComponentDemos';
 
 # rc-button
 
-Progressive-enhancement button wrapper for a direct native `<button>`.
+Progressive-enhancement action wrapper for a direct native `<button>` or
+`<a href>` child, with structural state affordances for buttons.
 
 `rc-button` keeps the real button in light DOM for forms, labels, keyboard
 behavior, and no-JavaScript fallback. The custom element adds reflected state
@@ -20,7 +21,7 @@ progress effects.
 <AtAGlance
   packageName="@rcarls/rc-button"
   tag="rc-button"
-  native="Direct-child <button> element"
+  native="Direct-child native button or anchor"
   state="Controlled or uncontrolled toggle state"
   events={['rc-button-toggle']}
   related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
@@ -68,6 +69,20 @@ Mark custom progress-adjacent content with `data-rc-button-progress` so it is
 excluded from label detection, the same way `data-rc-button-icon` and
 `data-rc-button-selected-icon` are.
 
+A direct `<a href>` child gets the same visual/layout styling (border,
+padding, background, `full-width`) for a real navigation action styled as a
+button, without losing native link affordances (open in new tab, copy link):
+
+```html
+<rc-button class="rc-button--outlined">
+  <a href="/support">Buy me a coffee</a>
+</rc-button>
+```
+
+`icon-only` sizing, the touch-target hit-slop, and the
+`toggle`/`disabled`/`pending`/`progress` states stay button-only — those
+assume a real `HTMLButtonElement`.
+
 ## States
 
 Use reflected attributes such as `pending`, `progress`, `selected`,
@@ -94,6 +109,35 @@ favoriteButton.addEventListener('rc-button-toggle', (event) => {
   favoriteButton.selected = event.detail.selected;
 });
 ```
+
+An `icon-only` button that visually renders smaller than the accessible
+touch-target minimum (MD3's 40dp "small" icon button, for example) grows its
+own host to reserve that minimum, keeping the visible button centered inside
+it; the actual larger hit region comes from an invisible pseudo-element on
+the native button itself. That reserved space is symmetric by default, which
+is right when the button has real neighbors on both sides.
+
+At an actual edge, such as the last icon in a toolbar's trailing group, that
+reserved space just adds dead space past the button before the container's
+own edge padding. `--rc-button-touch-target-overlap-inline-start` and
+`--rc-button-touch-target-overlap-inline-end` are zero by default; a theme or
+consumer sets one to give that space back on the given side instead: the
+visible button shifts to sit flush with the edge, while the invisible hit
+region keeps its full accessible size, now overlapping the container's own
+padding instead of sitting outside it. This is a plain token, not a mode
+`rc-button` switches on its own — whether a button sits at an edge that
+warrants it is something only the surrounding layout (a theme's dense
+variant, or the consumer's own CSS) knows.
+
+```css
+.trailing-actions rc-button:last-child {
+  --rc-button-touch-target-overlap-inline-end: 8px;
+}
+```
+
+Only set this on a button that genuinely has no neighbor on the
+overlapping side — otherwise the two buttons' touch targets overlap each
+other instead of a container's padding.
 
 ## Accessibility
 

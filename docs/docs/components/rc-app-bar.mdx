@@ -54,6 +54,21 @@ import '@rcarls/rc-app-bar/define';
 
 <AppBarSearchDemo />
 
+The `center` slot fills the flexible space between leading and trailing by
+default, capped by `--rc-app-bar-center-max-inline-size` before it starts
+centering within the available space instead of continuing to stretch (the
+demo above sets a cap so the search field doesn't stretch edge-to-edge).
+Add `center-symmetric` when a control must sit at the bar's exact geometric
+midpoint regardless of asymmetric leading/trailing widths instead:
+
+```html
+<rc-app-bar center-symmetric>
+  <button slot="leading">Long leading label</button>
+  <rc-search-bar slot="center">...</rc-search-bar>
+  <button slot="trailing" aria-label="Account">Account</button>
+</rc-app-bar>
+```
+
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.

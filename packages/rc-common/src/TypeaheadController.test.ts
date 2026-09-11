@@ -1,6 +1,6 @@
 import { test, expect, vi } from 'vitest';
 
-import { TypeaheadController } from './TypeaheadController';
+import { TypeaheadController } from './TypeaheadController.js';
 
 test('matches the next item by buffered printable keys', () => {
   const onMatch = vi.fn();

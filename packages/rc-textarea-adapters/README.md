@@ -16,10 +16,10 @@ Full API, usage examples, and keyboard/accessibility notes are on the
 All adapters are optional. Install only the peer(s) you use:
 
 | Adapter | Peer dependency |
-| --- | --- |
-| Lezer | `@lezer/common` |
-| Unified | `unified` |
-| Shiki | `shiki` |
+| ------- | --------------- |
+| Lezer   | `@lezer/common` |
+| Unified | `unified`       |
+| Shiki   | `shiki`         |
 
 ## License
 

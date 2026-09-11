@@ -3,17 +3,17 @@ import { describe, expect, test } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import type { RCTextarea } from './rc-textarea.ts';
-import type { RCTextareaPluginAPI } from './types.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import type { RCTextarea } from './rc-textarea.js';
+import type { RCTextareaPluginAPI } from './types.js';
 import {
   getEditor,
   getGutterCells,
   simulatePaste,
   getSlottedTextarea,
   waitRender,
-} from './test-helpers.ts';
-import './define';
+} from './test-helpers.js';
+import './define.js';
 
 async function renderTextarea(
   template: TemplateResult = html`
@@ -62,6 +62,58 @@ describe('RCTextarea — basic rendering', () => {
     const host = await renderTextarea();
 
     await expectNoA11yViolations(host);
+  });
+
+  test('word-wrap lets the host shrink inside a narrow grid', async () => {
+    const host = await renderTextarea(html`
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr); inline-size: 16rem">
+        <rc-textarea data-testid="host" word-wrap>
+          <textarea aria-label="Notes"></textarea>
+        </rc-textarea>
+      </div>
+    `);
+
+    host.value = `https://example.com/${'unbroken-path-segment-'.repeat(20)}`;
+
+    await waitRender();
+
+    const $grid = host.parentElement;
+    const $editor = getEditor(host);
+
+    if (!$grid) {
+      throw new Error('Expected the textarea grid fixture');
+    }
+
+    expect(host.clientWidth).toBe($grid.clientWidth);
+    expect(host.scrollWidth).toBeLessThanOrEqual(host.clientWidth);
+    expect($editor.scrollWidth).toBeLessThanOrEqual($editor.clientWidth);
+    expect(getComputedStyle($editor).whiteSpace).toBe('pre-wrap');
+  });
+
+  test('non-wrapping content scrolls inside a constrained host', async () => {
+    const host = await renderTextarea(html`
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr); inline-size: 16rem">
+        <rc-textarea data-testid="host">
+          <textarea aria-label="Notes"></textarea>
+        </rc-textarea>
+      </div>
+    `);
+
+    host.value = `https://example.com/${'unbroken-path-segment-'.repeat(20)}`;
+
+    await waitRender();
+
+    const $grid = host.parentElement;
+    const $editor = getEditor(host);
+
+    if (!$grid) {
+      throw new Error('Expected the textarea grid fixture');
+    }
+
+    expect(host.clientWidth).toBe($grid.clientWidth);
+    expect(host.scrollWidth).toBeLessThanOrEqual(host.clientWidth);
+    expect($editor.scrollWidth).toBeGreaterThan($editor.clientWidth);
+    expect(getComputedStyle($editor).whiteSpace).toBe('pre');
   });
 });
 

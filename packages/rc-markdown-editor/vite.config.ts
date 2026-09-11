@@ -4,7 +4,13 @@ import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
-  plugins: [dts({ outDir: 'dist/types' })],
+  plugins: [
+    dts({
+      outDir: 'dist/types',
+      entryRoot: resolve(__dirname, '../..'),
+      exclude: ['src/**/*.test.ts', 'src/**/test-helpers.ts'],
+    }),
+  ],
 
   // Exclude 'development' condition to prevent micromark from resolving
   // to its /dev/ entry, which imports `debug` via a Yarn Berry PnP virtual

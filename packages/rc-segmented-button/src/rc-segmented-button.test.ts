@@ -3,9 +3,9 @@ import { expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define';
-import type { RCSegmentedButton } from './rc-segmented-button';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCSegmentedButton } from './rc-segmented-button.js';
 
 async function flushSegmented(host: RCSegmentedButton): Promise<void> {
   await host.updateComplete;

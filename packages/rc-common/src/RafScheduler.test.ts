@@ -1,6 +1,6 @@
 import { test, expect, vi } from 'vitest';
 
-import { RafScheduler } from './RafScheduler';
+import { RafScheduler } from './RafScheduler.js';
 
 test('coalesces repeated schedules into one frame', async () => {
   const scheduler = new RafScheduler();

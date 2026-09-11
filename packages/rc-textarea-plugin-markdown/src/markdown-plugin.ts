@@ -13,14 +13,13 @@ interface VisitNode {
   };
 }
 
-
 /** Decoration styles applied per MDAST node type. */
 const DECORATION_MAP: Record<string, Partial<Omit<DecorationInput, 'type' | 'from' | 'to'>>> = {
-  heading:    { bold: true, className: 'rte-heading' },
-  emphasis:   { italic: true },
-  strong:     { bold: true },
+  heading: { bold: true, className: 'rte-heading' },
+  emphasis: { italic: true },
+  strong: { bold: true },
   inlineCode: { className: 'rte-code' },
-  link:       { underline: 'solid', className: 'rte-link' },
+  link: { underline: 'solid', className: 'rte-link' },
   blockquote: { className: 'rte-blockquote' },
 };
 

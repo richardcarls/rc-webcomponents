@@ -7,7 +7,7 @@ import {
   keyNavigation,
   type KeyboardNavigationAction,
   type KeyNavigationOptions,
-} from './KeyboardNavigationDirective';
+} from './KeyboardNavigationDirective.js';
 
 function renderTarget(
   role: string,

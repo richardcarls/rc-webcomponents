@@ -9,9 +9,9 @@ import {
   setDecorations,
   type MarkDecoration,
   type LineDecoration,
-} from './decoration.ts';
+} from './decoration.js';
 
-import type { Decoration, WidgetDecoration } from './types.ts';
+import type { Decoration, WidgetDecoration } from './types.js';
 
 describe('findEdit', () => {
   test('empty string → insertion', () => {

@@ -3,8 +3,7 @@ import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 import { userEvent } from 'vitest/browser';
 
-import { keyInteraction } from './KeyboardInteractionDirective';
-
+import { keyInteraction } from './KeyboardInteractionDirective.js';
 
 // ─── Focus via keyboard (Tab-in) ─────────────────────────────────────────────
 
@@ -20,19 +19,28 @@ test('keyInteraction: Tab-in sets data-interaction-mode=keyboard', async () => {
   (await screen.getByRole('button').element()).focus();
   await userEvent.keyboard('{Tab}');
 
-  await expect.element(screen.getByTestId('target')).toHaveAttribute('data-interaction-mode', 'keyboard');
+  await expect
+    .element(screen.getByTestId('target'))
+    .toHaveAttribute('data-interaction-mode', 'keyboard');
 });
 
 // ─── Pointer focus removes attribute ─────────────────────────────────────────
 
 test('keyInteraction: pointerdown removes data-interaction-mode', async () => {
   const screen = render(
-    html`<div data-testid="el" tabindex="0" data-interaction-mode="keyboard" ${keyInteraction()}></div>`
+    html`<div
+      data-testid="el"
+      tabindex="0"
+      data-interaction-mode="keyboard"
+      ${keyInteraction()}
+    ></div>`,
   );
   const el = screen.getByTestId('el');
   const node = await el.element();
 
-  node.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true }));
+  node.dispatchEvent(
+    new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true }),
+  );
 
   await expect.element(el).not.toHaveAttribute('data-interaction-mode');
 });
@@ -40,14 +48,14 @@ test('keyInteraction: pointerdown removes data-interaction-mode', async () => {
 // ─── Any keydown restores keyboard mode ──────────────────────────────────────
 
 test('keyInteraction: any keydown after pointerdown restores keyboard mode', async () => {
-  const screen = render(
-    html`<div data-testid="el" tabindex="0" ${keyInteraction()}></div>`
-  );
+  const screen = render(html`<div data-testid="el" tabindex="0" ${keyInteraction()}></div>`);
   const el = screen.getByTestId('el');
   const node = await el.element();
 
   // Click removes keyboard mode
-  node.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true }));
+  node.dispatchEvent(
+    new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true }),
+  );
   await expect.element(el).not.toHaveAttribute('data-interaction-mode');
 
   // Any subsequent keydown restores it
@@ -65,7 +73,11 @@ test('keyInteraction: attributeTarget directs attribute to a specified element',
 
   try {
     const screen = render(
-      html`<div data-testid="inner" tabindex="0" ${keyInteraction({ attributeTarget: target })}></div>`
+      html`<div
+        data-testid="inner"
+        tabindex="0"
+        ${keyInteraction({ attributeTarget: target })}
+      ></div>`,
     );
     const inner = screen.getByTestId('inner');
     const node = await inner.element();

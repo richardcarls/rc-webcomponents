@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { matchPatternResults } from './pattern-matcher.ts';
+import { matchPatternResults } from './pattern-matcher.js';
 
 describe('matchPatternResults', () => {
   test('single pattern match produces one mark decoration', () => {

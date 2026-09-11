@@ -1,1 +1,1 @@
-export * from './rc-search-bar';
+export * from './rc-search-bar.js';

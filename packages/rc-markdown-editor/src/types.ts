@@ -48,9 +48,9 @@ export type EditorMode = 'rich' | 'source';
 
 declare global {
   interface HTMLElementEventMap {
-    'rc-toolbar-action':    CustomEvent<EditorToolbarActionDetail>;
-    'rc-change':            CustomEvent<{ value: string }>;
-    'rc-mode-change':       CustomEvent<{ mode: EditorMode }>;
+    'rc-toolbar-action': CustomEvent<EditorToolbarActionDetail>;
+    'rc-change': CustomEvent<{ value: string }>;
+    'rc-mode-change': CustomEvent<{ mode: EditorMode }>;
     'rc-formatting-change': CustomEvent<ActiveFormats>;
   }
 }

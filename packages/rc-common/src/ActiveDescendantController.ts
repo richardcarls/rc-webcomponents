@@ -94,9 +94,7 @@ export class ActiveDescendantController implements ReactiveController {
     if (items.length === 0) return;
 
     const wrap = this._opts.wrap ?? true;
-    let index = this._activeIndex < 0
-      ? (delta > 0 ? -1 : items.length)
-      : this._activeIndex;
+    let index = this._activeIndex < 0 ? (delta > 0 ? -1 : items.length) : this._activeIndex;
 
     const max = items.length;
     let steps = 0;
@@ -126,7 +124,10 @@ export class ActiveDescendantController implements ReactiveController {
     const items = this._opts.items();
     let index = -1;
     for (let i = items.length - 1; i >= 0; i--) {
-      if (!this._isSkipped(items[i])) { index = i; break; }
+      if (!this._isSkipped(items[i])) {
+        index = i;
+        break;
+      }
     }
     if (index >= 0) this._setActive(items[index], index);
   }

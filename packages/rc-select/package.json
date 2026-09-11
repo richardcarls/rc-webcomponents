@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Select-only combobox backed by a native <select>.",
   "repository": {
     "type": "git",
@@ -45,6 +45,7 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
+    "@rcarls/rc-chip-group": "workspace:*",
     "@rcarls/rc-common": "workspace:*",
     "@rcarls/rc-listbox": "workspace:*"
   },

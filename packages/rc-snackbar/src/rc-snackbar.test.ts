@@ -2,9 +2,9 @@ import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define';
-import type { RCSnackbar } from './rc-snackbar';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCSnackbar } from './rc-snackbar.js';
 
 test('show opens a polite status message', async () => {
   const screen = render(html`<rc-snackbar data-testid="host"></rc-snackbar>`);

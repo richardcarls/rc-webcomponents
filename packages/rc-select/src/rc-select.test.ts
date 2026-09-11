@@ -2,9 +2,9 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './define';
-import type { RCSelect } from './rc-select';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import './define.js';
+import type { RCSelect } from './rc-select.js';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 function makeSelect(opts?: { multiple?: boolean; disabled?: boolean; placeholder?: string }) {
   return html`
@@ -722,9 +722,9 @@ test('display="auto" resolves to compact on coarse-pointer (touch) devices', asy
     const $listbox = host.renderRoot.querySelector('rc-listbox')!;
 
     for (const value of ['apple', 'banana']) {
-      $listbox.querySelector<HTMLElement>(`[data-value="${value}"]`)!.dispatchEvent(
-        new PointerEvent('pointerdown', { bubbles: true, cancelable: true }),
-      );
+      $listbox
+        .querySelector<HTMLElement>(`[data-value="${value}"]`)!
+        .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
     }
     await host.updateComplete;
 

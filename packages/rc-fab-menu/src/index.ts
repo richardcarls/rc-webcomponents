@@ -1,1 +1,1 @@
-export * from './rc-fab-menu';
+export * from './rc-fab-menu.js';

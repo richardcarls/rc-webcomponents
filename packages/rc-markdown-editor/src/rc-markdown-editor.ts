@@ -14,10 +14,10 @@ import type {
   EditorToolbarAction,
   EditorToolbarActionDetail,
   HeadingLevel,
-} from './types.ts';
-import { getFormatsFromDecorations, setCodeBlockLanguage } from './formatting.ts';
+} from './types.js';
+import { getFormatsFromDecorations, setCodeBlockLanguage } from './formatting.js';
 
-import { rmeStyles } from './rc-markdown-editor.styles.ts';
+import { rmeStyles } from './rc-markdown-editor.styles.js';
 
 // Syntax-highlight stylesheet for the source editor, injected into rc-textarea's
 // shadow via adoptStyleSheet. CSS custom properties inherit through the shadow

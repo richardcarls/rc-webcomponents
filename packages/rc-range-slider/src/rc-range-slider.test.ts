@@ -1,7 +1,7 @@
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 import './define.js';
 import type { RCRangeSlider } from './rc-range-slider.js';
@@ -13,7 +13,9 @@ function getInputs(host: RCRangeSlider): [HTMLInputElement, HTMLInputElement] {
 }
 
 function getThumbs(host: RCRangeSlider): [HTMLElement, HTMLElement] {
-  const thumbs = Array.from(host.shadowRoot?.querySelectorAll<HTMLElement>('[role="slider"]') ?? []);
+  const thumbs = Array.from(
+    host.shadowRoot?.querySelectorAll<HTMLElement>('[role="slider"]') ?? [],
+  );
   if (thumbs.length !== 2) throw new Error(`Expected 2 slider thumbs, got ${thumbs.length}`);
   return [thumbs[0], thumbs[1]];
 }
@@ -21,8 +23,8 @@ function getThumbs(host: RCRangeSlider): [HTMLElement, HTMLElement] {
 test('rc-range-slider renders custom thumbs with stable tab order and dynamic ARIA bounds', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host" aria-label="Price range">
-      <input type="range" min="0" max="100" value="20" aria-label="Minimum price">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum price">
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum price" />
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum price" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -47,8 +49,8 @@ test('rc-range-slider keeps native inputs in the DOM as hidden form reflectors',
   const screen = render(html`
     <form data-testid="form">
       <rc-range-slider data-testid="host">
-        <input type="range" name="price-min" min="10" max="500" value="50" aria-label="Minimum">
-        <input type="range" name="price-max" min="10" max="500" value="400" aria-label="Maximum">
+        <input type="range" name="price-min" min="10" max="500" value="50" aria-label="Minimum" />
+        <input type="range" name="price-max" min="10" max="500" value="400" aria-label="Maximum" />
       </rc-range-slider>
     </form>
   `);
@@ -71,12 +73,9 @@ test('rc-range-slider keeps native inputs in the DOM as hidden form reflectors',
 test('rc-range-slider low thumb ArrowRight increments low value', async () => {
   const inputSpy = vi.fn();
   const screen = render(html`
-    <rc-range-slider
-      data-testid="host"
-      @rc-range-slider-input=${inputSpy}
-    >
-      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+    <rc-range-slider data-testid="host" @rc-range-slider-input=${inputSpy}>
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -94,12 +93,9 @@ test('rc-range-slider low thumb ArrowRight increments low value', async () => {
 test('rc-range-slider high thumb ArrowLeft decrements high value', async () => {
   const inputSpy = vi.fn();
   const screen = render(html`
-    <rc-range-slider
-      data-testid="host"
-      @rc-range-slider-input=${inputSpy}
-    >
-      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+    <rc-range-slider data-testid="host" @rc-range-slider-input=${inputSpy}>
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -117,8 +113,8 @@ test('rc-range-slider high thumb ArrowLeft decrements high value', async () => {
 test('rc-range-slider keyboard clamps low and high thumbs at each other', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host">
-      <input type="range" min="0" max="100" value="79" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="79" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -141,8 +137,8 @@ test('rc-range-slider keyboard clamps low and high thumbs at each other', async 
 test('rc-range-slider Page and Home/End keys follow the APG bounds', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host">
-      <input type="range" min="0" max="100" step="5" value="30" aria-label="Minimum">
-      <input type="range" min="0" max="100" step="5" value="70" aria-label="Maximum">
+      <input type="range" min="0" max="100" step="5" value="30" aria-label="Minimum" />
+      <input type="range" min="0" max="100" step="5" value="70" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -172,8 +168,8 @@ test('rc-range-slider pointer drag updates nearest thumb without swapping tab or
       @rc-range-slider-input=${inputSpy}
       @rc-range-slider-change=${changeSpy}
     >
-      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -184,25 +180,31 @@ test('rc-range-slider pointer drag updates nearest thumb without swapping tab or
   if (!group) throw new Error('Expected slider group');
 
   group.getBoundingClientRect = () => new DOMRect(0, 0, 100, 20);
-  group.dispatchEvent(new PointerEvent('pointerdown', {
-    bubbles: true,
-    button: 0,
-    clientX: 25,
-    clientY: 10,
-    pointerId: 1,
-  }));
-  group.dispatchEvent(new PointerEvent('pointermove', {
-    bubbles: true,
-    clientX: 40,
-    clientY: 10,
-    pointerId: 1,
-  }));
-  group.dispatchEvent(new PointerEvent('pointerup', {
-    bubbles: true,
-    clientX: 40,
-    clientY: 10,
-    pointerId: 1,
-  }));
+  group.dispatchEvent(
+    new PointerEvent('pointerdown', {
+      bubbles: true,
+      button: 0,
+      clientX: 25,
+      clientY: 10,
+      pointerId: 1,
+    }),
+  );
+  group.dispatchEvent(
+    new PointerEvent('pointermove', {
+      bubbles: true,
+      clientX: 40,
+      clientY: 10,
+      pointerId: 1,
+    }),
+  );
+  group.dispatchEvent(
+    new PointerEvent('pointerup', {
+      bubbles: true,
+      clientX: 40,
+      clientY: 10,
+      pointerId: 1,
+    }),
+  );
   await host.updateComplete;
 
   expect(host.value).toEqual([40, 80]);
@@ -221,8 +223,8 @@ test('rc-range-slider fires input and change events via native input reflector',
       @rc-range-slider-input=${inputSpy}
       @rc-range-slider-change=${changeSpy}
     >
-      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -241,13 +243,9 @@ test('rc-range-slider fires input and change events via native input reflector',
 
 test('rc-range-slider exposes aria-valuetext on each custom thumb', async () => {
   const screen = render(html`
-    <rc-range-slider
-      data-testid="host"
-      low-value-text="$20"
-      high-value-text="$80"
-    >
-      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+    <rc-range-slider data-testid="host" low-value-text="$20" high-value-text="$80">
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -261,8 +259,8 @@ test('rc-range-slider exposes aria-valuetext on each custom thumb', async () => 
 test('rc-range-slider range fill style reflects current values', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host">
-      <input type="range" min="0" max="100" value="25" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="75" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="25" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="75" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -277,8 +275,8 @@ test('rc-range-slider range fill style reflects current values', async () => {
 test('rc-range-slider vertical range fill spans between thumb centers', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host" orientation="vertical">
-      <input type="range" min="0" max="100" value="25" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="75" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="25" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="75" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -299,8 +297,8 @@ test('rc-range-slider vertical range fill spans between thumb centers', async ()
 test('rc-range-slider selected range and thumbs use the accent token with Highlight fallback', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host" style="--rc-accent: rgb(1, 2, 3);">
-      <input type="range" min="0" max="100" value="25" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="75" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="25" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="75" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -310,16 +308,21 @@ test('rc-range-slider selected range and thumbs use the accent token with Highli
   const thumbEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="thumb"]');
 
   expect(getComputedStyle(rangeEl!).backgroundColor).toBe('rgb(1, 2, 3)');
-  expect(getComputedStyle(rangeEl!).backgroundColor).not.toBe(getComputedStyle(host.shadowRoot!.querySelector<HTMLElement>('[part~="track"]')!).backgroundColor);
-  expect(getComputedStyle(thumbEl!).borderTopColor).toBe(getComputedStyle(rangeEl!).backgroundColor);
+  expect(getComputedStyle(rangeEl!).backgroundColor).not.toBe(
+    getComputedStyle(host.shadowRoot!.querySelector<HTMLElement>('[part~="track"]')!)
+      .backgroundColor,
+  );
+  expect(getComputedStyle(thumbEl!).borderTopColor).toBe(
+    getComputedStyle(rangeEl!).backgroundColor,
+  );
 });
 
 test('rc-range-slider renders track-background slot before range', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host">
       <span slot="track-background" data-testid="background"></span>
-      <input type="range" min="0" max="100" value="25" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="75" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="25" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="75" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -337,13 +340,9 @@ test('rc-range-slider renders track-background slot before range', async () => {
 
 test('rc-range-slider consumer-provided aria-label is not overwritten by low-label/high-label', async () => {
   const screen = render(html`
-    <rc-range-slider
-      data-testid="host"
-      low-label="Minimum budget"
-      high-label="Maximum budget"
-    >
-      <input type="range" min="0" max="1000" value="100" aria-label="From">
-      <input type="range" min="0" max="1000" value="900" aria-label="To">
+    <rc-range-slider data-testid="host" low-label="Minimum budget" high-label="Maximum budget">
+      <input type="range" min="0" max="1000" value="100" aria-label="From" />
+      <input type="range" min="0" max="1000" value="900" aria-label="To" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -357,8 +356,8 @@ test('rc-range-slider consumer-provided aria-label is not overwritten by low-lab
 test('rc-range-slider disabled syncs to both native inputs and custom thumbs', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host" .disabled=${true}>
-      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -376,8 +375,8 @@ test('rc-range-slider readonly suppresses value updates on low thumb', async () 
   const inputSpy = vi.fn();
   const screen = render(html`
     <rc-range-slider data-testid="host" readonly @rc-range-slider-input=${inputSpy}>
-      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -393,8 +392,8 @@ test('rc-range-slider readonly suppresses value updates on low thumb', async () 
 test('rc-range-slider applies default low-label and high-label when no label source is present', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host">
-      <input type="range" min="0" max="100" value="20">
-      <input type="range" min="0" max="100" value="80">
+      <input type="range" min="0" max="100" value="20" />
+      <input type="range" min="0" max="100" value="80" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -408,8 +407,8 @@ test('rc-range-slider applies default low-label and high-label when no label sou
 test('rc-range-slider display="float" renders value displays for both thumbs', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host" display="float">
-      <input type="range" min="0" max="100" value="25" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="75" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="25" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="75" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -424,8 +423,8 @@ test('rc-range-slider display="float" renders value displays for both thumbs', a
 test('rc-range-slider has no automated accessibility violations', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host" aria-label="Price range">
-      <input type="range" min="0" max="100" value="20" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="80" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
     </rc-range-slider>
   `);
   await expectNoA11yViolations(screen.getByTestId('host').element());
@@ -434,8 +433,8 @@ test('rc-range-slider has no automated accessibility violations', async () => {
 test('rc-range-slider defaultValue sets initial [low, high] without controlling', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host">
-      <input type="range" min="0" max="100" value="0" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="100" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="0" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="100" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -452,8 +451,8 @@ test('rc-range-slider defaultValue sets initial [low, high] without controlling'
 test('rc-range-slider controlled value overrides defaultValue', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host">
-      <input type="range" min="0" max="100" value="0" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="100" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="0" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="100" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -468,8 +467,8 @@ test('rc-range-slider setting defaultValue does not fire rc-range-slider-input',
   const inputSpy = vi.fn();
   const screen = render(html`
     <rc-range-slider data-testid="host" @rc-range-slider-input=${inputSpy}>
-      <input type="range" min="0" max="100" value="0" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="100" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="0" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="100" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
@@ -482,8 +481,8 @@ test('rc-range-slider setting defaultValue does not fire rc-range-slider-input',
 test('rc-range-slider without defaultValue falls back to [0, 100]', async () => {
   const screen = render(html`
     <rc-range-slider data-testid="host">
-      <input type="range" min="0" max="100" value="0" aria-label="Minimum">
-      <input type="range" min="0" max="100" value="100" aria-label="Maximum">
+      <input type="range" min="0" max="100" value="0" aria-label="Minimum" />
+      <input type="range" min="0" max="100" value="100" aria-label="Maximum" />
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;

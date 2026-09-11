@@ -29,6 +29,98 @@
       cubic-bezier(0.05, 0.7, 0.1, 1)
     );
     --rc-button-progress-color: var(--md-sys-color-on-primary, ButtonText);
+    --rc-button-disabled-opacity: var(--rc-disabled-opacity, 0.38);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button.rc-button--tonal {
+    --rc-button-bg: var(--md-sys-color-secondary-container, ButtonFace);
+    --rc-button-color: var(--md-sys-color-on-secondary-container, ButtonText);
+    --rc-button-state-layer-bg: var(--md-sys-color-on-secondary-container, currentColor);
+    --_rc-button-ripple-color: var(--md-sys-color-on-secondary-container, currentColor);
+    --rc-button-progress-color: var(--md-sys-color-on-secondary-container, ButtonText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button.rc-button--outlined {
+    --rc-button-bg: transparent;
+    --rc-button-color: var(--md-sys-color-primary, ButtonText);
+    --rc-button-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
+    --rc-button-state-layer-bg: var(--md-sys-color-primary, currentColor);
+    --_rc-button-ripple-color: var(--md-sys-color-primary, currentColor);
+    --rc-button-progress-color: var(--md-sys-color-primary, ButtonText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button.rc-button--text {
+    --rc-button-bg: transparent;
+    --rc-button-color: var(--md-sys-color-primary, ButtonText);
+    --rc-button-border: 0;
+    --rc-button-padding-inline: 0.75rem;
+    --rc-button-state-layer-bg: var(--md-sys-color-primary, currentColor);
+    --_rc-button-ripple-color: var(--md-sys-color-primary, currentColor);
+    --rc-button-progress-color: var(--md-sys-color-primary, ButtonText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-icon-button--standard[icon-only] {
+    --rc-button-bg: transparent;
+    --rc-button-color: var(--md-sys-color-on-surface-variant, ButtonText);
+    --rc-button-border: 0;
+    --rc-button-state-layer-bg: var(--md-sys-color-on-surface-variant, currentColor);
+    --_rc-button-ripple-color: var(--md-sys-color-on-surface-variant, currentColor);
+    --rc-button-progress-color: var(--md-sys-color-on-surface-variant, ButtonText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button.rc-icon-button--tonal[icon-only] {
+    --rc-button-bg: var(--md-sys-color-secondary-container, ButtonFace);
+    --rc-button-color: var(--md-sys-color-on-secondary-container, ButtonText);
+    --rc-button-state-layer-bg: var(--md-sys-color-on-secondary-container, currentColor);
+    --_rc-button-ripple-color: var(--md-sys-color-on-secondary-container, currentColor);
+    --rc-button-progress-color: var(--md-sys-color-on-secondary-container, ButtonText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-icon-button--outlined[icon-only] {
+    --rc-button-bg: transparent;
+    --rc-button-color: var(--md-sys-color-on-surface-variant, ButtonText);
+    --rc-button-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
+    --rc-button-state-layer-bg: var(--md-sys-color-on-surface-variant, currentColor);
+    --_rc-button-ripple-color: var(--md-sys-color-on-surface-variant, currentColor);
+    --rc-button-progress-color: var(--md-sys-color-on-surface-variant, ButtonText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button[data-tone='danger'] {
+    --rc-button-bg: var(--md-sys-color-error, ButtonFace);
+    --rc-button-color: var(--md-sys-color-on-error, ButtonText);
+    --rc-button-state-layer-bg: var(--md-sys-color-on-error, currentColor);
+    --_rc-button-ripple-color: var(--md-sys-color-on-error, currentColor);
+    --rc-button-progress-color: var(--md-sys-color-on-error, ButtonText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button:is(
+      .rc-button--tonal,
+      .rc-button--outlined,
+      .rc-button--text,
+      .rc-icon-button--standard,
+      .rc-icon-button--tonal,
+      .rc-icon-button--outlined
+    )[data-tone='danger'] {
+    --rc-button-bg: transparent;
+    --rc-button-color: var(--md-sys-color-error, ButtonText);
+    --rc-button-state-layer-bg: var(--md-sys-color-error, currentColor);
+    --_rc-button-ripple-color: var(--md-sys-color-error, currentColor);
+    --rc-button-progress-color: var(--md-sys-color-error, ButtonText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button:is(.rc-button--tonal, .rc-icon-button--tonal)[data-tone='danger'] {
+    --rc-button-bg: var(--md-sys-color-error-container, ButtonFace);
+    --rc-button-color: var(--md-sys-color-on-error-container, ButtonText);
+    --rc-button-state-layer-bg: var(--md-sys-color-on-error-container, currentColor);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button:is(.rc-button--outlined, .rc-icon-button--outlined)[data-tone='danger'] {
+    --rc-button-border: 1px solid var(--md-sys-color-error, ButtonBorder);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-button > button:focus-visible {
@@ -51,7 +143,127 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-button[icon-only] {
+    /* MD3 expressive "Small" icon button (the default/unmodified size): a
+       40dp square container around a 24dp icon. rc-button's own touch-target
+       affordance (min-inline/block-size 3rem, plus the light-DOM hit-slop)
+       makes up the difference to the 48dp minimum tap target on its own; no
+       theme-level override is needed for that here. */
     --rc-button-icon-size: 2.5rem;
-    --rc-icon-font-line-height: var(--rc-button-icon-size, 2.5rem);
+    --rc-icon-button-icon-font-size: 1.5rem;
+  }
+
+  /*
+   * MD3 expressive icon-button sizes. Each sets both the square container
+   * (`--rc-button-block-size`/`--rc-button-icon-size`, since `icon-only`'s
+   * default width equals its height) and the icon glyph size together, so
+   * the two stay in the spec's fixed ratio instead of drifting independently.
+   * Values: https://m3.material.io/components/icon-buttons/specs (container
+   * height / icon size, dp): extra-small 32/20, small 40/24 (above, default),
+   * medium 56/24, large 96/32, extra-large 136/40.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-button--extra-small[icon-only] {
+    --rc-button-block-size: 2rem;
+    --rc-button-icon-size: 2rem;
+    --rc-icon-button-icon-font-size: 1.25rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button.rc-button--medium[icon-only] {
+    --rc-button-block-size: 3.5rem;
+    --rc-button-icon-size: 3.5rem;
+    --rc-icon-button-icon-font-size: 1.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button.rc-button--large[icon-only] {
+    --rc-button-block-size: 6rem;
+    --rc-button-icon-size: 6rem;
+    --rc-icon-button-icon-font-size: 2rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-button--extra-large[icon-only] {
+    --rc-button-block-size: 8.5rem;
+    --rc-button-icon-size: 8.5rem;
+    --rc-icon-button-icon-font-size: 2.5rem;
+  }
+
+  /*
+   * Width variants change only the container's inline size; block size (and
+   * the icon itself) stay governed by the size class above, or the default
+   * "small" size when none is present. `narrow` suits dense/overflow
+   * contexts (an app bar's trailing overflow trigger); `wide` suits roomier
+   * toolbars that can spare the extra tap-friendly width. Per-size pairing
+   * is required because each size's narrow/wide delta is a fixed spec value,
+   * not a proportional one.
+   */
+  /*
+   * The overlap tokens below give back exactly what --rc-button-icon-size
+   * leaves unclaimed of the 3rem default touch target ((3rem - icon-size) /
+   * 2, matching the button's own centered inflation) -- the narrow variant's
+   * documented reason for existing is dense/edge contexts, so this is a
+   * default here, not left for every consumer to compute and set
+   * individually. Trailing-edge only: narrow's own doc comment names an app
+   * bar's *trailing* overflow trigger as the canonical case, and defaulting
+   * only one side halves the risk of two adjacent narrow buttons' touch
+   * targets colliding if a consumer places one where it does have a real
+   * neighbor. Medium/large/extra-large narrow variants already meet or
+   * exceed the touch target on their own (see each size's own comment
+   * above), so they need no overlap default here.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-button--extra-small.rc-button--narrow[icon-only] {
+    --rc-button-icon-size: 1.75rem;
+    --rc-button-touch-target-overlap-inline-end: 0.625rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-button--extra-small.rc-button--wide[icon-only] {
+    --rc-button-icon-size: 2.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button.rc-button--narrow[icon-only] {
+    --rc-button-icon-size: 2rem;
+    --rc-button-touch-target-overlap-inline-end: 0.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-button.rc-button--wide[icon-only] {
+    --rc-button-icon-size: 3.25rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-button--medium.rc-button--narrow[icon-only] {
+    --rc-button-icon-size: 3rem;
+    /* Already meets the 3rem default touch target on its own; the bare
+       .rc-button--narrow[icon-only] rule's overlap default still matches
+       here too (class selectors don't exclude each other), so it needs an
+       explicit reset. */
+    --rc-button-touch-target-overlap-inline-end: 0px;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-button--medium.rc-button--wide[icon-only] {
+    --rc-button-icon-size: 4.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-button--large.rc-button--narrow[icon-only] {
+    --rc-button-icon-size: 4rem;
+    --rc-button-touch-target-overlap-inline-end: 0px;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-button--large.rc-button--wide[icon-only] {
+    --rc-button-icon-size: 8rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-button--extra-large.rc-button--narrow[icon-only] {
+    --rc-button-icon-size: 6.5rem;
+    --rc-button-touch-target-overlap-inline-end: 0px;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-button.rc-button--extra-large.rc-button--wide[icon-only] {
+    --rc-button-icon-size: 11.5rem;
   }
 }

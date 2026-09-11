@@ -3,10 +3,10 @@ import type { CSSResultGroup } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
 import { NativeChildController, warnMissingDirectChild } from '@rcarls/rc-common';
-import { RCDocument, getText } from './document.ts';
-import { saveSelection, restoreSelection, type SavedSelection } from './selection.ts';
-import { remapDecorations, addDecoration, setDecorations } from './decoration.ts';
-import { matchPatternResults } from './pattern-matcher.ts';
+import { RCDocument, getText } from './document.js';
+import { saveSelection, restoreSelection, type SavedSelection } from './selection.js';
+import { remapDecorations, addDecoration, setDecorations } from './decoration.js';
+import { matchPatternResults } from './pattern-matcher.js';
 import type {
   Decoration,
   DecorationInput,
@@ -15,10 +15,10 @@ import type {
   TextPattern,
   MarkDecoration,
   Token,
-} from './types.ts';
-import { generateId } from './types.ts';
+} from './types.js';
+import { generateId } from './types.js';
 
-import { styles } from './rc-textarea.styles.ts';
+import { styles } from './rc-textarea.styles.js';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -114,7 +114,9 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @slot - Accepts a native `<textarea>` element for form wiring.
  *
  * @fires rc-textarea-change - Fired when the field value changes
+ * @fires rc-textarea-focus - Fired when the field gains focus
  * @fires rc-textarea-blur - Fired when the field loses focus
+ * @fires rc-textarea-select - Fired when the selection changes while the editor is focused
  *
  * @csspart root - The outer flex container wrapping the gutter and editor area.
  * @csspart gutter - The gutter column container.

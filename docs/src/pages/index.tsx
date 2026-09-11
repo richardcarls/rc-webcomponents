@@ -4,10 +4,35 @@ import Layout from '@theme/Layout';
 import styles from './index.module.css';
 
 const packages = [
-  ['rc-button', 'Progressive-enhancement wrapper for native <button>', '/components/rc-button'],
-  ['rc-card', 'Design-system-neutral structural card shell', '/components/rc-card'],
-  ['rc-chip', 'Chip wrapper for native button-based controls', '/components/rc-chip'],
+  [
+    'rc-button',
+    'Progressive-enhancement wrapper for native buttons or anchors',
+    '/components/rc-button',
+  ],
+  ['rc-card', 'Vertical and horizontal structural card shell', '/components/rc-card'],
+  [
+    'rc-carousel',
+    'Native scroll-snap carousel with optional navigation and pagination',
+    '/components/rc-carousel',
+  ],
+  [
+    'rc-scroller',
+    'Native scroll region with optional content and fullbleed layout',
+    '/components/rc-scroller',
+  ],
+  ['rc-list', 'Shared-column list rows with native-backed selection', '/components/rc-list'],
+  ['rc-chip', 'Chip wrapper for native actions, links, filters, and inputs', '/components/rc-chip'],
+  [
+    'rc-chip-group',
+    'Adaptive wrapping and scrolling layout for chip collections',
+    '/components/rc-chip-group',
+  ],
   ['rc-select', 'Select-only combobox backed by native <select>', '/components/rc-select'],
+  [
+    'rc-listbox',
+    'Listbox with light-DOM options and active-descendant navigation',
+    '/components/rc-listbox',
+  ],
   [
     'rc-combobox',
     'Editable combobox with filtering and optional allow-create behavior',
@@ -48,6 +73,11 @@ const packages = [
     '/components/rc-range-slider',
   ],
   [
+    'rc-progress',
+    'Native <progress> enhancement with formatted and indeterminate states',
+    '/components/rc-progress',
+  ],
+  [
     'rc-textarea',
     'Textarea wrapper with line decorations and plugin hooks',
     '/components/rc-textarea',
@@ -58,6 +88,11 @@ const packages = [
     '/components/rc-transfer-list',
   ],
   ['rc-menu', 'Menu popup for command surfaces', '/components/rc-menu'],
+  [
+    'rc-adaptive-menu',
+    'Priority-aware action toolbar that preserves authored controls while moving lower-priority actions into an overflow menu',
+    '/components/rc-adaptive-menu',
+  ],
   ['rc-menu-button', 'Trigger button that opens an rc-menu popup', '/components/rc-menu-button'],
   ['rc-menubar', 'Menubar coordinator for rc-menu-button children', '/components/rc-menubar'],
   ['rc-toolbar', 'Toolbar that groups controls into one tab stop', '/components/rc-toolbar'],

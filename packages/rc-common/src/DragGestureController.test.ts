@@ -7,7 +7,7 @@ import {
   type DragGestureActivation,
   type DragGestureAxis,
   type DragGestureDetail,
-} from './DragGestureController';
+} from './DragGestureController.js';
 
 class DragGestureTestHost extends LitElement {
   axis: DragGestureAxis = 'both';

@@ -1,5 +1,22 @@
 # @rcarls/rc-fab-menu
 
+## 0.6.0
+
+### Patch Changes
+
+- 57370e4: Align component metadata, aggregate framework typings, development-time native-child
+  validation, controlled menu state, package declarations, and public documentation before the
+  next release.
+- Updated dependencies [7382c71]
+- Updated dependencies [6683eb9]
+- Updated dependencies [ee7ba6c]
+- Updated dependencies [30eb232]
+- Updated dependencies [30eb232]
+- Updated dependencies [57370e4]
+  - @rcarls/rc-menu@0.6.0
+  - @rcarls/rc-menu-button@0.6.0
+  - @rcarls/rc-common@0.6.0
+
 ## 0.5.0
 
 ### Patch Changes

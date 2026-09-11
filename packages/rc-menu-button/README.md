@@ -18,8 +18,8 @@ npm install @rcarls/rc-menu-button
 ## Import
 
 ```js
-import '@rcarls/rc-menu-button/define';                  // side-effect: registers <rc-menu-button>
-import { RCMenuButton } from '@rcarls/rc-menu-button';   // named class export
+import '@rcarls/rc-menu-button/define'; // side-effect: registers <rc-menu-button>
+import { RCMenuButton } from '@rcarls/rc-menu-button'; // named class export
 ```
 
 `rc-menu-button` depends on `rc-menu`. Ensure both are installed.
@@ -53,56 +53,62 @@ item.
 
 ### Properties / attributes
 
-| Property | Attribute | Type | Default | Description |
-|---|---|---|---|---|
-| `open` | `open` | `boolean` | `false` | Whether the menu popup is visible. Reflects to attribute. Controlled mode: host writes silently. |
-| `defaultOpen` | `default-open` | `boolean` | `false` | Initial open state for uncontrolled mode. Ignored after the first controlled write to `open`. |
-| `orientation` | `orientation` | `'horizontal' \| 'vertical' \| undefined` | `undefined` | Arrow-key axis for opening the menu. When unset, inherited from a parent `rc-menubar` or `[role="menubar"]` element. Falls back to `'horizontal'`. |
-| `placement` | `placement` | `AnchorPlacement` | `'bottom-start'` | Preferred placement of the popup relative to the trigger. Switches to `'right-start'` under vertical orientation unless explicitly overridden. |
+| Property      | Attribute      | Type                                      | Default          | Description                                                                                                                                                                                               |
+| ------------- | -------------- | ----------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `open`        | `open`         | `boolean`                                 | `false`          | Whether the menu popup is visible. Reflects to attribute. Controlled mode: host writes silently.                                                                                                          |
+| `defaultOpen` | `default-open` | `boolean`                                 | `false`          | Initial open state for uncontrolled mode. Ignored after the first controlled write to `open`.                                                                                                             |
+| `orientation` | `orientation`  | `'horizontal' \| 'vertical' \| undefined` | `undefined`      | Arrow-key axis for opening the menu. Vertical triggers span their allocated menu-row width. When unset, inherited from a parent `rc-menubar` or `[role="menubar"]` element. Falls back to `'horizontal'`. |
+| `placement`   | `placement`    | `AnchorPlacement`                         | `'bottom-start'` | Preferred placement of the popup relative to the trigger. Switches to `'right-start'` under vertical orientation unless explicitly overridden.                                                            |
+|               | `icon-only`    | boolean attribute                         | absent           | Hints that the trigger has no visible label so themes can apply icon-button sizing and activation-area geometry.                                                                                          |
 
 ### CSS custom properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--rc-menu-button-trigger-block-size` | `var(--rc-control-block-size)` | Minimum block size of the trigger |
-| `--rc-menu-button-trigger-padding-block` | `var(--rc-control-padding-block)` | Trigger block-axis padding |
-| `--rc-menu-button-trigger-padding-inline` | `var(--rc-control-padding-inline)` | Trigger inline-axis padding |
-| `--rc-menu-button-trigger-gap` | `var(--rc-item-gap)` | Gap between flex children inside the trigger |
-| `--rc-menu-button-trigger-border` | `var(--rc-border)` | Trigger border |
-| `--rc-menu-button-trigger-radius` | `var(--rc-control-radius)` | Trigger border radius |
-| `--rc-menu-button-trigger-background` | `var(--rc-button-bg)` | Trigger background |
-| `--rc-menu-button-trigger-color` | `var(--rc-button-text)` | Trigger text color |
-| `--rc-menu-button-trigger-transition` | `none` | Trigger state transition |
-| `--rc-menu-button-trigger-hover-background` | `color-mix(in srgb, Highlight 8%, transparent)` | Trigger hover background |
-| `--rc-menu-button-trigger-hover-color` | `inherit` | Trigger hover text color |
-| `--rc-menu-button-trigger-hover-border-color` | `currentColor` | Trigger hover border color |
-| `--rc-menu-button-trigger-open-background` | `color-mix(in srgb, Highlight 12%, transparent)` | Trigger background while the menu is open |
-| `--rc-menu-button-trigger-open-color` | `inherit` | Trigger text color while the menu is open |
-| `--rc-menu-button-trigger-open-border-color` | `currentColor` | Trigger border color while the menu is open |
-| `--rc-menu-button-indicator-size` | `1em` | Inline and block size reserved for the optional indicator |
-| `--rc-menu-button-indicator-color` | `currentColor` | Color of the optional indicator |
-| `--rc-menu-button-indicator-inset` | Trigger inline padding | Indicator distance from the trigger's inline end |
+| Property                                             | Default                                          | Description                                                     |
+| ---------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------- |
+| `--rc-menu-button-trigger-block-size`                | `var(--rc-control-block-size)`                   | Minimum block size of the trigger                               |
+| `--rc-menu-button-trigger-padding-block`             | `var(--rc-control-padding-block)`                | Trigger block-axis padding                                      |
+| `--rc-menu-button-trigger-padding-inline`            | `var(--rc-control-padding-inline)`               | Trigger inline-axis padding                                     |
+| `--rc-menu-button-trigger-gap`                       | `var(--rc-item-gap)`                             | Gap between flex children inside the trigger                    |
+| `--rc-menu-button-trigger-border`                    | `var(--rc-border)`                               | Trigger border                                                  |
+| `--rc-menu-button-trigger-radius`                    | `var(--rc-control-radius)`                       | Trigger border radius                                           |
+| `--rc-menu-button-trigger-background`                | `var(--rc-button-bg)`                            | Trigger background                                              |
+| `--rc-menu-button-trigger-color`                     | `var(--rc-button-text)`                          | Trigger text color                                              |
+| `--rc-menu-button-trigger-transition`                | `none`                                           | Trigger state transition                                        |
+| `--rc-menu-button-trigger-hover-background`          | `color-mix(in srgb, Highlight 8%, transparent)`  | Trigger hover background                                        |
+| `--rc-menu-button-trigger-hover-color`               | `inherit`                                        | Trigger hover text color                                        |
+| `--rc-menu-button-trigger-hover-border-color`        | `currentColor`                                   | Trigger hover border color                                      |
+| `--rc-menu-button-trigger-open-background`           | `color-mix(in srgb, Highlight 12%, transparent)` | Trigger background while the menu is open                       |
+| `--rc-menu-button-trigger-open-color`                | `inherit`                                        | Trigger text color while the menu is open                       |
+| `--rc-menu-button-trigger-open-border-color`         | `currentColor`                                   | Trigger border color while the menu is open                     |
+| `--rc-menu-button-indicator-size`                    | `1em`                                            | Inline and block size reserved for the optional indicator       |
+| `--rc-menu-button-indicator-color`                   | `currentColor`                                   | Color of the optional indicator                                 |
+| `--rc-menu-button-indicator-inset`                   | Trigger inline padding                           | Indicator distance from the trigger's inline end                |
+| `--rc-menu-button-icon-size`                         | Trigger block size                               | Visible inline size of an `icon-only` trigger                   |
+| `--rc-menu-button-touch-target-block-size`           | `3rem`                                           | Minimum block size of an `icon-only` trigger's activation area  |
+| `--rc-menu-button-touch-target-inline-size`          | Activation-area block size                       | Minimum inline size of an `icon-only` trigger's activation area |
+| `--rc-menu-button-touch-target-overlap-inline-start` | `0px`                                            | Allows touch-target inflation to overlap the leading neighbor   |
+| `--rc-menu-button-touch-target-overlap-inline-end`   | `0px`                                            | Allows touch-target inflation to overlap the trailing neighbor  |
 
 ### CSS parts
 
-| Part | Element | Description |
-|---|---|---|
-| `root` | Outer `div` | Root wrapper |
+| Part    | Element     | Description                                             |
+| ------- | ----------- | ------------------------------------------------------- |
+| `root`  | Outer `div` | Root wrapper                                            |
 | `popup` | Popup `div` | Container that shows/hides around the slotted `rc-menu` |
 
 ### Slots
 
-| Slot | Description |
-|---|---|
-| `trigger` | The button (or other interactive element) that toggles the menu. Receives `aria-haspopup` and `aria-expanded` automatically. |
+| Slot        | Description                                                                                                                                    |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trigger`   | The button (or other interactive element) that toggles the menu. Receives `aria-haspopup` and `aria-expanded` automatically.                   |
 | `indicator` | Optional author-supplied decorative submenu indicator. Rendered at the trigger's inline end with pointer events passed through to the trigger. |
-| *(default)* | The `rc-menu` to show as the popup. |
+| _(default)_ | The `rc-menu` to show as the popup.                                                                                                            |
 
 ### Events
 
-| Event | Bubbles | Cancelable | Detail | When |
-|---|---|---|---|---|
-| `rc-menu-button-toggle` | Yes (composed) | No | `{ open: boolean }` | Menu opens or closes |
+| Event                   | Bubbles        | Cancelable | Detail              | When                 |
+| ----------------------- | -------------- | ---------- | ------------------- | -------------------- |
+| `rc-menu-button-toggle` | Yes (composed) | No         | `{ open: boolean }` | Menu opens or closes |
 
 ### Public methods
 
@@ -124,25 +130,25 @@ toggleMenu(): void
 Keyboard handling depends on the resolved `orientation` (horizontal by
 default, or inherited from a parent menubar).
 
-| Key | Condition | Action |
-|---|---|---|
-| `ArrowDown` | Horizontal orientation | Open menu, focus first item |
-| `ArrowUp` | Horizontal orientation | Open menu, focus last item |
-| `ArrowRight` | Vertical orientation | Open menu, focus first item |
-| `ArrowLeft` | Vertical orientation | Open menu, focus last item |
-| `Enter` / `Space` | Menu closed | Open menu |
-| `Enter` / `Space` | Menu open | Activate focused item, close menu |
-| `Escape` | Menu open | Close menu, return focus to trigger |
+| Key               | Condition              | Action                              |
+| ----------------- | ---------------------- | ----------------------------------- |
+| `ArrowDown`       | Horizontal orientation | Open menu, focus first item         |
+| `ArrowUp`         | Horizontal orientation | Open menu, focus last item          |
+| `ArrowRight`      | Vertical orientation   | Open menu, focus first item         |
+| `ArrowLeft`       | Vertical orientation   | Open menu, focus last item          |
+| `Enter` / `Space` | Menu closed            | Open menu                           |
+| `Enter` / `Space` | Menu open              | Activate focused item, close menu   |
+| `Escape`          | Menu open              | Close menu, return focus to trigger |
 
 ---
 
 ## ARIA
 
-| Attribute | Where | Value |
-|---|---|---|
-| `aria-haspopup="menu"` | Trigger element | Set automatically on slot change |
-| `aria-expanded` | Trigger element | `"true"` / `"false"`, kept in sync with `open` |
-| `open` | Host element | Reflected boolean attribute when menu is open |
+| Attribute              | Where           | Value                                          |
+| ---------------------- | --------------- | ---------------------------------------------- |
+| `aria-haspopup="menu"` | Trigger element | Set automatically on slot change               |
+| `aria-expanded`        | Trigger element | `"true"` / `"false"`, kept in sync with `open` |
+| `open`                 | Host element    | Reflected boolean attribute when menu is open  |
 
 ---
 

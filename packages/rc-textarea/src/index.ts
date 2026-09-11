@@ -1,4 +1,4 @@
-export { RCTextarea } from './rc-textarea.ts';
+export { RCTextarea } from './rc-textarea.js';
 export type {
   Decoration,
   DecorationInput,
@@ -11,9 +11,9 @@ export type {
   TextPattern,
   LineDecoratorPlugin,
   Token,
-} from './types.ts';
-export { matchPatternResults } from './pattern-matcher.ts';
-export { createLineDecoratorPlugin } from './line-decorator.ts';
-export type { LineDecoratorPluginOptions } from './line-decorator.ts';
-export { LineActionsController } from './line-actions-controller.ts';
-export type { LineAction, LineActionsOptions } from './line-actions-controller.ts';
+} from './types.js';
+export { matchPatternResults } from './pattern-matcher.js';
+export { createLineDecoratorPlugin } from './line-decorator.js';
+export type { LineDecoratorPluginOptions } from './line-decorator.js';
+export { LineActionsController } from './line-actions-controller.js';
+export type { LineAction, LineActionsOptions } from './line-actions-controller.js';

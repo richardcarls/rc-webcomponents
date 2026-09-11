@@ -1,7 +1,7 @@
 import type { ReactiveControllerHost } from 'lit';
 import { test, expect, vi } from 'vitest';
 
-import { MutationObserverController } from './MutationObserverController';
+import { MutationObserverController } from './MutationObserverController.js';
 
 type FakeHost = ReactiveControllerHost & { controllers: unknown[] };
 

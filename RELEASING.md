@@ -13,7 +13,7 @@ OIDC and defeat the token-free release invariant.
 
 Before the first OIDC release:
 
-1. Add a GitHub repository ruleset for tags matching `v*`. Restrict tag creation and updates to
+1. Add a GitHub repository rule set for tags matching `v*`. Restrict tag creation and updates to
    release maintainers and prevent deletion or force updates.
 1. Keep the `npm` GitHub environment available. The trusted-publisher identity includes this
    exact environment name.
@@ -144,17 +144,53 @@ described above.
 Then remove the old npm token from the repository or `npm` GitHub environment and revoke the
 granular automation token on npm.
 
-## Bootstrap a new public package
+## Bootstrap Trusted Publishing for a new package
 
-npm requires a package to exist before it can have a trusted publisher. For a new workspace:
+npm requires a package name to exist before it can have a trusted publisher. Its
+staged-publishing feature has the same prerequisite, so `npm stage publish` cannot create a
+brand-new package. If the package name already exists on npm at any version, do not publish a
+bootstrap version; configure or verify its trusted publisher and continue with the normal release.
 
-1. Build and validate the workspace.
-1. Pack it with Yarn into a temporary directory.
-1. Inspect the packed manifest for rewritten internal versions.
-1. Publish that tarball interactively with `npm publish <tarball> --access public` and 2FA.
-1. Configure the trusted publisher manually on npmjs.com, using the same settings as the other
-   public packages (GitHub Actions, `richardcarls/rc-webcomponents`, `release.yml`, the `npm`
-   environment, allow publish).
-1. Include the package in the next normal tag-driven release.
+For a brand-new package name, perform one initial publish manually before running
+`version:packages`. Use the package's current, unreleased version so the next synchronized version
+remains available for the OIDC workflow and its provenance attestation.
 
-Never use a bypass-2FA token for the bootstrap publish.
+Important: Never bootstrap at the intended synchronized release version. npm versions are
+immutable, so the workflow cannot replace a manual publish with an OIDC-provenance publish of the
+same version. Never use a bypass-2FA token for the bootstrap publish.
+
+From a clean `develop` branch, build and validate the repository, then prepare an inspected
+tarball in a temporary directory. Pass more than one explicit package name when bootstrapping
+several new packages together.
+
+On Linux or macOS:
+
+```bash
+bootstrap_dir=$(mktemp -d)
+yarn build
+yarn validate:packages
+yarn bootstrap:packages --out "$bootstrap_dir" @rcarls/<package-name>
+```
+
+On Windows:
+
+```powershell
+$bootstrapDir = Join-Path ([System.IO.Path]::GetTempPath()) "rc-npm-bootstrap-$([guid]::NewGuid())"
+yarn.cmd build
+yarn.cmd validate:packages
+yarn.cmd bootstrap:packages --out $bootstrapDir @rcarls/<package-name>
+```
+
+The helper accepts only explicit public workspace names, orders selected packages by their runtime
+dependencies, packs them with Yarn so `workspace:*` ranges are rewritten, validates each packed
+manifest, refuses to overwrite an existing tarball, and prints the exact `npm publish` commands.
+It never authenticates to npm or publishes anything.
+
+Run each printed command interactively and complete its 2FA prompt. Then:
+
+1. Confirm its current version is visible on npmjs.com.
+1. Configure the trusted publisher with GitHub Actions, `richardcarls/rc-webcomponents`,
+   `release.yml`, the `npm` environment, and permission to run `npm publish`.
+1. Continue with the normal release steps above. `version:packages` will move the fixed group to
+   its next synchronized version, and the tag workflow will publish it directly with OIDC and
+   provenance.

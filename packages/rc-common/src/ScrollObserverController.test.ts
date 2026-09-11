@@ -3,7 +3,7 @@ import type { ReactiveControllerHost } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { ScrollObserverController } from './ScrollObserverController';
+import { ScrollObserverController } from './ScrollObserverController.js';
 
 type FakeHost = ReactiveControllerHost & { updates: number };
 

@@ -1,1 +1,1 @@
-export { markdownPlugin, createMarkdownPlugin, getMarkdownPreviewHtml } from './markdown-plugin.ts';
+export { markdownPlugin, createMarkdownPlugin, getMarkdownPreviewHtml } from './markdown-plugin.js';

@@ -1,0 +1,23 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-carousel {
+    --rc-carousel-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-carousel-navigation-button-background: color-mix(
+      in srgb,
+      var(--md-sys-color-surface, Canvas) 75%,
+      transparent
+    );
+    --rc-carousel-navigation-button-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-carousel-pagination-item-color: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 40%,
+      transparent
+    );
+    --rc-carousel-pagination-item-active-color: var(--md-sys-color-primary, Highlight);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-carousel-item {
+    --rc-carousel-item-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-carousel-item-background: var(--md-sys-color-surface-container, Canvas);
+    --rc-carousel-item-border-radius: var(--md-sys-shape-corner-extra-large, 28px);
+  }
+}

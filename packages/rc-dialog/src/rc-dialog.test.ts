@@ -2,9 +2,9 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './define';
+import './define.js';
 import type { RCDialog } from './rc-dialog.js';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 function firePointerEvent(target: Element, type: string, init: PointerEventInit = {}) {
   target.dispatchEvent(
@@ -80,6 +80,7 @@ test('rc-dialog dispatches rc-dialog-close with returnValue detail', async () =>
     <rc-dialog data-testid="host" @rc-dialog-close=${closeSpy}>
       <dialog aria-labelledby="t">
         <span id="t">Title</span>
+        <button type="button">Close</button>
       </dialog>
     </rc-dialog>
   `);
@@ -142,6 +143,7 @@ test('rc-dialog-request-close fires and is cancelable', async () => {
     >
       <dialog aria-labelledby="t">
         <span id="t">Title</span>
+        <button type="button">Close</button>
       </dialog>
     </rc-dialog>
   `);

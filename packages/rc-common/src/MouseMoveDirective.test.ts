@@ -3,13 +3,9 @@ import { test, expect, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
-import { mouseMove } from './MouseMoveDirective';
+import { mouseMove } from './MouseMoveDirective.js';
 
-function firePointerEvent(
-  target: EventTarget,
-  type: string,
-  init?: PointerEventInit,
-): void {
+function firePointerEvent(target: EventTarget, type: string, init?: PointerEventInit): void {
   target.dispatchEvent(
     new PointerEvent(type, {
       bubbles: true,
@@ -23,9 +19,7 @@ function firePointerEvent(
 
 test('mouseMove: callback fires on pointermove after pointerdown', async () => {
   const cb = vi.fn();
-  const screen = render(
-    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
-  );
+  const screen = render(html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`);
   const el = screen.getByTestId('handle');
   const node = await el.element();
 
@@ -38,9 +32,7 @@ test('mouseMove: callback fires on pointermove after pointerdown', async () => {
 
 test('mouseMove: callback does not fire before pointerdown', async () => {
   const cb = vi.fn();
-  const screen = render(
-    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
-  );
+  const screen = render(html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`);
   const node = await screen.getByTestId('handle').element();
 
   firePointerEvent(node, 'pointermove');
@@ -50,9 +42,7 @@ test('mouseMove: callback does not fire before pointerdown', async () => {
 
 test('mouseMove: callback receives the pointermove event', async () => {
   const cb = vi.fn();
-  const screen = render(
-    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
-  );
+  const screen = render(html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`);
   const node = await screen.getByTestId('handle').element();
 
   firePointerEvent(node, 'pointerdown');
@@ -67,9 +57,7 @@ test('mouseMove: callback receives the pointermove event', async () => {
 
 test('mouseMove: pointermove stops firing after pointerup', async () => {
   const cb = vi.fn();
-  const screen = render(
-    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
-  );
+  const screen = render(html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`);
   const node = await screen.getByTestId('handle').element();
 
   firePointerEvent(node, 'pointerdown');
@@ -85,9 +73,7 @@ test('mouseMove: pointermove stops firing after pointerup', async () => {
 
 test('mouseMove: pointermove stops firing after pointercancel', async () => {
   const cb = vi.fn();
-  const screen = render(
-    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
-  );
+  const screen = render(html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`);
   const node = await screen.getByTestId('handle').element();
 
   firePointerEvent(node, 'pointerdown');
@@ -100,9 +86,7 @@ test('mouseMove: pointermove stops firing after pointercancel', async () => {
 
 test('mouseMove: lostpointercapture ends the active drag cycle', async () => {
   const cb = vi.fn();
-  const screen = render(
-    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
-  );
+  const screen = render(html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`);
   const node = await screen.getByTestId('handle').element();
 
   firePointerEvent(node, 'pointerdown');
@@ -115,9 +99,7 @@ test('mouseMove: lostpointercapture ends the active drag cycle', async () => {
 
 test('mouseMove: new pointerdown re-arms after pointerup', async () => {
   const cb = vi.fn();
-  const screen = render(
-    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
-  );
+  const screen = render(html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`);
   const node = await screen.getByTestId('handle').element();
 
   firePointerEvent(node, 'pointerdown');
@@ -133,9 +115,7 @@ test('mouseMove: new pointerdown re-arms after pointerup', async () => {
 
 test('mouseMove: click does not arm pointer movement', async () => {
   const cb = vi.fn();
-  const screen = render(
-    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
-  );
+  const screen = render(html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`);
   const node = await screen.getByTestId('handle').element();
 
   node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
@@ -146,9 +126,7 @@ test('mouseMove: click does not arm pointer movement', async () => {
 
 test('mouseMove: pointerdown focuses the element', async () => {
   const cb = vi.fn();
-  const screen = render(
-    html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`,
-  );
+  const screen = render(html`<div tabindex="0" data-testid="handle" ${mouseMove(cb)}></div>`);
   const el = screen.getByTestId('handle');
   const node = await el.element();
 

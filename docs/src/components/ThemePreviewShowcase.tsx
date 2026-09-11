@@ -92,12 +92,16 @@ export function ThemePreviewShowcase() {
       <div className="theme-preview-shell">
         <rc-app-bar>
           <button slot="leading" type="button" aria-label="Open navigation">
-            <span className="material-symbols-outlined" aria-hidden="true">menu</span>
+            <span className="material-symbols-outlined" aria-hidden="true">
+              menu
+            </span>
           </button>
           <strong>Component Sampler</strong>
           <rc-menu-button slot="trailing" placement="bottom-end">
             <button slot="trigger" type="button" aria-label="More actions">
-              <span className="material-symbols-outlined" aria-hidden="true">more_vert</span>
+              <span className="material-symbols-outlined" aria-hidden="true">
+                more_vert
+              </span>
             </button>
             <rc-menu label="Actions">
               <button type="button" value="duplicate">
@@ -207,14 +211,20 @@ export function ThemePreviewShowcase() {
           <div className="theme-preview-actions">
             <rc-toolbar label="Formatting">
               <button type="button" aria-label="Bold">
-                <span className="material-symbols-outlined" aria-hidden="true">format_bold</span>
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  format_bold
+                </span>
               </button>
               <button type="button" aria-label="Italic">
-                <span className="material-symbols-outlined" aria-hidden="true">format_italic</span>
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  format_italic
+                </span>
               </button>
               <hr />
               <button type="button" aria-label="Link">
-                <span className="material-symbols-outlined" aria-hidden="true">link</span>
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  link
+                </span>
               </button>
             </rc-toolbar>
             <button type="button" onClick={() => dialogRef.current?.showModal()}>
@@ -223,7 +233,9 @@ export function ThemePreviewShowcase() {
           </div>
           <rc-fab>
             <button type="button">
-              <span className="material-symbols-outlined" aria-hidden="true">add</span>
+              <span className="material-symbols-outlined" aria-hidden="true">
+                add
+              </span>
               New
             </button>
           </rc-fab>

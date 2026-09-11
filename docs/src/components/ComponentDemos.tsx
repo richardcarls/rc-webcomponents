@@ -17,6 +17,7 @@ import type {
   RCMenuRef,
   RCNavigationRailRef,
   RCNavigationRailToggleDetail,
+  RCProgressRef,
   RCRangeSliderRef,
   RCSearchBarRef,
   RCSegmentedButtonChangeDetail,
@@ -317,7 +318,144 @@ const CARD_DEMO_CSS = `
 .card-demo-status {
   margin-block-end: 0;
 }
+
+.card-demo-horizontal {
+  max-inline-size: 32rem;
+  margin-block-start: 1rem;
+}
+
+.card-demo-horizontal [slot='media'] {
+  block-size: 100%;
+}
 `;
+
+const SCROLLER_DEMO_CSS = `
+.scroller-demo {
+  block-size: 20rem;
+  border: 1px solid color-mix(in srgb, CanvasText 24%, transparent);
+}
+
+.scroller-demo > * {
+  padding-block: 1rem;
+}
+
+.scroller-demo > [data-rc-scroller-span='fullbleed'] {
+  padding-inline: 1rem;
+  background: color-mix(in srgb, Highlight 12%, Canvas);
+}
+
+.scroller-demo article + article {
+  border-block-start: 1px dotted color-mix(in srgb, CanvasText 35%, transparent);
+}
+`;
+
+export function ScrollerDemo() {
+  return (
+    <DemoFrame defaultTheme="material">
+      <style>{SCROLLER_DEMO_CSS}</style>
+      <rc-scroller
+        className="scroller-demo"
+        layout="content"
+        role="region"
+        aria-label="Recipe collection"
+      >
+        <header data-rc-scroller-span="fullbleed">
+          <strong>Recipes</strong>
+        </header>
+        {['Apple pie', 'Mushroom risotto', 'Lentil soup', 'Lemon tart', 'Tomato galette'].map(
+          (name) => (
+            <article key={name}>
+              <h3>{name}</h3>
+              <p>Content stays centered while the header spans the full scrollport.</p>
+            </article>
+          ),
+        )}
+      </rc-scroller>
+    </DemoFrame>
+  );
+}
+
+const LIST_DEMO_CSS = `
+.list-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 1.5rem;
+}
+
+.list-demo-grid h3 {
+  margin-block-start: 0;
+}
+
+.list-demo-leading {
+  display: grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, Highlight 16%, Canvas);
+}
+
+.list-demo-copy {
+  display: block;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-demo-copy small {
+  display: block;
+}
+`;
+
+export function ListDemo() {
+  return (
+    <DemoFrame defaultTheme="material">
+      <style>{LIST_DEMO_CSS}</style>
+      <div className="list-demo-grid">
+        <section>
+          <h3>Standard</h3>
+          <rc-list aria-label="Recent recipes">
+            <rc-list-item>
+              <span slot="leading" className="list-demo-leading" aria-hidden="true">
+                A
+              </span>
+              <span className="list-demo-copy">
+                Apple pie
+                <small data-rc-list-supporting>Updated yesterday</small>
+              </span>
+              <span slot="trailing">42 min</span>
+            </rc-list-item>
+            <rc-list-item>
+              <span slot="leading" className="list-demo-leading" aria-hidden="true">
+                M
+              </span>
+              <span className="list-demo-copy">
+                Mushroom risotto with roasted garlic
+                <small data-rc-list-supporting>Updated Friday</small>
+              </span>
+              <span slot="trailing">35 min</span>
+            </rc-list-item>
+          </rc-list>
+        </section>
+        <section>
+          <h3>Segmented selection</h3>
+          <rc-list variant="segmented" selection="single" aria-label="Delivery speed">
+            <rc-list-item>
+              <input slot="leading" type="radio" name="delivery" defaultChecked />
+              Standard
+              <span slot="trailing">Free</span>
+            </rc-list-item>
+            <rc-list-item>
+              <input slot="leading" type="radio" name="delivery" />
+              Express
+              <span slot="trailing">$12</span>
+            </rc-list-item>
+          </rc-list>
+        </section>
+      </div>
+    </DemoFrame>
+  );
+}
 
 export function CardDemo() {
   const [message, setMessage] = useState('Activate the card surface or save an article.');
@@ -410,8 +548,75 @@ export function CardDemo() {
           <p>A minimal card can omit media and actions while sharing the same parent grid.</p>
         </rc-card>
       </div>
+      <rc-card className="card-demo-horizontal" orientation="horizontal">
+        <div slot="media" className="card-demo-media" aria-hidden="true">
+          <span className="material-symbols-outlined">restaurant</span>
+        </div>
+        <h3 slot="title">Horizontal card</h3>
+        <p>Media spans a two-fifths leading column while content uses the remaining space.</p>
+      </rc-card>
       <p className="card-demo-status" aria-live="polite">
         {message}
+      </p>
+    </DemoFrame>
+  );
+}
+
+const CAROUSEL_DEMO_CSS = `
+.carousel-demo {
+  inline-size: 100%;
+  max-inline-size: 24rem;
+  block-size: 12rem;
+  margin-inline: auto;
+}
+
+.carousel-demo-slide {
+  display: grid;
+  place-items: center;
+  block-size: 100%;
+  border-radius: var(--rc-carousel-item-border-radius, 12px);
+  color: white;
+  font: 600 1.125rem/1 sans-serif;
+}
+`;
+
+const CAROUSEL_DEMO_SLIDES = [
+  { name: 'Apple pie', color: '#6750a4' },
+  { name: 'Mushroom risotto', color: '#7d5260' },
+  { name: 'Lentil soup', color: '#386a20' },
+  { name: 'Lemon tart', color: '#b3261e' },
+];
+
+export function CarouselDemo() {
+  const [status, setStatus] = useState('Showing Apple pie.');
+
+  return (
+    <DemoFrame defaultTheme="material">
+      <style>{CAROUSEL_DEMO_CSS}</style>
+      <rc-carousel
+        className="carousel-demo"
+        navigation
+        pagination
+        loop
+        aria-label="Recipe photos"
+        onrc-carousel-change={(event: CustomEvent<{ index: number; trigger: string }>) => {
+          const slide = CAROUSEL_DEMO_SLIDES[event.detail.index];
+
+          if (slide) {
+            setStatus(`Showing ${slide.name}.`);
+          }
+        }}
+      >
+        {CAROUSEL_DEMO_SLIDES.map((slide) => (
+          <rc-carousel-item key={slide.name}>
+            <div className="carousel-demo-slide" style={{ background: slide.color }}>
+              {slide.name}
+            </div>
+          </rc-carousel-item>
+        ))}
+      </rc-carousel>
+      <p className="carousel-demo-status" aria-live="polite">
+        {status}
       </p>
     </DemoFrame>
   );
@@ -476,6 +681,42 @@ export function ChipDemo() {
         </rc-chip>
       </rc-toolbar>
       <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+export function ChipGroupDemo() {
+  const categories = [
+    'Breakfast',
+    'Dinner',
+    'Quick',
+    'Vegetarian',
+    'Baking',
+    'Dessert',
+    'Soup',
+    'Pasta',
+    'Salad',
+  ];
+
+  return (
+    <DemoFrame>
+      <fieldset style={{ border: 0, margin: 0, padding: 0 }}>
+        <legend>Categories</legend>
+        <rc-chip-group
+          kind="filter"
+          selection="multiple"
+          style={{ inlineSize: 'min(100%, 20rem)' }}
+        >
+          {categories.map((category) => (
+            <rc-chip key={category}>
+              <label>
+                <input type="checkbox" name="category" value={category.toLowerCase()} />
+                {category}
+              </label>
+            </rc-chip>
+          ))}
+        </rc-chip-group>
+      </fieldset>
     </DemoFrame>
   );
 }
@@ -1025,13 +1266,13 @@ export function AppBarDemo() {
 export function AppBarSearchDemo() {
   return (
     <DemoFrame>
-      <rc-app-bar>
+      <rc-app-bar style={{ '--rc-app-bar-center-max-inline-size': '28rem' } as CSSProperties}>
         <button slot="leading" type="button" aria-label="Open navigation">
           <span className="material-symbols-outlined" aria-hidden="true">
             menu
           </span>
         </button>
-        <rc-search-bar slot="center" style={{ inlineSize: 'min(28rem, 100%)' }}>
+        <rc-search-bar slot="center" style={{ inlineSize: '100%' }}>
           <input type="search" aria-label="Search library" placeholder="Search library" />
         </rc-search-bar>
         <button slot="trailing" type="button" aria-label="Filter results">
@@ -1679,6 +1920,40 @@ export function SliderDemo() {
   );
 }
 
+export function ProgressDemo() {
+  const [progressEl, setProgressEl] = useState<RCProgressRef | null>(null);
+  const log = useEventLog<Record<string, never>>(
+    progressEl,
+    'rc-progress-complete',
+    () => 'rc-progress-complete',
+  );
+
+  const advance = useCallback(() => {
+    if (!progressEl) {
+      return;
+    }
+
+    progressEl.value = (progressEl.value + 20) % 120;
+  }, [progressEl]);
+
+  return (
+    <DemoFrame>
+      <rc-progress ref={setProgressEl} display="inline-end">
+        <progress value="40" max="100" aria-label="Sync progress"></progress>
+      </rc-progress>
+      <p>
+        <button type="button" onClick={advance}>
+          Advance
+        </button>
+      </p>
+      <rc-progress indeterminate style={{ marginTop: '1rem' }}>
+        <progress aria-label="Preparing"></progress>
+      </rc-progress>
+      <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
 export function SplitterDemo() {
   return (
     <DemoFrame>
@@ -1902,6 +2177,55 @@ export function ToolbarDemo() {
           </button>
         </rc-button>
       </rc-toolbar>
+      <p>{clicked}</p>
+    </DemoFrame>
+  );
+}
+
+export function AdaptiveMenuDemo() {
+  const [clicked, setClicked] = useState('Choose an action.');
+  const [maxShown, setMaxShown] = useState(3);
+
+  const action = (label: string, icon: string, priority: number) => (
+    <rc-button icon-only className="rc-icon-button--standard" data-priority={priority}>
+      <button type="button" aria-label={label} onClick={() => setClicked(label)}>
+        <span data-rc-menu-leading className="material-symbols-outlined" aria-hidden="true">
+          {icon}
+        </span>
+        <span data-rc-menu-label>{label}</span>
+      </button>
+    </rc-button>
+  );
+
+  return (
+    <DemoFrame>
+      <label>
+        Max shown:{' '}
+        <select
+          value={maxShown}
+          onChange={(event) => setMaxShown(Number(event.currentTarget.value))}
+        >
+          <option value={0}>0</option>
+          <option value={1}>1</option>
+          <option value={2}>2</option>
+          <option value={3}>3</option>
+        </select>
+      </label>
+      <div style={{ inlineSize: '160px' }}>
+        <rc-adaptive-menu label="Recipe actions" max-shown={maxShown} overflow-label="More actions">
+          {action('Favorite', 'favorite', 30)}
+          {action('Edit', 'edit', 20)}
+          {action('Share', 'share', 10)}
+          <rc-button className="rc-button--text" slot="overflow">
+            <button type="button" onClick={() => setClicked('Delete')}>
+              <span data-rc-menu-leading className="material-symbols-outlined" aria-hidden="true">
+                delete
+              </span>
+              <span data-rc-menu-label>Delete</span>
+            </button>
+          </rc-button>
+        </rc-adaptive-menu>
+      </div>
       <p>{clicked}</p>
     </DemoFrame>
   );

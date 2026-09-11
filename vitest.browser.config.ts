@@ -49,6 +49,7 @@ export function createBrowserTestConfig(
     isolate: true,
     ...overrides,
     exclude: ['**/*.unit.test.ts', 'scripts/*.test.mjs', ...(overrides.exclude ?? [])],
+    setupFiles: ['./test-helpers/browser-setup.ts'],
     browser: {
       enabled: true,
       provider: playwright({ launchOptions: { headless: true } }),

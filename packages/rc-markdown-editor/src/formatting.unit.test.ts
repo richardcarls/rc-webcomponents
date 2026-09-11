@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { setCodeBlockLanguage } from './formatting.ts';
+import { setCodeBlockLanguage } from './formatting.js';
 
 test('updates the opening fence language when the cursor is inside a code block', () => {
   const value = 'Before\n\n```ts\nconst answer = 42;\n```\n';

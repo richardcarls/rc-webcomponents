@@ -1,7 +1,7 @@
 import type { LitElement } from 'lit';
 import { state } from 'lit/decorators.js';
 
-import { isFocusable, type FocusableElement } from './isFocusable';
+import { isFocusable, type FocusableElement } from './isFocusable.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
@@ -74,7 +74,6 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
     // items toggling `disabled` appear in the live `items` getter without a new slotchange.
     private _items: WeakRef<Element>[] = [];
 
-
     get items(): FocusableElement[] {
       return this._items
         .map((ref) => ref.deref())
@@ -101,7 +100,6 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
       return this.items.at((index - 1) % this.items.length);
     }
 
-
     focusItem(item?: FocusableElement | null) {
       if (item != null) {
         item.focus();
@@ -119,7 +117,6 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
     focusLast() {
       this.focusItem(this.lastItem);
     }
-
 
     /**
      * Returns the elements to register from a slot.
@@ -139,9 +136,9 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
       // found immediately for plain elements; for custom elements with
       // delegatesFocus the first composedPath entry is the deep shadow target,
       // not the host, so we search upward until we hit a registered item.
-      const $self = e.composedPath().find(
-        (el) => this.items.includes(el as FocusableElement),
-      ) as FocusableElement | undefined;
+      const $self = e.composedPath().find((el) => this.items.includes(el as FocusableElement)) as
+        | FocusableElement
+        | undefined;
 
       if ($self == null) return; // focus landed outside registered items
 
@@ -154,8 +151,9 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
     protected _onSlotChange(e: Event) {
       const prevItems = this._items;
 
-      this._items = this._collectItems(e.currentTarget as HTMLSlotElement)
-        .map((el) => new WeakRef<Element>(el));
+      this._items = this._collectItems(e.currentTarget as HTMLSlotElement).map(
+        (el) => new WeakRef<Element>(el),
+      );
 
       // Defer DOM mutations so this handler is instantaneous when slotchange
       // fires synchronously inside a framework reactive update pass (e.g.

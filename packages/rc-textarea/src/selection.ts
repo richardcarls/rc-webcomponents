@@ -288,7 +288,11 @@ export function saveSelection($root: Element): SavedSelection | null {
       $root.contains(composedRange.endContainer)
     ) {
       return {
-        anchorOffset: domToTextOffset($root, composedRange.startContainer, composedRange.startOffset),
+        anchorOffset: domToTextOffset(
+          $root,
+          composedRange.startContainer,
+          composedRange.startOffset,
+        ),
         focusOffset: domToTextOffset($root, composedRange.endContainer, composedRange.endOffset),
       };
     }

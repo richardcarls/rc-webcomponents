@@ -4,26 +4,37 @@ import { classMap } from 'lit/directives/class-map.js';
 
 import { NativeChildController, keyInteraction, warnMissingDirectChild } from '@rcarls/rc-common';
 
-import searchBarStyles from './rc-search-bar.styles';
+import searchBarStyles from './rc-search-bar.styles.js';
 
-const _uaClearSheet = new CSSStyleSheet();
-
-_uaClearSheet.replaceSync(
-  `rc-search-bar:not([allow-native-clear]) input[type="search"]::-webkit-search-cancel-button
-   { -webkit-appearance: none; display: none; }`,
-);
-
-let _uaClearSuppressed = false;
-
-function _suppressUaClear(): void {
-  if (_uaClearSuppressed) {
-    return;
-  }
-
-  document.adoptedStyleSheets = [...document.adoptedStyleSheets, _uaClearSheet];
-
-  _uaClearSuppressed = true;
+const LIGHT_DOM_CSS = `
+rc-search-bar > input[type='search'] {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--rc-search-bar-input-color, inherit);
+  font-family: var(--rc-search-bar-input-font-family, inherit);
+  font-size: var(--rc-search-bar-input-font-size, inherit);
+  outline: 0;
+  box-shadow: none;
+  appearance: textfield;
 }
+
+rc-search-bar > input[type='search']:focus-visible {
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+}
+
+rc-search-bar:not([allow-native-clear])
+  > input[type='search']::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  display: none;
+}
+`;
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -140,6 +151,27 @@ interface RCSearchBarSuggestion {
  */
 export class RCSearchBar extends LitElement {
   static styles = [searchBarStyles];
+
+  private static readonly _styledRoots = new Set<Document | ShadowRoot>();
+
+  private static _ensureBaseStyles(root: Document | ShadowRoot): void {
+    if (RCSearchBar._styledRoots.has(root)) {
+      return;
+    }
+
+    RCSearchBar._styledRoots.add(root);
+
+    const style = document.createElement('style');
+
+    style.setAttribute('data-rc-light-dom-base', 'rc-search-bar');
+    style.textContent = LIGHT_DOM_CSS;
+
+    if (root instanceof Document) {
+      root.head.append(style);
+    } else {
+      root.append(style);
+    }
+  }
 
   /** Presentation mode: docked search bar or expandable search view. */
   @property({ type: String, reflect: true })
@@ -372,8 +404,7 @@ export class RCSearchBar extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
-
-    _suppressUaClear();
+    RCSearchBar._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
   }
 
   override disconnectedCallback(): void {

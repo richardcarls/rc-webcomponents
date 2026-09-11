@@ -1,5 +1,13 @@
 # @rcarls/rc-textarea-adapters
 
+## 0.6.0
+
+### Patch Changes
+
+- Updated dependencies [985067e]
+- Updated dependencies [57370e4]
+  - @rcarls/rc-textarea@0.6.0
+
 ## 0.5.0
 
 ### Patch Changes

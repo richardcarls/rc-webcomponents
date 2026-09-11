@@ -10,13 +10,47 @@ import {
 } from '@rcarls/rc-common';
 import type { RCMenu } from '@rcarls/rc-menu';
 
-import menuButtonStyles from './rc-menu-button.styles';
+import menuButtonStyles from './rc-menu-button.styles.js';
 
 declare global {
   interface HTMLElementTagNameMap {
     'rc-menu-button': RCMenuButton;
   }
 }
+
+const LIGHT_DOM_CSS = `
+@layer rc-base {
+  /*
+   * Expands an icon-only trigger's clickable region beyond its visible box
+   * up to the accessible touch-target minimum, the same way rc-button and
+   * rc-chip do: an absolutely-positioned, invisible pseudo-element on the
+   * actual slotted trigger element (not the host) extends the hit area
+   * symmetrically. The trigger already has position: relative from the
+   * shadow-scoped ::slotted(button) rule. max(100%, size) keeps this a
+   * no-op once the visible trigger already meets or exceeds the touch
+   * target, rather than shrinking it.
+   */
+  rc-menu-button[icon-only] > [slot='trigger']::before {
+    content: '';
+    position: absolute;
+    inset-block: calc(
+      (
+          var(--rc-menu-button-touch-target-block-size, 3rem) -
+            max(100%, var(--rc-menu-button-trigger-block-size, 0px))
+        ) / -2
+    );
+    inset-inline: calc(
+      (
+          var(
+              --rc-menu-button-touch-target-inline-size,
+              var(--rc-menu-button-touch-target-block-size, 3rem)
+            ) -
+            max(100%, var(--rc-menu-button-icon-size, var(--rc-menu-button-trigger-block-size, 0px)))
+        ) / -2
+    );
+  }
+}
+`;
 
 /** Detail payload for the `rc-menu-button-toggle` event. */
 export interface RCMenuButtonToggleEvent {
@@ -55,6 +89,24 @@ export interface RCMenuButtonToggleEvent {
  * @cssprop [--rc-menu-button-indicator-size=1em] - Inline and block size of the slotted indicator
  * @cssprop [--rc-menu-button-indicator-color=currentColor] - Color of the slotted indicator
  * @cssprop [--rc-menu-button-indicator-inset=var(--rc-menu-button-trigger-padding-inline)] - Indicator distance from the trigger's inline end
+ * @cssprop [--rc-menu-button-icon-size] - Inline size of an `icon-only` trigger's visible box.
+ *   Square by default (equal to `--rc-menu-button-trigger-block-size`); set narrower or wider
+ *   to change only the trigger's width, independent of its height.
+ * @cssprop [--rc-menu-button-touch-target-block-size=3rem] - Minimum accessible touch target
+ *   block size for an `icon-only` trigger. A floor, not a fixed size: has no effect once
+ *   `--rc-menu-button-trigger-block-size` already meets or exceeds it. Grows the shadow-DOM
+ *   trigger wrapper (reserving layout space) and the light-DOM hit-slop (the actual larger
+ *   clickable region) together; the visible trigger itself stays at its own size, centered.
+ * @cssprop [--rc-menu-button-touch-target-inline-size] - Minimum accessible touch target inline
+ *   size for an `icon-only` trigger. Defers to `--rc-menu-button-touch-target-block-size` when
+ *   unset.
+ * @cssprop [--rc-menu-button-touch-target-overlap-inline-start=0px] - Zero by default. A theme
+ *   or consumer sets this on an `icon-only` trigger that sits at a real leading edge (no
+ *   neighbor on that side) to let its touch-target inflation overlap into whatever sits just
+ *   outside the host, such as a container's own edge padding, instead of also reserving layout
+ *   space there.
+ * @cssprop [--rc-menu-button-touch-target-overlap-inline-end=0px] - The trailing-edge
+ *   counterpart to `--rc-menu-button-touch-target-overlap-inline-start`.
  *
  * @csspart root - The root container element
  * @csspart popup - The popup container element
@@ -65,6 +117,10 @@ export interface RCMenuButtonToggleEvent {
  * @attr orientation - Arrow-key axis for opening the menu. Inherits from a parent
  *   `rc-menubar` or `[role="menubar"]` when unset.
  * @attr placement - Preferred placement of the popup relative to the trigger.
+ * @attr icon-only - Hints that the slotted trigger has no visible label, so themes can size
+ *   it and its touch target as an icon button (see `--rc-menu-button-icon-size` and
+ *   `--rc-menu-button-touch-target-*` above). Purely a styling hook; RCMenuButton does not read
+ *   or derive it — set it whenever the trigger is rendered icon-only.
  */
 export class RCMenuButton extends LitElement {
   static styles = [menuButtonStyles];
@@ -79,8 +135,30 @@ export class RCMenuButton extends LitElement {
     delegatesFocus: true,
   };
 
+  protected static readonly _styledRoots = new Set<Document | ShadowRoot>();
+
+  protected static _ensureBaseStyles(root: Document | ShadowRoot): void {
+    if (RCMenuButton._styledRoots.has(root)) {
+      return;
+    }
+
+    RCMenuButton._styledRoots.add(root);
+
+    const style = document.createElement('style');
+
+    style.setAttribute('data-rc-light-dom-base', 'rc-menu-button');
+    style.textContent = LIGHT_DOM_CSS;
+
+    if (root instanceof Document) {
+      root.head.append(style);
+    } else {
+      root.append(style);
+    }
+  }
+
   private _defaultOpen = false;
-  private _open = false;
+  private _open: boolean | undefined;
+  private _uncontrolledOpen: boolean | undefined;
   private _openInitialized = false;
 
   /**
@@ -91,20 +169,17 @@ export class RCMenuButton extends LitElement {
    */
   @property({ type: Boolean, reflect: true })
   get open(): boolean {
-    return this._open;
+    return this._open ?? this._uncontrolledOpen ?? this._defaultOpen;
   }
 
   /** Applies open state in controlled mode without dispatching an event. */
   set open(value: boolean | undefined) {
-    const oldValue = this._open;
+    const oldValue = this.open;
 
-    if (value === undefined) {
-      return;
-    }
-
+    this._open = value;
     this._openInitialized = true;
-    this._setOpen(value, false);
     this.requestUpdate('open', oldValue);
+    this._syncTriggerAria();
   }
 
   /**
@@ -124,8 +199,12 @@ export class RCMenuButton extends LitElement {
 
     this._defaultOpen = value;
 
-    if (value && !this._openInitialized) {
-      this._setOpen(true, false);
+    if (
+      !this._openInitialized &&
+      this._open === undefined &&
+      this._uncontrolledOpen === undefined
+    ) {
+      this.requestUpdate('open', oldValue);
     }
 
     this.requestUpdate('defaultOpen', oldValue);
@@ -225,15 +304,14 @@ export class RCMenuButton extends LitElement {
   /** Installs the tabindex mutation observer and the document-level click listener. */
   override connectedCallback() {
     super.connectedCallback();
+    RCMenuButton._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
 
     this._tabObserver = new MutationObserver(() => this._syncTriggerTabindex());
     this._tabObserver.observe(this, { attributes: true, attributeFilter: ['tabindex'] });
 
     document.addEventListener('click', this._boundHandleDocumentClick, true);
 
-    if (this.defaultOpen) {
-      this._setOpen(true, false);
-    }
+    this.requestUpdate('open');
   }
 
   /** Disconnects the tabindex observer and removes the document-level click listener. */
@@ -257,9 +335,12 @@ export class RCMenuButton extends LitElement {
 
     this._anchorCtrl.setOptions({ placement: this._effectivePlacement });
     this._setOpen(true, true);
-    this._anchorCtrl.update();
 
     this.updateComplete.then(() => {
+      if (!this.open) {
+        return;
+      }
+
       const $menu = this._$menu?.deref();
 
       focusTarget === 'last' ? $menu?.focusLast() : $menu?.focusFirst();
@@ -278,7 +359,7 @@ export class RCMenuButton extends LitElement {
 
     this._setOpen(false, true);
 
-    if (returnFocus) {
+    if (returnFocus && !this.open) {
       const $trigger = this._$trigger?.deref();
 
       $trigger?.focus();
@@ -294,13 +375,13 @@ export class RCMenuButton extends LitElement {
     }
   }
 
-  /** Dispatches the `rc-menu-button-toggle` bubbling composed event with the current open state. */
-  protected _dispatchToggle() {
+  /** Dispatches the `rc-menu-button-toggle` bubbling composed event with the requested open state. */
+  protected _dispatchToggle(open = this.open) {
     this.dispatchEvent(
       new CustomEvent<RCMenuButtonToggleEvent>('rc-menu-button-toggle', {
         bubbles: true,
         composed: true,
-        detail: { open: this.open },
+        detail: { open },
       }),
     );
   }
@@ -450,6 +531,10 @@ export class RCMenuButton extends LitElement {
       // rather than letting that reach the caller.
       if (this._$popup?.isConnected) {
         this._$popup.togglePopover(this.open);
+
+        if (this.open) {
+          this._anchorCtrl.update();
+        }
       }
     }
 
@@ -459,19 +544,21 @@ export class RCMenuButton extends LitElement {
   }
 
   protected _setOpen(open: boolean, dispatch: boolean): void {
-    if (this._open === open) {
+    const oldValue = this.open;
+
+    if (oldValue === open) {
       return;
     }
 
-    const oldValue = this._open;
-
-    this._open = open;
+    if (this._open === undefined) {
+      this._uncontrolledOpen = open;
+    }
 
     this.requestUpdate('open', oldValue);
     this._syncTriggerAria();
 
     if (dispatch) {
-      this._dispatchToggle();
+      this._dispatchToggle(open);
     }
   }
 

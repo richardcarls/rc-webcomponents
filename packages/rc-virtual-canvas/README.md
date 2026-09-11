@@ -1,5 +1,7 @@
 # `@rcarls/rc-virtual-canvas`
 
+<!-- markdownlint-disable MD013 -->
+
 Scrollable virtual canvas for rendering large coordinate-space content.
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-virtual-canvas](https://richardcarls.github.io/rc-webcomponents/components/rc-virtual-canvas).
@@ -19,8 +21,8 @@ npm install @rcarls/rc-virtual-canvas
 ## Import
 
 ```js
-import '@rcarls/rc-virtual-canvas';                              // side-effect: registers <rc-virtual-canvas>
-import { RCVirtualCanvas } from '@rcarls/rc-virtual-canvas';    // named class export
+import '@rcarls/rc-virtual-canvas'; // side-effect: registers <rc-virtual-canvas>
+import { RCVirtualCanvas } from '@rcarls/rc-virtual-canvas'; // named class export
 ```
 
 ---
@@ -56,7 +58,7 @@ total size of your virtual content. On each `rc-virtual-canvas-render` event, us
 ```
 
 The canvas element should match the component's rendered size (set via CSS). The virtual
-content is larger — scrolling is handled by an absolutely-positioned transparent `<div>`
+content is larger; scrolling is handled by an absolutely positioned transparent `<div>`
 that triggers native scroll events.
 
 ---
@@ -65,65 +67,65 @@ that triggers native scroll events.
 
 ### Properties / attributes
 
-| Property | Attribute | Type | Default | Description |
-|---|---|---|---|---|
-| `contentWidth` | `content-width` | `number` | `0` | Total pixel width of the virtual content |
-| `contentHeight` | `content-height` | `number` | `0` | Total pixel height of the virtual content |
-| `autoResizeCanvas` | `auto-resize-canvas` | `boolean` | `true` | Keeps the slotted canvas backing store aligned to the measured viewport |
-| `renderMode` | `render-mode` | `'continuous' \| 'viewport-change' \| 'manual'` | `'continuous'` | Controls when render events are dispatched |
-| `imageRendering` | `image-rendering` | `'auto' \| 'crisp-edges' \| 'pixelated'` | `'auto'` | Convenience value applied to the slotted canvas via `image-rendering` |
+| Property           | Attribute            | Type                                            | Default        | Description                                                             |
+| ------------------ | -------------------- | ----------------------------------------------- | -------------- | ----------------------------------------------------------------------- |
+| `contentWidth`     | `content-width`      | `number`                                        | `0`            | Total pixel width of the virtual content                                |
+| `contentHeight`    | `content-height`     | `number`                                        | `0`            | Total pixel height of the virtual content                               |
+| `autoResizeCanvas` | `auto-resize-canvas` | `boolean`                                       | `true`         | Keeps the slotted canvas backing store aligned to the measured viewport |
+| `renderMode`       | `render-mode`        | `'continuous' \| 'viewport-change' \| 'manual'` | `'continuous'` | Controls when render events are dispatched                              |
+| `imageRendering`   | `image-rendering`    | `'auto' \| 'crisp-edges' \| 'pixelated'`        | `'auto'`       | Convenience value applied to the slotted canvas via `image-rendering`   |
 
 ### Read-only properties
 
-| Property | Type | Description |
-|---|---|---|
+| Property       | Type     | Description                                                                                                                  |
+| -------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `canvasScaleX` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the x-axis (≈ `devicePixelRatio` when `autoResizeCanvas` is `true`) |
-| `canvasScaleY` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the y-axis |
+| `canvasScaleY` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the y-axis                                                          |
 
 ### Methods
 
-| Method | Description |
-|---|---|
-| `getViewRect()` | Returns an immutable snapshot of the current viewport rectangle |
-| `scrollToContent(x, y, options?)` | Scrolls so the content coordinate is at the viewport origin |
-| `centerOnContent(x, y, options?)` | Scrolls so the content coordinate is centered in the viewport |
+| Method                              | Description                                                                                      |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `getViewRect()`                     | Returns an immutable snapshot of the current viewport rectangle                                  |
+| `scrollToContent(x, y, options?)`   | Scrolls so the content coordinate is at the viewport origin                                      |
+| `centerOnContent(x, y, options?)`   | Scrolls so the content coordinate is centered in the viewport                                    |
 | `clientToContent(clientX, clientY)` | Converts browser client coordinates to content coordinates using the current backing-store scale |
-| `contentToClient(x, y)` | Converts content coordinates back to browser client coordinates |
-| `requestRender(reason?)` | Queues a render event; required when `renderMode` is `'manual'` |
+| `contentToClient(x, y)`             | Converts content coordinates back to browser client coordinates                                  |
+| `requestRender(reason?)`            | Queues a render event; required when `renderMode` is `'manual'`                                  |
 
 ### CSS custom properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--rc-virtual-canvas-image-rendering` | `auto` | Fallback styling hook for the slotted canvas `image-rendering` value |
+| Property                              | Default | Description                                                          |
+| ------------------------------------- | ------- | -------------------------------------------------------------------- |
+| `--rc-virtual-canvas-image-rendering` | `auto`  | Fallback styling hook for the slotted canvas `image-rendering` value |
 
 ### CSS parts
 
-| Part | Description |
-|---|---|
-| `scroller` | Internal scroll container that owns the virtual content scroll range |
-| `overlay` | Viewport-positioned overlay container rendered inside the scroll container |
+| Part       | Description                                                                |
+| ---------- | -------------------------------------------------------------------------- |
+| `scroller` | Internal scroll container that owns the virtual content scroll range       |
+| `overlay`  | Viewport-positioned overlay container rendered inside the scroll container |
 
 ### Slots
 
-| Slot | Description |
-|---|---|
-| *(default)* | A single `<canvas>` element. Non-canvas slotted elements are ignored by the component but rendered. |
-| `overlay` | Optional viewport-positioned content rendered over the canvas inside the scroll container. |
+| Slot        | Description                                                                                         |
+| ----------- | --------------------------------------------------------------------------------------------------- |
+| _(default)_ | A single `<canvas>` element. Non-canvas slotted elements are ignored by the component but rendered. |
+| `overlay`   | Optional viewport-positioned content rendered over the canvas inside the scroll container.          |
 
 ### Events
 
-| Event | Bubbles | Cancelable | Detail | When |
-|---|---|---|---|---|
-| `rc-virtual-canvas-render` | Yes (composed) | No | `{ time: DOMHighResTimeStamp, reason: RenderReason, viewRect: ViewRect, contentRect: ViewRect }` | When the active render mode schedules a frame and a canvas is slotted |
+| Event                      | Bubbles        | Cancelable | Detail                                                                                           | When                                                                  |
+| -------------------------- | -------------- | ---------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `rc-virtual-canvas-render` | Yes (composed) | No         | `{ time: DOMHighResTimeStamp, reason: RenderReason, viewRect: ViewRect, contentRect: ViewRect }` | When the active render mode schedules a frame and a canvas is slotted |
 
 **`ViewRect` shape:**
 
 ```ts
 type ViewRect = {
-  x: number;      // Scroll offset — the x origin of the visible window in content space
-  y: number;      // Scroll offset — the y origin of the visible window in content space
-  width: number;  // Visible width in device pixels (from ResizeObserver devicePixelContentBoxSize)
+  x: number; // Scroll offset — the x origin of the visible window in content space
+  y: number; // Scroll offset — the y origin of the visible window in content space
+  width: number; // Visible width in device pixels (from ResizeObserver devicePixelContentBoxSize)
   height: number; // Visible height in device pixels
 };
 ```
@@ -134,11 +136,11 @@ type ViewRect = {
 
 **Render modes:**
 
-| Mode | Behavior |
-|---|---|
-| `'continuous'` | Dispatches on every animation frame while connected and a canvas is slotted |
+| Mode                | Behavior                                                                      |
+| ------------------- | ----------------------------------------------------------------------------- |
+| `'continuous'`      | Dispatches on every animation frame while connected and a canvas is slotted   |
 | `'viewport-change'` | Dispatches after scroll, resize, content-size changes, and canvas replacement |
-| `'manual'` | Dispatches only after `requestRender()` |
+| `'manual'`          | Dispatches only after `requestRender()`                                       |
 
 ---
 
@@ -172,7 +174,7 @@ vc.addEventListener('pointerdown', (event) => {
 
 ## Accessibility
 
-`rc-virtual-canvas` is a rendering surface. A `<canvas>` element has no inherent semantics — it is a bitmap, not a document. If your canvas renders interactive or informational content, you are responsible for providing supplemental accessibility:
+`rc-virtual-canvas` is a rendering surface. A `<canvas>` element has no inherent semantics; it is a bitmap, not a document. If your canvas renders interactive or informational content, you are responsible for providing supplemental accessibility:
 
 - Add an accessible `<div>` or `<table>` alternative outside the canvas with the same information (hidden visually with `clip-path` or similar, not `display: none`).
 - Use `aria-label` or `aria-labelledby` on the `<canvas>` to describe what it shows.
@@ -182,7 +184,7 @@ vc.addEventListener('pointerdown', (event) => {
 
 ## Browser support
 
-| Feature | Requirement |
-|---|---|
-| Core | Chrome 67+, Firefox 63+, Safari 12.1+ (Web Components) |
+| Feature                      | Requirement                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| Core                         | Chrome 67+, Firefox 63+, Safari 12.1+ (Web Components)                             |
 | Device-pixel-accurate sizing | Chrome 84+, Firefox 93+, Safari 15.4+ (ResizeObserver `devicePixelContentBoxSize`) |

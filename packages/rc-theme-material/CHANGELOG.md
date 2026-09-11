@@ -1,5 +1,61 @@
 # @rcarls/rc-theme-material
 
+## 0.6.0
+
+### Minor Changes
+
+- ffcbf11: Add adaptive chip-group layouts, native-backed filter chips, and shared
+  input-chip rendering. Native-backed chips preserve controlled host state,
+  follow form resets when uncontrolled, and accept native link actions. Groups
+  restore author-owned chip variants when coordination ends. Keep search input
+  chrome inside the search surface and align contextual icon sizes with Material 3.
+- 40f9776: Add an APG carousel built on native CSS scroll snap, with optional navigation,
+  pagination, mouse dragging, looping, and consumer-controlled slide sizing.
+  Preserve controlled active-index behavior after rejected swipes, keep visual
+  loop clones inert and out of forms, and degrade safely without intersection
+  observation.
+- a108336: Add shared-column `rc-list` and `rc-list-item` elements with standard and
+  segmented appearances, default content truncation, and native-backed single or
+  multiple selection coordination. Restore author-owned item state when native
+  selection coordination ends.
+- 509ee64: Add `rc-progress`, a native `<progress>` enhancer with a formatted value
+  display, a track and fill you can restyle with CSS custom properties, and a
+  built-in fix for the indeterminate/undefined-binding footgun.
+
+  Keep the native element as the uncontrolled source of truth, support releasing
+  a controlled value, and react to live native `value`/`max` changes. Preserve a
+  native determinate value while `indeterminate` temporarily removes its
+  attribute.
+
+  The bar renders at its intended height with no `display` attribute set,
+  matching its own documented default: previously the track/fill/native
+  `<progress>` are all absolutely positioned, contributing nothing to the
+  control's normal-flow height, so with no value-display text sharing its grid
+  row to give it one, the whole bar collapsed to 0px.
+
+- d67efde: Add a native-host scroll region with optional centered content and fullbleed
+  layout tracks, aggregate framework typings, RTL-aware boundary state, and
+  Material layout defaults.
+- 6d3b478: Add Material button emphasis, danger-tone, icon sizing, and adaptive-menu
+  contracts. Complete the bundled surface-role palette and forced-colors mappings.
+- 30eb232: Add icon-only activation-area sizing and Material icon-button variants. Align menu
+  selection and submenu affordances, and keep anchored popups within the viewport
+  across native and fallback positioning.
+- 6d3b478: Default the new touch-target overlap tokens for MD3's own dense/narrow
+  icon-button and overflow-trigger conventions: `rc-button`'s and
+  `rc-menu-button`'s narrow variant (where the icon is smaller than the
+  default 3rem touch target) now reclaim the trailing edge automatically,
+  and `rc-adaptive-menu`'s overflow trigger, always the trailing-most
+  control in its toolbar by design, does the same unconditionally. Only the
+  trailing edge defaults, matching each component's own documented
+  "trailing overflow trigger" use case; the leading edge stays an explicit
+  opt-in.
+
+### Patch Changes
+
+- 6d3b478: Keep generic dialog button styles out of custom control wrappers, support nested
+  bottom-sheet handles, and expose the Material disabled-button opacity token.
+
 ## 0.5.0
 
 ## 0.4.2

@@ -10,12 +10,12 @@ import { ChipDemo } from '@site/src/components/ComponentDemos';
 
 # rc-chip
 
-Chip wrapper for native button-based actions, filters, suggestions, and inputs.
+Chip wrapper for native actions, links, filters, suggestions, and inputs.
 
 <AtAGlance
   packageName="@rcarls/rc-chip"
   tag="rc-chip"
-  native="Direct-child native button"
+  native="Direct-child native button, link, or labeled input"
   state="Selected/removable chip affordances"
   events={['rc-chip-change', 'rc-chip-remove']}
   related={[
@@ -58,10 +58,21 @@ import '@rcarls/rc-chip/define';
   <button type="button" aria-label="Remove basil">Basil</button>
   <span slot="remove-icon" class="material-symbols-outlined" aria-hidden="true"> close </span>
 </rc-chip>
+
+<rc-chip>
+  <a href="/recipes">Recipes</a>
+</rc-chip>
 ```
 
-Filter chips toggle `selected` on user activation and add `aria-pressed` only
-when the author has not supplied stronger toggle semantics.
+Button-backed filter chips toggle `selected` on user activation and add
+`aria-pressed` only when the author has not supplied stronger toggle semantics.
+For form-backed filters, keep the native input inside a direct label:
+
+```html
+<rc-chip variant="filter">
+  <label><input type="checkbox" name="category" value="quick" />Quick</label>
+</rc-chip>
+```
 
 For removable chips, the direct native button is the sole removal action and
 fires `rc-chip-remove`. The trailing remove icon is presentational, so it does
@@ -77,28 +88,38 @@ treatment.
 
 ## Groups
 
-Compose interactive chips inside `rc-toolbar` when the group should form one
-tab stop with arrow-key navigation. Install and import
-`@rcarls/rc-toolbar/define` separately when you are not using the aggregate
-package:
+Use `rc-chip-group` for adaptive wrapping/scrolling, native filter semantics,
+and an optional assist-chip toolbar keyboard model:
 
 ```html
-<rc-toolbar label="Recipe filters">
+<rc-chip-group kind="assist" label="Recipe actions">
   <rc-chip variant="filter">
     <button type="button">Quick</button>
   </rc-chip>
   <rc-chip variant="filter">
     <button type="button">Vegetarian</button>
   </rc-chip>
-</rc-toolbar>
+</rc-chip-group>
 ```
 
-Toolbar layout does not wrap by default. A wrapping chip toolbar can opt in
-without changing its keyboard model:
+`rc-toolbar` remains appropriate for mixed control toolbars that do not need
+chip-group overflow disclosure.
+
+### Dense, height-constrained fields
+
+A chip's accessible touch target (`--rc-chip-touch-target-block-size`,
+`3rem` by default) applies unconditionally, unlike `rc-button`'s
+opt-in-via-`icon-only` inflation — reasonable on its own, but a poor fit
+inside a field that can't spare that much height, such as a multi-select
+value area in `rc-search-bar` or `rc-combobox`. `--rc-chip-touch-target-overlap-block-start`
+and `-block-end` (zero by default) let a theme or consumer give that
+reserved space back on the block axis, the same pattern as `rc-button`'s
+own touch-target overlap tokens but vertical instead of horizontal:
 
 ```css
-rc-toolbar::part(root) {
-  flex-wrap: wrap;
+.chip-field rc-chip {
+  --rc-chip-touch-target-overlap-block-start: 8px;
+  --rc-chip-touch-target-overlap-block-end: 8px;
 }
 ```
 

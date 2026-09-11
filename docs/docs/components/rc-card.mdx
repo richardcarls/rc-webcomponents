@@ -10,7 +10,7 @@ import { CardDemo } from '@site/src/components/ComponentDemos';
 
 # rc-card
 
-Design-system-neutral card shell with structural slots and parts.
+Design-system-neutral vertical and horizontal card shell with structural slots and parts.
 
 `rc-card` owns card anatomy and layout affordances, but authors keep native
 anchors and buttons for semantics and keyboard access. Themes decide visual
@@ -65,6 +65,11 @@ The theme-free card provides one `rem` of body padding and otherwise remains an
 undecorated content container. Apply a packaged theme or card tokens when the
 composition needs a different spacing scale, shape, elevation, or state layers.
 
+Set `orientation="horizontal"` to place media in a two-fifths leading column
+that spans the card while the remaining structural regions flow through a
+three-fifths content column. Cards without media collapse back to one column.
+Orientation is presentational and does not set `aria-orientation`.
+
 ## Live demo
 
 <CardDemo />
@@ -75,10 +80,34 @@ Slots cover `media`, `header`, `title`, `subtitle`, default body, `actions`,
 and `footer`. Matching parts and reflected `has-*` attributes let themes adapt
 spacing when regions are present or absent.
 
-For shelf/grid layouts, set card rows through `--rc-card-grid-template-rows`.
-The demo spans each card across the parent grid's media, title, body, and action
-tracks, then uses `subgrid` on the hosts to align those regions across cards
-with different content.
+For shelf/grid layouts, set card tracks through
+`--rc-card-grid-template-rows` and `--rc-card-grid-template-columns`, then
+place each region with its matching `--rc-card-*-grid-row` and
+`--rc-card-*-grid-column` properties. The demo spans each vertical card across
+the parent grid's media, title, body, and action tracks, then uses `subgrid` on
+the hosts to align those regions across cards with different content.
+
+The consumer owns adaptive policy. A size container query cannot write the
+`orientation` attribute, so CSS-driven consumers set the public grid contract
+directly:
+
+```css
+.shelf {
+  container: recipe-shelf / inline-size;
+}
+
+@container recipe-shelf (inline-size < 26rem) {
+  .shelf rc-card {
+    --rc-card-grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    --rc-card-media-grid-row: 1 / -1;
+    --rc-card-media-grid-column: 1;
+    --rc-card-title-grid-row: 1;
+    --rc-card-title-grid-column: 2;
+    --rc-card-body-grid-row: 2;
+    --rc-card-body-grid-column: 2;
+  }
+}
+```
 
 Card titles remain author-owned semantic content. The packaged themes normalize
 slotted `h2` and `h3` margins and map those ranks to card-appropriate title

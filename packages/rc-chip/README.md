@@ -1,6 +1,6 @@
 # @rcarls/rc-chip
 
-Chip wrapper for native button-based actions, filters, and inputs.
+Chip wrapper for native actions, links, filters, and inputs.
 
 ```html
 <rc-chip variant="filter">
@@ -11,6 +11,14 @@ Chip wrapper for native button-based actions, filters, and inputs.
 The native button remains connected for keyboard behavior and progressive enhancement.
 Native tap highlighting is suppressed because the component's clipped state layer
 provides hover, focus, and pressed feedback within the chip shape.
+
+Navigation chips preserve the same native-link behavior:
+
+```html
+<rc-chip>
+  <a href="/recipes">Recipes</a>
+</rc-chip>
+```
 
 Use `rc-toolbar` when a group of interactive chips should form one tab stop
 with arrow-key navigation. Import `@rcarls/rc-toolbar/define` separately when

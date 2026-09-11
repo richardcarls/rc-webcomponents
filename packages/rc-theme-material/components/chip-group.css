@@ -1,0 +1,15 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-chip-group {
+    --rc-chip-group-column-gap: 0.5rem;
+    --rc-chip-group-row-gap: 0;
+    --rc-chip-group-padding-block: 0;
+    --rc-chip-group-scroll-padding-inline: 0;
+    --rc-chip-group-scrollbar-width: none;
+    --rc-chip-group-toggle-gap: 0.5rem;
+    --rc-chip-group-toggle-separator-gap: 0.5rem;
+    --rc-chip-group-toggle-icon-size: 1.125rem;
+    --rc-chip-group-toggle-separator-block-size: 1.5rem;
+    --rc-chip-group-toggle-separator-inline-size: 1px;
+    --rc-chip-group-toggle-separator-color: var(--md-sys-color-outline-variant, currentColor);
+  }
+}

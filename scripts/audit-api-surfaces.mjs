@@ -27,19 +27,19 @@ function componentPackageNames() {
   return packageDirs().filter((name) => has(`packages/${name}/src/${name}.ts`));
 }
 
-function cemTags() {
+function cemDeclarations() {
   const manifest = readJson('dist/custom-elements.json');
-  const tags = new Set();
+  const declarations = new Map();
 
   for (const mod of manifest.modules ?? []) {
     for (const declaration of mod.declarations ?? []) {
       if (declaration.tagName) {
-        tags.add(declaration.tagName);
+        declarations.set(declaration.tagName, declaration);
       }
     }
   }
 
-  return tags;
+  return declarations;
 }
 
 function assertIncludes(text, needle, label) {
@@ -49,8 +49,11 @@ function assertIncludes(text, needle, label) {
 }
 
 const components = componentPackageNames();
-const tags = cemTags();
+const declarations = cemDeclarations();
+const tags = new Set(declarations.keys());
 const sidebar = read('docs/sidebars.ts');
+const rootReadme = read('README.md');
+const docsHomepage = read('docs/src/pages/index.tsx');
 const reactTypes = read('packages/rc-webcomponents/src/react.d.ts');
 const solidTypes = read('packages/rc-webcomponents/src/solid.d.ts');
 const rcCommonReadme = read('packages/rc-common/README.md');
@@ -63,6 +66,33 @@ for (const name of components) {
   if (!has(`docs/docs/components/${name}.mdx`)) {
     errors.push(`${name}: missing Docusaurus component page`);
   }
+
+  assertIncludes(rootReadme, `](packages/${name}/)`, 'README.md');
+  assertIncludes(docsHomepage, `'${name}'`, 'docs/src/pages/index.tsx');
+}
+
+for (const [tag, declaration] of declarations) {
+  if ((declaration.events ?? []).some((event) => event.name === 'type')) {
+    errors.push(`${tag}: custom-elements manifest contains a spurious "type" event`);
+  }
+}
+
+for (const eventName of ['rc-textarea-focus', 'rc-textarea-select']) {
+  if (!(declarations.get('rc-textarea')?.events ?? []).some((event) => event.name === eventName)) {
+    errors.push(`rc-textarea: custom-elements manifest is missing the ${eventName} event`);
+  }
+}
+
+if (!(declarations.get('rc-toolbar')?.slots ?? []).some((slot) => slot.name === '')) {
+  errors.push('rc-toolbar: custom-elements manifest is missing the default slot');
+}
+
+const dialogModal = (declarations.get('rc-dialog')?.members ?? []).find(
+  (member) => member.name === 'modal',
+);
+
+if (!dialogModal || dialogModal.attribute !== undefined) {
+  errors.push('rc-dialog: modal must be documented as a property-only manifest member');
 }
 
 for (const file of readdirSync(join(root, 'docs/docs/components')).filter((name) =>
@@ -85,6 +115,12 @@ for (const needle of [
   'checkmark?: boolean',
   'label: string',
   "orientation: 'horizontal' | 'vertical'",
+  'readonly atBlockStart: boolean',
+  'readonly atBlockEnd: boolean',
+  'readonly atInlineStart: boolean',
+  'readonly atInlineEnd: boolean',
+  'export type RCRangeSliderRef = HTMLElement & {',
+  'readonly: boolean',
 ]) {
   assertIncludes(reactTypes, needle, 'packages/rc-webcomponents/src/react.d.ts');
 }
@@ -94,6 +130,12 @@ for (const needle of [
   'checkmark?: boolean | string',
   'label: string',
   "orientation: 'horizontal' | 'vertical'",
+  'readonly atBlockStart: boolean',
+  'readonly atBlockEnd: boolean',
+  'readonly atInlineStart: boolean',
+  'readonly atInlineEnd: boolean',
+  'export type RCRangeSliderRef = HTMLElement & {',
+  'readonly: boolean',
 ]) {
   assertIncludes(solidTypes, needle, 'packages/rc-webcomponents/src/solid.d.ts');
 }

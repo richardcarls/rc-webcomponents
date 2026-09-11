@@ -1,7 +1,6 @@
 import type { Decoration } from '@rcarls/rc-textarea';
 
-import type { ActiveFormats, HeadingLevel } from './types.ts';
-
+import type { ActiveFormats, HeadingLevel } from './types.js';
 
 /**
  * Replaces the language token on the opening fence of the code block containing
@@ -37,7 +36,6 @@ export function setCodeBlockLanguage(
   return value.slice(0, fenceStart) + '```' + language + '\n' + value.slice(fenceEnd);
 }
 
-
 /**
  * Derives active inline and block formats from the decoration array at a given
  * selection range in the markdown source editor. Used for toolbar state sync in
@@ -54,19 +52,21 @@ export function getFormatsFromDecorations(
   );
 
   const headingMark = marks.find((d) => d.className?.startsWith('rme-heading-'));
-  const headingLevel = headingMark?.className?.replace('rme-heading-', '') as HeadingLevel | undefined;
+  const headingLevel = headingMark?.className?.replace('rme-heading-', '') as
+    | HeadingLevel
+    | undefined;
 
   return {
-    bold:         marks.some((d) => d.bold),
-    italic:       marks.some((d) => d.italic),
-    underline:    marks.some((d) => d.className === 'rme-underline'),
+    bold: marks.some((d) => d.bold),
+    italic: marks.some((d) => d.italic),
+    underline: marks.some((d) => d.className === 'rme-underline'),
     strikethrough: marks.some((d) => d.className === 'rme-strikethrough'),
-    code:         marks.some((d) => d.className === 'rme-code'),
-    link:         marks.some((d) => d.className === 'rme-link'),
-    heading:      headingLevel ?? null,
-    blockquote:   marks.some((d) => d.className === 'rme-blockquote'),
-    bulletList:   marks.some((d) => d.className === 'rme-list-bullet'),
-    orderedList:  marks.some((d) => d.className === 'rme-list-ordered'),
-    codeBlock:    marks.some((d) => d.className === 'rme-code-block'),
+    code: marks.some((d) => d.className === 'rme-code'),
+    link: marks.some((d) => d.className === 'rme-link'),
+    heading: headingLevel ?? null,
+    blockquote: marks.some((d) => d.className === 'rme-blockquote'),
+    bulletList: marks.some((d) => d.className === 'rme-list-bullet'),
+    orderedList: marks.some((d) => d.className === 'rme-list-ordered'),
+    codeBlock: marks.some((d) => d.className === 'rme-code-block'),
   };
 }

@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import virtualCanvasStyles from './rc-virtual-canvas.styles';
+import virtualCanvasStyles from './rc-virtual-canvas.styles.js';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -162,6 +162,16 @@ export class RCVirtualCanvas extends LitElement {
 
   protected _rafHandle: number = 0;
   protected _pendingRenderReason?: RCVirtualCanvasRenderReason;
+
+  protected override firstUpdated(): void {
+    if (import.meta.env.DEV && !this.querySelector(':scope > canvas')) {
+      console.warn(
+        '[rc-virtual-canvas] No direct child <canvas> found. Place a native <canvas> inside <rc-virtual-canvas>.',
+        this,
+      );
+    }
+  }
+
   protected readonly _handledPointerEvents = new WeakSet<Event>();
 
   // Stored bound reference so the same closure is used for scheduling and
@@ -182,9 +192,11 @@ export class RCVirtualCanvas extends LitElement {
     this.requestUpdate('contentWidth', oldValue);
     this._scheduleRender('viewport-change');
   }
+
   get contentWidth() {
     return this._contentWidth;
   }
+
   private _contentWidth: number = 0;
 
   /** Pixel height of the virtual content */
@@ -198,9 +210,11 @@ export class RCVirtualCanvas extends LitElement {
     this.requestUpdate('contentHeight', oldValue);
     this._scheduleRender('viewport-change');
   }
+
   get contentHeight() {
     return this._contentHeight;
   }
+
   private _contentHeight: number = 0;
 
   /** When true, keep the slotted canvas backing store aligned to the viewport. */
@@ -282,8 +296,7 @@ export class RCVirtualCanvas extends LitElement {
     this._$canvas =
       (e.currentTarget as HTMLSlotElement)
         .assignedElements()
-        .filter((el) => el instanceof HTMLCanvasElement)
-        [0] ?? null;
+        .filter((el) => el instanceof HTMLCanvasElement)[0] ?? null;
 
     if (this._$canvas != null) {
       this._viewRect = {
@@ -487,7 +500,9 @@ export class RCVirtualCanvas extends LitElement {
       }),
     );
 
-    if (!shouldContinue) event.preventDefault();
+    if (!shouldContinue) {
+      event.preventDefault();
+    }
   }
 
   protected _isOverlayEvent(event: Event): boolean {

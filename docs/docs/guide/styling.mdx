@@ -87,6 +87,79 @@ rc-fab {
 }
 ```
 
+## Adaptive layout contracts
+
+Choose the narrowest responsive mechanism that keeps a component's visual and
+behavioral state synchronized:
+
+1. Override one geometry token for a scalar change such as carousel slide
+   size.
+2. Override a coordinated token set when unchanged regions need new grid
+   tracks or placement, as with `rc-card` and `rc-list-item`.
+3. Write a property or attribute when a mode also changes ARIA, keyboard
+   behavior, pointer calculations, focus, popup placement, rendered controls,
+   or light-DOM slot assignment.
+4. Use a component's `auto` mode only when it measures an objective layout
+   failure it owns, such as `rc-chip-group` exceeding `max-rows`.
+
+Container queries style descendants of the query container; they do not set
+custom-element properties or attributes. Keep the query container on a stable
+consumer-owned ancestor:
+
+```css
+.card-region {
+  container-type: inline-size;
+}
+
+@container (max-width: 28rem) {
+  .card-region rc-card {
+    --rc-card-grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    --rc-card-media-grid-row: 1 / -1;
+    --rc-card-media-grid-column: 1;
+    --rc-card-title-grid-row: 1;
+    --rc-card-title-grid-column: 2;
+  }
+}
+```
+
+Do not use a CSS custom property as a hidden behavioral input that component
+JavaScript reads with `getComputedStyle()`. CSS changes have no reliable
+property-change notification, and server rendering, accessibility state, and
+interaction logic can become desynchronized.
+
+### Adapt behavior from application state
+
+`rc-splitter.orientation` affects pane geometry, drag and measurement axes,
+arrow-key handling, collapse icons, and `aria-orientation`. Set the property
+from application code when the containing region changes size:
+
+```js
+const $region = document.querySelector('.workspace-region');
+const $splitter = $region.querySelector('rc-splitter');
+
+const observer = new ResizeObserver(([entry]) => {
+  const inlineSize = entry.borderBoxSize[0]?.inlineSize ?? entry.contentRect.width;
+
+  $splitter.orientation = inlineSize < 600 ? 'vertical' : 'horizontal';
+});
+
+observer.observe($region);
+```
+
+Apply the same boundary to structural states:
+
+- Keep `rc-app-bar variant="compact|expanded"` declarative because expanded
+  mode adds measured collapse behavior.
+- Set `rc-adaptive-menu.maxShown` from application responsive state because
+  it moves authored controls between toolbar and menu semantics. CSS-hiding
+  actions would not place them in the overflow menu.
+- Keep `rc-transfer-list compact`, toolbar/menu orientation, slider
+  orientation, navigation-rail expansion, search view mode, and select display
+  mode property-driven because their rendered controls or interaction semantics
+  change.
+- Set `--rc-carousel-slide-size`, card region tracks, list-item region
+  placement, and toolbar wrapping in CSS because those alter geometry only.
+
 ## CSS parts
 
 Components expose named parts for styling elements that are inside shadow
@@ -181,6 +254,18 @@ Apply the `rc-theme-material` class to a container to scope the theme:
   <rc-fab>...</rc-fab>
 </div>
 ```
+
+For `rc-button[icon-only]`, Material supplies
+`rc-button--extra-small`, `rc-button--medium`, `rc-button--large`, and
+`rc-button--extra-large` size classes. Combine them with
+`rc-button--narrow` or `rc-button--wide` to change the container width while
+keeping the selected height and icon size. The unmodified size is the Material
+small icon button. `rc-menu-button[icon-only]` also supports
+`rc-menu-button--narrow` for a narrow small trigger. All visually compact
+variants retain the component package's independent `3rem` activation area.
+Direct native buttons in an `rc-app-bar`'s `leading` and `trailing` slots use
+the same small icon-button geometry, while nested component controls retain
+their own sizing.
 
 See [Theme previews](./theme-previews) to compare components with and without
 the Material theme applied.

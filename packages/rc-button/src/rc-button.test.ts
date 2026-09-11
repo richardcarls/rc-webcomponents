@@ -3,9 +3,9 @@ import { expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define.ts';
-import type { RCButton } from './rc-button.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCButton } from './rc-button.js';
 
 async function flushButton(host: RCButton): Promise<void> {
   await host.updateComplete;
@@ -67,6 +67,50 @@ test('preserves native button appearance without theme tokens', async () => {
   }
 });
 
+test('styles a direct native anchor child the same as a button child', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  const screen = render(html`
+    <rc-button
+      data-testid="anchorHost"
+      style="--rc-button-border: 2px solid red; --rc-button-padding-inline: 20px"
+    >
+      <a href="/somewhere">Go</a>
+    </rc-button>
+    <rc-button
+      data-testid="buttonHost"
+      style="--rc-button-border: 2px solid red; --rc-button-padding-inline: 20px"
+    >
+      <button type="button">Go</button>
+    </rc-button>
+  `);
+  const anchorHost = (await screen.getByTestId('anchorHost').element()) as RCButton;
+  const buttonHost = (await screen.getByTestId('buttonHost').element()) as RCButton;
+
+  await flushButton(anchorHost);
+  await flushButton(buttonHost);
+
+  const anchor = anchorHost.querySelector('a')!;
+  const button = buttonHost.querySelector('button')!;
+  const anchorStyles = getComputedStyle(anchor);
+  const buttonStyles = getComputedStyle(button);
+  const sharedProperties = [
+    'border-block-start-width',
+    'border-block-start-style',
+    'border-block-start-color',
+    'padding-inline-start',
+    'display',
+  ] as const;
+
+  for (const property of sharedProperties) {
+    expect(anchorStyles.getPropertyValue(property), property).toBe(
+      buttonStyles.getPropertyValue(property),
+    );
+  }
+
+  expect(warn).not.toHaveBeenCalled();
+  warn.mockRestore();
+});
+
 test('warns when the direct native button is missing', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   const screen = render(html`<rc-button data-testid="host"><span>Save</span></rc-button>`);
@@ -75,7 +119,8 @@ test('warns when the direct native button is missing', async () => {
   await flushButton(host);
 
   expect(warn).toHaveBeenCalledWith(
-    '[rc-button] No direct child <button> found. Place a native <button> inside <rc-button>.',
+    '[rc-button] No supported direct child found. Place a native <button> or <a href> inside <rc-button>.',
+    host,
   );
 
   warn.mockRestore();
@@ -95,6 +140,7 @@ test('warns instead of moving misplaced icon and label markers', async () => {
 
   expect(warn).toHaveBeenCalledWith(
     '[rc-button] Place icon and label markers inside the direct child <button>; rc-button will not move author nodes.',
+    host,
   );
 
   expect(host.querySelector('button')).toBeNull();
@@ -314,6 +360,59 @@ test('reflects icon and label presence from immediate button children', async ()
   expect(host.iconOnly).toBe(false);
 });
 
+test('classifies icon-only from an unmarked icon element', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host">
+      <button type="button" aria-label="Delete">
+        <svg-icon></svg-icon>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  expect(host.hasAttribute('has-icon')).toBe(true);
+  expect(host.hasAttribute('has-label')).toBe(false);
+  expect(host.iconOnly).toBe(true);
+});
+
+test('classifies icon-only from a direct SVG element', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host">
+      <button type="button" aria-label="Delete">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M4 4h16v16H4z"></path>
+        </svg>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  expect(host.hasAttribute('has-icon')).toBe(true);
+  expect(host.hasAttribute('has-label')).toBe(false);
+  expect(host.iconOnly).toBe(true);
+});
+
+test('does not classify a labeled button as icon-only when its icon is unmarked', async () => {
+  const screen = render(html`
+    <rc-button data-testid="host">
+      <button type="button">
+        <svg-icon></svg-icon>
+        <span>Delete</span>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  expect(host.hasAttribute('has-label')).toBe(true);
+  expect(host.iconOnly).toBe(false);
+});
+
 test('excludes data-rc-button-progress content from label detection', async () => {
   const screen = render(html`
     <rc-button data-testid="host">
@@ -329,6 +428,203 @@ test('excludes data-rc-button-progress content from label detection', async () =
 
   expect(host.hasAttribute('has-label')).toBe(false);
   expect(host.iconOnly).toBe(true);
+});
+
+test('keeps a 32px visible icon-only button inside a clickable 48px target', async () => {
+  const screen = render(html`
+    <rc-button
+      data-testid="host"
+      style="--rc-button-block-size: 32px; --rc-button-icon-size: 32px;"
+    >
+      <button type="button">
+        <span data-rc-button-icon aria-hidden="true">+</span>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  expect(host.iconOnly).toBe(true);
+
+  const $button = host.querySelector('button')!;
+  const hostRect = host.getBoundingClientRect();
+  const buttonRect = $button.getBoundingClientRect();
+
+  expect(hostRect.height).toBeCloseTo(48);
+  expect(hostRect.width).toBeCloseTo(48);
+  expect(buttonRect.height).toBeCloseTo(32);
+  expect(buttonRect.width).toBeCloseTo(32);
+
+  const targetX = hostRect.left + 2;
+  const targetY = hostRect.top + hostRect.height / 2;
+
+  expect(targetX).toBeLessThan(buttonRect.left);
+  expect(document.elementFromPoint(targetX, targetY)).toBe($button);
+});
+
+test('does not grow a visible icon-only button that already meets the touch target', async () => {
+  const screen = render(html`
+    <rc-button
+      data-testid="host"
+      style="--rc-button-block-size: 56px; --rc-button-icon-size: 56px;"
+    >
+      <button type="button">
+        <span data-rc-button-icon aria-hidden="true">+</span>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  expect(host.getBoundingClientRect().height).toBeCloseTo(56);
+  expect(host.getBoundingClientRect().width).toBeCloseTo(56);
+});
+
+test('touch-target-overlap-inline-* defaults to 0px: no margin added', async () => {
+  const screen = render(html`
+    <rc-button
+      data-testid="host"
+      style="--rc-button-block-size: 32px; --rc-button-icon-size: 32px;"
+    >
+      <button type="button">
+        <span data-rc-button-icon aria-hidden="true">+</span>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  const margin = getComputedStyle(host);
+
+  expect(margin.marginInlineStart).toBe('0px');
+  expect(margin.marginInlineEnd).toBe('0px');
+});
+
+test('--rc-button-touch-target-overlap-inline-end shifts a 32px icon-only button flush with a flex-end container edge', async () => {
+  const screen = render(html`
+    <div data-testid="row" style="display:flex; justify-content:flex-end; width:200px;">
+      <rc-button
+        data-testid="host"
+        style="
+          --rc-button-block-size: 32px;
+          --rc-button-icon-size: 32px;
+          --rc-button-touch-target-overlap-inline-end: 8px;
+        "
+      >
+        <button type="button">
+          <span data-rc-button-icon aria-hidden="true">+</span>
+        </button>
+      </rc-button>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+  const row = (await screen.getByTestId('row').element()) as HTMLElement;
+
+  await flushButton(host);
+
+  expect(getComputedStyle(host).marginInlineEnd).toBe('-8px');
+  expect(getComputedStyle(host).marginInlineStart).toBe('0px');
+
+  const rowRect = row.getBoundingClientRect();
+  const $button = host.querySelector('button')!;
+  const buttonRect = $button.getBoundingClientRect();
+
+  // The 8px the touch target would otherwise reserve past the visible
+  // button is given back, so the visible icon itself lands flush with the
+  // row's own trailing edge instead of 8px short of it.
+  expect(buttonRect.right).toBeCloseTo(rowRect.right);
+
+  // A point just past the visible button -- outside the row's own
+  // boundary, in the space it just reclaimed -- still resolves to the
+  // button: the light-DOM hit-slop pseudo-element is anchored to the
+  // button itself and unaffected by the host's margin, so the actual
+  // clickable region keeps its full accessible size regardless.
+  const targetX = buttonRect.right + 2;
+  const targetY = buttonRect.top + buttonRect.height / 2;
+
+  expect(targetX).toBeGreaterThan(rowRect.right);
+  expect(document.elementFromPoint(targetX, targetY)).toBe($button);
+});
+
+test('--rc-button-touch-target-overlap-inline-start mirrors the same behavior on the leading edge', async () => {
+  const screen = render(html`
+    <div data-testid="row" style="display:flex; width:200px;">
+      <rc-button
+        data-testid="host"
+        style="
+          --rc-button-block-size: 32px;
+          --rc-button-icon-size: 32px;
+          --rc-button-touch-target-overlap-inline-start: 8px;
+        "
+      >
+        <button type="button">
+          <span data-rc-button-icon aria-hidden="true">+</span>
+        </button>
+      </rc-button>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+  const row = (await screen.getByTestId('row').element()) as HTMLElement;
+
+  await flushButton(host);
+
+  expect(getComputedStyle(host).marginInlineStart).toBe('-8px');
+  expect(getComputedStyle(host).marginInlineEnd).toBe('0px');
+
+  const rowRect = row.getBoundingClientRect();
+  const buttonRect = host.querySelector('button')!.getBoundingClientRect();
+
+  expect(buttonRect.left).toBeCloseTo(rowRect.left);
+});
+
+test('both touch-target-overlap-inline-* properties apply independently', async () => {
+  const screen = render(html`
+    <rc-button
+      data-testid="host"
+      style="
+        --rc-button-block-size: 32px;
+        --rc-button-icon-size: 32px;
+        --rc-button-touch-target-overlap-inline-start: 8px;
+        --rc-button-touch-target-overlap-inline-end: 8px;
+      "
+    >
+      <button type="button">
+        <span data-rc-button-icon aria-hidden="true">+</span>
+      </button>
+    </rc-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+
+  expect(getComputedStyle(host).marginInlineStart).toBe('-8px');
+  expect(getComputedStyle(host).marginInlineEnd).toBe('-8px');
+});
+
+test('touch-target-overlap-inline-end has no automated accessibility violations', async () => {
+  const screen = render(html`
+    <div style="display:flex; justify-content:flex-end; width:200px;">
+      <rc-button
+        data-testid="host"
+        style="
+          --rc-button-block-size: 32px;
+          --rc-button-icon-size: 32px;
+          --rc-button-touch-target-overlap-inline-end: 8px;
+        "
+      >
+        <button type="button" aria-label="More actions">
+          <span data-rc-button-icon aria-hidden="true">+</span>
+        </button>
+      </rc-button>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+
+  await flushButton(host);
+  await expectNoA11yViolations(host);
 });
 
 test('selected icon switching follows controlled state and native button clicks', async () => {

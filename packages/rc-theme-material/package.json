@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Material 3 CSS theme and token bridge for rc-webcomponents.",
   "repository": {
     "type": "git",
@@ -28,6 +28,7 @@
   "files": [
     "*.css",
     "components",
+    "constraints",
     "README.md"
   ],
   "scripts": {
@@ -37,6 +38,10 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "devDependencies": {
+    "@rcarls/rc-adaptive-menu": "workspace:*",
+    "@rcarls/rc-button": "workspace:*",
+    "@rcarls/rc-list": "workspace:*",
+    "@rcarls/rc-menu-button": "workspace:*",
     "@vitest/browser-playwright": "4.1.5",
     "playwright": "^1.56.0",
     "vite": "^7.1.7",

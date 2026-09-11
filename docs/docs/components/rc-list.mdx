@@ -1,0 +1,178 @@
+---
+title: rc-list
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { ListDemo } from '@site/src/components/ComponentDemos';
+
+# rc-list
+
+Shared-column list layout with standard and segmented appearances, optional
+leading and trailing content, and native-backed selection.
+
+<AtAGlance
+  packageName="@rcarls/rc-list"
+  tag="rc-list, rc-list-item"
+  native="Author-owned radio or checkbox controls in selecting lists"
+  state="Native checked/disabled state mirrored to list items"
+  events={[]}
+  related={[
+    { label: 'rc-listbox', href: '/components/rc-listbox' },
+    { label: 'rc-scroller', href: '/components/rc-scroller' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-list
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-list
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-list/define';
+```
+
+## Live demo
+
+<ListDemo />
+
+## Shared columns
+
+`rc-list` owns leading, content, and trailing grid columns. Each direct
+`rc-list-item` participates in them through CSS subgrid, so content stays
+aligned even when leading visuals or trailing actions have different sizes.
+If no visible row uses an optional slot, the corresponding column and gap
+collapse across the whole list.
+
+Mark an icon in the leading slot with `data-rc-list-leading` when the active
+theme should apply its standard icon size and alignment. Other leading media
+such as images, avatars, and selection controls retain their authored geometry.
+
+```html
+<rc-list aria-label="Recent recipes">
+  <rc-list-item>
+    <span slot="leading" data-rc-list-leading aria-hidden="true">★</span>
+    Apple pie
+    <span slot="trailing">42 min</span>
+  </rc-list-item>
+</rc-list>
+```
+
+Primary content truncates to one line with an ellipsis by default. Set
+`--rc-list-item-content-white-space: normal` on a list or item for deliberate
+multi-line rows.
+
+### Adapt region placement
+
+The shared column sizes and each item's leading, content, and trailing
+placements are exposed as a coordinated CSS custom-property contract. Use
+those tokens when a container query should rearrange the same regions without
+changing source order, focus behavior, or semantics:
+
+```css
+.list-region {
+  container-type: inline-size;
+}
+
+@container (max-width: 24rem) {
+  .list-region rc-list {
+    --rc-list-trailing-size: 0;
+    --rc-list-trailing-gap: 0;
+    --rc-list-item-grid-template-rows: auto auto;
+    --rc-list-item-row-gap: 0.25rem;
+    --rc-list-item-leading-grid-row: 1 / -1;
+    --rc-list-item-content-grid-row: 1;
+    --rc-list-item-trailing-grid-column: content-start / content-end;
+    --rc-list-item-trailing-grid-row: 2;
+    --rc-list-item-trailing-justify-self: start;
+  }
+}
+```
+
+Keep the named `leading-*`, `content-*`, and `trailing-*` column lines in
+placement values. They are the stable coordination points supplied by
+`rc-list`'s shared subgrid.
+
+## Variants
+
+`variant="standard"` is the default continuous list. `variant="segmented"`
+creates a grouped set of discrete rows; themes use the item position assigned
+by the list to shape first, middle, last, and only rows.
+
+## Native selection
+
+Use `selection="single"` with one direct radio per item, or
+`selection="multiple"` with one direct checkbox per item. The native input is
+the source of truth for checked, disabled, form, reset, and accessibility
+behavior. The component mirrors native state to the row and makes the otherwise
+non-interactive row surface activate its input. Independent links, buttons,
+inputs, selects, and textareas keep their own behavior. Radios in a
+single-selection list should share a `name`, exactly as they would without the
+custom element enhancement.
+
+```html
+<rc-list variant="segmented" selection="single" aria-label="Sort recipes">
+  <rc-list-item>
+    <input slot="leading" type="radio" name="sort" value="recent" checked />
+    Recently updated
+  </rc-list-item>
+  <rc-list-item>
+    <input slot="leading" type="radio" name="sort" value="title" />
+    Recipe title
+  </rc-list-item>
+</rc-list>
+```
+
+Programmatic writes to `selected`, `disabled`, and `interactive` are silent.
+In a selecting list, the next native `change` synchronizes those presentation
+states from the input again.
+
+## Action targets
+
+For a row whose primary action is an anchor or button rather than its selection
+input, set `interactive` and point `action-target` at that same-root native
+control. A plain primary click on otherwise non-interactive row content invokes
+the target. Nested links, buttons, form controls, editable content, and
+modifier-qualified or non-primary clicks retain their own behavior.
+
+```html
+<rc-list aria-label="Theme settings">
+  <rc-list-item interactive action-target="open-theme">
+    <span slot="leading" aria-hidden="true">◐</span>
+    Theme
+    <button id="open-theme" type="button" slot="trailing">Choose</button>
+  </rc-list-item>
+</rc-list>
+```
+
+The target remains its own keyboard tab stop. Delegation extends pointer reach
+without creating a second interactive role on the row.
+
+## Scope
+
+The package intentionally does not implement drag-and-drop reordering,
+swipe-to-reveal actions, virtualization, infinite loading, or pull-to-refresh.
+Those behaviors have distinct data, focus, scrolling, and platform contracts
+and can compose with list rows when their APIs are defined.
+
+## API
+
+<ApiTable tag="rc-list" />
+
+<ApiTable tag="rc-list-item" />

@@ -1,5 +1,26 @@
 # @rcarls/rc-app-bar
 
+## 0.6.0
+
+### Minor Changes
+
+- b6f52a2: Change the default `slot="center"` layout: it now fills the flexible space
+  between leading and trailing, capped by the new
+  `--rc-app-bar-center-max-inline-size` before it centers within available
+  space instead of continuing to stretch, rather than always mirroring the
+  leading/trailing edges to stay exactly viewport-centered. Add the new
+  `center-symmetric` attribute to keep the previous behavior (exact
+  viewport-centering regardless of asymmetric leading/trailing widths).
+
+### Patch Changes
+
+- b6f52a2: Defer app-bar layout measurements to animation frames, group geometry reads
+  before style writes, and remeasure when symmetric centering changes live.
+- Updated dependencies [6683eb9]
+- Updated dependencies [ee7ba6c]
+- Updated dependencies [30eb232]
+  - @rcarls/rc-common@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes

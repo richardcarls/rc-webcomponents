@@ -1,5 +1,20 @@
 # @rcarls/rc-textarea
 
+## 0.6.0
+
+### Patch Changes
+
+- 985067e: Allow `rc-textarea` to shrink below its intrinsic content width so `word-wrap`
+  wraps long, unbroken lines inside narrow grid and flex layouts instead of
+  forcing the consumer layout to overflow.
+- 57370e4: Align component metadata, aggregate framework typings, development-time native-child
+  validation, controlled menu state, package declarations, and public documentation before the
+  next release.
+- Updated dependencies [6683eb9]
+- Updated dependencies [ee7ba6c]
+- Updated dependencies [30eb232]
+  - @rcarls/rc-common@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes

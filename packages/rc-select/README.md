@@ -42,24 +42,24 @@ import '@rcarls/rc-select/define';
 
 ## API
 
-| Property / method | Type | Description |
-| --- | --- | --- |
-| `open` | `boolean` | Current popup state. |
-| `multiple` | `boolean` | Mirrors the slotted `<select multiple>` state. |
-| `disabled` | `boolean` | Mirrors the slotted `<select disabled>` state. |
-| `placeholder` | `string` | Text shown when no value is selected. |
-| `display` | `'auto' \| 'chips' \| 'compact'` | Controls multi-select display. |
-| `value` | `string \| string[]` | Controlled selection. Programmatic writes apply silently. |
-| `openPopup()` | `void` | Opens the listbox popover. |
-| `closePopup(returnFocus?)` | `void` | Closes the listbox and optionally restores focus. |
+| Property / method          | Type                             | Description                                               |
+| -------------------------- | -------------------------------- | --------------------------------------------------------- |
+| `open`                     | `boolean`                        | Current popup state.                                      |
+| `multiple`                 | `boolean`                        | Mirrors the slotted `<select multiple>` state.            |
+| `disabled`                 | `boolean`                        | Mirrors the slotted `<select disabled>` state.            |
+| `placeholder`              | `string`                         | Text shown when no value is selected.                     |
+| `display`                  | `'auto' \| 'chips' \| 'compact'` | Controls multi-select display.                            |
+| `value`                    | `string \| string[]`             | Controlled selection. Programmatic writes apply silently. |
+| `openPopup()`              | `void`                           | Opens the listbox popover.                                |
+| `closePopup(returnFocus?)` | `void`                           | Closes the listbox and optionally restores focus.         |
 
 ## Events
 
-| Event | Detail | Description |
-| --- | --- | --- |
+| Event              | Detail                          | Description                   |
+| ------------------ | ------------------------------- | ----------------------------- |
 | `rc-select-change` | `{ value: string \| string[] }` | Fires when selection changes. |
-| `rc-select-open` | none | Fires when the popup opens. |
-| `rc-select-close` | none | Fires when the popup closes. |
+| `rc-select-open`   | none                            | Fires when the popup opens.   |
+| `rc-select-close`  | none                            | Fires when the popup closes.  |
 
 ## Accessibility
 

@@ -2,9 +2,30 @@ import { css } from 'lit';
 
 export const cardStyles = css`
   :host {
+    --_rc-card-grid-template-rows: auto auto auto 1fr auto auto;
+    --_rc-card-grid-template-columns: minmax(0, 1fr);
+    --_rc-card-media-grid-row: auto;
+    --_rc-card-media-grid-column: auto;
+    --_rc-card-header-grid-row: auto;
+    --_rc-card-header-grid-column: auto;
+    --_rc-card-title-grid-row: auto;
+    --_rc-card-title-grid-column: auto;
+    --_rc-card-subtitle-grid-row: auto;
+    --_rc-card-subtitle-grid-column: auto;
+    --_rc-card-body-grid-row: auto;
+    --_rc-card-body-grid-column: auto;
+    --_rc-card-actions-grid-row: auto;
+    --_rc-card-actions-grid-column: auto;
+    --_rc-card-footer-grid-row: auto;
+    --_rc-card-footer-grid-column: auto;
+
     position: relative;
     display: grid;
-    grid-template-rows: var(--rc-card-grid-template-rows, auto auto auto 1fr auto auto);
+    grid-template-rows: var(--rc-card-grid-template-rows, var(--_rc-card-grid-template-rows));
+    grid-template-columns: var(
+      --rc-card-grid-template-columns,
+      var(--_rc-card-grid-template-columns)
+    );
     min-inline-size: 0;
     border: var(--rc-card-border, 0);
     border-radius: var(--rc-card-radius, 0);
@@ -13,6 +34,34 @@ export const cardStyles = css`
     box-shadow: var(--rc-card-shadow, none);
     overflow: clip;
     box-sizing: border-box;
+  }
+
+  :host([orientation='horizontal']) {
+    --_rc-card-grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    --_rc-card-media-grid-row: 1 / -1;
+    --_rc-card-media-grid-column: 1;
+    --_rc-card-header-grid-row: 1;
+    --_rc-card-header-grid-column: 2;
+    --_rc-card-title-grid-row: 2;
+    --_rc-card-title-grid-column: 2;
+    --_rc-card-subtitle-grid-row: 3;
+    --_rc-card-subtitle-grid-column: 2;
+    --_rc-card-body-grid-row: 4;
+    --_rc-card-body-grid-column: 2;
+    --_rc-card-actions-grid-row: 5;
+    --_rc-card-actions-grid-column: 2;
+    --_rc-card-footer-grid-row: 6;
+    --_rc-card-footer-grid-column: 2;
+  }
+
+  :host([orientation='horizontal']:not([has-media])) {
+    --_rc-card-grid-template-columns: minmax(0, 1fr);
+    --_rc-card-header-grid-column: 1;
+    --_rc-card-title-grid-column: 1;
+    --_rc-card-subtitle-grid-column: 1;
+    --_rc-card-body-grid-column: 1;
+    --_rc-card-actions-grid-column: 1;
+    --_rc-card-footer-grid-column: 1;
   }
 
   :host([hidden]) {
@@ -66,17 +115,20 @@ export const cardStyles = css`
   }
 
   [part='media'] {
-    grid-row: var(--rc-card-media-grid-row, auto);
+    grid-row: var(--rc-card-media-grid-row, var(--_rc-card-media-grid-row));
+    grid-column: var(--rc-card-media-grid-column, var(--_rc-card-media-grid-column));
   }
 
   [part='header'] {
-    grid-row: var(--rc-card-header-grid-row, auto);
+    grid-row: var(--rc-card-header-grid-row, var(--_rc-card-header-grid-row));
+    grid-column: var(--rc-card-header-grid-column, var(--_rc-card-header-grid-column));
     padding-block: var(--rc-card-header-padding-block, var(--rc-card-padding-block, 0) 0);
     padding-inline: var(--rc-card-header-padding-inline, var(--rc-card-padding-inline, 0));
   }
 
   [part='title'] {
-    grid-row: var(--rc-card-title-grid-row, auto);
+    grid-row: var(--rc-card-title-grid-row, var(--_rc-card-title-grid-row));
+    grid-column: var(--rc-card-title-grid-column, var(--_rc-card-title-grid-column));
     padding-block: var(--rc-card-title-padding-block, var(--rc-card-padding-block, 0) 0);
     padding-inline: var(--rc-card-title-padding-inline, var(--rc-card-padding-inline, 0));
     color: var(--rc-card-title-color, inherit);
@@ -84,7 +136,8 @@ export const cardStyles = css`
   }
 
   [part='subtitle'] {
-    grid-row: var(--rc-card-subtitle-grid-row, auto);
+    grid-row: var(--rc-card-subtitle-grid-row, var(--_rc-card-subtitle-grid-row));
+    grid-column: var(--rc-card-subtitle-grid-column, var(--_rc-card-subtitle-grid-column));
     padding-block: var(--rc-card-subtitle-padding-block, 0);
     padding-inline: var(--rc-card-subtitle-padding-inline, var(--rc-card-padding-inline, 0));
     color: var(--rc-card-subtitle-color, inherit);
@@ -92,12 +145,14 @@ export const cardStyles = css`
   }
 
   [part='body'] {
-    grid-row: var(--rc-card-body-grid-row, auto);
+    grid-row: var(--rc-card-body-grid-row, var(--_rc-card-body-grid-row));
+    grid-column: var(--rc-card-body-grid-column, var(--_rc-card-body-grid-column));
     min-block-size: 0;
   }
 
   [part='actions'] {
-    grid-row: var(--rc-card-actions-grid-row, auto);
+    grid-row: var(--rc-card-actions-grid-row, var(--_rc-card-actions-grid-row));
+    grid-column: var(--rc-card-actions-grid-column, var(--_rc-card-actions-grid-column));
     display: flex;
     align-items: center;
     justify-content: var(--rc-card-actions-justify, flex-end);
@@ -107,7 +162,8 @@ export const cardStyles = css`
   }
 
   [part='footer'] {
-    grid-row: var(--rc-card-footer-grid-row, auto);
+    grid-row: var(--rc-card-footer-grid-row, var(--_rc-card-footer-grid-row));
+    grid-column: var(--rc-card-footer-grid-column, var(--_rc-card-footer-grid-column));
     padding-block: var(--rc-card-footer-padding-block, 0 var(--rc-card-padding-block, 0));
     padding-inline: var(--rc-card-footer-padding-inline, var(--rc-card-padding-inline, 0));
   }

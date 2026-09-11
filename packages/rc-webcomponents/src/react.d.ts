@@ -96,6 +96,11 @@ export type RCBottomSheetSnapDetail = {
   trigger: 'drag' | 'api';
 };
 
+export type RCBottomSheetResizeStartDetail = {
+  height: number;
+  inputType: 'pointer' | 'keyboard';
+};
+
 export type RCMenuActivateDetail = {
   item: HTMLElement;
   value: string;
@@ -104,6 +109,10 @@ export type RCMenuActivateDetail = {
 
 export type RCMenuCloseDetail = {
   reason: 'escape';
+};
+
+export type RCAdaptiveMenuToggleDetail = {
+  open: boolean;
 };
 
 export type RCMenuButtonToggleDetail = {
@@ -194,6 +203,14 @@ export type RCSearchBarInputDetail = {
   value: string;
 };
 
+export type RCCarouselChangeTrigger = 'api' | 'button' | 'keyboard' | 'swipe';
+
+/** Detail shape for `rc-carousel-change`. */
+export type RCCarouselChangeDetail = {
+  index: number;
+  trigger: RCCarouselChangeTrigger;
+};
+
 export type RCTextareaChangeDetail = {
   value: string;
 };
@@ -219,6 +236,14 @@ export type RCChipChangeDetail = {
 
 export type RCChipRemoveDetail = {
   chip: HTMLElement;
+};
+
+export type RCChipGroupLayout = 'auto' | 'wrap' | 'scroll';
+export type RCChipGroupKind = 'generic' | 'assist' | 'filter';
+export type RCChipGroupSelection = 'none' | 'single' | 'multiple';
+
+export type RCChipGroupToggleDetail = {
+  expanded: boolean;
 };
 
 export type RCButtonToggleDetail = {
@@ -259,7 +284,40 @@ export type RCButtonRef = HTMLElement & {
 };
 
 /** Public API surface of `<rc-card>`. */
+export type RCCardOrientation = 'vertical' | 'horizontal';
+
 export type RCCardRef = HTMLElement & {
+  orientation: RCCardOrientation;
+  selected: boolean;
+  disabled: boolean;
+  interactive: boolean;
+  actionTarget: string;
+};
+
+export type RCScrollerAxis = 'block' | 'inline' | 'both';
+export type RCScrollerLayout = 'none' | 'content';
+
+/** Public API surface of `<rc-scroller>`. */
+export type RCScrollerRef = HTMLElement & {
+  axis: RCScrollerAxis;
+  layout: RCScrollerLayout;
+  readonly atBlockStart: boolean;
+  readonly atBlockEnd: boolean;
+  readonly atInlineStart: boolean;
+  readonly atInlineEnd: boolean;
+};
+
+export type RCListVariant = 'standard' | 'segmented';
+export type RCListSelection = 'none' | 'single' | 'multiple';
+
+/** Public API surface of `<rc-list>`. */
+export type RCListRef = HTMLElement & {
+  variant: RCListVariant;
+  selection: RCListSelection;
+};
+
+/** Public API surface of `<rc-list-item>`. */
+export type RCListItemRef = HTMLElement & {
   selected: boolean;
   disabled: boolean;
   interactive: boolean;
@@ -291,6 +349,18 @@ export type RCChipRef = HTMLElement & {
   disabled: boolean;
   readonly: boolean;
   removable: boolean;
+};
+
+export type RCChipGroupRef = HTMLElement & {
+  layout: RCChipGroupLayout;
+  maxRows: number;
+  kind: RCChipGroupKind;
+  selection: RCChipGroupSelection;
+  expanded: boolean;
+  defaultExpanded: boolean;
+  label: string;
+  showAllLabel: string;
+  showLessLabel: string;
 };
 
 /** Public API surface of `<rc-snackbar>`. */
@@ -403,6 +473,22 @@ export type RCMenuRef = HTMLElement & {
   label: string;
 };
 
+/** Public API surface of `<rc-adaptive-menu>`. */
+export type RCAdaptiveMenuRef = HTMLElement & {
+  label: string;
+  maxShown: number;
+  open: boolean;
+  defaultOpen: boolean;
+  orientation: 'horizontal' | 'vertical';
+  overflowLabel: string;
+  readonly $actions: HTMLElement[];
+  readonly $promotedActions: HTMLElement[];
+  readonly $overflowedActions: HTMLElement[];
+  openMenu(focus?: 'first' | 'last' | 'none'): void;
+  closeMenu(returnFocus?: boolean): void;
+  toggleMenu(focus?: 'first' | 'last' | 'none'): void;
+};
+
 /** Public API surface of `<rc-menu-button>`. */
 export type RCMenuButtonPlacement =
   | 'top'
@@ -462,7 +548,7 @@ export type RCMenubarRef = HTMLElement & {
 /** Public API surface of `<rc-toolbar>`. */
 export type RCToolbarRef = HTMLElement & {
   label: string;
-  orientation: string;
+  orientation: 'horizontal' | 'vertical';
 };
 
 /** Public API surface of `<rc-splitter>`. */
@@ -496,6 +582,18 @@ export type RCSliderRef = HTMLElement & {
   orientation: 'horizontal' | 'vertical';
 };
 
+/** Public API surface of `<rc-progress>`. */
+export type RCProgressRef = HTMLElement & {
+  readonly max: number;
+  value: number;
+  defaultValue: number | undefined;
+  indeterminate: boolean;
+  disabled: boolean;
+  display: 'inline-start' | 'inline-end' | 'overlay' | null;
+  valueText: string;
+  orientation: 'horizontal' | 'vertical';
+};
+
 /** Public API surface of `<rc-range-slider>`. */
 export type RCRangeSliderRef = HTMLElement & {
   min: number;
@@ -504,6 +602,7 @@ export type RCRangeSliderRef = HTMLElement & {
   value: [number, number];
   defaultValue: [number, number] | undefined;
   disabled: boolean;
+  readonly: boolean;
   lowLabel: string;
   highLabel: string;
   lowValueText: string;
@@ -595,6 +694,22 @@ export type RCSearchBarRef = HTMLElement & {
   toggleView(): void;
 };
 
+/** Public API surface of `<rc-carousel>`. */
+export type RCCarouselRef = HTMLElement & {
+  activeIndex: number | undefined;
+  defaultActiveIndex: number;
+  loop: boolean;
+  navigation: boolean;
+  pagination: boolean;
+  mouseDragging: boolean;
+  next(): void;
+  previous(): void;
+  goToIndex(index: number, instant?: boolean): void;
+};
+
+/** Public API surface of `<rc-carousel-item>`. */
+export type RCCarouselItemRef = HTMLElement;
+
 // ── React JSX declarations ───────────────────────────────────────────────────
 
 declare module 'react' {
@@ -628,6 +743,42 @@ declare module 'react' {
       };
 
       'rc-card': React.DetailedHTMLProps<React.HTMLAttributes<RCCardRef>, RCCardRef> & {
+        orientation?: RCCardOrientation;
+        selected?: boolean;
+        disabled?: boolean;
+        interactive?: boolean;
+        'action-target'?: string;
+      };
+
+      'rc-scroller': React.DetailedHTMLProps<React.HTMLAttributes<RCScrollerRef>, RCScrollerRef> & {
+        axis?: RCScrollerAxis;
+        layout?: RCScrollerLayout;
+      };
+
+      'rc-carousel': React.DetailedHTMLProps<React.HTMLAttributes<RCCarouselRef>, RCCarouselRef> & {
+        'active-index'?: number | string;
+        'default-active-index'?: number | string;
+        loop?: boolean;
+        navigation?: boolean;
+        pagination?: boolean;
+        'mouse-dragging'?: boolean;
+        'onrc-carousel-change'?: (event: CustomEvent<RCCarouselChangeDetail>) => void;
+      };
+
+      'rc-carousel-item': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCCarouselItemRef>,
+        RCCarouselItemRef
+      >;
+
+      'rc-list': React.DetailedHTMLProps<React.HTMLAttributes<RCListRef>, RCListRef> & {
+        variant?: RCListVariant;
+        selection?: RCListSelection;
+      };
+
+      'rc-list-item': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCListItemRef>,
+        RCListItemRef
+      > & {
         selected?: boolean;
         disabled?: boolean;
         interactive?: boolean;
@@ -659,6 +810,21 @@ declare module 'react' {
         disabled?: boolean;
         readonly?: boolean;
         removable?: boolean;
+      };
+
+      'rc-chip-group': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCChipGroupRef>,
+        RCChipGroupRef
+      > & {
+        layout?: RCChipGroupLayout;
+        'max-rows'?: number | string;
+        kind?: RCChipGroupKind;
+        selection?: RCChipGroupSelection;
+        expanded?: boolean;
+        'default-expanded'?: boolean;
+        label?: string;
+        'show-all-label'?: string;
+        'show-less-label'?: string;
       };
 
       'rc-snackbar': React.DetailedHTMLProps<React.HTMLAttributes<RCSnackbarRef>, RCSnackbarRef> & {
@@ -733,10 +899,26 @@ declare module 'react' {
         'snap-points'?: string;
         'swipe-dismiss'?: boolean;
         'swipe-velocity'?: number | string;
+        'onrc-bottom-sheet-resize-start'?: (
+          event: CustomEvent<RCBottomSheetResizeStartDetail>,
+        ) => void;
       };
 
       'rc-menu': React.DetailedHTMLProps<React.HTMLAttributes<RCMenuRef>, RCMenuRef> & {
         label?: string;
+      };
+
+      'rc-adaptive-menu': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCAdaptiveMenuRef>,
+        RCAdaptiveMenuRef
+      > & {
+        label?: string;
+        'max-shown'?: number | string;
+        open?: boolean;
+        'default-open'?: boolean;
+        orientation?: 'horizontal' | 'vertical';
+        'overflow-label'?: string;
+        'onrc-adaptive-menu-toggle'?: (event: CustomEvent<RCAdaptiveMenuToggleDetail>) => void;
       };
 
       'rc-menu-button': React.DetailedHTMLProps<
@@ -747,6 +929,7 @@ declare module 'react' {
         'default-open'?: boolean;
         orientation?: 'horizontal' | 'vertical';
         placement?: RCMenuButtonPlacement;
+        'icon-only'?: boolean;
       };
 
       'rc-fab-menu': React.DetailedHTMLProps<React.HTMLAttributes<RCFabMenuRef>, RCFabMenuRef> & {
@@ -781,7 +964,7 @@ declare module 'react' {
 
       'rc-toolbar': React.DetailedHTMLProps<React.HTMLAttributes<RCToolbarRef>, RCToolbarRef> & {
         label?: string;
-        orientation?: string;
+        orientation?: 'horizontal' | 'vertical';
       };
 
       'rc-slider': React.DetailedHTMLProps<React.HTMLAttributes<RCSliderRef>, RCSliderRef> & {
@@ -797,6 +980,16 @@ declare module 'react' {
         orientation?: 'horizontal' | 'vertical';
       };
 
+      'rc-progress': React.DetailedHTMLProps<React.HTMLAttributes<RCProgressRef>, RCProgressRef> & {
+        value?: number | string;
+        'default-value'?: number | string;
+        indeterminate?: boolean;
+        disabled?: boolean;
+        display?: 'inline-start' | 'inline-end' | 'overlay';
+        'value-text'?: string;
+        orientation?: 'horizontal' | 'vertical';
+      };
+
       'rc-range-slider': React.DetailedHTMLProps<
         React.HTMLAttributes<RCRangeSliderRef>,
         RCRangeSliderRef
@@ -807,6 +1000,7 @@ declare module 'react' {
         value?: [number, number];
         'default-value'?: [number, number];
         disabled?: boolean;
+        readonly?: boolean;
         'low-label'?: string;
         'high-label'?: string;
         'low-value-text'?: string;

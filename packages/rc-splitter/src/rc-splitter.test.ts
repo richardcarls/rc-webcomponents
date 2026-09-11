@@ -2,9 +2,9 @@ import { test, expect, describe, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './define';
-import type { RCSplitter } from './rc-splitter';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import './define.js';
+import type { RCSplitter } from './rc-splitter.js';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 // Helper to get elements from shadow DOM
 function getSeparator(host: RCSplitter): HTMLElement {

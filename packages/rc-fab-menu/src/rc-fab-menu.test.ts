@@ -3,9 +3,9 @@ import { expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define';
-import type { RCFabMenu } from './rc-fab-menu';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCFabMenu } from './rc-fab-menu.js';
 
 test('native trigger and rc-menu remain connected with author content intact', async () => {
   const screen = render(html`

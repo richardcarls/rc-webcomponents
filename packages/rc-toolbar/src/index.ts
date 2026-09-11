@@ -1,1 +1,1 @@
-export * from './rc-toolbar';
+export * from './rc-toolbar.js';

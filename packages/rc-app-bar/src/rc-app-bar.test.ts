@@ -2,16 +2,18 @@ import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-
-import './define';
-import type { RCAppBar } from './rc-app-bar';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCAppBar } from './rc-app-bar.js';
 
 const supportsCustomStates = 'states' in ElementInternals.prototype;
 
 function shadowEl(host: RCAppBar, selector: string): HTMLElement {
   const el = host.shadowRoot?.querySelector<HTMLElement>(selector);
-  if (!el) throw new Error(`missing shadow element: ${selector}`);
+
+  if (!el) {
+    throw new Error(`missing shadow element: ${selector}`);
+  }
 
   return el;
 }
@@ -32,6 +34,7 @@ test('renders one connected title with no implicit landmark role', async () => {
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
   const title = (await screen.getByTestId('title').element()) as HTMLElement;
+
   await host.updateComplete;
 
   expect(host.getAttribute('role')).toBeNull();
@@ -39,9 +42,7 @@ test('renders one connected title with no implicit landmark role', async () => {
   expect(host.scrollBehavior).toBe('pinned');
   expect(title.isConnected).toBe(true);
   expect(host.querySelectorAll('[slot="expanded-title"]')).toHaveLength(0);
-  expect(shadowEl(host, '#title').querySelector('slot')?.assignedElements()).toEqual([
-    title,
-  ]);
+  expect(shadowEl(host, '#title').querySelector('slot')?.assignedElements()).toEqual([title]);
 });
 
 test('expanded variant keeps the same title node through controlled collapse', async () => {
@@ -58,6 +59,7 @@ test('expanded variant keeps the same title node through controlled collapse', a
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
   const title = (await screen.getByTestId('title').element()) as HTMLElement;
+
   await host.updateComplete;
 
   expect(host.hasAttribute('data-collapsed')).toBe(false);
@@ -69,6 +71,7 @@ test('expanded variant keeps the same title node through controlled collapse', a
   expect(title.isConnected).toBe(true);
   expect(host.hasAttribute('data-collapsed')).toBe(true);
   expect(getComputedStyle(shadowEl(host, '#title')).gridRowStart).toBe('1');
+
   if (supportsCustomStates) {
     expect(host.matches(':state(collapsed)')).toBe(true);
   }
@@ -88,11 +91,130 @@ test('expanded title row uses the title content natural height', async () => {
   `);
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
   await host.updateComplete;
 
   const title = shadowEl(host, '#title');
+
   expect(title.offsetHeight).toBeGreaterThanOrEqual(72);
-  expect(host.style.getPropertyValue('--_rc-app-bar-collapse-distance')).not.toBe('');
+
+  await vi.waitFor(() => {
+    expect(host.style.getPropertyValue('--_rc-app-bar-collapse-distance')).not.toBe('');
+  });
+});
+
+test('slot changes defer layout measurement to an animation frame', async () => {
+  const screen = render(html`
+    <rc-app-bar data-testid="host" center-symmetric>
+      <span>Page title</span>
+    </rc-app-bar>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
+  await host.updateComplete;
+
+  await vi.waitFor(() => {
+    expect(host.style.getPropertyValue('--_rc-app-bar-edge-size')).not.toBe('');
+  });
+
+  host.style.removeProperty('--_rc-app-bar-edge-size');
+  shadowEl(host, '#title').querySelector('slot')?.dispatchEvent(new Event('slotchange'));
+
+  expect(host.style.getPropertyValue('--_rc-app-bar-edge-size')).toBe('');
+
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  expect(host.style.getPropertyValue('--_rc-app-bar-edge-size')).not.toBe('');
+});
+
+test('reconnecting resumes deferred layout measurement', async () => {
+  const screen = render(html`
+    <div data-testid="container">
+      <rc-app-bar data-testid="host" center-symmetric><span>Page title</span></rc-app-bar>
+    </div>
+  `);
+  const container = (await screen.getByTestId('container').element()) as HTMLDivElement;
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
+  await host.updateComplete;
+
+  await vi.waitFor(() => {
+    expect(host.style.getPropertyValue('--_rc-app-bar-edge-size')).not.toBe('');
+  });
+
+  host.remove();
+  host.style.removeProperty('--_rc-app-bar-edge-size');
+  container.append(host);
+
+  expect(host.style.getPropertyValue('--_rc-app-bar-edge-size')).toBe('');
+
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  expect(host.style.getPropertyValue('--_rc-app-bar-edge-size')).not.toBe('');
+});
+
+test('layout measurement completes geometry reads before style writes', async () => {
+  const operations: string[] = [];
+  const screen = render(html`
+    <rc-app-bar data-testid="host" variant="expanded">
+      <span>Page title</span>
+    </rc-app-bar>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const $leading = shadowEl(host, '#leading');
+  const $title = shadowEl(host, '#title');
+  const $trailing = shadowEl(host, '#trailing');
+  const testable = host as unknown as {
+    _measureLayout(): void;
+    _setGeometryProperty(name: string, value: string): void;
+  };
+
+  await host.updateComplete;
+
+  Object.defineProperties($leading, {
+    offsetWidth: { configurable: true, get: () => (operations.push('read:leading'), 24) },
+  });
+
+  Object.defineProperties($title, {
+    offsetHeight: { configurable: true, get: () => (operations.push('read:title-height'), 72) },
+    offsetTop: { configurable: true, get: () => (operations.push('read:title-top'), 48) },
+  });
+
+  Object.defineProperties($trailing, {
+    offsetWidth: { configurable: true, get: () => (operations.push('read:trailing'), 32) },
+  });
+
+  const computedStyle = vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+    get paddingBlockStart() {
+      operations.push('read:padding-start');
+
+      return '8px';
+    },
+    get paddingBlockEnd() {
+      operations.push('read:padding-end');
+
+      return '8px';
+    },
+  } as CSSStyleDeclaration);
+  const setGeometryProperty = vi.spyOn(testable, '_setGeometryProperty').mockImplementation(() => {
+    operations.push('write');
+  });
+
+  try {
+    testable._measureLayout();
+  } finally {
+    computedStyle.mockRestore();
+    setGeometryProperty.mockRestore();
+  }
+
+  expect(operations.indexOf('write')).toBeGreaterThan(
+    Math.max(
+      operations.lastIndexOf('read:leading'),
+      operations.lastIndexOf('read:trailing'),
+      operations.lastIndexOf('read:title-height'),
+      operations.lastIndexOf('read:title-top'),
+      operations.lastIndexOf('read:padding-start'),
+      operations.lastIndexOf('read:padding-end'),
+    ),
+  );
 });
 
 test('title-start-padding is unset when a leading icon is present', async () => {
@@ -104,6 +226,7 @@ test('title-start-padding is unset when a leading icon is present', async () => 
   `);
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
   await host.updateComplete;
 
   // _hasLeading (and the shadow #leading.empty class it drives) updates from
@@ -122,6 +245,7 @@ test('title-start-padding applies when the leading slot is empty', async () => {
   `);
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
   await host.updateComplete;
 
   await vi.waitFor(() => {
@@ -129,9 +253,9 @@ test('title-start-padding applies when the leading slot is empty', async () => {
   });
 });
 
-test('center slot remains at the host midpoint with asymmetric edge controls', async () => {
+test('center-symmetric: center slot remains at the host midpoint with asymmetric edge controls', async () => {
   const screen = render(html`
-    <rc-app-bar data-testid="host" style="width: 600px">
+    <rc-app-bar data-testid="host" center-symmetric style="width: 600px">
       <button slot="leading" style="width: 140px">Long leading</button>
       <span>Title</span>
       <input slot="center" style="width: 120px" aria-label="Search" />
@@ -140,16 +264,52 @@ test('center slot remains at the host midpoint with asymmetric edge controls', a
   `);
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
   await host.updateComplete;
 
   await vi.waitFor(() => {
     const hostRect = host.getBoundingClientRect();
     const centerRect = shadowEl(host, '#center').getBoundingClientRect();
+
     expect(centerRect.left + centerRect.width / 2).toBeCloseTo(
       hostRect.left + hostRect.width / 2,
       0,
     );
   });
+});
+
+test('default (no center-symmetric): capped center content centers within available space, not the viewport, with asymmetric edges', async () => {
+  const screen = render(html`
+    <rc-app-bar
+      data-testid="host"
+      style="width: 600px; --rc-app-bar-center-max-inline-size: 120px;"
+    >
+      <button slot="leading" style="width: 140px">Long leading</button>
+      <span>Title</span>
+      <input slot="center" style="width: 120px" aria-label="Search" />
+      <button slot="trailing" style="width: 40px">X</button>
+    </rc-app-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
+  await host.updateComplete;
+
+  const hostRect = host.getBoundingClientRect();
+  const leadingRect = shadowEl(host, '#leading').getBoundingClientRect();
+  const trailingRect = shadowEl(host, '#trailing').getBoundingClientRect();
+  const centerRect = shadowEl(host, '#center').getBoundingClientRect();
+  const centerMidpoint = centerRect.left + centerRect.width / 2;
+  const trackMidpoint = (leadingRect.right + trailingRect.left) / 2;
+  const viewportMidpoint = hostRect.left + hostRect.width / 2;
+
+  expect(centerRect.width).toBeCloseTo(120, 0);
+  // Centers within the flexible track between leading and trailing...
+  expect(centerMidpoint).toBeCloseTo(trackMidpoint, 0);
+  // ...which is not the same point as the bar's true viewport midpoint when
+  // leading and trailing are asymmetric widths, unlike center-symmetric mode
+  // (see the test above).
+  expect(Math.abs(centerMidpoint - viewportMidpoint)).toBeGreaterThan(10);
 });
 
 test('continuous collapse maps expanded-row scroll distance to progress', async () => {
@@ -169,19 +329,24 @@ test('continuous collapse maps expanded-row scroll distance to progress', async 
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
   const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+
   sc.id = 'collapse-scroll';
   host.scrollTarget = sc;
   await host.updateComplete;
 
-  const distance = Number.parseFloat(
-    host.style.getPropertyValue('--_rc-app-bar-collapse-distance'),
-  );
-  expect(distance).toBeGreaterThan(0);
+  let distance = 0;
+
+  await vi.waitFor(() => {
+    distance = Number.parseFloat(host.style.getPropertyValue('--_rc-app-bar-collapse-distance'));
+    expect(distance).toBeGreaterThan(0);
+  });
 
   scrollTo(sc, distance / 2);
-  expect(Number.parseFloat(
-    host.style.getPropertyValue('--rc-app-bar-collapse-progress'),
-  )).toBeCloseTo(0.5, 1);
+
+  expect(
+    Number.parseFloat(host.style.getPropertyValue('--rc-app-bar-collapse-progress')),
+  ).toBeCloseTo(0.5, 1);
+
   expect(host.hasAttribute('data-collapsed')).toBe(false);
 
   // Firefox quantizes scrollTop to fractional device pixels, so cross the
@@ -202,11 +367,13 @@ test('hide behavior hides downward and reveals upward or near the top', async ()
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
   const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+
   host.scrollTarget = sc;
   await host.updateComplete;
 
   scrollTo(sc, 50);
   expect(host.hasAttribute('data-hidden')).toBe(true);
+
   if (supportsCustomStates) {
     expect(host.matches(':state(hidden)')).toBe(true);
   }
@@ -226,11 +393,7 @@ test('controlled mode applies endpoints silently and ignores the observer', asyn
     <div data-testid="sc" style="height: 100px; overflow-y: auto;">
       <div style="height: 1000px;"></div>
     </div>
-    <rc-app-bar
-      data-testid="host"
-      variant="expanded"
-      scroll-behavior="collapse"
-    >
+    <rc-app-bar data-testid="host" variant="expanded" scroll-behavior="collapse">
       <span>Title</span>
     </rc-app-bar>
   `);
@@ -238,6 +401,7 @@ test('controlled mode applies endpoints silently and ignores the observer', asyn
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
   const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
   const onScroll = vi.fn();
+
   host.addEventListener('rc-app-bar-scroll', onScroll);
 
   host.scrolled = true;
@@ -266,6 +430,7 @@ test('uncontrolled threshold state and event behavior is preserved', async () =>
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
   const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
   const onScroll = vi.fn();
+
   host.addEventListener('rc-app-bar-scroll', onScroll);
   host.scrollTarget = sc;
   await host.updateComplete;
@@ -276,9 +441,7 @@ test('uncontrolled threshold state and event behavior is preserved', async () =>
   scrollTo(sc, 150);
   await host.updateComplete;
   expect(host.hasAttribute('data-scrolled')).toBe(true);
-  expect(onScroll).toHaveBeenCalledWith(
-    expect.objectContaining({ detail: { scrolled: true } }),
-  );
+  expect(onScroll).toHaveBeenCalledWith(expect.objectContaining({ detail: { scrolled: true } }));
 });
 
 test('releasing controlled mode hands state back to the observer', async () => {
@@ -311,6 +474,7 @@ test('missing selector and disconnect degrade silently', async () => {
   `);
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
   await host.updateComplete;
 
   expect(host.scrolled).toBe(false);
@@ -333,6 +497,7 @@ test('has no automated accessibility violations in active layouts', async () => 
   `);
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
   await host.updateComplete;
   await expectNoA11yViolations(host);
 

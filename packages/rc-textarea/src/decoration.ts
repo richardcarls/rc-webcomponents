@@ -1,6 +1,6 @@
-import type { Decoration, MarkDecoration, LineDecoration, DecorationInput } from './types.ts';
+import type { Decoration, MarkDecoration, LineDecoration, DecorationInput } from './types.js';
 
-export { generateId } from './types.ts';
+export { generateId } from './types.js';
 
 /**
  * The minimal description of a single contiguous edit:

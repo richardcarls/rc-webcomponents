@@ -4491,6 +4491,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-adaptive-menu@workspace:*, @rcarls/rc-adaptive-menu@workspace:packages/rc-adaptive-menu":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-adaptive-menu@workspace:packages/rc-adaptive-menu"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-app-bar@workspace:*, @rcarls/rc-app-bar@workspace:packages/rc-app-bar":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-app-bar@workspace:packages/rc-app-bar"
@@ -4557,6 +4577,48 @@ __metadata:
   resolution: "@rcarls/rc-card@workspace:packages/rc-card"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-carousel@workspace:*, @rcarls/rc-carousel@workspace:packages/rc-carousel":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-carousel@workspace:packages/rc-carousel"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-chip-group@workspace:*, @rcarls/rc-chip-group@workspace:packages/rc-chip-group":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-chip-group@workspace:packages/rc-chip-group"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-chip": "workspace:*"
+    "@rcarls/rc-common": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4595,6 +4657,7 @@ __metadata:
   resolution: "@rcarls/rc-combobox@workspace:packages/rc-combobox"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-chip-group": "workspace:*"
     "@rcarls/rc-common": "workspace:*"
     "@rcarls/rc-listbox": "workspace:*"
     "@rcarls/rc-select": "workspace:*"
@@ -4722,6 +4785,26 @@ __metadata:
 "@rcarls/rc-fab@workspace:*, @rcarls/rc-fab@workspace:packages/rc-fab":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-fab@workspace:packages/rc-fab"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-list@workspace:*, @rcarls/rc-list@workspace:packages/rc-list":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-list@workspace:packages/rc-list"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@rcarls/rc-common": "workspace:*"
@@ -4894,12 +4977,51 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-progress@workspace:*, @rcarls/rc-progress@workspace:packages/rc-progress":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-progress@workspace:packages/rc-progress"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-common": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-range-slider@workspace:*, @rcarls/rc-range-slider@workspace:packages/rc-range-slider":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-range-slider@workspace:packages/rc-range-slider"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@rcarls/rc-common": "workspace:*"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    rollup: "npm:^4.60.2"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+    vitest-browser-lit: "npm:^1.0.1"
+  peerDependencies:
+    lit: ^3.0.0
+  languageName: unknown
+  linkType: soft
+
+"@rcarls/rc-scroller@workspace:*, @rcarls/rc-scroller@workspace:packages/rc-scroller":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-scroller@workspace:packages/rc-scroller"
+  dependencies:
+    "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@vitest/browser-playwright": "npm:4.1.5"
     lit: "npm:^3.0.0"
     playwright: "npm:^1.56.0"
@@ -4958,6 +5080,7 @@ __metadata:
   resolution: "@rcarls/rc-select@workspace:packages/rc-select"
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
+    "@rcarls/rc-chip-group": "workspace:*"
     "@rcarls/rc-common": "workspace:*"
     "@rcarls/rc-listbox": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
@@ -5119,6 +5242,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-theme-material@workspace:packages/rc-theme-material"
   dependencies:
+    "@rcarls/rc-adaptive-menu": "workspace:*"
+    "@rcarls/rc-button": "workspace:*"
+    "@rcarls/rc-list": "workspace:*"
+    "@rcarls/rc-menu-button": "workspace:*"
     "@vitest/browser-playwright": "npm:4.1.5"
     playwright: "npm:^1.56.0"
     vite: "npm:^7.1.7"
@@ -5204,16 +5331,20 @@ __metadata:
   resolution: "@rcarls/rc-webcomponents@workspace:packages/rc-webcomponents"
   dependencies:
     "@rcarls/rc-accordion": "workspace:*"
+    "@rcarls/rc-adaptive-menu": "workspace:*"
     "@rcarls/rc-app-bar": "workspace:*"
     "@rcarls/rc-bottom-sheet": "workspace:*"
     "@rcarls/rc-button": "workspace:*"
     "@rcarls/rc-card": "workspace:*"
+    "@rcarls/rc-carousel": "workspace:*"
     "@rcarls/rc-chip": "workspace:*"
+    "@rcarls/rc-chip-group": "workspace:*"
     "@rcarls/rc-combobox": "workspace:*"
     "@rcarls/rc-dialog": "workspace:*"
     "@rcarls/rc-disclosure": "workspace:*"
     "@rcarls/rc-fab": "workspace:*"
     "@rcarls/rc-fab-menu": "workspace:*"
+    "@rcarls/rc-list": "workspace:*"
     "@rcarls/rc-listbox": "workspace:*"
     "@rcarls/rc-markdown-editor": "workspace:*"
     "@rcarls/rc-menu": "workspace:*"
@@ -5221,7 +5352,9 @@ __metadata:
     "@rcarls/rc-menubar": "workspace:*"
     "@rcarls/rc-navigation-bar": "workspace:*"
     "@rcarls/rc-navigation-rail": "workspace:*"
+    "@rcarls/rc-progress": "workspace:*"
     "@rcarls/rc-range-slider": "workspace:*"
+    "@rcarls/rc-scroller": "workspace:*"
     "@rcarls/rc-search-bar": "workspace:*"
     "@rcarls/rc-segmented-button": "workspace:*"
     "@rcarls/rc-select": "workspace:*"

@@ -2,9 +2,9 @@ import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define';
-import type { RCSearchBar } from './rc-search-bar';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCSearchBar } from './rc-search-bar.js';
 
 // Native-input discovery defers reads to a microtask after slotchange; a
 // macrotask boundary guarantees discovery has completed.
@@ -30,7 +30,13 @@ function clearButton($host: RCSearchBar): HTMLButtonElement {
 test('progressive enhancement: the native input keeps its author attributes', async () => {
   const screen = render(html`
     <rc-search-bar data-testid="host">
-      <input type="search" name="q" id="site-search" placeholder="Author placeholder" />
+      <input
+        type="search"
+        name="q"
+        id="site-search"
+        aria-label="Site search"
+        placeholder="Author placeholder"
+      />
     </rc-search-bar>
   `);
 
@@ -44,6 +50,42 @@ test('progressive enhancement: the native input keeps its author attributes', as
   expect($input?.getAttribute('name')).toBe('q');
   expect($input?.getAttribute('id')).toBe('site-search');
   expect($input?.getAttribute('placeholder')).toBe('Author placeholder');
+});
+
+test('host-scoped light DOM reset keeps native input chrome inside the search surface', async () => {
+  const screen = render(html`
+    <style>
+      input[type='search'] {
+        min-block-size: 56px;
+        padding: 12px;
+        border: 3px solid red;
+        background: red;
+      }
+
+      input[type='search']:focus-visible {
+        outline: 4px solid red;
+        box-shadow: 0 0 0 4px red;
+      }
+    </style>
+    <rc-search-bar data-testid="host">
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+
+  const input = host.querySelector<HTMLInputElement>('input')!;
+
+  input.focus();
+
+  const style = getComputedStyle(input);
+
+  expect(style.borderTopWidth).toBe('0px');
+  expect(style.paddingTop).toBe('0px');
+  expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(style.outlineStyle).toBe('none');
+  expect(style.boxShadow).toBe('none');
 });
 
 test('label association resolves through the native label registry', async () => {
@@ -279,7 +321,8 @@ test('the clear button tracks the disabled state of the input', async () => {
   await vi.waitFor(() => expect(clearButton($host).disabled).toBe(false));
 });
 
-test('no slotted search input degrades silently with no chrome', async () => {
+test('no slotted search input warns and degrades with no chrome', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   const screen = render(html`<rc-search-bar data-testid="host"></rc-search-bar>`);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
@@ -291,7 +334,14 @@ test('no slotted search input degrades silently with no chrome', async () => {
   expect(clearButton($host).hidden).toBe(true);
   expect(getComputedStyle($host.shadowRoot!.querySelector('#leading')!).display).toBe('none');
 
+  expect(warn).toHaveBeenCalledWith(
+    '[rc-search-bar] No direct child <input type="search"> found. Place a native search input inside <rc-search-bar>.',
+    $host,
+  );
+
   await expectNoA11yViolations($host);
+
+  warn.mockRestore();
 });
 
 test('has no automated accessibility violations with a live clear button', async () => {

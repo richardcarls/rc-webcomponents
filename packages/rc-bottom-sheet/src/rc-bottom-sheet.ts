@@ -15,8 +15,18 @@ declare global {
   }
 
   interface HTMLElementEventMap {
+    'rc-bottom-sheet-resize-start': CustomEvent<RCBottomSheetResizeStartDetail>;
     'rc-bottom-sheet-snap': CustomEvent<RCBottomSheetSnapDetail>;
   }
+}
+
+/** Detail shape for `rc-bottom-sheet-resize-start`. */
+export interface RCBottomSheetResizeStartDetail {
+  /** Rendered sheet height when the resize gesture begins. */
+  height: number;
+
+  /** Input mechanism initiating the resize. */
+  inputType: 'pointer' | 'keyboard';
 }
 
 /** Detail shape for `rc-bottom-sheet-snap`. */
@@ -109,8 +119,26 @@ const MIN_SWIPE_DISTANCE = 24;
  */
 function pinBlockBox(target: HTMLElement): DOMRect {
   const rect = target.getBoundingClientRect();
+  const styles = getComputedStyle(target);
+  // `getBoundingClientRect().top` is viewport-relative, while an authored
+  // `top` value is relative to the element's fixed/absolute containing block.
+  // They are only interchangeable when the viewport is that containing block.
+  // Derive the current *visual* top from the offset parent's box when one is
+  // available. `offsetTop` itself is insufficient here because it ignores an
+  // in-flight Web Animation; `getComputedStyle().top` can have the opposite
+  // problem for fixed positioning, reporting a viewport-relative used value.
+  const offsetParent = target.offsetParent as HTMLElement | null;
+  const computedTop = Number.parseFloat(styles.top);
+  const localTop = offsetParent
+    ? rect.top -
+      offsetParent.getBoundingClientRect().top -
+      offsetParent.clientTop +
+      offsetParent.scrollTop
+    : Number.isFinite(computedTop)
+      ? computedTop
+      : rect.top;
 
-  if (getComputedStyle(target).position === 'static') {
+  if (styles.position === 'static') {
     target.style.position = 'fixed';
   }
 
@@ -118,7 +146,7 @@ function pinBlockBox(target: HTMLElement): DOMRect {
   target.style.insetBlockStart = 'auto';
   target.style.marginBlock = '0';
   target.style.boxSizing = 'border-box';
-  target.style.top = `${rect.top}px`;
+  target.style.top = `${localTop}px`;
   target.style.height = `${rect.height}px`;
 
   return rect;
@@ -155,8 +183,10 @@ function pinBlockBox(target: HTMLElement): DOMRect {
  * @fires rc-dialog-request-close - Inherited from `rc-dialog`; cancelable close request.
  * @fires rc-dialog-cancel - Inherited from `rc-dialog`; backward-compatible cancel alias.
  * @fires rc-dialog-close - Inherited from `rc-dialog`; fired after the sheet closes.
- * @fires rc-bottom-sheet-snap - Fires when a drag release or `snapTo()` call
- *   selects a snap target. `detail: { index, height, trigger }`
+ * @fires rc-bottom-sheet-resize-start - Fires when an interactive resize begins.
+ *   `detail: { height, inputType }`
+ * @fires rc-bottom-sheet-snap - Fires after a drag release or `snapTo()` call
+ *   settles at its snap target. `detail: { index, height, trigger }`
  *
  * @attr light-dismiss - When present, a click on the backdrop area calls `requestClose()`.
  *   Present by default; inherited from `rc-dialog`.
@@ -333,6 +363,16 @@ export class RCBottomSheet extends RCDialog {
     this._snapToIndex(Math.trunc(index), behavior, 'api');
   }
 
+  protected override _onResizeStart(detail: ResizeLifecycleDetail): void {
+    this.dispatchEvent(
+      new CustomEvent<RCBottomSheetResizeStartDetail>('rc-bottom-sheet-resize-start', {
+        bubbles: true,
+        composed: true,
+        detail: { height: detail.height, inputType: detail.inputType },
+      }),
+    );
+  }
+
   protected override _onResizeEnd(detail: ResizeLifecycleDetail): void {
     if (detail.inputType === 'pointer' && this.swipeDismiss && this._shouldSwipeDismiss(detail)) {
       this.requestClose();
@@ -400,6 +440,7 @@ export class RCBottomSheet extends RCDialog {
     // the first drag gesture; snapTo() must do the same so a sheet that has
     // never been dragged still measures and sets height consistently.
     const rect = pinBlockBox($dialog);
+    const pinnedTop = $dialog.style.top;
     const clampedIndex = Math.max(0, Math.min(index, points.length - 1));
     const requestedHeight = points[clampedIndex];
 
@@ -419,20 +460,21 @@ export class RCBottomSheet extends RCDialog {
     // CSS min/max block-size can make targetHeight differ from the authored
     // snap point; anchoring from the effective height keeps the block-end edge
     // fixed in either case.
-    $dialog.style.top = `${rect.top}px`;
+    $dialog.style.top = pinnedTop;
     $dialog.style.height = `${rect.height}px`;
 
-    const targetTop = rect.bottom - targetHeight;
+    const currentTop = Number.parseFloat(pinnedTop);
+    const targetTop = currentTop + rect.height - targetHeight;
 
-    this._applySnap($dialog, targetTop, targetHeight, behavior);
-
-    this.dispatchEvent(
-      new CustomEvent<RCBottomSheetSnapDetail>('rc-bottom-sheet-snap', {
-        bubbles: true,
-        composed: true,
-        detail: { index: clampedIndex, height: targetHeight, trigger },
-      }),
-    );
+    this._applySnap($dialog, targetTop, targetHeight, behavior, () => {
+      this.dispatchEvent(
+        new CustomEvent<RCBottomSheetSnapDetail>('rc-bottom-sheet-snap', {
+          bubbles: true,
+          composed: true,
+          detail: { index: clampedIndex, height: targetHeight, trigger },
+        }),
+      );
+    });
   }
 
   private _applySnap(
@@ -440,11 +482,13 @@ export class RCBottomSheet extends RCDialog {
     top: number,
     height: number,
     behavior: 'animated' | 'instant',
+    onSettled: () => void,
   ): void {
     // Measure before cancelling any in-flight animation. `_snapToIndex()`
     // normally pins and cancels first, while this ordering also keeps direct
     // calls robust if applying a snap is refactored later.
     const fromRect = $dialog.getBoundingClientRect();
+    const fromTop = Number.parseFloat($dialog.style.top);
 
     this._activeSnapAnimation?.cancel();
     this._activeSnapAnimation = null;
@@ -453,16 +497,20 @@ export class RCBottomSheet extends RCDialog {
       $dialog.style.top = `${top}px`;
       $dialog.style.height = `${height}px`;
 
+      onSettled();
+
       return;
     }
 
-    if (fromRect.top === top && fromRect.height === height) {
+    if (fromTop === top && fromRect.height === height) {
+      onSettled();
+
       return;
     }
 
     const animation = $dialog.animate(
       [
-        { top: `${fromRect.top}px`, height: `${fromRect.height}px` },
+        { top: `${fromTop}px`, height: `${fromRect.height}px` },
         { top: `${top}px`, height: `${height}px` },
       ],
       {
@@ -474,19 +522,35 @@ export class RCBottomSheet extends RCDialog {
 
     this._activeSnapAnimation = animation;
 
-    animation.finished
-      .then(() => animation.commitStyles())
-      .catch(() => {
+    animation.finished.then(
+      () => {
+        // A newer gesture or snapTo() call owns the final geometry and event.
+        if (this._activeSnapAnimation !== animation) {
+          animation.cancel();
+
+          return;
+        }
+
+        // Persist the known target explicitly before removing the animation's
+        // forwards fill. Unlike commitStyles(), this remains safe if a test or
+        // consumer detaches the dialog as the finished promise resolves.
+        $dialog.style.top = `${top}px`;
+        $dialog.style.height = `${height}px`;
+        animation.cancel();
+        this._activeSnapAnimation = null;
+
+        onSettled();
+      },
+      () => {
         // Interrupted by a newer gesture or snapTo() call, which owns applying
-        // its own final styles.
-      })
-      .finally(() => {
+        // its own final styles and reporting its settled snap point.
         animation.cancel();
 
         if (this._activeSnapAnimation === animation) {
           this._activeSnapAnimation = null;
         }
-      });
+      },
+    );
   }
 
   private _snapDuration($dialog: HTMLDialogElement): number {

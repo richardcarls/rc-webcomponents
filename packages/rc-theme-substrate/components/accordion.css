@@ -65,7 +65,10 @@
       translate var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-accordion details[open] > summary::after {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-accordion
+    details[open]
+    > summary::after {
     rotate: 135deg;
     translate: 0 -0.125rem;
   }
@@ -90,8 +93,7 @@
       opacity: 0;
       overflow: clip;
       transition:
-        block-size var(--substrate-motion-duration-slow, 240ms)
-          var(--substrate-motion-easing, ease),
+        block-size var(--substrate-motion-duration-slow, 240ms) var(--substrate-motion-easing, ease),
         content-visibility var(--substrate-motion-duration-slow, 240ms)
           var(--substrate-motion-easing, ease) allow-discrete,
         opacity var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
