@@ -13,7 +13,7 @@ OIDC and defeat the token-free release invariant.
 
 Before the first OIDC release:
 
-1. Add a GitHub repository ruleset for tags matching `v*`. Restrict tag creation and updates to
+1. Add a GitHub repository rule set for tags matching `v*`. Restrict tag creation and updates to
    release maintainers and prevent deletion or force updates.
 1. Keep the `npm` GitHub environment available. The trusted-publisher identity includes this
    exact environment name.
@@ -146,15 +146,60 @@ granular automation token on npm.
 
 ## Bootstrap a new public package
 
-npm requires a package to exist before it can have a trusted publisher. For a new workspace:
+npm requires a package to exist before it can have a trusted publisher. Its staged-publishing
+feature has the same prerequisite, so `npm stage publish` cannot bootstrap a brand-new package.
+Perform the initial publish manually at the package's current version, configure trust, and only
+then run `version:packages` for the synchronized release. This keeps the later release version
+available for the OIDC workflow and its provenance attestation.
 
-1. Build and validate the workspace.
-1. Pack it with Yarn into a temporary directory.
-1. Inspect the packed manifest for rewritten internal versions.
-1. Publish that tarball interactively with `npm publish <tarball> --access public` and 2FA.
-1. Configure the trusted publisher manually on npmjs.com, using the same settings as the other
-   public packages (GitHub Actions, `richardcarls/rc-webcomponents`, `release.yml`, the `npm`
-   environment, allow publish).
-1. Include the package in the next normal tag-driven release.
+Important: Never bootstrap a package at the intended synchronized release version. npm versions
+are immutable, and the workflow cannot replace a manual `0.6.0` publish with an OIDC-provenance
+`0.6.0` publish. Never use a bypass-2FA token for the bootstrap publish.
 
-Never use a bypass-2FA token for the bootstrap publish.
+For the six packages being introduced before `0.6.0`, start from the clean `develop` branch while
+they still have their current `0.5.0` or `0.1.0` versions. Build and validate the repository, then
+create inspected tarballs in a temporary directory.
+
+On Linux or macOS:
+
+```bash
+bootstrap_dir=$(mktemp -d)
+yarn build
+yarn validate:packages
+yarn bootstrap:packages --out "$bootstrap_dir" \
+  @rcarls/rc-adaptive-menu \
+  @rcarls/rc-carousel \
+  @rcarls/rc-chip \
+  @rcarls/rc-chip-group \
+  @rcarls/rc-progress \
+  @rcarls/rc-scroller
+```
+
+On Windows:
+
+```powershell
+$bootstrapDir = Join-Path ([System.IO.Path]::GetTempPath()) "rc-npm-bootstrap"
+yarn.cmd build
+yarn.cmd validate:packages
+yarn.cmd bootstrap:packages --out $bootstrapDir `
+  @rcarls/rc-adaptive-menu `
+  @rcarls/rc-carousel `
+  @rcarls/rc-chip `
+  @rcarls/rc-chip-group `
+  @rcarls/rc-progress `
+  @rcarls/rc-scroller
+```
+
+The helper accepts only explicit public workspace names, orders selected packages by their runtime
+dependencies, packs them with Yarn so `workspace:*` ranges are rewritten, validates each packed
+manifest, refuses to overwrite an existing tarball, and prints the exact `npm publish` commands.
+It never authenticates to npm or publishes anything.
+
+Run each printed command interactively and complete its 2FA prompt. Then, for every new package:
+
+1. Confirm its current version is visible on npmjs.com.
+1. Configure the trusted publisher with GitHub Actions, `richardcarls/rc-webcomponents`,
+   `release.yml`, the `npm` environment, and permission to run `npm publish`.
+1. Continue with the normal release steps above. `version:packages` will move the entire fixed
+   group, including these six packages, to `0.6.0`; the tag workflow will publish that new version
+   directly with OIDC and provenance.
