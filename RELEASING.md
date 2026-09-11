@@ -144,21 +144,24 @@ described above.
 Then remove the old npm token from the repository or `npm` GitHub environment and revoke the
 granular automation token on npm.
 
-## Bootstrap a new public package
+## Bootstrap Trusted Publishing for a new package
 
-npm requires a package to exist before it can have a trusted publisher. Its staged-publishing
-feature has the same prerequisite, so `npm stage publish` cannot bootstrap a brand-new package.
-Perform the initial publish manually at the package's current version, configure trust, and only
-then run `version:packages` for the synchronized release. This keeps the later release version
-available for the OIDC workflow and its provenance attestation.
+npm requires a package name to exist before it can have a trusted publisher. Its
+staged-publishing feature has the same prerequisite, so `npm stage publish` cannot create a
+brand-new package. If the package name already exists on npm at any version, do not publish a
+bootstrap version; configure or verify its trusted publisher and continue with the normal release.
 
-Important: Never bootstrap a package at the intended synchronized release version. npm versions
-are immutable, and the workflow cannot replace a manual `0.6.0` publish with an OIDC-provenance
-`0.6.0` publish. Never use a bypass-2FA token for the bootstrap publish.
+For a brand-new package name, perform one initial publish manually before running
+`version:packages`. Use the package's current, unreleased version so the next synchronized version
+remains available for the OIDC workflow and its provenance attestation.
 
-For the six packages being introduced before `0.6.0`, start from the clean `develop` branch while
-they still have their current `0.5.0` or `0.1.0` versions. Build and validate the repository, then
-create inspected tarballs in a temporary directory.
+Important: Never bootstrap at the intended synchronized release version. npm versions are
+immutable, so the workflow cannot replace a manual publish with an OIDC-provenance publish of the
+same version. Never use a bypass-2FA token for the bootstrap publish.
+
+From a clean `develop` branch, build and validate the repository, then prepare an inspected
+tarball in a temporary directory. Pass more than one explicit package name when bootstrapping
+several new packages together.
 
 On Linux or macOS:
 
@@ -166,28 +169,16 @@ On Linux or macOS:
 bootstrap_dir=$(mktemp -d)
 yarn build
 yarn validate:packages
-yarn bootstrap:packages --out "$bootstrap_dir" \
-  @rcarls/rc-adaptive-menu \
-  @rcarls/rc-carousel \
-  @rcarls/rc-chip \
-  @rcarls/rc-chip-group \
-  @rcarls/rc-progress \
-  @rcarls/rc-scroller
+yarn bootstrap:packages --out "$bootstrap_dir" @rcarls/<package-name>
 ```
 
 On Windows:
 
 ```powershell
-$bootstrapDir = Join-Path ([System.IO.Path]::GetTempPath()) "rc-npm-bootstrap"
+$bootstrapDir = Join-Path ([System.IO.Path]::GetTempPath()) "rc-npm-bootstrap-$([guid]::NewGuid())"
 yarn.cmd build
 yarn.cmd validate:packages
-yarn.cmd bootstrap:packages --out $bootstrapDir `
-  @rcarls/rc-adaptive-menu `
-  @rcarls/rc-carousel `
-  @rcarls/rc-chip `
-  @rcarls/rc-chip-group `
-  @rcarls/rc-progress `
-  @rcarls/rc-scroller
+yarn.cmd bootstrap:packages --out $bootstrapDir @rcarls/<package-name>
 ```
 
 The helper accepts only explicit public workspace names, orders selected packages by their runtime
@@ -195,11 +186,11 @@ dependencies, packs them with Yarn so `workspace:*` ranges are rewritten, valida
 manifest, refuses to overwrite an existing tarball, and prints the exact `npm publish` commands.
 It never authenticates to npm or publishes anything.
 
-Run each printed command interactively and complete its 2FA prompt. Then, for every new package:
+Run each printed command interactively and complete its 2FA prompt. Then:
 
 1. Confirm its current version is visible on npmjs.com.
 1. Configure the trusted publisher with GitHub Actions, `richardcarls/rc-webcomponents`,
    `release.yml`, the `npm` environment, and permission to run `npm publish`.
-1. Continue with the normal release steps above. `version:packages` will move the entire fixed
-   group, including these six packages, to `0.6.0`; the tag workflow will publish that new version
-   directly with OIDC and provenance.
+1. Continue with the normal release steps above. `version:packages` will move the fixed group to
+   its next synchronized version, and the tag workflow will publish it directly with OIDC and
+   provenance.
