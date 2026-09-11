@@ -1,6 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
-import { DragGestureController, type DragGestureDetail } from './DragGestureController';
+import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
 
 export type ResizeDirection = 'none' | 'both' | 'horizontal' | 'vertical';
 
@@ -77,12 +77,16 @@ export function pinElementBox(target: HTMLElement): DOMRect {
   const rect = target.getBoundingClientRect();
   const offsetParent = target.offsetParent as HTMLElement | null;
   const localLeft = offsetParent
-    ? rect.left - offsetParent.getBoundingClientRect().left
-      - offsetParent.clientLeft + offsetParent.scrollLeft
+    ? rect.left -
+      offsetParent.getBoundingClientRect().left -
+      offsetParent.clientLeft +
+      offsetParent.scrollLeft
     : rect.left;
   const localTop = offsetParent
-    ? rect.top - offsetParent.getBoundingClientRect().top
-      - offsetParent.clientTop + offsetParent.scrollTop
+    ? rect.top -
+      offsetParent.getBoundingClientRect().top -
+      offsetParent.clientTop +
+      offsetParent.scrollTop
     : rect.top;
 
   if (getComputedStyle(target).position === 'static') {

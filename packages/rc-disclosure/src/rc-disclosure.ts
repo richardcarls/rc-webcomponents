@@ -14,7 +14,8 @@ declare global {
 }
 
 /**
- * Disclosure wrapper for a native <details>/<summary> pair with controlled open state,
+ * Disclosure wrapper for a native <details>/<summary> pair with controlled and uncontrolled
+ * open state,
  * following the WAI-ARIA Disclosure pattern.
  *
  * The browser keeps ownership of open/close behavior, keyboard support, and
@@ -26,7 +27,8 @@ declare global {
  *
  * @fires rc-disclosure-toggle - Fires when the child `<details>` toggles.
  *
- * @attr open - Current open state mirrored to the child `<details>`.
+ * @attr open - Controlled open state mirrored to the child `<details>`.
+ * @attr default-open - Initial open state for uncontrolled usage.
  */
 export class RCDisclosure extends HTMLElement {
   private _observer = new MutationObserver(() => this._setupDetails());
@@ -34,18 +36,47 @@ export class RCDisclosure extends HTMLElement {
   private _$details: HTMLDetailsElement | null = null;
 
   private _scrollFrame = 0;
+  private _controlledOpen: boolean | undefined;
+  private _defaultOpen = false;
+  private _defaultOpenInitialized = false;
+  private _uncontrolledOpen: boolean | undefined;
+  private _openInitialized = false;
+  private _reflectingOpen = false;
+  private _suppressNextToggle = false;
 
   static get observedAttributes(): string[] {
-    return ['open'];
+    return ['open', 'default-open'];
   }
 
-  /** Current open state mirrored to the child `<details>`. */
+  /** Current open state. Host writes are silent; assign `undefined` to release control. */
   get open(): boolean {
-    return this._$details?.open ?? this.hasAttribute('open');
+    return this._controlledOpen ?? this._uncontrolledOpen ?? this._defaultOpen;
   }
 
-  set open(value: boolean) {
-    this._setOpen(value, true);
+  set open(value: boolean | undefined) {
+    this._controlledOpen = value;
+    this._openInitialized = true;
+    this._applyOpen(this.open);
+    this._reflectOpen(this.open);
+  }
+
+  /** Initial open state for uncontrolled usage. */
+  get defaultOpen(): boolean {
+    return this._defaultOpen;
+  }
+
+  set defaultOpen(value: boolean) {
+    this._defaultOpen = value;
+    this._defaultOpenInitialized = true;
+
+    if (
+      !this._openInitialized &&
+      this._controlledOpen === undefined &&
+      this._uncontrolledOpen === undefined
+    ) {
+      this._applyOpen(value);
+      this._reflectOpen(value);
+    }
   }
 
   connectedCallback(): void {
@@ -61,16 +92,27 @@ export class RCDisclosure extends HTMLElement {
     this._teardownDetails();
   }
 
-  attributeChangedCallback(_name: string, oldValue: string | null, newValue: string | null): void {
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue === newValue) {
       return;
     }
 
-    this._syncDetailsOpen();
+    if (name === 'default-open') {
+      this.defaultOpen = newValue !== null;
+
+      return;
+    }
+
+    if (this._reflectingOpen) {
+      return;
+    }
+
+    this.open = newValue === null ? false : true;
   }
 
   private _setupDetails(): void {
     const $details = this.querySelector<HTMLDetailsElement>(DETAILS_SELECTOR);
+
     if ($details === this._$details) {
       return;
     }
@@ -95,80 +137,74 @@ export class RCDisclosure extends HTMLElement {
     }
 
     const $summary = $details.querySelector<HTMLElement>(SUMMARY_SELECTOR);
+
     $summary?.setAttribute('aria-controls', $details.id);
 
     $details.addEventListener('toggle', this._onToggle);
 
-    // If the host hasn't been given an explicit initial `open` of its own,
-    // adopt whatever the wrapped <details> markup already says instead of
-    // silently forcing it closed on connect — plain `<details open>`
-    // should still behave the way it always has when nothing overrides it.
-    if (!this.hasAttribute('open') && $details.open) {
-      this._reflectOpen(true);
+    if (this._controlledOpen === undefined && this._uncontrolledOpen === undefined) {
+      this._uncontrolledOpen = this._defaultOpenInitialized ? this._defaultOpen : $details.open;
     }
 
-    this._syncDetailsOpen();
-    this._reflectOpen($details.open);
+    this._applyOpen(this.open, true);
+    this._reflectOpen(this.open);
     this._openForCurrentHash();
   }
 
   private _teardownDetails(): void {
     const $summary = this._$details?.querySelector<HTMLElement>(SUMMARY_SELECTOR);
+
     $summary?.removeAttribute('aria-controls');
 
     this._$details?.removeEventListener('toggle', this._onToggle);
     this._$details = null;
   }
 
-  private _syncDetailsOpen(): void {
+  private _applyOpen(open: boolean, suppressToggle = true): void {
     const $details = this._$details;
+
     if (!$details) {
       return;
     }
 
-    const nextOpen = this.hasAttribute('open');
-    if ($details.open !== nextOpen) {
-      $details.open = nextOpen;
-    }
-  }
-
-  private _setOpen(value: boolean, reflect: boolean): void {
-    const $details = this._$details;
-    if ($details && $details.open !== value) {
-      $details.open = value;
-    }
-
-    // _reflectOpen is called here for programmatic opens because the <details>
-    // toggle event is async (queued task per HTML spec). _onToggle also calls
-    // _reflectOpen for user-initiated clicks, but that arrives after a tick.
-    if (reflect) {
-      this._reflectOpen(value);
+    if ($details.open !== open) {
+      this._suppressNextToggle = suppressToggle;
+      $details.open = open;
     }
   }
 
   private _reflectOpen(value: boolean): void {
-    if (value) {
-      if (!this.hasAttribute('open')) {
-        this.setAttribute('open', '');
-      }
+    if (this.hasAttribute('open') === value) {
+      return;
+    }
+
+    this._reflectingOpen = true;
+    this.toggleAttribute('open', value);
+    this._reflectingOpen = false;
+  }
+
+  private _onToggle = (): void => {
+    if (this._suppressNextToggle) {
+      this._suppressNextToggle = false;
 
       return;
     }
 
-    if (this.hasAttribute('open')) {
-      this.removeAttribute('open');
+    const requestedOpen = this._$details?.open ?? false;
+
+    if (this._controlledOpen === undefined) {
+      this._uncontrolledOpen = requestedOpen;
+      this._reflectOpen(requestedOpen);
+    } else {
+      this._applyOpen(this._controlledOpen, true);
+      this._reflectOpen(this._controlledOpen);
     }
-  }
 
-  private _onToggle = (): void => {
-    const open = this._$details?.open ?? false;
-
-    this._reflectOpen(open);
     this.dispatchEvent(
       new CustomEvent<RCDisclosureToggleEvent>(TOGGLE_EVENT, {
         bubbles: true,
         composed: true,
-        detail: { open },
+        detail: { open: requestedOpen },
       }),
     );
   };
@@ -183,24 +219,43 @@ export class RCDisclosure extends HTMLElement {
     }
 
     const targetId = decodeURIComponent(location.hash.slice(1));
+
     if (!targetId) {
       return;
     }
 
     const $target = this.querySelector(`#${CSS.escape(targetId)}`);
+
     if (!$target) {
       return;
     }
 
     const wasOpen = this.open;
 
-    this.open = true;
+    if (this._controlledOpen === undefined) {
+      this._uncontrolledOpen = true;
+      this._applyOpen(true);
+      this._reflectOpen(true);
+    } else {
+      this.dispatchEvent(
+        new CustomEvent<RCDisclosureToggleEvent>(TOGGLE_EVENT, {
+          bubbles: true,
+          composed: true,
+          detail: { open: true },
+        }),
+      );
+    }
+
+    if (!this.open) {
+      return;
+    }
 
     if (wasOpen) {
       return;
     }
 
     cancelAnimationFrame(this._scrollFrame);
+
     this._scrollFrame = requestAnimationFrame(() => {
       document.getElementById(targetId)?.scrollIntoView();
     });

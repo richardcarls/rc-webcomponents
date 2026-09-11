@@ -15,7 +15,7 @@ npm install @rcarls/rc-dialog
 ## Import
 
 ```js
-import '@rcarls/rc-dialog';          // side-effect: registers <rc-dialog>
+import '@rcarls/rc-dialog'; // side-effect: registers <rc-dialog>
 import { RCDialog } from '@rcarls/rc-dialog'; // named class export
 ```
 
@@ -45,22 +45,22 @@ Place a `<dialog>` element directly inside `<rc-dialog>`. The inner `<dialog>` m
 
 ### Properties / attributes
 
-| Property | Attribute | Type | Default | Description |
-|---|---|---|---|---|
-| `open` | `open` | `boolean` | None | Controlled open state. Setting to `true`/`false` opens/closes the dialog silently (no `rc-dialog-toggle` event). Reads the inner `<dialog>.open` value. |
-| `defaultOpen` | `default-open` | `boolean` | `false` | Uncontrolled initial open state. The component takes ownership after initialization. |
-| `modal` | None | `boolean` | `true` | Whether controlled `open` / `defaultOpen` opens as modal (`showModal`) or non-modal (`show`). No effect on direct `showModal()` / `show()` calls. JS property only; no attribute. |
-| `movable` | `movable` | `boolean` | `false` | Enable drag-to-move. Named `movable` (not `draggable`) to avoid colliding with the HTML `draggable` attribute. |
-| `moveHandle` | `move-handle` | `string` | `''` | CSS selector for the drag handle within the inner `<dialog>` (for example, `'.titlebar'`). Defaults to the whole dialog. |
-| `moveBounds` | `move-bounds` | `'viewport' \| 'parent'` | `'viewport'` | Constrains drag within the viewport or the nearest positioned ancestor. |
-| `moveStep` | `move-step` | `number` | `4` | Keyboard arrow-key step in px when moving. Shift multiplies by 10×. |
-| `resize` | `resize` | `'none' \| 'both' \| 'horizontal' \| 'vertical'` | `'none'` | Enables edge/corner resizing, mirroring CSS `resize` semantics. |
-| `resizeOrigin` | `resize-origin` | `'' \| 'top' \| 'right' \| 'bottom' \| 'left' \| 'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right'` | `''` | Constrains fallback edge detection or supplies the default origin for explicit handles. Empty keeps free edge detection. |
-| `resizeHandle` | `resize-handle` | `string` | `''` | CSS selector for explicit resize handles within the inner `<dialog>`. Matching handles receive pointer and keyboard resize behavior. |
-| `resizeThreshold` | `resize-threshold` | `number` | `8` | Edge hit-test band in px (straddles the border, half inside and half outside). |
-| `resizeStep` | `resize-step` | `number` | `4` | Keyboard arrow-key step in px when resizing. Shift multiplies by 10×. |
-| `closedBy` | `closed-by` | `'any' \| 'closerequest' \| 'none' \| ''` | `''` | Proxied to the inner `<dialog closedby="...">` attribute (Chrome 134+, Safari 18.4+, Firefox 139+). `'any'` = Escape or backdrop click; `'closerequest'` = Escape only; `'none'` = programmatic only. |
-| `lightDismiss` | `light-dismiss` | `boolean` | `false` | JS fallback for backdrop-click dismissal. Detects clicks whose target is the `<dialog>` element itself and calls `requestClose()`. Works in all browsers alongside or instead of `closed-by`. |
+| Property          | Attribute          | Type                                                                                                           | Default      | Description                                                                                                                                                                                           |
+| ----------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `open`            | `open`             | `boolean`                                                                                                      | None         | Controlled open state. Setting to `true`/`false` opens/closes the dialog silently (no `rc-dialog-toggle` event). Reads the inner `<dialog>.open` value.                                               |
+| `defaultOpen`     | `default-open`     | `boolean`                                                                                                      | `false`      | Uncontrolled initial open state. The component takes ownership after initialization.                                                                                                                  |
+| `modal`           | None               | `boolean`                                                                                                      | `true`       | Whether controlled `open` / `defaultOpen` opens as modal (`showModal`) or non-modal (`show`). No effect on direct `showModal()` / `show()` calls. JS property only; no attribute.                     |
+| `movable`         | `movable`          | `boolean`                                                                                                      | `false`      | Enable drag-to-move. Named `movable` (not `draggable`) to avoid colliding with the HTML `draggable` attribute.                                                                                        |
+| `moveHandle`      | `move-handle`      | `string`                                                                                                       | `''`         | CSS selector for the drag handle within the inner `<dialog>` (for example, `'.titlebar'`). Defaults to the whole dialog.                                                                              |
+| `moveBounds`      | `move-bounds`      | `'viewport' \| 'parent'`                                                                                       | `'viewport'` | Constrains drag within the viewport or the nearest positioned ancestor.                                                                                                                               |
+| `moveStep`        | `move-step`        | `number`                                                                                                       | `4`          | Keyboard arrow-key step in px when moving. Shift multiplies by 10×.                                                                                                                                   |
+| `resize`          | `resize`           | `'none' \| 'both' \| 'horizontal' \| 'vertical'`                                                               | `'none'`     | Enables edge/corner resizing, mirroring CSS `resize` semantics.                                                                                                                                       |
+| `resizeOrigin`    | `resize-origin`    | `'' \| 'top' \| 'right' \| 'bottom' \| 'left' \| 'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right'` | `''`         | Constrains fallback edge detection or supplies the default origin for explicit handles. Empty keeps free edge detection.                                                                              |
+| `resizeHandle`    | `resize-handle`    | `string`                                                                                                       | `''`         | CSS selector for explicit resize handles within the inner `<dialog>`. Matching handles receive pointer and keyboard resize behavior.                                                                  |
+| `resizeThreshold` | `resize-threshold` | `number`                                                                                                       | `8`          | Edge hit-test band in px (straddles the border, half inside and half outside).                                                                                                                        |
+| `resizeStep`      | `resize-step`      | `number`                                                                                                       | `4`          | Keyboard arrow-key step in px when resizing. Shift multiplies by 10×.                                                                                                                                 |
+| `closedBy`        | `closed-by`        | `'any' \| 'closerequest' \| 'none' \| ''`                                                                      | `''`         | Proxied to the inner `<dialog closedby="...">` attribute (Chrome 134+, Safari 18.4+, Firefox 139+). `'any'` = Escape or backdrop click; `'closerequest'` = Escape only; `'none'` = programmatic only. |
+| `lightDismiss`    | `light-dismiss`    | `boolean`                                                                                                      | `false`      | JS fallback for backdrop-click dismissal. Detects clicks whose target is the `<dialog>` element itself and calls `requestClose()`. Works in all browsers alongside or instead of `closed-by`.         |
 
 ### Methods
 
@@ -77,19 +77,19 @@ requestClose(returnValue?): void
 ### Read-only getters
 
 ```ts
-open: boolean        // Whether the inner <dialog> is currently open.
-returnValue: string  // The return value set when the dialog last closed.
+open: boolean; // Whether the inner <dialog> is currently open.
+returnValue: string; // The return value set when the dialog last closed.
 ```
 
 ### Events
 
-| Event | Cancelable | Detail | Description |
-|---|---|---|---|
-| `rc-dialog-open` | No | None | Fired when the dialog opens via `showModal()` or `show()`. |
-| `rc-dialog-toggle` | No | `{ open: boolean, returnValue: string }` | Fired when user or native interaction changes the open state. Not fired on silent host writes (`open` property). |
-| `rc-dialog-request-close` | **Yes** | `{ returnValue: string }` | Fired before close (Escape, backdrop click, or `requestClose()`). Call `preventDefault()` to block. |
-| `rc-dialog-cancel` | No | None | Fired after `rc-dialog-request-close` when the close was not prevented. Backward-compatible alias. |
-| `rc-dialog-close` | No | `{ returnValue: string }` | Fired after the dialog has closed. |
+| Event                     | Cancelable | Detail                                   | Description                                                                                                      |
+| ------------------------- | ---------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `rc-dialog-open`          | No         | None                                     | Fired when the dialog opens via `showModal()` or `show()`.                                                       |
+| `rc-dialog-toggle`        | No         | `{ open: boolean, returnValue: string }` | Fired when user or native interaction changes the open state. Not fired on silent host writes (`open` property). |
+| `rc-dialog-request-close` | **Yes**    | `{ returnValue: string }`                | Fired before close (Escape, backdrop click, or `requestClose()`). Call `preventDefault()` to block.              |
+| `rc-dialog-cancel`        | No         | None                                     | Fired after `rc-dialog-request-close` when the close was not prevented. Backward-compatible alias.               |
+| `rc-dialog-close`         | No         | `{ returnValue: string }`                | Fired after the dialog has closed.                                                                               |
 
 ---
 
@@ -123,9 +123,7 @@ Drag the `.titlebar` to reposition. Focus the titlebar and use **Arrow keys** to
 
 ```html
 <rc-dialog id="dlg" movable move-handle=".titlebar" resize="both">
-  <dialog aria-labelledby="dlg-title" style="min-width: 20rem; min-height: 10rem;">
-    …
-  </dialog>
+  <dialog aria-labelledby="dlg-title" style="min-width: 20rem; min-height: 10rem;">…</dialog>
 </rc-dialog>
 ```
 
@@ -160,11 +158,18 @@ No titlebar or footer structure is required. Any layout is valid.
 
 ```html
 <rc-dialog id="dlg">
-  <dialog aria-labelledby="dlg-title" aria-describedby="dlg-desc"
-          style="border-radius: 12px; padding: 2rem; position: relative;">
-    <button style="position:absolute;top:.5rem;right:.5rem;"
-            onclick="document.querySelector('#dlg').close()"
-            aria-label="Close">✕</button>
+  <dialog
+    aria-labelledby="dlg-title"
+    aria-describedby="dlg-desc"
+    style="border-radius: 12px; padding: 2rem; position: relative;"
+  >
+    <button
+      style="position:absolute;top:.5rem;right:.5rem;"
+      onclick="document.querySelector('#dlg').close()"
+      aria-label="Close"
+    >
+      ✕
+    </button>
     <h3 id="dlg-title">Quick note</h3>
     <p id="dlg-desc">Content here.</p>
   </dialog>
@@ -178,9 +183,7 @@ technology treats this with higher urgency.
 
 ```html
 <rc-dialog id="confirm">
-  <dialog role="alertdialog"
-          aria-labelledby="confirm-title"
-          aria-describedby="confirm-msg">
+  <dialog role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-msg">
     <div class="titlebar"><span id="confirm-title">Delete item?</span></div>
     <p id="confirm-msg">This action cannot be undone.</p>
     <div class="footer">
@@ -291,7 +294,7 @@ the body grows and the header/footer stay fixed:
 dialog[open] {
   display: flex;
   flex-direction: column;
-  overflow: hidden;   /* dialog box doesn't scroll; body does */
+  overflow: hidden; /* dialog box doesn't scroll; body does */
 }
 
 .dlg-header,
@@ -302,7 +305,7 @@ dialog[open] {
 .dlg-body {
   flex: 1;
   overflow: auto;
-  min-height: 0;      /* lets flex child shrink below content height */
+  min-height: 0; /* lets flex child shrink below content height */
 }
 ```
 
@@ -314,10 +317,10 @@ dialog[open] {
 
 ## Browser support
 
-| Feature | Requirement |
-|---|---|
-| Core (`<dialog>` delegation, events) | Chrome 37+, Firefox 98+, Safari 15.4+ |
-| Drag / resize | Any browser supporting Pointer Events |
-| `closed-by` attribute proxy | Chrome 134+, Safari 18.4+, Firefox 139+ |
-| `requestClose()` native method | Chrome 134+, Safari 18.4+, Firefox 139+ (fallback active on older browsers) |
-| `light-dismiss` JS fallback | All browsers |
+| Feature                              | Requirement                                                                 |
+| ------------------------------------ | --------------------------------------------------------------------------- |
+| Core (`<dialog>` delegation, events) | Chrome 37+, Firefox 98+, Safari 15.4+                                       |
+| Drag / resize                        | Any browser supporting Pointer Events                                       |
+| `closed-by` attribute proxy          | Chrome 134+, Safari 18.4+, Firefox 139+                                     |
+| `requestClose()` native method       | Chrome 134+, Safari 18.4+, Firefox 139+ (fallback active on older browsers) |
+| `light-dismiss` JS fallback          | All browsers                                                                |

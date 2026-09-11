@@ -1,6 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
-import { DragGestureController, type DragGestureDetail } from './DragGestureController';
+import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
 
 export interface DragOptions {
   /** The element to move. Its `left` / `top` styles are updated during drag. */

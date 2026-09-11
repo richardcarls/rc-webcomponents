@@ -9,22 +9,24 @@
   }
 
   @media (forced-colors: active) {
-    :where(.rc-theme-material, :host(.rc-theme-material)) :is(
-      rc-select,
-      rc-combobox,
-      rc-search-bar,
-      rc-textarea,
-      rc-markdown-editor,
-      rc-menu,
-      rc-menubar,
-      rc-toolbar,
-      rc-dialog > dialog
-    ) {
+    :where(.rc-theme-material, :host(.rc-theme-material))
+      :is(
+        rc-select,
+        rc-combobox,
+        rc-search-bar,
+        rc-textarea,
+        rc-markdown-editor,
+        rc-menu,
+        rc-menubar,
+        rc-toolbar,
+        rc-dialog > dialog
+      ) {
       forced-color-adjust: auto;
       box-shadow: none;
     }
 
-    :where(.rc-theme-material, :host(.rc-theme-material)) :is(button, [role='button'], [role^='menuitem']):focus-visible {
+    :where(.rc-theme-material, :host(.rc-theme-material))
+      :is(button, [role='button'], [role^='menuitem']):focus-visible {
       outline: 2px solid Highlight;
     }
   }

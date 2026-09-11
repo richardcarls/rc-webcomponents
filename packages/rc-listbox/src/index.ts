@@ -1,1 +1,1 @@
-export * from './rc-listbox';
+export * from './rc-listbox.js';

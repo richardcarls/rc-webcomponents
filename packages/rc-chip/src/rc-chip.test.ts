@@ -2,9 +2,9 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define';
-import type { RCChip } from './rc-chip';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCChip } from './rc-chip.js';
 
 async function flushChip(host: RCChip): Promise<void> {
   await host.updateComplete;

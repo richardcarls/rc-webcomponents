@@ -17,8 +17,8 @@ npm install @rcarls/rc-menubar
 ## Import
 
 ```js
-import '@rcarls/rc-menubar/define';                 // side-effect: registers <rc-menubar>
-import { RCMenubar } from '@rcarls/rc-menubar';     // named class export
+import '@rcarls/rc-menubar/define'; // side-effect: registers <rc-menubar>
+import { RCMenubar } from '@rcarls/rc-menubar'; // named class export
 ```
 
 `rc-menubar` depends on `rc-menu-button` and `rc-menu`. Ensure all three are installed.
@@ -67,49 +67,49 @@ Place `rc-menu-button` elements as direct children. The menubar manages focus an
 
 ### Properties / attributes
 
-| Property | Attribute | Type | Default | Description |
-|---|---|---|---|---|
-| `label` | `label` | `string` | `'Menu'` | `aria-label` for the menubar. Required — no visible label is rendered by the component. |
+| Property      | Attribute     | Type                         | Default        | Description                                                                                                                |
+| ------------- | ------------- | ---------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `label`       | `label`       | `string`                     | `'Menu'`       | `aria-label` for the menubar. Required — no visible label is rendered by the component.                                    |
 | `orientation` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Layout direction and keyboard navigation axis. Propagated to child `rc-menu-button` elements for arrow-key open direction. |
 
 ### CSS custom properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--rc-menubar-gap` | `var(--rc-control-gap)` | Gap between menu buttons |
-| `--rc-menubar-padding-inline` | `var(--rc-control-padding-inline)` | Inline padding on the menubar container |
-| `--rc-menubar-padding-block` | `var(--rc-control-padding-block)` | Block padding on the menubar container |
-| `--rc-menubar-border` | `var(--rc-border)` | Menubar container border |
-| `--rc-menubar-radius` | `var(--rc-control-radius)` | Menubar container border radius |
-| `--rc-menubar-background` | `Canvas` | Menubar container background |
-| `--rc-menubar-color` | `CanvasText` | Menubar container text color |
-| `--rc-menubar-item-block-size` | `2.25em` | Minimum block size for child menu-button triggers |
-| `--rc-menubar-item-padding-block` | `0.25em` | Child trigger block-axis padding |
-| `--rc-menubar-item-padding-inline` | `0.75em` | Child trigger inline-axis padding |
-| `--rc-menubar-item-gap` | `var(--rc-item-gap)` | Gap between flex children inside child triggers |
-| `--rc-menubar-item-border` | `1px solid transparent` | Child trigger border |
-| `--rc-menubar-item-radius` | `var(--rc-control-radius)` | Child trigger border radius |
-| `--rc-menubar-item-background` | `transparent` | Child trigger background |
-| `--rc-menubar-item-color` | `inherit` | Child trigger text color |
-| `--rc-menubar-item-transition` | — | Child trigger state transition |
-| `--rc-menubar-item-hover-background` | `color-mix(in srgb, Highlight 8%, transparent)` | Child trigger hover background |
-| `--rc-menubar-item-hover-color` | `inherit` | Child trigger hover text color |
-| `--rc-menubar-item-hover-border-color` | `transparent` | Child trigger hover border color |
-| `--rc-menubar-item-open-background` | `color-mix(in srgb, Highlight 12%, transparent)` | Child trigger background while its menu is open |
-| `--rc-menubar-item-open-color` | `inherit` | Child trigger text color while its menu is open |
-| `--rc-menubar-item-open-border-color` | `transparent` | Child trigger border color while its menu is open |
+| Property                               | Default                                          | Description                                       |
+| -------------------------------------- | ------------------------------------------------ | ------------------------------------------------- |
+| `--rc-menubar-gap`                     | `var(--rc-control-gap)`                          | Gap between menu buttons                          |
+| `--rc-menubar-padding-inline`          | `var(--rc-control-padding-inline)`               | Inline padding on the menubar container           |
+| `--rc-menubar-padding-block`           | `var(--rc-control-padding-block)`                | Block padding on the menubar container            |
+| `--rc-menubar-border`                  | `var(--rc-border)`                               | Menubar container border                          |
+| `--rc-menubar-radius`                  | `var(--rc-control-radius)`                       | Menubar container border radius                   |
+| `--rc-menubar-background`              | `Canvas`                                         | Menubar container background                      |
+| `--rc-menubar-color`                   | `CanvasText`                                     | Menubar container text color                      |
+| `--rc-menubar-item-block-size`         | `2.25em`                                         | Minimum block size for child menu-button triggers |
+| `--rc-menubar-item-padding-block`      | `0.25em`                                         | Child trigger block-axis padding                  |
+| `--rc-menubar-item-padding-inline`     | `0.75em`                                         | Child trigger inline-axis padding                 |
+| `--rc-menubar-item-gap`                | `var(--rc-item-gap)`                             | Gap between flex children inside child triggers   |
+| `--rc-menubar-item-border`             | `1px solid transparent`                          | Child trigger border                              |
+| `--rc-menubar-item-radius`             | `var(--rc-control-radius)`                       | Child trigger border radius                       |
+| `--rc-menubar-item-background`         | `transparent`                                    | Child trigger background                          |
+| `--rc-menubar-item-color`              | `inherit`                                        | Child trigger text color                          |
+| `--rc-menubar-item-transition`         | —                                                | Child trigger state transition                    |
+| `--rc-menubar-item-hover-background`   | `color-mix(in srgb, Highlight 8%, transparent)`  | Child trigger hover background                    |
+| `--rc-menubar-item-hover-color`        | `inherit`                                        | Child trigger hover text color                    |
+| `--rc-menubar-item-hover-border-color` | `transparent`                                    | Child trigger hover border color                  |
+| `--rc-menubar-item-open-background`    | `color-mix(in srgb, Highlight 12%, transparent)` | Child trigger background while its menu is open   |
+| `--rc-menubar-item-open-color`         | `inherit`                                        | Child trigger text color while its menu is open   |
+| `--rc-menubar-item-open-border-color`  | `transparent`                                    | Child trigger border color while its menu is open |
 
 ### CSS parts
 
-| Part | Element | Description |
-|---|---|---|
+| Part   | Element     | Description                  |
+| ------ | ----------- | ---------------------------- |
 | `root` | Inner `div` | The visual menubar container |
 
 ### Slots
 
-| Slot | Description |
-|---|---|
-| *(default)* | `rc-menu-button` elements. Non-menu-button elements are rendered but excluded from keyboard navigation. |
+| Slot        | Description                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------- |
+| _(default)_ | `rc-menu-button` elements. Non-menu-button elements are rendered but excluded from keyboard navigation. |
 
 ### Events
 
@@ -142,14 +142,14 @@ $previousItem: HTMLElement | undefined
 
 Horizontal orientation (default):
 
-| Key | Action |
-|---|---|
-| `ArrowRight` | Focus next trigger (wraps); if a menu is open, closes current and opens next |
-| `ArrowLeft` | Focus previous trigger (wraps); if a menu is open, closes current and opens previous |
-| `Home` | Focus first trigger |
-| `End` | Focus last trigger |
-| `Escape` | Close the active menu; focus remains on trigger |
-| `Tab` | Leaves the menubar (standard tab order) |
+| Key          | Action                                                                               |
+| ------------ | ------------------------------------------------------------------------------------ |
+| `ArrowRight` | Focus next trigger (wraps); if a menu is open, closes current and opens next         |
+| `ArrowLeft`  | Focus previous trigger (wraps); if a menu is open, closes current and opens previous |
+| `Home`       | Focus first trigger                                                                  |
+| `End`        | Focus last trigger                                                                   |
+| `Escape`     | Close the active menu; focus remains on trigger                                      |
+| `Tab`        | Leaves the menubar (standard tab order)                                              |
 
 For vertical orientation, `ArrowDown`/`ArrowUp` replace `ArrowRight`/`ArrowLeft`. The `rc-menu-button` children automatically inherit the menubar's orientation to determine their own open-axis arrow keys.
 
@@ -157,13 +157,13 @@ For vertical orientation, `ArrowDown`/`ArrowUp` replace `ArrowRight`/`ArrowLeft`
 
 ## ARIA
 
-| Attribute | Where | Value |
-|---|---|---|
-| `role="menubar"` | Host element | — |
-| `aria-orientation` | Host element | `"horizontal"` or `"vertical"` |
-| `aria-label` | Host element | Value of `label` property |
-| `tabindex="0"` | Active trigger | One trigger tabbable at a time (roving tabindex) |
-| `tabindex="-1"` | All other triggers | Removed from tab order |
+| Attribute          | Where              | Value                                            |
+| ------------------ | ------------------ | ------------------------------------------------ |
+| `role="menubar"`   | Host element       | —                                                |
+| `aria-orientation` | Host element       | `"horizontal"` or `"vertical"`                   |
+| `aria-label`       | Host element       | Value of `label` property                        |
+| `tabindex="0"`     | Active trigger     | One trigger tabbable at a time (roving tabindex) |
+| `tabindex="-1"`    | All other triggers | Removed from tab order                           |
 
 ---
 

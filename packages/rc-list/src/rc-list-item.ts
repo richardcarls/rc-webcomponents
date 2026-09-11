@@ -77,6 +77,7 @@ declare global {
  * @cssprop [--rc-list-item-trailing-grid-row=auto] - Trailing region row placement.
  * @cssprop [--rc-list-item-trailing-justify-self=end] - Trailing region alignment within its grid area.
  * @cssprop [--rc-list-item-state-layer-color=currentColor] - Interaction state layer color.
+ * @cssprop [--rc-list-item-state-layer-opacity=0] - Resting interaction state layer opacity.
  * @cssprop [--rc-list-item-hover-state-layer-opacity=0.08] - Hover state opacity.
  * @cssprop [--rc-list-item-focus-state-layer-opacity=0.1] - Focus state opacity.
  * @cssprop [--rc-list-item-pressed-state-layer-opacity=0.1] - Pressed state opacity.

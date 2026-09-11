@@ -41,17 +41,26 @@ export const menubarStyles = css`
     --rc-menu-button-trigger-padding-inline: var(--rc-menubar-item-padding-inline, 0.75em);
     --rc-menu-button-trigger-gap: var(--rc-menubar-item-gap, var(--rc-item-gap, 0.5em));
     --rc-menu-button-trigger-border: var(--rc-menubar-item-border, 1px solid transparent);
-    --rc-menu-button-trigger-radius: var(--rc-menubar-item-radius, var(--rc-control-radius, 0.125em));
+    --rc-menu-button-trigger-radius: var(
+      --rc-menubar-item-radius,
+      var(--rc-control-radius, 0.125em)
+    );
     --rc-menu-button-trigger-background: var(--rc-menubar-item-background, transparent);
     --rc-menu-button-trigger-color: var(--rc-menubar-item-color, inherit);
     --rc-menu-button-trigger-transition: var(--rc-menubar-item-transition);
-    --rc-menu-button-trigger-hover-border-color: var(--rc-menubar-item-hover-border-color, transparent);
+    --rc-menu-button-trigger-hover-border-color: var(
+      --rc-menubar-item-hover-border-color,
+      transparent
+    );
     --rc-menu-button-trigger-hover-background: var(
       --rc-menubar-item-hover-background,
       color-mix(in srgb, Highlight 8%, transparent)
     );
     --rc-menu-button-trigger-hover-color: var(--rc-menubar-item-hover-color, inherit);
-    --rc-menu-button-trigger-open-border-color: var(--rc-menubar-item-open-border-color, transparent);
+    --rc-menu-button-trigger-open-border-color: var(
+      --rc-menubar-item-open-border-color,
+      transparent
+    );
     --rc-menu-button-trigger-open-background: var(
       --rc-menubar-item-open-background,
       color-mix(in srgb, Highlight 12%, transparent)
@@ -70,7 +79,10 @@ export const menubarStyles = css`
       color-mix(in srgb, Highlight 12%, transparent)
     );
     --rc-menu-button-trigger-hover-color: var(--rc-menubar-item-open-color, inherit);
-    --rc-menu-button-trigger-hover-border-color: var(--rc-menubar-item-open-border-color, transparent);
+    --rc-menu-button-trigger-hover-border-color: var(
+      --rc-menubar-item-open-border-color,
+      transparent
+    );
   }
 
   :host([orientation='vertical']) ::slotted(rc-menu-button) {

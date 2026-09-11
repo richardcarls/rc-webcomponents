@@ -16,12 +16,12 @@ Keep shared AI-agent instructions in `AGENTS.md`. Tool-specific files are shallo
 adapters and must point back here rather than duplicating package lists, commands,
 architecture rules, or testing notes.
 
-| File or directory | Purpose |
-| --- | --- |
-| `README.md` | Human-facing overview, design principles, package table, and public usage guidance. |
-| `AGENTS.md` | Agent-facing implementation invariants, workflow rules, and repo gotchas. |
-| `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, `.cursor/rules/*.mdc` | Tool adapters only. |
-| `.agents/` | Project-local reusable agent assets; load only on demand. |
+| File or directory                                                                  | Purpose                                                                             |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `README.md`                                                                        | Human-facing overview, design principles, package table, and public usage guidance. |
+| `AGENTS.md`                                                                        | Agent-facing implementation invariants, workflow rules, and repo gotchas.           |
+| `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, `.cursor/rules/*.mdc` | Tool adapters only.                                                                 |
+| `.agents/`                                                                         | Project-local reusable agent assets; load only on demand.                           |
 
 When adding support for another AI coding tool, make its native context file point
 back to `AGENTS.md` where possible. If imports are not supported, keep the adapter
@@ -157,7 +157,7 @@ behavior. When changing it, update every affected surface in the same change:
   nothing fails to compile or test when it's missing: a `@property` decorator
   works fully without a matching `@attr` tag, so the class header can silently
   drift out of sync with the real attribute surface. Give every non-`attribute:
-  false` `@property` a matching `@attr` line; use bracket form (`@attr [name]`)
+false` `@property` a matching `@attr` line; use bracket form (`@attr [name]`)
   only for a computed, reflected-only attribute with no settable `@property`
   behind it (such as `rc-select`'s `[has-value]`), and plain form (`@attr name`)
   for anything a consumer can write. The same bracket convention applies to
@@ -343,7 +343,7 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
   small isolated fixes and documentation changes directly on `develop` when a
   feature branch would add no useful narrative.
 - Meaningful package changes need a Changesets intent file. Use `yarn.cmd
-  changeset` on Windows or `yarn changeset` on Linux/macOS.
+changeset` on Windows or `yarn changeset` on Linux/macOS.
 - Before pushing, rename generated Changeset files from random-word sequences to
   short, descriptive kebab-case slugs that identify the package, behavior, or
   concern.

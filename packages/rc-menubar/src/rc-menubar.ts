@@ -2,10 +2,9 @@ import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import { type KeyboardNavigationAction } from '@rcarls/rc-common';
-
 import type { RCMenuButton, RCMenuButtonToggleEvent } from '@rcarls/rc-menu-button';
 
-import menubarStyles from './rc-menubar.styles';
+import menubarStyles from './rc-menubar.styles.js';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -208,7 +207,9 @@ export class RCMenubar extends LitElement {
   protected _handleItemFocus(e: FocusEvent) {
     const $target = e.target as HTMLElement;
 
-    if ($target.slot !== 'trigger') return;
+    if ($target.slot !== 'trigger') {
+      return;
+    }
 
     this._$lastFocused = $target;
 
@@ -239,6 +240,7 @@ export class RCMenubar extends LitElement {
 
       prevButtons.forEach((ref) => {
         const $menuButton = ref.deref();
+
         if (!$menuButton) {
           return;
         }

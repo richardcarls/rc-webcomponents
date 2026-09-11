@@ -12,8 +12,8 @@ interaction surface.
 
 ```html
 <rc-range-slider aria-label="Price range">
-  <input type="range" name="price-min" min="0" max="100" value="20" aria-label="Minimum">
-  <input type="range" name="price-max" min="0" max="100" value="80" aria-label="Maximum">
+  <input type="range" name="price-min" min="0" max="100" value="20" aria-label="Minimum" />
+  <input type="range" name="price-max" min="0" max="100" value="80" aria-label="Maximum" />
 </rc-range-slider>
 ```
 
@@ -40,8 +40,8 @@ Consumers can decorate the track with a real named slot:
 ```html
 <rc-range-slider aria-label="Price range">
   <span slot="track-background" class="threshold-bands"></span>
-  <input type="range" name="price-min" min="0" max="100" value="20" aria-label="Minimum">
-  <input type="range" name="price-max" min="0" max="100" value="80" aria-label="Maximum">
+  <input type="range" name="price-min" min="0" max="100" value="20" aria-label="Minimum" />
+  <input type="range" name="price-max" min="0" max="100" value="80" aria-label="Maximum" />
 </rc-range-slider>
 ```
 

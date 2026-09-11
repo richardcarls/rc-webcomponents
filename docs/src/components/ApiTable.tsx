@@ -72,10 +72,13 @@ function typeText(type?: TypeRef) {
 }
 
 function methodSignature(method: Member) {
-  const params = method.parameters?.map((param) => {
-    const optional = param.optional ? '?' : '';
-    return `${param.name}${optional}: ${typeText(param.type)}`;
-  }).join(', ') ?? '';
+  const params =
+    method.parameters
+      ?.map((param) => {
+        const optional = param.optional ? '?' : '';
+        return `${param.name}${optional}: ${typeText(param.type)}`;
+      })
+      .join(', ') ?? '';
   const returnType = method.return?.text ? `: ${method.return.text}` : '';
   return `${method.name}(${params})${returnType}`;
 }
@@ -105,20 +108,22 @@ export function ApiTable({ tag }: ApiTableProps) {
     );
   }
 
-  const publicFields = declaration.members?.filter(
-    (member) =>
-      member.kind === 'field' &&
-      member.privacy !== 'private' &&
-      member.privacy !== 'protected' &&
-      !member.static,
-  ) ?? [];
-  const publicMethods = declaration.members?.filter(
-    (member) =>
-      member.kind === 'method' &&
-      member.privacy !== 'private' &&
-      member.privacy !== 'protected' &&
-      !member.static,
-  ) ?? [];
+  const publicFields =
+    declaration.members?.filter(
+      (member) =>
+        member.kind === 'field' &&
+        member.privacy !== 'private' &&
+        member.privacy !== 'protected' &&
+        !member.static,
+    ) ?? [];
+  const publicMethods =
+    declaration.members?.filter(
+      (member) =>
+        member.kind === 'method' &&
+        member.privacy !== 'private' &&
+        member.privacy !== 'protected' &&
+        !member.static,
+    ) ?? [];
 
   return (
     <div className={styles.wrapper}>
@@ -127,21 +132,49 @@ export function ApiTable({ tag }: ApiTableProps) {
         {publicFields.length ? (
           <table>
             <thead>
-              <tr><th>Property</th><th>Markup</th><th>Type</th><th>Default</th><th>Description</th></tr>
+              <tr>
+                <th>Property</th>
+                <th>Markup</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
             </thead>
             <tbody>
               {publicFields.map((member) => (
                 <tr key={member.name}>
-                  <td><code>{member.name}</code></td>
-                  <td>{member.attribute ? <code>{member.attribute}</code> : <span className={styles.na}>JS property only</span>}</td>
-                  <td>{member.type?.text ? <code className={styles.type}>{member.type.text}</code> : <span className={styles.na}>Unknown</span>}</td>
-                  <td>{member.default !== undefined ? <code>{member.default}</code> : <span className={styles.na}>Not specified</span>}</td>
+                  <td>
+                    <code>{member.name}</code>
+                  </td>
+                  <td>
+                    {member.attribute ? (
+                      <code>{member.attribute}</code>
+                    ) : (
+                      <span className={styles.na}>JS property only</span>
+                    )}
+                  </td>
+                  <td>
+                    {member.type?.text ? (
+                      <code className={styles.type}>{member.type.text}</code>
+                    ) : (
+                      <span className={styles.na}>Unknown</span>
+                    )}
+                  </td>
+                  <td>
+                    {member.default !== undefined ? (
+                      <code>{member.default}</code>
+                    ) : (
+                      <span className={styles.na}>Not specified</span>
+                    )}
+                  </td>
                   <td>{member.description ?? 'No description provided.'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ) : <Empty>No public properties are documented in the custom elements manifest.</Empty>}
+        ) : (
+          <Empty>No public properties are documented in the custom elements manifest.</Empty>
+        )}
       </section>
 
       <section className={styles.section}>
@@ -149,18 +182,25 @@ export function ApiTable({ tag }: ApiTableProps) {
         {publicMethods.length ? (
           <table>
             <thead>
-              <tr><th>Method</th><th>Description</th></tr>
+              <tr>
+                <th>Method</th>
+                <th>Description</th>
+              </tr>
             </thead>
             <tbody>
               {publicMethods.map((member) => (
                 <tr key={member.name}>
-                  <td><code>{methodSignature(member)}</code></td>
+                  <td>
+                    <code>{methodSignature(member)}</code>
+                  </td>
                   <td>{member.description ?? 'No description provided.'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ) : <Empty>No public methods are documented in the custom elements manifest.</Empty>}
+        ) : (
+          <Empty>No public methods are documented in the custom elements manifest.</Empty>
+        )}
       </section>
 
       <section className={styles.section}>
@@ -168,19 +208,33 @@ export function ApiTable({ tag }: ApiTableProps) {
         {declaration.events?.length ? (
           <table>
             <thead>
-              <tr><th>Event</th><th>Detail type</th><th>Description</th></tr>
+              <tr>
+                <th>Event</th>
+                <th>Detail type</th>
+                <th>Description</th>
+              </tr>
             </thead>
             <tbody>
               {declaration.events.map((event) => (
                 <tr key={event.name}>
-                  <td><code>{event.name}</code></td>
-                  <td>{event.type?.text ? <code className={styles.type}>{event.type.text}</code> : <span className={styles.na}>No detail type documented</span>}</td>
+                  <td>
+                    <code>{event.name}</code>
+                  </td>
+                  <td>
+                    {event.type?.text ? (
+                      <code className={styles.type}>{event.type.text}</code>
+                    ) : (
+                      <span className={styles.na}>No detail type documented</span>
+                    )}
+                  </td>
                   <td>{event.description ?? 'No description provided.'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ) : <Empty>No custom events are documented in the custom elements manifest.</Empty>}
+        ) : (
+          <Empty>No custom events are documented in the custom elements manifest.</Empty>
+        )}
       </section>
 
       <section className={styles.section}>
@@ -188,18 +242,25 @@ export function ApiTable({ tag }: ApiTableProps) {
         {declaration.slots?.length ? (
           <table>
             <thead>
-              <tr><th>Name</th><th>Description</th></tr>
+              <tr>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
             </thead>
             <tbody>
               {declaration.slots.map((slot) => (
                 <tr key={slot.name}>
-                  <td><code>{slot.name || '(default)'}</code></td>
+                  <td>
+                    <code>{slot.name || '(default)'}</code>
+                  </td>
                   <td>{slot.description ?? 'No description provided.'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ) : <Empty>No slots are documented in the custom elements manifest.</Empty>}
+        ) : (
+          <Empty>No slots are documented in the custom elements manifest.</Empty>
+        )}
       </section>
 
       <section className={styles.section}>
@@ -207,19 +268,33 @@ export function ApiTable({ tag }: ApiTableProps) {
         {declaration.cssProperties?.length ? (
           <table>
             <thead>
-              <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+              <tr>
+                <th>Property</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
             </thead>
             <tbody>
               {declaration.cssProperties.map((prop) => (
                 <tr key={prop.name}>
-                  <td><code>{prop.name}</code></td>
-                  <td>{prop.default ? <code>{prop.default}</code> : <span className={styles.na}>Not specified</span>}</td>
+                  <td>
+                    <code>{prop.name}</code>
+                  </td>
+                  <td>
+                    {prop.default ? (
+                      <code>{prop.default}</code>
+                    ) : (
+                      <span className={styles.na}>Not specified</span>
+                    )}
+                  </td>
                   <td>{prop.description ?? 'No description provided.'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ) : <Empty>No CSS custom properties are documented in the custom elements manifest.</Empty>}
+        ) : (
+          <Empty>No CSS custom properties are documented in the custom elements manifest.</Empty>
+        )}
       </section>
 
       <section className={styles.section}>
@@ -227,18 +302,25 @@ export function ApiTable({ tag }: ApiTableProps) {
         {declaration.cssParts?.length ? (
           <table>
             <thead>
-              <tr><th>Part</th><th>Description</th></tr>
+              <tr>
+                <th>Part</th>
+                <th>Description</th>
+              </tr>
             </thead>
             <tbody>
               {declaration.cssParts.map((part) => (
                 <tr key={part.name}>
-                  <td><code>{part.name}</code></td>
+                  <td>
+                    <code>{part.name}</code>
+                  </td>
                   <td>{part.description ?? 'No description provided.'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ) : <Empty>No CSS parts are documented in the custom elements manifest.</Empty>}
+        ) : (
+          <Empty>No CSS parts are documented in the custom elements manifest.</Empty>
+        )}
       </section>
     </div>
   );

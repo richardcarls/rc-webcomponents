@@ -11,6 +11,11 @@ const packages = [
   ],
   ['rc-card', 'Vertical and horizontal structural card shell', '/components/rc-card'],
   [
+    'rc-carousel',
+    'Native scroll-snap carousel with optional navigation and pagination',
+    '/components/rc-carousel',
+  ],
+  [
     'rc-scroller',
     'Native scroll region with optional content and fullbleed layout',
     '/components/rc-scroller',
@@ -23,6 +28,11 @@ const packages = [
     '/components/rc-chip-group',
   ],
   ['rc-select', 'Select-only combobox backed by native <select>', '/components/rc-select'],
+  [
+    'rc-listbox',
+    'Listbox with light-DOM options and active-descendant navigation',
+    '/components/rc-listbox',
+  ],
   [
     'rc-combobox',
     'Editable combobox with filtering and optional allow-create behavior',
@@ -61,6 +71,11 @@ const packages = [
     'rc-range-slider',
     'Two-thumb range slider backed by native range inputs',
     '/components/rc-range-slider',
+  ],
+  [
+    'rc-progress',
+    'Native <progress> enhancement with formatted and indeterminate states',
+    '/components/rc-progress',
   ],
   [
     'rc-textarea',

@@ -2,9 +2,9 @@ import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './define';
-import type { RCMenu } from './rc-menu';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import './define.js';
+import type { RCMenu } from './rc-menu.js';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 function pressKey($target: HTMLElement, key: string): void {
   $target.dispatchEvent(

@@ -1,0 +1,7 @@
+.yarn/sdks/
+**/.docusaurus/
+**/build/
+**/dist/
+docs/static/rc-webcomponents-dist/
+docs/static/rc-theme-material/
+docs/static/rc-theme-substrate/

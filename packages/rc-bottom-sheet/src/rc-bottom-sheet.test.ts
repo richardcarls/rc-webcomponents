@@ -2,9 +2,9 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define';
-import type { RCBottomSheet } from './rc-bottom-sheet';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCBottomSheet } from './rc-bottom-sheet.js';
 
 function firePointerEvent(target: Element, type: string, init: PointerEventInit = {}) {
   target.dispatchEvent(

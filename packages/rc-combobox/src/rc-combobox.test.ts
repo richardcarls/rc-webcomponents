@@ -3,9 +3,9 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import './define';
-import type { RCCombobox } from './rc-combobox';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import './define.js';
+import type { RCCombobox } from './rc-combobox.js';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 function makeCombobox(opts?: { multiple?: boolean; allowCreate?: boolean; placeholder?: string }) {
   return html`
@@ -377,9 +377,7 @@ test('composition input events (mobile IME) still filter the listbox', async () 
   // (e.g. Gboard predictive text) — _handleInput doesn't special-case
   // isComposing, so composition and committed input are handled identically.
   $input.value = 'ba';
-  $input.dispatchEvent(
-    new InputEvent('input', { bubbles: true, isComposing: true, data: 'ba' }),
-  );
+  $input.dispatchEvent(new InputEvent('input', { bubbles: true, isComposing: true, data: 'ba' }));
   await $host.updateComplete;
 
   const $listbox = $host.renderRoot.querySelector('rc-listbox')!;

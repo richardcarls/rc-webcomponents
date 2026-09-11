@@ -3,8 +3,8 @@ import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 import { userEvent, type Locator } from 'vitest/browser';
 
-import './define';
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import './define.js';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
 async function focusTrigger(trigger: Element): Promise<void> {
   if (!(trigger instanceof HTMLElement)) {

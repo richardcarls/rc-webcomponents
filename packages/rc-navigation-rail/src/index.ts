@@ -1,1 +1,1 @@
-export * from './rc-navigation-rail';
+export * from './rc-navigation-rail.js';

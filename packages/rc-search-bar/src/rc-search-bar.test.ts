@@ -2,9 +2,9 @@ import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define';
-import type { RCSearchBar } from './rc-search-bar';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCSearchBar } from './rc-search-bar.js';
 
 // Native-input discovery defers reads to a microtask after slotchange; a
 // macrotask boundary guarantees discovery has completed.

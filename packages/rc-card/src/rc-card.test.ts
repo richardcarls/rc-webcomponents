@@ -2,9 +2,9 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define.ts';
-import type { RCCard } from './rc-card.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCCard } from './rc-card.js';
 
 async function flushCard(host: RCCard): Promise<void> {
   await host.updateComplete;

@@ -3,15 +3,19 @@
     border-width: 0;
     border-radius: var(--md-sys-shape-corner-full, 999px);
     box-shadow: 0 0 0 0 transparent;
-    transition: box-shadow 150ms ease, scale 150ms ease;
+    transition:
+      box-shadow 150ms ease,
+      scale 150ms ease;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-range-slider::part(thumb):hover {
-    box-shadow: 0 0 0 0.5rem color-mix(in srgb, var(--md-sys-color-primary, Highlight) 8%, transparent);
+    box-shadow: 0 0 0 0.5rem
+      color-mix(in srgb, var(--md-sys-color-primary, Highlight) 8%, transparent);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-range-slider::part(thumb):active {
-    box-shadow: 0 0 0 0.625rem color-mix(in srgb, var(--md-sys-color-primary, Highlight) 12%, transparent);
+    box-shadow: 0 0 0 0.625rem
+      color-mix(in srgb, var(--md-sys-color-primary, Highlight) 12%, transparent);
     scale: 0.9;
   }
 

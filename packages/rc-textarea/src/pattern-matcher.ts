@@ -1,4 +1,4 @@
-import type { TextPattern, MarkDecoration, LineDecoration } from './types.ts';
+import type { TextPattern, MarkDecoration, LineDecoration } from './types.js';
 
 export type { TextPattern };
 

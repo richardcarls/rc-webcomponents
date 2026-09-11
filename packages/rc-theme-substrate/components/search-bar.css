@@ -22,7 +22,9 @@
     outline-offset: var(--rc-focus-ring-offset, 2px);
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-search-bar > input[type='search']:focus-visible {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-search-bar
+    > input[type='search']:focus-visible {
     outline: none;
   }
 }

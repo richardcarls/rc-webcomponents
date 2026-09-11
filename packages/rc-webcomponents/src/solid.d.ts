@@ -55,6 +55,10 @@ export type RCScrollerLayout = 'none' | 'content';
 export type RCScrollerRef = HTMLElement & {
   axis: RCScrollerAxis;
   layout: RCScrollerLayout;
+  readonly atBlockStart: boolean;
+  readonly atBlockEnd: boolean;
+  readonly atInlineStart: boolean;
+  readonly atInlineEnd: boolean;
 };
 
 export type RCListVariant = 'standard' | 'segmented';
@@ -425,7 +429,7 @@ export type RCMenubarRef = HTMLElement & {
 /** Public API surface of `<rc-toolbar>`. */
 export type RCToolbarRef = HTMLElement & {
   label: string;
-  orientation: string;
+  orientation: 'horizontal' | 'vertical';
 };
 
 /** Public API surface of `<rc-splitter>`. */
@@ -573,6 +577,7 @@ export type RCRangeSliderRef = HTMLElement & {
   value: [number, number];
   defaultValue: [number, number] | undefined;
   disabled: boolean;
+  readonly: boolean;
   lowLabel: string;
   highLabel: string;
   lowValueText: string;
@@ -999,7 +1004,7 @@ declare module 'solid-js' {
 
       'rc-toolbar': JSX.HTMLAttributes<RCToolbarRef> & {
         label?: string;
-        orientation?: string;
+        orientation?: 'horizontal' | 'vertical';
       };
 
       'rc-slider': JSX.HTMLAttributes<RCSliderRef> & {
@@ -1041,6 +1046,7 @@ declare module 'solid-js' {
         'prop:value'?: [number, number] | undefined;
         'prop:defaultValue'?: [number, number] | undefined;
         disabled?: boolean | string;
+        readonly?: boolean | string;
         'low-label'?: string;
         'high-label'?: string;
         'low-value-text'?: string;

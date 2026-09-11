@@ -1,1 +1,1 @@
-export * from './rc-virtual-canvas';
+export * from './rc-virtual-canvas.js';

@@ -8,7 +8,7 @@ import {
   getDirectChild,
   getDirectChildren,
   warnMissingDirectChild,
-} from './nativeChild';
+} from './nativeChild.js';
 
 type HostElement = ReactiveControllerHost & HTMLElement;
 

@@ -3,7 +3,7 @@ import type {
   LineDecoratorPlugin,
   MarkDecoration,
   RCTextareaPlugin,
-} from './types.ts';
+} from './types.js';
 
 export interface LineDecoratorPluginOptions {
   /**

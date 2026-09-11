@@ -2,7 +2,7 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCProgress } from './rc-progress.js';
 

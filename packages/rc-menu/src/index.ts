@@ -1,1 +1,1 @@
-export * from './rc-menu';
+export * from './rc-menu.js';

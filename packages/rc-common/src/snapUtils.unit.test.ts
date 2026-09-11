@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { findExtremeSnapIndex, findNearestSnapIndex, findNextSnapIndex } from './snapUtils';
+import { findExtremeSnapIndex, findNearestSnapIndex, findNextSnapIndex } from './snapUtils.js';
 
 test('findNearestSnapIndex returns the closest finite point', () => {
   expect(findNearestSnapIndex([0, Number.NaN, 50, 100], 62)).toBe(2);

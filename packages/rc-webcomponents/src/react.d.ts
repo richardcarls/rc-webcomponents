@@ -301,6 +301,10 @@ export type RCScrollerLayout = 'none' | 'content';
 export type RCScrollerRef = HTMLElement & {
   axis: RCScrollerAxis;
   layout: RCScrollerLayout;
+  readonly atBlockStart: boolean;
+  readonly atBlockEnd: boolean;
+  readonly atInlineStart: boolean;
+  readonly atInlineEnd: boolean;
 };
 
 export type RCListVariant = 'standard' | 'segmented';
@@ -544,7 +548,7 @@ export type RCMenubarRef = HTMLElement & {
 /** Public API surface of `<rc-toolbar>`. */
 export type RCToolbarRef = HTMLElement & {
   label: string;
-  orientation: string;
+  orientation: 'horizontal' | 'vertical';
 };
 
 /** Public API surface of `<rc-splitter>`. */
@@ -598,6 +602,7 @@ export type RCRangeSliderRef = HTMLElement & {
   value: [number, number];
   defaultValue: [number, number] | undefined;
   disabled: boolean;
+  readonly: boolean;
   lowLabel: string;
   highLabel: string;
   lowValueText: string;
@@ -959,7 +964,7 @@ declare module 'react' {
 
       'rc-toolbar': React.DetailedHTMLProps<React.HTMLAttributes<RCToolbarRef>, RCToolbarRef> & {
         label?: string;
-        orientation?: string;
+        orientation?: 'horizontal' | 'vertical';
       };
 
       'rc-slider': React.DetailedHTMLProps<React.HTMLAttributes<RCSliderRef>, RCSliderRef> & {
@@ -995,6 +1000,7 @@ declare module 'react' {
         value?: [number, number];
         'default-value'?: [number, number];
         disabled?: boolean;
+        readonly?: boolean;
         'low-label'?: string;
         'high-label'?: string;
         'low-value-text'?: string;

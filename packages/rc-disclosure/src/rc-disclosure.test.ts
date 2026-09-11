@@ -2,8 +2,7 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCDisclosure } from './rc-disclosure.js';
 
@@ -69,6 +68,89 @@ test('rc-disclosure adopts native initial open and closed states', async () => {
   expect($openHost.hasAttribute('open')).toBe(true);
   expect($closedDetails.open).toBe(false);
   expect($closedHost.open).toBe(false);
+});
+
+test('rc-disclosure applies default-open in uncontrolled mode', async () => {
+  const screen = render(html`
+    <rc-disclosure data-testid="host" default-open>
+      <details>
+        <summary>Status</summary>
+        <p>Body</p>
+      </details>
+    </rc-disclosure>
+  `);
+  const $host = screen.getByTestId('host').element() as RCDisclosure;
+  const $details = $host.querySelector('details') as HTMLDetailsElement;
+
+  expect($host.defaultOpen).toBe(true);
+  expect($host.open).toBe(true);
+  expect($details.open).toBe(true);
+});
+
+test('rc-disclosure applies a defaultOpen property written before connection', () => {
+  const $host = document.createElement('rc-disclosure') as RCDisclosure;
+  const $details = document.createElement('details');
+
+  $details.open = true;
+  $details.innerHTML = '<summary>Status</summary><p>Body</p>';
+  $host.defaultOpen = false;
+  $host.append($details);
+  document.body.append($host);
+
+  expect($host.open).toBe(false);
+  expect($details.open).toBe(false);
+
+  $host.remove();
+});
+
+test('rc-disclosure keeps controlled state while reporting native toggle intent', async () => {
+  const toggleSpy = vi.fn();
+  const screen = render(html`
+    <rc-disclosure data-testid="host" @rc-disclosure-toggle=${toggleSpy as EventListener}>
+      <details>
+        <summary>Status</summary>
+        <p>Body</p>
+      </details>
+    </rc-disclosure>
+  `);
+  const $host = screen.getByTestId('host').element() as RCDisclosure;
+  const $details = $host.querySelector('details') as HTMLDetailsElement;
+  const summary = screen.getByText('Status');
+
+  $host.open = false;
+  await summary.click();
+
+  await vi.waitFor(() => expect(toggleSpy).toHaveBeenCalledOnce());
+  expect(toggleSpy.mock.calls[0]?.[0].detail).toEqual({ open: true });
+  expect($host.open).toBe(false);
+  expect($details.open).toBe(false);
+});
+
+test('rc-disclosure releases controlled state back to default-open silently', async () => {
+  const toggleSpy = vi.fn();
+  const screen = render(html`
+    <rc-disclosure
+      data-testid="host"
+      default-open
+      @rc-disclosure-toggle=${toggleSpy as EventListener}
+    >
+      <details>
+        <summary>Status</summary>
+        <p>Body</p>
+      </details>
+    </rc-disclosure>
+  `);
+  const $host = screen.getByTestId('host').element() as RCDisclosure;
+  const $details = $host.querySelector('details') as HTMLDetailsElement;
+
+  $host.open = false;
+  $host.open = undefined;
+
+  expect($host.open).toBe(true);
+  expect($details.open).toBe(true);
+
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(toggleSpy).not.toHaveBeenCalled();
 });
 
 test('rc-disclosure opens when the hash matches details or a descendant', async () => {

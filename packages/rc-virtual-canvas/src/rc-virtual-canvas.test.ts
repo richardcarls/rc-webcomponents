@@ -2,12 +2,13 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
-import './define';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
 import type {
   RCVirtualCanvas,
   RCVirtualCanvasPointerInit,
   RCVirtualCanvasRenderInit,
-} from './rc-virtual-canvas';
+} from './rc-virtual-canvas.js';
 
 function getScrollRoot($host: RCVirtualCanvas) {
   const $root = $host.shadowRoot?.querySelector<HTMLDivElement>('#root');
@@ -24,6 +25,23 @@ function lastRenderEvent(renderSpy: ReturnType<typeof vi.fn>) {
     | CustomEvent<RCVirtualCanvasRenderInit>
     | undefined;
 }
+
+test('RCVirtualCanvas warns in development when its direct canvas child is missing', async () => {
+  const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  const screen = render(html`
+    <rc-virtual-canvas data-testid="virtual-canvas"></rc-virtual-canvas>
+  `);
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
+
+  await $host.updateComplete;
+
+  expect(warnSpy).toHaveBeenCalledWith(
+    '[rc-virtual-canvas] No direct child <canvas> found. Place a native <canvas> inside <rc-virtual-canvas>.',
+    $host,
+  );
+
+  warnSpy.mockRestore();
+});
 
 test('RCVirtualCanvas dispatches rc-virtual-canvas-render with viewport and content detail', async () => {
   const renderSpy = vi.fn();
@@ -51,6 +69,7 @@ test('RCVirtualCanvas dispatches rc-virtual-canvas-render with viewport and cont
     width: 800,
     height: 600,
   });
+
   expect(event?.detail.viewRect.x).toBe(0);
   expect(event?.detail.viewRect.y).toBe(0);
   expect(event?.detail.reason).toBeTypeOf('string');
@@ -74,19 +93,17 @@ test('RCVirtualCanvas maps content-width and content-height attributes to their 
 
 test('RCVirtualCanvas falls back when device-pixel-content-box observation is unsupported', async () => {
   const observe = ResizeObserver.prototype.observe;
-  const observeSpy = vi
-    .spyOn(ResizeObserver.prototype, 'observe')
-    .mockImplementation(function (
-      this: ResizeObserver,
-      target: Element,
-      options?: ResizeObserverOptions,
-    ) {
-      if (options?.box === 'device-pixel-content-box') {
-        throw new TypeError('Unsupported box option');
-      }
+  const observeSpy = vi.spyOn(ResizeObserver.prototype, 'observe').mockImplementation(function (
+    this: ResizeObserver,
+    target: Element,
+    options?: ResizeObserverOptions,
+  ) {
+    if (options?.box === 'device-pixel-content-box') {
+      throw new TypeError('Unsupported box option');
+    }
 
-      return observe.call(this, target, options);
-    });
+    return observe.call(this, target, options);
+  });
   const renderSpy = vi.fn();
 
   try {
@@ -103,6 +120,7 @@ test('RCVirtualCanvas falls back when device-pixel-content-box observation is un
     expect(observeSpy).toHaveBeenCalledWith(expect.any(HTMLCanvasElement), {
       box: 'device-pixel-content-box',
     });
+
     expect(observeSpy).toHaveBeenCalledWith(expect.any(HTMLCanvasElement));
   } finally {
     observeSpy.mockRestore();
@@ -243,6 +261,7 @@ test('RCVirtualCanvas dispatches pointer events with content coordinates and mod
 
   const $root = getScrollRoot($host);
   const rect = $root.getBoundingClientRect();
+
   $root.dispatchEvent(
     new PointerEvent('pointerdown', {
       bubbles: true,
@@ -281,7 +300,9 @@ test('RCVirtualCanvas pointer event cancellation prevents the source contextmenu
       data-testid="virtual-canvas"
       render-mode="viewport-change"
       @rc-virtual-canvas-pointer=${(event: CustomEvent<RCVirtualCanvasPointerInit>) => {
-        if (event.detail.type === 'contextmenu') event.preventDefault();
+        if (event.detail.type === 'contextmenu') {
+          event.preventDefault();
+        }
       }}
     >
       <canvas style="display: block; width: 100px; height: 100px;"></canvas>
@@ -569,4 +590,17 @@ test('RCVirtualCanvas cancels animation and resize observation on disconnect', a
   });
 
   cancelAnimationFrameSpy.mockRestore();
+});
+
+test('RCVirtualCanvas has no automated accessibility violations', async () => {
+  const screen = render(html`
+    <rc-virtual-canvas data-testid="virtual-canvas" content-width="320" content-height="240">
+      <canvas role="img" aria-label="Virtual drawing surface">Virtual drawing surface</canvas>
+    </rc-virtual-canvas>
+  `);
+
+  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
+
+  await $host.updateComplete;
+  await expectNoA11yViolations($host);
 });

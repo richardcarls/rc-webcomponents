@@ -48,6 +48,17 @@ import '@rcarls/rc-disclosure/define';
 
 <DisclosureDemo />
 
+## Open state
+
+Use `default-open` when the disclosure should manage its own state after initialization. Use
+the `open` property or attribute when the host owns the state; user interaction then emits
+`rc-disclosure-toggle` with the requested state, and the rendered disclosure continues to
+follow the controlled value. Assign `undefined` to the JavaScript `open` property to release
+control and return to the current uncontrolled/default state.
+
+The required direct child `<details>` remains connected and owns the native disclosure
+interaction, keyboard behavior, and accessibility semantics.
+
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.

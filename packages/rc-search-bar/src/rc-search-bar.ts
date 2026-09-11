@@ -4,7 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 
 import { NativeChildController, keyInteraction, warnMissingDirectChild } from '@rcarls/rc-common';
 
-import searchBarStyles from './rc-search-bar.styles';
+import searchBarStyles from './rc-search-bar.styles.js';
 
 const LIGHT_DOM_CSS = `
 rc-search-bar > input[type='search'] {

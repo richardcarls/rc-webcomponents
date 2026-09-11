@@ -4,9 +4,7 @@ import { expect } from 'vitest';
 
 function formatViolations(results: AxeResults): string[] {
   return results.violations.map((violation) => {
-    const targets = violation.nodes
-      .flatMap((node) => node.target)
-      .join(', ');
+    const targets = violation.nodes.flatMap((node) => node.target).join(', ');
 
     return `${violation.id}: ${violation.help} (${targets})`;
   });

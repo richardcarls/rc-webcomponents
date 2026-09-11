@@ -2,10 +2,10 @@ import { html } from 'lit';
 import { test, expect } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
-import './define.ts';
-import type { RCFab } from './rc-fab.ts';
+import './define.js';
+import type { RCFab } from './rc-fab.js';
 
 test('native button remains connected with author attributes intact', async () => {
   const screen = render(html`

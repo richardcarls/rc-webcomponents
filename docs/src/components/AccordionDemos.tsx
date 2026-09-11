@@ -14,14 +14,18 @@ export function SingleAccordionDemo() {
         <details>
           <summary>Billing contacts</summary>
           <div>
-            <p>Add a finance contact when invoices should go somewhere other than the account owner.</p>
+            <p>
+              Add a finance contact when invoices should go somewhere other than the account owner.
+            </p>
             <p>Receipts and renewal reminders use the same contact list.</p>
           </div>
         </details>
         <details>
           <summary>Notification preferences</summary>
           <div>
-            <p>Weekly summaries are useful for quiet teams; incident alerts should stay immediate.</p>
+            <p>
+              Weekly summaries are useful for quiet teams; incident alerts should stay immediate.
+            </p>
             <p>Arrow keys move between summaries after upgrade.</p>
           </div>
         </details>

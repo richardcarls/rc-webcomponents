@@ -7,7 +7,7 @@ import {
   ClickDelegateController,
   delegateClickTo,
   isEventFromInteractiveDescendant,
-} from './clickDelegate';
+} from './clickDelegate.js';
 
 type HostElement = ReactiveControllerHost & HTMLElement;
 

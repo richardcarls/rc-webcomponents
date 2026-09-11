@@ -63,29 +63,31 @@ item.
 
 ### CSS custom properties
 
-| Property                                      | Default                                          | Description                                                     |
-| --------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------- |
-| `--rc-menu-button-trigger-block-size`         | `var(--rc-control-block-size)`                   | Minimum block size of the trigger                               |
-| `--rc-menu-button-trigger-padding-block`      | `var(--rc-control-padding-block)`                | Trigger block-axis padding                                      |
-| `--rc-menu-button-trigger-padding-inline`     | `var(--rc-control-padding-inline)`               | Trigger inline-axis padding                                     |
-| `--rc-menu-button-trigger-gap`                | `var(--rc-item-gap)`                             | Gap between flex children inside the trigger                    |
-| `--rc-menu-button-trigger-border`             | `var(--rc-border)`                               | Trigger border                                                  |
-| `--rc-menu-button-trigger-radius`             | `var(--rc-control-radius)`                       | Trigger border radius                                           |
-| `--rc-menu-button-trigger-background`         | `var(--rc-button-bg)`                            | Trigger background                                              |
-| `--rc-menu-button-trigger-color`              | `var(--rc-button-text)`                          | Trigger text color                                              |
-| `--rc-menu-button-trigger-transition`         | `none`                                           | Trigger state transition                                        |
-| `--rc-menu-button-trigger-hover-background`   | `color-mix(in srgb, Highlight 8%, transparent)`  | Trigger hover background                                        |
-| `--rc-menu-button-trigger-hover-color`        | `inherit`                                        | Trigger hover text color                                        |
-| `--rc-menu-button-trigger-hover-border-color` | `currentColor`                                   | Trigger hover border color                                      |
-| `--rc-menu-button-trigger-open-background`    | `color-mix(in srgb, Highlight 12%, transparent)` | Trigger background while the menu is open                       |
-| `--rc-menu-button-trigger-open-color`         | `inherit`                                        | Trigger text color while the menu is open                       |
-| `--rc-menu-button-trigger-open-border-color`  | `currentColor`                                   | Trigger border color while the menu is open                     |
-| `--rc-menu-button-indicator-size`             | `1em`                                            | Inline and block size reserved for the optional indicator       |
-| `--rc-menu-button-indicator-color`            | `currentColor`                                   | Color of the optional indicator                                 |
-| `--rc-menu-button-indicator-inset`            | Trigger inline padding                           | Indicator distance from the trigger's inline end                |
-| `--rc-menu-button-icon-size`                  | Trigger block size                               | Visible inline size of an `icon-only` trigger                   |
-| `--rc-menu-button-touch-target-block-size`    | `3rem`                                           | Minimum block size of an `icon-only` trigger's activation area  |
-| `--rc-menu-button-touch-target-inline-size`   | Activation-area block size                       | Minimum inline size of an `icon-only` trigger's activation area |
+| Property                                             | Default                                          | Description                                                     |
+| ---------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------- |
+| `--rc-menu-button-trigger-block-size`                | `var(--rc-control-block-size)`                   | Minimum block size of the trigger                               |
+| `--rc-menu-button-trigger-padding-block`             | `var(--rc-control-padding-block)`                | Trigger block-axis padding                                      |
+| `--rc-menu-button-trigger-padding-inline`            | `var(--rc-control-padding-inline)`               | Trigger inline-axis padding                                     |
+| `--rc-menu-button-trigger-gap`                       | `var(--rc-item-gap)`                             | Gap between flex children inside the trigger                    |
+| `--rc-menu-button-trigger-border`                    | `var(--rc-border)`                               | Trigger border                                                  |
+| `--rc-menu-button-trigger-radius`                    | `var(--rc-control-radius)`                       | Trigger border radius                                           |
+| `--rc-menu-button-trigger-background`                | `var(--rc-button-bg)`                            | Trigger background                                              |
+| `--rc-menu-button-trigger-color`                     | `var(--rc-button-text)`                          | Trigger text color                                              |
+| `--rc-menu-button-trigger-transition`                | `none`                                           | Trigger state transition                                        |
+| `--rc-menu-button-trigger-hover-background`          | `color-mix(in srgb, Highlight 8%, transparent)`  | Trigger hover background                                        |
+| `--rc-menu-button-trigger-hover-color`               | `inherit`                                        | Trigger hover text color                                        |
+| `--rc-menu-button-trigger-hover-border-color`        | `currentColor`                                   | Trigger hover border color                                      |
+| `--rc-menu-button-trigger-open-background`           | `color-mix(in srgb, Highlight 12%, transparent)` | Trigger background while the menu is open                       |
+| `--rc-menu-button-trigger-open-color`                | `inherit`                                        | Trigger text color while the menu is open                       |
+| `--rc-menu-button-trigger-open-border-color`         | `currentColor`                                   | Trigger border color while the menu is open                     |
+| `--rc-menu-button-indicator-size`                    | `1em`                                            | Inline and block size reserved for the optional indicator       |
+| `--rc-menu-button-indicator-color`                   | `currentColor`                                   | Color of the optional indicator                                 |
+| `--rc-menu-button-indicator-inset`                   | Trigger inline padding                           | Indicator distance from the trigger's inline end                |
+| `--rc-menu-button-icon-size`                         | Trigger block size                               | Visible inline size of an `icon-only` trigger                   |
+| `--rc-menu-button-touch-target-block-size`           | `3rem`                                           | Minimum block size of an `icon-only` trigger's activation area  |
+| `--rc-menu-button-touch-target-inline-size`          | Activation-area block size                       | Minimum inline size of an `icon-only` trigger's activation area |
+| `--rc-menu-button-touch-target-overlap-inline-start` | `0px`                                            | Allows touch-target inflation to overlap the leading neighbor   |
+| `--rc-menu-button-touch-target-overlap-inline-end`   | `0px`                                            | Allows touch-target inflation to overlap the trailing neighbor  |
 
 ### CSS parts
 

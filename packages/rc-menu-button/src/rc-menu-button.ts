@@ -10,7 +10,7 @@ import {
 } from '@rcarls/rc-common';
 import type { RCMenu } from '@rcarls/rc-menu';
 
-import menuButtonStyles from './rc-menu-button.styles';
+import menuButtonStyles from './rc-menu-button.styles.js';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -157,7 +157,8 @@ export class RCMenuButton extends LitElement {
   }
 
   private _defaultOpen = false;
-  private _open = false;
+  private _open: boolean | undefined;
+  private _uncontrolledOpen: boolean | undefined;
   private _openInitialized = false;
 
   /**
@@ -168,20 +169,17 @@ export class RCMenuButton extends LitElement {
    */
   @property({ type: Boolean, reflect: true })
   get open(): boolean {
-    return this._open;
+    return this._open ?? this._uncontrolledOpen ?? this._defaultOpen;
   }
 
   /** Applies open state in controlled mode without dispatching an event. */
   set open(value: boolean | undefined) {
-    const oldValue = this._open;
+    const oldValue = this.open;
 
-    if (value === undefined) {
-      return;
-    }
-
+    this._open = value;
     this._openInitialized = true;
-    this._setOpen(value, false);
     this.requestUpdate('open', oldValue);
+    this._syncTriggerAria();
   }
 
   /**
@@ -201,8 +199,12 @@ export class RCMenuButton extends LitElement {
 
     this._defaultOpen = value;
 
-    if (value && !this._openInitialized) {
-      this._setOpen(true, false);
+    if (
+      !this._openInitialized &&
+      this._open === undefined &&
+      this._uncontrolledOpen === undefined
+    ) {
+      this.requestUpdate('open', oldValue);
     }
 
     this.requestUpdate('defaultOpen', oldValue);
@@ -309,9 +311,7 @@ export class RCMenuButton extends LitElement {
 
     document.addEventListener('click', this._boundHandleDocumentClick, true);
 
-    if (this.defaultOpen) {
-      this._setOpen(true, false);
-    }
+    this.requestUpdate('open');
   }
 
   /** Disconnects the tabindex observer and removes the document-level click listener. */
@@ -337,6 +337,10 @@ export class RCMenuButton extends LitElement {
     this._setOpen(true, true);
 
     this.updateComplete.then(() => {
+      if (!this.open) {
+        return;
+      }
+
       const $menu = this._$menu?.deref();
 
       focusTarget === 'last' ? $menu?.focusLast() : $menu?.focusFirst();
@@ -355,7 +359,7 @@ export class RCMenuButton extends LitElement {
 
     this._setOpen(false, true);
 
-    if (returnFocus) {
+    if (returnFocus && !this.open) {
       const $trigger = this._$trigger?.deref();
 
       $trigger?.focus();
@@ -371,13 +375,13 @@ export class RCMenuButton extends LitElement {
     }
   }
 
-  /** Dispatches the `rc-menu-button-toggle` bubbling composed event with the current open state. */
-  protected _dispatchToggle() {
+  /** Dispatches the `rc-menu-button-toggle` bubbling composed event with the requested open state. */
+  protected _dispatchToggle(open = this.open) {
     this.dispatchEvent(
       new CustomEvent<RCMenuButtonToggleEvent>('rc-menu-button-toggle', {
         bubbles: true,
         composed: true,
-        detail: { open: this.open },
+        detail: { open },
       }),
     );
   }
@@ -540,19 +544,21 @@ export class RCMenuButton extends LitElement {
   }
 
   protected _setOpen(open: boolean, dispatch: boolean): void {
-    if (this._open === open) {
+    const oldValue = this.open;
+
+    if (oldValue === open) {
       return;
     }
 
-    const oldValue = this._open;
-
-    this._open = open;
+    if (this._open === undefined) {
+      this._uncontrolledOpen = open;
+    }
 
     this.requestUpdate('open', oldValue);
     this._syncTriggerAria();
 
     if (dispatch) {
-      this._dispatchToggle();
+      this._dispatchToggle(open);
     }
   }
 

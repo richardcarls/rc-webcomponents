@@ -1,1 +1,1 @@
-export * from './rc-menu-button';
+export * from './rc-menu-button.js';

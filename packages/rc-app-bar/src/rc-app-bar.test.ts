@@ -2,9 +2,9 @@ import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { expectNoA11yViolations } from '../../../test-helpers/a11y.ts';
-import './define';
-import type { RCAppBar } from './rc-app-bar';
+import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import './define.js';
+import type { RCAppBar } from './rc-app-bar.js';
 
 const supportsCustomStates = 'states' in ElementInternals.prototype;
 

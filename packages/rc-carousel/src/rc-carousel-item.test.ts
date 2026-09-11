@@ -2,9 +2,9 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import './define.ts';
-import type { RCCarousel } from './rc-carousel.ts';
-import type { RCCarouselItem } from './rc-carousel-item.ts';
+import './define.js';
+import type { RCCarousel } from './rc-carousel.js';
+import type { RCCarouselItem } from './rc-carousel-item.js';
 
 async function settle(carousel: RCCarousel): Promise<void> {
   await carousel.updateComplete;
