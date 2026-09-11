@@ -57,6 +57,7 @@ test('assist mode exposes one toolbar tab stop with arrow-key navigation', async
 });
 
 test('filter mode preserves native radio behavior and synchronizes chip selection', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   const screen = render(html`
     <fieldset data-testid="fieldset">
       <legend>Recipe scope</legend>
@@ -79,6 +80,8 @@ test('filter mode preserves native radio behavior and synchronizes chip selectio
   const radios = host.querySelectorAll<HTMLInputElement>('input[type="radio"]');
 
   await vi.waitFor(() => expect(chips[0]).toHaveAttribute('selected'));
+  expect(warn).not.toHaveBeenCalled();
+
   expect(fieldset.querySelector('legend')?.textContent).toBe('Recipe scope');
   expect(radios[0].checked).toBe(true);
   expect(radios[1].checked).toBe(false);
@@ -92,6 +95,9 @@ test('filter mode preserves native radio behavior and synchronizes chip selectio
 
   expect(radios[0].checked).toBe(false);
   expect(radios[1].checked).toBe(true);
+  expect(warn).not.toHaveBeenCalled();
+
+  warn.mockRestore();
 });
 
 test('restores authored chip variants when coordination ends', async () => {

@@ -234,6 +234,7 @@ export class RCChip extends LitElement {
   private _disabledOwned = false;
   private _pressedOwned = false;
   private _slotMicrotaskQueued = false;
+  private _lastChildWarning: string | null = null;
 
   /** Chip variant. */
   @property({ type: String, reflect: true })
@@ -310,7 +311,7 @@ export class RCChip extends LitElement {
   }
 
   protected override firstUpdated(): void {
-    this._syncSlottedButton();
+    this._syncSlottedButton(true);
   }
 
   protected override updated(changed: PropertyValues<this>): void {
@@ -362,7 +363,7 @@ export class RCChip extends LitElement {
     });
   }
 
-  private _syncSlottedButton(): void {
+  private _syncSlottedButton(deferInitialSelectionUpdate = false): void {
     const $nextButton = this.querySelector<HTMLButtonElement>(':scope > button');
     const $anchor = this.querySelector<HTMLAnchorElement>(':scope > a[href]');
     const $label = this.querySelector<HTMLLabelElement>(':scope > label');
@@ -371,18 +372,22 @@ export class RCChip extends LitElement {
         ':scope > input:is([type="checkbox"], [type="radio"])',
       ) ?? null;
 
-    if (!$nextButton && !$anchor && !$nextInput && !this.readonly && import.meta.env.DEV) {
-      console.warn(
-        '[rc-chip] No supported direct child found. Place a native <button>, <a href>, or a <label> containing a direct checkbox/radio inside <rc-chip>, or use readonly with a [data-rc-chip-label] child.',
-        this,
-      );
-    }
+    if (import.meta.env.DEV) {
+      let childWarning: string | null = null;
 
-    if ($label && !$nextInput && !this.readonly && import.meta.env.DEV) {
-      console.warn(
-        '[rc-chip] A direct child <label> must contain a direct <input type="checkbox"> or <input type="radio">.',
-        $label,
-      );
+      if (!$nextButton && !$anchor && !$label && !this.readonly) {
+        childWarning =
+          '[rc-chip] No supported direct child found. Place a native <button>, <a href>, or a <label> containing a direct checkbox/radio inside <rc-chip>, or use readonly with a [data-rc-chip-label] child.';
+      } else if ($label && !$nextInput && !this.readonly) {
+        childWarning =
+          '[rc-chip] A direct child <label> must contain a direct <input type="checkbox"> or <input type="radio">.';
+      }
+
+      if (childWarning && childWarning !== this._lastChildWarning) {
+        console.warn(childWarning);
+      }
+
+      this._lastChildWarning = childWarning;
     }
 
     if ($nextButton === this._$button && $nextInput === this._$input) {
@@ -414,7 +419,12 @@ export class RCChip extends LitElement {
 
         this._uncontrolledSelected = $nextInput.checked;
         this._selectedInitialized = true;
-        this.requestUpdate('selected', oldValue);
+
+        if (deferInitialSelectionUpdate) {
+          queueMicrotask(() => this.requestUpdate('selected', oldValue));
+        } else {
+          this.requestUpdate('selected', oldValue);
+        }
       } else {
         this._syncCheckedState();
       }

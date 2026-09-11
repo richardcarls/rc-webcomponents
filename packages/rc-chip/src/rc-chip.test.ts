@@ -53,6 +53,24 @@ test('accepts a direct native anchor child without a development warning', async
   warn.mockRestore();
 });
 
+test('warns once and without dumping an unsupported child', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  const screen = render(html`
+    <rc-chip data-testid="host">
+      <span>Quick</span>
+    </rc-chip>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCChip;
+
+  await flushChip($host);
+
+  expect(warn).toHaveBeenCalledExactlyOnceWith(
+    '[rc-chip] No supported direct child found. Place a native <button>, <a href>, or a <label> containing a direct checkbox/radio inside <rc-chip>, or use readonly with a [data-rc-chip-label] child.',
+  );
+
+  warn.mockRestore();
+});
+
 test('uses its shape-clipped state layer for focus feedback', async () => {
   const screen = render(html`
     <rc-chip data-testid="host" variant="filter" style="--rc-chip-radius: 999px">
@@ -113,6 +131,7 @@ test('menu-backed filter chips leave selected state to the menu owner', async ()
 });
 
 test('native-backed filter chips preserve checkbox state and form values', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   const listener = vi.fn();
   const screen = render(html`
     <form data-testid="form">
@@ -144,6 +163,10 @@ test('native-backed filter chips preserve checkbox state and form values', async
   expect(listener).toHaveBeenLastCalledWith(
     expect.objectContaining({ detail: { selected: false } }),
   );
+
+  expect(warn).not.toHaveBeenCalled();
+
+  warn.mockRestore();
 });
 
 test('controlled native-backed filters report user intent without changing host state', async () => {

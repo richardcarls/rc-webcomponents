@@ -78,9 +78,27 @@ test('preserves an author-provided label instead of the fallback', async () => {
   expect(carousel.getAttribute('aria-label')).toBe('Photos of Beef Stew');
 });
 
+test('warns concisely when its accessible name is missing', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  const screen = render(html`
+    <rc-carousel data-testid="carousel">
+      <rc-carousel-item>One</rc-carousel-item>
+    </rc-carousel>
+  `);
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+
+  await settle(carousel);
+
+  expect(warn).toHaveBeenCalledExactlyOnceWith(
+    "[rc-carousel] No aria-label/aria-labelledby set. Provide one describing this carousel's content.",
+  );
+
+  warn.mockRestore();
+});
+
 test('defaultActiveIndex seeds uncontrolled activeIndex, and stops applying once set', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel" default-active-index="1">
+    <rc-carousel data-testid="carousel" aria-label="Test carousel" default-active-index="1">
       <rc-carousel-item>One</rc-carousel-item>
       <rc-carousel-item>Two</rc-carousel-item>
       <rc-carousel-item>Three</rc-carousel-item>
@@ -172,7 +190,7 @@ test('has no accessibility violations at rest', async () => {
 
 test('navigation buttons step with a button trigger and use aria-disabled (not disabled) at the ends', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel" navigation>
+    <rc-carousel data-testid="carousel" aria-label="Test carousel" navigation>
       <rc-carousel-item>One</rc-carousel-item>
       <rc-carousel-item>Two</rc-carousel-item>
     </rc-carousel>
@@ -210,7 +228,7 @@ test('navigation buttons step with a button trigger and use aria-disabled (not d
 
 test('loop wraps navigation seamlessly instead of clamping at the ends', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel" navigation loop>
+    <rc-carousel data-testid="carousel" aria-label="Test carousel" navigation loop>
       <rc-carousel-item>One</rc-carousel-item>
       <rc-carousel-item>Two</rc-carousel-item>
       <rc-carousel-item>Three</rc-carousel-item>
@@ -241,7 +259,7 @@ test('loop wraps navigation seamlessly instead of clamping at the ends', async (
 
 test('loop clones the lead/trail slides but excludes them from the real item count and position labels', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel" loop>
+    <rc-carousel data-testid="carousel" aria-label="Test carousel" loop>
       <rc-carousel-item data-testid="item-0">One</rc-carousel-item>
       <rc-carousel-item data-testid="item-1">Two</rc-carousel-item>
     </rc-carousel>
@@ -271,7 +289,7 @@ test('loop clones the lead/trail slides but excludes them from the real item cou
 
 test('pagination renders one button per real slide (not clones), reflecting the active slide', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel" pagination loop>
+    <rc-carousel data-testid="carousel" aria-label="Test carousel" pagination loop>
       <rc-carousel-item>One</rc-carousel-item>
       <rc-carousel-item>Two</rc-carousel-item>
       <rc-carousel-item>Three</rc-carousel-item>
@@ -302,7 +320,7 @@ test('pagination renders one button per real slide (not clones), reflecting the 
 });
 
 test('does not schedule a reactive update from firstUpdated', async () => {
-  const warn = vi.spyOn(console, 'warn');
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   const screen = render(html`
     <rc-carousel data-testid="carousel" aria-label="Featured recipes" pagination>
       <rc-carousel-item>One</rc-carousel-item>
@@ -327,7 +345,11 @@ test('does not schedule a reactive update from firstUpdated', async () => {
 
 test('mouse-dragging is off by default, so a pointer drag on the track does not scroll it', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel" style="inline-size: 20rem; block-size: 10rem">
+    <rc-carousel
+      data-testid="carousel"
+      aria-label="Test carousel"
+      style="inline-size: 20rem; block-size: 10rem"
+    >
       <rc-carousel-item>One</rc-carousel-item>
       <rc-carousel-item>Two</rc-carousel-item>
     </rc-carousel>
@@ -352,6 +374,7 @@ test('mouse-dragging drives scrollLeft during a drag and settles to the dragged-
   const screen = render(html`
     <rc-carousel
       data-testid="carousel"
+      aria-label="Test carousel"
       mouse-dragging
       style="inline-size: 20rem; block-size: 10rem"
     >
@@ -397,6 +420,7 @@ test('a drag across interactive slide content suppresses the trailing click, but
   const screen = render(html`
     <rc-carousel
       data-testid="carousel"
+      aria-label="Test carousel"
       mouse-dragging
       style="inline-size: 20rem; block-size: 10rem"
     >
@@ -472,7 +496,12 @@ test('arrow keys navigate with a keyboard trigger, and Home/End jump to the extr
 
 test('aria-busy reflects an in-flight settle and clears once it commits', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel" navigation style="inline-size: 20rem; block-size: 10rem">
+    <rc-carousel
+      data-testid="carousel"
+      aria-label="Test carousel"
+      navigation
+      style="inline-size: 20rem; block-size: 10rem"
+    >
       <rc-carousel-item>One</rc-carousel-item>
       <rc-carousel-item>Two</rc-carousel-item>
     </rc-carousel>
@@ -508,6 +537,7 @@ test('consumer slide sizing composes with loop clones', async () => {
   const screen = render(html`
     <rc-carousel
       data-testid="carousel"
+      aria-label="Test carousel"
       loop
       style="inline-size: 20rem; block-size: 10rem; --rc-carousel-slide-size: min(75%, 300px)"
     >
@@ -545,7 +575,11 @@ test('inherits slide sizing from a consumer container query', async () => {
       }
     </style>
     <div class="carousel-region">
-      <rc-carousel data-testid="carousel" style="inline-size: 20rem; block-size: 10rem">
+      <rc-carousel
+        data-testid="carousel"
+        aria-label="Test carousel"
+        style="inline-size: 20rem; block-size: 10rem"
+      >
         <rc-carousel-item>One</rc-carousel-item>
         <rc-carousel-item>Two</rc-carousel-item>
       </rc-carousel>
@@ -574,6 +608,7 @@ test('has no unexpected overflow at rest or with navigation/pagination interacti
   const screen = render(html`
     <rc-carousel
       data-testid="carousel"
+      aria-label="Test carousel"
       navigation
       pagination
       loop
@@ -602,7 +637,7 @@ test('has no unexpected overflow at rest or with navigation/pagination interacti
 
 test('has no accessibility violations with navigation and pagination active mid-interaction', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel" navigation pagination loop>
+    <rc-carousel data-testid="carousel" aria-label="Test carousel" navigation pagination loop>
       <rc-carousel-item>One</rc-carousel-item>
       <rc-carousel-item>Two</rc-carousel-item>
       <rc-carousel-item>Three</rc-carousel-item>

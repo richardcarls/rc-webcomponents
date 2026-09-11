@@ -80,6 +80,7 @@ test('rc-dialog dispatches rc-dialog-close with returnValue detail', async () =>
     <rc-dialog data-testid="host" @rc-dialog-close=${closeSpy}>
       <dialog aria-labelledby="t">
         <span id="t">Title</span>
+        <button type="button">Close</button>
       </dialog>
     </rc-dialog>
   `);
@@ -142,6 +143,7 @@ test('rc-dialog-request-close fires and is cancelable', async () => {
     >
       <dialog aria-labelledby="t">
         <span id="t">Title</span>
+        <button type="button">Close</button>
       </dialog>
     </rc-dialog>
   `);

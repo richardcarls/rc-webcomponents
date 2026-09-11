@@ -4,6 +4,7 @@ import { createBrowserTestConfig } from './vitest.browser.config';
 
 export default defineConfig({
   test: {
+    reporters: [['default', { summary: true }]],
     projects: [
       {
         test: {

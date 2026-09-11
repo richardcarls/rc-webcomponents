@@ -293,7 +293,6 @@ export class RCCarousel extends LitElement {
       if (!this.hasAttribute('aria-label') && !this.hasAttribute('aria-labelledby')) {
         console.warn(
           "[rc-carousel] No aria-label/aria-labelledby set. Provide one describing this carousel's content.",
-          this,
         );
       }
     }

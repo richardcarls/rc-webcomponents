@@ -38,7 +38,7 @@ test('reports its own N-of-M position as a default aria-label', async () => {
 
 test('preserves an authored aria-label instead of the computed position', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel">
+    <rc-carousel data-testid="carousel" aria-label="Test carousel">
       <rc-carousel-item data-testid="item-0" aria-label="Beef Stew, plated">One</rc-carousel-item>
     </rc-carousel>
   `);
@@ -53,7 +53,11 @@ test('preserves an authored aria-label instead of the computed position', async 
 
 test('hides off-screen slides from assistive technology and the tab sequence', async () => {
   const screen = render(html`
-    <rc-carousel data-testid="carousel" style="inline-size: 20rem; block-size: 10rem">
+    <rc-carousel
+      data-testid="carousel"
+      aria-label="Test carousel"
+      style="inline-size: 20rem; block-size: 10rem"
+    >
       <rc-carousel-item data-testid="item-0">
         <button type="button">One</button>
       </rc-carousel-item>

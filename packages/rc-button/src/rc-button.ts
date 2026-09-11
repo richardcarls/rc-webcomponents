@@ -271,7 +271,7 @@ export class RCButton extends LitElement {
   }
 
   protected override firstUpdated(): void {
-    this._syncSlottedButton();
+    this._syncSlottedButton(true);
   }
 
   protected override updated(changed: PropertyValues<this>): void {
@@ -326,7 +326,7 @@ export class RCButton extends LitElement {
     });
   }
 
-  protected _syncSlottedButton(): void {
+  protected _syncSlottedButton(deferClassification = false): void {
     const $nextButton =
       this._$slot
         ?.assignedElements({ flatten: true })
@@ -389,7 +389,16 @@ export class RCButton extends LitElement {
       });
     }
 
-    this._classifyButton();
+    if (deferClassification) {
+      queueMicrotask(() => {
+        if (this.isConnected && this._$button === $nextButton) {
+          this._classifyButton();
+        }
+      });
+    } else {
+      this._classifyButton();
+    }
+
     this._syncNativeState();
     this._syncPressedState();
   }

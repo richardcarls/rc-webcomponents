@@ -30,7 +30,13 @@ function clearButton($host: RCSearchBar): HTMLButtonElement {
 test('progressive enhancement: the native input keeps its author attributes', async () => {
   const screen = render(html`
     <rc-search-bar data-testid="host">
-      <input type="search" name="q" id="site-search" placeholder="Author placeholder" />
+      <input
+        type="search"
+        name="q"
+        id="site-search"
+        aria-label="Site search"
+        placeholder="Author placeholder"
+      />
     </rc-search-bar>
   `);
 
@@ -315,7 +321,8 @@ test('the clear button tracks the disabled state of the input', async () => {
   await vi.waitFor(() => expect(clearButton($host).disabled).toBe(false));
 });
 
-test('no slotted search input degrades silently with no chrome', async () => {
+test('no slotted search input warns and degrades with no chrome', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   const screen = render(html`<rc-search-bar data-testid="host"></rc-search-bar>`);
 
   const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
@@ -327,7 +334,14 @@ test('no slotted search input degrades silently with no chrome', async () => {
   expect(clearButton($host).hidden).toBe(true);
   expect(getComputedStyle($host.shadowRoot!.querySelector('#leading')!).display).toBe('none');
 
+  expect(warn).toHaveBeenCalledWith(
+    '[rc-search-bar] No direct child <input type="search"> found. Place a native search input inside <rc-search-bar>.',
+    $host,
+  );
+
   await expectNoA11yViolations($host);
+
+  warn.mockRestore();
 });
 
 test('has no automated accessibility violations with a live clear button', async () => {

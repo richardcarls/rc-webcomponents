@@ -53,6 +53,12 @@ declare global {
 export class RCScroller extends LitElement {
   static override styles = scrollerStyles;
 
+  // Boundary state can only be measured after render, so the reflected edge
+  // properties intentionally schedule one follow-up update.
+  static override enabledWarnings = (LitElement.enabledWarnings ?? []).filter(
+    (warning) => warning !== 'change-in-update',
+  );
+
   /** Scroll axis. */
   @property({ reflect: true })
   axis: RCScrollerAxis = 'block';
