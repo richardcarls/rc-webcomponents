@@ -5,7 +5,6 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-
 import { c as createTar } from 'tar';
 
 import {
@@ -16,6 +15,7 @@ import {
   inspectPackedManifest,
   interpretRegistryResult,
   normalizeRegistryMetadata,
+  parseProvenanceExceptions,
   validatePackedManifest,
 } from './publish-workspaces.mjs';
 import {
@@ -85,10 +85,12 @@ test('discovers only the public workspaces returned by Yarn', (context) => {
   context.after(() => rmSync(root, { recursive: true }));
   mkdirSync(publicDirectory, { recursive: true });
   mkdirSync(privateDirectory, { recursive: true });
+
   writeFileSync(
     join(publicDirectory, 'package.json'),
     JSON.stringify({ name: '@example/public', version: VERSION }),
   );
+
   writeFileSync(
     join(privateDirectory, 'package.json'),
     JSON.stringify({ name: '@example/private', private: true, version: VERSION }),
@@ -117,6 +119,7 @@ test('validates one fixed group and sorts runtime dependencies first', (context)
 
   context.after(() => rmSync(root, { recursive: true }));
   mkdirSync(join(root, '.changeset'));
+
   writeFileSync(
     join(root, '.changeset', 'config.json'),
     JSON.stringify({ fixed: [[aggregate.name, foundation.name]] }),
@@ -130,6 +133,7 @@ test('validates one fixed group and sorts runtime dependencies first', (context)
     }),
     VERSION,
   );
+
   assert.deepEqual(
     topologicallySortWorkspaces([aggregate, foundation]).map(({ name }) => name),
     [foundation.name, aggregate.name],
@@ -142,6 +146,7 @@ test('rejects prerelease and mismatched synchronized workspace versions', (conte
 
   context.after(() => rmSync(root, { recursive: true }));
   mkdirSync(join(root, '.changeset'));
+
   writeFileSync(
     join(root, '.changeset', 'config.json'),
     JSON.stringify({ fixed: [[workspace.name]] }),
@@ -158,6 +163,7 @@ test('rejects prerelease and mismatched synchronized workspace versions', (conte
   );
 
   workspace.manifest.version = '1.2.3-beta.1';
+
   assert.throws(
     () => validateWorkspaceConfiguration({ root, workspaces: [workspace] }),
     /version must be a stable X\.Y\.Z release/,
@@ -212,6 +218,7 @@ test('preserves explicit internal peer ranges while pinning workspace star range
 
   assert.equal(expectedPublishedRange('workspace:*', VERSION), VERSION);
   assert.equal(expectedPublishedRange('workspace:>=1.0.0 <2.0.0', VERSION), '>=1.0.0 <2.0.0');
+
   assert.doesNotThrow(() =>
     validatePackedManifest({
       internalNames: new Set([foundation.name, plugin.name]),
@@ -232,21 +239,78 @@ test('requires an exact tag, OIDC context, and no token credentials for live pub
   };
 
   assert.equal(assertLiveEnvironment(environment), VERSION);
+
   assert.throws(
     () => assertLiveEnvironment({ ...environment, NODE_AUTH_TOKEN: 'legacy-token' }),
     /Refusing token fallback.*NODE_AUTH_TOKEN/,
   );
+
   assert.throws(
     () => assertLiveEnvironment({ ...environment, npm_config_password: 'legacy-password' }),
     /Refusing token fallback.*npm_config_password/,
   );
+
   assert.throws(
     () => assertLiveEnvironment({ ...environment, NPM_CONFIG_OTP: '123456' }),
     /Refusing token fallback.*NPM_CONFIG_OTP/,
   );
+
   assert.throws(
     () => assertLiveEnvironment({ ...environment, GITHUB_REF_NAME: 'v1.2.3-beta.1' }),
     /stable vX\.Y\.Z/,
+  );
+
+  const recoveryEnvironment = {
+    ...environment,
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    GITHUB_REF_NAME: 'main',
+    GITHUB_REF_TYPE: 'branch',
+    RC_RELEASE_TAG: 'v1.2.3',
+  };
+
+  assert.equal(assertLiveEnvironment(recoveryEnvironment), VERSION);
+
+  assert.throws(
+    () => assertLiveEnvironment({ ...recoveryEnvironment, GITHUB_EVENT_NAME: 'push' }),
+    /restricted to manually dispatched recovery runs/,
+  );
+});
+
+test('restricts provenance exceptions to exact recovery package versions', () => {
+  const workspace = createWorkspace('package');
+  const environment = {
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    RC_ALLOW_MISSING_PROVENANCE: `${workspace.name}@${VERSION}`,
+    RC_RELEASE_TAG: `v${VERSION}`,
+  };
+
+  assert.deepEqual(
+    parseProvenanceExceptions({
+      env: environment,
+      expectedVersion: VERSION,
+      workspaces: [workspace],
+    }),
+    new Set([`${workspace.name}@${VERSION}`]),
+  );
+
+  assert.throws(
+    () =>
+      parseProvenanceExceptions({
+        env: { ...environment, RC_ALLOW_MISSING_PROVENANCE: `${workspace.name}@1.2.4` },
+        expectedVersion: VERSION,
+        workspaces: [workspace],
+      }),
+    /Invalid provenance exception/,
+  );
+
+  assert.throws(
+    () =>
+      parseProvenanceExceptions({
+        env: { ...environment, GITHUB_EVENT_NAME: 'push' },
+        expectedVersion: VERSION,
+        workspaces: [workspace],
+      }),
+    /restricted to manually dispatched recovery runs/,
   );
 });
 
@@ -259,6 +323,7 @@ test('treats only npm E404 responses as unpublished versions', () => {
     }),
     { state: 'missing' },
   );
+
   assert.throws(
     () =>
       interpretRegistryResult({
@@ -335,6 +400,7 @@ test('skips verified versions and publishes only missing packages in dependency 
       },
       async query(workspace) {
         calls.push(`query:${workspace.name}`);
+
         const count = (queryCounts.get(workspace.name) ?? 0) + 1;
 
         queryCounts.set(workspace.name, count);
@@ -354,6 +420,7 @@ test('skips verified versions and publishes only missing packages in dependency 
 
   assert.deepEqual(summary.skipped, [foundation.name]);
   assert.deepEqual(summary.published, [aggregate.name]);
+
   assert.deepEqual(calls, [
     `query:${foundation.name}`,
     `query:${aggregate.name}`,
@@ -424,6 +491,38 @@ test('polls until registry provenance becomes visible', async () => {
   assert.equal(queryCount, 2);
   assert.equal(sleepCount, 1);
   assert.equal(hasSlsaProvenance(registryManifest(workspace)), true);
+});
+
+test('skips an immutable manual publish only with its exact provenance exception', async () => {
+  const workspace = createWorkspace('package');
+  const packageSpec = `${workspace.name}@${VERSION}`;
+  let queryCount = 0;
+
+  const summary = await executePublication({
+    dryRun: false,
+    log: quietLog,
+    operations: {
+      async query() {
+        queryCount += 1;
+
+        return {
+          metadata: registryManifest(workspace, { provenance: false }),
+          state: 'found',
+        };
+      },
+      async sleep() {
+        assert.fail('an approved immutable manual publish must not poll for provenance');
+      },
+    },
+    pollAttempts: 2,
+    pollDelayMs: 0,
+    provenanceExceptions: new Set([packageSpec]),
+    workspaces: [workspace],
+  });
+
+  assert.deepEqual(summary.skipped, [workspace.name]);
+  assert.deepEqual(summary.provenanceExceptions, [packageSpec]);
+  assert.equal(queryCount, 1);
 });
 
 test('stops provenance polling after the configured attempt bound', async () => {
