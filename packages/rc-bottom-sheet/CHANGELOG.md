@@ -1,5 +1,22 @@
 # @rcarls/rc-bottom-sheet
 
+## 0.6.0
+
+### Patch Changes
+
+- ee7ba6c: Keep resize pinning, drag origins, and snapped bottom sheets correctly
+  positioned when a layout-containing ancestor establishes a non-viewport
+  containing block. Report animated snap changes only after the sheet settles so
+  consumers can defer discrete content and accessibility state changes until the
+  surface motion completes. Expose resize-start timing so content can be prepared
+  before an interactive expansion reveals it.
+- Updated dependencies [6683eb9]
+- Updated dependencies [ee7ba6c]
+- Updated dependencies [30eb232]
+- Updated dependencies [57370e4]
+  - @rcarls/rc-common@0.6.0
+  - @rcarls/rc-dialog@0.6.0
+
 ## 0.5.0
 
 ### Patch Changes

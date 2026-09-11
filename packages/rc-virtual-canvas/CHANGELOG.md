@@ -1,5 +1,13 @@
 # @rcarls/rc-virtual-canvas
 
+## 0.6.0
+
+### Patch Changes
+
+- 57370e4: Align component metadata, aggregate framework typings, development-time native-child
+  validation, controlled menu state, package declarations, and public documentation before the
+  next release.
+
 ## 0.5.0
 
 ## 0.4.2

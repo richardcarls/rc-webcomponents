@@ -1,5 +1,25 @@
 # @rcarls/rc-common
 
+## 0.6.0
+
+### Minor Changes
+
+- 6683eb9: Add shared, lifecycle-safe click delegation and let interactive list items
+  forward plain surface clicks to same-root native action targets while
+  preserving nested and modified clicks.
+
+### Patch Changes
+
+- ee7ba6c: Keep resize pinning, drag origins, and snapped bottom sheets correctly
+  positioned when a layout-containing ancestor establishes a non-viewport
+  containing block. Report animated snap changes only after the sheet settles so
+  consumers can defer discrete content and accessibility state changes until the
+  surface motion completes. Expose resize-start timing so content can be prepared
+  before an interactive expansion reveals it.
+- 30eb232: Add icon-only activation-area sizing and Material icon-button variants. Align menu
+  selection and submenu affordances, and keep anchored popups within the viewport
+  across native and fallback positioning.
+
 ## 0.5.0
 
 ### Minor Changes

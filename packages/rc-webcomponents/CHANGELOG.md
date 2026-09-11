@@ -1,5 +1,145 @@
 # @rcarls/rc-webcomponents
 
+## 0.6.0
+
+### Minor Changes
+
+- 7382c71: Add a priority-aware action toolbar that moves original controls into an
+  overflow menu. Which actions are promoted is a purely declarative computation
+  from `max-shown` and each action's `data-priority`/authored `slot`, with no
+  runtime measurement of the toolbar's or its children's rendered size: a
+  consumer whose promoted count needs to react to available space owns that
+  decision and writes the resulting `max-shown` value down. Include controlled
+  and uncontrolled open state, keyboard navigation, light dismissal, and a
+  non-Popover fallback.
+
+  Fix `--rc-adaptive-menu-touch-target-overlap-inline-start`/`-end`: the host's
+  own `max-inline-size: 100%` self-referenced a shrink-to-fit ancestor's
+  already-margin-reduced auto size (an app bar's own trailing group, for
+  example), quietly clamping the host back down and canceling the overlap out
+  from under it. The cap now grows by the overlap amount so it only ever bounds
+  the host's real content.
+
+- ffcbf11: Add adaptive chip-group layouts, native-backed filter chips, and shared
+  input-chip rendering. Native-backed chips preserve controlled host state,
+  follow form resets when uncontrolled, and accept native link actions. Groups
+  restore author-owned chip variants when coordination ends. Keep search input
+  chrome inside the search surface and align contextual icon sizes with Material 3.
+- b639e04: Add coordinated list and list-item layout tokens so container queries can
+  stack unchanged content regions while preserving shared subgrid alignment.
+
+  Breaking for the pre-1.0 carousel API: remove the redundant
+  `variant="hero|multi-browse"` attribute and property. The variant only
+  changed slide geometry, which is already controlled by
+  `--rc-carousel-slide-size`. Remove `variant="hero"` without replacement;
+  replace `variant="multi-browse"` with
+  `--rc-carousel-slide-size: min(75%, 300px)`.
+
+- 40f9776: Add an APG carousel built on native CSS scroll snap, with optional navigation,
+  pagination, mouse dragging, looping, and consumer-controlled slide sizing.
+  Preserve controlled active-index behavior after rejected swipes, keep visual
+  loop clones inert and out of forms, and degrade safely without intersection
+  observation.
+- a108336: Add shared-column `rc-list` and `rc-list-item` elements with standard and
+  segmented appearances, default content truncation, and native-backed single or
+  multiple selection coordination. Restore author-owned item state when native
+  selection coordination ends.
+- 509ee64: Add `rc-progress`, a native `<progress>` enhancer with a formatted value
+  display, a track and fill you can restyle with CSS custom properties, and a
+  built-in fix for the indeterminate/undefined-binding footgun.
+
+  Keep the native element as the uncontrolled source of truth, support releasing
+  a controlled value, and react to live native `value`/`max` changes. Preserve a
+  native determinate value while `indeterminate` temporarily removes its
+  attribute.
+
+  The bar renders at its intended height with no `display` attribute set,
+  matching its own documented default: previously the track/fill/native
+  `<progress>` are all absolutely positioned, contributing nothing to the
+  control's normal-flow height, so with no value-display text sharing its grid
+  row to give it one, the whole bar collapsed to 0px.
+
+- d67efde: Add a native-host scroll region with optional centered content and fullbleed
+  layout tracks, aggregate framework typings, RTL-aware boundary state, and
+  Material layout defaults.
+- 6683eb9: Add shared, lifecycle-safe click delegation and let interactive list items
+  forward plain surface clicks to same-root native action targets while
+  preserving nested and modified clicks.
+- 30eb232: Add icon-only activation-area sizing and Material icon-button variants. Align menu
+  selection and submenu affordances, and keep anchored popups within the viewport
+  across native and fallback positioning.
+- f099b02: Add declarative horizontal cards with a two-fifths media column and symmetric
+  row and column grid coordination properties.
+
+### Patch Changes
+
+- e0de31d: Avoid scheduling a redundant carousel update during the initial Lit lifecycle
+  while retaining initial pagination and dynamic slide synchronization.
+- 57370e4: Align component metadata, aggregate framework typings, development-time native-child
+  validation, controlled menu state, package declarations, and public documentation before the
+  next release.
+- Updated dependencies [a108336]
+- Updated dependencies [7382c71]
+- Updated dependencies [ffcbf11]
+- Updated dependencies [b639e04]
+- Updated dependencies [40f9776]
+- Updated dependencies [a108336]
+- Updated dependencies [509ee64]
+- Updated dependencies [d67efde]
+- Updated dependencies [b6f52a2]
+- Updated dependencies [e0de31d]
+- Updated dependencies [6683eb9]
+- Updated dependencies [7adbd76]
+- Updated dependencies [57370e4]
+- Updated dependencies [ee7ba6c]
+- Updated dependencies [30eb232]
+- Updated dependencies [7382c71]
+- Updated dependencies [b6f52a2]
+- Updated dependencies [53baa54]
+- Updated dependencies [53baa54]
+- Updated dependencies [f099b02]
+- Updated dependencies [0a462c5]
+- Updated dependencies [30eb232]
+- Updated dependencies [d67efde]
+- Updated dependencies [985067e]
+- Updated dependencies [57370e4]
+  - @rcarls/rc-card@0.6.0
+  - @rcarls/rc-list@0.6.0
+  - @rcarls/rc-adaptive-menu@0.6.0
+  - @rcarls/rc-menu@0.6.0
+  - @rcarls/rc-menu-button@0.6.0
+  - @rcarls/rc-chip-group@0.6.0
+  - @rcarls/rc-chip@0.6.0
+  - @rcarls/rc-select@0.6.0
+  - @rcarls/rc-combobox@0.6.0
+  - @rcarls/rc-search-bar@0.6.0
+  - @rcarls/rc-carousel@0.6.0
+  - @rcarls/rc-progress@0.6.0
+  - @rcarls/rc-scroller@0.6.0
+  - @rcarls/rc-app-bar@0.6.0
+  - @rcarls/rc-button@0.6.0
+  - @rcarls/rc-disclosure@0.6.0
+  - @rcarls/rc-bottom-sheet@0.6.0
+  - @rcarls/rc-textarea@0.6.0
+  - @rcarls/rc-dialog@0.6.0
+  - @rcarls/rc-fab-menu@0.6.0
+  - @rcarls/rc-range-slider@0.6.0
+  - @rcarls/rc-slider@0.6.0
+  - @rcarls/rc-toolbar@0.6.0
+  - @rcarls/rc-virtual-canvas@0.6.0
+  - @rcarls/rc-menubar@0.6.0
+  - @rcarls/rc-markdown-editor@0.6.0
+  - @rcarls/rc-fab@0.6.0
+  - @rcarls/rc-listbox@0.6.0
+  - @rcarls/rc-navigation-bar@0.6.0
+  - @rcarls/rc-navigation-rail@0.6.0
+  - @rcarls/rc-splitter@0.6.0
+  - @rcarls/rc-transfer-list@0.6.0
+  - @rcarls/rc-accordion@0.6.0
+  - @rcarls/rc-segmented-button@0.6.0
+  - @rcarls/rc-snackbar@0.6.0
+  - @rcarls/rc-switch@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes
