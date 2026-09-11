@@ -9,6 +9,11 @@ import '@rcarls/rc-menu-button/define';
 import './theme.css';
 import { logicalInsets, unexpectedOverflow } from '../../test-helpers/rendered-ui';
 
+// Linux distributions rasterize fallback fonts differently when Roboto is unavailable.
+const SCREENSHOT_OPTIONS = {
+  comparatorOptions: { allowedMismatchedPixelRatio: 0.01 },
+} as const;
+
 afterEach(() => {
   document.body.replaceChildren();
   document.documentElement.style.removeProperty('color-scheme');
@@ -264,6 +269,7 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
 
     await expect(page.getByTestId('adaptive-menu-contract')).toMatchScreenshot(
       `adaptive-menu-contract-${mode}`,
+      SCREENSHOT_OPTIONS,
     );
   },
 );
@@ -337,6 +343,7 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
 
     await expect(page.getByTestId('material-contract')).toMatchScreenshot(
       `material-contract-${mode}`,
+      SCREENSHOT_OPTIONS,
     );
   },
 );
