@@ -5,6 +5,15 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Immutable release tag to recover, such as v0.6.0
+        required: true
+        type: string
+      provenance_exception:
+        description: Comma-separated package@version values manually published without provenance
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -21,6 +30,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    env:
+      RC_ALLOW_MISSING_PROVENANCE: ${{ inputs.provenance_exception }}
+      RC_RELEASE_TAG: ${{ inputs.release_tag }}
     steps:
       - uses: actions/checkout@v5
         with:

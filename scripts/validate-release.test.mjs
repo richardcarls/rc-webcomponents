@@ -21,10 +21,12 @@ function createReleaseRepo({
 
   mkdirSync(join(root, 'packages', 'example'), { recursive: true });
   mkdirSync(join(root, '.changeset'));
+
   writeFileSync(
     join(root, 'packages', 'example', 'package.json'),
     JSON.stringify({ name: '@example/package', version: packageVersion }),
   );
+
   writeFileSync(join(root, '.changeset', 'README.md'), '# Changesets\n');
 
   if (pendingChangeset) {
@@ -54,10 +56,11 @@ function createReleaseRepo({
   return root;
 }
 
-function validate(root) {
+function validate(root, env = {}) {
   const result = spawnSync(process.execPath, [validator], {
     cwd: root,
     encoding: 'utf8',
+    env: { ...process.env, ...env },
   });
 
   if (result.error) {
@@ -65,6 +68,14 @@ function validate(root) {
   }
 
   return result;
+}
+
+function addRecoveryCommit(root, path = 'scripts/publish-workspaces.mjs') {
+  mkdirSync(join(root, path, '..'), { recursive: true });
+  writeFileSync(join(root, path), '// recovery tooling hotfix\n');
+  git(root, 'add', path);
+  git(root, 'commit', '-m', 'fix: recover release');
+  git(root, 'update-ref', 'refs/remotes/origin/main', 'HEAD');
 }
 
 test('accepts an exact semantic tag matching all package versions', () => {
@@ -106,4 +117,49 @@ test('rejects a tagged commit that is not contained in origin main', () => {
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /must be contained in origin\/main/);
+});
+
+test('accepts a manual recovery from main when only release tooling changed', () => {
+  const root = createReleaseRepo({ tag: 'v1.2.3' });
+
+  addRecoveryCommit(root);
+
+  const result = validate(root, {
+    GITHUB_ACTIONS: 'true',
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    RC_RELEASE_TAG: 'v1.2.3',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('rejects a recovery tag outside a manually dispatched GitHub Actions run', () => {
+  const root = createReleaseRepo({ tag: 'v1.2.3' });
+
+  addRecoveryCommit(root);
+
+  const result = validate(root, {
+    GITHUB_ACTIONS: 'false',
+    GITHUB_EVENT_NAME: 'push',
+    RC_RELEASE_TAG: 'v1.2.3',
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /restricted to manually dispatched GitHub Actions runs/);
+});
+
+test('rejects recovery commits that change files outside release tooling', () => {
+  const root = createReleaseRepo({ tag: 'v1.2.3' });
+
+  addRecoveryCommit(root, 'packages/example/index.js');
+
+  const result = validate(root, {
+    GITHUB_ACTIONS: 'true',
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    RC_RELEASE_TAG: 'v1.2.3',
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /differs from v1\.2\.3 outside release tooling/);
+  assert.match(result.stderr, /packages\/example\/index\.js/);
 });

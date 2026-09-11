@@ -292,8 +292,17 @@ export function assertLiveEnvironment(env) {
     throw new Error(`GITHUB_REPOSITORY must be ${EXPECTED_GITHUB_REPOSITORY}`);
   }
 
-  const tag = env.GITHUB_REF_NAME ?? env.GITHUB_REF?.replace(/^refs\/tags\//, '');
-  const isTag = env.GITHUB_REF_TYPE === 'tag' || env.GITHUB_REF?.startsWith('refs/tags/');
+  const recoveryTag = env.RC_RELEASE_TAG?.trim();
+
+  if (recoveryTag && env.GITHUB_EVENT_NAME !== 'workflow_dispatch') {
+    throw new Error('RC_RELEASE_TAG is restricted to manually dispatched recovery runs');
+  }
+
+  const tag = recoveryTag ?? env.GITHUB_REF_NAME ?? env.GITHUB_REF?.replace(/^refs\/tags\//, '');
+  const isTag =
+    Boolean(recoveryTag) ||
+    env.GITHUB_REF_TYPE === 'tag' ||
+    env.GITHUB_REF?.startsWith('refs/tags/');
 
   if (!isTag || !STABLE_TAG_PATTERN.test(tag ?? '')) {
     throw new Error('Live publication requires a stable vX.Y.Z GitHub tag ref');
@@ -304,6 +313,38 @@ export function assertLiveEnvironment(env) {
   }
 
   return tag.slice(1);
+}
+
+export function parseProvenanceExceptions({ env, expectedVersion, workspaces }) {
+  const configured = env.RC_ALLOW_MISSING_PROVENANCE?.trim();
+
+  if (!configured) {
+    return new Set();
+  }
+
+  if (env.GITHUB_EVENT_NAME !== 'workflow_dispatch' || !env.RC_RELEASE_TAG) {
+    throw new Error(
+      'RC_ALLOW_MISSING_PROVENANCE is restricted to manually dispatched recovery runs',
+    );
+  }
+
+  const allowedSpecs = new Set(workspaces.map(({ name }) => `${name}@${expectedVersion}`));
+  const exceptions = new Set(
+    configured
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean),
+  );
+
+  for (const packageSpec of exceptions) {
+    if (!allowedSpecs.has(packageSpec)) {
+      throw new Error(
+        `Invalid provenance exception ${packageSpec}; expected an exact public workspace name at ${expectedVersion}`,
+      );
+    }
+  }
+
+  return exceptions;
 }
 
 function createNpmEnvironment(runtimeDirectory, env) {
@@ -398,6 +439,7 @@ export function createPublisherOperations({ env, runtimeDirectory }) {
 }
 
 async function waitForVerifiedPackage({
+  allowMissingProvenance = false,
   initialMetadata,
   internalNames,
   operations,
@@ -418,7 +460,11 @@ async function waitForVerifiedPackage({
       });
 
       if (hasSlsaProvenance(metadata)) {
-        return;
+        return true;
+      }
+
+      if (allowMissingProvenance) {
+        return false;
       }
     }
 
@@ -448,12 +494,14 @@ export async function executePublication({
   operations,
   pollAttempts = DEFAULT_POLL_ATTEMPTS,
   pollDelayMs = DEFAULT_POLL_DELAY_MS,
+  provenanceExceptions = new Set(),
   workspaces,
 }) {
   const ordered = topologicallySortWorkspaces(workspaces);
   const internalNames = new Set(ordered.map(({ name }) => name));
   const summary = {
     failed: [],
+    provenanceExceptions: [],
     published: [],
     raceRecovered: [],
     skipped: [],
@@ -476,7 +524,9 @@ export async function executePublication({
       const existing = await operations.query(workspace);
 
       if (existing.state === 'found') {
-        await waitForVerifiedPackage({
+        const packageSpec = `${workspace.name}@${workspace.manifest.version}`;
+        const provenanceVerified = await waitForVerifiedPackage({
+          allowMissingProvenance: provenanceExceptions.has(packageSpec),
           initialMetadata: existing.metadata,
           internalNames,
           operations,
@@ -486,7 +536,13 @@ export async function executePublication({
         });
 
         summary.skipped.push(workspace.name);
-        log.log(`skip (published and verified): ${workspace.name}@${workspace.manifest.version}`);
+
+        if (provenanceVerified) {
+          log.log(`skip (published and verified): ${packageSpec}`);
+        } else {
+          summary.provenanceExceptions.push(packageSpec);
+          log.log(`skip (published without provenance by recovery exception): ${packageSpec}`);
+        }
 
         continue;
       }
@@ -548,6 +604,7 @@ export function printPublicationSummary(summary, log = console) {
     ['packed and validated', summary.validated],
     ['published', summary.published],
     ['already published', summary.skipped],
+    ['provenance exceptions', summary.provenanceExceptions],
     ['race recovered', summary.raceRecovered],
     ['failed', summary.failed],
     ['not attempted', summary.unattempted],
@@ -594,6 +651,10 @@ export async function main(args = process.argv.slice(2), env = process.env) {
 
   validateWorkspaceConfiguration({ expectedVersion, root, workspaces });
 
+  const provenanceExceptions = dryRun
+    ? new Set()
+    : parseProvenanceExceptions({ env, expectedVersion, workspaces });
+
   const runtimeParent = resolve(env.RUNNER_TEMP ?? tmpdir());
   const runtimeDirectory = mkdtempSync(join(runtimeParent, 'rc-npm-publish-'));
 
@@ -606,7 +667,12 @@ export async function main(args = process.argv.slice(2), env = process.env) {
       assertMinimumVersion('npm', npmVersion, MINIMUM_NPM_VERSION);
     }
 
-    const summary = await executePublication({ dryRun, operations, workspaces });
+    const summary = await executePublication({
+      dryRun,
+      operations,
+      provenanceExceptions,
+      workspaces,
+    });
 
     printPublicationSummary(summary);
   } catch (error) {
