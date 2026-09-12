@@ -38,6 +38,7 @@ test('Material fields render filled and outlined native-control compositions', a
   const scope = document.createElement('div');
 
   scope.className = 'rc-theme-material';
+
   scope.innerHTML = `
     <rc-field counter>
       <label slot="label">Recipe title</label>
@@ -48,21 +49,104 @@ test('Material fields render filled and outlined native-control compositions', a
       <label slot="label">Notes</label>
       <textarea rows="3"></textarea>
     </rc-field>
+    <rc-field>
+      <label slot="label">Amount per serving</label>
+      <input type="number">
+    </rc-field>
   `;
+
   document.body.append(scope);
   await settle(scope);
 
-  const [$filled, $outlined] = scope.querySelectorAll('rc-field');
+  const [$filled, $outlined, $empty] = scope.querySelectorAll('rc-field');
   const $filledSurface = $filled.shadowRoot?.querySelector<HTMLElement>('[part="field"]');
   const $outlinedSurface = $outlined.shadowRoot?.querySelector<HTMLElement>('[part="field"]');
+  const $filledLabel = $filled.shadowRoot?.querySelector<HTMLElement>('[part="label"]');
+  const $filledControl = $filled.querySelector('input');
+  const $emptyLabel = $empty.shadowRoot?.querySelector<HTMLElement>('[part="label"]');
+  const $emptyControl = $empty.querySelector('input');
 
   expect($filledSurface).not.toBeNull();
   expect($outlinedSurface).not.toBeNull();
+  expect($filledLabel).not.toBeNull();
+  expect($filledControl).not.toBeNull();
+  expect($emptyLabel).not.toBeNull();
+  expect($emptyControl).not.toBeNull();
   expect($filledSurface!.getBoundingClientRect().height).toBe(56);
   expect(getComputedStyle($filledSurface!).borderBottomWidth).toBe('1px');
   expect(getComputedStyle($outlinedSurface!).borderTopWidth).toBe('1px');
   expect($outlined.hasAttribute('data-multiline')).toBe(true);
   expect($filled.querySelector('input')?.isConnected).toBe(true);
+  expect($filledLabel!.getBoundingClientRect().left).toBe($filledControl!.getBoundingClientRect().left);
+
+  expect($filledLabel!.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    $filledControl!.getBoundingClientRect().top,
+  );
+
+  const restingTop = $emptyLabel!.getBoundingClientRect().top;
+
+  $emptyControl!.focus();
+  await settle($empty);
+
+  expect($empty.hasAttribute('data-focused')).toBe(true);
+
+  await expect
+    .poll(() => $emptyLabel!.getBoundingClientRect().top)
+    .toBeLessThan(restingTop);
+});
+
+test('Material fields preserve label separation with increased text metrics', async () => {
+  const $scope = document.createElement('div');
+
+  $scope.className = 'rc-theme-material';
+  $scope.style.setProperty('--md-sys-typescale-body-small-size', '24px');
+  $scope.style.setProperty('--md-sys-typescale-body-small-line-height', '32px');
+  $scope.style.setProperty('--md-sys-typescale-body-large-size', '32px');
+  $scope.style.setProperty('--md-sys-typescale-body-large-line-height', '48px');
+
+  $scope.innerHTML = `
+    <rc-field>
+      <label slot="label">Recipe title</label>
+      <input value="Soup">
+    </rc-field>
+    <rc-field>
+      <label slot="label">Amount per serving</label>
+      <input type="number">
+    </rc-field>
+  `;
+
+  document.body.append($scope);
+  await settle($scope);
+
+  const [$populated, $empty] = $scope.querySelectorAll('rc-field');
+  const $populatedSurface = $populated.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
+  const $populatedLabel = $populated.shadowRoot!.querySelector<HTMLElement>('[part="label"]')!;
+  const $populatedControl = $populated.querySelector('input')!;
+  const $emptySurface = $empty.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
+  const $emptyLabel = $empty.shadowRoot!.querySelector<HTMLElement>('[part="label"]')!;
+  const $emptyControl = $empty.querySelector('input')!;
+  const emptySurfaceBox = $emptySurface.getBoundingClientRect();
+  const restingLabelBox = $emptyLabel.getBoundingClientRect();
+
+  expect($populatedSurface.getBoundingClientRect().height).toBeGreaterThanOrEqual(80);
+
+  expect($populatedLabel.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    $populatedControl.getBoundingClientRect().top,
+  );
+
+  expect(
+    Math.abs(
+      restingLabelBox.top + restingLabelBox.height / 2
+        - (emptySurfaceBox.top + emptySurfaceBox.height / 2),
+    ),
+  ).toBeLessThanOrEqual(0.5);
+
+  $emptyControl.focus();
+  await settle($empty);
+
+  await expect
+    .poll(() => $emptyLabel.getBoundingClientRect().bottom)
+    .toBeLessThanOrEqual($emptyControl.getBoundingClientRect().top);
 });
 
 test('segmented Material list rows render with 16px inline content padding', async () => {

@@ -2,7 +2,18 @@
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field {
     display: inline-block;
     inline-size: min(100%, 28rem);
-    --rc-field-min-block-size: 3.5rem;
+    --_rc-field-input-line-height: max(
+      var(--md-sys-typescale-body-large-line-height, 1.5rem),
+      1em
+    );
+    --_rc-field-label-line-height: max(
+      var(--md-sys-typescale-body-small-line-height, 1rem),
+      1em
+    );
+    --rc-field-min-block-size: max(
+      3.5em,
+      calc(var(--_rc-field-label-line-height) + var(--_rc-field-input-line-height))
+    );
     --rc-field-gap: 0.75rem;
     --rc-field-padding: 0 1rem;
     --rc-field-border: 0;
@@ -61,7 +72,7 @@
     position: absolute;
     z-index: 1;
     inset-inline-start: 0;
-    inset-block-start: 1rem;
+    inset-block-start: 50%;
     max-inline-size: 100%;
     overflow: hidden;
     font-family: var(--md-sys-typescale-body-large-font, inherit);
@@ -70,25 +81,27 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     pointer-events: none;
+    transform: translateY(-50%);
     transform-origin: left top;
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field:is([data-focused], [data-populated])::part(label),
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-focused]::part(label),
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-populated]::part(label),
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(label) {
-    inset-block-start: 0.5rem;
+    inset-block-start: 0;
     font-family: var(--md-sys-typescale-body-small-font, inherit);
     font-size: var(--md-sys-typescale-body-small-size, 0.75rem);
     line-height: var(--md-sys-typescale-body-small-line-height, 1rem);
+    transform: translateY(0);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-has-label]::part(control) {
-    min-block-size: 1.5rem;
-    padding-block-start: 1rem;
+    min-block-size: var(--_rc-field-input-line-height);
+    padding-block-start: var(--_rc-field-label-line-height);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(control) {
-    min-block-size: 1.5rem;
+    min-block-size: var(--_rc-field-input-line-height);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(content) {
@@ -101,16 +114,49 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field[data-multiline][data-has-label]::part(control) {
-    padding-block-start: 1rem;
+    padding-block-start: var(--_rc-field-label-line-height);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field > :is(input, textarea) {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field > input,
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field > textarea {
     caret-color: var(--md-sys-color-primary, Highlight);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > rc-textarea[data-rc-field-control] {
+    --rc-textarea-border: 0;
+    --rc-textarea-border-radius: 0;
+    --rc-textarea-background: transparent;
+    --rc-textarea-focus-outline: 0;
+    inline-size: 100%;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-control-provider] {
+    --rc-field-padding: 0;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-control-provider]::part(label) {
+    inset-inline-start: 1rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-control-provider]::part(trailing) {
+    margin-inline-end: 1rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-control-provider][data-multiline]::part(content) {
+    padding-block: 0;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field[data-has-label]:not([data-focused]):not([data-populated])
-    > :is(input, textarea)::placeholder {
+    > input::placeholder,
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-has-label]:not([data-focused]):not([data-populated])
+    > textarea::placeholder {
     color: transparent;
   }
 
@@ -160,6 +206,10 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field.rc-field--outlined {
+    --rc-field-min-block-size: max(
+      3.5em,
+      calc(var(--_rc-field-input-line-height) + 2em)
+    );
     --rc-field-background: transparent;
     --rc-field-radius: var(
       --md-outlined-text-field-container-shape,
@@ -185,17 +235,20 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field.rc-field--outlined::part(label) {
-    inset-block-start: 1rem;
+    inset-block-start: 50%;
     padding-inline: 0.25rem;
     background: var(--md-sys-color-surface, Canvas);
-    transform: translateX(-0.25rem);
+    transform: translate(-0.25rem, -50%);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field.rc-field--outlined:is([data-focused], [data-populated])::part(label),
+    rc-field.rc-field--outlined[data-focused]::part(label),
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field.rc-field--outlined[data-populated]::part(label),
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field.rc-field--outlined[data-multiline]::part(label) {
-    inset-block-start: -0.5rem;
+    inset-block-start: 0;
+    transform: translate(-0.25rem, -50%);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field.rc-field--outlined::part(control) {
@@ -224,6 +277,12 @@
         border-color var(--rc-motion-effects-duration-fast, 150ms)
           var(--rc-motion-effects-easing-default, ease),
         color var(--rc-motion-effects-duration-fast, 150ms)
+          var(--rc-motion-effects-easing-default, ease),
+        inset-block-start var(--rc-motion-effects-duration-fast, 150ms)
+          var(--rc-motion-effects-easing-default, ease),
+        font-size var(--rc-motion-effects-duration-fast, 150ms)
+          var(--rc-motion-effects-easing-default, ease),
+        line-height var(--rc-motion-effects-duration-fast, 150ms)
           var(--rc-motion-effects-easing-default, ease),
         opacity var(--rc-motion-effects-duration-fast, 150ms)
           var(--rc-motion-effects-easing-default, ease),

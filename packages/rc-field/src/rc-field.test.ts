@@ -3,7 +3,6 @@ import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
-
 import './define.js';
 import type { RCField } from './rc-field.js';
 
@@ -39,6 +38,31 @@ test('keeps the native control connected with author form attributes intact', as
   expect($input.getAttribute('autocomplete')).toBe('name');
   expect($input.required).toBe(true);
   expect(new FormData($input.form!).get('name')).toBe('Pasta');
+});
+
+test('supports an enhancing control provider without replacing the native control', async () => {
+  const $field = await fieldFixture(html`
+    <form>
+      <rc-field data-testid="field">
+        <label slot="label" for="notes">Notes</label>
+        <div data-rc-field-control tabindex="0">
+          <textarea id="notes" name="notes">Remember the salt.</textarea>
+        </div>
+      </rc-field>
+    </form>
+  `);
+  const $provider = $field.querySelector<HTMLElement>('[data-rc-field-control]')!;
+  const $textarea = $provider.querySelector('textarea')!;
+
+  expect($field.control).toBe($textarea);
+  expect(new FormData($textarea.form!).get('notes')).toBe('Remember the salt.');
+  expect($field.hasAttribute('data-multiline')).toBe(true);
+  expect($field.hasAttribute('data-control-provider')).toBe(true);
+
+  $field.focus();
+
+  expect(document.activeElement).toBe($provider);
+  expect($field.hasAttribute('data-focused')).toBe(true);
 });
 
 test('wires a sibling slotted native label without replacing author ids', async () => {
@@ -182,7 +206,7 @@ test('updates populated and counter state from native input and sync()', async (
     </rc-field>
   `);
   const $input = $field.querySelector<HTMLInputElement>('input')!;
-  const $counter = $field.shadowRoot?.querySelector<HTMLElement>('[part="counter"]')!;
+  const $counter = $field.shadowRoot!.querySelector<HTMLElement>('[part="counter"]')!;
 
   expect($counter.textContent).toBe('0 / 10');
 

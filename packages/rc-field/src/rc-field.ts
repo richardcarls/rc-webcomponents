@@ -17,6 +17,13 @@ declare global {
 
 export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement;
 
+const CONTROL_SELECTOR = [
+  ':scope > input',
+  ':scope > textarea',
+  ':scope > [data-rc-field-control] > input',
+  ':scope > [data-rc-field-control] > textarea',
+].join(', ');
+
 const TEXT_INPUT_TYPES = new Set([
   'date',
   'datetime-local',
@@ -49,7 +56,8 @@ let fieldId = 0;
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-field rc-field docs}
  * @see {@link https://m3.material.io/components/text-fields/overview Material Design 3 text fields}
  *
- * @slot - Required direct native `<input>` or `<textarea>` control
+ * @slot - Required native `<input>` or `<textarea>` control. An enhancing direct child marked
+ *   `data-rc-field-control` may own the native control as its direct child.
  * @slot label - Visible label; use a native `<label>` unless an ancestor label wraps the field
  * @slot leading - Leading icon or control outside the editable content
  * @slot trailing - Trailing icon or control outside the editable content
@@ -69,6 +77,7 @@ let fieldId = 0;
  * @attr [data-multiline] - Present when the native control is a textarea
  * @attr [data-has-label] - Present when the field has content in its label slot
  * @attr [data-validation-attempted] - Present after the native control dispatches `invalid`
+ * @attr [data-control-provider] - Present when an enhancing direct child owns the native control
  *
  * @cssprop [--rc-field-min-block-size=2.5rem] - Minimum field surface block size
  * @cssprop [--rc-field-gap=0.5rem] - Gap between leading, content, and trailing regions
@@ -166,6 +175,8 @@ export class RCField extends LitElement {
 
   private _$controlRef: WeakRef<RCFieldControl> | null = null;
 
+  private _$controlProviderRef: WeakRef<HTMLElement> | null = null;
+
   private _$formRef: WeakRef<HTMLFormElement> | null = null;
 
   private _controlObserver: MutationObserver | null = null;
@@ -183,20 +194,21 @@ export class RCField extends LitElement {
   private _managedAriaInvalid = false;
 
   private readonly _controlController = new NativeChildController<RCFieldControl>(this, {
-    selector: ':scope > input, :scope > textarea',
-    observe: { childList: true },
+    selector: CONTROL_SELECTOR,
+    observe: { childList: true, subtree: true },
     onChange: ($control, $previousControl) => this._setupControl($control, $previousControl),
     onMissing: () => {
       if (import.meta.env.DEV) {
         warnMissingDirectChild(this, {
-          selector: ':scope > input, :scope > textarea',
-          childDescription: 'native <input> or <textarea>',
+          selector: CONTROL_SELECTOR,
+          childDescription:
+            'native <input> or <textarea>, optionally inside a data-rc-field-control provider',
         });
       }
     },
   });
 
-  /** Returns the direct native control, or `null` when the field is incomplete. */
+  /** Returns the native control, or `null` when the field is incomplete. */
   get control(): RCFieldControl | null {
     return this._$controlRef?.deref() ?? null;
   }
@@ -205,6 +217,7 @@ export class RCField extends LitElement {
     super.connectedCallback();
 
     this._compositionObserver ??= new MutationObserver(() => this._queueSync());
+
     this._compositionObserver.observe(this, {
       childList: true,
       attributes: true,
@@ -228,12 +241,12 @@ export class RCField extends LitElement {
 
   /** Focuses the native control. */
   override focus(options?: FocusOptions): void {
-    this.control?.focus(options);
+    (this._$controlProviderRef?.deref() ?? this.control)?.focus(options);
   }
 
   /** Removes focus from the native control. */
   override blur(): void {
-    this.control?.blur();
+    (this._$controlProviderRef?.deref() ?? this.control)?.blur();
   }
 
   /** Re-reads native value, validity, attributes, slots, and accessible relationships. */
@@ -254,6 +267,12 @@ export class RCField extends LitElement {
     }
 
     this._$controlRef = $control ? new WeakRef($control) : null;
+
+    const $provider = $control?.parentElement?.matches('[data-rc-field-control]')
+      ? $control.parentElement
+      : null;
+
+    this._$controlProviderRef = $provider ? new WeakRef($provider) : null;
     this._hasControl = $control !== null;
     this._focused = false;
     this._validationAttempted = false;
@@ -274,7 +293,11 @@ export class RCField extends LitElement {
     $control.addEventListener('invalid', this._onControlInvalid);
     $control.addEventListener('compositionend', this._onCompositionEnd);
 
+    $provider?.addEventListener('focusin', this._onProviderFocusIn);
+    $provider?.addEventListener('focusout', this._onProviderFocusOut);
+
     this._controlObserver ??= new MutationObserver(() => this._queueSync());
+
     this._controlObserver.observe($control, {
       attributes: true,
       attributeFilter: ['disabled', 'maxlength', 'placeholder', 'readonly', 'required', 'type'],
@@ -295,6 +318,12 @@ export class RCField extends LitElement {
     $control.removeEventListener('blur', this._onControlBlur);
     $control.removeEventListener('invalid', this._onControlInvalid);
     $control.removeEventListener('compositionend', this._onCompositionEnd);
+
+    const $provider = this._$controlProviderRef?.deref();
+
+    $provider?.removeEventListener('focusin', this._onProviderFocusIn);
+    $provider?.removeEventListener('focusout', this._onProviderFocusOut);
+    this._$controlProviderRef = null;
     this._controlObserver?.disconnect();
     this._$formRef?.deref()?.removeEventListener('reset', this._onFormReset);
     this._$formRef = null;
@@ -347,6 +376,16 @@ export class RCField extends LitElement {
     this._syncState();
   };
 
+  private readonly _onProviderFocusIn = (): void => {
+    this._focused = true;
+    this._reflectStates();
+  };
+
+  private readonly _onProviderFocusOut = (): void => {
+    this._focused = false;
+    this._syncState();
+  };
+
   private readonly _onControlInvalid = (): void => {
     this._validationAttempted = true;
     this._nativeInvalid = true;
@@ -392,6 +431,7 @@ export class RCField extends LitElement {
     this.toggleAttribute('data-multiline', this._multiline);
     this.toggleAttribute('data-has-label', this._hasLabel);
     this.toggleAttribute('data-validation-attempted', this._validationAttempted);
+    this.toggleAttribute('data-control-provider', this._$controlProviderRef?.deref() !== undefined);
   }
 
   private _effectiveInvalid(): boolean {
@@ -529,11 +569,11 @@ export class RCField extends LitElement {
       return;
     }
 
-    const $controls = getDirectChildren<RCFieldControl>(this, ':scope > input, :scope > textarea');
+    const $controls = getDirectChildren<RCFieldControl>(this, CONTROL_SELECTOR);
 
     if ($controls.length > 1) {
       console.warn(
-        '[rc-field] Multiple direct native controls found. Place exactly one input or textarea inside <rc-field>.',
+        '[rc-field] Multiple native controls found. Place exactly one input or textarea inside <rc-field>.',
         this,
       );
     }
@@ -565,11 +605,20 @@ export class RCField extends LitElement {
       return;
     }
 
+    const $provider = this._$controlProviderRef?.deref();
+
+    if ($provider && $origin.closest("label[slot='label']")) {
+      event.preventDefault();
+      $provider.focus();
+
+      return;
+    }
+
     if ($origin.closest('button, a, input, textarea, select, [contenteditable], [tabindex]')) {
       return;
     }
 
-    $control.focus();
+    ($provider ?? $control).focus();
   }
 
   private _slotClass(hasContent: boolean): string {

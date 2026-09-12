@@ -45,3 +45,15 @@ form reset, and control replacement synchronize automatically.
 
 Import `@rcarls/rc-theme-material/theme.css` and place the field under `.rc-theme-material`.
 Filled is the default treatment; add `class="rc-field--outlined"` for the outlined variant.
+
+An enhancing control may wrap the native control when the direct child is explicitly marked as
+the field control provider. The native control must remain its direct child:
+
+```html
+<rc-field>
+  <label slot="label" for="notes">Notes</label>
+  <rc-textarea data-rc-field-control>
+    <textarea id="notes" name="notes"></textarea>
+  </rc-textarea>
+</rc-field>
+```

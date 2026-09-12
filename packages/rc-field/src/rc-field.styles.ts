@@ -12,11 +12,10 @@ export const fieldStyles = css`
 
   #field {
     box-sizing: border-box;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    display: flex;
     align-items: center;
     min-block-size: var(--rc-field-min-block-size, 2.5rem);
-    gap: var(--rc-field-gap, 0.5rem);
+    gap: 0;
     padding: var(--rc-field-padding, 0.5rem 0.75rem);
     border: var(--rc-field-border, 1px solid ButtonBorder);
     border-radius: var(--rc-field-radius, 0.125rem);
@@ -34,6 +33,7 @@ export const fieldStyles = css`
 
   #content {
     display: flex;
+    flex: 1 1 auto;
     min-inline-size: 0;
     flex-direction: column;
   }
@@ -47,7 +47,7 @@ export const fieldStyles = css`
     display: flex;
     min-inline-size: 0;
     align-items: center;
-    gap: var(--rc-field-control-gap, 0.25rem);
+    gap: 0;
   }
 
   #leading,
@@ -59,12 +59,29 @@ export const fieldStyles = css`
     align-items: center;
   }
 
+  #leading:not(.empty-slot) {
+    margin-inline-end: var(--rc-field-gap, 0.5rem);
+  }
+
+  #trailing:not(.empty-slot) {
+    margin-inline-start: var(--rc-field-gap, 0.5rem);
+  }
+
+  #prefix:not(.empty-slot) {
+    margin-inline-end: var(--rc-field-control-gap, 0.25rem);
+  }
+
+  #suffix:not(.empty-slot) {
+    margin-inline-start: var(--rc-field-control-gap, 0.25rem);
+  }
+
   .empty-slot {
     display: none;
   }
 
   ::slotted(input),
-  ::slotted(textarea) {
+  ::slotted(textarea),
+  ::slotted([data-rc-field-control]) {
     box-sizing: border-box;
     flex: 1 1 auto;
     min-inline-size: 0;
@@ -82,6 +99,10 @@ export const fieldStyles = css`
   ::slotted(textarea) {
     min-block-size: 4lh;
     resize: block;
+  }
+
+  ::slotted([data-rc-field-control]) {
+    display: block;
   }
 
   #supporting {
