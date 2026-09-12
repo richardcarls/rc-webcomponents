@@ -94,6 +94,12 @@ export const fieldStyles = css`
     color: inherit;
     font: inherit;
     box-shadow: none;
+    /*
+     * Chromium's own tap-highlight flash on touch is not an outline and
+     * isn't covered by outline: 0 above; Firefox has no equivalent
+     * behavior, which is why an unstyled control only flashes on Chrome.
+     */
+    -webkit-tap-highlight-color: transparent;
   }
 
   ::slotted(textarea) {
