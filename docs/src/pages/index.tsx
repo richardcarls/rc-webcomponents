@@ -49,6 +49,11 @@ const packages = [
     'Search field/view wrapper for native <input type="search">',
     '/components/rc-search-bar',
   ],
+  [
+    'rc-field',
+    'Accessible field wrapper for a native input or textarea with labels and supporting text',
+    '/components/rc-field',
+  ],
   ['rc-app-bar', 'App bar modeled after Material 3 Top app bar', '/components/rc-app-bar'],
   [
     'rc-navigation-bar',

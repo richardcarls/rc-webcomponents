@@ -40,6 +40,7 @@
   "devDependencies": {
     "@rcarls/rc-adaptive-menu": "workspace:*",
     "@rcarls/rc-button": "workspace:*",
+    "@rcarls/rc-field": "workspace:*",
     "@rcarls/rc-list": "workspace:*",
     "@rcarls/rc-menu-button": "workspace:*",
     "@vitest/browser-playwright": "4.1.5",

@@ -1,0 +1,240 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field {
+    display: inline-block;
+    inline-size: min(100%, 28rem);
+    --rc-field-min-block-size: 3.5rem;
+    --rc-field-gap: 0.75rem;
+    --rc-field-padding: 0 1rem;
+    --rc-field-border: 0;
+    --rc-field-radius: var(--md-filled-text-field-container-shape, 0.25rem 0.25rem 0 0);
+    --rc-field-background: var(
+      --md-filled-text-field-container-color,
+      var(--md-sys-color-surface-container-highest, Field)
+    );
+    --rc-field-color: var(
+      --md-filled-text-field-input-text-color,
+      var(--md-sys-color-on-surface, FieldText)
+    );
+    --rc-field-label-color: var(
+      --md-filled-text-field-label-text-color,
+      var(--md-sys-color-on-surface-variant, GrayText)
+    );
+    --rc-field-error-color: var(
+      --md-filled-text-field-error-focus-label-text-color,
+      var(--md-sys-color-error, Mark)
+    );
+    --rc-field-disabled-opacity: 1;
+    --rc-field-focus-outline: 0;
+    --rc-field-supporting-color: var(--md-sys-color-on-surface-variant, GrayText);
+    --rc-field-supporting-font-size: var(--md-sys-typescale-body-small-size, 0.75rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field) {
+    position: relative;
+    border-block-end: 1px solid
+      var(
+        --md-filled-text-field-active-indicator-color,
+        var(--md-sys-color-on-surface-variant, GrayText)
+      );
+    font-family: var(--md-sys-typescale-body-large-font, inherit);
+    font-size: var(--md-sys-typescale-body-large-size, 1rem);
+    line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field)::after {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: -1px;
+    block-size: 2px;
+    background: var(--md-sys-color-primary, Highlight);
+    content: '';
+    transform: scaleX(0);
+    transform-origin: center;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(content) {
+    position: relative;
+    justify-content: center;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(label) {
+    position: absolute;
+    z-index: 1;
+    inset-inline-start: 0;
+    inset-block-start: 1rem;
+    max-inline-size: 100%;
+    overflow: hidden;
+    font-family: var(--md-sys-typescale-body-large-font, inherit);
+    font-size: var(--md-sys-typescale-body-large-size, 1rem);
+    line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    transform-origin: left top;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field:is([data-focused], [data-populated])::part(label),
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(label) {
+    inset-block-start: 0.5rem;
+    font-family: var(--md-sys-typescale-body-small-font, inherit);
+    font-size: var(--md-sys-typescale-body-small-size, 0.75rem);
+    line-height: var(--md-sys-typescale-body-small-line-height, 1rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-has-label]::part(control) {
+    min-block-size: 1.5rem;
+    padding-block-start: 1rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(control) {
+    min-block-size: 1.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(content) {
+    padding-block: 0.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(control) {
+    align-items: flex-start;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-multiline][data-has-label]::part(control) {
+    padding-block-start: 1rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field > :is(input, textarea) {
+    caret-color: var(--md-sys-color-primary, Highlight);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-has-label]:not([data-focused]):not([data-populated])
+    > :is(input, textarea)::placeholder {
+    color: transparent;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:hover::part(field) {
+    border-block-end-color: var(--md-sys-color-on-surface, CanvasText);
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 4%,
+      var(--md-filled-text-field-container-color, var(--md-sys-color-surface-container-highest))
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-focused]::part(field)::after {
+    transform: scaleX(1);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-focused]::part(label) {
+    color: var(--md-sys-color-primary, Highlight);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(field) {
+    border-block-end-color: var(--md-sys-color-error, Mark);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(field)::after {
+    background: var(--md-sys-color-error, Mark);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(label) {
+    color: var(--md-sys-color-error, Mark);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-disabled]::part(field) {
+    border-block-end-color: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText) 38%,
+      transparent
+    );
+    background: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 4%, transparent);
+    color: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 38%, transparent);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-disabled]::part(label),
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-disabled]::part(supporting-text) {
+    color: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 38%, transparent);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field.rc-field--outlined {
+    --rc-field-background: transparent;
+    --rc-field-radius: var(
+      --md-outlined-text-field-container-shape,
+      var(--md-sys-shape-corner-extra-small, 0.25rem)
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field.rc-field--outlined::part(field) {
+    border: 1px solid
+      var(--md-outlined-text-field-outline-color, var(--md-sys-color-outline, ButtonBorder));
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field.rc-field--outlined::part(field)::after {
+    inset: -1px;
+    block-size: auto;
+    border: 2px solid var(--md-sys-color-primary, Highlight);
+    border-radius: inherit;
+    background: transparent;
+    transform: none;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field.rc-field--outlined::part(label) {
+    inset-block-start: 1rem;
+    padding-inline: 0.25rem;
+    background: var(--md-sys-color-surface, Canvas);
+    transform: translateX(-0.25rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field.rc-field--outlined:is([data-focused], [data-populated])::part(label),
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field.rc-field--outlined[data-multiline]::part(label) {
+    inset-block-start: -0.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field.rc-field--outlined::part(control) {
+    padding-block-start: 0;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field.rc-field--outlined[data-focused]::part(field)::after {
+    opacity: 1;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field.rc-field--outlined[data-invalid]::part(field),
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field.rc-field--outlined[data-invalid]::part(field)::after {
+    border-color: var(--md-sys-color-error, Mark);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field),
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(label),
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field)::after {
+      transition:
+        background-color var(--rc-motion-effects-duration-fast, 150ms)
+          var(--rc-motion-effects-easing-default, ease),
+        border-color var(--rc-motion-effects-duration-fast, 150ms)
+          var(--rc-motion-effects-easing-default, ease),
+        color var(--rc-motion-effects-duration-fast, 150ms)
+          var(--rc-motion-effects-easing-default, ease),
+        opacity var(--rc-motion-effects-duration-fast, 150ms)
+          var(--rc-motion-effects-easing-default, ease),
+        transform var(--rc-motion-spatial-duration-fast, 350ms)
+          var(--rc-motion-spatial-easing-fast, ease);
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field) {
+      forced-color-adjust: auto;
+    }
+  }
+}

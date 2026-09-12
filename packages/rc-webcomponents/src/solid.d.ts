@@ -643,6 +643,18 @@ export type RCSearchBarRef = HTMLElement & {
   toggleView(): void;
 };
 
+export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement;
+
+/** Public API surface of `<rc-field>`. */
+export type RCFieldRef = HTMLElement & {
+  counter: boolean;
+  invalid: boolean;
+  readonly control: RCFieldControl | null;
+  focus(options?: FocusOptions): void;
+  blur(): void;
+  sync(): void;
+};
+
 export type RCSearchBarInputDetail = {
   value: string;
 };
@@ -1143,6 +1155,11 @@ declare module 'solid-js' {
         'on:rc-search-bar-suggestion-select'?: (
           e: CustomEvent<RCSearchBarSuggestionSelectDetail>,
         ) => void;
+      };
+
+      'rc-field': JSX.HTMLAttributes<RCFieldRef> & {
+        counter?: boolean | string;
+        invalid?: boolean | string;
       };
 
       'rc-virtual-canvas': JSX.HTMLAttributes<RCVirtualCanvasRef> & {

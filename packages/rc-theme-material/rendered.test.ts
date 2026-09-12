@@ -3,6 +3,7 @@ import { afterEach, expect, test } from 'vitest';
 
 import '@rcarls/rc-adaptive-menu/define';
 import '@rcarls/rc-button/define';
+import '@rcarls/rc-field/define';
 import '@rcarls/rc-list/define';
 import '@rcarls/rc-menu-button/define';
 
@@ -32,6 +33,37 @@ async function settle(element: Element): Promise<void> {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
   );
 }
+
+test('Material fields render filled and outlined native-control compositions', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+  scope.innerHTML = `
+    <rc-field counter>
+      <label slot="label">Recipe title</label>
+      <input value="Soup" maxlength="80" required>
+      <small slot="hint">Use a descriptive title.</small>
+    </rc-field>
+    <rc-field class="rc-field--outlined">
+      <label slot="label">Notes</label>
+      <textarea rows="3"></textarea>
+    </rc-field>
+  `;
+  document.body.append(scope);
+  await settle(scope);
+
+  const [$filled, $outlined] = scope.querySelectorAll('rc-field');
+  const $filledSurface = $filled.shadowRoot?.querySelector<HTMLElement>('[part="field"]');
+  const $outlinedSurface = $outlined.shadowRoot?.querySelector<HTMLElement>('[part="field"]');
+
+  expect($filledSurface).not.toBeNull();
+  expect($outlinedSurface).not.toBeNull();
+  expect($filledSurface!.getBoundingClientRect().height).toBe(56);
+  expect(getComputedStyle($filledSurface!).borderBottomWidth).toBe('1px');
+  expect(getComputedStyle($outlinedSurface!).borderTopWidth).toBe('1px');
+  expect($outlined.hasAttribute('data-multiline')).toBe(true);
+  expect($filled.querySelector('input')?.isConnected).toBe(true);
+});
 
 test('segmented Material list rows render with 16px inline content padding', async () => {
   const scope = document.createElement('div');

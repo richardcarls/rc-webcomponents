@@ -694,6 +694,18 @@ export type RCSearchBarRef = HTMLElement & {
   toggleView(): void;
 };
 
+export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement;
+
+/** Public API surface of `<rc-field>`. */
+export type RCFieldRef = HTMLElement & {
+  counter: boolean;
+  invalid: boolean;
+  readonly control: RCFieldControl | null;
+  focus(options?: FocusOptions): void;
+  blur(): void;
+  sync(): void;
+};
+
 /** Public API surface of `<rc-carousel>`. */
 export type RCCarouselRef = HTMLElement & {
   activeIndex: number | undefined;
@@ -1081,6 +1093,11 @@ declare module 'react' {
         placeholder?: string;
         'default-value'?: string;
         value?: string;
+      };
+
+      'rc-field': React.DetailedHTMLProps<React.HTMLAttributes<RCFieldRef>, RCFieldRef> & {
+        counter?: boolean;
+        invalid?: boolean;
       };
 
       'rc-virtual-canvas': React.DetailedHTMLProps<

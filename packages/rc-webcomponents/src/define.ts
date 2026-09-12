@@ -11,6 +11,7 @@ import '@rcarls/rc-dialog/define';
 import '@rcarls/rc-disclosure/define';
 import '@rcarls/rc-fab/define';
 import '@rcarls/rc-fab-menu/define';
+import '@rcarls/rc-field/define';
 import '@rcarls/rc-accordion/define';
 import '@rcarls/rc-list/define';
 import '@rcarls/rc-listbox/define';
