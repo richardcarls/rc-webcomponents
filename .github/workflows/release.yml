@@ -30,9 +30,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    env:
-      RC_ALLOW_MISSING_PROVENANCE: ${{ inputs.provenance_exception }}
-      RC_RELEASE_TAG: ${{ inputs.release_tag }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -58,6 +55,8 @@ jobs:
 
       - name: Validate release tag
         run: yarn validate:release
+        env:
+          RC_RELEASE_TAG: ${{ inputs.release_tag }}
 
       - name: Build, validate packages, and test
         run: yarn ci
@@ -66,3 +65,6 @@ jobs:
       # the registry publish itself so Trusted Publishing can exchange this job's OIDC token.
       - name: Publish and verify packages
         run: yarn publish:packages
+        env:
+          RC_ALLOW_MISSING_PROVENANCE: ${{ inputs.provenance_exception }}
+          RC_RELEASE_TAG: ${{ inputs.release_tag }}

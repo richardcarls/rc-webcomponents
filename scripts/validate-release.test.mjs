@@ -57,10 +57,16 @@ function createReleaseRepo({
 }
 
 function validate(root, env = {}) {
+  const childEnvironment = { ...process.env };
+
+  delete childEnvironment.RC_ALLOW_MISSING_PROVENANCE;
+  delete childEnvironment.RC_RELEASE_TAG;
+  Object.assign(childEnvironment, env);
+
   const result = spawnSync(process.execPath, [validator], {
     cwd: root,
     encoding: 'utf8',
-    env: { ...process.env, ...env },
+    env: childEnvironment,
   });
 
   if (result.error) {
