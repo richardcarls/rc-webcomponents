@@ -65,6 +65,36 @@ test('supports an enhancing control provider without replacing the native contro
   expect($field.hasAttribute('data-focused')).toBe(true);
 });
 
+test('prefers a control provider\'s own disabled over the raw control it wraps', async () => {
+  const $field = await fieldFixture(html`
+    <rc-field data-testid="field">
+      <label slot="label" for="notes">Notes</label>
+      <div data-rc-field-control tabindex="0">
+        <textarea id="notes" disabled></textarea>
+      </div>
+    </rc-field>
+  `);
+  const $provider = $field.querySelector<HTMLElement & { disabled?: boolean }>(
+    '[data-rc-field-control]',
+  )!;
+
+  // A provider disabling its own native control for an internal reason unrelated to
+  // the field's real enabled/disabled intent (rc-select's picker guard is exactly this)
+  // must not leak into rc-field's own data-disabled state when the provider itself
+  // reports it is not disabled.
+  $provider.disabled = false;
+  $field.sync();
+  await $field.updateComplete;
+
+  expect($field.hasAttribute('data-disabled')).toBe(false);
+
+  $provider.disabled = true;
+  $field.sync();
+  await $field.updateComplete;
+
+  expect($field.hasAttribute('data-disabled')).toBe(true);
+});
+
 test('wires a sibling slotted native label without replacing author ids', async () => {
   const $field = await fieldFixture(html`
     <rc-field data-testid="field">

@@ -415,7 +415,7 @@ export class RCField extends LitElement {
       ? $control.selectedOptions.length > 0
       : Boolean($control?.value);
 
-    this._disabled = $control?.disabled ?? false;
+    this._disabled = this._effectiveDisabled($control);
     this._readOnly = $control instanceof HTMLSelectElement ? false : ($control?.readOnly ?? false);
     this._required = $control?.required ?? false;
     this._multiline = $control instanceof HTMLTextAreaElement;
@@ -426,6 +426,23 @@ export class RCField extends LitElement {
     }
 
     this._reflectStates();
+  }
+
+  /**
+   * A control provider may disable its native control for a reason unrelated to the field's
+   * own enabled/disabled intent (`rc-select`'s picker guard force-disables a `multiple` native
+   * select to defeat a GeckoView label-activation bug, entirely independent of author intent).
+   * Prefer the provider's own `disabled` property, when it exposes one, over the raw control's
+   * — the same precedence `focus()`/`blur()` already give the provider over the control.
+   */
+  private _effectiveDisabled($control: RCFieldControl | null): boolean {
+    const $provider = this._$controlProviderRef?.deref();
+
+    if ($provider && 'disabled' in $provider && typeof $provider.disabled === 'boolean') {
+      return $provider.disabled;
+    }
+
+    return $control?.disabled ?? false;
   }
 
   private _reflectStates(): void {
