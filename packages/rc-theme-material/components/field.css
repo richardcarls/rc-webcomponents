@@ -148,7 +148,24 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field[data-control-provider][data-multiline]::part(content) {
+    /*
+     * A single-line field's label gets its resting space above the field's
+     * top edge for free: #field centers content within its own taller
+     * min-block-size. A multiline control-provider's content fills #field's
+     * whole height instead, so there's no leftover space to center into.
+     * Padding here wouldn't reach the label: an absolutely positioned
+     * child's containing block is the padding EDGE (the border/padding
+     * boundary), not the content edge, so an ancestor's own padding only
+     * moves its in-flow children (the control), never an abspos one. Margin
+     * moves the ancestor's own box instead, carrying both children down
+     * together and reproducing the single-line field's free top space.
+     * padding-block is reset to 0 here too: the general [data-multiline]
+     * rule above would otherwise still apply its own 0.5rem, additionally
+     * shifting only the in-flow control and pulling it out of alignment
+     * with the label again.
+     */
     padding-block: 0;
+    margin-block-start: 0.5rem;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
