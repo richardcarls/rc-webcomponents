@@ -46,6 +46,8 @@ declare global {
  * @csspart listbox - The `<rc-listbox>` popup element.
  *
  * @attr allow-create - When present, shows a "Create 'X'" option for unmatched input.
+ * @attr required - Inherited from `rc-select`; mirrors the slotted native `<select>`'s own
+ *   `required`, for `aria-required` on the input trigger.
  * @attr filter-strategy - How option labels are matched against typed input: `'contains'`
  *   (default), `'prefix'`, or a custom predicate set via the `filterStrategy` JS property.
  *
@@ -235,7 +237,7 @@ export class RCCombobox extends RCSelect {
       return;
     }
 
-    this._applySelection([text]);
+    this._applySelection([text], true);
     this._syncInputToSelection();
     this.closePopup(true);
     this._dispatchChange();
@@ -402,6 +404,7 @@ export class RCCombobox extends RCSelect {
           aria-expanded=${this.open ? 'true' : 'false'}
           aria-controls="listbox"
           aria-autocomplete="list"
+          aria-required=${this.required ? 'true' : 'false'}
           ?disabled=${this.disabled}
           placeholder=${this._inputPlaceholder}
           .value=${this._filterText}
