@@ -1,6 +1,6 @@
 # rc-field
 
-Accessible field wrapper for a native input or textarea with labels and supporting text.
+Accessible field wrapper for a native input, textarea, or select with labels and supporting text.
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-field](https://richardcarls.github.io/rc-webcomponents/components/rc-field).
 
@@ -57,3 +57,32 @@ the field control provider. The native control must remain its direct child:
   </rc-textarea>
 </rc-field>
 ```
+
+`select` is a supported control shape too, either as a plain direct child:
+
+```html
+<rc-field>
+  <label slot="label" for="unit">Unit</label>
+  <select id="unit" name="unit">
+    <option value="oz">oz</option>
+    <option value="mL">mL</option>
+  </select>
+</rc-field>
+```
+
+or wrapped by an enhancing control provider the same way as `rc-textarea`:
+
+```html
+<rc-field>
+  <label slot="label" for="categories">Categories</label>
+  <rc-combobox data-rc-field-control multiple allow-create>
+    <select id="categories" name="categories" multiple>
+      <option value="braiser">Braiser</option>
+      <option value="chicken">Chicken</option>
+    </select>
+  </rc-combobox>
+</rc-field>
+```
+
+A multiple select's populated state comes from `selectedOptions`, not `.value` (which only ever
+reflects the first *selected* option in tree order and can read empty even with a real selection).

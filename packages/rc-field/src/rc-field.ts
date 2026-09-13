@@ -15,13 +15,15 @@ declare global {
   }
 }
 
-export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement;
+export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 const CONTROL_SELECTOR = [
   ':scope > input',
   ':scope > textarea',
+  ':scope > select',
   ':scope > [data-rc-field-control] > input',
   ':scope > [data-rc-field-control] > textarea',
+  ':scope > [data-rc-field-control] > select',
 ].join(', ');
 
 const TEXT_INPUT_TYPES = new Set([
@@ -42,7 +44,8 @@ const TEXT_INPUT_TYPES = new Set([
 let fieldId = 0;
 
 /**
- * Accessible field wrapper for a native input or textarea with labels and supporting text.
+ * Accessible field wrapper for a native input, textarea, or select with labels and supporting
+ * text.
  *
  * The native control remains connected in light DOM and owns its value, form association,
  * autofill, constraint validation, and native events. `rc-field` derives visual state from that
@@ -56,8 +59,8 @@ let fieldId = 0;
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-field rc-field docs}
  * @see {@link https://m3.material.io/components/text-fields/overview Material Design 3 text fields}
  *
- * @slot - Required native `<input>` or `<textarea>` control. An enhancing direct child marked
- *   `data-rc-field-control` may own the native control as its direct child.
+ * @slot - Required native `<input>`, `<textarea>`, or `<select>` control. An enhancing direct
+ *   child marked `data-rc-field-control` may own the native control as its direct child.
  * @slot label - Visible label; use a native `<label>` unless an ancestor label wraps the field
  * @slot leading - Leading icon or control outside the editable content
  * @slot trailing - Trailing icon or control outside the editable content
@@ -407,9 +410,13 @@ export class RCField extends LitElement {
     const $control = this.control;
 
     this._hasControl = $control !== null;
-    this._populated = Boolean($control?.value);
+
+    this._populated = $control instanceof HTMLSelectElement && $control.multiple
+      ? $control.selectedOptions.length > 0
+      : Boolean($control?.value);
+
     this._disabled = $control?.disabled ?? false;
-    this._readOnly = $control?.readOnly ?? false;
+    this._readOnly = $control instanceof HTMLSelectElement ? false : ($control?.readOnly ?? false);
     this._required = $control?.required ?? false;
     this._multiline = $control instanceof HTMLTextAreaElement;
 
@@ -629,7 +636,7 @@ export class RCField extends LitElement {
     const invalid = this._effectiveInvalid();
     const $control = this.control;
     const length = $control?.value.length ?? 0;
-    const maxLength = $control?.maxLength ?? -1;
+    const maxLength = $control instanceof HTMLSelectElement ? -1 : ($control?.maxLength ?? -1);
     const counterText = maxLength >= 0 ? `${length} / ${maxLength}` : String(length);
     const hasError = invalid && (this._hasError || this._validationMessage);
     const hasSupporting = this._hasHint || hasError || this.counter;

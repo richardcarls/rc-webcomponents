@@ -224,6 +224,87 @@ test('updates populated and counter state from native input and sync()', async (
   expect($counter.textContent).toBe('5 / 10');
 });
 
+test('discovers a native select as the control and reflects populated state', async () => {
+  const $field = await fieldFixture(html`
+    <rc-field data-testid="field">
+      <label slot="label">Unit</label>
+      <select>
+        <option value="">Choose a unit</option>
+        <option value="oz">oz</option>
+        <option value="mL">mL</option>
+      </select>
+    </rc-field>
+  `);
+  const $select = $field.querySelector<HTMLSelectElement>('select')!;
+
+  expect($field.control).toBe($select);
+  expect($field.hasAttribute('data-populated')).toBe(false);
+  expect($field.hasAttribute('data-multiline')).toBe(false);
+
+  $select.value = 'oz';
+  $select.dispatchEvent(new Event('change', { bubbles: true }));
+  await $field.updateComplete;
+
+  expect($field.hasAttribute('data-populated')).toBe(true);
+});
+
+test('reflects populated state for a multiple select from selectedOptions, not value', async () => {
+  const $field = await fieldFixture(html`
+    <rc-field data-testid="field">
+      <label slot="label">Categories</label>
+      <select multiple>
+        <option value="">Choose categories</option>
+        <option value="braiser">Braiser</option>
+        <option value="chicken">Chicken</option>
+      </select>
+    </rc-field>
+  `);
+  const $select = $field.querySelector<HTMLSelectElement>('select')!;
+
+  expect($field.hasAttribute('data-populated')).toBe(false);
+
+  // A multiple select's own .value is the first *selected* option's value in
+  // tree order, not "the first option overall" — so selecting a blank
+  // placeholder alongside a real choice leaves .value === '' (the blank
+  // option comes first) even though the field genuinely has a selection.
+  // Populated state must come from selectedOptions instead.
+  $select.options[0]!.selected = true;
+  $select.options[2]!.selected = true;
+  $select.dispatchEvent(new Event('change', { bubbles: true }));
+  await $field.updateComplete;
+
+  expect($select.value).toBe('');
+  expect($field.hasAttribute('data-populated')).toBe(true);
+});
+
+test('supports a select-owning control provider', async () => {
+  const $field = await fieldFixture(html`
+    <form>
+      <rc-field data-testid="field">
+        <label slot="label" for="unit">Unit</label>
+        <div data-rc-field-control tabindex="0">
+          <select id="unit" name="unit">
+            <option value="">Choose a unit</option>
+            <option value="oz">oz</option>
+          </select>
+        </div>
+      </rc-field>
+    </form>
+  `);
+  const $provider = $field.querySelector<HTMLElement>('[data-rc-field-control]')!;
+  const $select = $provider.querySelector('select')!;
+
+  expect($field.control).toBe($select);
+  expect($field.hasAttribute('data-control-provider')).toBe(true);
+  expect($field.hasAttribute('data-multiline')).toBe(false);
+  expect(new FormData($select.form!).get('unit')).toBe('');
+
+  $field.focus();
+
+  expect(document.activeElement).toBe($provider);
+  expect($field.hasAttribute('data-focused')).toBe(true);
+});
+
 test('delegates focus and does not steal trailing action clicks', async () => {
   const $field = await fieldFixture(html`
     <rc-field data-testid="field">
