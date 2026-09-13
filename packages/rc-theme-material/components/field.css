@@ -132,6 +132,61 @@
     inline-size: 100%;
   }
 
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > rc-select[data-rc-field-control] {
+    --rc-select-border: 0;
+    --rc-select-radius: 0;
+    --rc-field: transparent;
+    inline-size: 100%;
+  }
+
+  /*
+   * rc-select's own hover/focus-visible/open chrome is hardcoded border-color and
+   * box-shadow, not resettable custom properties like the resting border above, so a
+   * more specific selector is the only way to suppress it once rc-field's own #field
+   * surface owns that visual instead.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > rc-select[data-rc-field-control]::part(trigger):hover,
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > rc-select[data-rc-field-control]::part(trigger):focus-visible,
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > rc-select[data-rc-field-control]::part(trigger)[aria-expanded='true'] {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > rc-combobox[data-rc-field-control] {
+    --rc-combobox-border: 0;
+    --rc-combobox-radius: 0;
+    --rc-field: transparent;
+    inline-size: 100%;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > rc-combobox[data-rc-field-control]::part(anchor):hover,
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > rc-combobox[data-rc-field-control]::part(anchor):focus-within {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    rc-combobox[data-rc-field-control]::part(input) {
+    caret-color: var(--md-sys-color-primary, Highlight);
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-control-provider] {
     --rc-field-padding: 0;
   }

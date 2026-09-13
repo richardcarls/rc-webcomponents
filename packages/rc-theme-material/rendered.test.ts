@@ -3,9 +3,11 @@ import { afterEach, expect, test } from 'vitest';
 
 import '@rcarls/rc-adaptive-menu/define';
 import '@rcarls/rc-button/define';
+import '@rcarls/rc-combobox/define';
 import '@rcarls/rc-field/define';
 import '@rcarls/rc-list/define';
 import '@rcarls/rc-menu-button/define';
+import '@rcarls/rc-select/define';
 
 import './theme.css';
 import { logicalInsets, unexpectedOverflow } from '../../test-helpers/rendered-ui';
@@ -93,6 +95,62 @@ test('Material fields render filled and outlined native-control compositions', a
   await expect
     .poll(() => $emptyLabel!.getBoundingClientRect().top)
     .toBeLessThan(restingTop);
+});
+
+test('rc-select and rc-combobox lose their own chrome when composed as rc-field control providers', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label">Unit</label>
+      <rc-select data-rc-field-control>
+        <select>
+          <option value="">Choose a unit</option>
+          <option value="oz">oz</option>
+        </select>
+      </rc-select>
+    </rc-field>
+    <rc-field>
+      <label slot="label">Categories</label>
+      <rc-combobox data-rc-field-control multiple>
+        <select multiple>
+          <option value="braiser">Braiser</option>
+        </select>
+      </rc-combobox>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const [$selectField, $comboboxField] = scope.querySelectorAll('rc-field');
+  const $select = $selectField.querySelector('rc-select')!;
+  const $selectTrigger = $select.shadowRoot!.querySelector<HTMLElement>('[part="trigger"]')!;
+  const $combobox = $comboboxField.querySelector('rc-combobox')!;
+  const $comboboxAnchor = $combobox.shadowRoot!.querySelector<HTMLElement>('[part="anchor"]')!;
+
+  expect($selectField.control).toBe($select.querySelector('select'));
+  expect($selectField.hasAttribute('data-control-provider')).toBe(true);
+  expect($comboboxField.control).toBe($combobox.querySelector('select'));
+  expect($comboboxField.hasAttribute('data-control-provider')).toBe(true);
+
+  expect(getComputedStyle($selectTrigger).borderWidth).toBe('0px');
+  expect(getComputedStyle($selectTrigger).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(getComputedStyle($comboboxAnchor).borderWidth).toBe('0px');
+  expect(getComputedStyle($comboboxAnchor).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+
+  ($select as unknown as { focus(): void }).focus();
+  await settle($selectField);
+
+  expect($selectField.hasAttribute('data-focused')).toBe(true);
+
+  // border-color is moot once border-width is 0 (invisible regardless of color), and
+  // :focus-visible is a scripted-focus heuristic that varies by environment; border-width
+  // and box-shadow are what actually determine whether chrome is visible here.
+  expect(getComputedStyle($selectTrigger).borderWidth).toBe('0px');
+  expect(getComputedStyle($selectTrigger).boxShadow).toBe('none');
 });
 
 test('Material fields preserve label separation with increased text metrics', async () => {
