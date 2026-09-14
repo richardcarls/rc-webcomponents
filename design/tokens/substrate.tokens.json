@@ -221,6 +221,64 @@
           }
         },
         {
+          "name": "color/computed/menu-button-trigger-hover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-menu-button-trigger-hover-background)"
+          },
+          "cssVar": "--rc-menu-button-trigger-hover-background",
+          "description": "Resolved from --rc-menu-button-trigger-hover-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.960488,
+              "g": 0.889512,
+              "b": 0.834196,
+              "a": 1,
+              "hex": "#f5e3d5"
+            },
+            "Dark": {
+              "r": 0.215589,
+              "g": 0.156991,
+              "b": 0.099494,
+              "a": 1,
+              "hex": "#372819"
+            }
+          }
+        },
+        {
+          "name": "color/computed/menu-button-trigger-open-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-menu-button-trigger-open-background)"
+          },
+          "cssVar": "--rc-menu-button-trigger-open-background",
+          "description": "Resolved from --rc-menu-button-trigger-open-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.949373,
+              "g": 0.848407,
+              "b": 0.778583,
+              "a": 1,
+              "hex": "#f2d8c7"
+            },
+            "Dark": {
+              "r": 0.265693,
+              "g": 0.185814,
+              "b": 0.110486,
+              "a": 1,
+              "hex": "#442f1c"
+            }
+          }
+        },
+        {
           "name": "color/computed/menu-hover-bg",
           "type": "COLOR",
           "scopes": [
@@ -3552,6 +3610,44 @@
           }
         },
         {
+          "name": "menu-button/trigger-hover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-menu-button-trigger-hover-background)"
+          },
+          "cssVar": "--rc-menu-button-trigger-hover-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/menu-button-trigger-hover-background",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "menu-button/trigger-open-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-menu-button-trigger-open-background)"
+          },
+          "cssVar": "--rc-menu-button-trigger-open-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/menu-button-trigger-open-background",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "menu/active-bg",
           "type": "COLOR",
           "scopes": [
@@ -6056,18 +6152,6 @@
         "scope": "rc-theme-substrate"
       },
       {
-        "property": "--rc-menu-button-trigger-hover-background",
-        "raw": "color-mix( in srgb, var(--rc-accent, Highlight) 10%, var(--rc-button-bg, ButtonFace) )",
-        "reason": "multi-color-mix",
-        "scope": "rc-theme-substrate"
-      },
-      {
-        "property": "--rc-menu-button-trigger-open-background",
-        "raw": "color-mix( in srgb, var(--rc-accent, Highlight) 16%, var(--rc-button-bg, ButtonFace) )",
-        "reason": "multi-color-mix",
-        "scope": "rc-theme-substrate"
-      },
-      {
         "property": "--rc-navigation-bar-color",
         "raw": "var(--rc-color, CanvasText)",
         "reason": "literal",
@@ -6130,13 +6214,13 @@
       {
         "property": "--rc-splitter-handle-color",
         "raw": "color-mix(in srgb, var(--rc-accent, Highlight) 45%, ButtonBorder)",
-        "reason": "multi-color-mix",
+        "reason": "mix-base-unresolved",
         "scope": "rc-theme-substrate"
       },
       {
         "property": "--rc-splitter-separator-color",
         "raw": "color-mix(in srgb, var(--rc-accent, Highlight) 8%, Canvas)",
-        "reason": "multi-color-mix",
+        "reason": "mix-base-unresolved",
         "scope": "rc-theme-substrate"
       }
     ]

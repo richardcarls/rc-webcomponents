@@ -191,6 +191,30 @@ function parseOklch(value) {
   };
 }
 
+/**
+ * Mixes two resolved colors the way `color-mix(in srgb, …)` does: weights
+ * normalized to one, and the channels premultiplied by alpha so a translucent
+ * operand contributes in proportion to how much of it there is.
+ */
+function mixColors([first, second]) {
+  const firstWeight = first.weight ?? (second.weight === null ? 0.5 : 1 - second.weight);
+  const secondWeight = second.weight ?? 1 - firstWeight;
+  const total = firstWeight + secondWeight;
+  const share = [firstWeight / total, secondWeight / total];
+  const colors = [first.color.value, second.color.value];
+  const alpha = colors[0].a * share[0] + colors[1].a * share[1];
+
+  const channel = (key) => {
+    if (alpha === 0) {
+      return 0;
+    }
+
+    return (colors[0][key] * colors[0].a * share[0] + colors[1][key] * colors[1].a * share[1]) / alpha;
+  };
+
+  return { r: channel('r'), g: channel('g'), b: channel('b'), a: alpha };
+}
+
 function colorValue(color) {
   return {
     r: Number(color.r.toFixed(6)),
@@ -309,23 +333,42 @@ function createResolver(byProperty) {
       const inner = text.slice(text.indexOf('(') + 1, text.lastIndexOf(')'));
       const [, first, second] = splitTopLevel(inner, ',');
 
-      // Every mix in these themes fades one color toward transparent, which is
-      // only an alpha change on that color.
-      if (!first || !second || second.trim() !== 'transparent') {
+      if (!first || !second) {
         return { kind: 'unresolved', raw: text, reason: 'multi-color-mix' };
       }
 
-      const percent = /(\d+(?:\.\d+)?)%\s*$/.exec(first);
-      const base = first.replace(/(\d+(?:\.\d+)?)%\s*$/, '').trim();
-      const resolved = resolveIn(base, mode, depth + 1);
+      // Most mixes here fade one color toward transparent, which is only an
+      // alpha change on that color.
+      if (second.trim() === 'transparent') {
+        const percent = /(\d+(?:\.\d+)?)%\s*$/.exec(first);
+        const base = first.replace(/(\d+(?:\.\d+)?)%\s*$/, '').trim();
+        const resolved = resolveIn(base, mode, depth + 1);
 
-      if (resolved.kind !== 'color') {
+        if (resolved.kind !== 'color') {
+          return { kind: 'unresolved', raw: text, reason: 'mix-base-unresolved' };
+        }
+
+        const ratio = percent ? Number.parseFloat(percent[1]) / 100 : 1;
+
+        return { kind: 'color', value: { ...resolved.value, a: resolved.value.a * ratio } };
+      }
+
+      // The rest tint one color with another, which needs both sides. A system
+      // color such as `Canvas` on either side has no value to mix with.
+      const operands = [first, second].map((operand) => {
+        const percent = /(\d+(?:\.\d+)?)%\s*$/.exec(operand);
+
+        return {
+          weight: percent ? Number.parseFloat(percent[1]) / 100 : null,
+          color: resolveIn(operand.replace(/(\d+(?:\.\d+)?)%\s*$/, '').trim(), mode, depth + 1),
+        };
+      });
+
+      if (operands.some((operand) => operand.color.kind !== 'color')) {
         return { kind: 'unresolved', raw: text, reason: 'mix-base-unresolved' };
       }
 
-      const ratio = percent ? Number.parseFloat(percent[1]) / 100 : 1;
-
-      return { kind: 'color', value: { ...resolved.value, a: resolved.value.a * ratio } };
+      return { kind: 'color', value: mixColors(operands) };
     }
 
     const direct = shallowResolve(text);

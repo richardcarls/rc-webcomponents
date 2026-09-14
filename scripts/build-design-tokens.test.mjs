@@ -110,6 +110,34 @@ test('oklch brand colors convert to sRGB', () => {
   assert.notEqual(primary.values.Light.hex, primary.values.Dark.hex);
 });
 
+test('a two color mix lands between its operands', () => {
+  const tinted = variable(substrate, 'Color', 'color/computed/menu-button-trigger-hover-background');
+  const accent = variable(substrate, 'Color', 'color/primary');
+  const base = variable(substrate, 'Color', 'color/surface-raised');
+
+  assert.ok(tinted, 'expected the 10 percent accent tint over the button fill to resolve');
+  assert.equal(tinted.values.Light.a, 1, 'a mix of two opaque colors stays opaque');
+
+  const channels = ['r', 'g', 'b'];
+  const between = channels.every((channel) => {
+    const [low, high] = [accent, base]
+      .map((entry) => entry.values.Light[channel])
+      .sort((first, second) => first - second);
+
+    return tinted.values.Light[channel] >= low && tinted.values.Light[channel] <= high;
+  });
+
+  assert.ok(between, `expected ${tinted.values.Light.hex} to sit between its operands`);
+});
+
+test('a mix against a system color stays unresolved rather than guessing', () => {
+  const reasons = substrate.skipped.unresolved
+    .filter((entry) => entry.property.startsWith('--rc-splitter-'))
+    .map((entry) => entry.reason);
+
+  assert.deepEqual(reasons, ['mix-base-unresolved', 'mix-base-unresolved']);
+});
+
 test('substrate exposes the same rc contract surface as material', () => {
   const names = (document) =>
     new Set(
