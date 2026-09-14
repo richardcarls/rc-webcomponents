@@ -16,6 +16,21 @@ export interface SavedSelection {
   focusOffset: number;
 }
 
+interface SelectionEndpoints {
+  $anchorNode: Node;
+  anchorOffset: number;
+  $focusNode: Node;
+  focusOffset: number;
+}
+
+type ShadowSelectionRoot = ShadowRoot & {
+  getSelection?: () => Selection | null;
+};
+
+type ComposedSelection = Selection & {
+  getComposedRanges?: (options: { shadowRoots: ShadowRoot[] }) => StaticRange[];
+};
+
 /** Returns the text-model length of a DOM node and its descendants. */
 function textModelLength($node: Node): number {
   if ($node.nodeType === Node.TEXT_NODE) {
@@ -35,6 +50,7 @@ function textModelLength($node: Node): number {
   }
 
   let len = 0;
+
   for (const $child of $node.childNodes) {
     len += textModelLength($child);
   }
@@ -54,6 +70,7 @@ export function domToTextOffset(
   const $lines = Array.from($root.querySelectorAll<HTMLElement>('.line'));
 
   let totalOffset = 0;
+
   for (let lineIdx = 0; lineIdx < $lines.length; lineIdx++) {
     if (lineIdx > 0) {
       totalOffset++; // \n between lines
@@ -101,6 +118,7 @@ function walkForOffset(
 
     // Element node - targetNodeOffset is a child index
     let offset = currentOffset;
+
     for (let i = 0; i < targetNodeOffset && i < $children.length; i++) {
       offset += textModelLength($children[i]!);
     }
@@ -122,6 +140,7 @@ function walkForOffset(
     }
 
     let offset = currentOffset;
+
     for (const $child of $node.childNodes) {
       const result = walkForOffset($child, $targetNode, targetNodeOffset, offset);
 
@@ -152,6 +171,7 @@ export function textOffsetToDom($root: Element, targetOffset: number): DomPositi
   const $lines = Array.from($root.querySelectorAll<HTMLElement>('.line'));
 
   let localOffset = targetOffset;
+
   for (let i = 0; i < $lines.length; i++) {
     if (i > 0) {
       if (localOffset === 0) {
@@ -219,6 +239,7 @@ function walkToOffset($node: Node, localOffset: number): DomPosition | null {
     }
 
     let offset = 0;
+
     for (const $child of $node.childNodes) {
       const length = textModelLength($child);
 
@@ -241,64 +262,102 @@ function walkToOffset($node: Node, localOffset: number): DomPosition | null {
   return null;
 }
 
+function readNativeSelectionEndpoints(
+  $root: Element,
+  selection: Selection | null,
+): SelectionEndpoints | null {
+  if (
+    !selection ||
+    selection.rangeCount === 0 ||
+    !selection.anchorNode ||
+    !selection.focusNode
+  ) {
+    return null;
+  }
+
+  const $range = selection.getRangeAt(0);
+
+  if (
+    !$root.contains($range.commonAncestorContainer) ||
+    !$root.contains(selection.anchorNode) ||
+    !$root.contains(selection.focusNode)
+  ) {
+    return null;
+  }
+
+  return {
+    $anchorNode: selection.anchorNode,
+    anchorOffset: selection.anchorOffset,
+    $focusNode: selection.focusNode,
+    focusOffset: selection.focusOffset,
+  };
+}
+
+function readSelectionEndpoints($root: Element): SelectionEndpoints | null {
+  const $rootNode = $root.getRootNode();
+  const getShadowSelection = ($rootNode as ShadowSelectionRoot).getSelection;
+  const shadowEndpoints = readNativeSelectionEndpoints(
+    $root,
+    getShadowSelection?.call($rootNode) ?? null,
+  );
+
+  if (shadowEndpoints) {
+    return shadowEndpoints;
+  }
+
+  const globalSelection = window.getSelection();
+  const globalEndpoints = readNativeSelectionEndpoints($root, globalSelection);
+
+  if (globalEndpoints) {
+    return globalEndpoints;
+  }
+
+  if (!($rootNode instanceof ShadowRoot)) {
+    return null;
+  }
+
+  const [$composedRange] =
+    (globalSelection as ComposedSelection | null)?.getComposedRanges?.({
+      shadowRoots: [$rootNode],
+    }) ?? [];
+
+  if (
+    !$composedRange ||
+    !$root.contains($composedRange.startContainer) ||
+    !$root.contains($composedRange.endContainer)
+  ) {
+    return null;
+  }
+
+  return {
+    $anchorNode: $composedRange.startContainer,
+    anchorOffset: $composedRange.startOffset,
+    $focusNode: $composedRange.endContainer,
+    focusOffset: $composedRange.endOffset,
+  };
+}
+
+/** Returns the current selection focus node when it belongs to `$root`. */
+export function getSelectionFocusNode($root: Element): Node | null {
+  return readSelectionEndpoints($root)?.$focusNode ?? null;
+}
+
 /**
  * Captures the current browser selection as plain-text offsets relative to `$root`.
  *
  * Returns null if there is no selection or the selection is outside `$root`.
  */
 export function saveSelection($root: Element): SavedSelection | null {
-  const $rootNode = $root.getRootNode();
-  const $shadowGetSelection = (
-    $rootNode as unknown as { /* Chrome 53+ */ getSelection?: () => Selection | null }
-  ).getSelection;
-  const selection = $shadowGetSelection?.call($rootNode) ?? window.getSelection();
+  const endpoints = readSelectionEndpoints($root);
 
-  if (!selection || selection.rangeCount === 0) {
+  if (!endpoints) {
     return null;
   }
 
-  const range = selection.getRangeAt(0);
-
-  if ($root.contains(range.commonAncestorContainer)) {
-    return {
-      anchorOffset: domToTextOffset($root, range.startContainer, range.startOffset),
-      focusOffset: domToTextOffset($root, range.endContainer, range.endOffset),
-    };
-  }
-
-  // window.getSelection() does not resolve inside an open shadow root in
-  // WebKit — a plain Range from getRangeAt() reports a boundary scoped to
-  // the shadow host's own tree instead of a node inside $root, so the
-  // containment check above fails and every caret position would otherwise
-  // silently read back as "no selection". This only matters for browsers
-  // without Chrome's non-standard shadowRoot.getSelection() escape hatch
-  // (checked above), so fall back here to Selection.getComposedRanges()
-  // (Selection API Level 2; WebKit 17+), which returns a StaticRange whose
-  // endpoints are rescoped into the shadow tree we ask for.
-  if (
-    !$shadowGetSelection &&
-    $rootNode instanceof ShadowRoot &&
-    typeof selection.getComposedRanges === 'function'
-  ) {
-    const [composedRange] = selection.getComposedRanges({ shadowRoots: [$rootNode] });
-
-    if (
-      composedRange &&
-      $root.contains(composedRange.startContainer) &&
-      $root.contains(composedRange.endContainer)
-    ) {
-      return {
-        anchorOffset: domToTextOffset(
-          $root,
-          composedRange.startContainer,
-          composedRange.startOffset,
-        ),
-        focusOffset: domToTextOffset($root, composedRange.endContainer, composedRange.endOffset),
-      };
-    }
-  }
-
-  return null;
+  return {
+    anchorOffset: domToTextOffset($root, endpoints.$anchorNode, endpoints.anchorOffset),
+    focusOffset: domToTextOffset($root, endpoints.$focusNode, endpoints.focusOffset),
+  };
 }
 
 /**

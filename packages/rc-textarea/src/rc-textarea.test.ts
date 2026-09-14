@@ -64,6 +64,62 @@ describe('RCTextarea — basic rendering', () => {
     await expectNoA11yViolations(host);
   });
 
+  test('highlights the line containing the browser caret', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $lines = $editor.querySelectorAll<HTMLElement>('.line');
+    const $secondLine = $lines.item(1);
+
+    if (!$secondLine) {
+      throw new Error('Expected a second editor line');
+    }
+
+    await userEvent.click($secondLine);
+
+    await expect.poll(() => $editor.querySelector('.line--active')).toBe($secondLine);
+  });
+
+  test('falls back when shadow selection access has no local range', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $secondLine = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+    const $root = host.shadowRoot as ShadowRoot & {
+      getSelection?: () => Selection | null;
+    };
+    const ownGetSelection = Object.getOwnPropertyDescriptor($root, 'getSelection');
+
+    if (!$secondLine) {
+      throw new Error('Expected a second editor line');
+    }
+
+    Object.defineProperty($root, 'getSelection', {
+      configurable: true,
+      value: () => null,
+    });
+
+    try {
+      await userEvent.click($secondLine);
+
+      await expect.poll(() => $editor.querySelector('.line--active')).toBe($secondLine);
+    } finally {
+      if (ownGetSelection) {
+        Object.defineProperty($root, 'getSelection', ownGetSelection);
+      } else {
+        delete $root.getSelection;
+      }
+    }
+  });
+
   test('word-wrap lets the host shrink inside a narrow grid', async () => {
     const host = await renderTextarea(html`
       <div style="display: grid; grid-template-columns: minmax(0, 1fr); inline-size: 16rem">

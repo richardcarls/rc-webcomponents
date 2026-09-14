@@ -4,7 +4,12 @@ import { property, query } from 'lit/decorators.js';
 
 import { NativeChildController, warnMissingDirectChild } from '@rcarls/rc-common';
 import { RCDocument, getText } from './document.js';
-import { saveSelection, restoreSelection, type SavedSelection } from './selection.js';
+import {
+  getSelectionFocusNode,
+  saveSelection,
+  restoreSelection,
+  type SavedSelection,
+} from './selection.js';
 import { remapDecorations, addDecoration, setDecorations } from './decoration.js';
 import { matchPatternResults } from './pattern-matcher.js';
 import type {
@@ -679,25 +684,17 @@ export class RCTextarea extends LitElement {
       return;
     }
 
-    const selection =
-      (
-        this.shadowRoot as unknown as { /* (Chrome 53+) */ getSelection?: () => Selection | null }
-      ).getSelection?.() ?? window.getSelection();
-
     let $line: HTMLElement | null = null;
+    let $node = getSelectionFocusNode(this._$editor);
 
-    if (selection?.focusNode && this._$editor.contains(selection.focusNode)) {
-      let node: Node | null = selection.focusNode;
+    while ($node && $node !== this._$editor) {
+      if ($node instanceof HTMLElement && $node.classList.contains('line')) {
+        $line = $node;
 
-      while (node && node !== this._$editor) {
-        if (node instanceof HTMLElement && node.classList.contains('line')) {
-          $line = node;
-
-          break;
-        }
-
-        node = node.parentNode;
+        break;
       }
+
+      $node = $node.parentNode;
     }
 
     if ($line === this._$activeLine) {
