@@ -24,6 +24,11 @@
     --substrate-border-color: light-dark(oklch(83% 0.018 75), oklch(39% 0.018 72));
     --substrate-shadow-color: light-dark(oklch(16% 0.03 60 / 18%), oklch(0% 0 0 / 42%));
 
+    /* Flipped against the surface pair, for the snackbar and anything else
+     * that has to read as a layer above the page rather than part of it. */
+    --substrate-inverse-surface: light-dark(oklch(27% 0.018 72), oklch(93% 0.01 80));
+    --substrate-inverse-on-surface: light-dark(oklch(96% 0.01 80), oklch(21% 0.018 72));
+
     /*
      * Held at hue 25 so it reads as red rather than as a darker shade of the
      * primary, which sits at hue 48. Clears 7:1 against the field in both modes.
@@ -41,6 +46,7 @@
     --substrate-radius-md: 0.5rem;
     --substrate-radius-lg: 0.75rem;
     --substrate-radius-xl: 1rem;
+    --substrate-radius-pill: 999px;
 
     --substrate-control-block-size: 2.5rem;
     --substrate-control-padding-block: 0.5rem;
@@ -78,6 +84,8 @@
       --substrate-field: Field;
       --substrate-on-surface: CanvasText;
       --substrate-on-surface-muted: GrayText;
+      --substrate-inverse-surface: CanvasText;
+      --substrate-inverse-on-surface: Canvas;
       --substrate-error: Mark;
       --substrate-border-color: ButtonBorder;
       --substrate-shadow-color: transparent;

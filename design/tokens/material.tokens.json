@@ -6042,8 +6042,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "color/on-primary",
-              "collection": "Color"
+              "alias": "button/text",
+              "collection": "RC Contract"
             }
           }
         },
@@ -6207,6 +6207,24 @@
             "WEB": "var(--rc-button-state-layer-bg)"
           },
           "cssVar": "--rc-button-state-layer-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-primary",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "button/text",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-button-text)"
+          },
+          "cssVar": "--rc-button-text",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {

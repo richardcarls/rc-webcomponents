@@ -51,7 +51,14 @@
     --rc-list-item-selected-bg: var(--md-sys-color-secondary-container, Highlight);
     --rc-list-item-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
     --rc-button-bg: var(--md-sys-color-primary, ButtonFace);
-    --rc-button-color: var(--md-sys-color-on-primary, ButtonText);
+    /*
+     * Both of these sit on --rc-button-bg, so both take the on-primary color.
+     * rc-select, rc-combobox, and rc-menu-button read --rc-button-text directly
+     * for their trigger and chip text; leaving it unset dropped them onto the
+     * ButtonText system color over the primary fill.
+     */
+    --rc-button-text: var(--md-sys-color-on-primary, ButtonText);
+    --rc-button-color: var(--rc-button-text, ButtonText);
     --rc-button-block-size: var(--rc-control-block-size);
     --rc-button-radius: var(--rc-control-radius);
     --rc-button-border: 0;

@@ -480,6 +480,61 @@
           }
         },
         {
+          "name": "color/inverse-on-surface",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--substrate-inverse-on-surface)"
+          },
+          "cssVar": "--substrate-inverse-on-surface",
+          "values": {
+            "Light": {
+              "r": 0.962059,
+              "g": 0.945737,
+              "b": 0.919382,
+              "a": 1,
+              "hex": "#f5f1ea"
+            },
+            "Dark": {
+              "r": 0.115749,
+              "g": 0.090297,
+              "b": 0.059404,
+              "a": 1,
+              "hex": "#1e170f"
+            }
+          }
+        },
+        {
+          "name": "color/inverse-surface",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--substrate-inverse-surface)"
+          },
+          "cssVar": "--substrate-inverse-surface",
+          "values": {
+            "Light": {
+              "r": 0.172663,
+              "g": 0.145582,
+              "b": 0.113108,
+              "a": 1,
+              "hex": "#2c251d"
+            },
+            "Dark": {
+              "r": 0.922935,
+              "g": 0.906742,
+              "b": 0.880592,
+              "a": 1,
+              "hex": "#ebe7e1"
+            }
+          }
+        },
+        {
           "name": "color/on-primary",
           "type": "COLOR",
           "scopes": [
@@ -818,6 +873,20 @@
           }
         },
         {
+          "name": "radius/pill",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--substrate-radius-pill)"
+          },
+          "cssVar": "--substrate-radius-pill",
+          "values": {
+            "Value": 999
+          }
+        },
+        {
           "name": "radius/sm",
           "type": "FLOAT",
           "scopes": [
@@ -1090,7 +1159,10 @@
           "cssVar": "--rc-bottom-sheet-handle-radius",
           "description": "Applied where rc-theme-substrate is themed.",
           "values": {
-            "Value": 999
+            "Value": {
+              "alias": "radius/pill",
+              "collection": "Radius"
+            }
           }
         },
         {
@@ -4938,6 +5010,24 @@
           }
         },
         {
+          "name": "snackbar/action-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-snackbar-action-color)"
+          },
+          "cssVar": "--rc-snackbar-action-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/inverse-on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "snackbar/action-padding-block",
           "type": "FLOAT",
           "scopes": [
@@ -4985,6 +5075,25 @@
           }
         },
         {
+          "name": "snackbar/bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-snackbar-bg)"
+          },
+          "cssVar": "--rc-snackbar-bg",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/inverse-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "snackbar/border",
           "type": "FLOAT",
           "scopes": [],
@@ -4995,6 +5104,24 @@
           "description": "Applied where rc-theme-substrate is themed.",
           "values": {
             "Value": 0
+          }
+        },
+        {
+          "name": "snackbar/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-snackbar-color)"
+          },
+          "cssVar": "--rc-snackbar-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/inverse-on-surface",
+              "collection": "Color"
+            }
           }
         },
         {
@@ -6230,24 +6357,6 @@
       {
         "property": "--rc-shadow",
         "raw": "var(--substrate-shadow-md, 0 2px 8px rgb(0 0 0 / 15%))",
-        "reason": "literal",
-        "scope": "rc-theme-substrate"
-      },
-      {
-        "property": "--rc-snackbar-action-color",
-        "raw": "var(--substrate-inverse-on-surface, Canvas)",
-        "reason": "literal",
-        "scope": "rc-theme-substrate"
-      },
-      {
-        "property": "--rc-snackbar-bg",
-        "raw": "var(--substrate-inverse-surface, CanvasText)",
-        "reason": "literal",
-        "scope": "rc-theme-substrate"
-      },
-      {
-        "property": "--rc-snackbar-color",
-        "raw": "var(--substrate-inverse-on-surface, Canvas)",
         "reason": "literal",
         "scope": "rc-theme-substrate"
       },
