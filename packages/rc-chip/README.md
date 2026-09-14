@@ -11,6 +11,8 @@ Chip wrapper for native actions, links, filters, and inputs.
 The native button remains connected for keyboard behavior and progressive enhancement.
 Native tap highlighting is suppressed because the component's clipped state layer
 provides hover, focus, and pressed feedback within the chip shape.
+Structural styles for the native child are installed in the `rc-base` cascade
+layer, so normal author rules outside a layer remain the final styling authority.
 
 Navigation chips preserve the same native-link behavior:
 

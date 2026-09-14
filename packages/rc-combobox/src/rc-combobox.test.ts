@@ -332,6 +332,14 @@ test('multiple: chips render from value property', async () => {
 
   expect($host.selectedValues).toEqual(['apple', 'banana']);
   expect($chips).toHaveLength(2);
+
+  const $chip = $chips[0].closest('rc-chip')!;
+  const $label = $chips[0].querySelector<HTMLElement>('[part~="chip-label"]')!;
+  const $remove = $chip.shadowRoot!.querySelector<HTMLElement>('[part="remove"]')!;
+
+  expect($label.getBoundingClientRect().right).toBeLessThanOrEqual(
+    $remove.getBoundingClientRect().left,
+  );
 });
 
 test('--rc-combobox-toggle-size controls the toggle button inline size', async () => {

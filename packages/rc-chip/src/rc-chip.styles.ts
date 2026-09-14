@@ -145,7 +145,10 @@ export const chipStyles = css`
   :host([removable]) ::slotted([data-rc-chip-label]) {
     padding-inline-end: var(
       --rc-chip-removable-padding-inline-end,
-      calc(var(--rc-chip-remove-target-size, 1.5rem) - var(--rc-chip-gap, 0px))
+      calc(
+        var(--rc-chip-remove-target-size, 1.5rem) +
+          var(--rc-chip-remove-offset-inline, 0.125rem)
+      )
     );
   }
 

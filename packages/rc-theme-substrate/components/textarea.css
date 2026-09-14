@@ -2,7 +2,7 @@
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-textarea {
     --rc-textarea-padding: 0.75rem;
     --rc-textarea-border: var(--rc-border, 1px solid ButtonBorder);
-    --rc-textarea-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-textarea-border-radius: var(--substrate-radius-lg, 0.75rem);
     --rc-textarea-background: var(--rc-field, Field);
     --rc-textarea-color: var(--rc-field-text, FieldText);
     font-family: var(--rc-font-family, inherit);

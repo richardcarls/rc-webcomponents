@@ -32,6 +32,7 @@ export const transferListStyles = css`
     min-block-size: var(--rc-transfer-list-listbox-min-block-size, 10rem);
     overflow: auto;
     border: var(--rc-transfer-list-listbox-border, var(--rc-border, 1px solid ButtonBorder));
+    border-radius: var(--rc-transfer-list-listbox-radius, var(--rc-control-radius, 0.125rem));
     background: var(--rc-transfer-list-listbox-bg, var(--rc-surface, Canvas));
     color: var(--rc-transfer-list-listbox-color, var(--rc-field-text, FieldText));
     --rc-listbox-option-gap: var(--rc-transfer-list-option-gap, var(--rc-item-gap, 0.4em));

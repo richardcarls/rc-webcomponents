@@ -18,7 +18,7 @@ export const styles = css`
     border: var(--rc-textarea-border, 1px solid ButtonBorder);
     border-radius: var(--rc-textarea-border-radius, 2px);
     background: var(--rc-textarea-background, Field);
-    color: var(--rc-textarea-color, var(--rc-text, FieldText));
+    color: var(--rc-textarea-color, var(--rc-field-text, FieldText));
     overflow: hidden;
     min-height: var(--_rc-textarea-min-height, auto);
   }
@@ -54,7 +54,7 @@ export const styles = css`
   }
 
   .gutter-cell--active {
-    color: var(--rc-textarea-color, var(--rc-text, FieldText));
+    color: var(--rc-textarea-color, var(--rc-field-text, FieldText));
   }
 
   #editor-area {
@@ -74,7 +74,7 @@ export const styles = css`
     font-family: var(--rc-textarea-font-family, monospace);
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);
-    color: var(--rc-textarea-color, var(--rc-text, FieldText));
+    color: var(--rc-textarea-color, var(--rc-field-text, FieldText));
     caret-color: var(--rc-textarea-caret-color, var(--rc-textarea-color, FieldText));
     background: transparent;
     outline: none;

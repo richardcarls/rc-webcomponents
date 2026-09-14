@@ -59,6 +59,9 @@ export type RCFabMenuPosition = 'bottom-end' | 'bottom-start' | 'top-end' | 'top
  *   through --rc-fab-inset-inline.
  * @cssprop [--rc-fab-menu-z-index=10] - Stacking order for the floating wrapper; falls back
  *   through --rc-fab-z-index.
+ * @cssprop [--rc-fab-inset-block=1.5rem] - Shared FAB-family block-axis inset fallback.
+ * @cssprop [--rc-fab-inset-inline=1.5rem] - Shared FAB-family inline-axis inset fallback.
+ * @cssprop [--rc-fab-z-index=10] - Shared FAB-family stacking-order fallback.
  * @cssprop [--rc-fab-menu-trigger-gap] - Gap between trigger icon and label content. No default.
  * @cssprop [--rc-fab-menu-size] - Trigger minimum inline and block size. No default; set
  *   explicitly or apply a theme.
@@ -115,6 +118,7 @@ export type RCFabMenuPosition = 'bottom-end' | 'bottom-start' | 'top-end' | 'top
  *   native disabled styling when unset).
  * @cssprop [--rc-fab-menu-popup-z-index=1000] - Stacking order of the popup container; falls back
  *   through --rc-menu-button-popup-z-index.
+ * @cssprop [--rc-menu-button-popup-z-index=1000] - Shared menu-button popup stacking-order fallback.
  * @cssprop [--rc-fab-menu-popup-duration=0ms] - Popup reveal transition duration.
  * @cssprop [--rc-fab-menu-popup-transform-origin=bottom right] - Popup reveal transform origin.
  *

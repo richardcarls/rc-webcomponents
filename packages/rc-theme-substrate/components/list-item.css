@@ -5,8 +5,6 @@
     --rc-list-item-min-block-size: 2.25rem;
     --rc-list-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
     --rc-list-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
-    --rc-list-item-bg: transparent;
-    --rc-list-item-supporting-color: var(--substrate-on-surface-muted, GrayText);
     --rc-list-item-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
     --rc-list-item-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
     --rc-list-item-selected-bg: var(--rc-highlight, Highlight);

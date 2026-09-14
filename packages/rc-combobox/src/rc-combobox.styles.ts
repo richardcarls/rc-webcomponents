@@ -54,8 +54,15 @@ export const comboboxStyles = css`
     display: inline-flex;
     align-items: center;
     gap: var(--rc-combobox-chip-gap, calc(var(--rc-control-gap, 0.25em) * 0.8));
-    padding: var(--rc-combobox-chip-padding-block, 0.1em)
-      var(--rc-combobox-chip-padding-inline, 0.3em);
+    padding-block: var(--rc-combobox-chip-padding-block, 0.1em);
+    padding-inline-start: var(--rc-combobox-chip-padding-inline-start, 0.3em);
+    padding-inline-end: var(
+      --rc-combobox-chip-padding-inline-end,
+      calc(
+        var(--rc-chip-remove-target-size, 1.5rem) +
+          var(--rc-chip-remove-offset-inline, 0.125rem)
+      )
+    );
     border: var(
       --rc-combobox-chip-border,
       var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))

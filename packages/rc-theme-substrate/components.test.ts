@@ -62,7 +62,7 @@ test('aggregate component styles cover the reference styling surface', () => {
     ['rc-bottom-sheet', ['--rc-bottom-sheet-bg', '']],
     ['rc-search-bar', ['display', 'inline-block']],
     ['rc-textarea', ['--rc-textarea-padding', '0.75rem']],
-    ['rc-markdown-editor', ['--rme-padding', '0.75rem']],
+    ['rc-markdown-editor', ['--rc-markdown-editor-padding', '0.75rem']],
     ['rc-transfer-list', ['--rc-transfer-list-gap', '1rem']],
     ['rc-app-bar', ['font-family', '']],
     ['rc-fab', ['--rc-fab-bg', '']],
@@ -94,6 +94,32 @@ test('aggregate component styles cover the reference styling surface', () => {
       expect(value).toBe(expected);
     }
   }
+});
+
+test('canonical 0.7 component tokens replace removed theme-only names', () => {
+  const scope = renderScope();
+  const appBar = document.createElement('rc-app-bar');
+  const markdownEditor = document.createElement('rc-markdown-editor');
+  const textarea = document.createElement('rc-textarea');
+  const transferList = document.createElement('rc-transfer-list');
+
+  scope.append(appBar, markdownEditor, textarea, transferList);
+
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-bg')).not.toBe('');
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-background')).toBe('');
+  expect(
+    getComputedStyle(markdownEditor).getPropertyValue('--rc-markdown-editor-border-radius'),
+  ).not.toBe('');
+  expect(getComputedStyle(textarea).getPropertyValue('--rc-textarea-border-radius')).toBe(
+    '0.75rem',
+  );
+  expect(getComputedStyle(transferList).getPropertyValue('--rc-transfer-list-listbox-radius')).toBe(
+    '0.75rem',
+  );
+
+  appBar.setAttribute('data-scrolled', '');
+
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-shadow')).not.toBe('');
 });
 
 test('contextual styles do not style unrelated native buttons', () => {

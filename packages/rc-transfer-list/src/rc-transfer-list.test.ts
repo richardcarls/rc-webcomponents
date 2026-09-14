@@ -77,6 +77,25 @@ test('transfer-list option tokens flow into both listbox option rows', async () 
   }
 });
 
+test('listbox surface tokens include the canonical radius hook', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host" style="--rc-transfer-list-listbox-radius: 11px">
+      <select multiple>
+        <option value="a">Alpha</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+
+  await host.updateComplete;
+
+  const $listbox = shadow(host).querySelector<HTMLElement>('rc-listbox');
+
+  expect($listbox).not.toBeNull();
+
+  expect(getComputedStyle($listbox as HTMLElement).borderRadius).toBe('11px');
+});
+
 test('rc-transfer-list keeps the native select connected and hidden after upgrade', async () => {
   const screen = render(html`
     <rc-transfer-list data-testid="host">

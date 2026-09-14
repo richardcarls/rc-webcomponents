@@ -210,6 +210,7 @@ rc-app-bar.glass::part(root) {
 | --------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--rc-app-bar-bg`                       | `Canvas`             | Bar background                                                                                                                                     |
 | `--rc-app-bar-color`                    | `CanvasText`         | Bar text color                                                                                                                                     |
+| `--rc-app-bar-shadow`                   | `none`               | Bar box shadow                                                                                                                                     |
 | `--rc-app-bar-compact-min-height`       | `3rem`               | Compact row minimum height                                                                                                                         |
 | `--rc-app-bar-expanded-padding-block`   | `0.75em`             | Expanded title block padding                                                                                                                       |
 | `--rc-app-bar-padding-inline`           | `0.75em`             | Horizontal padding                                                                                                                                 |

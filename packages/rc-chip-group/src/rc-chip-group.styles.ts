@@ -31,7 +31,7 @@ export const chipGroupStyles = css`
   }
 
   #root[data-mode='scroll']::-webkit-scrollbar {
-    display: var(--rc-chip-group-webkit-scrollbar-display, none);
+    display: var(--rc-chip-group-scrollbar-display, none);
   }
 
   #root[data-measuring] {

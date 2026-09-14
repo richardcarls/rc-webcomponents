@@ -140,7 +140,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-border=1px solid ButtonBorder] - Border around the field
  * @cssprop [--rc-textarea-border-radius=2px] - Border radius of the field
  * @cssprop [--rc-textarea-background=Field] - Background color of the field
- * @cssprop [--rc-textarea-color=FieldText] - Text color; falls back through --rc-text
+ * @cssprop [--rc-textarea-color=var(--rc-field-text, FieldText)] - Text color
  * @cssprop [--rc-textarea-font-family=monospace] - Font family
  * @cssprop [--rc-textarea-font-size=1em] - Font size
  * @cssprop [--rc-textarea-line-height=1.5] - Line height
@@ -153,6 +153,19 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-gutter-border=1px solid ButtonBorder] - Gutter right border
  * @cssprop [--rc-textarea-gutter-font-family=var(--rc-textarea-font-family, monospace)] - Gutter font family
  * @cssprop [--rc-textarea-gutter-padding-inline-end=0.75em] - Space between gutter labels and text
+ * @cssprop [--rc-line-actions-gap=2px] - Gap between inline line actions; popover actions default to 4px
+ * @cssprop [--rc-line-actions-margin-start=6px] - Inline-start margin before line actions
+ * @cssprop [--rc-line-action-padding=1px] - Inline line-action padding; popover actions default to 4px 6px
+ * @cssprop [--rc-line-action-border=none] - Line-action border; the popover surface defaults to 1px solid ButtonBorder
+ * @cssprop [--rc-line-action-border-radius=3px] - Line-action border radius; the popover surface defaults to 4px
+ * @cssprop [--rc-line-action-bg=transparent] - Line-action background; the popover surface defaults to Canvas
+ * @cssprop [--rc-line-action-color=inherit] - Line-action color; popover actions default to ButtonText
+ * @cssprop [--rc-line-action-font-size=1em] - Inline line-action font size; popover actions default to 0.85em
+ * @cssprop [--rc-line-action-opacity=0.4] - Resting opacity of inline line actions
+ * @cssprop [--rc-line-action-hover-opacity=1] - Hover and focus opacity of inline line actions
+ * @cssprop [--rc-line-action-hover-bg=transparent] - Hover and focus background; popover actions default to ButtonFace
+ * @cssprop [--rc-line-action-hover-color=inherit] - Hover and focus text color
+ * @cssprop [--rc-line-action-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Line-action popover shadow
  */
 export class RCTextarea extends LitElement {
   static override styles: CSSResultGroup = styles;

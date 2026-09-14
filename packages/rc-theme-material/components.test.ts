@@ -48,7 +48,7 @@ test('aggregate component styles cover every visual RC component', () => {
     ['rc-search-bar', ['display', 'inline']],
     ['rc-field', ['--rc-field-min-block-size', '']],
     ['rc-textarea', ['--rc-textarea-padding', '1rem']],
-    ['rc-markdown-editor', ['--rme-padding', '1rem']],
+    ['rc-markdown-editor', ['--rc-markdown-editor-padding', '1rem']],
     ['rc-transfer-list', ['--rc-transfer-list-gap', '1rem']],
     ['rc-app-bar', ['font-family', '']],
     ['rc-fab-menu', ['--rc-fab-menu-bg', '']],
@@ -80,6 +80,22 @@ test('aggregate component styles cover every visual RC component', () => {
       expect(value).toBe(expected);
     }
   }
+});
+
+test('canonical 0.7 component tokens replace removed theme-only names', () => {
+  const scope = renderScope();
+  const markdownEditor = document.createElement('rc-markdown-editor');
+  const transferList = document.createElement('rc-transfer-list');
+
+  scope.append(markdownEditor, transferList);
+
+  const markdownStyles = getComputedStyle(markdownEditor);
+  const transferStyles = getComputedStyle(transferList);
+
+  expect(markdownStyles.getPropertyValue('--rc-markdown-editor-toolbar-padding')).toBe('0.25rem');
+  expect(markdownStyles.getPropertyValue('--rc-markdown-editor-border-radius')).not.toBe('');
+  expect(transferStyles.getPropertyValue('--rc-transfer-list-listbox-radius')).toBe('0.25rem');
+  expect(transferStyles.getPropertyValue('--rc-transfer-list-panel-radius')).toBe('');
 });
 
 test('icons follow Material sizes by component context', () => {

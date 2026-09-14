@@ -532,6 +532,14 @@ test('multiple: chips render for selected values', async () => {
 
   expect($chips).toHaveLength(1);
   expect($chips[0].textContent).toContain('Apple');
+
+  const $chip = $chips[0].closest('rc-chip')!;
+  const $label = $chips[0].querySelector<HTMLElement>('[part~="chip-label"]')!;
+  const $remove = $chip.shadowRoot!.querySelector<HTMLElement>('[part="remove"]')!;
+
+  expect($label.getBoundingClientRect().right).toBeLessThanOrEqual(
+    $remove.getBoundingClientRect().left,
+  );
 });
 
 test('multiple: chip remove button click removes the value', async () => {

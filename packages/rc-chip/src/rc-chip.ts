@@ -18,87 +18,92 @@ declare global {
 const TOGGLE_ROLES = new Set(['checkbox', 'menuitemcheckbox', 'menuitemradio', 'radio', 'switch']);
 
 const LIGHT_DOM_CSS = `
-rc-chip > :is(button, a, label, [data-rc-chip-label]) {
-  position: relative;
-  display: inline-flex;
-  box-sizing: border-box;
-  align-items: center;
-  justify-content: center;
-  gap: var(--rc-chip-gap, 0px);
-  min-block-size: var(--rc-chip-block-size, revert);
-  margin: 0;
-  padding-block: var(--rc-chip-padding-block, revert);
-  padding-inline: var(--rc-chip-padding-inline, revert);
-  border: var(--rc-chip-border, revert);
-  border-radius: var(--rc-chip-radius, revert);
-  background: var(--rc-chip-bg, revert);
-  color: var(--rc-chip-color, revert);
-  font: var(--rc-chip-font, revert);
-  text-decoration: var(--rc-chip-text-decoration, revert);
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-}
-
-rc-chip:not([readonly]) > :is(button, a, label)::before {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  inset-block: calc(
-    (var(--rc-chip-touch-target-block-size, 3rem) - max(100%, var(--rc-chip-block-size, 0px))) /
-      -2
-  );
-  inset-inline: 0;
-  border-radius: inherit;
-}
-
-rc-chip[selected] > :is(button, a, label, [data-rc-chip-label]),
-rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):checked) {
-  border-color: var(--rc-chip-selected-border-color, revert);
-  background: var(--rc-chip-selected-bg, revert);
-  color: var(--rc-chip-selected-color, revert);
-}
-
-rc-chip[disabled] > :is(button, label),
-rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):disabled) {
-  opacity: var(--rc-chip-disabled-opacity, revert);
-}
-
-rc-chip > :is(button, a):focus-visible,
-rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):focus-visible) {
-  outline: var(--rc-chip-focus-ring, revert);
-  outline-offset: var(--rc-chip-focus-ring-offset, revert);
-}
-
-rc-chip > label > input:is([type='checkbox'], [type='radio']) {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-rc-chip[removable] > :is(button, a, label, [data-rc-chip-label]) {
-  padding-inline-end: var(
-    --rc-chip-removable-padding-inline-end,
-    calc(var(--rc-chip-remove-target-size, 1.5rem) - var(--rc-chip-gap, 0px))
-  );
-}
-
-@media (forced-colors: active) {
+@layer rc-base {
   rc-chip > :is(button, a, label, [data-rc-chip-label]) {
-    border-color: ButtonBorder;
-    background: ButtonFace;
-    color: ButtonText;
+    position: relative;
+    display: inline-flex;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    gap: var(--rc-chip-gap, 0px);
+    min-block-size: var(--rc-chip-block-size, revert);
+    margin: 0;
+    padding-block: var(--rc-chip-padding-block, revert);
+    padding-inline: var(--rc-chip-padding-inline, revert);
+    border: var(--rc-chip-border, revert);
+    border-radius: var(--rc-chip-radius, revert);
+    background: var(--rc-chip-bg, revert);
+    color: var(--rc-chip-color, revert);
+    font: var(--rc-chip-font, revert);
+    text-decoration: var(--rc-chip-text-decoration, revert);
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  rc-chip:not([readonly]) > :is(button, a, label)::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset-block: calc(
+      (var(--rc-chip-touch-target-block-size, 3rem) - max(100%, var(--rc-chip-block-size, 0px))) /
+        -2
+    );
+    inset-inline: 0;
+    border-radius: inherit;
   }
 
   rc-chip[selected] > :is(button, a, label, [data-rc-chip-label]),
   rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):checked) {
-    border-color: Highlight;
-    background: Highlight;
-    color: HighlightText;
+    border-color: var(--rc-chip-selected-border-color, revert);
+    background: var(--rc-chip-selected-bg, revert);
+    color: var(--rc-chip-selected-color, revert);
+  }
+
+  rc-chip[disabled] > :is(button, label),
+  rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):disabled) {
+    opacity: var(--rc-chip-disabled-opacity, revert);
+  }
+
+  rc-chip > :is(button, a):focus-visible,
+  rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):focus-visible) {
+    outline: var(--rc-chip-focus-ring, revert);
+    outline-offset: var(--rc-chip-focus-ring-offset, revert);
+  }
+
+  rc-chip > label > input:is([type='checkbox'], [type='radio']) {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  rc-chip[removable] > :is(button, a, label, [data-rc-chip-label]) {
+    padding-inline-end: var(
+      --rc-chip-removable-padding-inline-end,
+      calc(
+        var(--rc-chip-remove-target-size, 1.5rem) +
+          var(--rc-chip-remove-offset-inline, 0.125rem)
+      )
+    );
+  }
+
+  @media (forced-colors: active) {
+    rc-chip > :is(button, a, label, [data-rc-chip-label]) {
+      border-color: ButtonBorder;
+      background: ButtonFace;
+      color: ButtonText;
+    }
+
+    rc-chip[selected] > :is(button, a, label, [data-rc-chip-label]),
+    rc-chip > label:has(> input:is([type='checkbox'], [type='radio']):checked) {
+      border-color: Highlight;
+      background: Highlight;
+      color: HighlightText;
+    }
   }
 }
 `;
@@ -190,7 +195,7 @@ export interface RCChipRemoveDetail {
  *   indicator's hit target.
  * @cssprop [--rc-chip-remove-radius=9999px] - Border radius of the remove indicator.
  * @cssprop [--rc-chip-remove-icon-size=smaller] - Font size for a slotted remove icon.
- * @cssprop [--rc-chip-removable-padding-inline-end=calc(var(--rc-chip-remove-target-size, 1.5rem) - var(--rc-chip-gap, 0px))] - Override for removable chip content end padding.
+ * @cssprop [--rc-chip-removable-padding-inline-end=calc(var(--rc-chip-remove-target-size, 1.5rem) + var(--rc-chip-remove-offset-inline, 0.125rem))] - Override for removable chip content end padding.
  *
  * @attr variant - Chip variant: `assist`, `filter`, `input`, or `suggestion`.
  * @attr selected - Declarative selected state for filter/input chips.

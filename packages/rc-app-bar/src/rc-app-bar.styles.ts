@@ -6,6 +6,7 @@ export const appBarStyles = css`
     container-type: inline-size;
     background: var(--rc-app-bar-bg, Canvas);
     color: var(--rc-app-bar-color, CanvasText);
+    box-shadow: var(--rc-app-bar-shadow, none);
     --_rc-app-bar-collapse-distance: 0px;
     --_rc-app-bar-collapse-offset: 0px;
     --rc-app-bar-collapse-progress: 0;

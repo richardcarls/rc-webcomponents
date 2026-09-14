@@ -52,25 +52,24 @@ at once:
 }
 ```
 
-Full token reference:
+The semantic layer is deliberately smaller than the sum of every component's
+styling API. Components consume these shared decisions and expose narrower
+component tokens where their structure needs an additional adaptation point.
 
-| Token                         | Default                     | Controls                      |
-| ----------------------------- | --------------------------- | ----------------------------- |
-| `--rc-accent`                 | `Highlight` / `AccentColor` | Focus rings, selected states  |
-| `--rc-surface`                | `Canvas`                    | Surface backgrounds           |
-| `--rc-field`                  | `Field`                     | Input field backgrounds       |
-| `--rc-border-color`           | `ButtonBorder`              | All borders                   |
-| `--rc-border-width`           | `1px`                       | All borders                   |
-| `--rc-control-block-size`     | `2.25em`                    | Control height                |
-| `--rc-control-padding-block`  | `0.25em`                    | Control vertical padding      |
-| `--rc-control-padding-inline` | `0.5em`                     | Control horizontal padding    |
-| `--rc-control-radius`         | `0.125em`                   | Control corner radius         |
-| `--rc-radius-md`              | `0.25em`                    | Larger radius (chips, badges) |
-| `--rc-font-family`            | `inherit`                   | All component text            |
-| `--rc-font-size`              | `1em`                       | All component text            |
-| `--rc-shadow`                 | `0 2px 8px …`               | Popups and overlays           |
-| `--rc-motion-duration`        | `120ms`                     | All transitions               |
-| `--rc-disabled-opacity`       | `0.5`                       | Disabled state opacity        |
+| Role                 | Tokens and defaults                                                                                                                                                                                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Surfaces             | `--rc-surface: Canvas`; `--rc-field: Field`; `--rc-button-bg: ButtonFace`                                                                                                                                                                                                                              |
+| Text                 | `--rc-field-text: FieldText`; `--rc-button-text: ButtonText`; `--rc-highlight-text: HighlightText`; `--rc-text-disabled: GrayText`                                                                                                                                                                     |
+| Accent and selection | `--rc-accent: Highlight` (`AccentColor` when supported); `--rc-highlight: Highlight`                                                                                                                                                                                                                   |
+| Border and elevation | `--rc-border-color: ButtonBorder`; `--rc-border-width: 1px`; `--rc-border-style: solid`; `--rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color)`; `--rc-shadow: 0 2px 8px rgba(0, 0, 0, 0.15)`                                                                             |
+| Type                 | `--rc-font-family: inherit`; `--rc-font-size: 1em`; `--rc-font-weight: 400`; `--rc-line-height: normal`                                                                                                                                                                                                |
+| Controls             | `--rc-control-block-size: 2.25em`; `--rc-control-padding-block: 0.25em`; `--rc-control-padding-inline: 0.5em`; `--rc-control-gap: 0.25em`                                                                                                                                                              |
+| Items                | `--rc-item-padding-block: 0.3em`; `--rc-item-padding-inline: 0.75em`; `--rc-item-gap: 0.4em`                                                                                                                                                                                                           |
+| Shape                | `--rc-radius-sm: 0.125em`; `--rc-radius-md: 0.25em`; `--rc-control-radius: var(--rc-radius-sm)`                                                                                                                                                                                                        |
+| Focus and disabled   | `--rc-focus-ring: auto`; `--rc-focus-ring-offset: 0`; `--rc-disabled-opacity: 0.5`                                                                                                                                                                                                                     |
+| Effects motion       | `--rc-motion-effects-duration-fast: 80ms`; `--rc-motion-effects-duration-default: 120ms`; `--rc-motion-effects-duration-slow: 200ms`; matching `--rc-motion-effects-easing-fast`, `--rc-motion-effects-easing-default`, and `--rc-motion-effects-easing-slow` default to `ease-out`                    |
+| Spatial motion       | `--rc-motion-spatial-duration-fast: 180ms`; `--rc-motion-spatial-duration-default: 300ms`; `--rc-motion-spatial-duration-slow: 450ms`; matching `--rc-motion-spatial-easing-fast`, `--rc-motion-spatial-easing-default`, and `--rc-motion-spatial-easing-slow` default to `cubic-bezier(0.2, 0, 0, 1)` |
+| Compatibility motion | `--rc-motion-duration: var(--rc-motion-effects-duration-default)`                                                                                                                                                                                                                                      |
 
 ## Per-component tokens
 
@@ -86,6 +85,36 @@ rc-fab {
   --rc-fab-shadow: 0 4px 12px oklch(55% 0.2 250 / 40%);
 }
 ```
+
+Some public tokens intentionally form a small family across related
+components. `--rc-thumb-radius` aligns slider and range-slider thumbs;
+`--rc-fab-*` tokens let `rc-fab-menu` reuse the FAB trigger contract. A few
+composition tokens are deliberate pass-throughs: `rc-bottom-sheet` forwards
+`--rc-dialog-scrim`, and `rc-fab-menu` forwards
+`--rc-menu-button-popup-z-index`. These contracts are documented by every
+component that consumes them and enforced by the architecture audit.
+
+## 0.7 styling migration
+
+Version 0.7 removes compatibility aliases and accepts the following breaking
+token replacements as the only supported names:
+
+| Removed token or prefix                    | Replacement                         |
+| ------------------------------------------ | ----------------------------------- |
+| `--rme-*`                                  | `--rc-markdown-editor-*`            |
+| `--rc-app-bar-background`                  | `--rc-app-bar-bg`                   |
+| `--rc-textarea-radius`                     | `--rc-textarea-border-radius`       |
+| `--rc-transfer-list-panel-border`          | `--rc-transfer-list-listbox-border` |
+| `--rc-transfer-list-panel-background`      | `--rc-transfer-list-listbox-bg`     |
+| `--rc-transfer-list-panel-radius`          | `--rc-transfer-list-listbox-radius` |
+| `--rc-chip-group-webkit-scrollbar-display` | `--rc-chip-group-scrollbar-display` |
+| `--rc-text`                                | `--rc-field-text`                   |
+
+The Material navigation-rail toggle overrides and list-item background and
+supporting-color tokens were internal theme leftovers with no component
+consumer; they have been removed rather than replaced. Component-specific
+tokens still win over shared semantic fallbacks, so localized overrides remain
+straightforward after migrating.
 
 ## Adaptive layout contracts
 
@@ -180,6 +209,56 @@ rc-select::part(toggle-indicator) {
 
 Available parts are listed in the API table under the **Parts** section on
 each component's page.
+
+## Styling hooks and ownership
+
+Use the narrowest public styling surface that expresses the change:
+
+1. Override a shared semantic token at a real theme ancestor when the decision
+   should flow through nested light and shadow trees.
+2. Override a component token on one component when changing a documented
+   adaptation point such as geometry, color, or typography.
+3. Use a CSS part when styling a shadow-owned element requires selectors or
+   declarations that cannot be represented by one token.
+4. Use a documented `data-rc-*` marker when consumer-authored light-DOM content
+   must declare a structural or behavioral role.
+5. Use a theme modifier class or theme-specific data attribute only for an
+   optional visual recipe supplied by that theme.
+
+The `data-rc-*` prefix identifies ownership, not visibility. Documented markers
+such as `data-rc-button-icon`, `data-rc-field-control`, and
+`data-rc-bottom-sheet-handle` are author-facing contracts. Other markers are
+written by components or shared controllers for measurement, coordination, or
+style deduplication and are not consumer APIs. Do not depend on a marker unless
+the component or theme documentation explicitly exposes it.
+
+Prefer native or ARIA state selectors such as `[open]`, `:checked`,
+`[aria-selected]`, and `[aria-current]`. Components expose documented host
+`data-*` state when the authoritative state cannot otherwise be selected by a
+theme. Theme CSS may style that state, but it must not use CSS to create a
+second behavioral source of truth.
+
+## Cascade layers
+
+Shadow-DOM component styles are scoped by the shadow tree and do not share the
+document's layer order. Components that must install structural light-DOM CSS
+place it in the `rc-base` layer and deduplicate it per document or shadow root.
+Unlayered consumer rules therefore override these structural defaults without
+selector specificity contests.
+
+Each packaged theme declares three ordered layers:
+
+```css
+@layer rc-theme.defaults, rc-theme.bridge, rc-theme.components;
+```
+
+The real names include the theme package, such as
+`rc-theme-material.components`. Defaults own the theme's raw source tokens,
+the bridge maps those tokens to shared and component RC tokens, and components
+hold element-specific recipes, parts, contextual selectors, and visual
+variants. Normal application rules outside a layer outrank all three theme layers,
+which provides a straightforward consumer override path. Avoid routine
+`!important`: important declarations reverse layer precedence.
 
 ## Substrate reference theme
 

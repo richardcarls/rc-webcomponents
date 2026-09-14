@@ -166,7 +166,7 @@
     --rc-select-shadow: var(--rc-shadow);
     --rc-select-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
     --rc-select-chip-padding-block: 0.375rem;
-    --rc-select-chip-padding-inline: 0.75rem;
+    --rc-select-chip-padding-inline-start: 0.75rem;
     --rc-field: var(
       --md-outlined-select-text-field-container-color,
       var(--md-sys-color-surface, Field)
@@ -224,7 +224,7 @@
     --rc-combobox-shadow: var(--rc-shadow);
     --rc-combobox-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
     --rc-combobox-chip-padding-block: 0.375rem;
-    --rc-combobox-chip-padding-inline: 0.75rem;
+    --rc-combobox-chip-padding-inline-start: 0.75rem;
     --rc-field: var(--md-outlined-text-field-container-color, var(--md-sys-color-surface, Field));
     --rc-field-text: var(
       --md-outlined-text-field-input-text-color,
@@ -529,10 +529,10 @@
 
   .rc-theme-material rc-markdown-editor,
   :host(.rc-theme-material) rc-markdown-editor {
-    --rme-background: var(--md-sys-color-surface, Canvas);
-    --rme-color: var(--md-sys-color-on-surface, CanvasText);
-    --rme-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
-    --rme-focus-outline: 2px solid var(--md-sys-color-primary, Highlight);
+    --rc-markdown-editor-background: var(--md-sys-color-surface, Canvas);
+    --rc-markdown-editor-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-markdown-editor-border: 1px solid var(--md-sys-color-outline, ButtonBorder);
+    --rc-markdown-editor-focus-outline: 2px solid var(--md-sys-color-primary, Highlight);
   }
 
   .rc-theme-material rc-transfer-list,
@@ -558,9 +558,6 @@
     --rc-navigation-rail-item-text-decoration: none;
     --rc-navigation-rail-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
     --rc-navigation-rail-indicator-border: 0;
-    --rc-navigation-rail-toggle-padding: 0;
-    --rc-navigation-rail-toggle-border: 0;
-    --rc-navigation-rail-toggle-font: inherit;
   }
   .rc-theme-material rc-navigation-rail > rc-fab[slot='header'],
   :host(.rc-theme-material) rc-navigation-rail > rc-fab[slot='header'] {
