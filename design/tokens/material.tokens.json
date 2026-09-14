@@ -1688,6 +1688,35 @@
           }
         },
         {
+          "name": "color/computed/adaptive-menu-popup-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-background)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-background",
+          "description": "Resolved from --rc-adaptive-menu-popup-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.94902,
+              "g": 0.92549,
+              "b": 0.94902,
+              "a": 1,
+              "hex": "#f2ecf2"
+            },
+            "Dark": {
+              "r": 0.129412,
+              "g": 0.121569,
+              "b": 0.137255,
+              "a": 1,
+              "hex": "#211f23"
+            }
+          }
+        },
+        {
           "name": "color/computed/app-bar-bg",
           "type": "COLOR",
           "scopes": [
@@ -1804,6 +1833,64 @@
           }
         },
         {
+          "name": "color/computed/carousel-navigation-button-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-navigation-button-background)"
+          },
+          "cssVar": "--rc-carousel-navigation-button-background",
+          "description": "Resolved from --rc-carousel-navigation-button-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.992157,
+              "g": 0.972549,
+              "b": 0.992157,
+              "a": 0.75,
+              "hex": "#fdf8fd"
+            },
+            "Dark": {
+              "r": 0.078431,
+              "g": 0.07451,
+              "b": 0.090196,
+              "a": 0.75,
+              "hex": "#141317"
+            }
+          }
+        },
+        {
+          "name": "color/computed/carousel-pagination-item-color",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-pagination-item-color)"
+          },
+          "cssVar": "--rc-carousel-pagination-item-color",
+          "description": "Resolved from --rc-carousel-pagination-item-color, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.109804,
+              "g": 0.105882,
+              "b": 0.121569,
+              "a": 0.4,
+              "hex": "#1c1b1f"
+            },
+            "Dark": {
+              "r": 0.901961,
+              "g": 0.882353,
+              "b": 0.898039,
+              "a": 0.4,
+              "hex": "#e6e1e5"
+            }
+          }
+        },
+        {
           "name": "color/computed/dialog-scrim",
           "type": "COLOR",
           "scopes": [
@@ -1887,6 +1974,238 @@
               "b": 1,
               "a": 1,
               "hex": "#eaddff"
+            }
+          }
+        },
+        {
+          "name": "color/computed/fab-menu-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-bg)"
+          },
+          "cssVar": "--rc-fab-menu-bg",
+          "description": "Resolved from --rc-fab-menu-bg, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.917647,
+              "g": 0.866667,
+              "b": 1,
+              "a": 1,
+              "hex": "#eaddff"
+            },
+            "Dark": {
+              "r": 0.309804,
+              "g": 0.215686,
+              "b": 0.545098,
+              "a": 1,
+              "hex": "#4f378b"
+            }
+          }
+        },
+        {
+          "name": "color/computed/fab-menu-color",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-color)"
+          },
+          "cssVar": "--rc-fab-menu-color",
+          "description": "Resolved from --rc-fab-menu-color, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.129412,
+              "g": 0,
+              "b": 0.364706,
+              "a": 1,
+              "hex": "#21005d"
+            },
+            "Dark": {
+              "r": 0.917647,
+              "g": 0.866667,
+              "b": 1,
+              "a": 1,
+              "hex": "#eaddff"
+            }
+          }
+        },
+        {
+          "name": "color/computed/field-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-background)"
+          },
+          "cssVar": "--rc-field-background",
+          "description": "Resolved from --rc-field-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.901961,
+              "g": 0.882353,
+              "b": 0.898039,
+              "a": 1,
+              "hex": "#e6e1e5"
+            },
+            "Dark": {
+              "r": 0.211765,
+              "g": 0.203922,
+              "b": 0.219608,
+              "a": 1,
+              "hex": "#363438"
+            }
+          }
+        },
+        {
+          "name": "color/computed/field-color",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-color)"
+          },
+          "cssVar": "--rc-field-color",
+          "description": "Resolved from --rc-field-color, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.109804,
+              "g": 0.105882,
+              "b": 0.121569,
+              "a": 1,
+              "hex": "#1c1b1f"
+            },
+            "Dark": {
+              "r": 0.901961,
+              "g": 0.882353,
+              "b": 0.898039,
+              "a": 1,
+              "hex": "#e6e1e5"
+            }
+          }
+        },
+        {
+          "name": "color/computed/field-error-color",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-error-color)"
+          },
+          "cssVar": "--rc-field-error-color",
+          "description": "Resolved from --rc-field-error-color, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.701961,
+              "g": 0.14902,
+              "b": 0.117647,
+              "a": 1,
+              "hex": "#b3261e"
+            },
+            "Dark": {
+              "r": 0.94902,
+              "g": 0.721569,
+              "b": 0.709804,
+              "a": 1,
+              "hex": "#f2b8b5"
+            }
+          }
+        },
+        {
+          "name": "color/computed/field-label-color",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-label-color)"
+          },
+          "cssVar": "--rc-field-label-color",
+          "description": "Resolved from --rc-field-label-color, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.286275,
+              "g": 0.270588,
+              "b": 0.309804,
+              "a": 1,
+              "hex": "#49454f"
+            },
+            "Dark": {
+              "r": 0.792157,
+              "g": 0.768627,
+              "b": 0.815686,
+              "a": 1,
+              "hex": "#cac4d0"
+            }
+          }
+        },
+        {
+          "name": "color/computed/list-item-active-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-active-bg)"
+          },
+          "cssVar": "--rc-list-item-active-bg",
+          "description": "Resolved from --rc-list-item-active-bg, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.109804,
+              "g": 0.105882,
+              "b": 0.121569,
+              "a": 1,
+              "hex": "#1c1b1f"
+            },
+            "Dark": {
+              "r": 0.901961,
+              "g": 0.882353,
+              "b": 0.898039,
+              "a": 1,
+              "hex": "#e6e1e5"
+            }
+          }
+        },
+        {
+          "name": "color/computed/list-item-hover-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-hover-bg)"
+          },
+          "cssVar": "--rc-list-item-hover-bg",
+          "description": "Resolved from --rc-list-item-hover-bg, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.109804,
+              "g": 0.105882,
+              "b": 0.121569,
+              "a": 1,
+              "hex": "#1c1b1f"
+            },
+            "Dark": {
+              "r": 0.901961,
+              "g": 0.882353,
+              "b": 0.898039,
+              "a": 1,
+              "hex": "#e6e1e5"
             }
           }
         },
@@ -2756,6 +3075,122 @@
               "g": 0.882353,
               "b": 0.898039,
               "a": 1,
+              "hex": "#e6e1e5"
+            }
+          }
+        },
+        {
+          "name": "color/computed/splitter-handle-fill",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-fill)"
+          },
+          "cssVar": "--rc-splitter-handle-fill",
+          "description": "Resolved from --rc-splitter-handle-fill, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.286275,
+              "g": 0.270588,
+              "b": 0.309804,
+              "a": 0.4,
+              "hex": "#49454f"
+            },
+            "Dark": {
+              "r": 0.792157,
+              "g": 0.768627,
+              "b": 0.815686,
+              "a": 0.4,
+              "hex": "#cac4d0"
+            }
+          }
+        },
+        {
+          "name": "color/computed/splitter-handle-hover-fill",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-hover-fill)"
+          },
+          "cssVar": "--rc-splitter-handle-hover-fill",
+          "description": "Resolved from --rc-splitter-handle-hover-fill, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.403922,
+              "g": 0.313725,
+              "b": 0.643137,
+              "a": 0.08,
+              "hex": "#6750a4"
+            },
+            "Dark": {
+              "r": 0.815686,
+              "g": 0.737255,
+              "b": 1,
+              "a": 0.08,
+              "hex": "#d0bcff"
+            }
+          }
+        },
+        {
+          "name": "color/computed/textarea-active-line-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-textarea-active-line-bg)"
+          },
+          "cssVar": "--rc-textarea-active-line-bg",
+          "description": "Resolved from --rc-textarea-active-line-bg, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.403922,
+              "g": 0.313725,
+              "b": 0.643137,
+              "a": 0.08,
+              "hex": "#6750a4"
+            },
+            "Dark": {
+              "r": 0.815686,
+              "g": 0.737255,
+              "b": 1,
+              "a": 0.08,
+              "hex": "#d0bcff"
+            }
+          }
+        },
+        {
+          "name": "color/computed/transfer-list-option-hover-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-transfer-list-option-hover-bg)"
+          },
+          "cssVar": "--rc-transfer-list-option-hover-bg",
+          "description": "Resolved from --rc-transfer-list-option-hover-bg, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.109804,
+              "g": 0.105882,
+              "b": 0.121569,
+              "a": 0.08,
+              "hex": "#1c1b1f"
+            },
+            "Dark": {
+              "r": 0.901961,
+              "g": 0.882353,
+              "b": 0.898039,
+              "a": 0.08,
               "hex": "#e6e1e5"
             }
           }
@@ -4954,6 +5389,317 @@
       "description": "The public --rc-* styling contract consumed by rc-webcomponents. Aliases the theme layer, so swapping the theme reskins every component.",
       "variables": [
         {
+          "name": "adaptive-menu/gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-gap)"
+          },
+          "cssVar": "--rc-adaptive-menu-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "adaptive-menu/icon-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-icon-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-icon-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 24
+          }
+        },
+        {
+          "name": "adaptive-menu/item-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-item-gap)"
+          },
+          "cssVar": "--rc-adaptive-menu-item-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "adaptive-menu/item-min-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-item-min-block-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-item-min-block-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 48
+          }
+        },
+        {
+          "name": "adaptive-menu/item-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-item-padding-block)"
+          },
+          "cssVar": "--rc-adaptive-menu-item-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "adaptive-menu/item-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-item-padding-inline)"
+          },
+          "cssVar": "--rc-adaptive-menu-item-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-background)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/adaptive-menu-popup-background",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-border)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-border",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-color)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-min-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-min-inline-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-min-inline-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 112
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-padding-block)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-radius)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "adaptive-menu/touch-target-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-touch-target-block-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-touch-target-block-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 48
+          }
+        },
+        {
+          "name": "adaptive-menu/touch-target-overlap-inline-end",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-touch-target-overlap-inline-end)"
+          },
+          "cssVar": "--rc-adaptive-menu-touch-target-overlap-inline-end",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-block-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-block-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 40
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-border)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-border",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-color)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-variant",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-inline-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-inline-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 32
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-padding",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-padding)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-padding",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-radius)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-full",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
           "name": "app-bar/bg",
           "type": "COLOR",
           "scopes": [
@@ -5169,6 +5915,21 @@
           }
         },
         {
+          "name": "bottom-sheet/handle-target-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-bottom-sheet-handle-target-block-size)"
+          },
+          "cssVar": "--rc-bottom-sheet-handle-target-block-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 48
+          }
+        },
+        {
           "name": "bottom-sheet/max-inline-size",
           "type": "FLOAT",
           "scopes": [
@@ -5199,6 +5960,22 @@
             "Value": {
               "alias": "color/computed/bottom-sheet-scrim",
               "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "bottom-sheet/snap-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-bottom-sheet-snap-duration)"
+          },
+          "cssVar": "--rc-bottom-sheet-snap-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-spatial-duration-default",
+              "collection": "RC Contract"
             }
           }
         },
@@ -5267,6 +6044,24 @@
             "Value": {
               "alias": "color/on-primary",
               "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "button/disabled-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-button-disabled-opacity)"
+          },
+          "cssVar": "--rc-button-disabled-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/disabled-opacity",
+              "collection": "RC Contract"
             }
           }
         },
@@ -5366,6 +6161,24 @@
           }
         },
         {
+          "name": "button/progress-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-button-progress-color)"
+          },
+          "cssVar": "--rc-button-progress-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-primary",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "button/radius",
           "type": "FLOAT",
           "scopes": [
@@ -5380,6 +6193,25 @@
             "Value": {
               "alias": "core/control-radius",
               "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "button/state-layer-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-button-state-layer-bg)"
+          },
+          "cssVar": "--rc-button-state-layer-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-primary",
+              "collection": "Color"
             }
           }
         },
@@ -5516,6 +6348,370 @@
           }
         },
         {
+          "name": "card/state-layer-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-card-state-layer-bg)"
+          },
+          "cssVar": "--rc-card-state-layer-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "card/subtitle-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-card-subtitle-color)"
+          },
+          "cssVar": "--rc-card-subtitle-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-variant",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "card/subtitle-font",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-card-subtitle-font)"
+          },
+          "cssVar": "--rc-card-subtitle-font",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 400
+          }
+        },
+        {
+          "name": "card/title-font",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-card-title-font)"
+          },
+          "cssVar": "--rc-card-title-font",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 500
+          }
+        },
+        {
+          "name": "carousel/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-color)"
+          },
+          "cssVar": "--rc-carousel-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/item-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-item-background)"
+          },
+          "cssVar": "--rc-carousel-item-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/item-border-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-item-border-radius)"
+          },
+          "cssVar": "--rc-carousel-item-border-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-extra-large",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
+          "name": "carousel/item-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-item-color)"
+          },
+          "cssVar": "--rc-carousel-item-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/navigation-button-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-navigation-button-background)"
+          },
+          "cssVar": "--rc-carousel-navigation-button-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/carousel-navigation-button-background",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/navigation-button-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-navigation-button-color)"
+          },
+          "cssVar": "--rc-carousel-navigation-button-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/pagination-item-active-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-pagination-item-active-color)"
+          },
+          "cssVar": "--rc-carousel-pagination-item-active-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/primary",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/pagination-item-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-pagination-item-color)"
+          },
+          "cssVar": "--rc-carousel-pagination-item-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/carousel-pagination-item-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "chip-group/column-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-column-gap)"
+          },
+          "cssVar": "--rc-chip-group-column-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "chip-group/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-padding-block)"
+          },
+          "cssVar": "--rc-chip-group-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "chip-group/row-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-row-gap)"
+          },
+          "cssVar": "--rc-chip-group-row-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "chip-group/scroll-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-scroll-padding-inline)"
+          },
+          "cssVar": "--rc-chip-group-scroll-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "chip-group/toggle-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-gap)"
+          },
+          "cssVar": "--rc-chip-group-toggle-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "chip-group/toggle-icon-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-icon-size)"
+          },
+          "cssVar": "--rc-chip-group-toggle-icon-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 18
+          }
+        },
+        {
+          "name": "chip-group/toggle-separator-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-separator-block-size)"
+          },
+          "cssVar": "--rc-chip-group-toggle-separator-block-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 24
+          }
+        },
+        {
+          "name": "chip-group/toggle-separator-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-separator-color)"
+          },
+          "cssVar": "--rc-chip-group-toggle-separator-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/outline-variant",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "chip-group/toggle-separator-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-separator-gap)"
+          },
+          "cssVar": "--rc-chip-group-toggle-separator-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "chip-group/toggle-separator-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-separator-inline-size)"
+          },
+          "cssVar": "--rc-chip-group-toggle-separator-inline-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 1
+          }
+        },
+        {
           "name": "chip/bg",
           "type": "COLOR",
           "scopes": [
@@ -5564,6 +6760,43 @@
             "Value": {
               "alias": "color/on-surface-variant",
               "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "chip/disabled-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-disabled-opacity)"
+          },
+          "cssVar": "--rc-chip-disabled-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/disabled-opacity",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "chip/focus-ring-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-focus-ring-offset)"
+          },
+          "cssVar": "--rc-chip-focus-ring-offset",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/focus-ring-offset",
+              "collection": "RC Contract"
             }
           }
         },
@@ -5671,6 +6904,37 @@
           }
         },
         {
+          "name": "chip/remove-offset-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-remove-offset-inline)"
+          },
+          "cssVar": "--rc-chip-remove-offset-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "chip/remove-target-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-remove-target-size)"
+          },
+          "cssVar": "--rc-chip-remove-target-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 24
+          }
+        },
+        {
           "name": "chip/selected-bg",
           "type": "COLOR",
           "scopes": [
@@ -5685,6 +6949,24 @@
           "values": {
             "Value": {
               "alias": "color/secondary-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "chip/selected-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-selected-color)"
+          },
+          "cssVar": "--rc-chip-selected-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-secondary-container",
               "collection": "Color"
             }
           }
@@ -5739,6 +7021,21 @@
               "alias": "core/motion-effects-duration-fast",
               "collection": "RC Contract"
             }
+          }
+        },
+        {
+          "name": "chip/touch-target-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-touch-target-block-size)"
+          },
+          "cssVar": "--rc-chip-touch-target-block-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 48
           }
         },
         {
@@ -6381,6 +7678,261 @@
           }
         },
         {
+          "name": "fab-menu/bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-bg)"
+          },
+          "cssVar": "--rc-fab-menu-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/fab-menu-bg",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "fab-menu/bg-hover",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-bg-hover)"
+          },
+          "cssVar": "--rc-fab-menu-bg-hover",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "fab-menu/bg",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "fab-menu/bg-open",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-bg-open)"
+          },
+          "cssVar": "--rc-fab-menu-bg-open",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "fab-menu/bg-hover",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "fab-menu/border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-border)"
+          },
+          "cssVar": "--rc-fab-menu-border",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "fab-menu/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-color)"
+          },
+          "cssVar": "--rc-fab-menu-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/fab-menu-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "fab-menu/disabled-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-disabled-opacity)"
+          },
+          "cssVar": "--rc-fab-menu-disabled-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0.38
+          }
+        },
+        {
+          "name": "fab-menu/focus-ring-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-focus-ring-offset)"
+          },
+          "cssVar": "--rc-fab-menu-focus-ring-offset",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/focus-ring-offset",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "fab-menu/font-size",
+          "type": "FLOAT",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-font-size)"
+          },
+          "cssVar": "--rc-fab-menu-font-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 14
+          }
+        },
+        {
+          "name": "fab-menu/font-weight",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-font-weight)"
+          },
+          "cssVar": "--rc-fab-menu-font-weight",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 500
+          }
+        },
+        {
+          "name": "fab-menu/letter-spacing",
+          "type": "FLOAT",
+          "scopes": [
+            "LETTER_SPACING"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-letter-spacing)"
+          },
+          "cssVar": "--rc-fab-menu-letter-spacing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0.10000000149011612
+          }
+        },
+        {
+          "name": "fab-menu/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-padding-block)"
+          },
+          "cssVar": "--rc-fab-menu-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "fab-menu/padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-padding-inline)"
+          },
+          "cssVar": "--rc-fab-menu-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
+          "name": "fab-menu/popup-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-popup-duration)"
+          },
+          "cssVar": "--rc-fab-menu-popup-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 150
+          }
+        },
+        {
+          "name": "fab-menu/radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-radius)"
+          },
+          "cssVar": "--rc-fab-menu-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
+          "name": "fab-menu/size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-size)"
+          },
+          "cssVar": "--rc-fab-menu-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 56
+          }
+        },
+        {
+          "name": "fab-menu/trigger-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-menu-trigger-gap)"
+          },
+          "cssVar": "--rc-fab-menu-trigger-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
           "name": "fab/bg",
           "type": "COLOR",
           "scopes": [
@@ -6400,6 +7952,38 @@
           }
         },
         {
+          "name": "fab/bg-hover",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-bg-hover)"
+          },
+          "cssVar": "--rc-fab-bg-hover",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "fab/bg",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "fab/border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-border)"
+          },
+          "cssVar": "--rc-fab-border",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
           "name": "fab/color",
           "type": "COLOR",
           "scopes": [
@@ -6414,6 +7998,24 @@
             "Value": {
               "alias": "color/computed/fab-color",
               "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "fab/disabled-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-disabled-opacity)"
+          },
+          "cssVar": "--rc-fab-disabled-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/disabled-opacity",
+              "collection": "RC Contract"
             }
           }
         },
@@ -6465,6 +8067,21 @@
           }
         },
         {
+          "name": "fab/gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-gap)"
+          },
+          "cssVar": "--rc-fab-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
           "name": "fab/letter-spacing",
           "type": "FLOAT",
           "scopes": [
@@ -6480,6 +8097,38 @@
           }
         },
         {
+          "name": "fab/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-padding-block)"
+          },
+          "cssVar": "--rc-fab-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "fab/padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-padding-inline)"
+          },
+          "cssVar": "--rc-fab-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
           "name": "fab/radius",
           "type": "FLOAT",
           "scopes": [
@@ -6492,6 +8141,40 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 16
+          }
+        },
+        {
+          "name": "fab/size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-fab-size)"
+          },
+          "cssVar": "--rc-fab-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 56
+          }
+        },
+        {
+          "name": "field/background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-background)"
+          },
+          "cssVar": "--rc-field-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/field-background",
+              "collection": "Color"
+            }
           }
         },
         {
@@ -6514,6 +8197,149 @@
           }
         },
         {
+          "name": "field/border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-border)"
+          },
+          "cssVar": "--rc-field-border",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "field/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-color)"
+          },
+          "cssVar": "--rc-field-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/field-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "field/disabled-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-disabled-opacity)"
+          },
+          "cssVar": "--rc-field-disabled-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 1
+          }
+        },
+        {
+          "name": "field/error-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-error-color)"
+          },
+          "cssVar": "--rc-field-error-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/field-error-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "field/focus-outline",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-focus-outline)"
+          },
+          "cssVar": "--rc-field-focus-outline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "field/gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-gap)"
+          },
+          "cssVar": "--rc-field-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "field/label-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-label-color)"
+          },
+          "cssVar": "--rc-field-label-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/field-label-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "field/supporting-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-supporting-color)"
+          },
+          "cssVar": "--rc-field-supporting-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-variant",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "field/supporting-font-size",
+          "type": "FLOAT",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-supporting-font-size)"
+          },
+          "cssVar": "--rc-field-supporting-font-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
           "name": "field/text",
           "type": "COLOR",
           "scopes": [
@@ -6532,6 +8358,76 @@
           }
         },
         {
+          "name": "list-item/active-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-active-bg)"
+          },
+          "cssVar": "--rc-list-item-active-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/list-item-active-bg",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "list-item/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-color)"
+          },
+          "cssVar": "--rc-list-item-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "list-item/disabled-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-disabled-opacity)"
+          },
+          "cssVar": "--rc-list-item-disabled-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0.38
+          }
+        },
+        {
+          "name": "list-item/focus-state-layer-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-focus-state-layer-opacity)"
+          },
+          "cssVar": "--rc-list-item-focus-state-layer-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "state/focus-state-layer-opacity",
+              "collection": "State"
+            }
+          }
+        },
+        {
           "name": "list-item/gap",
           "type": "FLOAT",
           "scopes": [
@@ -6544,6 +8440,43 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 16
+          }
+        },
+        {
+          "name": "list-item/hover-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-hover-bg)"
+          },
+          "cssVar": "--rc-list-item-hover-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/list-item-hover-bg",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "list-item/hover-state-layer-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-hover-state-layer-opacity)"
+          },
+          "cssVar": "--rc-list-item-hover-state-layer-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "state/hover-state-layer-opacity",
+              "collection": "State"
+            }
           }
         },
         {
@@ -6594,6 +8527,43 @@
           }
         },
         {
+          "name": "list-item/pressed-state-layer-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-pressed-state-layer-opacity)"
+          },
+          "cssVar": "--rc-list-item-pressed-state-layer-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "state/pressed-state-layer-opacity",
+              "collection": "State"
+            }
+          }
+        },
+        {
+          "name": "list-item/selected-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-selected-background)"
+          },
+          "cssVar": "--rc-list-item-selected-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/secondary-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "list-item/selected-bg",
           "type": "COLOR",
           "scopes": [
@@ -6628,6 +8598,98 @@
               "alias": "color/on-secondary-container",
               "collection": "Color"
             }
+          }
+        },
+        {
+          "name": "list-item/state-layer-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-state-layer-color)"
+          },
+          "cssVar": "--rc-list-item-state-layer-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "list-item/transition-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-transition-duration)"
+          },
+          "cssVar": "--rc-list-item-transition-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 150
+          }
+        },
+        {
+          "name": "list/leading-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-leading-gap)"
+          },
+          "cssVar": "--rc-list-leading-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
+          "name": "list/padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-padding-inline)"
+          },
+          "cssVar": "--rc-list-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
+          "name": "list/row-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-row-gap)"
+          },
+          "cssVar": "--rc-list-row-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "list/trailing-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-trailing-gap)"
+          },
+          "cssVar": "--rc-list-trailing-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
           }
         },
         {
@@ -6864,6 +8926,439 @@
             "Value": {
               "alias": "color/on-surface",
               "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/padding",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-padding)"
+          },
+          "cssVar": "--rc-markdown-editor-padding",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-background)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-button-active-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-button-active-background)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-button-active-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/secondary-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-button-active-border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-button-active-border)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-button-active-border",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-button-active-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-button-active-color)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-button-active-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-secondary-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-button-border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-button-border)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-button-border",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-button-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-button-color)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-button-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-variant",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-button-focus-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-button-focus-opacity)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-button-focus-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "state/focus-state-layer-opacity",
+              "collection": "State"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-button-hover-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-button-hover-opacity)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-button-hover-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "state/hover-state-layer-opacity",
+              "collection": "State"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-button-pressed-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-button-pressed-opacity)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-button-pressed-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "state/pressed-state-layer-opacity",
+              "collection": "State"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-button-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-button-radius)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-button-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-full",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-button-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-button-size)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-button-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 40
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-color)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-focus-outline-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-focus-outline-offset)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-focus-outline-offset",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 1
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-gap)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-input-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-input-background)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-input-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-container-highest",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-input-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-input-color)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-input-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-input-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-input-radius)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-input-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-extra-small",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-padding",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-padding)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-padding",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-select-active-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-select-active-background)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-select-active-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/secondary-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-select-active-border-color",
+          "type": "COLOR",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-select-active-border-color)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-select-active-border-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/primary",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-select-active-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-select-active-color)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-select-active-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-secondary-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-select-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-select-background)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-select-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-container-highest",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-select-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-select-color)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-select-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "markdown-editor/toolbar-select-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-markdown-editor-toolbar-select-radius)"
+          },
+          "cssVar": "--rc-markdown-editor-toolbar-select-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-extra-small",
+              "collection": "Shape"
             }
           }
         },
@@ -7703,6 +10198,24 @@
           }
         },
         {
+          "name": "navigation-bar/active-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-bar-active-color)"
+          },
+          "cssVar": "--rc-navigation-bar-active-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "navigation-bar/bg",
           "type": "COLOR",
           "scopes": [
@@ -7740,6 +10253,22 @@
           }
         },
         {
+          "name": "navigation-bar/focus-ring-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-bar-focus-ring-offset)"
+          },
+          "cssVar": "--rc-navigation-bar-focus-ring-offset",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 2
+          }
+        },
+        {
           "name": "navigation-bar/indicator-bg",
           "type": "COLOR",
           "scopes": [
@@ -7769,6 +10298,135 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 0
+          }
+        },
+        {
+          "name": "navigation-bar/indicator-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-bar-indicator-duration)"
+          },
+          "cssVar": "--rc-navigation-bar-indicator-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 150
+          }
+        },
+        {
+          "name": "navigation-bar/indicator-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-bar-indicator-radius)"
+          },
+          "cssVar": "--rc-navigation-bar-indicator-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-full",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
+          "name": "navigation-bar/item-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-bar-item-color)"
+          },
+          "cssVar": "--rc-navigation-bar-item-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-variant",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "navigation-bar/item-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-bar-item-gap)"
+          },
+          "cssVar": "--rc-navigation-bar-item-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "navigation-bar/item-min-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-bar-item-min-block-size)"
+          },
+          "cssVar": "--rc-navigation-bar-item-min-block-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 80
+          }
+        },
+        {
+          "name": "navigation-bar/item-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-bar-item-padding-inline)"
+          },
+          "cssVar": "--rc-navigation-bar-item-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "navigation-bar/padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-bar-padding-inline)"
+          },
+          "cssVar": "--rc-navigation-bar-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "navigation-rail/active-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-active-color)"
+          },
+          "cssVar": "--rc-navigation-rail-active-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
           }
         },
         {
@@ -7809,6 +10467,99 @@
           }
         },
         {
+          "name": "navigation-rail/duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-duration)"
+          },
+          "cssVar": "--rc-navigation-rail-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 300
+          }
+        },
+        {
+          "name": "navigation-rail/expanded-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-expanded-inline-size)"
+          },
+          "cssVar": "--rc-navigation-rail-expanded-inline-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 256
+          }
+        },
+        {
+          "name": "navigation-rail/expanded-item-min-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-expanded-item-min-block-size)"
+          },
+          "cssVar": "--rc-navigation-rail-expanded-item-min-block-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 56
+          }
+        },
+        {
+          "name": "navigation-rail/expanded-item-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-expanded-item-padding-inline)"
+          },
+          "cssVar": "--rc-navigation-rail-expanded-item-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "navigation-rail/item-padding-inline",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "navigation-rail/focus-ring-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-focus-ring-offset)"
+          },
+          "cssVar": "--rc-navigation-rail-focus-ring-offset",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 2
+          }
+        },
+        {
+          "name": "navigation-rail/gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-gap)"
+          },
+          "cssVar": "--rc-navigation-rail-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
           "name": "navigation-rail/indicator-bg",
           "type": "COLOR",
           "scopes": [
@@ -7838,6 +10589,179 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 0
+          }
+        },
+        {
+          "name": "navigation-rail/indicator-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-indicator-duration)"
+          },
+          "cssVar": "--rc-navigation-rail-indicator-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 150
+          }
+        },
+        {
+          "name": "navigation-rail/indicator-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-indicator-radius)"
+          },
+          "cssVar": "--rc-navigation-rail-indicator-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-full",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
+          "name": "navigation-rail/inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-inline-size)"
+          },
+          "cssVar": "--rc-navigation-rail-inline-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 80
+          }
+        },
+        {
+          "name": "navigation-rail/item-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-item-color)"
+          },
+          "cssVar": "--rc-navigation-rail-item-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-variant",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "navigation-rail/item-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-item-gap)"
+          },
+          "cssVar": "--rc-navigation-rail-item-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "navigation-rail/item-min-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-item-min-block-size)"
+          },
+          "cssVar": "--rc-navigation-rail-item-min-block-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 56
+          }
+        },
+        {
+          "name": "navigation-rail/item-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-item-padding-inline)"
+          },
+          "cssVar": "--rc-navigation-rail-item-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "navigation-rail/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-padding-block)"
+          },
+          "cssVar": "--rc-navigation-rail-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "navigation-rail/padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-padding-inline)"
+          },
+          "cssVar": "--rc-navigation-rail-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "navigation-rail/toggle-inline-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-toggle-inline-offset)"
+          },
+          "cssVar": "--rc-navigation-rail-toggle-inline-offset",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
+          "name": "navigation-rail/toggle-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-toggle-size)"
+          },
+          "cssVar": "--rc-navigation-rail-toggle-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 48
           }
         },
         {
@@ -8142,6 +11066,37 @@
           }
         },
         {
+          "name": "scroller/content-max-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-scroller-content-max-inline-size)"
+          },
+          "cssVar": "--rc-scroller-content-max-inline-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 1200
+          }
+        },
+        {
+          "name": "scroller/content-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-scroller-content-padding-inline)"
+          },
+          "cssVar": "--rc-scroller-content-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
           "name": "search-bar/bg",
           "type": "COLOR",
           "scopes": [
@@ -8409,6 +11364,108 @@
           }
         },
         {
+          "name": "segmented-button/bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-segmented-button-bg)"
+          },
+          "cssVar": "--rc-segmented-button-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "segmented-button/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-segmented-button-color)"
+          },
+          "cssVar": "--rc-segmented-button-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "segmented-button/disabled-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-segmented-button-disabled-opacity)"
+          },
+          "cssVar": "--rc-segmented-button-disabled-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/disabled-opacity",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "segmented-button/divider",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-segmented-button-divider)"
+          },
+          "cssVar": "--rc-segmented-button-divider",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "segmented-button/focus-ring-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-segmented-button-focus-ring-offset)"
+          },
+          "cssVar": "--rc-segmented-button-focus-ring-offset",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": -2
+          }
+        },
+        {
+          "name": "segmented-button/radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-segmented-button-radius)"
+          },
+          "cssVar": "--rc-segmented-button-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-full",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
           "name": "segmented-button/segment-min-block-size",
           "type": "FLOAT",
           "scopes": [
@@ -8421,6 +11478,22 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 40
+          }
+        },
+        {
+          "name": "segmented-button/segment-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-segmented-button-segment-padding-inline)"
+          },
+          "cssVar": "--rc-segmented-button-segment-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
           }
         },
         {
@@ -8438,6 +11511,24 @@
           "values": {
             "Value": {
               "alias": "color/secondary-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "segmented-button/selected-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-segmented-button-selected-color)"
+          },
+          "cssVar": "--rc-segmented-button-selected-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-secondary-container",
               "collection": "Color"
             }
           }
@@ -8812,6 +11903,117 @@
           }
         },
         {
+          "name": "snackbar/focus-ring-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-snackbar-focus-ring-offset)"
+          },
+          "cssVar": "--rc-snackbar-focus-ring-offset",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 2
+          }
+        },
+        {
+          "name": "snackbar/max-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-snackbar-max-inline-size)"
+          },
+          "cssVar": "--rc-snackbar-max-inline-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 480
+          }
+        },
+        {
+          "name": "snackbar/min-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-snackbar-min-block-size)"
+          },
+          "cssVar": "--rc-snackbar-min-block-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 48
+          }
+        },
+        {
+          "name": "snackbar/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-snackbar-padding-block)"
+          },
+          "cssVar": "--rc-snackbar-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 14
+          }
+        },
+        {
+          "name": "snackbar/padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-snackbar-padding-inline)"
+          },
+          "cssVar": "--rc-snackbar-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
+          "name": "snackbar/radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-snackbar-radius)"
+          },
+          "cssVar": "--rc-snackbar-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-extra-small",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
+          "name": "splitter/handle-border-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-border-radius)"
+          },
+          "cssVar": "--rc-splitter-handle-border-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 999
+          }
+        },
+        {
           "name": "splitter/handle-color",
           "type": "COLOR",
           "scopes": [
@@ -8830,6 +12032,59 @@
           }
         },
         {
+          "name": "splitter/handle-fill",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-fill)"
+          },
+          "cssVar": "--rc-splitter-handle-fill",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/splitter-handle-fill",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "splitter/handle-hover-fill",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-hover-fill)"
+          },
+          "cssVar": "--rc-splitter-handle-hover-fill",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/splitter-handle-hover-fill",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "splitter/handle-thickness",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-thickness)"
+          },
+          "cssVar": "--rc-splitter-handle-thickness",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
           "name": "splitter/separator-color",
           "type": "COLOR",
           "scopes": [
@@ -8844,6 +12099,89 @@
             "Value": {
               "alias": "color/surface-container",
               "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "splitter/separator-handle-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-separator-handle-size)"
+          },
+          "cssVar": "--rc-splitter-separator-handle-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 32
+          }
+        },
+        {
+          "name": "splitter/separator-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-separator-size)"
+          },
+          "cssVar": "--rc-splitter-separator-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 24
+          }
+        },
+        {
+          "name": "switch/disabled-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-disabled-opacity)"
+          },
+          "cssVar": "--rc-switch-disabled-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/disabled-opacity",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "switch/duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-duration)"
+          },
+          "cssVar": "--rc-switch-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-duration",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "switch/focus-ring-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-focus-ring-offset)"
+          },
+          "cssVar": "--rc-switch-focus-ring-offset",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/focus-ring-offset",
+              "collection": "RC Contract"
             }
           }
         },
@@ -8906,6 +12244,40 @@
           }
         },
         {
+          "name": "switch/selected-thumb-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-selected-thumb-bg)"
+          },
+          "cssVar": "--rc-switch-selected-thumb-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-primary",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "switch/selected-thumb-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-selected-thumb-size)"
+          },
+          "cssVar": "--rc-switch-selected-thumb-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 24
+          }
+        },
+        {
           "name": "switch/selected-track-bg",
           "type": "COLOR",
           "scopes": [
@@ -8925,6 +12297,74 @@
           }
         },
         {
+          "name": "switch/selected-track-border-color",
+          "type": "COLOR",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-selected-track-border-color)"
+          },
+          "cssVar": "--rc-switch-selected-track-border-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/primary",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "switch/thumb-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-thumb-bg)"
+          },
+          "cssVar": "--rc-switch-thumb-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/outline",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "switch/thumb-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-thumb-offset)"
+          },
+          "cssVar": "--rc-switch-thumb-offset",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 6
+          }
+        },
+        {
+          "name": "switch/thumb-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-thumb-size)"
+          },
+          "cssVar": "--rc-switch-thumb-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
           "name": "switch/thumb-translate",
           "type": "FLOAT",
           "scopes": [],
@@ -8935,6 +12375,25 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 18
+          }
+        },
+        {
+          "name": "switch/track-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-track-bg)"
+          },
+          "cssVar": "--rc-switch-track-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-container-highest",
+              "collection": "Color"
+            }
           }
         },
         {
@@ -8965,6 +12424,43 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 52
+          }
+        },
+        {
+          "name": "switch/track-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-track-radius)"
+          },
+          "cssVar": "--rc-switch-track-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-full",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
+          "name": "textarea/active-line-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-textarea-active-line-bg)"
+          },
+          "cssVar": "--rc-textarea-active-line-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/textarea-active-line-bg",
+              "collection": "Color"
+            }
           }
         },
         {
@@ -9078,6 +12574,22 @@
           }
         },
         {
+          "name": "textarea/padding",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-textarea-padding)"
+          },
+          "cssVar": "--rc-textarea-padding",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
           "name": "toolbar/gap-inline",
           "type": "FLOAT",
           "scopes": [
@@ -9173,6 +12685,164 @@
           }
         },
         {
+          "name": "transfer-list/listbox-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-transfer-list-listbox-bg)"
+          },
+          "cssVar": "--rc-transfer-list-listbox-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "transfer-list/listbox-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-transfer-list-listbox-radius)"
+          },
+          "cssVar": "--rc-transfer-list-listbox-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-extra-small",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
+          "name": "transfer-list/option-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-transfer-list-option-gap)"
+          },
+          "cssVar": "--rc-transfer-list-option-gap",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "transfer-list/option-hover-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-transfer-list-option-hover-bg)"
+          },
+          "cssVar": "--rc-transfer-list-option-hover-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/transfer-list-option-hover-bg",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "transfer-list/option-hover-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-transfer-list-option-hover-color)"
+          },
+          "cssVar": "--rc-transfer-list-option-hover-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "transfer-list/option-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-transfer-list-option-padding-block)"
+          },
+          "cssVar": "--rc-transfer-list-option-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "transfer-list/option-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-transfer-list-option-padding-inline)"
+          },
+          "cssVar": "--rc-transfer-list-option-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "transfer-list/option-selected-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-transfer-list-option-selected-bg)"
+          },
+          "cssVar": "--rc-transfer-list-option-selected-bg",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/secondary-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "transfer-list/option-selected-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-transfer-list-option-selected-color)"
+          },
+          "cssVar": "--rc-transfer-list-option-selected-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-secondary-container",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "transfer-list/panel-gap",
           "type": "FLOAT",
           "scopes": [
@@ -9204,6 +12874,21 @@
               "alias": "color/surface-container-high",
               "collection": "Color"
             }
+          }
+        },
+        {
+          "name": "virtual-canvas/scrollbar-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-virtual-canvas-scrollbar-size)"
+          },
+          "cssVar": "--rc-virtual-canvas-scrollbar-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
           }
         },
         {
@@ -9595,6 +13280,16 @@
     "note": "Composite values are CSS shorthands with no single-variable Figma equivalent; bind their parts individually. Forced-colors and reduced-motion overrides are accessibility fallbacks Figma cannot express.",
     "composite": [
       {
+        "property": "--rc-adaptive-menu-popup-shadow",
+        "raw": "0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%)",
+        "name": "adaptive-menu/popup-shadow"
+      },
+      {
+        "property": "--rc-adaptive-menu-trigger-background",
+        "raw": "transparent",
+        "name": "adaptive-menu/trigger-background"
+      },
+      {
         "property": "--rc-app-bar-scroll-divider",
         "raw": "1px solid var(--md-sys-color-outline-variant, ButtonBorder)",
         "name": "app-bar/scroll-divider"
@@ -9621,9 +13316,20 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-bottom-sheet-snap-easing",
+        "raw": "var( --rc-motion-spatial-easing-default, cubic-bezier(0.2, 0, 0, 1) )",
+        "name": "bottom-sheet/snap-easing",
+        "reason": "aliases a composite shorthand"
+      },
+      {
         "property": "--rc-button-font",
         "raw": "500 var(--md-sys-typescale-label-large-size, 0.875rem) / var(--md-sys-typescale-label-large-line-height, 1.25rem) var(--rc-font-family)",
         "name": "button/font"
+      },
+      {
+        "property": "--rc-card-shadow",
+        "raw": "0 1px 2px color-mix(in srgb, var(--md-sys-color-shadow, #000) 30%, transparent), 0 1px 3px 1px color-mix(in srgb, var(--md-sys-color-shadow, #000) 15%, transparent)",
+        "name": "card/shadow"
       },
       {
         "property": "--rc-chip-border",
@@ -9631,9 +13337,25 @@
         "name": "chip/border"
       },
       {
+        "property": "--rc-chip-focus-ring",
+        "raw": "var(--rc-focus-ring)",
+        "name": "chip/focus-ring",
+        "reason": "aliases a composite shorthand"
+      },
+      {
         "property": "--rc-chip-font",
         "raw": "inherit",
         "name": "chip/font"
+      },
+      {
+        "property": "--rc-chip-group-scrollbar-width",
+        "raw": "none",
+        "name": "chip-group/scrollbar-width"
+      },
+      {
+        "property": "--rc-chip-selected-border-color",
+        "raw": "transparent",
+        "name": "chip/selected-border-color"
       },
       {
         "property": "--rc-chip-state-layer-transition-easing",
@@ -9658,10 +13380,80 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-fab-active-transform",
+        "raw": "scale(0.96)",
+        "name": "fab/active-transform"
+      },
+      {
+        "property": "--rc-fab-disabled-shadow",
+        "raw": "none",
+        "name": "fab/disabled-shadow"
+      },
+      {
         "property": "--rc-fab-focus-ring",
         "raw": "var(--rc-focus-ring)",
         "name": "fab/focus-ring",
         "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-fab-menu-active-transform",
+        "raw": "scale(0.96)",
+        "name": "fab-menu/active-transform"
+      },
+      {
+        "property": "--rc-fab-menu-appearance",
+        "raw": "none",
+        "name": "fab-menu/appearance"
+      },
+      {
+        "property": "--rc-fab-menu-disabled-shadow",
+        "raw": "none",
+        "name": "fab-menu/disabled-shadow"
+      },
+      {
+        "property": "--rc-fab-menu-focus-ring",
+        "raw": "var(--rc-focus-ring)",
+        "name": "fab-menu/focus-ring",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-fab-menu-shadow",
+        "raw": "var(--rc-shadow-level3)",
+        "name": "fab-menu/shadow",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-fab-menu-shadow-active",
+        "raw": "var(--rc-shadow-level3)",
+        "name": "fab-menu/shadow-active",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-fab-menu-shadow-hover",
+        "raw": "var(--rc-shadow-level4)",
+        "name": "fab-menu/shadow-hover",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-fab-menu-shadow-open",
+        "raw": "var(--rc-fab-menu-shadow-hover)",
+        "name": "fab-menu/shadow-open",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-fab-menu-text-decoration",
+        "raw": "none",
+        "name": "fab-menu/text-decoration"
+      },
+      {
+        "property": "--rc-fab-menu-transition",
+        "raw": "background var(--md-sys-motion-duration-short4, 200ms) ease, box-shadow var(--md-sys-motion-duration-short4, 200ms) ease, transform var(--md-sys-motion-duration-short4, 200ms) ease",
+        "name": "fab-menu/transition"
+      },
+      {
+        "property": "--rc-fab-menu-user-select",
+        "raw": "none",
+        "name": "fab-menu/user-select"
       },
       {
         "property": "--rc-fab-shadow",
@@ -9679,9 +13471,34 @@
         "name": "fab/shadow-hover"
       },
       {
+        "property": "--rc-fab-transition",
+        "raw": "background var(--rc-motion-duration, 200ms) ease, box-shadow var(--rc-motion-duration, 200ms) ease, transform var(--rc-motion-duration, 200ms) ease",
+        "name": "fab/transition"
+      },
+      {
+        "property": "--rc-field-min-block-size",
+        "raw": "max( 3.5em, calc(var(--_rc-field-label-line-height) + var(--_rc-field-input-line-height)) )",
+        "name": "field/min-block-size"
+      },
+      {
+        "property": "--rc-field-padding",
+        "raw": "0 1rem",
+        "name": "field/padding"
+      },
+      {
         "property": "--rc-focus-ring",
         "raw": "2px solid var(--md-sys-color-primary, Highlight)",
         "name": "core/focus-ring"
+      },
+      {
+        "property": "--rc-list-item-background",
+        "raw": "transparent",
+        "name": "list-item/background"
+      },
+      {
+        "property": "--rc-list-item-divider",
+        "raw": "1px solid var(--md-sys-color-outline-variant, GrayText)",
+        "name": "list-item/divider"
       },
       {
         "property": "--rc-listbox-option-transition",
@@ -9694,9 +13511,39 @@
         "name": "markdown-editor/border"
       },
       {
+        "property": "--rc-markdown-editor-border-radius",
+        "raw": "0 0 var(--md-sys-shape-corner-small, 0.5rem) var(--md-sys-shape-corner-small, 0.5rem)",
+        "name": "markdown-editor/border-radius"
+      },
+      {
         "property": "--rc-markdown-editor-focus-outline",
         "raw": "2px solid var(--md-sys-color-primary, Highlight)",
         "name": "markdown-editor/focus-outline"
+      },
+      {
+        "property": "--rc-markdown-editor-toolbar-border",
+        "raw": "1px solid var(--md-sys-color-outline, ButtonBorder)",
+        "name": "markdown-editor/toolbar-border"
+      },
+      {
+        "property": "--rc-markdown-editor-toolbar-focus-outline",
+        "raw": "2px solid var(--md-sys-color-primary, Highlight)",
+        "name": "markdown-editor/toolbar-focus-outline"
+      },
+      {
+        "property": "--rc-markdown-editor-toolbar-input-border",
+        "raw": "1px solid var(--md-sys-color-outline, ButtonBorder)",
+        "name": "markdown-editor/toolbar-input-border"
+      },
+      {
+        "property": "--rc-markdown-editor-toolbar-radius",
+        "raw": "var(--md-sys-shape-corner-small, 0.5rem) var(--md-sys-shape-corner-small, 0.5rem) 0 0",
+        "name": "markdown-editor/toolbar-radius"
+      },
+      {
+        "property": "--rc-markdown-editor-toolbar-select-border",
+        "raw": "1px solid var(--md-sys-color-outline, ButtonBorder)",
+        "name": "markdown-editor/toolbar-select-border"
       },
       {
         "property": "--rc-menu-button-trigger-background",
@@ -9769,14 +13616,44 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-navigation-bar-block-size",
+        "raw": "calc(5rem + env(safe-area-inset-bottom, 0px))",
+        "name": "navigation-bar/block-size"
+      },
+      {
+        "property": "--rc-navigation-bar-focus-ring",
+        "raw": "2px solid var(--md-sys-color-primary, Highlight)",
+        "name": "navigation-bar/focus-ring"
+      },
+      {
+        "property": "--rc-navigation-bar-item-padding-block",
+        "raw": "0.75rem 1rem",
+        "name": "navigation-bar/item-padding-block"
+      },
+      {
         "property": "--rc-navigation-bar-item-text-decoration",
         "raw": "none",
         "name": "navigation-bar/item-text-decoration"
       },
       {
+        "property": "--rc-navigation-bar-padding-block",
+        "raw": "0 0",
+        "name": "navigation-bar/padding-block"
+      },
+      {
+        "property": "--rc-navigation-rail-focus-ring",
+        "raw": "2px solid var(--md-sys-color-primary, Highlight)",
+        "name": "navigation-rail/focus-ring"
+      },
+      {
         "property": "--rc-navigation-rail-item-text-decoration",
         "raw": "none",
         "name": "navigation-rail/item-text-decoration"
+      },
+      {
+        "property": "--rc-scroller-scrollbar-width",
+        "raw": "thin",
+        "name": "scroller/scrollbar-width"
       },
       {
         "property": "--rc-search-bar-border",
@@ -9794,6 +13671,22 @@
         "raw": "var(--rc-shadow-level3)",
         "name": "search-bar/view-shadow",
         "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-segmented-button-border",
+        "raw": "1px solid var(--md-sys-color-outline, ButtonBorder)",
+        "name": "segmented-button/border"
+      },
+      {
+        "property": "--rc-segmented-button-focus-ring",
+        "raw": "var(--rc-focus-ring)",
+        "name": "segmented-button/focus-ring",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-segmented-button-segment-gap",
+        "raw": "0.5em",
+        "name": "segmented-button/segment-gap"
       },
       {
         "property": "--rc-select-border",
@@ -9848,14 +13741,66 @@
         "name": "snackbar/action-font"
       },
       {
+        "property": "--rc-snackbar-focus-ring",
+        "raw": "2px solid var(--md-sys-color-inverse-primary, Highlight)",
+        "name": "snackbar/focus-ring"
+      },
+      {
+        "property": "--rc-snackbar-inset-block-end",
+        "raw": "calc(1rem + var(--rc-navigation-bar-block-size, 0px))",
+        "name": "snackbar/inset-block-end"
+      },
+      {
+        "property": "--rc-snackbar-shadow",
+        "raw": "var(--rc-shadow-level3)",
+        "name": "snackbar/shadow",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-splitter-handle-pattern",
+        "raw": "none",
+        "name": "splitter/handle-pattern"
+      },
+      {
+        "property": "--rc-splitter-handle-transition",
+        "raw": "150ms var(--md-sys-motion-easing-standard, ease)",
+        "name": "splitter/handle-transition"
+      },
+      {
         "property": "--rc-splitter-keyline",
         "raw": "1px solid var(--md-sys-color-outline-variant, ButtonBorder)",
         "name": "splitter/keyline"
       },
       {
+        "property": "--rc-splitter-separator-border-block-end",
+        "raw": "none",
+        "name": "splitter/separator-border-block-end"
+      },
+      {
+        "property": "--rc-splitter-separator-border-block-start",
+        "raw": "none",
+        "name": "splitter/separator-border-block-start"
+      },
+      {
+        "property": "--rc-splitter-separator-border-inline-end",
+        "raw": "none",
+        "name": "splitter/separator-border-inline-end"
+      },
+      {
+        "property": "--rc-splitter-separator-border-inline-start",
+        "raw": "none",
+        "name": "splitter/separator-border-inline-start"
+      },
+      {
         "property": "--rc-switch-decoration-display",
         "raw": "block",
         "name": "switch/decoration-display"
+      },
+      {
+        "property": "--rc-switch-focus-ring",
+        "raw": "var(--rc-focus-ring)",
+        "name": "switch/focus-ring",
+        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-switch-icon-display",
@@ -9866,6 +13811,11 @@
         "property": "--rc-switch-native-appearance",
         "raw": "none",
         "name": "switch/native-appearance"
+      },
+      {
+        "property": "--rc-switch-track-border",
+        "raw": "2px solid var(--md-sys-color-outline, ButtonBorder)",
+        "name": "switch/track-border"
       },
       {
         "property": "--rc-textarea-border",
@@ -9883,6 +13833,16 @@
         "name": "textarea/gutter-border"
       },
       {
+        "property": "--rc-theme-material-accordion-easing",
+        "raw": "cubic-bezier( var(--md-sys-motion-easing-standard-x0, 0.2), var(--md-sys-motion-easing-standard-y0, 0), var(--md-sys-motion-easing-standard-x1, 0), var(--md-sys-motion-easing-standard-y1, 1) )",
+        "name": "core/theme-material-accordion-easing"
+      },
+      {
+        "property": "--rc-theme-material-disclosure-easing",
+        "raw": "cubic-bezier( var(--md-sys-motion-easing-standard-x0, 0.2), var(--md-sys-motion-easing-standard-y0, 0), var(--md-sys-motion-easing-standard-x1, 0), var(--md-sys-motion-easing-standard-y1, 1) )",
+        "name": "core/theme-material-disclosure-easing"
+      },
+      {
         "property": "--rc-thumb-radius",
         "raw": "calc(var(--md-slider-handle-width, 1.25rem) / 2)",
         "name": "core/thumb-radius"
@@ -9891,9 +13851,20 @@
         "property": "--rc-transfer-list-listbox-border",
         "raw": "1px solid var(--md-sys-color-outline-variant, ButtonBorder)",
         "name": "transfer-list/listbox-border"
+      },
+      {
+        "property": "--rc-virtual-canvas-scrollbar-width",
+        "raw": "thin",
+        "name": "virtual-canvas/scrollbar-width"
       }
     ],
     "unresolved": [
+      {
+        "property": "--rc-button-state-layer-easing",
+        "raw": "var( --md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1) )",
+        "reason": "literal",
+        "scope": "rc-theme-material"
+      },
       {
         "property": "--rc-fab-font-family",
         "raw": "var( --md-fab-label-text-font, var(--md-sys-typescale-label-large-font, inherit) )",
@@ -9901,8 +13872,44 @@
         "scope": "rc-theme-material"
       },
       {
+        "property": "--rc-fab-menu-font-family",
+        "raw": "var( --md-fab-label-text-font, var(--md-sys-typescale-label-large-font, inherit) )",
+        "reason": "literal",
+        "scope": "rc-theme-material"
+      },
+      {
+        "property": "--rc-field-radius",
+        "raw": "var(--md-filled-text-field-container-shape, 0.25rem 0.25rem 0 0)",
+        "reason": "literal",
+        "scope": "rc-theme-material"
+      },
+      {
         "property": "--rc-font-family",
         "raw": "var(--md-sys-typescale-body-medium-font, inherit)",
+        "reason": "literal",
+        "scope": "rc-theme-material"
+      },
+      {
+        "property": "--rc-list-item-transition-easing",
+        "raw": "var(--md-sys-motion-easing-standard, ease)",
+        "reason": "literal",
+        "scope": "rc-theme-material"
+      },
+      {
+        "property": "--rc-navigation-bar-indicator-easing",
+        "raw": "var( --md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1) )",
+        "reason": "literal",
+        "scope": "rc-theme-material"
+      },
+      {
+        "property": "--rc-navigation-rail-easing",
+        "raw": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
+        "reason": "literal",
+        "scope": "rc-theme-material"
+      },
+      {
+        "property": "--rc-navigation-rail-indicator-easing",
+        "raw": "var( --md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1) )",
         "reason": "literal",
         "scope": "rc-theme-material"
       },

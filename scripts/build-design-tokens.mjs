@@ -19,7 +19,7 @@
  * is mode-agnostic and inherits light or dark through the aliases it follows.
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 const root = process.cwd();
@@ -655,24 +655,52 @@ function buildVariable({ name, property, type, values, description }) {
   };
 }
 
+/**
+ * A declaration under a state or modifier selector is an override of the base
+ * value rather than the value itself, so it must not be mistaken for the
+ * component's default.
+ */
+function isStateScoped(scope) {
+  return /\[|:(hover|focus|focus-visible|focus-within|active|checked|disabled|open|indeterminate)/.test(
+    scope,
+  );
+}
+
 function readTheme(themePackage) {
   const base = join(root, 'packages', themePackage);
+  const componentsDir = join(base, 'components');
+  // Most component tokens are set in components/*.css rather than the bridge,
+  // so the contract is incomplete without them.
+  const componentFiles = existsSync(componentsDir)
+    ? readdirSync(componentsDir)
+        .filter((name) => name.endsWith('.css'))
+        .sort()
+    : [];
 
   return {
     defaults: parseDeclarations(readFileSync(join(base, 'defaults.css'), 'utf8')),
     bridge: parseDeclarations(readFileSync(join(base, 'bridge.css'), 'utf8')),
+    components: componentFiles.flatMap((file) =>
+      parseDeclarations(readFileSync(join(componentsDir, file), 'utf8')),
+    ),
   };
 }
 
 function buildDocument(theme) {
-  const { defaults, bridge } = readTheme(theme.themePackage);
+  const { defaults, bridge, components } = readTheme(theme.themePackage);
 
   // @layer only establishes cascade order, so those declarations are still the
   // theme's base values. @media blocks are forced-colors and reduced-motion
   // fallbacks, which have no Figma equivalent.
   const isBase = (entry) => entry.media.length === 0;
   const defaultDecls = defaults.filter(isBase);
-  const bridgeDecls = bridge.filter(isBase);
+  const bridgeDecls = [
+    ...bridge.filter(isBase),
+    // The bridge sets the shared contract; components/*.css sets the
+    // per-component defaults. Both are the theme's base values, and the bridge
+    // wins where the two overlap because it is listed first.
+    ...components.filter((entry) => isBase(entry) && !isStateScoped(entry.scope)),
+  ];
 
   const byProperty = new Map();
 
