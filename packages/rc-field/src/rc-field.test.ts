@@ -254,6 +254,23 @@ test('updates populated and counter state from native input and sync()', async (
   expect($counter.textContent).toBe('5 / 10');
 });
 
+test('an empty leading/trailing/prefix/suffix slot takes up no width', async () => {
+  const $field = await fieldFixture(html`
+    <rc-field data-testid="field">
+      <label slot="label">Name</label>
+      <input />
+    </rc-field>
+  `);
+
+  for (const part of ['leading', 'trailing', 'prefix', 'suffix']) {
+    const $slot = $field.shadowRoot!.querySelector<HTMLElement>(`[part="${part}"]`)!;
+
+    expect($slot.className).toContain('empty-slot');
+    expect(getComputedStyle($slot).display).toBe('none');
+    expect($slot.getBoundingClientRect().width).toBe(0);
+  }
+});
+
 test('discovers a native select as the control and reflects populated state', async () => {
   const $field = await fieldFixture(html`
     <rc-field data-testid="field">

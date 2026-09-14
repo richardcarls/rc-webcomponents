@@ -75,7 +75,17 @@ export const fieldStyles = css`
     margin-inline-start: var(--rc-field-control-gap, 0.25rem);
   }
 
-  .empty-slot {
+  /*
+   * Must repeat the #leading/#trailing/#prefix/#suffix id selectors: a class alone
+   * (0,1,0) can never beat their own display:inline-flex rule above, an id selector
+   * (1,0,0) — an empty slot region reflowed as an invisible box but kept its
+   * inline-flex layout box (and any margin set for the non-empty case), silently
+   * eating into the control's available width.
+   */
+  #leading.empty-slot,
+  #trailing.empty-slot,
+  #prefix.empty-slot,
+  #suffix.empty-slot {
     display: none;
   }
 
