@@ -32,7 +32,7 @@
     );
     --rc-field-error-color: var(
       --md-filled-text-field-error-focus-label-text-color,
-      var(--md-sys-color-error, Mark)
+      var(--md-sys-color-error, red)
     );
     --rc-field-disabled-opacity: 1;
     --rc-field-focus-outline: 0;
@@ -250,15 +250,15 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(field) {
-    border-block-end-color: var(--md-sys-color-error, Mark);
+    border-block-end-color: var(--md-sys-color-error, red);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(field)::after {
-    background: var(--md-sys-color-error, Mark);
+    background: var(--md-sys-color-error, red);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(label) {
-    color: var(--md-sys-color-error, Mark);
+    color: var(--md-sys-color-error, red);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-disabled]::part(field) {
@@ -336,7 +336,7 @@
     rc-field.rc-field--outlined[data-invalid]::part(field),
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field.rc-field--outlined[data-invalid]::part(field)::after {
-    border-color: var(--md-sys-color-error, Mark);
+    border-color: var(--md-sys-color-error, red);
   }
 
   @media (prefers-reduced-motion: no-preference) {

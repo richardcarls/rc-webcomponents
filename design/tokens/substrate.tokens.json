@@ -424,6 +424,34 @@
           }
         },
         {
+          "name": "color/error",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--substrate-error)"
+          },
+          "cssVar": "--substrate-error",
+          "values": {
+            "Light": {
+              "r": 0.675779,
+              "g": 0.004464,
+              "b": 0.102126,
+              "a": 1,
+              "hex": "#ac011a"
+            },
+            "Dark": {
+              "r": 0.9851,
+              "g": 0.506995,
+              "b": 0.477447,
+              "a": 1,
+              "hex": "#fb817a"
+            }
+          }
+        },
+        {
           "name": "color/field",
           "type": "COLOR",
           "scopes": [
@@ -2604,6 +2632,24 @@
           "values": {
             "Value": {
               "alias": "color/field",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "field/error-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-error-color)"
+          },
+          "cssVar": "--rc-field-error-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/error",
               "collection": "Color"
             }
           }

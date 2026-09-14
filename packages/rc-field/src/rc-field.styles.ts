@@ -142,7 +142,12 @@ export const fieldStyles = css`
   }
 
   #error {
-    color: var(--rc-field-error-color, Mark);
+    /*
+     * Falls back to the validation red a user agent uses for an invalid
+     * control, not to a system color. Mark is the background of highlighted
+     * text, which renders as pure yellow and is unreadable as a foreground.
+     */
+    color: var(--rc-field-error-color, red);
   }
 
   #counter {
@@ -152,7 +157,7 @@ export const fieldStyles = css`
   }
 
   :host([data-invalid]) #field {
-    border-color: var(--rc-field-error-color, Mark);
+    border-color: var(--rc-field-error-color, red);
   }
 
   :host([data-disabled]) {

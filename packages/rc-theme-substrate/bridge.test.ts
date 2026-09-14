@@ -34,6 +34,20 @@ test('bridge maps Substrate tokens to the RC token contract', () => {
   expect(styles.getPropertyValue('--rc-motion-duration').trim()).toBe('160ms');
 });
 
+test('bridge maps the error color rather than leaving it to a system color', () => {
+  const scope = renderScope();
+
+  scope.style.setProperty('--substrate-error', 'rgb(172, 1, 26)');
+
+  const styles = getComputedStyle(scope);
+
+  expect(styles.getPropertyValue('--rc-field-error-color').trim()).toBe('rgb(172, 1, 26)');
+
+  // Mark is the background of highlighted text and renders as pure yellow,
+  // which is unreadable as a foreground on a light field.
+  expect(styles.getPropertyValue('--rc-field-error-color')).not.toContain('Mark');
+});
+
 test('bridge defines shared popup and slider component tokens', () => {
   const scope = renderScope();
   const listbox = document.createElement('rc-listbox');

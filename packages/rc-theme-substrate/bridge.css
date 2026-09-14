@@ -12,6 +12,7 @@
     --rc-field: var(--substrate-field, Field);
     --rc-button-bg: var(--substrate-surface-raised, ButtonFace);
     --rc-field-text: var(--substrate-on-surface, FieldText);
+    --rc-field-error-color: var(--substrate-error, red);
     --rc-button-text: var(--substrate-on-surface, ButtonText);
     --rc-highlight: var(--substrate-primary-container, Highlight);
     --rc-highlight-text: var(--substrate-on-primary-container, HighlightText);
