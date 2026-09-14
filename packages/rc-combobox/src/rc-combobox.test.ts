@@ -7,14 +7,19 @@ import './define.js';
 import type { RCCombobox } from './rc-combobox.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
-function makeCombobox(opts?: { multiple?: boolean; allowCreate?: boolean; placeholder?: string }) {
+function makeCombobox(opts?: {
+  multiple?: boolean;
+  allowCreate?: boolean;
+  placeholder?: string;
+  required?: boolean;
+}) {
   return html`
     <rc-combobox
       ?multiple=${opts?.multiple ?? false}
       ?allow-create=${opts?.allowCreate ?? false}
       placeholder=${opts?.placeholder ?? 'Search...'}
     >
-      <select aria-label="Fruit" ?multiple=${opts?.multiple ?? false}>
+      <select aria-label="Fruit" ?multiple=${opts?.multiple ?? false} ?required=${opts?.required ?? false}>
         <option value="apple">Apple</option>
         <option value="banana">Banana</option>
         <option value="cherry" disabled>Cherry</option>
@@ -143,6 +148,54 @@ test('ArrowDown opens to the first option and Enter selects it', async () => {
   expect(changeHandler.mock.calls[0][0].detail.selectedOptions).toEqual([
     { value: 'apple', label: 'Apple', disabled: false },
   ]);
+});
+
+test('selecting an option dispatches native input and change on the slotted select', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+  const $nativeSel = $host.querySelector('select')!;
+  const onInput = vi.fn();
+  const onChange = vi.fn();
+
+  $nativeSel.addEventListener('input', onInput);
+  $nativeSel.addEventListener('change', onChange);
+
+  $input.focus();
+  await $host.updateComplete;
+
+  $input.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+  );
+  await $host.updateComplete;
+
+  $input.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+  );
+  await $host.updateComplete;
+
+  expect(onInput).toHaveBeenCalledOnce();
+  expect(onChange).toHaveBeenCalledOnce();
+});
+
+test('focus() and blur() forward to the input trigger, inherited from rc-select', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+
+  $host.focus();
+  expect($host.shadowRoot!.activeElement).toBe($input);
+
+  $host.blur();
+  expect($host.shadowRoot!.activeElement).toBe(null);
+});
+
+test('required on the slotted select reflects as aria-required on the input trigger', async () => {
+  const screen = render(makeCombobox({ required: true }));
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+
+  expect($input.getAttribute('aria-required')).toBe('true');
 });
 
 test('Escape clears filter and closes popup', async () => {

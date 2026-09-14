@@ -368,6 +368,72 @@ test('native <select> value syncs after selection', async () => {
   expect($nativeSel.value).toBe('banana');
 });
 
+test('user selection dispatches native input and change on the slotted select', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+  const onInput = vi.fn();
+  const onChange = vi.fn();
+
+  $nativeSel.addEventListener('input', onInput);
+  $nativeSel.addEventListener('change', onChange);
+
+  host.openPopup();
+  await host.updateComplete;
+
+  const $listbox = host.renderRoot.querySelector('rc-listbox')!;
+
+  $listbox
+    .querySelector<HTMLElement>('[data-value="banana"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+  await host.updateComplete;
+
+  expect(onInput).toHaveBeenCalledOnce();
+  expect(onChange).toHaveBeenCalledOnce();
+});
+
+test('host value writes do not dispatch native input or change on the slotted select', async () => {
+  const screen = render(makeSelect({ multiple: true }));
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+  const onInput = vi.fn();
+  const onChange = vi.fn();
+
+  $nativeSel.addEventListener('input', onInput);
+  $nativeSel.addEventListener('change', onChange);
+
+  host.value = ['apple'];
+  await host.updateComplete;
+
+  expect(onInput).not.toHaveBeenCalled();
+  expect(onChange).not.toHaveBeenCalled();
+});
+
+test('focus() and blur() forward to the trigger', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const $trigger = getTrigger(host);
+
+  host.focus();
+  expect(host.shadowRoot!.activeElement).toBe($trigger);
+
+  host.blur();
+  expect(host.shadowRoot!.activeElement).toBe(null);
+});
+
+test('required on the slotted select reflects as aria-required on the trigger', async () => {
+  const screen = render(html`
+    <rc-select>
+      <select required>
+        <option value="apple">Apple</option>
+      </select>
+    </rc-select>
+  `);
+  const host = await getHost(screen);
+
+  expect(getTrigger(host).getAttribute('aria-required')).toBe('true');
+});
+
 test('disabled option cannot be selected', async () => {
   const screen = render(makeSelect());
   const host = await getHost(screen);

@@ -12,6 +12,7 @@ import type {
   RCButtonToggleDetail,
   RCDialogRef,
   RCDisclosureRef,
+  RCFieldRef,
   RCListboxRef,
   RCMenuActivateDetail,
   RCMenuRef,
@@ -1898,6 +1899,61 @@ export function SearchBarDemo() {
         </button>
       </p>
       <EventLog entries={log} />
+    </DemoFrame>
+  );
+}
+
+export function FieldDemo() {
+  const [titleField, setTitleField] = useState<RCFieldRef | null>(null);
+
+  return (
+    <DemoFrame>
+      <form
+        style={{ display: 'grid', gap: '1.5rem', maxInlineSize: '28rem' }}
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <rc-field ref={setTitleField} counter>
+          <span slot="leading" aria-hidden="true">
+            ✎
+          </span>
+          <label slot="label" htmlFor="field-demo-title">
+            Recipe title
+          </label>
+          <input
+            id="field-demo-title"
+            name="title"
+            maxLength={80}
+            placeholder="Tomato soup"
+            required
+          />
+          <small slot="hint">Use the title printed on the recipe.</small>
+          <small slot="error">Enter a recipe title.</small>
+        </rc-field>
+
+        <rc-field className="rc-field--outlined">
+          <label slot="label" htmlFor="field-demo-notes">
+            Preparation notes
+          </label>
+          <textarea id="field-demo-notes" name="notes" rows={3} placeholder="Optional notes" />
+          <span slot="suffix">min</span>
+        </rc-field>
+
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button type="submit">Validate</button>
+          <button
+            type="button"
+            onClick={() => {
+              if (titleField?.control) {
+                titleField.control.value = 'Tomato soup';
+                titleField.sync();
+              }
+            }}
+          >
+            Set title with JavaScript
+          </button>
+          <button type="reset">Reset</button>
+        </div>
+      </form>
     </DemoFrame>
   );
 }

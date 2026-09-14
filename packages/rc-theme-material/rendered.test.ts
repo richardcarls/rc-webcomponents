@@ -3,8 +3,11 @@ import { afterEach, expect, test } from 'vitest';
 
 import '@rcarls/rc-adaptive-menu/define';
 import '@rcarls/rc-button/define';
+import '@rcarls/rc-combobox/define';
+import '@rcarls/rc-field/define';
 import '@rcarls/rc-list/define';
 import '@rcarls/rc-menu-button/define';
+import '@rcarls/rc-select/define';
 
 import './theme.css';
 import { logicalInsets, unexpectedOverflow } from '../../test-helpers/rendered-ui';
@@ -32,6 +35,177 @@ async function settle(element: Element): Promise<void> {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
   );
 }
+
+test('Material fields render filled and outlined native-control compositions', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-field counter>
+      <label slot="label">Recipe title</label>
+      <input value="Soup" maxlength="80" required>
+      <small slot="hint">Use a descriptive title.</small>
+    </rc-field>
+    <rc-field class="rc-field--outlined">
+      <label slot="label">Notes</label>
+      <textarea rows="3"></textarea>
+    </rc-field>
+    <rc-field>
+      <label slot="label">Amount per serving</label>
+      <input type="number">
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const [$filled, $outlined, $empty] = scope.querySelectorAll('rc-field');
+  const $filledSurface = $filled.shadowRoot?.querySelector<HTMLElement>('[part="field"]');
+  const $outlinedSurface = $outlined.shadowRoot?.querySelector<HTMLElement>('[part="field"]');
+  const $filledLabel = $filled.shadowRoot?.querySelector<HTMLElement>('[part="label"]');
+  const $filledControl = $filled.querySelector('input');
+  const $emptyLabel = $empty.shadowRoot?.querySelector<HTMLElement>('[part="label"]');
+  const $emptyControl = $empty.querySelector('input');
+
+  expect($filledSurface).not.toBeNull();
+  expect($outlinedSurface).not.toBeNull();
+  expect($filledLabel).not.toBeNull();
+  expect($filledControl).not.toBeNull();
+  expect($emptyLabel).not.toBeNull();
+  expect($emptyControl).not.toBeNull();
+  expect($filledSurface!.getBoundingClientRect().height).toBe(56);
+  expect(getComputedStyle($filledSurface!).borderBottomWidth).toBe('1px');
+  expect(getComputedStyle($outlinedSurface!).borderTopWidth).toBe('1px');
+  expect($outlined.hasAttribute('data-multiline')).toBe(true);
+  expect($filled.querySelector('input')?.isConnected).toBe(true);
+  expect($filledLabel!.getBoundingClientRect().left).toBe($filledControl!.getBoundingClientRect().left);
+
+  expect($filledLabel!.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    $filledControl!.getBoundingClientRect().top,
+  );
+
+  const restingTop = $emptyLabel!.getBoundingClientRect().top;
+
+  $emptyControl!.focus();
+  await settle($empty);
+
+  expect($empty.hasAttribute('data-focused')).toBe(true);
+
+  await expect
+    .poll(() => $emptyLabel!.getBoundingClientRect().top)
+    .toBeLessThan(restingTop);
+});
+
+test('rc-select and rc-combobox lose their own chrome when composed as rc-field control providers', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label">Unit</label>
+      <rc-select data-rc-field-control>
+        <select>
+          <option value="">Choose a unit</option>
+          <option value="oz">oz</option>
+        </select>
+      </rc-select>
+    </rc-field>
+    <rc-field>
+      <label slot="label">Categories</label>
+      <rc-combobox data-rc-field-control multiple>
+        <select multiple>
+          <option value="braiser">Braiser</option>
+        </select>
+      </rc-combobox>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const [$selectField, $comboboxField] = scope.querySelectorAll('rc-field');
+  const $select = $selectField.querySelector('rc-select')!;
+  const $selectTrigger = $select.shadowRoot!.querySelector<HTMLElement>('[part="trigger"]')!;
+  const $combobox = $comboboxField.querySelector('rc-combobox')!;
+  const $comboboxAnchor = $combobox.shadowRoot!.querySelector<HTMLElement>('[part="anchor"]')!;
+
+  expect($selectField.control).toBe($select.querySelector('select'));
+  expect($selectField.hasAttribute('data-control-provider')).toBe(true);
+  expect($comboboxField.control).toBe($combobox.querySelector('select'));
+  expect($comboboxField.hasAttribute('data-control-provider')).toBe(true);
+
+  expect(getComputedStyle($selectTrigger).borderWidth).toBe('0px');
+  expect(getComputedStyle($selectTrigger).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(getComputedStyle($comboboxAnchor).borderWidth).toBe('0px');
+  expect(getComputedStyle($comboboxAnchor).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+
+  ($select as unknown as { focus(): void }).focus();
+  await settle($selectField);
+
+  expect($selectField.hasAttribute('data-focused')).toBe(true);
+
+  // border-color is moot once border-width is 0 (invisible regardless of color), and
+  // :focus-visible is a scripted-focus heuristic that varies by environment; border-width
+  // and box-shadow are what actually determine whether chrome is visible here.
+  expect(getComputedStyle($selectTrigger).borderWidth).toBe('0px');
+  expect(getComputedStyle($selectTrigger).boxShadow).toBe('none');
+});
+
+test('Material fields preserve label separation with increased text metrics', async () => {
+  const $scope = document.createElement('div');
+
+  $scope.className = 'rc-theme-material';
+  $scope.style.setProperty('--md-sys-typescale-body-small-size', '24px');
+  $scope.style.setProperty('--md-sys-typescale-body-small-line-height', '32px');
+  $scope.style.setProperty('--md-sys-typescale-body-large-size', '32px');
+  $scope.style.setProperty('--md-sys-typescale-body-large-line-height', '48px');
+
+  $scope.innerHTML = `
+    <rc-field>
+      <label slot="label">Recipe title</label>
+      <input value="Soup">
+    </rc-field>
+    <rc-field>
+      <label slot="label">Amount per serving</label>
+      <input type="number">
+    </rc-field>
+  `;
+
+  document.body.append($scope);
+  await settle($scope);
+
+  const [$populated, $empty] = $scope.querySelectorAll('rc-field');
+  const $populatedSurface = $populated.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
+  const $populatedLabel = $populated.shadowRoot!.querySelector<HTMLElement>('[part="label"]')!;
+  const $populatedControl = $populated.querySelector('input')!;
+  const $emptySurface = $empty.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
+  const $emptyLabel = $empty.shadowRoot!.querySelector<HTMLElement>('[part="label"]')!;
+  const $emptyControl = $empty.querySelector('input')!;
+  const emptySurfaceBox = $emptySurface.getBoundingClientRect();
+  const restingLabelBox = $emptyLabel.getBoundingClientRect();
+
+  expect($populatedSurface.getBoundingClientRect().height).toBeGreaterThanOrEqual(80);
+
+  expect($populatedLabel.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    $populatedControl.getBoundingClientRect().top,
+  );
+
+  expect(
+    Math.abs(
+      restingLabelBox.top + restingLabelBox.height / 2
+        - (emptySurfaceBox.top + emptySurfaceBox.height / 2),
+    ),
+  ).toBeLessThanOrEqual(0.5);
+
+  $emptyControl.focus();
+  await settle($empty);
+
+  await expect
+    .poll(() => $emptyLabel.getBoundingClientRect().bottom)
+    .toBeLessThanOrEqual($emptyControl.getBoundingClientRect().top);
+});
 
 test('segmented Material list rows render with 16px inline content padding', async () => {
   const scope = document.createElement('div');

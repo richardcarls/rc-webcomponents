@@ -1,0 +1,152 @@
+---
+title: rc-field
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { FieldDemo } from '@site/src/components/ComponentDemos';
+
+# rc-field
+
+Accessible field wrapper for a native input or textarea with labels and supporting text.
+
+<AtAGlance
+  packageName="@rcarls/rc-field"
+  tag="rc-field"
+  native="Requires one direct child native input or textarea"
+  state="Derived from the native control; invalid can also be set explicitly"
+  events={['Native input, change, and invalid events']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-field
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-field
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-field/define';
+```
+
+## Live demo
+
+Filled is the Material theme's default treatment. Add `rc-field--outlined` for the outlined
+variant. The unthemed component retains a compact, system-color presentation.
+
+<FieldDemo />
+
+## Native-first composition
+
+Place exactly one native `<input>` or `<textarea>` directly inside the field. The control stays in
+light DOM and remains the source of truth for its value, form submission, autofill, browser
+validation, keyboard behavior, and native events.
+
+```html
+<rc-field counter>
+  <label slot="label" for="recipe-title">Recipe title</label>
+  <input id="recipe-title" name="title" maxlength="80" placeholder="Tomato soup" required />
+  <small slot="hint">Use the title printed on the recipe.</small>
+  <small slot="error">Enter a recipe title.</small>
+</rc-field>
+```
+
+Use matching `for` and `id` values when label semantics must work before the custom element is
+defined. They are preserved after upgrade. As a convenience, a slotted native label with no `for`
+attribute is connected to the control automatically after upgrade. Wrapping the complete field in
+a native label is also valid:
+
+```html
+<label>
+  <rc-field>
+    <span slot="label">Notes</span>
+    <textarea name="notes"></textarea>
+  </rc-field>
+</label>
+```
+
+## Validation and supporting text
+
+Native constraint validation remains authoritative. A required field stays visually quiet until
+the control dispatches `invalid`, such as during form submission or `reportValidity()`. At that
+point the error slot replaces the hint and the native control receives `aria-invalid="true"` and
+the error's description. Author-provided `aria-describedby` and `aria-invalid` values are
+preserved.
+
+Use `setCustomValidity()` for application validation so the native control, form, and field agree:
+
+```js
+const field = document.querySelector('rc-field');
+const input = field.control;
+
+input.setCustomValidity(isAvailable(input.value) ? '' : 'That name is already in use.');
+input.reportValidity();
+```
+
+The `invalid` property is available when an application owns a separate validation lifecycle. It
+sets the visual state and supplies `aria-invalid` when the author has not supplied it, but does not
+change `ValidityState` or prevent form submission.
+
+## Affixes and actions
+
+Use `leading` and `trailing` for icons or controls outside the editable content. Use `prefix` and
+`suffix` for content adjacent to the value. Interactive trailing content, such as a password
+visibility button, keeps its own focus and click behavior.
+
+```html
+<rc-field class="rc-field--outlined">
+  <span slot="leading" aria-hidden="true">$</span>
+  <label slot="label" for="budget">Budget</label>
+  <input id="budget" name="budget" type="number" inputmode="decimal" />
+  <span slot="suffix">USD</span>
+  <button slot="trailing" type="button" aria-label="Clear budget">×</button>
+</rc-field>
+```
+
+Prefer native attributes such as `type`, `inputmode`, `autocomplete`, `pattern`, `min`, and `max`
+for formatting and validation affordances. `rc-field` intentionally does not rewrite values or
+implement input masking.
+
+## Programmatic updates
+
+Native `input` and `change` events, constraint-attribute changes, form reset, and replacement of the
+direct control synchronize automatically. Assigning `input.value` does not emit an event, so call
+`sync()` afterward:
+
+```js
+field.control.value = 'Tomato soup';
+field.sync();
+```
+
+`focus()` and `blur()` delegate to the native control. The read-only `control` property returns the
+current direct input or textarea.
+
+## Accessibility
+
+- Always give the native control an accessible name with a native label, `aria-label`, or
+  `aria-labelledby`. Prefer explicit `for` and `id` values for sibling labels so the relationship
+  exists before upgrade.
+- Keep error text specific and actionable; do not rely on color alone.
+- Mark decorative icons `aria-hidden="true"`. Give interactive leading or trailing controls their
+  own accessible names.
+- The character counter is supplementary visual text. Put hard limits on the native control with
+  `maxlength` so browsers and assistive technology receive the actual constraint.
+
+## API
+
+<ApiTable tag="rc-field" />

@@ -1,5 +1,8 @@
+import { fileURLToPath } from 'node:url';
 import { playwright } from '@vitest/browser-playwright';
 import type { BrowserConfigOptions, InlineConfig } from 'vitest/node';
+
+const BROWSER_SETUP_FILE = fileURLToPath(new URL('./test-helpers/browser-setup.ts', import.meta.url));
 
 const BROWSER_NAMES = ['chromium', 'firefox', 'webkit'] as const;
 
@@ -49,7 +52,7 @@ export function createBrowserTestConfig(
     isolate: true,
     ...overrides,
     exclude: ['**/*.unit.test.ts', 'scripts/*.test.mjs', ...(overrides.exclude ?? [])],
-    setupFiles: ['./test-helpers/browser-setup.ts'],
+    setupFiles: [BROWSER_SETUP_FILE],
     browser: {
       enabled: true,
       provider: playwright({ launchOptions: { headless: true } }),

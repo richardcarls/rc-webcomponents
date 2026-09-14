@@ -70,6 +70,8 @@ declare global {
  * @attr open - Reflects whether the popup listbox is open.
  * @attr multiple - Enables selection of multiple options simultaneously.
  * @attr disabled - Disables the trigger and prevents the popup from opening.
+ * @attr required - Reflects the slotted native `<select>`'s own `required`, for `aria-required`
+ *   on the trigger. Set `required` on the slotted `<select>` itself, not here.
  * @attr placeholder - Text shown in the trigger when no value is selected.
  * @attr display - Controls how selected values appear in the trigger: `'auto'`,
  *   `'chips'`, or `'compact'`.
@@ -109,6 +111,14 @@ export class RCSelect extends LitElement {
   /** Disables the trigger and prevents the popup from opening. */
   @property({ type: Boolean, reflect: true })
   disabled = false;
+
+  /**
+   * Mirrors the slotted native `<select>`'s own `required`, for `aria-required` on the trigger.
+   * Read-only in practice: set `required` on the slotted `<select>` itself, the source of truth
+   * for form participation and constraint validation.
+   */
+  @property({ type: Boolean, reflect: true })
+  required = false;
 
   /** Text shown in the trigger when no value is selected. */
   @property()
@@ -264,6 +274,20 @@ export class RCSelect extends LitElement {
     this.toggleAttribute('has-value', this._selectedValues.size > 0);
   }
 
+  /**
+   * Forwards focus to the trigger. The host itself is never in the tab order, so without this
+   * override, calling `.focus()` on `<rc-select>` (as `rc-field` does when treating it as a
+   * control provider) would be a no-op.
+   */
+  override focus(options?: FocusOptions): void {
+    this._$trigger?.focus(options);
+  }
+
+  /** Forwards blur to the trigger; see `focus()`. */
+  override blur(): void {
+    this._$trigger?.blur();
+  }
+
   /** Opens the popup listbox if not already open or disabled. */
   openPopup() {
     if (this.open || this.disabled) {
@@ -369,13 +393,18 @@ export class RCSelect extends LitElement {
    *
    * In single-select mode only the first value is kept. Syncs `_$listbox` and the
    * native `<select>` but does NOT dispatch `rc-select-change`.
+   *
+   * @param fromUser - Pass `true` only for a selection driven by real user interaction, so
+   *   `_syncNativeSelect` dispatches native `input`/`change` on the underlying `<select>` (a
+   *   programmatic `value`/`defaultValue` write is not a native interaction and relies on an
+   *   external `sync()` call instead, the same as `rc-textarea`'s controlled-value contract).
    */
-  protected _applySelection(values: string[]): void {
+  protected _applySelection(values: string[], fromUser = false): void {
     const selectedValues = this.multiple ? values : values.slice(0, 1);
 
     this._selectedValues = new Set(selectedValues);
     this._$listbox?.setSelectedValues(selectedValues);
-    this._syncNativeSelect();
+    this._syncNativeSelect(fromUser);
     this.requestUpdate();
   }
 
@@ -578,6 +607,7 @@ export class RCSelect extends LitElement {
 
       this.multiple = $select.multiple;
       this.disabled = $select.disabled;
+      this.required = $select.required;
       this._syncOptionsFromSelect($select);
       this._applyPickerGuard($select);
 
@@ -589,6 +619,7 @@ export class RCSelect extends LitElement {
         }
 
         this.multiple = $current.multiple;
+        this.required = $current.required;
 
         // While the picker guard holds the select disabled, its `disabled`
         // attribute reflects the guard, not author intent — don't echo it.
@@ -870,7 +901,7 @@ export class RCSelect extends LitElement {
     }
 
     this._selectionInitialized = true;
-    this._syncNativeSelect();
+    this._syncNativeSelect(true);
     this._$listbox.setSelectedValues(this.selectedValues);
     this._dispatchChange();
   }
@@ -885,12 +916,19 @@ export class RCSelect extends LitElement {
     this._$listbox.setSelectedValues([...next]);
     this._selectionInitialized = true;
 
-    this._syncNativeSelect();
+    this._syncNativeSelect(true);
     this._dispatchChange();
   }
 
-  /** Flips `selected` on each `<option>` in the native `<select>` to match `_selectedValues`; no-op when no native select is present. */
-  protected _syncNativeSelect() {
+  /**
+   * Flips `selected` on each `<option>` in the native `<select>` to match `_selectedValues`;
+   * no-op when no native select is present.
+   *
+   * @param fromUser - When `true`, also dispatches native `input` and `change` on `$select`
+   *   (in that order, matching a real `<select>`) so outside listeners, including an
+   *   `rc-field` ancestor treating this component as its control provider, observe the change.
+   */
+  protected _syncNativeSelect(fromUser = false) {
     const $select = this._$selectRef?.deref();
 
     if (!$select) {
@@ -899,6 +937,11 @@ export class RCSelect extends LitElement {
 
     for (const $option of $select.options) {
       $option.selected = this._selectedValues.has($option.value);
+    }
+
+    if (fromUser) {
+      $select.dispatchEvent(new Event('input', { bubbles: true }));
+      $select.dispatchEvent(new Event('change', { bubbles: true }));
     }
   }
 
@@ -1096,7 +1139,7 @@ export class RCSelect extends LitElement {
       // Select-only type-ahead: immediately select the match
       if (!this.multiple) {
         this._selectionInitialized = true;
-        this._applySelection([match.value]);
+        this._applySelection([match.value], true);
         this._dispatchChange();
       }
     } else {
@@ -1203,6 +1246,7 @@ export class RCSelect extends LitElement {
           aria-expanded=${this.open ? 'true' : 'false'}
           aria-controls="listbox"
           aria-disabled=${this.disabled ? 'true' : 'false'}
+          aria-required=${this.required ? 'true' : 'false'}
           aria-label=${this.placeholder || nothing}
           @click=${this._handleTriggerClick}
           @keydown=${this._handleTriggerKeyDown}

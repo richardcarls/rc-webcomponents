@@ -246,14 +246,17 @@ export type RCSelectRef = HTMLElement & {
   open: boolean;
   multiple: boolean;
   disabled: boolean;
+  required: boolean;
   placeholder: string;
   display: 'auto' | 'chips' | 'compact';
   value: RCSelectValue;
   defaultValue: RCSelectValue | undefined;
-  options: RCSelectOption[] | undefined;
+  options: RCListboxOption[] | undefined;
   readonly selectedValues: string[];
   openPopup(): void;
   closePopup(returnFocus?: boolean): void;
+  focus(options?: FocusOptions): void;
+  blur(): void;
 };
 
 /** Public API surface of `<rc-combobox>`. */
@@ -643,6 +646,18 @@ export type RCSearchBarRef = HTMLElement & {
   toggleView(): void;
 };
 
+export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+
+/** Public API surface of `<rc-field>`. */
+export type RCFieldRef = HTMLElement & {
+  counter: boolean;
+  invalid: boolean;
+  readonly control: RCFieldControl | null;
+  focus(options?: FocusOptions): void;
+  blur(): void;
+  sync(): void;
+};
+
 export type RCSearchBarInputDetail = {
   value: string;
 };
@@ -856,14 +871,16 @@ declare module 'solid-js' {
         open?: boolean | string;
         multiple?: boolean | string;
         disabled?: boolean | string;
+        required?: boolean | string;
         placeholder?: string;
         display?: 'auto' | 'chips' | 'compact';
         value?: RCSelectValue;
         defaultValue?: RCSelectValue;
-        options?: RCSelectOption[];
+        options?: RCListboxOption[];
+        'data-rc-field-control'?: boolean | string;
         'prop:value'?: RCSelectValue | undefined;
         'prop:defaultValue'?: RCSelectValue | undefined;
-        'prop:options'?: RCSelectOption[] | undefined;
+        'prop:options'?: RCListboxOption[] | undefined;
         'on:rc-select-change'?: (e: CustomEvent<RCSelectChangeDetail>) => void;
         'on:rc-select-open'?: (e: CustomEvent) => void;
         'on:rc-select-close'?: (e: CustomEvent) => void;
@@ -873,16 +890,18 @@ declare module 'solid-js' {
         open?: boolean | string;
         multiple?: boolean | string;
         disabled?: boolean | string;
+        required?: boolean | string;
         placeholder?: string;
         display?: 'auto' | 'chips' | 'compact';
         'allow-create'?: boolean | string;
         'filter-strategy'?: 'prefix' | 'contains';
         value?: RCSelectValue;
         defaultValue?: RCSelectValue;
-        options?: RCSelectOption[];
+        options?: RCListboxOption[];
+        'data-rc-field-control'?: boolean | string;
         'prop:value'?: RCSelectValue | undefined;
         'prop:defaultValue'?: RCSelectValue | undefined;
-        'prop:options'?: RCSelectOption[] | undefined;
+        'prop:options'?: RCListboxOption[] | undefined;
         'prop:allowCreate'?: boolean | undefined;
         'on:rc-select-change'?: (e: CustomEvent<RCSelectChangeDetail>) => void;
         'on:rc-select-open'?: (e: CustomEvent) => void;
@@ -1143,6 +1162,11 @@ declare module 'solid-js' {
         'on:rc-search-bar-suggestion-select'?: (
           e: CustomEvent<RCSearchBarSuggestionSelectDetail>,
         ) => void;
+      };
+
+      'rc-field': JSX.HTMLAttributes<RCFieldRef> & {
+        counter?: boolean | string;
+        invalid?: boolean | string;
       };
 
       'rc-virtual-canvas': JSX.HTMLAttributes<RCVirtualCanvasRef> & {
