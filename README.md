@@ -8,6 +8,14 @@ Components are fully typed and developed primarily with [Lit](https://lit.dev).
 
 **[Documentation and component demos](https://richardcarls.github.io/rc-webcomponents/)**
 
+Runtime support covers the current and previous stable Chromium, Firefox, and Safari releases,
+plus current Chrome on Android and Safari on iOS. Packages are browser modules: render native
+fallback markup on the server and register components from a client-only entry point. See the
+[compatibility](https://richardcarls.github.io/rc-webcomponents/guide/compatibility),
+[accessibility testing](https://richardcarls.github.io/rc-webcomponents/guide/accessibility-testing),
+and [performance](https://richardcarls.github.io/rc-webcomponents/guide/performance) guides for
+the complete contracts and current baselines.
+
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E4P62596QR)
 
 ## Design principles
@@ -86,8 +94,8 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-common`](packages/rc-common/)                                     | Shared controllers, directives, mixins, and utilities: drag, resize, anchor positioning, scroll observation, keyboard interaction/navigation, active descendant, roving tabindex, focusability, and slider math | None                                            |
 | [`rc-listbox`](packages/rc-listbox/)                                   | Listbox that keeps option DOM in light DOM for `aria-activedescendant` navigation                                                                                                                               | rc-common                                       |
 | [`rc-menu`](packages/rc-menu/)                                         | Menu popup for command surfaces with keyboard navigation and typed activation events                                                                                                                            | rc-common                                       |
-| [`rc-select`](packages/rc-select/)                                     | Select-only combobox backed by a native `<select>`                                                                                                                                                              | rc-common, rc-listbox                           |
-| [`rc-combobox`](packages/rc-combobox/)                                 | Editable combobox with filtering and optional allow-create behavior                                                                                                                                             | rc-chip-group, rc-common, rc-listbox, rc-select |
+| [`rc-select`](packages/rc-select/)                                     | Select-only combobox backed by a native `<select>`, with popover or transactional dialog presentation                                                                                                           | rc-common, rc-dialog, rc-listbox                |
+| [`rc-combobox`](packages/rc-combobox/)                                 | Editable combobox with filtering, allow-create, and popover or transactional dialog presentation                                                                                                                | rc-chip-group, rc-common, rc-listbox, rc-select |
 | [`rc-menu-button`](packages/rc-menu-button/)                           | Trigger button that opens an `rc-menu` popup                                                                                                                                                                    | rc-common, rc-menu                              |
 | [`rc-menubar`](packages/rc-menubar/)                                   | Menubar coordinator for `rc-menu-button` children with roving tabindex and submenu handoff                                                                                                                      | rc-common, rc-menu, rc-menu-button              |
 | [`rc-toolbar`](packages/rc-toolbar/)                                   | Toolbar that groups consumer-supplied controls into one tab stop with arrow-key navigation                                                                                                                      | rc-common                                       |
@@ -135,6 +143,10 @@ Vite builds ESM and UMD output plus type declarations. Tests run with Vitest Bro
 Playwright. The default local suite uses Chromium; `yarn test:full` runs Chromium, Firefox, and
 WebKit sequentially to bound browser-session resource use. CI always runs the full browser matrix.
 The documentation site uses Docusaurus.
+
+After `yarn build`, `yarn audit:performance` checks package and theme size budgets and
+`yarn benchmark:browser` checks representative Chromium runtime budgets. Reports are written to
+the ignored `.performance/` directory.
 
 Maintainers should follow the [tag-driven npm release guide](RELEASING.md) when versioning or
 publishing the synchronized workspace packages.

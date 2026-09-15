@@ -1,0 +1,87 @@
+---
+title: Accessibility testing
+---
+
+# Accessibility testing
+
+Accessibility is an acceptance requirement for every component. Automated
+checks cover semantics and repeatable interactions, while manual assistive
+technology testing checks the announcements, focus behavior, and task flows
+that browser automation cannot reliably judge.
+
+## Automated coverage
+
+Component tests run in real Chromium, Firefox, and WebKit browser engines. The
+test suite covers native form and label behavior, roles and live ARIA state,
+keyboard interaction, focus movement, controlled and uncontrolled state, and
+progressive enhancement. Every component also has an axe-core check. Stateful
+widgets are checked in their active or open state as well as at rest.
+
+The shared axe helper disables only the `region` rule. Isolated component-test
+fragments intentionally do not create a complete page landmark structure; all
+other applicable axe rules remain enabled. Automated success is not evidence
+that a screen-reader interaction is understandable.
+
+## Manual assistive technology matrix
+
+Run the following matrix before a stable release and after a material change to
+focus, keyboard handling, ARIA, popup behavior, native form integration, or a
+shadow-DOM boundary. “Current” means the current stable release when the run is
+performed.
+
+| Assistive technology | Browser         | Platform | Status                               |
+| -------------------- | --------------- | -------- | ------------------------------------ |
+| NVDA current         | Firefox current | Windows  | Pending external AT run              |
+| NVDA current         | Chrome current  | Windows  | Pending external AT run              |
+| JAWS current         | Chrome current  | Windows  | Pending external AT run              |
+| VoiceOver current    | Safari current  | macOS    | Pending external AT run              |
+| VoiceOver current    | Safari current  | iOS      | Pending external device run          |
+| TalkBack current     | Chrome current  | Android  | Pending external device run          |
+| TalkBack current     | Firefox current | Android  | Pending targeted select/combobox run |
+
+Record the test date and the exact OS, browser, and assistive technology
+versions in the release issue. A row remains pending until a person has run it;
+automated browser tests do not change these statuses.
+
+## Task checklist
+
+Exercise the real documentation demos with keyboard-only input, browser zoom at
+200% and 400%, forced colors where available, and the matrix above.
+
+| Area                           | Tasks to verify                                                                                                                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Select and combobox            | Discover the name, role, value, expanded state, option count, active option, selection, validation, and both popover and dialog presentation. Filter and create an option where supported. |
+| Menu button, menu, and menubar | Open from the trigger, traverse items and submenus, activate an item, escape each level, and confirm focus return.                                                                         |
+| Dialog and bottom sheet        | Enter the modal, understand its name and description, traverse without escaping the modal, invoke every close path, and confirm focus return.                                              |
+| Carousel                       | Discover the region and slide position, move between slides, use pagination, and verify off-screen controls do not remain operable.                                                        |
+| Slider and range slider        | Read the current value and bounds, change by small and large steps, reach each endpoint, and distinguish both thumbs.                                                                      |
+| Textarea and Markdown editor   | Enter and edit text, move by line, discover diagnostics and toolbar actions, switch modes, and confirm value retention.                                                                    |
+| Transfer list                  | Identify both lists, select and move one or several options in both directions, and understand disabled actions.                                                                           |
+| Snackbar                       | Hear a status once without an unexpected focus move, reach an optional action, and dismiss it.                                                                                             |
+| Splitter                       | Identify the separator, read value and orientation, resize with the keyboard, and collapse and restore a pane.                                                                             |
+
+Treat any of the following as a release blocker: a task cannot be completed; focus
+is lost or trapped incorrectly; a name, role, state, value, or relationship is
+wrong; validation is inaccessible; or an announcement is absent or materially
+misleading. Link each failure to an issue and rerun the affected task after the
+fix.
+
+## Result record
+
+Use one record per environment and release candidate:
+
+```text
+Date:
+Commit or release candidate:
+Operating system and version:
+Browser and version:
+Assistive technology and version:
+Components and tasks run:
+Outcome: pass | fail | blocked
+Issue links:
+Notes:
+```
+
+The project does not claim a manual pass until these records exist. The pending
+statuses above are deliberate: the matrix requires software and physical mobile
+devices that are outside automated CI.

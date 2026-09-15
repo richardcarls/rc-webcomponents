@@ -89,6 +89,10 @@ short and tell the tool to read `AGENTS.md` before project work.
   leaving a package-local copy.
 - Each package builds ESM, UMD, and declarations. Keep package exports and
   `sideEffects: false` tree-shaking behavior intact.
+- Runtime packages are browser-only. Server output may contain the native
+  fallback markup, but component registration belongs in a client-only entry;
+  do not claim Node import safety, server-side custom-element rendering, or
+  hydration support without implementing and testing that contract.
 - In `firstUpdated()`, guard required native child checks behind
   `import.meta.env.DEV` and emit a `console.warn` when the expected child is
   absent. Use `:scope > <tagname>` to scope the query to direct children only.
@@ -290,6 +294,8 @@ yarn.cmd build
 yarn.cmd test
 yarn.cmd test:full
 yarn.cmd validate:packages
+yarn.cmd audit:performance
+yarn.cmd benchmark:browser
 ```
 
 ```bash
@@ -300,6 +306,8 @@ yarn build
 yarn test
 yarn test:full
 yarn validate:packages
+yarn audit:performance
+yarn benchmark:browser
 ```
 
 New package `test:browser` scripts must include `--run` (`vitest --run`). Without it
@@ -311,6 +319,10 @@ The root `build` script runs workspaces topologically. For targeted package work
 rebuild changed dependencies before running tests in packages that consume them.
 Vite HMR does not watch dependency `dist/` output through `node_modules`; restart
 the docs dev server after rebuilding a dependency.
+
+Performance audits consume built package exports. Run the root build first.
+Update tracked size or runtime budgets only after reviewing the generated
+`.performance/` report and confirming that a change is intentional.
 
 ## Testing
 
