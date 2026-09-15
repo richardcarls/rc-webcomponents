@@ -103,7 +103,16 @@
     --rc-focus-ring-offset: var(--substrate-focus-ring-offset, 2px);
     --rc-disabled-opacity: var(--substrate-disabled-opacity, 0.52);
     --rc-motion-duration: var(--substrate-motion-duration, 160ms);
-    --rc-dialog-scrim: color-mix(in srgb, CanvasText 32%, transparent);
+    /*
+     * Mixed against the theme's own inverse surface rather than `CanvasText`,
+     * so the scrim carries the palette's warmth and resolves to a real color
+     * rather than to a system one that cannot leave CSS.
+     */
+    --rc-dialog-scrim: color-mix(
+      in srgb,
+      var(--substrate-inverse-surface, CanvasText) 42%,
+      transparent
+    );
   }
 
   .rc-theme-substrate rc-listbox,

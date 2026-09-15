@@ -76,6 +76,93 @@
           }
         },
         {
+          "name": "color/computed/carousel-navigation-button-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-navigation-button-background)"
+          },
+          "cssVar": "--rc-carousel-navigation-button-background",
+          "description": "Resolved from --rc-carousel-navigation-button-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.995636,
+              "g": 0.985776,
+              "b": 0.969861,
+              "a": 0.88,
+              "hex": "#fefbf7"
+            },
+            "Dark": {
+              "r": 0.082144,
+              "g": 0.065831,
+              "b": 0.046269,
+              "a": 0.88,
+              "hex": "#15110c"
+            }
+          }
+        },
+        {
+          "name": "color/computed/carousel-pagination-item-color",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-pagination-item-color)"
+          },
+          "cssVar": "--rc-carousel-pagination-item-color",
+          "description": "Resolved from --rc-carousel-pagination-item-color, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.370556,
+              "g": 0.339623,
+              "b": 0.303027,
+              "a": 0.4,
+              "hex": "#5e574d"
+            },
+            "Dark": {
+              "r": 0.675831,
+              "g": 0.654454,
+              "b": 0.619898,
+              "a": 0.4,
+              "hex": "#aca79e"
+            }
+          }
+        },
+        {
+          "name": "color/computed/dialog-scrim",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-scrim)"
+          },
+          "cssVar": "--rc-dialog-scrim",
+          "description": "Resolved from --rc-dialog-scrim, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.172663,
+              "g": 0.145582,
+              "b": 0.113108,
+              "a": 0.42,
+              "hex": "#2c251d"
+            },
+            "Dark": {
+              "r": 0.922935,
+              "g": 0.906742,
+              "b": 0.880592,
+              "a": 0.42,
+              "hex": "#ebe7e1"
+            }
+          }
+        },
+        {
           "name": "color/computed/list-item-active-bg",
           "type": "COLOR",
           "scopes": [
@@ -395,6 +482,35 @@
           }
         },
         {
+          "name": "color/computed/scroller-scrollbar-color",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-scroller-scrollbar-color)"
+          },
+          "cssVar": "--rc-scroller-scrollbar-color",
+          "description": "Resolved from --rc-scroller-scrollbar-color, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.370556,
+              "g": 0.339623,
+              "b": 0.303027,
+              "a": 0.45,
+              "hex": "#5e574d"
+            },
+            "Dark": {
+              "r": 0.675831,
+              "g": 0.654454,
+              "b": 0.619898,
+              "a": 0.45,
+              "hex": "#aca79e"
+            }
+          }
+        },
+        {
           "name": "color/computed/slider-track-background",
           "type": "COLOR",
           "scopes": [
@@ -420,6 +536,122 @@
               "b": 0.229993,
               "a": 0.7,
               "hex": "#4b443b"
+            }
+          }
+        },
+        {
+          "name": "color/computed/splitter-collapse-button-hover-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-collapse-button-hover-bg)"
+          },
+          "cssVar": "--rc-splitter-collapse-button-hover-bg",
+          "description": "Resolved from --rc-splitter-collapse-button-hover-bg, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.960488,
+              "g": 0.889512,
+              "b": 0.834196,
+              "a": 1,
+              "hex": "#f5e3d5"
+            },
+            "Dark": {
+              "r": 0.215589,
+              "g": 0.156991,
+              "b": 0.099494,
+              "a": 1,
+              "hex": "#372819"
+            }
+          }
+        },
+        {
+          "name": "color/computed/splitter-handle-color",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-color)"
+          },
+          "cssVar": "--rc-splitter-handle-color",
+          "description": "Resolved from --rc-splitter-handle-color, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.802262,
+              "g": 0.549663,
+              "b": 0.40283,
+              "a": 1,
+              "hex": "#cd8c67"
+            },
+            "Dark": {
+              "r": 0.597414,
+              "g": 0.41107,
+              "b": 0.245467,
+              "a": 1,
+              "hex": "#98693f"
+            }
+          }
+        },
+        {
+          "name": "color/computed/splitter-separator-color",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-separator-color)"
+          },
+          "cssVar": "--rc-splitter-separator-color",
+          "description": "Resolved from --rc-splitter-separator-color, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.979485,
+              "g": 0.928748,
+              "b": 0.892272,
+              "a": 1,
+              "hex": "#faede4"
+            },
+            "Dark": {
+              "r": 0.152945,
+              "g": 0.107711,
+              "b": 0.063718,
+              "a": 1,
+              "hex": "#271b10"
+            }
+          }
+        },
+        {
+          "name": "color/computed/virtual-canvas-scrollbar-thumb-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-virtual-canvas-scrollbar-thumb-background)"
+          },
+          "cssVar": "--rc-virtual-canvas-scrollbar-thumb-background",
+          "description": "Resolved from --rc-virtual-canvas-scrollbar-thumb-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.370556,
+              "g": 0.339623,
+              "b": 0.303027,
+              "a": 0.45,
+              "hex": "#5e574d"
+            },
+            "Dark": {
+              "r": 0.675831,
+              "g": 0.654454,
+              "b": 0.619898,
+              "a": 0.45,
+              "hex": "#aca79e"
             }
           }
         },
@@ -1056,6 +1288,334 @@
       "description": "The public --rc-* styling contract consumed by rc-webcomponents. Aliases the theme layer, so swapping the theme reskins every component.",
       "variables": [
         {
+          "name": "adaptive-menu/gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-gap)"
+          },
+          "cssVar": "--rc-adaptive-menu-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/control-gap",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/icon-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-icon-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-icon-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 20
+          }
+        },
+        {
+          "name": "adaptive-menu/item-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-item-gap)"
+          },
+          "cssVar": "--rc-adaptive-menu-item-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/item-gap",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/item-min-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-item-min-block-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-item-min-block-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 48
+          }
+        },
+        {
+          "name": "adaptive-menu/item-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-item-padding-block)"
+          },
+          "cssVar": "--rc-adaptive-menu-item-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/item-padding-block",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/item-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-item-padding-inline)"
+          },
+          "cssVar": "--rc-adaptive-menu-item-padding-inline",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/item-padding-inline",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-background)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-color)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "field/text",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-min-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-min-inline-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-min-inline-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 192
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-padding-block)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 6
+          }
+        },
+        {
+          "name": "adaptive-menu/popup-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-popup-radius)"
+          },
+          "cssVar": "--rc-adaptive-menu-popup-radius",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/lg",
+              "collection": "Radius"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/touch-target-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-touch-target-block-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-touch-target-block-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 48
+          }
+        },
+        {
+          "name": "adaptive-menu/touch-target-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-touch-target-inline-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-touch-target-inline-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 48
+          }
+        },
+        {
+          "name": "adaptive-menu/touch-target-overlap-inline-end",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-touch-target-overlap-inline-end)"
+          },
+          "cssVar": "--rc-adaptive-menu-touch-target-overlap-inline-end",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 6
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-block-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-block-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 36
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-border)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-border",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-color)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-muted",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-inline-size)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-inline-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 36
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-padding",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-padding)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-padding",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 6
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-radius)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-radius",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/md",
+              "collection": "Radius"
+            }
+          }
+        },
+        {
           "name": "app-bar/bg",
           "type": "COLOR",
           "scopes": [
@@ -1162,6 +1722,25 @@
             "Value": {
               "alias": "radius/pill",
               "collection": "Radius"
+            }
+          }
+        },
+        {
+          "name": "bottom-sheet/scrim",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-bottom-sheet-scrim)"
+          },
+          "cssVar": "--rc-bottom-sheet-scrim",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "dialog/scrim",
+              "collection": "RC Contract"
             }
           }
         },
@@ -1505,6 +2084,386 @@
               "alias": "radius/lg",
               "collection": "Radius"
             }
+          }
+        },
+        {
+          "name": "carousel/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-color)"
+          },
+          "cssVar": "--rc-carousel-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-gap)"
+          },
+          "cssVar": "--rc-carousel-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/control-gap",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "carousel/item-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-item-background)"
+          },
+          "cssVar": "--rc-carousel-item-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-raised",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/item-border-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-item-border-radius)"
+          },
+          "cssVar": "--rc-carousel-item-border-radius",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/lg",
+              "collection": "Radius"
+            }
+          }
+        },
+        {
+          "name": "carousel/item-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-item-color)"
+          },
+          "cssVar": "--rc-carousel-item-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/navigation-button-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-navigation-button-background)"
+          },
+          "cssVar": "--rc-carousel-navigation-button-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/carousel-navigation-button-background",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/navigation-button-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-navigation-button-color)"
+          },
+          "cssVar": "--rc-carousel-navigation-button-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/navigation-button-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-navigation-button-size)"
+          },
+          "cssVar": "--rc-carousel-navigation-button-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 36
+          }
+        },
+        {
+          "name": "carousel/navigation-inset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-navigation-inset)"
+          },
+          "cssVar": "--rc-carousel-navigation-inset",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "carousel/pagination-item-active-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-pagination-item-active-color)"
+          },
+          "cssVar": "--rc-carousel-pagination-item-active-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/accent",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "carousel/pagination-item-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-pagination-item-color)"
+          },
+          "cssVar": "--rc-carousel-pagination-item-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/carousel-pagination-item-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "carousel/pagination-item-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-carousel-pagination-item-size)"
+          },
+          "cssVar": "--rc-carousel-pagination-item-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "chip-group/column-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-column-gap)"
+          },
+          "cssVar": "--rc-chip-group-column-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/control-gap",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "chip-group/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-padding-block)"
+          },
+          "cssVar": "--rc-chip-group-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "chip-group/row-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-row-gap)"
+          },
+          "cssVar": "--rc-chip-group-row-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/control-gap",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "chip-group/scroll-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-scroll-padding-inline)"
+          },
+          "cssVar": "--rc-chip-group-scroll-padding-inline",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/item-padding-inline",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "chip-group/toggle-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-gap)"
+          },
+          "cssVar": "--rc-chip-group-toggle-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/control-gap",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "chip-group/toggle-icon-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-icon-size)"
+          },
+          "cssVar": "--rc-chip-group-toggle-icon-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 18
+          }
+        },
+        {
+          "name": "chip-group/toggle-separator-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-separator-block-size)"
+          },
+          "cssVar": "--rc-chip-group-toggle-separator-block-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 24
+          }
+        },
+        {
+          "name": "chip-group/toggle-separator-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-separator-color)"
+          },
+          "cssVar": "--rc-chip-group-toggle-separator-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/border-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "chip-group/toggle-separator-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-separator-gap)"
+          },
+          "cssVar": "--rc-chip-group-toggle-separator-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/control-gap",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "chip-group/toggle-separator-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-group-toggle-separator-inline-size)"
+          },
+          "cssVar": "--rc-chip-group-toggle-separator-inline-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 1
           }
         },
         {
@@ -2239,6 +3198,25 @@
           "description": "Applied where rc-theme-substrate is themed.",
           "values": {
             "Value": 9
+          }
+        },
+        {
+          "name": "dialog/scrim",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-scrim)"
+          },
+          "cssVar": "--rc-dialog-scrim",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/dialog-scrim",
+              "collection": "Color"
+            }
           }
         },
         {
@@ -4663,6 +5641,76 @@
           }
         },
         {
+          "name": "scroller/content-max-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-scroller-content-max-inline-size)"
+          },
+          "cssVar": "--rc-scroller-content-max-inline-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 1088
+          }
+        },
+        {
+          "name": "scroller/content-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-scroller-content-padding-inline)"
+          },
+          "cssVar": "--rc-scroller-content-padding-inline",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/item-padding-inline",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "scroller/content-row-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-scroller-content-row-gap)"
+          },
+          "cssVar": "--rc-scroller-content-row-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/item-gap",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "scroller/scrollbar-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-scroller-scrollbar-color)"
+          },
+          "cssVar": "--rc-scroller-scrollbar-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/scroller-scrollbar-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "search-bar/radius",
           "type": "FLOAT",
           "scopes": [
@@ -5240,6 +6288,152 @@
           }
         },
         {
+          "name": "splitter/collapse-button-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-collapse-button-bg)"
+          },
+          "cssVar": "--rc-splitter-collapse-button-bg",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-raised",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "splitter/collapse-button-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-collapse-button-color)"
+          },
+          "cssVar": "--rc-splitter-collapse-button-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "splitter/collapse-button-hover-bg",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-collapse-button-hover-bg)"
+          },
+          "cssVar": "--rc-splitter-collapse-button-hover-bg",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/splitter-collapse-button-hover-bg",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "splitter/handle-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-color)"
+          },
+          "cssVar": "--rc-splitter-handle-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/splitter-handle-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "splitter/handle-fill",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-fill)"
+          },
+          "cssVar": "--rc-splitter-handle-fill",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/border-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "splitter/handle-hover-fill",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-hover-fill)"
+          },
+          "cssVar": "--rc-splitter-handle-hover-fill",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/accent",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "splitter/handle-transition",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-handle-transition)"
+          },
+          "cssVar": "--rc-splitter-handle-transition",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/duration",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "splitter/separator-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-separator-color)"
+          },
+          "cssVar": "--rc-splitter-separator-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/splitter-separator-color",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "switch/disabled-opacity",
           "type": "FLOAT",
           "scopes": [
@@ -5620,6 +6814,89 @@
           }
         },
         {
+          "name": "toolbar/gap-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-toolbar-gap-inline)"
+          },
+          "cssVar": "--rc-toolbar-gap-inline",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 2
+          }
+        },
+        {
+          "name": "toolbar/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-toolbar-padding-block)"
+          },
+          "cssVar": "--rc-toolbar-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "toolbar/padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-toolbar-padding-inline)"
+          },
+          "cssVar": "--rc-toolbar-padding-inline",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 4
+          }
+        },
+        {
+          "name": "toolbar/radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-toolbar-radius)"
+          },
+          "cssVar": "--rc-toolbar-radius",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/md",
+              "collection": "Radius"
+            }
+          }
+        },
+        {
+          "name": "toolbar/vertical-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-toolbar-vertical-radius)"
+          },
+          "cssVar": "--rc-toolbar-vertical-radius",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/md",
+              "collection": "Radius"
+            }
+          }
+        },
+        {
           "name": "transfer-list/gap",
           "type": "FLOAT",
           "scopes": [
@@ -5668,6 +6945,59 @@
             "Value": {
               "alias": "radius/lg",
               "collection": "Radius"
+            }
+          }
+        },
+        {
+          "name": "virtual-canvas/scrollbar-button-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-virtual-canvas-scrollbar-button-background)"
+          },
+          "cssVar": "--rc-virtual-canvas-scrollbar-button-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-raised",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "virtual-canvas/scrollbar-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-virtual-canvas-scrollbar-size)"
+          },
+          "cssVar": "--rc-virtual-canvas-scrollbar-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "virtual-canvas/scrollbar-thumb-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-virtual-canvas-scrollbar-thumb-background)"
+          },
+          "cssVar": "--rc-virtual-canvas-scrollbar-thumb-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/virtual-canvas-scrollbar-thumb-background",
+              "collection": "Color"
             }
           }
         }
@@ -5835,6 +7165,17 @@
     "note": "Composite values are CSS shorthands with no single-variable Figma equivalent; bind their parts individually. Forced-colors and reduced-motion overrides are accessibility fallbacks Figma cannot express.",
     "composite": [
       {
+        "property": "--rc-adaptive-menu-popup-border",
+        "raw": "var(--rc-border, 1px solid ButtonBorder)",
+        "name": "adaptive-menu/popup-border",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-adaptive-menu-trigger-background",
+        "raw": "transparent",
+        "name": "adaptive-menu/trigger-background"
+      },
+      {
         "property": "--rc-app-bar-scroll-divider",
         "raw": "var(--rc-border, 1px solid ButtonBorder)",
         "name": "app-bar/scroll-divider",
@@ -5859,12 +7200,6 @@
         "property": "--rc-bottom-sheet-radius",
         "raw": "var(--substrate-radius-xl, 1rem) var(--substrate-radius-xl, 1rem) 0 0",
         "name": "bottom-sheet/radius"
-      },
-      {
-        "property": "--rc-bottom-sheet-scrim",
-        "raw": "var(--rc-dialog-scrim)",
-        "name": "bottom-sheet/scrim",
-        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-button-border",
@@ -5920,6 +7255,11 @@
         "property": "--rc-chip-font",
         "raw": "inherit",
         "name": "chip/font"
+      },
+      {
+        "property": "--rc-chip-group-scrollbar-width",
+        "raw": "none",
+        "name": "chip-group/scrollbar-width"
       },
       {
         "property": "--rc-chip-text-decoration",
@@ -6157,6 +7497,11 @@
         "name": "navigation-rail/item-text-decoration"
       },
       {
+        "property": "--rc-scroller-scrollbar-width",
+        "raw": "thin",
+        "name": "scroller/scrollbar-width"
+      },
+      {
         "property": "--rc-search-bar-border",
         "raw": "var(--rc-border, 1px solid ButtonBorder)",
         "name": "search-bar/border",
@@ -6208,6 +7553,18 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-splitter-collapse-button-border",
+        "raw": "var(--rc-border, 1px solid ButtonBorder)",
+        "name": "splitter/collapse-button-border",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-splitter-keyline",
+        "raw": "var(--rc-border, 1px solid ButtonBorder)",
+        "name": "splitter/keyline",
+        "reason": "aliases a composite shorthand"
+      },
+      {
         "property": "--rc-switch-decoration-display",
         "raw": "block",
         "name": "switch/decoration-display"
@@ -6241,10 +7598,25 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-toolbar-flex-wrap",
+        "raw": "nowrap",
+        "name": "toolbar/flex-wrap"
+      },
+      {
         "property": "--rc-transfer-list-listbox-border",
         "raw": "var(--rc-border, 1px solid ButtonBorder)",
         "name": "transfer-list/listbox-border",
         "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-virtual-canvas-scrollbar-track-background",
+        "raw": "transparent",
+        "name": "virtual-canvas/scrollbar-track-background"
+      },
+      {
+        "property": "--rc-virtual-canvas-scrollbar-width",
+        "raw": "thin",
+        "name": "virtual-canvas/scrollbar-width"
       },
       {
         "property": "--substrate-focus-ring",
@@ -6258,6 +7630,12 @@
       }
     ],
     "unresolved": [
+      {
+        "property": "--rc-adaptive-menu-popup-shadow",
+        "raw": "var(--substrate-shadow-lg, none)",
+        "reason": "literal",
+        "scope": "rc-theme-substrate"
+      },
       {
         "property": "--rc-bottom-sheet-shadow",
         "raw": "var(--substrate-shadow-lg, none)",
@@ -6273,12 +7651,6 @@
       {
         "property": "--rc-card-subtitle-color",
         "raw": "color-mix(in srgb, currentColor 72%, transparent)",
-        "reason": "mix-base-unresolved",
-        "scope": "rc-theme-substrate"
-      },
-      {
-        "property": "--rc-dialog-scrim",
-        "raw": "color-mix(in srgb, CanvasText 32%, transparent)",
         "reason": "mix-base-unresolved",
         "scope": "rc-theme-substrate"
       },
@@ -6364,18 +7736,6 @@
         "property": "--rc-snackbar-shadow",
         "raw": "var(--substrate-shadow-lg, var(--rc-shadow))",
         "reason": "literal",
-        "scope": "rc-theme-substrate"
-      },
-      {
-        "property": "--rc-splitter-handle-color",
-        "raw": "color-mix(in srgb, var(--rc-accent, Highlight) 45%, ButtonBorder)",
-        "reason": "mix-base-unresolved",
-        "scope": "rc-theme-substrate"
-      },
-      {
-        "property": "--rc-splitter-separator-color",
-        "raw": "color-mix(in srgb, var(--rc-accent, Highlight) 8%, Canvas)",
-        "reason": "mix-base-unresolved",
         "scope": "rc-theme-substrate"
       }
     ]

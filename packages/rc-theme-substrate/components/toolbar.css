@@ -1,10 +1,17 @@
 @layer rc-theme-substrate.components {
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-toolbar {
     display: inline-block;
+
+    --rc-toolbar-gap-inline: 0.125rem;
+    --rc-toolbar-padding-block: 0.25rem;
+    --rc-toolbar-padding-inline: 0.25rem;
+    --rc-toolbar-radius: var(--substrate-radius-md, 0.5rem);
+    --rc-toolbar-vertical-radius: var(--substrate-radius-md, 0.5rem);
+    --rc-toolbar-flex-wrap: nowrap;
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-toolbar::part(root) {
-    gap: 0.125rem;
+    gap: var(--rc-toolbar-gap-inline, 0.125rem);
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-toolbar > button {

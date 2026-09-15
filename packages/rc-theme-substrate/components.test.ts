@@ -412,3 +412,67 @@ test('disclosure and accordion styles keep native details as the styled surface'
   expect(getComputedStyle(accordionContent!).paddingInlineStart).toBe('14px');
   expect(getComputedStyle(accordionContent!).paddingBlockEnd).toBe('0px');
 });
+
+test('components that previously had no contract now expose themed tokens', () => {
+  const scope = renderScope();
+  const cases: Array<[string, string[]]> = [
+    [
+      'rc-adaptive-menu',
+      [
+        '--rc-adaptive-menu-popup-background',
+        '--rc-adaptive-menu-trigger-color',
+        '--rc-adaptive-menu-item-min-block-size',
+      ],
+    ],
+    [
+      'rc-carousel',
+      [
+        '--rc-carousel-item-background',
+        '--rc-carousel-navigation-button-color',
+        '--rc-carousel-pagination-item-active-color',
+      ],
+    ],
+    ['rc-chip-group', ['--rc-chip-group-column-gap', '--rc-chip-group-toggle-separator-color']],
+    ['rc-scroller', ['--rc-scroller-content-max-inline-size', '--rc-scroller-scrollbar-color']],
+    ['rc-toolbar', ['--rc-toolbar-radius', '--rc-toolbar-padding-inline']],
+    [
+      'rc-virtual-canvas',
+      ['--rc-virtual-canvas-scrollbar-size', '--rc-virtual-canvas-scrollbar-thumb-background'],
+    ],
+  ];
+
+  for (const [tag, tokens] of cases) {
+    const element = document.createElement(tag);
+
+    scope.append(element);
+
+    const styles = getComputedStyle(element);
+
+    for (const token of tokens) {
+      expect(styles.getPropertyValue(token).trim(), `${tag} ${token}`).not.toBe('');
+    }
+  }
+});
+
+test('no themed color mixes against a bare system color', () => {
+  const scope = renderScope();
+  const splitter = document.createElement('rc-splitter');
+
+  // components.css alone has no brand values, so supply the ones these mixes
+  // reach for; the point is that the *other* operand is a theme token.
+  scope.style.setProperty('--rc-accent', 'rgb(1, 2, 3)');
+  scope.style.setProperty('--substrate-surface', 'rgb(4, 5, 6)');
+  scope.style.setProperty('--substrate-border-color', 'rgb(7, 8, 9)');
+  scope.append(splitter);
+
+  // A mix whose other operand is a system color has no value outside a browser,
+  // so it cannot reach the token export at all.
+  for (const [element, token] of [
+    [splitter, '--rc-splitter-separator-color'],
+    [splitter, '--rc-splitter-handle-color'],
+  ] as const) {
+    const value = getComputedStyle(element).getPropertyValue(token);
+
+    expect(value, token).not.toMatch(/\b(Canvas|CanvasText|ButtonBorder|ButtonFace)\b/);
+  }
+});

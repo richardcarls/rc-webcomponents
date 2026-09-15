@@ -33,4 +33,8 @@
 @import './components/disclosure.css';
 @import './components/accordion.css';
 @import './components/virtual-canvas.css';
+@import './components/adaptive-menu.css';
+@import './components/carousel.css';
+@import './components/chip-group.css';
+@import './components/scroller.css';
 @import './components/modes.css';

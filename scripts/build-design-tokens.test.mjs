@@ -131,11 +131,27 @@ test('a two color mix lands between its operands', () => {
 });
 
 test('a mix against a system color stays unresolved rather than guessing', () => {
-  const reasons = substrate.skipped.unresolved
-    .filter((entry) => entry.property.startsWith('--rc-splitter-'))
-    .map((entry) => entry.reason);
+  // `currentColor` is contextual by definition, so this one cannot resolve to a
+  // value no matter what the theme does.
+  const entry = substrate.skipped.unresolved.find(
+    (candidate) => candidate.property === '--rc-card-subtitle-color',
+  );
 
-  assert.deepEqual(reasons, ['mix-base-unresolved', 'mix-base-unresolved']);
+  assert.equal(entry?.reason, 'mix-base-unresolved');
+});
+
+test('themed mixes name a theme token as their other operand', () => {
+  // A mix against a bare system color has no value outside a browser, so it
+  // never reaches the export. Every theme mix should resolve instead.
+  const unresolved = new Set(substrate.skipped.unresolved.map((entry) => entry.property));
+
+  for (const property of [
+    '--rc-splitter-separator-color',
+    '--rc-splitter-handle-color',
+    '--rc-dialog-scrim',
+  ]) {
+    assert.ok(!unresolved.has(property), `${property} should resolve`);
+  }
 });
 
 test('substrate exposes the same rc contract surface as material', () => {
