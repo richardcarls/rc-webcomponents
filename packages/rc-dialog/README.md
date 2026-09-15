@@ -49,6 +49,7 @@ Place a `<dialog>` element directly inside `<rc-dialog>`. The inner `<dialog>` m
 | ----------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `open`            | `open`             | `boolean`                                                                                                      | None         | Controlled open state. Setting to `true`/`false` opens/closes the dialog silently (no `rc-dialog-toggle` event). Reads the inner `<dialog>.open` value.                                               |
 | `defaultOpen`     | `default-open`     | `boolean`                                                                                                      | `false`      | Uncontrolled initial open state. The component takes ownership after initialization.                                                                                                                  |
+| `variant`         | `variant`          | `'standard' \| 'fullscreen'`                                                                                   | `'standard'` | Surface presentation. Fullscreen themes the direct child dialog to the current visual viewport and disables move/resize controllers.                                                                  |
 | `modal`           | None               | `boolean`                                                                                                      | `true`       | Whether controlled `open` / `defaultOpen` opens as modal (`showModal`) or non-modal (`show`). No effect on direct `showModal()` / `show()` calls. JS property only; no attribute.                     |
 | `movable`         | `movable`          | `boolean`                                                                                                      | `false`      | Enable drag-to-move. Named `movable` (not `draggable`) to avoid colliding with the HTML `draggable` attribute.                                                                                        |
 | `moveHandle`      | `move-handle`      | `string`                                                                                                       | `''`         | CSS selector for the drag handle within the inner `<dialog>` (for example, `'.titlebar'`). Defaults to the whole dialog.                                                                              |
@@ -118,6 +119,24 @@ backdrop color. Theme packages consume this token in their `::backdrop` styles.
 
 Drag the `.titlebar` to reposition. Focus the titlebar and use **Arrow keys** to move it
 (Shift = 10× step).
+
+### Fullscreen dialog
+
+`variant="fullscreen"` is a separately usable surface variant. It tracks the visual viewport,
+including zoom offsets and software-keyboard resizing, while the dialog is open. The consumer
+still owns the native dialog content and accessible header/actions.
+
+```html
+<rc-dialog id="picker" variant="fullscreen">
+  <dialog aria-labelledby="picker-title">
+    <header>
+      <button aria-label="Close" onclick="picker.close('cancel')">✕</button>
+      <h2 id="picker-title">Categories</h2>
+      <button onclick="picker.close('done')">Done</button>
+    </header>
+  </dialog>
+</rc-dialog>
+```
 
 ### Movable + resizable
 

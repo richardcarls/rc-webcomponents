@@ -3245,6 +3245,61 @@
           }
         },
         {
+          "name": "dialog/background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-background)"
+          },
+          "cssVar": "--rc-dialog-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-raised",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "dialog/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-color)"
+          },
+          "cssVar": "--rc-dialog-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "field/text",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "dialog/radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-radius)"
+          },
+          "cssVar": "--rc-dialog-radius",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/xl",
+              "collection": "Radius"
+            }
+          }
+        },
+        {
           "name": "dialog/scrim",
           "type": "COLOR",
           "scopes": [
@@ -7509,6 +7564,12 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-dialog-border",
+        "raw": "var(--rc-border, 1px solid ButtonBorder)",
+        "name": "dialog/border",
+        "reason": "aliases a composite shorthand"
+      },
+      {
         "property": "--rc-disclosure-border",
         "raw": "var(--rc-border, 1px solid ButtonBorder)",
         "name": "disclosure/border",
@@ -7904,6 +7965,12 @@
         "property": "--rc-card-subtitle-color",
         "raw": "color-mix(in srgb, currentColor 72%, transparent)",
         "reason": "mix-base-unresolved",
+        "scope": "rc-theme-substrate"
+      },
+      {
+        "property": "--rc-dialog-shadow",
+        "raw": "var(--substrate-shadow-lg, none)",
+        "reason": "literal",
         "scope": "rc-theme-substrate"
       },
       {

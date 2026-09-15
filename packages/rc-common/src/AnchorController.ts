@@ -1,5 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { getVisualViewportBounds } from './visualViewport.js';
+
 export type AnchorPlacement =
   | 'top'
   | 'top-start'
@@ -324,8 +326,7 @@ export class AnchorController implements ReactiveController {
       return;
     }
 
-    const vw = $window.innerWidth;
-    const vh = $window.innerHeight;
+    const viewport = getVisualViewportBounds($window);
 
     // Undo the previous tick's correction to get the natural rect.
     const left = rect.left - this._appliedDx;
@@ -336,25 +337,35 @@ export class AnchorController implements ReactiveController {
     let dx = 0;
     let dy = 0;
 
-    if (right > vw - margin) {
-      dx = vw - margin - right;
+    if (right > viewport.right - margin) {
+      dx = viewport.right - margin - right;
     }
 
-    if (left + dx < margin) {
-      dx = margin - left;
+    if (left + dx < viewport.left + margin) {
+      dx = viewport.left + margin - left;
     }
 
-    if (bottom > vh - margin) {
-      dy = vh - margin - bottom;
+    if (bottom > viewport.bottom - margin) {
+      dy = viewport.bottom - margin - bottom;
     }
 
-    if (top + dy < margin) {
-      dy = margin - top;
+    if (top + dy < viewport.top + margin) {
+      dy = viewport.top + margin - top;
     }
 
     this._appliedDx = dx;
     this._appliedDy = dy;
     floating.style.translate = dx || dy ? `${dx}px ${dy}px` : '';
+
+    floating.style.setProperty(
+      '--rc-anchor-viewport-inline-size',
+      `${Math.max(0, viewport.width - margin * 2)}px`,
+    );
+
+    floating.style.setProperty(
+      '--rc-anchor-viewport-block-size',
+      `${Math.max(0, viewport.height - margin * 2)}px`,
+    );
   }
 
   private async _applyPolyfillOrFallback(): Promise<void> {
@@ -489,6 +500,7 @@ export class AnchorController implements ReactiveController {
       return;
     }
 
+    const viewport = getVisualViewportBounds($window);
     const vw = $window.innerWidth;
     const vh = $window.innerHeight;
 
@@ -512,8 +524,8 @@ export class AnchorController implements ReactiveController {
     let resolvedSide: typeof side = side;
 
     if (side === 'top' || side === 'bottom') {
-      const spaceBelow = vh - rect.bottom;
-      const spaceAbove = rect.top;
+      const spaceBelow = viewport.bottom - rect.bottom;
+      const spaceAbove = rect.top - viewport.top;
 
       if (flip) {
         if (side === 'bottom' && spaceBelow < popupHeight + offset && spaceAbove > spaceBelow) {
@@ -536,11 +548,12 @@ export class AnchorController implements ReactiveController {
             ? rect.left
             : rect.left + rect.width / 2 - popupWidth / 2;
 
-      left = Math.max(margin, Math.min(left, vw - popupWidth - margin));
+      left = Math.max(viewport.left + margin, Math.min(left, viewport.right - popupWidth - margin));
+
       floating.style.left = `${left}px`;
     } else {
-      const spaceRight = vw - rect.right;
-      const spaceLeft = rect.left;
+      const spaceRight = viewport.right - rect.right;
+      const spaceLeft = rect.left - viewport.left;
 
       if (flip) {
         if (side === 'right' && spaceRight < popupWidth + offset && spaceLeft > spaceRight) {
@@ -563,7 +576,8 @@ export class AnchorController implements ReactiveController {
             ? rect.top
             : rect.top + rect.height / 2 - popupHeight / 2;
 
-      top = Math.max(margin, Math.min(top, vh - popupHeight - margin));
+      top = Math.max(viewport.top + margin, Math.min(top, viewport.bottom - popupHeight - margin));
+
       floating.style.top = `${top}px`;
     }
   }
@@ -585,6 +599,8 @@ export class AnchorController implements ReactiveController {
       // Clear any overflow-clamp nudge so a reopened popup doesn't inherit
       // a stale offset computed for its previous position/viewport size.
       (floating as HTMLElement).style.translate = '';
+      (floating as HTMLElement).style.removeProperty('--rc-anchor-viewport-inline-size');
+      (floating as HTMLElement).style.removeProperty('--rc-anchor-viewport-block-size');
     }
 
     this._styleEl?.remove();

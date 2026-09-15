@@ -50,6 +50,25 @@ yarn add @rcarls/rc-dialog
 import '@rcarls/rc-dialog/define';
 ```
 
+## Fullscreen variant
+
+Use `variant="fullscreen"` for a surface that follows the current visual viewport, including
+browser zoom offsets and software-keyboard resizing. Move and resize behavior is disabled for
+this variant. The consumer continues to author the native dialog content and accessible close
+action.
+
+```html
+<rc-dialog variant="fullscreen">
+  <dialog aria-labelledby="picker-title">
+    <header>
+      <button aria-label="Close">✕</button>
+      <h2 id="picker-title">Choose categories</h2>
+      <button>Done</button>
+    </header>
+  </dialog>
+</rc-dialog>
+```
+
 ## Live demo
 
 <DialogDemo />

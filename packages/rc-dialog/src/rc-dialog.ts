@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 
 import {
   DragController,
+  getVisualViewportBounds,
   NativeChildController,
   ResizeController,
   type ResizeDirection,
@@ -10,6 +11,10 @@ import {
   type ResizeOrigin,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
+
+import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
+
+export type RCDialogVariant = 'standard' | 'fullscreen';
 
 /** Detail shape for `rc-dialog-close` and `rc-dialog-request-close`. */
 export interface RCDialogCloseEvent {
@@ -68,11 +73,36 @@ declare global {
  * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute.
  * @attr light-dismiss - When present and the dialog is modal, a click on the backdrop area calls
  *   `requestClose()`.
+ * @attr variant - Surface presentation: `standard` (default) or visual-viewport-filling
+ *   `fullscreen`.
  * @prop modal - Whether controlled open state uses `showModal()` instead of `show()`.
  *   JavaScript property only; no attribute is observed.
  *
+ * @cssprop [--rc-dialog-max-inline-size=none] - Standard surface inline bound.
+ * @cssprop [--rc-dialog-max-block-size=calc(100dvb - 2rem)] - Standard surface block bound. The
+ *   surface never scrolls itself, so a scrollable dialog should scroll a dedicated inner region.
+ * @cssprop [--rc-dialog-padding=1em] - Standard surface padding.
+ * @cssprop [--rc-dialog-border=0] - Surface border.
+ * @cssprop [--rc-dialog-radius=0] - Surface corner radius.
+ * @cssprop [--rc-dialog-background=Canvas] - Surface background.
+ * @cssprop [--rc-dialog-color=CanvasText] - Surface foreground.
+ * @cssprop [--rc-dialog-shadow=none] - Surface shadow.
  * @cssprop [--rc-dialog-scrim=color-mix(in srgb, CanvasText 32%, transparent)] - Modal backdrop color.
+ * @cssprop [--rc-dialog-fullscreen-padding-block] - Fullscreen block padding. Defaults to a
+ *   safe-area-aware inset, which is the one value the fullscreen variant genuinely needs of its own.
+ * @cssprop [--rc-dialog-fullscreen-padding-inline] - Fullscreen inline padding, safe-area aware.
+ * @cssprop [--rc-dialog-fullscreen-background] - Fullscreen background. Defers to
+ *   `--rc-dialog-background` when unset.
  *
+ * Fullscreen geometry, meaning position, size, margin, radius, and shadow, is structural rather
+ * than themable: filling the visual viewport is what keeps the surface correct under browser zoom
+ * and a software keyboard.
+ *
+ * This element also writes `--rc-dialog-visual-viewport-left`, `-top`, `-width`, and `-height`
+ * onto itself while a fullscreen dialog is open. Those are geometry outputs, not theme inputs:
+ * read them if something inside the dialog needs the same measurements, but setting them does not
+ * move the dialog, and the component overwrites them on the next viewport change. They are
+ * candidates for private `--_rc-dialog-*` names in the next compatible API revision.
  */
 export class RCDialog extends LitElement {
   override createRenderRoot() {
@@ -151,6 +181,10 @@ export class RCDialog extends LitElement {
   @property({ type: Boolean, attribute: 'light-dismiss' })
   lightDismiss = false;
 
+  /** Surface presentation. Fullscreen geometry follows the visual viewport while open. */
+  @property({ type: String, reflect: true })
+  variant: RCDialogVariant = 'standard';
+
   /**
    * Whether to open as modal with controlled open. Default: `true`.
    */
@@ -183,6 +217,8 @@ export class RCDialog extends LitElement {
   // remove listeners even after the element is removed from the DOM.
   protected _$wired: WeakRef<HTMLDialogElement> | null = null;
   protected _suppressNextCloseToggle = false;
+
+  private _trackingVisualViewport = false;
 
   /** The element that had focus when the dialog was opened; restored on close. */
   protected _$opener: Element | null = null;
@@ -344,7 +380,7 @@ export class RCDialog extends LitElement {
       }
     }
 
-    if (this.movable || this.moveHandle) {
+    if (this.variant !== 'fullscreen' && (this.movable || this.moveHandle)) {
       const $handle = this.moveHandle
         ? ($dialog.querySelector<Element>(this.moveHandle) ?? $dialog)
         : $dialog;
@@ -357,7 +393,7 @@ export class RCDialog extends LitElement {
       });
     }
 
-    if (this.resize !== 'none') {
+    if (this.variant !== 'fullscreen' && this.resize !== 'none') {
       const $handles = this._resizeHandles($dialog);
 
       if ($handles.length > 0) {
@@ -397,6 +433,8 @@ export class RCDialog extends LitElement {
     } else if (this.defaultOpen) {
       this._applyOpen(true, true, this.modal);
     }
+
+    this._syncVisualViewportTracking();
   }
 
   override updated(changed: PropertyValues) {
@@ -404,6 +442,10 @@ export class RCDialog extends LitElement {
 
     if (!$dialog) {
       return;
+    }
+
+    if (changed.has('variant')) {
+      this._syncVisualViewportTracking();
     }
 
     if (changed.has('closedBy')) {
@@ -433,7 +475,13 @@ export class RCDialog extends LitElement {
     }
   }
 
+  override connectedCallback() {
+    super.connectedCallback();
+    ensureDialogBaseStyles(this.getRootNode() as Document | ShadowRoot);
+  }
+
   override disconnectedCallback() {
+    this._stopVisualViewportTracking();
     this._teardownDialog();
 
     super.disconnectedCallback();
@@ -456,6 +504,8 @@ export class RCDialog extends LitElement {
   }
 
   protected _onClose = () => {
+    this._stopVisualViewportTracking();
+
     // Restore focus to the element that triggered the open, per APG focus management.
     if (this._$opener instanceof HTMLElement) {
       if (this._$opener.isConnected) {
@@ -582,6 +632,7 @@ export class RCDialog extends LitElement {
       // Capture focus owner before the dialog steals it, so we can restore on close.
       this._$opener = document.activeElement;
       modal ? $dialog.showModal() : $dialog.show();
+      this._syncVisualViewportTracking();
       this.requestUpdate('open');
 
       return true;
@@ -607,6 +658,64 @@ export class RCDialog extends LitElement {
         detail: { open, returnValue: this.returnValue },
       }),
     );
+  }
+
+  private _handleVisualViewportChange = (): void => {
+    const $window = this.ownerDocument.defaultView;
+
+    if (!$window) {
+      return;
+    }
+
+    const bounds = getVisualViewportBounds($window);
+
+    this.style.setProperty('--rc-dialog-visual-viewport-left', `${bounds.left}px`);
+    this.style.setProperty('--rc-dialog-visual-viewport-top', `${bounds.top}px`);
+    this.style.setProperty('--rc-dialog-visual-viewport-width', `${bounds.width}px`);
+    this.style.setProperty('--rc-dialog-visual-viewport-height', `${bounds.height}px`);
+  };
+
+  private _syncVisualViewportTracking(): void {
+    if (this.variant === 'fullscreen' && this.open) {
+      this._startVisualViewportTracking();
+    } else {
+      this._stopVisualViewportTracking();
+    }
+  }
+
+  private _startVisualViewportTracking(): void {
+    const $window = this.ownerDocument.defaultView;
+
+    if (!$window) {
+      return;
+    }
+
+    this._handleVisualViewportChange();
+
+    if (this._trackingVisualViewport) {
+      return;
+    }
+
+    this._trackingVisualViewport = true;
+    $window.addEventListener('resize', this._handleVisualViewportChange);
+    $window.visualViewport?.addEventListener('resize', this._handleVisualViewportChange);
+    $window.visualViewport?.addEventListener('scroll', this._handleVisualViewportChange);
+  }
+
+  private _stopVisualViewportTracking(): void {
+    const $window = this.ownerDocument.defaultView;
+
+    if ($window && this._trackingVisualViewport) {
+      $window.removeEventListener('resize', this._handleVisualViewportChange);
+      $window.visualViewport?.removeEventListener('resize', this._handleVisualViewportChange);
+      $window.visualViewport?.removeEventListener('scroll', this._handleVisualViewportChange);
+    }
+
+    this._trackingVisualViewport = false;
+    this.style.removeProperty('--rc-dialog-visual-viewport-left');
+    this.style.removeProperty('--rc-dialog-visual-viewport-top');
+    this.style.removeProperty('--rc-dialog-visual-viewport-width');
+    this.style.removeProperty('--rc-dialog-visual-viewport-height');
   }
 }
 

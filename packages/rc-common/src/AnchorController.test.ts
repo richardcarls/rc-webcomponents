@@ -150,6 +150,21 @@ test('_clampToViewport leaves an on-screen floating element untouched', async ()
   expect(floating.style.translate).toBe('');
 });
 
+test('_clampToViewport publishes the available visual viewport size', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
+  const ctl = asPrivate(new AnchorController(createHost(), { anchor, floating }));
+
+  ctl._clampToViewport();
+
+  expect(floating.style.getPropertyValue('--rc-anchor-viewport-inline-size')).toBe(
+    `${(window.visualViewport?.width ?? window.innerWidth) - 8}px`,
+  );
+
+  expect(floating.style.getPropertyValue('--rc-anchor-viewport-block-size')).toBe(
+    `${(window.visualViewport?.height ?? window.innerHeight) - 8}px`,
+  );
+});
+
 // Regression test for a real Android Firefox failure: a single post-open
 // check measured the popover before its native anchor position had resolved,
 // concluded nothing was overflowing, and never checked again. The geometry

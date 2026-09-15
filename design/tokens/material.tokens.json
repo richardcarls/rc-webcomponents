@@ -7695,6 +7695,90 @@
           }
         },
         {
+          "name": "dialog/background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-background)"
+          },
+          "cssVar": "--rc-dialog-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-container-high",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "dialog/border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-border)"
+          },
+          "cssVar": "--rc-dialog-border",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "dialog/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-color)"
+          },
+          "cssVar": "--rc-dialog-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "dialog/padding",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-padding)"
+          },
+          "cssVar": "--rc-dialog-padding",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 24
+          }
+        },
+        {
+          "name": "dialog/radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-radius)"
+          },
+          "cssVar": "--rc-dialog-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-extra-large",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
           "name": "dialog/scrim",
           "type": "COLOR",
           "scopes": [
@@ -13665,6 +13749,22 @@
         "property": "--rc-combobox-shadow",
         "raw": "var(--rc-shadow)",
         "name": "combobox/shadow",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-dialog-max-block-size",
+        "raw": "calc(100dvh - 3rem)",
+        "name": "dialog/max-block-size"
+      },
+      {
+        "property": "--rc-dialog-max-inline-size",
+        "raw": "min(35rem, calc(100vw - 3rem))",
+        "name": "dialog/max-inline-size"
+      },
+      {
+        "property": "--rc-dialog-shadow",
+        "raw": "var(--rc-shadow-level3, var(--rc-shadow, none))",
+        "name": "dialog/shadow",
         "reason": "aliases a composite shorthand"
       },
       {
