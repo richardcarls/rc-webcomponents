@@ -12,6 +12,7 @@ dist
 dist-ssr
 custom-elements.json
 *.local
+/.performance/
 
 # Local package demo scratch files
 /packages/*/*.html
