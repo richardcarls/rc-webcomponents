@@ -375,7 +375,7 @@ test('list elements receive the shared Substrate token contract', () => {
   expect(listStyles.getPropertyValue('--rc-list-item-selected-background')).not.toBe('');
 });
 
-test('disclosure and accordion styles keep native details as the styled surface', () => {
+test('disclosure and accordion map their tokens onto the shared panel properties', () => {
   const scope = renderScope();
   const disclosure = document.createElement('rc-disclosure');
   const accordion = document.createElement('rc-accordion');
@@ -396,21 +396,34 @@ test('disclosure and accordion styles keep native details as the styled surface'
 
   scope.append(disclosure, accordion);
 
-  const disclosureDetails = disclosure.querySelector('details');
-  const disclosureContent = disclosure.querySelector('details > div');
+  // The panel boxes are drawn by the component's own light-DOM base layer, so
+  // what a theme owes is the mapping. Both child forms read the same names.
+  for (const element of [disclosure, accordion]) {
+    const styles = getComputedStyle(element);
+
+    for (const token of [
+      '--rc-disclosure-radius',
+      '--rc-disclosure-background',
+      '--rc-disclosure-summary-min-block-size',
+      '--rc-disclosure-summary-hover-background',
+      '--rc-disclosure-content-padding-inline',
+      '--rc-disclosure-duration',
+    ]) {
+      expect(styles.getPropertyValue(token).trim(), `${element.tagName} ${token}`).not.toBe('');
+    }
+  }
+
+  expect(getComputedStyle(accordion).getPropertyValue('--rc-accordion-gap').trim()).toBe('0.5rem');
+
+  // Decoration a bounded property cannot express stays with the theme: the
+  // chevron that replaces the native marker, and the content's block box.
   const accordionSummary = accordion.querySelector('summary');
   const accordionContent = accordion.querySelector('details > div');
 
-  expect(disclosureDetails).not.toBeNull();
-  expect(disclosureContent).not.toBeNull();
   expect(accordionSummary).not.toBeNull();
   expect(accordionContent).not.toBeNull();
-  expect(getComputedStyle(disclosureDetails!).borderRadius).not.toBe('0px');
-  expect(getComputedStyle(accordionSummary!).minBlockSize).toBe('44px');
   expect(getComputedStyle(accordionSummary!, '::after').borderBlockStartWidth).toBe('2px');
   expect(getComputedStyle(accordionContent!).display).toBe('flow-root');
-  expect(getComputedStyle(accordionContent!).paddingInlineStart).toBe('14px');
-  expect(getComputedStyle(accordionContent!).paddingBlockEnd).toBe('0px');
 });
 
 test('components that previously had no contract now expose themed tokens', () => {

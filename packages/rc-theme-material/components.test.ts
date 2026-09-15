@@ -771,7 +771,7 @@ test('menubar receives the Material menu-button item token contract', () => {
   expect(styles.getPropertyValue('--rc-menubar-item-open-background')).not.toBe('');
 });
 
-test('disclosure styles use Material list headers and card expansion', () => {
+test('disclosure maps Material tokens onto the shared panel properties', () => {
   const scope = renderScope();
   const disclosure = document.createElement('rc-disclosure');
 
@@ -784,32 +784,50 @@ test('disclosure styles use Material list headers and card expansion', () => {
 
   scope.append(disclosure);
 
-  const details = disclosure.querySelector('details');
-  const summary = disclosure.querySelector('summary');
-  const content = disclosure.querySelector('p');
+  const styles = getComputedStyle(disclosure);
 
-  expect(details).not.toBeNull();
-  expect(summary).not.toBeNull();
-  expect(content).not.toBeNull();
+  // The panel boxes are drawn by the component's own light-DOM base layer, so
+  // what the theme owes is the mapping.
+  for (const token of [
+    '--rc-disclosure-radius',
+    '--rc-disclosure-background',
+    '--rc-disclosure-open-background',
+    '--rc-disclosure-open-shadow',
+    '--rc-disclosure-summary-min-block-size',
+    '--rc-disclosure-summary-font',
+    '--rc-disclosure-content-color',
+    '--rc-disclosure-duration',
+  ]) {
+    expect(styles.getPropertyValue(token).trim(), token).not.toBe('');
+  }
 
-  const summaryStyle = getComputedStyle(summary!);
-
-  expect(summaryStyle.display).toBe('grid');
-  expect(summaryStyle.minBlockSize).toBe('56px');
-  expect(summaryStyle.fontSize).not.toBe('');
-
-  const detailsStyle = getComputedStyle(details!);
-
-  expect(detailsStyle.borderRadius).not.toBe('0px');
-  expect(detailsStyle.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
-
-  content!.style.transitionDuration = '0ms';
-  details!.open = true;
-  expect(getComputedStyle(details!).boxShadow).not.toBe('none');
-  expect(getComputedStyle(content!).opacity).toBe('1');
+  expect(styles.getPropertyValue('--rc-disclosure-summary-min-block-size').trim()).toBe('3.5rem');
 });
 
-test('accordion styles direct and wrapped disclosures as equal-height Material segments', () => {
+test('the summary keeps its list-item box so the native marker still renders', () => {
+  const scope = renderScope();
+  const disclosure = document.createElement('rc-disclosure');
+
+  disclosure.innerHTML = `
+    <details>
+      <summary>Details</summary>
+      <p>Expanded content</p>
+    </details>
+  `;
+
+  scope.append(disclosure);
+
+  const summary = disclosure.querySelector('summary');
+
+  expect(summary).not.toBeNull();
+
+  // `display: grid` drops the list-item box, which silently removes the
+  // disclosure triangle. Material styles `::marker` and draws no replacement,
+  // so setting grid here left the control with no expand affordance at all.
+  expect(getComputedStyle(summary!).display).toBe('list-item');
+});
+
+test('accordion styles direct and wrapped disclosures from one shared mapping', () => {
   const scope = renderScope();
   const accordion = document.createElement('rc-accordion');
 
@@ -828,22 +846,17 @@ test('accordion styles direct and wrapped disclosures as equal-height Material s
 
   scope.append(accordion);
 
-  const summaries = accordion.querySelectorAll('summary');
+  const wrapped = accordion.querySelector('rc-disclosure');
 
-  expect(summaries).toHaveLength(2);
+  expect(wrapped).not.toBeNull();
 
-  const firstSummaryStyle = getComputedStyle(summaries[0]!);
-  const secondSummaryStyle = getComputedStyle(summaries[1]!);
+  // Both supported child forms resolve the same property names to the same
+  // values, which is what keeps one panel recipe honest.
+  for (const token of ['--rc-disclosure-radius', '--rc-disclosure-summary-min-block-size']) {
+    expect(getComputedStyle(accordion).getPropertyValue(token).trim(), token).toBe(
+      getComputedStyle(wrapped!).getPropertyValue(token).trim(),
+    );
+  }
 
-  expect(firstSummaryStyle.display).toBe('grid');
-  expect(secondSummaryStyle.display).toBe('grid');
-  expect(firstSummaryStyle.minBlockSize).toBe(secondSummaryStyle.minBlockSize);
-
-  const details = accordion.querySelectorAll('details');
-
-  expect(details).toHaveLength(2);
-
-  expect(getComputedStyle(details[0]!).borderRadius).toBe(
-    getComputedStyle(details[1]!).borderRadius,
-  );
+  expect(getComputedStyle(accordion).getPropertyValue('--rc-accordion-gap').trim()).toBe('0.5rem');
 });

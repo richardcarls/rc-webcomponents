@@ -1,3 +1,5 @@
+import { ensureDisclosureBaseStyles } from './disclosureBaseStyles.js';
+
 export interface RCDisclosureToggleEvent {
   /** Whether the disclosure is now open. */
   open: boolean;
@@ -29,6 +31,36 @@ declare global {
  *
  * @attr open - Controlled open state mirrored to the child `<details>`.
  * @attr default-open - Initial open state for uncontrolled usage.
+ *
+ * @cssprop [--rc-disclosure-border=0] - Panel border.
+ * @cssprop [--rc-disclosure-radius=0] - Panel corner radius.
+ * @cssprop [--rc-disclosure-background=transparent] - Panel background while closed.
+ * @cssprop [--rc-disclosure-color=inherit] - Panel foreground.
+ * @cssprop [--rc-disclosure-open-background] - Panel background while open. Defers to
+ *   `--rc-disclosure-background` when unset.
+ * @cssprop [--rc-disclosure-open-shadow=none] - Panel shadow while open.
+ * @cssprop [--rc-disclosure-summary-min-block-size=0] - Summary minimum block size. Set this to
+ *   at least `3rem` for a comfortable touch target.
+ * @cssprop [--rc-disclosure-summary-padding-block=0] - Summary block padding.
+ * @cssprop [--rc-disclosure-summary-padding-inline=0] - Summary inline padding.
+ * @cssprop [--rc-disclosure-summary-gap=0] - Summary gap, for a theme that lays the summary out
+ *   as a grid or flex container.
+ * @cssprop [--rc-disclosure-summary-color=inherit] - Summary foreground.
+ * @cssprop [--rc-disclosure-summary-font=inherit] - Summary font shorthand.
+ * @cssprop [--rc-disclosure-summary-marker-color=currentColor] - Native disclosure marker color.
+ *   A theme that replaces the marker with its own affordance should hide `::marker` itself.
+ * @cssprop [--rc-disclosure-summary-hover-background=transparent] - Summary hover background.
+ * @cssprop [--rc-disclosure-focus-ring=var(--rc-focus-ring, 2px solid Highlight)] - Summary
+ *   focus-visible outline.
+ * @cssprop [--rc-disclosure-focus-ring-offset=0] - Summary focus-visible outline offset.
+ * @cssprop [--rc-disclosure-content-padding-block=0] - Content block padding.
+ * @cssprop [--rc-disclosure-content-padding-inline=0] - Content inline padding.
+ * @cssprop [--rc-disclosure-content-color=inherit] - Content foreground.
+ * @cssprop [--rc-disclosure-content-font=inherit] - Content font shorthand.
+ * @cssprop [--rc-disclosure-duration=0ms] - Open and close transition duration. Zero by default,
+ *   so the panel snaps the way the platform does until a theme opts into motion. The animation
+ *   runs on `::details-content` where that is supported and is skipped entirely where it is not.
+ * @cssprop [--rc-disclosure-easing=ease] - Open and close transition easing.
  */
 export class RCDisclosure extends HTMLElement {
   private _observer = new MutationObserver(() => this._setupDetails());
@@ -80,6 +112,7 @@ export class RCDisclosure extends HTMLElement {
   }
 
   connectedCallback(): void {
+    ensureDisclosureBaseStyles(this.getRootNode() as Document | ShadowRoot);
     this._observer.observe(this, { childList: true });
     window.addEventListener('hashchange', this._onHashChange);
     this._setupDetails();
