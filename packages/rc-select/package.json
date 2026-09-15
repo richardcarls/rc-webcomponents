@@ -47,6 +47,7 @@
   "dependencies": {
     "@rcarls/rc-chip-group": "workspace:*",
     "@rcarls/rc-common": "workspace:*",
+    "@rcarls/rc-dialog": "workspace:*",
     "@rcarls/rc-listbox": "workspace:*"
   },
   "devDependencies": {

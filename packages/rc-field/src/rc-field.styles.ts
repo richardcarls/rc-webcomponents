@@ -96,6 +96,7 @@ export const fieldStyles = css`
   }
 
   ::slotted(input),
+  ::slotted(select),
   ::slotted(textarea),
   ::slotted([data-rc-field-control]) {
     box-sizing: border-box;

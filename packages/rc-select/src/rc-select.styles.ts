@@ -79,8 +79,7 @@ export const selectStyles = css`
     padding-inline-end: var(
       --rc-select-chip-padding-inline-end,
       calc(
-        var(--rc-chip-remove-target-size, 1.5rem) +
-          var(--rc-chip-remove-offset-inline, 0.125rem)
+        var(--rc-chip-remove-target-size, 1.5rem) + var(--rc-chip-remove-offset-inline, 0.125rem)
       )
     );
     border: var(
@@ -146,10 +145,76 @@ export const selectStyles = css`
     --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
     --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
     --rc-listbox-disabled-opacity: var(--rc-disabled-opacity, 0.5);
+  }
 
-    &:not(:popover-open) {
-      display: none;
+  [part='listbox']:not(:popover-open) {
+    display: none;
+  }
+
+  rc-dialog[variant='fullscreen'] {
+    display: contents;
+  }
+
+  [part~='dialog'] {
+    box-sizing: border-box;
+    background: var(--rc-surface, Canvas);
+    color: var(--rc-field-text, CanvasText);
+    font-family: var(--rc-font-family, inherit);
+
+    &[open] {
+      display: flex;
+      flex-direction: column;
+      gap: var(--rc-select-dialog-gap, 1rem);
     }
+  }
+
+  [part~='dialog-header'] {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--rc-select-dialog-header-gap, 0.5rem);
+  }
+
+  [part~='dialog-header'] > [part~='dialog-title']:first-child {
+    grid-column: 1 / 3;
+  }
+
+  [part~='dialog-title'] {
+    min-inline-size: 0;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: inherit;
+  }
+
+  [part~='dialog-cancel'],
+  [part~='dialog-confirm'] {
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+  }
+
+  [part~='dialog-cancel'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  [part~='dialog-cancel-icon'] {
+    fill: currentColor;
+  }
+
+  [part~='dialog-selected'] {
+    max-block-size: 30%;
+    overflow: auto;
+  }
+
+  [part~='dialog-listbox'] {
+    flex: 1;
+    min-block-size: 0;
+    max-block-size: none;
+    box-shadow: none;
   }
 
   rc-listbox [part~='option'][hidden] {

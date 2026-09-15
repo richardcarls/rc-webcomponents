@@ -297,6 +297,7 @@ export class RCCarousel extends LitElement {
       }
     }
 
+    this._syncActiveItemAccessibility(this.activeIndex);
     this._scrollToIndex(this.activeIndex, true);
     this._mounted = true;
   }
@@ -316,6 +317,8 @@ export class RCCarousel extends LitElement {
     if (!changed.has('activeIndex')) {
       return;
     }
+
+    this._syncActiveItemAccessibility(this.activeIndex);
 
     if (this._suppressSync) {
       this._suppressSync = false;
@@ -475,6 +478,22 @@ export class RCCarousel extends LitElement {
       // #track in rc-carousel.styles.ts.
       this._trackEl.scrollTo({ left, behavior: 'smooth' });
     }
+  }
+
+  /**
+   * Keep the authored active slide available to assistive technology even
+   * before a programmatic scroll produces its next intersection callback.
+   * IntersectionObserver still takes over during direct manipulation, where
+   * the visually dominant slide can change before scroll settling updates the
+   * public active index.
+   */
+  private _syncActiveItemAccessibility(index: number): void {
+    this._directItems().forEach((item, itemIndex) => {
+      const hidden = itemIndex !== index;
+
+      item.toggleAttribute('aria-hidden', hidden);
+      item.toggleAttribute('inert', hidden);
+    });
   }
 
   private _onSlotChange = (): void => {

@@ -29,7 +29,11 @@ const LIGHT_DOM_CSS = `
     min-block-size: var(--rc-chip-block-size, revert);
     margin: 0;
     padding-block: var(--rc-chip-padding-block, revert);
-    padding-inline: var(--rc-chip-padding-inline, revert);
+    padding-inline-start: var(
+      --rc-chip-padding-inline-start,
+      var(--rc-chip-padding-inline, revert)
+    );
+    padding-inline-end: var(--rc-chip-padding-inline-end, var(--rc-chip-padding-inline, revert));
     border: var(--rc-chip-border, revert);
     border-radius: var(--rc-chip-radius, revert);
     background: var(--rc-chip-bg, revert);
@@ -157,6 +161,10 @@ export interface RCChipRemoveDetail {
  *   label (defers to native padding when unset).
  * @cssprop [--rc-chip-padding-inline] - Inline-axis padding of the slotted button, anchor, or
  *   label (defers to native padding when unset).
+ * @cssprop [--rc-chip-padding-inline-start=var(--rc-chip-padding-inline)] - Logical leading
+ *   padding of the slotted button, anchor, or label.
+ * @cssprop [--rc-chip-padding-inline-end=var(--rc-chip-padding-inline)] - Logical trailing
+ *   padding of the slotted button, anchor, or label.
  * @cssprop [--rc-chip-border] - Border of the slotted button, anchor, or label (defers to
  *   native border when unset).
  * @cssprop [--rc-chip-radius] - Border radius of the slotted button/anchor/label and the

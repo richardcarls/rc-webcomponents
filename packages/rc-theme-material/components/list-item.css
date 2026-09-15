@@ -31,6 +31,7 @@
     --rc-list-item-padding-block: 0.5rem;
     --rc-list-item-color: var(--md-sys-color-on-surface, CanvasText);
     --rc-list-item-background: transparent;
+    --rc-list-item-border-radius: 0;
     --rc-list-item-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
     --rc-list-item-selected-background: var(--md-sys-color-secondary-container, Highlight);
     --rc-list-item-divider: 1px solid var(--md-sys-color-outline-variant, GrayText);
@@ -48,6 +49,18 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-list[variant='segmented'] {
     --rc-list-row-gap: 0.125rem;
+  }
+
+  /* Dividers separate visible rows; they do not trail the final row. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-list
+    > rc-list-item:is([data-rc-list-position='last'], [data-rc-list-position='only']) {
+    --rc-list-item-divider: 0;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-list[variant='segmented']
+    > rc-list-item {
     --rc-list-item-min-block-size: 3.5rem;
     --rc-list-item-padding-block: 0.625rem;
     --rc-list-item-background: var(--md-sys-color-surface-container-low, Canvas);

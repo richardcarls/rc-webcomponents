@@ -14,6 +14,10 @@ provides hover, focus, and pressed feedback within the chip shape.
 Structural styles for the native child are installed in the `rc-base` cascade
 layer, so normal author rules outside a layer remain the final styling authority.
 
+Themes may use `--rc-chip-padding-inline-start` and
+`--rc-chip-padding-inline-end` for icon-aware logical padding. Both fall back
+to `--rc-chip-padding-inline`, so existing symmetric padding remains compatible.
+
 Navigation chips preserve the same native-link behavior:
 
 ```html

@@ -6018,8 +6018,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "core/motion-spatial-duration-default",
-              "collection": "RC Contract"
+              "alias": "motion/duration-300",
+              "collection": "Motion"
             }
           }
         },
@@ -6888,6 +6888,22 @@
           }
         },
         {
+          "name": "chip/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-padding-block)"
+          },
+          "cssVar": "--rc-chip-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
           "name": "chip/padding-inline",
           "type": "FLOAT",
           "scopes": [
@@ -6901,6 +6917,44 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 16
+          }
+        },
+        {
+          "name": "chip/padding-inline-end",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-padding-inline-end)"
+          },
+          "cssVar": "--rc-chip-padding-inline-end",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "chip/padding-inline",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "chip/padding-inline-start",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-padding-inline-start)"
+          },
+          "cssVar": "--rc-chip-padding-inline-start",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "chip/padding-inline",
+              "collection": "RC Contract"
+            }
           }
         },
         {
@@ -8736,6 +8790,21 @@
               "alias": "color/computed/list-item-active-bg",
               "collection": "Color"
             }
+          }
+        },
+        {
+          "name": "list-item/border-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-border-radius)"
+          },
+          "cssVar": "--rc-list-item-border-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
           }
         },
         {
@@ -13760,6 +13829,11 @@
         "property": "--rc-dialog-max-inline-size",
         "raw": "min(35rem, calc(100vw - 3rem))",
         "name": "dialog/max-inline-size"
+      },
+      {
+        "property": "--rc-dialog-min-inline-size",
+        "raw": "min(17.5rem, calc(100vw - 3rem))",
+        "name": "dialog/min-inline-size"
       },
       {
         "property": "--rc-dialog-shadow",

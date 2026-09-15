@@ -13,10 +13,13 @@ import type {
   ListboxOption,
   ListboxSelectableOption,
 } from '@rcarls/rc-listbox';
+import type { RCDialog, RCDialogCloseEvent } from '@rcarls/rc-dialog';
+import '@rcarls/rc-dialog/define';
 
 import { selectStyles } from './rc-select.styles.js';
 
 export type RCSelectValue = string | string[];
+export type RCSelectPopupMode = 'popover' | 'dialog';
 
 export interface RCSelectChangeEvent {
   /** Updated value after the change. */
@@ -66,6 +69,15 @@ declare global {
  * @csspart value-display - The text label showing selected value(s).
  * @csspart toggle-indicator - The open/close indicator container.
  * @csspart listbox - The `<rc-listbox>` popup element.
+ * @csspart dialog - Dialog popup surface.
+ * @csspart dialog-header - Managed leading/title/trailing header.
+ * @csspart dialog-cancel - Leading button that discards pending changes.
+ * @csspart dialog-cancel-icon - Decorative close icon inside the cancel button.
+ * @csspart dialog-title - Visible dialog title.
+ * @csspart dialog-selected - Scrollable pending-selection chip region.
+ * @csspart dialog-actions - Dialog confirmation action group.
+ * @csspart dialog-confirm - Commits pending changes and closes the dialog.
+ * @csspart dialog-listbox - Dialog option list.
  *
  * @attr open - Reflects whether the popup listbox is open.
  * @attr multiple - Enables selection of multiple options simultaneously.
@@ -75,6 +87,11 @@ declare global {
  * @attr placeholder - Text shown in the trigger when no value is selected.
  * @attr display - Controls how selected values appear in the trigger: `'auto'`,
  *   `'chips'`, or `'compact'`.
+ * @attr popup-mode - Presents options in an anchored `popover` (default) or transactional
+ *   modal `dialog`.
+ * @attr dialog-confirm-label - Text for the dialog confirmation action.
+ * @attr dialog-cancel-label - Accessible label for the leading cancel action.
+ * @attr dialog-cancel-button - Shows or hides the leading cancel action.
  * @attr [has-value] - Present when one or more options are selected. Use with CSS
  *   selectors (e.g. `rc-select[has-value]`) for floating-label wrappers.
  *
@@ -101,6 +118,8 @@ declare global {
  * @cssprop [--rc-chip-remove-offset-inline=0.125rem] - Inherited edge offset reserved by
  *   generated multi-select chips.
  * @cssprop [--rc-select-toggle-indicator-size=1.1em] - Inline size of the toggle indicator container.
+ * @cssprop [--rc-select-dialog-gap=1rem] - Gap between fullscreen dialog regions.
+ * @cssprop [--rc-select-dialog-header-gap=0.5rem] - Gap between fullscreen dialog header slots.
  */
 export class RCSelect extends LitElement {
   static override styles = selectStyles;
@@ -139,6 +158,22 @@ export class RCSelect extends LitElement {
   @property()
   display: 'auto' | 'chips' | 'compact' = 'auto';
 
+  /** Presents options in an anchored popover or transactional modal dialog. */
+  @property({ attribute: 'popup-mode', reflect: true })
+  popupMode: RCSelectPopupMode = 'popover';
+
+  /** Text for the dialog confirmation action. */
+  @property({ attribute: 'dialog-confirm-label' })
+  dialogConfirmLabel = 'Done';
+
+  /** Accessible label for the leading dialog cancel action. */
+  @property({ attribute: 'dialog-cancel-label' })
+  dialogCancelLabel = 'Cancel';
+
+  /** Whether the leading dialog cancel action is visible. */
+  @property({ attribute: 'dialog-cancel-button', reflect: true })
+  dialogCancelButton: 'visible' | 'hidden' = 'visible';
+
   /** Flex container used by `_anchorCtrl` as the positioning reference for the popup. */
   @query('#anchor')
   protected _$anchor!: HTMLElement;
@@ -153,8 +188,11 @@ export class RCSelect extends LitElement {
   protected _$trigger!: HTMLElement;
 
   /** The `<rc-listbox>` popup. Receives option lists and selected-value updates from the host. */
-  @query('#listbox')
+  @query('rc-listbox')
   protected _$listbox!: RCListbox;
+
+  @query('#dialog-host')
+  protected _$dialogHost?: RCDialog;
 
   /**
    * Reactive set of currently selected option values.
@@ -164,6 +202,15 @@ export class RCSelect extends LitElement {
    */
   @state()
   protected _selectedValues: Set<string> = new Set();
+
+  /** Transaction-local selection while a dialog popup is open. */
+  @state()
+  protected _pendingSelectedValues: Set<string> | null = null;
+
+  @state()
+  protected _accessibleName = '';
+
+  protected _activePopupMode: RCSelectPopupMode = 'popover';
 
   /**
    * Index into the chip button array for roving-tabindex chip navigation.
@@ -233,7 +280,7 @@ export class RCSelect extends LitElement {
    * within `_$listbox.navigableItems`.
    */
   protected _activeDescendantCtrl = new ActiveDescendantController(this, {
-    host: () => this._$trigger ?? null,
+    host: () => this._$activeDescendantHost,
     items: () => this._$listbox?.navigableItems ?? [],
   });
 
@@ -245,6 +292,11 @@ export class RCSelect extends LitElement {
     placement: 'bottom-start',
     offset: 2,
   });
+
+  /** Element that owns `aria-activedescendant` for the currently rendered popup. */
+  protected get _$activeDescendantHost(): HTMLElement | null {
+    return this._$trigger ?? null;
+  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -299,6 +351,35 @@ export class RCSelect extends LitElement {
       return;
     }
 
+    this._activePopupMode = this.popupMode;
+
+    if (this._activePopupMode === 'dialog') {
+      this._pendingSelectedValues = new Set(this._selectedValues);
+      this.open = true;
+      this.requestUpdate();
+
+      void this.updateComplete.then(async () => {
+        const $dialogHost = this._$dialogHost;
+
+        if (!this.open || this._activePopupMode !== 'dialog' || !$dialogHost) {
+          return;
+        }
+
+        await $dialogHost.updateComplete;
+
+        if (!this.open || this._activePopupMode !== 'dialog') {
+          return;
+        }
+
+        this._$listbox?.setSelectedValues(this._dialogSelectedValues);
+        $dialogHost.showModal();
+        this._focusDialogContent();
+        this.dispatchEvent(new CustomEvent('rc-select-open', { bubbles: true, composed: true }));
+      });
+
+      return;
+    }
+
     this.open = true;
     this._$listbox.showPopover();
     this._anchorCtrl.update();
@@ -314,6 +395,14 @@ export class RCSelect extends LitElement {
    */
   closePopup(returnFocus = true) {
     if (!this.open) {
+      return;
+    }
+
+    if (this._activePopupMode === 'dialog') {
+      this._discardDialogSelection();
+      this._$dialogHost?.close('cancel');
+      this._finishDialogClose(returnFocus);
+
       return;
     }
 
@@ -410,6 +499,11 @@ export class RCSelect extends LitElement {
     this._selectedValues = new Set(selectedValues);
     this._$listbox?.setSelectedValues(selectedValues);
     this._syncNativeSelect(fromUser);
+
+    if (this.open && this._activePopupMode === 'dialog' && this._pendingSelectedValues) {
+      this._pendingSelectedValues = new Set(selectedValues);
+    }
+
     this.requestUpdate();
   }
 
@@ -856,6 +950,8 @@ export class RCSelect extends LitElement {
 
     const name = $sel.getAttribute('aria-label') ?? $sel.labels?.[0]?.textContent?.trim() ?? null;
 
+    this._accessibleName = name ?? '';
+
     if (name) {
       this._$trigger.setAttribute('aria-label', name);
     } else {
@@ -886,6 +982,26 @@ export class RCSelect extends LitElement {
     }
 
     e.stopPropagation();
+
+    if (this.open && this._activePopupMode === 'dialog') {
+      const next = new Set(this._pendingSelectedValues ?? this._selectedValues);
+
+      if (this.multiple) {
+        selected ? next.add(activatedValue) : next.delete(activatedValue);
+      } else {
+        next.clear();
+
+        if (selected) {
+          next.add(activatedValue);
+        }
+      }
+
+      this._pendingSelectedValues = next;
+      this._$listbox.setSelectedValues([...next]);
+      this.requestUpdate();
+
+      return;
+    }
 
     if (this.multiple) {
       const next = new Set(this._selectedValues);
@@ -1236,9 +1352,187 @@ export class RCSelect extends LitElement {
     }
   }
 
+  protected get _dialogSelectedValues(): string[] {
+    return [...(this._pendingSelectedValues ?? this._selectedValues)];
+  }
+
+  protected _focusDialogContent(): void {
+    this._$listbox?.focus();
+  }
+
+  /** Hook for subclasses to finalize provisional options before dialog selection commits. */
+  protected _prepareDialogCommit(): void {}
+
+  protected _commitDialogSelection(): void {
+    if (!this.open || this._activePopupMode !== 'dialog') {
+      return;
+    }
+
+    this._prepareDialogCommit();
+
+    const pending = this._dialogSelectedValues;
+    const committed = this.selectedValues;
+    const changed =
+      pending.length !== committed.length || pending.some((value) => !committed.includes(value));
+
+    this._pendingSelectedValues = null;
+
+    if (changed) {
+      this._selectionInitialized = true;
+      this._applySelection(pending, true);
+      this._dispatchChange();
+    }
+
+    this._$dialogHost?.close('done');
+    this._finishDialogClose(true);
+  }
+
+  protected _discardDialogSelection(): void {
+    this._pendingSelectedValues = null;
+    this._$listbox?.setSelectedValues(this.selectedValues);
+  }
+
+  protected _finishDialogClose(returnFocus: boolean): void {
+    if (!this.open) {
+      return;
+    }
+
+    this.open = false;
+    this._activeDescendantCtrl.clear();
+
+    if (returnFocus) {
+      this._$trigger?.focus();
+    }
+
+    this.dispatchEvent(new CustomEvent('rc-select-close', { bubbles: true, composed: true }));
+    this.requestUpdate();
+  }
+
+  protected _handleDialogClose(e: CustomEvent<RCDialogCloseEvent>): void {
+    e.stopPropagation();
+
+    if (this.open) {
+      this._discardDialogSelection();
+      this._finishDialogClose(true);
+    }
+  }
+
+  protected _stopDialogEvent(e: Event): void {
+    e.stopPropagation();
+  }
+
+  protected _removePendingValue(value: string): void {
+    const next = new Set(this._pendingSelectedValues ?? this._selectedValues);
+
+    next.delete(value);
+    this._pendingSelectedValues = next;
+    this._$listbox?.setSelectedValues([...next]);
+    this.requestUpdate();
+  }
+
+  protected _renderDialogBody() {
+    return html`
+      <rc-listbox
+        id="dialog-listbox"
+        part="listbox dialog-listbox"
+        tabindex="0"
+        aria-label=${this._accessibleName || 'Options'}
+        ?multiple=${this.multiple}
+        checkmark
+        .options=${this._options}
+        @rc-listbox-change=${this._handleListboxChange}
+      ></rc-listbox>
+    `;
+  }
+
+  protected _renderDialogPopup() {
+    const title = this._accessibleName || 'Options';
+    const showSelected = this.multiple && this._dialogSelectedValues.length > 0;
+
+    return html`
+      <rc-dialog
+        id="dialog-host"
+        variant="fullscreen"
+        closed-by="closerequest"
+        @rc-dialog-open=${this._stopDialogEvent}
+        @rc-dialog-toggle=${this._stopDialogEvent}
+        @rc-dialog-request-close=${this._stopDialogEvent}
+        @rc-dialog-cancel=${this._stopDialogEvent}
+        @rc-dialog-close=${this._handleDialogClose}
+      >
+        <dialog id="dialog" part="dialog" aria-labelledby="dialog-title">
+          <header part="dialog-header">
+            ${this.dialogCancelButton === 'visible'
+              ? html`
+                  <button
+                    part="dialog-cancel"
+                    type="button"
+                    aria-label=${this.dialogCancelLabel}
+                    @click=${() => this.closePopup()}
+                  >
+                    <svg
+                      part="dialog-cancel-icon"
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      height="24"
+                    >
+                      <path
+                        d="M6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6Z"
+                      />
+                    </svg>
+                  </button>
+                `
+              : nothing}
+
+            <h2 id="dialog-title" part="dialog-title">${title}</h2>
+
+            <div part="dialog-actions">
+              <button part="dialog-confirm" type="button" @click=${this._commitDialogSelection}>
+                ${this.dialogConfirmLabel}
+              </button>
+            </div>
+          </header>
+
+          ${showSelected
+            ? html`<div part="dialog-selected">
+                ${this._renderChips(this._dialogSelectedValues, true)}
+              </div>`
+            : nothing}
+          ${this._renderDialogBody()}
+        </dialog>
+      </rc-dialog>
+    `;
+  }
+
   protected override render() {
+    if ((this.open ? this._activePopupMode : this.popupMode) === 'dialog') {
+      return html`
+        ${this._renderAnchor()} ${this.open ? this._renderDialogPopup() : nothing}
+        <slot @slotchange=${this._handleSelectSlotChange}></slot>
+      `;
+    }
+
+    return html`
+      ${this._renderAnchor()}
+
+      <rc-listbox
+        id="listbox"
+        part="listbox"
+        popover="manual"
+        ?multiple=${this.multiple}
+        checkmark
+        @rc-listbox-change=${this._handleListboxChange}
+      ></rc-listbox>
+
+      <slot @slotchange=${this._handleSelectSlotChange}></slot>
+    `;
+  }
+
+  protected _renderAnchor() {
     const showChips =
       this.multiple && this._effectiveDisplay === 'chips' && this._selectedValues.size > 0;
+    const dialogMode = (this.open ? this._activePopupMode : this.popupMode) === 'dialog';
 
     return html`
       <div id="anchor" part="anchor">
@@ -1247,9 +1541,9 @@ export class RCSelect extends LitElement {
           part="trigger"
           role="combobox"
           tabindex=${this.disabled ? '-1' : '0'}
-          aria-haspopup="listbox"
+          aria-haspopup=${dialogMode ? 'dialog' : 'listbox'}
           aria-expanded=${this.open ? 'true' : 'false'}
-          aria-controls="listbox"
+          aria-controls=${dialogMode ? 'dialog' : 'listbox'}
           aria-disabled=${this.disabled ? 'true' : 'false'}
           aria-required=${this.required ? 'true' : 'false'}
           aria-label=${this.placeholder || nothing}
@@ -1278,25 +1572,14 @@ export class RCSelect extends LitElement {
           </span>
         </div>
       </div>
-
-      <rc-listbox
-        id="listbox"
-        part="listbox"
-        popover="manual"
-        ?multiple=${this.multiple}
-        checkmark
-        @rc-listbox-change=${this._handleListboxChange}
-      ></rc-listbox>
-
-      <slot @slotchange=${this._handleSelectSlotChange}></slot>
     `;
   }
 
   /** Renders selected values as removable input chips inside the shared chip-group layout. */
-  protected _renderChips() {
+  protected _renderChips(values: Iterable<string> = this._selectedValues, pending = false) {
     return html`
       <rc-chip-group part="chips" kind="generic" layout="wrap" aria-label="Selected items">
-        ${[...this._selectedValues].map((value) => {
+        ${[...values].map((value) => {
           const label = this._labelFor(value);
 
           return html`
@@ -1306,7 +1589,7 @@ export class RCSelect extends LitElement {
               data-value=${value}
               @rc-chip-remove=${(event: Event) => {
                 event.stopPropagation();
-                this._removeValue(value);
+                pending ? this._removePendingValue(value) : this._removeValue(value);
               }}
             >
               <button

@@ -62,6 +62,7 @@
 
     --rc-disclosure-duration: var(--md-sys-motion-duration-300, 300ms);
     --rc-disclosure-easing: var(--rc-theme-material-disclosure-easing);
+    --rc-accordion-gap: 0.125rem;
   }
 
   /*
@@ -82,8 +83,21 @@
     :is(rc-disclosure, rc-accordion)
     > details
     > summary {
+    -webkit-tap-highlight-color: transparent;
     border-radius: calc(var(--md-sys-shape-corner-large, 1rem) - 1px);
     transition: background-color var(--md-sys-motion-duration-100, 100ms)
       var(--rc-theme-material-disclosure-easing);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > summary:active {
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, CanvasText)
+        calc(var(--md-sys-state-pressed-state-layer-opacity, 0.12) * 100%),
+      transparent
+    );
   }
 }

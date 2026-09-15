@@ -93,6 +93,14 @@
     color: var(--md-sys-color-on-secondary-container, HighlightText);
   }
 
+  /* M3 single-choice menus use the same trailing check affordance as other
+   * selected menu rows; role=menuitemradio continues to carry semantics. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-menu
+    [role='menuitemradio'][aria-checked='true']::after {
+    content: '✓';
+  }
+
   /* Section / group labels (optional, for menu segmentation) -------------- */
   /* Add [data-group-label] as first child of role="group" for a visible heading. */
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu [data-group-label] {

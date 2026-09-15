@@ -238,6 +238,12 @@ Prefer native or ARIA state selectors such as `[open]`, `:checked`,
 theme. Theme CSS may style that state, but it must not use CSS to create a
 second behavioral source of truth.
 
+Public tokens, parts, and documented markers are versioned API. The repository
+architecture audit tracks their usage along with private theme overrides and
+ID-selector complexity. Net growth requires a documented consumer need and an
+explicit budget rationale; prefer consolidating an existing hook over creating
+an overlapping one.
+
 ## Cascade layers
 
 Shadow-DOM component styles are scoped by the shadow tree and do not share the

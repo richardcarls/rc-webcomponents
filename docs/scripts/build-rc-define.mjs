@@ -62,12 +62,9 @@ await build({
 
 console.log(`Built docs custom-element bundle -> ${outDir}`);
 
-mkdirSync(materialThemeOutDir, { recursive: true });
-writeFileSync(materialThemeOutFile, inlineCssImports(materialThemeEntry));
+for (const theme of themePackages) {
+  mkdirSync(theme.outDir, { recursive: true });
+  writeFileSync(theme.outFile, inlineCssImports(theme.entry));
 
-console.log(`Built docs Material theme CSS -> ${materialThemeOutFile}`);
-
-mkdirSync(substrateThemeOutDir, { recursive: true });
-writeFileSync(substrateThemeOutFile, inlineCssImports(substrateThemeEntry));
-
-console.log(`Built docs Substrate theme CSS -> ${substrateThemeOutFile}`);
+  console.log(`Built docs theme CSS -> ${theme.outFile}`);
+}

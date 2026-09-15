@@ -122,6 +122,97 @@ test('icons follow Material sizes by component context', () => {
   expect(getComputedStyle(chipIcon).fontSize).toBe('18px');
 });
 
+test('Material chips use the MD3 leading-icon spacing', () => {
+  const $scope = renderScope();
+  const $chip = document.createElement('rc-chip');
+  const $label = document.createElement('button');
+  const $icon = document.createElement('span');
+
+  $icon.dataset.rcChipIcon = '';
+  $label.append($icon, 'Quick');
+  $chip.append($label);
+  $scope.append($chip);
+
+  const styles = getComputedStyle($chip);
+
+  expect(styles.getPropertyValue('--rc-chip-gap')).toBe('0.5rem');
+  expect(styles.getPropertyValue('--rc-chip-padding-inline-start')).toBe('0.5rem');
+  expect(styles.getPropertyValue('--rc-chip-padding-inline-end')).toBe('1rem');
+  expect(styles.getPropertyValue('--rc-chip-padding-block')).toBe('0');
+  expect(styles.getPropertyValue('--rc-chip-font')).toMatch(/\/\s+1\.25rem/);
+});
+
+test('Material terminal list rows do not draw a trailing divider', () => {
+  const $scope = renderScope();
+  const $list = document.createElement('rc-list');
+  const $first = document.createElement('rc-list-item');
+  const $last = document.createElement('rc-list-item');
+
+  $first.dataset.rcListPosition = 'first';
+  $last.dataset.rcListPosition = 'last';
+  $list.append($first, $last);
+  $scope.append($list);
+
+  expect(getComputedStyle($first).getPropertyValue('--rc-list-item-divider')).not.toBe('0');
+  expect(getComputedStyle($last).getPropertyValue('--rc-list-item-divider')).toBe('0');
+});
+
+test('Material uses standard-duration bottom-sheet snaps', () => {
+  const $scope = renderScope();
+  const $sheet = document.createElement('rc-bottom-sheet');
+
+  $scope.append($sheet);
+
+  expect(getComputedStyle($sheet).getPropertyValue('--rc-bottom-sheet-snap-duration')).toBe(
+    '300ms',
+  );
+});
+
+test('nested field controls defer compact geometry and multiline label inset to the field', () => {
+  const $scope = renderScope();
+  const $field = document.createElement('rc-field');
+  const $select = document.createElement('rc-select');
+  const $combobox = document.createElement('rc-combobox');
+  const $label = renderPart($scope, 'rc-field', 'label');
+  const $labelField = $label.getRootNode() as ShadowRoot;
+
+  $select.dataset.rcFieldControl = '';
+  $combobox.dataset.rcFieldControl = '';
+  ($labelField.host as HTMLElement).setAttribute('data-multiline', '');
+  $field.append($select, $combobox);
+  $scope.append($field);
+
+  expect(getComputedStyle($select).getPropertyValue('--rc-select-control-block-size')).toBe(
+    '1.5rem',
+  );
+
+  expect(getComputedStyle($combobox).getPropertyValue('--rc-combobox-control-block-size')).toBe(
+    '1.5rem',
+  );
+
+  expect(getComputedStyle($label).insetBlockStart).toBe('8px');
+});
+
+test('nested standard lists reset segmented item radius', () => {
+  const $scope = renderScope();
+  const $segmentedList = document.createElement('rc-list');
+  const $outerItem = document.createElement('rc-list-item');
+  const $nestedList = document.createElement('rc-list');
+  const $nestedItem = document.createElement('rc-list-item');
+
+  $segmentedList.setAttribute('variant', 'segmented');
+  $segmentedList.append($outerItem);
+  $outerItem.append($nestedList);
+  $nestedList.append($nestedItem);
+  $scope.append($segmentedList);
+
+  expect(getComputedStyle($outerItem).getPropertyValue('--rc-list-item-border-radius')).toBe(
+    '0.25rem',
+  );
+
+  expect(getComputedStyle($nestedItem).getPropertyValue('--rc-list-item-border-radius')).toBe('0');
+});
+
 test('unmarked icon-button content receives the Material icon size', () => {
   const $scope = renderScope();
   const $host = document.createElement('rc-button');
@@ -340,7 +431,7 @@ test('bottom sheets preserve the drag handle geometry and style authored actions
   ).not.toBe('');
 
   expect(getComputedStyle(sheet).getPropertyValue('--rc-bottom-sheet-snap-duration').trim()).toBe(
-    '500ms',
+    '300ms',
   );
 
   expect(getComputedStyle(sheet).getPropertyValue('--rc-bottom-sheet-snap-easing').trim()).not.toBe(

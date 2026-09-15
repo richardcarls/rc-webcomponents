@@ -4,6 +4,7 @@ import { afterEach, expect, test } from 'vitest';
 import '@rcarls/rc-adaptive-menu/define';
 import '@rcarls/rc-button/define';
 import '@rcarls/rc-combobox/define';
+import '@rcarls/rc-dialog/define';
 import '@rcarls/rc-field/define';
 import '@rcarls/rc-list/define';
 import '@rcarls/rc-menu-button/define';
@@ -79,7 +80,9 @@ test('Material fields render filled and outlined native-control compositions', a
   expect(getComputedStyle($outlinedSurface!).borderTopWidth).toBe('1px');
   expect($outlined.hasAttribute('data-multiline')).toBe(true);
   expect($filled.querySelector('input')?.isConnected).toBe(true);
-  expect($filledLabel!.getBoundingClientRect().left).toBe($filledControl!.getBoundingClientRect().left);
+  expect($filledLabel!.getBoundingClientRect().left).toBe(
+    $filledControl!.getBoundingClientRect().left,
+  );
 
   expect($filledLabel!.getBoundingClientRect().bottom).toBeLessThanOrEqual(
     $filledControl!.getBoundingClientRect().top,
@@ -92,9 +95,7 @@ test('Material fields render filled and outlined native-control compositions', a
 
   expect($empty.hasAttribute('data-focused')).toBe(true);
 
-  await expect
-    .poll(() => $emptyLabel!.getBoundingClientRect().top)
-    .toBeLessThan(restingTop);
+  await expect.poll(() => $emptyLabel!.getBoundingClientRect().top).toBeLessThan(restingTop);
 });
 
 test('rc-select and rc-combobox lose their own chrome when composed as rc-field control providers', async () => {
@@ -153,6 +154,84 @@ test('rc-select and rc-combobox lose their own chrome when composed as rc-field 
   expect(getComputedStyle($selectTrigger).boxShadow).toBe('none');
 });
 
+test('dialog-mode combobox fills the current visual viewport', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label">Categories</label>
+      <rc-combobox data-rc-field-control popup-mode="dialog" multiple>
+        <select aria-label="Categories" multiple>
+          <option value="quick">Quick meal</option>
+          <option value="vegetarian">Vegetarian</option>
+        </select>
+      </rc-combobox>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const $combobox = scope.querySelector<HTMLElement & { openPopup(): void }>('rc-combobox')!;
+
+  $combobox.openPopup();
+  await settle($combobox);
+
+  const $dialogHost = $combobox.shadowRoot!.querySelector('rc-dialog')!;
+  const $dialog = $dialogHost.querySelector<HTMLDialogElement>('[part~="dialog"]')!;
+  const $search = $dialog.querySelector<HTMLInputElement>('[part~="dialog-input"]')!;
+  const $cancel = $dialog.querySelector<HTMLButtonElement>('[part~="dialog-cancel"]')!;
+  const $confirm = $dialog.querySelector<HTMLButtonElement>('[part~="dialog-confirm"]')!;
+  const viewport = window.visualViewport;
+  const rect = $dialog.getBoundingClientRect();
+
+  expect($dialogHost.getAttribute('variant')).toBe('fullscreen');
+  expect($dialog.open).toBe(true);
+  expect(getComputedStyle($search).borderWidth).toBe('1px');
+  expect($cancel.getAttribute('aria-label')).toBe('Cancel');
+  expect($confirm.textContent?.trim()).toBe('Done');
+  expect(rect.left).toBeCloseTo(viewport?.offsetLeft ?? 0, 0);
+  expect(rect.top).toBeCloseTo(viewport?.offsetTop ?? 0, 0);
+  expect(rect.width).toBeCloseTo(viewport?.width ?? window.innerWidth, 0);
+  expect(rect.height).toBeCloseTo(viewport?.height ?? window.innerHeight, 0);
+
+  $dialog.close();
+});
+
+test('standalone fullscreen dialog uses the Material visual viewport surface', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-dialog variant="fullscreen">
+      <dialog aria-label="Fullscreen example"><button>Close</button></dialog>
+    </rc-dialog>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const $host = scope.querySelector<HTMLElement & { showModal(): void }>('rc-dialog')!;
+
+  $host.showModal();
+  await settle($host);
+
+  const $dialog = $host.querySelector('dialog')!;
+  const viewport = window.visualViewport;
+  const rect = $dialog.getBoundingClientRect();
+
+  expect(rect.left).toBeCloseTo(viewport?.offsetLeft ?? 0, 0);
+  expect(rect.top).toBeCloseTo(viewport?.offsetTop ?? 0, 0);
+  expect(rect.width).toBeCloseTo(viewport?.width ?? window.innerWidth, 0);
+  expect(rect.height).toBeCloseTo(viewport?.height ?? window.innerHeight, 0);
+  expect(getComputedStyle($dialog).borderRadius).toBe('0px');
+
+  $dialog.close();
+});
+
 test('Material fields preserve label separation with increased text metrics', async () => {
   const $scope = document.createElement('div');
 
@@ -194,8 +273,9 @@ test('Material fields preserve label separation with increased text metrics', as
 
   expect(
     Math.abs(
-      restingLabelBox.top + restingLabelBox.height / 2
-        - (emptySurfaceBox.top + emptySurfaceBox.height / 2),
+      restingLabelBox.top +
+        restingLabelBox.height / 2 -
+        (emptySurfaceBox.top + emptySurfaceBox.height / 2),
     ),
   ).toBeLessThanOrEqual(0.5);
 

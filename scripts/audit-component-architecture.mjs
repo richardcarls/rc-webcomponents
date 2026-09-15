@@ -62,6 +62,8 @@ export const REMOVED_TOKEN_CONTRACTS = new Set([
 export const CROSS_COMPONENT_TOKEN_CONTRACTS = {
   '--rc-chip-remove-offset-inline': ['rc-combobox', 'rc-select'],
   '--rc-chip-remove-target-size': ['rc-combobox', 'rc-select'],
+  '--rc-anchor-viewport-block-size': ['rc-combobox'],
+  '--rc-anchor-viewport-inline-size': ['rc-combobox'],
   '--rc-dialog-scrim': ['rc-bottom-sheet'],
   '--rc-fab-inset-block': ['rc-fab', 'rc-fab-menu'],
   '--rc-fab-inset-inline': ['rc-fab', 'rc-fab-menu'],
@@ -133,14 +135,16 @@ export const PRIVATE_THEME_TOKEN_CONTRACTS = {
 
 export const THEME_SELECTOR_BUDGETS = {
   'rc-theme-material': {
-    parts: 95,
-    markerHooks: 68,
+    parts: 108,
+    // Dialog surfaces add no marker coupling; the retained growth comes from
+    // documented chip-icon and visible-list-position contracts.
+    markerHooks: 71,
     importantDeclarations: 13,
     idSelectors: 3,
     modifierHooks: 59,
   },
   'rc-theme-substrate': {
-    parts: 31,
+    parts: 33,
     markerHooks: 15,
     importantDeclarations: 1,
     idSelectors: 0,

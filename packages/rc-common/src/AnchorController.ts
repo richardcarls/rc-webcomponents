@@ -1,5 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { RafScheduler } from './RafScheduler.js';
 import { getVisualViewportBounds } from './visualViewport.js';
 
 export type AnchorPlacement =
@@ -162,10 +163,23 @@ export class AnchorController implements ReactiveController {
   private _styleEl: HTMLStyleElement | null = null;
   private _adoptedSheet: CSSStyleSheet | null = null;
   private _connected = false;
+  private readonly _clampScheduler = new RafScheduler();
   private _clampLoopActive = false;
-  private _clampFrame: number | null = null;
+  private _settleFramesRemaining = 0;
+  private _stableFrames = 0;
+  private _lastNaturalRect = '';
   private _appliedDx = 0;
   private _appliedDy = 0;
+  private _geometryAbort: AbortController | null = null;
+  private _resizeObserver: ResizeObserver | null = null;
+  private _intersectionObserver: IntersectionObserver | null = null;
+  private _mutationObserver: MutationObserver | null = null;
+  private _$observedAnchor: Element | null = null;
+  private _$observedFloating: Element | null = null;
+
+  private readonly _handleGeometryChange = (): void => {
+    this._scheduleClamp();
+  };
 
   constructor(host: ReactiveControllerHost, options: AnchorOptions) {
     this._opts = options;
@@ -217,10 +231,12 @@ export class AnchorController implements ReactiveController {
     }
 
     if (_hasNativeAnchor) {
+      this._startWatchingGeometry();
       this._scheduleClamp();
     } else {
       void this._applyPolyfillOrFallback().then(() => {
         if (this._connected && !this._opts.disabled) {
+          this._startWatchingGeometry();
           this._scheduleClamp();
         }
       });
@@ -228,59 +244,157 @@ export class AnchorController implements ReactiveController {
   }
 
   /**
-   * Checks viewport overflow on every frame while the floating element is
-   * visible. Anchor geometry can settle well after the popup opens, so the
-   * loop follows visibility rather than a fixed timeout. A hidden initial
-   * state stops immediately; consumers restart positioning after showing the
-   * popup by calling `update()`.
+   * Checks viewport overflow during a bounded post-open settling window.
+   * Observers and viewport events restart the window when geometry changes,
+   * avoiding permanent layout polling while a popup is idle.
    */
   private _scheduleClamp(): void {
-    if (this._clampLoopActive || !this._connected || this._opts.disabled) {
+    if (!this._connected || this._opts.disabled) {
       return;
     }
 
-    this._clampLoopActive = true;
+    if (!this._clampLoopActive) {
+      this._clampLoopActive = true;
+    }
 
-    const tick = (): void => {
-      this._clampFrame = null;
+    this._settleFramesRemaining = 10;
+    this._stableFrames = 0;
+    this._lastNaturalRect = '';
+    this._clampScheduler.schedule(() => this._runClampTick());
+  }
 
-      if (!this._connected || this._opts.disabled) {
-        this._stopClampLoop();
+  private _runClampTick(): void {
+    if (!this._connected || this._opts.disabled) {
+      this._stopClampLoop();
 
-        return;
-      }
+      return;
+    }
 
-      const $floating = this._floating() as HTMLElement | null;
+    const $floating = this._floating() as HTMLElement | null;
 
-      if (!$floating) {
-        this._stopClampLoop();
+    if (!$floating) {
+      this._stopClampLoop();
 
-        return;
-      }
+      return;
+    }
 
-      const rect = $floating.getBoundingClientRect();
-      const isVisible = rect.width > 0 || rect.height > 0;
+    const rect = $floating.getBoundingClientRect();
+    const isVisible = rect.width > 0 || rect.height > 0;
 
-      if (!isVisible) {
-        this._stopClampLoop();
+    if (!isVisible) {
+      this._stopClampLoop();
+      this._stopWatchingGeometry();
 
-        return;
-      }
+      return;
+    }
 
-      this._clampToViewport();
-      this._clampFrame = requestAnimationFrame(tick);
-    };
+    const naturalRect = [
+      rect.left - this._appliedDx,
+      rect.top - this._appliedDy,
+      rect.width,
+      rect.height,
+    ]
+      .map((value) => Math.round(value * 4) / 4)
+      .join(':');
 
-    this._clampFrame = requestAnimationFrame(tick);
+    this._stableFrames = naturalRect === this._lastNaturalRect ? this._stableFrames + 1 : 0;
+    this._lastNaturalRect = naturalRect;
+    this._settleFramesRemaining -= 1;
+
+    this._clampToViewport(rect);
+
+    if (this._stableFrames >= 3 || this._settleFramesRemaining <= 0) {
+      this._stopClampLoop();
+
+      return;
+    }
+
+    this._clampScheduler.schedule(() => this._runClampTick());
   }
 
   private _stopClampLoop(): void {
-    if (this._clampFrame !== null) {
-      cancelAnimationFrame(this._clampFrame);
-      this._clampFrame = null;
+    this._clampScheduler.cancel();
+    this._clampLoopActive = false;
+    this._settleFramesRemaining = 0;
+    this._stableFrames = 0;
+    this._lastNaturalRect = '';
+  }
+
+  private _startWatchingGeometry(): void {
+    const $anchor = this._anchor();
+    const $floating = this._floating();
+
+    if (!$anchor || !$floating) {
+      this._stopWatchingGeometry();
+
+      return;
     }
 
-    this._clampLoopActive = false;
+    if (
+      this._geometryAbort &&
+      this._$observedAnchor === $anchor &&
+      this._$observedFloating === $floating
+    ) {
+      return;
+    }
+
+    this._stopWatchingGeometry();
+    this._$observedAnchor = $anchor;
+    this._$observedFloating = $floating;
+    this._geometryAbort = new AbortController();
+
+    const $window = $floating.ownerDocument.defaultView;
+    const options = { passive: true, signal: this._geometryAbort.signal };
+
+    $floating.ownerDocument.addEventListener('scroll', this._handleGeometryChange, {
+      ...options,
+      capture: true,
+    });
+
+    $window?.addEventListener('resize', this._handleGeometryChange, options);
+    $window?.visualViewport?.addEventListener('resize', this._handleGeometryChange, options);
+    $window?.visualViewport?.addEventListener('scroll', this._handleGeometryChange, options);
+
+    if (typeof ResizeObserver === 'function') {
+      this._resizeObserver = new ResizeObserver(this._handleGeometryChange);
+      this._resizeObserver.observe($anchor);
+      this._resizeObserver.observe($floating);
+    }
+
+    if (typeof IntersectionObserver === 'function') {
+      this._intersectionObserver = new IntersectionObserver(this._handleGeometryChange, {
+        threshold: [0, 1],
+      });
+
+      this._intersectionObserver.observe($floating);
+    }
+
+    if (typeof MutationObserver === 'function') {
+      this._mutationObserver = new MutationObserver(this._handleGeometryChange);
+
+      this._mutationObserver.observe($anchor, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'hidden', 'open'],
+      });
+
+      this._mutationObserver.observe($floating, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'hidden', 'open'],
+      });
+    }
+  }
+
+  private _stopWatchingGeometry(): void {
+    this._geometryAbort?.abort();
+    this._geometryAbort = null;
+    this._resizeObserver?.disconnect();
+    this._resizeObserver = null;
+    this._intersectionObserver?.disconnect();
+    this._intersectionObserver = null;
+    this._mutationObserver?.disconnect();
+    this._mutationObserver = null;
+    this._$observedAnchor = null;
+    this._$observedFloating = null;
   }
 
   /**
@@ -306,7 +420,7 @@ export class AnchorController implements ReactiveController {
    * last applied so it can subtract it back out and compute against the
    * element's natural, uncorrected position each time.
    */
-  private _clampToViewport(): void {
+  private _clampToViewport(measuredRect?: DOMRect): void {
     const floating = this._floating() as HTMLElement | null;
 
     if (!floating) {
@@ -314,7 +428,7 @@ export class AnchorController implements ReactiveController {
     }
 
     const margin = 4;
-    const rect = floating.getBoundingClientRect();
+    const rect = measuredRect ?? floating.getBoundingClientRect();
 
     if (rect.width === 0 && rect.height === 0) {
       return; // not actually visible/open
@@ -355,17 +469,24 @@ export class AnchorController implements ReactiveController {
 
     this._appliedDx = dx;
     this._appliedDy = dy;
-    floating.style.translate = dx || dy ? `${dx}px ${dy}px` : '';
 
-    floating.style.setProperty(
-      '--rc-anchor-viewport-inline-size',
-      `${Math.max(0, viewport.width - margin * 2)}px`,
-    );
+    const translate = dx || dy ? `${dx}px ${dy}px` : '';
+    const viewportInlineSize = `${Math.max(0, viewport.width - margin * 2)}px`;
+    const viewportBlockSize = `${Math.max(0, viewport.height - margin * 2)}px`;
 
-    floating.style.setProperty(
-      '--rc-anchor-viewport-block-size',
-      `${Math.max(0, viewport.height - margin * 2)}px`,
-    );
+    if (floating.style.translate !== translate) {
+      floating.style.translate = translate;
+    }
+
+    if (
+      floating.style.getPropertyValue('--rc-anchor-viewport-inline-size') !== viewportInlineSize
+    ) {
+      floating.style.setProperty('--rc-anchor-viewport-inline-size', viewportInlineSize);
+    }
+
+    if (floating.style.getPropertyValue('--rc-anchor-viewport-block-size') !== viewportBlockSize) {
+      floating.style.setProperty('--rc-anchor-viewport-block-size', viewportBlockSize);
+    }
   }
 
   private async _applyPolyfillOrFallback(): Promise<void> {
@@ -584,6 +705,7 @@ export class AnchorController implements ReactiveController {
 
   private _cleanup(): void {
     this._stopClampLoop();
+    this._stopWatchingGeometry();
     this._appliedDx = 0;
     this._appliedDy = 0;
 

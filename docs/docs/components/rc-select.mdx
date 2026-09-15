@@ -59,6 +59,22 @@ import '@rcarls/rc-select/define';
 
 <DynamicOptionsDemo />
 
+## Dialog popup
+
+Set `popup-mode="dialog"` for constrained viewports. The component-managed fullscreen dialog
+provides a leading close action, title, selected chips, option list, and Done action. Selection
+is staged: Done updates the native select and fires one change event, while close, Escape, or an
+imperative close discards the draft.
+
+```html
+<rc-select popup-mode="dialog" multiple placeholder="Choose categories">
+  <select name="categories" multiple>
+    <option value="quick">Quick meal</option>
+    <option value="vegetarian">Vegetarian</option>
+  </select>
+</rc-select>
+```
+
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.

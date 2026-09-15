@@ -77,6 +77,23 @@ test('keeps the native control connected with author form attributes intact', as
   expect(new FormData($input.form!).get('name')).toBe('Pasta');
 });
 
+test('removes nested native select chrome so the field surface owns it', async () => {
+  const $field = await fieldFixture(html`
+    <rc-field data-testid="field">
+      <label slot="label">Difficulty</label>
+      <select>
+        <option>Easy</option>
+      </select>
+    </rc-field>
+  `);
+  const $select = $field.querySelector('select')!;
+  const styles = getComputedStyle($select);
+
+  expect(styles.borderTopWidth).toBe('0px');
+  expect(styles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(styles.boxShadow).toBe('none');
+});
+
 test('supports an enhancing control provider without replacing the native control', async () => {
   const $field = await fieldFixture(html`
     <form>

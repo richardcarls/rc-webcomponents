@@ -40,6 +40,25 @@ import '@rcarls/rc-select/define';
 </label>
 ```
 
+## Dialog popup
+
+Set `popup-mode="dialog"` when an anchored listbox would leave too little usable viewport. The
+component manages a fullscreen native dialog with a leading close action, title, current chips,
+option list, and trailing Done action.
+
+Dialog selection is transactional: option and chip changes are staged until Done is activated.
+Done updates the native `<select>` and fires one `rc-select-change`; the leading close action,
+Escape, and imperative close discard the staged changes.
+
+```html
+<rc-select popup-mode="dialog" placeholder="Choose categories" multiple>
+  <select name="categories" multiple>
+    <option value="quick">Quick meal</option>
+    <option value="vegetarian">Vegetarian</option>
+  </select>
+</rc-select>
+```
+
 ## API
 
 | Property / method          | Type                             | Description                                               |
@@ -49,6 +68,10 @@ import '@rcarls/rc-select/define';
 | `disabled`                 | `boolean`                        | Mirrors the slotted `<select disabled>` state.            |
 | `placeholder`              | `string`                         | Text shown when no value is selected.                     |
 | `display`                  | `'auto' \| 'chips' \| 'compact'` | Controls multi-select display.                            |
+| `popupMode`                | `'popover' \| 'dialog'`          | Chooses anchored or transactional dialog presentation.    |
+| `dialogConfirmLabel`       | `string`                         | Dialog commit action label. Defaults to `Done`.           |
+| `dialogCancelLabel`        | `string`                         | Accessible label for the leading close action.            |
+| `dialogCancelButton`       | `'visible' \| 'hidden'`          | Shows or hides the leading close action.                  |
 | `value`                    | `string \| string[]`             | Controlled selection. Programmatic writes apply silently. |
 | `openPopup()`              | `void`                           | Opens the listbox popover.                                |
 | `closePopup(returnFocus?)` | `void`                           | Closes the listbox and optionally restores focus.         |

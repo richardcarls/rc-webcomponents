@@ -5,6 +5,7 @@
 '@rcarls/rc-combobox': minor
 '@rcarls/rc-fab-menu': minor
 '@rcarls/rc-field': minor
+'@rcarls/rc-list': minor
 '@rcarls/rc-markdown-editor': minor
 '@rcarls/rc-search-bar': minor
 '@rcarls/rc-select': minor
@@ -30,9 +31,15 @@ BREAKING CHANGE: Replace `--rc-select-chip-padding-inline` and
 remove target and its edge offset, so their indicator cannot overlap label text.
 
 Add canonical app-bar elevation, transfer-list listbox radius, and textarea
-line-action tokens. Make `rc-field` consume the shared semantic token layer,
+line-action tokens. Add logical `rc-chip` inline-padding properties so themes
+can implement Material's icon-aware spacing without overriding authored child
+styles. Make `rc-field` consume the shared semantic token layer,
 and place the `rc-chip` and `rc-search-bar` light-DOM structural styles in the
 `rc-base` cascade layer so normal consumer rules override them.
+
+Prevent decorative, `aria-hidden` trailing list content from intercepting a
+whole-row action target, and keep segmented-list item geometry from leaking
+into nested standard lists.
 
 Remove unused Material navigation-rail toggle tokens and obsolete list-item
 theme tokens. Register the segmented-button private theme seam and enforce

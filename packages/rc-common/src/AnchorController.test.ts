@@ -1,6 +1,6 @@
 import { html } from 'lit';
 import type { ReactiveControllerHost } from 'lit';
-import { test, expect } from 'vitest';
+import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
 import { AnchorController } from './AnchorController.js';
@@ -237,4 +237,30 @@ test('_scheduleClamp cancels a visible loop on disconnect', async () => {
   controller.hostDisconnected();
 
   expect(ctl._clampLoopActive).toBe(false);
+});
+
+test('_scheduleClamp stops polling after visible geometry stabilizes', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
+  const controller = new AnchorController(createHost(), { anchor, floating });
+  const ctl = asPrivate(controller);
+  const rectSpy = vi.spyOn(floating, 'getBoundingClientRect');
+
+  controller.hostConnected();
+  ctl._scheduleClamp();
+
+  for (let i = 0; i < 12; i += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+
+  expect(ctl._clampLoopActive).toBe(false);
+
+  const settledCalls = rectSpy.mock.calls.length;
+
+  for (let i = 0; i < 5; i += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+
+  expect(rectSpy).toHaveBeenCalledTimes(settledCalls);
+
+  controller.hostDisconnected();
 });
