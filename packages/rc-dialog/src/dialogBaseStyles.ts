@@ -17,6 +17,7 @@ export const DIALOG_BASE_CSS = `
 @layer rc-base {
   ${SURFACE} {
     box-sizing: border-box;
+    min-inline-size: var(--rc-dialog-min-inline-size, auto);
     max-inline-size: var(--rc-dialog-max-inline-size, none);
     /*
      * A native dialog's own default max-block-size plus overflow:auto is what

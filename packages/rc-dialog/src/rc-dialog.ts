@@ -11,7 +11,6 @@ import {
   type ResizeOrigin,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
-
 import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
 
 export type RCDialogVariant = 'standard' | 'fullscreen';
@@ -78,7 +77,8 @@ declare global {
  * @prop modal - Whether controlled open state uses `showModal()` instead of `show()`.
  *   JavaScript property only; no attribute is observed.
  *
- * @cssprop [--rc-dialog-max-inline-size=none] - Standard surface inline bound.
+ * @cssprop [--rc-dialog-min-inline-size=auto] - Standard surface minimum inline size.
+ * @cssprop [--rc-dialog-max-inline-size=none] - Standard surface maximum inline size.
  * @cssprop [--rc-dialog-max-block-size=calc(100dvb - 2rem)] - Standard surface block bound. The
  *   surface never scrolls itself, so a scrollable dialog should scroll a dedicated inner region.
  * @cssprop [--rc-dialog-padding=1em] - Standard surface padding.
@@ -93,6 +93,10 @@ declare global {
  * @cssprop [--rc-dialog-fullscreen-padding-inline] - Fullscreen inline padding, safe-area aware.
  * @cssprop [--rc-dialog-fullscreen-background] - Fullscreen background. Defers to
  *   `--rc-dialog-background` when unset.
+ * @cssprop --rc-dialog-visual-viewport-left - Read-only fullscreen visual viewport left edge.
+ * @cssprop --rc-dialog-visual-viewport-top - Read-only fullscreen visual viewport top edge.
+ * @cssprop --rc-dialog-visual-viewport-width - Read-only fullscreen visual viewport width.
+ * @cssprop --rc-dialog-visual-viewport-height - Read-only fullscreen visual viewport height.
  *
  * Fullscreen geometry, meaning position, size, margin, radius, and shadow, is structural rather
  * than themable: filling the visual viewport is what keeps the surface correct under browser zoom

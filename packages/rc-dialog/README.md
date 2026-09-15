@@ -96,8 +96,11 @@ returnValue: string; // The return value set when the dialog last closed.
 
 ### Theming
 
-Set `--rc-dialog-scrim` on `<rc-dialog>` or a theme scope to customize the modal
-backdrop color. Theme packages consume this token in their `::backdrop` styles.
+Set the `--rc-dialog-min-inline-size`, `--rc-dialog-max-inline-size`, and
+`--rc-dialog-max-block-size` surface bounds on `<rc-dialog>` or a theme scope.
+The component also exposes surface padding, border, radius, background,
+foreground, shadow, and `--rc-dialog-scrim` properties. Theme packages map
+their design-system values onto those public properties.
 
 ---
 

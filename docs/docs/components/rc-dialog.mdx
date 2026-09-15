@@ -77,8 +77,10 @@ action.
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
-Set `--rc-dialog-scrim` on `<rc-dialog>` or a theme scope to customize the modal
-backdrop color used by theme `::backdrop` styles.
+Set `--rc-dialog-min-inline-size`, `--rc-dialog-max-inline-size`, and
+`--rc-dialog-max-block-size` on `<rc-dialog>` or a theme scope to bound the
+standard surface. The Material theme supplies its viewport-clamped 280px to
+560px dialog width. `--rc-dialog-scrim` customizes the modal backdrop.
 
 ## API
 

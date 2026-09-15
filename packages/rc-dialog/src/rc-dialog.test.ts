@@ -829,7 +829,7 @@ test('rc-dialog draws its surface from the public properties', async () => {
   const screen = render(html`
     <rc-dialog
       default-open
-      style="--rc-dialog-radius: 14px; --rc-dialog-padding: 18px; --rc-dialog-max-inline-size: 300px"
+      style="--rc-dialog-radius: 14px; --rc-dialog-padding: 18px; --rc-dialog-min-inline-size: 240px; --rc-dialog-max-inline-size: 300px"
     >
       <dialog><p>Body</p></dialog>
     </rc-dialog>
@@ -842,6 +842,7 @@ test('rc-dialog draws its surface from the public properties', async () => {
 
   expect(styles.borderRadius).toBe('14px');
   expect(styles.padding).toBe('18px');
+  expect(styles.minInlineSize).toBe('240px');
   expect(styles.maxInlineSize).toBe('300px');
 
   // The surface never scrolls itself, so its corners always clip; a scrollable

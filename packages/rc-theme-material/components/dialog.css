@@ -6,6 +6,7 @@
    * dialog's corners clipping correctly in Chromium.
    */
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-dialog {
+    --rc-dialog-min-inline-size: min(17.5rem, calc(100vw - 3rem));
     --rc-dialog-max-inline-size: min(35rem, calc(100vw - 3rem));
     --rc-dialog-max-block-size: calc(100dvh - 3rem);
     --rc-dialog-padding: 1.5rem;

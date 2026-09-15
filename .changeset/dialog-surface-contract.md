@@ -8,7 +8,7 @@ Give `rc-dialog` a surface styling contract.
 
 It exposed only `--rc-dialog-scrim`, so both themes drew the surface by selecting the native
 `<dialog>` directly. It now installs a light-DOM base stylesheet, the same pattern as `rc-button`
-and `rc-disclosure`, and exposes inline and block bounds, padding, border, radius, background,
+and `rc-disclosure`, and exposes minimum and maximum inline and block bounds, padding, border, radius, background,
 foreground, and shadow, plus fullscreen-specific padding and background for the two values that
 variant genuinely needs of its own.
 
