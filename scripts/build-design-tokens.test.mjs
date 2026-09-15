@@ -46,10 +46,7 @@ test('the rc contract aliases the theme layer rather than restating it', () => {
 });
 
 test('primitive hex values survive the round trip', () => {
-  assert.equal(
-    variable(material, 'Primitives', 'palette/primary/40').values.Value.hex,
-    '#6750a4',
-  );
+  assert.equal(variable(material, 'Primitives', 'palette/primary/40').values.Value.hex, '#6750a4');
 });
 
 test('primitives stay out of variable pickers while semantic tokens are scoped', () => {
@@ -111,7 +108,11 @@ test('oklch brand colors convert to sRGB', () => {
 });
 
 test('a two color mix lands between its operands', () => {
-  const tinted = variable(substrate, 'Color', 'color/computed/menu-button-trigger-hover-background');
+  const tinted = variable(
+    substrate,
+    'Color',
+    'color/computed/menu-button-trigger-hover-background',
+  );
   const accent = variable(substrate, 'Color', 'color/primary');
   const base = variable(substrate, 'Color', 'color/surface-raised');
 
@@ -202,7 +203,13 @@ test('every alias points at a variable that exists and shares its type', () => {
 });
 
 test('scopes match the variable type they are attached to', () => {
-  const colorScopes = new Set(['FRAME_FILL', 'SHAPE_FILL', 'TEXT_FILL', 'STROKE_COLOR', 'EFFECT_COLOR']);
+  const colorScopes = new Set([
+    'FRAME_FILL',
+    'SHAPE_FILL',
+    'TEXT_FILL',
+    'STROKE_COLOR',
+    'EFFECT_COLOR',
+  ]);
 
   for (const document of [material, substrate]) {
     for (const collection of document.collections) {
@@ -247,4 +254,41 @@ test('unresolved values always record why they could not be resolved', () => {
       assert.ok(entry.reason, `${entry.property} is missing a reason`);
     }
   }
+});
+
+test('a font shorthand is a composite, not the first number inside it', () => {
+  // `var(--weight, 500) var(--size, 1rem) / var(--lh) var(--family)` both starts
+  // and ends with `var(`, so an anchored greedy pattern reads it as one variable
+  // whose fallback is the rest of the declaration, and it resolves to `500`.
+  for (const document of [material, substrate]) {
+    const fontShorthands = document.collections
+      .flatMap((collection) => collection.variables)
+      .filter((entry) => /(^|\/)(.*-)?font$/.test(entry.name));
+
+    assert.deepEqual(fontShorthands, [], 'font shorthands should never become variables');
+  }
+
+  const composites = material.skipped.composite.map((entry) => entry.property);
+
+  assert.ok(composites.includes('--rc-card-title-font'));
+  assert.ok(composites.includes('--rc-disclosure-summary-font'));
+});
+
+test('a mix weight written as a calc still resolves', () => {
+  // Material writes its state layers as `calc(var(--opacity, 0.08) * 100%)`
+  // rather than as a literal percentage.
+  const index = new Map(
+    material.collections
+      .flatMap((collection) => collection.variables)
+      .map((entry) => [entry.name, entry]),
+  );
+
+  for (const name of ['list-item/hover-bg', 'list-item/active-bg']) {
+    assert.ok(index.has(name), `${name} should resolve`);
+  }
+
+  const unresolved = new Set(material.skipped.unresolved.map((entry) => entry.property));
+
+  assert.ok(!unresolved.has('--rc-list-item-hover-bg'));
+  assert.ok(!unresolved.has('--rc-disclosure-summary-hover-background'));
 });

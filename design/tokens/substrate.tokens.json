@@ -163,6 +163,35 @@
           }
         },
         {
+          "name": "color/computed/disclosure-summary-hover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-summary-hover-background)"
+          },
+          "cssVar": "--rc-disclosure-summary-hover-background",
+          "description": "Resolved from --rc-disclosure-summary-hover-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.793749,
+              "g": 0.272927,
+              "b": 0,
+              "a": 0.08,
+              "hex": "#ca4600"
+            },
+            "Dark": {
+              "r": 0.967158,
+              "g": 0.589338,
+              "b": 0.26438,
+              "a": 0.08,
+              "hex": "#f79643"
+            }
+          }
+        },
+        {
           "name": "color/computed/list-item-active-bg",
           "type": "COLOR",
           "scopes": [
@@ -1287,6 +1316,21 @@
       ],
       "description": "The public --rc-* styling contract consumed by rc-webcomponents. Aliases the theme layer, so swapping the theme reskins every component.",
       "variables": [
+        {
+          "name": "accordion/gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-accordion-gap)"
+          },
+          "cssVar": "--rc-accordion-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
         {
           "name": "adaptive-menu/gap",
           "type": "FLOAT",
@@ -3217,6 +3261,192 @@
               "alias": "color/computed/dialog-scrim",
               "collection": "Color"
             }
+          }
+        },
+        {
+          "name": "disclosure/background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-background)"
+          },
+          "cssVar": "--rc-disclosure-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-raised",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "disclosure/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-color)"
+          },
+          "cssVar": "--rc-disclosure-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "disclosure/content-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-content-color)"
+          },
+          "cssVar": "--rc-disclosure-content-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-muted",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "disclosure/content-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-content-padding-inline)"
+          },
+          "cssVar": "--rc-disclosure-content-padding-inline",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 14
+          }
+        },
+        {
+          "name": "disclosure/duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-duration)"
+          },
+          "cssVar": "--rc-disclosure-duration",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-slow",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "disclosure/radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-radius)"
+          },
+          "cssVar": "--rc-disclosure-radius",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/lg",
+              "collection": "Radius"
+            }
+          }
+        },
+        {
+          "name": "disclosure/summary-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-summary-gap)"
+          },
+          "cssVar": "--rc-disclosure-summary-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "disclosure/summary-hover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-summary-hover-background)"
+          },
+          "cssVar": "--rc-disclosure-summary-hover-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/disclosure-summary-hover-background",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "disclosure/summary-min-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-summary-min-block-size)"
+          },
+          "cssVar": "--rc-disclosure-summary-min-block-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 44
+          }
+        },
+        {
+          "name": "disclosure/summary-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-summary-padding-block)"
+          },
+          "cssVar": "--rc-disclosure-summary-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "disclosure/summary-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-summary-padding-inline)"
+          },
+          "cssVar": "--rc-disclosure-summary-padding-inline",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 14
           }
         },
         {
@@ -7279,6 +7509,28 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-disclosure-border",
+        "raw": "var(--rc-border, 1px solid ButtonBorder)",
+        "name": "disclosure/border",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-disclosure-content-padding-block",
+        "raw": "0 0.875rem",
+        "name": "disclosure/content-padding-block"
+      },
+      {
+        "property": "--rc-disclosure-easing",
+        "raw": "var(--substrate-motion-easing, ease)",
+        "name": "disclosure/easing",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-disclosure-summary-font",
+        "raw": "650 var(--substrate-font-size, 0.95rem) / var(--substrate-line-height, 1.45) var(--substrate-font-family, sans-serif)",
+        "name": "disclosure/summary-font"
+      },
+      {
         "property": "--rc-fab-active-transform",
         "raw": "scale(0.96)",
         "name": "fab/active-transform"
@@ -7652,6 +7904,12 @@
         "property": "--rc-card-subtitle-color",
         "raw": "color-mix(in srgb, currentColor 72%, transparent)",
         "reason": "mix-base-unresolved",
+        "scope": "rc-theme-substrate"
+      },
+      {
+        "property": "--rc-disclosure-open-shadow",
+        "raw": "var(--substrate-shadow-sm, none)",
+        "reason": "literal",
         "scope": "rc-theme-substrate"
       },
       {

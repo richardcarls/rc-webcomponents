@@ -86,7 +86,10 @@ function parseDeclarations(css) {
 
     declarations.push({
       property: text.slice(0, colon).trim(),
-      value: text.slice(colon + 1).trim().replace(/\s+/g, ' '),
+      value: text
+        .slice(colon + 1)
+        .trim()
+        .replace(/\s+/g, ' '),
       scope: stack.filter((entry) => !entry.startsWith('@')).join(' '),
       media: stack.filter((entry) => entry.startsWith('@media')),
     });
@@ -139,17 +142,12 @@ function parseHex(value) {
     r: Number.parseInt(normalized.slice(0, 2), 16) / 255,
     g: Number.parseInt(normalized.slice(2, 4), 16) / 255,
     b: Number.parseInt(normalized.slice(4, 6), 16) / 255,
-    a:
-      normalized.length >= 8
-        ? Number.parseInt(normalized.slice(6, 8), 16) / 255
-        : 1,
+    a: normalized.length >= 8 ? Number.parseInt(normalized.slice(6, 8), 16) / 255 : 1,
   };
 }
 
 function gammaEncode(channel) {
-  return channel <= 0.0031308
-    ? 12.92 * channel
-    : 1.055 * Math.pow(channel, 1 / 2.4) - 0.055;
+  return channel <= 0.0031308 ? 12.92 * channel : 1.055 * Math.pow(channel, 1 / 2.4) - 0.055;
 }
 
 /** Converts an oklch() color to sRGB, which is what Figma variables store. */
@@ -178,15 +176,9 @@ function parseOklch(value) {
   const short = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
 
   return {
-    r: clamp01(
-      gammaEncode(4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short),
-    ),
-    g: clamp01(
-      gammaEncode(-1.2684380046 * long + 2.6097574011 * medium - 0.3413193965 * short),
-    ),
-    b: clamp01(
-      gammaEncode(-0.0041960863 * long - 0.7034186147 * medium + 1.707614701 * short),
-    ),
+    r: clamp01(gammaEncode(4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short)),
+    g: clamp01(gammaEncode(-1.2684380046 * long + 2.6097574011 * medium - 0.3413193965 * short)),
+    b: clamp01(gammaEncode(-0.0041960863 * long - 0.7034186147 * medium + 1.707614701 * short)),
     a: alpha,
   };
 }
@@ -209,7 +201,9 @@ function mixColors([first, second]) {
       return 0;
     }
 
-    return (colors[0][key] * colors[0].a * share[0] + colors[1][key] * colors[1].a * share[1]) / alpha;
+    return (
+      (colors[0][key] * colors[0].a * share[0] + colors[1][key] * colors[1].a * share[1]) / alpha
+    );
   };
 
   return { r: channel('r'), g: channel('g'), b: channel('b'), a: alpha };
@@ -229,10 +223,43 @@ function colorValue(color) {
 
 const VAR_PATTERN = /^var\(\s*(--[a-z0-9-]+)\s*(?:,([\s\S]*))?\)$/i;
 
+/**
+ * True when the whole value is one balanced `var()` rather than a shorthand
+ * that merely starts and ends with one.
+ *
+ * `VAR_PATTERN` is anchored but its fallback group is greedy, so a font
+ * shorthand like `var(--weight, 500) var(--size, 1rem) / var(--lh) var(--family)`
+ * matches as a single `var(--weight)` whose fallback is the entire rest of the
+ * declaration. It then resolves to `500`, turning a composite into a plausible
+ * looking number.
+ */
+function isSingleVar(text) {
+  if (!text.startsWith('var(') || !text.endsWith(')')) {
+    return false;
+  }
+
+  let depth = 0;
+
+  for (let index = 0; index < text.length; index += 1) {
+    if (text[index] === '(') {
+      depth += 1;
+    } else if (text[index] === ')') {
+      depth -= 1;
+
+      // Closing the opening `var(` before the end means more follows it.
+      if (depth === 0) {
+        return index === text.length - 1;
+      }
+    }
+  }
+
+  return false;
+}
+
 /** Classifies a value without following any variable references. */
 function shallowResolve(value) {
   const text = value.trim();
-  const varMatch = VAR_PATTERN.exec(text);
+  const varMatch = isSingleVar(text) ? VAR_PATTERN.exec(text) : null;
 
   if (varMatch) {
     return { kind: 'alias', target: varMatch[1], fallback: varMatch[2]?.trim() || null };
@@ -294,7 +321,7 @@ function createResolver(byProperty) {
       return resolveIn(mode === 'Dark' ? dark : light, mode, depth + 1);
     }
 
-    const varMatch = VAR_PATTERN.exec(text);
+    const varMatch = isSingleVar(text) ? VAR_PATTERN.exec(text) : null;
 
     if (varMatch) {
       const declared = byProperty.get(varMatch[1]);
@@ -337,18 +364,44 @@ function createResolver(byProperty) {
         return { kind: 'unresolved', raw: text, reason: 'multi-color-mix' };
       }
 
+      /*
+       * An operand is `<color> <percentage>`, and the percentage is not always a
+       * literal: Material writes its state layers as
+       * `calc(var(--opacity, 0.08) * 100%)`. Split at depth zero and resolve the
+       * weight through the same resolver rather than pattern-matching a number
+       * off the end of the string.
+       */
+      const splitOperand = (operand) => {
+        const parts = splitTopLevel(operand.trim(), ' ').filter(Boolean);
+        const last = parts.at(-1) ?? '';
+        const isWeight = last.endsWith('%') || last.startsWith('calc(');
+
+        if (!isWeight || parts.length < 2) {
+          return { colorText: operand.trim(), weight: null };
+        }
+
+        const resolvedWeight =
+          last.endsWith('%') && !last.startsWith('calc(')
+            ? Number.parseFloat(last)
+            : resolveIn(last, mode, depth + 1).value;
+
+        return {
+          colorText: parts.slice(0, -1).join(' '),
+          weight: Number.isFinite(resolvedWeight) ? resolvedWeight / 100 : null,
+        };
+      };
+
       // Most mixes here fade one color toward transparent, which is only an
       // alpha change on that color.
       if (second.trim() === 'transparent') {
-        const percent = /(\d+(?:\.\d+)?)%\s*$/.exec(first);
-        const base = first.replace(/(\d+(?:\.\d+)?)%\s*$/, '').trim();
-        const resolved = resolveIn(base, mode, depth + 1);
+        const { colorText, weight } = splitOperand(first);
+        const resolved = resolveIn(colorText, mode, depth + 1);
 
         if (resolved.kind !== 'color') {
           return { kind: 'unresolved', raw: text, reason: 'mix-base-unresolved' };
         }
 
-        const ratio = percent ? Number.parseFloat(percent[1]) / 100 : 1;
+        const ratio = weight ?? 1;
 
         return { kind: 'color', value: { ...resolved.value, a: resolved.value.a * ratio } };
       }
@@ -356,12 +409,9 @@ function createResolver(byProperty) {
       // The rest tint one color with another, which needs both sides. A system
       // color such as `Canvas` on either side has no value to mix with.
       const operands = [first, second].map((operand) => {
-        const percent = /(\d+(?:\.\d+)?)%\s*$/.exec(operand);
+        const { colorText, weight } = splitOperand(operand);
 
-        return {
-          weight: percent ? Number.parseFloat(percent[1]) / 100 : null,
-          color: resolveIn(operand.replace(/(\d+(?:\.\d+)?)%\s*$/, '').trim(), mode, depth + 1),
-        };
+        return { weight, color: resolveIn(colorText, mode, depth + 1) };
       });
 
       if (operands.some((operand) => operand.color.kind !== 'color')) {
@@ -395,7 +445,7 @@ function resolveLiteral(value, byProperty, depth = 0) {
     return text;
   }
 
-  const varMatch = VAR_PATTERN.exec(text);
+  const varMatch = isSingleVar(text) ? VAR_PATTERN.exec(text) : null;
 
   if (!varMatch) {
     return text;
@@ -437,7 +487,7 @@ function parseShadowLayer(layer, resolveIn) {
   }
 
   const [offsetX, offsetY, radius, spread] = lengths;
-  const colorVar = colorPart ? VAR_PATTERN.exec(colorPart)?.[1] ?? null : null;
+  const colorVar = colorPart ? (VAR_PATTERN.exec(colorPart)?.[1] ?? null) : null;
   const colors = {};
 
   for (const mode of MODES) {
@@ -512,9 +562,7 @@ function paletteTokenName(property) {
 /** Groups an rc contract token under its component, or under `core`. */
 function rcTokenName(property) {
   const stem = property.replace('--rc-', '');
-  const prefix = COMPONENT_PREFIXES.find(
-    (name) => stem === name || stem.startsWith(`${name}-`),
-  );
+  const prefix = COMPONENT_PREFIXES.find((name) => stem === name || stem.startsWith(`${name}-`));
 
   if (!prefix) {
     return `core/${stem}`;
@@ -601,8 +649,7 @@ function inferScopes(name, type) {
 
   // Matching must respect token-part boundaries: "emphasized" contains "size",
   // and a substring match would scope an easing curve as a dimension.
-  const has = (...words) =>
-    new RegExp(`(^|[/-])(${words.join('|')})([/-]|$)`).test(role);
+  const has = (...words) => new RegExp(`(^|[/-])(${words.join('|')})([/-]|$)`).test(role);
 
   if (has('opacity')) {
     return ['OPACITY'];
@@ -763,8 +810,7 @@ function buildDocument(theme) {
    * that also becomes a variable.
    */
   const registry = new Map();
-  const register = (property, name, collection) =>
-    registry.set(property, { name, collection });
+  const register = (property, name, collection) => registry.set(property, { name, collection });
 
   const primitiveDecls = theme.primitivePrefix
     ? defaultDecls.filter((entry) => entry.property.startsWith(theme.primitivePrefix))
@@ -789,11 +835,13 @@ function buildDocument(theme) {
     // color cannot live in a numeric collection.
     const isColor = resolveIn(entry.value, 'Light').kind === 'color';
     const name =
-      isColor && !derived.startsWith('color/')
-        ? `color/${derived.replace(/\//g, '-')}`
-        : derived;
+      isColor && !derived.startsWith('color/') ? `color/${derived.replace(/\//g, '-')}` : derived;
 
-    register(entry.property, name, name.startsWith('color/') ? 'Color' : capitalize(name.split('/')[0]));
+    register(
+      entry.property,
+      name,
+      name.startsWith('color/') ? 'Color' : capitalize(name.split('/')[0]),
+    );
   }
 
   const rcDecls = [];
@@ -885,11 +933,7 @@ function buildDocument(theme) {
     if (shallow.kind === 'alias' && registry.has(shallow.target)) {
       const target = registry.get(shallow.target);
       const alias = { alias: target.name, collection: target.collection };
-      const collection = ensure(
-        collectionName,
-        isColorToken ? MODES : ['Value'],
-        undefined,
-      );
+      const collection = ensure(collectionName, isColorToken ? MODES : ['Value'], undefined);
 
       collection.variables.push(
         buildVariable({
@@ -918,9 +962,7 @@ function buildDocument(theme) {
         /* light-dark() whose branch is a bare primitive reference still aliases
          * cleanly, which keeps the semantic layer pointing at primitives. */
         const lightDark = /^light-dark\(([\s\S]*)\)$/.exec(entry.value.trim());
-        const branch = lightDark
-          ? splitTopLevel(lightDark[1], ',')[mode === 'Dark' ? 1 : 0]
-          : null;
+        const branch = lightDark ? splitTopLevel(lightDark[1], ',')[mode === 'Dark' ? 1 : 0] : null;
         const branchShallow = branch ? shallowResolve(branch) : null;
 
         perMode[mode] =
@@ -974,9 +1016,7 @@ function buildDocument(theme) {
   for (const entry of rcDecls) {
     const name = registry.get(entry.property).name;
     const componentScope = entry.scope.match(/\brc-[a-z-]+\b/)?.[0] ?? null;
-    const description = componentScope
-      ? `Applied where ${componentScope} is themed.`
-      : undefined;
+    const description = componentScope ? `Applied where ${componentScope} is themed.` : undefined;
     const shallow = shallowResolve(entry.value);
 
     if (shallow.kind === 'composite') {
@@ -1134,7 +1174,12 @@ function buildDocument(theme) {
       const literal = resolveIn(byProperty.get(entry.cssVar) ?? '', 'Light');
 
       if (literal.kind === 'number') {
-        resolvedRc.push({ ...entry, type: 'FLOAT', values: { Value: literal.value }, pendingAliasTarget: undefined });
+        resolvedRc.push({
+          ...entry,
+          type: 'FLOAT',
+          values: { Value: literal.value },
+          pendingAliasTarget: undefined,
+        });
 
         continue;
       }
@@ -1197,9 +1242,10 @@ function buildDocument(theme) {
     .filter((entry) => theme.shadow.test(entry.property))
     .map((entry) => {
       const level = theme.shadow.exec(entry.property)[1];
-      const layers = entry.value === 'none'
-        ? []
-        : splitTopLevel(entry.value, ',').map((layer) => parseShadowLayer(layer, resolveIn));
+      const layers =
+        entry.value === 'none'
+          ? []
+          : splitTopLevel(entry.value, ',').map((layer) => parseShadowLayer(layer, resolveIn));
 
       return {
         name: theme.shadowStyleName(level),
