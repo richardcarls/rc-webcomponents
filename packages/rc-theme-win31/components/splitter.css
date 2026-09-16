@@ -1,0 +1,42 @@
+@layer rc-theme-win31.components {
+  /*
+   * The split bar between panes in File Manager and the MDI shells: a surface
+   * strip carrying one highlight edge and one shadow edge, with no grab dots.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-splitter {
+    --rc-splitter-separator-size: calc(5 * var(--win31-unit));
+    --rc-splitter-separator-color: var(--win31-color-surface);
+    --rc-splitter-separator-border-inline-start: var(--win31-hairline) solid
+      var(--win31-color-highlight);
+    --rc-splitter-separator-border-inline-end: var(--win31-hairline) solid var(--win31-color-shadow);
+    --rc-splitter-separator-border-block-start: var(--win31-hairline) solid
+      var(--win31-color-highlight);
+    --rc-splitter-separator-border-block-end: var(--win31-hairline) solid var(--win31-color-shadow);
+    --rc-splitter-separator-handle-size: 100%;
+    --rc-splitter-handle-color: transparent;
+    --rc-splitter-handle-fill: transparent;
+    --rc-splitter-handle-hover-fill: transparent;
+    --rc-splitter-handle-border-radius: var(--win31-radius);
+    --rc-splitter-handle-transition: none;
+    --rc-splitter-snap-duration: 0ms;
+    --rc-splitter-keyline: var(--win31-hairline) solid var(--win31-color-shadow);
+    --rc-splitter-collapse-button-bg: var(--win31-color-surface);
+    --rc-splitter-collapse-button-color: var(--win31-color-frame);
+    --rc-splitter-collapse-button-border: var(--win31-border);
+    --rc-splitter-collapse-button-hover-bg: var(--win31-color-surface);
+    --rc-splitter-collapse-button-size: var(--win31-scrollbar-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-splitter::part(separator-handle) {
+    border-radius: var(--win31-radius);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-splitter::part(collapse-button) {
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-splitter::part(collapse-button):active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+}

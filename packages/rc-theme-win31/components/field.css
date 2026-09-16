@@ -1,0 +1,67 @@
+@layer rc-theme-win31.components {
+  /*
+   * A 3.1 edit control is a sunken white well with a hard one-pixel frame. The
+   * label sits outside it as plain text; there is no floating-label behavior to
+   * reproduce because the idiom did not exist yet.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field::part(field) {
+    min-block-size: var(--win31-control-height);
+    padding-block: var(--win31-padding-block);
+    padding-inline: var(--win31-padding-inline);
+    color: var(--win31-color-field-text);
+    background: var(--win31-color-field);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field::part(label) {
+    position: static;
+    transform: none;
+    padding: 0;
+    margin-block-end: var(--win31-gap-tight);
+    color: var(--win31-color-frame);
+    background: transparent;
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field::part(supporting-text),
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field::part(hint),
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field::part(counter) {
+    color: var(--win31-color-frame);
+    font-size: var(--win31-font-size);
+  }
+
+  /*
+   * 3.1 had no inline validation styling, so an error is stated in text rather
+   * than colored. The frame is left alone deliberately.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field::part(error) {
+    color: var(--win31-color-frame);
+    font-size: var(--win31-font-size);
+    font-weight: 700;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field :is(input, textarea, select) {
+    color: var(--win31-color-field-text);
+    background: transparent;
+    border: 0;
+    border-radius: var(--win31-radius);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+    line-height: var(--win31-line-height);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field :is(input, textarea):focus-visible {
+    outline: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field:focus-within::part(field) {
+    outline: var(--win31-focus-ring);
+    outline-offset: var(--win31-focus-ring-offset);
+  }
+}

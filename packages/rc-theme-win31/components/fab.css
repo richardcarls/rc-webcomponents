@@ -1,0 +1,49 @@
+@layer rc-theme-win31.components {
+  /*
+   * A knowing anachronism, and the only one in this theme.
+   *
+   * Windows 3.1 had no floating action button and no concept that would have
+   * produced one: nothing hovered above the window, and there was no primary
+   * action promoted out of the command set. Rather than leave the component
+   * unstyled in a themed page, it is drawn as the nearest period object, a
+   * floating tool-palette button, and labelled here as the deviation it is.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-fab {
+    --rc-fab-bg: var(--win31-color-surface);
+    --rc-fab-bg-hover: var(--win31-color-surface);
+    --rc-fab-color: var(--win31-color-frame);
+    --rc-fab-border: var(--win31-border);
+    --rc-fab-radius: var(--win31-radius);
+    --rc-fab-size: var(--win31-toolbar-height);
+    --rc-fab-gap: var(--win31-gap-tight);
+    --rc-fab-padding-block: var(--win31-padding-block);
+    --rc-fab-padding-inline: calc(8 * var(--win31-unit));
+    --rc-fab-font-family: var(--win31-font-family);
+    --rc-fab-font-size: var(--win31-font-size);
+    --rc-fab-font-weight: var(--win31-font-weight);
+    --rc-fab-letter-spacing: normal;
+    --rc-fab-shadow: none;
+    --rc-fab-shadow-hover: none;
+    --rc-fab-shadow-active: none;
+    --rc-fab-disabled-shadow: none;
+    --rc-fab-disabled-opacity: 1;
+    --rc-fab-active-transform: none;
+    --rc-fab-transition: none;
+    --rc-fab-focus-ring: var(--win31-focus-ring);
+    --rc-fab-focus-ring-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-fab > button {
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-fab > button:active:not(:disabled) {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-fab > button:disabled {
+    color: var(--win31-color-disabled-text);
+    text-shadow: var(--win31-unit) var(--win31-unit) 0 var(--win31-color-disabled-emboss);
+  }
+}

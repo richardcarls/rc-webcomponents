@@ -1,0 +1,52 @@
+@layer rc-theme-win31.components {
+  /*
+   * No 3.1 analogue. The closest period construction is a docked strip of
+   * latched icon buttons, the way Program Manager showed groups and a toolbar
+   * showed modes, so the active destination reads as pressed rather than as
+   * tinted.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-navigation-bar {
+    --rc-navigation-bar-bg: var(--win31-color-surface);
+    --rc-navigation-bar-color: var(--win31-color-frame);
+    --rc-navigation-bar-item-color: var(--win31-color-frame);
+    --rc-navigation-bar-active-color: var(--win31-color-frame);
+    --rc-navigation-bar-block-size: var(--win31-toolbar-height);
+    --rc-navigation-bar-gap: calc(3 * var(--win31-unit));
+    --rc-navigation-bar-padding-block: var(--win31-gap-tight);
+    --rc-navigation-bar-padding-inline: calc(3 * var(--win31-unit));
+    --rc-navigation-bar-item-gap: var(--win31-gap-tight);
+    --rc-navigation-bar-item-min-block-size: var(--win31-toolbar-button-size);
+    --rc-navigation-bar-item-padding-block: 0;
+    --rc-navigation-bar-item-padding-inline: var(--win31-gap-tight);
+    --rc-navigation-bar-item-text-decoration: none;
+    --rc-navigation-bar-indicator-bg: transparent;
+    --rc-navigation-bar-indicator-border: 0;
+    --rc-navigation-bar-indicator-radius: var(--win31-radius);
+    --rc-navigation-bar-indicator-duration: 0ms;
+    --rc-navigation-bar-focus-ring: var(--win31-focus-ring);
+    --rc-navigation-bar-focus-ring-offset: var(--win31-focus-ring-offset);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-navigation-bar::part(nav) {
+    border-block-start: var(--win31-border);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-navigation-bar :is(a, button) {
+    background-color: var(--win31-color-surface);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-navigation-bar
+    :is([aria-current], [aria-selected='true']) {
+    background-image: var(--win31-dither-track);
+    background-size: var(--win31-dither-size);
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+}

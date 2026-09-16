@@ -1,0 +1,58 @@
+@layer rc-theme-win31.components {
+  /*
+   * Reduced motion is already satisfied: every duration in this theme is zero
+   * because 3.1 animated nothing. Declared anyway so the guarantee is explicit
+   * rather than incidental, and so a consumer override cannot reintroduce
+   * motion under the preference.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    :where(.rc-theme-win31, :host(.rc-theme-win31)) *,
+    :where(.rc-theme-win31, :host(.rc-theme-win31)) *::before,
+    :where(.rc-theme-win31, :host(.rc-theme-win31)) *::after {
+      transition-duration: 0s !important;
+      animation-duration: 0s !important;
+    }
+  }
+
+  /*
+   * Forced colors: total surrender.
+   *
+   * Every bevel in this theme is an inset box-shadow, a four-value
+   * border-color, or a dither image, and forced colors deletes or overrides
+   * all three. There is no version of a 3.1 bevel that survives High Contrast,
+   * and a user who has turned it on has asked for exactly the decoration this
+   * theme is made of to go away. So it goes away completely and the system
+   * palette takes over.
+   *
+   * The result is closer to stock, pre-CTL3D Windows 3.1 than the beveled
+   * default is: flat, system-colored, one-pixel-outlined controls.
+   */
+  @media (forced-colors: active) {
+    :where(.rc-theme-win31, :host(.rc-theme-win31)) * {
+      forced-color-adjust: auto;
+      box-shadow: none !important;
+      background-image: none !important;
+      text-shadow: none !important;
+    }
+
+    :where(.rc-theme-win31, :host(.rc-theme-win31)) :is(button, [role='button'], summary) {
+      border: 1px solid ButtonBorder;
+    }
+
+    :where(.rc-theme-win31, :host(.rc-theme-win31))
+      :is(button, [role='button'], [role^='menuitem'], summary):focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 0;
+    }
+
+    /*
+     * The dotted focus rectangle is too thin to survive as the only indicator
+     * once the bevels are gone, so it thickens rather than disappearing.
+     */
+    :where(.rc-theme-win31, :host(.rc-theme-win31)) {
+      --win31-focus-ring: 2px solid Highlight;
+      --win31-focus-ring-selected: 2px solid HighlightText;
+      --win31-focus-ring-offset: 0;
+    }
+  }
+}

@@ -1,0 +1,222 @@
+@layer rc-theme-win31.defaults, rc-theme-win31.bridge, rc-theme-win31.components;
+
+@layer rc-theme-win31.bridge {
+  /*
+   * Maps the Windows 3.1 reference tokens onto the rc-webcomponents public
+   * styling contract. Consumers can replace --win31-* values and keep this file
+   * as their bridge.
+   *
+   * Three decisions run through the whole mapping and are worth knowing before
+   * reading it:
+   *
+   * - Disabled is a color, never an opacity. --rc-disabled-opacity stays at 1
+   *   and components/modes.css supplies the embossed gray instead.
+   * - Motion is zero. Windows 3.1 had no transitions anywhere.
+   * - Depth is geometry. --rc-shadow is none; bevels come from the box-shadow
+   *   and border-color tokens, which forced-colors can delete cleanly.
+   */
+  .rc-theme-win31,
+  :host(.rc-theme-win31) {
+    --rc-surface: var(--win31-color-surface);
+    --rc-field: var(--win31-color-field);
+    --rc-field-text: var(--win31-color-field-text);
+    --rc-field-error-color: var(--win31-color-frame);
+    --rc-button-bg: var(--win31-color-surface);
+    --rc-button-text: var(--win31-color-frame);
+    --rc-highlight: var(--win31-color-selection);
+    --rc-highlight-text: var(--win31-color-selection-text);
+    --rc-text-disabled: var(--win31-color-disabled-text);
+    --rc-accent: var(--win31-color-selection);
+    --rc-border-color: var(--win31-color-frame);
+    --rc-border-width: var(--win31-hairline);
+    --rc-border-style: solid;
+    --rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
+    --rc-shadow: none;
+
+    --rc-font-family: var(--win31-font-family);
+    --rc-font-size: var(--win31-font-size);
+    --rc-font-weight: var(--win31-font-weight);
+    --rc-line-height: var(--win31-line-height);
+    --rc-icon-font-size: var(--win31-check-size);
+    --rc-icon-font-line-height: var(--rc-icon-font-size);
+
+    --rc-control-block-size: var(--win31-control-height);
+    --rc-control-padding-block: var(--win31-padding-block);
+    --rc-control-padding-inline: var(--win31-padding-inline);
+    --rc-control-gap: var(--win31-gap-tight);
+    --rc-item-padding-block: var(--win31-padding-block);
+    --rc-item-padding-inline: var(--win31-padding-inline);
+    --rc-item-gap: var(--win31-gap-tight);
+
+    --rc-radius-sm: var(--win31-radius);
+    --rc-radius-md: var(--win31-radius);
+    --rc-control-radius: var(--win31-radius);
+    --rc-thumb-radius: var(--win31-radius);
+
+    --rc-focus-ring: var(--win31-focus-ring);
+    --rc-focus-ring-offset: var(--win31-focus-ring-offset);
+    --rc-disabled-opacity: 1;
+    --rc-motion-duration: 0ms;
+
+    --rc-button-color: var(--rc-button-text);
+    --rc-button-block-size: var(--rc-control-block-size);
+    --rc-button-radius: var(--win31-radius);
+    --rc-button-border: var(--rc-border);
+    --rc-button-padding-block: var(--rc-control-padding-block);
+    --rc-button-padding-inline: calc(8 * var(--win31-unit));
+    --rc-button-gap: var(--rc-control-gap);
+    --rc-button-font: var(--rc-font-weight) var(--rc-font-size) / 1 var(--rc-font-family);
+    /*
+     * Windows 3.1 gave push buttons no hover or focus wash at all. The state
+     * layers stay at zero and pressed is drawn as an inverted bevel instead.
+     */
+    --rc-button-hover-state-layer-opacity: 0;
+    --rc-button-focus-state-layer-opacity: 0;
+    --rc-button-pressed-state-layer-opacity: 0;
+
+    --rc-card-bg: var(--win31-color-surface);
+    --rc-card-color: var(--win31-color-frame);
+    --rc-card-radius: var(--win31-radius);
+    --rc-card-padding-block: var(--win31-gap-tight);
+    --rc-card-padding-inline: var(--win31-padding-inline);
+    --rc-card-actions-gap: var(--win31-gap);
+    --rc-card-subtitle-color: var(--win31-color-frame);
+    --rc-card-hover-state-layer-opacity: 0;
+    --rc-card-pressed-state-layer-opacity: 0;
+
+    --rc-chip-block-size: var(--win31-control-height);
+    --rc-chip-gap: var(--win31-gap-tight);
+    --rc-chip-padding-inline: calc(8 * var(--win31-unit));
+    --rc-chip-border: var(--rc-border);
+    --rc-chip-radius: var(--win31-radius);
+    --rc-chip-bg: var(--win31-color-surface);
+    --rc-chip-color: var(--win31-color-frame);
+    --rc-chip-font: inherit;
+    --rc-chip-text-decoration: none;
+    --rc-chip-selected-bg: var(--win31-dither-surface);
+
+    --rc-switch-native-appearance: none;
+    --rc-switch-native-inline-size: 100%;
+    --rc-switch-native-block-size: 100%;
+    --rc-switch-native-margin: 0;
+    --rc-switch-native-opacity: 0;
+    --rc-switch-decoration-display: block;
+    --rc-switch-icon-display: grid;
+    --rc-switch-track-inline-size: calc(36 * var(--win31-unit));
+    --rc-switch-track-block-size: var(--win31-control-height);
+    --rc-switch-selected-track-bg: var(--win31-color-surface);
+    --rc-switch-thumb-translate: calc(16 * var(--win31-unit));
+
+    --rc-segmented-button-segment-min-block-size: var(--rc-control-block-size);
+    --rc-segmented-button-selected-bg: var(--win31-dither-surface);
+
+    --rc-snackbar-bg: var(--win31-color-surface);
+    --rc-snackbar-color: var(--win31-color-frame);
+    --rc-snackbar-border: var(--rc-border);
+    --rc-snackbar-action-color: var(--win31-color-frame);
+    --rc-snackbar-action-border: var(--rc-border);
+    --rc-snackbar-action-radius: var(--win31-radius);
+    --rc-snackbar-action-padding-block: var(--win31-padding-block);
+    --rc-snackbar-action-padding-inline: calc(8 * var(--win31-unit));
+    --rc-snackbar-action-bg: var(--win31-color-surface);
+    --rc-snackbar-action-font: var(--rc-button-font);
+
+    --rc-list-item-gap: var(--rc-item-gap);
+    --rc-list-item-min-block-size: var(--win31-listbox-row-height);
+    --rc-list-item-padding-block: var(--rc-item-padding-block);
+    --rc-list-item-padding-inline: var(--rc-item-padding-inline);
+    --rc-list-item-selected-bg: var(--win31-color-selection);
+    --rc-list-item-selected-color: var(--win31-color-selection-text);
+
+    /*
+     * The scrim is transparent on purpose. Windows 3.1 dimmed nothing behind a
+     * modal dialog; the dialog's own frame carried the separation.
+     */
+    --rc-dialog-scrim: transparent;
+  }
+
+  /*
+   * Listboxes and menus diverge here, and the divergence is period-correct
+   * rather than an oversight: menus highlighted under the pointer, and list
+   * rows did not. A list row's resting and hover appearance are the same.
+   */
+  .rc-theme-win31 rc-listbox,
+  :host(.rc-theme-win31) rc-listbox {
+    --rc-listbox-option-gap: var(--win31-gap-tight);
+    --rc-listbox-option-min-block-size: var(--win31-listbox-row-height);
+    --rc-listbox-option-padding-block: var(--win31-padding-block);
+    --rc-listbox-option-padding-inline: var(--win31-padding-inline);
+    --rc-listbox-hover-bg: transparent;
+    --rc-listbox-hover-color: var(--win31-color-field-text);
+    --rc-listbox-active-bg: var(--win31-color-selection);
+    --rc-listbox-active-color: var(--win31-color-selection-text);
+    --rc-listbox-selected-bg: var(--win31-color-selection);
+    --rc-listbox-selected-color: var(--win31-color-selection-text);
+  }
+
+  .rc-theme-win31 rc-menu,
+  :host(.rc-theme-win31) rc-menu {
+    --rc-listbox-option-gap: 0;
+    --rc-listbox-option-min-block-size: calc(20 * var(--win31-unit));
+    --rc-listbox-option-padding-block: 0;
+    --rc-listbox-option-padding-inline: var(--win31-padding-inline);
+    --rc-listbox-hover-bg: var(--win31-color-selection);
+    --rc-listbox-hover-color: var(--win31-color-selection-text);
+    --rc-listbox-active-bg: var(--win31-color-selection);
+    --rc-listbox-active-color: var(--win31-color-selection-text);
+    --rc-listbox-selected-bg: var(--win31-color-selection);
+    --rc-listbox-selected-color: var(--win31-color-selection-text);
+  }
+
+  .rc-theme-win31 rc-select,
+  :host(.rc-theme-win31) rc-select,
+  .rc-theme-win31 rc-combobox,
+  :host(.rc-theme-win31) rc-combobox {
+    --rc-select-control-block-size: calc(20 * var(--win31-unit));
+    --rc-select-radius: var(--win31-radius);
+    --rc-select-shadow: none;
+    --rc-select-listbox-radius: var(--win31-radius);
+    --rc-select-listbox-border: var(--rc-border);
+    --rc-select-chip-radius: var(--win31-radius);
+    --rc-combobox-control-block-size: calc(20 * var(--win31-unit));
+    --rc-combobox-radius: var(--win31-radius);
+    --rc-combobox-shadow: none;
+    --rc-combobox-listbox-radius: var(--win31-radius);
+    --rc-combobox-listbox-border: var(--rc-border);
+    --rc-combobox-chip-radius: var(--win31-radius);
+  }
+
+  .rc-theme-win31 rc-slider,
+  :host(.rc-theme-win31) rc-slider,
+  .rc-theme-win31 rc-range-slider,
+  :host(.rc-theme-win31) rc-range-slider {
+    --rc-slider-track-size: calc(4 * var(--win31-unit));
+    --rc-slider-track-background: var(--win31-color-field);
+    --rc-slider-progress-background: var(--win31-color-selection);
+    --rc-slider-track-radius: var(--win31-radius);
+    --rc-range-slider-accent: var(--win31-color-selection);
+    --rc-range-slider-track-background: var(--win31-color-field);
+    --rc-range-slider-thumb-background: var(--win31-color-surface);
+    --rc-range-slider-thumb-border: var(--win31-color-frame);
+  }
+
+  .rc-theme-win31 rc-progress,
+  :host(.rc-theme-win31) rc-progress {
+    --rc-progress-track-background: var(--win31-color-field);
+    --rc-progress-track-opacity: 1;
+    --rc-progress-track-radius: var(--win31-radius);
+    --rc-progress-fill-background: var(--win31-color-selection);
+    --rc-progress-value-color: var(--win31-color-frame);
+  }
+
+  .rc-theme-win31 rc-bottom-sheet,
+  :host(.rc-theme-win31) rc-bottom-sheet {
+    --rc-bottom-sheet-bg: var(--win31-color-surface);
+    --rc-bottom-sheet-color: var(--win31-color-frame);
+    --rc-bottom-sheet-radius: var(--win31-radius);
+    --rc-bottom-sheet-shadow: none;
+    --rc-bottom-sheet-scrim: transparent;
+    --rc-bottom-sheet-handle-color: var(--win31-color-shadow);
+    --rc-bottom-sheet-handle-radius: var(--win31-radius);
+  }
+}

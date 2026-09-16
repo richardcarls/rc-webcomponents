@@ -23,6 +23,21 @@ test('extracts marker and token contracts without confusing references and defin
   assert.deepEqual([...extractMarkers(css)], ['data-rc-icon']);
   assert.deepEqual([...extractTokenDefinitions(css)], ['--rc-accent', '--_rc-private']);
 
+  // A declaration explained by a comment, or sitting first in its block behind
+  // indentation, is still a definition.
+  assert.deepEqual(
+    [
+      ...extractTokenDefinitions(`
+        .theme {
+          --rc-first: 0;
+          /* Why this one is what it is. */
+          --rc-commented: 1;
+        }
+      `),
+    ],
+    ['--rc-first', '--rc-commented'],
+  );
+
   assert.deepEqual(
     [...extractTokenReferences(css)],
     ['--rc-accent', '--rc-markdown-editor-color', '--rc-imperative-duration'],

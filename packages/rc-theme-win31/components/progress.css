@@ -1,0 +1,47 @@
+@layer rc-theme-win31.components {
+  /*
+   * There was no progress common control in 3.1; Setup drew its own. The
+   * period form is a sunken well filled with discrete blocks rather than a
+   * continuous bar, which also happens to communicate "step N of M" better
+   * than a smooth fill does.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-progress {
+    --rc-progress-track-background: var(--win31-color-field);
+    --rc-progress-track-opacity: 1;
+    --rc-progress-track-radius: var(--win31-radius);
+    --rc-progress-fill-background: var(--win31-color-selection);
+    --rc-progress-value-color: var(--win31-color-frame);
+    --rc-progress-control-size: var(--win31-check-size);
+    --rc-progress-gap: var(--win31-gap);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-progress::part(track) {
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-progress::part(fill) {
+    border-radius: var(--win31-radius);
+    /*
+     * The gradient paints the blocks on its own, so the solid fill color has to
+     * go: leaving it set fills the gaps behind the transparent stops and the
+     * bar reads as continuous. Forced colors drops the image and restores a
+     * plain bar, which is the right degradation.
+     */
+    background-color: transparent;
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--win31-color-selection) 0 calc(8 * var(--win31-unit)),
+      transparent calc(8 * var(--win31-unit)) calc(10 * var(--win31-unit))
+    );
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-progress::part(value-display) {
+    color: var(--win31-color-frame);
+    font-size: var(--win31-font-size);
+  }
+}

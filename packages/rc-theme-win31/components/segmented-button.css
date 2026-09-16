@@ -1,0 +1,86 @@
+@layer rc-theme-win31.components {
+  /*
+   * The 3.1 analogue is a run of latched toolbar toggles sharing an edge. The
+   * selected segment stays pressed: inverted bevel plus a dithered face.
+   *
+   * The private --_rc-* block is how this component is turned from a bare
+   * fieldset of radios into a segmented control; every packaged theme has to
+   * supply it, and the native radios stay visible without it.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-segmented-button {
+    --_rc-segmented-button-fieldset-display: inline-flex;
+    --_rc-segmented-button-fieldset-margin: 0;
+    --_rc-segmented-button-fieldset-padding: 0;
+    --_rc-segmented-button-fieldset-border: 0;
+    --_rc-segmented-button-fieldset-radius: 0;
+    --_rc-segmented-button-fieldset-overflow: visible;
+    --_rc-segmented-button-legend-position: absolute;
+    --_rc-segmented-button-legend-inline-size: 1px;
+    --_rc-segmented-button-legend-block-size: 1px;
+    --_rc-segmented-button-legend-margin: -1px;
+    --_rc-segmented-button-legend-padding: 0;
+    --_rc-segmented-button-legend-border: 0;
+    --_rc-segmented-button-legend-overflow: hidden;
+    --_rc-segmented-button-legend-clip: rect(0 0 0 0);
+    --_rc-segmented-button-legend-white-space: nowrap;
+    --_rc-segmented-button-segment-display: inline-flex;
+    /* Windows 3.1 never showed a text cursor over a control. */
+    --_rc-segmented-button-segment-cursor: default;
+    --_rc-segmented-button-segment-user-select: none;
+    --_rc-segmented-button-disabled-cursor: default;
+    --_rc-segmented-button-radio-position: absolute;
+    --_rc-segmented-button-radio-inline-size: 1px;
+    --_rc-segmented-button-radio-block-size: 1px;
+    --_rc-segmented-button-radio-margin: 0;
+    --_rc-segmented-button-radio-opacity: 0;
+    --_rc-segmented-button-radio-pointer-events: none;
+    --_rc-segmented-button-selected-icon-display: none;
+    --_rc-segmented-button-vertical-border-inline-start: var(--win31-border);
+
+    --rc-segmented-button-bg: var(--win31-color-surface);
+    --rc-segmented-button-color: var(--win31-color-frame);
+    --rc-segmented-button-border: var(--win31-border);
+    --rc-segmented-button-radius: var(--win31-radius);
+    --rc-segmented-button-divider: 0;
+    --rc-segmented-button-segment-gap: var(--win31-gap-tight);
+    --rc-segmented-button-segment-min-block-size: var(--win31-control-height);
+    --rc-segmented-button-segment-padding-block: var(--win31-padding-block);
+    --rc-segmented-button-segment-padding-inline: calc(8 * var(--win31-unit));
+    --rc-segmented-button-selected-bg: var(--win31-dither-surface);
+    --rc-segmented-button-selected-color: var(--win31-color-frame);
+    --rc-segmented-button-selected-icon-size: var(--win31-check-size);
+    --rc-segmented-button-disabled-opacity: 1;
+    --rc-segmented-button-focus-ring: var(--win31-focus-ring);
+    --rc-segmented-button-focus-ring-offset: var(--win31-focus-ring-offset);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-segmented-button > fieldset > label {
+    box-shadow: var(--win31-bevel-outset-1);
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-segmented-button
+    > fieldset
+    > label:has(input[type='radio']:checked) {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-segmented-button
+    > fieldset
+    > label:active:not(:has(input[type='radio']:disabled)) {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-segmented-button
+    > fieldset
+    > label:has(input[type='radio']:disabled),
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-segmented-button[disabled] > fieldset > label {
+    color: var(--win31-color-disabled-text);
+    text-shadow: var(--win31-unit) var(--win31-unit) 0 var(--win31-color-disabled-emboss);
+  }
+}

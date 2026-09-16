@@ -8,23 +8,21 @@ const docsRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = resolve(docsRoot, '..');
 const entry = join(repoRoot, 'packages', 'rc-webcomponents', 'src', 'define.ts');
 const outDir = join(docsRoot, 'static', 'rc-webcomponents-dist');
-const materialThemeEntry = join(repoRoot, 'packages', 'rc-theme-material', 'theme.css');
-const materialThemeOutDir = join(docsRoot, 'static', 'rc-theme-material');
-const materialThemeOutFile = join(materialThemeOutDir, 'theme.css');
-const substrateThemeEntry = join(repoRoot, 'packages', 'rc-theme-substrate', 'theme.css');
-const substrateThemeOutDir = join(docsRoot, 'static', 'rc-theme-substrate');
-const substrateThemeOutFile = join(substrateThemeOutDir, 'theme.css');
+const themePackages = ['rc-theme-material', 'rc-theme-substrate', 'rc-theme-win31'].map((name) => ({
+  name,
+  entry: join(repoRoot, 'packages', name, 'theme.css'),
+  outDir: join(docsRoot, 'static', name),
+  outFile: join(docsRoot, 'static', name, 'theme.css'),
+}));
 
 if (!existsSync(entry)) {
   throw new Error(`Missing ${entry}.`);
 }
 
-if (!existsSync(materialThemeEntry)) {
-  throw new Error(`Missing ${materialThemeEntry}.`);
-}
-
-if (!existsSync(substrateThemeEntry)) {
-  throw new Error(`Missing ${substrateThemeEntry}.`);
+for (const theme of themePackages) {
+  if (!existsSync(theme.entry)) {
+    throw new Error(`Missing ${theme.entry}.`);
+  }
 }
 
 function inlineCssImports(filePath, seen = new Set()) {

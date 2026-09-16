@@ -1,0 +1,64 @@
+@layer rc-theme-win31.components {
+  /*
+   * The trackbar arrived with Windows 95, so there is no 3.1 original to copy.
+   * The construction here is assembled from parts that did exist: a sunken
+   * channel and a beveled thumb, which is how 3.1 applications drew their own
+   * slider-shaped controls before the common control shipped.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-slider {
+    --rc-slider-track-size: calc(4 * var(--win31-unit));
+    --rc-slider-track-background: var(--win31-color-field);
+    --rc-slider-track-radius: var(--win31-radius);
+    --rc-slider-track-opacity: 1;
+    --rc-slider-progress-background: var(--win31-color-selection);
+    --rc-slider-value-color: var(--win31-color-frame);
+    --rc-slider-control-size: var(--win31-control-height);
+    --rc-slider-gap: var(--win31-gap);
+    --rc-thumb-radius: var(--win31-radius);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-slider::part(track) {
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-slider::part(progress) {
+    border-radius: var(--win31-radius);
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-slider::part(value-display) {
+    color: var(--win31-color-frame);
+    font-size: var(--win31-font-size);
+  }
+
+  /*
+   * The native thumb stays consumer-owned, as the component intends, but the
+   * beveled face is the whole point of the look so it is supplied here for the
+   * slotted input.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-slider
+    > input[type='range']::-webkit-slider-thumb {
+    inline-size: calc(11 * var(--win31-unit));
+    block-size: var(--win31-control-height);
+    background: var(--win31-color-surface);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+    appearance: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-slider
+    > input[type='range']::-moz-range-thumb {
+    inline-size: calc(11 * var(--win31-unit));
+    block-size: var(--win31-control-height);
+    background: var(--win31-color-surface);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+  }
+}

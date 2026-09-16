@@ -298,6 +298,16 @@ function shallowResolve(value) {
     return { kind: 'number', value: amount, unit };
   }
 
+  /*
+   * A calc() is arithmetic, not a shorthand, so it is not a composite. Let it
+   * fall through to the deep resolver, which evaluates it whenever every
+   * operand resolves. A theme that scales its metrics from one unit token
+   * writes every metric this way.
+   */
+  if (/^calc\(/.test(text)) {
+    return { kind: 'calc' };
+  }
+
   return { kind: 'composite', raw: text };
 }
 
@@ -351,6 +361,21 @@ function createResolver(byProperty) {
           value: operator === '/' ? base.value / factor : base.value * factor,
           unit: base.unit,
         };
+      }
+
+      /*
+       * Multiplication is commutative, and a theme that scales every metric
+       * from one unit writes the factor first: calc(22 * var(--unit)). Without
+       * this the whole metric set resolves as composite, and so does every
+       * bridge token that aliases it.
+       */
+      if (operator === '*') {
+        const scaled = resolveIn(right, mode, depth + 1);
+        const leading = Number.parseFloat(left);
+
+        if (scaled.kind === 'number' && Number.isFinite(leading)) {
+          return { kind: 'number', value: scaled.value * leading, unit: scaled.unit };
+        }
       }
 
       return { kind: 'unresolved', raw: text, reason: 'calc-unresolved' };
@@ -702,6 +727,28 @@ function isTokenMetadata(property) {
   return /-(unit|family|path|value)$/.test(property);
 }
 
+/**
+ * The Windows 3.1 theme has a flat namespace, so the group is inferred from
+ * what each token controls, the way Substrate's is.
+ */
+function win31BrandName(property) {
+  const stem = property.replace('--win31-', '');
+
+  const group = [
+    [/^color-/, 'color'],
+    [/^glyph-/, 'glyph'],
+    [/^dither-/, 'texture'],
+    [/^bevel-|frame$|^drop-shadow$/, 'effect'],
+    [/^focus-ring/, 'focus'],
+    [/border-color$|^border$/, 'border'],
+    [/^radius$/, 'radius'],
+    [/^(font|line-height|menu-font|title-font)/, 'typography'],
+  ].find(([pattern]) => pattern.test(stem))?.[1];
+
+  // Everything left is a metric: heights, gaps, paddings, and the hairline.
+  return `${group ?? 'size'}/${stem.replace(/^(color|glyph|dither)-/, '')}`;
+}
+
 /* ── Document assembly ─────────────────────────────────────────────────────── */
 
 const THEMES = [
@@ -730,6 +777,21 @@ const THEMES = [
     typescaleStyleName: () => 'Substrate/body',
     shadow: /^--substrate-shadow-(sm|md|lg)$/,
     shadowStyleName: (level) => `Shadow/${level}`,
+  },
+  {
+    themeName: 'Windows 3.1',
+    themePackage: 'rc-theme-win31',
+    primitivePrefix: null,
+    primitiveName: null,
+    brandPrefix: '--win31-',
+    brandName: win31BrandName,
+    // Bevels and the window frames are multi-value box-shadow composites, so
+    // they become effect styles rather than variables.
+    excludeBrand: /^--win31-(bevel-|window-frame$|dialog-frame$|drop-shadow$)/,
+    typescale: /^--win31-(font)-(family|size|weight)$|^--win31-(line-height)$/,
+    typescaleStyleName: () => 'Windows 3.1/body',
+    shadow: /^--win31-(bevel-outset-1|bevel-inset-1|window-frame|dialog-frame)$/,
+    shadowStyleName: (level) => `Bevel/${level}`,
   },
 ];
 

@@ -1,0 +1,164 @@
+@layer rc-theme-win31.defaults, rc-theme-win31.bridge, rc-theme-win31.components;
+
+@layer rc-theme-win31.defaults {
+  /*
+   * Windows 3.1 reference tokens.
+   *
+   * Scoped so applications can place the theme at any app boundary. Import
+   * bridge.css alone when providing your own --win31-* tokens.
+   *
+   * Values are the stock "Windows Default" scheme. Windows 3.1 shipped around
+   * twenty further named Control Panel schemes; every component stylesheet in
+   * this package reads only the --win31-color-* tokens below, so a scheme is a
+   * class that overrides those and nothing else.
+   */
+  .rc-theme-win31,
+  :host(.rc-theme-win31) {
+    /*
+     * Windows 3.1 had no dark mode. Declaring the scheme keeps browser-painted
+     * UI (form controls, scrollbars, the canvas behind a dialog) from fighting
+     * a palette that is light by construction.
+     */
+    color-scheme: light;
+
+    /*
+     * The scaling unit. Every metric below is authored as a multiple of it, so
+     * setting --win31-unit: 2px doubles the whole theme for a high-density
+     * display or a low-vision consumer without changing a single ratio. This is
+     * the bitmap-interface answer to responsive sizing.
+     */
+    --win31-unit: 1px;
+
+    /* Palette */
+    --win31-color-surface: #c0c0c0;
+    --win31-color-highlight: #ffffff;
+    --win31-color-shadow: #808080;
+    --win31-color-shadow-dark: #404040;
+    --win31-color-frame: #000000;
+    --win31-color-field: #ffffff;
+    --win31-color-field-text: #000000;
+    --win31-color-menu: #c0c0c0;
+    --win31-color-menu-text: #000000;
+    --win31-color-selection: #000080;
+    --win31-color-selection-text: #ffffff;
+    --win31-color-title-active: #000080;
+    --win31-color-title-active-text: #ffffff;
+    --win31-color-title-inactive: #808080;
+    --win31-color-title-inactive-text: #c0c0c0;
+    --win31-color-desktop: #008080;
+
+    /*
+     * Disabled is embossed rather than faded: Windows 3.1 had no alpha, so it
+     * drew gray text with a one-pixel highlight offset underneath it.
+     */
+    --win31-color-disabled-text: var(--win31-color-shadow);
+    --win31-color-disabled-emboss: var(--win31-color-highlight);
+
+    /* Typography */
+    --win31-font-family: 'Microsoft Sans Serif', 'MS Sans Serif', Tahoma, 'Segoe UI', sans-serif;
+    --win31-font-size: calc(13 * var(--win31-unit));
+    --win31-menu-font-size: calc(16 * var(--win31-unit));
+    --win31-title-font-size: calc(16 * var(--win31-unit));
+    --win31-line-height: 1.1;
+    --win31-font-weight: 400;
+
+    /*
+     * Metrics, derived from the MS Sans Serif 8pt cell of 6 by 13 pixels at
+     * 96 DPI. One horizontal dialog unit is 1.5px, one vertical unit 1.625px,
+     * which puts the standard 50 by 14 DLU push button at 75 by 23 pixels.
+     */
+    --win31-control-height: calc(22 * var(--win31-unit));
+    --win31-title-height: calc(24 * var(--win31-unit));
+    --win31-menu-height: calc(27 * var(--win31-unit));
+    --win31-toolbar-height: calc(31 * var(--win31-unit));
+    --win31-toolbar-button-size: calc(27 * var(--win31-unit));
+    --win31-listbox-row-height: calc(17 * var(--win31-unit));
+    --win31-scrollbar-size: calc(16 * var(--win31-unit));
+    --win31-check-size: calc(13 * var(--win31-unit));
+    --win31-hairline: var(--win31-unit);
+    --win31-gap: calc(4 * var(--win31-unit));
+    --win31-gap-tight: calc(2 * var(--win31-unit));
+    --win31-gap-panel: calc(6 * var(--win31-unit));
+    --win31-padding-block: var(--win31-unit);
+    --win31-padding-inline: calc(4 * var(--win31-unit));
+
+    /* Geometry. Nothing in Windows 3.1 was rounded, and nothing was blurred. */
+    --win31-radius: 0;
+    --win31-border: var(--win31-hairline) solid var(--win31-color-frame);
+
+    /*
+     * Focus is a dotted rectangle drawn inside the control, never a ring
+     * around it, and it coexists with selection rather than replacing it.
+     */
+    --win31-focus-ring: var(--win31-hairline) dotted var(--win31-color-frame);
+    --win31-focus-ring-offset: calc(-3 * var(--win31-unit));
+    --win31-focus-ring-selected: var(--win31-hairline) dotted var(--win31-color-highlight);
+
+    --win31-bevel-outset-1:
+      inset var(--win31-hairline) var(--win31-hairline) 0 var(--win31-color-highlight),
+      inset calc(-1 * var(--win31-hairline)) calc(-1 * var(--win31-hairline)) 0
+        var(--win31-color-shadow);
+    --win31-bevel-inset-1:
+      inset var(--win31-hairline) var(--win31-hairline) 0 var(--win31-color-shadow),
+      inset calc(-1 * var(--win31-hairline)) calc(-1 * var(--win31-hairline)) 0
+        var(--win31-color-highlight);
+    --win31-bevel-outset-2:
+      inset calc(2 * var(--win31-hairline)) calc(2 * var(--win31-hairline)) 0
+        var(--win31-color-highlight),
+      inset calc(-2 * var(--win31-hairline)) calc(-2 * var(--win31-hairline)) 0
+        var(--win31-color-shadow);
+    --win31-bevel-inset-2:
+      inset calc(2 * var(--win31-hairline)) calc(2 * var(--win31-hairline)) 0
+        var(--win31-color-shadow),
+      inset calc(-2 * var(--win31-hairline)) calc(-2 * var(--win31-hairline)) 0
+        var(--win31-color-highlight);
+
+    /*
+     * The four-value border-color shorthands are the other way to draw a bevel.
+     * They survive a background-image where an inset box-shadow would sit on
+     * top of it, so listboxes and fields use these and buttons use the shadows.
+     */
+    --win31-inset-border-color: var(--win31-color-shadow) var(--win31-color-highlight)
+      var(--win31-color-highlight) var(--win31-color-shadow);
+    --win31-outset-border-color: var(--win31-color-highlight) var(--win31-color-shadow)
+      var(--win31-color-shadow) var(--win31-color-highlight);
+
+    --win31-window-frame: 0 0 0 var(--win31-hairline) var(--win31-color-frame);
+    --win31-dialog-frame:
+      inset 0 0 0 calc(3 * var(--win31-hairline)) var(--win31-color-title-active),
+      inset 0 0 0 calc(4 * var(--win31-hairline)) var(--win31-color-highlight);
+
+    /* A menu casts a hard one-pixel shadow, never a blur. */
+    --win31-drop-shadow: var(--win31-hairline) var(--win31-hairline) 0 var(--win31-color-shadow);
+
+    /*
+     * One-bit dither, the period way to say "less" without an alpha channel.
+     * Used for scrollbar tracks and latched toggle faces.
+     */
+    --win31-dither-track: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgLTAuNSAyIDIiIHNoYXBlLXJlbmRlcmluZz0iY3Jpc3BFZGdlcyI+PHBhdGggc3Ryb2tlPSIjYzBjMGMwIiBkPSJNMCAwaDFNMSAxaDEiIC8+PC9zdmc+');
+    --win31-dither-size: calc(2 * var(--win31-unit));
+
+    /*
+     * The latched face, as a complete background shorthand. Components expose
+     * their selected background as a shorthand token, so handing them this
+     * paints the dither through their own contract instead of fighting a
+     * shorthand with a longhand override.
+     */
+    --win31-dither-surface: var(--win31-color-surface) var(--win31-dither-track) repeat 0 0 /
+      var(--win31-dither-size);
+
+    /*
+     * Glyphs are 1-bit bitmaps, not an icon font. Each is an SVG path drawn on
+     * the pixel grid with shape-rendering="crispEdges" so it stays sharp when
+     * --win31-unit scales it up.
+     */
+    --win31-glyph-arrow-up: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M8 5h1v1h1v1h1v1h1v1H4V8h1V7h1V6h1V5z'/%3E%3C/svg%3E");
+    --win31-glyph-arrow-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M4 6h8v1h-1v1h-1v1H9v1H8v1H7v-1H6V9H5V8H4z'/%3E%3C/svg%3E");
+    --win31-glyph-arrow-left: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M5 8h1V7h1V6h1V5h1V4h1v8H9v-1H8v-1H7V9H6V8z'/%3E%3C/svg%3E");
+    --win31-glyph-arrow-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M6 4h1v1h1v1h1v1h1v1h1v1h-1v1H9v1H8v1H7v1H6z'/%3E%3C/svg%3E");
+    --win31-glyph-collapse: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 13 13' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M6 4h1v1h1v1h1v1h1v1H3V7h1V6h1V5h1V4z'/%3E%3C/svg%3E");
+    --win31-glyph-expand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 13 13' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M4 3h1v1h1v1h1v1h1v1H7v1H6v1H5v1H4z'/%3E%3C/svg%3E");
+    --win31-glyph-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 13 13' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M10 3h2v2h-1v1h-1v1H9v1H8v1H7v1H6v1H4v-1H3V9H2V8H1V7h2v1h1v1h1V8h1V7h1V6h1V5h1V4h1z'/%3E%3C/svg%3E");
+    --win31-glyph-submenu: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 13 13' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M4 3h1v1h1v1h1v1h1v1H7v1H6v1H5v1H4z'/%3E%3C/svg%3E");
+  }
+}

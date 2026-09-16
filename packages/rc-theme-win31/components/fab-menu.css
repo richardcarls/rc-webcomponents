@@ -1,0 +1,47 @@
+@layer rc-theme-win31.components {
+  /* The same knowing anachronism as rc-fab, with a menu hung off it. */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-fab-menu {
+    --rc-fab-menu-bg: var(--win31-color-surface);
+    --rc-fab-menu-bg-hover: var(--win31-color-surface);
+    --rc-fab-menu-bg-open: var(--win31-color-selection);
+    --rc-fab-menu-color: var(--win31-color-frame);
+    --rc-fab-menu-border: var(--win31-border);
+    --rc-fab-menu-radius: var(--win31-radius);
+    --rc-fab-menu-size: var(--win31-toolbar-height);
+    --rc-fab-menu-padding-block: var(--win31-padding-block);
+    --rc-fab-menu-padding-inline: calc(8 * var(--win31-unit));
+    --rc-fab-menu-font-family: var(--win31-font-family);
+    --rc-fab-menu-font-size: var(--win31-font-size);
+    --rc-fab-menu-font-weight: var(--win31-font-weight);
+    --rc-fab-menu-letter-spacing: normal;
+    --rc-fab-menu-text-decoration: none;
+    --rc-fab-menu-shadow: none;
+    --rc-fab-menu-shadow-hover: none;
+    --rc-fab-menu-shadow-active: none;
+    --rc-fab-menu-shadow-open: none;
+    --rc-fab-menu-disabled-shadow: none;
+    --rc-fab-menu-disabled-opacity: 1;
+    --rc-fab-menu-active-transform: none;
+    --rc-fab-menu-transition: none;
+    --rc-fab-menu-popup-duration: 0ms;
+    --rc-fab-menu-trigger-gap: var(--win31-gap-tight);
+    --rc-fab-menu-focus-ring: var(--win31-focus-ring);
+    --rc-fab-menu-focus-ring-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-fab-menu > button {
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-fab-menu > button:active:not(:disabled) {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-fab-menu::part(popup) {
+    background: var(--win31-color-menu);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-drop-shadow);
+  }
+}

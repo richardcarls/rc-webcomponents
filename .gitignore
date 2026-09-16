@@ -29,6 +29,7 @@ custom-elements.json
 /docs/static/rc-webcomponents-dist/
 /docs/static/rc-theme-material/
 /docs/static/rc-theme-substrate/
+/docs/static/rc-theme-win31/
 
 # Yarn Berry
 /.yarn/install-state.gz

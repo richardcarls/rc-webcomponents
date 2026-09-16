@@ -1,0 +1,35 @@
+@layer rc-theme-win31.components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-adaptive-menu {
+    --rc-adaptive-menu-gap: var(--win31-gap-tight);
+    --rc-adaptive-menu-item-gap: var(--win31-gap-tight);
+    --rc-adaptive-menu-item-min-block-size: var(--win31-control-height);
+    --rc-adaptive-menu-item-padding-block: var(--win31-padding-block);
+    --rc-adaptive-menu-item-padding-inline: calc(8 * var(--win31-unit));
+    --rc-adaptive-menu-icon-size: var(--win31-check-size);
+    --rc-adaptive-menu-trigger-background: var(--win31-color-surface);
+    --rc-adaptive-menu-trigger-color: var(--win31-color-frame);
+    --rc-adaptive-menu-trigger-border: var(--win31-border);
+    --rc-adaptive-menu-trigger-radius: var(--win31-radius);
+    --rc-adaptive-menu-trigger-block-size: var(--win31-control-height);
+    --rc-adaptive-menu-trigger-inline-size: var(--win31-control-height);
+    --rc-adaptive-menu-trigger-padding: 0;
+    --rc-adaptive-menu-popup-background: var(--win31-color-menu);
+    --rc-adaptive-menu-popup-color: var(--win31-color-menu-text);
+    --rc-adaptive-menu-popup-border: var(--win31-border);
+    --rc-adaptive-menu-popup-radius: var(--win31-radius);
+    --rc-adaptive-menu-popup-shadow: var(--win31-drop-shadow);
+    --rc-adaptive-menu-popup-padding-block: var(--win31-unit);
+    --rc-adaptive-menu-popup-min-inline-size: calc(142 * var(--win31-unit));
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-adaptive-menu::part(overflow-trigger) {
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-adaptive-menu::part(overflow-trigger):active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+}

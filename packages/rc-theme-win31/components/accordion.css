@@ -1,0 +1,21 @@
+@layer rc-theme-win31.components {
+  /*
+   * 3.1 had no accordion, so this is a stack of the window-shade panels above
+   * with no gap between them, which is how a column of 3.1 panes actually read.
+   *
+   * rc-accordion exposes one custom property and no parts, so everything here
+   * reaches its slotted rc-disclosure children rather than the host's own
+   * anatomy. That is the thinnest styling surface in the library and is worth
+   * revisiting upstream before this theme grows any further accordion chrome.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-accordion {
+    --rc-accordion-gap: 0;
+    display: block;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-accordion > rc-disclosure + rc-disclosure {
+    margin-block-start: calc(-1 * var(--win31-hairline));
+  }
+}

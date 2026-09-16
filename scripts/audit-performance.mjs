@@ -30,6 +30,7 @@ const CSS_SCENARIOS = {
   baseTheme: 'packages/rc-webcomponents/themes/base.css',
   materialTheme: 'packages/rc-theme-material/theme.css',
   substrateTheme: 'packages/rc-theme-substrate/theme.css',
+  win31Theme: 'packages/rc-theme-win31/theme.css',
 };
 
 function compressedSize(contents, compressor) {

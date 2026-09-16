@@ -53,6 +53,7 @@ export default defineConfig({
             include: [
               'packages/rc-theme-material/*.test.ts',
               'packages/rc-theme-substrate/*.test.ts',
+              'packages/rc-theme-win31/*.test.ts',
             ],
             fileParallelism: false,
             sequence: { groupOrder: 3 },

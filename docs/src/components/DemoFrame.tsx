@@ -9,7 +9,7 @@ import styles from './DemoFrame.module.css';
 
 export type DemoFrameMode = 'auto' | 'light' | 'dark';
 
-export type DemoFrameTheme = 'none' | 'substrate' | 'material';
+export type DemoFrameTheme = 'none' | 'substrate' | 'material' | 'win31';
 
 export type DemoFrameControls = 'mode' | 'theme' | 'all';
 
@@ -139,10 +139,21 @@ const STRUCTURAL_CSS = `
 `;
 
 let structuralSheet: CSSStyleSheet | undefined;
-let materialSheetPromise: Promise<CSSStyleSheet> | undefined;
-let materialCssPromise: Promise<string> | undefined;
-let substrateSheetPromise: Promise<CSSStyleSheet> | undefined;
-let substrateCssPromise: Promise<string> | undefined;
+/*
+ * Packaged themes are all fetched and adopted the same way, so they are keyed
+ * by name rather than given a loader pair each. Adding a theme means adding a
+ * row here and an <option> below.
+ */
+const PACKAGE_THEMES = {
+  substrate: { className: 'rc-theme-substrate', asset: 'rc-theme-substrate/theme.css' },
+  material: { className: 'rc-theme-material', asset: 'rc-theme-material/theme.css' },
+  win31: { className: 'rc-theme-win31', asset: 'rc-theme-win31/theme.css' },
+} as const satisfies Record<string, { className: string; asset: string }>;
+
+type PackageTheme = keyof typeof PACKAGE_THEMES;
+
+const themeCssPromises = new Map<PackageTheme, Promise<string>>();
+const themeSheetPromises = new Map<PackageTheme, Promise<CSSStyleSheet>>();
 let symbolFontInjected = false;
 let robotoFontInjected = false;
 let previewSnapshot: DemoFramePreviewStore = {
@@ -469,6 +480,7 @@ export function DemoFrame({
                   <option value="none">None</option>
                   <option value="substrate">Substrate</option>
                   <option value="material">Material</option>
+                  <option value="win31">Windows 3.1</option>
                 </select>
               </label>
             )}

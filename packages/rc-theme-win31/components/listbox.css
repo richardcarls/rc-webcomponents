@@ -1,0 +1,39 @@
+@layer rc-theme-win31.components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-listbox {
+    display: block;
+    padding: var(--win31-gap-tight);
+    overflow: auto;
+    color: var(--win31-color-field-text);
+    background: var(--win31-color-field);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+    --rc-listbox-option-transition: none;
+    --rc-listbox-disabled-opacity: 1;
+  }
+
+  /*
+   * Selection is full-row inverse video and it persists whether or not the
+   * listbox has focus, which is why focus needs its own dotted mark below.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-listbox::part(option) {
+    border-radius: var(--win31-radius);
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-listbox::part(option):focus-visible {
+    outline: var(--win31-focus-ring);
+    outline-offset: calc(-1 * var(--win31-unit));
+  }
+
+  /*
+   * A 3.1 listbox marked selection by inverting the row, never by adding a
+   * checkmark, so the indicator is removed rather than restyled.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-listbox::part(option-checkmark) {
+    display: none;
+  }
+}

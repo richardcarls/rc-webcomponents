@@ -40,6 +40,9 @@ export const MARKER_CONTRACTS = {
   'data-rc-scroller-span': 'authored-behavior',
   'data-rc-segmented-button-selected-icon': 'authored-structure',
   'data-rc-view-transition': 'authored-theme-hook',
+  'data-rc-win31-default': 'authored-theme-hook',
+  'data-rc-win31-inactive': 'authored-theme-hook',
+  'data-rc-win31-toggle': 'authored-theme-hook',
 };
 
 export const REMOVED_TOKEN_CONTRACTS = new Set([
@@ -131,6 +134,7 @@ export const PRIVATE_THEME_TOKEN_CONTRACTS = {
     ...SEGMENTED_BUTTON_PRIVATE_TOKENS,
   ]),
   'rc-theme-substrate': SEGMENTED_BUTTON_PRIVATE_TOKENS,
+  'rc-theme-win31': SEGMENTED_BUTTON_PRIVATE_TOKENS,
 };
 
 export const THEME_SELECTOR_BUDGETS = {
@@ -147,6 +151,16 @@ export const THEME_SELECTOR_BUDGETS = {
     parts: 33,
     markerHooks: 15,
     importantDeclarations: 1,
+    idSelectors: 0,
+    modifierHooks: 0,
+  },
+  'rc-theme-win31': {
+    // Period chrome is drawn rather than tinted, so the theme reaches more
+    // shadow-owned elements than the modern themes do. The !important
+    // declarations are the icon-geometry and forced-colors overrides.
+    parts: 115,
+    markerHooks: 19,
+    importantDeclarations: 8,
     idSelectors: 0,
     modifierHooks: 0,
   },
@@ -180,6 +194,7 @@ const NON_COMPONENT_PACKAGES = new Set([
   'rc-textarea-plugin-markdown',
   'rc-theme-material',
   'rc-theme-substrate',
+  'rc-theme-win31',
   'rc-webcomponents',
 ]);
 const COMPONENT_THEME_FILE = new Map([['rc-list', 'list-item.css']]);
@@ -220,8 +235,18 @@ export function extractTokenReferences(text) {
 }
 
 export function extractTokenDefinitions(text) {
+  /*
+   * Comments are removed before matching. A declaration explained by a comment
+   * directly above it used to read as undefined, so Material was hiding 24 of
+   * its own definitions this way and Substrate 8. It only surfaced when a theme
+   * commented a token that a private contract required.
+   */
+  const withoutComments = text.replace(/\/\*[\s\S]*?\*\//g, ' ');
+
   return new Set(
-    [...text.matchAll(/(^|[;{]\s*)(--(?:_)?rc-[a-z0-9-]+)\s*:/gm)].map((match) => match[2]),
+    [...withoutComments.matchAll(/(^|[;{]\s*)(--(?:_)?rc-[a-z0-9-]+)\s*:/gm)].map(
+      (match) => match[2],
+    ),
   );
 }
 
@@ -412,6 +437,7 @@ export function runAudit(root = DEFAULT_ROOT) {
     ...listFiles(join(root, 'packages/rc-theme-substrate/components'), (path) =>
       path.endsWith('.css'),
     ),
+    ...listFiles(join(root, 'packages/rc-theme-win31/components'), (path) => path.endsWith('.css')),
   ];
   const discoveredMarkers = new Set(markerFiles.flatMap((path) => [...extractMarkers(read(path))]));
 
@@ -427,7 +453,7 @@ export function runAudit(root = DEFAULT_ROOT) {
     errors.push(`${pkg.package}: injected light-DOM base CSS is not in @layer rc-base.`);
   }
 
-  const themes = ['rc-theme-material', 'rc-theme-substrate'].map((theme) =>
+  const themes = ['rc-theme-material', 'rc-theme-substrate', 'rc-theme-win31'].map((theme) =>
     inspectTheme(root, theme),
   );
   const tokenConsumers = new Map();
