@@ -34,6 +34,33 @@ test('bridge maps Substrate tokens to the RC token contract', () => {
   expect(styles.getPropertyValue('--rc-motion-duration').trim()).toBe('160ms');
 });
 
+test('bridge maps the error color rather than leaving it to a system color', () => {
+  const scope = renderScope();
+
+  scope.style.setProperty('--substrate-error', 'rgb(172, 1, 26)');
+
+  const styles = getComputedStyle(scope);
+
+  expect(styles.getPropertyValue('--rc-field-error-color').trim()).toBe('rgb(172, 1, 26)');
+
+  // Mark is the background of highlighted text and renders as pure yellow,
+  // which is unreadable as a foreground on a light field.
+  expect(styles.getPropertyValue('--rc-field-error-color')).not.toContain('Mark');
+});
+
+test('the scrim mixes against a theme token rather than a system color', () => {
+  const scope = renderScope();
+
+  scope.style.setProperty('--substrate-inverse-surface', 'rgb(10, 11, 12)');
+
+  const scrim = getComputedStyle(scope).getPropertyValue('--rc-dialog-scrim');
+
+  // A mix against a bare system color has no value outside a browser, so it
+  // cannot reach the token export at all.
+  expect(scrim).not.toMatch(/\bCanvasText\b/);
+  expect(scrim).toContain('10, 11, 12');
+});
+
 test('bridge defines shared popup and slider component tokens', () => {
   const scope = renderScope();
   const listbox = document.createElement('rc-listbox');

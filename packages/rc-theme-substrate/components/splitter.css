@@ -1,6 +1,39 @@
 @layer rc-theme-substrate.components {
+  /*
+   * Geometry is deliberately left to the component's own defaults here; this
+   * theme only paints the splitter. See the matching assertion in
+   * components.test.ts.
+   */
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-splitter {
-    --rc-splitter-separator-color: color-mix(in srgb, var(--rc-accent, Highlight) 8%, Canvas);
-    --rc-splitter-handle-color: color-mix(in srgb, var(--rc-accent, Highlight) 45%, ButtonBorder);
+    /*
+     * Both of these used to mix against the bare `Canvas` and `ButtonBorder`
+     * system colors, which have no value outside a browser and so could not
+     * reach the token export at all. Mixing against the theme's own surface and
+     * border keeps the intent and makes the result a real color.
+     */
+    --rc-splitter-separator-color: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 8%,
+      var(--substrate-surface, Canvas)
+    );
+    --rc-splitter-handle-color: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 45%,
+      var(--substrate-border-color, ButtonBorder)
+    );
+
+    --rc-splitter-handle-fill: var(--substrate-border-color, ButtonBorder);
+    --rc-splitter-handle-hover-fill: var(--rc-accent, Highlight);
+    --rc-splitter-handle-transition: var(--substrate-motion-duration, 160ms);
+    --rc-splitter-keyline: var(--rc-border, 1px solid ButtonBorder);
+
+    --rc-splitter-collapse-button-bg: var(--substrate-surface-raised, ButtonFace);
+    --rc-splitter-collapse-button-hover-bg: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 10%,
+      var(--substrate-surface-raised, ButtonFace)
+    );
+    --rc-splitter-collapse-button-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-splitter-collapse-button-color: var(--substrate-on-surface, ButtonText);
   }
 }

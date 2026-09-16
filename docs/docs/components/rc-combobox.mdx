@@ -67,9 +67,30 @@ Add the `allow-create` attribute to show a **"Create 'X'"** option when typed te
 </rc-combobox>
 ```
 
+## Dialog popup
+
+Set `popup-mode="dialog"` when the available viewport is too constrained for an anchored
+listbox. This presents the current chips, search field, options, and a Done action in a native
+modal dialog. Selection and allow-create changes are staged until Done; close or Escape discards
+the draft. Done produces one committed selection change.
+
+```html
+<rc-combobox popup-mode="dialog" allow-create placeholder="Add categories…">
+  <select name="categories" multiple>
+    <option value="quick">Quick meal</option>
+    <option value="vegetarian">Vegetarian</option>
+  </select>
+</rc-combobox>
+```
+
+Applications can switch `popupMode` from viewport state. The mode is latched while a popup is
+open so a resize does not replace an active interaction.
+
 ### Validation
 
 `rc-combobox-create` is **cancelable**. Call `event.preventDefault()` to block the default insertion. The event `detail` contains the raw typed text:
+
+In dialog mode, create events are deferred until Done and run before the selection commit.
 
 ```js
 combobox.addEventListener('rc-combobox-create', (event) => {

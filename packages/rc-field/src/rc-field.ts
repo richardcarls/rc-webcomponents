@@ -72,7 +72,8 @@ let fieldId = 0;
  * @attr counter - Shows the current native value length and `maxlength`, when present
  * @attr invalid - Forces invalid presentation and supplies native `aria-invalid` when absent
  * @attr [data-focused] - Present while the native control has focus
- * @attr [data-populated] - Present while the native control has a value
+ * @attr [data-populated] - Present while the native control has a value, or a single select's
+ *   selected option has visible label text
  * @attr [data-disabled] - Mirrors the native control's disabled state
  * @attr [data-readonly] - Mirrors the native control's readonly state
  * @attr [data-required] - Mirrors the native control's required state
@@ -82,24 +83,24 @@ let fieldId = 0;
  * @attr [data-validation-attempted] - Present after the native control dispatches `invalid`
  * @attr [data-control-provider] - Present when an enhancing direct child owns the native control
  *
- * @cssprop [--rc-field-min-block-size=2.5rem] - Minimum field surface block size
- * @cssprop [--rc-field-gap=0.5rem] - Gap between leading, content, and trailing regions
- * @cssprop [--rc-field-padding=0.5rem 0.75rem] - Field surface padding
- * @cssprop [--rc-field-border=1px solid ButtonBorder] - Field surface border
- * @cssprop [--rc-field-radius=0.125rem] - Field surface corner radius
- * @cssprop [--rc-field-background=Field] - Field surface background
- * @cssprop [--rc-field-color=FieldText] - Input and affix text color
- * @cssprop [--rc-field-label-color=CanvasText] - Label color
- * @cssprop [--rc-field-control-gap=0.25rem] - Gap between control and prefix or suffix
- * @cssprop [--rc-field-supporting-gap=0.5rem] - Gap between supporting text and counter
+ * @cssprop [--rc-field-min-block-size=var(--rc-control-block-size, 2.5rem)] - Minimum field surface block size
+ * @cssprop [--rc-field-gap=var(--rc-control-gap, 0.5rem)] - Gap between leading, content, and trailing regions
+ * @cssprop [--rc-field-padding=var(--rc-control-padding-block, 0.5rem) var(--rc-control-padding-inline, 0.75rem)] - Field surface padding
+ * @cssprop [--rc-field-border=var(--rc-border, 1px solid ButtonBorder)] - Field surface border
+ * @cssprop [--rc-field-radius=var(--rc-control-radius, 0.125rem)] - Field surface corner radius
+ * @cssprop [--rc-field-background=var(--rc-field, Field)] - Field surface background
+ * @cssprop [--rc-field-color=var(--rc-field-text, FieldText)] - Input and affix text color
+ * @cssprop [--rc-field-label-color=var(--rc-field-text, CanvasText)] - Label color
+ * @cssprop [--rc-field-control-gap=var(--rc-control-gap, 0.25rem)] - Gap between control and prefix or suffix
+ * @cssprop [--rc-field-supporting-gap=var(--rc-control-gap, 0.5rem)] - Gap between supporting text and counter
  * @cssprop [--rc-field-supporting-padding-block-start=0.25rem] - Supporting text top padding
- * @cssprop [--rc-field-supporting-padding-inline=0.75rem] - Supporting text inline padding
- * @cssprop [--rc-field-supporting-color=CanvasText] - Hint and counter color
+ * @cssprop [--rc-field-supporting-padding-inline=var(--rc-control-padding-inline, 0.75rem)] - Supporting text inline padding
+ * @cssprop [--rc-field-supporting-color=var(--rc-field-text, CanvasText)] - Hint and counter color
  * @cssprop [--rc-field-supporting-font-size=0.75rem] - Hint, error, and counter font size
  * @cssprop [--rc-field-error-color=Mark] - Invalid outline, label, and error color
- * @cssprop [--rc-field-disabled-opacity=0.6] - Disabled field opacity
- * @cssprop [--rc-field-focus-outline=2px solid Highlight] - Focus outline
- * @cssprop [--rc-field-focus-outline-offset=0] - Focus outline offset
+ * @cssprop [--rc-field-disabled-opacity=var(--rc-disabled-opacity, 0.6)] - Disabled field opacity
+ * @cssprop [--rc-field-focus-outline=var(--rc-focus-ring, 2px solid Highlight)] - Focus outline
+ * @cssprop [--rc-field-focus-outline-offset=var(--rc-focus-ring-offset, 0)] - Focus outline offset
  *
  * @csspart field - Field surface
  * @csspart content - Label and editable content column
@@ -411,9 +412,12 @@ export class RCField extends LitElement {
 
     this._hasControl = $control !== null;
 
-    this._populated = $control instanceof HTMLSelectElement && $control.multiple
-      ? $control.selectedOptions.length > 0
-      : Boolean($control?.value);
+    this._populated =
+      $control instanceof HTMLSelectElement
+        ? $control.multiple
+          ? $control.selectedOptions.length > 0
+          : Boolean($control.selectedOptions[0]?.label.trim())
+        : Boolean($control?.value);
 
     this._disabled = this._effectiveDisabled($control);
     this._readOnly = $control instanceof HTMLSelectElement ? false : ($control?.readOnly ?? false);

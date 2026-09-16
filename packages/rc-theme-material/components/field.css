@@ -2,14 +2,8 @@
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field {
     display: inline-block;
     inline-size: min(100%, 28rem);
-    --_rc-field-input-line-height: max(
-      var(--md-sys-typescale-body-large-line-height, 1.5rem),
-      1em
-    );
-    --_rc-field-label-line-height: max(
-      var(--md-sys-typescale-body-small-line-height, 1rem),
-      1em
-    );
+    --_rc-field-input-line-height: max(var(--md-sys-typescale-body-large-line-height, 1.5rem), 1em);
+    --_rc-field-label-line-height: max(var(--md-sys-typescale-body-small-line-height, 1rem), 1em);
     --rc-field-min-block-size: max(
       3.5em,
       calc(var(--_rc-field-label-line-height) + var(--_rc-field-input-line-height))
@@ -32,7 +26,7 @@
     );
     --rc-field-error-color: var(
       --md-filled-text-field-error-focus-label-text-color,
-      var(--md-sys-color-error, Mark)
+      var(--md-sys-color-error, red)
     );
     --rc-field-disabled-opacity: 1;
     --rc-field-focus-outline: 0;
@@ -108,6 +102,10 @@
     padding-block: 0.5rem;
   }
 
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(label) {
+    inset-block-start: 0.5rem;
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(control) {
     align-items: flex-start;
   }
@@ -128,6 +126,7 @@
     --rc-textarea-border: 0;
     --rc-textarea-border-radius: 0;
     --rc-textarea-background: transparent;
+    --rc-textarea-gutter-bg: transparent;
     --rc-textarea-focus-outline: 0;
     inline-size: 100%;
   }
@@ -135,6 +134,7 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
     > rc-select[data-rc-field-control] {
+    --rc-select-control-block-size: var(--md-sys-typescale-body-large-line-height, 1.5rem);
     --rc-select-border: 0;
     --rc-select-radius: 0;
     --rc-field: transparent;
@@ -164,8 +164,11 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
     > rc-combobox[data-rc-field-control] {
+    --rc-combobox-control-block-size: var(--md-sys-typescale-body-large-line-height, 1.5rem);
     --rc-combobox-border: 0;
     --rc-combobox-radius: 0;
+    --rc-chip-touch-target-overlap-block-start: 0.5rem;
+    --rc-chip-touch-target-overlap-block-end: 0.5rem;
     --rc-field: transparent;
     inline-size: 100%;
   }
@@ -250,15 +253,15 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(field) {
-    border-block-end-color: var(--md-sys-color-error, Mark);
+    border-block-end-color: var(--md-sys-color-error, red);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(field)::after {
-    background: var(--md-sys-color-error, Mark);
+    background: var(--md-sys-color-error, red);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-invalid]::part(label) {
-    color: var(--md-sys-color-error, Mark);
+    color: var(--md-sys-color-error, red);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-disabled]::part(field) {
@@ -278,10 +281,7 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field.rc-field--outlined {
-    --rc-field-min-block-size: max(
-      3.5em,
-      calc(var(--_rc-field-input-line-height) + 2em)
-    );
+    --rc-field-min-block-size: max(3.5em, calc(var(--_rc-field-input-line-height) + 2em));
     --rc-field-background: transparent;
     --rc-field-radius: var(
       --md-outlined-text-field-container-shape,
@@ -336,7 +336,7 @@
     rc-field.rc-field--outlined[data-invalid]::part(field),
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field.rc-field--outlined[data-invalid]::part(field)::after {
-    border-color: var(--md-sys-color-error, Mark);
+    border-color: var(--md-sys-color-error, red);
   }
 
   @media (prefers-reduced-motion: no-preference) {

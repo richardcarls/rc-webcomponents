@@ -60,6 +60,7 @@ declare global {
  * @cssprop [--rc-chip-group-padding-block=0] - Group block-axis padding.
  * @cssprop [--rc-chip-group-scroll-padding-inline=0] - Horizontal scroll padding.
  * @cssprop [--rc-chip-group-scrollbar-width=none] - Standards-based scrollbar width.
+ * @cssprop [--rc-chip-group-scrollbar-display=none] - WebKit scrollbar display.
  * @cssprop [--rc-chip-group-toggle-gap=0.5rem] - Gap between the disclosure icon and label.
  * @cssprop [--rc-chip-group-toggle-separator-gap=0.5rem] - Gap before the disclosure separator.
  * @cssprop [--rc-chip-group-toggle-icon-size=1.125rem] - Disclosure icon size.

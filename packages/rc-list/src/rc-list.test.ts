@@ -260,6 +260,25 @@ test('does not hijack independent interactive descendants', async () => {
   expect(item.querySelector('input')?.checked).toBe(false);
 });
 
+test('decorative trailing content does not intercept row hit testing', async () => {
+  const screen = render(html`
+    <rc-list data-testid="list">
+      <rc-list-item data-testid="item" interactive action-target="theme-trigger">
+        <button id="theme-trigger" type="button">Theme</button>
+        <span slot="trailing" aria-hidden="true">chevron_right</span>
+      </rc-list-item>
+    </rc-list>
+  `);
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const item = (await screen.getByTestId('item').element()) as RCListItem;
+
+  await settle(list);
+
+  expect(
+    getComputedStyle(item.querySelector<HTMLElement>('[slot="trailing"]')!).pointerEvents,
+  ).toBe('none');
+});
+
 test('action-target forwards surface clicks to a same-root anchor or button', async () => {
   const onClick = vi.fn((event: MouseEvent) => event.preventDefault());
   const screen = render(html`

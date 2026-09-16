@@ -4,5 +4,15 @@
     border: var(--rc-border, 1px solid ButtonBorder);
     border-radius: var(--substrate-radius-lg, 0.75rem);
     background: var(--substrate-surface, Canvas);
+
+    --rc-virtual-canvas-scrollbar-size: 0.75rem;
+    --rc-virtual-canvas-scrollbar-width: thin;
+    --rc-virtual-canvas-scrollbar-track-background: transparent;
+    --rc-virtual-canvas-scrollbar-thumb-background: color-mix(
+      in srgb,
+      var(--substrate-on-surface-muted, GrayText) 45%,
+      transparent
+    );
+    --rc-virtual-canvas-scrollbar-button-background: var(--substrate-surface-raised, ButtonFace);
   }
 }

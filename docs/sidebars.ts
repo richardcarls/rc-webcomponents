@@ -9,6 +9,9 @@ const sidebars: SidebarsConfig = {
       items: [
         'guide/installation',
         'guide/progressive-enhancement',
+        'guide/compatibility',
+        'guide/accessibility-testing',
+        'guide/performance',
         'guide/react',
         'guide/styling',
         'guide/theme-previews',

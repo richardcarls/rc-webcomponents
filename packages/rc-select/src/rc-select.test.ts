@@ -6,9 +6,17 @@ import './define.js';
 import type { RCSelect } from './rc-select.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
-function makeSelect(opts?: { multiple?: boolean; disabled?: boolean; placeholder?: string }) {
+function makeSelect(opts?: {
+  multiple?: boolean;
+  disabled?: boolean;
+  placeholder?: string;
+  popupMode?: 'popover' | 'dialog';
+}) {
   return html`
-    <rc-select placeholder=${opts?.placeholder ?? 'Choose...'}>
+    <rc-select
+      placeholder=${opts?.placeholder ?? 'Choose...'}
+      popup-mode=${opts?.popupMode ?? 'popover'}
+    >
       <select
         aria-label="Fruit"
         ?multiple=${opts?.multiple ?? false}
@@ -62,6 +70,75 @@ test('trigger has role="combobox", aria-haspopup="listbox", aria-expanded="false
   expect($el.getAttribute('aria-haspopup')).toBe('listbox');
   expect($el.getAttribute('aria-expanded')).toBe('false');
   expect($el.getAttribute('aria-controls')).toBe('listbox');
+});
+
+test('dialog mode stages multiple selection until Done', async () => {
+  const screen = render(makeSelect({ multiple: true, popupMode: 'dialog' }));
+  const host = await getHost(screen);
+  const changeSpy = vi.fn();
+  const nativeInputSpy = vi.fn();
+  const nativeChangeSpy = vi.fn();
+  const $select = host.querySelector('select')!;
+
+  host.addEventListener('rc-select-change', changeSpy);
+  $select.addEventListener('input', nativeInputSpy);
+  $select.addEventListener('change', nativeChangeSpy);
+  host.openPopup();
+
+  await vi.waitFor(() => {
+    expect(host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  const $listbox = host.renderRoot.querySelector('#dialog-listbox')!;
+
+  $listbox
+    .querySelector<HTMLElement>('[data-value="apple"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await host.updateComplete;
+
+  expect(host.selectedValues).toEqual([]);
+  expect(Array.from($select.selectedOptions)).toEqual([]);
+  expect(changeSpy).not.toHaveBeenCalled();
+
+  host.renderRoot.querySelector<HTMLButtonElement>('[part~="dialog-confirm"]')!.click();
+  await host.updateComplete;
+
+  expect(host.selectedValues).toEqual(['apple']);
+  expect(Array.from($select.selectedOptions, (option) => option.value)).toEqual(['apple']);
+  expect(nativeInputSpy).toHaveBeenCalledOnce();
+  expect(nativeChangeSpy).toHaveBeenCalledOnce();
+  expect(changeSpy).toHaveBeenCalledOnce();
+});
+
+test('dialog mode keeps single selection open and discards it with the leading cancel action', async () => {
+  const screen = render(makeSelect({ popupMode: 'dialog' }));
+  const host = await getHost(screen);
+  const changeSpy = vi.fn();
+
+  host.addEventListener('rc-select-change', changeSpy);
+  host.openPopup();
+
+  await vi.waitFor(() => {
+    expect(host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  host.renderRoot
+    .querySelector('#dialog-listbox')!
+    .querySelector<HTMLElement>('[data-value="banana"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await host.updateComplete;
+
+  expect(host.open).toBe(true);
+  expect(host.selectedValues).toEqual([]);
+
+  host.renderRoot.querySelector<HTMLButtonElement>('[part~="dialog-cancel"]')!.click();
+  await host.updateComplete;
+
+  expect(host.open).toBe(false);
+  expect(host.selectedValues).toEqual([]);
+  expect(changeSpy).not.toHaveBeenCalled();
 });
 
 test('rc-select has no automated accessibility violations', async () => {
@@ -532,6 +609,14 @@ test('multiple: chips render for selected values', async () => {
 
   expect($chips).toHaveLength(1);
   expect($chips[0].textContent).toContain('Apple');
+
+  const $chip = $chips[0].closest('rc-chip')!;
+  const $label = $chips[0].querySelector<HTMLElement>('[part~="chip-label"]')!;
+  const $remove = $chip.shadowRoot!.querySelector<HTMLElement>('[part="remove"]')!;
+
+  expect($label.getBoundingClientRect().right).toBeLessThanOrEqual(
+    $remove.getBoundingClientRect().left,
+  );
 });
 
 test('multiple: chip remove button click removes the value', async () => {

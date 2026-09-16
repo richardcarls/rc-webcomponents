@@ -46,19 +46,20 @@ declare global {
  * @attr available-label - Visible label for the available list.
  * @attr selected-label - Visible label for the selected list.
  *
- * @cssprop [--rc-transfer-list-gap=var(--rc-control-gap)] - Gap between panels and the action toolbar
- * @cssprop [--rc-transfer-list-panel-gap=var(--rc-control-gap)] - Gap between a panel label and its listbox
+ * @cssprop [--rc-transfer-list-gap=var(--rc-control-gap, 0.75rem)] - Gap between panels and the action toolbar
+ * @cssprop [--rc-transfer-list-panel-gap=var(--rc-control-gap, 0.35rem)] - Gap between a panel label and its listbox
  * @cssprop [--rc-transfer-list-listbox-min-block-size=10rem] - Minimum block size for each listbox
- * @cssprop [--rc-transfer-list-listbox-border=var(--rc-border)] - Border around each listbox
- * @cssprop [--rc-transfer-list-listbox-bg=var(--rc-surface)] - Background of each listbox
- * @cssprop [--rc-transfer-list-listbox-color=var(--rc-field-text)] - Text color of each listbox
- * @cssprop [--rc-transfer-list-option-gap=var(--rc-item-gap)] - Gap between option adornments and labels
- * @cssprop [--rc-transfer-list-option-padding-block=var(--rc-item-padding-block)] - Block padding for option rows
- * @cssprop [--rc-transfer-list-option-padding-inline=var(--rc-item-padding-inline)] - Inline padding for option rows
- * @cssprop [--rc-transfer-list-option-selected-bg=var(--rc-highlight)] - Selected option background
- * @cssprop [--rc-transfer-list-option-selected-color=var(--rc-highlight-text)] - Selected option foreground
- * @cssprop [--rc-transfer-list-option-hover-bg=var(--rc-transfer-list-option-selected-bg)] - Hovered/active option background
- * @cssprop [--rc-transfer-list-option-hover-color=var(--rc-transfer-list-option-selected-color)] - Hovered/active option foreground
+ * @cssprop [--rc-transfer-list-listbox-border=var(--rc-border, 1px solid ButtonBorder)] - Border around each listbox
+ * @cssprop [--rc-transfer-list-listbox-radius=var(--rc-control-radius, 0.125rem)] - Corner radius of each listbox
+ * @cssprop [--rc-transfer-list-listbox-bg=var(--rc-surface, Canvas)] - Background of each listbox
+ * @cssprop [--rc-transfer-list-listbox-color=var(--rc-field-text, FieldText)] - Text color of each listbox
+ * @cssprop [--rc-transfer-list-option-gap=var(--rc-item-gap, 0.4em)] - Gap between option adornments and labels
+ * @cssprop [--rc-transfer-list-option-padding-block=var(--rc-item-padding-block, 0.3em)] - Block padding for option rows
+ * @cssprop [--rc-transfer-list-option-padding-inline=var(--rc-item-padding-inline, 0.75em)] - Inline padding for option rows
+ * @cssprop [--rc-transfer-list-option-selected-bg=var(--rc-highlight, Highlight)] - Selected option background
+ * @cssprop [--rc-transfer-list-option-selected-color=var(--rc-highlight-text, HighlightText)] - Selected option foreground
+ * @cssprop [--rc-transfer-list-option-hover-bg=var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight))] - Hovered/active option background
+ * @cssprop [--rc-transfer-list-option-hover-color=var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText))] - Hovered/active option foreground
  *
  * @csspart root - Root layout wrapper. Reflects data-can-move-up/down.
  * @csspart panel - Shared list panel surface.

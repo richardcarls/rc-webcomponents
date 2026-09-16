@@ -62,7 +62,7 @@ test('aggregate component styles cover the reference styling surface', () => {
     ['rc-bottom-sheet', ['--rc-bottom-sheet-bg', '']],
     ['rc-search-bar', ['display', 'inline-block']],
     ['rc-textarea', ['--rc-textarea-padding', '0.75rem']],
-    ['rc-markdown-editor', ['--rme-padding', '0.75rem']],
+    ['rc-markdown-editor', ['--rc-markdown-editor-padding', '0.75rem']],
     ['rc-transfer-list', ['--rc-transfer-list-gap', '1rem']],
     ['rc-app-bar', ['font-family', '']],
     ['rc-fab', ['--rc-fab-bg', '']],
@@ -94,6 +94,32 @@ test('aggregate component styles cover the reference styling surface', () => {
       expect(value).toBe(expected);
     }
   }
+});
+
+test('canonical 0.7 component tokens replace removed theme-only names', () => {
+  const scope = renderScope();
+  const appBar = document.createElement('rc-app-bar');
+  const markdownEditor = document.createElement('rc-markdown-editor');
+  const textarea = document.createElement('rc-textarea');
+  const transferList = document.createElement('rc-transfer-list');
+
+  scope.append(appBar, markdownEditor, textarea, transferList);
+
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-bg')).not.toBe('');
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-background')).toBe('');
+  expect(
+    getComputedStyle(markdownEditor).getPropertyValue('--rc-markdown-editor-border-radius'),
+  ).not.toBe('');
+  expect(getComputedStyle(textarea).getPropertyValue('--rc-textarea-border-radius')).toBe(
+    '0.75rem',
+  );
+  expect(getComputedStyle(transferList).getPropertyValue('--rc-transfer-list-listbox-radius')).toBe(
+    '0.75rem',
+  );
+
+  appBar.setAttribute('data-scrolled', '');
+
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-shadow')).not.toBe('');
 });
 
 test('contextual styles do not style unrelated native buttons', () => {
@@ -349,7 +375,7 @@ test('list elements receive the shared Substrate token contract', () => {
   expect(listStyles.getPropertyValue('--rc-list-item-selected-background')).not.toBe('');
 });
 
-test('disclosure and accordion styles keep native details as the styled surface', () => {
+test('disclosure and accordion map their tokens onto the shared panel properties', () => {
   const scope = renderScope();
   const disclosure = document.createElement('rc-disclosure');
   const accordion = document.createElement('rc-accordion');
@@ -370,19 +396,96 @@ test('disclosure and accordion styles keep native details as the styled surface'
 
   scope.append(disclosure, accordion);
 
-  const disclosureDetails = disclosure.querySelector('details');
-  const disclosureContent = disclosure.querySelector('details > div');
+  // The panel boxes are drawn by the component's own light-DOM base layer, so
+  // what a theme owes is the mapping. Both child forms read the same names.
+  for (const element of [disclosure, accordion]) {
+    const styles = getComputedStyle(element);
+
+    for (const token of [
+      '--rc-disclosure-radius',
+      '--rc-disclosure-background',
+      '--rc-disclosure-summary-min-block-size',
+      '--rc-disclosure-summary-hover-background',
+      '--rc-disclosure-content-padding-inline',
+      '--rc-disclosure-duration',
+    ]) {
+      expect(styles.getPropertyValue(token).trim(), `${element.tagName} ${token}`).not.toBe('');
+    }
+  }
+
+  expect(getComputedStyle(accordion).getPropertyValue('--rc-accordion-gap').trim()).toBe('0.5rem');
+
+  // Decoration a bounded property cannot express stays with the theme: the
+  // chevron that replaces the native marker, and the content's block box.
   const accordionSummary = accordion.querySelector('summary');
   const accordionContent = accordion.querySelector('details > div');
 
-  expect(disclosureDetails).not.toBeNull();
-  expect(disclosureContent).not.toBeNull();
   expect(accordionSummary).not.toBeNull();
   expect(accordionContent).not.toBeNull();
-  expect(getComputedStyle(disclosureDetails!).borderRadius).not.toBe('0px');
-  expect(getComputedStyle(accordionSummary!).minBlockSize).toBe('44px');
   expect(getComputedStyle(accordionSummary!, '::after').borderBlockStartWidth).toBe('2px');
   expect(getComputedStyle(accordionContent!).display).toBe('flow-root');
-  expect(getComputedStyle(accordionContent!).paddingInlineStart).toBe('14px');
-  expect(getComputedStyle(accordionContent!).paddingBlockEnd).toBe('0px');
+});
+
+test('components that previously had no contract now expose themed tokens', () => {
+  const scope = renderScope();
+  const cases: Array<[string, string[]]> = [
+    [
+      'rc-adaptive-menu',
+      [
+        '--rc-adaptive-menu-popup-background',
+        '--rc-adaptive-menu-trigger-color',
+        '--rc-adaptive-menu-item-min-block-size',
+      ],
+    ],
+    [
+      'rc-carousel',
+      [
+        '--rc-carousel-item-background',
+        '--rc-carousel-navigation-button-color',
+        '--rc-carousel-pagination-item-active-color',
+      ],
+    ],
+    ['rc-chip-group', ['--rc-chip-group-column-gap', '--rc-chip-group-toggle-separator-color']],
+    ['rc-scroller', ['--rc-scroller-content-max-inline-size', '--rc-scroller-scrollbar-color']],
+    ['rc-toolbar', ['--rc-toolbar-radius', '--rc-toolbar-padding-inline']],
+    [
+      'rc-virtual-canvas',
+      ['--rc-virtual-canvas-scrollbar-size', '--rc-virtual-canvas-scrollbar-thumb-background'],
+    ],
+  ];
+
+  for (const [tag, tokens] of cases) {
+    const element = document.createElement(tag);
+
+    scope.append(element);
+
+    const styles = getComputedStyle(element);
+
+    for (const token of tokens) {
+      expect(styles.getPropertyValue(token).trim(), `${tag} ${token}`).not.toBe('');
+    }
+  }
+});
+
+test('no themed color mixes against a bare system color', () => {
+  const scope = renderScope();
+  const splitter = document.createElement('rc-splitter');
+
+  // components.css alone has no brand values, so supply the ones these mixes
+  // reach for; the point is that the *other* operand is a theme token.
+  scope.style.setProperty('--rc-accent', 'rgb(1, 2, 3)');
+  scope.style.setProperty('--substrate-surface', 'rgb(4, 5, 6)');
+  scope.style.setProperty('--substrate-border-color', 'rgb(7, 8, 9)');
+  scope.append(splitter);
+
+  // A mix whose other operand is a system color has no value outside a browser,
+  // so it cannot reach the token export at all.
+  for (const [element, token] of [
+    [splitter, '--rc-splitter-separator-color'],
+    [splitter, '--rc-splitter-handle-color'],
+  ] as const) {
+    const value = getComputedStyle(element).getPropertyValue(token);
+
+    expect(value, token).not.toMatch(/\b(Canvas|CanvasText|ButtonBorder|ButtonFace)\b/);
+  }
 });

@@ -215,3 +215,72 @@ test('rc-disclosure has no automated accessibility violations', async () => {
 
   await expectNoA11yViolations(screen.getByTestId('host').element());
 });
+
+test('rc-disclosure installs its light-DOM base styles once per root', async () => {
+  const screen = render(html`
+    <rc-disclosure>
+      <details>
+        <summary>First</summary>
+        <p>One</p>
+      </details>
+    </rc-disclosure>
+    <rc-disclosure>
+      <details>
+        <summary>Second</summary>
+        <p>Two</p>
+      </details>
+    </rc-disclosure>
+  `);
+
+  await expect.element(screen.getByText('First')).toBeInTheDocument();
+
+  expect(document.querySelectorAll('[data-rc-light-dom-base="rc-disclosure"]')).toHaveLength(1);
+});
+
+test('rc-disclosure draws its panel from the public properties', async () => {
+  const screen = render(html`
+    <rc-disclosure
+      style="--rc-disclosure-radius: 12px; --rc-disclosure-summary-padding-inline: 20px"
+    >
+      <details>
+        <summary>Status</summary>
+        <p>Population</p>
+      </details>
+    </rc-disclosure>
+  `);
+
+  await expect.element(screen.getByText('Status')).toBeInTheDocument();
+
+  const $details = document.querySelector('rc-disclosure > details')!;
+  const $summary = $details.querySelector('summary')!;
+
+  expect(getComputedStyle($details).borderRadius).toBe('12px');
+  expect(getComputedStyle($summary).paddingInlineStart).toBe('20px');
+});
+
+test('an unthemed disclosure keeps the native marker and snaps open', async () => {
+  const screen = render(html`
+    <rc-disclosure>
+      <details>
+        <summary>Status</summary>
+        <p>Population</p>
+      </details>
+    </rc-disclosure>
+  `);
+
+  await expect.element(screen.getByText('Status')).toBeInTheDocument();
+
+  const $summary = document.querySelector('rc-disclosure > details > summary')!;
+
+  // The base layer never changes the summary's display, so the list-item box
+  // that generates the disclosure triangle survives.
+  expect(getComputedStyle($summary).display).toBe('list-item');
+
+  // Motion is opt-in: with no theme the duration stays zero, so the panel keeps
+  // the platform's snap-open behavior rather than animating to a guessed height.
+  expect(
+    getComputedStyle(document.querySelector('rc-disclosure')!)
+      .getPropertyValue('--rc-disclosure-duration')
+      .trim(),
+  ).toBe('');
+});

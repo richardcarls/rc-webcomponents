@@ -41,6 +41,20 @@ test('system token overrides resolve through shared RC tokens', () => {
   expect(getComputedStyle(probe).color).toBe('rgb(1, 2, 3)');
 });
 
+test('button text sits on the button fill rather than on a system color', () => {
+  const scope = renderMaterialScope();
+
+  scope.style.setProperty('--md-sys-color-on-primary', 'rgb(7, 8, 9)');
+
+  const styles = getComputedStyle(scope);
+
+  // rc-select, rc-combobox, and rc-menu-button read --rc-button-text directly
+  // for text drawn over --rc-button-bg, so it has to follow the same on-color
+  // as --rc-button-color rather than falling through to ButtonText.
+  expect(styles.getPropertyValue('--rc-button-text').trim()).toBe('rgb(7, 8, 9)');
+  expect(styles.getPropertyValue('--rc-button-color').trim()).toBe('rgb(7, 8, 9)');
+});
+
 test('component tokens override Material system tokens', () => {
   const scope = renderMaterialScope();
   const slider = document.createElement('rc-slider');

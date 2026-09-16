@@ -56,10 +56,31 @@ fires `rc-combobox-create`.
 </rc-combobox>
 ```
 
+## Dialog Popup
+
+Use `popup-mode="dialog"` when an anchored option list would leave too little usable
+viewport, such as on a phone with the software keyboard open. The trigger opens a native modal
+dialog with the current chips, a dedicated search input, the option list, and a Done action.
+Selections and newly created values are staged while the dialog is open. Done commits them in
+one selection change; the leading close action, Escape, and imperative close discard them.
+
+```html
+<rc-combobox popup-mode="dialog" allow-create placeholder="Add categories">
+  <select name="categories" multiple>
+    <option value="quick">Quick meal</option>
+    <option value="vegetarian">Vegetarian</option>
+  </select>
+</rc-combobox>
+```
+
+Choose the mode declaratively from your application’s viewport policy. The component latches
+the mode for an open interaction, so changing `popupMode` does not replace an active popup.
+
 ### Validation
 
 `rc-combobox-create` is cancelable. Call `event.preventDefault()` to block insertion when the
-text fails validation. The default behavior (insert + select) runs otherwise.
+text fails validation. In dialog mode the event is deferred until Done, before the selection
+commit. The default behavior (insert + select) runs otherwise.
 
 ```js
 combobox.addEventListener('rc-combobox-create', (event) => {
@@ -159,12 +180,13 @@ For `allow-create`, the same split applies to options:
 | ---------------- | ------------------------------------ | -------------------------------------------------------------------------- |
 | `allowCreate`    | `boolean`                            | Shows a create option for unmatched input.                                 |
 | `filterStrategy` | `'prefix' \| 'contains' \| function` | Controls option filtering.                                                 |
+| `popupMode`      | `'popover' \| 'dialog'`              | Chooses an anchored popup or modal dialog. Defaults to `'popover'`.        |
 | `open`           | `boolean`                            | Inherited from `rc-select`; reflects whether the popup is open.            |
 | `multiple`       | `boolean`                            | Inherited from `rc-select`; enables multiple selection and chip rendering. |
 | `disabled`       | `boolean`                            | Inherited from `rc-select`; disables the input and popup trigger.          |
 | `placeholder`    | `string`                             | Inherited from `rc-select`; input placeholder when no value is selected.   |
 | `display`        | `'auto' \| 'chips' \| 'compact'`     | Inherited from `rc-select`; controls multiple-value presentation.          |
-| `value`          | `string \| string[]`                 | Inherited from `rc-select`; live selection. Host writes are silent.        |
+| `value`          | `string \| string[]`                 | Inherited committed selection. Host writes are silent.                     |
 | `defaultValue`   | `string \| string[] \| undefined`    | Inherited JS-only initial value for uncontrolled usage.                    |
 | `options`        | `ListboxOption[] \| undefined`       | Inherited JS-only option-data override.                                    |
 | `selectedValues` | `string[]`                           | Inherited read-only snapshot of selected values.                           |
@@ -185,5 +207,6 @@ selection-change event.
 ## Accessibility
 
 - Input uses `role="combobox"` with `aria-autocomplete="list"`.
+- Dialog mode exposes a dialog-valued combobox trigger and moves filtering into the modal.
 - Popup navigation uses `aria-activedescendant`.
 - The slotted native `<select>` remains the form value source.

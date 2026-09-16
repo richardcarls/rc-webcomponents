@@ -1,0 +1,82 @@
+---
+title: Compatibility and runtime
+---
+
+# Compatibility and runtime
+
+## Browser support
+
+The supported desktop policy is the current and previous stable releases of
+Chromium, Firefox, and Safari. The mobile policy covers current Chrome on
+Android and Safari on iOS, with targeted Firefox for Android validation for
+select and combobox behavior.
+
+CI runs the complete component suite in Chromium, Firefox, and WebKit. WebKit is
+the available cross-platform Safari engine check; release-critical mobile and
+assistive-technology behaviors still require the manual matrix in
+[Accessibility testing](./accessibility-testing).
+
+Components feature-detect optional platform APIs and preserve a usable native
+path when an enhancement is unavailable. “Supported” therefore has two levels:
+
+- **Progressive baseline:** meaningful native markup, form submission, label
+  association, and ordinary links or controls remain available before upgrade
+  or without JavaScript.
+- **Full enhancement:** the custom element has upgraded and its richer popup,
+  keyboard, focus, styling, or layout behavior is active in a supported browser.
+
+Component pages document narrower platform caveats. In particular, read the
+mobile notes for [`rc-select`](../components/rc-select) and
+[`rc-combobox`](../components/rc-combobox) before choosing a popup mode.
+
+## Browser-only runtime
+
+The packages are browser modules. Importing a component evaluates classes that
+extend browser globals such as `HTMLElement`; importing the aggregate package
+also evaluates the full collection. Node-only import safety, server-side custom
+element rendering, declarative shadow DOM output, and hydration are not current
+support contracts.
+
+A server may emit the native fallback markup. Register components only in a
+client entry point:
+
+```html
+<rc-select>
+  <select name="status" aria-label="Status">
+    <option>Draft</option>
+    <option>Published</option>
+  </select>
+</rc-select>
+```
+
+```js
+// Client-only entry point
+import '@rcarls/rc-select/define';
+```
+
+Frameworks that evaluate route modules on the server should place registration
+behind their documented client-only boundary. The native child remains useful
+until the browser loads and upgrades the custom element; this is progressive
+enhancement, not component hydration.
+
+## Import choice
+
+Prefer an individual package when a page uses only one or a few components:
+
+```js
+import '@rcarls/rc-button/define';
+import '@rcarls/rc-select/define';
+```
+
+Use `@rcarls/rc-webcomponents/define` only when the application genuinely wants
+to register the entire collection. The aggregate class export and aggregate
+define export both evaluate nearly all component modules, so they are a
+convenience boundary rather than a small tree-shaken entry point. See
+[Performance](./performance) for measured sizes.
+
+## Versioning
+
+The collection is pre-1.0. Minor releases can contain intentional breaking API
+changes, which are described by Changesets and release notes. Package versions
+are locked together, so use one version across all `@rcarls/*` packages and
+review migration notes before upgrading.

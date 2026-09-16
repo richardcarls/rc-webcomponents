@@ -234,10 +234,10 @@ for the field, then add component tokens for editor-specific surfaces.
 
 The component reads inherited tokens where possible:
 
-| Token          | Use                                                          |
-| -------------- | ------------------------------------------------------------ |
-| `--rc-text`    | Fallback text color before `--rc-textarea-color`.            |
-| `color-scheme` | Inherited by the host so system colors match the page theme. |
+| Token             | Use                                                          |
+| ----------------- | ------------------------------------------------------------ |
+| `--rc-field-text` | Fallback text color before `--rc-textarea-color`.            |
+| `color-scheme`    | Inherited by the host so system colors match the page theme. |
 
 ### Component Tokens
 
@@ -248,7 +248,7 @@ The component reads inherited tokens where possible:
 | `--rc-textarea-line-height`               | `1.5`                                       | Editor and gutter line height.        |
 | `--rc-textarea-padding`                   | `0.5em`                                     | Editor and gutter padding.            |
 | `--rc-textarea-background`                | `Field`                                     | Field background.                     |
-| `--rc-textarea-color`                     | `var(--rc-text, FieldText)`                 | Field text color.                     |
+| `--rc-textarea-color`                     | `var(--rc-field-text, FieldText)`           | Field text color.                     |
 | `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)`       | Caret color.                          |
 | `--rc-textarea-border`                    | `1px solid ButtonBorder`                    | Field border.                         |
 | `--rc-textarea-border-radius`             | `2px`                                       | Field corner radius.                  |
@@ -259,6 +259,15 @@ The component reads inherited tokens where possible:
 | `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`                    | Gutter separator.                     |
 | `--rc-textarea-gutter-font-family`        | `var(--rc-textarea-font-family, monospace)` | Gutter font family.                   |
 | `--rc-textarea-gutter-padding-inline-end` | `0.75em`                                    | Space between gutter labels and text. |
+
+Line actions added by plugins use the `--rc-line-action-*` family. Inline actions default to
+compact, inherited styling; popover actions use `Canvas`, `ButtonText`, and `ButtonFace` system
+colors where their surface needs an independent default. The public hooks are
+`--rc-line-actions-gap`, `--rc-line-actions-margin-start`, `--rc-line-action-padding`,
+`--rc-line-action-border`, `--rc-line-action-border-radius`, `--rc-line-action-bg`,
+`--rc-line-action-color`, `--rc-line-action-font-size`, `--rc-line-action-opacity`,
+`--rc-line-action-hover-opacity`, `--rc-line-action-hover-bg`,
+`--rc-line-action-hover-color`, and `--rc-line-action-shadow`.
 
 ```css
 rc-textarea {

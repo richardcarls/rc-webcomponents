@@ -548,3 +548,33 @@ test('rc-accordion has no automated accessibility violations', async () => {
 
   await expectNoA11yViolations(screen.getByTestId('accordion').element());
 });
+
+test('rc-accordion styles both child forms from the one disclosure recipe', async () => {
+  const screen = render(html`
+    <rc-accordion style="--rc-disclosure-radius: 10px; --rc-accordion-gap: 6px">
+      <details>
+        <summary>Direct</summary>
+        <p>One</p>
+      </details>
+      <rc-disclosure>
+        <details>
+          <summary>Wrapped</summary>
+          <p>Two</p>
+        </details>
+      </rc-disclosure>
+    </rc-accordion>
+  `);
+
+  await expect.element(screen.getByText('Direct')).toBeInTheDocument();
+
+  const $accordion = document.querySelector('rc-accordion')!;
+  const [$direct, $wrapped] = [...document.querySelectorAll('details')];
+
+  expect(getComputedStyle($accordion).display).toBe('grid');
+  expect(getComputedStyle($accordion).rowGap).toBe('6px');
+
+  // A bare <details> child and one wrapped in rc-disclosure resolve the same
+  // panel recipe, so neither form needs its own vocabulary.
+  expect(getComputedStyle($direct!).borderRadius).toBe('10px');
+  expect(getComputedStyle($wrapped!).borderRadius).toBe('10px');
+});

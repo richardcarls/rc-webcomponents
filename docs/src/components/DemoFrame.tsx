@@ -260,76 +260,49 @@ function injectMaterialFonts(): void {
   document.head.append($link);
 }
 
-async function loadMaterialCss(): Promise<string> {
-  materialCssPromise ??= fetch(docsAssetUrl('rc-theme-material/theme.css')).then((response) => {
-    if (!response.ok) {
-      throw new Error(`Unable to load Material theme CSS: ${response.status}`);
-    }
-
-    return response.text();
-  });
-
-  return materialCssPromise;
+function isPackageTheme(theme: DemoFrameTheme): theme is PackageTheme {
+  return theme !== 'none';
 }
 
-async function loadMaterialSheet(): Promise<CSSStyleSheet> {
-  materialSheetPromise ??= loadMaterialCss().then(createStylesheet);
+async function loadThemeCssFor(theme: PackageTheme): Promise<string> {
+  let pending = themeCssPromises.get(theme);
 
-  return materialSheetPromise;
+  if (!pending) {
+    pending = fetch(docsAssetUrl(PACKAGE_THEMES[theme].asset)).then((response) => {
+      if (!response.ok) {
+        throw new Error(`Unable to load ${theme} theme CSS: ${response.status}`);
+      }
+
+      return response.text();
+    });
+
+    themeCssPromises.set(theme, pending);
+  }
+
+  return pending;
 }
 
-async function loadSubstrateCss(): Promise<string> {
-  substrateCssPromise ??= fetch(docsAssetUrl('rc-theme-substrate/theme.css')).then((response) => {
-    if (!response.ok) {
-      throw new Error(`Unable to load Substrate theme CSS: ${response.status}`);
-    }
+async function loadThemeSheetFor(theme: PackageTheme): Promise<CSSStyleSheet> {
+  let pending = themeSheetPromises.get(theme);
 
-    return response.text();
-  });
+  if (!pending) {
+    pending = loadThemeCssFor(theme).then(createStylesheet);
+    themeSheetPromises.set(theme, pending);
+  }
 
-  return substrateCssPromise;
-}
-
-async function loadSubstrateSheet(): Promise<CSSStyleSheet> {
-  substrateSheetPromise ??= loadSubstrateCss().then(createStylesheet);
-
-  return substrateSheetPromise;
+  return pending;
 }
 
 function themeClassName(theme: DemoFrameTheme): string {
-  if (theme === 'material') {
-    return 'rc-theme-material';
-  }
-
-  if (theme === 'substrate') {
-    return 'rc-theme-substrate';
-  }
-
-  return '';
+  return isPackageTheme(theme) ? PACKAGE_THEMES[theme].className : '';
 }
 
 function loadThemeCss(theme: DemoFrameTheme): Promise<string> | undefined {
-  if (theme === 'material') {
-    return loadMaterialCss();
-  }
-
-  if (theme === 'substrate') {
-    return loadSubstrateCss();
-  }
-
-  return undefined;
+  return isPackageTheme(theme) ? loadThemeCssFor(theme) : undefined;
 }
 
 function loadThemeSheet(theme: DemoFrameTheme): Promise<CSSStyleSheet> | undefined {
-  if (theme === 'material') {
-    return loadMaterialSheet();
-  }
-
-  if (theme === 'substrate') {
-    return loadSubstrateSheet();
-  }
-
-  return undefined;
+  return isPackageTheme(theme) ? loadThemeSheetFor(theme) : undefined;
 }
 
 function upsertFallbackStyle(shadowRoot: ShadowRoot, name: string, cssText: string): void {

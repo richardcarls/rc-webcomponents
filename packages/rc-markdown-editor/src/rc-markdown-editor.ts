@@ -31,30 +31,30 @@ _sourceHighlightSheet.replaceSync(`
   .rme-heading-h4,
   .rme-heading-h5,
   .rme-heading-h6 {
-    color: var(--rme-src-heading-color, light-dark(#1d6fc4, #82b4f5));
+    color: var(--rc-markdown-editor-src-heading-color, light-dark(#1d6fc4, #82b4f5));
   }
 
   .rme-code,
   .rme-code-block {
-    color: var(--rme-src-code-color, light-dark(#c94a1a, #f09060));
+    color: var(--rc-markdown-editor-src-code-color, light-dark(#c94a1a, #f09060));
   }
 
   .rme-link {
-    color: var(--rme-src-link-color, light-dark(#0370b0, #60b8e8));
+    color: var(--rc-markdown-editor-src-link-color, light-dark(#0370b0, #60b8e8));
   }
 
   .rme-blockquote {
-    color: var(--rme-src-blockquote-color, light-dark(#2d7a42, #70b880));
+    color: var(--rc-markdown-editor-src-blockquote-color, light-dark(#2d7a42, #70b880));
   }
 
   .rme-list-bullet,
   .rme-list-ordered {
-    color: var(--rme-src-list-color, light-dark(#7a5c0a, #d4ac48));
+    color: var(--rc-markdown-editor-src-list-color, light-dark(#7a5c0a, #d4ac48));
   }
 
   .rme-strikethrough {
     text-decoration: line-through;
-    color: var(--rme-src-dim-color, GrayText);
+    color: var(--rc-markdown-editor-src-dim-color, GrayText);
   }
 
   .rme-underline {
@@ -233,24 +233,52 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
  * @attr value - Current Markdown value.
  * @attr default-value - Initial uncontrolled Markdown value.
  *
- * @cssprop [--rme-font-family=inherit] - Font family of the rich-text view
- * @cssprop [--rme-font-size=inherit] - Font size of the rich-text view
- * @cssprop [--rme-line-height=1.6] - Line height of the rich-text view
- * @cssprop [--rme-padding=0.75em 1em] - Padding inside the rich-text view
- * @cssprop [--rme-background=Canvas] - Background color of the rich-text view
- * @cssprop [--rme-color=CanvasText] - Text color of the rich-text view
- * @cssprop [--rme-border=1px solid ButtonBorder] - Border around the rich-text view
- * @cssprop [--rme-border-radius=0 0 4px 4px] - Border radius of the rich-text view
- * @cssprop [--rme-focus-outline=2px solid Highlight] - Focus ring outline on the rich-text view
- * @cssprop [--rme-src-font-family='Cascadia Code', 'Fira Code', ui-monospace, monospace] - Font family of the source editor
- * @cssprop [--rme-toolbar-gap=1px] - Gap between toolbar buttons
- * @cssprop [--rme-toolbar-button-size=2rem] - Minimum inline and block size of toolbar buttons
- * @cssprop [--rme-src-heading-color=light-dark(#1d6fc4, #82b4f5)] - Source-mode heading token color
- * @cssprop [--rme-src-code-color=light-dark(#c94a1a, #f09060)] - Source-mode inline/fenced code token color
- * @cssprop [--rme-src-link-color=light-dark(#0370b0, #60b8e8)] - Source-mode link token color
- * @cssprop [--rme-src-blockquote-color=light-dark(#2d7a42, #70b880)] - Source-mode blockquote token color
- * @cssprop [--rme-src-list-color=light-dark(#7a5c0a, #d4ac48)] - Source-mode list marker token color
- * @cssprop [--rme-src-dim-color=GrayText] - Source-mode strikethrough token color
+ * @cssprop [--rc-markdown-editor-font-family=inherit] - Font family of the rich-text view
+ * @cssprop [--rc-markdown-editor-font-size=inherit] - Font size of the rich-text view
+ * @cssprop [--rc-markdown-editor-line-height=1.6] - Line height of the rich-text view
+ * @cssprop [--rc-markdown-editor-padding=0.75em 1em] - Padding inside the rich-text view
+ * @cssprop [--rc-markdown-editor-background=Canvas] - Background color of the rich-text view
+ * @cssprop [--rc-markdown-editor-color=CanvasText] - Text color of the rich-text view
+ * @cssprop [--rc-markdown-editor-border=1px solid ButtonBorder] - Border around the rich-text view
+ * @cssprop [--rc-markdown-editor-border-radius=0 0 4px 4px] - Border radius of the rich-text view
+ * @cssprop [--rc-markdown-editor-focus-outline=2px solid Highlight] - Focus ring outline on the rich-text view
+ * @cssprop [--rc-markdown-editor-src-font-family='Cascadia Code', 'Fira Code', ui-monospace, monospace] - Font family of the source editor
+ * @cssprop [--rc-markdown-editor-toolbar-gap=1px] - Gap between toolbar buttons
+ * @cssprop [--rc-markdown-editor-toolbar-padding=4px] - Padding inside the toolbar
+ * @cssprop [--rc-markdown-editor-toolbar-radius=4px 4px 0 0] - Toolbar border radius
+ * @cssprop [--rc-markdown-editor-toolbar-border=1px solid ButtonBorder] - Toolbar border
+ * @cssprop [--rc-markdown-editor-toolbar-background=Canvas] - Toolbar background
+ * @cssprop [--rc-markdown-editor-toolbar-color=CanvasText] - Toolbar text color
+ * @cssprop [--rc-markdown-editor-toolbar-button-size=2rem] - Minimum inline and block size of toolbar buttons
+ * @cssprop [--rc-markdown-editor-toolbar-button-background=transparent] - Toolbar button background
+ * @cssprop [--rc-markdown-editor-toolbar-button-color=ButtonText] - Toolbar button text color
+ * @cssprop [--rc-markdown-editor-toolbar-button-border=1px solid transparent] - Toolbar button border
+ * @cssprop [--rc-markdown-editor-toolbar-button-radius=3px] - Toolbar button border radius
+ * @cssprop [--rc-markdown-editor-toolbar-button-hover-opacity=0.08] - Toolbar button hover state-layer opacity
+ * @cssprop [--rc-markdown-editor-toolbar-button-focus-opacity=0.12] - Toolbar button focus state-layer opacity
+ * @cssprop [--rc-markdown-editor-toolbar-button-pressed-opacity=0.12] - Toolbar button pressed state-layer opacity
+ * @cssprop [--rc-markdown-editor-toolbar-button-active-background=Highlight] - Active toolbar button background
+ * @cssprop [--rc-markdown-editor-toolbar-button-active-color=HighlightText] - Active toolbar button text color
+ * @cssprop [--rc-markdown-editor-toolbar-button-active-border=1px solid Highlight] - Active toolbar button border
+ * @cssprop [--rc-markdown-editor-toolbar-focus-outline=2px solid Highlight] - Toolbar control focus outline
+ * @cssprop [--rc-markdown-editor-toolbar-focus-outline-offset=1px] - Toolbar control focus outline offset
+ * @cssprop [--rc-markdown-editor-toolbar-select-border=1px solid ButtonBorder] - Toolbar select border
+ * @cssprop [--rc-markdown-editor-toolbar-select-radius=3px] - Toolbar select border radius
+ * @cssprop [--rc-markdown-editor-toolbar-select-background=ButtonFace] - Toolbar select background
+ * @cssprop [--rc-markdown-editor-toolbar-select-color=ButtonText] - Toolbar select text color
+ * @cssprop [--rc-markdown-editor-toolbar-select-active-background=Highlight] - Active toolbar select background
+ * @cssprop [--rc-markdown-editor-toolbar-select-active-color=HighlightText] - Active toolbar select text color
+ * @cssprop [--rc-markdown-editor-toolbar-select-active-border-color=Highlight] - Active toolbar select border color
+ * @cssprop [--rc-markdown-editor-toolbar-input-border=1px solid ButtonBorder] - Toolbar input border
+ * @cssprop [--rc-markdown-editor-toolbar-input-radius=3px] - Toolbar input border radius
+ * @cssprop [--rc-markdown-editor-toolbar-input-background=Field] - Toolbar input background
+ * @cssprop [--rc-markdown-editor-toolbar-input-color=FieldText] - Toolbar input text color
+ * @cssprop [--rc-markdown-editor-src-heading-color=light-dark(#1d6fc4, #82b4f5)] - Source-mode heading token color
+ * @cssprop [--rc-markdown-editor-src-code-color=light-dark(#c94a1a, #f09060)] - Source-mode inline/fenced code token color
+ * @cssprop [--rc-markdown-editor-src-link-color=light-dark(#0370b0, #60b8e8)] - Source-mode link token color
+ * @cssprop [--rc-markdown-editor-src-blockquote-color=light-dark(#2d7a42, #70b880)] - Source-mode blockquote token color
+ * @cssprop [--rc-markdown-editor-src-list-color=light-dark(#7a5c0a, #d4ac48)] - Source-mode list marker token color
+ * @cssprop [--rc-markdown-editor-src-dim-color=GrayText] - Source-mode strikethrough token color
  */
 export class RcMarkdownEditor extends LitElement {
   static override styles = rmeStyles;

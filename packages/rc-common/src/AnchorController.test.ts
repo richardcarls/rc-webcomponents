@@ -1,6 +1,6 @@
 import { html } from 'lit';
 import type { ReactiveControllerHost } from 'lit';
-import { test, expect } from 'vitest';
+import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
 import { AnchorController } from './AnchorController.js';
@@ -150,6 +150,21 @@ test('_clampToViewport leaves an on-screen floating element untouched', async ()
   expect(floating.style.translate).toBe('');
 });
 
+test('_clampToViewport publishes the available visual viewport size', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
+  const ctl = asPrivate(new AnchorController(createHost(), { anchor, floating }));
+
+  ctl._clampToViewport();
+
+  expect(floating.style.getPropertyValue('--rc-anchor-viewport-inline-size')).toBe(
+    `${(window.visualViewport?.width ?? window.innerWidth) - 8}px`,
+  );
+
+  expect(floating.style.getPropertyValue('--rc-anchor-viewport-block-size')).toBe(
+    `${(window.visualViewport?.height ?? window.innerHeight) - 8}px`,
+  );
+});
+
 // Regression test for a real Android Firefox failure: a single post-open
 // check measured the popover before its native anchor position had resolved,
 // concluded nothing was overflowing, and never checked again. The geometry
@@ -222,4 +237,30 @@ test('_scheduleClamp cancels a visible loop on disconnect', async () => {
   controller.hostDisconnected();
 
   expect(ctl._clampLoopActive).toBe(false);
+});
+
+test('_scheduleClamp stops polling after visible geometry stabilizes', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
+  const controller = new AnchorController(createHost(), { anchor, floating });
+  const ctl = asPrivate(controller);
+  const rectSpy = vi.spyOn(floating, 'getBoundingClientRect');
+
+  controller.hostConnected();
+  ctl._scheduleClamp();
+
+  for (let i = 0; i < 12; i += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+
+  expect(ctl._clampLoopActive).toBe(false);
+
+  const settledCalls = rectSpy.mock.calls.length;
+
+  for (let i = 0; i < 5; i += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+
+  expect(rectSpy).toHaveBeenCalledTimes(settledCalls);
+
+  controller.hostDisconnected();
 });

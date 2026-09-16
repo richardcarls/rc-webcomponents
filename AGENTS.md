@@ -45,6 +45,29 @@ short and tell the tool to read `AGENTS.md` before project work.
 - Components are design-system neutral. Ship only structural styling needed for
   correct layout or behavior; avoid decorative visual opinions. Prefer UA-like
   defaults, CSS system colors, and forced-colors-safe state indicators.
+- Keep styling contracts in distinct layers. Shared `--rc-*` semantic tokens
+  describe system-wide meaning, `--rc-<component>-*` tokens expose intentional
+  component adaptation points, and `--_rc-*` tokens are private implementation
+  details. Theme packages map their design-system tokens into the public RC
+  layers; components must not depend directly on Material or Substrate tokens.
+- Prefer tokens for bounded value substitution and CSS parts for selectors or
+  declarations that must reach a shadow-owned element. Use contextual light-DOM
+  selectors only when the consumer-authored structure is itself part of the
+  component contract. A theme must not change semantics or interaction behavior.
+- Treat every styling hook as an owned contract. Author-provided `data-rc-*`
+  markers used for structure, behavior, or theme opt-in are public API and must
+  be documented. Component-written state should prefer native state, ARIA,
+  documented host `data-*`, or custom states as appropriate. Controller IDs,
+  measurement reflectors, and injected-style sentinels remain internal even
+  when they use the `data-rc-*` namespace. Classify new markers in
+  `scripts/audit-component-architecture.mjs`; the prefix alone does not make a
+  marker public.
+- Shadow styles rely on shadow-tree scoping rather than document cascade layers.
+  Injected light-DOM structural CSS belongs in the `rc-base` layer and uses one
+  `data-rc-light-dom-base` sentinel per root. Theme styles declare their complete
+  layer order and keep component rules in the theme's `.components` layer.
+  Remember that normal author rules outside a layer outrank layered rules, while
+  `!important` reverses layer precedence.
 - Runtime measurement may write inline geometry styles, such as splitter sizes.
   Decorative styles belong in static CSS, CSS custom properties, or CSS parts.
 - Expose CSS custom properties for responsive changes that only alter geometry,
@@ -66,6 +89,10 @@ short and tell the tool to read `AGENTS.md` before project work.
   leaving a package-local copy.
 - Each package builds ESM, UMD, and declarations. Keep package exports and
   `sideEffects: false` tree-shaking behavior intact.
+- Runtime packages are browser-only. Server output may contain the native
+  fallback markup, but component registration belongs in a client-only entry;
+  do not claim Node import safety, server-side custom-element rendering, or
+  hydration support without implementing and testing that contract.
 - In `firstUpdated()`, guard required native child checks behind
   `import.meta.env.DEV` and emit a `console.warn` when the expected child is
   absent. Use `:scope > <tagname>` to scope the query to direct children only.
@@ -241,7 +268,7 @@ directly usable public packages.
   generated API table; the class-level prose is the only durable source.
 - Do not add tracked package-local demo pages or shared demo assets. Files such
   as `packages/<name>/*.html` and `packages/<name>/public/` are ignored scratch
-  space for ad hoc Vite experiments only.
+  space for temporary Vite experiments only.
 - Component examples must preserve project principles: native children remain in
   the DOM, labels/forms work before upgrade, ARIA is demonstrated on the native
   element where applicable, and interactive demos show keyboard and accessibility
@@ -267,6 +294,8 @@ yarn.cmd build
 yarn.cmd test
 yarn.cmd test:full
 yarn.cmd validate:packages
+yarn.cmd audit:performance
+yarn.cmd benchmark:browser
 ```
 
 ```bash
@@ -277,6 +306,8 @@ yarn build
 yarn test
 yarn test:full
 yarn validate:packages
+yarn audit:performance
+yarn benchmark:browser
 ```
 
 New package `test:browser` scripts must include `--run` (`vitest --run`). Without it
@@ -288,6 +319,10 @@ The root `build` script runs workspaces topologically. For targeted package work
 rebuild changed dependencies before running tests in packages that consume them.
 Vite HMR does not watch dependency `dist/` output through `node_modules`; restart
 the docs dev server after rebuilding a dependency.
+
+Performance audits consume built package exports. Run the root build first.
+Update tracked size or runtime budgets only after reviewing the generated
+`.performance/` report and confirming that a change is intentional.
 
 ## Testing
 

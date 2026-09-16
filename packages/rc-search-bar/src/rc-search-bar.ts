@@ -7,32 +7,34 @@ import { NativeChildController, keyInteraction, warnMissingDirectChild } from '@
 import searchBarStyles from './rc-search-bar.styles.js';
 
 const LIGHT_DOM_CSS = `
-rc-search-bar > input[type='search'] {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--rc-search-bar-input-color, inherit);
-  font-family: var(--rc-search-bar-input-font-family, inherit);
-  font-size: var(--rc-search-bar-input-font-size, inherit);
-  outline: 0;
-  box-shadow: none;
-  appearance: textfield;
-}
+@layer rc-base {
+  rc-search-bar > input[type='search'] {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    min-block-size: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--rc-search-bar-input-color, inherit);
+    font-family: var(--rc-search-bar-input-font-family, inherit);
+    font-size: var(--rc-search-bar-input-font-size, inherit);
+    outline: 0;
+    box-shadow: none;
+    appearance: textfield;
+  }
 
-rc-search-bar > input[type='search']:focus-visible {
-  border: 0;
-  outline: 0;
-  box-shadow: none;
-}
+  rc-search-bar > input[type='search']:focus-visible {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+  }
 
-rc-search-bar:not([allow-native-clear])
-  > input[type='search']::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-  display: none;
+  rc-search-bar:not([allow-native-clear])
+    > input[type='search']::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    display: none;
+  }
 }
 `;
 

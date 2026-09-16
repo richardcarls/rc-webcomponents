@@ -85,6 +85,10 @@ export const listItemStyles = css`
     min-inline-size: 0;
   }
 
+  ::slotted([slot='trailing'][aria-hidden='true']) {
+    pointer-events: none;
+  }
+
   [part='content'] ::slotted(*) {
     overflow: hidden;
     text-overflow: inherit;

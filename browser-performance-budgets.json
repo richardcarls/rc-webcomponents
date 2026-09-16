@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "measurements": {
+    "create100Buttons": {
+      "median": 17.899999976158142,
+      "p95": 23.700000047683716
+    },
+    "create50Selects": {
+      "median": 37.700000047683716,
+      "p95": 58.89999997615814
+    },
+    "filter1000OptionCombobox": {
+      "median": 113.39999997615814,
+      "p95": 155.80000007152557
+    },
+    "render1000LineTextarea": {
+      "median": 142.29999995231628,
+      "p95": 167.79999995231628
+    },
+    "update50ActionAdaptiveMenu": {
+      "median": 33.299999952316284,
+      "p95": 33.700000047683716
+    },
+    "settleAnchoredPopup": {
+      "median": 233.29999995231628,
+      "p95": 233.5
+    }
+  },
+  "budgets": {
+    "create100Buttons": {
+      "median": 22.899999976158142,
+      "p95": 28.700000047683716
+    },
+    "create50Selects": {
+      "median": 45.240000057220456,
+      "p95": 70.67999997138976
+    },
+    "filter1000OptionCombobox": {
+      "median": 136.07999997138975,
+      "p95": 186.96000008583067
+    },
+    "render1000LineTextarea": {
+      "median": 170.75999994277953,
+      "p95": 201.35999994277952
+    },
+    "update50ActionAdaptiveMenu": {
+      "median": 39.95999994277954,
+      "p95": 40.44000005722046
+    },
+    "settleAnchoredPopup": {
+      "median": 279.9599999427795,
+      "p95": 280.2
+    }
+  }
+}

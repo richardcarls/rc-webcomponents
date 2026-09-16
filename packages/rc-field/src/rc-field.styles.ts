@@ -14,14 +14,20 @@ export const fieldStyles = css`
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    min-block-size: var(--rc-field-min-block-size, 2.5rem);
+    min-block-size: var(--rc-field-min-block-size, var(--rc-control-block-size, 2.5rem));
     gap: 0;
-    padding: var(--rc-field-padding, 0.5rem 0.75rem);
-    border: var(--rc-field-border, 1px solid ButtonBorder);
-    border-radius: var(--rc-field-radius, 0.125rem);
-    background: var(--rc-field-background, Field);
-    color: var(--rc-field-color, FieldText);
-    font: inherit;
+    padding: var(
+      --rc-field-padding,
+      var(--rc-control-padding-block, 0.5rem) var(--rc-control-padding-inline, 0.75rem)
+    );
+    border: var(--rc-field-border, var(--rc-border, 1px solid ButtonBorder));
+    border-radius: var(--rc-field-radius, var(--rc-control-radius, 0.125rem));
+    background: var(--rc-field-background, var(--rc-field, Field));
+    color: var(--rc-field-color, var(--rc-field-text, FieldText));
+    font-family: var(--rc-font-family, inherit);
+    font-size: var(--rc-font-size, 1em);
+    font-weight: var(--rc-font-weight, 400);
+    line-height: var(--rc-line-height, normal);
   }
 
   #field.empty {
@@ -39,7 +45,7 @@ export const fieldStyles = css`
   }
 
   #label {
-    color: var(--rc-field-label-color, CanvasText);
+    color: var(--rc-field-label-color, var(--rc-field-text, CanvasText));
     line-height: 1.25;
   }
 
@@ -60,19 +66,19 @@ export const fieldStyles = css`
   }
 
   #leading:not(.empty-slot) {
-    margin-inline-end: var(--rc-field-gap, 0.5rem);
+    margin-inline-end: var(--rc-field-gap, var(--rc-control-gap, 0.5rem));
   }
 
   #trailing:not(.empty-slot) {
-    margin-inline-start: var(--rc-field-gap, 0.5rem);
+    margin-inline-start: var(--rc-field-gap, var(--rc-control-gap, 0.5rem));
   }
 
   #prefix:not(.empty-slot) {
-    margin-inline-end: var(--rc-field-control-gap, 0.25rem);
+    margin-inline-end: var(--rc-field-control-gap, var(--rc-control-gap, 0.25rem));
   }
 
   #suffix:not(.empty-slot) {
-    margin-inline-start: var(--rc-field-control-gap, 0.25rem);
+    margin-inline-start: var(--rc-field-control-gap, var(--rc-control-gap, 0.25rem));
   }
 
   /*
@@ -90,6 +96,7 @@ export const fieldStyles = css`
   }
 
   ::slotted(input),
+  ::slotted(select),
   ::slotted(textarea),
   ::slotted([data-rc-field-control]) {
     box-sizing: border-box;
@@ -124,16 +131,24 @@ export const fieldStyles = css`
   #supporting {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: var(--rc-field-supporting-gap, 0.5rem);
+    gap: var(--rc-field-supporting-gap, var(--rc-control-gap, 0.5rem));
     padding-block-start: var(--rc-field-supporting-padding-block-start, 0.25rem);
-    padding-inline: var(--rc-field-supporting-padding-inline, 0.75rem);
-    color: var(--rc-field-supporting-color, CanvasText);
+    padding-inline: var(
+      --rc-field-supporting-padding-inline,
+      var(--rc-control-padding-inline, 0.75rem)
+    );
+    color: var(--rc-field-supporting-color, var(--rc-field-text, CanvasText));
     font-size: var(--rc-field-supporting-font-size, 0.75rem);
     line-height: 1.333;
   }
 
   #error {
-    color: var(--rc-field-error-color, Mark);
+    /*
+     * Falls back to the validation red a user agent uses for an invalid
+     * control, not to a system color. Mark is the background of highlighted
+     * text, which renders as pure yellow and is unreadable as a foreground.
+     */
+    color: var(--rc-field-error-color, red);
   }
 
   #counter {
@@ -143,16 +158,16 @@ export const fieldStyles = css`
   }
 
   :host([data-invalid]) #field {
-    border-color: var(--rc-field-error-color, Mark);
+    border-color: var(--rc-field-error-color, red);
   }
 
   :host([data-disabled]) {
-    opacity: var(--rc-field-disabled-opacity, 0.6);
+    opacity: var(--rc-field-disabled-opacity, var(--rc-disabled-opacity, 0.6));
   }
 
   :host([data-focused]) #field {
-    outline: var(--rc-field-focus-outline, 2px solid Highlight);
-    outline-offset: var(--rc-field-focus-outline-offset, 0);
+    outline: var(--rc-field-focus-outline, var(--rc-focus-ring, 2px solid Highlight));
+    outline-offset: var(--rc-field-focus-outline-offset, var(--rc-focus-ring-offset, 0));
   }
 
   @media (forced-colors: active) {

@@ -44,7 +44,11 @@ export const chipStyles = css`
     gap: var(--rc-chip-gap, 0px);
     min-block-size: var(--rc-chip-block-size);
     padding-block: var(--rc-chip-padding-block, revert);
-    padding-inline: var(--rc-chip-padding-inline, revert);
+    padding-inline-start: var(
+      --rc-chip-padding-inline-start,
+      var(--rc-chip-padding-inline, revert)
+    );
+    padding-inline-end: var(--rc-chip-padding-inline-end, var(--rc-chip-padding-inline, revert));
     border: var(--rc-chip-border, revert);
     border-radius: var(--rc-chip-radius, revert);
     background: var(--rc-chip-bg, revert);
@@ -145,7 +149,9 @@ export const chipStyles = css`
   :host([removable]) ::slotted([data-rc-chip-label]) {
     padding-inline-end: var(
       --rc-chip-removable-padding-inline-end,
-      calc(var(--rc-chip-remove-target-size, 1.5rem) - var(--rc-chip-gap, 0px))
+      calc(
+        var(--rc-chip-remove-target-size, 1.5rem) + var(--rc-chip-remove-offset-inline, 0.125rem)
+      )
     );
   }
 

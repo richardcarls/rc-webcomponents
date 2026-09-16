@@ -15,19 +15,19 @@ export const rmeStyles = css`
     box-sizing: border-box;
     outline: none;
     /* Consumer themes via CSS custom properties */
-    font-family: var(--rme-font-family, inherit);
-    font-size: var(--rme-font-size, inherit);
-    line-height: var(--rme-line-height, 1.6);
-    padding: var(--rme-padding, 0.75em 1em);
-    background: var(--rme-background, Canvas);
-    color: var(--rme-color, CanvasText);
-    border: var(--rme-border, 1px solid ButtonBorder);
+    font-family: var(--rc-markdown-editor-font-family, inherit);
+    font-size: var(--rc-markdown-editor-font-size, inherit);
+    line-height: var(--rc-markdown-editor-line-height, 1.6);
+    padding: var(--rc-markdown-editor-padding, 0.75em 1em);
+    background: var(--rc-markdown-editor-background, Canvas);
+    color: var(--rc-markdown-editor-color, CanvasText);
+    border: var(--rc-markdown-editor-border, 1px solid ButtonBorder);
     border-top: none;
-    border-radius: var(--rme-border-radius, 0 0 4px 4px);
+    border-radius: var(--rc-markdown-editor-border-radius, 0 0 4px 4px);
   }
 
   #rich-view:focus {
-    outline: var(--rme-focus-outline, 2px solid Highlight);
+    outline: var(--rc-markdown-editor-focus-outline, 2px solid Highlight);
     outline-offset: -2px;
   }
 
@@ -58,7 +58,13 @@ export const rmeStyles = css`
   #source-editor {
     flex: 1 1 auto;
     display: block;
-    font-family: var(--rme-src-font-family, 'Cascadia Code', 'Fira Code', ui-monospace, monospace);
+    font-family: var(
+      --rc-markdown-editor-src-font-family,
+      'Cascadia Code',
+      'Fira Code',
+      ui-monospace,
+      monospace
+    );
     --rc-textarea-border-radius: 0 0 4px 4px;
     --rc-textarea-border-top: none;
   }
@@ -67,43 +73,52 @@ export const rmeStyles = css`
     display: block;
     inline-size: 100%;
     --rc-toolbar-flex-wrap: wrap;
-    --rc-toolbar-gap-inline: var(--rme-toolbar-gap, 1px);
-    --rc-toolbar-padding-block: var(--rme-toolbar-padding, 4px);
-    --rc-toolbar-padding-inline: var(--rme-toolbar-padding, 4px);
-    --rc-toolbar-radius: var(--rme-toolbar-radius, 4px 4px 0 0);
+    --rc-toolbar-gap-inline: var(--rc-markdown-editor-toolbar-gap, 1px);
+    --rc-toolbar-padding-block: var(--rc-markdown-editor-toolbar-padding, 4px);
+    --rc-toolbar-padding-inline: var(--rc-markdown-editor-toolbar-padding, 4px);
+    --rc-toolbar-radius: var(--rc-markdown-editor-toolbar-radius, 4px 4px 0 0);
   }
 
   rc-editor-toolbar rc-toolbar::part(root) {
-    border: var(--rme-toolbar-border, 1px solid ButtonBorder);
-    background: var(--rme-toolbar-background, Canvas);
-    color: var(--rme-toolbar-color, CanvasText);
+    border: var(--rc-markdown-editor-toolbar-border, 1px solid ButtonBorder);
+    background: var(--rc-markdown-editor-toolbar-background, Canvas);
+    color: var(--rc-markdown-editor-toolbar-color, CanvasText);
   }
 
   rc-editor-toolbar rc-button {
-    --rc-button-bg: var(--rme-toolbar-button-background, transparent);
-    --rc-button-color: var(--rme-toolbar-button-color, ButtonText);
-    --rc-button-border: var(--rme-toolbar-button-border, 1px solid transparent);
-    --rc-button-radius: var(--rme-toolbar-button-radius, 3px);
-    --rc-button-block-size: var(--rme-toolbar-button-size, 2rem);
-    --rc-button-icon-size: var(--rme-toolbar-button-size, 2rem);
+    --rc-button-bg: var(--rc-markdown-editor-toolbar-button-background, transparent);
+    --rc-button-color: var(--rc-markdown-editor-toolbar-button-color, ButtonText);
+    --rc-button-border: var(--rc-markdown-editor-toolbar-button-border, 1px solid transparent);
+    --rc-button-radius: var(--rc-markdown-editor-toolbar-button-radius, 3px);
+    --rc-button-block-size: var(--rc-markdown-editor-toolbar-button-size, 2rem);
+    --rc-button-icon-size: var(--rc-markdown-editor-toolbar-button-size, 2rem);
     --rc-button-padding-block: 0;
     --rc-button-padding-inline: 0;
     --rc-button-font: inherit;
     --rc-button-state-layer-bg: currentColor;
-    --rc-button-hover-state-layer-opacity: var(--rme-toolbar-button-hover-opacity, 0.08);
-    --rc-button-focus-state-layer-opacity: var(--rme-toolbar-button-focus-opacity, 0.12);
-    --rc-button-pressed-state-layer-opacity: var(--rme-toolbar-button-pressed-opacity, 0.12);
+    --rc-button-hover-state-layer-opacity: var(
+      --rc-markdown-editor-toolbar-button-hover-opacity,
+      0.08
+    );
+    --rc-button-focus-state-layer-opacity: var(
+      --rc-markdown-editor-toolbar-button-focus-opacity,
+      0.12
+    );
+    --rc-button-pressed-state-layer-opacity: var(
+      --rc-markdown-editor-toolbar-button-pressed-opacity,
+      0.12
+    );
   }
 
   rc-editor-toolbar rc-button.toolbar-active {
-    --rc-button-bg: var(--rme-toolbar-button-active-background, Highlight);
-    --rc-button-color: var(--rme-toolbar-button-active-color, HighlightText);
-    --rc-button-border: var(--rme-toolbar-button-active-border, 1px solid Highlight);
+    --rc-button-bg: var(--rc-markdown-editor-toolbar-button-active-background, Highlight);
+    --rc-button-color: var(--rc-markdown-editor-toolbar-button-active-color, HighlightText);
+    --rc-button-border: var(--rc-markdown-editor-toolbar-button-active-border, 1px solid Highlight);
   }
 
   rc-editor-toolbar rc-button > button:focus-visible {
-    outline: var(--rme-toolbar-focus-outline, 2px solid Highlight);
-    outline-offset: var(--rme-toolbar-focus-outline-offset, 1px);
+    outline: var(--rc-markdown-editor-toolbar-focus-outline, 2px solid Highlight);
+    outline-offset: var(--rc-markdown-editor-toolbar-focus-outline-offset, 1px);
   }
 
   rc-editor-toolbar [data-rc-button-icon] svg {
@@ -117,14 +132,14 @@ export const rmeStyles = css`
     font-size: 0.8125em;
     --rc-select-padding-block: 0.25em;
     --rc-select-padding-inline: 0.35em;
-    --rc-select-border: var(--rme-toolbar-select-border, 1px solid ButtonBorder);
-    --rc-select-radius: var(--rme-toolbar-select-radius, 3px);
+    --rc-select-border: var(--rc-markdown-editor-toolbar-select-border, 1px solid ButtonBorder);
+    --rc-select-radius: var(--rc-markdown-editor-toolbar-select-radius, 3px);
   }
 
   rc-editor-toolbar rc-select::part(trigger) {
     min-width: 0;
-    background: var(--rme-toolbar-select-background, ButtonFace);
-    color: var(--rme-toolbar-select-color, ButtonText);
+    background: var(--rc-markdown-editor-toolbar-select-background, ButtonFace);
+    color: var(--rc-markdown-editor-toolbar-select-color, ButtonText);
     cursor: pointer;
   }
 
@@ -133,26 +148,26 @@ export const rmeStyles = css`
   }
 
   rc-editor-toolbar rc-select.toolbar-active::part(trigger) {
-    background: var(--rme-toolbar-select-active-background, Highlight);
-    color: var(--rme-toolbar-select-active-color, HighlightText);
-    border-color: var(--rme-toolbar-select-active-border-color, Highlight);
+    background: var(--rc-markdown-editor-toolbar-select-active-background, Highlight);
+    color: var(--rc-markdown-editor-toolbar-select-active-color, HighlightText);
+    border-color: var(--rc-markdown-editor-toolbar-select-active-border-color, Highlight);
   }
 
   /* Code block language input */
   rc-editor-toolbar .lang-input {
     padding: 0.25em 0.5em;
-    border: var(--rme-toolbar-input-border, 1px solid ButtonBorder);
-    border-radius: var(--rme-toolbar-input-radius, 3px);
-    background: var(--rme-toolbar-input-background, Field);
-    color: var(--rme-toolbar-input-color, FieldText);
+    border: var(--rc-markdown-editor-toolbar-input-border, 1px solid ButtonBorder);
+    border-radius: var(--rc-markdown-editor-toolbar-input-radius, 3px);
+    background: var(--rc-markdown-editor-toolbar-input-background, Field);
+    color: var(--rc-markdown-editor-toolbar-input-color, FieldText);
     font: inherit;
     font-size: 0.8125em;
     width: 8em;
   }
 
   rc-editor-toolbar .lang-input:focus {
-    outline: var(--rme-toolbar-focus-outline, 2px solid Highlight);
-    outline-offset: var(--rme-toolbar-focus-outline-offset, 1px);
+    outline: var(--rc-markdown-editor-toolbar-focus-outline, 2px solid Highlight);
+    outline-offset: var(--rc-markdown-editor-toolbar-focus-outline-offset, 1px);
   }
 
   rc-editor-toolbar .lang-input::placeholder {

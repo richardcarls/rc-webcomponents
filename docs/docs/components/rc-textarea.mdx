@@ -179,7 +179,7 @@ editor.addEventListener('rc-textarea-change', (e) => {
 | `--rc-textarea-line-height`               | `1.5`                                 | Editor and gutter line height.        |
 | `--rc-textarea-padding`                   | `0.5em`                               | Editor and gutter padding.            |
 | `--rc-textarea-background`                | `Field`                               | Field background.                     |
-| `--rc-textarea-color`                     | `var(--rc-text, FieldText)`           | Field text color.                     |
+| `--rc-textarea-color`                     | `var(--rc-field-text, FieldText)`     | Field text color.                     |
 | `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)` | Caret color.                          |
 | `--rc-textarea-border`                    | `1px solid ButtonBorder`              | Field border.                         |
 | `--rc-textarea-border-radius`             | `2px`                                 | Field corner radius.                  |
@@ -189,6 +189,11 @@ editor.addEventListener('rc-textarea-change', (e) => {
 | `--rc-textarea-gutter-color`              | `GrayText`                            | Gutter text color.                    |
 | `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`              | Gutter separator.                     |
 | `--rc-textarea-gutter-padding-inline-end` | `0.75em`                              | Space between gutter labels and text. |
+
+Plugin-provided line actions expose the `--rc-line-actions-*` and
+`--rc-line-action-*` hooks listed in the generated API table. Inline actions
+inherit the editor surface by default; popover actions use system-color
+surface defaults where they need independent chrome.
 
 ```css
 rc-textarea {

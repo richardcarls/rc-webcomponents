@@ -249,6 +249,10 @@ export type RCSelectRef = HTMLElement & {
   required: boolean;
   placeholder: string;
   display: 'auto' | 'chips' | 'compact';
+  popupMode: 'popover' | 'dialog';
+  dialogConfirmLabel: string;
+  dialogCancelLabel: string;
+  dialogCancelButton: 'visible' | 'hidden';
   value: RCSelectValue;
   defaultValue: RCSelectValue | undefined;
   options: RCListboxOption[] | undefined;
@@ -284,6 +288,7 @@ export type RCDialogResizeOrigin =
 export type RCDialogRef = HTMLElement & {
   open: boolean | undefined;
   defaultOpen: boolean;
+  variant: 'standard' | 'fullscreen';
   movable: boolean;
   moveHandle: string;
   moveBounds: 'viewport' | 'parent';
@@ -874,6 +879,10 @@ declare module 'solid-js' {
         required?: boolean | string;
         placeholder?: string;
         display?: 'auto' | 'chips' | 'compact';
+        'popup-mode'?: 'popover' | 'dialog';
+        'dialog-confirm-label'?: string;
+        'dialog-cancel-label'?: string;
+        'dialog-cancel-button'?: 'visible' | 'hidden';
         value?: RCSelectValue;
         defaultValue?: RCSelectValue;
         options?: RCListboxOption[];
@@ -881,6 +890,7 @@ declare module 'solid-js' {
         'prop:value'?: RCSelectValue | undefined;
         'prop:defaultValue'?: RCSelectValue | undefined;
         'prop:options'?: RCListboxOption[] | undefined;
+        'prop:popupMode'?: 'popover' | 'dialog' | undefined;
         'on:rc-select-change'?: (e: CustomEvent<RCSelectChangeDetail>) => void;
         'on:rc-select-open'?: (e: CustomEvent) => void;
         'on:rc-select-close'?: (e: CustomEvent) => void;
@@ -895,6 +905,10 @@ declare module 'solid-js' {
         display?: 'auto' | 'chips' | 'compact';
         'allow-create'?: boolean | string;
         'filter-strategy'?: 'prefix' | 'contains';
+        'popup-mode'?: 'popover' | 'dialog';
+        'dialog-confirm-label'?: string;
+        'dialog-cancel-label'?: string;
+        'dialog-cancel-button'?: 'visible' | 'hidden';
         value?: RCSelectValue;
         defaultValue?: RCSelectValue;
         options?: RCListboxOption[];
@@ -903,6 +917,7 @@ declare module 'solid-js' {
         'prop:defaultValue'?: RCSelectValue | undefined;
         'prop:options'?: RCListboxOption[] | undefined;
         'prop:allowCreate'?: boolean | undefined;
+        'prop:popupMode'?: 'popover' | 'dialog' | undefined;
         'on:rc-select-change'?: (e: CustomEvent<RCSelectChangeDetail>) => void;
         'on:rc-select-open'?: (e: CustomEvent) => void;
         'on:rc-select-close'?: (e: CustomEvent) => void;
@@ -912,6 +927,7 @@ declare module 'solid-js' {
       'rc-dialog': JSX.HTMLAttributes<RCDialogRef> & {
         open?: boolean | string;
         defaultOpen?: boolean | string;
+        variant?: 'standard' | 'fullscreen';
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
         'prop:modal'?: boolean | undefined;

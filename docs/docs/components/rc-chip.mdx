@@ -82,6 +82,12 @@ Without a theme, button and link chips retain their browser appearance.
 Packaged themes opt into chip sizing, shape, selection colors, and focus
 treatment.
 
+For asymmetric content such as a leading icon, use
+`--rc-chip-padding-inline-start` and `--rc-chip-padding-inline-end`. Both fall
+back to `--rc-chip-padding-inline`; the Material theme applies its documented
+8px leading-icon inset and icon-label gap automatically when the icon carries
+`data-rc-chip-icon`.
+
 ## Live demo
 
 <ChipDemo />

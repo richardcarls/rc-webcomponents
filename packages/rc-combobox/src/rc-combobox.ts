@@ -1,7 +1,7 @@
 import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { RCSelect } from '@rcarls/rc-select';
+import { RCSelect, type RCSelectPopupMode } from '@rcarls/rc-select';
 import type { FilterStrategy, RCListboxChangeEvent } from '@rcarls/rc-listbox';
 
 import { comboboxStyles } from './rc-combobox.styles.js';
@@ -10,6 +10,8 @@ export interface RCComboboxCreateEvent {
   /** The text typed by the user that didn't match any existing option. */
   text: string;
 }
+
+export type RCComboboxPopupMode = RCSelectPopupMode;
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -44,12 +46,23 @@ declare global {
  * @csspart input - The text input element.
  * @csspart toggle - The chevron toggle button.
  * @csspart listbox - The `<rc-listbox>` popup element.
+ * @csspart dialog - Dialog popup surface.
+ * @csspart dialog-header - Dialog title and action row.
+ * @csspart dialog-title - Visible dialog title.
+ * @csspart dialog-selected - Scrollable selected-chip region.
+ * @csspart dialog-search - Dialog search field wrapper.
+ * @csspart dialog-input - Dialog search input.
+ * @csspart dialog-listbox - Dialog option list.
+ * @csspart dialog-actions - Dialog action group.
+ * @csspart dialog-confirm - Commits pending dialog selection and closes the dialog.
+ * @csspart dialog-cancel - Discards pending dialog selection and closes the dialog.
  *
  * @attr allow-create - When present, shows a "Create 'X'" option for unmatched input.
  * @attr required - Inherited from `rc-select`; mirrors the slotted native `<select>`'s own
  *   `required`, for `aria-required` on the input trigger.
  * @attr filter-strategy - How option labels are matched against typed input: `'contains'`
  *   (default), `'prefix'`, or a custom predicate set via the `filterStrategy` JS property.
+ * @attr popup-mode - Presents options in an anchored `popover` (default) or modal `dialog`.
  *
  * @cssprop [--rc-combobox-max-height=20em] - Maximum popup height.
  * @cssprop [--rc-combobox-control-block-size=var(--rc-control-block-size)] - Anchor block size.
@@ -62,12 +75,25 @@ declare global {
  * @cssprop [--rc-combobox-listbox-border=var(--rc-border)] - Popup listbox border.
  * @cssprop [--rc-combobox-shadow=var(--rc-shadow)] - Popup listbox box shadow.
  * @cssprop [--rc-combobox-listbox-padding-block=var(--rc-control-padding-block)] - Popup listbox block padding.
+ * @cssprop [--rc-combobox-dialog-input-border=var(--rc-border)] - Dialog search input border.
+ * @cssprop [--rc-combobox-dialog-input-radius=var(--rc-control-radius)] - Dialog search input radius.
+ * @cssprop [--rc-combobox-dialog-input-background=var(--rc-field)] - Dialog search input background.
+ * @cssprop [--rc-combobox-dialog-gap=1rem] - Gap between fullscreen dialog regions.
+ * @cssprop [--rc-combobox-dialog-header-gap=0.5rem] - Gap between fullscreen dialog header slots.
+ * @cssprop [--rc-combobox-dialog-search-gap=0.25rem] - Gap between the dialog search label and input.
+ * @cssprop [--rc-anchor-viewport-inline-size] - Visual-viewport inline space supplied by the anchor controller.
+ * @cssprop [--rc-anchor-viewport-block-size] - Visual-viewport block space supplied by the anchor controller.
  * @cssprop [--rc-combobox-chip-radius=var(--rc-radius-md)] - Multi-select chip border radius.
  * @cssprop [--rc-combobox-chip-padding-block=0.1em] - Multi-select chip block-axis padding.
- * @cssprop [--rc-combobox-chip-padding-inline=0.3em] - Multi-select chip inline-axis padding.
+ * @cssprop [--rc-combobox-chip-padding-inline-start=0.3em] - Multi-select chip leading padding.
+ * @cssprop [--rc-combobox-chip-padding-inline-end=calc(var(--rc-chip-remove-target-size, 1.5rem) + var(--rc-chip-remove-offset-inline, 0.125rem))] - Multi-select chip trailing padding, including the remove affordance.
  * @cssprop [--rc-combobox-chip-gap=calc(var(--rc-control-gap, 0.25em) * 0.8)] - Gap between chip
- *   label and remove icon.
+ *   content items.
  * @cssprop [--rc-combobox-chip-border=var(--rc-border)] - Multi-select chip border.
+ * @cssprop [--rc-chip-remove-target-size=1.5rem] - Inherited remove-target width reserved by
+ *   generated multi-select chips.
+ * @cssprop [--rc-chip-remove-offset-inline=0.125rem] - Inherited edge offset reserved by
+ *   generated multi-select chips.
  * @cssprop [--rc-combobox-toggle-size=1.1em] - Inline size of the toggle button's icon area.
  */
 export class RCCombobox extends RCSelect {
@@ -91,7 +117,10 @@ export class RCCombobox extends RCSelect {
   filterStrategy: FilterStrategy = 'contains';
 
   @query('#trigger')
-  protected override _$trigger!: HTMLInputElement;
+  protected override _$trigger!: HTMLElement;
+
+  @query('#dialog-input')
+  private _$dialogInput?: HTMLInputElement;
 
   @state()
   private _filterText = '';
@@ -99,18 +128,40 @@ export class RCCombobox extends RCSelect {
   // Guard against _handleInputFocus re-opening the popup immediately after close.
   private _closingPopup = false;
 
+  private _provisionalOptions = new Map<string, { value: string; label: string }>();
+  private _preDialogOptions: typeof this._options | null = null;
+
+  private get _$filterInput(): HTMLInputElement | null {
+    if (this._activePopupMode === 'dialog') {
+      return this._$dialogInput ?? null;
+    }
+
+    return this._$trigger instanceof HTMLInputElement ? this._$trigger : null;
+  }
+
+  protected override get _$activeDescendantHost(): HTMLElement | null {
+    return this._$filterInput;
+  }
+
   override openPopup() {
     super.openPopup();
-    this._$listbox?.filterOptions(this._filterText);
+
+    if (this._activePopupMode === 'popover') {
+      this._$listbox?.filterOptions(this._filterText);
+    }
   }
 
   override closePopup(_returnFocus = true) {
+    if (!this.open) {
+      return;
+    }
+
     this._filterText = '';
     this._$listbox?.clearFilter();
     this._$listbox?.setCreateOption(null);
     this._closingPopup = true;
 
-    super.closePopup(false);
+    super.closePopup(_returnFocus);
 
     // Deferred past any native focus-return from hidePopover() in Firefox
     setTimeout(() => {
@@ -136,7 +187,7 @@ export class RCCombobox extends RCSelect {
   }
 
   private _handleInputFocus() {
-    if (!this.open && !this._closingPopup) {
+    if (this.popupMode === 'popover' && !this.open && !this._closingPopup) {
       this.openPopup();
     }
   }
@@ -162,7 +213,37 @@ export class RCCombobox extends RCSelect {
       return;
     }
 
-    this._$trigger?.focus();
+    this._$filterInput?.focus();
+  }
+
+  private _handleDialogAnchorClick(e: MouseEvent): void {
+    const $target = e.target as HTMLElement;
+
+    if ($target.closest('[part~="chip"]')) {
+      return;
+    }
+
+    this.openPopup();
+  }
+
+  private _handleDialogTriggerKeyDown(e: KeyboardEvent): void {
+    switch (e.key) {
+      case ' ':
+      case 'Enter':
+      case 'ArrowDown':
+        e.preventDefault();
+        this.openPopup();
+
+        break;
+
+      case 'ArrowLeft':
+        if (this.multiple && this._selectedValues.size > 0) {
+          e.preventDefault();
+          this._focusLastChipRemove();
+        }
+
+        break;
+    }
   }
 
   private _updateCreateOption() {
@@ -191,13 +272,13 @@ export class RCCombobox extends RCSelect {
 
     super._handleListboxChange(e);
 
-    if (!this.multiple) {
+    if (!this.multiple && this._activePopupMode === 'popover') {
       this._syncInputToSelection();
     } else {
       this._filterText = '';
 
-      if (this._$trigger) {
-        this._$trigger.value = '';
+      if (this._$filterInput) {
+        this._$filterInput.value = '';
       }
 
       this._$listbox?.clearFilter();
@@ -207,6 +288,35 @@ export class RCCombobox extends RCSelect {
 
   private async _activateCreate(text: string) {
     if (!text) {
+      return;
+    }
+
+    if (this._activePopupMode === 'dialog') {
+      const option = { value: text, label: text };
+
+      this._preDialogOptions ??= [...this._options];
+      this._provisionalOptions.set(text, option);
+      this._syncOptions([...this._preDialogOptions, ...this._provisionalOptions.values()]);
+
+      const next = new Set(this._pendingSelectedValues ?? this._selectedValues);
+
+      if (!this.multiple) {
+        next.clear();
+      }
+
+      next.add(text);
+      this._pendingSelectedValues = next;
+      this._$listbox?.setSelectedValues([...next]);
+      this._filterText = '';
+
+      if (this._$filterInput) {
+        this._$filterInput.value = '';
+      }
+
+      this._$listbox?.clearFilter();
+      this._$listbox?.setCreateOption(null);
+      this.requestUpdate();
+
       return;
     }
 
@@ -227,8 +337,8 @@ export class RCCombobox extends RCSelect {
       this._$listbox?.toggleOption(text);
       this._filterText = '';
 
-      if (this._$trigger) {
-        this._$trigger.value = '';
+      if (this._$filterInput) {
+        this._$filterInput.value = '';
       }
 
       this._$listbox?.clearFilter();
@@ -262,8 +372,8 @@ export class RCCombobox extends RCSelect {
 
     this._filterText = label;
 
-    if (this._$trigger) {
-      this._$trigger.value = label;
+    if (this._$filterInput) {
+      this._$filterInput.value = label;
     }
   }
 
@@ -327,7 +437,7 @@ export class RCCombobox extends RCSelect {
       }
 
       case 'Tab':
-        if (this.open) {
+        if (this.open && this._activePopupMode === 'popover') {
           const $first = this._$listbox?.navigableItems[0];
 
           if ($first) {
@@ -345,8 +455,8 @@ export class RCCombobox extends RCSelect {
         e.preventDefault();
         this._filterText = '';
 
-        if (this._$trigger) {
-          this._$trigger.value = '';
+        if (this._$filterInput) {
+          this._$filterInput.value = '';
         }
 
         this.closePopup();
@@ -381,28 +491,97 @@ export class RCCombobox extends RCSelect {
   }
 
   private get _inputPlaceholder(): string {
-    if (this.multiple && this._selectedValues.size > 0) {
+    const selectedCount =
+      this._activePopupMode === 'dialog'
+        ? this._dialogSelectedValues.length
+        : this._selectedValues.size;
+
+    if (this.multiple && selectedCount > 0) {
       return '';
     }
 
     return this.placeholder;
   }
 
-  protected override render() {
-    const showChips = this.multiple && this._selectedValues.size > 0;
+  protected override _syncAccessibleName($select: HTMLSelectElement): void {
+    const accessibleName =
+      $select.getAttribute('aria-label') ?? $select.labels?.[0]?.textContent?.trim() ?? '';
+
+    this._accessibleName = accessibleName;
+    super._syncAccessibleName($select);
+  }
+
+  protected override _focusDialogContent(): void {
+    this._$listbox?.filterOptions(this._filterText);
+    this._$dialogInput?.focus();
+  }
+
+  protected override _prepareDialogCommit(): void {
+    const baseOptions = this._preDialogOptions ?? [...this._options];
+    const pending = new Set(this._dialogSelectedValues);
+
+    this._syncOptions(baseOptions);
+
+    for (const option of this._provisionalOptions.values()) {
+      if (!pending.has(option.value)) {
+        continue;
+      }
+
+      const createEvent = new CustomEvent<RCComboboxCreateEvent>('rc-combobox-create', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: { text: option.label },
+      });
+
+      if (this.dispatchEvent(createEvent)) {
+        this._addOption(option);
+      } else {
+        pending.delete(option.value);
+      }
+    }
+
+    this._pendingSelectedValues = pending;
+    this._provisionalOptions.clear();
+    this._preDialogOptions = null;
+  }
+
+  protected override _commitDialogSelection(): void {
+    super._commitDialogSelection();
+    this._syncInputToSelection();
+  }
+
+  protected override _discardDialogSelection(): void {
+    if (this._preDialogOptions) {
+      this._syncOptions(this._preDialogOptions);
+    }
+
+    this._provisionalOptions.clear();
+    this._preDialogOptions = null;
+    super._discardDialogSelection();
+  }
+
+  protected override _finishDialogClose(returnFocus: boolean): void {
+    this._filterText = '';
+    this._$listbox?.clearFilter();
+    this._$listbox?.setCreateOption(null);
+    super._finishDialogClose(returnFocus);
+  }
+
+  protected override _renderDialogBody() {
+    const title = this._accessibleName || 'Options';
 
     return html`
-      <div id="anchor" part="anchor" @click=${this._handleAnchorClick}>
-        ${showChips ? this._renderChips() : nothing}
-
+      <label part="dialog-search">
+        <span>Search ${title}</span>
         <input
-          id="trigger"
-          part="input"
+          id="dialog-input"
+          part="dialog-input"
           type="text"
           role="combobox"
           aria-haspopup="listbox"
-          aria-expanded=${this.open ? 'true' : 'false'}
-          aria-controls="listbox"
+          aria-expanded="true"
+          aria-controls="dialog-listbox"
           aria-autocomplete="list"
           aria-required=${this.required ? 'true' : 'false'}
           ?disabled=${this.disabled}
@@ -412,8 +591,98 @@ export class RCCombobox extends RCSelect {
           spellcheck="false"
           @input=${this._handleInput}
           @keydown=${this._handleInputKeyDown}
-          @focus=${this._handleInputFocus}
         />
+      </label>
+
+      <rc-listbox
+        id="dialog-listbox"
+        part="listbox dialog-listbox"
+        tabindex="-1"
+        ?multiple=${this.multiple}
+        checkmark
+        .options=${this._options}
+        .filterStrategy=${this.filterStrategy}
+        @rc-listbox-change=${this._handleListboxChange}
+      ></rc-listbox>
+    `;
+  }
+
+  protected override render() {
+    const showChips = this.multiple && this._selectedValues.size > 0;
+    const popupMode = this.open ? this._activePopupMode : this.popupMode;
+
+    if (popupMode === 'dialog') {
+      return html`
+        <div id="anchor" part="anchor" @click=${this._handleDialogAnchorClick}>
+          <div class="value">
+            ${showChips ? this._renderChips() : nothing}
+
+            <div
+              id="trigger"
+              part="input"
+              role="combobox"
+              tabindex=${this.disabled ? '-1' : '0'}
+              aria-label=${this._accessibleName || nothing}
+              aria-haspopup="dialog"
+              aria-expanded=${this.open ? 'true' : 'false'}
+              aria-controls="dialog"
+              aria-required=${this.required ? 'true' : 'false'}
+              aria-disabled=${this.disabled ? 'true' : 'false'}
+              @keydown=${this._handleDialogTriggerKeyDown}
+            >
+              ${this._displayLabel}
+            </div>
+          </div>
+
+          <span id="toggle" part="toggle" aria-hidden="true">
+            <slot name="toggle-icon">
+              <svg
+                width="10"
+                height="6"
+                viewBox="0 0 10 6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="1,1 5,5 9,1"></polyline>
+              </svg>
+            </slot>
+          </span>
+        </div>
+
+        ${this._renderDialogPopup()}
+        <slot @slotchange=${this._handleSelectSlotChange}></slot>
+      `;
+    }
+
+    return html`
+      <div id="anchor" part="anchor" @click=${this._handleAnchorClick}>
+        <div class="value">
+          ${showChips ? this._renderChips() : nothing}
+
+          <input
+            id="trigger"
+            part="input"
+            type="text"
+            role="combobox"
+            aria-label=${this._accessibleName || nothing}
+            aria-haspopup="listbox"
+            aria-expanded=${this.open ? 'true' : 'false'}
+            aria-controls="listbox"
+            aria-autocomplete="list"
+            aria-required=${this.required ? 'true' : 'false'}
+            ?disabled=${this.disabled}
+            placeholder=${this._inputPlaceholder}
+            .value=${this._filterText}
+            autocomplete="off"
+            spellcheck="false"
+            @input=${this._handleInput}
+            @keydown=${this._handleInputKeyDown}
+            @focus=${this._handleInputFocus}
+          />
+        </div>
 
         <button
           id="toggle"
@@ -447,6 +716,7 @@ export class RCCombobox extends RCSelect {
         ?multiple=${this.multiple}
         checkmark
         .filterStrategy=${this.filterStrategy}
+        .options=${this._options}
         @rc-listbox-change=${this._handleListboxChange}
       ></rc-listbox>
 

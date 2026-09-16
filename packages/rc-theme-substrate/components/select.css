@@ -1,4 +1,25 @@
 @layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :is(rc-select, rc-combobox)[popup-mode='dialog']::part(dialog) {
+    position: fixed;
+    inset: auto;
+    top: var(--rc-dialog-visual-viewport-top, 0);
+    left: var(--rc-dialog-visual-viewport-left, 0);
+    box-sizing: border-box;
+    inline-size: var(--rc-dialog-visual-viewport-width, 100dvw);
+    block-size: var(--rc-dialog-visual-viewport-height, 100dvh);
+    max-inline-size: none;
+    max-block-size: none;
+    margin: 0;
+    padding-block: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-bottom));
+    padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+    resize: none;
+    overflow: hidden;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none;
+  }
+
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-select {
     display: inline-block;
   }

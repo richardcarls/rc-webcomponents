@@ -48,7 +48,7 @@ test('aggregate component styles cover every visual RC component', () => {
     ['rc-search-bar', ['display', 'inline']],
     ['rc-field', ['--rc-field-min-block-size', '']],
     ['rc-textarea', ['--rc-textarea-padding', '1rem']],
-    ['rc-markdown-editor', ['--rme-padding', '1rem']],
+    ['rc-markdown-editor', ['--rc-markdown-editor-padding', '1rem']],
     ['rc-transfer-list', ['--rc-transfer-list-gap', '1rem']],
     ['rc-app-bar', ['font-family', '']],
     ['rc-fab-menu', ['--rc-fab-menu-bg', '']],
@@ -82,6 +82,22 @@ test('aggregate component styles cover every visual RC component', () => {
   }
 });
 
+test('canonical 0.7 component tokens replace removed theme-only names', () => {
+  const scope = renderScope();
+  const markdownEditor = document.createElement('rc-markdown-editor');
+  const transferList = document.createElement('rc-transfer-list');
+
+  scope.append(markdownEditor, transferList);
+
+  const markdownStyles = getComputedStyle(markdownEditor);
+  const transferStyles = getComputedStyle(transferList);
+
+  expect(markdownStyles.getPropertyValue('--rc-markdown-editor-toolbar-padding')).toBe('0.25rem');
+  expect(markdownStyles.getPropertyValue('--rc-markdown-editor-border-radius')).not.toBe('');
+  expect(transferStyles.getPropertyValue('--rc-transfer-list-listbox-radius')).toBe('0.25rem');
+  expect(transferStyles.getPropertyValue('--rc-transfer-list-panel-radius')).toBe('');
+});
+
 test('icons follow Material sizes by component context', () => {
   const scope = renderScope();
   const labeledButton = document.createElement('rc-button');
@@ -104,6 +120,97 @@ test('icons follow Material sizes by component context', () => {
   expect(getComputedStyle(iconButtonIcon).fontSize).toBe('24px');
   expect(getComputedStyle(navigationIcon).fontSize).toBe('24px');
   expect(getComputedStyle(chipIcon).fontSize).toBe('18px');
+});
+
+test('Material chips use the MD3 leading-icon spacing', () => {
+  const $scope = renderScope();
+  const $chip = document.createElement('rc-chip');
+  const $label = document.createElement('button');
+  const $icon = document.createElement('span');
+
+  $icon.dataset.rcChipIcon = '';
+  $label.append($icon, 'Quick');
+  $chip.append($label);
+  $scope.append($chip);
+
+  const styles = getComputedStyle($chip);
+
+  expect(styles.getPropertyValue('--rc-chip-gap')).toBe('0.5rem');
+  expect(styles.getPropertyValue('--rc-chip-padding-inline-start')).toBe('0.5rem');
+  expect(styles.getPropertyValue('--rc-chip-padding-inline-end')).toBe('1rem');
+  expect(styles.getPropertyValue('--rc-chip-padding-block')).toBe('0');
+  expect(styles.getPropertyValue('--rc-chip-font')).toMatch(/\/\s+1\.25rem/);
+});
+
+test('Material terminal list rows do not draw a trailing divider', () => {
+  const $scope = renderScope();
+  const $list = document.createElement('rc-list');
+  const $first = document.createElement('rc-list-item');
+  const $last = document.createElement('rc-list-item');
+
+  $first.dataset.rcListPosition = 'first';
+  $last.dataset.rcListPosition = 'last';
+  $list.append($first, $last);
+  $scope.append($list);
+
+  expect(getComputedStyle($first).getPropertyValue('--rc-list-item-divider')).not.toBe('0');
+  expect(getComputedStyle($last).getPropertyValue('--rc-list-item-divider')).toBe('0');
+});
+
+test('Material uses standard-duration bottom-sheet snaps', () => {
+  const $scope = renderScope();
+  const $sheet = document.createElement('rc-bottom-sheet');
+
+  $scope.append($sheet);
+
+  expect(getComputedStyle($sheet).getPropertyValue('--rc-bottom-sheet-snap-duration')).toBe(
+    '300ms',
+  );
+});
+
+test('nested field controls defer compact geometry and multiline label inset to the field', () => {
+  const $scope = renderScope();
+  const $field = document.createElement('rc-field');
+  const $select = document.createElement('rc-select');
+  const $combobox = document.createElement('rc-combobox');
+  const $label = renderPart($scope, 'rc-field', 'label');
+  const $labelField = $label.getRootNode() as ShadowRoot;
+
+  $select.dataset.rcFieldControl = '';
+  $combobox.dataset.rcFieldControl = '';
+  ($labelField.host as HTMLElement).setAttribute('data-multiline', '');
+  $field.append($select, $combobox);
+  $scope.append($field);
+
+  expect(getComputedStyle($select).getPropertyValue('--rc-select-control-block-size')).toBe(
+    '1.5rem',
+  );
+
+  expect(getComputedStyle($combobox).getPropertyValue('--rc-combobox-control-block-size')).toBe(
+    '1.5rem',
+  );
+
+  expect(getComputedStyle($label).insetBlockStart).toBe('8px');
+});
+
+test('nested standard lists reset segmented item radius', () => {
+  const $scope = renderScope();
+  const $segmentedList = document.createElement('rc-list');
+  const $outerItem = document.createElement('rc-list-item');
+  const $nestedList = document.createElement('rc-list');
+  const $nestedItem = document.createElement('rc-list-item');
+
+  $segmentedList.setAttribute('variant', 'segmented');
+  $segmentedList.append($outerItem);
+  $outerItem.append($nestedList);
+  $nestedList.append($nestedItem);
+  $scope.append($segmentedList);
+
+  expect(getComputedStyle($outerItem).getPropertyValue('--rc-list-item-border-radius')).toBe(
+    '0.25rem',
+  );
+
+  expect(getComputedStyle($nestedItem).getPropertyValue('--rc-list-item-border-radius')).toBe('0');
 });
 
 test('unmarked icon-button content receives the Material icon size', () => {
@@ -324,7 +431,7 @@ test('bottom sheets preserve the drag handle geometry and style authored actions
   ).not.toBe('');
 
   expect(getComputedStyle(sheet).getPropertyValue('--rc-bottom-sheet-snap-duration').trim()).toBe(
-    '500ms',
+    '300ms',
   );
 
   expect(getComputedStyle(sheet).getPropertyValue('--rc-bottom-sheet-snap-easing').trim()).not.toBe(
@@ -755,7 +862,7 @@ test('menubar receives the Material menu-button item token contract', () => {
   expect(styles.getPropertyValue('--rc-menubar-item-open-background')).not.toBe('');
 });
 
-test('disclosure styles use Material list headers and card expansion', () => {
+test('disclosure maps Material tokens onto the shared panel properties', () => {
   const scope = renderScope();
   const disclosure = document.createElement('rc-disclosure');
 
@@ -768,32 +875,50 @@ test('disclosure styles use Material list headers and card expansion', () => {
 
   scope.append(disclosure);
 
-  const details = disclosure.querySelector('details');
-  const summary = disclosure.querySelector('summary');
-  const content = disclosure.querySelector('p');
+  const styles = getComputedStyle(disclosure);
 
-  expect(details).not.toBeNull();
-  expect(summary).not.toBeNull();
-  expect(content).not.toBeNull();
+  // The panel boxes are drawn by the component's own light-DOM base layer, so
+  // what the theme owes is the mapping.
+  for (const token of [
+    '--rc-disclosure-radius',
+    '--rc-disclosure-background',
+    '--rc-disclosure-open-background',
+    '--rc-disclosure-open-shadow',
+    '--rc-disclosure-summary-min-block-size',
+    '--rc-disclosure-summary-font',
+    '--rc-disclosure-content-color',
+    '--rc-disclosure-duration',
+  ]) {
+    expect(styles.getPropertyValue(token).trim(), token).not.toBe('');
+  }
 
-  const summaryStyle = getComputedStyle(summary!);
-
-  expect(summaryStyle.display).toBe('grid');
-  expect(summaryStyle.minBlockSize).toBe('56px');
-  expect(summaryStyle.fontSize).not.toBe('');
-
-  const detailsStyle = getComputedStyle(details!);
-
-  expect(detailsStyle.borderRadius).not.toBe('0px');
-  expect(detailsStyle.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
-
-  content!.style.transitionDuration = '0ms';
-  details!.open = true;
-  expect(getComputedStyle(details!).boxShadow).not.toBe('none');
-  expect(getComputedStyle(content!).opacity).toBe('1');
+  expect(styles.getPropertyValue('--rc-disclosure-summary-min-block-size').trim()).toBe('3.5rem');
 });
 
-test('accordion styles direct and wrapped disclosures as equal-height Material segments', () => {
+test('the summary keeps its list-item box so the native marker still renders', () => {
+  const scope = renderScope();
+  const disclosure = document.createElement('rc-disclosure');
+
+  disclosure.innerHTML = `
+    <details>
+      <summary>Details</summary>
+      <p>Expanded content</p>
+    </details>
+  `;
+
+  scope.append(disclosure);
+
+  const summary = disclosure.querySelector('summary');
+
+  expect(summary).not.toBeNull();
+
+  // `display: grid` drops the list-item box, which silently removes the
+  // disclosure triangle. Material styles `::marker` and draws no replacement,
+  // so setting grid here left the control with no expand affordance at all.
+  expect(getComputedStyle(summary!).display).toBe('list-item');
+});
+
+test('accordion styles direct and wrapped disclosures from one shared mapping', () => {
   const scope = renderScope();
   const accordion = document.createElement('rc-accordion');
 
@@ -812,22 +937,17 @@ test('accordion styles direct and wrapped disclosures as equal-height Material s
 
   scope.append(accordion);
 
-  const summaries = accordion.querySelectorAll('summary');
+  const wrapped = accordion.querySelector('rc-disclosure');
 
-  expect(summaries).toHaveLength(2);
+  expect(wrapped).not.toBeNull();
 
-  const firstSummaryStyle = getComputedStyle(summaries[0]!);
-  const secondSummaryStyle = getComputedStyle(summaries[1]!);
+  // Both supported child forms resolve the same property names to the same
+  // values, which is what keeps one panel recipe honest.
+  for (const token of ['--rc-disclosure-radius', '--rc-disclosure-summary-min-block-size']) {
+    expect(getComputedStyle(accordion).getPropertyValue(token).trim(), token).toBe(
+      getComputedStyle(wrapped!).getPropertyValue(token).trim(),
+    );
+  }
 
-  expect(firstSummaryStyle.display).toBe('grid');
-  expect(secondSummaryStyle.display).toBe('grid');
-  expect(firstSummaryStyle.minBlockSize).toBe(secondSummaryStyle.minBlockSize);
-
-  const details = accordion.querySelectorAll('details');
-
-  expect(details).toHaveLength(2);
-
-  expect(getComputedStyle(details[0]!).borderRadius).toBe(
-    getComputedStyle(details[1]!).borderRadius,
-  );
+  expect(getComputedStyle(accordion).getPropertyValue('--rc-accordion-gap').trim()).toBe('0.5rem');
 });

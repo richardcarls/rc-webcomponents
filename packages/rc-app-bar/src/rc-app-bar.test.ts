@@ -23,6 +23,19 @@ function scrollTo(el: HTMLElement, top: number): void {
   el.dispatchEvent(new Event('scroll'));
 }
 
+test('applies the public elevation token to the host surface', async () => {
+  const screen = render(html`
+    <rc-app-bar data-testid="host" style="--rc-app-bar-shadow: rgb(1 2 3) 0 4px 8px">
+      <span>Title</span>
+    </rc-app-bar>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
+  await host.updateComplete;
+
+  expect(getComputedStyle(host).boxShadow).toBe('rgb(1, 2, 3) 0px 4px 8px 0px');
+});
+
 test('renders one connected title with no implicit landmark role', async () => {
   const screen = render(html`
     <rc-app-bar data-testid="host">

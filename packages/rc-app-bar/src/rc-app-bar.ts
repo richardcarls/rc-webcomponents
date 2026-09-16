@@ -65,6 +65,7 @@ export interface RCAppBarScrollDetail {
  *   centered within available space once capped by `--rc-app-bar-center-max-inline-size`.
  * @cssprop [--rc-app-bar-bg=Canvas] - Bar background
  * @cssprop [--rc-app-bar-color=CanvasText] - Bar text color
+ * @cssprop [--rc-app-bar-shadow=none] - Bar box shadow
  * @cssprop [--rc-app-bar-compact-min-height=3rem] - Compact row minimum height
  * @cssprop [--rc-app-bar-expanded-padding-block=0.75em] - Expanded title padding
  * @cssprop [--rc-app-bar-padding-inline=0.75em] - Horizontal padding

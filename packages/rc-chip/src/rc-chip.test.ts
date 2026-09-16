@@ -36,6 +36,28 @@ test('preserves a direct native button child', async () => {
   }
 });
 
+test('unlayered author styles override the layered light DOM base', async () => {
+  const screen = render(html`
+    <style>
+      rc-chip > button {
+        padding: 13px;
+        border: 4px solid red;
+        background: red;
+      }
+    </style>
+    <rc-chip data-testid="host"><button type="button">Quick</button></rc-chip>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCChip;
+
+  await flushChip(host);
+
+  const styles = getComputedStyle(host.querySelector('button')!);
+
+  expect(styles.paddingTop).toBe('13px');
+  expect(styles.borderTopWidth).toBe('4px');
+  expect(styles.backgroundColor).toBe('rgb(255, 0, 0)');
+});
+
 test('accepts a direct native anchor child without a development warning', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   const screen = render(html`
@@ -373,21 +395,29 @@ test('removable chip indicator is presentational and adds no button semantics', 
   await expectNoA11yViolations(host);
 });
 
-test('removable chip end padding follows the remove target size minus the chip gap', async () => {
+test('removable chip end padding reserves the remove target and its edge offset', async () => {
   const screen = render(html`
     <rc-chip
       data-testid="host"
       removable
-      style="--rc-chip-remove-target-size: 2rem; --rc-chip-gap: 0.25rem"
+      style="--rc-chip-remove-target-size: 2rem; --rc-chip-remove-offset-inline: 0.25rem; --rc-chip-gap: 0.5rem"
     >
-      <button type="button" aria-label="Remove Quick">Quick</button>
+      <button type="button" aria-label="Remove Quick"><span>Quick</span></button>
     </rc-chip>
   `);
   const host = (await screen.getByTestId('host').element()) as RCChip;
 
   await flushChip(host);
 
-  expect(getComputedStyle(host.querySelector('button')!).paddingInlineEnd).toBe('28px');
+  const button = host.querySelector('button')!;
+  const label = button.querySelector('span')!;
+  const remove = host.shadowRoot!.querySelector<HTMLElement>('[part="remove"]')!;
+
+  expect(getComputedStyle(button).paddingInlineEnd).toBe('36px');
+
+  expect(label.getBoundingClientRect().right).toBeLessThanOrEqual(
+    remove.getBoundingClientRect().left,
+  );
 });
 
 test('removable filter chips remove instead of toggling selected state', async () => {

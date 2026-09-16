@@ -1,52 +1,91 @@
 @layer rc-theme-substrate.components {
+  /*
+   * Maps Substrate tokens onto the public rc-disclosure properties, for both
+   * `rc-disclosure` and `rc-accordion`, since a panel reads the same properties
+   * either way. The boxes themselves are drawn by the component's own light-DOM
+   * base layer.
+   */
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure {
+    /*
+     * Layout stays in theme CSS so a disclosure is laid out before the element
+     * upgrades; only the property-driven drawing lives in the component's base
+     * layer, which needs JS to install.
+     */
     display: block;
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure > details {
-    border: var(--rc-border, 1px solid ButtonBorder);
-    border-radius: var(--substrate-radius-lg, 0.75rem);
-    background: var(--substrate-surface-raised, Canvas);
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) :is(rc-disclosure, rc-accordion) {
+    --rc-disclosure-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-disclosure-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-disclosure-background: var(--substrate-surface-raised, Canvas);
+    --rc-disclosure-color: var(--substrate-on-surface, CanvasText);
+    --rc-disclosure-open-shadow: var(--substrate-shadow-sm, none);
+
+    --rc-disclosure-summary-min-block-size: 2.75rem;
+    --rc-disclosure-summary-padding-block: 0.75rem;
+    --rc-disclosure-summary-padding-inline: 0.875rem;
+    --rc-disclosure-summary-gap: 0.75rem;
+    --rc-disclosure-summary-font: 650 var(--substrate-font-size, 0.95rem) /
+      var(--substrate-line-height, 1.45) var(--substrate-font-family, sans-serif);
+    --rc-disclosure-summary-hover-background: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 8%,
+      transparent
+    );
+
+    --rc-disclosure-content-padding-block: 0 0.875rem;
+    --rc-disclosure-content-padding-inline: 0.875rem;
+    --rc-disclosure-content-color: var(--substrate-on-surface-muted, CanvasText);
+
+    --rc-disclosure-duration: var(--substrate-motion-duration-slow, 240ms);
+    --rc-disclosure-easing: var(--substrate-motion-easing, ease);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :is(rc-disclosure, rc-accordion)
+    > details {
     overflow: clip;
     transition:
       border-color var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease),
       box-shadow var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure > details[open] {
-    box-shadow: var(--substrate-shadow-sm, none);
-  }
-
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure > details > summary {
+  /*
+   * Substrate replaces the native marker with its own chevron, so it owns both
+   * halves of that swap: hiding `::marker` and drawing the affordance. Changing
+   * `display` here is safe precisely because this rule also supplies the
+   * replacement the lost `list-item` box would have drawn.
+   */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > summary {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.75rem;
     align-items: center;
-    min-block-size: 2.75rem;
-    padding-block: 0.75rem;
-    padding-inline: 0.875rem;
-    cursor: pointer;
-    font-weight: 650;
     transition:
       background-color var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease),
       color var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-disclosure
+    :is(rc-disclosure, rc-accordion)
     > details
     > summary::marker {
     content: '';
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-disclosure
+    :is(rc-disclosure, rc-accordion)
     > details
     > summary::-webkit-details-marker {
     display: none;
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure > details > summary::after {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > summary::after {
     content: '';
     inline-size: 0.5rem;
     block-size: 0.5rem;
@@ -59,62 +98,17 @@
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-    rc-disclosure
+    :is(rc-disclosure, rc-accordion)
     > details[open]
     > summary::after {
     rotate: 135deg;
     translate: 0 -0.125rem;
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure > details > summary:hover {
-    background: color-mix(in srgb, var(--rc-accent, Highlight) 8%, transparent);
-  }
-
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure > details > :not(summary) {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > :not(summary) {
     display: flow-root;
-    padding-inline: 0.875rem;
-    opacity: 1;
-    transition:
-      opacity var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease),
-      translate var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
-  }
-
-  @supports selector(::details-content) {
-    :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-disclosure > details {
-      interpolate-size: allow-keywords;
-    }
-
-    :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-      rc-disclosure
-      > details::details-content {
-      block-size: 0;
-      content-visibility: hidden;
-      opacity: 0;
-      overflow: clip;
-      transition:
-        block-size var(--substrate-motion-duration-slow, 240ms) var(--substrate-motion-easing, ease),
-        content-visibility var(--substrate-motion-duration-slow, 240ms)
-          var(--substrate-motion-easing, ease) allow-discrete,
-        opacity var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
-      transition-behavior: allow-discrete;
-    }
-
-    :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-      rc-disclosure
-      > details[open]::details-content {
-      block-size: auto;
-      content-visibility: visible;
-      opacity: 1;
-    }
-  }
-
-  @starting-style {
-    :where(.rc-theme-substrate, :host(.rc-theme-substrate))
-      rc-disclosure
-      > details[open]
-      > :not(summary) {
-      opacity: 0;
-      translate: 0 -0.25rem;
-    }
   }
 }

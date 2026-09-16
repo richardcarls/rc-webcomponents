@@ -20,6 +20,43 @@ async function fieldFixture(template: ReturnType<typeof html>): Promise<RCField>
   return $field;
 }
 
+test('shared semantic tokens flow into the field and component tokens remain the final override', async () => {
+  const $field = await fieldFixture(html`
+    <div
+      style="
+        --rc-control-block-size: 64px;
+        --rc-control-padding-block: 8px;
+        --rc-control-padding-inline: 12px;
+        --rc-control-radius: 14px;
+        --rc-border: 3px solid rgb(1 2 3);
+        --rc-field: rgb(10 20 30);
+        --rc-field-text: rgb(240 241 242);
+        --rc-font-size: 18px;
+      "
+    >
+      <rc-field data-testid="field"><input aria-label="Name" /></rc-field>
+    </div>
+  `);
+  const $surface = $field.shadowRoot!.querySelector<HTMLElement>('#field')!;
+  let styles = getComputedStyle($surface);
+
+  expect(styles.minBlockSize).toBe('64px');
+  expect(styles.paddingBlockStart).toBe('8px');
+  expect(styles.paddingInlineStart).toBe('12px');
+  expect(styles.borderTopWidth).toBe('3px');
+  expect(styles.borderRadius).toBe('14px');
+  expect(styles.backgroundColor).toBe('rgb(10, 20, 30)');
+  expect(styles.color).toBe('rgb(240, 241, 242)');
+  expect(styles.fontSize).toBe('18px');
+
+  $field.style.setProperty('--rc-field-radius', '6px');
+  $field.style.setProperty('--rc-field-background', 'rgb(30 40 50)');
+  styles = getComputedStyle($surface);
+
+  expect(styles.borderRadius).toBe('6px');
+  expect(styles.backgroundColor).toBe('rgb(30, 40, 50)');
+});
+
 test('keeps the native control connected with author form attributes intact', async () => {
   const $field = await fieldFixture(html`
     <form>
@@ -38,6 +75,23 @@ test('keeps the native control connected with author form attributes intact', as
   expect($input.getAttribute('autocomplete')).toBe('name');
   expect($input.required).toBe(true);
   expect(new FormData($input.form!).get('name')).toBe('Pasta');
+});
+
+test('removes nested native select chrome so the field surface owns it', async () => {
+  const $field = await fieldFixture(html`
+    <rc-field data-testid="field">
+      <label slot="label">Difficulty</label>
+      <select>
+        <option>Easy</option>
+      </select>
+    </rc-field>
+  `);
+  const $select = $field.querySelector('select')!;
+  const styles = getComputedStyle($select);
+
+  expect(styles.borderTopWidth).toBe('0px');
+  expect(styles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(styles.boxShadow).toBe('none');
 });
 
 test('supports an enhancing control provider without replacing the native control', async () => {
@@ -65,7 +119,7 @@ test('supports an enhancing control provider without replacing the native contro
   expect($field.hasAttribute('data-focused')).toBe(true);
 });
 
-test('prefers a control provider\'s own disabled over the raw control it wraps', async () => {
+test("prefers a control provider's own disabled over the raw control it wraps", async () => {
   const $field = await fieldFixture(html`
     <rc-field data-testid="field">
       <label slot="label" for="notes">Notes</label>
@@ -271,7 +325,7 @@ test('an empty leading/trailing/prefix/suffix slot takes up no width', async () 
   }
 });
 
-test('discovers a native select as the control and reflects populated state', async () => {
+test('single select populated state follows visible option text rather than its submitted value', async () => {
   const $field = await fieldFixture(html`
     <rc-field data-testid="field">
       <label slot="label">Unit</label>
@@ -285,7 +339,8 @@ test('discovers a native select as the control and reflects populated state', as
   const $select = $field.querySelector<HTMLSelectElement>('select')!;
 
   expect($field.control).toBe($select);
-  expect($field.hasAttribute('data-populated')).toBe(false);
+  expect($select.value).toBe('');
+  expect($field.hasAttribute('data-populated')).toBe(true);
   expect($field.hasAttribute('data-multiline')).toBe(false);
 
   $select.value = 'oz';
@@ -293,6 +348,21 @@ test('discovers a native select as the control and reflects populated state', as
   await $field.updateComplete;
 
   expect($field.hasAttribute('data-populated')).toBe(true);
+});
+
+test('single select with a blank sentinel option remains unpopulated', async () => {
+  const $field = await fieldFixture(html`
+    <rc-field data-testid="field">
+      <label slot="label">Unit</label>
+      <select>
+        <option value=""></option>
+        <option value="oz">oz</option>
+      </select>
+    </rc-field>
+  `);
+
+  expect($field.querySelector('select')?.value).toBe('');
+  expect($field.hasAttribute('data-populated')).toBe(false);
 });
 
 test('reflects populated state for a multiple select from selectedOptions, not value', async () => {

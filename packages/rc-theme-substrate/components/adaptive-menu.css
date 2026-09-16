@@ -1,0 +1,43 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-adaptive-menu {
+    --rc-adaptive-menu-gap: var(--substrate-control-gap, 0.5rem);
+    --rc-adaptive-menu-icon-size: 1.25rem;
+
+    --rc-adaptive-menu-trigger-background: transparent;
+    --rc-adaptive-menu-trigger-border: 0;
+    --rc-adaptive-menu-trigger-color: var(--substrate-on-surface-muted, ButtonText);
+    --rc-adaptive-menu-trigger-block-size: 2.25rem;
+    --rc-adaptive-menu-trigger-inline-size: 2.25rem;
+    --rc-adaptive-menu-trigger-padding: 0.375rem;
+    --rc-adaptive-menu-trigger-radius: var(--substrate-radius-md, 0.5rem);
+
+    /*
+     * The trigger is drawn at 2.25rem for density, so the hit area is inflated
+     * separately to clear the 3rem touch minimum without widening the row.
+     */
+    --rc-adaptive-menu-touch-target-block-size: 3rem;
+    --rc-adaptive-menu-touch-target-inline-size: 3rem;
+    --rc-adaptive-menu-touch-target-overlap-inline-end: 0.375rem;
+
+    --rc-adaptive-menu-popup-background: var(--substrate-surface, Canvas);
+    --rc-adaptive-menu-popup-color: var(--rc-field-text, CanvasText);
+    --rc-adaptive-menu-popup-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-adaptive-menu-popup-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-adaptive-menu-popup-shadow: var(--substrate-shadow-lg, none);
+    --rc-adaptive-menu-popup-min-inline-size: 12rem;
+    --rc-adaptive-menu-popup-padding-block: 0.375rem;
+
+    /*
+     * The sheet presentation exists because a finger is doing the pointing, so
+     * its rows take the larger list item height rather than the menu row height.
+     */
+    --rc-adaptive-menu-item-min-block-size: 3rem;
+    --rc-adaptive-menu-item-padding-block: var(--substrate-item-padding-block, 0.55rem);
+    --rc-adaptive-menu-item-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+    --rc-adaptive-menu-item-gap: var(--substrate-item-gap, 0.5rem);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-adaptive-menu::part(trigger):hover {
+    background: color-mix(in srgb, var(--rc-accent, Highlight) 10%, var(--substrate-surface, Canvas));
+  }
+}

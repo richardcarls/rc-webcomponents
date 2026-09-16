@@ -1,0 +1,80 @@
+---
+title: Performance
+---
+
+# Performance
+
+The repository tracks both distributable size and representative browser work.
+Budgets are regression guards, not claims that every application will observe
+the same timing. Network delivery, theme choice, option count, fonts, and host
+application work all affect real results.
+
+## Bundle baselines
+
+Consumer-style Vite builds measure minified initial and lazy output with gzip
+and Brotli compression. The tracked baseline currently records these initial
+gzip sizes:
+
+| Entry                               | Initial gzip |
+| ----------------------------------- | -----------: |
+| `@rcarls/rc-button/define`          |      11.7 kB |
+| `@rcarls/rc-select/define`          |      41.8 kB |
+| `@rcarls/rc-textarea/define`        |      26.5 kB |
+| `@rcarls/rc-markdown-editor/define` |     106.9 kB |
+| Aggregate class export              |     186.7 kB |
+| Aggregate define export             |     186.5 kB |
+| Base theme CSS                      |       0.7 kB |
+| Material theme CSS                  |      28.6 kB |
+| Substrate theme CSS                 |      10.5 kB |
+
+`rc-select` and aggregate entries also retain the anchor-positioning polyfill as
+a lazy chunk. The complete raw, gzip, Brotli, and chunk-count data lives in
+`performance-budgets.json`. Each byte budget allows five percent or 1 kB above
+the recorded measurement, whichever is larger; chunk counts may not grow
+without an intentional baseline update.
+
+## Browser scenarios
+
+Headless Chromium measures three warmups followed by ten samples and records the
+median and 95th percentile for:
+
+- creating 100 native-backed buttons
+- creating 50 selects with 20 options each
+- opening and filtering a combobox with 1,000 options
+- rendering and editing a 1,000-line textarea with a pattern decoration
+- updating an adaptive menu with 50 actions
+- opening, moving, and settling an anchored popup
+
+The CI limit for each browser metric is 20 percent or 5 ms above its recorded
+baseline, whichever is larger. The report, including every sample, is uploaded
+as a CI artifact. Other browser engines remain correctness gates; Chromium is
+the stable timing gate.
+
+## Running the audits
+
+Build packages before measuring so package exports resolve to current output:
+
+```bash
+yarn build
+yarn audit:performance
+yarn benchmark:browser
+```
+
+An intentional improvement or accepted regression can refresh the baselines:
+
+```bash
+yarn audit:performance:update
+yarn benchmark:browser:update
+```
+
+Review the generated `.performance/` reports and the source change before
+committing either budget file. A baseline update is evidence of a deliberate
+decision, not a way to silence an unexplained regression.
+
+## Runtime behavior
+
+Popup anchoring observes resize, scrolling, relevant mutations, and visibility
+changes. It performs layout reads only during a bounded settling window and
+stops after stable geometry, so an idle open popup does not leave a permanent
+animation-frame polling loop. Components otherwise favor native browser
+behavior, event-driven updates, and individually importable packages.

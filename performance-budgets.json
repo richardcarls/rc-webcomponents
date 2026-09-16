@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "measurements": {
+    "button": {
+      "initialRaw": 40102,
+      "initialGzip": 11711,
+      "initialBrotli": 10386,
+      "totalRaw": 40102,
+      "totalGzip": 11711,
+      "totalBrotli": 10386,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "select": {
+      "initialRaw": 175700,
+      "initialGzip": 41848,
+      "initialBrotli": 35599,
+      "totalRaw": 344953,
+      "totalGzip": 82703,
+      "totalBrotli": 70847,
+      "largestLazyGzip": 40855,
+      "initialChunks": 1,
+      "lazyChunks": 1
+    },
+    "textarea": {
+      "initialRaw": 100811,
+      "initialGzip": 26485,
+      "initialBrotli": 23348,
+      "totalRaw": 100811,
+      "totalGzip": 26485,
+      "totalBrotli": 23348,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "markdownEditor": {
+      "initialRaw": 442202,
+      "initialGzip": 106918,
+      "initialBrotli": 88941,
+      "totalRaw": 611455,
+      "totalGzip": 147773,
+      "totalBrotli": 124189,
+      "largestLazyGzip": 40855,
+      "initialChunks": 1,
+      "lazyChunks": 1
+    },
+    "aggregateClasses": {
+      "initialRaw": 818637,
+      "initialGzip": 186711,
+      "initialBrotli": 144206,
+      "totalRaw": 987890,
+      "totalGzip": 227566,
+      "totalBrotli": 179454,
+      "largestLazyGzip": 40855,
+      "initialChunks": 1,
+      "lazyChunks": 1
+    },
+    "aggregateDefine": {
+      "initialRaw": 821365,
+      "initialGzip": 186472,
+      "initialBrotli": 144451,
+      "totalRaw": 990618,
+      "totalGzip": 227327,
+      "totalBrotli": 179699,
+      "largestLazyGzip": 40855,
+      "initialChunks": 1,
+      "lazyChunks": 1
+    },
+    "baseTheme": {
+      "initialRaw": 1971,
+      "initialGzip": 684,
+      "initialBrotli": 571,
+      "totalRaw": 1971,
+      "totalGzip": 684,
+      "totalBrotli": 571,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "materialTheme": {
+      "initialRaw": 203501,
+      "initialGzip": 28553,
+      "initialBrotli": 22067,
+      "totalRaw": 203501,
+      "totalGzip": 28553,
+      "totalBrotli": 22067,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "substrateTheme": {
+      "initialRaw": 74778,
+      "initialGzip": 10518,
+      "initialBrotli": 8846,
+      "totalRaw": 74778,
+      "totalGzip": 10518,
+      "totalBrotli": 8846,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    }
+  },
+  "budgets": {
+    "button": {
+      "initialGzip": 12735,
+      "initialBrotli": 11410,
+      "totalGzip": 12735,
+      "totalBrotli": 11410,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "select": {
+      "initialGzip": 43941,
+      "initialBrotli": 37379,
+      "totalGzip": 86839,
+      "totalBrotli": 74390,
+      "largestLazyGzip": 42898,
+      "initialChunks": 1,
+      "lazyChunks": 1
+    },
+    "textarea": {
+      "initialGzip": 27810,
+      "initialBrotli": 24516,
+      "totalGzip": 27810,
+      "totalBrotli": 24516,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "markdownEditor": {
+      "initialGzip": 112264,
+      "initialBrotli": 93389,
+      "totalGzip": 155162,
+      "totalBrotli": 130399,
+      "largestLazyGzip": 42898,
+      "initialChunks": 1,
+      "lazyChunks": 1
+    },
+    "aggregateClasses": {
+      "initialGzip": 196047,
+      "initialBrotli": 151417,
+      "totalGzip": 238945,
+      "totalBrotli": 188427,
+      "largestLazyGzip": 42898,
+      "initialChunks": 1,
+      "lazyChunks": 1
+    },
+    "aggregateDefine": {
+      "initialGzip": 195796,
+      "initialBrotli": 151674,
+      "totalGzip": 238694,
+      "totalBrotli": 188684,
+      "largestLazyGzip": 42898,
+      "initialChunks": 1,
+      "lazyChunks": 1
+    },
+    "baseTheme": {
+      "initialGzip": 1708,
+      "initialBrotli": 1595,
+      "totalGzip": 1708,
+      "totalBrotli": 1595,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "materialTheme": {
+      "initialGzip": 29981,
+      "initialBrotli": 23171,
+      "totalGzip": 29981,
+      "totalBrotli": 23171,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "substrateTheme": {
+      "initialGzip": 11542,
+      "initialBrotli": 9870,
+      "totalGzip": 11542,
+      "totalBrotli": 9870,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    }
+  }
+}

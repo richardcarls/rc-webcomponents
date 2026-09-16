@@ -1,32 +1,25 @@
 @layer rc-theme-material.components {
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-dialog > dialog {
-    max-inline-size: min(35rem, calc(100vw - 3rem));
-    /* A native <dialog>'s own default max-block-size/overflow:auto is what
-     * would otherwise constrain a tall dialog's height, but Chromium does
-     * not reliably clip a scrolling element's own border-radius once it
-     * actually needs to scroll (confirmed: a short dialog renders correctly
-     * rounded on every edge; the same dialog forced to overflow its
-     * available height loses the radius on whichever edge sits at the
-     * scroll boundary). Setting an explicit max-block-size plus
-     * overflow: hidden here replaces that reliance: this outer surface
-     * never itself scrolls, so its own corners always clip correctly, and
-     * a scrollable dialog instead scrolls a dedicated inner region. */
-    max-block-size: calc(100dvh - 3rem);
-    overflow: hidden;
-    padding: 1.5rem;
-    border: 0;
-    border-radius: var(--md-sys-shape-corner-extra-large, 1.75rem);
-    background: var(--md-sys-color-surface-container-high, Canvas);
-    color: var(--md-sys-color-on-surface, CanvasText);
-    box-shadow: var(--rc-shadow-level3, var(--rc-shadow, none));
-    font-family: var(--md-sys-typescale-body-medium-font, inherit);
+  /*
+   * Maps Material tokens onto the public rc-dialog properties. The surface and
+   * the fullscreen geometry are drawn by the component's own light-DOM base
+   * layer, including the explicit block bound and overflow that keep a tall
+   * dialog's corners clipping correctly in Chromium.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-dialog {
+    --rc-dialog-min-inline-size: min(17.5rem, calc(100vw - 3rem));
+    --rc-dialog-max-inline-size: min(35rem, calc(100vw - 3rem));
+    --rc-dialog-max-block-size: calc(100dvh - 3rem);
+    --rc-dialog-padding: 1.5rem;
+    --rc-dialog-border: 0;
+    --rc-dialog-radius: var(--md-sys-shape-corner-extra-large, 1.75rem);
+    --rc-dialog-background: var(--md-sys-color-surface-container-high, Canvas);
+    --rc-dialog-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-dialog-shadow: var(--rc-shadow-level3, var(--rc-shadow, none));
+    --rc-dialog-scrim: color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-dialog > dialog::backdrop {
-    background: var(
-      --rc-dialog-scrim,
-      color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent)
-    );
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-dialog > dialog {
+    font-family: var(--md-sys-typescale-body-medium-font, inherit);
   }
 
   /*

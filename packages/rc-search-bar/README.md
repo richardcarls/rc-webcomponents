@@ -43,9 +43,9 @@ import { RCSearchBar } from '@rcarls/rc-search-bar';
 </script>
 ```
 
-The component's shadow CSS already strips the slotted input's native border,
-background, and outline so it blends into the wrapper chrome without a consumer
-reset.
+The component's `rc-base` light-DOM layer strips the slotted input's native
+border, background, and outline so it blends into the wrapper chrome without a
+consumer reset. Normal author rules outside a layer override that structural base.
 
 The native WebKit cancel button is suppressed automatically. Set
 `allow-native-clear` to restore it.

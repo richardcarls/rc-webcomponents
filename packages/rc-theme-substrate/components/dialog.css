@@ -1,10 +1,19 @@
 @layer rc-theme-substrate.components {
+  /*
+   * Maps Substrate tokens onto the public rc-dialog properties. The surface and
+   * the fullscreen geometry are drawn by the component's own light-DOM base
+   * layer; what is left here is the mapping plus the open and close motion,
+   * which depends on state selectors a bounded property cannot express.
+   */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog {
+    --rc-dialog-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-dialog-radius: var(--substrate-radius-xl, 1rem);
+    --rc-dialog-background: var(--substrate-surface-raised, Canvas);
+    --rc-dialog-color: var(--rc-field-text, CanvasText);
+    --rc-dialog-shadow: var(--substrate-shadow-lg, none);
+  }
+
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog > dialog {
-    border: var(--rc-border, 1px solid ButtonBorder);
-    border-radius: var(--substrate-radius-xl, 1rem);
-    background: var(--substrate-surface-raised, Canvas);
-    color: var(--rc-field-text, CanvasText);
-    box-shadow: var(--substrate-shadow-lg, none);
     opacity: 1;
     transform: translateY(0) scale(1);
     transition:
@@ -16,7 +25,6 @@
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog > dialog::backdrop {
-    background: var(--rc-dialog-scrim, color-mix(in srgb, CanvasText 32%, transparent));
     transition: opacity var(--substrate-motion-duration-slow, 240ms)
       var(--substrate-motion-easing, ease);
   }

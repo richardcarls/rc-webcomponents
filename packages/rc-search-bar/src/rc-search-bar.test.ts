@@ -52,7 +52,7 @@ test('progressive enhancement: the native input keeps its author attributes', as
   expect($input?.getAttribute('placeholder')).toBe('Author placeholder');
 });
 
-test('host-scoped light DOM reset keeps native input chrome inside the search surface', async () => {
+test('unlayered author styles override the layered light DOM base', async () => {
   const screen = render(html`
     <style>
       input[type='search'] {
@@ -81,11 +81,11 @@ test('host-scoped light DOM reset keeps native input chrome inside the search su
 
   const style = getComputedStyle(input);
 
-  expect(style.borderTopWidth).toBe('0px');
-  expect(style.paddingTop).toBe('0px');
-  expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
-  expect(style.outlineStyle).toBe('none');
-  expect(style.boxShadow).toBe('none');
+  expect(style.borderTopWidth).toBe('3px');
+  expect(style.paddingTop).toBe('12px');
+  expect(style.backgroundColor).toBe('rgb(255, 0, 0)');
+  expect(style.outlineWidth).toBe('4px');
+  expect(style.boxShadow).not.toBe('none');
 });
 
 test('label association resolves through the native label registry', async () => {

@@ -198,6 +198,38 @@ test('rc-dialog open getter reflects inner dialog state', async () => {
   expect(host.open).toBe(false);
 });
 
+test('fullscreen variant tracks the visual viewport only while open', async () => {
+  const screen = render(html`
+    <rc-dialog data-testid="host" variant="fullscreen">
+      <dialog aria-label="Fullscreen test"><button>Close</button></dialog>
+    </rc-dialog>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+
+  expect(host.variant).toBe('fullscreen');
+  expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-width')).toBe('');
+
+  host.showModal();
+
+  expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-width')).toBe(
+    `${window.visualViewport?.width ?? window.innerWidth}px`,
+  );
+
+  expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-height')).toBe(
+    `${window.visualViewport?.height ?? window.innerHeight}px`,
+  );
+
+  host.close();
+
+  await vi.waitFor(() => {
+    expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-width')).toBe('');
+  });
+
+  expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-height')).toBe('');
+});
+
 test('rc-dialog restores focus to the opener on close', async () => {
   const screen = render(html`
     <div>
@@ -791,4 +823,73 @@ test('rc-dialog-open fires on show()', async () => {
   expect(openSpy).toHaveBeenCalledTimes(1);
 
   host.close();
+});
+
+test('rc-dialog draws its surface from the public properties', async () => {
+  const screen = render(html`
+    <rc-dialog
+      default-open
+      style="--rc-dialog-radius: 14px; --rc-dialog-padding: 18px; --rc-dialog-min-inline-size: 240px; --rc-dialog-max-inline-size: 300px"
+    >
+      <dialog><p>Body</p></dialog>
+    </rc-dialog>
+  `);
+
+  await expect.element(screen.getByText('Body')).toBeInTheDocument();
+
+  const $dialog = document.querySelector('rc-dialog > dialog')!;
+  const styles = getComputedStyle($dialog);
+
+  expect(styles.borderRadius).toBe('14px');
+  expect(styles.padding).toBe('18px');
+  expect(styles.minInlineSize).toBe('240px');
+  expect(styles.maxInlineSize).toBe('300px');
+
+  // The surface never scrolls itself, so its corners always clip; a scrollable
+  // dialog scrolls a dedicated inner region instead.
+  expect(styles.overflow).toBe('hidden');
+});
+
+test('rc-dialog installs its light-DOM base styles once per root', async () => {
+  const screen = render(html`
+    <rc-dialog default-open
+      ><dialog><p>One</p></dialog></rc-dialog
+    >
+    <rc-dialog
+      ><dialog><p>Two</p></dialog></rc-dialog
+    >
+  `);
+
+  await expect.element(screen.getByText('One')).toBeInTheDocument();
+
+  expect(document.querySelectorAll('[data-rc-light-dom-base="rc-dialog"]')).toHaveLength(1);
+});
+
+test('the visual viewport values are outputs, not theme inputs', async () => {
+  const screen = render(html`
+    <rc-dialog
+      variant="fullscreen"
+      default-open
+      style="--rc-dialog-visual-viewport-width: 320px; --rc-dialog-visual-viewport-height: 480px"
+    >
+      <dialog><p>Fullscreen body</p></dialog>
+    </rc-dialog>
+  `);
+
+  await expect.element(screen.getByText('Fullscreen body')).toBeInTheDocument();
+
+  const $host = document.querySelector('rc-dialog')!;
+  const styles = getComputedStyle(document.querySelector('rc-dialog > dialog')!);
+  const written = getComputedStyle($host).getPropertyValue('--rc-dialog-visual-viewport-width');
+
+  // Setting these does not move the dialog: the component measures the visual
+  // viewport and overwrites them, so the surface follows its measurement rather
+  // than the author's value.
+  expect(written.trim()).not.toBe('320px');
+  expect(styles.inlineSize).toBe(written.trim());
+
+  // Fullscreen geometry is structural, so the surface drops the standard radius
+  // and shadow rather than leaving a theme to remember to.
+  expect(styles.borderRadius).toBe('0px');
+  expect(styles.boxShadow).toBe('none');
 });
