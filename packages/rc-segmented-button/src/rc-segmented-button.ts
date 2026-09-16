@@ -138,6 +138,25 @@ const LIGHT_DOM_CSS = `
     inline-size: var(--rc-segmented-button-selected-icon-size, 1.25em);
     visibility: hidden;
   }
+
+  /* Forced colors replaces the palette a theme selects a segment with, so the
+     selected state has to be restated in system colors here. Without it the
+     only surviving indicator is the optional selected-icon slot, which a theme
+     is free to switch off, and a theme that does leaves the control with no
+     visible selection at all. Mirrors the rc-chip treatment. */
+  @media (forced-colors: active) {
+    rc-segmented-button > fieldset > label {
+      border-color: ButtonBorder;
+      background: ButtonFace;
+      color: ButtonText;
+    }
+
+    rc-segmented-button > fieldset > label:has(input[type='radio']:checked) {
+      border-color: Highlight;
+      background: Highlight;
+      color: HighlightText;
+    }
+  }
 }
 `;
 
@@ -192,6 +211,11 @@ export interface RCSegmentedButtonChangeDetail {
  *   radio is focus-visible (defers to native focus styling when unset).
  * @cssprop [--rc-segmented-button-disabled-opacity=revert] - Segment opacity when its radio is
  *   disabled, or when the host is `disabled` (defers to native disabled styling when unset).
+ *
+ * Under `forced-colors: active` the selected segment is restated in system colors
+ * (`Highlight` / `HighlightText`), so a selected state stays visible even when a theme
+ * paints selection with a background the forced palette replaces, and even when the
+ * optional selected-icon slot is not used.
  */
 export class RCSegmentedButton extends LitElement {
   static override styles = segmentedButtonStyles;

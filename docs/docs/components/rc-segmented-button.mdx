@@ -66,6 +66,11 @@ appearance. Material and Substrate visually flatten the fieldset and legend,
 then style the labels as the segment surfaces; the semantic fieldset and legend
 remain available to assistive technology.
 
+In forced-colors mode the component restates the selected segment in system
+colors, so selection stays visible after the forced palette replaces whatever
+background a theme selects a segment with. Themes do not need to handle this,
+and a theme that omits the optional selected-icon slot is still covered.
+
 ## Live demo
 
 <SegmentedButtonDemo />

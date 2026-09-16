@@ -213,3 +213,57 @@ test('has no automated accessibility violations', async () => {
   await flushSegmented(host);
   await expectNoA11yViolations(host);
 });
+
+test('the selected segment is restated in system colors for forced colors', async () => {
+  const screen = render(html`
+    <rc-segmented-button data-testid="host">
+      <fieldset>
+        <legend>Text size</legend>
+        <label><input type="radio" name="fc" value="small" /> Small</label>
+        <label data-testid="selected">
+          <input type="radio" name="fc" value="medium" checked />
+          Medium
+        </label>
+      </fieldset>
+    </rc-segmented-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCSegmentedButton;
+
+  await flushSegmented(host);
+
+  const $style = document.querySelector<HTMLStyleElement>(
+    'style[data-rc-light-dom-base="rc-segmented-button"]',
+  );
+
+  expect($style).not.toBeNull();
+
+  const forced = [...($style!.sheet?.cssRules ?? [])]
+    .filter((rule): rule is CSSLayerBlockRule => rule instanceof CSSLayerBlockRule)
+    .flatMap((layer) => [...layer.cssRules])
+    .find(
+      (rule): rule is CSSMediaRule =>
+        rule instanceof CSSMediaRule && rule.conditionText.includes('forced-colors'),
+    );
+
+  expect(forced, 'the base styles declare a forced-colors block').toBeDefined();
+
+  // Asserting through the CSSOM rather than the stylesheet text: the rule has to
+  // actually select the checked segment, which is what a theme cannot guarantee
+  // on its own once the forced palette replaces its selected background.
+  const $selected = (await screen.getByTestId('selected').element()) as HTMLElement;
+  const rules = [...forced!.cssRules].filter(
+    (rule): rule is CSSStyleRule => rule instanceof CSSStyleRule,
+  );
+  const selectedRule = rules.find(
+    (rule) => rule.selectorText.includes(':checked') && $selected.matches(rule.selectorText),
+  );
+  const baseRule = rules.find((rule) => !rule.selectorText.includes(':checked'));
+
+  expect(selectedRule, 'a forced-colors rule matches the checked segment').toBeDefined();
+  expect(baseRule, 'a forced-colors rule covers the resting segment').toBeDefined();
+
+  // The CSSOM lower-cases system color keywords.
+  expect(selectedRule!.style.getPropertyValue('background').toLowerCase()).toBe('highlight');
+  expect(selectedRule!.style.getPropertyValue('color').toLowerCase()).toBe('highlighttext');
+  expect(baseRule!.style.getPropertyValue('background').toLowerCase()).toBe('buttonface');
+});
