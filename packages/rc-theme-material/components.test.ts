@@ -475,9 +475,9 @@ test('segmented buttons flatten native fieldset chrome for themed segments', () 
 
   const styles = getComputedStyle(segmentedButton);
 
-  expect(styles.getPropertyValue('--_rc-segmented-button-fieldset-border')).toBe('0');
-  expect(styles.getPropertyValue('--_rc-segmented-button-legend-position')).toBe('absolute');
-  expect(styles.getPropertyValue('--_rc-segmented-button-radio-opacity')).toBe('0');
+  // The structural recipe moved into the component, which now owns the
+  // visually hidden legend and the focusable hidden radio. The theme opts in.
+  expect(styles.getPropertyValue('--rc-segmented-button-appearance').trim()).toBe('segmented');
 });
 
 test('switches retain Material geometry under flex pressure', () => {

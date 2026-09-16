@@ -3,39 +3,17 @@
    * The 3.1 analogue is a run of latched toolbar toggles sharing an edge. The
    * selected segment stays pressed: inverted bevel plus a dithered face.
    *
-   * The private --_rc-* block is how this component is turned from a bare
-   * fieldset of radios into a segmented control; every packaged theme has to
-   * supply it, and the native radios stay visible without it.
+   * One property turns on the component's own segmented recipe; without it the
+   * fieldset and radios keep their browser appearance.
    */
   :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-segmented-button {
-    --_rc-segmented-button-fieldset-display: inline-flex;
-    --_rc-segmented-button-fieldset-margin: 0;
-    --_rc-segmented-button-fieldset-padding: 0;
-    --_rc-segmented-button-fieldset-border: 0;
-    --_rc-segmented-button-fieldset-radius: 0;
-    --_rc-segmented-button-fieldset-overflow: visible;
-    --_rc-segmented-button-legend-position: absolute;
-    --_rc-segmented-button-legend-inline-size: 1px;
-    --_rc-segmented-button-legend-block-size: 1px;
-    --_rc-segmented-button-legend-margin: -1px;
-    --_rc-segmented-button-legend-padding: 0;
-    --_rc-segmented-button-legend-border: 0;
-    --_rc-segmented-button-legend-overflow: hidden;
-    --_rc-segmented-button-legend-clip: rect(0 0 0 0);
-    --_rc-segmented-button-legend-white-space: nowrap;
-    --_rc-segmented-button-segment-display: inline-flex;
+    /* One switch turns on the component-owned segmented recipe. */
+    --rc-segmented-button-appearance: segmented;
     /* Windows 3.1 never showed a text cursor over a control. */
-    --_rc-segmented-button-segment-cursor: default;
-    --_rc-segmented-button-segment-user-select: none;
-    --_rc-segmented-button-disabled-cursor: default;
-    --_rc-segmented-button-radio-position: absolute;
-    --_rc-segmented-button-radio-inline-size: 1px;
-    --_rc-segmented-button-radio-block-size: 1px;
-    --_rc-segmented-button-radio-margin: 0;
-    --_rc-segmented-button-radio-opacity: 0;
-    --_rc-segmented-button-radio-pointer-events: none;
-    --_rc-segmented-button-selected-icon-display: none;
-    --_rc-segmented-button-vertical-border-inline-start: var(--win31-border);
+    --rc-segmented-button-cursor: default;
+    --rc-segmented-button-disabled-cursor: default;
+    /* A latched 3.1 toggle showed state by staying pressed, not by a tick. */
+    --rc-segmented-button-selected-icon-display: none;
 
     --rc-segmented-button-bg: var(--win31-color-surface);
     --rc-segmented-button-color: var(--win31-color-frame);
