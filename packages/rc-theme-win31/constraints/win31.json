@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "rc-theme-win31 rendered constraints",
+  "version": 1,
+  "sources": {
+    "designGuide": "The Windows Interface: An Application Design Guide (Microsoft Press, 1992; Windows 3.1 SDK document PC28921-0692)",
+    "dialogUnits": "Derived from the MS Sans Serif 8pt cell of 6 by 13 pixels at 96 DPI. One horizontal dialog unit is 1.5px and one vertical unit is 1.625px, so the standard 50 by 14 DLU push button is 75 by 23 pixels.",
+    "ctl3d": "The beveled variant this theme targets is the CTL3D.DLL appearance that applications opted into, not the flat stock control set."
+  },
+  "constraints": [
+    {
+      "id": "button.container",
+      "selector": "rc-button > button",
+      "geometry": { "minBlockSize": "22px" },
+      "source": "dialogUnits"
+    },
+    {
+      "id": "listbox.row",
+      "selector": "rc-listbox::part(option)",
+      "geometry": { "minBlockSize": "17px" },
+      "source": "dialogUnits"
+    },
+    {
+      "id": "scrollbar.gutter",
+      "selector": ".rc-theme-win31",
+      "geometry": { "scrollbarSize": "16px" },
+      "source": "designGuide"
+    },
+    {
+      "id": "checkbox.box",
+      "selector": "rc-switch::part(track)",
+      "geometry": { "inlineSize": "13px", "blockSize": "13px" },
+      "source": "designGuide"
+    },
+    {
+      "id": "dialog.caption",
+      "selector": "rc-dialog > dialog > header",
+      "geometry": { "minBlockSize": "24px" },
+      "typography": { "weight": "700", "align": "center" },
+      "source": "designGuide"
+    },
+    {
+      "id": "menubar.height",
+      "selector": "rc-menubar::part(root)",
+      "geometry": { "minBlockSize": "27px" },
+      "source": "designGuide"
+    },
+    {
+      "id": "toolbar.button",
+      "selector": "rc-toolbar button",
+      "geometry": { "inlineSize": "27px", "blockSize": "27px" },
+      "source": "designGuide"
+    },
+    {
+      "id": "theme.square",
+      "selector": ".rc-theme-win31 *",
+      "geometry": { "borderRadius": "0px" },
+      "source": "designGuide"
+    },
+    {
+      "id": "theme.motionless",
+      "selector": ".rc-theme-win31 *",
+      "motion": { "transitionDuration": "0s" },
+      "source": "designGuide"
+    }
+  ]
+}

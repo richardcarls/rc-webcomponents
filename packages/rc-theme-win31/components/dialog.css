@@ -1,0 +1,155 @@
+@layer rc-theme-win31.components {
+  /*
+   * Window chrome.
+   *
+   * rc-dialog deliberately keeps the native <dialog> in consumer light DOM and
+   * exposes no CSS parts, so the caption bar is authored markup. The component
+   * already contracts on that markup through its move-handle selector, and its
+   * documented demo shape is a <header> as the first child of the <dialog>.
+   * This theme styles that shape, which means a themed window needs no new
+   * markers and no upstream change:
+   *
+   *   <rc-dialog movable move-handle="header">
+   *     <dialog aria-labelledby="t">
+   *       <header><h2 id="t">Title</h2></header>
+   *       ...
+   *       <footer><button>OK</button><button>Cancel</button></footer>
+   *     </dialog>
+   *   </rc-dialog>
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog {
+    --rc-dialog-background: var(--win31-color-surface);
+    --rc-dialog-color: var(--win31-color-frame);
+    --rc-dialog-border: var(--win31-border);
+    --rc-dialog-radius: var(--win31-radius);
+    --rc-dialog-padding: 0;
+    --rc-dialog-shadow: var(--win31-dialog-frame);
+    --rc-dialog-scrim: transparent;
+    --rc-dialog-fullscreen-background: var(--win31-color-surface);
+    --rc-dialog-fullscreen-padding-block: 0;
+    --rc-dialog-fullscreen-padding-inline: 0;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog > dialog {
+    padding: 0;
+    color: var(--win31-color-frame);
+    background: var(--win31-color-surface);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-dialog-frame);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  /*
+   * 3.1 dimmed nothing behind a modal. The dialog's own frame carried the
+   * separation, so the backdrop stays fully transparent.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog > dialog::backdrop {
+    background: transparent;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog > dialog > header {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-block-size: var(--win31-title-height);
+    padding: 0;
+    color: var(--win31-color-title-active-text);
+    background: var(--win31-color-title-active);
+    font-size: var(--win31-title-font-size);
+    font-weight: 700;
+    line-height: 1;
+    /* The caption bar is a grab handle, not text to select. */
+    cursor: default;
+    user-select: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog > dialog > header > :is(h1, h2, h3) {
+    flex: 1;
+    margin: 0;
+    padding-inline: var(--win31-padding-inline);
+    font-size: inherit;
+    font-weight: inherit;
+    /* 3.1 centered the window title rather than aligning it to the start. */
+    text-align: center;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog > dialog > header button {
+    flex-shrink: 0;
+    inline-size: var(--win31-title-height);
+    block-size: var(--win31-title-height);
+    min-inline-size: var(--win31-title-height);
+    min-block-size: var(--win31-title-height);
+    padding: 0;
+    color: var(--win31-color-frame);
+    background-color: var(--win31-color-surface);
+    border: 0;
+    border-inline-start: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog > dialog > header button:active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  /*
+   * The system-menu box sits at the leading edge and is drawn rather than
+   * lettered: a white bar with a black frame and a one-pixel shadow.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog > dialog > header button:first-child {
+    border-inline-start: 0;
+    border-inline-end: var(--win31-border);
+    box-shadow: none;
+    font-size: 0;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-dialog
+    > dialog
+    > header
+    button:first-child::before {
+    content: '';
+    display: block;
+    box-sizing: border-box;
+    inline-size: calc(10 * var(--win31-unit));
+    block-size: calc(3 * var(--win31-unit));
+    margin-inline: auto;
+    background-color: var(--win31-color-highlight);
+    border: var(--win31-border);
+    box-shadow: var(--win31-unit) var(--win31-unit) 0 var(--win31-color-shadow);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog > dialog > footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--win31-gap);
+    padding-block: calc(3 * var(--win31-unit)) calc(8 * var(--win31-unit));
+    padding-inline: calc(8 * var(--win31-unit));
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog > dialog > :not(header, footer) {
+    padding: var(--win31-gap-panel);
+  }
+
+  /*
+   * A group box is a sunken frame with its legend notched into the top edge.
+   * It is still the most accessible grouping primitive in HTML and it is worth
+   * having it look deliberate again.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog fieldset {
+    margin-block: var(--win31-gap-panel) 0;
+    padding-block: calc(5 * var(--win31-unit)) var(--win31-gap-panel);
+    padding-inline: var(--win31-gap-panel);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-dialog fieldset > legend {
+    padding-inline: var(--win31-padding-inline);
+  }
+}

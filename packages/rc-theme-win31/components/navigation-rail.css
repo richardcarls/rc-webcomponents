@@ -1,0 +1,57 @@
+@layer rc-theme-win31.components {
+  /* The vertical form of the docked latched-button strip above. */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-navigation-rail {
+    --rc-navigation-rail-bg: var(--win31-color-surface);
+    --rc-navigation-rail-color: var(--win31-color-frame);
+    --rc-navigation-rail-item-color: var(--win31-color-frame);
+    --rc-navigation-rail-active-color: var(--win31-color-frame);
+    --rc-navigation-rail-inline-size: var(--win31-toolbar-height);
+    --rc-navigation-rail-expanded-inline-size: calc(160 * var(--win31-unit));
+    --rc-navigation-rail-gap: calc(3 * var(--win31-unit));
+    --rc-navigation-rail-padding-block: calc(3 * var(--win31-unit));
+    --rc-navigation-rail-padding-inline: var(--win31-gap-tight);
+    --rc-navigation-rail-item-gap: var(--win31-gap-tight);
+    --rc-navigation-rail-item-min-block-size: var(--win31-toolbar-button-size);
+    --rc-navigation-rail-item-padding-block: 0;
+    --rc-navigation-rail-item-padding-inline: var(--win31-gap-tight);
+    --rc-navigation-rail-item-text-decoration: none;
+    --rc-navigation-rail-expanded-item-min-block-size: var(--win31-control-height);
+    --rc-navigation-rail-expanded-item-padding-inline: var(--win31-padding-inline);
+    --rc-navigation-rail-indicator-bg: transparent;
+    --rc-navigation-rail-indicator-border: 0;
+    --rc-navigation-rail-indicator-radius: var(--win31-radius);
+    --rc-navigation-rail-indicator-duration: 0ms;
+    --rc-navigation-rail-duration: 0ms;
+    --rc-navigation-rail-toggle-size: var(--win31-control-height);
+    --rc-navigation-rail-focus-ring: var(--win31-focus-ring);
+    --rc-navigation-rail-focus-ring-offset: var(--win31-focus-ring-offset);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-navigation-rail::part(nav) {
+    border-inline-end: var(--win31-border);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-navigation-rail :is(a, button) {
+    background-color: var(--win31-color-surface);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-navigation-rail
+    :is([aria-current], [aria-selected='true']) {
+    background-image: var(--win31-dither-track);
+    background-size: var(--win31-dither-size);
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-navigation-rail::part(toggle) {
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+  }
+}

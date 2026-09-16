@@ -1,0 +1,83 @@
+@layer rc-theme-win31.components {
+  /*
+   * The editable sibling of the drop-down list. Windows 3.1 distinguished a
+   * "drop-down combo" (typing allowed) from a "drop-down list" (selection
+   * only), and the difference was visible: the combo shows a text caret in the
+   * well while the list does not.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-combobox {
+    display: block;
+    min-inline-size: 0;
+    --rc-combobox-gap: var(--win31-gap-tight);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-combobox::part(anchor) {
+    position: relative;
+    min-inline-size: 0;
+    min-block-size: calc(20 * var(--win31-unit));
+    color: var(--win31-color-field-text);
+    background: var(--win31-color-field);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-combobox::part(input),
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-combobox > input {
+    padding-block: var(--win31-padding-block);
+    padding-inline: var(--win31-padding-inline) calc(18 * var(--win31-unit));
+    color: var(--win31-color-field-text);
+    background: transparent;
+    border: 0;
+    border-radius: var(--win31-radius);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-combobox > input:focus-visible {
+    outline: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-combobox:focus-within::part(anchor) {
+    outline: var(--win31-focus-ring);
+    outline-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-combobox::part(toggle) {
+    position: absolute;
+    inset-block-start: var(--win31-unit);
+    inset-inline-end: var(--win31-unit);
+    inline-size: var(--win31-scrollbar-size);
+    block-size: calc(100% - (2 * var(--win31-unit)));
+    background-color: var(--win31-color-surface);
+    background-image: var(--win31-glyph-arrow-down);
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 0;
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+    color: transparent;
+    font-size: 0;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-combobox::part(toggle):active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-combobox::part(listbox) {
+    color: var(--win31-color-field-text);
+    background: var(--win31-color-field);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-combobox::part(chip) {
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+  }
+}

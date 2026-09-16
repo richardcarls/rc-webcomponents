@@ -1,0 +1,73 @@
+@layer rc-theme-win31.components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-select {
+    display: block;
+    min-inline-size: 0;
+    --rc-select-padding-block: var(--win31-padding-block);
+    --rc-select-padding-inline: var(--win31-padding-inline);
+    --rc-select-gap: var(--win31-gap-tight);
+    --rc-select-listbox-padding-block: 0;
+    --rc-select-toggle-indicator-size: var(--win31-scrollbar-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-select::part(anchor) {
+    min-inline-size: 0;
+  }
+
+  /*
+   * A drop-down list is a sunken white field with a beveled arrow button
+   * attached to its trailing edge, sized to match a scrollbar button.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-select::part(trigger) {
+    position: relative;
+    min-block-size: calc(20 * var(--win31-unit));
+    padding-inline: var(--win31-padding-inline) calc(18 * var(--win31-unit));
+    color: var(--win31-color-field-text);
+    background: var(--win31-color-field);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+    cursor: default;
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-select::part(trigger):focus-visible {
+    outline: var(--win31-focus-ring);
+    outline-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-select::part(toggle-indicator) {
+    position: absolute;
+    inset-block-start: var(--win31-unit);
+    inset-inline-end: var(--win31-unit);
+    display: block;
+    inline-size: var(--win31-scrollbar-size);
+    block-size: calc(100% - (2 * var(--win31-unit)));
+    background-color: var(--win31-color-surface);
+    background-image: var(--win31-glyph-arrow-down);
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 0;
+    box-shadow: var(--win31-bevel-outset-1);
+    color: transparent;
+    font-size: 0;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-select::part(listbox) {
+    color: var(--win31-color-field-text);
+    background: var(--win31-color-field);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-select::part(chip) {
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+  }
+}

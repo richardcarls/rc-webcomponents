@@ -1,0 +1,42 @@
+@layer rc-theme-win31.components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-textarea::part(root) {
+    color: var(--win31-color-field-text);
+    background: var(--win31-color-field);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-textarea::part(editor),
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-textarea::part(editor-area) {
+    padding: var(--win31-gap-tight);
+    line-height: var(--win31-line-height);
+  }
+
+  /*
+   * The gutter reads as a separate sunken strip, the way a 3.1 editor split
+   * line numbers from text.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-textarea::part(gutter) {
+    color: var(--win31-color-shadow);
+    background: var(--win31-color-surface);
+    border-inline-end: var(--win31-hairline) solid var(--win31-color-shadow);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-textarea > textarea {
+    color: var(--win31-color-field-text);
+    background: transparent;
+    border: 0;
+    border-radius: var(--win31-radius);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-textarea:focus-within::part(root) {
+    outline: var(--win31-focus-ring);
+    outline-offset: var(--win31-focus-ring-offset);
+  }
+}

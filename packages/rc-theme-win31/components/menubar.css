@@ -1,0 +1,67 @@
+@layer rc-theme-win31.components {
+  /*
+   * The menu bar runs at its own larger type size, which is one of the few
+   * places 3.1 varied it. An open top-level item inverts to the selection
+   * colors rather than opening a highlighted container.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menubar {
+    --rc-menubar-gap: 0;
+    --rc-menubar-padding-inline: 0;
+    --rc-menubar-padding-block: 0;
+    --rc-menubar-border: 0;
+    --rc-menubar-radius: var(--win31-radius);
+    --rc-menubar-background: var(--win31-color-menu);
+    --rc-menubar-color: var(--win31-color-menu-text);
+    --rc-menubar-item-block-size: var(--win31-menu-height);
+    --rc-menubar-item-padding-block: 0;
+    --rc-menubar-item-padding-inline: calc(9 * var(--win31-unit));
+    --rc-menubar-item-gap: 0;
+    --rc-menubar-item-border: 0;
+    --rc-menubar-item-radius: var(--win31-radius);
+    --rc-menubar-item-background: transparent;
+    --rc-menubar-item-color: var(--win31-color-menu-text);
+    --rc-menubar-item-transition: none;
+    --rc-menubar-item-hover-border-color: transparent;
+    --rc-menubar-item-hover-background: var(--win31-color-selection);
+    --rc-menubar-item-hover-color: var(--win31-color-selection-text);
+    --rc-menubar-item-open-border-color: transparent;
+    --rc-menubar-item-open-background: var(--win31-color-selection);
+    --rc-menubar-item-open-color: var(--win31-color-selection-text);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menubar::part(root) {
+    min-block-size: var(--win31-menu-height);
+    background: var(--win31-color-menu);
+    border-block-end: var(--win31-border);
+    box-shadow: none;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-menu-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-menubar
+    rc-menu-button
+    > button[slot='trigger'] {
+    min-block-size: var(--win31-menu-height);
+    padding-block: 0;
+    padding-inline: calc(9 * var(--win31-unit));
+    border: 0;
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-size: var(--win31-menu-font-size);
+    line-height: 1;
+    cursor: default;
+  }
+
+  /*
+   * Mnemonics are authored markup, not a component feature: the underlined
+   * letter is a <u> inside the label. Keeping the underline visible is the
+   * whole point of the convention, so it is stated explicitly here rather than
+   * left to a UA default that a reset may have removed.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menubar u,
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu u {
+    text-decoration: underline;
+    text-underline-offset: var(--win31-unit);
+  }
+}

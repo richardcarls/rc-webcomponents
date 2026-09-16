@@ -1,0 +1,59 @@
+@layer rc-theme-win31.components {
+  /*
+   * No 3.1 analogue. Rendered as a framed filmstrip whose navigation reuses
+   * the scrollbar button construction, which is the only stepping affordance
+   * the period actually had.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-carousel::part(track) {
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+    background: var(--win31-color-field);
+    scroll-behavior: auto;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-carousel::part(navigation-button) {
+    inline-size: var(--win31-scrollbar-size);
+    block-size: var(--win31-scrollbar-size);
+    color: transparent;
+    background-color: var(--win31-color-surface);
+    background-position: center;
+    background-repeat: no-repeat;
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+    font-size: 0;
+    cursor: default;
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-carousel::part(navigation-button):active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-carousel::part(navigation-button-previous) {
+    background-image: var(--win31-glyph-arrow-left);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-carousel::part(navigation-button-next) {
+    background-image: var(--win31-glyph-arrow-right);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-carousel::part(pagination-item) {
+    inline-size: calc(8 * var(--win31-unit));
+    block-size: calc(8 * var(--win31-unit));
+    background: var(--win31-color-surface);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-carousel::part(pagination-item-active) {
+    background: var(--win31-color-selection);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-carousel img {
+    image-rendering: pixelated;
+  }
+}

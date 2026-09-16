@@ -1,0 +1,45 @@
+@layer rc-theme-win31.components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-virtual-canvas {
+    --rc-virtual-canvas-scrollbar-width: auto;
+    --rc-virtual-canvas-scrollbar-size: var(--win31-scrollbar-size);
+    --rc-virtual-canvas-scrollbar-thumb-background: var(--win31-color-surface);
+    --rc-virtual-canvas-scrollbar-button-background: var(--win31-color-surface);
+    --rc-virtual-canvas-scrollbar-track-background: var(--win31-color-shadow);
+    /* Bitmap art scaled without smoothing, the way a 3.1 canvas rendered it. */
+    --rc-virtual-canvas-image-rendering: pixelated;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-virtual-canvas::part(scroller) {
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+    scrollbar-width: auto;
+    scrollbar-color: var(--win31-color-surface) var(--win31-color-shadow);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-virtual-canvas::part(scroller)::-webkit-scrollbar {
+    inline-size: var(--win31-scrollbar-size);
+    block-size: var(--win31-scrollbar-size);
+    background: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-virtual-canvas::part(scroller)::-webkit-scrollbar-thumb,
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-virtual-canvas::part(scroller)::-webkit-scrollbar-button {
+    background: var(--win31-color-surface);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-color-surface) var(--win31-color-frame) var(--win31-color-frame)
+      var(--win31-color-surface);
+    box-shadow: var(--win31-bevel-outset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-virtual-canvas::part(scroller)::-webkit-scrollbar-track {
+    background-image: var(--win31-dither-track);
+    background-repeat: repeat;
+    background-size: var(--win31-dither-size);
+    image-rendering: pixelated;
+  }
+}

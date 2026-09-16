@@ -352,5 +352,61 @@ Direct native buttons in an `rc-app-bar`'s `leading` and `trailing` slots use
 the same small icon-button geometry, while nested component controls retain
 their own sizing.
 
+## Windows 3.1 theme
+
+The optional `@rcarls/rc-theme-win31` package is a period theme: the beveled,
+square, motionless chrome of Windows 3.1 as it looked to applications that
+linked `CTL3D`. It changes styling only.
+
+```sh
+npm install @rcarls/rc-theme-win31
+```
+
+```css
+@import '@rcarls/rc-theme-win31/theme.css';
+```
+
+```html
+<div class="rc-theme-win31">
+  <rc-select>...</rc-select>
+  <rc-dialog>...</rc-dialog>
+</div>
+```
+
+Unlike the other packaged themes, its component stylesheets read the
+`--win31-*` tokens with no literal fallbacks, so a value lives in exactly one
+place and cannot drift between the token layer and thirty-nine component
+sheets. Import `defaults.css` before any selective import, or supply the
+`--win31-*` set yourself:
+
+```css
+@import '@rcarls/rc-theme-win31/defaults.css';
+@import '@rcarls/rc-theme-win31/bridge.css';
+@import '@rcarls/rc-theme-win31/components/button.css';
+```
+
+Three properties of the theme are deliberate and worth knowing before you
+adopt it:
+
+- **It is light only.** Windows 3.1 had no dark mode. It had something
+  arguably better, around twenty user-selectable whole-system color schemes,
+  and every component stylesheet here reads only the `--win31-color-*` tokens
+  so a scheme is a class that overrides those and nothing else.
+- **It has no hover states**, except on menus, which is period-correct and can
+  surprise people. Push buttons and list rows look identical at rest and under
+  the pointer.
+- **It disappears under forced colors.** Every bevel is an inset shadow, a
+  four-value `border-color`, or a dither image, and High Contrast removes all
+  three. The theme yields completely rather than fighting it.
+
+Scale the whole theme from one token when you need it larger, without changing
+any proportion:
+
+```css
+.rc-theme-win31 {
+  --win31-unit: 2px;
+}
+```
+
 See [Theme previews](./theme-previews) to compare components with and without
-the Material theme applied.
+each packaged theme applied.

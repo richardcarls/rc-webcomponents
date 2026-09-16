@@ -23,6 +23,7 @@ function variable(document, collectionName, variableName) {
 
 const material = load('material');
 const substrate = load('substrate');
+const win31 = load('win31');
 
 test('semantic colors alias primitives per mode instead of duplicating values', () => {
   const primary = variable(material, 'Color', 'color/primary');
@@ -291,4 +292,27 @@ test('a mix weight written as a calc still resolves', () => {
 
   assert.ok(!unresolved.has('--rc-list-item-hover-bg'));
   assert.ok(!unresolved.has('--rc-disclosure-summary-hover-background'));
+});
+
+test('a metric scaled from a unit token resolves to a real length', () => {
+  // The Windows 3.1 theme writes the factor first, as calc(22 * var(--unit)),
+  // which is the commuted form of what Material writes. Without it every
+  // metric, and every bridge token aliasing one, degrades to a composite.
+  assert.deepEqual(variable(win31, 'Size', 'size/control-height').values, { Value: 22 });
+  assert.deepEqual(variable(win31, 'Size', 'size/listbox-row-height').values, { Value: 17 });
+  assert.deepEqual(variable(win31, 'Size', 'size/scrollbar-size').values, { Value: 16 });
+
+  const composite = new Set(win31.skipped.composite.map((entry) => entry.property));
+
+  assert.ok(!composite.has('--rc-control-block-size'));
+  assert.ok(!composite.has('--rc-list-item-min-block-size'));
+});
+
+test('the Windows 3.1 export carries its palette and its RC contract', () => {
+  assert.equal(variable(win31, 'Color', 'color/surface').values.Light.hex, '#c0c0c0');
+  assert.equal(variable(win31, 'Color', 'color/selection').values.Light.hex, '#000080');
+
+  const contract = win31.collections.find((entry) => entry.name === 'RC Contract');
+
+  assert.ok(contract.variables.length > 250, 'the bridge should export its full contract');
 });

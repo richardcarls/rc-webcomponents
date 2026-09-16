@@ -1,0 +1,106 @@
+@layer rc-theme-win31.components {
+  /*
+   * The window-shade roll-up: an outset panel whose header carries a small
+   * beveled box at its trailing edge holding a triangle. 3.1 shells used this
+   * for independently collapsible panes, which is still a better density tool
+   * than an accordion when the panes are not mutually exclusive.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-disclosure {
+    display: block;
+    --rc-disclosure-background: var(--win31-color-surface);
+    --rc-disclosure-open-background: var(--win31-color-surface);
+    --rc-disclosure-color: var(--win31-color-frame);
+    --rc-disclosure-border: var(--win31-hairline) solid var(--win31-color-shadow);
+    --rc-disclosure-radius: var(--win31-radius);
+    --rc-disclosure-open-shadow: none;
+    --rc-disclosure-duration: 0ms;
+    --rc-disclosure-summary-color: var(--win31-color-frame);
+    --rc-disclosure-summary-font: var(--win31-font-weight) var(--win31-font-size) / 1
+      var(--win31-font-family);
+    --rc-disclosure-summary-min-block-size: calc(18 * var(--win31-unit));
+    --rc-disclosure-summary-padding-block: var(--win31-padding-block);
+    --rc-disclosure-summary-padding-inline: var(--win31-padding-inline);
+    --rc-disclosure-summary-gap: var(--win31-gap-tight);
+    --rc-disclosure-summary-hover-background: var(--win31-color-surface);
+    --rc-disclosure-summary-marker-color: var(--win31-color-frame);
+    --rc-disclosure-content-color: var(--win31-color-frame);
+    --rc-disclosure-content-font: var(--win31-font-weight) var(--win31-font-size) /
+      var(--win31-line-height) var(--win31-font-family);
+    --rc-disclosure-content-padding-block: var(--win31-gap-tight);
+    --rc-disclosure-content-padding-inline: var(--win31-gap-tight);
+    --rc-disclosure-focus-ring: var(--win31-focus-ring);
+    --rc-disclosure-focus-ring-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-disclosure > details {
+    padding: 0;
+    background: var(--win31-color-surface);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-outset-border-color);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-disclosure > details > summary {
+    display: block;
+    position: relative;
+    min-block-size: calc(18 * var(--win31-unit));
+    padding-block: var(--win31-padding-block);
+    padding-inline: var(--win31-padding-inline) calc(18 * var(--win31-unit));
+    background-color: var(--win31-color-surface);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-outset-border-color);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-weight: var(--win31-font-weight);
+    line-height: calc(16 * var(--win31-unit));
+    /* 3.1 centered a pane caption rather than aligning it to the start. */
+    text-align: center;
+    list-style: none;
+    cursor: default;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-disclosure
+    > details
+    > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-disclosure > details > summary::marker {
+    content: '';
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-disclosure > details > summary::after {
+    content: '';
+    position: absolute;
+    inset-block-start: var(--win31-gap-tight);
+    inset-inline-end: var(--win31-gap-tight);
+    inline-size: var(--win31-check-size);
+    block-size: var(--win31-check-size);
+    background-color: var(--win31-color-surface);
+    background-image: var(--win31-glyph-collapse);
+    background-position: center;
+    background-repeat: no-repeat;
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-outset-border-color);
+    box-shadow: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-disclosure
+    > details:not([open])
+    > summary::after {
+    background-image: var(--win31-glyph-expand);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-disclosure > details > summary:focus-visible {
+    outline: var(--win31-focus-ring);
+    outline-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-disclosure > details > :not(summary) {
+    margin: var(--win31-gap-tight);
+  }
+}

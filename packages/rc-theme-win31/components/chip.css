@@ -1,0 +1,55 @@
+@layer rc-theme-win31.components {
+  /*
+   * There is no 3.1 chip. The closest real control is the latched toolbar
+   * toggle: a small beveled square that stays pressed while its state is on.
+   * Selected therefore inverts the bevel and dithers the face rather than
+   * filling it with an accent color, which is how 3.1 expressed "on" without
+   * an alpha channel.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip {
+    --rc-chip-padding-block: var(--win31-padding-block);
+    --rc-chip-disabled-opacity: 1;
+    --rc-chip-hover-state-layer-opacity: 0;
+    --rc-chip-focus-state-layer-opacity: 0;
+    --rc-chip-pressed-state-layer-opacity: 0;
+    --rc-chip-state-layer-transition-duration: 0ms;
+    --rc-chip-focus-ring: var(--win31-focus-ring);
+    --rc-chip-focus-ring-offset: var(--win31-focus-ring-offset);
+    --rc-chip-selected-color: var(--win31-color-frame);
+    --rc-chip-selected-border-color: var(--win31-color-frame);
+    --rc-chip-remove-radius: var(--win31-radius);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip > :is(button, a, span) {
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+    transition: none;
+  }
+
+  /*
+   * The dithered face arrives through --rc-chip-selected-bg, which the
+   * component applies as a background shorthand. Only the bevel is left to set
+   * here, because the component does not own one.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip[selected] > :is(button, a, span) {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip > :is(button, a):active:not(:disabled) {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip > button:disabled {
+    color: var(--win31-color-disabled-text);
+    text-shadow: var(--win31-unit) var(--win31-unit) 0 var(--win31-color-disabled-emboss);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip::part(state-layer) {
+    display: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip::part(remove) {
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+  }
+}

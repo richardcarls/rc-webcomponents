@@ -7749,6 +7749,21 @@
           }
         },
         {
+          "name": "core/thumb-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-thumb-radius)"
+          },
+          "cssVar": "--rc-thumb-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 10
+          }
+        },
+        {
           "name": "dialog/background",
           "type": "COLOR",
           "scopes": [
@@ -13821,11 +13836,6 @@
         "reason": "aliases a composite shorthand"
       },
       {
-        "property": "--rc-dialog-max-block-size",
-        "raw": "calc(100dvh - 3rem)",
-        "name": "dialog/max-block-size"
-      },
-      {
         "property": "--rc-dialog-max-inline-size",
         "raw": "min(35rem, calc(100vw - 3rem))",
         "name": "dialog/max-inline-size"
@@ -14110,11 +14120,6 @@
         "reason": "aliases a composite shorthand"
       },
       {
-        "property": "--rc-navigation-bar-block-size",
-        "raw": "calc(5rem + env(safe-area-inset-bottom, 0px))",
-        "name": "navigation-bar/block-size"
-      },
-      {
         "property": "--rc-navigation-bar-focus-ring",
         "raw": "2px solid var(--md-sys-color-primary, Highlight)",
         "name": "navigation-bar/focus-ring"
@@ -14240,11 +14245,6 @@
         "name": "snackbar/focus-ring"
       },
       {
-        "property": "--rc-snackbar-inset-block-end",
-        "raw": "calc(1rem + var(--rc-navigation-bar-block-size, 0px))",
-        "name": "snackbar/inset-block-end"
-      },
-      {
         "property": "--rc-snackbar-shadow",
         "raw": "var(--rc-shadow-level3)",
         "name": "snackbar/shadow",
@@ -14332,11 +14332,6 @@
         "name": "core/theme-material-disclosure-easing"
       },
       {
-        "property": "--rc-thumb-radius",
-        "raw": "calc(var(--md-slider-handle-width, 1.25rem) / 2)",
-        "name": "core/thumb-radius"
-      },
-      {
         "property": "--rc-transfer-list-listbox-border",
         "raw": "1px solid var(--md-sys-color-outline-variant, ButtonBorder)",
         "name": "transfer-list/listbox-border"
@@ -14352,6 +14347,12 @@
         "property": "--rc-button-state-layer-easing",
         "raw": "var( --md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1) )",
         "reason": "literal",
+        "scope": "rc-theme-material"
+      },
+      {
+        "property": "--rc-dialog-max-block-size",
+        "raw": "calc(100dvh - 3rem)",
+        "reason": "calc-unresolved",
         "scope": "rc-theme-material"
       },
       {
@@ -14385,6 +14386,12 @@
         "scope": "rc-theme-material"
       },
       {
+        "property": "--rc-navigation-bar-block-size",
+        "raw": "calc(5rem + env(safe-area-inset-bottom, 0px))",
+        "reason": "calc-unresolved",
+        "scope": "rc-theme-material"
+      },
+      {
         "property": "--rc-navigation-bar-indicator-easing",
         "raw": "var( --md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1) )",
         "reason": "literal",
@@ -14406,6 +14413,12 @@
         "property": "--rc-search-bar-input-font-family",
         "raw": "var( --md-search-bar-input-text-font, var(--md-sys-typescale-body-large-font, inherit) )",
         "reason": "literal",
+        "scope": "rc-theme-material"
+      },
+      {
+        "property": "--rc-snackbar-inset-block-end",
+        "raw": "calc(1rem + var(--rc-navigation-bar-block-size, 0px))",
+        "reason": "calc-unresolved",
         "scope": "rc-theme-material"
       }
     ]

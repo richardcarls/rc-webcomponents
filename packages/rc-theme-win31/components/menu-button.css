@@ -1,0 +1,38 @@
+@layer rc-theme-win31.components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu-button {
+    --rc-menu-button-trigger-background: var(--win31-color-surface);
+    --rc-menu-button-trigger-color: var(--win31-color-frame);
+    --rc-menu-button-trigger-border: var(--win31-border);
+    --rc-menu-button-trigger-radius: var(--win31-radius);
+    --rc-menu-button-trigger-block-size: var(--win31-control-height);
+    --rc-menu-button-trigger-padding-block: var(--win31-padding-block);
+    --rc-menu-button-trigger-padding-inline: calc(8 * var(--win31-unit));
+    --rc-menu-button-trigger-gap: var(--win31-gap-tight);
+    --rc-menu-button-trigger-transition: none;
+    --rc-menu-button-trigger-hover-background: var(--win31-color-surface);
+    --rc-menu-button-trigger-hover-color: var(--win31-color-frame);
+    --rc-menu-button-trigger-hover-border-color: var(--win31-color-frame);
+    --rc-menu-button-trigger-open-background: var(--win31-color-selection);
+    --rc-menu-button-trigger-open-color: var(--win31-color-selection-text);
+    --rc-menu-button-trigger-open-border-color: transparent;
+    --rc-menu-button-indicator-color: var(--win31-color-frame);
+    --rc-menu-button-indicator-size: var(--win31-check-size);
+    --rc-menu-button-icon-size: var(--win31-check-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu-button > button[slot='trigger'] {
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+  }
+
+  /*
+   * While the menu is open the trigger stays inverted, which is how 3.1 showed
+   * which menu owned the open panel.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu-button[open] > button[slot='trigger'],
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu-button > button[slot='trigger']:active {
+    color: var(--win31-color-selection-text);
+    background-color: var(--win31-color-selection);
+    box-shadow: none;
+  }
+}

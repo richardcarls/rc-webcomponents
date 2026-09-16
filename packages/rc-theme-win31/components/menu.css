@@ -1,0 +1,66 @@
+@layer rc-theme-win31.components {
+  /*
+   * A 3.1 menu is a flat surface panel with a hard one-pixel frame and a hard
+   * one-pixel drop shadow. Menus are the one place 3.1 did highlight under the
+   * pointer, so the hover tokens are live here where they are transparent for
+   * list rows.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu {
+    --rc-menu-min-width: calc(142 * var(--win31-unit));
+    --rc-menu-padding-block: var(--win31-unit);
+    --rc-menu-background: var(--win31-color-menu);
+    --rc-menu-color: var(--win31-color-menu-text);
+    --rc-menu-border: var(--win31-border);
+    --rc-menu-radius: var(--win31-radius);
+    --rc-menu-shadow: var(--win31-drop-shadow);
+    --rc-menu-item-min-block-size: calc(20 * var(--win31-unit));
+    --rc-menu-item-padding-block: 0;
+    --rc-menu-item-padding-inline: calc(18 * var(--win31-unit)) calc(34 * var(--win31-unit));
+    --rc-menu-item-gap: var(--win31-gap);
+    --rc-menu-item-transition: none;
+    --rc-menu-hover-bg: var(--win31-color-selection);
+    --rc-menu-hover-color: var(--win31-color-selection-text);
+    --rc-menu-active-bg: var(--win31-color-selection);
+    --rc-menu-active-color: var(--win31-color-selection-text);
+    --rc-menu-disabled-color: var(--win31-color-disabled-text);
+    --rc-menu-disabled-opacity: 1;
+    --rc-menu-check-color: var(--win31-color-menu-text);
+    --rc-menu-check-size: var(--win31-check-size);
+    --rc-menu-group-label-color: var(--win31-color-menu-text);
+    --rc-menu-shortcut-color: inherit;
+    --rc-menu-shortcut-size: var(--win31-font-size);
+    /* Two-pixel ridge, the way 3.1 drew every divider. */
+    --rc-menu-separator-border: var(--win31-hairline) solid var(--win31-color-shadow);
+    --rc-menu-separator-margin-block: var(--win31-unit);
+    --rc-menu-separator-margin-inline: 0;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+    line-height: 1;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu [role^='menuitem'] {
+    border-radius: var(--win31-radius);
+    cursor: default;
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu [role^='menuitem']:focus-visible {
+    outline: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu [role^='menuitem']:disabled,
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu [role^='menuitem'][aria-disabled='true'] {
+    color: var(--win31-color-disabled-text);
+    text-shadow: var(--win31-unit) var(--win31-unit) 0 var(--win31-color-disabled-emboss);
+    opacity: 1;
+  }
+
+  /*
+   * The shortcut column is right-aligned plain text at the same size as the
+   * label. 3.1 did not dim it; the spacing carried the distinction.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu [data-rc-menu-shortcut] {
+    color: inherit;
+    font-size: var(--win31-font-size);
+  }
+}

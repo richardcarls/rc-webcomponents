@@ -1,0 +1,75 @@
+@layer rc-theme-win31.components {
+  /*
+   * Windows 3.1 had no switch. Its two-state control was the checkbox: a 13 by
+   * 13 sunken white box that draws a check when set. That is the default here,
+   * because it is the honest mapping and it keeps the native input's own
+   * semantics intact.
+   *
+   * Consumers who want a sliding control can opt into the beveled two-position
+   * variant with the documented data-rc-win31-toggle marker below.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch {
+    --rc-switch-track-inline-size: var(--win31-check-size);
+    --rc-switch-track-block-size: var(--win31-check-size);
+    --rc-switch-thumb-translate: 0;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch::part(track) {
+    inline-size: var(--win31-check-size);
+    block-size: var(--win31-check-size);
+    background: var(--win31-color-field);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch::part(thumb) {
+    inline-size: var(--win31-check-size);
+    block-size: var(--win31-check-size);
+    background-color: transparent;
+    background-image: none;
+    border: 0;
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    translate: none;
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch[checked]::part(thumb) {
+    background-image: var(--win31-glyph-check);
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch::part(selected-icon),
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch::part(deselected-icon) {
+    display: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch:focus-within::part(track) {
+    outline: var(--win31-focus-ring);
+    outline-offset: var(--win31-unit);
+  }
+
+  /* Opt-in sliding variant: a beveled thumb travelling in a sunken channel. */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch[data-rc-win31-toggle] {
+    --rc-switch-track-inline-size: calc(36 * var(--win31-unit));
+    --rc-switch-track-block-size: var(--win31-control-height);
+    --rc-switch-thumb-translate: calc(16 * var(--win31-unit));
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch[data-rc-win31-toggle]::part(track) {
+    inline-size: calc(36 * var(--win31-unit));
+    block-size: var(--win31-control-height);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-switch[data-rc-win31-toggle]::part(thumb) {
+    inline-size: calc(18 * var(--win31-unit));
+    block-size: calc(100% - (2 * var(--win31-unit)));
+    background-color: var(--win31-color-surface);
+    background-image: none;
+    box-shadow: var(--win31-bevel-outset-1);
+  }
+}

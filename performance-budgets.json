@@ -99,6 +99,17 @@
       "largestLazyGzip": 0,
       "initialChunks": 1,
       "lazyChunks": 0
+    },
+    "win31Theme": {
+      "initialRaw": 115971,
+      "initialGzip": 17655,
+      "initialBrotli": 14458,
+      "totalRaw": 115971,
+      "totalGzip": 17655,
+      "totalBrotli": 14458,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
     }
   },
   "budgets": {
@@ -179,6 +190,15 @@
       "initialBrotli": 9870,
       "totalGzip": 11542,
       "totalBrotli": 9870,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "win31Theme": {
+      "initialGzip": 18679,
+      "initialBrotli": 15482,
+      "totalGzip": 18679,
+      "totalBrotli": 15482,
       "largestLazyGzip": 1024,
       "initialChunks": 1,
       "lazyChunks": 0

@@ -1,0 +1,53 @@
+@layer rc-theme-win31.components {
+  /*
+   * Not an icon font.
+   *
+   * 3.1 iconography was one-bit and two-bit bitmap art at 16 and 32 pixels,
+   * so this sizes icon slots to those grids and turns off smoothing rather
+   * than wiring a variable font. Component-drawn affordances (scrollbar
+   * arrows, the disclosure triangle, the checkbox tick) come from the
+   * --win31-glyph-* data URIs in defaults.css instead.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    :where([data-rc-icon], [data-rc-navigation-icon]) {
+    display: inline-grid;
+    place-items: center;
+    inline-size: var(--rc-icon-font-size, var(--win31-check-size));
+    block-size: var(--rc-icon-font-size, var(--win31-check-size));
+    font-size: var(--rc-icon-font-size, var(--win31-check-size));
+    /*
+     * Unlayered icon-font boilerplate otherwise beats this layered theme rule.
+     * Keep the geometry invariant important, but let consumers override the
+     * normally-cascaded custom property.
+     */
+    line-height: var(--rc-icon-font-line-height, var(--win31-check-size)) !important;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    :where([data-rc-button-icon], [data-rc-button-selected-icon], [data-rc-chip-icon]) {
+    display: inline-grid;
+    place-items: center;
+    font-size: var(--rc-compact-icon-font-size, var(--win31-check-size));
+    line-height: var(
+      --rc-compact-icon-font-line-height,
+      var(--rc-compact-icon-font-size, var(--win31-check-size))
+    ) !important;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-button[icon-only]
+    :where([data-rc-button-icon], [data-rc-button-selected-icon]) {
+    font-size: var(--rc-icon-button-icon-font-size, var(--win31-scrollbar-size));
+    line-height: var(--rc-icon-button-icon-font-size, var(--win31-scrollbar-size)) !important;
+  }
+
+  /* Period art is pixel art. Never let the UA smooth it. */
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    :where([data-rc-icon], [data-rc-navigation-icon])
+    img,
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    :where([data-rc-icon], [data-rc-navigation-icon])
+    svg {
+    image-rendering: pixelated;
+  }
+}

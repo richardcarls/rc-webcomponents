@@ -1,0 +1,50 @@
+@layer rc-theme-win31.components {
+  /*
+   * A card is a group box: an outset panel with no radius and no elevation.
+   * Depth comes from the one-pixel bevel, which is all Windows 3.1 had.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-card::part(container) {
+    background: var(--win31-color-surface);
+    color: var(--win31-color-frame);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-outset-border-color);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-card::part(header) {
+    padding-block: var(--win31-gap-tight);
+    padding-inline: var(--win31-padding-inline);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-card::part(title) {
+    font-size: var(--win31-font-size);
+    font-weight: 700;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-card::part(subtitle) {
+    color: var(--win31-color-frame);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-card::part(media) img {
+    image-rendering: pixelated;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-card::part(state-layer) {
+    display: none;
+  }
+
+  /*
+   * A horizontal rule in a 3.1 panel is a two-pixel ridge, not a line: one
+   * shadow pixel above one highlight pixel.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-card hr {
+    margin-block: var(--win31-gap-tight);
+    border: 0;
+    border-block-start: var(--win31-hairline) solid var(--win31-color-shadow);
+    border-block-end: var(--win31-hairline) solid var(--win31-color-highlight);
+  }
+}

@@ -1,0 +1,66 @@
+@layer rc-theme-win31.components {
+  /*
+   * The application window's caption bar. Same construction as the dialog
+   * caption above: a solid active-title fill, a centered bold title, and
+   * beveled caption buttons at the trailing edge.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-app-bar {
+    --rc-app-bar-bg: var(--win31-color-title-active);
+    --rc-app-bar-color: var(--win31-color-title-active-text);
+    --rc-app-bar-compact-min-height: var(--win31-title-height);
+    --rc-app-bar-title-font-size: var(--win31-title-font-size);
+    --rc-app-bar-expanded-title-font-size: var(--win31-title-font-size);
+    --rc-app-bar-expanded-padding-block: 0;
+    --rc-app-bar-padding-inline: 0;
+    --rc-app-bar-title-start-padding: var(--win31-padding-inline);
+    --rc-app-bar-gap: 0;
+    --rc-app-bar-shadow: none;
+    --rc-app-bar-scroll-divider: var(--win31-border);
+    --rc-app-bar-transition-duration: 0ms;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-app-bar::part(root) {
+    min-block-size: var(--win31-title-height);
+    border-block-end: var(--win31-border);
+    font-family: var(--win31-font-family);
+    user-select: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-app-bar::part(title) {
+    flex: 1;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-app-bar::part(scroll-shadow) {
+    display: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-app-bar button {
+    inline-size: var(--win31-title-height);
+    block-size: var(--win31-title-height);
+    min-inline-size: var(--win31-title-height);
+    min-block-size: var(--win31-title-height);
+    padding: 0;
+    color: var(--win31-color-frame);
+    background-color: var(--win31-color-surface);
+    border: 0;
+    border-inline-start: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-app-bar button:active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  /*
+   * An inactive window took the muted caption pair. rc-app-bar has no inactive
+   * state of its own, so this is offered as a documented opt-in marker.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-app-bar[data-rc-win31-inactive] {
+    --rc-app-bar-bg: var(--win31-color-title-inactive);
+    --rc-app-bar-color: var(--win31-color-title-inactive-text);
+  }
+}
