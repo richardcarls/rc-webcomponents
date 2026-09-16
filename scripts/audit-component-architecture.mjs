@@ -113,8 +113,10 @@ export const THEME_SELECTOR_BUDGETS = {
     modifierHooks: 59,
   },
   'rc-theme-substrate': {
-    parts: 33,
-    markerHooks: 15,
+    // Grew with rc-field coverage: the field's own anatomy plus the resets a
+    // control provider needs so its chrome stops nesting inside the field's.
+    parts: 45,
+    markerHooks: 22,
     importantDeclarations: 1,
     idSelectors: 0,
     modifierHooks: 0,

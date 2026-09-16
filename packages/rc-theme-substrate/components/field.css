@@ -1,0 +1,136 @@
+@layer rc-theme-substrate.components {
+  /*
+   * rc-field already owns its own layout, invalid border, disabled opacity,
+   * focus outline, and forced-colors fallbacks, and it resets the slotted
+   * native control's chrome itself. Substrate only supplies its palette and
+   * the hover/focus polish its other form controls share, so the field reads
+   * as one of them rather than as a separate idiom.
+   */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field {
+    /*
+     * The component is inline-block, so an unsized field shrink-wraps to its
+     * content: a provider-backed field with no value collapses to its chevron.
+     * Fill the container instead, capped so a field in a wide layout stays a
+     * readable measure.
+     */
+    display: inline-block;
+    inline-size: min(100%, 28rem);
+    --rc-field-background: var(--substrate-field, Field);
+    --rc-field-color: var(--rc-field-text, FieldText);
+    --rc-field-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-field-radius: var(--rc-control-radius, 0.5rem);
+    --rc-field-min-block-size: var(--rc-control-block-size, 2.5rem);
+    --rc-field-padding: var(--rc-control-padding-block, 0.5rem)
+      var(--rc-control-padding-inline, 0.75rem);
+    --rc-field-control-gap: var(--substrate-control-gap, 0.5rem);
+    --rc-field-label-color: var(--substrate-on-surface-muted, GrayText);
+    --rc-field-error-color: var(--substrate-error, red);
+    --rc-field-supporting-color: var(--substrate-on-surface-muted, GrayText);
+    --rc-field-supporting-font-size: 0.8125rem;
+    --rc-field-supporting-padding-block-start: 0.25rem;
+    --rc-field-focus-outline: var(--rc-focus-ring, 2px solid Highlight);
+    --rc-field-focus-outline-offset: var(--rc-focus-ring-offset, 2px);
+    --rc-field-disabled-opacity: var(--rc-disabled-opacity, 0.52);
+    font-family: var(--rc-font-family, inherit);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field::part(field) {
+    transition:
+      border-color var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease),
+      box-shadow var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
+  }
+
+  /* Same hover and focus treatment rc-select, rc-combobox, and rc-textarea use. */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field:hover::part(field) {
+    border-color: color-mix(in srgb, var(--rc-accent, Highlight) 55%, var(--rc-border-color));
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-focused]::part(field) {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-invalid]::part(label) {
+    color: var(--rc-field-error-color, red);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field[data-invalid]:hover::part(field) {
+    border-color: var(--rc-field-error-color, red);
+  }
+
+  /* A textarea grows downward, so its label and control belong at the top. */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-multiline]::part(field) {
+    align-items: flex-start;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-multiline]::part(control) {
+    align-items: flex-start;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field > input,
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field > textarea {
+    caret-color: var(--rc-accent, Highlight);
+  }
+
+  /*
+   * Control providers: rc-field's own surface draws the border, background,
+   * and focus ring, so the enhancing child has to stop drawing its own or the
+   * two sets of chrome nest visibly.
+   */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field
+    > rc-textarea[data-rc-field-control] {
+    --rc-textarea-border: 0;
+    --rc-textarea-border-radius: 0;
+    --rc-textarea-background: transparent;
+    --rc-textarea-padding: 0;
+    inline-size: 100%;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field
+    > rc-textarea[data-rc-field-control]::part(root):focus-within {
+    box-shadow: none;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field
+    > :is(rc-select, rc-combobox)[data-rc-field-control] {
+    --rc-field: transparent;
+    inline-size: 100%;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field
+    > rc-select[data-rc-field-control]::part(trigger),
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field
+    > rc-combobox[data-rc-field-control]::part(anchor) {
+    min-block-size: 0;
+    padding-inline: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  /*
+   * Substrate sets the hover and focus chrome on the part directly rather than
+   * through a resettable property, so suppressing it needs the same
+   * specificity back.
+   */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field
+    > rc-select[data-rc-field-control]::part(trigger):is(
+      :hover,
+      :focus-visible,
+      [aria-expanded='true']
+    ),
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field
+    > rc-combobox[data-rc-field-control]::part(anchor):is(:hover, :focus-within) {
+    border-color: transparent;
+    background: transparent;
+    outline: none;
+    box-shadow: none;
+  }
+}

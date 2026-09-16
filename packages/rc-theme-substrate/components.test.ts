@@ -489,3 +489,53 @@ test('no themed color mixes against a bare system color', () => {
     expect(value, token).not.toMatch(/\b(Canvas|CanvasText|ButtonBorder|ButtonFace)\b/);
   }
 });
+
+test('fields take the Substrate palette and its shared control chrome', () => {
+  const scope = renderScope();
+  const field = document.createElement('rc-field');
+
+  scope.append(field);
+
+  const styles = getComputedStyle(field);
+
+  expect(styles.getPropertyValue('--rc-field-background')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-field-label-color')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-field-error-color')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-field-radius')).not.toBe('');
+
+  // rc-field owns its own focus outline; Substrate only supplies the values.
+  expect(styles.getPropertyValue('--rc-field-focus-outline')).not.toBe('');
+
+  const surface = renderPart(scope, 'rc-field', 'field');
+
+  expect(getComputedStyle(surface).transitionDuration).not.toBe('0s');
+});
+
+test('a control provider inside a field stops drawing its own chrome', () => {
+  const scope = renderScope();
+
+  // rc-field's own surface draws the border and background; without these
+  // resets the nested control's chrome nests visibly inside the field's.
+  for (const [tagName, partName] of [
+    ['rc-select', 'trigger'],
+    ['rc-combobox', 'anchor'],
+  ] as const) {
+    const field = document.createElement('rc-field');
+    const provider = document.createElement(tagName);
+    const shadowRoot = provider.shadowRoot ?? provider.attachShadow({ mode: 'open' });
+    const part = document.createElement('div');
+
+    provider.setAttribute('data-rc-field-control', '');
+    part.setAttribute('part', partName);
+    shadowRoot.append(part);
+    field.append(provider);
+    scope.append(field);
+
+    const styles = getComputedStyle(part);
+
+    expect(styles.borderTopWidth, tagName).toBe('0px');
+    expect(styles.borderRadius, tagName).toBe('0px');
+    expect(styles.minBlockSize, tagName).toBe('0px');
+    expect(styles.backgroundColor, tagName).toBe('rgba(0, 0, 0, 0)');
+  }
+});

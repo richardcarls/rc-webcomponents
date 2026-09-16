@@ -12,6 +12,7 @@ const componentEntries = [
   'disclosure',
   'fab',
   'fab-menu',
+  'field',
   'icons',
   'list-item',
   'listbox',
