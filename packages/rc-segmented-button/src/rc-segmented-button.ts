@@ -16,33 +16,77 @@ declare global {
 
 const LIGHT_DOM_CSS = `
 @layer rc-base {
-  rc-segmented-button > fieldset {
-    display: var(--_rc-segmented-button-fieldset-display, revert);
-    margin: var(--_rc-segmented-button-fieldset-margin, revert);
-    padding: var(--_rc-segmented-button-fieldset-padding, revert);
-    border: var(--_rc-segmented-button-fieldset-border, revert);
-    border-radius: var(--_rc-segmented-button-fieldset-radius, revert);
-    overflow: var(--_rc-segmented-button-fieldset-overflow, revert);
+  /*
+   * The segmented appearance, behind one switch a theme sets.
+   *
+   * Everything here is structure rather than paint, and two of the blocks are
+   * accessibility recipes rather than taste: the legend stays in the
+   * accessibility tree while being visually hidden, and each radio stays
+   * focusable and hit-testable through its label while being invisible. A
+   * theme that reached for display:none on either would remove the group's
+   * accessible name or make the control unreachable by keyboard, so the
+   * component owns both rather than restating them per theme.
+   *
+   * Gating on a style query keeps the documented unthemed contract: with the
+   * property unset the fieldset, legend, and radios keep their browser
+   * appearance. Where style queries are unsupported the recipe simply does not
+   * apply, which lands on that same native appearance.
+   */
+  @container style(--rc-segmented-button-appearance: segmented) {
+    rc-segmented-button > fieldset {
+      display: inline-flex;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      overflow: visible;
+    }
+
+    rc-segmented-button > fieldset > legend {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      margin: -1px;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    rc-segmented-button > fieldset > label {
+      display: inline-flex;
+      cursor: var(--rc-segmented-button-cursor, pointer);
+      user-select: none;
+    }
+
+    rc-segmented-button > fieldset > label:has(input[type='radio']:disabled),
+    rc-segmented-button[disabled] > fieldset > label {
+      cursor: var(--rc-segmented-button-disabled-cursor, not-allowed);
+    }
+
+    rc-segmented-button[orientation='vertical'] > fieldset > label + label {
+      border-inline-start: var(
+        --rc-segmented-button-vertical-divider,
+        var(--rc-segmented-button-border, revert)
+      );
+    }
+
+    rc-segmented-button > fieldset > label > input[type='radio'] {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      margin: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
   }
 
   rc-segmented-button[orientation='vertical'] > fieldset {
     flex-direction: column;
   }
 
-  rc-segmented-button > fieldset > legend {
-    position: var(--_rc-segmented-button-legend-position, revert);
-    inline-size: var(--_rc-segmented-button-legend-inline-size, revert);
-    block-size: var(--_rc-segmented-button-legend-block-size, revert);
-    margin: var(--_rc-segmented-button-legend-margin, revert);
-    padding: var(--_rc-segmented-button-legend-padding, revert);
-    border: var(--_rc-segmented-button-legend-border, revert);
-    overflow: var(--_rc-segmented-button-legend-overflow, revert);
-    clip: var(--_rc-segmented-button-legend-clip, revert);
-    white-space: var(--_rc-segmented-button-legend-white-space, revert);
-  }
-
   rc-segmented-button > fieldset > label {
-    display: var(--_rc-segmented-button-segment-display, revert);
     align-items: center;
     justify-content: center;
     gap: var(--rc-segmented-button-segment-gap, 0.5em);
@@ -52,8 +96,6 @@ const LIGHT_DOM_CSS = `
     border: var(--rc-segmented-button-border, revert);
     color: var(--rc-segmented-button-color, revert);
     background: var(--rc-segmented-button-bg, revert);
-    cursor: var(--_rc-segmented-button-segment-cursor, revert);
-    user-select: var(--_rc-segmented-button-segment-user-select, revert);
   }
 
   rc-segmented-button > fieldset > label:first-of-type {
@@ -71,7 +113,6 @@ const LIGHT_DOM_CSS = `
   }
 
   rc-segmented-button[orientation='vertical'] > fieldset > label + label {
-    border-inline-start: var(--_rc-segmented-button-vertical-border-inline-start, revert);
     border-block-start: var(--rc-segmented-button-divider, revert);
   }
 
@@ -100,16 +141,6 @@ const LIGHT_DOM_CSS = `
   rc-segmented-button > fieldset > label:has(input[type='radio']:disabled),
   rc-segmented-button[disabled] > fieldset > label {
     opacity: var(--rc-segmented-button-disabled-opacity, revert);
-    cursor: var(--_rc-segmented-button-disabled-cursor, revert);
-  }
-
-  rc-segmented-button > fieldset > label > input[type='radio'] {
-    position: var(--_rc-segmented-button-radio-position, revert);
-    inline-size: var(--_rc-segmented-button-radio-inline-size, revert);
-    block-size: var(--_rc-segmented-button-radio-block-size, revert);
-    margin: var(--_rc-segmented-button-radio-margin, revert);
-    opacity: var(--_rc-segmented-button-radio-opacity, revert);
-    pointer-events: var(--_rc-segmented-button-radio-pointer-events, revert);
   }
 
   /* Always reserved (never display:none) so a segment's width doesn't
@@ -117,7 +148,7 @@ const LIGHT_DOM_CSS = `
      inline-size keeps the reserved width deterministic regardless of the
      icon's own intrinsic size. */
   rc-segmented-button > fieldset > label > [data-rc-segmented-button-selected-icon] {
-    display: var(--_rc-segmented-button-selected-icon-display, inline-grid);
+    display: var(--rc-segmented-button-selected-icon-display, inline-grid);
     inline-size: var(--rc-segmented-button-selected-icon-size, 1.25em);
     place-items: center;
     visibility: hidden;
@@ -181,6 +212,16 @@ export interface RCSegmentedButtonChangeDetail {
  * @attr disabled - Mirrors disabled state to the native fieldset.
  * @attr orientation - Keyboard orientation: `horizontal` or `vertical`.
  *
+ * @cssprop [--rc-segmented-button-appearance] - Set to `segmented` to turn on the component's
+ *   segmented recipe: a flat fieldset, a visually hidden legend, and hidden but focusable radios.
+ *   Unset, the fieldset, legend, and radios keep their browser appearance.
+ * @cssprop [--rc-segmented-button-cursor=pointer] - Segment cursor once the segmented recipe is on.
+ * @cssprop [--rc-segmented-button-disabled-cursor=not-allowed] - Segment cursor when its radio is
+ *   disabled, or when the host is `disabled`, once the segmented recipe is on.
+ * @cssprop [--rc-segmented-button-vertical-divider] - Border on the inline-start edge of adjacent
+ *   segments in vertical orientation (defaults to the segment border).
+ * @cssprop [--rc-segmented-button-selected-icon-display=inline-grid] - Display of the selected-icon
+ *   slot. Set to `none` for a theme that shows selection without a tick.
  * @cssprop [--rc-segmented-button-segment-gap=0.5em] - Gap between segment icon and label content.
  * @cssprop [--rc-segmented-button-selected-icon-size=1.25em] - Reserved inline-size of the
  *   selected-icon slot (and its opposite-side mirror spacer) — constant regardless of checked

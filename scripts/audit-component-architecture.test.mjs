@@ -42,6 +42,13 @@ test('extracts marker and token contracts without confusing references and defin
     [...extractTokenReferences(css)],
     ['--rc-accent', '--rc-markdown-editor-color', '--rc-imperative-duration'],
   );
+
+  // A style query tests a token instead of substituting it, so it is a
+  // reference even though there is no var() anywhere.
+  assert.deepEqual(
+    [...extractTokenReferences('@container style(--rc-segmented-button-appearance: segmented) {}')],
+    ['--rc-segmented-button-appearance'],
+  );
 });
 
 test('recognizes only the canonical 0.7 token namespace', () => {
@@ -57,11 +64,17 @@ test('recognizes only the canonical 0.7 token namespace', () => {
     'rc-slider',
   ]);
 
-  assert.ok(
-    PRIVATE_THEME_TOKEN_CONTRACTS['rc-theme-material'].has(
-      '--_rc-segmented-button-fieldset-border',
-    ),
-  );
+  assert.ok(PRIVATE_THEME_TOKEN_CONTRACTS['rc-theme-material'].has('--_rc-button-ripple-color'));
+
+  // The segmented button stopped parameterizing its structure through private
+  // tokens, so no theme overrides any of them now.
+  for (const theme of ['rc-theme-material', 'rc-theme-substrate', 'rc-theme-win31']) {
+    assert.ok(
+      ![...PRIVATE_THEME_TOKEN_CONTRACTS[theme]].some((token) =>
+        token.startsWith('--_rc-segmented-button-'),
+      ),
+    );
+  }
 });
 
 test('reports an actionable error for a marker without an ownership contract', () => {
@@ -92,6 +105,6 @@ test('the current component architecture satisfies hard guardrails', () => {
   assert.ok(
     result.themes
       .find((theme) => theme.name === 'rc-theme-material')
-      .privateTokenOverrides.some((token) => token.startsWith('--_rc-segmented-button-')),
+      .privateTokenOverrides.some((token) => token.startsWith('--_rc-button-ripple-')),
   );
 });

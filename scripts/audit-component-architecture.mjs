@@ -88,40 +88,6 @@ export const CROSS_COMPONENT_TOKEN_CONTRACTS = {
   '--rc-line-actions-margin-start': ['rc-textarea'],
 };
 
-const SEGMENTED_BUTTON_PRIVATE_TOKENS = new Set(
-  `
---_rc-segmented-button-disabled-cursor
---_rc-segmented-button-fieldset-border
---_rc-segmented-button-fieldset-display
---_rc-segmented-button-fieldset-margin
---_rc-segmented-button-fieldset-overflow
---_rc-segmented-button-fieldset-padding
---_rc-segmented-button-fieldset-radius
---_rc-segmented-button-legend-block-size
---_rc-segmented-button-legend-border
---_rc-segmented-button-legend-clip
---_rc-segmented-button-legend-inline-size
---_rc-segmented-button-legend-margin
---_rc-segmented-button-legend-overflow
---_rc-segmented-button-legend-padding
---_rc-segmented-button-legend-position
---_rc-segmented-button-legend-white-space
---_rc-segmented-button-radio-block-size
---_rc-segmented-button-radio-inline-size
---_rc-segmented-button-radio-margin
---_rc-segmented-button-radio-opacity
---_rc-segmented-button-radio-pointer-events
---_rc-segmented-button-radio-position
---_rc-segmented-button-segment-cursor
---_rc-segmented-button-segment-display
---_rc-segmented-button-segment-user-select
---_rc-segmented-button-selected-icon-display
---_rc-segmented-button-vertical-border-inline-start
-`
-    .trim()
-    .split(/\s+/),
-);
-
 export const PRIVATE_THEME_TOKEN_CONTRACTS = {
   'rc-theme-material': new Set([
     '--_rc-button-ripple-color',
@@ -131,10 +97,9 @@ export const PRIVATE_THEME_TOKEN_CONTRACTS = {
     '--_rc-button-ripple-opacity',
     '--_rc-field-input-line-height',
     '--_rc-field-label-line-height',
-    ...SEGMENTED_BUTTON_PRIVATE_TOKENS,
   ]),
-  'rc-theme-substrate': SEGMENTED_BUTTON_PRIVATE_TOKENS,
-  'rc-theme-win31': SEGMENTED_BUTTON_PRIVATE_TOKENS,
+  'rc-theme-substrate': new Set(),
+  'rc-theme-win31': new Set(),
 };
 
 export const THEME_SELECTOR_BUDGETS = {
@@ -230,8 +195,17 @@ export function extractTokenReferences(text) {
   const fromComputedStyles = [
     ...text.matchAll(/getPropertyValue\(\s*['"](--(?:_)?rc-[a-z0-9-]+)['"]\s*\)/g),
   ].map((match) => match[1]);
+  /*
+   * A style query consumes a token by testing it rather than substituting it,
+   * so it never appears inside a var(). Without this a token that only gates a
+   * @container style() block reads as defined by the themes and consumed by
+   * nobody.
+   */
+  const fromStyleQueries = [...text.matchAll(/style\(\s*(--(?:_)?rc-[a-z0-9-]+)\s*:/g)].map(
+    (match) => match[1],
+  );
 
-  return new Set([...fromVars, ...fromComputedStyles]);
+  return new Set([...fromVars, ...fromComputedStyles, ...fromStyleQueries]);
 }
 
 export function extractTokenDefinitions(text) {

@@ -62,9 +62,26 @@ no-JavaScript fallback. Arrow keys, Home, and End follow the APG radio group
 model.
 
 Without a theme, the fieldset, legend, and radio controls retain their browser
-appearance. Material and Substrate visually flatten the fieldset and legend,
-then style the labels as the segment surfaces; the semantic fieldset and legend
-remain available to assistive technology.
+appearance. Setting `--rc-segmented-button-appearance: segmented` turns on the
+component's own recipe: a flat fieldset, a visually hidden legend, and radios
+that stay focusable and in the accessibility tree while being invisible. The
+packaged themes set it, so the semantic fieldset and legend remain available to
+assistive technology while the labels read as segment surfaces.
+
+:::caution Browser support
+
+That one switch is read with a CSS style container query, which has narrower
+support than the rest of this package: Chrome 111, Safari 18, and Firefox 128.
+The component's behavior, keyboard handling, and form participation are
+unaffected and work wherever custom elements do.
+
+Where style queries are unsupported the recipe does not apply and the control
+falls back to the native fieldset and radio appearance. That fallback stays
+fully usable and accessible, but it looks like plain radio buttons rather than
+a segmented control. Write the segment layout in your own CSS if that is not
+acceptable for your audience.
+
+:::
 
 In forced-colors mode the component restates the selected segment in system
 colors, so selection stays visible after the forced palette replaces whatever

@@ -74,17 +74,7 @@ test('preserves native fieldset, legend, and radio appearance without theme toke
 
 test('selected-icon slot reserves constant width, regardless of checked state', async () => {
   const screen = render(html`
-    <rc-segmented-button
-      data-testid="host"
-      style="
-        --_rc-segmented-button-segment-display: inline-flex;
-        --_rc-segmented-button-radio-position: absolute;
-        --_rc-segmented-button-radio-inline-size: 1px;
-        --_rc-segmented-button-radio-block-size: 1px;
-        --_rc-segmented-button-radio-margin: -1px;
-        --_rc-segmented-button-radio-opacity: 0;
-      "
-    >
+    <rc-segmented-button data-testid="host" style="--rc-segmented-button-appearance: segmented">
       <fieldset>
         <legend>Size</legend>
         <label data-testid="unchecked-label">
@@ -103,6 +93,14 @@ test('selected-icon slot reserves constant width, regardless of checked state', 
   const host = (await screen.getByTestId('host').element()) as RCSegmentedButton;
 
   await flushSegmented(host);
+
+  if (!supportsStyleQueries()) {
+    // Firefox currently parses CSSContainerRule but does not evaluate style
+    // queries. The component deliberately falls back to native radio markup.
+    expect(getComputedStyle(host.querySelector('fieldset')!).display).toBe('block');
+
+    return;
+  }
 
   const uncheckedLabel = await screen.getByTestId('unchecked-label').element();
   const checkedLabel = await screen.getByTestId('checked-label').element();
@@ -266,4 +264,82 @@ test('the selected segment is restated in system colors for forced colors', asyn
   expect(selectedRule!.style.getPropertyValue('background').toLowerCase()).toBe('highlight');
   expect(selectedRule!.style.getPropertyValue('color').toLowerCase()).toBe('highlighttext');
   expect(baseRule!.style.getPropertyValue('background').toLowerCase()).toBe('buttonface');
+});
+
+/** True when the engine evaluates `@container style(...)` queries. */
+function supportsStyleQueries(): boolean {
+  const $probe = document.createElement('style');
+  const $container = document.createElement('div');
+  const $child = document.createElement('div');
+
+  $container.style.setProperty('--rc-probe', 'yes');
+  $child.dataset.rcStyleQueryProbe = '';
+  $container.append($child);
+
+  $probe.textContent = `
+    @container style(--rc-probe: yes) {
+      [data-rc-style-query-probe] { --rc-style-query-supported: yes; }
+    }
+  `;
+
+  document.head.append($probe);
+  document.body.append($container);
+
+  const supported =
+    getComputedStyle($child).getPropertyValue('--rc-style-query-supported').trim() === 'yes';
+
+  $probe.remove();
+
+  $container.remove();
+
+  return supported;
+}
+
+test('the appearance switch gates the segmented recipe', async () => {
+  const screen = render(html`
+    <rc-segmented-button data-testid="host">
+      <fieldset data-testid="fieldset">
+        <legend data-testid="legend">Text size</legend>
+        <label>
+          <input data-testid="radio" type="radio" name="gate" value="small" checked />
+          Small
+        </label>
+      </fieldset>
+    </rc-segmented-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCSegmentedButton;
+
+  await flushSegmented(host);
+
+  const $fieldset = (await screen.getByTestId('fieldset').element()) as HTMLElement;
+  const $legend = (await screen.getByTestId('legend').element()) as HTMLElement;
+  const $radio = (await screen.getByTestId('radio').element()) as HTMLInputElement;
+
+  // Unset, the native appearance is the documented contract.
+  expect(getComputedStyle($fieldset).display).toBe('block');
+  expect(getComputedStyle($legend).position).toBe('static');
+  expect(getComputedStyle($radio).opacity).toBe('1');
+
+  host.style.setProperty('--rc-segmented-button-appearance', 'segmented');
+
+  if (!supportsStyleQueries()) {
+    // Documented degradation: without style query support the recipe never
+    // applies, which lands on the same native appearance.
+    expect(getComputedStyle($fieldset).display).toBe('block');
+    expect(getComputedStyle($radio).opacity).toBe('1');
+
+    return;
+  }
+
+  expect(getComputedStyle($fieldset).display).toBe('inline-flex');
+  expect(getComputedStyle($legend).position).toBe('absolute');
+
+  // The radio stays focusable and in the accessibility tree while invisible,
+  // which is why the component owns this rather than each theme.
+  expect(getComputedStyle($radio).opacity).toBe('0');
+  expect(getComputedStyle($radio).display).not.toBe('none');
+  expect(getComputedStyle($radio).visibility).toBe('visible');
+
+  $radio.focus();
+  expect(document.activeElement).toBe($radio);
 });
