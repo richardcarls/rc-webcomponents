@@ -133,6 +133,41 @@ export const THEME_SELECTOR_BUDGETS = {
   },
 };
 
+/*
+ * A component that animates a layout property (box geometry, not paint) runs
+ * layout on every frame instead of compositing on the GPU. Each entry is a
+ * deliberate exception with its own justification; anything else found by
+ * extractTransitionAnalysis() is an error. Keys are component package names
+ * for a component's own source, and theme names for motion a theme package
+ * adds on top of a component (see rc-theme-material below).
+ */
+export const ANIMATED_LAYOUT_PROPERTY_BUDGETS = {
+  // The `<details>` panel measures its open state as actual box height;
+  // `calc-size()` isn't broadly supported enough yet to be the primary
+  // mechanism. See the motion guide for the tradeoff.
+  'rc-disclosure': new Set(['block-size']),
+  // The active-item indicator resizes to the newly selected item's box, not
+  // just its own position; a transform-only scale would distort its border
+  // and corner radius instead of tracking the target's real geometry.
+  'rc-navigation-bar': new Set(['inline-size', 'block-size']),
+  // The rail itself widens and repads on expand/collapse (a transform-only
+  // approximation would clip or overlap sibling content instead of reflowing
+  // it), and the active-item indicator resizes the same way rc-navigation-bar's
+  // does.
+  'rc-navigation-rail': new Set(['inline-size', 'block-size', 'padding']),
+  // The fill tracks literal determinate progress, and the indeterminate loop
+  // sweeps a highlight edge-to-edge across the track; see rc-progress's own
+  // motion tokens.
+  'rc-progress': new Set(['inline-size', 'inset-inline-start']),
+  // The thumb's own box grows and shrinks with the track in some themes.
+  'rc-switch': new Set(['inline-size', 'block-size']),
+  // The floating label crosses from placeholder position to the shrunk
+  // caption position. A `transform`-based rewrite is tracked separately
+  // (pending theme-material-multiline-label-spacing changeset) and is a
+  // different risk profile than this motion-token pass.
+  'rc-theme-material': new Set(['inset-block-start', 'font-size', 'line-height']),
+};
+
 export const PACKAGE_ID_SELECTOR_BUDGETS = {
   'rc-adaptive-menu': 14,
   'rc-app-bar': 29,
@@ -226,6 +261,187 @@ export function extractTokenDefinitions(text) {
   );
 }
 
+/*
+ * Properties whose change forces layout (box geometry), as opposed to paint
+ * or composite-only properties such as color, opacity, or transform.
+ */
+const ANIMATED_LAYOUT_PROPERTIES = new Set([
+  'width',
+  'height',
+  'inline-size',
+  'block-size',
+  'min-width',
+  'min-height',
+  'min-inline-size',
+  'min-block-size',
+  'max-width',
+  'max-height',
+  'max-inline-size',
+  'max-block-size',
+  'padding',
+  'padding-top',
+  'padding-right',
+  'padding-bottom',
+  'padding-left',
+  'padding-block',
+  'padding-inline',
+  'padding-block-start',
+  'padding-block-end',
+  'padding-inline-start',
+  'padding-inline-end',
+  'margin',
+  'margin-top',
+  'margin-right',
+  'margin-bottom',
+  'margin-left',
+  'margin-block',
+  'margin-inline',
+  'margin-block-start',
+  'margin-block-end',
+  'margin-inline-start',
+  'margin-inline-end',
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'inset',
+  'inset-block',
+  'inset-inline',
+  'inset-block-start',
+  'inset-block-end',
+  'inset-inline-start',
+  'inset-inline-end',
+  'font-size',
+  'line-height',
+  'gap',
+  'row-gap',
+  'column-gap',
+  'flex-basis',
+]);
+
+function splitOnTopLevelCommas(value) {
+  const parts = [];
+  let depth = 0;
+  let current = '';
+
+  for (const char of value) {
+    if (char === '(') {
+      depth += 1;
+    } else if (char === ')') {
+      depth -= 1;
+    }
+
+    if (char === ',' && depth === 0) {
+      parts.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+
+  parts.push(current);
+
+  return parts;
+}
+
+function splitTransitionPropertyNames(value) {
+  return splitOnTopLevelCommas(value)
+    .map((part) => part.trim().split(/\s+/)[0])
+    .filter(Boolean);
+}
+
+function extractKeyframesBodies(text) {
+  const bodies = [];
+  const opener = /@keyframes\s+[\w-]+\s*\{/g;
+  let match;
+
+  while ((match = opener.exec(text))) {
+    let depth = 1;
+    let index = match.index + match[0].length;
+
+    while (index < text.length && depth > 0) {
+      if (text[index] === '{') {
+        depth += 1;
+      } else if (text[index] === '}') {
+        depth -= 1;
+      }
+
+      index += 1;
+    }
+
+    bodies.push(text.slice(match.index + match[0].length, index - 1));
+    opener.lastIndex = index;
+  }
+
+  return bodies;
+}
+
+/*
+ * `transition`/`transition-property` shorthands and @keyframes bodies are
+ * parsed for the property names they animate, not line-grepped: a multi-line
+ * shorthand such as field.css's own transition list wraps `cubic-bezier(...)`
+ * across several lines, which a naive per-line regex misreads. `transition:
+ * all` is flagged on its own because it animates whatever a future edit adds
+ * to the rule, layout properties included, with no budget able to catch it.
+ */
+export function extractTransitionAnalysis(text) {
+  const withoutComments = text.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  const layoutProperties = new Set();
+  let transitionsAll = false;
+
+  for (const match of withoutComments.matchAll(/transition(?:-property)?\s*:\s*([^;]+);/g)) {
+    for (const name of splitTransitionPropertyNames(match[1])) {
+      if (name === 'all') {
+        transitionsAll = true;
+      }
+
+      if (ANIMATED_LAYOUT_PROPERTIES.has(name)) {
+        layoutProperties.add(name);
+      }
+    }
+  }
+
+  for (const body of extractKeyframesBodies(withoutComments)) {
+    for (const match of body.matchAll(/(?:^|[;{])\s*([a-z-]+)\s*:/g)) {
+      if (ANIMATED_LAYOUT_PROPERTIES.has(match[1])) {
+        layoutProperties.add(match[1]);
+      }
+    }
+  }
+
+  return { layoutProperties, transitionsAll };
+}
+
+function checkAnimatedLayoutProperties(name, animatedLayoutProperties, transitionsAll, errors) {
+  if (transitionsAll) {
+    errors.push(
+      `${name}: uses 'transition: all', which animates every property a future edit adds to ` +
+        'the rule, layout included, with no budget able to scope it. Name properties explicitly.',
+    );
+  }
+
+  const budget = ANIMATED_LAYOUT_PROPERTY_BUDGETS[name] ?? new Set();
+
+  for (const property of animatedLayoutProperties) {
+    if (!budget.has(property)) {
+      errors.push(
+        `${name}: transition/@keyframes animates layout property ${property}, which has no ` +
+          'budget entry. Add it to ANIMATED_LAYOUT_PROPERTY_BUDGETS with a justification, or ' +
+          'animate transform/opacity instead.',
+      );
+    }
+  }
+
+  for (const property of budget) {
+    if (!animatedLayoutProperties.includes(property)) {
+      errors.push(
+        `${name}: ANIMATED_LAYOUT_PROPERTY_BUDGETS entry for ${property} is stale; it is no ` +
+          'longer animated.',
+      );
+    }
+  }
+}
+
 export function findMarkerContractErrors(markers, contracts = MARKER_CONTRACTS) {
   const errors = [];
 
@@ -295,6 +511,7 @@ function inspectPackage(directory, declarations, baseTokens) {
   const source = sourceFiles.map(read).join('\n');
   const markers = extractMarkers(source);
   const tokens = extractTokenReferences(source);
+  const transitionAnalysis = extractTransitionAnalysis(source);
   const hasLightDomBase = markers.has('data-rc-light-dom-base');
   const hasShadowStyles = sourceFiles.some(
     (path) => path.endsWith('.styles.ts') || /static\s+(?:override\s+)?styles\s*=/.test(read(path)),
@@ -345,6 +562,8 @@ function inspectPackage(directory, declarations, baseTokens) {
     selectorMetrics: {
       idSelectors: (source.match(/(^|[\s>,+~])#[a-zA-Z_-]/gm) ?? []).length,
     },
+    animatedLayoutProperties: sorted(transitionAnalysis.layoutProperties),
+    transitionsAll: transitionAnalysis.transitionsAll,
   };
 }
 
@@ -366,6 +585,7 @@ export function inspectTheme(root, themeName) {
   const allCss = [read(join(directory, 'bridge.css')), aggregate, ...componentFiles.map(read)].join(
     '\n',
   );
+  const transitionAnalysis = extractTransitionAnalysis(allCss);
 
   return {
     name: themeName,
@@ -375,6 +595,8 @@ export function inspectTheme(root, themeName) {
     tokenDefinitions: sorted(extractTokenDefinitions(allCss)),
     tokenReferences: sorted(extractTokenReferences(allCss)),
     markerSelectors: sorted(extractMarkers(allCss)),
+    animatedLayoutProperties: sorted(transitionAnalysis.layoutProperties),
+    transitionsAll: transitionAnalysis.transitionsAll,
     selectorMetrics: {
       parts: (allCss.match(/::part\(/g) ?? []).length,
       markerHooks: (allCss.match(/\[data-rc-/g) ?? []).length,
@@ -486,6 +708,13 @@ export function runAudit(root = DEFAULT_ROOT) {
         `${pkg.package}: ID-selector count ${pkg.selectorMetrics.idSelectors} exceeds budget ${budget}.`,
       );
     }
+
+    checkAnimatedLayoutProperties(
+      pkg.package,
+      pkg.animatedLayoutProperties,
+      pkg.transitionsAll,
+      errors,
+    );
   }
 
   const runtimeTokenFiles = listFiles(join(root, 'packages'), (path) => {
@@ -551,6 +780,13 @@ export function runAudit(root = DEFAULT_ROOT) {
         );
       }
     }
+
+    checkAnimatedLayoutProperties(
+      theme.name,
+      theme.animatedLayoutProperties,
+      theme.transitionsAll,
+      errors,
+    );
   }
 
   for (const theme of themes) {
