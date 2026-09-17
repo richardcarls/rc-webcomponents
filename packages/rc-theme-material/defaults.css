@@ -667,6 +667,77 @@
     /* Motion path */
     --md-sys-motion-path-standard-path: 1;
 
+    /*
+     * Repo-authored composites, not vendored. The tokens above are the raw
+     * control points and millisecond primitives material-tokens ships;
+     * nothing composes them into a usable `cubic-bezier()` or names the
+     * duration bands the Material 3 motion spec actually refers to, so any
+     * component or bridge rule reaching for one directly resolved to
+     * nothing. Each alias below is assembled from those primitives; see
+     * defaults.test.ts for the full set this asserts, so a future re-vendor
+     * that drops or renames a primitive fails a test instead of silently
+     * breaking every alias that composes it.
+     */
+    --md-sys-motion-easing-standard: cubic-bezier(
+      var(--md-sys-motion-easing-standard-x0),
+      var(--md-sys-motion-easing-standard-y0),
+      var(--md-sys-motion-easing-standard-x1),
+      var(--md-sys-motion-easing-standard-y1)
+    );
+    --md-sys-motion-easing-standard-decelerate: cubic-bezier(
+      var(--md-sys-motion-easing-standard-decelerate-x0),
+      var(--md-sys-motion-easing-standard-decelerate-y0),
+      var(--md-sys-motion-easing-standard-decelerate-x1),
+      var(--md-sys-motion-easing-standard-decelerate-y1)
+    );
+    --md-sys-motion-easing-standard-accelerate: cubic-bezier(
+      var(--md-sys-motion-easing-standard-accelerate-x0),
+      var(--md-sys-motion-easing-standard-accelerate-y0),
+      var(--md-sys-motion-easing-standard-accelerate-x1),
+      var(--md-sys-motion-easing-standard-accelerate-y1)
+    );
+    --md-sys-motion-easing-emphasized: cubic-bezier(
+      var(--md-sys-motion-easing-emphasized-x0),
+      var(--md-sys-motion-easing-emphasized-y0),
+      var(--md-sys-motion-easing-emphasized-x1),
+      var(--md-sys-motion-easing-emphasized-y1)
+    );
+    --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(
+      var(--md-sys-motion-easing-emphasized-decelerate-x0),
+      var(--md-sys-motion-easing-emphasized-decelerate-y0),
+      var(--md-sys-motion-easing-emphasized-decelerate-x1),
+      var(--md-sys-motion-easing-emphasized-decelerate-y1)
+    );
+    --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(
+      var(--md-sys-motion-easing-emphasized-accelerate-x0),
+      var(--md-sys-motion-easing-emphasized-accelerate-y0),
+      var(--md-sys-motion-easing-emphasized-accelerate-x1),
+      var(--md-sys-motion-easing-emphasized-accelerate-y1)
+    );
+    --md-sys-motion-easing-linear: cubic-bezier(
+      var(--md-sys-motion-easing-linear-x0),
+      var(--md-sys-motion-easing-linear-y0),
+      var(--md-sys-motion-easing-linear-x1),
+      var(--md-sys-motion-easing-linear-y1)
+    );
+    /* Duration bands, named per the Material 3 motion spec. */
+    --md-sys-motion-duration-short1: var(--md-sys-motion-duration-50);
+    --md-sys-motion-duration-short2: var(--md-sys-motion-duration-100);
+    --md-sys-motion-duration-short3: var(--md-sys-motion-duration-150);
+    --md-sys-motion-duration-short4: var(--md-sys-motion-duration-200);
+    --md-sys-motion-duration-medium1: var(--md-sys-motion-duration-250);
+    --md-sys-motion-duration-medium2: var(--md-sys-motion-duration-300);
+    --md-sys-motion-duration-medium3: var(--md-sys-motion-duration-350);
+    --md-sys-motion-duration-medium4: var(--md-sys-motion-duration-400);
+    --md-sys-motion-duration-long1: var(--md-sys-motion-duration-450);
+    --md-sys-motion-duration-long2: var(--md-sys-motion-duration-500);
+    --md-sys-motion-duration-long3: var(--md-sys-motion-duration-550);
+    --md-sys-motion-duration-long4: var(--md-sys-motion-duration-600);
+    --md-sys-motion-duration-extra-long1: var(--md-sys-motion-duration-700);
+    --md-sys-motion-duration-extra-long2: var(--md-sys-motion-duration-800);
+    --md-sys-motion-duration-extra-long3: var(--md-sys-motion-duration-900);
+    --md-sys-motion-duration-extra-long4: var(--md-sys-motion-duration-1000);
+
     /* State tokens */
     /* Dragged state layer opacity */
     --md-sys-state-dragged-state-layer-opacity: 0.1599999964237213;
@@ -676,6 +747,15 @@
     --md-sys-state-focus-state-layer-opacity: 0.11999999731779099;
     /* Hover state layer opacity */
     --md-sys-state-hover-state-layer-opacity: 0.07999999821186066;
+    /*
+     * Disabled state layer and container opacity were missing from this
+     * vendored snapshot even though a dozen component recipes already
+     * referenced them with an inline `0.38` fallback; every reference
+     * silently used that literal instead of these tokens. 0.38 is the
+     * published Material 3 constant for both.
+     */
+    --md-sys-state-disabled-state-layer-opacity: 0.38;
+    --md-sys-state-disabled-container-opacity: 0.38;
 
     /* Elevation tokens */
     /* Surface tint color */

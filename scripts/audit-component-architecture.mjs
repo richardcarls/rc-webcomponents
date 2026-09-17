@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -100,6 +100,28 @@ export const PRIVATE_THEME_TOKEN_CONTRACTS = {
   ]),
   'rc-theme-substrate': new Set(),
   'rc-theme-win31': new Set(),
+};
+
+/*
+ * The namespace prefix each theme exhaustively vendors defaults for, as
+ * opposed to a namespace it only reads from as an optional consumer hook.
+ * Material's bridge deliberately reads component-level MWC token names
+ * (--md-fab-container-color, --md-menu-container-shape, and similar) with a
+ * safe fallback chain, by design, for an application that already has its
+ * own Material Web Components environment (see defaults.css's header
+ * comment); those have no local definition on purpose and aren't a bug.
+ * --md-sys-* is different: that's the design-token namespace this package
+ * vendors exhaustively (colors, typography, shape, state, elevation, and
+ * now motion), so a reference into it with no local definition can create
+ * an otherwise undetected dead token reference. Substrate and win31 have
+ * no such
+ * external-hook tier: every reference in their own namespace is meant to be
+ * locally defined.
+ */
+export const THEME_OWNED_TOKEN_PREFIXES = {
+  'rc-theme-material': '--md-sys-',
+  'rc-theme-substrate': '--substrate-',
+  'rc-theme-win31': '--win31-',
 };
 
 export const THEME_SELECTOR_BUDGETS = {
@@ -245,6 +267,26 @@ export function extractTokenReferences(text) {
   return new Set([...fromVars, ...fromComputedStyles, ...fromStyleQueries]);
 }
 
+/*
+ * extractTokenReferences() above is deliberately scoped to the --rc- and
+ * --_rc- namespaces for the shared-contract checks (family tokens, consumer
+ * tracking). A theme's own design-system tokens (--md-, --substrate-,
+ * --win31-) never match it, so it can't answer "is this theme-native
+ * reference defined anywhere" — this sibling captures every custom-property
+ * reference regardless of namespace for that narrower question.
+ */
+export function extractAllTokenReferences(text) {
+  const fromVars = [...text.matchAll(/var\(\s*(--[a-z0-9_-]+)/g)].map((match) => match[1]);
+  const fromComputedStyles = [
+    ...text.matchAll(/getPropertyValue\(\s*['"](--[a-z0-9_-]+)['"]\s*\)/g),
+  ].map((match) => match[1]);
+  const fromStyleQueries = [...text.matchAll(/style\(\s*(--[a-z0-9_-]+)\s*:/g)].map(
+    (match) => match[1],
+  );
+
+  return new Set([...fromVars, ...fromComputedStyles, ...fromStyleQueries]);
+}
+
 export function extractTokenDefinitions(text) {
   /*
    * Comments are removed before matching. A declaration explained by a comment
@@ -258,6 +300,20 @@ export function extractTokenDefinitions(text) {
     [...withoutComments.matchAll(/(^|[;{]\s*)(--(?:_)?rc-[a-z0-9-]+)\s*:/gm)].map(
       (match) => match[2],
     ),
+  );
+}
+
+/*
+ * Sibling to extractAllTokenReferences: extractTokenDefinitions() above is
+ * scoped to the --rc- and --_rc- namespaces for the same shared-contract
+ * reasons, so it misses every vendored --md-sys- (and --substrate-,
+ * --win31-) definition a theme declares in its own namespace.
+ */
+export function extractAllTokenDefinitions(text) {
+  const withoutComments = text.replace(/\/\*[\s\S]*?\*\//g, ' ');
+
+  return new Set(
+    [...withoutComments.matchAll(/(^|[;{]\s*)(--[a-z0-9_-]+)\s*:/gm)].map((match) => match[2]),
   );
 }
 
@@ -586,6 +642,30 @@ export function inspectTheme(root, themeName) {
     '\n',
   );
   const transitionAnalysis = extractTransitionAnalysis(allCss);
+  /*
+   * defaults.css and state-layer.css (Material only) are deliberately left
+   * out of allCss: defaults.css vendors hundreds of upstream tokens most of
+   * which this theme's own bridge/components never touch, by design (an app
+   * with its own Material environment imports only bridge.css and expects
+   * those upstream tokens for OTHER apps to be there whether this theme
+   * consumes them or not), so folding it into tokenDefinitions would flag
+   * most of it as having "no public or runtime consumer". They're scanned
+   * here only for the narrower question the theme's own defaults.test.ts
+   * can't answer on its own: does every theme-native token this theme's own
+   * bridge or components actually reference resolve to a definition
+   * *somewhere*, including its own vendored/composited defaults? Seven MD3
+   * duration/easing names shipped referenced-but-undeclared this way,
+   * silently falling back to their inline var() fallback, until this check
+   * existed to catch it.
+   */
+  const definitionOnlyCss = [join(directory, 'defaults.css'), join(directory, 'state-layer.css')]
+    .filter((path) => existsSync(path))
+    .map(read)
+    .join('\n');
+  const knownTokenDefinitions = new Set([
+    ...extractAllTokenDefinitions(allCss),
+    ...extractAllTokenDefinitions(definitionOnlyCss),
+  ]);
 
   return {
     name: themeName,
@@ -594,6 +674,8 @@ export function inspectTheme(root, themeName) {
     unlayeredFiles,
     tokenDefinitions: sorted(extractTokenDefinitions(allCss)),
     tokenReferences: sorted(extractTokenReferences(allCss)),
+    allTokenReferences: sorted(extractAllTokenReferences(allCss)),
+    knownTokenDefinitions,
     markerSelectors: sorted(extractMarkers(allCss)),
     animatedLayoutProperties: sorted(transitionAnalysis.layoutProperties),
     transitionsAll: transitionAnalysis.transitionsAll,
@@ -768,6 +850,29 @@ export function runAudit(root = DEFAULT_ROOT) {
         !themeReferences.has(token)
       ) {
         errors.push(`${theme.name}: token definition ${token} has no public or runtime consumer.`);
+      }
+    }
+
+    /*
+     * A reference into the theme's own exhaustively-vendored namespace (see
+     * THEME_OWNED_TOKEN_PREFIXES) must resolve to a real definition
+     * somewhere in the theme package, defaults.css and state-layer.css
+     * included. Otherwise the var() silently falls back to its inline
+     * literal and the reference is dead weight that looks wired up but
+     * isn't.
+     */
+    const ownedPrefix = THEME_OWNED_TOKEN_PREFIXES[theme.name];
+
+    for (const token of theme.allTokenReferences) {
+      if (!token.startsWith(ownedPrefix)) {
+        continue;
+      }
+
+      if (!theme.knownTokenDefinitions.has(token)) {
+        errors.push(
+          `${theme.name}: token reference ${token} is declared nowhere in the theme package ` +
+            '(checked bridge, components, defaults, and state-layer).',
+        );
       }
     }
 

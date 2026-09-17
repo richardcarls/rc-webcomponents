@@ -11,6 +11,14 @@ execFileSync(process.execPath, [join(root, 'scripts/build-design-tokens.mjs')], 
   stdio: 'pipe',
 });
 
+/*
+ * A unit-level export used only for the one edge case the real theme CSS
+ * can't exercise (an easing curve with an unresolvable control point).
+ * Importing it re-runs the module's top-level write loop a second time,
+ * redundant with the execFileSync run above but harmless and idempotent.
+ */
+const { resolveCubicBezierComposite } = await import('./build-design-tokens.mjs');
+
 function load(theme) {
   return JSON.parse(readFileSync(join(root, `design/tokens/${theme}.tokens.json`), 'utf8'));
 }
@@ -247,6 +255,48 @@ test('composite shorthands are reported rather than silently dropped', () => {
   const border = material.skipped.composite.find((entry) => entry.property === '--rc-border');
 
   assert.ok(border, '--rc-border is a shorthand and should be listed as composite');
+});
+
+test('a cubic-bezier composed from var() control points resolves to a literal STRING variable', () => {
+  const standard = variable(material, 'Motion', 'motion/easing-standard');
+
+  assert.equal(standard?.type, 'STRING');
+  assert.equal(standard?.values.Value, 'cubic-bezier(0.2, 0, 0, 1)');
+
+  const emphasizedDecelerate = variable(material, 'Motion', 'motion/easing-emphasized-decelerate');
+
+  assert.equal(emphasizedDecelerate?.values.Value, 'cubic-bezier(0.05, 0.7, 0.1, 1)');
+
+  // None of the seven named easings should fall through to skipped.composite
+  // now that their control points resolve.
+  const skippedEasings = material.skipped.composite.filter((entry) =>
+    entry.name.startsWith('motion/easing-'),
+  );
+
+  assert.deepEqual(skippedEasings, []);
+});
+
+test('a cubic-bezier with an unresolvable control point stays a reported composite, not a partial curve', () => {
+  const byProperty = new Map([
+    ['--test-easing-x0', '0.2'],
+    // y0 is left undeclared on purpose.
+    ['--test-easing-x1', '0'],
+    ['--test-easing-y1', '1'],
+  ]);
+
+  const resolveIn = (value) => {
+    const match = /^var\(\s*(--[a-z0-9-]+)\s*\)$/.exec(value.trim());
+    const declared = match ? byProperty.get(match[1]) : undefined;
+
+    return declared === undefined
+      ? { kind: 'unresolved', raw: value, reason: 'undeclared-variable' }
+      : { kind: 'number', value: Number.parseFloat(declared) };
+  };
+
+  const raw =
+    'cubic-bezier(var(--test-easing-x0), var(--test-easing-y0), var(--test-easing-x1), var(--test-easing-y1))';
+
+  assert.equal(resolveCubicBezierComposite(raw, resolveIn), null);
 });
 
 test('unresolved values always record why they could not be resolved', () => {

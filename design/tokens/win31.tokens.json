@@ -8507,10 +8507,25 @@
         "name": "scroller/scrollbar-width"
       },
       {
+        "property": "--rc-segmented-button-appearance",
+        "raw": "segmented",
+        "name": "segmented-button/appearance"
+      },
+      {
         "property": "--rc-segmented-button-border",
         "raw": "var(--win31-border)",
         "name": "segmented-button/border",
         "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-segmented-button-cursor",
+        "raw": "default",
+        "name": "segmented-button/cursor"
+      },
+      {
+        "property": "--rc-segmented-button-disabled-cursor",
+        "raw": "default",
+        "name": "segmented-button/disabled-cursor"
       },
       {
         "property": "--rc-segmented-button-focus-ring",
@@ -8523,6 +8538,11 @@
         "raw": "var(--win31-dither-surface)",
         "name": "segmented-button/selected-bg",
         "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-segmented-button-selected-icon-display",
+        "raw": "none",
+        "name": "segmented-button/selected-icon-display"
       },
       {
         "property": "--rc-select-listbox-border",

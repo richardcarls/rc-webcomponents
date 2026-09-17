@@ -4582,6 +4582,270 @@
           }
         },
         {
+          "name": "motion/duration-extra-long1",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-extra-long1)"
+          },
+          "cssVar": "--md-sys-motion-duration-extra-long1",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-700",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-extra-long2",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-extra-long2)"
+          },
+          "cssVar": "--md-sys-motion-duration-extra-long2",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-800",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-extra-long3",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-extra-long3)"
+          },
+          "cssVar": "--md-sys-motion-duration-extra-long3",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-900",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-extra-long4",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-extra-long4)"
+          },
+          "cssVar": "--md-sys-motion-duration-extra-long4",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-1000",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-long1",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-long1)"
+          },
+          "cssVar": "--md-sys-motion-duration-long1",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-450",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-long2",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-long2)"
+          },
+          "cssVar": "--md-sys-motion-duration-long2",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-500",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-long3",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-long3)"
+          },
+          "cssVar": "--md-sys-motion-duration-long3",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-550",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-long4",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-long4)"
+          },
+          "cssVar": "--md-sys-motion-duration-long4",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-600",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-medium1",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-medium1)"
+          },
+          "cssVar": "--md-sys-motion-duration-medium1",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-250",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-medium2",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-medium2)"
+          },
+          "cssVar": "--md-sys-motion-duration-medium2",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-300",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-medium3",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-medium3)"
+          },
+          "cssVar": "--md-sys-motion-duration-medium3",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-350",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-medium4",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-medium4)"
+          },
+          "cssVar": "--md-sys-motion-duration-medium4",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-400",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-short1",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-short1)"
+          },
+          "cssVar": "--md-sys-motion-duration-short1",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-50",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-short2",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-short2)"
+          },
+          "cssVar": "--md-sys-motion-duration-short2",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-100",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-short3",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-short3)"
+          },
+          "cssVar": "--md-sys-motion-duration-short3",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-150",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/duration-short4",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-duration-short4)"
+          },
+          "cssVar": "--md-sys-motion-duration-short4",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-200",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "motion/easing-emphasized",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-easing-emphasized)"
+          },
+          "cssVar": "--md-sys-motion-easing-emphasized",
+          "values": {
+            "Value": "cubic-bezier(0.2, 0, 0, 1)"
+          }
+        },
+        {
+          "name": "motion/easing-emphasized-accelerate",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-easing-emphasized-accelerate)"
+          },
+          "cssVar": "--md-sys-motion-easing-emphasized-accelerate",
+          "values": {
+            "Value": "cubic-bezier(0.3, 0, 0.8, 0.15)"
+          }
+        },
+        {
           "name": "motion/easing-emphasized-accelerate-x0",
           "type": "FLOAT",
           "scopes": [],
@@ -4627,6 +4891,18 @@
           "cssVar": "--md-sys-motion-easing-emphasized-accelerate-y1",
           "values": {
             "Value": 0.15000000596046448
+          }
+        },
+        {
+          "name": "motion/easing-emphasized-decelerate",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-easing-emphasized-decelerate)"
+          },
+          "cssVar": "--md-sys-motion-easing-emphasized-decelerate",
+          "values": {
+            "Value": "cubic-bezier(0.05, 0.7, 0.1, 1)"
           }
         },
         {
@@ -4726,6 +5002,18 @@
           }
         },
         {
+          "name": "motion/easing-linear",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-easing-linear)"
+          },
+          "cssVar": "--md-sys-motion-easing-linear",
+          "values": {
+            "Value": "cubic-bezier(0, 0, 1, 1)"
+          }
+        },
+        {
           "name": "motion/easing-linear-x0",
           "type": "FLOAT",
           "scopes": [],
@@ -4774,6 +5062,30 @@
           }
         },
         {
+          "name": "motion/easing-standard",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-easing-standard)"
+          },
+          "cssVar": "--md-sys-motion-easing-standard",
+          "values": {
+            "Value": "cubic-bezier(0.2, 0, 0, 1)"
+          }
+        },
+        {
+          "name": "motion/easing-standard-accelerate",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-easing-standard-accelerate)"
+          },
+          "cssVar": "--md-sys-motion-easing-standard-accelerate",
+          "values": {
+            "Value": "cubic-bezier(0.3, 0, 1, 1)"
+          }
+        },
+        {
           "name": "motion/easing-standard-accelerate-x0",
           "type": "FLOAT",
           "scopes": [],
@@ -4819,6 +5131,18 @@
           "cssVar": "--md-sys-motion-easing-standard-accelerate-y1",
           "values": {
             "Value": 1
+          }
+        },
+        {
+          "name": "motion/easing-standard-decelerate",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-motion-easing-standard-decelerate)"
+          },
+          "cssVar": "--md-sys-motion-easing-standard-decelerate",
+          "values": {
+            "Value": "cubic-bezier(0, 0, 0, 1)"
           }
         },
         {
@@ -5352,6 +5676,34 @@
         "Value"
       ],
       "variables": [
+        {
+          "name": "state/disabled-container-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-state-disabled-container-opacity)"
+          },
+          "cssVar": "--md-sys-state-disabled-container-opacity",
+          "values": {
+            "Value": 0.38
+          }
+        },
+        {
+          "name": "state/disabled-state-layer-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--md-sys-state-disabled-state-layer-opacity)"
+          },
+          "cssVar": "--md-sys-state-disabled-state-layer-opacity",
+          "values": {
+            "Value": 0.38
+          }
+        },
         {
           "name": "state/dragged-state-layer-opacity",
           "type": "FLOAT",
@@ -6256,6 +6608,22 @@
             "Value": {
               "alias": "color/on-primary",
               "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "button/state-layer-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-button-state-layer-easing)"
+          },
+          "cssVar": "--rc-button-state-layer-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-standard",
+              "collection": "Motion"
             }
           }
         },
@@ -7397,7 +7765,10 @@
           "cssVar": "--rc-disabled-opacity",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 0.38
+            "Value": {
+              "alias": "state/disabled-state-layer-opacity",
+              "collection": "State"
+            }
           }
         },
         {
@@ -8315,7 +8686,10 @@
           "cssVar": "--rc-fab-menu-popup-duration",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 150
+            "Value": {
+              "alias": "motion/duration-short3",
+              "collection": "Motion"
+            }
           }
         },
         {
@@ -8852,7 +9226,10 @@
           "cssVar": "--rc-list-item-disabled-opacity",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 0.38
+            "Value": {
+              "alias": "state/disabled-state-layer-opacity",
+              "collection": "State"
+            }
           }
         },
         {
@@ -9074,7 +9451,26 @@
           "cssVar": "--rc-list-item-transition-duration",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 150
+            "Value": {
+              "alias": "motion/duration-short3",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "list-item/transition-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-transition-easing)"
+          },
+          "cssVar": "--rc-list-item-transition-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-standard",
+              "collection": "Motion"
+            }
           }
         },
         {
@@ -9187,7 +9583,10 @@
           "cssVar": "--rc-listbox-disabled-opacity",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 0.38
+            "Value": {
+              "alias": "state/disabled-state-layer-opacity",
+              "collection": "State"
+            }
           }
         },
         {
@@ -10161,7 +10560,10 @@
           "cssVar": "--rc-menu-disabled-opacity",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 0.38
+            "Value": {
+              "alias": "state/disabled-state-layer-opacity",
+              "collection": "State"
+            }
           }
         },
         {
@@ -10756,7 +11158,26 @@
           "cssVar": "--rc-navigation-bar-indicator-duration",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 150
+            "Value": {
+              "alias": "motion/duration-short3",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "navigation-bar/indicator-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-bar-indicator-easing)"
+          },
+          "cssVar": "--rc-navigation-bar-indicator-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-standard",
+              "collection": "Motion"
+            }
           }
         },
         {
@@ -10922,7 +11343,26 @@
           "cssVar": "--rc-navigation-rail-duration",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 300
+            "Value": {
+              "alias": "motion/duration-medium2",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "navigation-rail/easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-easing)"
+          },
+          "cssVar": "--rc-navigation-rail-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-emphasized",
+              "collection": "Motion"
+            }
           }
         },
         {
@@ -11047,7 +11487,26 @@
           "cssVar": "--rc-navigation-rail-indicator-duration",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 150
+            "Value": {
+              "alias": "motion/duration-short3",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "navigation-rail/indicator-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-navigation-rail-indicator-easing)"
+          },
+          "cssVar": "--rc-navigation-rail-indicator-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-standard",
+              "collection": "Motion"
+            }
           }
         },
         {
@@ -14172,6 +14631,11 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-segmented-button-appearance",
+        "raw": "segmented",
+        "name": "segmented-button/appearance"
+      },
+      {
         "property": "--rc-segmented-button-border",
         "raw": "1px solid var(--md-sys-color-outline, ButtonBorder)",
         "name": "segmented-button/border"
@@ -14344,12 +14808,6 @@
     ],
     "unresolved": [
       {
-        "property": "--rc-button-state-layer-easing",
-        "raw": "var( --md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1) )",
-        "reason": "literal",
-        "scope": "rc-theme-material"
-      },
-      {
         "property": "--rc-dialog-max-block-size",
         "raw": "calc(100dvh - 3rem)",
         "reason": "calc-unresolved",
@@ -14380,33 +14838,9 @@
         "scope": "rc-theme-material"
       },
       {
-        "property": "--rc-list-item-transition-easing",
-        "raw": "var(--md-sys-motion-easing-standard, ease)",
-        "reason": "literal",
-        "scope": "rc-theme-material"
-      },
-      {
         "property": "--rc-navigation-bar-block-size",
         "raw": "calc(5rem + env(safe-area-inset-bottom, 0px))",
         "reason": "calc-unresolved",
-        "scope": "rc-theme-material"
-      },
-      {
-        "property": "--rc-navigation-bar-indicator-easing",
-        "raw": "var( --md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1) )",
-        "reason": "literal",
-        "scope": "rc-theme-material"
-      },
-      {
-        "property": "--rc-navigation-rail-easing",
-        "raw": "var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))",
-        "reason": "literal",
-        "scope": "rc-theme-material"
-      },
-      {
-        "property": "--rc-navigation-rail-indicator-easing",
-        "raw": "var( --md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1) )",
-        "reason": "literal",
         "scope": "rc-theme-material"
       },
       {
