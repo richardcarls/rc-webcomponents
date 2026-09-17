@@ -13,18 +13,82 @@ function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-export function runtimeBudget(value) {
+/*
+ * `measureScenario()` in benchmarks/browser.ts always includes `samples`
+ * (the raw per-run timings) alongside whatever metrics it measured. It's
+ * report detail, not a budgeted metric, so it's excluded here rather than
+ * required to have a RUNTIME_METRICS entry.
+ */
+const NON_METRIC_RESULT_FIELDS = new Set(['samples']);
+
+/*
+ * Three budget semantics, mirroring BYTE_METRICS/COUNT_METRICS in
+ * audit-performance.mjs. `timingBudget` gives a timing measurement headroom
+ * over its own baseline; `countBudget` allows no headroom at all, since a
+ * count regressing by even one is itself the signal; `absoluteBudget` fixes
+ * a ceiling that doesn't move with the baseline, for a metric where the
+ * baseline value itself isn't a meaningful budget input (a frame that blows
+ * past ~50ms is bad regardless of how fast prior runs happened to be).
+ */
+export function timingBudget(value) {
   return Math.max(value * 1.2, value + 5);
+}
+
+export function countBudget(value) {
+  return value;
+}
+
+export function absoluteBudget(ceiling) {
+  return () => ceiling;
+}
+
+/*
+ * The metrics a scenario is allowed to report, each mapped to its budget
+ * semantics. A scenario result carrying a metric with no entry here throws
+ * during createRuntimeBudgets rather than silently being budgeted as a
+ * timing (a motion scenario's frame-count metrics need countBudget/
+ * absoluteBudget, not timingBudget's proportional headroom).
+ */
+export const RUNTIME_METRICS = {
+  median: timingBudget,
+  p95: timingBudget,
+};
+
+const RUNTIME_METRIC_UNITS = {
+  median: 'ms',
+  p95: 'ms',
+};
+
+function formatRuntimeMetric(metric, value) {
+  return `${value.toFixed(2)}${RUNTIME_METRIC_UNITS[metric] ?? ''}`;
+}
+
+function budgetedMetricEntries(scenario, result) {
+  return Object.entries(result)
+    .filter(([metric]) => !NON_METRIC_RESULT_FIELDS.has(metric))
+    .map(([metric, value]) => {
+      const budgetFor = RUNTIME_METRICS[metric];
+
+      if (!budgetFor) {
+        throw new Error(
+          `Unknown runtime metric "${metric}" in scenario "${scenario}"; add it to RUNTIME_METRICS.`,
+        );
+      }
+
+      return [metric, value, budgetFor];
+    });
 }
 
 export function createRuntimeBudgets(results) {
   return Object.fromEntries(
     Object.entries(results).map(([scenario, result]) => [
       scenario,
-      {
-        median: runtimeBudget(result.median),
-        p95: runtimeBudget(result.p95),
-      },
+      Object.fromEntries(
+        budgetedMetricEntries(scenario, result).map(([metric, value, budgetFor]) => [
+          metric,
+          budgetFor(value),
+        ]),
+      ),
     ]),
   );
 }
@@ -35,7 +99,9 @@ export function createRuntimeBaseline(results) {
     measurements: Object.fromEntries(
       Object.entries(results).map(([scenario, result]) => [
         scenario,
-        { median: result.median, p95: result.p95 },
+        Object.fromEntries(
+          budgetedMetricEntries(scenario, result).map(([metric, value]) => [metric, value]),
+        ),
       ]),
     ),
     budgets: createRuntimeBudgets(results),
@@ -54,10 +120,10 @@ export function compareRuntimeResults(results, budgets) {
       continue;
     }
 
-    for (const metric of ['median', 'p95']) {
-      if (actual[metric] > limits[metric]) {
+    for (const [metric, limit] of Object.entries(limits)) {
+      if (actual[metric] > limit) {
         errors.push(
-          `${scenario}.${metric}: ${actual[metric].toFixed(2)}ms exceeds ${limits[metric].toFixed(2)}ms.`,
+          `${scenario}.${metric}: ${formatRuntimeMetric(metric, actual[metric])} exceeds ${formatRuntimeMetric(metric, limit)}.`,
         );
       }
     }
@@ -137,7 +203,12 @@ async function main() {
     Object.fromEntries(
       Object.entries(results).map(([scenario, result]) => [
         scenario,
-        { median: `${result.median.toFixed(2)}ms`, p95: `${result.p95.toFixed(2)}ms` },
+        Object.fromEntries(
+          budgetedMetricEntries(scenario, result).map(([metric, value]) => [
+            metric,
+            formatRuntimeMetric(metric, value),
+          ]),
+        ),
       ]),
     ),
   );
