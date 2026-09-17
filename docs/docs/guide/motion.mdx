@@ -1,0 +1,144 @@
+---
+title: Motion
+---
+
+# Motion
+
+Motion in this library is an enhancement layered on top of an interface that
+already works without it. Every component reaches every state with its
+durations set to zero, and nothing depends on an animation finishing.
+
+## Two scales, not one
+
+Motion splits by what it animates, not by how long it lasts.
+
+| Scale   | Animates                                                                          | Tokens                                                           |
+| ------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Spatial | Position and size: `translate`, `scale`, `transform`, `inline-size`, `block-size` | `--rc-motion-spatial-duration-*`, `--rc-motion-spatial-easing-*` |
+| Effects | Appearance: `opacity`, `color`, `background-color`, `box-shadow`                  | `--rc-motion-effects-duration-*`, `--rc-motion-effects-easing-*` |
+
+Each has `fast`, `default`, and `slow` variants.
+
+Keeping them apart matters for two independent reasons. Material's motion
+system resolves spatial motion with more energy than effects motion, so
+applying a spatial curve to opacity makes color and alpha visibly wobble. And
+the accessibility case below turns on the same distinction: spatial motion is
+what causes harm, effects motion is not. A theme that mixes the two cannot
+respond to a reduced-motion preference precisely.
+
+Pick the scale from the property, every time:
+
+```css
+/* Position and size: spatial. */
+.panel {
+  transition: translate var(--rc-motion-spatial-duration-default)
+    var(--rc-motion-spatial-easing-default);
+}
+
+/* Opacity and color: effects. */
+.panel::after {
+  transition: opacity var(--rc-motion-effects-duration-fast) var(--rc-motion-effects-easing-fast);
+}
+```
+
+## Duration
+
+Match the duration to the size of the change. A control changing state should
+be quicker than a surface arriving on screen.
+
+| Change                             | Duration      |
+| ---------------------------------- | ------------- |
+| Micro: ripple, tick, indicator dot | 50 to 100 ms  |
+| Component state: button, chip, row | 150 to 200 ms |
+| Container: menu, card expand       | 250 to 300 ms |
+| Screen element: dialog, sheet      | 350 to 400 ms |
+
+Anything past about 400 ms reads as waiting rather than as feedback.
+
+## Direction
+
+An element arriving and the same element leaving should not share a curve.
+
+| Moment            | Easing     | Feel                           |
+| ----------------- | ---------- | ------------------------------ |
+| Arriving          | Decelerate | Enters quickly, settles gently |
+| Leaving           | Accelerate | Starts slowly, exits quickly   |
+| Changing in place | Symmetric  | Even on both ends              |
+
+Exits are usually quicker than entrances: the user has already decided, and
+waiting for a leaving element is waiting for nothing.
+
+## Accessibility
+
+Some people get dizzy or nauseated from motion on screen. The trigger is
+movement across the visual field, especially large or parallax movement. A
+cross-fade is not the same thing, and treating it as though it were costs
+users the cues that make an interface legible.
+
+WCAG 2.3.3 requires that motion from interactions can be turned off unless it
+is essential. The operating system preference is the signal:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  /* Remove movement. */
+  .panel {
+    transition-property: opacity;
+  }
+}
+```
+
+The guidance this library follows:
+
+- **Remove spatial motion.** Slides, scale, parallax, and anything travelling
+  across the viewport. This is the part that causes harm.
+- **Keep effects motion, shortened.** A fade of 50 to 100 ms still signals that
+  something changed without moving anything. Removing every transition makes
+  state changes read as glitches, which helps nobody.
+- **Never remove the state change itself**, only its animation. A control that
+  animates to a state must reach that state instantly instead.
+- **Do not animate anything that flashes.** Nothing above three flashes per
+  second, whatever the preference is set to.
+- **Do not gate meaning on motion.** If an animation is the only thing that
+  communicates something, that something is undocumented for anyone who does
+  not see it.
+
+The split makes this expressible: a reduced-motion block zeroes the spatial
+scale and shortens the effects scale, and every component follows without
+knowing the preference exists.
+
+## Performance
+
+The browser animates `transform` and `opacity` on the compositor, without
+recalculating layout or repainting. Everything else costs more, and some
+properties cost a great deal.
+
+- **Prefer `transform` and `opacity`.** Move with `translate`, resize with
+  `scale`, fade with `opacity`.
+- **Avoid animating layout properties.** `width`, `height`, `top`, `left`,
+  `margin`, and `padding` force layout on every frame, for the element and
+  often its siblings.
+- **Use `will-change` sparingly and briefly.** It reserves compositor memory.
+  Applied to many elements, or left on permanently, it costs more than it
+  saves.
+- **Animate few elements at once.** Ten elements moving together is one
+  composited layer if they share a parent, and ten layers if they do not.
+- **Measure rather than assume.** A transition that feels fine on a desktop can
+  miss frames on a mid-range phone, which is where it matters.
+
+## Degrading gracefully
+
+Motion is the first thing to go, and nothing should break when it does.
+
+- **Zero duration is a supported state**, not a fallback. Every component is
+  fully usable with all motion removed, which is also what the Windows 3.1
+  theme ships, where both scales are zero because the period had no motion at
+  all.
+- **Do not block on transition events.** A `transitionend` listener that never
+  fires because the duration is zero, or because the element was removed
+  mid-transition, is a hang. Treat those events as optional.
+- **Newer features degrade on their own.** `@starting-style`, discrete
+  transitions, and `transition-behavior: allow-discrete` simply do not apply
+  where they are unsupported, which lands on the instant change. That is the
+  correct outcome, so no fallback is needed.
+- **A theme may decline motion entirely** by setting both scales to zero.
+  Nothing in any component requires a non-zero duration.

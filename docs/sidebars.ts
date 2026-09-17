@@ -15,6 +15,7 @@ const sidebars: SidebarsConfig = {
         'guide/react',
         'guide/angular',
         'guide/styling',
+        'guide/motion',
         'guide/theme-previews',
       ],
     },
