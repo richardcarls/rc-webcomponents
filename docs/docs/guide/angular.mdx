@@ -1,0 +1,154 @@
+---
+title: Using with Angular
+---
+
+# Using with Angular
+
+## Setup
+
+Register the elements you use once in your application entry point, before
+bootstrapping:
+
+```ts title="main.ts"
+import { bootstrapApplication } from '@angular/platform-browser';
+
+// Each package's side-effectful `/define` subpath registers its custom
+// element. Register only the tags you actually use.
+import '@rcarls/rc-button/define';
+import '@rcarls/rc-card/define';
+
+import { appConfig } from './app/app.config';
+import { App } from './app/app';
+
+bootstrapApplication(App, appConfig).catch((error) => console.error(error));
+```
+
+## Template type-checking
+
+Add `CUSTOM_ELEMENTS_SCHEMA` to any component whose template uses an `rc-*`
+element. Angular's compiler does not recognize custom elements by default:
+
+```ts
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.html',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+})
+export class App {}
+```
+
+There is a tradeoff to know about. React gets full attribute and ref
+type-checking from the `@rcarls/rc-webcomponents/react` typings, but
+`CUSTOM_ELEMENTS_SCHEMA` turns off template type-checking for property
+bindings on that element instead of adding types for them. There is no Angular
+equivalent of those typings today, so a misspelled property binding on an
+`rc-*` element is not a compile error. Each component's API table remains the
+reference for its real property surface.
+
+## Elements in templates
+
+Custom elements bind like any other element. `rc-*` components keep the native
+control they wrap in light DOM, so ordinary Angular bindings on that native
+child work normally:
+
+```html
+<rc-button (click)="onSave()">
+  <button type="button">Save</button>
+</rc-button>
+```
+
+The `(click)` above is a plain Angular binding on the native `<button>`, not
+anything specific to custom elements.
+
+## Custom events
+
+Bind custom events the same way as any DOM event. Cast `$event` to read a
+structured `detail` payload:
+
+```html
+<rc-navigation-rail
+  [defaultExpanded]="railExpanded()"
+  (rc-navigation-rail-toggle)="onRailToggle($event)"
+>
+  ...
+</rc-navigation-rail>
+```
+
+```ts
+protected onRailToggle(event: Event): void {
+  const { expanded } = (event as CustomEvent<{ expanded: boolean }>).detail;
+
+  this.railExpanded.set(expanded);
+}
+```
+
+## Controlled and uncontrolled properties
+
+Some properties are documented as "host writes are silent" once the component
+has mounted. That is the controlled and uncontrolled contract every stateful
+`rc-*` component follows, not anything Angular-specific, but it is easy to trip
+over coming from Angular's usual one-way binding model.
+
+`rc-navigation-rail`'s `expanded` is one example: binding `[expanded]` does
+nothing after the first render. Bind the matching `default*` property for
+initial state and listen for the component's own event to learn about
+user-driven changes, as shown above.
+
+## Signal Forms
+
+`[formField]` accepts two kinds of host: a native form element, or an Angular
+component implementing its custom-control contract (a `value` model-signal pair
+and a `touch` output, resolved through Angular's own component metadata). A
+framework-agnostic custom element is neither, so binding `[formField]` on an
+`rc-*` wrapper throws `NG01914`.
+
+Bind it on the native control instead. A component that owns a native control
+dispatches real `input` and `change` events on that control when the user
+changes the value, so `[formField]` observes user input exactly as it would on
+a bare element:
+
+```html
+<rc-select>
+  <select [formField]="productForm.category">
+    <option value="soup">Soup</option>
+    <option value="salad">Salad</option>
+  </select>
+</rc-select>
+```
+
+Writing a value back is the direction that needs care. The component does not
+observe writes made directly to its native control, so a form that resets or
+patches a value should write the component's own `value` property, which
+updates both the component and its native control:
+
+```ts
+protected resetCategory(): void {
+  this.categoryRef().nativeElement.value = '';
+}
+```
+
+A programmatic write like that stays silent by design, so it does not feed back
+into the form as though the user had made it.
+
+If you would rather keep the form as the only writer, bridge the component
+manually instead of using `[formField]`: read `field().value()` into the
+component's `value` property, write back on its own change event, and call
+`field().markAsTouched()` on blur. That also means binding `required`,
+`disabled`, and `aria-invalid` yourself, which `[formField]` otherwise handles.
+
+## Change detection without `zone.js`
+
+Angular's event binding works across a component-managed native control without
+`zone.js`, which is the default for new Angular applications.
+A binding on a native element inside an `rc-*` wrapper triggers change
+detection normally, with no manual `markForCheck()` needed.
+
+## Local development against unpublished packages
+
+Angular's esbuild-based builder resolves packages through normal `package.json`
+`exports` resolution, which points at built output. If you link a local
+`rc-webcomponents` checkout rather than installing the published packages, build
+that workspace before starting Angular's dev server. Vite-based consumers can
+transform the raw source instead, so this step is specific to Angular.

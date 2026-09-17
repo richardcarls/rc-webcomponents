@@ -13,6 +13,7 @@ const sidebars: SidebarsConfig = {
         'guide/accessibility-testing',
         'guide/performance',
         'guide/react',
+        'guide/angular',
         'guide/styling',
         'guide/theme-previews',
       ],
