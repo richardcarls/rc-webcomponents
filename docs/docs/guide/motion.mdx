@@ -125,6 +125,25 @@ properties cost a great deal.
 - **Measure rather than assume.** A transition that feels fine on a desktop can
   miss frames on a mid-range phone, which is where it matters.
 
+`scripts/audit-component-architecture.mjs` enforces the layout-property rule:
+it parses every `transition`/`transition-property` shorthand and `@keyframes`
+body across component and theme CSS, and errors on any layout property (box
+geometry, not paint) that isn't in `ANIMATED_LAYOUT_PROPERTY_BUDGETS` with a
+recorded justification. `transition: all` is a hard error everywhere, with no
+budget able to scope it. A few components carry a deliberate exception because
+they resize to content the theme can't predict from CSS alone — an indicator
+tracking the selected item's box (`rc-navigation-bar`, `rc-navigation-rail`), a
+disclosure panel's real open height, a switch thumb whose box changes with the
+control's size, and a progress fill tracking literal percentage.
+
+That static check only covers CSS. `rc-bottom-sheet` and `rc-splitter` animate
+layout with the Web Animations API instead of CSS, calling `.animate()`
+directly with a measured pixel `top`/`height` or `width`/`height` pair to snap
+to a released drag position. That's outside the audit's reach by construction,
+and it's also the right call here: both animate to a geometry only known at
+drag-release time, which isn't expressible as a `transform` without either
+distorting the dragged content or requiring the same measurement work anyway.
+
 ## Degrading gracefully
 
 Motion is the first thing to go, and nothing should break when it does.
