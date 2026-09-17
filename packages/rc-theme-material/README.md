@@ -94,11 +94,41 @@ unrelated application controls and follows design-token conventions.
 Fonts and icons are not bundled; websites and applications may provide
 [Roboto](https://fonts.google.com/specimen/Roboto) and
 [Material Symbols](https://fonts.google.com/icons) through other means.
-Tag general icon-font markup with `data-rc-icon`; component-specific markers
-such as `data-rc-button-icon` and `data-rc-navigation-icon` opt in
-automatically. The shared `--rc-icon-font-size` and
-`--rc-icon-font-line-height` tokens keep glyph geometry consistent and can be
-overridden at the theme boundary or on one component.
+
+### Icon font wiring
+
+The theme sizes and centers icon markers but never sets `font-family` on them,
+because no font ships with it. Until the application supplies one, an icon
+marker renders as its literal text, so a navigation toggle shows the word
+`menu` rather than a glyph.
+
+Every marker in the catalog needs that one declaration. Wire them all at once
+rather than adding each as you adopt the component it belongs to:
+
+```css
+:is(
+  [data-rc-icon],
+  [data-rc-button-icon],
+  [data-rc-button-selected-icon],
+  [data-rc-chip-icon],
+  [data-rc-menu-icon],
+  [data-rc-navigation-icon],
+  [data-rc-navigation-collapse-icon],
+  [data-rc-navigation-expand-icon],
+  [data-rc-segmented-button-selected-icon]
+) {
+  font-family: 'Material Symbols Outlined';
+}
+```
+
+Three of those carry no sizing from the theme, so give them a `font-size`
+alongside the font where an application uses them:
+`data-rc-navigation-collapse-icon`, `data-rc-navigation-expand-icon`, and
+`data-rc-segmented-button-selected-icon`.
+
+For the rest, the shared `--rc-icon-font-size` and `--rc-icon-font-line-height`
+tokens keep glyph geometry consistent and can be overridden at the theme
+boundary or on one component.
 
 ### Icon-button modifiers
 
