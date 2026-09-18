@@ -7,7 +7,10 @@
     --rc-menu-button-trigger-border: 0;
     --rc-menu-button-trigger-background: transparent;
     --rc-menu-button-trigger-color: var(--md-sys-color-primary, ButtonText);
-    --rc-menu-button-trigger-transition: background-color 150ms ease, color 150ms ease;
+    --rc-menu-button-trigger-transition:
+      background-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      color var(--rc-motion-effects-duration-fast, 150ms) var(--rc-motion-effects-easing-fast, ease);
     --rc-menu-button-trigger-hover-background: color-mix(
       in srgb,
       var(--md-sys-color-primary, Highlight) 8%,

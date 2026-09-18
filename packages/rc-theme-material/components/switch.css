@@ -23,7 +23,15 @@
     --rc-switch-focus-ring: var(--rc-focus-ring);
     --rc-switch-focus-ring-offset: var(--rc-focus-ring-offset);
     --rc-switch-disabled-opacity: var(--rc-disabled-opacity);
-    --rc-switch-duration: var(--rc-motion-duration);
+    /*
+     * The switch's single duration/easing pair drives both its
+     * background-color/border-color fades and its thumb/track resize and
+     * slide; the dominant motion is spatial (the thumb visibly moves and
+     * grows), so it takes the spatial scale rather than the compatibility
+     * token.
+     */
+    --rc-switch-duration: var(--rc-motion-spatial-duration-fast, 300ms);
+    --rc-switch-easing: var(--rc-motion-spatial-easing-fast, ease);
 
     /* Keep long flex/grid siblings from shrinking the control below its track. */
     min-inline-size: var(--rc-switch-track-inline-size) !important;

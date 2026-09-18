@@ -343,6 +343,13 @@
     :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field),
     :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(label),
     :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field)::after {
+      /*
+       * inset-block-start and font-size move the label's box (the floating
+       * label crossing from placeholder position to the shrunk caption
+       * position), which is spatial motion, not effects, even though it was
+       * previously grouped with the color/opacity properties around it. The
+       * full transform-based label rewrite is tracked separately.
+       */
       transition:
         background-color var(--rc-motion-effects-duration-fast, 150ms)
           var(--rc-motion-effects-easing-default, ease),
@@ -350,15 +357,15 @@
           var(--rc-motion-effects-easing-default, ease),
         color var(--rc-motion-effects-duration-fast, 150ms)
           var(--rc-motion-effects-easing-default, ease),
-        inset-block-start var(--rc-motion-effects-duration-fast, 150ms)
-          var(--rc-motion-effects-easing-default, ease),
-        font-size var(--rc-motion-effects-duration-fast, 150ms)
-          var(--rc-motion-effects-easing-default, ease),
+        inset-block-start var(--rc-motion-spatial-duration-fast, 300ms)
+          var(--rc-motion-spatial-easing-fast, ease),
+        font-size var(--rc-motion-spatial-duration-fast, 300ms)
+          var(--rc-motion-spatial-easing-fast, ease),
         line-height var(--rc-motion-effects-duration-fast, 150ms)
           var(--rc-motion-effects-easing-default, ease),
         opacity var(--rc-motion-effects-duration-fast, 150ms)
           var(--rc-motion-effects-easing-default, ease),
-        transform var(--rc-motion-spatial-duration-fast, 350ms)
+        transform var(--rc-motion-spatial-duration-fast, 300ms)
           var(--rc-motion-spatial-easing-fast, ease);
     }
   }

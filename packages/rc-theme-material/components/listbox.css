@@ -16,7 +16,10 @@
     --rc-listbox-option-min-block-size: 3rem;
     --rc-listbox-option-padding-block: 0;
     --rc-listbox-option-padding-inline: 0.75rem;
-    --rc-listbox-option-transition: background-color 150ms ease, color 150ms ease;
+    --rc-listbox-option-transition:
+      background-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      color var(--rc-motion-effects-duration-fast, 150ms) var(--rc-motion-effects-easing-fast, ease);
     --rc-listbox-hover-bg: color-mix(
       in srgb,
       var(--md-sys-color-on-surface, CanvasText) 8%,

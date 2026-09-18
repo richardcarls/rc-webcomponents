@@ -22,13 +22,11 @@
     --rc-navigation-rail-indicator-radius: var(--md-sys-shape-corner-full, 9999px);
     --rc-navigation-rail-toggle-size: 3rem;
     --rc-navigation-rail-toggle-inline-offset: 1rem;
-    --rc-navigation-rail-duration: var(--md-sys-motion-duration-medium2, 300ms);
-    --rc-navigation-rail-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
-    --rc-navigation-rail-indicator-duration: var(--md-sys-motion-duration-short3, 150ms);
-    --rc-navigation-rail-indicator-easing: var(
-      --md-sys-motion-easing-standard,
-      cubic-bezier(0.2, 0, 0, 1)
-    );
+    --rc-navigation-rail-duration: var(--rc-motion-spatial-duration-fast, 300ms);
+    --rc-navigation-rail-easing: var(--rc-motion-spatial-easing-fast, ease);
+    /* The indicator resizes to the selected item's box, which is spatial motion. */
+    --rc-navigation-rail-indicator-duration: var(--rc-motion-spatial-duration-fast, 300ms);
+    --rc-navigation-rail-indicator-easing: var(--rc-motion-spatial-easing-fast, ease);
     --rc-icon-font-line-height: 2rem;
     --rc-navigation-rail-focus-ring: 2px solid var(--md-sys-color-primary, Highlight);
     --rc-navigation-rail-focus-ring-offset: 2px;

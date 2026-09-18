@@ -3,8 +3,10 @@
     box-shadow: var(--rc-shadow-level0, none);
     font-family: var(--md-sys-typescale-title-large-font, inherit);
     transition:
-      box-shadow 200ms ease,
-      translate 200ms ease;
+      box-shadow var(--rc-motion-effects-duration-default, 200ms)
+        var(--rc-motion-effects-easing-default, ease),
+      translate var(--rc-motion-spatial-duration-default, 400ms)
+        var(--rc-motion-spatial-easing-default, ease);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-app-bar[data-scrolled] {

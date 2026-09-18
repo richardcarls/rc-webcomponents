@@ -13,7 +13,8 @@
     background: transparent;
     color: inherit;
     font: inherit;
-    transition: background-color 150ms ease;
+    transition: background-color var(--rc-motion-effects-duration-fast, 150ms)
+      var(--rc-motion-effects-easing-fast, ease);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-toolbar > button:hover {

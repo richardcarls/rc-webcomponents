@@ -18,7 +18,10 @@
     --rc-menu-item-padding-block: 0;
     --rc-menu-item-padding-inline: 0.75rem;
     --rc-menu-item-gap: 0.75rem;
-    --rc-menu-item-transition: background-color 150ms ease, color 150ms ease;
+    --rc-menu-item-transition:
+      background-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      color var(--rc-motion-effects-duration-fast, 150ms) var(--rc-motion-effects-easing-fast, ease);
 
     /* State layers derived from on-surface (M3: 8% hover, 12% keyboard cursor) */
     --rc-menu-hover-bg: color-mix(

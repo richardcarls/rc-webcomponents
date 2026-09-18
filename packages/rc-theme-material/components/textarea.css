@@ -19,8 +19,10 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-textarea::part(root) {
     transition:
-      border-color 150ms ease,
-      box-shadow 150ms ease;
+      border-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      box-shadow var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-textarea::part(root):hover {
