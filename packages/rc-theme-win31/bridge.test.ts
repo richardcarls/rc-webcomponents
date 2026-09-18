@@ -7,6 +7,16 @@ import { afterEach, expect, test } from 'vitest';
  * between the token layer and thirty-nine component stylesheets. A consumer
  * either imports defaults.css or supplies the --win31-* set themselves.
  */
+/*
+ * base.css is optional and loaded here specifically to prove win31's own
+ * claim: an app that loads base.css alongside this theme (on the documented
+ * container class, not <html> — see the styling guide) must not inherit
+ * base's real 180/300/450ms spatial motion for any of the thirteen shared
+ * tokens or the four directional ones. Without base.css in this file, a
+ * theme token this bridge forgot to declare would silently pass by falling
+ * back to its own literal instead of proving base's value is overridden.
+ */
+import '../rc-webcomponents/themes/base.css';
 import './defaults.css';
 import './bridge.css';
 
@@ -75,6 +85,31 @@ test('the theme is motionless, square, and unelevated', () => {
     '--rc-motion-spatial-easing-exit',
   ] as const) {
     expect(styles.getPropertyValue(token).trim(), token).toBe('step-end');
+  }
+});
+
+/*
+ * base.css is optional, so an app can load it and this theme together. Every
+ * shared motion token must resolve to zero from this theme, not from
+ * base.css's own real 180/300/450ms defaults falling through — this is
+ * exactly the scenario docs/docs/guide/motion.mdx's "both scales are zero"
+ * claim depends on. Verified on the documented container class; the styling
+ * guide notes the theme class does not override base.css's :root when
+ * placed directly on <html>, which is a base.css layering limitation no
+ * theme package can fix by declaring more tokens.
+ */
+test('base.css cannot reintroduce real motion durations anywhere in the shared scale', () => {
+  const styles = getComputedStyle(renderScope());
+
+  for (const token of [
+    '--rc-motion-effects-duration-fast',
+    '--rc-motion-effects-duration-default',
+    '--rc-motion-effects-duration-slow',
+    '--rc-motion-spatial-duration-fast',
+    '--rc-motion-spatial-duration-default',
+    '--rc-motion-spatial-duration-slow',
+  ] as const) {
+    expect(styles.getPropertyValue(token).trim(), token).toBe('0ms');
   }
 });
 
