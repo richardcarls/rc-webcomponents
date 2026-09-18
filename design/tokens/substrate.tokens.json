@@ -3185,6 +3185,22 @@
           }
         },
         {
+          "name": "core/motion-spatial-easing-enter",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-spatial-easing-enter)"
+          },
+          "cssVar": "--rc-motion-spatial-easing-enter",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
           "name": "core/radius-md",
           "type": "FLOAT",
           "scopes": [
@@ -8005,6 +8021,21 @@
         "property": "--rc-menubar-item-background",
         "raw": "transparent",
         "name": "menubar/item-background"
+      },
+      {
+        "property": "--rc-motion-effects-easing-enter",
+        "raw": "ease-out",
+        "name": "core/motion-effects-easing-enter"
+      },
+      {
+        "property": "--rc-motion-effects-easing-exit",
+        "raw": "ease-in",
+        "name": "core/motion-effects-easing-exit"
+      },
+      {
+        "property": "--rc-motion-spatial-easing-exit",
+        "raw": "cubic-bezier(0.3, 0, 1, 1)",
+        "name": "core/motion-spatial-easing-exit"
       },
       {
         "property": "--rc-navigation-bar-focus-ring",

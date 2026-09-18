@@ -67,6 +67,15 @@ test('the theme is motionless, square, and unelevated', () => {
   ] as const) {
     expect(styles.getPropertyValue(token).trim(), token).toBe('0');
   }
+
+  for (const token of [
+    '--rc-motion-effects-easing-enter',
+    '--rc-motion-effects-easing-exit',
+    '--rc-motion-spatial-easing-enter',
+    '--rc-motion-spatial-easing-exit',
+  ] as const) {
+    expect(styles.getPropertyValue(token).trim(), token).toBe('step-end');
+  }
 });
 
 test('the component-scoped radius tokens are square too', () => {
@@ -116,6 +125,7 @@ test('menus highlight under the pointer and list rows do not', () => {
   expect(getComputedStyle(listbox).getPropertyValue('--rc-listbox-hover-bg').trim()).toBe(
     'transparent',
   );
+
   expect(getComputedStyle(menu).getPropertyValue('--rc-listbox-hover-bg').trim()).not.toBe(
     'transparent',
   );
