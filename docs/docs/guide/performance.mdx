@@ -18,14 +18,14 @@ gzip sizes:
 | Entry                               | Initial gzip |
 | ----------------------------------- | -----------: |
 | `@rcarls/rc-button/define`          |      11.7 kB |
-| `@rcarls/rc-select/define`          |      41.8 kB |
+| `@rcarls/rc-select/define`          |      41.9 kB |
 | `@rcarls/rc-textarea/define`        |      26.5 kB |
 | `@rcarls/rc-markdown-editor/define` |     106.9 kB |
-| Aggregate class export              |     186.7 kB |
-| Aggregate define export             |     186.5 kB |
-| Base theme CSS                      |       0.7 kB |
-| Material theme CSS                  |      28.6 kB |
-| Substrate theme CSS                 |      10.5 kB |
+| Aggregate class export              |     187.2 kB |
+| Aggregate define export             |     187.0 kB |
+| Base theme CSS                      |       0.9 kB |
+| Material theme CSS                  |      29.8 kB |
+| Substrate theme CSS                 |      11.5 kB |
 | Windows 3.1 theme CSS               |      17.7 kB |
 
 `rc-select` and aggregate entries also retain the anchor-positioning polyfill as
@@ -46,10 +46,45 @@ median and 95th percentile for:
 - updating an adaptive menu with 50 actions
 - opening, moving, and settling an anchored popup
 
-The CI limit for each browser metric is 20 percent or 5 ms above its recorded
-baseline, whichever is larger. The report, including every sample, is uploaded
-as a CI artifact. Other browser engines remain correctness gates; Chromium is
-the stable timing gate.
+The CI limit for each of these two metrics is 20 percent or 5 ms above its
+recorded baseline, whichever is larger.
+
+A second group of scenarios profiles motion specifically, sampling
+`requestAnimationFrame` deltas from the moment a transition is triggered until
+every animation it started has settled (WAAPI's `finished` promise, not a
+fixed wait), rather than trusting a single before/after timestamp:
+
+- expanding the Material navigation rail (the worst case theorized: `inline-size`
+  and `padding` both animate, so layout runs every frame)
+- opening and closing a Material menu button
+- toggling a Material switch
+- opening and closing a win31 menu button, as a zero-duration control
+
+Each motion scenario adds three metrics beyond median and p95:
+
+- **`longFrames`**: rAF deltas over 32&nbsp;ms, summed across all ten measured
+  runs. Budgeted with zero headroom — any regression here is itself the
+  signal, not noise to tolerate.
+- **`longestFrameMs`**: the single worst rAF delta observed. Budgeted against
+  a fixed 50&nbsp;ms ceiling rather than a percentage of its own baseline,
+  since a dropped frame moves in ~16.7&nbsp;ms quanta and a proportional
+  budget would be meaningless at that scale.
+- **`animationCount`**: the peak number of concurrent `Animation` objects
+  found across the scenario's whole shadow tree (`getAnimations({ subtree:
+  true })` does not cross into a shadow root from its host in this browser,
+  so the harness walks every shadow boundary explicitly). Fully
+  deterministic and machine-independent, and the metric most likely to catch
+  a theme change that animates more properties than intended.
+
+Motion scenarios never wait on a `transitionend`/`animationend` listener, and
+filter out any animation whose `getComputedTiming().iterations` is `Infinity`
+(an indeterminate progress bar's loop, for example) before waiting on it,
+racing the whole settle step against a 4-second wall-clock cap regardless. A
+theme with every duration at zero, like win31, resolves through this path
+immediately: `getAnimations()` reports nothing to wait for.
+
+The report, including every sample, is uploaded as a CI artifact. Other
+browser engines remain correctness gates; Chromium is the stable timing gate.
 
 ## Running the audits
 

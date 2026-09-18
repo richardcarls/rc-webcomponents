@@ -52,11 +52,22 @@ export function absoluteBudget(ceiling) {
 export const RUNTIME_METRICS = {
   median: timingBudget,
   p95: timingBudget,
+  /*
+   * Motion scenarios (see benchmarks/browser.ts's measureMotionScenario):
+   * longFrames and animationCount are deterministic counts a regression
+   * should not grow at all, and longestFrameMs is judged against a fixed
+   * ceiling rather than its own baseline, since dropped frames move in
+   * ~16.7ms quanta and a proportional budget would be meaningless noise.
+   */
+  longFrames: countBudget,
+  longestFrameMs: absoluteBudget(50),
+  animationCount: countBudget,
 };
 
 const RUNTIME_METRIC_UNITS = {
   median: 'ms',
   p95: 'ms',
+  longestFrameMs: 'ms',
 };
 
 function formatRuntimeMetric(metric, value) {

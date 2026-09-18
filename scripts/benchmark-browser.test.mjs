@@ -36,8 +36,19 @@ test('every RUNTIME_METRICS entry is a budget function', () => {
 
 test('createRuntimeBudgets throws for a metric with no RUNTIME_METRICS entry', () => {
   assert.throws(
-    () => createRuntimeBudgets({ example: { median: 10, longFrames: 2 } }),
-    /Unknown runtime metric "longFrames" in scenario "example"/,
+    () => createRuntimeBudgets({ example: { median: 10, futureMetric: 2 } }),
+    /Unknown runtime metric "futureMetric" in scenario "example"/,
+  );
+});
+
+test('the motion metrics added for frame sampling have the right budget semantics', () => {
+  assert.deepEqual(
+    createRuntimeBudgets({
+      example: { median: 10, longFrames: 3, longestFrameMs: 20, animationCount: 4 },
+    }),
+    {
+      example: { median: 15, longFrames: 3, longestFrameMs: 50, animationCount: 4 },
+    },
   );
 });
 
