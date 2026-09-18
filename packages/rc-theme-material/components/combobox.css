@@ -2,9 +2,12 @@
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-combobox::part(anchor) {
     box-sizing: border-box;
     transition:
-      border-color 150ms ease,
-      box-shadow 150ms ease,
-      background-color 150ms ease;
+      border-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      box-shadow var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      background-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-combobox::part(anchor):hover {
@@ -42,8 +45,9 @@
       var(--md-sys-color-on-surface-variant, CanvasText)
     );
     transition:
-      color 150ms ease,
-      background-color 150ms ease;
+      color var(--rc-motion-effects-duration-fast, 150ms) var(--rc-motion-effects-easing-fast, ease),
+      background-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-combobox::part(toggle):hover {
@@ -119,7 +123,10 @@
     --rc-listbox-option-min-block-size: 3rem;
     --rc-listbox-option-padding-block: 0;
     --rc-listbox-option-padding-inline: 0.75rem;
-    --rc-listbox-option-transition: background-color 150ms ease, color 150ms ease;
+    --rc-listbox-option-transition:
+      background-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      color var(--rc-motion-effects-duration-fast, 150ms) var(--rc-motion-effects-easing-fast, ease);
 
     /* M3 hover state layer (8% on-surface) instead of secondary-container */
     --rc-highlight: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);

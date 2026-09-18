@@ -2,8 +2,10 @@
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(root) {
     box-sizing: border-box;
     transition:
-      box-shadow 200ms ease,
-      background-color 200ms ease;
+      box-shadow var(--rc-motion-effects-duration-default, 200ms)
+        var(--rc-motion-effects-easing-default, ease),
+      background-color var(--rc-motion-effects-duration-default, 200ms)
+        var(--rc-motion-effects-easing-default, ease);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar:hover::part(root) {

@@ -26,9 +26,12 @@
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(trigger) {
     box-sizing: border-box;
     transition:
-      border-color 150ms ease,
-      box-shadow 150ms ease,
-      background-color 150ms ease;
+      border-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      box-shadow var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      background-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(trigger):hover {
@@ -90,7 +93,10 @@
     --rc-listbox-option-min-block-size: 3rem;
     --rc-listbox-option-padding-block: 0;
     --rc-listbox-option-padding-inline: 0.75rem;
-    --rc-listbox-option-transition: background-color 150ms ease, color 150ms ease;
+    --rc-listbox-option-transition:
+      background-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      color var(--rc-motion-effects-duration-fast, 150ms) var(--rc-motion-effects-easing-fast, ease);
 
     /* M3 hover/focus state layers use on-surface, not the selected container role. */
     --rc-highlight: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 8%, transparent);
@@ -122,8 +128,9 @@
       var(--md-sys-color-on-surface-variant, CanvasText)
     );
     transition:
-      color 150ms ease,
-      transform 150ms ease;
+      color var(--rc-motion-effects-duration-fast, 150ms) var(--rc-motion-effects-easing-fast, ease),
+      transform var(--rc-motion-spatial-duration-fast, 300ms)
+        var(--rc-motion-spatial-easing-fast, ease);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-select[open]::part(toggle-indicator) {

@@ -6376,6 +6376,22 @@
           }
         },
         {
+          "name": "bottom-sheet/snap-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-bottom-sheet-snap-easing)"
+          },
+          "cssVar": "--rc-bottom-sheet-snap-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-spatial-easing-default",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
           "name": "button/bg",
           "type": "COLOR",
           "scopes": [
@@ -6612,6 +6628,22 @@
           }
         },
         {
+          "name": "button/state-layer-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-button-state-layer-duration)"
+          },
+          "cssVar": "--rc-button-state-layer-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-effects-duration-fast",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
           "name": "button/state-layer-easing",
           "type": "STRING",
           "scopes": [],
@@ -6793,6 +6825,38 @@
             "Value": {
               "alias": "color/on-surface",
               "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "card/state-layer-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-card-state-layer-duration)"
+          },
+          "cssVar": "--rc-card-state-layer-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-effects-duration-fast",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "card/state-layer-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-card-state-layer-easing)"
+          },
+          "cssVar": "--rc-card-state-layer-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-standard",
+              "collection": "Motion"
             }
           }
         },
@@ -7482,6 +7546,22 @@
           }
         },
         {
+          "name": "chip/state-layer-transition-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-chip-state-layer-transition-easing)"
+          },
+          "cssVar": "--rc-chip-state-layer-transition-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-effects-easing-fast",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
           "name": "chip/touch-target-block-size",
           "type": "FLOAT",
           "scopes": [
@@ -7999,6 +8079,22 @@
           }
         },
         {
+          "name": "core/motion-effects-easing-default",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-effects-easing-default)"
+          },
+          "cssVar": "--rc-motion-effects-easing-default",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-effects-easing-fast",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
           "name": "core/motion-effects-easing-enter",
           "type": "STRING",
           "scopes": [],
@@ -8031,6 +8127,38 @@
           }
         },
         {
+          "name": "core/motion-effects-easing-fast",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-effects-easing-fast)"
+          },
+          "cssVar": "--rc-motion-effects-easing-fast",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-standard",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "core/motion-effects-easing-slow",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-effects-easing-slow)"
+          },
+          "cssVar": "--rc-motion-effects-easing-slow",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-effects-easing-fast",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
           "name": "core/motion-spatial-duration-default",
           "type": "FLOAT",
           "scopes": [],
@@ -8041,7 +8169,7 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration-500",
+              "alias": "motion/duration-medium4",
               "collection": "Motion"
             }
           }
@@ -8057,7 +8185,7 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration-350",
+              "alias": "motion/duration-medium2",
               "collection": "Motion"
             }
           }
@@ -8073,8 +8201,24 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration-700",
+              "alias": "motion/duration-long2",
               "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "core/motion-spatial-easing-default",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-spatial-easing-default)"
+          },
+          "cssVar": "--rc-motion-spatial-easing-default",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-spatial-easing-fast",
+              "collection": "RC Contract"
             }
           }
         },
@@ -8107,6 +8251,38 @@
             "Value": {
               "alias": "motion/easing-emphasized-accelerate",
               "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "core/motion-spatial-easing-fast",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-spatial-easing-fast)"
+          },
+          "cssVar": "--rc-motion-spatial-easing-fast",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-emphasized",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "core/motion-spatial-easing-slow",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-spatial-easing-slow)"
+          },
+          "cssVar": "--rc-motion-spatial-easing-slow",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-spatial-easing-fast",
+              "collection": "RC Contract"
             }
           }
         },
@@ -11223,8 +11399,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration-short3",
-              "collection": "Motion"
+              "alias": "core/motion-spatial-duration-fast",
+              "collection": "RC Contract"
             }
           }
         },
@@ -11239,8 +11415,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/easing-standard",
-              "collection": "Motion"
+              "alias": "core/motion-spatial-easing-fast",
+              "collection": "RC Contract"
             }
           }
         },
@@ -11408,8 +11584,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration-medium2",
-              "collection": "Motion"
+              "alias": "core/motion-spatial-duration-fast",
+              "collection": "RC Contract"
             }
           }
         },
@@ -11424,8 +11600,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/easing-emphasized",
-              "collection": "Motion"
+              "alias": "core/motion-spatial-easing-fast",
+              "collection": "RC Contract"
             }
           }
         },
@@ -11552,8 +11728,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration-short3",
-              "collection": "Motion"
+              "alias": "core/motion-spatial-duration-fast",
+              "collection": "RC Contract"
             }
           }
         },
@@ -11568,8 +11744,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/easing-standard",
-              "collection": "Motion"
+              "alias": "core/motion-spatial-easing-fast",
+              "collection": "RC Contract"
             }
           }
         },
@@ -13102,6 +13278,22 @@
           }
         },
         {
+          "name": "splitter/snap-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-splitter-snap-duration)"
+          },
+          "cssVar": "--rc-splitter-snap-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-spatial-duration-fast",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
           "name": "switch/disabled-opacity",
           "type": "FLOAT",
           "scopes": [
@@ -13130,7 +13322,23 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "core/motion-duration",
+              "alias": "core/motion-spatial-duration-fast",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "switch/easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-switch-easing)"
+          },
+          "cssVar": "--rc-switch-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-spatial-easing-fast",
               "collection": "RC Contract"
             }
           }
@@ -14285,12 +14493,6 @@
         "reason": "aliases a composite shorthand"
       },
       {
-        "property": "--rc-bottom-sheet-snap-easing",
-        "raw": "var( --rc-motion-spatial-easing-default, cubic-bezier(0.2, 0, 0, 1) )",
-        "name": "bottom-sheet/snap-easing",
-        "reason": "aliases a composite shorthand"
-      },
-      {
         "property": "--rc-button-font",
         "raw": "500 var(--md-sys-typescale-label-large-size, 0.875rem) / var(--md-sys-typescale-label-large-line-height, 1.25rem) var(--rc-font-family)",
         "name": "button/font"
@@ -14335,12 +14537,6 @@
         "property": "--rc-chip-selected-border-color",
         "raw": "transparent",
         "name": "chip/selected-border-color"
-      },
-      {
-        "property": "--rc-chip-state-layer-transition-easing",
-        "raw": "var(--rc-motion-effects-easing-fast, ease-out)",
-        "name": "chip/state-layer-transition-easing",
-        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-chip-text-decoration",
@@ -14609,40 +14805,6 @@
         "name": "menubar/item-transition"
       },
       {
-        "property": "--rc-motion-effects-easing-default",
-        "raw": "var(--rc-motion-effects-easing-fast)",
-        "name": "core/motion-effects-easing-default",
-        "reason": "aliases a composite shorthand"
-      },
-      {
-        "property": "--rc-motion-effects-easing-fast",
-        "raw": "cubic-bezier( var(--md-sys-motion-easing-standard-x0, 0.2), var(--md-sys-motion-easing-standard-y0, 0), var(--md-sys-motion-easing-standard-x1, 0), var(--md-sys-motion-easing-standard-y1, 1) )",
-        "name": "core/motion-effects-easing-fast"
-      },
-      {
-        "property": "--rc-motion-effects-easing-slow",
-        "raw": "var(--rc-motion-effects-easing-fast)",
-        "name": "core/motion-effects-easing-slow",
-        "reason": "aliases a composite shorthand"
-      },
-      {
-        "property": "--rc-motion-spatial-easing-default",
-        "raw": "var(--rc-motion-spatial-easing-fast)",
-        "name": "core/motion-spatial-easing-default",
-        "reason": "aliases a composite shorthand"
-      },
-      {
-        "property": "--rc-motion-spatial-easing-fast",
-        "raw": "cubic-bezier( var(--md-sys-motion-easing-emphasized-x0, 0.2), var(--md-sys-motion-easing-emphasized-y0, 0), var(--md-sys-motion-easing-emphasized-x1, 0), var(--md-sys-motion-easing-emphasized-y1, 1) )",
-        "name": "core/motion-spatial-easing-fast"
-      },
-      {
-        "property": "--rc-motion-spatial-easing-slow",
-        "raw": "var(--rc-motion-spatial-easing-fast)",
-        "name": "core/motion-spatial-easing-slow",
-        "reason": "aliases a composite shorthand"
-      },
-      {
         "property": "--rc-navigation-bar-focus-ring",
         "raw": "2px solid var(--md-sys-color-primary, Highlight)",
         "name": "navigation-bar/focus-ring"
@@ -14785,7 +14947,7 @@
       },
       {
         "property": "--rc-splitter-handle-transition",
-        "raw": "150ms var(--md-sys-motion-easing-standard, ease)",
+        "raw": "var(--rc-motion-effects-duration-fast, 150ms) var(--rc-motion-effects-easing-fast, ease)",
         "name": "splitter/handle-transition"
       },
       {

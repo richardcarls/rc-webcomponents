@@ -103,9 +103,10 @@ test('maps theme-neutral effects and spatial motion pairs', () => {
   expect(styles.getPropertyValue('--rc-motion-effects-duration-default').trim()).toBe('200ms');
   expect(styles.getPropertyValue('--rc-motion-effects-duration-slow').trim()).toBe('300ms');
   expect(styles.getPropertyValue('--rc-motion-effects-easing-default').trim()).not.toBe('');
-  expect(styles.getPropertyValue('--rc-motion-spatial-duration-fast').trim()).toBe('350ms');
-  expect(styles.getPropertyValue('--rc-motion-spatial-duration-default').trim()).toBe('500ms');
-  expect(styles.getPropertyValue('--rc-motion-spatial-duration-slow').trim()).toBe('700ms');
+  // Compressed from the spec's 350/500/700ms; see bridge.css for why.
+  expect(styles.getPropertyValue('--rc-motion-spatial-duration-fast').trim()).toBe('300ms');
+  expect(styles.getPropertyValue('--rc-motion-spatial-duration-default').trim()).toBe('400ms');
+  expect(styles.getPropertyValue('--rc-motion-spatial-duration-slow').trim()).toBe('500ms');
   expect(styles.getPropertyValue('--rc-motion-spatial-easing-default').trim()).not.toBe('');
 });
 
