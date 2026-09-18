@@ -267,6 +267,14 @@ variants. Normal application rules outside a layer outrank all three theme layer
 which provides a straightforward consumer override path. Avoid routine
 `!important`: important declarations reverse layer precedence.
 
+This is also why a packaged theme's class belongs on a container, as shown
+below, not on `<html>`. The shared `base.css` declares no layer at all, so
+its `:root` values act as normal application rules and outrank every theme
+layer for that same reason. On a container, a theme's own value is a direct
+declaration that beats an inherited one regardless of layer; on `<html>`,
+`:root` and the theme class target the same element, and `:root`'s
+layer-free value wins outright.
+
 ## Substrate reference theme
 
 The optional `@rcarls/rc-theme-substrate` package is the canonical reference

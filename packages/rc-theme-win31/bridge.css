@@ -56,19 +56,32 @@
     --rc-focus-ring: var(--win31-focus-ring);
     --rc-focus-ring-offset: var(--win31-focus-ring-offset);
     --rc-disabled-opacity: 1;
-    --rc-motion-duration: 0ms;
     /*
-     * Period chrome switches state instantly, so a step function is the
+     * Period chrome switches state instantly. All thirteen shared motion
+     * tokens are declared here at zero, not left to base.css's fallbacks:
+     * base.css is optional, and an app that loads it alongside this theme
+     * would otherwise inherit base's real 180/300/450ms spatial motion for
+     * whichever of these a bridge left unmapped. A step function is the
      * honest curve even though a 0ms duration already makes the curve shape
-     * invisible. Declared now so an app loading base.css alongside this
-     * theme doesn't inherit base's real decelerate/accelerate curves for
-     * these two tokens specifically; the rest of the spatial/effects scale
-     * gets the same full-zero treatment separately.
+     * invisible.
      */
+    --rc-motion-effects-duration-fast: 0ms;
+    --rc-motion-effects-easing-fast: step-end;
+    --rc-motion-effects-duration-default: 0ms;
+    --rc-motion-effects-easing-default: step-end;
+    --rc-motion-effects-duration-slow: 0ms;
+    --rc-motion-effects-easing-slow: step-end;
+    --rc-motion-spatial-duration-fast: 0ms;
+    --rc-motion-spatial-easing-fast: step-end;
+    --rc-motion-spatial-duration-default: 0ms;
+    --rc-motion-spatial-easing-default: step-end;
+    --rc-motion-spatial-duration-slow: 0ms;
+    --rc-motion-spatial-easing-slow: step-end;
     --rc-motion-effects-easing-enter: step-end;
     --rc-motion-effects-easing-exit: step-end;
     --rc-motion-spatial-easing-enter: step-end;
     --rc-motion-spatial-easing-exit: step-end;
+    --rc-motion-duration: var(--rc-motion-effects-duration-default);
 
     --rc-button-color: var(--rc-button-text);
     --rc-button-block-size: var(--rc-control-block-size);

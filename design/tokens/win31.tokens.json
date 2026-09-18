@@ -2530,6 +2530,87 @@
           "cssVar": "--rc-motion-duration",
           "description": "Applied where rc-theme- is themed.",
           "values": {
+            "Value": {
+              "alias": "core/motion-effects-duration-default",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "core/motion-effects-duration-default",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-effects-duration-default)"
+          },
+          "cssVar": "--rc-motion-effects-duration-default",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "core/motion-effects-duration-fast",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-effects-duration-fast)"
+          },
+          "cssVar": "--rc-motion-effects-duration-fast",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "core/motion-effects-duration-slow",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-effects-duration-slow)"
+          },
+          "cssVar": "--rc-motion-effects-duration-slow",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "core/motion-spatial-duration-default",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-spatial-duration-default)"
+          },
+          "cssVar": "--rc-motion-spatial-duration-default",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "core/motion-spatial-duration-fast",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-spatial-duration-fast)"
+          },
+          "cssVar": "--rc-motion-spatial-duration-fast",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "core/motion-spatial-duration-slow",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-spatial-duration-slow)"
+          },
+          "cssVar": "--rc-motion-spatial-duration-slow",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
             "Value": 0
           }
         },
@@ -8186,6 +8267,11 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-chip-state-layer-transition-easing",
+        "raw": "step-end",
+        "name": "chip/state-layer-transition-easing"
+      },
+      {
         "property": "--rc-chip-text-decoration",
         "raw": "none",
         "name": "chip/text-decoration"
@@ -8465,6 +8551,11 @@
         "name": "menubar/item-transition"
       },
       {
+        "property": "--rc-motion-effects-easing-default",
+        "raw": "step-end",
+        "name": "core/motion-effects-easing-default"
+      },
+      {
         "property": "--rc-motion-effects-easing-enter",
         "raw": "step-end",
         "name": "core/motion-effects-easing-enter"
@@ -8475,6 +8566,21 @@
         "name": "core/motion-effects-easing-exit"
       },
       {
+        "property": "--rc-motion-effects-easing-fast",
+        "raw": "step-end",
+        "name": "core/motion-effects-easing-fast"
+      },
+      {
+        "property": "--rc-motion-effects-easing-slow",
+        "raw": "step-end",
+        "name": "core/motion-effects-easing-slow"
+      },
+      {
+        "property": "--rc-motion-spatial-easing-default",
+        "raw": "step-end",
+        "name": "core/motion-spatial-easing-default"
+      },
+      {
         "property": "--rc-motion-spatial-easing-enter",
         "raw": "step-end",
         "name": "core/motion-spatial-easing-enter"
@@ -8483,6 +8589,16 @@
         "property": "--rc-motion-spatial-easing-exit",
         "raw": "step-end",
         "name": "core/motion-spatial-easing-exit"
+      },
+      {
+        "property": "--rc-motion-spatial-easing-fast",
+        "raw": "step-end",
+        "name": "core/motion-spatial-easing-fast"
+      },
+      {
+        "property": "--rc-motion-spatial-easing-slow",
+        "raw": "step-end",
+        "name": "core/motion-spatial-easing-slow"
       },
       {
         "property": "--rc-navigation-bar-focus-ring",

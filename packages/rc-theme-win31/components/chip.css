@@ -13,6 +13,7 @@
     --rc-chip-focus-state-layer-opacity: 0;
     --rc-chip-pressed-state-layer-opacity: 0;
     --rc-chip-state-layer-transition-duration: 0ms;
+    --rc-chip-state-layer-transition-easing: step-end;
     --rc-chip-focus-ring: var(--win31-focus-ring);
     --rc-chip-focus-ring-offset: var(--win31-focus-ring-offset);
     --rc-chip-selected-color: var(--win31-color-frame);

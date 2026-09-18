@@ -21,4 +21,25 @@
       view-transition-name: var(--rc-view-transition-name, none);
     }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rc-theme-substrate,
+    :host(.rc-theme-substrate) {
+      --substrate-motion-duration: 0ms;
+      --substrate-motion-duration-slow: 0ms;
+      --substrate-motion-effects-duration-fast: 0ms;
+      --substrate-motion-effects-duration-default: 0ms;
+      --substrate-motion-effects-duration-slow: 0ms;
+      --substrate-motion-spatial-duration-fast: 0ms;
+      --substrate-motion-spatial-duration-default: 0ms;
+      --substrate-motion-spatial-duration-slow: 0ms;
+      --rc-motion-duration: 0ms;
+      --rc-motion-effects-duration-fast: 0ms;
+      --rc-motion-effects-duration-default: 0ms;
+      --rc-motion-effects-duration-slow: 0ms;
+      --rc-motion-spatial-duration-fast: 0ms;
+      --rc-motion-spatial-duration-default: 0ms;
+      --rc-motion-spatial-duration-slow: 0ms;
+    }
+  }
 }

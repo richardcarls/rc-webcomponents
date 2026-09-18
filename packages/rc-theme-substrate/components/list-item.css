@@ -29,7 +29,7 @@
     --rc-list-item-focus-state-layer-opacity: 0.12;
     --rc-list-item-pressed-state-layer-opacity: 0.16;
     --rc-list-item-disabled-opacity: var(--rc-disabled-opacity, 0.52);
-    --rc-list-item-transition-duration: 100ms;
+    --rc-list-item-transition-duration: var(--rc-motion-effects-duration-fast, 100ms);
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-list[variant='segmented'] {

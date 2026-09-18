@@ -69,6 +69,19 @@
     --substrate-motion-duration: 160ms;
     --substrate-motion-duration-slow: 240ms;
     --substrate-motion-easing: cubic-bezier(0.2, 0, 0, 1);
+    /*
+     * The shared spatial/effects scale (see the styling guide), kept as its
+     * own small set of primitives rather than derived from the two above:
+     * Substrate favors few named tokens over a layered primitive/semantic
+     * split, and the values only partly overlap (160/240ms already meant
+     * something as the flat scale; here they mean the spatial tier).
+     */
+    --substrate-motion-effects-duration-fast: 100ms;
+    --substrate-motion-effects-duration-default: 160ms;
+    --substrate-motion-effects-duration-slow: 240ms;
+    --substrate-motion-spatial-duration-fast: 160ms;
+    --substrate-motion-spatial-duration-default: 240ms;
+    --substrate-motion-spatial-duration-slow: 320ms;
     --substrate-disabled-opacity: 0.52;
   }
 
