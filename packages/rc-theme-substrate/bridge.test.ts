@@ -1,5 +1,13 @@
 import { afterEach, expect, test } from 'vitest';
 
+/*
+ * Both layers, matching how theme.css actually bundles them for a consumer.
+ * Without defaults.css, a var() onto a --substrate-* token with a
+ * deliberately different literal fallback (see the directional easing test
+ * below) would silently assert against the fallback instead of the real
+ * theme value.
+ */
+import './defaults.css';
 import './bridge.css';
 
 afterEach(() => {
@@ -32,6 +40,34 @@ test('bridge maps Substrate tokens to the RC token contract', () => {
   expect(styles.getPropertyValue('--rc-list-item-min-block-size').trim()).toBe('2.25rem');
   expect(styles.getPropertyValue('--rc-border')).not.toBe('');
   expect(styles.getPropertyValue('--rc-motion-duration').trim()).toBe('160ms');
+});
+
+test('maps directional easing so entering and exiting are not the same curve', () => {
+  const scope = renderScope();
+  const probe = document.createElement('div');
+
+  scope.append(probe);
+
+  const resolvedTimingFunction = (token: string): string => {
+    probe.style.transitionTimingFunction = `var(${token})`;
+
+    return getComputedStyle(probe).transitionTimingFunction;
+  };
+
+  const effectsEnter = resolvedTimingFunction('--rc-motion-effects-easing-enter');
+  const effectsExit = resolvedTimingFunction('--rc-motion-effects-easing-exit');
+  const spatialEnter = resolvedTimingFunction('--rc-motion-spatial-easing-enter');
+  const spatialExit = resolvedTimingFunction('--rc-motion-spatial-easing-exit');
+
+  for (const value of [effectsEnter, effectsExit, spatialEnter, spatialExit]) {
+    expect(value).not.toBe('');
+  }
+
+  expect(effectsEnter).not.toBe(effectsExit);
+  expect(spatialEnter).not.toBe(spatialExit);
+
+  // Spatial enter aliases the theme's own curve, not its fallback.
+  expect(spatialEnter).toBe('cubic-bezier(0.2, 0, 0, 1)');
 });
 
 test('bridge maps the error color rather than leaving it to a system color', () => {

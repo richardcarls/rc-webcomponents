@@ -57,6 +57,18 @@
     --rc-focus-ring-offset: var(--win31-focus-ring-offset);
     --rc-disabled-opacity: 1;
     --rc-motion-duration: 0ms;
+    /*
+     * Period chrome switches state instantly, so a step function is the
+     * honest curve even though a 0ms duration already makes the curve shape
+     * invisible. Declared now so an app loading base.css alongside this
+     * theme doesn't inherit base's real decelerate/accelerate curves for
+     * these two tokens specifically; the rest of the spatial/effects scale
+     * gets the same full-zero treatment separately.
+     */
+    --rc-motion-effects-easing-enter: step-end;
+    --rc-motion-effects-easing-exit: step-end;
+    --rc-motion-spatial-easing-enter: step-end;
+    --rc-motion-spatial-easing-exit: step-end;
 
     --rc-button-color: var(--rc-button-text);
     --rc-button-block-size: var(--rc-control-block-size);

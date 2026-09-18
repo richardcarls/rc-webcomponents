@@ -1,5 +1,15 @@
 import { afterEach, expect, test } from 'vitest';
 
+/*
+ * Both layers, matching how theme.css actually bundles them for a consumer.
+ * bridge.css's own literal fallbacks (for an app supplying its own Material
+ * environment) mean most of this file's assertions would pass even without
+ * defaults.css, since many fallbacks happen to equal the real vendored
+ * value — that coincidence stops holding once a bridge mapping's fallback
+ * is deliberately different from its target (see the directional easing
+ * test below), which is exactly when this import starts to matter.
+ */
+import './defaults.css';
 import './bridge.css';
 
 afterEach(() => {
@@ -97,6 +107,30 @@ test('maps theme-neutral effects and spatial motion pairs', () => {
   expect(styles.getPropertyValue('--rc-motion-spatial-duration-default').trim()).toBe('500ms');
   expect(styles.getPropertyValue('--rc-motion-spatial-duration-slow').trim()).toBe('700ms');
   expect(styles.getPropertyValue('--rc-motion-spatial-easing-default').trim()).not.toBe('');
+});
+
+test('directional easing pairs decelerate-shaped curves with entering and accelerate-shaped with exiting', () => {
+  const scope = renderMaterialScope();
+  const probe = document.createElement('div');
+
+  scope.append(probe);
+
+  const resolvedTimingFunction = (token: string): string => {
+    probe.style.transitionTimingFunction = `var(${token})`;
+
+    return getComputedStyle(probe).transitionTimingFunction;
+  };
+
+  expect(resolvedTimingFunction('--rc-motion-effects-easing-enter')).toBe('cubic-bezier(0, 0, 0, 1)');
+  expect(resolvedTimingFunction('--rc-motion-effects-easing-exit')).toBe('cubic-bezier(0.3, 0, 1, 1)');
+
+  expect(resolvedTimingFunction('--rc-motion-spatial-easing-enter')).toBe(
+    'cubic-bezier(0.05, 0.7, 0.1, 1)',
+  );
+
+  expect(resolvedTimingFunction('--rc-motion-spatial-easing-exit')).toBe(
+    'cubic-bezier(0.3, 0, 0.8, 0.15)',
+  );
 });
 
 test('maps listbox selection to the selected container color role', () => {

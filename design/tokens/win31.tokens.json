@@ -8465,6 +8465,26 @@
         "name": "menubar/item-transition"
       },
       {
+        "property": "--rc-motion-effects-easing-enter",
+        "raw": "step-end",
+        "name": "core/motion-effects-easing-enter"
+      },
+      {
+        "property": "--rc-motion-effects-easing-exit",
+        "raw": "step-end",
+        "name": "core/motion-effects-easing-exit"
+      },
+      {
+        "property": "--rc-motion-spatial-easing-enter",
+        "raw": "step-end",
+        "name": "core/motion-spatial-easing-enter"
+      },
+      {
+        "property": "--rc-motion-spatial-easing-exit",
+        "raw": "step-end",
+        "name": "core/motion-spatial-easing-exit"
+      },
+      {
         "property": "--rc-navigation-bar-focus-ring",
         "raw": "var(--win31-focus-ring)",
         "name": "navigation-bar/focus-ring",

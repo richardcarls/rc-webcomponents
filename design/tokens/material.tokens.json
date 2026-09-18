@@ -7999,6 +7999,38 @@
           }
         },
         {
+          "name": "core/motion-effects-easing-enter",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-effects-easing-enter)"
+          },
+          "cssVar": "--rc-motion-effects-easing-enter",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-standard-decelerate",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "core/motion-effects-easing-exit",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-effects-easing-exit)"
+          },
+          "cssVar": "--rc-motion-effects-easing-exit",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-standard-accelerate",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
           "name": "core/motion-spatial-duration-default",
           "type": "FLOAT",
           "scopes": [],
@@ -8042,6 +8074,38 @@
           "values": {
             "Value": {
               "alias": "motion/duration-700",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "core/motion-spatial-easing-enter",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-spatial-easing-enter)"
+          },
+          "cssVar": "--rc-motion-spatial-easing-enter",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-emphasized-decelerate",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "core/motion-spatial-easing-exit",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-motion-spatial-easing-exit)"
+          },
+          "cssVar": "--rc-motion-spatial-easing-exit",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-emphasized-accelerate",
               "collection": "Motion"
             }
           }

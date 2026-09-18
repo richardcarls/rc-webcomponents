@@ -54,6 +54,17 @@
   --rc-motion-spatial-easing-default: cubic-bezier(0.2, 0, 0, 1);
   --rc-motion-spatial-duration-slow: 450ms;
   --rc-motion-spatial-easing-slow: cubic-bezier(0.2, 0, 0, 1);
+  /*
+   * Enter/exit easing, not duration: an opening element should decelerate
+   * into place and a closing one should accelerate out, on whichever
+   * duration band the component already uses. Pair -easing-exit with
+   * -duration-fast rather than adding matching exit-duration tokens, so
+   * closing reads as quicker without doubling the token surface.
+   */
+  --rc-motion-spatial-easing-enter: cubic-bezier(0, 0, 0, 1);
+  --rc-motion-spatial-easing-exit: cubic-bezier(0.3, 0, 1, 1);
+  --rc-motion-effects-easing-enter: ease-out;
+  --rc-motion-effects-easing-exit: ease-in;
   --rc-motion-duration: var(--rc-motion-effects-duration-default);
 
   --rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
