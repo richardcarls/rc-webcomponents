@@ -1096,6 +1096,18 @@
           "values": {
             "Value": 240
           }
+        },
+        {
+          "name": "motion/easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--substrate-motion-easing)"
+          },
+          "cssVar": "--substrate-motion-easing",
+          "values": {
+            "Value": "cubic-bezier(0.2, 0, 0, 1)"
+          }
         }
       ]
     },
@@ -1977,6 +1989,22 @@
             "Value": {
               "alias": "core/control-radius",
               "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "button/state-layer-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-button-state-layer-easing)"
+          },
+          "cssVar": "--rc-button-state-layer-easing",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing",
+              "collection": "Motion"
             }
           }
         },
@@ -3406,6 +3434,22 @@
           }
         },
         {
+          "name": "disclosure/easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-easing)"
+          },
+          "cssVar": "--rc-disclosure-easing",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
           "name": "disclosure/radius",
           "type": "FLOAT",
           "scopes": [
@@ -3953,6 +3997,25 @@
           }
         },
         {
+          "name": "field/background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-background)"
+          },
+          "cssVar": "--rc-field-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/field",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "field/base",
           "type": "COLOR",
           "scopes": [
@@ -3972,6 +4035,60 @@
           }
         },
         {
+          "name": "field/color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-color)"
+          },
+          "cssVar": "--rc-field-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "field/text",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "field/control-gap",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-control-gap)"
+          },
+          "cssVar": "--rc-field-control-gap",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/control-gap",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "field/disabled-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-disabled-opacity)"
+          },
+          "cssVar": "--rc-field-disabled-opacity",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/disabled-opacity",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
           "name": "field/error-color",
           "type": "COLOR",
           "scopes": [
@@ -3987,6 +4104,128 @@
               "alias": "color/error",
               "collection": "Color"
             }
+          }
+        },
+        {
+          "name": "field/focus-outline-offset",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-focus-outline-offset)"
+          },
+          "cssVar": "--rc-field-focus-outline-offset",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/focus-ring-offset",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "field/label-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-label-color)"
+          },
+          "cssVar": "--rc-field-label-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-muted",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "field/min-block-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-min-block-size)"
+          },
+          "cssVar": "--rc-field-min-block-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/control-block-size",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "field/radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-radius)"
+          },
+          "cssVar": "--rc-field-radius",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/control-radius",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "field/supporting-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-supporting-color)"
+          },
+          "cssVar": "--rc-field-supporting-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-muted",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "field/supporting-font-size",
+          "type": "FLOAT",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-supporting-font-size)"
+          },
+          "cssVar": "--rc-field-supporting-font-size",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 13
+          }
+        },
+        {
+          "name": "field/supporting-padding-block-start",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-field-supporting-padding-block-start)"
+          },
+          "cssVar": "--rc-field-supporting-padding-block-start",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 4
           }
         },
         {
@@ -7503,12 +7742,6 @@
         "name": "button/state-layer-bg"
       },
       {
-        "property": "--rc-button-state-layer-easing",
-        "raw": "var(--substrate-motion-easing, ease)",
-        "name": "button/state-layer-easing",
-        "reason": "aliases a composite shorthand"
-      },
-      {
         "property": "--rc-card-border",
         "raw": "var(--rc-border, 1px solid ButtonBorder)",
         "name": "card/border",
@@ -7579,12 +7812,6 @@
         "property": "--rc-disclosure-content-padding-block",
         "raw": "0 0.875rem",
         "name": "disclosure/content-padding-block"
-      },
-      {
-        "property": "--rc-disclosure-easing",
-        "raw": "var(--substrate-motion-easing, ease)",
-        "name": "disclosure/easing",
-        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-disclosure-summary-font",
@@ -7687,6 +7914,23 @@
         "name": "fab/transition"
       },
       {
+        "property": "--rc-field-border",
+        "raw": "var(--rc-border, 1px solid ButtonBorder)",
+        "name": "field/border",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-field-focus-outline",
+        "raw": "var(--rc-focus-ring, 2px solid Highlight)",
+        "name": "field/focus-outline",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-field-padding",
+        "raw": "var(--rc-control-padding-block, 0.5rem) var(--rc-control-padding-inline, 0.75rem)",
+        "name": "field/padding"
+      },
+      {
         "property": "--rc-focus-ring",
         "raw": "var(--substrate-focus-ring, 2px solid Highlight)",
         "name": "core/focus-ring",
@@ -7699,7 +7943,7 @@
       },
       {
         "property": "--rc-list-item-divider",
-        "raw": "1px solid var(--substrate-border, GrayText)",
+        "raw": "1px solid var(--substrate-border-color, GrayText)",
         "name": "list-item/divider"
       },
       {
@@ -7821,6 +8065,11 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-segmented-button-appearance",
+        "raw": "segmented",
+        "name": "segmented-button/appearance"
+      },
+      {
         "property": "--rc-segmented-button-border",
         "raw": "var(--rc-border)",
         "name": "segmented-button/border",
@@ -7935,11 +8184,6 @@
         "property": "--substrate-focus-ring",
         "raw": "2px solid var(--substrate-primary)",
         "name": "focus/ring"
-      },
-      {
-        "property": "--substrate-motion-easing",
-        "raw": "cubic-bezier(0.2, 0, 0, 1)",
-        "name": "motion/easing"
       }
     ],
     "unresolved": [
@@ -7987,19 +8231,19 @@
       },
       {
         "property": "--rc-fab-menu-shadow",
-        "raw": "var(--substrate-shadow-raised, var(--rc-shadow-level2, none))",
+        "raw": "var(--substrate-shadow-md, var(--rc-shadow-level2, none))",
         "reason": "literal",
         "scope": "rc-theme-substrate"
       },
       {
         "property": "--rc-fab-menu-shadow-active",
-        "raw": "var(--substrate-shadow-raised, var(--rc-shadow-level2, none))",
+        "raw": "var(--substrate-shadow-md, var(--rc-shadow-level2, none))",
         "reason": "literal",
         "scope": "rc-theme-substrate"
       },
       {
         "property": "--rc-fab-menu-shadow-hover",
-        "raw": "var(--substrate-shadow-overlay, var(--rc-shadow-level3, none))",
+        "raw": "var(--substrate-shadow-lg, var(--rc-shadow-level3, none))",
         "reason": "literal",
         "scope": "rc-theme-substrate"
       },

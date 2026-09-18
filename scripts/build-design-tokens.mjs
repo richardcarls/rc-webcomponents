@@ -458,6 +458,39 @@ function createResolver(byProperty) {
   return resolveIn;
 }
 
+const CUBIC_BEZIER_COMPOSITE_PATTERN = /^cubic-bezier\(([\s\S]+)\)$/;
+
+/**
+ * `shallowResolve()` classifies `cubic-bezier(var(--x0), var(--y0), ...)` as
+ * an opaque composite, the same as a shorthand it has no way to reconstruct.
+ * An easing curve is different: it's exactly four control points, each of
+ * which is either a literal number or a var() this resolver already follows,
+ * so the curve is fully reconstructable as a literal string. Returns null
+ * (falls back to the ordinary skipped-composite path) when any control point
+ * doesn't resolve to a number, rather than emitting a partial curve.
+ */
+export function resolveCubicBezierComposite(raw, resolveIn) {
+  const match = CUBIC_BEZIER_COMPOSITE_PATTERN.exec(raw.trim());
+
+  if (!match) {
+    return null;
+  }
+
+  const args = splitTopLevel(match[1], ',');
+
+  if (args.length !== 4) {
+    return null;
+  }
+
+  const points = args.map((arg) => resolveIn(arg, 'Light'));
+
+  if (points.some((point) => point.kind !== 'number')) {
+    return null;
+  }
+
+  return `cubic-bezier(${points.map((point) => Number(point.value.toFixed(4))).join(', ')})`;
+}
+
 /**
  * Follows variable references down to a literal string. Font families and
  * weights are declared once on the reference layer and pointed at by name, so
@@ -986,6 +1019,21 @@ function buildDocument(theme) {
     const isColorToken = name.startsWith('color/');
 
     if (shallow.kind === 'composite') {
+      const curve = resolveCubicBezierComposite(shallow.raw, resolveIn);
+
+      if (curve) {
+        ensure(collectionName, ['Value'], undefined).variables.push(
+          buildVariable({
+            name,
+            property: entry.property,
+            type: 'STRING',
+            values: { Value: curve },
+          }),
+        );
+
+        continue;
+      }
+
       composite.push({ property: entry.property, raw: entry.value, name });
 
       continue;
@@ -1188,13 +1236,19 @@ function buildDocument(theme) {
    */
   const rcByProperty = new Map(rcCollection.variables.map((entry) => [entry.cssVar, entry]));
 
-  // Being in the registry only means a declaration was seen; a composite
-  // shorthand never becomes a variable, so an alias cannot point at it.
-  const materialized = new Set();
+  /*
+   * Being in the registry only means a declaration was seen; a composite
+   * shorthand never becomes a variable, so an alias cannot point at it. Keyed
+   * by cssVar to the variable's real type rather than just presence: a
+   * non-color target used to be assumed FLOAT, which was true until motion
+   * easings started emitting STRING variables (a curve is a literal
+   * `cubic-bezier()` string, not a number Figma can animate as a float).
+   */
+  const materializedType = new Map();
 
   for (const collection of collections.values()) {
     for (const variable of collection.variables) {
-      materialized.add(variable.cssVar);
+      materializedType.set(variable.cssVar, variable.type);
     }
   }
 
@@ -1208,11 +1262,7 @@ function buildDocument(theme) {
     const target = registry.get(entry.pendingAliasTarget);
 
     if (target && target.collection !== 'RC Contract') {
-      return materialized.has(entry.pendingAliasTarget)
-        ? target.collection === 'Color'
-          ? 'COLOR'
-          : 'FLOAT'
-        : null;
+      return materializedType.get(entry.pendingAliasTarget) ?? null;
     }
 
     const next = rcByProperty.get(entry.pendingAliasTarget);

@@ -23,7 +23,7 @@
     --rc-list-item-background: transparent;
     --rc-list-item-selected-color: var(--rc-highlight-text, HighlightText);
     --rc-list-item-selected-background: var(--rc-highlight, Highlight);
-    --rc-list-item-divider: 1px solid var(--substrate-border, GrayText);
+    --rc-list-item-divider: 1px solid var(--substrate-border-color, GrayText);
     --rc-list-item-state-layer-color: var(--rc-accent, Highlight);
     --rc-list-item-hover-state-layer-opacity: 0.1;
     --rc-list-item-focus-state-layer-opacity: 0.12;
@@ -37,8 +37,8 @@
     --rc-list-row-gap: 0.25rem;
     --rc-list-item-background: var(--substrate-surface-raised, Field);
     --rc-list-item-divider: 0;
-    --rc-list-item-border: 1px solid var(--substrate-border, GrayText);
-    --rc-list-item-border-radius: var(--substrate-radius-medium, 0.375rem);
+    --rc-list-item-border: 1px solid var(--substrate-border-color, GrayText);
+    --rc-list-item-border-radius: var(--substrate-radius-md, 0.375rem);
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate))
