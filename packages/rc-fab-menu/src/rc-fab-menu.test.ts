@@ -7,6 +7,43 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCFabMenu } from './rc-fab-menu.js';
 
+test('popup exit fade is not skipped by an instant display change', async () => {
+  const screen = render(html`
+    <rc-fab-menu data-testid="host">
+      <button slot="trigger" type="button" aria-label="Create">
+        <span aria-hidden="true">+</span>
+      </button>
+      <rc-menu label="Create">
+        <button data-value="recipe">Recipe</button>
+      </rc-menu>
+    </rc-fab-menu>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCFabMenu;
+
+  await $host.updateComplete;
+
+  const popup = $host.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  // A long duration makes the mid-transition state easy to sample
+  // deterministically, the way rc-menu-button's identical structure was
+  // verified: this popup's own default is 0ms (motion is opt-in for this
+  // component), so exercising the fade at all requires overriding it.
+  popup.style.setProperty('--rc-fab-menu-popup-duration', '2000ms');
+
+  $host.open = true;
+  await new Promise((resolve) => setTimeout(resolve, 2100));
+
+  $host.open = false;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  const midStyles = getComputedStyle(popup);
+
+  expect(midStyles.display).not.toBe('none');
+  expect(Number(midStyles.opacity)).toBeGreaterThan(0);
+  expect(Number(midStyles.opacity)).toBeLessThan(1);
+});
+
 test('native trigger and rc-menu remain connected with author content intact', async () => {
   const screen = render(html`
     <rc-fab-menu data-testid="host">

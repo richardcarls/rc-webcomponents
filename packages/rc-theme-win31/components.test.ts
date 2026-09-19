@@ -6,6 +6,10 @@ import './defaults.css';
 import './bridge.css';
 import './components.css';
 
+const scrollerCss = await import('./components/scroller.css?raw').then(
+  (module) => module.default as string,
+);
+
 afterEach(() => {
   document.body.replaceChildren();
 });
@@ -168,9 +172,10 @@ test('scrollbars fall back to the standard properties for browsers without the p
   const styles = getComputedStyle(renderScope());
 
   // Firefox exposes no ::-webkit-scrollbar tree, so the two-color fallback is
-  // the only thing it can render. Asserting it here keeps the Firefox leg of
-  // the matrix honest.
-  expect(styles.scrollbarWidth).toBe('auto');
+  // the only thing it can render. Vitest's browser shell may suppress its own
+  // scrollbars with an unlayered rule, so assert the theme's layered width
+  // declaration directly and the rendered color independently.
+  expect(scrollerCss).toMatch(/scrollbar-width:\s*auto/);
   expect(styles.scrollbarColor).toBe('rgb(192, 192, 192) rgb(128, 128, 128)');
 });
 
@@ -219,4 +224,12 @@ test('nothing in the theme is rounded or animated', () => {
     expect(styles.borderRadius, element.tagName).toBe('0px');
     expect(styles.transitionDuration, element.tagName).toBe('0s');
   }
+
+  const menuButton = document.createElement('rc-menu-button');
+
+  scope.append(menuButton);
+
+  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-popup-duration').trim()).toBe(
+    '0ms',
+  );
 });

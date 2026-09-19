@@ -61,6 +61,35 @@ function getTrigger(host: RCSelect): HTMLElement {
   return host.renderRoot.querySelector<HTMLElement>('#trigger')!;
 }
 
+test('listbox fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const listbox = host.renderRoot.querySelector<HTMLElement>('[part="listbox"]')!;
+
+  expect(getComputedStyle(listbox).opacity).toBe('0');
+  expect(getComputedStyle(listbox).transitionDuration).not.toBe('0s');
+
+  // openPopup()/closePopup() are synchronous; nothing waits on a transition.
+  host.openPopup();
+
+  await Promise.all(listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await Promise.all(listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+
+  expect(getComputedStyle(listbox).opacity).toBe('1');
+
+  host.closePopup(false);
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await Promise.all(listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+
+  // The exit fade must actually be visible, not skipped by an instant
+  // display: none racing ahead of it: closing relies on allow-discrete
+  // keeping display: block for the fade's duration rather than the
+  // popover's own display toggle winning immediately.
+  expect(getComputedStyle(listbox).opacity).toBe('0');
+});
+
 test('trigger has role="combobox", aria-haspopup="listbox", aria-expanded="false"', async () => {
   const screen = render(makeSelect());
   const host = await getHost(screen);

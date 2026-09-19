@@ -99,12 +99,36 @@ export const fabMenuStyles = css`
 
   #popup {
     z-index: var(--rc-fab-menu-popup-z-index, var(--rc-menu-button-popup-z-index, 1000));
+    transform-origin: var(--rc-fab-menu-popup-transform-origin, bottom right);
+  }
+
+  /*
+   * Enter decelerates, exit accelerates, using the same directional tokens
+   * every other open/close surface in this project reads. Previously this
+   * only had an entrance (a bare, unconditional #popup rule plus a
+   * @starting-style for it): closing relied entirely on the popover's own
+   * instant display:none, with no exit fade at all. display/overlay join
+   * the transition list, allow-discrete, so closing now fades out over the
+   * same duration before the popover actually leaves the top layer.
+   */
+  :host([open]) #popup {
     opacity: 1;
     scale: 1;
-    transform-origin: var(--rc-fab-menu-popup-transform-origin, bottom right);
     transition:
-      opacity var(--rc-fab-menu-popup-duration, 0ms) ease,
-      scale var(--rc-fab-menu-popup-duration, 0ms) ease;
+      opacity var(--rc-fab-menu-popup-duration, 0ms) var(--rc-motion-effects-easing-enter, ease-out),
+      scale var(--rc-fab-menu-popup-duration, 0ms) var(--rc-motion-spatial-easing-enter, ease-out),
+      overlay var(--rc-fab-menu-popup-duration, 0ms) allow-discrete,
+      display var(--rc-fab-menu-popup-duration, 0ms) allow-discrete;
+  }
+
+  :host(:not([open])) #popup {
+    opacity: 0;
+    scale: 0.92;
+    transition:
+      opacity var(--rc-fab-menu-popup-duration, 0ms) var(--rc-motion-effects-easing-exit, ease-in),
+      scale var(--rc-fab-menu-popup-duration, 0ms) var(--rc-motion-spatial-easing-exit, ease-in),
+      overlay var(--rc-fab-menu-popup-duration, 0ms) allow-discrete,
+      display var(--rc-fab-menu-popup-duration, 0ms) allow-discrete;
   }
 
   #popup[hidden] {

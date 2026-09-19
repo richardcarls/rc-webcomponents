@@ -57,6 +57,45 @@ async function expectActiveMenuItem(item: Locator) {
   await expect.element(item).toHaveAttribute('data-active');
 }
 
+test('popup fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+        <button>Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCMenuButton;
+
+  await host.updateComplete;
+
+  const popup = host.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  expect(getComputedStyle(popup).opacity).toBe('0');
+  expect(getComputedStyle(popup).transitionDuration).not.toBe('0s');
+
+  // Host writes to open are silent and synchronous; nothing waits on a transition.
+  host.open = true;
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await Promise.all(popup.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+
+  expect(getComputedStyle(popup).opacity).toBe('1');
+
+  host.open = false;
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await Promise.all(popup.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+
+  // The exit fade must actually be visible, not skipped by an instant
+  // display: none racing ahead of it: closing relies on allow-discrete
+  // keeping display visible for the fade's duration rather than the
+  // popover's own native display toggle winning immediately.
+  expect(getComputedStyle(popup).opacity).toBe('0');
+});
+
 test('RCMenuButton renders with correct ARIA attributes', async () => {
   const screen = render(html`
     <rc-menu-button data-testid="host">

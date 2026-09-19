@@ -107,6 +107,7 @@ export interface RCMenuButtonToggleEvent {
  *   space there.
  * @cssprop [--rc-menu-button-touch-target-overlap-inline-end=0px] - The trailing-edge
  *   counterpart to `--rc-menu-button-touch-target-overlap-inline-start`.
+ * @cssprop [--rc-menu-button-popup-duration=150ms] - Popup open/close fade transition duration.
  *
  * @csspart root - The root container element
  * @csspart popup - The popup container element

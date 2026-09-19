@@ -196,10 +196,14 @@ export const PACKAGE_ID_SELECTOR_BUDGETS = {
   'rc-carousel': 7,
   'rc-chip-group': 10,
   'rc-combobox': 4,
-  'rc-fab-menu': 6,
+  // Grew the same way rc-menu-button's did: the popup's exit fade split its
+  // one #popup rule into separate open/closed/@starting-style declarations.
+  'rc-fab-menu': 9,
   'rc-field': 25,
   'rc-markdown-editor': 19,
-  'rc-menu-button': 9,
+  // Grew with the popup's own open/close fade: enter, exit, and its
+  // @starting-style all re-select #popup by ID.
+  'rc-menu-button': 12,
   'rc-menubar': 3,
   'rc-navigation-bar': 4,
   'rc-navigation-rail': 18,
