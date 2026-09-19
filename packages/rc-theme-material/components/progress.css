@@ -7,4 +7,9 @@
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-progress[disabled] {
     opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
   }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-progress {
+    --rc-progress-fill-transition-duration: var(--rc-motion-effects-duration-fast, 150ms);
+    --rc-progress-fill-transition-easing: var(--rc-motion-effects-easing-fast, ease-out);
+  }
 }

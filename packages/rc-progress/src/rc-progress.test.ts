@@ -19,6 +19,71 @@ test('rc-progress renders fill part', async () => {
   expect(host.shadowRoot?.querySelector('[part="fill"]')).toBeTruthy();
 });
 
+test('rc-progress fill transition is themeable rather than hardcoded', async () => {
+  const screen = render(html`
+    <rc-progress
+      data-testid="host"
+      style="--rc-progress-fill-transition-duration: 400ms; --rc-progress-fill-transition-easing: linear"
+    >
+      <progress value="25" max="100" aria-label="Sync"></progress>
+    </rc-progress>
+  `);
+  const host = screen.getByTestId('host').element() as RCProgress;
+
+  await host.updateComplete;
+
+  const fill = host.shadowRoot?.querySelector<HTMLElement>('[part="fill"]');
+
+  expect(fill).toBeTruthy();
+
+  const styles = getComputedStyle(fill!);
+
+  expect(styles.transitionDuration).toBe('0.4s');
+  expect(styles.transitionTimingFunction).toBe('linear');
+});
+
+test('rc-progress indeterminate loop paces at a constant rate, not eased', async () => {
+  const screen = render(html`
+    <rc-progress data-testid="host" indeterminate>
+      <progress aria-label="Sync"></progress>
+    </rc-progress>
+  `);
+  const host = screen.getByTestId('host').element() as RCProgress;
+
+  await host.updateComplete;
+
+  const fill = host.shadowRoot?.querySelector<HTMLElement>('[part="fill"]');
+
+  expect(fill).toBeTruthy();
+  expect(getComputedStyle(fill!).animationTimingFunction).toBe('linear');
+});
+
+test('rc-progress indeterminate sweep travels start-to-end in both writing directions', async () => {
+  const screen = render(html`
+    <rc-progress data-testid="host" indeterminate>
+      <progress aria-label="Sync"></progress>
+    </rc-progress>
+  `);
+  const host = screen.getByTestId('host').element() as RCProgress;
+
+  await host.updateComplete;
+
+  // translate() percentages resolve against the element's own box and its
+  // direction is physical, not logical, so the sign of this internal token
+  // is what keeps the sweep going start-to-end as the writing direction
+  // flips, rather than the animation itself changing per direction.
+  expect(getComputedStyle(host).getPropertyValue('--_rc-progress-indeterminate-direction').trim()).toBe(
+    '1',
+  );
+
+  host.dir = 'rtl';
+  await host.updateComplete;
+
+  expect(getComputedStyle(host).getPropertyValue('--_rc-progress-indeterminate-direction').trim()).toBe(
+    '-1',
+  );
+});
+
 test('rc-progress default value display renders a percentage', async () => {
   const screen = render(html`
     <rc-progress data-testid="host" display="overlay">
