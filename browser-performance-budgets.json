@@ -24,6 +24,34 @@
     "settleAnchoredPopup": {
       "median": 233.29999995231628,
       "p95": 233.5
+    },
+    "materialNavigationRailExpandMotion": {
+      "median": 300.2000000476837,
+      "p95": 316.6999999284744,
+      "longFrames": 0,
+      "longestFrameMs": 16.800000000000182,
+      "animationCount": 2
+    },
+    "materialMenuOpenCloseMotion": {
+      "median": 199.90000009536743,
+      "p95": 200.10000002384186,
+      "longFrames": 0,
+      "longestFrameMs": 16.800000000000182,
+      "animationCount": 2
+    },
+    "materialSwitchToggleMotion": {
+      "median": 332.39999997615814,
+      "p95": 333.8000000715256,
+      "longFrames": 0,
+      "longestFrameMs": 16.800000000000182,
+      "animationCount": 9
+    },
+    "win31MenuOpenCloseMotion": {
+      "median": 16.600000023841858,
+      "p95": 16.799999952316284,
+      "longFrames": 0,
+      "longestFrameMs": 16.700000000000045,
+      "animationCount": 0
     }
   },
   "budgets": {
@@ -50,6 +78,34 @@
     "settleAnchoredPopup": {
       "median": 279.9599999427795,
       "p95": 280.2
+    },
+    "materialNavigationRailExpandMotion": {
+      "median": 360.24000005722047,
+      "p95": 380.0399999141693,
+      "longFrames": 0,
+      "longestFrameMs": 50,
+      "animationCount": 2
+    },
+    "materialMenuOpenCloseMotion": {
+      "median": 239.88000011444092,
+      "p95": 240.1200000286102,
+      "longFrames": 0,
+      "longestFrameMs": 50,
+      "animationCount": 2
+    },
+    "materialSwitchToggleMotion": {
+      "median": 398.87999997138974,
+      "p95": 400.56000008583067,
+      "longFrames": 0,
+      "longestFrameMs": 50,
+      "animationCount": 9
+    },
+    "win31MenuOpenCloseMotion": {
+      "median": 21.600000023841858,
+      "p95": 21.799999952316284,
+      "longFrames": 0,
+      "longestFrameMs": 50,
+      "animationCount": 0
     }
   }
 }
