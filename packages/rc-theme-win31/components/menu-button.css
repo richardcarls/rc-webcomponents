@@ -9,6 +9,7 @@
     --rc-menu-button-trigger-padding-inline: calc(8 * var(--win31-unit));
     --rc-menu-button-trigger-gap: var(--win31-gap-tight);
     --rc-menu-button-trigger-transition: none;
+    --rc-menu-button-popup-duration: 0ms;
     --rc-menu-button-trigger-hover-background: var(--win31-color-surface);
     --rc-menu-button-trigger-hover-color: var(--win31-color-frame);
     --rc-menu-button-trigger-hover-border-color: var(--win31-color-frame);

@@ -4830,6 +4830,19 @@
           }
         },
         {
+          "name": "menu-button/popup-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-menu-button-popup-duration)"
+          },
+          "cssVar": "--rc-menu-button-popup-duration",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
           "name": "menu-button/trigger-background",
           "type": "COLOR",
           "scopes": [

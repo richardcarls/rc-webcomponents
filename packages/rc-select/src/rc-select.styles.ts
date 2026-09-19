@@ -147,6 +147,51 @@ export const selectStyles = css`
     --rc-listbox-disabled-opacity: var(--rc-disabled-opacity, 0.5);
   }
 
+  /*
+   * @media (prefers-reduced-motion: reduce) below restates this plainly for
+   * a reduced-motion user: without any transition on display, it still
+   * changes instantly, exactly like this unconditional rule would.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    /*
+     * Opacity only, deliberately not a scale/slide transform: AnchorController
+     * (see rc-common) positions this listbox and applies its own
+     * viewport-clamping translate to it, tracked against
+     * getBoundingClientRect() to compute the next correction. A second,
+     * CSS-driven transform on the same element and property would fight
+     * that math on every open.
+     *
+     * display and overlay join the transition list, allow-discrete: without
+     * them, this listbox's own separate display: none on
+     * :not(:popover-open) (still needed, see below) would apply instantly,
+     * and a transition on a property of an element with no box doesn't
+     * render at all — confirmed directly, an earlier opacity-only version
+     * of this rule measured display: none and opacity: 0 only 300ms into
+     * what should have been a 2-second exit fade.
+     */
+    [part='listbox']:popover-open {
+      opacity: 1;
+      transition:
+        opacity var(--rc-select-listbox-duration, 150ms) var(--rc-motion-effects-easing-enter, ease-out),
+        overlay var(--rc-select-listbox-duration, 150ms) allow-discrete,
+        display var(--rc-select-listbox-duration, 150ms) allow-discrete;
+    }
+
+    [part='listbox']:not(:popover-open) {
+      opacity: 0;
+      transition:
+        opacity var(--rc-select-listbox-duration, 150ms) var(--rc-motion-effects-easing-exit, ease-in),
+        overlay var(--rc-select-listbox-duration, 150ms) allow-discrete,
+        display var(--rc-select-listbox-duration, 150ms) allow-discrete;
+    }
+
+    @starting-style {
+      [part='listbox']:popover-open {
+        opacity: 0;
+      }
+    }
+  }
+
   [part='listbox']:not(:popover-open) {
     display: none;
   }

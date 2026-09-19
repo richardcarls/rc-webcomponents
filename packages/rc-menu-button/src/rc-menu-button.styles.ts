@@ -180,6 +180,48 @@ export const menuButtonStyles = css`
     overflow: visible;
     color: inherit;
   }
+
+  /*
+   * Opacity only, deliberately not a scale or slide transform: AnchorController
+   * (see rc-common) positions this popup and applies its own viewport-clamping
+   * translate to it, tracked against getBoundingClientRect() to compute the
+   * next correction. A second, CSS-driven transform on the same element and
+   * property would fight that math on every open, not just during a resize
+   * window the way rc-dialog's conflict was.
+   *
+   * display and overlay join the transition list, allow-discrete: without
+   * them, the popover's own native display: none for :not(:popover-open)
+   * applies instantly, and a transition on a property of an element with no
+   * box doesn't render at all. Confirmed directly against rc-select's
+   * identical conflict: an opacity-only version of this same shape measured
+   * display: none within 300ms of a 2-second exit fade that should still
+   * have been running.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    :host([open]) #popup {
+      opacity: 1;
+      transition:
+        opacity var(--rc-menu-button-popup-duration, 150ms)
+          var(--rc-motion-effects-easing-enter, ease-out),
+        overlay var(--rc-menu-button-popup-duration, 150ms) allow-discrete,
+        display var(--rc-menu-button-popup-duration, 150ms) allow-discrete;
+    }
+
+    :host(:not([open])) #popup {
+      opacity: 0;
+      transition:
+        opacity var(--rc-menu-button-popup-duration, 150ms)
+          var(--rc-motion-effects-easing-exit, ease-in),
+        overlay var(--rc-menu-button-popup-duration, 150ms) allow-discrete,
+        display var(--rc-menu-button-popup-duration, 150ms) allow-discrete;
+    }
+
+    @starting-style {
+      :host([open]) #popup {
+        opacity: 0;
+      }
+    }
+  }
 `;
 
 export default menuButtonStyles;

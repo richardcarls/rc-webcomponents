@@ -103,6 +103,7 @@ declare global {
  * @cssprop [--rc-select-radius=var(--rc-control-radius)] - Trigger border radius.
  * @cssprop [--rc-select-border=var(--rc-border)] - Trigger border.
  * @cssprop [--rc-select-listbox-radius=var(--rc-control-radius)] - Popup listbox border radius.
+ * @cssprop [--rc-select-listbox-duration=150ms] - Popup listbox open/close fade transition duration.
  * @cssprop [--rc-select-listbox-border=var(--rc-border)] - Popup listbox border.
  * @cssprop [--rc-select-shadow=var(--rc-shadow)] - Popup listbox box shadow.
  * @cssprop [--rc-select-listbox-padding-block=var(--rc-control-padding-block)] - Popup listbox block padding.

@@ -179,10 +179,52 @@ export const comboboxStyles = css`
       var(--rc-combobox-max-height, 20em),
       var(--rc-anchor-viewport-block-size, 20em)
     );
+  }
 
-    &:not(:popover-open) {
-      display: none;
+  /*
+   * Opacity only, deliberately not a scale/slide transform: AnchorController
+   * (see rc-common) positions this listbox and applies its own
+   * viewport-clamping translate to it, tracked against
+   * getBoundingClientRect() to compute the next correction. A second,
+   * CSS-driven transform on the same element and property would fight that
+   * math on every open.
+   *
+   * display and overlay join the transition list, allow-discrete: without
+   * them, this listbox's own separate display: none on :not(:popover-open)
+   * (still needed for reduced motion, see below) would apply instantly, and
+   * a transition on a property of an element with no box doesn't render at
+   * all. Confirmed directly against rc-select's identical structure: an
+   * opacity-only version of this rule measured display: none within 300ms
+   * of a 2-second exit fade that should still have been running.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    [part='listbox']:popover-open {
+      opacity: 1;
+      transition:
+        opacity var(--rc-combobox-listbox-duration, 150ms)
+          var(--rc-motion-effects-easing-enter, ease-out),
+        overlay var(--rc-combobox-listbox-duration, 150ms) allow-discrete,
+        display var(--rc-combobox-listbox-duration, 150ms) allow-discrete;
     }
+
+    [part='listbox']:not(:popover-open) {
+      opacity: 0;
+      transition:
+        opacity var(--rc-combobox-listbox-duration, 150ms)
+          var(--rc-motion-effects-easing-exit, ease-in),
+        overlay var(--rc-combobox-listbox-duration, 150ms) allow-discrete,
+        display var(--rc-combobox-listbox-duration, 150ms) allow-discrete;
+    }
+
+    @starting-style {
+      [part='listbox']:popover-open {
+        opacity: 0;
+      }
+    }
+  }
+
+  [part='listbox']:not(:popover-open) {
+    display: none;
   }
 
   rc-dialog[variant='fullscreen'] {

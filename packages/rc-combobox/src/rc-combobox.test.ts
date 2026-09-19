@@ -47,6 +47,30 @@ async function getHost(screen: ReturnType<typeof render>): Promise<RCCombobox> {
   return $host;
 }
 
+test('listbox fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = render(makeCombobox());
+  const host = await getHost(screen);
+  const listbox = host.renderRoot.querySelector<HTMLElement>('[part="listbox"]')!;
+
+  expect(getComputedStyle(listbox).opacity).toBe('0');
+  expect(getComputedStyle(listbox).transitionDuration).not.toBe('0s');
+
+  // openPopup()/closePopup() are synchronous; nothing waits on a transition.
+  host.openPopup();
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await Promise.all(listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+
+  expect(getComputedStyle(listbox).opacity).toBe('1');
+
+  host.closePopup(false);
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await Promise.all(listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+
+  expect(getComputedStyle(listbox).opacity).toBe('0');
+});
+
 test('input has role="combobox", aria-haspopup="listbox", aria-autocomplete="list"', async () => {
   const screen = render(makeCombobox());
   const $host = await getHost(screen);

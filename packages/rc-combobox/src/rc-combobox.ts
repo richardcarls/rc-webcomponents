@@ -72,6 +72,7 @@ declare global {
  * @cssprop [--rc-combobox-radius=var(--rc-control-radius)] - Anchor border radius.
  * @cssprop [--rc-combobox-border=var(--rc-border)] - Anchor border.
  * @cssprop [--rc-combobox-listbox-radius=var(--rc-control-radius)] - Popup listbox border radius.
+ * @cssprop [--rc-combobox-listbox-duration=150ms] - Popup listbox open/close fade transition duration.
  * @cssprop [--rc-combobox-listbox-border=var(--rc-border)] - Popup listbox border.
  * @cssprop [--rc-combobox-shadow=var(--rc-shadow)] - Popup listbox box shadow.
  * @cssprop [--rc-combobox-listbox-padding-block=var(--rc-control-padding-block)] - Popup listbox block padding.
