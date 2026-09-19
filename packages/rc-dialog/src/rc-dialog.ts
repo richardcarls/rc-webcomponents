@@ -44,6 +44,14 @@ declare global {
  * Draggable, resizable wrapper for a native <dialog>, following the WAI-ARIA Dialog Modal
  * pattern.
  *
+ * The surface and its backdrop fade in and out through CSS alone (`@starting-style` plus
+ * a discrete `display`/`overlay` transition), using the shared `--rc-motion-effects-*`
+ * tokens. `showModal()`/`close()` stay synchronous and nothing waits on the transition
+ * finishing; a zero-duration theme or a browser without support both degrade to an
+ * instant, fully correct open and close. The surface only animates opacity, not scale,
+ * because `movable`/resizable geometry reads `getBoundingClientRect()`, which reports the
+ * transformed box for as long as a scale transition is still running.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-dialog rc-dialog docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/ WAI-ARIA Dialog Modal pattern}
  *

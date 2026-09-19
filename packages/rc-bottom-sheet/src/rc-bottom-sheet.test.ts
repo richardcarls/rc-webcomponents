@@ -32,6 +32,52 @@ function renderSheet() {
   `);
 }
 
+test('rc-bottom-sheet fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = renderSheet();
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  expect(getComputedStyle($dialog).opacity).toBe('0');
+  expect(getComputedStyle($dialog).transitionDuration).not.toBe('0s');
+
+  $host.showModal();
+  expect($host.open).toBe(true);
+
+  await wait(250);
+  expect(getComputedStyle($dialog).opacity).toBe('1');
+
+  $host.close();
+  expect($host.open).toBe(false);
+
+  await wait(250);
+  expect(getComputedStyle($dialog).opacity).toBe('0');
+});
+
+test('rc-bottom-sheet entrance does not shift measured geometry, unlike a slide transform would', async () => {
+  const screen = renderSheet();
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $host.showModal();
+
+  const immediately = $dialog.getBoundingClientRect();
+
+  await wait(250);
+
+  const settled = $dialog.getBoundingClientRect();
+
+  expect(Math.round(immediately.top)).toBe(Math.round(settled.top));
+  expect(Math.round(immediately.height)).toBe(Math.round(settled.height));
+
+  $host.close();
+});
+
 test('rc-bottom-sheet defaults and inherited dialog lifecycle integrate through the native child', async () => {
   const screen = renderSheet();
   const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;

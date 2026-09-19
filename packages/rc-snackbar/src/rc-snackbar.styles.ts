@@ -22,6 +22,47 @@ export const snackbarStyles = css`
     display: flex;
   }
 
+  /*
+   * Fade and slide up from the block-end edge it's anchored to. Unlike
+   * rc-dialog/rc-bottom-sheet, nothing here reads getBoundingClientRect()
+   * during the entrance, so a transform is safe: the host is a fixed
+   * positioning wrapper with no resize or drag feature of its own.
+   * show()/close() stay synchronous either way.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    :host {
+      opacity: 0;
+      translate: 0 100%;
+    }
+
+    :host([open]) {
+      opacity: 1;
+      translate: none;
+      transition:
+        opacity var(--rc-motion-effects-duration-default, 200ms)
+          var(--rc-motion-effects-easing-enter, ease-out),
+        translate var(--rc-motion-spatial-duration-default, 400ms)
+          var(--rc-motion-spatial-easing-enter, ease-out),
+        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+    }
+
+    :host(:not([open])) {
+      transition:
+        opacity var(--rc-motion-effects-duration-default, 200ms)
+          var(--rc-motion-effects-easing-exit, ease-in),
+        translate var(--rc-motion-spatial-duration-default, 400ms)
+          var(--rc-motion-spatial-easing-exit, ease-in),
+        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+    }
+
+    @starting-style {
+      :host([open]) {
+        opacity: 0;
+        translate: 0 100%;
+      }
+    }
+  }
+
   [part='surface'] {
     pointer-events: auto;
     display: flex;

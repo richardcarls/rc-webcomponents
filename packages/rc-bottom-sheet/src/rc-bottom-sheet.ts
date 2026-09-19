@@ -96,6 +96,59 @@ const LIGHT_DOM_CSS = `
     outline: auto;
     outline-offset: -0.25rem;
   }
+
+  /*
+   * Opacity only, deliberately not a slide transform: several tests (and a
+   * consumer's own layout code) read getBoundingClientRect() immediately
+   * after show()/showModal(), before any entrance transition would have
+   * settled. A translate-based slide shifts that measured box for as long
+   * as it's animating, the same conflict rc-dialog's scale had with its own
+   * resize feature. showModal()/show()/close() stay synchronous either way;
+   * nothing here is gated on the transition finishing.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    rc-bottom-sheet > dialog[open] {
+      opacity: 1;
+      transition:
+        opacity var(--rc-motion-effects-duration-default, 200ms)
+          var(--rc-motion-effects-easing-enter, ease-out),
+        overlay var(--rc-motion-effects-duration-default, 200ms) allow-discrete,
+        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+    }
+
+    rc-bottom-sheet > dialog:not([open]) {
+      opacity: 0;
+      transition:
+        opacity var(--rc-motion-effects-duration-default, 200ms)
+          var(--rc-motion-effects-easing-exit, ease-in),
+        overlay var(--rc-motion-effects-duration-default, 200ms) allow-discrete,
+        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+    }
+
+    @starting-style {
+      rc-bottom-sheet > dialog[open] {
+        opacity: 0;
+      }
+    }
+
+    rc-bottom-sheet > dialog[open]::backdrop {
+      opacity: 1;
+      transition: opacity var(--rc-motion-effects-duration-default, 200ms)
+        var(--rc-motion-effects-easing-enter, ease-out);
+    }
+
+    rc-bottom-sheet > dialog:not([open])::backdrop {
+      opacity: 0;
+      transition: opacity var(--rc-motion-effects-duration-default, 200ms)
+        var(--rc-motion-effects-easing-exit, ease-in);
+    }
+
+    @starting-style {
+      rc-bottom-sheet > dialog[open]::backdrop {
+        opacity: 0;
+      }
+    }
+  }
 }
 `;
 
@@ -171,6 +224,16 @@ function pinBlockBox(target: HTMLElement): DOMRect {
  * over `--rc-bottom-sheet-snap-duration`, follows
  * `--rc-bottom-sheet-snap-easing`, and is skipped for
  * `prefers-reduced-motion: reduce`.
+ *
+ * Opening and closing themselves fade the surface and its backdrop through
+ * CSS alone (`@starting-style` plus a discrete `display`/`overlay`
+ * transition), using the shared `--rc-motion-effects-*` tokens.
+ * `showModal()`/`show()`/`close()` stay synchronous; nothing waits on the
+ * transition finishing. The entrance animates opacity only, not a slide
+ * transform, because several call sites (and this component's own drag/snap
+ * math) read `getBoundingClientRect()` right after opening, which reports
+ * the transformed box for as long as a transform-based entrance is still
+ * running.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-bottom-sheet rc-bottom-sheet docs}
  * @see {@link https://m3.material.io/components/bottom-sheets/overview Material Design bottom sheets}
