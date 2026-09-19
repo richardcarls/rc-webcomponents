@@ -6,6 +6,16 @@ import './define.js';
 import type { RCDialog } from './rc-dialog.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
+/*
+ * @starting-style only applies at the first style recalc after an element
+ * begins rendering, so opacity reads its starting-style value (0) at the
+ * instant showModal() returns; the transition to its resting value doesn't
+ * begin until the following frame.
+ */
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
 function firePointerEvent(target: Element, type: string, init: PointerEventInit = {}) {
   target.dispatchEvent(
     new PointerEvent(type, {
@@ -43,6 +53,74 @@ test('rc-dialog delegates showModal() to inner <dialog>', async () => {
   expect(host.open).toBe(true);
 
   host.close();
+});
+
+test('rc-dialog fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = renderDialog();
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+
+  const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+  // Closed: opacity is 0 and a real transition is declared, not transition: none.
+  expect(getComputedStyle($dialog).opacity).toBe('0');
+  expect(getComputedStyle($dialog).transitionDuration).not.toBe('0s');
+  expect(getComputedStyle($dialog).transitionProperty).toContain('opacity');
+
+  // showModal() is synchronous; open state does not wait on any transition.
+  host.showModal();
+  expect(host.open).toBe(true);
+  expect($dialog.open).toBe(true);
+
+  await nextFrame();
+  await Promise.all($dialog.getAnimations().map((animation) => animation.finished));
+  expect(getComputedStyle($dialog).opacity).toBe('1');
+
+  host.close();
+  expect(host.open).toBe(false);
+
+  await nextFrame();
+  await Promise.all($dialog.getAnimations().map((animation) => animation.finished));
+  expect(getComputedStyle($dialog).opacity).toBe('0');
+});
+
+test('rc-dialog backdrop fades with the surface rather than snapping instantly', async () => {
+  const screen = renderDialog();
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.showModal();
+
+  const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+  await nextFrame();
+  await Promise.all($dialog.getAnimations({ subtree: true }).map((animation) => animation.finished));
+
+  const backdropStyles = getComputedStyle($dialog, '::backdrop');
+
+  expect(backdropStyles.opacity).toBe('1');
+  expect(backdropStyles.transitionDuration).not.toBe('0s');
+
+  host.close();
+});
+
+test('rc-dialog respects prefers-reduced-motion by declaring no transition at all', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test instead proves the CSS itself is unconditionally
+  // gated behind @media (prefers-reduced-motion: no-preference), so a
+  // reduced-motion user gets the plain, un-animated opacity values with no
+  // transition at all, by construction rather than by observation.
+  const { DIALOG_BASE_CSS } = await import('./dialogBaseStyles.js');
+
+  expect(DIALOG_BASE_CSS).toContain('@media (prefers-reduced-motion: no-preference)');
+
+  const motionBlock = DIALOG_BASE_CSS.slice(
+    DIALOG_BASE_CSS.indexOf('@media (prefers-reduced-motion: no-preference)'),
+  );
+
+  expect(motionBlock).toContain('transition:');
 });
 
 test('rc-dialog has no automated accessibility violations', async () => {

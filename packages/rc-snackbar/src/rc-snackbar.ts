@@ -48,6 +48,12 @@ export interface RCSnackbarCloseDetail {
 /**
  * Snackbar live-region host for brief status messages and optional actions.
  *
+ * Fades and slides in from the block-end edge it's anchored to through CSS
+ * alone (`@starting-style` plus a discrete `display` transition), using the
+ * shared `--rc-motion-effects-*`/`--rc-motion-spatial-*` tokens.
+ * `show()`/`close()` stay synchronous; nothing waits on the transition
+ * finishing.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-snackbar rc-snackbar docs}
  *
  * @fires rc-snackbar-action - Fired when the action button is activated.

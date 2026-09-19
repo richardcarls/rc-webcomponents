@@ -6,6 +6,42 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCSnackbar } from './rc-snackbar.js';
 
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+test('fades and slides in through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = render(html`<rc-snackbar data-testid="host"></rc-snackbar>`);
+  const host = (await screen.getByTestId('host').element()) as RCSnackbar;
+
+  await host.updateComplete;
+
+  const closedStyles = getComputedStyle(host);
+
+  expect(closedStyles.opacity).toBe('0');
+  expect(closedStyles.transitionDuration).not.toBe('0s');
+
+  // show()/close() are synchronous; open state does not wait on a transition.
+  host.show('Saved');
+  expect(host.open).toBe(true);
+
+  await nextFrame();
+  await Promise.all(host.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+
+  const openStyles = getComputedStyle(host);
+
+  expect(openStyles.opacity).toBe('1');
+  expect(openStyles.translate).toBe('none');
+
+  host.close();
+  expect(host.open).toBe(false);
+
+  await nextFrame();
+  await Promise.all(host.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+
+  expect(getComputedStyle(host).opacity).toBe('0');
+});
+
 test('show opens a polite status message', async () => {
   const screen = render(html`<rc-snackbar data-testid="host"></rc-snackbar>`);
   const host = (await screen.getByTestId('host').element()) as RCSnackbar;

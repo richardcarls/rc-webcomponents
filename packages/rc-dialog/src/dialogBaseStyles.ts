@@ -44,6 +44,78 @@ export const DIALOG_BASE_CSS = `
   }
 
   /*
+   * A native <dialog> can animate its own open/close entirely through CSS:
+   * @starting-style plus transition-behavior: allow-discrete lets it fade and
+   * scale in and out without any JavaScript coordinating the timing.
+   * showModal()/close() still run synchronously; the discrete transition on
+   * display/overlay is what keeps the surface (and its backdrop) rendered
+   * and interactive for the duration of the exit transition instead of
+   * vanishing the instant close() removes [open]. Nothing here is gated on a
+   * transition event finishing, so a zero-duration theme or an unsupported
+   * browser both degrade to an instant, fully correct open and close.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    /*
+     * Opacity only, deliberately not scale: this surface supports pointer
+     * resize (data-rc-dialog-resize-axis/-origin), which measures
+     * getBoundingClientRect() to compute a drag delta. scale is a visual
+     * transform, so getBoundingClientRect() reports the transformed
+     * (shrunk) box for as long as an entrance scale is still animating,
+     * corrupting that measurement if a resize starts during it — caught
+     * directly by three existing resize tests failing at ~95% of their
+     * expected geometry the moment a scale transition was added here.
+     * Opacity has no such effect on layout or the measured box.
+     *
+     * The transition shorthand is fully redeclared per state rather than
+     * shared, because the timing function that actually runs is the one on
+     * the state being transitioned TO: opening reads [open]'s (enter,
+     * decelerating), closing reads :not([open])'s (exit, accelerating).
+     */
+    ${SURFACE}[open] {
+      opacity: 1;
+      transition:
+        opacity var(--rc-motion-effects-duration-default, 200ms)
+          var(--rc-motion-effects-easing-enter, ease-out),
+        overlay var(--rc-motion-effects-duration-default, 200ms) allow-discrete,
+        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+    }
+
+    ${SURFACE}:not([open]) {
+      opacity: 0;
+      transition:
+        opacity var(--rc-motion-effects-duration-default, 200ms)
+          var(--rc-motion-effects-easing-exit, ease-in),
+        overlay var(--rc-motion-effects-duration-default, 200ms) allow-discrete,
+        display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
+    }
+
+    @starting-style {
+      ${SURFACE}[open] {
+        opacity: 0;
+      }
+    }
+
+    /* The scrim fades in step with the surface, not instantly. */
+    ${SURFACE}[open]::backdrop {
+      opacity: 1;
+      transition: opacity var(--rc-motion-effects-duration-default, 200ms)
+        var(--rc-motion-effects-easing-enter, ease-out);
+    }
+
+    ${SURFACE}:not([open])::backdrop {
+      opacity: 0;
+      transition: opacity var(--rc-motion-effects-duration-default, 200ms)
+        var(--rc-motion-effects-easing-exit, ease-in);
+    }
+
+    @starting-style {
+      ${SURFACE}[open]::backdrop {
+        opacity: 0;
+      }
+    }
+  }
+
+  /*
    * Fullscreen geometry is structural rather than a theme choice: the surface
    * fills the visual viewport, which is what keeps it correct under browser
    * zoom and a software keyboard. The viewport values are written by the
