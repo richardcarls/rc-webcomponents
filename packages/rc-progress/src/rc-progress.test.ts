@@ -58,6 +58,32 @@ test('rc-progress indeterminate loop paces at a constant rate, not eased', async
   expect(getComputedStyle(fill!).animationTimingFunction).toBe('linear');
 });
 
+test('rc-progress indeterminate sweep travels start-to-end in both writing directions', async () => {
+  const screen = render(html`
+    <rc-progress data-testid="host" indeterminate>
+      <progress aria-label="Sync"></progress>
+    </rc-progress>
+  `);
+  const host = screen.getByTestId('host').element() as RCProgress;
+
+  await host.updateComplete;
+
+  // translate() percentages resolve against the element's own box and its
+  // direction is physical, not logical, so the sign of this internal token
+  // is what keeps the sweep going start-to-end as the writing direction
+  // flips, rather than the animation itself changing per direction.
+  expect(getComputedStyle(host).getPropertyValue('--_rc-progress-indeterminate-direction').trim()).toBe(
+    '1',
+  );
+
+  host.dir = 'rtl';
+  await host.updateComplete;
+
+  expect(getComputedStyle(host).getPropertyValue('--_rc-progress-indeterminate-direction').trim()).toBe(
+    '-1',
+  );
+});
+
 test('rc-progress default value display renders a percentage', async () => {
   const screen = render(html`
     <rc-progress data-testid="host" display="overlay">

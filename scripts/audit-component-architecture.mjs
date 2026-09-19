@@ -177,10 +177,10 @@ export const ANIMATED_LAYOUT_PROPERTY_BUDGETS = {
   // it), and the active-item indicator resizes the same way rc-navigation-bar's
   // does.
   'rc-navigation-rail': new Set(['inline-size', 'block-size', 'padding']),
-  // The fill tracks literal determinate progress, and the indeterminate loop
-  // sweeps a highlight edge-to-edge across the track; see rc-progress's own
-  // motion tokens.
-  'rc-progress': new Set(['inline-size', 'inset-inline-start']),
+  // The fill tracks literal determinate progress, in a box sized as a
+  // percentage of the track. The indeterminate sweep moved to translate(),
+  // a composited property, so it no longer needs a budget entry here.
+  'rc-progress': new Set(['inline-size']),
   // The thumb's own box grows and shrinks with the track in some themes.
   'rc-switch': new Set(['inline-size', 'block-size']),
   // The floating label crosses from placeholder position to the shrunk

@@ -106,6 +106,18 @@ export class RCProgress extends LitElement {
   static override styles = css`
     :host {
       display: block;
+      /*
+       * translate() percentages resolve against the element's own box, not
+       * the parent's, and its direction is physical, not logical — it does
+       * not flip for RTL the way inset-inline-start does on its own. This
+       * sign flips the indeterminate sweep's direction so it still travels
+       * start-to-end in the document's actual writing direction.
+       */
+      --_rc-progress-indeterminate-direction: 1;
+    }
+
+    :host(:dir(rtl)) {
+      --_rc-progress-indeterminate-direction: -1;
     }
 
     .rc-progress-root {
@@ -187,19 +199,26 @@ export class RCProgress extends LitElement {
       animation: rc-progress-indeterminate 1.4s linear infinite;
     }
 
+    /*
+     * translate() moves on the compositor; inset-inline-start forces layout
+     * on every frame. The fill's own box is 40% of the track (its inline-
+     * size), so a translate of N% moves it N% of that 40%, not of the
+     * track: -100% (of self) lands at -40% of the track, matching where
+     * this keyframe used to start, and 250% (of self) lands at 100%.
+     */
     @keyframes rc-progress-indeterminate {
       0% {
-        inset-inline-start: -40%;
+        translate: calc(var(--_rc-progress-indeterminate-direction) * -100%) 0;
       }
       100% {
-        inset-inline-start: 100%;
+        translate: calc(var(--_rc-progress-indeterminate-direction) * 250%) 0;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
       :host([indeterminate]) .rc-progress-fill {
         animation: none;
-        inset-inline-start: 0;
+        translate: none;
       }
     }
 
