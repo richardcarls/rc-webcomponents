@@ -3,4 +3,9 @@
     color: var(--substrate-on-surface-muted, GrayText);
     font-variant-numeric: tabular-nums;
   }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-progress {
+    --rc-progress-fill-transition-duration: var(--rc-motion-effects-duration-fast, 100ms);
+    --rc-progress-fill-transition-easing: var(--rc-motion-effects-easing-fast, ease-out);
+  }
 }

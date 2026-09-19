@@ -92,6 +92,8 @@ const displayConverter: ComplexAttributeConverter<DisplayValue> = {
  * @cssprop [--rc-progress-track-opacity=0.25] - Unfilled track opacity.
  * @cssprop [--rc-progress-track-radius=var(--rc-control-radius)] - Track border radius.
  * @cssprop [--rc-progress-fill-background=var(--rc-accent)] - Filled track color.
+ * @cssprop [--rc-progress-fill-transition-duration=150ms] - Determinate fill transition duration.
+ * @cssprop [--rc-progress-fill-transition-easing=ease-out] - Determinate fill transition easing.
  * @cssprop [--rc-progress-value-color=var(--rc-text-disabled)] - Value display text color.
  *
  * @csspart root - Root layout wrapper.
@@ -171,12 +173,18 @@ export class RCProgress extends LitElement {
       background: var(--rc-progress-fill-background, var(--rc-accent, Highlight));
       border-radius: inherit;
       z-index: 1;
-      transition: inline-size 0.15s ease-out;
+      transition: inline-size var(--rc-progress-fill-transition-duration, 150ms)
+        var(--rc-progress-fill-transition-easing, ease-out);
     }
 
     :host([indeterminate]) .rc-progress-fill {
       inline-size: 40% !important;
-      animation: rc-progress-indeterminate 1.4s ease-in-out infinite;
+      /*
+       * A loop has no beginning or end to decelerate into or accelerate out
+       * of, so it uses a constant, linear pace; an eased loop visibly pulses
+       * at each cycle boundary.
+       */
+      animation: rc-progress-indeterminate 1.4s linear infinite;
     }
 
     @keyframes rc-progress-indeterminate {
