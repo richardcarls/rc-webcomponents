@@ -9,6 +9,7 @@ import { c as createTar } from 'tar';
 
 import {
   assertLiveEnvironment,
+  buildPublishArgs,
   executePublication,
   expectedPublishedRange,
   hasSlsaProvenance,
@@ -25,6 +26,8 @@ import {
   topologicallySortWorkspaces,
   validateWorkspaceConfiguration,
 } from './release-workspaces.mjs';
+
+const SNAPSHOT_VERSION = '0.0.0-next-20260920120000';
 
 const VERSION = '1.2.3';
 const repository = { type: 'git', url: EXPECTED_REPOSITORY_URL };
@@ -171,6 +174,38 @@ test('rejects prerelease and mismatched synchronized workspace versions', (conte
   );
 });
 
+test('validates snapshot-shaped versions only when explicitly in snapshot mode', (context) => {
+  const root = mkdtempSync(join(tmpdir(), 'rc-snapshot-workspaces-'));
+  const workspace = createWorkspace('package');
+
+  context.after(() => rmSync(root, { recursive: true }));
+  mkdirSync(join(root, '.changeset'));
+
+  writeFileSync(
+    join(root, '.changeset', 'config.json'),
+    JSON.stringify({ fixed: [[workspace.name]] }),
+  );
+
+  workspace.manifest.version = SNAPSHOT_VERSION;
+
+  assert.throws(
+    () => validateWorkspaceConfiguration({ root, workspaces: [workspace] }),
+    /version must be a stable X\.Y\.Z release/,
+  );
+
+  assert.equal(
+    validateWorkspaceConfiguration({ root, snapshot: true, workspaces: [workspace] }),
+    SNAPSHOT_VERSION,
+  );
+
+  workspace.manifest.version = VERSION;
+
+  assert.throws(
+    () => validateWorkspaceConfiguration({ root, snapshot: true, workspaces: [workspace] }),
+    /version must be a snapshot X\.Y\.Z-<tag>-<datecode> release/,
+  );
+});
+
 test('inspects the manifest contained in a packed tarball', (context) => {
   const root = mkdtempSync(join(tmpdir(), 'rc-packed-manifest-'));
   const packageDirectory = join(root, 'package');
@@ -229,6 +264,30 @@ test('preserves explicit internal peer ranges while pinning workspace star range
   );
 });
 
+test('builds the npm publish command under the requested dist-tag', () => {
+  assert.deepEqual(buildPublishArgs({ tarballPath: '/tmp/package.tgz' }), [
+    'publish',
+    '/tmp/package.tgz',
+    '--access',
+    'public',
+    '--tag',
+    'latest',
+    '--registry',
+    'https://registry.npmjs.org/',
+  ]);
+
+  assert.deepEqual(buildPublishArgs({ npmTag: 'next', tarballPath: '/tmp/package.tgz' }), [
+    'publish',
+    '/tmp/package.tgz',
+    '--access',
+    'public',
+    '--tag',
+    'next',
+    '--registry',
+    'https://registry.npmjs.org/',
+  ]);
+});
+
 test('requires an exact tag, OIDC context, and no token credentials for live publishing', () => {
   const environment = {
     ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'oidc-request-token',
@@ -274,6 +333,39 @@ test('requires an exact tag, OIDC context, and no token credentials for live pub
   assert.throws(
     () => assertLiveEnvironment({ ...recoveryEnvironment, GITHUB_EVENT_NAME: 'push' }),
     /restricted to manually dispatched recovery runs/,
+  );
+});
+
+test('snapshot mode skips the tag requirement but still enforces credential, repository, and OIDC checks', () => {
+  const environment = {
+    ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'oidc-request-token',
+    ACTIONS_ID_TOKEN_REQUEST_URL: 'https://example.test/oidc',
+    GITHUB_ACTIONS: 'true',
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    GITHUB_REF_NAME: 'develop',
+    GITHUB_REF_TYPE: 'branch',
+    GITHUB_REPOSITORY: 'richardcarls/rc-webcomponents',
+  };
+
+  assert.equal(assertLiveEnvironment(environment, { snapshot: true }), undefined);
+
+  assert.throws(
+    () => assertLiveEnvironment({ ...environment, NODE_AUTH_TOKEN: 'legacy-token' }, { snapshot: true }),
+    /Refusing token fallback.*NODE_AUTH_TOKEN/,
+  );
+
+  assert.throws(
+    () => assertLiveEnvironment({ ...environment, GITHUB_REPOSITORY: 'someone/else' }, { snapshot: true }),
+    /GITHUB_REPOSITORY must be richardcarls\/rc-webcomponents/,
+  );
+
+  assert.throws(
+    () =>
+      assertLiveEnvironment(
+        { ...environment, ACTIONS_ID_TOKEN_REQUEST_TOKEN: undefined },
+        { snapshot: true },
+      ),
+    /GitHub OIDC request variables are unavailable/,
   );
 });
 

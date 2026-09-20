@@ -148,6 +148,39 @@ between the release tag and the selected `main` commit. Normal tag-triggered run
 provenance exceptions. The exception records an unavoidable provenance gap for that immutable
 version; the package's next release must publish through Trusted Publishing normally.
 
+## Publish a @next snapshot release
+
+A snapshot release publishes every public package under the npm `next` dist-tag from whatever
+`develop` currently looks like, without a git tag, a commit, or a coherent version bump. It exists
+so in-development work is reachable (`yarn up '@rcarls/*@next'` in a consuming project) without
+waiting for a stable release, and without documenting unpublished components on the stable docs
+site in the meantime.
+
+To trigger one: open the `Publish to npm` workflow, choose **Run workflow**, pick the ref to
+publish from (usually `develop`), check **snapshot**, and leave `release_tag` and
+`provenance_exception` empty. `snapshot_tag` defaults to `next`; change it only for a deliberately
+different dist-tag.
+
+This publishes all public packages at a fresh, unique `X.Y.Z-<tag>-<datecode>`-shaped version
+(Changesets' snapshot format) under the chosen npm dist-tag, in dependency order, through the same
+OIDC Trusted Publishing and tarball-packing path a stable release uses. It reuses `release.yml`'s
+own file and `npm` environment specifically so no per-package Trusted Publisher re-registration is
+needed: the tuple registered on npmjs.com is keyed on repository, workflow filename, and
+environment name only.
+
+It explicitly does **not**: create a git tag, commit, or push anything, or leave a retained
+CHANGELOG entry. `changeset version --snapshot` computes the version and consumes pending
+`.changeset/*.md` files the same way a real `changeset version` would, but only inside the
+workflow run's own ephemeral checkout; nothing is ever pushed back (the job's `permissions` stay
+`contents: read`), so `develop`'s committed state and its pending changesets are untouched. This
+is what makes running a snapshot publish repeatedly, including right before cutting a real
+release, safe.
+
+To build and deploy the matching in-development docs, run the `Deploy docs to GitHub Pages`
+workflow's **Run workflow** with `next_ref` set to the same ref (defaults to `develop`). It
+publishes to `https://richardcarls.github.io/rc-webcomponents/next/`, alongside the stable site,
+which continues to deploy automatically on a `v*` tag push.
+
 ## Disable automation-token publishing
 
 Only after one complete OIDC release is verified, enforce package-level 2FA and disallow token

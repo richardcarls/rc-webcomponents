@@ -1,11 +1,15 @@
 import type { Config } from '@docusaurus/types';
 import type { Preset } from '@docusaurus/types';
 
+// Set by the docs deploy workflow's next-docs build only; everything else
+// (local dev, the stable build) falls through to the stable variant.
+const variant = process.env.RC_DOCS_VARIANT === 'next' ? 'next' : 'stable';
+
 const config: Config = {
   title: 'rc-webcomponents',
   tagline: 'Themeable web components for app interfaces',
   url: 'https://richardcarls.github.io',
-  baseUrl: '/rc-webcomponents/',
+  baseUrl: variant === 'next' ? '/rc-webcomponents/next/' : '/rc-webcomponents/',
   organizationName: 'richardcarls',
   projectName: 'rc-webcomponents',
   trailingSlash: false,
@@ -60,6 +64,16 @@ const config: Config = {
     prism: {
       additionalLanguages: ['bash'],
     },
+    ...(variant === 'next' && {
+      announcementBar: {
+        id: 'next-docs',
+        content:
+          'This documents in-development, unpublished components. For the stable release, see <a href="https://richardcarls.github.io/rc-webcomponents/">richardcarls.github.io/rc-webcomponents</a>.',
+        backgroundColor: '#fef6e4',
+        textColor: '#3a2e00',
+        isCloseable: false,
+      },
+    }),
   },
 };
 

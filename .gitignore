@@ -26,6 +26,7 @@ custom-elements.json
 # Docusaurus build artifacts
 **/.docusaurus
 **/build
+/docs/build-next/
 /docs/static/rc-webcomponents-dist/
 /docs/static/rc-theme-material/
 /docs/static/rc-theme-substrate/

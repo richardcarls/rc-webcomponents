@@ -294,7 +294,7 @@ export function inspectPackedManifest({ extractDirectory, packageName, tarballPa
   return JSON.parse(readFileSync(manifestPath, 'utf8'));
 }
 
-export function assertLiveEnvironment(env) {
+export function assertLiveEnvironment(env, { snapshot = false } = {}) {
   const credentialVariables = Object.entries(env)
     .filter(([, value]) => Boolean(value))
     .map(([name]) => name)
@@ -327,27 +327,35 @@ export function assertLiveEnvironment(env) {
     throw new Error(`GITHUB_REPOSITORY must be ${EXPECTED_GITHUB_REPOSITORY}`);
   }
 
-  const recoveryTag = env.RC_RELEASE_TAG?.trim();
+  if (!snapshot) {
+    const recoveryTag = env.RC_RELEASE_TAG?.trim();
 
-  if (recoveryTag && env.GITHUB_EVENT_NAME !== 'workflow_dispatch') {
-    throw new Error('RC_RELEASE_TAG is restricted to manually dispatched recovery runs');
-  }
+    if (recoveryTag && env.GITHUB_EVENT_NAME !== 'workflow_dispatch') {
+      throw new Error('RC_RELEASE_TAG is restricted to manually dispatched recovery runs');
+    }
 
-  const tag = recoveryTag ?? env.GITHUB_REF_NAME ?? env.GITHUB_REF?.replace(/^refs\/tags\//, '');
-  const isTag =
-    Boolean(recoveryTag) ||
-    env.GITHUB_REF_TYPE === 'tag' ||
-    env.GITHUB_REF?.startsWith('refs/tags/');
+    const tag = recoveryTag ?? env.GITHUB_REF_NAME ?? env.GITHUB_REF?.replace(/^refs\/tags\//, '');
+    const isTag =
+      Boolean(recoveryTag) ||
+      env.GITHUB_REF_TYPE === 'tag' ||
+      env.GITHUB_REF?.startsWith('refs/tags/');
 
-  if (!isTag || !STABLE_TAG_PATTERN.test(tag ?? '')) {
-    throw new Error('Live publication requires a stable vX.Y.Z GitHub tag ref');
+    if (!isTag || !STABLE_TAG_PATTERN.test(tag ?? '')) {
+      throw new Error('Live publication requires a stable vX.Y.Z GitHub tag ref');
+    }
+
+    if (!env.ACTIONS_ID_TOKEN_REQUEST_URL || !env.ACTIONS_ID_TOKEN_REQUEST_TOKEN) {
+      throw new Error('GitHub OIDC request variables are unavailable; grant id-token: write');
+    }
+
+    return tag.slice(1);
   }
 
   if (!env.ACTIONS_ID_TOKEN_REQUEST_URL || !env.ACTIONS_ID_TOKEN_REQUEST_TOKEN) {
     throw new Error('GitHub OIDC request variables are unavailable; grant id-token: write');
   }
 
-  return tag.slice(1);
+  return undefined;
 }
 
 export function parseProvenanceExceptions({ env, expectedVersion, workspaces }) {
@@ -410,7 +418,11 @@ function safePackageSlug(packageName) {
   return packageName.replaceAll(/[^0-9A-Za-z._-]/g, '-').replace(/^-+/, '');
 }
 
-export function createPublisherOperations({ env, runtimeDirectory }) {
+export function buildPublishArgs({ npmTag = 'latest', tarballPath }) {
+  return ['publish', tarballPath, '--access', 'public', '--tag', npmTag, '--registry', NPM_REGISTRY];
+}
+
+export function createPublisherOperations({ env, npmTag = 'latest', runtimeDirectory }) {
   const npmEnvironment = createNpmEnvironment(runtimeDirectory, env);
 
   return {
@@ -435,16 +447,7 @@ export function createPublisherOperations({ env, runtimeDirectory }) {
     },
 
     publish(tarballPath) {
-      const args = [
-        'publish',
-        tarballPath,
-        '--access',
-        'public',
-        '--tag',
-        'latest',
-        '--registry',
-        NPM_REGISTRY,
-      ];
+      const args = buildPublishArgs({ npmTag, tarballPath });
       const result = spawnCommand('npm', args, {
         cwd: runtimeDirectory,
         env: npmEnvironment,
@@ -695,7 +698,7 @@ function removeRuntimeDirectory(runtimeDirectory, parentDirectory) {
 }
 
 function usage() {
-  console.log('Usage: node scripts/publish-workspaces.mjs [--dry-run]');
+  console.log('Usage: node scripts/publish-workspaces.mjs [--dry-run] [--snapshot]');
 }
 
 export async function main(args = process.argv.slice(2), env = process.env) {
@@ -705,18 +708,27 @@ export async function main(args = process.argv.slice(2), env = process.env) {
     return;
   }
 
-  const unknownArgs = args.filter((argument) => argument !== '--dry-run');
+  const unknownArgs = args.filter(
+    (argument) => argument !== '--dry-run' && argument !== '--snapshot',
+  );
 
   if (unknownArgs.length > 0) {
     throw new Error(`Unknown argument(s): ${unknownArgs.join(', ')}`);
   }
 
   const dryRun = args.includes('--dry-run');
+  const snapshot = args.includes('--snapshot');
+  const snapshotTag = env.RC_SNAPSHOT_TAG?.trim();
+
+  if (snapshot && !snapshotTag) {
+    throw new Error('RC_SNAPSHOT_TAG must be set when publishing with --snapshot');
+  }
+
   const root = process.cwd();
   const workspaces = loadPublicWorkspaces({ root });
-  const expectedVersion = dryRun ? undefined : assertLiveEnvironment(env);
+  const expectedVersion = dryRun ? undefined : assertLiveEnvironment(env, { snapshot });
 
-  validateWorkspaceConfiguration({ expectedVersion, root, workspaces });
+  validateWorkspaceConfiguration({ expectedVersion, root, snapshot, workspaces });
 
   const provenanceExceptions = dryRun
     ? new Set()
@@ -726,7 +738,11 @@ export async function main(args = process.argv.slice(2), env = process.env) {
   const runtimeDirectory = mkdtempSync(join(runtimeParent, 'rc-npm-publish-'));
 
   try {
-    const operations = createPublisherOperations({ env, runtimeDirectory });
+    const operations = createPublisherOperations({
+      env,
+      npmTag: snapshot ? snapshotTag : 'latest',
+      runtimeDirectory,
+    });
 
     if (!dryRun) {
       const npmVersion = execCommand('npm', ['--version'], { encoding: 'utf8' }).trim();
