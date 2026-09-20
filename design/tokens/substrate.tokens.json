@@ -3660,7 +3660,7 @@
           "description": "Applied where rc-theme-substrate is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration-slow",
+              "alias": "motion/spatial-duration-default",
               "collection": "Motion"
             }
           }
@@ -6258,6 +6258,22 @@
           }
         },
         {
+          "name": "progress/fill-transition-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-progress-fill-transition-duration)"
+          },
+          "cssVar": "--rc-progress-fill-transition-duration",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-effects-duration-fast",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
           "name": "progress/track-background",
           "type": "COLOR",
           "scopes": [
@@ -7169,7 +7185,7 @@
           "description": "Applied where rc-theme-substrate is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration",
+              "alias": "motion/effects-duration-default",
               "collection": "Motion"
             }
           }
@@ -8183,7 +8199,7 @@
       },
       {
         "property": "--rc-listbox-option-transition",
-        "raw": "background-color var(--substrate-motion-duration, 160ms) var(--substrate-motion-easing, ease), color var(--substrate-motion-duration, 160ms) var(--substrate-motion-easing, ease)",
+        "raw": "background-color var(--substrate-motion-effects-duration-default, 160ms) var(--substrate-motion-easing, ease), color var(--substrate-motion-effects-duration-default, 160ms) var(--substrate-motion-easing, ease)",
         "name": "listbox/option-transition"
       },
       {
@@ -8319,6 +8335,12 @@
         "property": "--rc-navigation-rail-item-text-decoration",
         "raw": "none",
         "name": "navigation-rail/item-text-decoration"
+      },
+      {
+        "property": "--rc-progress-fill-transition-easing",
+        "raw": "var(--rc-motion-effects-easing-fast, ease-out)",
+        "name": "progress/fill-transition-easing",
+        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-scroller-scrollbar-width",

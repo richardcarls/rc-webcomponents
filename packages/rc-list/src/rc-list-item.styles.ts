@@ -140,10 +140,15 @@ export const listItemStyles = css`
     }
   }
 
+  /*
+   * background-color, box-shadow, and opacity are all effects motion (no
+   * translate, scale, or layout property here), so reduced motion shortens
+   * the shared duration instead of zeroing it.
+   */
   @media (prefers-reduced-motion: reduce) {
     [part='row'],
     [part='state-layer'] {
-      transition-duration: 0ms;
+      transition-duration: 50ms;
     }
   }
 `;

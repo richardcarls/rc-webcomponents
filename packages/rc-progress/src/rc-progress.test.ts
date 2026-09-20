@@ -4,7 +4,7 @@ import { html } from 'lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
-import type { RCProgress } from './rc-progress.js';
+import { RCProgress } from './rc-progress.js';
 
 test('rc-progress renders fill part', async () => {
   const screen = render(html`
@@ -391,4 +391,22 @@ test('rc-progress has no automated accessibility violations while indeterminate'
 
   await host.updateComplete;
   await expectNoA11yViolations(host);
+});
+
+test('reduced motion zeros the determinate fill transition but stops the indeterminate loop outright', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test proves the split by construction: the determinate
+  // fill's inline-size transition (spatial) drops to 0ms, while the
+  // indeterminate loop, an unbounded continuous translate with no
+  // meaningful "shortened" form, stops outright instead.
+  const css = RCProgress.styles.cssText;
+
+  expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+
+  const motionBlock = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+
+  expect(motionBlock).toContain('transition-duration: 0ms;');
+  expect(motionBlock).toContain('animation: none;');
+  expect(motionBlock).toContain('translate: none;');
 });

@@ -116,9 +116,16 @@ export const fabStyles = css`
       visibility: visible;
     }
 
+    /*
+     * Effects motion (opacity/visibility, no translate or scale), so the
+     * range narrows to a brief scroll window instead of collapsing to zero
+     * width: a scroll-linked timeline has no duration to shorten, so a
+     * narrow range is this animation's equivalent of a shortened duration.
+     */
     @media (prefers-reduced-motion: reduce) {
       :host([scroll-reveal]) {
-        animation-range: var(--rc-fab-scroll-threshold, 300px) var(--rc-fab-scroll-threshold, 300px);
+        animation-range: calc(var(--rc-fab-scroll-threshold, 300px) - 8px)
+          var(--rc-fab-scroll-threshold, 300px);
       }
     }
   }
@@ -152,10 +159,18 @@ export const fabStyles = css`
       transition: none;
     }
 
+    /* Effects motion (opacity/visibility): shortened rather than removed. */
     @media (prefers-reduced-motion: reduce) {
-      :host([scroll-reveal]),
+      :host([scroll-reveal]) {
+        transition:
+          opacity 50ms linear,
+          visibility 0s linear;
+      }
+
       :host([scroll-reveal][scroll-below-threshold]) {
-        transition: none;
+        transition:
+          opacity 50ms linear,
+          visibility 0s linear 50ms;
       }
     }
   }

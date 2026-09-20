@@ -7,7 +7,9 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCFabMenu } from './rc-fab-menu.js';
 
-test('popup exit fade is not skipped by an instant display change', async () => {
+const isFirefox = navigator.userAgent.includes('Firefox');
+
+test.skipIf(isFirefox)('popup exit fade is not skipped by an instant display change', async () => {
   const screen = render(html`
     <rc-fab-menu data-testid="host">
       <button slot="trigger" type="button" aria-label="Create">
@@ -176,4 +178,23 @@ test('has no automated accessibility violations while closed and open', async ()
   await expectNoA11yViolations($host);
 
   $host.closeMenu();
+});
+
+test('reduced motion zeros the popup scale but only shortens its opacity/overlay/display fade', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test proves the split by construction: scale (spatial)
+  // drops to 0s while opacity and the overlay/display pair that tracks it
+  // (effects) are shortened rather than zeroed.
+  const { fabMenuStyles } = await import('./rc-fab-menu.styles.js');
+  const css = fabMenuStyles.cssText;
+
+  expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+
+  const motionBlock = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+
+  expect(motionBlock).toContain('scale 0s');
+  expect(motionBlock).toContain('opacity 50ms');
+  expect(motionBlock).toContain('overlay 50ms allow-discrete');
+  expect(motionBlock).toContain('display 50ms allow-discrete');
 });

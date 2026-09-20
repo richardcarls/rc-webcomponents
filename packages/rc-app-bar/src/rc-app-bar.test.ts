@@ -518,3 +518,21 @@ test('has no automated accessibility violations in active layouts', async () => 
   await host.updateComplete;
   await expectNoA11yViolations(host);
 });
+
+test('reduced motion zeros the spatial hide/show transition but only shortens the title effects fade', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test proves the split by construction: the host's own
+  // translate transition (spatial) drops to 0s, while the title's opacity
+  // fade-in animation (effects) is shortened rather than zeroed.
+  const { appBarStyles } = await import('./rc-app-bar.styles.js');
+  const css = appBarStyles.cssText;
+
+  expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+
+  const motionBlock = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+
+  expect(motionBlock).toMatch(/:host\s*{\s*transition-duration:\s*0s;/);
+  expect(motionBlock).toContain('animation-duration: 70ms;');
+  expect(motionBlock).not.toContain('animation-duration: 0s');
+});

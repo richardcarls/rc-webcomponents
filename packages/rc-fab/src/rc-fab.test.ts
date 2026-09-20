@@ -161,3 +161,33 @@ test('scroll-reveal JS fallback: removes scroll-below-threshold when scroll-reve
 
   expect(host.hasAttribute('scroll-below-threshold')).toBe(false);
 });
+
+test('scroll-reveal reduced motion shortens the opacity/visibility fade in both fallback paths rather than removing it', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test proves the split by construction: the reveal is
+  // opacity/visibility only (no translate or scale), so reduced motion
+  // shortens it in both the scroll-timeline path and the JS-transition
+  // fallback rather than eliminating it outright.
+  const { fabStyles } = await import('./rc-fab.styles.js');
+  const css = fabStyles.cssText;
+
+  const timelineBlock = css.slice(
+    css.indexOf('@supports (animation-timeline'),
+    css.indexOf('@supports not (animation-timeline'),
+  );
+
+  expect(timelineBlock).toContain('@media (prefers-reduced-motion: reduce)');
+  expect(timelineBlock).toMatch(/animation-range:\s*calc\(var\(--rc-fab-scroll-threshold, 300px\) - 8px\)/);
+
+  const fallbackBlock = css.slice(css.indexOf('@supports not (animation-timeline'));
+
+  expect(fallbackBlock).toContain('@media (prefers-reduced-motion: reduce)');
+
+  const fallbackMotionBlock = fallbackBlock.slice(
+    fallbackBlock.indexOf('@media (prefers-reduced-motion: reduce)'),
+  );
+
+  expect(fallbackMotionBlock).toContain('opacity 50ms linear');
+  expect(fallbackMotionBlock).not.toContain('transition: none');
+});

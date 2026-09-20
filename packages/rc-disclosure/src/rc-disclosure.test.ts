@@ -284,3 +284,30 @@ test('an unthemed disclosure keeps the native marker and snaps open', async () =
       .trim(),
   ).toBe('');
 });
+
+test('reduced motion zeros the spatial expand/collapse but only shortens the effects backstop', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test proves the split by construction: the panel's own
+  // block-size/content-visibility transition (spatial) drops to 0ms, while the
+  // panel/summary/content transition-duration backstop for a theme-added
+  // effects transition (background-color, border-color, box-shadow) is only
+  // shortened, so it cannot silently cancel a theme's own reduced-motion
+  // handling.
+  const { DISCLOSURE_BASE_CSS } = await import('./disclosureBaseStyles.js');
+
+  expect(DISCLOSURE_BASE_CSS).toContain('@media (prefers-reduced-motion: reduce)');
+
+  const motionBlock = DISCLOSURE_BASE_CSS.slice(
+    DISCLOSURE_BASE_CSS.indexOf('@media (prefers-reduced-motion: reduce)'),
+  );
+
+  expect(motionBlock).toContain('transition-duration: 50ms;');
+
+  const detailsContentBlock = motionBlock.slice(
+    motionBlock.indexOf('@supports selector(::details-content)'),
+  );
+
+  expect(detailsContentBlock).toContain('transition-duration: 0ms;');
+  expect(detailsContentBlock).not.toContain('50ms');
+});
