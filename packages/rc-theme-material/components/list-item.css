@@ -43,7 +43,7 @@
       0.12
     );
     --rc-list-item-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
-    --rc-list-item-transition-duration: var(--md-sys-motion-duration-short3, 150ms);
+    --rc-list-item-transition-duration: var(--rc-motion-effects-duration-fast, 150ms);
     --rc-list-item-transition-easing: var(--md-sys-motion-easing-standard, ease);
   }
 

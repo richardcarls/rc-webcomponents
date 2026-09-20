@@ -37,7 +37,7 @@
     --rc-disclosure-content-padding-inline: 0.875rem;
     --rc-disclosure-content-color: var(--substrate-on-surface-muted, CanvasText);
 
-    --rc-disclosure-duration: var(--substrate-motion-duration-slow, 240ms);
+    --rc-disclosure-duration: var(--substrate-motion-spatial-duration-default, 240ms);
     --rc-disclosure-easing: var(--substrate-motion-easing, ease);
   }
 

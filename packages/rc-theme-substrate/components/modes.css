@@ -22,21 +22,36 @@
     }
   }
 
+  /*
+   * The vestibular harm reduced motion guards against is movement across the
+   * visual field, which a color or opacity change does not trigger; removing
+   * every transition over-corrected. Spatial motion still goes fully to
+   * zero. Effects motion is kept but shortened, scaled down from
+   * Substrate's own already-quick 100/160/240ms scale. The two legacy
+   * primitives (--substrate-motion-duration and its -slow companion,
+   * predating the effects/spatial split) and the cross-theme compatibility
+   * token stay at zero: dialog.css is their one remaining direct consumer,
+   * animating opacity, display, and transform together in one declaration
+   * that mixes spatial and effects properties and can't be cleanly
+   * classified into one bucket. (That file's own transform-based entrance
+   * is a separate, pre-existing conflict with rc-dialog's pointer-resize
+   * geometry reads and remains outside this theme-level override.)
+   */
   @media (prefers-reduced-motion: reduce) {
     .rc-theme-substrate,
     :host(.rc-theme-substrate) {
       --substrate-motion-duration: 0ms;
       --substrate-motion-duration-slow: 0ms;
-      --substrate-motion-effects-duration-fast: 0ms;
-      --substrate-motion-effects-duration-default: 0ms;
-      --substrate-motion-effects-duration-slow: 0ms;
+      --substrate-motion-effects-duration-fast: 40ms;
+      --substrate-motion-effects-duration-default: 55ms;
+      --substrate-motion-effects-duration-slow: 70ms;
       --substrate-motion-spatial-duration-fast: 0ms;
       --substrate-motion-spatial-duration-default: 0ms;
       --substrate-motion-spatial-duration-slow: 0ms;
       --rc-motion-duration: 0ms;
-      --rc-motion-effects-duration-fast: 0ms;
-      --rc-motion-effects-duration-default: 0ms;
-      --rc-motion-effects-duration-slow: 0ms;
+      --rc-motion-effects-duration-fast: 40ms;
+      --rc-motion-effects-duration-default: 55ms;
+      --rc-motion-effects-duration-slow: 70ms;
       --rc-motion-spatial-duration-fast: 0ms;
       --rc-motion-spatial-duration-default: 0ms;
       --rc-motion-spatial-duration-slow: 0ms;

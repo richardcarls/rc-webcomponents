@@ -1,10 +1,27 @@
 @layer rc-theme-material.components {
+  /*
+   * The vestibular harm reduced motion guards against is movement across the
+   * visual field: a cross-fade or a color change doesn't trigger it, so
+   * removing every transition (the previous *, !important sweep) over-
+   * corrected, and it also silently removed the ones that aid comprehension.
+   * Spatial motion still goes to zero; effects motion is kept but shortened,
+   * which the spatial/effects split makes expressible for the first time.
+   * Values are read as custom properties rather than reasserted with
+   * !important, so this only reaches whatever already consumes the shared
+   * motion tokens or the Material duration primitives. Components that
+   * still handle prefers-reduced-motion with their own blunt sweep are
+   * refined in their own component styles; this file no longer
+   * compensates for that with a second, theme-wide !important override.
+   */
   @media (prefers-reduced-motion: reduce) {
-    :where(.rc-theme-material, :host(.rc-theme-material)) *,
-    :where(.rc-theme-material, :host(.rc-theme-material)) *::before,
-    :where(.rc-theme-material, :host(.rc-theme-material)) *::after {
-      transition-duration: 0s !important;
-      animation-duration: 0s !important;
+    :where(.rc-theme-material, :host(.rc-theme-material)) {
+      --rc-motion-spatial-duration-fast: 0ms;
+      --rc-motion-spatial-duration-default: 0ms;
+      --rc-motion-spatial-duration-slow: 0ms;
+      --rc-motion-effects-duration-fast: 50ms;
+      --rc-motion-effects-duration-default: 70ms;
+      --rc-motion-effects-duration-slow: 100ms;
+      --rc-motion-duration: var(--rc-motion-effects-duration-default);
     }
   }
 

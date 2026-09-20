@@ -80,3 +80,75 @@ test('reduced motion overrides the spatial/effects scale from the components lay
 
   expect(declaresZeroDuration).toBe(true);
 });
+
+test('reduced motion zeroes spatial duration but only shortens effects duration', () => {
+  const findRule = (rules: CSSRuleList): CSSMediaRule | undefined => {
+    for (const rule of rules) {
+      // Deliberately excludes "no-preference": some components declare
+      // their own entrance/exit motion behind that opposite condition, and
+      // a broader match could find one of those first instead of this
+      // theme's reduced-motion override.
+      if (
+        rule instanceof CSSMediaRule &&
+        rule.conditionText.includes('prefers-reduced-motion: reduce')
+      ) {
+        return rule;
+      }
+
+      if ('cssRules' in rule) {
+        const match = findRule((rule as CSSGroupingRule).cssRules);
+
+        if (match) {
+          return match;
+        }
+      }
+    }
+
+    return undefined;
+  };
+
+  const mediaRules = [...document.styleSheets].flatMap((sheet) => {
+    const match = findRule(sheet.cssRules);
+
+    return match ? [match] : [];
+  });
+
+  expect(mediaRules.length).toBeGreaterThan(0);
+
+  const declaration = mediaRules
+    .flatMap((mediaRule) => [...mediaRule.cssRules])
+    .find(
+      (rule): rule is CSSStyleRule =>
+        rule instanceof CSSStyleRule &&
+        rule.selectorText.includes('.rc-theme-substrate') &&
+        rule.style.getPropertyValue('--rc-motion-spatial-duration-fast') !== '',
+    );
+
+  expect(declaration).toBeDefined();
+
+  for (const token of [
+    '--rc-motion-spatial-duration-fast',
+    '--rc-motion-spatial-duration-default',
+    '--rc-motion-spatial-duration-slow',
+  ] as const) {
+    expect(declaration?.style.getPropertyValue(token).trim(), token).toBe('0ms');
+  }
+
+  const effectsFast = declaration?.style.getPropertyValue('--rc-motion-effects-duration-fast').trim();
+  const effectsDefault = declaration?.style
+    .getPropertyValue('--rc-motion-effects-duration-default')
+    .trim();
+
+  const effectsSlow = declaration?.style.getPropertyValue('--rc-motion-effects-duration-slow').trim();
+
+  for (const value of [effectsFast, effectsDefault, effectsSlow]) {
+    expect(value).not.toBe('0ms');
+    expect(value).not.toBe('');
+  }
+
+  // Shortened relative to Substrate's own full-motion effects scale
+  // (100/160/240ms), not merely non-zero.
+  expect(Number.parseFloat(effectsFast!)).toBeLessThan(100);
+  expect(Number.parseFloat(effectsDefault!)).toBeLessThan(160);
+  expect(Number.parseFloat(effectsSlow!)).toBeLessThan(240);
+});
