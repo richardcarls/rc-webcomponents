@@ -9,6 +9,10 @@ export const EXPECTED_GITHUB_REPOSITORY = 'richardcarls/rc-webcomponents';
 export const NPM_REGISTRY = 'https://registry.npmjs.org/';
 export const STABLE_VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
 export const STABLE_TAG_PATTERN = /^v\d+\.\d+\.\d+$/;
+// Changesets' default snapshot format: `X.Y.Z-<tag>-<datecode>`, e.g.
+// `0.0.0-next-20260920120000`. Confirm this against the first real snapshot
+// run and adjust if the installed Changesets version differs.
+export const SNAPSHOT_VERSION_PATTERN = /^\d+\.\d+\.\d+-[^-]+-\d+$/;
 
 function commandInvocation(command, args) {
   if (process.platform !== 'win32') {
@@ -78,6 +82,7 @@ export function loadPublicWorkspaces({ root = process.cwd(), execute = execComma
 export function validateWorkspaceConfiguration({
   expectedVersion,
   root = process.cwd(),
+  snapshot = false,
   workspaces,
 }) {
   const errors = [];
@@ -85,6 +90,8 @@ export function validateWorkspaceConfiguration({
   const versions = new Set();
   const changesetConfig = JSON.parse(readFileSync(join(root, '.changeset', 'config.json'), 'utf8'));
   const fixedGroups = changesetConfig.fixed ?? [];
+  const versionPattern = snapshot ? SNAPSHOT_VERSION_PATTERN : STABLE_VERSION_PATTERN;
+  const versionDescription = snapshot ? 'a snapshot X.Y.Z-<tag>-<datecode>' : 'a stable X.Y.Z';
 
   if (workspaces.length === 0) {
     errors.push('No public workspaces were discovered');
@@ -99,8 +106,8 @@ export function validateWorkspaceConfiguration({
       errors.push(`${name}: private workspace reached the public release set`);
     }
 
-    if (!STABLE_VERSION_PATTERN.test(manifest.version ?? '')) {
-      errors.push(`${name}: version must be a stable X.Y.Z release (${manifest.version})`);
+    if (!versionPattern.test(manifest.version ?? '')) {
+      errors.push(`${name}: version must be ${versionDescription} release (${manifest.version})`);
     } else {
       versions.add(manifest.version);
     }
