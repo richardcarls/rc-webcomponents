@@ -17,7 +17,7 @@
     opacity: 0;
     pointer-events: none;
     transition:
-      opacity var(--md-sys-motion-duration-short3, 150ms)
+      opacity var(--rc-motion-effects-duration-fast, 150ms)
         var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
   }
 

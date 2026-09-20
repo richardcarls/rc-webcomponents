@@ -24,7 +24,7 @@
 
     --rc-splitter-handle-fill: var(--substrate-border-color, ButtonBorder);
     --rc-splitter-handle-hover-fill: var(--rc-accent, Highlight);
-    --rc-splitter-handle-transition: var(--substrate-motion-duration, 160ms);
+    --rc-splitter-handle-transition: var(--substrate-motion-effects-duration-default, 160ms);
     --rc-splitter-keyline: var(--rc-border, 1px solid ButtonBorder);
 
     --rc-splitter-collapse-button-bg: var(--substrate-surface-raised, ButtonFace);

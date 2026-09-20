@@ -130,7 +130,11 @@ export const THEME_SELECTOR_BUDGETS = {
     // Dialog surfaces add no marker coupling; the retained growth comes from
     // documented chip-icon and visible-list-position contracts.
     markerHooks: 71,
-    importantDeclarations: 13,
+    // Dropped from 13: the reduced-motion refinement replaced a blunt
+    // *, !important sweep (2 declarations) with token-level overrides.
+    // The audit's own comment-stripping fix also corrected a false count
+    // (raw text included 3 !important mentions inside a prose comment).
+    importantDeclarations: 9,
     idSelectors: 3,
     modifierHooks: 59,
   },
@@ -502,6 +506,26 @@ function checkAnimatedLayoutProperties(name, animatedLayoutProperties, transitio
   }
 }
 
+/*
+ * Comments stripped before counting: a prose comment explaining *why* a
+ * declaration needs !important (or mentioning ::part()/a marker/a modifier
+ * class) reads as one more real occurrence otherwise. Found when a
+ * reduced-motion comment explaining the old !important sweep's removal
+ * pushed Material's own importantDeclarations count over budget for a
+ * reason that had nothing to do with real CSS.
+ */
+export function extractThemeSelectorMetrics(css) {
+  const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, ' ');
+
+  return {
+    parts: (withoutComments.match(/::part\(/g) ?? []).length,
+    markerHooks: (withoutComments.match(/\[data-rc-/g) ?? []).length,
+    importantDeclarations: (withoutComments.match(/!important/g) ?? []).length,
+    idSelectors: (withoutComments.match(/(^|[\s>,+~])#[a-zA-Z_-]/gm) ?? []).length,
+    modifierHooks: (withoutComments.match(/\.rc-[a-z0-9-]+--[a-z0-9-]+/g) ?? []).length,
+  };
+}
+
 export function findMarkerContractErrors(markers, contracts = MARKER_CONTRACTS) {
   const errors = [];
 
@@ -683,13 +707,7 @@ export function inspectTheme(root, themeName) {
     markerSelectors: sorted(extractMarkers(allCss)),
     animatedLayoutProperties: sorted(transitionAnalysis.layoutProperties),
     transitionsAll: transitionAnalysis.transitionsAll,
-    selectorMetrics: {
-      parts: (allCss.match(/::part\(/g) ?? []).length,
-      markerHooks: (allCss.match(/\[data-rc-/g) ?? []).length,
-      importantDeclarations: (allCss.match(/!important/g) ?? []).length,
-      idSelectors: (allCss.match(/(^|[\s>,+~])#[a-zA-Z_-]/gm) ?? []).length,
-      modifierHooks: (allCss.match(/\.rc-[a-z0-9-]+--[a-z0-9-]+/g) ?? []).length,
-    },
+    selectorMetrics: extractThemeSelectorMetrics(allCss),
   };
 }
 

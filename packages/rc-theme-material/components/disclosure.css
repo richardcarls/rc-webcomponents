@@ -60,7 +60,7 @@
       var(--md-sys-typescale-body-medium-line-height, 1.25rem)
       var(--md-sys-typescale-body-medium-font, sans-serif);
 
-    --rc-disclosure-duration: var(--md-sys-motion-duration-300, 300ms);
+    --rc-disclosure-duration: var(--rc-motion-effects-duration-slow, 300ms);
     --rc-disclosure-easing: var(--rc-theme-material-disclosure-easing);
     --rc-accordion-gap: 0.125rem;
   }
@@ -72,11 +72,12 @@
   :where(.rc-theme-material, :host(.rc-theme-material)) :is(rc-disclosure, rc-accordion) > details {
     overflow: clip;
     transition:
-      background-color var(--md-sys-motion-duration-200, 200ms)
+      background-color var(--rc-motion-effects-duration-default, 200ms)
         var(--rc-theme-material-disclosure-easing),
-      border-color var(--md-sys-motion-duration-200, 200ms)
+      border-color var(--rc-motion-effects-duration-default, 200ms)
         var(--rc-theme-material-disclosure-easing),
-      box-shadow var(--md-sys-motion-duration-200, 200ms) var(--rc-theme-material-disclosure-easing);
+      box-shadow var(--rc-motion-effects-duration-default, 200ms)
+        var(--rc-theme-material-disclosure-easing);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
@@ -85,7 +86,7 @@
     > summary {
     -webkit-tap-highlight-color: transparent;
     border-radius: calc(var(--md-sys-shape-corner-large, 1rem) - 1px);
-    transition: background-color var(--md-sys-motion-duration-100, 100ms)
+    transition: background-color var(--rc-motion-effects-duration-fast, 150ms)
       var(--rc-theme-material-disclosure-easing);
   }
 

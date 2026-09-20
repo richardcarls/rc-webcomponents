@@ -24,7 +24,7 @@
     --_rc-button-ripple-enabled: 1;
     --_rc-button-ripple-color: var(--md-sys-color-on-primary, currentColor);
     --_rc-button-ripple-opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
-    --_rc-button-ripple-duration: var(--md-sys-motion-duration-long1, 450ms);
+    --_rc-button-ripple-duration: var(--rc-motion-spatial-duration-slow, 500ms);
     --_rc-button-ripple-easing: var(
       --md-sys-motion-easing-emphasized-decelerate,
       cubic-bezier(0.05, 0.7, 0.1, 1)
