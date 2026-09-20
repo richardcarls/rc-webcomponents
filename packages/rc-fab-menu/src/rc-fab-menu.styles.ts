@@ -142,11 +142,37 @@ export const fabMenuStyles = css`
     }
   }
 
+  /*
+   * #popup mixes a spatial property (scale) and effects properties (opacity,
+   * plus the overlay/display pair keyed to whichever is still animating)
+   * under one shared --rc-fab-menu-popup-duration, so the reduced-motion
+   * override restates the transition list rather than zeroing the shared
+   * duration: scale drops to 0s, opacity (and overlay/display, which track
+   * it) shortens instead. The trigger's own --rc-fab-menu-transition is an
+   * opaque, theme-authored value with no visible property list, so the
+   * component cannot split it the same way and zeros it outright, matching
+   * the Substrate dialog exception.
+   */
   @media (prefers-reduced-motion: reduce) {
     slot[name='trigger']::slotted(button),
-    slot[name='trigger']::slotted([role='button']),
-    #popup {
+    slot[name='trigger']::slotted([role='button']) {
       transition-duration: 0s;
+    }
+
+    :host([open]) #popup {
+      transition:
+        opacity 50ms var(--rc-motion-effects-easing-enter, ease-out),
+        scale 0s var(--rc-motion-spatial-easing-enter, ease-out),
+        overlay 50ms allow-discrete,
+        display 50ms allow-discrete;
+    }
+
+    :host(:not([open])) #popup {
+      transition:
+        opacity 50ms var(--rc-motion-effects-easing-exit, ease-in),
+        scale 0s var(--rc-motion-spatial-easing-exit, ease-in),
+        overlay 50ms allow-discrete,
+        display 50ms allow-discrete;
     }
 
     slot[name='trigger']::slotted(button:active),

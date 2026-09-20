@@ -6370,8 +6370,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration-300",
-              "collection": "Motion"
+              "alias": "core/motion-spatial-duration-fast",
+              "collection": "RC Contract"
             }
           }
         },
@@ -8559,8 +8559,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration-300",
-              "collection": "Motion"
+              "alias": "core/motion-effects-duration-slow",
+              "collection": "RC Contract"
             }
           }
         },
@@ -9692,8 +9692,8 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "motion/duration-short3",
-              "collection": "Motion"
+              "alias": "core/motion-effects-duration-fast",
+              "collection": "RC Contract"
             }
           }
         },
@@ -11925,6 +11925,38 @@
             "Value": {
               "alias": "color/computed/progress-fill-background",
               "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "progress/fill-transition-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-progress-fill-transition-duration)"
+          },
+          "cssVar": "--rc-progress-fill-transition-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-effects-duration-fast",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "progress/fill-transition-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-progress-fill-transition-easing)"
+          },
+          "cssVar": "--rc-progress-fill-transition-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/motion-effects-easing-fast",
+              "collection": "RC Contract"
             }
           }
         },

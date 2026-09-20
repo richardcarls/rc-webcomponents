@@ -106,11 +106,20 @@ export const DISCLOSURE_BASE_CSS = `
     }
   }
 
+  /*
+   * Split by what actually moves: \`::details-content\`'s own transition is the
+   * block-size expand/collapse, which is spatial and goes fully to zero. The
+   * base component sets no transition of its own on the \`<details>\`, summary,
+   * or content boxes, but this stays as a backstop for a theme that adds one
+   * there (Material adds background-color/border-color/box-shadow, all
+   * effects motion), shortened rather than zeroed so it does not silently
+   * cancel a theme's own reduced-motion handling.
+   */
   @media (prefers-reduced-motion: reduce) {
     ${PANEL},
     ${SUMMARY},
     ${CONTENT} {
-      transition-duration: 0ms;
+      transition-duration: 50ms;
     }
 
     @supports selector(::details-content) {

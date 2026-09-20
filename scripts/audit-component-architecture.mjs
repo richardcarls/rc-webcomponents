@@ -201,8 +201,11 @@ export const PACKAGE_ID_SELECTOR_BUDGETS = {
   'rc-chip-group': 10,
   'rc-combobox': 4,
   // Grew the same way rc-menu-button's did: the popup's exit fade split its
-  // one #popup rule into separate open/closed/@starting-style declarations.
-  'rc-fab-menu': 9,
+  // one #popup rule into separate open/closed/@starting-style declarations,
+  // and its reduced-motion override restates the same two rules again to
+  // split scale (spatial, zeroed) from opacity/overlay/display (effects,
+  // shortened) instead of zeroing the shared duration.
+  'rc-fab-menu': 11,
   'rc-field': 25,
   'rc-markdown-editor': 19,
   // Grew with the popup's own open/close fade: enter, exit, and its

@@ -216,6 +216,18 @@ export class RCProgress extends LitElement {
     }
 
     @media (prefers-reduced-motion: reduce) {
+      /*
+       * The determinate fill's inline-size transition is spatial (a real
+       * width change), so it drops to 0ms. The indeterminate loop is an
+       * unbounded, continuous translate sweeping most of the track, which
+       * has no meaningful "shortened" form, so it stops outright rather
+       * than looping faster; the fill still shows a static bar via its
+       * existing 40% inline-size.
+       */
+      :host(:not([indeterminate])) .rc-progress-fill {
+        transition-duration: 0ms;
+      }
+
       :host([indeterminate]) .rc-progress-fill {
         animation: none;
         translate: none;

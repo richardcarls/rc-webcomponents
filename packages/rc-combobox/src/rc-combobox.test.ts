@@ -92,6 +92,10 @@ test('dialog mode stages selection until Done and restores trigger focus', async
   const $trigger = $host.renderRoot.querySelector<HTMLElement>('#trigger')!;
   const changeHandler = vi.fn();
 
+  // Axe must sample the resting colors, not the transparent first frame of
+  // rc-dialog's entrance fade. Zeroing the shared effect duration preserves
+  // the open-state accessibility audit without making it refresh-driver bound.
+  $host.style.setProperty('--rc-motion-effects-duration-default', '0ms');
   $host.addEventListener('rc-select-change', changeHandler);
   $trigger.focus();
   $trigger.click();

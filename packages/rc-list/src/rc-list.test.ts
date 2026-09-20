@@ -446,3 +446,21 @@ test('has no automated accessibility violations with native selection', async ()
   await settle(list);
   await expectNoA11yViolations(list);
 });
+
+test('rc-list-item reduced motion shortens the effects transitions rather than zeroing them', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test proves the split by construction: row and
+  // state-layer only ever transition background-color, box-shadow, and
+  // opacity (no spatial property), so reduced motion shortens the shared
+  // duration instead of zeroing it.
+  const { listItemStyles } = await import('./rc-list-item.styles.js');
+  const css = listItemStyles.cssText;
+
+  expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+
+  const motionBlock = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+
+  expect(motionBlock).toContain('transition-duration: 50ms;');
+  expect(motionBlock).not.toContain('transition-duration: 0ms');
+});
