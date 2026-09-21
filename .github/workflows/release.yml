@@ -115,6 +115,16 @@ jobs:
       - name: Version packages for the snapshot
         run: yarn version:packages:snapshot "${{ inputs.snapshot_tag }}"
 
+      # Catches a fixed-group package that has never been bootstrapped on
+      # npm before any live publish is attempted. Without this, a snapshot
+      # run publishes every package ahead of the unbootstrapped one, then
+      # hard-fails on it with a raw OIDC permission error, leaving the next
+      # dist-tag inconsistent across packages.
+      - name: Check for packages requiring npm bootstrap
+        run: yarn publish:packages:snapshot:dry-run
+        env:
+          RC_SNAPSHOT_TAG: ${{ inputs.snapshot_tag }}
+
       # Same tarball packing and OIDC Trusted Publishing flow as a stable
       # release, published under the snapshot dist-tag instead of latest.
       - name: Publish and verify snapshot packages

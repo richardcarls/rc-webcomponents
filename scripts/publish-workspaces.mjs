@@ -654,7 +654,7 @@ export async function executePublication({
 
   if (summary.unregistered.length > 0) {
     const error = new Error(
-      `npm package bootstrap required: ${summary.unregistered.join(', ')}. Run yarn bootstrap:packages before versioning the release.`,
+      `npm package bootstrap required: ${summary.unregistered.join(', ')}. Run yarn bootstrap:trusted-publisher before versioning the release.`,
     );
 
     error.publicationSummary = summary;
