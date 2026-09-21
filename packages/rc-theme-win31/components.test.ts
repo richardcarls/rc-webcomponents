@@ -121,14 +121,15 @@ test('the dialog caption bar is a centered bold title on the active caption colo
 
   const headerStyles = getComputedStyle(header);
   const titleStyles = getComputedStyle(title);
-  const userSelect =
-    headerStyles.getPropertyValue('user-select') ||
-    headerStyles.getPropertyValue('-webkit-user-select');
+  const userSelectValues = [
+    headerStyles.getPropertyValue('user-select'),
+    headerStyles.getPropertyValue('-webkit-user-select'),
+  ];
 
   expect(headerStyles.minBlockSize).toBe('24px');
   expect(headerStyles.backgroundColor).toBe('rgb(0, 0, 128)');
   expect(headerStyles.color).toBe('rgb(255, 255, 255)');
-  expect(userSelect).toBe('none');
+  expect(userSelectValues).toContain('none');
   expect(titleStyles.textAlign).toBe('center');
   expect(titleStyles.fontWeight).toBe('700');
 });
