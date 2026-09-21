@@ -59,14 +59,20 @@ test('listbox fades in and out through CSS alone, with no JavaScript gating the 
   host.openPopup();
 
   await new Promise((resolve) => requestAnimationFrame(resolve));
-  await Promise.all(listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  await Promise.all(
+    listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
 
-  expect(getComputedStyle(listbox).opacity).toBe('1');
+  // WebKit can expose the transition after the first animation snapshot and
+  // resolve its finished promise just before computed style reaches rest.
+  await vi.waitFor(() => expect(getComputedStyle(listbox).opacity).toBe('1'));
 
   host.closePopup(false);
 
   await new Promise((resolve) => requestAnimationFrame(resolve));
-  await Promise.all(listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  await Promise.all(
+    listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
 
   expect(getComputedStyle(listbox).opacity).toBe('0');
 });

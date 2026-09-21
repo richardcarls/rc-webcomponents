@@ -80,14 +80,20 @@ test('popup fades in and out through CSS alone, with no JavaScript gating the ti
   host.open = true;
 
   await new Promise((resolve) => requestAnimationFrame(resolve));
-  await Promise.all(popup.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  await Promise.all(
+    popup.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
 
-  expect(getComputedStyle(popup).opacity).toBe('1');
+  // WebKit can resolve an Animation.finished promise just before computed
+  // style exposes the transition's resting value.
+  await vi.waitFor(() => expect(getComputedStyle(popup).opacity).toBe('1'));
 
   host.open = false;
 
   await new Promise((resolve) => requestAnimationFrame(resolve));
-  await Promise.all(popup.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  await Promise.all(
+    popup.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
 
   // The exit fade must actually be visible, not skipped by an instant
   // display: none racing ahead of it: closing relies on allow-discrete

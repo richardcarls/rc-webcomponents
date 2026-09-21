@@ -121,11 +121,14 @@ test('the dialog caption bar is a centered bold title on the active caption colo
 
   const headerStyles = getComputedStyle(header);
   const titleStyles = getComputedStyle(title);
+  const userSelect =
+    headerStyles.getPropertyValue('user-select') ||
+    headerStyles.getPropertyValue('-webkit-user-select');
 
   expect(headerStyles.minBlockSize).toBe('24px');
   expect(headerStyles.backgroundColor).toBe('rgb(0, 0, 128)');
   expect(headerStyles.color).toBe('rgb(255, 255, 255)');
-  expect(headerStyles.userSelect).toBe('none');
+  expect(userSelect).toBe('none');
   expect(titleStyles.textAlign).toBe('center');
   expect(titleStyles.fontWeight).toBe('700');
 });
@@ -229,7 +232,7 @@ test('nothing in the theme is rounded or animated', () => {
 
   scope.append(menuButton);
 
-  expect(getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-popup-duration').trim()).toBe(
-    '0ms',
-  );
+  expect(
+    getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-popup-duration').trim(),
+  ).toBe('0ms');
 });

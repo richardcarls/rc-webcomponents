@@ -7,9 +7,9 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCFabMenu } from './rc-fab-menu.js';
 
-const isFirefox = navigator.userAgent.includes('Firefox');
+const isChromium = navigator.userAgent.includes('Chrome');
 
-test.skipIf(isFirefox)('popup exit fade is not skipped by an instant display change', async () => {
+test.runIf(isChromium)('popup exit fade is not skipped by an instant display change', async () => {
   const screen = render(html`
     <rc-fab-menu data-testid="host">
       <button slot="trigger" type="button" aria-label="Create">
@@ -44,6 +44,17 @@ test.skipIf(isFirefox)('popup exit fade is not skipped by an instant display cha
   expect(midStyles.display).not.toBe('none');
   expect(Number(midStyles.opacity)).toBeGreaterThan(0);
   expect(Number(midStyles.opacity)).toBeLessThan(1);
+});
+
+test('popup exit fade retains display and overlay through discrete transitions', async () => {
+  const { fabMenuStyles } = await import('./rc-fab-menu.styles.js');
+  const css = fabMenuStyles.cssText;
+  const motionBlock = css.slice(0, css.indexOf('@media (prefers-reduced-motion: reduce)'));
+
+  expect(motionBlock).toContain('opacity var(--rc-fab-menu-popup-duration');
+  expect(motionBlock).toContain('overlay var(--rc-fab-menu-popup-duration');
+  expect(motionBlock).toContain('display var(--rc-fab-menu-popup-duration');
+  expect(motionBlock).toContain('allow-discrete');
 });
 
 test('native trigger and rc-menu remain connected with author content intact', async () => {
