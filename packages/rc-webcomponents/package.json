@@ -39,11 +39,456 @@
     "./react": {
       "types": "./src/react.d.ts"
     },
-    "./themes/base.css": "./themes/base.css"
+    "./themes/base.css": "./themes/base.css",
+    "./rc-accordion": {
+      "import": {
+        "types": "./dist/types/rc-accordion/index.d.ts",
+        "default": "./dist/rc-accordion/index.js"
+      }
+    },
+    "./rc-accordion/define": {
+      "import": {
+        "types": "./dist/types/rc-accordion/define.d.ts",
+        "default": "./dist/rc-accordion/define.js"
+      }
+    },
+    "./rc-adaptive-menu": {
+      "import": {
+        "types": "./dist/types/rc-adaptive-menu/index.d.ts",
+        "default": "./dist/rc-adaptive-menu/index.js"
+      }
+    },
+    "./rc-adaptive-menu/define": {
+      "import": {
+        "types": "./dist/types/rc-adaptive-menu/define.d.ts",
+        "default": "./dist/rc-adaptive-menu/define.js"
+      }
+    },
+    "./rc-app-bar": {
+      "import": {
+        "types": "./dist/types/rc-app-bar/index.d.ts",
+        "default": "./dist/rc-app-bar/index.js"
+      }
+    },
+    "./rc-app-bar/define": {
+      "import": {
+        "types": "./dist/types/rc-app-bar/define.d.ts",
+        "default": "./dist/rc-app-bar/define.js"
+      }
+    },
+    "./rc-bottom-sheet": {
+      "import": {
+        "types": "./dist/types/rc-bottom-sheet/index.d.ts",
+        "default": "./dist/rc-bottom-sheet/index.js"
+      }
+    },
+    "./rc-bottom-sheet/define": {
+      "import": {
+        "types": "./dist/types/rc-bottom-sheet/define.d.ts",
+        "default": "./dist/rc-bottom-sheet/define.js"
+      }
+    },
+    "./rc-button": {
+      "import": {
+        "types": "./dist/types/rc-button/index.d.ts",
+        "default": "./dist/rc-button/index.js"
+      }
+    },
+    "./rc-button/define": {
+      "import": {
+        "types": "./dist/types/rc-button/define.d.ts",
+        "default": "./dist/rc-button/define.js"
+      }
+    },
+    "./rc-card": {
+      "import": {
+        "types": "./dist/types/rc-card/index.d.ts",
+        "default": "./dist/rc-card/index.js"
+      }
+    },
+    "./rc-card/define": {
+      "import": {
+        "types": "./dist/types/rc-card/define.d.ts",
+        "default": "./dist/rc-card/define.js"
+      }
+    },
+    "./rc-carousel": {
+      "import": {
+        "types": "./dist/types/rc-carousel/index.d.ts",
+        "default": "./dist/rc-carousel/index.js"
+      }
+    },
+    "./rc-carousel/define": {
+      "import": {
+        "types": "./dist/types/rc-carousel/define.d.ts",
+        "default": "./dist/rc-carousel/define.js"
+      }
+    },
+    "./rc-chip": {
+      "import": {
+        "types": "./dist/types/rc-chip/index.d.ts",
+        "default": "./dist/rc-chip/index.js"
+      }
+    },
+    "./rc-chip/define": {
+      "import": {
+        "types": "./dist/types/rc-chip/define.d.ts",
+        "default": "./dist/rc-chip/define.js"
+      }
+    },
+    "./rc-chip-group": {
+      "import": {
+        "types": "./dist/types/rc-chip-group/index.d.ts",
+        "default": "./dist/rc-chip-group/index.js"
+      }
+    },
+    "./rc-chip-group/define": {
+      "import": {
+        "types": "./dist/types/rc-chip-group/define.d.ts",
+        "default": "./dist/rc-chip-group/define.js"
+      }
+    },
+    "./rc-combobox": {
+      "import": {
+        "types": "./dist/types/rc-combobox/index.d.ts",
+        "default": "./dist/rc-combobox/index.js"
+      }
+    },
+    "./rc-combobox/define": {
+      "import": {
+        "types": "./dist/types/rc-combobox/define.d.ts",
+        "default": "./dist/rc-combobox/define.js"
+      }
+    },
+    "./rc-dialog": {
+      "import": {
+        "types": "./dist/types/rc-dialog/index.d.ts",
+        "default": "./dist/rc-dialog/index.js"
+      }
+    },
+    "./rc-dialog/define": {
+      "import": {
+        "types": "./dist/types/rc-dialog/define.d.ts",
+        "default": "./dist/rc-dialog/define.js"
+      }
+    },
+    "./rc-disclosure": {
+      "import": {
+        "types": "./dist/types/rc-disclosure/index.d.ts",
+        "default": "./dist/rc-disclosure/index.js"
+      }
+    },
+    "./rc-disclosure/define": {
+      "import": {
+        "types": "./dist/types/rc-disclosure/define.d.ts",
+        "default": "./dist/rc-disclosure/define.js"
+      }
+    },
+    "./rc-fab": {
+      "import": {
+        "types": "./dist/types/rc-fab/index.d.ts",
+        "default": "./dist/rc-fab/index.js"
+      }
+    },
+    "./rc-fab/define": {
+      "import": {
+        "types": "./dist/types/rc-fab/define.d.ts",
+        "default": "./dist/rc-fab/define.js"
+      }
+    },
+    "./rc-fab-menu": {
+      "import": {
+        "types": "./dist/types/rc-fab-menu/index.d.ts",
+        "default": "./dist/rc-fab-menu/index.js"
+      }
+    },
+    "./rc-fab-menu/define": {
+      "import": {
+        "types": "./dist/types/rc-fab-menu/define.d.ts",
+        "default": "./dist/rc-fab-menu/define.js"
+      }
+    },
+    "./rc-field": {
+      "import": {
+        "types": "./dist/types/rc-field/index.d.ts",
+        "default": "./dist/rc-field/index.js"
+      }
+    },
+    "./rc-field/define": {
+      "import": {
+        "types": "./dist/types/rc-field/define.d.ts",
+        "default": "./dist/rc-field/define.js"
+      }
+    },
+    "./rc-list": {
+      "import": {
+        "types": "./dist/types/rc-list/index.d.ts",
+        "default": "./dist/rc-list/index.js"
+      }
+    },
+    "./rc-list/define": {
+      "import": {
+        "types": "./dist/types/rc-list/define.d.ts",
+        "default": "./dist/rc-list/define.js"
+      }
+    },
+    "./rc-listbox": {
+      "import": {
+        "types": "./dist/types/rc-listbox/index.d.ts",
+        "default": "./dist/rc-listbox/index.js"
+      }
+    },
+    "./rc-listbox/define": {
+      "import": {
+        "types": "./dist/types/rc-listbox/define.d.ts",
+        "default": "./dist/rc-listbox/define.js"
+      }
+    },
+    "./rc-markdown-editor": {
+      "import": {
+        "types": "./dist/types/rc-markdown-editor/index.d.ts",
+        "default": "./dist/rc-markdown-editor/index.js"
+      }
+    },
+    "./rc-markdown-editor/define": {
+      "import": {
+        "types": "./dist/types/rc-markdown-editor/define.d.ts",
+        "default": "./dist/rc-markdown-editor/define.js"
+      }
+    },
+    "./rc-menu": {
+      "import": {
+        "types": "./dist/types/rc-menu/index.d.ts",
+        "default": "./dist/rc-menu/index.js"
+      }
+    },
+    "./rc-menu/define": {
+      "import": {
+        "types": "./dist/types/rc-menu/define.d.ts",
+        "default": "./dist/rc-menu/define.js"
+      }
+    },
+    "./rc-menu-button": {
+      "import": {
+        "types": "./dist/types/rc-menu-button/index.d.ts",
+        "default": "./dist/rc-menu-button/index.js"
+      }
+    },
+    "./rc-menu-button/define": {
+      "import": {
+        "types": "./dist/types/rc-menu-button/define.d.ts",
+        "default": "./dist/rc-menu-button/define.js"
+      }
+    },
+    "./rc-menubar": {
+      "import": {
+        "types": "./dist/types/rc-menubar/index.d.ts",
+        "default": "./dist/rc-menubar/index.js"
+      }
+    },
+    "./rc-menubar/define": {
+      "import": {
+        "types": "./dist/types/rc-menubar/define.d.ts",
+        "default": "./dist/rc-menubar/define.js"
+      }
+    },
+    "./rc-navigation-bar": {
+      "import": {
+        "types": "./dist/types/rc-navigation-bar/index.d.ts",
+        "default": "./dist/rc-navigation-bar/index.js"
+      }
+    },
+    "./rc-navigation-bar/define": {
+      "import": {
+        "types": "./dist/types/rc-navigation-bar/define.d.ts",
+        "default": "./dist/rc-navigation-bar/define.js"
+      }
+    },
+    "./rc-navigation-rail": {
+      "import": {
+        "types": "./dist/types/rc-navigation-rail/index.d.ts",
+        "default": "./dist/rc-navigation-rail/index.js"
+      }
+    },
+    "./rc-navigation-rail/define": {
+      "import": {
+        "types": "./dist/types/rc-navigation-rail/define.d.ts",
+        "default": "./dist/rc-navigation-rail/define.js"
+      }
+    },
+    "./rc-progress": {
+      "import": {
+        "types": "./dist/types/rc-progress/index.d.ts",
+        "default": "./dist/rc-progress/index.js"
+      }
+    },
+    "./rc-progress/define": {
+      "import": {
+        "types": "./dist/types/rc-progress/define.d.ts",
+        "default": "./dist/rc-progress/define.js"
+      }
+    },
+    "./rc-range-slider": {
+      "import": {
+        "types": "./dist/types/rc-range-slider/index.d.ts",
+        "default": "./dist/rc-range-slider/index.js"
+      }
+    },
+    "./rc-range-slider/define": {
+      "import": {
+        "types": "./dist/types/rc-range-slider/define.d.ts",
+        "default": "./dist/rc-range-slider/define.js"
+      }
+    },
+    "./rc-scroller": {
+      "import": {
+        "types": "./dist/types/rc-scroller/index.d.ts",
+        "default": "./dist/rc-scroller/index.js"
+      }
+    },
+    "./rc-scroller/define": {
+      "import": {
+        "types": "./dist/types/rc-scroller/define.d.ts",
+        "default": "./dist/rc-scroller/define.js"
+      }
+    },
+    "./rc-search-bar": {
+      "import": {
+        "types": "./dist/types/rc-search-bar/index.d.ts",
+        "default": "./dist/rc-search-bar/index.js"
+      }
+    },
+    "./rc-search-bar/define": {
+      "import": {
+        "types": "./dist/types/rc-search-bar/define.d.ts",
+        "default": "./dist/rc-search-bar/define.js"
+      }
+    },
+    "./rc-segmented-button": {
+      "import": {
+        "types": "./dist/types/rc-segmented-button/index.d.ts",
+        "default": "./dist/rc-segmented-button/index.js"
+      }
+    },
+    "./rc-segmented-button/define": {
+      "import": {
+        "types": "./dist/types/rc-segmented-button/define.d.ts",
+        "default": "./dist/rc-segmented-button/define.js"
+      }
+    },
+    "./rc-select": {
+      "import": {
+        "types": "./dist/types/rc-select/index.d.ts",
+        "default": "./dist/rc-select/index.js"
+      }
+    },
+    "./rc-select/define": {
+      "import": {
+        "types": "./dist/types/rc-select/define.d.ts",
+        "default": "./dist/rc-select/define.js"
+      }
+    },
+    "./rc-slider": {
+      "import": {
+        "types": "./dist/types/rc-slider/index.d.ts",
+        "default": "./dist/rc-slider/index.js"
+      }
+    },
+    "./rc-slider/define": {
+      "import": {
+        "types": "./dist/types/rc-slider/define.d.ts",
+        "default": "./dist/rc-slider/define.js"
+      }
+    },
+    "./rc-snackbar": {
+      "import": {
+        "types": "./dist/types/rc-snackbar/index.d.ts",
+        "default": "./dist/rc-snackbar/index.js"
+      }
+    },
+    "./rc-snackbar/define": {
+      "import": {
+        "types": "./dist/types/rc-snackbar/define.d.ts",
+        "default": "./dist/rc-snackbar/define.js"
+      }
+    },
+    "./rc-splitter": {
+      "import": {
+        "types": "./dist/types/rc-splitter/index.d.ts",
+        "default": "./dist/rc-splitter/index.js"
+      }
+    },
+    "./rc-splitter/define": {
+      "import": {
+        "types": "./dist/types/rc-splitter/define.d.ts",
+        "default": "./dist/rc-splitter/define.js"
+      }
+    },
+    "./rc-switch": {
+      "import": {
+        "types": "./dist/types/rc-switch/index.d.ts",
+        "default": "./dist/rc-switch/index.js"
+      }
+    },
+    "./rc-switch/define": {
+      "import": {
+        "types": "./dist/types/rc-switch/define.d.ts",
+        "default": "./dist/rc-switch/define.js"
+      }
+    },
+    "./rc-textarea": {
+      "import": {
+        "types": "./dist/types/rc-textarea/index.d.ts",
+        "default": "./dist/rc-textarea/index.js"
+      }
+    },
+    "./rc-textarea/define": {
+      "import": {
+        "types": "./dist/types/rc-textarea/define.d.ts",
+        "default": "./dist/rc-textarea/define.js"
+      }
+    },
+    "./rc-toolbar": {
+      "import": {
+        "types": "./dist/types/rc-toolbar/index.d.ts",
+        "default": "./dist/rc-toolbar/index.js"
+      }
+    },
+    "./rc-toolbar/define": {
+      "import": {
+        "types": "./dist/types/rc-toolbar/define.d.ts",
+        "default": "./dist/rc-toolbar/define.js"
+      }
+    },
+    "./rc-transfer-list": {
+      "import": {
+        "types": "./dist/types/rc-transfer-list/index.d.ts",
+        "default": "./dist/rc-transfer-list/index.js"
+      }
+    },
+    "./rc-transfer-list/define": {
+      "import": {
+        "types": "./dist/types/rc-transfer-list/define.d.ts",
+        "default": "./dist/rc-transfer-list/define.js"
+      }
+    },
+    "./rc-virtual-canvas": {
+      "import": {
+        "types": "./dist/types/rc-virtual-canvas/index.d.ts",
+        "default": "./dist/rc-virtual-canvas/index.js"
+      }
+    },
+    "./rc-virtual-canvas/define": {
+      "import": {
+        "types": "./dist/types/rc-virtual-canvas/define.d.ts",
+        "default": "./dist/rc-virtual-canvas/define.js"
+      }
+    }
   },
   "types": "./dist/types/index.d.ts",
   "sideEffects": [
     "./dist/rc-webcomponents-define.js",
+    "./dist/*/define.js",
     "./themes/*.css"
   ],
   "scripts": {

@@ -24,6 +24,10 @@ const JAVASCRIPT_SCENARIOS = {
   markdownEditor: ['rc-markdown-editor', './define'],
   aggregateClasses: ['rc-webcomponents', '.'],
   aggregateDefine: ['rc-webcomponents', './define'],
+  // Guards the per-component subpath contract: importing one component from the
+  // aggregate must cost about as much as its standalone package, not the whole
+  // collection. Compare against `button`, not `aggregateDefine`.
+  aggregateSubpathDefine: ['rc-webcomponents', './rc-button/define'],
 };
 
 const CSS_SCENARIOS = {

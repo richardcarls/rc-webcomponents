@@ -67,6 +67,17 @@
       "initialChunks": 1,
       "lazyChunks": 1
     },
+    "aggregateSubpathDefine": {
+      "initialRaw": 40102,
+      "initialGzip": 11711,
+      "initialBrotli": 10386,
+      "totalRaw": 40102,
+      "totalGzip": 11711,
+      "totalBrotli": 10386,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
     "baseTheme": {
       "initialRaw": 2551,
       "initialGzip": 895,
@@ -166,6 +177,15 @@
       "largestLazyGzip": 42898,
       "initialChunks": 1,
       "lazyChunks": 1
+    },
+    "aggregateSubpathDefine": {
+      "initialGzip": 12735,
+      "initialBrotli": 11410,
+      "totalGzip": 12735,
+      "totalBrotli": 11410,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
     },
     "baseTheme": {
       "initialGzip": 1919,
