@@ -18,21 +18,36 @@ Or install only the packages you need:
 npm install @rcarls/rc-select @rcarls/rc-fab
 ```
 
+Both install styles cost the same bundle bytes. See
+[Choosing an install style](#choosing-an-install-style).
+
 ## Load elements
 
-### Register all elements
+### Register one element at a time
 
-Import the side-effectful `define` entry to register every element at once.
-Do this once at your application root.
+Import a component's `define` entry to register just that element. Your bundler
+drops every component you do not import.
 
 ```js
-import '@rcarls/rc-webcomponents/define';
+import '@rcarls/rc-webcomponents/rc-select/define';
 ```
 
-Individual packages expose the same entry:
+Individual packages expose the same entry, and the two spellings are
+interchangeable, because the aggregate subpath re-exports the standalone
+package:
 
 ```js
 import '@rcarls/rc-select/define';
+```
+
+### Register all elements
+
+Import the collection-wide `define` entry to register every element at once.
+Do this once at your application root. This pulls in the whole collection, so
+prefer the per-component entries above unless you use most of it.
+
+```js
+import '@rcarls/rc-webcomponents/define';
 ```
 
 ### Register elements manually
@@ -53,6 +68,26 @@ Load directly from a CDN in plain HTML pages:
 ```html
 <script type="module" src="https://esm.sh/@rcarls/rc-webcomponents/define"></script>
 ```
+
+## Choosing an install style
+
+Per-component entries cost the same either way. Importing
+`@rcarls/rc-webcomponents/rc-button/define` bundles exactly what
+`@rcarls/rc-button/define` bundles, because the aggregate subpath is a
+re-export of the standalone package. You also write the same number of import
+lines either way, one per component you use.
+
+The difference is dependency management:
+
+- **The aggregate package** gives you one dependency to install and upgrade.
+  Every component moves to the same version together, which is how they are
+  released.
+- **Individual packages** let you install only what you use and pin components
+  separately, at the cost of a manifest entry per component.
+
+Reach for the aggregate unless you have a reason to pin components apart. Only
+the collection-wide entry, `@rcarls/rc-webcomponents/define`, carries the whole
+library.
 
 ## Basic usage
 

@@ -18,7 +18,27 @@ Bash/zsh:
 yarn add @rcarls/rc-webcomponents
 ```
 
+## Import One Component
+
+Each component has its own subpath, so bundlers drop the components you do not
+import:
+
+```ts
+import '@rcarls/rc-webcomponents/rc-button/define';
+import '@rcarls/rc-webcomponents/rc-dialog/define';
+```
+
+The subpath is the package name, so these are interchangeable with the
+standalone packages and bundle to the same output:
+
+```ts
+import '@rcarls/rc-button/define';
+```
+
 ## Import All Definitions
+
+Registers every element in the collection. Prefer the per-component entries
+above unless you use most of the library:
 
 ```ts
 import '@rcarls/rc-webcomponents/define';
@@ -98,7 +118,12 @@ fallbacks:
 
 ## Notes
 
-- Use individual packages when bundle size matters and the app only needs one or
-  two components.
-- Use this aggregate package for app-level convenience, framework integration,
-  and demo/documentation surfaces.
+- Bundle size no longer decides this. A per-component subpath here re-exports
+  the standalone package, so the two bundle identically, and either way you
+  write one import per component you use.
+- Use this aggregate package for one dependency to install and upgrade. The
+  collection is released as a version-locked set, so the components move
+  together regardless.
+- Use individual packages to install only what you use or to pin components
+  separately, at the cost of a manifest entry per component.
+- Only `@rcarls/rc-webcomponents/define` pulls in the whole collection.
