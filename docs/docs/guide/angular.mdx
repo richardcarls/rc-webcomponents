@@ -12,10 +12,10 @@ bootstrapping:
 ```ts title="main.ts"
 import { bootstrapApplication } from '@angular/platform-browser';
 
-// Each package's side-effectful `/define` subpath registers its custom
-// element. Register only the tags you actually use.
-import '@rcarls/rc-button/define';
-import '@rcarls/rc-card/define';
+// Each aggregate-package `/define` subpath registers one component. Register
+// only the tags you actually use.
+import '@rcarls/rc-webcomponents/rc-button/define';
+import '@rcarls/rc-webcomponents/rc-card/define';
 
 import { appConfig } from './app/app.config';
 import { App } from './app/app';

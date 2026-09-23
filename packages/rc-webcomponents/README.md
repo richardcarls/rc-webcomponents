@@ -18,10 +18,10 @@ Bash/zsh:
 yarn add @rcarls/rc-webcomponents
 ```
 
-## Import One Component
+## Import Components
 
-Each component has its own subpath, so bundlers drop the components you do not
-import:
+The recommended syntax uses one aggregate-package subpath per component. This
+registers only the elements you import:
 
 ```ts
 import '@rcarls/rc-webcomponents/rc-button/define';
@@ -47,28 +47,12 @@ import '@rcarls/rc-webcomponents/define';
 ## Import Classes
 
 ```ts
-import {
-  RCButton,
-  RCCard,
-  RCCombobox,
-  RCDialog,
-  RCFabMenu,
-  RCList,
-  RCListItem,
-  RCListbox,
-  RcMarkdownEditor,
-  RCMenu,
-  RCMenuButton,
-  RCMenubar,
-  RCNavigationBar,
-  RCNavigationRail,
-  RCSelect,
-  RCSplitter,
-  RCTextarea,
-  RCToolbar,
-  RCVirtualCanvas,
-} from '@rcarls/rc-webcomponents';
+import { RCButton } from '@rcarls/rc-webcomponents/rc-button';
+import { RCDialog } from '@rcarls/rc-webcomponents/rc-dialog';
 ```
+
+Class subpaths do not register custom elements. Import the matching `/define`
+subpath when you want registration as a side effect.
 
 ## Base Theme Tokens
 

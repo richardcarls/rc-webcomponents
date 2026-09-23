@@ -51,7 +51,7 @@ client entry point:
 
 ```js
 // Client-only entry point
-import '@rcarls/rc-select/define';
+import '@rcarls/rc-webcomponents/rc-select/define';
 ```
 
 Frameworks that evaluate route modules on the server should place registration
@@ -61,18 +61,19 @@ enhancement, not component hydration.
 
 ## Import choice
 
-Prefer an individual package when a page uses only one or a few components:
+Prefer the aggregate package's per-component subpaths. They keep dependency
+management centralized without pulling unused components into the bundle:
 
 ```js
-import '@rcarls/rc-button/define';
-import '@rcarls/rc-select/define';
+import '@rcarls/rc-webcomponents/rc-button/define';
+import '@rcarls/rc-webcomponents/rc-select/define';
 ```
 
 Use `@rcarls/rc-webcomponents/define` only when the application genuinely wants
-to register the entire collection. The aggregate class export and aggregate
-define export both evaluate nearly all component modules, so they are a
-convenience boundary rather than a small tree-shaken entry point. See
-[Performance](./performance) for measured sizes.
+to register the entire collection. Likewise, import classes from component
+subpaths such as `@rcarls/rc-webcomponents/rc-select` instead of the root class
+barrel when bundle size matters. See [Performance](./performance) for measured
+sizes.
 
 ## Versioning
 

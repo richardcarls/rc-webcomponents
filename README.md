@@ -18,6 +18,31 @@ the complete contracts and current baselines.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E4P62596QR)
 
+## Quick start
+
+Install the aggregate package:
+
+```sh
+npm install @rcarls/rc-webcomponents
+```
+
+Register only the components your application uses through their aggregate-package subpaths:
+
+```js
+import '@rcarls/rc-webcomponents/rc-button/define';
+import '@rcarls/rc-webcomponents/rc-select/define';
+```
+
+The matching class-only subpaths omit registration:
+
+```js
+import { RCButton } from '@rcarls/rc-webcomponents/rc-button';
+```
+
+Use `@rcarls/rc-webcomponents/define` only when you want to register the entire collection.
+See the [installation guide](https://richardcarls.github.io/rc-webcomponents/guide/installation)
+for standalone-package and CDN alternatives.
+
 ## Design principles
 
 These principles guide every component in the collection. Web applications need fundamental

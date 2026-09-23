@@ -6,10 +6,14 @@ title: Using with React
 
 ## Setup
 
-Register elements once in your application entry point:
+Register the elements you use once in your application entry point. Prefer the
+aggregate package's per-component subpaths so unused components stay out of the
+bundle:
 
 ```ts title="main.tsx"
-import '@rcarls/rc-webcomponents/define';
+import '@rcarls/rc-webcomponents/rc-combobox/define';
+import '@rcarls/rc-webcomponents/rc-dialog/define';
+import '@rcarls/rc-webcomponents/rc-select/define';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 

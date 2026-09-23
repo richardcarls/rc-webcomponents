@@ -6,7 +6,7 @@ title: Installation
 
 ## Install
 
-Install the aggregate package for all components:
+Install the aggregate package. This is the recommended setup for most applications:
 
 ```sh
 npm install @rcarls/rc-webcomponents
@@ -25,8 +25,8 @@ Both install styles cost the same bundle bytes. See
 
 ### Register one element at a time
 
-Import a component's `define` entry to register just that element. Your bundler
-drops every component you do not import.
+Import the aggregate package's per-component `define` subpath to register just
+that element. Your bundler drops every component you do not import.
 
 ```js
 import '@rcarls/rc-webcomponents/rc-select/define';
@@ -56,17 +56,20 @@ Import the class and call `customElements.define` yourself when you need
 control over timing or want to extend a class before registering:
 
 ```js
-import { RCSelect } from '@rcarls/rc-webcomponents';
+import { RCSelect } from '@rcarls/rc-webcomponents/rc-select';
 
 customElements.define('rc-select', RCSelect);
 ```
 
 ### CDN — no bundler
 
-Load directly from a CDN in plain HTML pages:
+Load the same per-component subpath from a CDN in plain HTML pages:
 
 ```html
-<script type="module" src="https://esm.sh/@rcarls/rc-webcomponents/define"></script>
+<script
+  type="module"
+  src="https://esm.sh/@rcarls/rc-webcomponents/rc-select/define"
+></script>
 ```
 
 ## Choosing an install style
