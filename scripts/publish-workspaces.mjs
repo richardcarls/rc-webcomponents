@@ -33,17 +33,21 @@ const REGISTRY_FIELDS = [
 ];
 // npm sometimes prints "Your package is being processed and may take a few
 // minutes to become available" right after a successful publish; the SLSA
-// provenance attestation can lag the package itself by more than a minute.
-// A confirmed instance: @rcarls/rc-bottom-sheet@0.5.0 published fine but its
-// provenance didn't index for several minutes, well past the previous 60s
-// budget (12 x 5s), which failed the whole release run even though nothing
-// was actually wrong. 30 x 10s gives ~5 minutes, matching npm's own estimate.
-const DEFAULT_POLL_ATTEMPTS = 30;
-const DEFAULT_POLL_DELAY_MS = 10_000;
+// provenance attestation can lag the package itself by several minutes. Use a
+// bounded exponential backoff so a delayed attestation gets about 12.5 minutes
+// to propagate without querying the registry every few seconds for that whole
+// window.
+const DEFAULT_PROVENANCE_MAX_RETRIES = 10;
+const DEFAULT_PROVENANCE_INITIAL_DELAY_MS = 5_000;
+const DEFAULT_PROVENANCE_MAX_DELAY_MS = 120_000;
 const PUBLISHED_DEPENDENCY_FIELDS = ['dependencies', 'optionalDependencies', 'peerDependencies'];
 
 function sleep(milliseconds) {
   return new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
+}
+
+export function provenanceRetryDelay(retry, initialDelayMs, maxDelayMs) {
+  return Math.min(initialDelayMs * 2 ** (retry - 1), maxDelayMs);
 }
 
 function parseJsonObject(output) {
@@ -419,7 +423,16 @@ function safePackageSlug(packageName) {
 }
 
 export function buildPublishArgs({ npmTag = 'latest', tarballPath }) {
-  return ['publish', tarballPath, '--access', 'public', '--tag', npmTag, '--registry', NPM_REGISTRY];
+  return [
+    'publish',
+    tarballPath,
+    '--access',
+    'public',
+    '--tag',
+    npmTag,
+    '--registry',
+    NPM_REGISTRY,
+  ];
 }
 
 export function createPublisherOperations({ env, npmTag = 'latest', runtimeDirectory }) {
@@ -488,14 +501,16 @@ async function waitForVerifiedPackage({
   allowMissingProvenance = false,
   initialMetadata,
   internalNames,
+  log,
   operations,
-  pollAttempts,
-  pollDelayMs,
+  provenanceInitialDelayMs,
+  provenanceMaxDelayMs,
+  provenanceMaxRetries,
   workspace,
 }) {
   let metadata = initialMetadata;
 
-  for (let attempt = 1; attempt <= pollAttempts; attempt += 1) {
+  for (let retry = 0; retry <= provenanceMaxRetries; retry += 1) {
     if (metadata) {
       validatePublishedManifest({
         internalNames,
@@ -514,11 +529,19 @@ async function waitForVerifiedPackage({
       }
     }
 
-    if (attempt === pollAttempts) {
+    if (retry === provenanceMaxRetries) {
       break;
     }
 
-    await operations.sleep(pollDelayMs);
+    const nextRetry = retry + 1;
+    const delayMs = provenanceRetryDelay(nextRetry, provenanceInitialDelayMs, provenanceMaxDelayMs);
+
+    log.log(
+      `waiting for npm provenance: ${workspace.name}@${workspace.manifest.version} ` +
+        `(retry ${nextRetry}/${provenanceMaxRetries} in ${delayMs / 1_000}s)`,
+    );
+
+    await operations.sleep(delayMs);
 
     const result = await operations.query(workspace);
 
@@ -526,7 +549,7 @@ async function waitForVerifiedPackage({
   }
 
   throw new Error(
-    `${workspace.name}@${workspace.manifest.version} did not expose SLSA provenance after ${pollAttempts} checks`,
+    `${workspace.name}@${workspace.manifest.version} did not expose SLSA provenance after ${provenanceMaxRetries} retries`,
   );
 }
 
@@ -538,8 +561,9 @@ export async function executePublication({
   dryRun,
   log = console,
   operations,
-  pollAttempts = DEFAULT_POLL_ATTEMPTS,
-  pollDelayMs = DEFAULT_POLL_DELAY_MS,
+  provenanceInitialDelayMs = DEFAULT_PROVENANCE_INITIAL_DELAY_MS,
+  provenanceMaxDelayMs = DEFAULT_PROVENANCE_MAX_DELAY_MS,
+  provenanceMaxRetries = DEFAULT_PROVENANCE_MAX_RETRIES,
   provenanceExceptions = new Set(),
   workspaces,
 }) {
@@ -587,9 +611,11 @@ export async function executePublication({
           allowMissingProvenance: provenanceExceptions.has(packageSpec),
           initialMetadata: existing.metadata,
           internalNames,
+          log,
           operations,
-          pollAttempts,
-          pollDelayMs,
+          provenanceInitialDelayMs,
+          provenanceMaxDelayMs,
+          provenanceMaxRetries,
           workspace,
         });
 
@@ -622,9 +648,11 @@ export async function executePublication({
         await waitForVerifiedPackage({
           initialMetadata: raced.metadata,
           internalNames,
+          log,
           operations,
-          pollAttempts,
-          pollDelayMs,
+          provenanceInitialDelayMs,
+          provenanceMaxDelayMs,
+          provenanceMaxRetries,
           workspace,
         });
 
@@ -636,9 +664,11 @@ export async function executePublication({
 
       await waitForVerifiedPackage({
         internalNames,
+        log,
         operations,
-        pollAttempts,
-        pollDelayMs,
+        provenanceInitialDelayMs,
+        provenanceMaxDelayMs,
+        provenanceMaxRetries,
         workspace,
       });
 

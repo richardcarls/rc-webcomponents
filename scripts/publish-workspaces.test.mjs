@@ -18,6 +18,7 @@ import {
   interpretRegistryResult,
   normalizeRegistryMetadata,
   parseProvenanceExceptions,
+  provenanceRetryDelay,
   validatePackedManifest,
 } from './publish-workspaces.mjs';
 import {
@@ -288,6 +289,13 @@ test('builds the npm publish command under the requested dist-tag', () => {
   ]);
 });
 
+test('backs off provenance checks exponentially up to the configured delay cap', () => {
+  assert.deepEqual(
+    [1, 2, 3, 4, 5].map((retry) => provenanceRetryDelay(retry, 100, 1_000)),
+    [100, 200, 400, 800, 1_000],
+  );
+});
+
 test('requires an exact tag, OIDC context, and no token credentials for live publishing', () => {
   const environment = {
     ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'oidc-request-token',
@@ -350,12 +358,20 @@ test('snapshot mode skips the tag requirement but still enforces credential, rep
   assert.equal(assertLiveEnvironment(environment, { snapshot: true }), undefined);
 
   assert.throws(
-    () => assertLiveEnvironment({ ...environment, NODE_AUTH_TOKEN: 'legacy-token' }, { snapshot: true }),
+    () =>
+      assertLiveEnvironment(
+        { ...environment, NODE_AUTH_TOKEN: 'legacy-token' },
+        { snapshot: true },
+      ),
     /Refusing token fallback.*NODE_AUTH_TOKEN/,
   );
 
   assert.throws(
-    () => assertLiveEnvironment({ ...environment, GITHUB_REPOSITORY: 'someone/else' }, { snapshot: true }),
+    () =>
+      assertLiveEnvironment(
+        { ...environment, GITHUB_REPOSITORY: 'someone/else' },
+        { snapshot: true },
+      ),
     /GITHUB_REPOSITORY must be richardcarls\/rc-webcomponents/,
   );
 
@@ -595,8 +611,9 @@ test('skips verified versions and publishes only missing packages in dependency 
       },
       async sleep() {},
     },
-    pollAttempts: 2,
-    pollDelayMs: 0,
+    provenanceInitialDelayMs: 0,
+    provenanceMaxDelayMs: 0,
+    provenanceMaxRetries: 1,
     workspaces: [aggregate, foundation],
   });
 
@@ -635,8 +652,9 @@ test('recovers when a failed publish raced with another successful publisher', a
       },
       async sleep() {},
     },
-    pollAttempts: 1,
-    pollDelayMs: 0,
+    provenanceInitialDelayMs: 0,
+    provenanceMaxDelayMs: 0,
+    provenanceMaxRetries: 0,
     workspaces: [workspace],
   });
 
@@ -646,7 +664,7 @@ test('recovers when a failed publish raced with another successful publisher', a
 test('polls until registry provenance becomes visible', async () => {
   const workspace = createWorkspace('package');
   let queryCount = 0;
-  let sleepCount = 0;
+  const delays = [];
 
   const summary = await executePublication({
     dryRun: false,
@@ -660,18 +678,19 @@ test('polls until registry provenance becomes visible', async () => {
           state: 'found',
         };
       },
-      async sleep() {
-        sleepCount += 1;
+      async sleep(delayMs) {
+        delays.push(delayMs);
       },
     },
-    pollAttempts: 2,
-    pollDelayMs: 0,
+    provenanceInitialDelayMs: 100,
+    provenanceMaxDelayMs: 1_000,
+    provenanceMaxRetries: 2,
     workspaces: [workspace],
   });
 
   assert.deepEqual(summary.skipped, [workspace.name]);
   assert.equal(queryCount, 2);
-  assert.equal(sleepCount, 1);
+  assert.deepEqual(delays, [100]);
   assert.equal(hasSlsaProvenance(registryManifest(workspace)), true);
 });
 
@@ -696,8 +715,9 @@ test('skips an immutable manual publish only with its exact provenance exception
         assert.fail('an approved immutable manual publish must not poll for provenance');
       },
     },
-    pollAttempts: 2,
-    pollDelayMs: 0,
+    provenanceInitialDelayMs: 0,
+    provenanceMaxDelayMs: 0,
+    provenanceMaxRetries: 1,
     provenanceExceptions: new Set([packageSpec]),
     workspaces: [workspace],
   });
@@ -710,7 +730,7 @@ test('skips an immutable manual publish only with its exact provenance exception
 test('stops provenance polling after the configured attempt bound', async () => {
   const workspace = createWorkspace('package');
   let queryCount = 0;
-  let sleepCount = 0;
+  const delays = [];
 
   await assert.rejects(
     executePublication({
@@ -725,19 +745,20 @@ test('stops provenance polling after the configured attempt bound', async () => 
             state: 'found',
           };
         },
-        async sleep() {
-          sleepCount += 1;
+        async sleep(delayMs) {
+          delays.push(delayMs);
         },
       },
-      pollAttempts: 2,
-      pollDelayMs: 0,
+      provenanceInitialDelayMs: 100,
+      provenanceMaxDelayMs: 150,
+      provenanceMaxRetries: 3,
       workspaces: [workspace],
     }),
-    /did not expose SLSA provenance after 2 checks/,
+    /did not expose SLSA provenance after 3 retries/,
   );
 
-  assert.equal(queryCount, 2);
-  assert.equal(sleepCount, 1);
+  assert.equal(queryCount, 4);
+  assert.deepEqual(delays, [100, 150, 150]);
 });
 
 test('aborts on unknown registry failures and leaves dependents unattempted', async () => {

@@ -133,6 +133,9 @@ tag. Leave the provenance exception empty. The publisher verifies and skips corr
 then publishes only missing versions.
 
 Registry, authentication, parsing, or invalid immutable-version errors stop the run immediately.
+After a successful publish, provenance verification retries with exponentially increasing delays
+for roughly 12.5 minutes before treating a still-missing attestation as a transient failure. The
+workflow logs each scheduled retry; let that bounded wait finish before manually rerunning it.
 If an existing version contains incorrect metadata, it cannot be overwritten; correct the issue
 in a new patch release.
 
