@@ -45,6 +45,17 @@ const config: Config = {
         { label: 'Guide', to: '/guide/installation' },
         { label: 'Theme previews', to: '/guide/theme-previews' },
         { label: 'Components', to: '/components/rc-select' },
+        variant === 'next'
+          ? {
+              href: 'https://richardcarls.github.io/rc-webcomponents/',
+              label: 'Stable docs',
+              position: 'right',
+            }
+          : {
+              href: 'https://richardcarls.github.io/rc-webcomponents/next/',
+              label: '@next preview',
+              position: 'right',
+            },
         {
           href: 'https://ko-fi.com/rcarls',
           label: 'Donate',
@@ -68,7 +79,7 @@ const config: Config = {
       announcementBar: {
         id: 'next-docs',
         content:
-          'This documents in-development, unpublished components. For the stable release, see <a href="https://richardcarls.github.io/rc-webcomponents/">richardcarls.github.io/rc-webcomponents</a>.',
+          'Preview docs for the npm <code>@next</code> channel. Install with <code>npm install @rcarls/rc-webcomponents@next</code>. APIs may change; see the <a href="https://richardcarls.github.io/rc-webcomponents/">stable docs</a>.',
         backgroundColor: '#fef6e4',
         textColor: '#3a2e00',
         isCloseable: false,

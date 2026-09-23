@@ -2,7 +2,8 @@
 
 Aggregate package that re-exports and defines the `rc-webcomponents` collection.
 
-Docs: [https://richardcarls.github.io/rc-webcomponents/](https://richardcarls.github.io/rc-webcomponents/).
+Docs: [stable](https://richardcarls.github.io/rc-webcomponents/) ·
+[`@next` preview](https://richardcarls.github.io/rc-webcomponents/next/).
 
 ## Installation
 
@@ -16,6 +17,24 @@ Bash/zsh:
 
 ```bash
 yarn add @rcarls/rc-webcomponents
+```
+
+### Preview releases
+
+Install the npm `next` channel to try in-development snapshots. Use the
+[`@next` preview documentation](https://richardcarls.github.io/rc-webcomponents/next/)
+with these releases because it may describe APIs that are not yet stable.
+
+PowerShell:
+
+```powershell
+yarn.cmd add @rcarls/rc-webcomponents@next
+```
+
+Bash/zsh:
+
+```bash
+yarn add @rcarls/rc-webcomponents@next
 ```
 
 ## Import Components

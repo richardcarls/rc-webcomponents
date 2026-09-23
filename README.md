@@ -6,7 +6,12 @@ apply.
 
 Components are fully typed and developed primarily with [Lit](https://lit.dev).
 
-**[Documentation and component demos](https://richardcarls.github.io/rc-webcomponents/)**
+**[Stable documentation and demos](https://richardcarls.github.io/rc-webcomponents/)** ·
+**[`@next` preview documentation and demos](https://richardcarls.github.io/rc-webcomponents/next/)**
+
+> The npm `next` channel contains in-development snapshots. Install it with
+> `npm install @rcarls/rc-webcomponents@next` and use the preview documentation, which may cover
+> APIs that are not available in the latest stable release.
 
 Runtime support covers the current and previous stable Chromium, Firefox, and Safari releases,
 plus current Chrome on Android and Safari on iOS. Packages are browser modules: render native
