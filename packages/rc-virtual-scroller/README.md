@@ -16,12 +16,17 @@ consumer-owned list or grid and reserves the off-range scroll space.
 ```js
 const scroller = document.querySelector('rc-virtual-scroller');
 
-scroller.addEventListener('rc-virtual-scroller-range', (event) => {
-  const { start, end } = event.detail;
+const render = ({ start, end }) => renderItems(recipes.slice(start, end), start);
 
-  renderItems(recipes.slice(start, end), start);
-});
+// The element may have measured before this listener existed.
+if (scroller.range) render(scroller.range);
+
+scroller.addEventListener('rc-virtual-scroller-range', (event) => render(event.detail));
 ```
+
+The element measures on its own schedule, which can be before your listener is
+attached, and it never re-sends an unchanged range. Render once from the
+read-only `range` property when you subscribe, then follow the event.
 
 The element never creates, recycles, or positions item DOM. It measures
 geometry, dispatches `rc-virtual-scroller-range`, and sizes two spacer parts
@@ -42,21 +47,46 @@ Containment cannot prevent element construction, so a collection of a few
 thousand custom elements still pays for all of them up front. Virtualization is
 the only thing that avoids that cost.
 
+## Axis, direction, and writing mode
+
+`axis` is logical. `block`, the default, windows lines that stack the way
+paragraphs do: top to bottom in horizontal text, right to left in
+`vertical-rl`. `inline` windows items running the way text runs, such as a
+horizontal shelf. For the inline axis, lay the container's items along it with
+`display: flex` or a grid with `grid-auto-flow: column`.
+
+```html
+<rc-virtual-scroller axis="inline" count="500" item-size="160">
+  <ul class="shelf">
+    <!-- display: flex -->
+  </ul>
+</rc-virtual-scroller>
+```
+
+Direction and writing mode come from the element's computed style, so RTL
+pages and vertical text need no configuration. The visible range is measured
+from where the scroll container's visible box sits relative to the element, in
+the element's own flow, so it never depends on the sign conventions of
+`scrollLeft` in RTL.
+
 ## Geometry
 
-`count` is the true total. `item-size` is the estimated row pitch in pixels; it
-is used for the first frame and whenever nothing can be measured yet, so a
+`count` is the true total. `item-size` is the estimated line pitch in pixels;
+it is used for the first frame and whenever nothing can be measured yet, so a
 reasonable value matters for the first paint and for restoring a saved scroll
 position.
 
-Column count and row pitch are measured from the slotted container rather than
-configured. The element reads the resolved `grid-template-columns` and the
-offset between two items one row apart, which keeps `auto-fill`, container
-queries, and the gap authoritative in CSS instead of duplicated in JavaScript.
-`rc-virtual-scroller-range` reports `columns`, `rowSize`, and a `measured` flag
-that is `false` while the geometry is still the `item-size` estimate.
+Items per line and line pitch are measured from the slotted container rather
+than configured. On the block axis a line holds one item per grid column
+(`grid-template-columns`); on the inline axis, one item per grid row
+(`grid-template-rows`). Grid columns and rows are logical, so this holds in
+vertical writing modes too. The pitch is the offset between two items one line
+apart, which keeps `auto-fill`, container queries, and the gap authoritative in
+CSS instead of duplicated in JavaScript. `rc-virtual-scroller-range` reports
+`itemsPerLine`, `lineSize`, and a `measured` flag that is `false` while the
+geometry is still the `item-size` estimate.
 
-`overscan` (default `2`) is how many extra rows render past each edge.
+`overscan` (default `2`) is how many extra lines render past each edge.
 `disabled` reports the whole collection as the range and stops measuring, which
 makes an A/B against the non-virtualized cost a one-attribute change.
 
@@ -64,10 +94,11 @@ The element measures against the nearest scrolling ancestor. Set the
 `scrollTarget` property when that ancestor only becomes scrollable after its own
 upgrade, or when the real scrollport is further up the tree.
 
-`scrollToIndex(index, { block, behavior })` scrolls an arbitrary index into
-view, including one that is not currently rendered. It is accurate to the
-current row pitch, so it is only as accurate as `item-size` until at least one
-row has rendered.
+`scrollToIndex(index, { align, behavior })` scrolls an arbitrary index into
+view along `axis`, including one that is not currently rendered. `align` is
+`start` (the default), `center`, `end`, or `nearest`. It is accurate to the
+current line pitch, so it is only as accurate as `item-size` until at least one
+line has rendered.
 
 ## Accessibility
 
