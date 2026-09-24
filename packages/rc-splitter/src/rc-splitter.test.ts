@@ -1338,4 +1338,54 @@ describe('RCSplitter direction and writing mode', () => {
     // so the bar between them is horizontal.
     await vi.waitFor(() => expect(separator.getAttribute('aria-orientation')).toBe('horizontal'));
   });
+
+  test.each([
+    ['horizontal-tb', 'col-resize'],
+    ['vertical-rl', 'row-resize'],
+  ])('turns the grip and cursor with the bar in %s', async (writingMode, cursor) => {
+    const screen = render(html`
+      <div style="writing-mode: ${writingMode};">
+        <rc-splitter data-testid="host" style="inline-size: 400px; block-size: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      </div>
+    `);
+    const host = screen.getByTestId('host').element() as RCSplitter;
+
+    await host.updateComplete;
+
+    const separator = await waitForInit(host);
+
+    // The cursor and dots are physical, so they follow the bar as rendered,
+    // not the orientation attribute, which stays horizontal in both cases.
+    await vi.waitFor(() => expect(getComputedStyle(separator).cursor).toBe(cursor));
+    expect(separator.dataset.bar).toBe(separator.getAttribute('aria-orientation'));
+  });
+
+  test('sizes the primary pane along the inline axis in vertical text', async () => {
+    const screen = render(html`
+      <div style="writing-mode: vertical-rl;">
+        <rc-splitter data-testid="host" style="inline-size: 400px; block-size: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      </div>
+    `);
+    const host = screen.getByTestId('host').element() as RCSplitter;
+
+    await host.updateComplete;
+
+    const separator = await waitForInit(host);
+
+    // The whole inline extent, which is the host's height here, not its width.
+    expect(Number(separator.getAttribute('aria-valuemax'))).toBeCloseTo(400, -1);
+
+    host.value = 100;
+    await host.updateComplete;
+
+    // Side-by-side panes stack vertically on screen, so the value is a height.
+    expect(getPrimary(host).getBoundingClientRect().height).toBeCloseTo(100, 0);
+    expect(getPrimary(host).getBoundingClientRect().width).toBeCloseTo(300, 0);
+  });
 });

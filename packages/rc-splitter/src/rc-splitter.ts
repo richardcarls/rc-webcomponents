@@ -504,10 +504,7 @@ export class RCSplitter extends LitElement {
 
   protected async _settleToValue(value: number, behavior: 'animated' | 'instant'): Promise<void> {
     const $primary = this._$primary;
-    const fromSize =
-      this.orientation === 'horizontal'
-        ? $primary.getBoundingClientRect().width
-        : $primary.getBoundingClientRect().height;
+    const fromSize = this._sizeAlong($primary.getBoundingClientRect(), this._paneAxis);
 
     this._activeSnapAnimation?.cancel();
     this._activeSnapAnimation = null;
@@ -518,16 +515,13 @@ export class RCSplitter extends LitElement {
       return;
     }
 
-    const toSize =
-      this.orientation === 'horizontal'
-        ? $primary.getBoundingClientRect().width
-        : $primary.getBoundingClientRect().height;
+    const toSize = this._sizeAlong($primary.getBoundingClientRect(), this._paneAxis);
 
     if (fromSize === toSize) {
       return;
     }
 
-    const property = this.orientation === 'horizontal' ? 'width' : 'height';
+    const property = this._paneAxis === 'inline' ? 'inlineSize' : 'blockSize';
     const animation = $primary.animate(
       [{ [property]: `${fromSize}px` }, { [property]: `${toSize}px` }],
       {
@@ -576,16 +570,23 @@ export class RCSplitter extends LitElement {
     });
   }
 
+  /**
+   * The extent of `rect` along a logical axis. The pane axis is vertical on
+   * screen in vertical text, so a physical width would measure the wrong one.
+   */
+  protected _sizeAlong(rect: DOMRect, axis: LogicalAxis): number {
+    return physicalAxis(axis, resolveFlow(this)) === 'x' ? rect.width : rect.height;
+  }
+
   protected _measureHostSize(axis: 'inline' | 'block'): number {
-    const clientRect = this.getBoundingClientRect();
-    const measuredSize = axis === 'inline' ? clientRect.width : clientRect.height;
+    const measuredSize = this._sizeAlong(this.getBoundingClientRect(), axis);
 
     if (measuredSize > 0) {
       return Math.ceil(measuredSize);
     }
 
     const computedStyle = getComputedStyle(this);
-    const fallbackSize = axis === 'inline' ? computedStyle.width : computedStyle.height;
+    const fallbackSize = axis === 'inline' ? computedStyle.inlineSize : computedStyle.blockSize;
     const parsedFallbackSize = Number.parseFloat(fallbackSize);
 
     return Number.isFinite(parsedFallbackSize) ? Math.ceil(parsedFallbackSize) : 0;
@@ -608,7 +609,9 @@ export class RCSplitter extends LitElement {
             ? // For horizontal splitters, just take the host width...
               this._measureHostSize('inline')
             : // ...otherwise try to use the first lightDOM element's auto height, and cache it
-              this._initialMax || Math.ceil(clientRect.height) || this._measureHostSize('block');
+              this._initialMax ||
+              Math.ceil(this._sizeAlong(clientRect, 'block')) ||
+              this._measureHostSize('block');
 
         // After initialization, ignore spurious zero measurements (e.g. during
         // Chromium's layout recalculation triggered by a secondary ResizeObserver
@@ -667,14 +670,20 @@ export class RCSplitter extends LitElement {
   }
 
   render() {
+    // The separator bar's rendered direction, which turns with the text. The
+    // grip dots and resize cursor are physical, so they key off this rather
+    // than the orientation attribute, which names a layout.
+    const bar = renderedOrientation(
+      this.orientation === 'horizontal' ? 'vertical' : 'horizontal',
+      this._flow.flow,
+    );
+
     return html`
       <div
         id="primary"
         part="primary"
         aria-label=${this.label}
-        style=${this.orientation === 'horizontal'
-          ? `width: ${this.valueText}`
-          : `height: ${this.valueText}`}
+        style=${`${this._paneAxis === 'inline' ? 'inline' : 'block'}-size: ${this.valueText}`}
         ?hidden=${this.value === this._minValue}
       >
         <slot @slotchange=${this._onPrimaryChange}></slot>
@@ -700,10 +709,8 @@ export class RCSplitter extends LitElement {
           part="separator-handle"
           aria-labelledby="primary"
           aria-controls="primary"
-          aria-orientation=${renderedOrientation(
-            this.orientation === 'horizontal' ? 'vertical' : 'horizontal',
-            this._flow.flow,
-          )}
+          aria-orientation=${bar}
+          data-bar=${bar}
           aria-valuenow=${this.value}
           aria-valuetext=${this.valueText}
           aria-valuemin=${this._effectiveMin}
