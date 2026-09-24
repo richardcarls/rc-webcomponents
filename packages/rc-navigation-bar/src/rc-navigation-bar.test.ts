@@ -269,3 +269,59 @@ test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
     });
   },
 );
+
+test('follows the current link when the direction flips at runtime', async () => {
+  const screen = render(html`
+    <div data-testid="flow" dir="ltr">
+      <rc-navigation-bar data-testid="host" style="display: block; inline-size: 240px;">
+        <a href="/recipes">
+          <span
+            data-rc-navigation-icon
+            style="display: inline-block; inline-size: 48px; block-size: 32px;"
+            >R</span
+          >
+        </a>
+        <a href="/settings" aria-current="page">
+          <span
+            data-testid="target"
+            data-rc-navigation-icon
+            style="display: inline-block; inline-size: 48px; block-size: 32px;"
+            >S</span
+          >
+        </a>
+      </rc-navigation-bar>
+    </div>
+  `);
+  const flow = (await screen.getByTestId('flow').element()) as HTMLElement;
+  const host = (await screen.getByTestId('host').element()) as RCNavigationBar;
+  const target = await screen.getByTestId('target').element();
+
+  await host.updateComplete;
+  await nextFrame();
+
+  const indicator = host.shadowRoot?.querySelector<HTMLElement>('#indicator');
+
+  const landed = () => {
+    expect(indicator?.getBoundingClientRect().left).toBeCloseTo(
+      target.getBoundingClientRect().left,
+      0,
+    );
+  };
+
+  await vi.waitFor(landed);
+  // The bar settles its own width after the first frame; flipping before
+  // that resize is delivered would let it re-measure and hide the bug.
+  await nextFrame();
+  await nextFrame();
+
+  // Every box keeps its size, so no resize reports the flip. The target's
+  // logical offset is unchanged too, but the physical translate written for
+  // it now points the wrong way; a link at offset 0 would hide that.
+  const before = target.getBoundingClientRect().left;
+
+  flow.dir = 'rtl';
+
+  expect(target.getBoundingClientRect().left).not.toBeCloseTo(before, 0);
+
+  await vi.waitFor(landed);
+});

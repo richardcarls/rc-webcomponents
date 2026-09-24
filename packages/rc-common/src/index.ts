@@ -17,6 +17,7 @@ export * from './visualViewport.js';
 export * from './findNearestScrollAncestor.js';
 export * from './flow.js';
 export * from './FlowController.js';
+export * from './observeDirection.js';
 export * from './isFocusable.js';
 export * from './nativeChild.js';
 export * from './RovingTabIndexMixin.js';

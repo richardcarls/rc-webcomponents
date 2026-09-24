@@ -1,6 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { logicalRect, physicalOffset, resolveFlow } from './flow.js';
+import { observeDirection } from './observeDirection.js';
 
 export interface NavigationIndicatorControllerOptions {
   slot: () => HTMLSlotElement | null;
@@ -25,6 +26,8 @@ export class NavigationIndicatorController implements ReactiveController {
 
   private _resizeObserver?: ResizeObserver;
 
+  private _unobserveDirection?: () => void;
+
   private _frame = 0;
 
   private _links: HTMLAnchorElement[] = [];
@@ -39,14 +42,20 @@ export class NavigationIndicatorController implements ReactiveController {
   }
 
   hostConnected(): void {
+    // The indicator's offset is measured from the container's logical start,
+    // which moves to the other side when the direction flips; the links keep
+    // their sizes, so no resize would report it.
+    this._unobserveDirection ??= observeDirection(() => this.update());
     this.sync();
   }
 
   hostDisconnected(): void {
     this._mutationObserver?.disconnect();
     this._resizeObserver?.disconnect();
+    this._unobserveDirection?.();
     this._mutationObserver = undefined;
     this._resizeObserver = undefined;
+    this._unobserveDirection = undefined;
 
     if (this._frame) {
       cancelAnimationFrame(this._frame);

@@ -88,8 +88,11 @@ short and tell the tool to read `AGENTS.md` before project work.
   `logicalRect`, `logicalDelta`, `arrowKeys`) rather than reading
   `direction`, `writing-mode`, `scrollLeft`, or `clientX` directly. Resolve the
   flow at interaction or measure time, since a `dir` change on an ancestor
-  fires no event. Test new geometry or keyboard behavior with the
-  `FLOW_FIXTURES`/`inFlow` helpers in `test-helpers/flow.ts`.
+  fires no event. Anything cached from the flow (rendered attributes,
+  measured offsets) must also subscribe through `FlowController` or
+  `observeDirection`, and its test should flip `dir` at runtime after layout
+  settles, not only render in RTL. Test new geometry or keyboard behavior
+  with the `FLOW_FIXTURES`/`inFlow` helpers in `test-helpers/flow.ts`.
 - Shared interaction behavior belongs in `rc-common` as Lit directives or
   `ReactiveController` classes.
 - Before adding new interaction, focus, positioning, scrolling, pointer, resize,
