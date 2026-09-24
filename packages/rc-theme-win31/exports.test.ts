@@ -40,6 +40,7 @@ const componentEntries = [
   'toolbar',
   'transfer-list',
   'virtual-canvas',
+  'virtual-scroller',
 ] as const;
 
 test('every selective component stylesheet can be imported', async () => {

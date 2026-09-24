@@ -38,5 +38,6 @@
 @import './components/disclosure.css';
 @import './components/accordion.css';
 @import './components/virtual-canvas.css';
+@import './components/virtual-scroller.css';
 @import './components/modes.css';
 @import './state-layer.css';

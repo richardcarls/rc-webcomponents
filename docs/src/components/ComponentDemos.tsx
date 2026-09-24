@@ -33,6 +33,7 @@ import type {
   RCVirtualCanvasRef,
   RCVirtualCanvasRenderDetail,
   RCVirtualCanvasPointerDetail,
+  RCVirtualScrollerRangeDetail,
 } from '@rcarls/rc-webcomponents/react';
 import type { RCTextareaPluginAPI } from '@rcarls/rc-textarea';
 
@@ -372,6 +373,90 @@ export function ScrollerDemo() {
           ),
         )}
       </rc-scroller>
+    </DemoFrame>
+  );
+}
+
+const VIRTUAL_SCROLLER_DEMO_CSS = `
+.virtual-scroller-demo-port {
+  block-size: 16rem;
+  overflow: auto;
+  border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
+  border-radius: 0.5rem;
+}
+
+.virtual-scroller-demo-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.virtual-scroller-demo-list li {
+  display: flex;
+  align-items: center;
+  block-size: 3rem;
+  padding-inline: 1rem;
+  border-block-end: 1px solid color-mix(in srgb, CanvasText 10%, transparent);
+}
+
+.virtual-scroller-demo-status {
+  margin-block-start: 0.5rem;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, CanvasText 65%, transparent);
+}
+`;
+
+const VIRTUAL_SCROLLER_DEMO_COUNT = 2000;
+
+export function VirtualScrollerDemo() {
+  const listRef = useRef<HTMLUListElement | null>(null);
+  const [range, setRange] = useState({ start: 0, end: 0 });
+
+  useEffect(() => {
+    const list = listRef.current;
+
+    if (!list) {
+      return;
+    }
+
+    for (let index = list.children.length; index < range.end - range.start; index += 1) {
+      list.append(document.createElement('li'));
+    }
+
+    while (list.children.length > range.end - range.start) {
+      list.lastElementChild?.remove();
+    }
+
+    for (let i = 0; i < list.children.length; i += 1) {
+      const item = list.children[i];
+      const index = range.start + i;
+
+      if (item) {
+        item.setAttribute('aria-setsize', String(VIRTUAL_SCROLLER_DEMO_COUNT));
+        item.setAttribute('aria-posinset', String(index + 1));
+        item.textContent = `Recipe #${index + 1}`;
+      }
+    }
+  }, [range]);
+
+  return (
+    <DemoFrame defaultTheme="material">
+      <style>{VIRTUAL_SCROLLER_DEMO_CSS}</style>
+      <div className="virtual-scroller-demo-port">
+        <rc-virtual-scroller
+          count={VIRTUAL_SCROLLER_DEMO_COUNT}
+          item-size={48}
+          onrc-virtual-scroller-range={(event: CustomEvent<RCVirtualScrollerRangeDetail>) => {
+            setRange({ start: event.detail.start, end: event.detail.end });
+          }}
+        >
+          <ul className="virtual-scroller-demo-list" ref={listRef} aria-label="Recipes" />
+        </rc-virtual-scroller>
+      </div>
+      <p className="virtual-scroller-demo-status" aria-live="polite">
+        Rendering items {range.start + 1}–{range.end} of {VIRTUAL_SCROLLER_DEMO_COUNT}.
+      </p>
     </DemoFrame>
   );
 }

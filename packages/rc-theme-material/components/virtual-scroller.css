@@ -1,0 +1,7 @@
+@layer rc-theme-material.components {
+  /*
+   * rc-virtual-scroller has no decorative surface of its own: the two
+   * spacer parts carry no paint, and every visual opinion belongs to the
+   * consumer's slotted list or grid. Nothing in Material maps onto it.
+   */
+}

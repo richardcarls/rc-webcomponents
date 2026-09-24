@@ -483,6 +483,18 @@
         "types": "./dist/types/rc-virtual-canvas/define.d.ts",
         "default": "./dist/rc-virtual-canvas/define.js"
       }
+    },
+    "./rc-virtual-scroller": {
+      "import": {
+        "types": "./dist/types/rc-virtual-scroller/index.d.ts",
+        "default": "./dist/rc-virtual-scroller/index.js"
+      }
+    },
+    "./rc-virtual-scroller/define": {
+      "import": {
+        "types": "./dist/types/rc-virtual-scroller/define.d.ts",
+        "default": "./dist/rc-virtual-scroller/define.js"
+      }
     }
   },
   "types": "./dist/types/index.d.ts",
@@ -531,7 +543,8 @@
     "@rcarls/rc-textarea": "workspace:*",
     "@rcarls/rc-toolbar": "workspace:*",
     "@rcarls/rc-transfer-list": "workspace:*",
-    "@rcarls/rc-virtual-canvas": "workspace:*"
+    "@rcarls/rc-virtual-canvas": "workspace:*",
+    "@rcarls/rc-virtual-scroller": "workspace:*"
   },
   "peerDependencies": {
     "lit": "^3.0.0"
