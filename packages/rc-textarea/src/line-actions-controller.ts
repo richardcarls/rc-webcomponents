@@ -49,7 +49,7 @@ WIDGET_SHEET.replaceSync(`
     display: inline-flex;
     align-items: center;
     gap: var(--rc-line-actions-gap, 2px);
-    margin-left: var(--rc-line-actions-margin-start, 6px);
+    margin-inline-start: var(--rc-line-actions-margin-start, 6px);
     vertical-align: middle;
   }
   .rc-line-action-btn {

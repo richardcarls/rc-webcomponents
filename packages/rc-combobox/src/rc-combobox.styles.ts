@@ -146,6 +146,7 @@ export const comboboxStyles = css`
   /* Listbox popup — positioned by AnchorController via adoptedStyleSheets */
   rc-listbox {
     overflow-y: auto;
+    overflow-block: auto;
     background: var(--rc-surface, Canvas);
     border: var(
       --rc-combobox-listbox-border,

@@ -241,11 +241,8 @@ export const PHYSICAL_CSS_ALLOWLIST = {
   'packages/rc-virtual-canvas/src/rc-virtual-canvas.ts': 'canvas pixel space is physical',
   'packages/rc-common/src/AnchorController.ts':
     'emits physical CSS only after resolving the placement against the flow',
-  'packages/rc-markdown-editor/src/rc-markdown-editor.styles.ts':
-    'pending: blockquote and list indents',
   'packages/rc-markdown-editor/src/rc-markdown-editor.ts':
     'positions the link popover in host pixel coordinates, aligned from the flow',
-  'packages/rc-textarea/src/rc-textarea.styles.ts': 'pending: gutter border and wrap indent',
   'packages/rc-textarea/src/line-actions-controller.ts':
     'positions the popover in viewport pixel coordinates, aligned from the flow',
 };
@@ -259,7 +256,18 @@ export const DIRECTION_READ_ALLOWLIST = {
 };
 
 const PHYSICAL_CSS_DECLARATION =
-  /(?:^|[\s;{])(?:((?:margin|padding|border)-(?:left|right)(?:-[a-z]+)?|left|right)\s*:|((?:text-align|float|clear)\s*:\s*(?:left|right))\b)/g;
+  /(?:^|[\s;{])(?:((?:margin|padding|border|scroll-margin|scroll-padding)-(?:left|right)(?:-[a-z]+)?|border-(?:top|bottom)-(?:left|right)-radius|overflow-[xy]|overscroll-behavior-[xy]|left|right)\s*:|((?:text-align|float|clear)\s*:\s*(?:left|right)|scroll-snap-type\s*:\s*[xy])\b)/g;
+
+/**
+ * A physical overflow declaration is fine as a fallback when its logical
+ * counterpart sits beside it for engines that support it.
+ */
+const LOGICAL_FALLBACK_FOR = {
+  'overflow-x': 'overflow-inline',
+  'overflow-y': 'overflow-block',
+  'overscroll-behavior-x': 'overscroll-behavior-inline',
+  'overscroll-behavior-y': 'overscroll-behavior-block',
+};
 const PHYSICAL_STYLE_WRITE =
   /\.style\.(left|right|marginLeft|marginRight|paddingLeft|paddingRight)\s*=/g;
 const DIRECTION_READ =
@@ -276,7 +284,12 @@ export function extractPhysicalCss(text, isCss) {
 
   for (const region of regions) {
     for (const match of region.matchAll(PHYSICAL_CSS_DECLARATION)) {
-      found.add((match[1] ?? match[2]).replace(/\s+/g, ''));
+      const declaration = (match[1] ?? match[2]).replace(/\s+/g, '');
+      const logical = LOGICAL_FALLBACK_FOR[declaration];
+
+      if (!logical || !region.includes(`${logical}:`)) {
+        found.add(declaration);
+      }
     }
   }
 

@@ -123,6 +123,7 @@ export const selectStyles = css`
   rc-listbox {
     max-height: var(--rc-select-max-height, 20em);
     overflow-y: auto;
+    overflow-block: auto;
     background: var(--rc-surface, Canvas);
     border: var(
       --rc-select-listbox-border,

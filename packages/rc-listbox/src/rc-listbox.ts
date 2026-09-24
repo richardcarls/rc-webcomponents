@@ -196,6 +196,7 @@ export class RCListbox extends LitElement {
     :host {
       display: block;
       overflow-y: auto;
+      overflow-block: auto;
     }
   `;
 

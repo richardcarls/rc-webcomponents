@@ -28,7 +28,7 @@ export const styles = css`
     flex-shrink: 0;
     background: var(--rc-textarea-gutter-bg, Canvas);
     color: var(--rc-textarea-gutter-color, GrayText);
-    border-right: var(--rc-textarea-gutter-border, 1px solid ButtonBorder);
+    border-inline-end: var(--rc-textarea-gutter-border, 1px solid ButtonBorder);
     overflow: hidden;
     user-select: none;
   }
@@ -44,8 +44,8 @@ export const styles = css`
     font-family: var(--rc-textarea-gutter-font-family, var(--rc-textarea-font-family, monospace));
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);
-    text-align: right;
-    min-width: 2.5ch;
+    text-align: end;
+    min-inline-size: 2.5ch;
   }
 
   .gutter-cell {
@@ -150,7 +150,7 @@ export const styles = css`
   .line[data-message]::after {
     content: attr(data-message);
     display: inline;
-    margin-left: 4ch;
+    margin-inline-start: 4ch;
     white-space: nowrap;
     pointer-events: none;
     font-size: 0.875em;
