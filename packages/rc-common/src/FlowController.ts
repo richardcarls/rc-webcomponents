@@ -17,11 +17,13 @@ function sameFlow(a: Flow, b: Flow): boolean {
  * such as an `aria-orientation` that must report the rendered orientation.
  *
  * Re-resolves on connect, whenever a `dir` attribute changes in the document,
- * and whenever the host resizes, which a writing-mode switch almost always
- * causes. Requests an update only when the flow actually changed. A change
- * the document cannot see, such as `direction` set by a stylesheet, needs
- * {@link refresh}. Event handlers should resolve the flow themselves at event
- * time instead.
+ * and whenever the host resizes. Requests an update only when the flow
+ * actually changed. A writing-mode switch is only caught when it changes the
+ * host's logical size: ResizeObserver compares inline and block sizes, so a
+ * logically sized host that turns keeps both and reports nothing. Call
+ * {@link refresh} after such a switch, or after `direction` set by a
+ * stylesheet. Event handlers should resolve the flow themselves at event time
+ * instead.
  */
 export class FlowController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & Element;
