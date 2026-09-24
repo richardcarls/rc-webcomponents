@@ -24,6 +24,18 @@ function wait(ms: number): Promise<void> {
 // writes trigger.
 const SETTLE_WAIT_MS = 300;
 
+/**
+ * The physical direction toward the inline start in each flow, written out
+ * rather than derived so the drag test cannot share a bug with the helpers.
+ */
+const TOWARD_INLINE_START: Record<string, [number, number]> = {
+  'horizontal-tb ltr': [-1, 0],
+  'horizontal-tb rtl': [1, 0],
+  'vertical-rl ltr': [0, -1],
+  'vertical-rl rtl': [0, 1],
+  'vertical-lr ltr': [0, -1],
+};
+
 function firePointerEvent(target: Element, type: string, init: PointerEventInit = {}) {
   target.dispatchEvent(
     new PointerEvent(type, {
@@ -37,11 +49,12 @@ function firePointerEvent(target: Element, type: string, init: PointerEventInit 
   );
 }
 
-function threeItems() {
+function threeItems({ mouseDragging = false } = {}) {
   return html`
     <rc-carousel
       data-testid="carousel"
       aria-label="Featured recipes"
+      ?mouse-dragging=${mouseDragging}
       style="inline-size: 20rem; block-size: 10rem"
     >
       <rc-carousel-item data-testid="item-0">One</rc-carousel-item>
@@ -677,8 +690,8 @@ function centerInside(inner: DOMRect, outer: DOMRect): boolean {
 describe.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
   'in %s',
   (_label, flow) => {
-    async function mountInFlow() {
-      const screen = render(inFlow(threeItems(), flow));
+    async function mountInFlow({ mouseDragging = false } = {}) {
+      const screen = render(inFlow(threeItems({ mouseDragging }), flow));
       const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
 
       await settle(carousel);
@@ -729,5 +742,56 @@ describe.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
       expect(carousel.activeIndex).toBe(1);
       expect(changed.mock.calls.at(-1)?.[0]?.detail).toEqual({ index: 1, trigger: 'swipe' });
     });
+
+    test('drags along the inline axis toward the inline end', async () => {
+      const { carousel, track } = await mountInFlow({ mouseDragging: true });
+      const box = track.getBoundingClientRect();
+      const x = box.left + box.width / 2;
+      const y = box.top + box.height / 2;
+      // Pulling the content toward the inline start reveals the inline end.
+      const [dx, dy] = TOWARD_INLINE_START[flowLabel(flow)];
+
+      firePointerEvent(track, 'pointerdown', { clientX: x, clientY: y });
+      firePointerEvent(track, 'pointermove', { clientX: x + dx * 40, clientY: y + dy * 40 });
+      await carousel.updateComplete;
+
+      expect(track.classList.contains('dragging')).toBe(true);
+
+      firePointerEvent(track, 'pointermove', { clientX: x + dx * 2000, clientY: y + dy * 2000 });
+      firePointerEvent(track, 'pointerup', { clientX: x + dx * 2000, clientY: y + dy * 2000 });
+      await wait(SETTLE_WAIT_MS);
+      await settle(carousel);
+
+      expect(carousel.activeIndex).toBe(2);
+    });
   },
 );
+
+test('drags along the new inline axis after a writing-mode change', async () => {
+  const screen = render(
+    inFlow(threeItems({ mouseDragging: true }), { dir: 'ltr', writingMode: 'horizontal-tb' }),
+  );
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+  const wrapper = (await screen.getByTestId('flow').element()) as HTMLElement;
+
+  await settle(carousel);
+
+  // Nothing reports this change; the next gesture has to pick it up.
+  wrapper.style.writingMode = 'vertical-rl';
+  await wait(SETTLE_WAIT_MS);
+  await settle(carousel);
+
+  const track = carousel.renderRoot.querySelector<HTMLElement>('#track')!;
+  const box = track.getBoundingClientRect();
+  const x = box.left + box.width / 2;
+  const y = box.top + box.height / 2;
+
+  // The inline axis now runs top to bottom, so dragging up moves forward.
+  firePointerEvent(track, 'pointerdown', { clientX: x, clientY: y });
+  firePointerEvent(track, 'pointermove', { clientX: x, clientY: y - 40 });
+  await carousel.updateComplete;
+
+  expect(track.classList.contains('dragging')).toBe(true);
+
+  firePointerEvent(track, 'pointerup', { clientX: x, clientY: y - 40 });
+});

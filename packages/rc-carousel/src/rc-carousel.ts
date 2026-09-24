@@ -187,10 +187,19 @@ export class RCCarousel extends LitElement {
     target: () => this._trackEl ?? null,
     axis: 'x',
     activation: 'axis',
-    canStart: (event) => this.mouseDragging && event.pointerType === 'mouse',
+    canStart: (event) => {
+      if (!this.mouseDragging || event.pointerType !== 'mouse') {
+        return false;
+      }
+
+      // Resolve on pointerdown, before the controller picks the drag axis
+      // from the first moves; the flow then holds for the whole gesture.
+      this._resolveFlow();
+
+      return true;
+    },
     onStart: () => {
       this._dragging = true;
-      this._resolveFlow();
       this._dragStartOffset = this._trackOffset();
       this._suppressNextClick = true;
 
@@ -456,9 +465,10 @@ export class RCCarousel extends LitElement {
 
   /**
    * Re-reads the track's writing mode and direction. Called at the start of
-   * each scroll or drag operation rather than cached for the element's life,
-   * since a `dir` change on an ancestor fires no event. The drag gesture's
-   * physical axis follows, so a carousel in vertical text drags vertically.
+   * each scroll operation and on each drag's pointerdown rather than cached
+   * for the element's life, since neither a `dir` nor a writing-mode change
+   * on an ancestor fires an event. The drag gesture's physical axis follows,
+   * so a carousel in vertical text drags vertically.
    */
   private _resolveFlow(): Flow {
     if (!this._trackEl) {
