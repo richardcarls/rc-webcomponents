@@ -241,7 +241,6 @@ export const PHYSICAL_CSS_ALLOWLIST = {
   'packages/rc-virtual-canvas/src/rc-virtual-canvas.ts': 'canvas pixel space is physical',
   'packages/rc-common/src/AnchorController.ts':
     'emits physical CSS only after resolving the placement against the flow',
-  'packages/rc-slider/src/rc-slider.ts': 'pending: fill and tick offsets start from the left',
   'packages/rc-range-slider/src/rc-range-slider.ts':
     'pending: fill and thumb offsets start from the left',
   'packages/rc-markdown-editor/src/rc-markdown-editor.styles.ts':

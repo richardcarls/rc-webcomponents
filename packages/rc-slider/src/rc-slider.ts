@@ -190,6 +190,14 @@ export class RCSlider extends LitElement {
       z-index: 3;
     }
 
+    /* Positioned from the inline start, which is the right edge in RTL, so
+       centering pulls the other way. */
+    :host(:dir(rtl):not([orientation='vertical']))
+      .rc-slider-root[data-display='float']
+      .rc-slider-value {
+      transform: translateX(50%);
+    }
+
     :host([orientation='vertical']) {
       display: inline-block;
     }
@@ -521,7 +529,9 @@ export class RCSlider extends LitElement {
       return `bottom:0%;height:${pct.toFixed(3)}%`;
     }
 
-    return `left:0%;width:${pct.toFixed(3)}%`;
+    // Logical, like the native input it overlays: it fills from the right in
+    // RTL and from the top in vertical text.
+    return `inset-inline-start:0%;inline-size:${pct.toFixed(3)}%`;
   }
 
   private _floatStyle(): string {
@@ -537,7 +547,7 @@ export class RCSlider extends LitElement {
       return `bottom:calc(${(pct * 100).toFixed(3)}% + ${k} * var(--rc-thumb-radius, 9px))`;
     }
 
-    return `left:calc(${(pct * 100).toFixed(3)}% + ${k} * var(--rc-thumb-radius, 9px))`;
+    return `inset-inline-start:calc(${(pct * 100).toFixed(3)}% + ${k} * var(--rc-thumb-radius, 9px))`;
   }
 }
 
