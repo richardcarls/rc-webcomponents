@@ -8,6 +8,7 @@ import {
   findNearestScrollAncestor,
   isReversed,
   logicalRect,
+  observeDirection,
   physicalAxis,
   resolveFlow,
   type Flow,
@@ -215,6 +216,8 @@ export class RCVirtualScroller extends LitElement {
 
   private _resizeObserver: ResizeObserver | null = null;
 
+  private _unobserveDirection: (() => void) | null = null;
+
   private _lastDetail: RCVirtualScrollerRangeDetail | null = null;
 
   /** Set when the surrounding layout changed enough to re-find the scrollport. */
@@ -232,6 +235,9 @@ export class RCVirtualScroller extends LitElement {
       this._resizeObserver = new ResizeObserver(this._requestResolve);
       this._resizeObserver.observe(this);
     }
+
+    // A direction flip reverses the inline axis without resizing anything.
+    this._unobserveDirection = observeDirection(this._requestResolve);
   }
 
   override disconnectedCallback(): void {
@@ -240,6 +246,8 @@ export class RCVirtualScroller extends LitElement {
     this._detachScrollTarget();
     this._resizeObserver?.disconnect();
     this._resizeObserver = null;
+    this._unobserveDirection?.();
+    this._unobserveDirection = null;
 
     super.disconnectedCallback();
   }
@@ -299,6 +307,10 @@ export class RCVirtualScroller extends LitElement {
     if (!target || !lineSize) {
       return;
     }
+
+    // Read at call time, like any other interaction: the direction may have
+    // flipped in this same task, before the observer's notice arrives.
+    this._flow = resolveFlow(this);
 
     const clamped = Math.min(Math.max(index, 0), Math.max(this.count - 1, 0));
     const lineStart = Math.floor(clamped / this._itemsPerLine) * lineSize;
@@ -494,8 +506,8 @@ export class RCVirtualScroller extends LitElement {
       this._needsResolve = false;
       // Deliberately not on the scroll path: walking ancestors and reading the
       // flow cost a getComputedStyle each, which has no business running per
-      // frame. A `dir` change on an ancestor is picked up on the next resize,
-      // slotchange, or focus change.
+      // frame. A resize, slotchange, focus change, or `dir` change requests
+      // this pass.
       this._attachScrollTarget();
       this._flow = resolveFlow(this);
     }
