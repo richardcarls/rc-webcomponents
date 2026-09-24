@@ -3,12 +3,19 @@ import { property, state, query, queryAssignedElements } from 'lit/decorators.js
 
 import {
   DragGestureController,
+  FlowController,
   findNearestSnapIndex,
   findNextSnapIndex,
+  isReversed,
   keyInteraction,
   keyNavigation,
+  logicalDelta,
+  physicalAxis,
+  renderedOrientation,
+  resolveFlow,
   type DragGestureDetail,
   type KeyboardNavigationAction,
+  type LogicalAxis,
 } from '@rcarls/rc-common';
 
 import splitterStyles from './rc-splitter.styles.js';
@@ -43,7 +50,10 @@ declare global {
  *
  * @attr label - Accessible label applied to the primary pane and referenced by the separator
  *   handle's `aria-labelledby`.
- * @attr orientation - Layout direction: `horizontal` (left/right panes) or `vertical` (top/bottom panes).
+ * @attr orientation - Layout: `horizontal` places the panes side by side along the inline axis
+ *   (left/right in LTR, right/left in RTL), `vertical` stacks them along the block axis. Both turn
+ *   over in vertical writing modes; the separator's `aria-orientation`, arrow keys, and dragging
+ *   follow the layout actually rendered.
  * @attr mode - Value units and pane sizing behavior: `length`, `percent`, or `fixed`.
  * @attr step - Keyboard resize step size, in the current mode's units.
  * @attr min - Minimum primary pane size, in the current mode's units.
@@ -190,7 +200,7 @@ export class RCSplitter extends LitElement {
     }
 
     const isRelevantKey =
-      this.orientation === 'horizontal'
+      renderedOrientation(this.orientation, resolveFlow(this)) === 'horizontal'
         ? e.key === 'ArrowLeft' || e.key === 'ArrowRight'
         : e.key === 'ArrowUp' || e.key === 'ArrowDown';
 
@@ -330,6 +340,17 @@ export class RCSplitter extends LitElement {
 
   protected _resizeObserver = new ResizeObserver(() => this._onResize());
 
+  /** Keeps the separator's aria-orientation and drag axis on the rendered layout. */
+  protected readonly _flow = new FlowController(this);
+
+  /**
+   * The logical axis the panes sit along: `horizontal` places them side by
+   * side along the inline axis, `vertical` stacks them along the block axis.
+   */
+  protected get _paneAxis(): LogicalAxis {
+    return this.orientation === 'horizontal' ? 'inline' : 'block';
+  }
+
   protected _onKeyboardResize(action: KeyboardNavigationAction) {
     if (this.fixed) {
       return;
@@ -367,13 +388,17 @@ export class RCSplitter extends LitElement {
       return;
     }
 
+    // Measured from the primary pane's logical start edge, which is the
+    // right edge in RTL and the top or right edge in vertical text.
+    const flow = resolveFlow(this);
+    const axis = this._paneAxis;
     const clientRect = this.getBoundingClientRect();
+    const alongX = physicalAxis(axis, flow) === 'x';
+    const size = alongX ? clientRect.width : clientRect.height;
+    const fromPhysicalStart = alongX ? e.clientX - clientRect.left : e.clientY - clientRect.top;
+    const offset = isReversed(axis, flow) ? size - fromPhysicalStart : fromPhysicalStart;
 
-    if (this.orientation === 'vertical') {
-      this._setUserValue(((e.clientY - clientRect.top) / clientRect.height) * this._maxValue);
-    } else {
-      this._setUserValue(((e.clientX - clientRect.left) / clientRect.width) * this._maxValue);
-    }
+    this._setUserValue((offset / size) * this._maxValue);
   }
 
   /**
@@ -409,8 +434,14 @@ export class RCSplitter extends LitElement {
   }
 
   protected _onGestureEnd(detail: DragGestureDetail): void {
-    const delta = this.orientation === 'horizontal' ? detail.deltaX : detail.deltaY;
-    const velocity = this.orientation === 'horizontal' ? detail.velocityX : detail.velocityY;
+    // Positive toward the pane axis's logical end, i.e. away from the primary pane.
+    const flow = resolveFlow(this);
+    const delta = logicalDelta({ dx: detail.deltaX, dy: detail.deltaY }, this._paneAxis, flow);
+    const velocity = logicalDelta(
+      { dx: detail.velocityX, dy: detail.velocityY },
+      this._paneAxis,
+      flow,
+    );
     const decisive =
       Math.abs(delta) >= MIN_SWIPE_DISTANCE && Math.abs(velocity) >= this.swipeVelocity;
 
@@ -630,7 +661,7 @@ export class RCSplitter extends LitElement {
 
   protected updated(): void {
     this._gesture.setOptions({
-      axis: this.orientation === 'horizontal' ? 'x' : 'y',
+      axis: physicalAxis(this._paneAxis, this._flow.flow),
       target: () => this._$separatorHandle,
     });
   }
@@ -669,7 +700,10 @@ export class RCSplitter extends LitElement {
           part="separator-handle"
           aria-labelledby="primary"
           aria-controls="primary"
-          aria-orientation=${this.orientation === 'horizontal' ? 'vertical' : 'horizontal'}
+          aria-orientation=${renderedOrientation(
+            this.orientation === 'horizontal' ? 'vertical' : 'horizontal',
+            this._flow.flow,
+          )}
           aria-valuenow=${this.value}
           aria-valuetext=${this.valueText}
           aria-valuemin=${this._effectiveMin}

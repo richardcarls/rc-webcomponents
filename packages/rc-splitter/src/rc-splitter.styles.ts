@@ -44,11 +44,11 @@ export const splitterStyles = css`
       --rc-splitter-separator-color,
       color-mix(in srgb, ButtonBorder 35%, Canvas 65%)
     );
-    border-left: var(
+    border-inline-start: var(
       --rc-splitter-separator-border-inline-start,
       var(--rc-splitter-keyline, 1px solid ButtonBorder)
     );
-    border-right: var(
+    border-inline-end: var(
       --rc-splitter-separator-border-inline-end,
       var(--rc-splitter-keyline, 1px solid ButtonBorder)
     );
@@ -60,13 +60,13 @@ export const splitterStyles = css`
 
     :host([orientation='vertical']) & {
       flex-direction: row;
-      border-left: unset;
-      border-right: unset;
-      border-top: var(
+      border-inline-start: unset;
+      border-inline-end: unset;
+      border-block-start: var(
         --rc-splitter-separator-border-block-start,
         var(--rc-splitter-keyline, 1px solid ButtonBorder)
       );
-      border-bottom: var(
+      border-block-end: var(
         --rc-splitter-separator-border-block-end,
         var(--rc-splitter-keyline, 1px solid ButtonBorder)
       );
@@ -78,11 +78,13 @@ export const splitterStyles = css`
        axis. The button intentionally protrudes into the primary pane so it
        is visible and hittable at a reasonable size even on narrow strips. */
     position: absolute;
-    top: var(--rc-splitter-collapse-button-offset, 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: var(--rc-splitter-collapse-button-size, 20px);
-    height: var(--rc-splitter-collapse-button-size, 20px);
+    /* Centered on the cross axis with auto margins, which hold in RTL and in
+       vertical text where a physical 50% offset plus translate would not. */
+    inset-block-start: var(--rc-splitter-collapse-button-offset, 8px);
+    inset-inline: 0;
+    margin-inline: auto;
+    inline-size: var(--rc-splitter-collapse-button-size, 20px);
+    block-size: var(--rc-splitter-collapse-button-size, 20px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -103,17 +105,23 @@ export const splitterStyles = css`
       outline-offset: 2px;
     }
 
+    /* The chevron points toward the primary pane, which is on the right in RTL. */
+    :host(:dir(rtl):not([orientation='vertical'])) & svg {
+      transform: scaleX(-1);
+    }
+
     :host([orientation='vertical']) & {
-      top: 50%;
-      left: var(--rc-splitter-collapse-button-offset, 8px);
-      transform: translateY(-50%);
+      inset-block: 0;
+      margin-block: auto;
+      inset-inline: var(--rc-splitter-collapse-button-offset, 8px) auto;
+      margin-inline: 0;
     }
   }
 
   #separator-handle {
     touch-action: none;
-    width: 100%;
-    height: var(--rc-splitter-separator-handle-size, 100%);
+    inline-size: 100%;
+    block-size: var(--rc-splitter-separator-handle-size, 100%);
     cursor: col-resize;
     display: flex;
     align-items: center;
@@ -128,8 +136,8 @@ export const splitterStyles = css`
     &::before {
       content: '';
       display: block;
-      width: var(--rc-splitter-handle-thickness, 4px);
-      height: 100%;
+      inline-size: var(--rc-splitter-handle-thickness, 4px);
+      block-size: 100%;
       background-color: var(--rc-splitter-handle-fill, transparent);
       background-image: var(
         --rc-splitter-handle-pattern,
@@ -167,24 +175,23 @@ export const splitterStyles = css`
     &::after {
       content: '';
       position: absolute;
-      width: 24px;
-      height: 24px;
+      inset: 0;
+      margin: auto;
+      inline-size: 24px;
+      block-size: 24px;
       border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       pointer-events: none;
     }
 
     :host([orientation='vertical']) & {
-      width: var(--rc-splitter-separator-handle-size, 100%);
-      height: 100%;
+      inline-size: var(--rc-splitter-separator-handle-size, 100%);
+      block-size: 100%;
       cursor: row-resize;
 
       /* Horizontal 3-dot grip (vertical splitter / horizontal bar) */
       &::before {
-        width: 100%;
-        height: var(--rc-splitter-handle-thickness, 4px);
+        inline-size: 100%;
+        block-size: var(--rc-splitter-handle-thickness, 4px);
         background-image: var(
           --rc-splitter-handle-pattern,
           radial-gradient(
