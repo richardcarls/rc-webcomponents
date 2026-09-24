@@ -160,6 +160,22 @@ export function logicalRect(
   };
 }
 
+/**
+ * The physical translation for a logical offset from the start corner, the
+ * inverse of {@link logicalRect}. An element anchored with
+ * `inset-inline-start: 0; inset-block-start: 0` reaches `offset` with
+ * `translate(x, y)`; in RTL that means a negative `x`.
+ */
+export function physicalOffset(
+  offset: { inline: number; block: number },
+  flow: Flow,
+): { x: number; y: number } {
+  const inline = flow.inlineReversed ? -offset.inline : offset.inline;
+  const block = flow.blockReversed ? -offset.block : offset.block;
+
+  return flow.inline === 'x' ? { x: inline, y: block } : { x: block, y: inline };
+}
+
 /** A physical pointer delta projected onto `axis`, positive toward its end. */
 export function logicalDelta(
   delta: { dx: number; dy: number },

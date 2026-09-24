@@ -10,6 +10,7 @@ import {
   logicalDelta,
   logicalRect,
   physicalAxis,
+  physicalOffset,
   resolveFlow,
   scrollSize,
   setScrollOffset,
@@ -137,6 +138,30 @@ describe.each(FLOW_FIXTURES.map((fixture) => [flowLabel(fixture), fixture] as co
       expect(rect.blockStart).toBeCloseTo(0, 0);
       expect(rect.inlineSize).toBe(10);
       expect(rect.blockSize).toBe(20);
+    });
+
+    test('translates a logical offset back to where logicalRect measured it', async () => {
+      const { port, first, flow } = await mountScroller(fixture);
+      const container =
+        first.parentElement?.getBoundingClientRect() ?? port.getBoundingClientRect();
+
+      // Anchor a probe at the logical start corner, move it by a logical
+      // offset, and read the offset back from its rect.
+      const probe = document.createElement('div');
+
+      probe.style.cssText =
+        'position: absolute; inset-inline-start: 0; inset-block-start: 0; inline-size: 4px; block-size: 4px;';
+
+      first.parentElement?.append(probe);
+
+      const { x, y } = physicalOffset({ inline: 30, block: 50 }, flow);
+
+      probe.style.transform = `translate(${x}px, ${y}px)`;
+
+      const measured = logicalRect(probe.getBoundingClientRect(), container, flow);
+
+      expect(measured.inlineStart).toBeCloseTo(30, 0);
+      expect(measured.blockStart).toBeCloseTo(50, 0);
     });
 
     test('projects a physical delta pointing toward the logical end as positive', async () => {
