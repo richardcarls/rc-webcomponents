@@ -1,8 +1,10 @@
 import { html } from 'lit';
-import { expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { logicalRect, resolveFlow, setScrollOffset } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import { unexpectedOverflow } from '../../../test-helpers/rendered-ui.js';
 import './define.js';
 import type { RCCarousel } from './rc-carousel.js';
@@ -664,3 +666,68 @@ test('has no accessibility violations with navigation and pagination active mid-
 
   await expectNoA11yViolations(carousel);
 });
+
+function centerInside(inner: DOMRect, outer: DOMRect): boolean {
+  const x = inner.left + inner.width / 2;
+  const y = inner.top + inner.height / 2;
+
+  return x > outer.left && x < outer.right && y > outer.top && y < outer.bottom;
+}
+
+describe.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
+  'in %s',
+  (_label, flow) => {
+    async function mountInFlow() {
+      const screen = render(inFlow(threeItems(), flow));
+      const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+
+      await settle(carousel);
+
+      const track = carousel.renderRoot.querySelector<HTMLElement>('#track');
+      const items = await Promise.all(
+        [0, 1, 2].map(async (i) => screen.getByTestId(`item-${i}`).element()),
+      );
+
+      if (!track) {
+        throw new Error('rc-carousel rendered no #track');
+      }
+
+      return { carousel, track, items };
+    }
+
+    test('scrolls the requested slide into view', async () => {
+      const { carousel, track, items } = await mountInFlow();
+
+      carousel.goToIndex(2, true);
+      await wait(SETTLE_WAIT_MS);
+      await settle(carousel);
+
+      const view = track.getBoundingClientRect();
+
+      expect(centerInside(items[2]!.getBoundingClientRect(), view)).toBe(true);
+      expect(centerInside(items[0]!.getBoundingClientRect(), view)).toBe(false);
+    });
+
+    test('settles to the slide a native scroll stopped on', async () => {
+      const { carousel, track, items } = await mountInFlow();
+      const changed = vi.fn<(event: CustomEvent<RCCarouselChangeDetail>) => void>();
+
+      carousel.addEventListener('rc-carousel-change', changed);
+
+      const trackFlow = resolveFlow(track);
+      const step = logicalRect(
+        items[1]!.getBoundingClientRect(),
+        items[0]!.getBoundingClientRect(),
+        trackFlow,
+      ).inlineStart;
+
+      setScrollOffset(track, 'inline', step, trackFlow);
+      track.dispatchEvent(new Event('scroll'));
+      await wait(SETTLE_WAIT_MS);
+      await settle(carousel);
+
+      expect(carousel.activeIndex).toBe(1);
+      expect(changed.mock.calls.at(-1)?.[0]?.detail).toEqual({ index: 1, trigger: 'swipe' });
+    });
+  },
+);

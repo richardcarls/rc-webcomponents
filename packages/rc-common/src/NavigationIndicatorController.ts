@@ -1,5 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { logicalRect, physicalOffset, resolveFlow } from './flow.js';
+
 export interface NavigationIndicatorControllerOptions {
   slot: () => HTMLSlotElement | null;
   container: () => HTMLElement | null;
@@ -178,13 +180,18 @@ export class NavigationIndicatorController implements ReactiveController {
       return;
     }
 
-    indicator.toggleAttribute('hidden', false);
-    indicator.style.inlineSize = `${targetRect.width}px`;
-    indicator.style.blockSize = `${targetRect.height}px`;
+    // The indicator is anchored at the container's logical start corner
+    // (inset-inline-start / inset-block-start), so its size and offset are
+    // measured in the same logical terms. Physical left/width would put it on
+    // the wrong side in RTL and swap its sizes in vertical writing modes.
+    const flow = resolveFlow(container);
+    const box = logicalRect(targetRect, containerRect, flow);
+    const { x, y } = physicalOffset({ inline: box.inlineStart, block: box.blockStart }, flow);
 
-    indicator.style.transform = `translate(${targetRect.left - containerRect.left}px, ${
-      targetRect.top - containerRect.top
-    }px)`;
+    indicator.toggleAttribute('hidden', false);
+    indicator.style.inlineSize = `${box.inlineSize}px`;
+    indicator.style.blockSize = `${box.blockSize}px`;
+    indicator.style.transform = `translate(${x}px, ${y}px)`;
   }
 }
 
