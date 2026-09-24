@@ -838,3 +838,34 @@ test('RCMenuButton supports two simultaneously-open nested instances', async () 
   expect(innerPopup.matches(':popover-open')).toBe(false);
   expect(outerPopup.matches(':popover-open')).toBe(false);
 });
+
+test.each([
+  ['vertical-rl', 'ltr', 'horizontal', 'ArrowLeft'],
+  ['horizontal-tb', 'rtl', 'vertical', 'ArrowLeft'],
+  ['vertical-rl', 'rtl', 'vertical', 'ArrowUp'],
+])(
+  'RCMenuButton opens with the documented key in %s %s (%s layout)',
+  async (writingMode, dir, orientation, key) => {
+    const screen = render(html`
+      <div dir=${dir} style="writing-mode: ${writingMode};">
+        <rc-menu-button data-testid="host" orientation=${orientation}>
+          <button slot="trigger" data-testid="trigger">Options</button>
+          <rc-menu label="Options">
+            <button data-testid="item-one">Cut</button>
+            <button data-testid="item-two">Copy</button>
+          </rc-menu>
+        </rc-menu-button>
+      </div>
+    `);
+
+    const trigger = screen.getByTestId('trigger');
+    const item1 = screen.getByTestId('item-one');
+    const { $host, $trigger } = await prepareKeyboardInteraction(screen, 2);
+
+    pressKey($trigger, key);
+    await $host.updateComplete;
+
+    await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expectActiveMenuItem(item1);
+  },
+);

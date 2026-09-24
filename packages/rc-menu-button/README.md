@@ -53,13 +53,13 @@ item.
 
 ### Properties / attributes
 
-| Property      | Attribute      | Type                                      | Default          | Description                                                                                                                                                                                               |
-| ------------- | -------------- | ----------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `open`        | `open`         | `boolean`                                 | `false`          | Whether the menu popup is visible. Reflects to attribute. Controlled mode: host writes silently.                                                                                                          |
-| `defaultOpen` | `default-open` | `boolean`                                 | `false`          | Initial open state for uncontrolled mode. Ignored after the first controlled write to `open`.                                                                                                             |
-| `orientation` | `orientation`  | `'horizontal' \| 'vertical' \| undefined` | `undefined`      | Arrow-key axis for opening the menu. Vertical triggers span their allocated menu-row width. When unset, inherited from a parent `rc-menubar` or `[role="menubar"]` element. Falls back to `'horizontal'`. |
-| `placement`   | `placement`    | `AnchorPlacement`                         | `'bottom-start'` | Preferred placement of the popup relative to the trigger. Switches to `'right-start'` under vertical orientation unless explicitly overridden.                                                            |
-|               | `icon-only`    | boolean attribute                         | absent           | Hints that the trigger has no visible label so themes can apply icon-button sizing and activation-area geometry.                                                                                          |
+| Property      | Attribute      | Type                                      | Default          | Description                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------- | -------------- | ----------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `open`        | `open`         | `boolean`                                 | `false`          | Whether the menu popup is visible. Reflects to attribute. Controlled mode: host writes silently.                                                                                                                                                                                                                                                                              |
+| `defaultOpen` | `default-open` | `boolean`                                 | `false`          | Initial open state for uncontrolled mode. Ignored after the first controlled write to `open`.                                                                                                                                                                                                                                                                                 |
+| `orientation` | `orientation`  | `'horizontal' \| 'vertical' \| undefined` | `undefined`      | The layout the trigger sits in: `horizontal` along the inline axis, `vertical` along the block axis. Picks the arrow key that opens the menu, following how the layout renders in RTL and vertical text. Vertical triggers span their allocated menu-row width. When unset, inherited from a parent `rc-menubar` or `[role="menubar"]` element. Falls back to `'horizontal'`. |
+| `placement`   | `placement`    | `AnchorPlacement`                         | `'bottom-start'` | Preferred placement of the popup relative to the trigger. `inline-start*`/`inline-end*` and the `-start`/`-end` alignments follow the reading direction; physical `left*`/`right*` values are deprecated. Switches to `'inline-end-start'` under vertical orientation unless explicitly overridden.                                                                           |
+|               | `icon-only`    | boolean attribute                         | absent           | Hints that the trigger has no visible label so themes can apply icon-button sizing and activation-area geometry.                                                                                                                                                                                                                                                              |
 
 ### CSS custom properties
 
@@ -88,6 +88,7 @@ item.
 | `--rc-menu-button-touch-target-inline-size`          | Activation-area block size                       | Minimum inline size of an `icon-only` trigger's activation area |
 | `--rc-menu-button-touch-target-overlap-inline-start` | `0px`                                            | Allows touch-target inflation to overlap the leading neighbor   |
 | `--rc-menu-button-touch-target-overlap-inline-end`   | `0px`                                            | Allows touch-target inflation to overlap the trailing neighbor  |
+| `--rc-menu-button-popup-duration`                    | `150ms`                                          | Popup open/close fade transition duration                       |
 
 ### CSS parts
 
@@ -128,17 +129,24 @@ toggleMenu(): void
 ## Keyboard behavior
 
 Keyboard handling depends on the resolved `orientation` (horizontal by
-default, or inherited from a parent menubar).
+default, or inherited from a parent menubar) and on how that layout renders.
+The opening keys turn with RTL and vertical writing modes:
 
-| Key               | Condition              | Action                              |
-| ----------------- | ---------------------- | ----------------------------------- |
-| `ArrowDown`       | Horizontal orientation | Open menu, focus first item         |
-| `ArrowUp`         | Horizontal orientation | Open menu, focus last item          |
-| `ArrowRight`      | Vertical orientation   | Open menu, focus first item         |
-| `ArrowLeft`       | Vertical orientation   | Open menu, focus last item          |
-| `Enter` / `Space` | Menu closed            | Open menu                           |
-| `Enter` / `Space` | Menu open              | Activate focused item, close menu   |
-| `Escape`          | Menu open              | Close menu, return focus to trigger |
+| Layout     | Flow                 | Open, focus first item | Open, focus last item |
+| ---------- | -------------------- | ---------------------- | --------------------- |
+| Horizontal | Horizontal text      | `ArrowDown`            | `ArrowUp`             |
+| Horizontal | `vertical-rl`        | `ArrowLeft`            | `ArrowRight`          |
+| Horizontal | `vertical-lr`        | `ArrowRight`           | `ArrowLeft`           |
+| Vertical   | Horizontal text, LTR | `ArrowRight`           | `ArrowLeft`           |
+| Vertical   | Horizontal text, RTL | `ArrowLeft`            | `ArrowRight`          |
+| Vertical   | Vertical text, LTR   | `ArrowDown`            | `ArrowUp`             |
+| Vertical   | Vertical text, RTL   | `ArrowUp`              | `ArrowDown`           |
+
+| Key               | Condition   | Action                              |
+| ----------------- | ----------- | ----------------------------------- |
+| `Enter` / `Space` | Menu closed | Open menu                           |
+| `Enter` / `Space` | Menu open   | Activate focused item, close menu   |
+| `Escape`          | Menu open   | Close menu, return focus to trigger |
 
 ---
 
