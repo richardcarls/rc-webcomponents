@@ -5369,7 +5369,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-virtual-scroller@workspace:packages/rc-virtual-scroller":
+"@rcarls/rc-virtual-scroller@workspace:*, @rcarls/rc-virtual-scroller@workspace:packages/rc-virtual-scroller":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-virtual-scroller@workspace:packages/rc-virtual-scroller"
   dependencies:
@@ -5430,6 +5430,7 @@ __metadata:
     "@rcarls/rc-toolbar": "workspace:*"
     "@rcarls/rc-transfer-list": "workspace:*"
     "@rcarls/rc-virtual-canvas": "workspace:*"
+    "@rcarls/rc-virtual-scroller": "workspace:*"
     lit: "npm:^3.0.0"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
