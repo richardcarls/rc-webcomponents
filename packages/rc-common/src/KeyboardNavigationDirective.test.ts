@@ -175,31 +175,36 @@ test('keyNavigation maps the perpendicular open axis in both orientations', () =
   expect(horizontalCB.mock.calls).toEqual([['open-to-first'], ['open-to-last']]);
 });
 
-/** Keys spelled out per flow, rather than derived from the helper under test. */
+/**
+ * Keys spelled out per flow, rather than derived from the helpers under test.
+ * [next, prev, open-to-first, open-to-last]. With no explicit
+ * aria-orientation a toolbar lays out along the inline axis and a menu along
+ * the block axis, so each turns over in vertical text, like a native range
+ * input: a toolbar there navigates with ArrowDown.
+ */
 const EXPECTED_KEYS: Record<
   string,
-  Record<'horizontal' | 'vertical', [string, string, string, string]>
+  Record<'toolbar' | 'menu', [string, string, string, string]>
 > = {
-  // [next, prev, open-to-first, open-to-last]
   'horizontal-tb ltr': {
-    horizontal: ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'],
-    vertical: ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'],
+    toolbar: ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'],
+    menu: ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'],
   },
   'horizontal-tb rtl': {
-    horizontal: ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp'],
-    vertical: ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'],
+    toolbar: ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp'],
+    menu: ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'],
   },
   'vertical-rl ltr': {
-    horizontal: ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp'],
-    vertical: ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'],
+    toolbar: ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'],
+    menu: ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp'],
   },
   'vertical-rl rtl': {
-    horizontal: ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'],
-    vertical: ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'],
+    toolbar: ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'],
+    menu: ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'],
   },
   'vertical-lr ltr': {
-    horizontal: ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'],
-    vertical: ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'],
+    toolbar: ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'],
+    menu: ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'],
   },
 };
 
@@ -228,14 +233,35 @@ test.each(
       ([role, orientation]) => [`${role} in ${flowLabel(flow)}`, role, orientation, flow] as const,
     ),
   ),
-)('keyNavigation maps navigation and open keys for a %s', (_label, role, orientation, flow) => {
+)('keyNavigation maps navigation and open keys for a %s', (_label, role, _orientation, flow) => {
   const callback = vi.fn();
   const $target = renderInFlow(role, callback, flow);
-  const [next, prev, openFirst, openLast] = EXPECTED_KEYS[flowLabel(flow)]![orientation];
+  const [next, prev, openFirst, openLast] = EXPECTED_KEYS[flowLabel(flow)]![role];
 
   for (const key of [next, prev, openFirst, openLast]) {
     press($target, key);
   }
 
   expect(callback.mock.calls).toEqual([['next'], ['prev'], ['open-to-first'], ['open-to-last']]);
+});
+
+test('an explicit aria-orientation is physical and wins over the layout default', () => {
+  const callback = vi.fn();
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl;">
+      <div
+        role="toolbar"
+        aria-orientation="horizontal"
+        tabindex="0"
+        ${keyNavigation(callback)}
+      ></div>
+    </div>
+  `);
+  const $toolbar = screen.container.querySelector<HTMLElement>('[role="toolbar"]')!;
+
+  // Physically horizontal in vertical-rl, where lines progress right to left.
+  press($toolbar, 'ArrowLeft');
+  press($toolbar, 'ArrowRight');
+
+  expect(callback.mock.calls).toEqual([['next'], ['prev']]);
 });

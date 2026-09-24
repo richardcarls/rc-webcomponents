@@ -3,9 +3,11 @@ import { property, query } from 'lit/decorators.js';
 
 import {
   AnchorController,
+  FlowController,
   isFocusable,
   keyNavigation,
   type KeyboardNavigationAction,
+  renderedOrientation,
 } from '@rcarls/rc-common';
 
 import adaptiveMenuStyles from './rc-adaptive-menu.styles.js';
@@ -133,7 +135,9 @@ const LIGHT_DOM_CSS = `
  *   the overflow menu regardless of whether they'd visually fit. Defaults to 3.
  * @attr open - Whether the overflow menu is visible. Host writes are silent.
  * @attr default-open - Initial open state for uncontrolled usage.
- * @attr orientation - Toolbar layout and arrow-key axis: `horizontal` or `vertical`.
+ * @attr orientation - Toolbar layout along the inline (`horizontal`) or block (`vertical`) axis.
+ *   `aria-orientation` and the arrow keys follow the orientation actually rendered, which turns
+ *   over in vertical writing modes.
  * @attr overflow-label - Accessible label for the overflow trigger and popup. Defaults to `More actions`.
  *
  * @csspart root - Toolbar container.
@@ -233,6 +237,9 @@ export class RCAdaptiveMenu extends LitElement {
   /** Toolbar layout and arrow-key navigation axis. */
   @property({ type: String, reflect: true })
   orientation: 'horizontal' | 'vertical' = 'horizontal';
+
+  /** Keeps the exposed aria-orientation on the orientation actually rendered. */
+  protected readonly _flow = new FlowController(this);
 
   /** Accessible name for the overflow trigger and popup. */
   @property({ type: String, attribute: 'overflow-label' })
@@ -375,7 +382,7 @@ export class RCAdaptiveMenu extends LitElement {
         part="root"
         role="toolbar"
         aria-label=${this.label}
-        aria-orientation=${this.orientation}
+        aria-orientation=${renderedOrientation(this.orientation, this._flow.flow)}
         ${keyNavigation(this._onToolbarNavigate, {
           navigationAxis: this.orientation,
         })}

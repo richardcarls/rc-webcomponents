@@ -218,3 +218,19 @@ export function arrowKeys(orientation: 'horizontal' | 'vertical', flow: Flow): A
 export function inlineArrowKeys(flow: Flow): ArrowKeyMap {
   return arrowKeys(flow.inline === 'x' ? 'horizontal' : 'vertical', flow);
 }
+
+/**
+ * The physical orientation a layout actually renders in. A `horizontal`
+ * layout runs along the inline axis and a `vertical` one along the block
+ * axis, so both turn over in vertical writing modes, the same way a native
+ * `<input type="range">` becomes vertical there. Use the result for
+ * `aria-orientation` and for arrow keys; keep the layout value for styling.
+ */
+export function renderedOrientation(
+  layout: 'horizontal' | 'vertical',
+  flow: Flow,
+): 'horizontal' | 'vertical' {
+  const axis = physicalAxis(layout === 'horizontal' ? 'inline' : 'block', flow);
+
+  return axis === 'x' ? 'horizontal' : 'vertical';
+}
