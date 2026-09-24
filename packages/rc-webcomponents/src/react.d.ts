@@ -307,16 +307,19 @@ export type RCScrollerRef = HTMLElement & {
   readonly atInlineEnd: boolean;
 };
 
+export type RCVirtualScrollerAxis = 'block' | 'inline';
+
 export type RCVirtualScrollerRangeDetail = {
   start: number;
   end: number;
-  columns: number;
-  rowSize: number;
+  itemsPerLine: number;
+  lineSize: number;
   measured: boolean;
 };
 
 /** Public API surface of `<rc-virtual-scroller>`. */
 export type RCVirtualScrollerRef = HTMLElement & {
+  axis: RCVirtualScrollerAxis;
   count: number;
   itemSize: number;
   overscan: number;
@@ -324,9 +327,10 @@ export type RCVirtualScrollerRef = HTMLElement & {
   scrollTarget: Element | null;
   readonly first: number;
   readonly last: number;
+  readonly range: RCVirtualScrollerRangeDetail | null;
   scrollToIndex(
     index: number,
-    options?: { block?: 'start' | 'center' | 'end' | 'nearest'; behavior?: ScrollBehavior },
+    options?: { align?: 'start' | 'center' | 'end' | 'nearest'; behavior?: ScrollBehavior },
   ): void;
   measure(): void;
 };
@@ -800,13 +804,12 @@ declare module 'react' {
         React.HTMLAttributes<RCVirtualScrollerRef>,
         RCVirtualScrollerRef
       > & {
+        axis?: RCVirtualScrollerAxis;
         count?: number | string;
         'item-size'?: number | string;
         overscan?: number | string;
         disabled?: boolean;
-        'onrc-virtual-scroller-range'?: (
-          event: CustomEvent<RCVirtualScrollerRangeDetail>,
-        ) => void;
+        'onrc-virtual-scroller-range'?: (event: CustomEvent<RCVirtualScrollerRangeDetail>) => void;
       };
 
       'rc-carousel': React.DetailedHTMLProps<React.HTMLAttributes<RCCarouselRef>, RCCarouselRef> & {
