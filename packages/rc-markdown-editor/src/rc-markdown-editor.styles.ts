@@ -12,6 +12,7 @@ export const rmeStyles = css`
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    overflow-block: auto;
     box-sizing: border-box;
     outline: none;
     /* Consumer themes via CSS custom properties */
@@ -181,8 +182,8 @@ export const rmeStyles = css`
 
   #rich-view blockquote {
     margin: 0.5em 0;
-    padding-left: 1em;
-    border-left: 3px solid ButtonBorder;
+    padding-inline-start: 1em;
+    border-inline-start: 3px solid ButtonBorder;
     color: GrayText;
   }
 
@@ -193,6 +194,7 @@ export const rmeStyles = css`
     border: 1px solid ButtonBorder;
     border-radius: 4px;
     overflow-x: auto;
+    overflow-inline: auto;
   }
 
   #rich-view pre code {
@@ -203,7 +205,7 @@ export const rmeStyles = css`
   #rich-view ul,
   #rich-view ol {
     margin: 0.5em 0;
-    padding-left: 1.75em;
+    padding-inline-start: 1.75em;
   }
 
   #rich-view li {

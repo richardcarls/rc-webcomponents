@@ -2,8 +2,14 @@ import { LitElement, css, html, nothing } from 'lit';
 import type { ComplexAttributeConverter } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import {
+  arrowKeys,
+  FlowController,
   NativeChildController,
   getDirectChildren,
+  isReversed,
+  physicalAxis,
+  renderedOrientation,
+  resolveFlow,
   snapToStep,
   valueToPercent,
   warnMissingDirectChild,
@@ -95,7 +101,9 @@ function parseAttr(s: string, defaultVal: number): number {
  *   number.
  * @attr display - Controls the live value display: absent (none), `float`, `inline-start`, or
  *   `inline-end`.
- * @attr orientation - Orientation, forwarded to the custom thumbs: `horizontal` or `vertical`.
+ * @attr orientation - `horizontal` runs along the inline axis like a native range input: right to
+ *   left in RTL, and vertical in vertical text, where the thumbs report `aria-orientation` of
+ *   `vertical`. `vertical` is always physically vertical, bottom to top.
  *
  * @cssprop [--rc-range-slider-accent=Highlight] - Accent color for selected range, thumb border, focus, hover, and active states.
  * @cssprop [--rc-range-slider-gap=var(--rc-control-gap)] - Gap between track and inline value display.
@@ -227,7 +235,10 @@ export class RCRangeSlider extends LitElement {
       border-radius: 50%;
       box-sizing: border-box;
       cursor: grab;
-      transform: translate(-50%, -50%);
+      /* Centered on its point with logical margins, which follow RTL and
+         vertical text where a fixed translate would not. */
+      margin-inline-start: calc(var(--rc-range-slider-thumb-size, 1.125rem) / -2);
+      margin-block-start: calc(var(--rc-range-slider-thumb-size, 1.125rem) / -2);
       transition:
         background-color 120ms ease,
         border-color 120ms ease,
@@ -298,6 +309,14 @@ export class RCRangeSlider extends LitElement {
       transform: translateX(-50%);
     }
 
+    /* Positioned from the inline start, which is the right edge in RTL, so
+       centering pulls the other way. */
+    :host(:dir(rtl):not([orientation='vertical']))
+      .rc-range-slider-root[data-display='float']
+      .rc-range-slider-value {
+      transform: translateX(50%);
+    }
+
     .rc-range-slider-root[data-display='inline-start'] .rc-range-slider-values,
     .rc-range-slider-root[data-display='inline-end'] .rc-range-slider-values {
       display: flex;
@@ -333,7 +352,8 @@ export class RCRangeSlider extends LitElement {
 
     :host([orientation='vertical']) .rc-range-slider-thumb {
       inset-inline-start: 50%;
-      transform: translate(-50%, 50%);
+      margin-block-start: 0;
+      transform: translateY(50%);
     }
 
     :host([orientation='vertical'])
@@ -419,6 +439,9 @@ export class RCRangeSlider extends LitElement {
 
   /** Orientation; reflected as an attribute and forwarded to custom thumbs. */
   @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
+
+  /** Keeps the thumbs' aria-orientation on the orientation actually rendered. */
+  protected readonly _flow = new FlowController(this);
 
   @state() private _lowValue = 0;
   @state() private _highValue = 100;
@@ -539,7 +562,9 @@ export class RCRangeSlider extends LitElement {
         aria-valuemax=${String(isLow ? this._highValue : this._max())}
         aria-valuenow=${String(value)}
         aria-valuetext=${valueText || nothing}
-        aria-orientation=${this.orientation}
+        aria-orientation=${this.orientation === 'vertical'
+          ? 'vertical'
+          : renderedOrientation('horizontal', this._flow.flow)}
         aria-disabled=${this.disabled ? 'true' : nothing}
         aria-readonly=${this.readonly ? 'true' : nothing}
         style=${this._thumbStyle(value)}
@@ -761,13 +786,14 @@ export class RCRangeSlider extends LitElement {
     const effectiveMax = thumb === 'low' ? high : max;
 
     let next: number | null = null;
+    const keys = this._valueKeys();
 
     switch (e.key) {
-      case 'ArrowRight':
+      case keys.increase:
       case 'ArrowUp':
         next = current + step;
         break;
-      case 'ArrowLeft':
+      case keys.decrease:
       case 'ArrowDown':
         next = current - step;
         break;
@@ -866,7 +892,7 @@ export class RCRangeSlider extends LitElement {
     const pct =
       this.orientation === 'vertical'
         ? 1 - (e.clientY - rect.top) / rect.height
-        : (e.clientX - rect.left) / rect.width;
+        : this._inlineFraction(e, rect);
     const raw = pct * span + this._min();
 
     return snapToStep(raw, min, max, this._step());
@@ -894,7 +920,10 @@ export class RCRangeSlider extends LitElement {
       return [`bottom:${loCenter}`, `height:max(0px, calc(${hiCenter} - ${loCenter}))`].join(';');
     }
 
-    return [`left:${loCenter}`, `width:max(0px, calc(${hiCenter} - ${loCenter}))`].join(';');
+    return [
+      `inset-inline-start:${loCenter}`,
+      `inline-size:max(0px, calc(${hiCenter} - ${loCenter}))`,
+    ].join(';');
   }
 
   private _thumbStyle(value: number): string {
@@ -905,7 +934,7 @@ export class RCRangeSlider extends LitElement {
       return `bottom:${center}`;
     }
 
-    return `left:${center};top:50%`;
+    return `inset-inline-start:${center};inset-block-start:50%`;
   }
 
   private _thumbCenterStyle(pct: number): string {
@@ -922,7 +951,36 @@ export class RCRangeSlider extends LitElement {
       return `bottom:${center}`;
     }
 
-    return `left:${center}`;
+    return `inset-inline-start:${center}`;
+  }
+
+  /**
+   * How far along the inline axis a pointer is, 0 at the inline start. That
+   * is the right edge in RTL and the top in vertical text, where a horizontal
+   * slider runs like the native range input it enhances.
+   */
+  private _inlineFraction(e: PointerEvent, rect: DOMRect): number {
+    const flow = resolveFlow(this);
+    const alongX = physicalAxis('inline', flow) === 'x';
+    const fraction = alongX
+      ? (e.clientX - rect.left) / rect.width
+      : (e.clientY - rect.top) / rect.height;
+
+    return isReversed('inline', flow) ? 1 - fraction : fraction;
+  }
+
+  /**
+   * The left/right keys that raise and lower the value. They swap in RTL, as
+   * the APG describes; Up and Down always raise and lower.
+   */
+  private _valueKeys(): { increase: string; decrease: string } {
+    if (this.orientation === 'vertical') {
+      return { increase: 'ArrowRight', decrease: 'ArrowLeft' };
+    }
+
+    const { next, prev } = arrowKeys('horizontal', resolveFlow(this));
+
+    return { increase: next, decrease: prev };
   }
 
   private _normalizeValue([low, high]: [number, number]): [number, number] {

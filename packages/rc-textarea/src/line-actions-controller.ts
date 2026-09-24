@@ -1,3 +1,4 @@
+import { isPhysicalReversed, resolveFlow } from '@rcarls/rc-common';
 import type { RCTextareaPluginAPI, DecorationInput } from './types.js';
 
 export interface LineAction {
@@ -48,7 +49,7 @@ WIDGET_SHEET.replaceSync(`
     display: inline-flex;
     align-items: center;
     gap: var(--rc-line-actions-gap, 2px);
-    margin-left: var(--rc-line-actions-margin-start, 6px);
+    margin-inline-start: var(--rc-line-actions-margin-start, 6px);
     vertical-align: middle;
   }
   .rc-line-action-btn {
@@ -331,7 +332,10 @@ export class LineActionsController {
 
     const panelWidth = this._popover.offsetWidth || 120;
 
-    let left = hostRect.left;
+    // Aligned to the host's inline start: its right edge in RTL.
+    const startsRight = isPhysicalReversed('x', resolveFlow(this._api.host));
+
+    let left = startsRight ? hostRect.right - panelWidth : hostRect.left;
     left = Math.min(left, window.innerWidth - panelWidth - 8);
     left = Math.max(left, 8);
 

@@ -1,9 +1,11 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { isPhysicalReversed, resolveFlow, type Flow } from './flow.js';
 import { RafScheduler } from './RafScheduler.js';
 import { getVisualViewportBounds } from './visualViewport.js';
 
-export type AnchorPlacement =
+/** A placement on a fixed physical side, after resolving against the flow. */
+export type PhysicalAnchorPlacement =
   | 'top'
   | 'top-start'
   | 'top-end'
@@ -16,6 +18,67 @@ export type AnchorPlacement =
   | 'right'
   | 'right-start'
   | 'right-end';
+
+/**
+ * Where to place the floating element relative to its anchor.
+ *
+ * The side is `top`/`bottom`, or a logical `inline-start`/`inline-end` that
+ * follows the reading direction (a submenu opening at `inline-end` opens to
+ * the left in RTL). The optional `-start`/`-end` suffix aligns to the
+ * logical start or end edge along the other axis, so `bottom-start` aligns
+ * right edges in RTL. `left*`/`right*` sides are physical and deprecated in
+ * favor of `inline-*`.
+ */
+export type AnchorPlacement =
+  | PhysicalAnchorPlacement
+  | 'inline-start'
+  | 'inline-start-start'
+  | 'inline-start-end'
+  | 'inline-end'
+  | 'inline-end-start'
+  | 'inline-end-end';
+
+/**
+ * Resolves a placement to a physical side and alignment for a given flow.
+ * Logical sides map through the inline axis; alignment suffixes flip where
+ * the cross axis runs right to left or bottom to top.
+ */
+export function resolveAnchorPlacement(
+  placement: AnchorPlacement,
+  flow: Flow,
+): PhysicalAnchorPlacement {
+  const logical = /^inline-(start|end)(?:-(start|end))?$/.exec(placement);
+
+  let side: 'top' | 'bottom' | 'left' | 'right';
+  let align: 'start' | 'end' | undefined;
+
+  if (logical) {
+    const [, edge, suffix] = logical;
+    const towardEnd = (edge === 'end') !== flow.inlineReversed;
+
+    side = flow.inline === 'x' ? (towardEnd ? 'right' : 'left') : towardEnd ? 'bottom' : 'top';
+    align = suffix as 'start' | 'end' | undefined;
+  } else {
+    const [physicalSide, suffix] = placement.split('-');
+
+    side = physicalSide as typeof side;
+    align = suffix as 'start' | 'end' | undefined;
+  }
+
+  if (!align) {
+    return side;
+  }
+
+  // top/bottom align along x; left/right along y.
+  const cross = side === 'top' || side === 'bottom' ? 'x' : 'y';
+  const physicalAlign = isPhysicalReversed(cross, flow)
+    ? align === 'start'
+      ? 'end'
+      : 'start'
+    : align;
+
+  return `${side}-${physicalAlign}`;
+}
 
 export interface AnchorOptions {
   /** The anchor (trigger) element. Accepts an element reference or getter. */
@@ -40,7 +103,7 @@ export interface AnchorOptions {
 
 // ---- CSS placement helpers -----------------------------------------------
 
-function placementCSS(placement: AnchorPlacement, offset: number): string {
+function placementCSS(placement: PhysicalAnchorPlacement, offset: number): string {
   const o = `${offset}px`;
 
   switch (placement) {
@@ -71,7 +134,7 @@ function placementCSS(placement: AnchorPlacement, offset: number): string {
   }
 }
 
-const FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
+const FLIP_PLACEMENT: Record<PhysicalAnchorPlacement, PhysicalAnchorPlacement> = {
   top: 'bottom',
   'top-start': 'bottom-start',
   'top-end': 'bottom-end',
@@ -87,7 +150,7 @@ const FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
 };
 
 // Inline-axis flip: start ↔ end (handles horizontal viewport overflow)
-const INLINE_FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
+const INLINE_FLIP_PLACEMENT: Record<PhysicalAnchorPlacement, PhysicalAnchorPlacement> = {
   top: 'top',
   'top-start': 'top-end',
   'top-end': 'top-start',
@@ -505,6 +568,14 @@ export class AnchorController implements ReactiveController {
     }
   }
 
+  /**
+   * The configured placement resolved against the anchor's writing mode and
+   * direction. Read at every apply, since a `dir` change fires no event.
+   */
+  private _physicalPlacement(anchor: Element): PhysicalAnchorPlacement {
+    return resolveAnchorPlacement(this._opts.placement ?? 'bottom-start', resolveFlow(anchor));
+  }
+
   private _apply(): boolean {
     if (this._opts.disabled) {
       this._cleanup();
@@ -521,7 +592,7 @@ export class AnchorController implements ReactiveController {
       return false;
     }
 
-    const placement = this._opts.placement ?? 'bottom-start';
+    const placement = this._physicalPlacement(anchor);
     const offset = this._opts.offset ?? 4;
     const flip = this._opts.flip ?? true;
     const anchorName = `--${this._uid}`;
@@ -610,7 +681,7 @@ export class AnchorController implements ReactiveController {
       return;
     }
 
-    const placement = this._opts.placement ?? 'bottom-start';
+    const placement = this._physicalPlacement(anchor);
     const offset = this._opts.offset ?? 4;
     const flip = this._opts.flip ?? true;
     const margin = 4;

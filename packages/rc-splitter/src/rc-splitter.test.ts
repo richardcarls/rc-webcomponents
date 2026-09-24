@@ -1277,3 +1277,65 @@ describe('RCSplitter', () => {
     });
   });
 });
+
+describe('RCSplitter direction and writing mode', () => {
+  test('places the primary pane at the inline start and measures drags from it in RTL', async () => {
+    const screen = render(html`
+      <div dir="rtl">
+        <rc-splitter data-testid="host" style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      </div>
+    `);
+    const host = screen.getByTestId('host').element() as RCSplitter;
+
+    await host.updateComplete;
+
+    const separator = await waitForInit(host);
+
+    host.value = 100;
+    await host.updateComplete;
+
+    const hostRect = host.getBoundingClientRect();
+
+    // The primary pane starts at the right edge in RTL.
+    expect(getPrimary(host).getBoundingClientRect().right).toBeCloseTo(hostRect.right, 0);
+
+    // 300px from the right edge is a primary size of 300, not 100.
+    firePointerEvent(separator, 'pointerdown', {
+      clientX: hostRect.right - 100,
+      clientY: hostRect.top + 150,
+    });
+    firePointerEvent(separator, 'pointermove', {
+      clientX: hostRect.right - 300,
+      clientY: hostRect.top + 150,
+    });
+    firePointerEvent(separator, 'pointerup', {
+      clientX: hostRect.right - 300,
+      clientY: hostRect.top + 150,
+    });
+
+    expect(host.value).toBe(300);
+  });
+
+  test('reports the separator orientation it renders in vertical text', async () => {
+    const screen = render(html`
+      <div style="writing-mode: vertical-rl;">
+        <rc-splitter data-testid="host" style="inline-size: 400px; block-size: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      </div>
+    `);
+    const host = screen.getByTestId('host').element() as RCSplitter;
+
+    await host.updateComplete;
+
+    const separator = await waitForInit(host);
+
+    // Side-by-side panes run along the inline axis, which is vertical here,
+    // so the bar between them is horizontal.
+    await vi.waitFor(() => expect(separator.getAttribute('aria-orientation')).toBe('horizontal'));
+  });
+});

@@ -3,7 +3,8 @@ import type { ReactiveControllerHost } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { AnchorController } from './AnchorController.js';
+import { AnchorController, resolveAnchorPlacement } from './AnchorController.js';
+import { HORIZONTAL_LTR_FLOW, type Flow } from './flow.js';
 
 type FakeHost = ReactiveControllerHost;
 
@@ -263,4 +264,108 @@ test('_scheduleClamp stops polling after visible geometry stabilizes', async () 
   expect(rectSpy).toHaveBeenCalledTimes(settledCalls);
 
   controller.hostDisconnected();
+});
+
+const RTL: Flow = {
+  inline: 'x',
+  block: 'y',
+  inlineReversed: true,
+  blockReversed: false,
+  rtl: true,
+};
+const VERTICAL_RL: Flow = {
+  inline: 'y',
+  block: 'x',
+  inlineReversed: false,
+  blockReversed: true,
+  rtl: false,
+};
+
+test.each([
+  // LTR is unchanged for every existing physical placement.
+  [HORIZONTAL_LTR_FLOW, 'bottom-start', 'bottom-start'],
+  [HORIZONTAL_LTR_FLOW, 'right-start', 'right-start'],
+  [HORIZONTAL_LTR_FLOW, 'inline-end-start', 'right-start'],
+  [HORIZONTAL_LTR_FLOW, 'inline-start', 'left'],
+  // RTL: alignment suffixes and logical sides follow the reading direction.
+  [RTL, 'bottom-start', 'bottom-end'],
+  [RTL, 'top-end', 'top-start'],
+  [RTL, 'bottom', 'bottom'],
+  [RTL, 'inline-end-start', 'left-start'],
+  [RTL, 'inline-start-end', 'right-end'],
+  [RTL, 'right-start', 'right-start'],
+  // vertical-rl: the inline axis runs top to bottom, lines right to left.
+  [VERTICAL_RL, 'inline-end-start', 'bottom-end'],
+  [VERTICAL_RL, 'bottom-start', 'bottom-end'],
+] as const)('resolveAnchorPlacement(%#): %s resolves %s to %s', (flow, placement, expected) => {
+  expect(resolveAnchorPlacement(placement, flow)).toBe(expected);
+});
+
+test("_positionFallback aligns a bottom-start popup to the anchor's right edge in RTL", async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    // Well inside the narrow test viewport so the viewport clamp stays out of it.
+    'direction: rtl; left: 150px; top: 100px; width: 120px; height: 40px;',
+    'width: 200px; height: 80px;',
+  );
+  const ctl = asPrivate(
+    new AnchorController(createHost(), { anchor, floating, placement: 'bottom-start', offset: 0 }),
+  );
+
+  ctl._positionFallback();
+
+  const popup = floating.getBoundingClientRect();
+  const trigger = anchor.getBoundingClientRect();
+
+  expect(popup.right).toBeCloseTo(trigger.right, 0);
+  expect(popup.top).toBeCloseTo(trigger.bottom, 0);
+});
+
+test('_positionFallback opens an inline-end submenu to the left in RTL', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    'direction: rtl; left: 400px; top: 100px; width: 120px; height: 40px;',
+    'width: 200px; height: 80px;',
+  );
+  const ctl = asPrivate(
+    new AnchorController(createHost(), {
+      anchor,
+      floating,
+      placement: 'inline-end-start',
+      offset: 8,
+    }),
+  );
+
+  ctl._positionFallback();
+
+  const popup = floating.getBoundingClientRect();
+  const trigger = anchor.getBoundingClientRect();
+
+  expect(popup.right).toBeCloseTo(trigger.left - 8, 0);
+  expect(popup.top).toBeCloseTo(trigger.top, 0);
+});
+
+test('the applied positioning aligns a bottom-start popup to the right edge in RTL', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    'direction: rtl; left: 150px; top: 100px; width: 120px; height: 40px;',
+    'width: 200px; height: 80px;',
+  );
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    placement: 'bottom-start',
+    offset: 0,
+  });
+
+  // Whichever path this engine takes (native, polyfill, or fallback), the
+  // rendered result must line up with the anchor's logical start edge.
+  ctl.hostConnected();
+
+  await vi.waitFor(() => {
+    const popup = floating.getBoundingClientRect();
+    const trigger = anchor.getBoundingClientRect();
+
+    expect(popup.right).toBeCloseTo(trigger.right, 0);
+    expect(popup.top).toBeCloseTo(trigger.bottom, 0);
+  });
+
+  ctl.hostDisconnected();
 });

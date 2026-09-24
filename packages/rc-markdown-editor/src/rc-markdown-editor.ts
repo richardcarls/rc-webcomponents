@@ -7,6 +7,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
 import { visit } from 'unist-util-visit';
 
+import { isPhysicalReversed, resolveFlow } from '@rcarls/rc-common';
 import type { RCTextarea, RCTextareaPluginAPI, DecorationInput } from '@rcarls/rc-textarea';
 import type {
   ActiveFormats,
@@ -1427,8 +1428,14 @@ export class RcMarkdownEditor extends LitElement {
     const rangeRect = this._$savedRange.getBoundingClientRect();
     const hostRect = this.getBoundingClientRect();
 
+    // Aligned to the selection's inline start: its right edge in RTL.
+    const startsRight = isPhysicalReversed('x', resolveFlow(this));
+    const left = startsRight
+      ? rangeRect.right - hostRect.left - this._$linkPopover.offsetWidth
+      : rangeRect.left - hostRect.left;
+
     this._$linkPopover.style.top = `${rangeRect.bottom - hostRect.top + 4}px`;
-    this._$linkPopover.style.left = `${Math.max(0, rangeRect.left - hostRect.left)}px`;
+    this._$linkPopover.style.left = `${Math.max(0, left)}px`;
   }
 
   protected _applyLink = () => {

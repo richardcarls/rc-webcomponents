@@ -117,7 +117,10 @@ export interface RCMenuButtonToggleEvent {
  *   controlled write to `open`.
  * @attr orientation - Arrow-key axis for opening the menu. Inherits from a parent
  *   `rc-menubar` or `[role="menubar"]` when unset.
- * @attr placement - Preferred placement of the popup relative to the trigger.
+ * @attr placement - Preferred placement of the popup relative to the trigger: `top` or `bottom`,
+ *   or `inline-start`/`inline-end` to open beside it toward the reading direction, each with an
+ *   optional `-start`/`-end` edge alignment that follows the reading direction too. Physical
+ *   `left*`/`right*` values still work but are deprecated.
  * @attr icon-only - Hints that the slotted trigger has no visible label, so themes can size
  *   it and its touch target as an icon button (see `--rc-menu-button-icon-size` and
  *   `--rc-menu-button-touch-target-*` above). Purely a styling hook; RCMenuButton does not read
@@ -234,7 +237,8 @@ export class RCMenuButton extends LitElement {
       return this.placement;
     }
 
-    return this._resolvedOrientation === 'vertical' ? 'right-start' : this.placement;
+    // Opens toward the inline end, which is the left in RTL.
+    return this._resolvedOrientation === 'vertical' ? 'inline-end-start' : this.placement;
   }
 
   /**

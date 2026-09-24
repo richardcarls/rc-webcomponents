@@ -535,7 +535,13 @@ export type RCMenuButtonPlacement =
   | 'left-end'
   | 'right'
   | 'right-start'
-  | 'right-end';
+  | 'right-end'
+  | 'inline-start'
+  | 'inline-start-start'
+  | 'inline-start-end'
+  | 'inline-end'
+  | 'inline-end-start'
+  | 'inline-end-end';
 
 export type RCMenuButtonRef = HTMLElement & {
   open: boolean | undefined;

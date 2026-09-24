@@ -1,6 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
+import { isPhysicalReversed, resolveFlow } from './flow.js';
 
 export type ResizeDirection = 'none' | 'both' | 'horizontal' | 'vertical';
 
@@ -285,10 +286,14 @@ export class ResizeController implements ReactiveController {
     btn.setAttribute('aria-label', 'Resize');
     btn.type = 'button';
 
+    // The grip sits at the end corner, where browsers put the native resize
+    // grip: bottom-left in RTL and in vertical-rl.
+    const { x, y } = this._endEdges();
+
     Object.assign(btn.style, {
       position: 'absolute',
-      bottom: '0',
-      right: '0',
+      [y === 's' ? 'bottom' : 'top']: '0',
+      [x === 'e' ? 'right' : 'left']: '0',
       width: '12px',
       height: '12px',
       padding: '0',
@@ -316,7 +321,7 @@ export class ResizeController implements ReactiveController {
   private _cornerCursor(): string {
     switch (this._opts.direction) {
       case 'both':
-        return 'se-resize';
+        return `${this._defaultHandleEdge()}-resize`;
       case 'horizontal':
         return 'ew-resize';
       case 'vertical':
@@ -345,16 +350,30 @@ export class ResizeController implements ReactiveController {
     return this._edgeForOrigin(this._opts.origin) ?? this._defaultHandleEdge();
   }
 
+  /**
+   * The physical edges at the target's end corner, where a resize grip and
+   * keyboard resizing act by default: right and bottom in LTR, left in RTL
+   * and in vertical-rl, top where the inline axis runs bottom to top.
+   */
+  private _endEdges(): { x: 'e' | 'w'; y: 's' | 'n' } {
+    const flow = resolveFlow(this._target());
+
+    return {
+      x: isPhysicalReversed('x', flow) ? 'w' : 'e',
+      y: isPhysicalReversed('y', flow) ? 'n' : 's',
+    };
+  }
+
   private _defaultHandleEdge(): ResizeEdge {
+    const { x, y } = this._endEdges();
+
     switch (this._opts.direction) {
-      case 'both':
-        return 'se';
       case 'horizontal':
-        return 'e';
+        return x;
       case 'vertical':
-        return 's';
+        return y;
       default:
-        return 'se';
+        return `${y}${x}`;
     }
   }
 
@@ -753,12 +772,14 @@ export class ResizeController implements ReactiveController {
       return originEdge;
     }
 
+    const { x, y } = this._endEdges();
+
     if (key === 'ArrowRight' || key === 'ArrowLeft') {
-      return this._opts.direction === 'both' || this._opts.direction === 'horizontal' ? 'e' : null;
+      return this._opts.direction === 'both' || this._opts.direction === 'horizontal' ? x : null;
     }
 
     if (key === 'ArrowDown' || key === 'ArrowUp') {
-      return this._opts.direction === 'both' || this._opts.direction === 'vertical' ? 's' : null;
+      return this._opts.direction === 'both' || this._opts.direction === 'vertical' ? y : null;
     }
 
     return null;

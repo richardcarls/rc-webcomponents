@@ -233,25 +233,18 @@ export const PACKAGE_ID_SELECTOR_BUDGETS = {
 export const PHYSICAL_CSS_ALLOWLIST = {
   'packages/rc-common/src/DragController.ts': 'pins a dragged box at physical pointer coordinates',
   'packages/rc-common/src/ResizeController.ts':
-    'resizes a pinned box from physical pointer coordinates (its injected handle offset is pending)',
+    'resizes a pinned box from physical pointer coordinates, at an end corner resolved from the flow',
   'packages/rc-dialog/src/dialogBaseStyles.ts': 'visual-viewport offsets are physical',
   'packages/rc-theme-material/components/select.css': 'visual-viewport offsets are physical',
   'packages/rc-theme-substrate/components/select.css': 'visual-viewport offsets are physical',
   'packages/rc-virtual-canvas/src/rc-virtual-canvas.styles.ts': 'canvas pixel space is physical',
   'packages/rc-virtual-canvas/src/rc-virtual-canvas.ts': 'canvas pixel space is physical',
   'packages/rc-common/src/AnchorController.ts':
-    'pending: -start/-end placements align physically, wrong in RTL',
-  'packages/rc-splitter/src/rc-splitter.styles.ts': 'pending: physical borders and offsets',
-  'packages/rc-slider/src/rc-slider.ts': 'pending: fill and tick offsets start from the left',
-  'packages/rc-range-slider/src/rc-range-slider.ts':
-    'pending: fill and thumb offsets start from the left',
-  'packages/rc-markdown-editor/src/rc-markdown-editor.styles.ts':
-    'pending: blockquote and list indents',
+    'emits physical CSS only after resolving the placement against the flow',
   'packages/rc-markdown-editor/src/rc-markdown-editor.ts':
-    'pending: link popover aligns to the physical left edge',
-  'packages/rc-textarea/src/rc-textarea.styles.ts': 'pending: gutter border and wrap indent',
+    'positions the link popover in host pixel coordinates, aligned from the flow',
   'packages/rc-textarea/src/line-actions-controller.ts':
-    'pending: popover aligns to the physical left edge',
+    'positions the popover in viewport pixel coordinates, aligned from the flow',
 };
 
 /**
@@ -263,7 +256,18 @@ export const DIRECTION_READ_ALLOWLIST = {
 };
 
 const PHYSICAL_CSS_DECLARATION =
-  /(?:^|[\s;{])(?:((?:margin|padding|border)-(?:left|right)(?:-[a-z]+)?|left|right)\s*:|((?:text-align|float|clear)\s*:\s*(?:left|right))\b)/g;
+  /(?:^|[\s;{])(?:((?:margin|padding|border|scroll-margin|scroll-padding)-(?:left|right)(?:-[a-z]+)?|border-(?:top|bottom)-(?:left|right)-radius|overflow-[xy]|overscroll-behavior-[xy]|left|right)\s*:|((?:text-align|float|clear)\s*:\s*(?:left|right)|scroll-snap-type\s*:\s*[xy])\b)/g;
+
+/**
+ * A physical overflow declaration is fine as a fallback when its logical
+ * counterpart sits beside it for engines that support it.
+ */
+const LOGICAL_FALLBACK_FOR = {
+  'overflow-x': 'overflow-inline',
+  'overflow-y': 'overflow-block',
+  'overscroll-behavior-x': 'overscroll-behavior-inline',
+  'overscroll-behavior-y': 'overscroll-behavior-block',
+};
 const PHYSICAL_STYLE_WRITE =
   /\.style\.(left|right|marginLeft|marginRight|paddingLeft|paddingRight)\s*=/g;
 const DIRECTION_READ =
@@ -280,7 +284,12 @@ export function extractPhysicalCss(text, isCss) {
 
   for (const region of regions) {
     for (const match of region.matchAll(PHYSICAL_CSS_DECLARATION)) {
-      found.add((match[1] ?? match[2]).replace(/\s+/g, ''));
+      const declaration = (match[1] ?? match[2]).replace(/\s+/g, '');
+      const logical = LOGICAL_FALLBACK_FOR[declaration];
+
+      if (!logical || !region.includes(`${logical}:`)) {
+        found.add(declaration);
+      }
     }
   }
 

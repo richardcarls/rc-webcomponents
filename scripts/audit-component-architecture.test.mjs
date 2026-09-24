@@ -37,6 +37,23 @@ test('finds physical CSS in stylesheets and template literals but not object key
   assert.deepEqual([...extractPhysicalCss(source, false)].sort(), ['left', 'style.marginRight']);
 });
 
+test('finds physical scrolling axes unless a logical fallback sits beside them', () => {
+  assert.deepEqual(
+    [...extractPhysicalCss('a { overflow-x: auto; scroll-snap-type: x mandatory; }', true)].sort(),
+    ['overflow-x', 'scroll-snap-type:x'],
+  );
+  assert.deepEqual(
+    [...extractPhysicalCss('a { overflow-x: auto; overflow-inline: auto; }', true)],
+    [],
+  );
+  assert.deepEqual(
+    [
+      ...extractPhysicalCss('a { border-top-left-radius: 4px; scroll-padding-left: 1rem; }', true),
+    ].sort(),
+    ['border-top-left-radius', 'scroll-padding-left'],
+  );
+});
+
 test('finds direction reads without matching option names that share the word', () => {
   assert.ok(readsDirection("getComputedStyle(el).direction === 'rtl'"));
   assert.ok(readsDirection('const styles = getComputedStyle(el); styles.writingMode;'));
