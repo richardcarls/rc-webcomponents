@@ -6,9 +6,17 @@ import {
   findExtremeSnapIndex,
   findNearestSnapIndex,
   findNextSnapIndex,
+  HORIZONTAL_LTR_FLOW,
+  clientSize,
+  getScrollOffset,
   keyNavigation,
+  logicalDelta,
+  physicalAxis,
+  resolveFlow,
+  setScrollOffset,
   warnMissingDirectChild,
   type DragGestureDetail,
+  type Flow,
   type KeyboardNavigationAction,
 } from '@rcarls/rc-common';
 import type { RCCarouselItem } from './rc-carousel-item.js';
@@ -156,11 +164,17 @@ export class RCCarousel extends LitElement {
 
   @state() private _dragging = false;
 
-  private _dragStartLeft = 0;
+  /** Logical inline scroll offset of the track when the current drag began. */
+  private _dragStartOffset = 0;
+
+  /** Track flow, re-resolved at the start of each drag or scroll operation. */
+  private _flow: Flow = HORIZONTAL_LTR_FLOW;
+
+  private _dragAxis: 'x' | 'y' = 'x';
   private _suppressNextClick = false;
 
   /**
-   * Drives `scrollLeft` directly from pointer deltas while `mouseDragging`
+   * Drives the track's scroll offset directly from pointer deltas while `mouseDragging`
    * is on. `activation: 'axis'` (not `'immediate'`) means a plain click
    * never activates a drag at all — it requires clearing
    * `activationDistance` (8px) of movement first — but a *real* drag still
@@ -176,14 +190,15 @@ export class RCCarousel extends LitElement {
     canStart: (event) => this.mouseDragging && event.pointerType === 'mouse',
     onStart: () => {
       this._dragging = true;
-      this._dragStartLeft = this._trackEl?.scrollLeft ?? 0;
+      this._resolveFlow();
+      this._dragStartOffset = this._trackOffset();
       this._suppressNextClick = true;
 
       // Imperative, not reactive-class-driven: this must land before
-      // onMove's very first scrollLeft write below, and a Lit re-render
+      // onMove's very first scroll offset write below, and a Lit re-render
       // (triggered by _dragging above) is a whole render pass too late for
       // that — with scroll-snap-type still active, the browser eagerly
-      // resnaps a plain scrollLeft assignment straight back to the
+      // resnaps a plain scroll offset assignment straight back to the
       // nearest snap point, same as it would any other programmatic
       // scroll with no notion this is "mid-gesture".
       if (this._trackEl) {
@@ -191,9 +206,13 @@ export class RCCarousel extends LitElement {
       }
     },
     onMove: (detail) => {
-      if (this._trackEl) {
-        this._trackEl.scrollLeft = this._dragStartLeft - detail.deltaX;
-      }
+      // Dragging toward the inline end drags content with it, which scrolls
+      // back toward the start, hence the subtraction. Projecting through the
+      // flow makes that hold in RTL and in vertical writing modes.
+      this._setTrackOffset(
+        this._dragStartOffset -
+          logicalDelta({ dx: detail.deltaX, dy: detail.deltaY }, 'inline', this._flow),
+      );
     },
     onEnd: (detail) => this._endDrag(detail),
     onCancel: (detail) => this._endDrag(detail),
@@ -424,14 +443,50 @@ export class RCCarousel extends LitElement {
     }
 
     const first = this._items[0];
+    const flow = this._resolveFlow();
 
     if (!(first instanceof HTMLElement)) {
-      return this._trackEl.clientWidth;
+      return clientSize(this._trackEl, 'inline', flow);
     }
 
     const gap = Number.parseFloat(getComputedStyle(this._trackEl).columnGap || '0') || 0;
 
-    return first.offsetWidth + gap;
+    return (flow.inline === 'x' ? first.offsetWidth : first.offsetHeight) + gap;
+  }
+
+  /**
+   * Re-reads the track's writing mode and direction. Called at the start of
+   * each scroll or drag operation rather than cached for the element's life,
+   * since a `dir` change on an ancestor fires no event. The drag gesture's
+   * physical axis follows, so a carousel in vertical text drags vertically.
+   */
+  private _resolveFlow(): Flow {
+    if (!this._trackEl) {
+      return this._flow;
+    }
+
+    this._flow = resolveFlow(this._trackEl);
+
+    const axis = physicalAxis('inline', this._flow);
+
+    // Never rebind mid-gesture; the next drag picks the new axis up.
+    if (!this._dragging && axis !== this._dragAxis) {
+      this._dragAxis = axis;
+      this._dragController.setOptions({ axis });
+    }
+
+    return this._flow;
+  }
+
+  /** Scroll distance from the track's logical start, never negative. */
+  private _trackOffset(): number {
+    return this._trackEl ? getScrollOffset(this._trackEl, 'inline', this._flow) : 0;
+  }
+
+  private _setTrackOffset(offset: number, behavior: ScrollBehavior = 'auto'): void {
+    if (this._trackEl) {
+      setScrollOffset(this._trackEl, 'inline', offset, this._flow, behavior);
+    }
   }
 
   private _setActiveIndex(index: number, trigger: RCCarouselChangeTrigger): void {
@@ -466,18 +521,14 @@ export class RCCarousel extends LitElement {
     }
 
     const slot = this._trackSlots().find((s) => !s.isClone && s.index === index);
-    const left = slot ? slot.point : index * this._itemStep();
+    const offset = slot ? slot.point : index * this._itemStep();
     const reducedMotion =
       this.ownerDocument.defaultView?.matchMedia('(prefers-reduced-motion: reduce)').matches ??
       false;
 
-    if (instant || reducedMotion) {
-      this._trackEl.scrollLeft = left;
-    } else {
-      // Explicit per call, not an ambient CSS default — see the comment on
-      // #track in rc-carousel.styles.ts.
-      this._trackEl.scrollTo({ left, behavior: 'smooth' });
-    }
+    // Explicit per call, not an ambient CSS default — see the comment on
+    // #track in rc-carousel.styles.ts.
+    this._setTrackOffset(offset, instant || reducedMotion ? 'auto' : 'smooth');
   }
 
   /**
@@ -604,13 +655,13 @@ export class RCCarousel extends LitElement {
   }
 
   /**
-   * On release, a fast enough flick pre-nudges `scrollLeft` to the next
+   * On release, a fast enough flick pre-nudges the scroll offset to the next
    * snap point in the drag direction (a "decisive swipe" — mirroring
    * `rc-bottom-sheet`'s own velocity-vs-nearest-point settle heuristic,
    * adapted from "jump to the extreme end" for a 2-point sheet to "advance
    * one further point" for a carousel that can have many). Either way,
    * this hands off to the same debounced settle path a native swipe
-   * already goes through — our own `scrollLeft` writes during the drag
+   * already goes through — our own scroll offset writes during the drag
    * already fired real `scroll` events, so `_onScroll` just needs to run
    * its usual timer to pick up wherever things ended.
    */
@@ -621,20 +672,26 @@ export class RCCarousel extends LitElement {
       this._trackEl.style.scrollSnapType = '';
     }
 
-    if (this._trackEl && Math.abs(detail.velocityX) > DECISIVE_DRAG_VELOCITY) {
+    const velocity = logicalDelta(
+      { dx: detail.velocityX, dy: detail.velocityY },
+      'inline',
+      this._flow,
+    );
+
+    if (this._trackEl && Math.abs(velocity) > DECISIVE_DRAG_VELOCITY) {
       const slots = this._trackSlots();
-      // Dragging left (negative velocityX) moves content right-to-left,
+      // Flicking toward the inline start moves content toward the start,
       // i.e. advances forward — toward higher track points.
-      const direction = detail.velocityX < 0 ? 1 : -1;
+      const direction = velocity < 0 ? 1 : -1;
       const targetSlotIndex = findNextSnapIndex(
         slots.map((slot) => slot.point),
-        this._trackEl.scrollLeft,
+        this._trackOffset(),
         direction,
       );
       const targetSlot = slots[targetSlotIndex];
 
       if (targetSlot) {
-        this._trackEl.scrollLeft = targetSlot.point;
+        this._setTrackOffset(targetSlot.point);
       }
     }
 
@@ -667,7 +724,7 @@ export class RCCarousel extends LitElement {
     const slots = this._trackSlots();
     const settledSlotIndex = findNearestSnapIndex(
       slots.map((slot) => slot.point),
-      this._trackEl.scrollLeft,
+      this._trackOffset(),
     );
     const settledSlot = settledSlotIndex >= 0 ? slots[settledSlotIndex] : undefined;
 
@@ -683,7 +740,7 @@ export class RCCarousel extends LitElement {
       const realSlot = slots.find((slot) => !slot.isClone && slot.index === settledSlot.index);
 
       if (realSlot) {
-        this._trackEl.scrollLeft = realSlot.point;
+        this._setTrackOffset(realSlot.point);
       }
     }
 
