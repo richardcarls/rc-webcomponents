@@ -233,7 +233,7 @@ export const PACKAGE_ID_SELECTOR_BUDGETS = {
 export const PHYSICAL_CSS_ALLOWLIST = {
   'packages/rc-common/src/DragController.ts': 'pins a dragged box at physical pointer coordinates',
   'packages/rc-common/src/ResizeController.ts':
-    'resizes a pinned box from physical pointer coordinates (its injected handle offset is pending)',
+    'resizes a pinned box from physical pointer coordinates, at an end corner resolved from the flow',
   'packages/rc-dialog/src/dialogBaseStyles.ts': 'visual-viewport offsets are physical',
   'packages/rc-theme-material/components/select.css': 'visual-viewport offsets are physical',
   'packages/rc-theme-substrate/components/select.css': 'visual-viewport offsets are physical',

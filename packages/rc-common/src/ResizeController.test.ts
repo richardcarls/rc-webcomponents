@@ -1,8 +1,8 @@
-import { html } from 'lit';
+import { html, type ReactiveControllerHost } from 'lit';
 import { expect, test } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { pinElementBox } from './ResizeController.js';
+import { ResizeController, pinElementBox } from './ResizeController.js';
 
 test('pinElementBox preserves visual geometry inside a containing block', async () => {
   const screen = render(html`
@@ -32,4 +32,48 @@ test('pinElementBox preserves visual geometry inside a containing block', async 
   expect(Number.parseFloat($target.style.top)).toBeCloseTo(
     before.top - $container.getBoundingClientRect().top,
   );
+});
+
+function createHost(): ReactiveControllerHost {
+  return {
+    addController() {},
+    removeController() {},
+    requestUpdate() {},
+    updateComplete: Promise.resolve(true),
+  };
+}
+
+test('puts the resize grip at the end corner and resizes from it in RTL', async () => {
+  const screen = render(html`
+    <div
+      dir="rtl"
+      data-testid="target"
+      style="position: fixed; top: 50px; left: 100px; inline-size: 200px; block-size: 100px;"
+    ></div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const ctl = new ResizeController(createHost(), { target: $target, direction: 'both' });
+
+  ctl.hostConnected();
+
+  const $grip = $target.querySelector<HTMLElement>('[data-rc-resize-corner]');
+
+  expect($grip).not.toBeNull();
+
+  const box = $target.getBoundingClientRect();
+  const grip = $grip!.getBoundingClientRect();
+
+  // Bottom-left: the inline-end, block-end corner in RTL, as for native resize.
+  expect(grip.left).toBeCloseTo(box.left, 0);
+  expect(grip.bottom).toBeCloseTo(box.bottom, 0);
+
+  // ArrowLeft drags that corner outward, widening the box from its left edge.
+  $grip!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+
+  const after = $target.getBoundingClientRect();
+
+  expect(after.width).toBeGreaterThan(box.width);
+  expect(after.right).toBeCloseTo(box.right, 0);
+
+  ctl.hostDisconnected();
 });
