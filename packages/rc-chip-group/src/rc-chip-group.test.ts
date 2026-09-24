@@ -3,6 +3,7 @@ import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import type { RCChip } from '@rcarls/rc-chip';
 import './define.js';
 import type { RCChipGroup } from './rc-chip-group.js';
@@ -308,3 +309,41 @@ test('has no automated accessibility violations with native filter semantics', a
 
   await expectNoA11yViolations(fieldset);
 });
+
+/** The arrow that points toward the inline end in each flow, written out rather than derived. */
+const NEXT_KEY: Record<string, string> = {
+  'horizontal-tb ltr': 'ArrowRight',
+  'horizontal-tb rtl': 'ArrowLeft',
+  'vertical-rl ltr': 'ArrowDown',
+  'vertical-rl rtl': 'ArrowUp',
+  'vertical-lr ltr': 'ArrowDown',
+};
+
+test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
+  'assist mode moves to the next chip with the inline-end arrow in %s',
+  async (label, flow) => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-chip-group data-testid="host" kind="assist" layout="wrap" label="Recipe actions">
+            <button type="button">One</button>
+            <button type="button">Two</button>
+          </rc-chip-group>
+        `,
+        flow,
+      ),
+    );
+    const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+    await settle(host);
+    await vi.waitFor(() => expect(host.querySelector('button')?.tabIndex).toBe(0));
+
+    const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+    const buttons = host.querySelectorAll<HTMLButtonElement>('button');
+
+    buttons[0].focus();
+    root.dispatchEvent(new KeyboardEvent('keydown', { key: NEXT_KEY[label], bubbles: true }));
+
+    expect(document.activeElement).toBe(buttons[1]);
+  },
+);

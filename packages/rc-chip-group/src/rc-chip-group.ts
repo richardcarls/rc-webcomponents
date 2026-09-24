@@ -1,7 +1,15 @@
 import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { isFocusable, RovingTabIndexMixin } from '@rcarls/rc-common';
+import {
+  arrowKeys,
+  getScrollOffset,
+  isFocusable,
+  logicalRect,
+  resolveFlow,
+  RovingTabIndexMixin,
+  setScrollOffset,
+} from '@rcarls/rc-common';
 import type { RCChip } from '@rcarls/rc-chip';
 
 import chipGroupStyles from './rc-chip-group.styles.js';
@@ -77,7 +85,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   private _expandedInitialized = false;
   private _measureFrame: number | undefined;
   private _targetVisibilityFrame: number | undefined;
-  private _pendingScrollLeft: number | undefined;
+  private _pendingScrollOffset: number | undefined;
   private _pendingScrollTarget: HTMLElement | undefined;
 
   @state()
@@ -201,7 +209,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
       this._targetVisibilityFrame = undefined;
     }
 
-    this._pendingScrollLeft = undefined;
+    this._pendingScrollOffset = undefined;
     this._pendingScrollTarget = undefined;
     this._restoreAuthoredVariants();
   }
@@ -282,14 +290,18 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
       return;
     }
 
-    const rtl = getComputedStyle(this._$root).direction === 'rtl';
+    // Chips run along the inline axis, so the keys follow whichever physical
+    // axis that is and whichever way it runs: ArrowLeft for next in RTL,
+    // ArrowDown in vertical text.
+    const flow = resolveFlow(this._$root);
+    const keys = arrowKeys(flow.inline === 'x' ? 'horizontal' : 'vertical', flow);
 
     switch (event.key) {
-      case rtl ? 'ArrowLeft' : 'ArrowRight':
+      case keys.next:
         event.preventDefault();
         this.focusItem(this.nextItem);
         break;
-      case rtl ? 'ArrowRight' : 'ArrowLeft':
+      case keys.prev:
         event.preventDefault();
         this.focusItem(this.previousItem);
         break;
@@ -411,7 +423,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
         this._targetVisibilityFrame = undefined;
       }
 
-      this._pendingScrollLeft = this._$root.scrollLeft;
+      this._pendingScrollOffset = this._inlineScrollOffset();
 
       const assigned = new Set(this._assignedElements());
 
@@ -460,15 +472,15 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
 
   private _measureRows(): void {
     if (this.layout !== 'auto') {
-      if (this.layout === 'scroll' && this._pendingScrollLeft !== undefined) {
+      if (this.layout === 'scroll' && this._pendingScrollOffset !== undefined) {
         const $target = this._pendingScrollTarget;
 
-        this._$root.scrollLeft = this._pendingScrollLeft;
+        this._setInlineScrollOffset(this._pendingScrollOffset);
         this._keepTargetVisible($target);
         this._scheduleTargetVisibility($target);
       }
 
-      this._pendingScrollLeft = undefined;
+      this._pendingScrollOffset = undefined;
       this._pendingScrollTarget = undefined;
 
       if (this._overflowing) {
@@ -480,18 +492,21 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
 
     const items = this._assignedElements().filter(($element) => !$element.hidden);
     const wasScrolling = this._resolvedLayout === 'scroll';
-    const scrollLeft = this._pendingScrollLeft ?? this._$root.scrollLeft;
+    const scrollOffset = this._pendingScrollOffset ?? this._inlineScrollOffset();
+    const flow = resolveFlow(this._$root);
+    const rootRect = this._$root.getBoundingClientRect();
 
     this._$root.toggleAttribute('data-measuring', true);
     this._$toggleWrap.hidden = true;
 
     const rowStarts: number[] = [];
 
+    // Rows stack along the block axis, which is horizontal in vertical text.
     for (const $item of items) {
-      const top = $item.getBoundingClientRect().top;
+      const start = logicalRect($item.getBoundingClientRect(), rootRect, flow).blockStart;
 
-      if (!rowStarts.some((rowTop) => Math.abs(rowTop - top) < 1)) {
-        rowStarts.push(top);
+      if (!rowStarts.some((rowStart) => Math.abs(rowStart - start) < 1)) {
+        rowStarts.push(start);
       }
     }
 
@@ -514,12 +529,12 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
     if (wasScrolling && this._resolvedLayout === 'scroll') {
       const $target = this._pendingScrollTarget;
 
-      this._$root.scrollLeft = scrollLeft;
+      this._setInlineScrollOffset(scrollOffset);
       this._keepTargetVisible($target);
       this._scheduleTargetVisibility($target);
     }
 
-    this._pendingScrollLeft = undefined;
+    this._pendingScrollOffset = undefined;
     this._pendingScrollTarget = undefined;
   }
 
@@ -528,18 +543,37 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
       return;
     }
 
-    const rootRect = this._$root.getBoundingClientRect();
-    const targetRect = $target.getBoundingClientRect();
+    const flow = resolveFlow(this._$root);
+    const root = logicalRect(
+      this._$root.getBoundingClientRect(),
+      this._$root.getBoundingClientRect(),
+      flow,
+    );
+    const target = logicalRect(
+      $target.getBoundingClientRect(),
+      this._$root.getBoundingClientRect(),
+      flow,
+    );
+    const targetEnd = target.inlineStart + target.inlineSize;
     const delta =
-      targetRect.left < rootRect.left
-        ? targetRect.left - rootRect.left
-        : targetRect.right > rootRect.right
-          ? targetRect.right - rootRect.right
+      target.inlineStart < 0
+        ? target.inlineStart
+        : targetEnd > root.inlineSize
+          ? targetEnd - root.inlineSize
           : 0;
 
     if (delta !== 0) {
-      this._$root.scrollLeft += delta;
+      this._setInlineScrollOffset(this._inlineScrollOffset() + delta);
     }
+  }
+
+  /** Scroll distance from the root's inline start, never negative. */
+  private _inlineScrollOffset(): number {
+    return getScrollOffset(this._$root, 'inline', resolveFlow(this._$root));
+  }
+
+  private _setInlineScrollOffset(offset: number): void {
+    setScrollOffset(this._$root, 'inline', offset, resolveFlow(this._$root));
   }
 
   private _scheduleTargetVisibility($target: HTMLElement | undefined): void {

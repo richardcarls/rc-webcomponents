@@ -22,8 +22,11 @@ export const chipGroupStyles = css`
 
   #root[data-mode='scroll'] {
     flex-wrap: nowrap;
+    /* Physical fallback first, for engines without logical overflow. */
     overflow-x: auto;
     overflow-y: hidden;
+    overflow-inline: auto;
+    overflow-block: hidden;
     overscroll-behavior-inline: contain;
     scroll-padding-inline: var(--rc-chip-group-scroll-padding-inline, 0);
     scrollbar-width: var(--rc-chip-group-scrollbar-width, none);

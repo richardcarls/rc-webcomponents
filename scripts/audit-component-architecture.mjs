@@ -260,7 +260,6 @@ export const PHYSICAL_CSS_ALLOWLIST = {
  */
 export const DIRECTION_READ_ALLOWLIST = {
   'packages/rc-common/src/flow.ts': 'owns direction and writing-mode resolution',
-  'packages/rc-chip-group/src/rc-chip-group.ts': 'pending: move arrow keys to arrowKeys',
   'packages/rc-common/src/KeyboardNavigationDirective.ts': 'pending: move to arrowKeys',
 };
 
