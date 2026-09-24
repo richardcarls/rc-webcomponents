@@ -2,6 +2,7 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
 import { isPhysicalReversed, resolveFlow } from './flow.js';
+import { observeDirection } from './observeDirection.js';
 
 export type ResizeDirection = 'none' | 'both' | 'horizontal' | 'vertical';
 
@@ -158,6 +159,14 @@ export class ResizeController implements ReactiveController {
 
   private _cornerBtn: HTMLButtonElement | null = null;
 
+  // The grip's corner and cursors are physical, derived from the flow. A dir
+  // flip fires no event, so it is observed. A writing-mode change is not
+  // observable at all (ResizeObserver compares logical sizes, which a
+  // logically sized target keeps), so the styles are also re-derived when a
+  // pointer enters or the grip takes focus, before either can be used.
+  private _unobserveDirection: (() => void) | null = null;
+  private readonly _onFlowInteraction = (): void => this._syncFlowStyles();
+
   private readonly _onPointerMove: (e: PointerEvent) => void;
   private readonly _gesture: DragGestureController;
   private readonly _onPointerLeave: (e: PointerEvent) => void;
@@ -212,6 +221,8 @@ export class ResizeController implements ReactiveController {
       return;
     }
 
+    this._observeFlow();
+
     if (this._opts.handle) {
       this._attachToHandle(this._opts.handle);
 
@@ -226,6 +237,8 @@ export class ResizeController implements ReactiveController {
   }
 
   hostDisconnected(): void {
+    this._unobserveFlow();
+
     if (this._opts.handle) {
       this._detachFromHandle(this._opts.handle);
 
@@ -261,6 +274,35 @@ export class ResizeController implements ReactiveController {
     }
   }
 
+  private _observeFlow(): void {
+    this._unobserveDirection ??= observeDirection(this._onFlowInteraction);
+    (this._handle() ?? this._target()).addEventListener('pointerenter', this._onFlowInteraction);
+  }
+
+  private _unobserveFlow(): void {
+    this._unobserveDirection?.();
+    this._unobserveDirection = null;
+    (this._handle() ?? this._target()).removeEventListener('pointerenter', this._onFlowInteraction);
+  }
+
+  /** Re-places the corner grip and re-derives handle cursors from the current flow. */
+  private _syncFlowStyles(): void {
+    // Mid-gesture the edge is fixed; the next gesture picks the new flow up.
+    if (this._resizing) {
+      return;
+    }
+
+    const handle = this._handle();
+
+    if (handle) {
+      handle.style.cursor = this._edgeCursor(this._handleEdge());
+    }
+
+    if (this._cornerBtn) {
+      this._placeCornerButton(this._cornerBtn);
+    }
+  }
+
   private _detachFromHandle(handle: Element | null | undefined): void {
     if (!handle) {
       return;
@@ -286,26 +328,38 @@ export class ResizeController implements ReactiveController {
     btn.setAttribute('aria-label', 'Resize');
     btn.type = 'button';
 
-    // The grip sits at the end corner, where browsers put the native resize
-    // grip: bottom-left in RTL and in vertical-rl.
-    const { x, y } = this._endEdges();
-
     Object.assign(btn.style, {
       position: 'absolute',
-      [y === 's' ? 'bottom' : 'top']: '0',
-      [x === 'e' ? 'right' : 'left']: '0',
       width: '12px',
       height: '12px',
       padding: '0',
       border: 'none',
       background: 'transparent',
-      cursor: this._cornerCursor(),
       zIndex: '1',
     });
 
+    this._placeCornerButton(btn);
+
     btn.addEventListener('keydown', this._onKeyDown as EventListener);
+    btn.addEventListener('focus', this._onFlowInteraction);
     target.appendChild(btn);
     this._cornerBtn = btn;
+  }
+
+  /**
+   * Puts the grip at the end corner, where browsers put the native resize
+   * grip: bottom-left in RTL and in vertical-rl.
+   */
+  private _placeCornerButton(btn: HTMLButtonElement): void {
+    const { x, y } = this._endEdges();
+
+    Object.assign(btn.style, {
+      top: y === 'n' ? '0' : '',
+      bottom: y === 's' ? '0' : '',
+      left: x === 'w' ? '0' : '',
+      right: x === 'e' ? '0' : '',
+      cursor: this._cornerCursor(),
+    });
   }
 
   private _removeCornerButton(): void {
@@ -314,6 +368,7 @@ export class ResizeController implements ReactiveController {
     }
 
     this._cornerBtn.removeEventListener('keydown', this._onKeyDown as EventListener);
+    this._cornerBtn.removeEventListener('focus', this._onFlowInteraction);
     this._cornerBtn.remove();
     this._cornerBtn = null;
   }
