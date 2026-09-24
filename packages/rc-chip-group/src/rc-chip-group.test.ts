@@ -347,3 +347,33 @@ test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
     expect(document.activeElement).toBe(buttons[1]);
   },
 );
+
+test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
+  'assist mode reports the orientation its chips render in for %s',
+  async (_label, flow) => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-chip-group data-testid="host" kind="assist" layout="wrap" label="Recipe actions">
+            <button type="button">One</button>
+            <button type="button">Two</button>
+          </rc-chip-group>
+        `,
+        flow,
+      ),
+    );
+    const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+    await settle(host);
+
+    const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+
+    // Like a native range input made vertical by writing-mode: the exposed
+    // orientation is the rendered one. Horizontal is the toolbar default.
+    await vi.waitFor(() =>
+      expect(root.getAttribute('aria-orientation')).toBe(
+        flow.writingMode === 'horizontal-tb' ? null : 'vertical',
+      ),
+    );
+  },
+);

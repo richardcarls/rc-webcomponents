@@ -88,6 +88,10 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   private _pendingScrollOffset: number | undefined;
   private _pendingScrollTarget: HTMLElement | undefined;
 
+  /** Chips run vertically (vertical writing mode); drives aria-orientation. */
+  @state()
+  private _inlineVertical = false;
+
   @state()
   private _overflowing = false;
 
@@ -471,6 +475,14 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   }
 
   private _measureRows(): void {
+    // aria-orientation reports how the chips actually render, like a native
+    // range input made vertical by writing-mode: vertical in vertical text.
+    const vertical = resolveFlow(this._$root).inline === 'y';
+
+    if (vertical !== this._inlineVertical) {
+      this._inlineVertical = vertical;
+    }
+
     if (this.layout !== 'auto') {
       if (this.layout === 'scroll' && this._pendingScrollOffset !== undefined) {
         const $target = this._pendingScrollTarget;
@@ -613,6 +625,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
         data-mode=${this._resolvedLayout}
         role=${assist ? 'toolbar' : nothing}
         aria-label=${assist ? this.label : nothing}
+        aria-orientation=${assist && this._inlineVertical ? 'vertical' : nothing}
         @keydown=${this._handleKeyDown}
         @change=${{ handleEvent: this._handleChange, capture: true }}
       >
