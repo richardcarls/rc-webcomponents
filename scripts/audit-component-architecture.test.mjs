@@ -10,11 +10,50 @@ import {
   extractThemeSelectorMetrics,
   extractTokenDefinitions,
   extractTokenReferences,
+  extractPhysicalCss,
   extractTransitionAnalysis,
+  findAllowlistErrors,
   findMarkerContractErrors,
   inspectTheme,
+  readsDirection,
   runAudit,
 } from './audit-component-architecture.mjs';
+
+test('finds physical CSS in stylesheets and template literals but not object keys', () => {
+  const css = `a { margin-left: 1rem; inset-inline-start: 0; border-right-color: red; text-align: left; }`;
+
+  assert.deepEqual([...extractPhysicalCss(css, true)].sort(), [
+    'border-right-color',
+    'margin-left',
+    'text-align:left',
+  ]);
+
+  const source = [
+    "const FLIP = { left: 'right', right: 'left' };",
+    'const styles = css`:host { padding-inline-start: 0; left: 50%; }`;',
+    'el.style.marginRight = `${x}px`;',
+  ].join('\n');
+
+  assert.deepEqual([...extractPhysicalCss(source, false)].sort(), ['left', 'style.marginRight']);
+});
+
+test('finds direction reads without matching option names that share the word', () => {
+  assert.ok(readsDirection("getComputedStyle(el).direction === 'rtl'"));
+  assert.ok(readsDirection('const styles = getComputedStyle(el); styles.writingMode;'));
+  assert.ok(!readsDirection("if (this._opts.direction === 'none') {}"));
+});
+
+test('reports unlisted files and allowlist entries that are no longer needed', () => {
+  const hits = new Map([['a.ts', 'left']]);
+
+  assert.deepEqual(findAllowlistErrors(hits, { 'a.ts': 'why' }, 'physical CSS'), []);
+  assert.equal(findAllowlistErrors(hits, {}, 'physical CSS').length, 1);
+
+  assert.match(
+    findAllowlistErrors(new Map(), { 'b.ts': 'why' }, 'physical CSS')[0],
+    /no longer needs it/,
+  );
+});
 
 test('extracts marker and token contracts without confusing references and definitions', () => {
   const css = `
@@ -113,7 +152,9 @@ test('every animated-layout-property budget entry is still animated, and every f
   const result = runAudit(process.cwd());
 
   assert.deepEqual(
-    result.errors.filter((error) => error.includes('layout property') || error.includes('is stale')),
+    result.errors.filter(
+      (error) => error.includes('layout property') || error.includes('is stale'),
+    ),
     [],
   );
 

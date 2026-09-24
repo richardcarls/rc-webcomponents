@@ -79,6 +79,20 @@ Every component implements the corresponding
 - Focus management behaves as defined / expected
 - A11y testing is part of acceptance, not an afterthought
 
+### Direction and writing-mode aware
+
+Components work in right-to-left languages and in vertical writing modes, not only in
+left-to-right horizontal text.
+
+- Styles use logical CSS properties (`inset-inline-start`, `margin-block-end`), so layout
+  follows the page's `dir` and `writing-mode`
+- Scrolling, pointer dragging, and anchored popups measure in logical terms: a menu aligned to
+  its trigger's start edge aligns to the right edge in RTL
+- Arrow keys follow reading direction, as the APG describes for RTL: in a horizontal toolbar,
+  ArrowLeft moves to the next item in RTL
+- `orientation="horizontal|vertical"` matches ARIA's `aria-orientation`, while scrolling regions
+  take a logical `axis="block|inline"`
+
 ### Design-system neutral
 
 Components do not impose a particular visual system. They ship the structural styling needed

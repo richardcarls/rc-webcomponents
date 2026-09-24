@@ -79,6 +79,17 @@ short and tell the tool to read `AGENTS.md` before project work.
   attribute from their own responsive state.
 - Use Pointer Events for pointer interaction. Avoid mouse-only logic and
   hardcoded responsive breakpoints inside component behavior.
+- Support RTL and vertical writing modes. Use logical CSS properties
+  (`inset-inline-start`, `padding-block-end`) in component and theme styles;
+  physical ones need an allowlist entry in
+  `scripts/audit-component-architecture.mjs` with a reason. Resolve scroll
+  offsets, pointer deltas, element positions, and arrow keys through
+  `rc-common`'s `flow` helpers (`resolveFlow`, `getScrollOffset`,
+  `logicalRect`, `logicalDelta`, `arrowKeys`) rather than reading
+  `direction`, `writing-mode`, `scrollLeft`, or `clientX` directly. Resolve the
+  flow at interaction or measure time, since a `dir` change on an ancestor
+  fires no event. Test new geometry or keyboard behavior with the
+  `FLOW_FIXTURES`/`inFlow` helpers in `test-helpers/flow.ts`.
 - Shared interaction behavior belongs in `rc-common` as Lit directives or
   `ReactiveController` classes.
 - Before adding new interaction, focus, positioning, scrolling, pointer, resize,
@@ -220,6 +231,20 @@ false` `@property` a matching `@attr` line; use bracket form (`@attr [name]`)
   snippets, accessibility notes, events, and at-a-glance summaries.
 - Package README, root README package summary, aggregate package exports, and
   aggregate React/Solid typings when public usage changes.
+
+Axis and position vocabulary is shared across the collection:
+
+- `orientation="horizontal|vertical"` is only for widgets that expose
+  `aria-orientation` (toolbar, menubar, segmented button, splitter separator,
+  slider), defaulting as the APG role does. It stays physical because ARIA's
+  is; keyboard mapping flips through `arrowKeys` for RTL. `rc-card`'s
+  `orientation` is a layout mode and is documented as such.
+- `axis="block|inline|both"` is for scrolling and geometry (`rc-scroller`,
+  `rc-virtual-scroller`) and is logical.
+- Position-like values use logical `start`/`end` and `inline-*` sides.
+  Physical `x`/`y`/`left`/`right` belong to internal pointer and geometry math,
+  and to `DragGestureController` and `ResizeController`, which model raw
+  pointer deltas and CSS `resize` and say so in their docs.
 
 Generated API tables come from `dist/custom-elements.json`; do not hand-edit
 generated output instead of source comments and types.

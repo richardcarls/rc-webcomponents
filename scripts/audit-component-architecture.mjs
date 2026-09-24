@@ -223,6 +223,102 @@ export const PACKAGE_ID_SELECTOR_BUDGETS = {
   'rc-virtual-canvas': 7,
 };
 
+/**
+ * Files allowed to use physical CSS (`left`, `margin-right`, `style.left`, ...)
+ * and why. Everything else uses logical properties so layout follows `dir` and
+ * `writing-mode`. Entries marked "pending" are known RTL bugs scheduled for a
+ * fix; delete the entry in the change that fixes the file, and the stale-entry
+ * check below will insist on it.
+ */
+export const PHYSICAL_CSS_ALLOWLIST = {
+  'packages/rc-common/src/DragController.ts': 'pins a dragged box at physical pointer coordinates',
+  'packages/rc-common/src/ResizeController.ts':
+    'resizes a pinned box from physical pointer coordinates (its injected handle offset is pending)',
+  'packages/rc-dialog/src/dialogBaseStyles.ts': 'visual-viewport offsets are physical',
+  'packages/rc-theme-material/components/select.css': 'visual-viewport offsets are physical',
+  'packages/rc-theme-substrate/components/select.css': 'visual-viewport offsets are physical',
+  'packages/rc-virtual-canvas/src/rc-virtual-canvas.styles.ts': 'canvas pixel space is physical',
+  'packages/rc-virtual-canvas/src/rc-virtual-canvas.ts': 'canvas pixel space is physical',
+  'packages/rc-common/src/AnchorController.ts':
+    'pending: -start/-end placements align physically, wrong in RTL',
+  'packages/rc-splitter/src/rc-splitter.styles.ts': 'pending: physical borders and offsets',
+  'packages/rc-slider/src/rc-slider.ts': 'pending: fill and tick offsets start from the left',
+  'packages/rc-range-slider/src/rc-range-slider.ts':
+    'pending: fill and thumb offsets start from the left',
+  'packages/rc-markdown-editor/src/rc-markdown-editor.styles.ts':
+    'pending: blockquote and list indents',
+  'packages/rc-markdown-editor/src/rc-markdown-editor.ts':
+    'pending: link popover aligns to the physical left edge',
+  'packages/rc-textarea/src/rc-textarea.styles.ts': 'pending: gutter border and wrap indent',
+  'packages/rc-textarea/src/line-actions-controller.ts':
+    'pending: popover aligns to the physical left edge',
+};
+
+/**
+ * Files allowed to read `direction` or `writing-mode` themselves. Everyone
+ * else resolves them through rc-common's flow helpers.
+ */
+export const DIRECTION_READ_ALLOWLIST = {
+  'packages/rc-common/src/flow.ts': 'owns direction and writing-mode resolution',
+  'packages/rc-chip-group/src/rc-chip-group.ts': 'pending: move arrow keys to arrowKeys',
+  'packages/rc-common/src/KeyboardNavigationDirective.ts': 'pending: move to arrowKeys',
+  'packages/rc-scroller/src/rc-scroller.ts': 'pending: move to getScrollOffset',
+};
+
+const PHYSICAL_CSS_DECLARATION =
+  /(?:^|[\s;{])(?:((?:margin|padding|border)-(?:left|right)(?:-[a-z]+)?|left|right)\s*:|((?:text-align|float|clear)\s*:\s*(?:left|right))\b)/g;
+const PHYSICAL_STYLE_WRITE =
+  /\.style\.(left|right|marginLeft|marginRight|paddingLeft|paddingRight)\s*=/g;
+const DIRECTION_READ =
+  /\b(?:getComputedStyle\([^)]*\)|styles?|computed)\.(?:direction|writingMode)\b|['"]rtl['"]/;
+
+/**
+ * Physical CSS properties declared in `text`. TypeScript sources are only
+ * scanned inside template literals and `.style.*` writes, so object keys such
+ * as a `{ left: 'right' }` lookup table don't count as CSS.
+ */
+export function extractPhysicalCss(text, isCss) {
+  const regions = isCss ? [text] : [...text.matchAll(/`([^`]*)`/g)].map((match) => match[1]);
+  const found = new Set();
+
+  for (const region of regions) {
+    for (const match of region.matchAll(PHYSICAL_CSS_DECLARATION)) {
+      found.add((match[1] ?? match[2]).replace(/\s+/g, ''));
+    }
+  }
+
+  if (!isCss) {
+    for (const match of text.matchAll(PHYSICAL_STYLE_WRITE)) {
+      found.add(`style.${match[1]}`);
+    }
+  }
+
+  return found;
+}
+
+export function readsDirection(text) {
+  return DIRECTION_READ.test(text);
+}
+
+/** Checks each file against an allowlist, and the allowlist against the files. */
+export function findAllowlistErrors(hits, allowlist, describe) {
+  const errors = [];
+
+  for (const [path, detail] of hits) {
+    if (!allowlist[path]) {
+      errors.push(`${path}: ${describe} (${detail}); use logical equivalents or allowlist it.`);
+    }
+  }
+
+  for (const path of Object.keys(allowlist)) {
+    if (!hits.has(path)) {
+      errors.push(`${path}: allowlisted for ${describe} but no longer needs it; remove the entry.`);
+    }
+  }
+
+  return errors;
+}
+
 const NON_COMPONENT_PACKAGES = new Set([
   'rc-common',
   'rc-textarea-adapters',
@@ -747,6 +843,28 @@ export function runAudit(root = DEFAULT_ROOT) {
   const discoveredMarkers = new Set(markerFiles.flatMap((path) => [...extractMarkers(read(path))]));
 
   errors.push(...findMarkerContractErrors(discoveredMarkers));
+
+  const physicalCssHits = new Map();
+  const directionReadHits = new Map();
+
+  for (const path of markerFiles) {
+    const text = read(path);
+    const displayPath = relative(root, path);
+    const physical = extractPhysicalCss(text, extname(path) === '.css');
+
+    if (physical.size > 0) {
+      physicalCssHits.set(displayPath, sorted(physical).join(', '));
+    }
+
+    if (extname(path) === '.ts' && readsDirection(text)) {
+      directionReadHits.set(displayPath, 'direction or writing-mode');
+    }
+  }
+
+  errors.push(
+    ...findAllowlistErrors(physicalCssHits, PHYSICAL_CSS_ALLOWLIST, 'physical CSS'),
+    ...findAllowlistErrors(directionReadHits, DIRECTION_READ_ALLOWLIST, 'reads direction'),
+  );
 
   for (const token of baseTokens) {
     if (!stylingGuide.includes(token)) {
