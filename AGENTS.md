@@ -239,6 +239,15 @@ Axis and position vocabulary is shared across the collection:
   slider), defaulting as the APG role does. It stays physical because ARIA's
   is; keyboard mapping flips through `arrowKeys` for RTL. `rc-card`'s
   `orientation` is a layout mode and is documented as such.
+- `aria-orientation` reports the orientation a widget actually renders in,
+  so it can follow the writing mode. ARIA defines it physically ("oriented
+  horizontally"), and a native `<input type="range">` made vertical by
+  `writing-mode` is exposed as vertical. A widget whose items flow along the
+  inline axis with no author `orientation` (for example `rc-chip-group`'s
+  assist toolbar) sets `aria-orientation="vertical"` in vertical writing
+  modes. Where the author sets `orientation`, the layout must render that
+  physical orientation, since the attribute maps straight to
+  `aria-orientation`.
 - `axis="block|inline|both"` is for scrolling and geometry (`rc-scroller`,
   `rc-virtual-scroller`) and is logical.
 - Position-like values use logical `start`/`end` and `inline-*` sides.
