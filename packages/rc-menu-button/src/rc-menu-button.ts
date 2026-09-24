@@ -115,8 +115,10 @@ export interface RCMenuButtonToggleEvent {
  * @attr open - Whether the menu popup is visible. Controlled mode: host writes silently.
  * @attr default-open - Initial open state for uncontrolled mode. Ignored after the first
  *   controlled write to `open`.
- * @attr orientation - Arrow-key axis for opening the menu. Inherits from a parent
- *   `rc-menubar` or `[role="menubar"]` when unset.
+ * @attr orientation - The layout the trigger sits in: `horizontal` along the inline axis,
+ *   like a menubar row, or `vertical` along the block axis. It picks the arrow key that opens
+ *   the menu, following how that layout renders, so the keys turn with RTL and vertical text.
+ *   Inherits from a parent `rc-menubar` or `[role="menubar"]` when unset.
  * @attr placement - Preferred placement of the popup relative to the trigger: `top` or `bottom`,
  *   or `inline-start`/`inline-end` to open beside it toward the reading direction, each with an
  *   optional `-start`/`-end` edge alignment that follows the reading direction too. Physical
@@ -215,7 +217,9 @@ export class RCMenuButton extends LitElement {
   }
 
   /**
-   * Orientation of this menu button, affects which arrow keys open/close the menu.
+   * The layout this menu button sits in, which picks the arrow keys that open
+   * and close the menu. `horizontal` runs along the inline axis and `vertical`
+   * along the block axis; the keys follow how that layout renders.
    *
    * If not set, inherits from a parent rc-menubar or element with role="menubar".
    */
@@ -229,8 +233,9 @@ export class RCMenuButton extends LitElement {
   /**
    * Popup placement adjusted for orientation.
    *
-   * Switches from `bottom-start` to `right-start` when the resolved orientation
-   * is `vertical`, so vertical menubars open submenus to the side.
+   * Switches from `bottom-start` to `inline-end-start` when the resolved
+   * orientation is `vertical`, so vertical menubars open submenus to the side,
+   * toward the inline end.
    */
   protected get _effectivePlacement(): AnchorPlacement {
     if (this.placement !== 'bottom-start') {
