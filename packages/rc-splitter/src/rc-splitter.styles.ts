@@ -122,7 +122,6 @@ export const splitterStyles = css`
     touch-action: none;
     inline-size: 100%;
     block-size: var(--rc-splitter-separator-handle-size, 100%);
-    cursor: col-resize;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -130,7 +129,10 @@ export const splitterStyles = css`
     position: relative;
 
     /* ── Visual drag indicator ─────────────────────────────────────────────
-       Default: 3-dot vertical grip (horizontal splitter / vertical bar).
+       The box follows the orientation attribute in logical terms; the dots
+       and cursor are physical and follow data-bar, the bar's rendered
+       direction, so they stay right in vertical text.
+       Default: 3-dot grip along a vertical bar.
        Themes override via --rc-splitter-handle-pattern (background-image) and
        --rc-splitter-handle-fill (background-color). */
     &::before {
@@ -186,12 +188,22 @@ export const splitterStyles = css`
     :host([orientation='vertical']) & {
       inline-size: var(--rc-splitter-separator-handle-size, 100%);
       block-size: 100%;
-      cursor: row-resize;
 
-      /* Horizontal 3-dot grip (vertical splitter / horizontal bar) */
       &::before {
         inline-size: 100%;
         block-size: var(--rc-splitter-handle-thickness, 4px);
+      }
+    }
+
+    &[data-bar='vertical'] {
+      cursor: col-resize;
+    }
+
+    &[data-bar='horizontal'] {
+      cursor: row-resize;
+
+      /* 3-dot grip along a horizontal bar */
+      &::before {
         background-image: var(
           --rc-splitter-handle-pattern,
           radial-gradient(

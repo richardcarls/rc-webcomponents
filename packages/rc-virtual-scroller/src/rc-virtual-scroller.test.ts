@@ -194,6 +194,47 @@ describe.each(
   });
 });
 
+test('re-resolves the inline axis when the direction flips at runtime', async () => {
+  const { host, port, range } = await mount({ count: 500, axis: 'inline' });
+  const flow = port.parentElement as HTMLElement;
+
+  // Let the first measurement's resize settle, so only the flip can prompt
+  // a re-resolve.
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  // Nothing resizes, but the inline start moves to the other edge; measured
+  // against the stale direction the view would sit at the far end.
+  flow.dir = 'rtl';
+  host.scrollToIndex(300);
+
+  await vi.waitFor(() => expect(range().start).toBeGreaterThan(290));
+
+  expect(getScrollOffset(port, 'inline', resolveFlow(port))).toBeCloseTo(300 * ITEM_SIZE, -1);
+  expect(range().start).toBeLessThanOrEqual(300);
+  expect(range().end).toBeGreaterThan(300);
+});
+
+test('keeps the range on the scroll position when the direction flips at runtime', async () => {
+  const { port, range, portFlow } = await mount({ count: 500, axis: 'inline' });
+  const flow = port.parentElement as HTMLElement;
+
+  setScrollOffset(port, 'inline', 100 * ITEM_SIZE, portFlow);
+
+  await vi.waitFor(() => expect(range().start).toBe(98));
+
+  // The flip moves the scroll origin; engines settle the position where they
+  // like, so check the range against whatever offset they kept.
+  flow.dir = 'rtl';
+
+  await vi.waitFor(() => {
+    const line = Math.floor(getScrollOffset(port, 'inline', resolveFlow(port)) / ITEM_SIZE);
+
+    expect(range().start).toBeLessThanOrEqual(line);
+    expect(range().end).toBeGreaterThan(line + PORT_SIZE / ITEM_SIZE - 1);
+  });
+});
+
 test('measures items per line from an auto-fill grid without changing it', async () => {
   const { host, list, range } = await mount(
     { count: 500 },
