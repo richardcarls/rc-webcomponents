@@ -2,8 +2,8 @@ import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
 import {
-  arrowKeys,
   getScrollOffset,
+  inlineArrowKeys,
   isFocusable,
   logicalRect,
   resolveFlow,
@@ -297,8 +297,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
     // Chips run along the inline axis, so the keys follow whichever physical
     // axis that is and whichever way it runs: ArrowLeft for next in RTL,
     // ArrowDown in vertical text.
-    const flow = resolveFlow(this._$root);
-    const keys = arrowKeys(flow.inline === 'x' ? 'horizontal' : 'vertical', flow);
+    const keys = inlineArrowKeys(resolveFlow(this._$root));
 
     switch (event.key) {
       case keys.next:

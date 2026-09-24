@@ -4,7 +4,9 @@ import { property, query, state } from 'lit/decorators.js';
 import {
   ActiveDescendantController,
   AnchorController,
+  inlineArrowKeys,
   NativeChildController,
+  resolveFlow,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 import type {
@@ -1207,14 +1209,23 @@ export class RCSelect extends LitElement {
         }
         break;
 
-      case 'ArrowLeft':
-        if (!this.open && this.multiple && this._selectedValues.size > 0) {
+      default:
+        // Chips sit before the trigger along the inline axis, so the arrow
+        // toward the inline start enters them: ArrowRight in RTL. In vertical
+        // text that arrow is ArrowUp, which the popup navigation above keeps,
+        // so this path does not apply there.
+        if (
+          e.key === inlineArrowKeys(resolveFlow(this)).prev &&
+          !this.open &&
+          this.multiple &&
+          this._selectedValues.size > 0
+        ) {
           e.preventDefault();
           this._enterChipNav();
-        }
-        break;
 
-      default:
+          break;
+        }
+
         if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
           this._handleTypeAhead(e.key);
         }
@@ -1303,9 +1314,10 @@ export class RCSelect extends LitElement {
    */
   protected _handleChipKeyDown(e: KeyboardEvent, value: string) {
     const $buttons = this._$chipButtons();
+    const keys = inlineArrowKeys(resolveFlow(this));
 
     switch (e.key) {
-      case 'ArrowLeft':
+      case keys.prev:
         e.preventDefault();
 
         if (this._chipNavIndex > 0) {
@@ -1314,7 +1326,7 @@ export class RCSelect extends LitElement {
         }
         break;
 
-      case 'ArrowRight':
+      case keys.next:
         e.preventDefault();
 
         if (this._chipNavIndex < $buttons.length - 1) {

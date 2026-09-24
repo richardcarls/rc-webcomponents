@@ -343,3 +343,33 @@ test('the appearance switch gates the segmented recipe', async () => {
   $radio.focus();
   expect(document.activeElement).toBe($radio);
 });
+
+test('ArrowLeft selects the next segment in RTL', async () => {
+  const screen = render(html`
+    <div dir="rtl">
+      <rc-segmented-button data-testid="host">
+        <fieldset>
+          <legend>Text size</legend>
+          <label
+            ><input data-testid="small" type="radio" name="rtl-size" value="small" checked />
+            Small</label
+          >
+          <label
+            ><input data-testid="medium" type="radio" name="rtl-size" value="medium" />
+            Medium</label
+          >
+        </fieldset>
+      </rc-segmented-button>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCSegmentedButton;
+  const small = await screen.getByTestId('small').element();
+  const medium = await screen.getByTestId('medium').element();
+
+  await flushSegmented(host);
+  small.focus();
+  await userEvent.keyboard('{ArrowLeft}');
+
+  expect(document.activeElement).toBe(medium);
+  expect(host.value).toBe('medium');
+});

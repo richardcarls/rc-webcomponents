@@ -1130,3 +1130,24 @@ test('native <select> click has its default action suppressed', async () => {
 
   expect(clickEvent.defaultPrevented).toBe(true);
 });
+
+test.each([
+  ['ltr', 'horizontal-tb', 'ArrowLeft'],
+  ['rtl', 'horizontal-tb', 'ArrowRight'],
+  // Not vertical text: there the inline-start arrow is ArrowUp, which popup
+  // navigation keeps, as the APG listbox pattern specifies.
+] as const)(
+  'multiple: the arrow toward the inline start enters chip navigation (%s %s)',
+  async (dir, writingMode, key) => {
+    const screen = render(
+      html`<div dir=${dir} style="writing-mode: ${writingMode}">${makeSelectedSelect()}</div>`,
+    );
+    const host = await getHost(screen);
+    const enterChipNav = vi.spyOn(host as unknown as { _enterChipNav(): void }, '_enterChipNav');
+    const $trigger = host.renderRoot.querySelector<HTMLElement>('#trigger')!;
+
+    $trigger.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+
+    expect(enterChipNav).toHaveBeenCalledTimes(1);
+  },
+);

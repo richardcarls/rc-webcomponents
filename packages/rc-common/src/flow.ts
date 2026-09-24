@@ -208,3 +208,29 @@ export function arrowKeys(orientation: 'horizontal' | 'vertical', flow: Flow): A
     ? { next: xForward, prev: xBackward, openFirst: yForward, openLast: yBackward }
     : { next: yForward, prev: yBackward, openFirst: xForward, openLast: xBackward };
 }
+
+/**
+ * Arrow keys for content that runs along the inline axis, such as a row of
+ * chips or the characters in a text field: `next` points toward the inline
+ * end and `prev` toward the inline start. That is Right/Left in LTR,
+ * Left/Right in RTL, and Down/Up in vertical text.
+ */
+export function inlineArrowKeys(flow: Flow): ArrowKeyMap {
+  return arrowKeys(flow.inline === 'x' ? 'horizontal' : 'vertical', flow);
+}
+
+/**
+ * The physical orientation a layout actually renders in. A `horizontal`
+ * layout runs along the inline axis and a `vertical` one along the block
+ * axis, so both turn over in vertical writing modes, the same way a native
+ * `<input type="range">` becomes vertical there. Use the result for
+ * `aria-orientation` and for arrow keys; keep the layout value for styling.
+ */
+export function renderedOrientation(
+  layout: 'horizontal' | 'vertical',
+  flow: Flow,
+): 'horizontal' | 'vertical' {
+  const axis = physicalAxis(layout === 'horizontal' ? 'inline' : 'block', flow);
+
+  return axis === 'x' ? 'horizontal' : 'vertical';
+}

@@ -711,3 +711,28 @@ test('autofill-style input event (inputType: insertReplacementText) is handled w
   expect($host.open).toBe(true);
   expect($options.every(($opt) => $opt.hidden)).toBe(true);
 });
+
+test.each([
+  ['ltr', 'ArrowLeft'],
+  ['rtl', 'ArrowRight'],
+] as const)(
+  'multiple: the arrow toward the inline start moves from an empty input to the chips (%s)',
+  async (dir, key) => {
+    const screen = render(html`<div dir=${dir}>${makeCombobox({ multiple: true })}</div>`);
+    const $host = screen.container.querySelector('rc-combobox') as RCCombobox;
+
+    $host.value = ['apple'];
+    await getHost(screen);
+
+    const focusLastChip = vi.spyOn(
+      $host as unknown as { _focusLastChipRemove(): void },
+      '_focusLastChipRemove',
+    );
+    const $input = $host.renderRoot.querySelector<HTMLInputElement>('input')!;
+
+    $input.setSelectionRange(0, 0);
+    $input.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+
+    expect(focusLastChip).toHaveBeenCalledTimes(1);
+  },
+);

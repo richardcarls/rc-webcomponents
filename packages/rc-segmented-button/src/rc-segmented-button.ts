@@ -2,6 +2,8 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
+import { arrowKeys, renderedOrientation, resolveFlow } from '@rcarls/rc-common';
+
 import segmentedButtonStyles from './rc-segmented-button.styles.js';
 
 declare global {
@@ -210,7 +212,8 @@ export interface RCSegmentedButtonChangeDetail {
  * @attr value - Current selected radio value. Host writes are silent.
  * @attr default-value - Initial selected value for uncontrolled usage.
  * @attr disabled - Mirrors disabled state to the native fieldset.
- * @attr orientation - Keyboard orientation: `horizontal` or `vertical`.
+ * @attr orientation - Layout along the inline (`horizontal`) or block (`vertical`) axis. Arrow
+ *   keys follow the orientation actually rendered, which turns over in vertical writing modes.
  *
  * @cssprop [--rc-segmented-button-appearance] - Set to `segmented` to turn on the component's
  *   segmented recipe: a flat fieldset, a visually hidden legend, and hidden but focusable radios.
@@ -465,9 +468,15 @@ export class RCSegmentedButton extends LitElement {
       return;
     }
 
-    const forwardKeys =
-      this.orientation === 'vertical' ? ['ArrowDown'] : ['ArrowRight', 'ArrowDown'];
-    const backwardKeys = this.orientation === 'vertical' ? ['ArrowUp'] : ['ArrowLeft', 'ArrowUp'];
+    // Keys follow the orientation actually rendered, which turns over in
+    // vertical text; horizontal keys flip in RTL. A horizontal layout also
+    // accepts the cross-axis keys, as a native radio group does.
+    const flow = resolveFlow(this);
+    const keys = arrowKeys(renderedOrientation(this.orientation, flow), flow);
+    const forwardKeys: string[] =
+      this.orientation === 'vertical' ? [keys.next] : [keys.next, keys.openFirst];
+    const backwardKeys: string[] =
+      this.orientation === 'vertical' ? [keys.prev] : [keys.prev, keys.openLast];
     const $radios = this._$enabledRadios();
     const currentIndex = $radios.indexOf($target);
 

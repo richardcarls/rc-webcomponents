@@ -506,3 +506,56 @@ test('RCMenubar vertical orientation uses Up/Down for navigation', async () => {
   await userEvent.keyboard('{ArrowUp}');
   await expect.element(trigger1).toHaveFocus();
 });
+
+test('RCMenubar advances with ArrowLeft in RTL', async () => {
+  const screen = render(html`
+    <div dir="rtl">
+      <rc-menubar label="Test Menu">
+        <rc-menu-button>
+          <button slot="trigger" data-testid="rtl-1">File</button>
+          <rc-menu label="File"><button>New</button></rc-menu>
+        </rc-menu-button>
+        <rc-menu-button>
+          <button slot="trigger" data-testid="rtl-2">Edit</button>
+          <rc-menu label="Edit"><button>Undo</button></rc-menu>
+        </rc-menu-button>
+      </rc-menubar>
+    </div>
+  `);
+  const first = screen.getByTestId('rtl-1');
+  const second = screen.getByTestId('rtl-2');
+
+  await focusTrigger(first.element());
+
+  await userEvent.keyboard('{ArrowLeft}');
+  await expect.element(second).toHaveFocus();
+
+  await userEvent.keyboard('{ArrowRight}');
+  await expect.element(first).toHaveFocus();
+});
+
+test('RCMenubar reports and navigates the orientation it renders in vertical text', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl;">
+      <rc-menubar data-testid="vertical-text" label="Test Menu">
+        <rc-menu-button>
+          <button slot="trigger" data-testid="vt-1">File</button>
+          <rc-menu label="File"><button>New</button></rc-menu>
+        </rc-menu-button>
+        <rc-menu-button>
+          <button slot="trigger" data-testid="vt-2">Edit</button>
+          <rc-menu label="Edit"><button>Undo</button></rc-menu>
+        </rc-menu-button>
+      </rc-menubar>
+    </div>
+  `);
+  const menubar = screen.getByTestId('vertical-text');
+  const first = screen.getByTestId('vt-1');
+  const second = screen.getByTestId('vt-2');
+
+  await expect.element(menubar).toHaveAttribute('aria-orientation', 'vertical');
+
+  await focusTrigger(first.element());
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.element(second).toHaveFocus();
+});

@@ -236,18 +236,19 @@ Axis and position vocabulary is shared across the collection:
 
 - `orientation="horizontal|vertical"` is only for widgets that expose
   `aria-orientation` (toolbar, menubar, segmented button, splitter separator,
-  slider), defaulting as the APG role does. It stays physical because ARIA's
-  is; keyboard mapping flips through `arrowKeys` for RTL. `rc-card`'s
-  `orientation` is a layout mode and is documented as such.
-- `aria-orientation` reports the orientation a widget actually renders in,
-  so it can follow the writing mode. ARIA defines it physically ("oriented
-  horizontally"), and a native `<input type="range">` made vertical by
-  `writing-mode` is exposed as vertical. A widget whose items flow along the
-  inline axis with no author `orientation` (for example `rc-chip-group`'s
-  assist toolbar) sets `aria-orientation="vertical"` in vertical writing
-  modes. Where the author sets `orientation`, the layout must render that
-  physical orientation, since the attribute maps straight to
-  `aria-orientation`.
+  slider), defaulting as the APG role does. It names a layout, like a native
+  range input's default: `horizontal` runs along the inline axis and
+  `vertical` along the block axis, so both turn over in vertical writing
+  modes. Style from this attribute. `rc-card`'s `orientation` is a layout
+  mode only and is documented as such.
+- `aria-orientation` reports the orientation actually rendered, which is what
+  ARIA defines ("oriented horizontally") and what browsers expose for a native
+  `<input type="range">` made vertical by `writing-mode`. Derive it with
+  `renderedOrientation(orientation, flow)`, keep it current with
+  `FlowController`, and never select styles on it. Arrow keys follow the same
+  rendered orientation through `arrowKeys`, and `keyNavigation` converts an
+  explicit `navigationAxis` or a role default the same way. An explicit
+  `aria-orientation` attribute is already physical and is used as is.
 - `axis="block|inline|both"` is for scrolling and geometry (`rc-scroller`,
   `rc-virtual-scroller`) and is logical.
 - Position-like values use logical `start`/`end` and `inline-*` sides.

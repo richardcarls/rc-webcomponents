@@ -4,6 +4,14 @@ import { PartType, type PartInfo, type ElementPart } from 'lit/directive.js';
 
 import { directive, AsyncDirective } from 'lit/async-directive.js';
 
+import {
+  HORIZONTAL_LTR_FLOW,
+  arrowKeys,
+  renderedOrientation,
+  resolveFlow,
+  type Flow,
+} from './flow.js';
+
 export type KeyboardNavigationAction =
   | 'next'
   | 'prev'
@@ -38,6 +46,11 @@ export interface KeyNavigationOptions {
    * Explicitly set the navigation axis, overriding role-based auto-detection.
    * The navigation axis determines which arrow keys map to 'next'/'prev'.
    * Required when the element has no ARIA role (e.g. a menu-button trigger wrapper).
+   *
+   * This is a layout orientation: `horizontal` means items run along the
+   * inline axis, `vertical` along the block axis. It is converted to the
+   * rendered physical orientation per keydown, so a horizontal layout in
+   * vertical text navigates with ArrowUp/ArrowDown.
    */
   navigationAxis?: 'horizontal' | 'vertical';
 
@@ -65,34 +78,48 @@ class KeyboardNavigationDirective extends AsyncDirective {
   private _callback!: (action: KeyboardNavigationAction) => void;
   private _options: KeyNavigationOptions = {};
   /**
-   * The navigation axis determines which arrow keys map to 'next'/'prev'.
-   * Checks the explicit `navigationAxis` option first, then auto-detects
-   * from the element's ARIA role and aria-orientation attribute.
+   * The physical axis whose arrow keys map to 'next'/'prev'.
+   *
+   * An explicit `aria-orientation` attribute is already physical and is used
+   * as is. Everything else describes layout, so it is converted to the
+   * orientation it renders in: an explicit `navigationAxis` option or a role
+   * default of `horizontal` runs along the inline axis and turns vertical in
+   * vertical writing modes, like a native range input does.
    */
   protected get navigationAxis(): 'horizontal' | 'vertical' {
-    if (this._options.navigationAxis) return this._options.navigationAxis;
+    const el = this._element?.deref();
 
-    switch (this._element?.deref()?.role) {
+    return this._resolveAxis(el, el ? resolveFlow(el) : HORIZONTAL_LTR_FLOW);
+  }
+
+  private _resolveAxis(el: Element | undefined, flow: Flow): 'horizontal' | 'vertical' {
+    if (this._options.navigationAxis) {
+      return renderedOrientation(this._options.navigationAxis, flow);
+    }
+
+    const aria = el?.getAttribute('aria-orientation');
+    const explicit = aria === 'horizontal' || aria === 'vertical' ? aria : null;
+
+    switch (el?.role) {
       case 'slider':
       case 'tablist':
       case 'toolbar':
       case 'menubar':
-        // Horizontal by default
-        return this._element?.deref()?.ariaOrientation === 'vertical' ? 'vertical' : 'horizontal';
+        return explicit ?? renderedOrientation('horizontal', flow);
 
       case 'separator':
-        // Navigation axis is perpendicular to the bar orientation.
-        // ARIA default bar orientation is horizontal → keyboard axis is vertical (Up/Down).
-        // A vertical bar (aria-orientation="vertical") → keyboard axis is horizontal (Left/Right).
-        return this._element?.deref()?.ariaOrientation === 'vertical' ? 'horizontal' : 'vertical';
+        // Navigation runs perpendicular to the bar. With no explicit
+        // orientation the bar separates stacked blocks, so it runs along the
+        // inline axis and the keys along the block axis.
+        if (explicit) {
+          return explicit === 'vertical' ? 'horizontal' : 'vertical';
+        }
 
-      case 'scrollbar':
-      case 'tree':
-      case 'listbox':
-      case 'menu':
+        return renderedOrientation('vertical', flow);
+
       default:
-        // Vertical by default
-        return this._element?.deref()?.ariaOrientation === 'horizontal' ? 'horizontal' : 'vertical';
+        // scrollbar, tree, listbox, menu, and unknown roles stack vertically.
+        return explicit ?? renderedOrientation('vertical', flow);
     }
   }
 
@@ -122,14 +149,16 @@ class KeyboardNavigationDirective extends AsyncDirective {
   protected _onKeydown(e: KeyboardEvent) {
     const key = this._normalizeKey(e.key);
 
-    // Compute axis-based key mappings, flipping horizontal arrows for RTL reading direction.
-    const axis = this.navigationAxis;
+    // Resolved per keydown: a dir change on an ancestor fires no event. The
+    // open axis flips too, so a vertical menu in RTL opens with ArrowLeft.
     const el = this._element?.deref();
-    const rtl = axis === 'horizontal' && el != null && getComputedStyle(el).direction === 'rtl';
-    const navNext = axis === 'horizontal' ? (rtl ? 'ArrowLeft' : 'ArrowRight') : 'ArrowDown';
-    const navPrev = axis === 'horizontal' ? (rtl ? 'ArrowRight' : 'ArrowLeft') : 'ArrowUp';
-    const openFirst = axis === 'horizontal' ? 'ArrowDown' : 'ArrowRight';
-    const openLast = axis === 'horizontal' ? 'ArrowUp' : 'ArrowLeft';
+    const flow = el ? resolveFlow(el) : HORIZONTAL_LTR_FLOW;
+    const {
+      next: navNext,
+      prev: navPrev,
+      openFirst,
+      openLast,
+    } = arrowKeys(this._resolveAxis(el, flow), flow);
 
     let action: KeyboardNavigationAction | undefined;
 
