@@ -61,6 +61,30 @@ export type RCScrollerRef = HTMLElement & {
   readonly atInlineEnd: boolean;
 };
 
+export type RCVirtualScrollerRangeDetail = {
+  start: number;
+  end: number;
+  columns: number;
+  rowSize: number;
+  measured: boolean;
+};
+
+/** Public API surface of `<rc-virtual-scroller>`. */
+export type RCVirtualScrollerRef = HTMLElement & {
+  count: number;
+  itemSize: number;
+  overscan: number;
+  disabled: boolean;
+  scrollTarget: Element | null;
+  readonly first: number;
+  readonly last: number;
+  scrollToIndex(
+    index: number,
+    options?: { block?: 'start' | 'center' | 'end' | 'nearest'; behavior?: ScrollBehavior },
+  ): void;
+  measure(): void;
+};
+
 export type RCListVariant = 'standard' | 'segmented';
 export type RCListSelection = 'none' | 'single' | 'multiple';
 
@@ -758,6 +782,17 @@ declare module 'solid-js' {
       'rc-scroller': JSX.HTMLAttributes<RCScrollerRef> & {
         axis?: RCScrollerAxis;
         layout?: RCScrollerLayout;
+      };
+
+      'rc-virtual-scroller': JSX.HTMLAttributes<RCVirtualScrollerRef> & {
+        count?: number | string;
+        'item-size'?: number | string;
+        overscan?: number | string;
+        disabled?: boolean | string;
+        'prop:scrollTarget'?: Element | null | undefined;
+        'on:rc-virtual-scroller-range'?: (
+          e: CustomEvent<RCVirtualScrollerRangeDetail>,
+        ) => void;
       };
 
       'rc-carousel': JSX.HTMLAttributes<RCCarouselRef> & {

@@ -20,6 +20,11 @@ const packages = [
     'Native scroll region with optional content and fullbleed layout',
     '/components/rc-scroller',
   ],
+  [
+    'rc-virtual-scroller',
+    'Headless virtualization wrapper reporting the visible index range for a consumer-owned list or grid',
+    '/components/rc-virtual-scroller',
+  ],
   ['rc-list', 'Shared-column list rows with native-backed selection', '/components/rc-list'],
   ['rc-chip', 'Chip wrapper for native actions, links, filters, and inputs', '/components/rc-chip'],
   [

@@ -67,6 +67,7 @@ const sidebars: SidebarsConfig = {
         'components/rc-navigation-bar',
         'components/rc-navigation-rail',
         'components/rc-scroller',
+        'components/rc-virtual-scroller',
         'components/rc-virtual-canvas',
       ],
     },

@@ -47,6 +47,7 @@
       "@rcarls/rc-toolbar",
       "@rcarls/rc-transfer-list",
       "@rcarls/rc-virtual-canvas",
+      "@rcarls/rc-virtual-scroller",
       "@rcarls/rc-webcomponents"
     ]
   ],

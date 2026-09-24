@@ -35,5 +35,6 @@ import '@rcarls/rc-textarea/define';
 import '@rcarls/rc-toolbar/define';
 import '@rcarls/rc-transfer-list/define';
 import '@rcarls/rc-virtual-canvas/define';
+import '@rcarls/rc-virtual-scroller/define';
 
 export * from './index.js';
