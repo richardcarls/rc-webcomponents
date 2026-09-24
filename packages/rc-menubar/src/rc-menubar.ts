@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
-import { type KeyboardNavigationAction } from '@rcarls/rc-common';
+import { arrowKeys, resolveFlow, type KeyboardNavigationAction } from '@rcarls/rc-common';
 import type { RCMenuButton, RCMenuButtonToggleEvent } from '@rcarls/rc-menu-button';
 
 import menubarStyles from './rc-menubar.styles.js';
@@ -373,8 +373,8 @@ export class RCMenubar extends LitElement {
   /** Translates keyboard events to navigation actions and activates keyboard interaction mode. */
   protected _handleKeydown(e: KeyboardEvent): void {
     const key = IE_KEY_ALIASES[e.key] ?? e.key;
-    const navNext = this.orientation === 'horizontal' ? 'ArrowRight' : 'ArrowDown';
-    const navPrev = this.orientation === 'horizontal' ? 'ArrowLeft' : 'ArrowUp';
+    // Flips for RTL: a horizontal menubar advances with ArrowLeft there.
+    const { next: navNext, prev: navPrev } = arrowKeys(this.orientation, resolveFlow(this));
 
     let action: KeyboardNavigationAction | undefined;
 

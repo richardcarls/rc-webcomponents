@@ -5,6 +5,7 @@ import { render } from 'vitest-browser-lit';
 import { FLOW_FIXTURES, flowLabel, inFlow, type FlowFixture } from '../../../test-helpers/flow.js';
 import {
   arrowKeys,
+  inlineArrowKeys,
   clientSize,
   getScrollOffset,
   logicalDelta,
@@ -235,4 +236,29 @@ describe('arrowKeys', () => {
     expect(arrowKeys('horizontal', flow).next).toBe('ArrowLeft');
     expect(arrowKeys('vertical', flow).next).toBe('ArrowDown');
   });
+});
+
+test.each([
+  [
+    { inline: 'x', block: 'y', inlineReversed: false, blockReversed: false, rtl: false },
+    'ArrowRight',
+    'ArrowLeft',
+  ],
+  [
+    { inline: 'x', block: 'y', inlineReversed: true, blockReversed: false, rtl: true },
+    'ArrowLeft',
+    'ArrowRight',
+  ],
+  [
+    { inline: 'y', block: 'x', inlineReversed: false, blockReversed: true, rtl: false },
+    'ArrowDown',
+    'ArrowUp',
+  ],
+  [
+    { inline: 'y', block: 'x', inlineReversed: true, blockReversed: true, rtl: true },
+    'ArrowUp',
+    'ArrowDown',
+  ],
+] as const)('inlineArrowKeys points next toward the inline end (%#)', (flow, next, prev) => {
+  expect(inlineArrowKeys(flow)).toMatchObject({ next, prev });
 });

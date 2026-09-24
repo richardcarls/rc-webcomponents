@@ -208,3 +208,13 @@ export function arrowKeys(orientation: 'horizontal' | 'vertical', flow: Flow): A
     ? { next: xForward, prev: xBackward, openFirst: yForward, openLast: yBackward }
     : { next: yForward, prev: yBackward, openFirst: xForward, openLast: xBackward };
 }
+
+/**
+ * Arrow keys for content that runs along the inline axis, such as a row of
+ * chips or the characters in a text field: `next` points toward the inline
+ * end and `prev` toward the inline start. That is Right/Left in LTR,
+ * Left/Right in RTL, and Down/Up in vertical text.
+ */
+export function inlineArrowKeys(flow: Flow): ArrowKeyMap {
+  return arrowKeys(flow.inline === 'x' ? 'horizontal' : 'vertical', flow);
+}

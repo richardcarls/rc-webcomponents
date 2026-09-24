@@ -2,8 +2,10 @@ import { LitElement, html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
 import {
+  arrowKeys,
   MutationObserverController,
   NativeChildController,
+  resolveFlow,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 import type { ListboxOption, RCListbox, RCListboxChangeEvent } from '@rcarls/rc-listbox';
@@ -540,14 +542,17 @@ export class RCTransferList extends LitElement {
 
   private _onKeydown = (e: KeyboardEvent): void => {
     if (e.altKey) {
+      // Alt+arrow toward the selected list adds; the lists swap sides in RTL.
+      const keys = arrowKeys('horizontal', resolveFlow(this));
+
       switch (e.key) {
-        case 'ArrowRight':
+        case keys.next:
           e.preventDefault();
           this.addSelected();
 
           break;
 
-        case 'ArrowLeft':
+        case keys.prev:
           e.preventDefault();
           this.removeSelected();
 

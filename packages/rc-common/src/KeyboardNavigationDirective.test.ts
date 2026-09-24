@@ -3,6 +3,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { FLOW_FIXTURES, flowLabel, type FlowFixture } from '../../../test-helpers/flow.js';
 import {
   keyNavigation,
   type KeyboardNavigationAction,
@@ -172,4 +173,69 @@ test('keyNavigation maps the perpendicular open axis in both orientations', () =
   press($toolbar, 'ArrowUp');
 
   expect(horizontalCB.mock.calls).toEqual([['open-to-first'], ['open-to-last']]);
+});
+
+/** Keys spelled out per flow, rather than derived from the helper under test. */
+const EXPECTED_KEYS: Record<
+  string,
+  Record<'horizontal' | 'vertical', [string, string, string, string]>
+> = {
+  // [next, prev, open-to-first, open-to-last]
+  'horizontal-tb ltr': {
+    horizontal: ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'],
+    vertical: ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'],
+  },
+  'horizontal-tb rtl': {
+    horizontal: ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp'],
+    vertical: ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'],
+  },
+  'vertical-rl ltr': {
+    horizontal: ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp'],
+    vertical: ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'],
+  },
+  'vertical-rl rtl': {
+    horizontal: ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'],
+    vertical: ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'],
+  },
+  'vertical-lr ltr': {
+    horizontal: ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'],
+    vertical: ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'],
+  },
+};
+
+function renderInFlow(
+  role: string,
+  callback: (action: KeyboardNavigationAction) => void,
+  { dir, writingMode }: FlowFixture,
+): HTMLElement {
+  const screen = render(html`
+    <div dir=${dir} style="writing-mode: ${writingMode};">
+      <div role=${role} tabindex="0" ${keyNavigation(callback, { handleOpenAxis: true })}></div>
+    </div>
+  `);
+
+  return screen.container.querySelector<HTMLElement>(`[role="${role}"]`)!;
+}
+
+test.each(
+  FLOW_FIXTURES.flatMap((flow) =>
+    (
+      [
+        ['toolbar', 'horizontal'],
+        ['menu', 'vertical'],
+      ] as const
+    ).map(
+      ([role, orientation]) => [`${role} in ${flowLabel(flow)}`, role, orientation, flow] as const,
+    ),
+  ),
+)('keyNavigation maps navigation and open keys for a %s', (_label, role, orientation, flow) => {
+  const callback = vi.fn();
+  const $target = renderInFlow(role, callback, flow);
+  const [next, prev, openFirst, openLast] = EXPECTED_KEYS[flowLabel(flow)]![orientation];
+
+  for (const key of [next, prev, openFirst, openLast]) {
+    press($target, key);
+  }
+
+  expect(callback.mock.calls).toEqual([['next'], ['prev'], ['open-to-first'], ['open-to-last']]);
 });

@@ -4,6 +4,8 @@ import { PartType, type PartInfo, type ElementPart } from 'lit/directive.js';
 
 import { directive, AsyncDirective } from 'lit/async-directive.js';
 
+import { HORIZONTAL_LTR_FLOW, arrowKeys, resolveFlow } from './flow.js';
+
 export type KeyboardNavigationAction =
   | 'next'
   | 'prev'
@@ -122,14 +124,15 @@ class KeyboardNavigationDirective extends AsyncDirective {
   protected _onKeydown(e: KeyboardEvent) {
     const key = this._normalizeKey(e.key);
 
-    // Compute axis-based key mappings, flipping horizontal arrows for RTL reading direction.
-    const axis = this.navigationAxis;
+    // Resolved per keydown: a dir change on an ancestor fires no event. The
+    // open axis flips too, so a vertical menu in RTL opens with ArrowLeft.
     const el = this._element?.deref();
-    const rtl = axis === 'horizontal' && el != null && getComputedStyle(el).direction === 'rtl';
-    const navNext = axis === 'horizontal' ? (rtl ? 'ArrowLeft' : 'ArrowRight') : 'ArrowDown';
-    const navPrev = axis === 'horizontal' ? (rtl ? 'ArrowRight' : 'ArrowLeft') : 'ArrowUp';
-    const openFirst = axis === 'horizontal' ? 'ArrowDown' : 'ArrowRight';
-    const openLast = axis === 'horizontal' ? 'ArrowUp' : 'ArrowLeft';
+    const {
+      next: navNext,
+      prev: navPrev,
+      openFirst,
+      openLast,
+    } = arrowKeys(this.navigationAxis, el ? resolveFlow(el) : HORIZONTAL_LTR_FLOW);
 
     let action: KeyboardNavigationAction | undefined;
 

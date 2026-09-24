@@ -2,6 +2,8 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
+import { arrowKeys, resolveFlow } from '@rcarls/rc-common';
+
 import segmentedButtonStyles from './rc-segmented-button.styles.js';
 
 declare global {
@@ -465,9 +467,15 @@ export class RCSegmentedButton extends LitElement {
       return;
     }
 
-    const forwardKeys =
-      this.orientation === 'vertical' ? ['ArrowDown'] : ['ArrowRight', 'ArrowDown'];
-    const backwardKeys = this.orientation === 'vertical' ? ['ArrowUp'] : ['ArrowLeft', 'ArrowUp'];
+    // A horizontal group also accepts the vertical keys, as a native radio
+    // group does; the horizontal pair flips in RTL.
+    const flow = resolveFlow(this);
+    const vertical = arrowKeys('vertical', flow);
+    const horizontal = arrowKeys('horizontal', flow);
+    const forwardKeys: string[] =
+      this.orientation === 'vertical' ? [vertical.next] : [horizontal.next, vertical.next];
+    const backwardKeys: string[] =
+      this.orientation === 'vertical' ? [vertical.prev] : [horizontal.prev, vertical.prev];
     const $radios = this._$enabledRadios();
     const currentIndex = $radios.indexOf($target);
 

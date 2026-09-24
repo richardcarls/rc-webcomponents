@@ -1,6 +1,7 @@
 import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
+import { inlineArrowKeys, resolveFlow } from '@rcarls/rc-common';
 import { RCSelect, type RCSelectPopupMode } from '@rcarls/rc-select';
 import type { FilterStrategy, RCListboxChangeEvent } from '@rcarls/rc-listbox';
 
@@ -237,8 +238,14 @@ export class RCCombobox extends RCSelect {
 
         break;
 
-      case 'ArrowLeft':
-        if (this.multiple && this._selectedValues.size > 0) {
+      default:
+        // Chips sit before the trigger along the inline axis, so the arrow
+        // toward the inline start reaches them: ArrowRight in RTL.
+        if (
+          e.key === inlineArrowKeys(resolveFlow(this)).prev &&
+          this.multiple &&
+          this._selectedValues.size > 0
+        ) {
           e.preventDefault();
           this._focusLastChipRemove();
         }
@@ -471,8 +478,11 @@ export class RCCombobox extends RCSelect {
 
         break;
 
-      case 'ArrowLeft':
+      default:
+        // With the caret at the text's logical start, the arrow toward the
+        // inline start moves on to the chips before the input.
         if (
+          e.key === inlineArrowKeys(resolveFlow(this)).prev &&
           (e.target as HTMLInputElement).selectionStart === 0 &&
           this.multiple &&
           this._selectedValues.size > 0

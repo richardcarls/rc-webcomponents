@@ -473,3 +473,32 @@ test('rc-transfer-list defaultSelected set before connect is applied on connect'
   expect(el.selected.map((o) => o.value)).toEqual(['x']);
   document.body.removeChild(el);
 });
+
+test('rc-transfer-list Alt+ArrowLeft transfers toward the selected list in RTL', async () => {
+  const screen = render(html`
+    <div dir="rtl">
+      <rc-transfer-list data-testid="host">
+        <select multiple>
+          <option value="x">Xavier</option>
+        </select>
+      </rc-transfer-list>
+    </div>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+
+  await host.updateComplete;
+
+  const $listbox = shadow(host).querySelector('rc-listbox') as HTMLElement & {
+    setSelectedValues(values: string[]): void;
+  };
+
+  $listbox.setSelectedValues(['x']);
+
+  $listbox.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
+  );
+
+  await host.updateComplete;
+
+  expect(host.selected.map((o) => o.value)).toEqual(['x']);
+});
