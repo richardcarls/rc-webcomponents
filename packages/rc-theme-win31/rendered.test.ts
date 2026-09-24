@@ -152,7 +152,12 @@ test('the theme scales from one unit without changing a proportion', async () =>
   expect(doubled).toBe(single * 2);
 });
 
-test('window chrome renders', async () => {
+// Visual baselines are recorded for Chromium only, like rc-theme-material's:
+// font rasterization differs per engine, and one shared file per test would
+// have every engine overwrite the others' image.
+const isChromium = navigator.userAgent.includes('Chrome');
+
+test.runIf(isChromium)('window chrome matches its visual baseline', async () => {
   const scope = renderScope(`
     <rc-toolbar>
       <button aria-label="One">A</button>
@@ -178,5 +183,10 @@ test('window chrome renders', async () => {
 
   await settle(scope);
 
-  await expect(page.screenshot(SCREENSHOT_OPTIONS)).resolves.toBeDefined();
+  scope.dataset.testid = 'window-chrome';
+
+  await expect(page.getByTestId('window-chrome')).toMatchScreenshot(
+    'window-chrome',
+    SCREENSHOT_OPTIONS,
+  );
 });

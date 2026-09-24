@@ -13,6 +13,8 @@ dist-ssr
 custom-elements.json
 *.local
 /.performance/
+# Vitest visual-test failure output (actual and diff images)
+.vitest-attachments/
 
 # Local package demo scratch files
 /packages/*/*.html
