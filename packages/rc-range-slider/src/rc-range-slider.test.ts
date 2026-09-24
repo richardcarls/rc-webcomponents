@@ -267,8 +267,8 @@ test('rc-range-slider range fill style reflects current values', async () => {
   await host.updateComplete;
 
   const rangeEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="range"]');
-  expect(rangeEl?.getAttribute('style')).toContain('left:calc(25.000%');
-  expect(rangeEl?.getAttribute('style')).toContain('width:max(0px');
+  expect(rangeEl?.getAttribute('style')).toContain('inset-inline-start:calc(25.000%');
+  expect(rangeEl?.getAttribute('style')).toContain('inline-size:max(0px');
   expect(rangeEl?.getAttribute('style')).toContain('calc(75.000%');
 });
 
@@ -489,4 +489,80 @@ test('rc-range-slider without defaultValue falls back to [0, 100]', async () => 
   await host.updateComplete;
 
   expect(host.value).toEqual([0, 100]);
+});
+
+test('rc-range-slider raises the low thumb with ArrowLeft in RTL', async () => {
+  const screen = render(html`
+    <div dir="rtl">
+      <rc-range-slider data-testid="host">
+        <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+        <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
+      </rc-range-slider>
+    </div>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  const [lowThumb] = getThumbs(host);
+
+  lowThumb.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+  await host.updateComplete;
+
+  expect(host.value[0]).toBe(21);
+});
+
+test('rc-range-slider measures pointer positions from the right edge in RTL', async () => {
+  const screen = render(html`
+    <div dir="rtl">
+      <rc-range-slider data-testid="host">
+        <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+        <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
+      </rc-range-slider>
+    </div>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  const group = host.shadowRoot?.querySelector<HTMLElement>('.rc-range-slider-group');
+  if (!group) throw new Error('Expected slider group');
+
+  group.getBoundingClientRect = () => new DOMRect(0, 0, 100, 20);
+
+  const pointer = (type: string, clientX: number) =>
+    group.dispatchEvent(
+      new PointerEvent(type, { bubbles: true, button: 0, clientX, clientY: 10, pointerId: 1 }),
+    );
+
+  // 75px from the left is 25 from the right: nearest the low thumb at 20.
+  pointer('pointerdown', 75);
+  pointer('pointermove', 60);
+  pointer('pointerup', 60);
+  await host.updateComplete;
+
+  expect(host.value).toEqual([40, 80]);
+});
+
+test('rc-range-slider draws the fill from the right in RTL', async () => {
+  const screen = render(html`
+    <div dir="rtl" style="inline-size: 300px;">
+      <rc-range-slider data-testid="host">
+        <input type="range" min="0" max="100" value="0" aria-label="Minimum" />
+        <input type="range" min="0" max="100" value="25" aria-label="Maximum" />
+      </rc-range-slider>
+    </div>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+  await host.updateComplete;
+
+  const group = host.shadowRoot?.querySelector<HTMLElement>('.rc-range-slider-group');
+  const range = host.shadowRoot?.querySelector<HTMLElement>('[part="range"]');
+
+  await vi.waitFor(() => {
+    const track = group?.getBoundingClientRect();
+    const fill = range?.getBoundingClientRect();
+
+    expect(fill?.width).toBeGreaterThan(0);
+    // A 0..25 range sits in the rightmost quarter, the inline start.
+    expect(fill!.left).toBeGreaterThan(track!.left + track!.width / 2);
+  });
 });
