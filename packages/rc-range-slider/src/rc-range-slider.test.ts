@@ -2,6 +2,7 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow, type FlowFixture } from '../../../test-helpers/flow.js';
 
 import './define.js';
 import type { RCRangeSlider } from './rc-range-slider.js';
@@ -565,4 +566,79 @@ test('rc-range-slider draws the fill from the right in RTL', async () => {
     // A 0..25 range sits in the rightmost quarter, the inline start.
     expect(fill!.left).toBeGreaterThan(track!.left + track!.width / 2);
   });
+});
+
+/**
+ * Value change per arrow key, matching a native range input in Chromium:
+ * the keys along the rendered track move the thumb the way it moves on
+ * screen, and the cross-axis keys raise with Up or Right. Written out rather
+ * than derived, so the expectation cannot share a bug with the helpers.
+ */
+const KEY_DELTAS: Record<string, Record<string, number>> = {
+  'horizontal-tb ltr': { ArrowUp: 1, ArrowDown: -1, ArrowLeft: -1, ArrowRight: 1 },
+  'horizontal-tb rtl': { ArrowUp: 1, ArrowDown: -1, ArrowLeft: 1, ArrowRight: -1 },
+  'vertical-rl ltr': { ArrowUp: -1, ArrowDown: 1, ArrowLeft: -1, ArrowRight: 1 },
+  'vertical-rl rtl': { ArrowUp: 1, ArrowDown: -1, ArrowLeft: -1, ArrowRight: 1 },
+  'vertical-lr ltr': { ArrowUp: -1, ArrowDown: 1, ArrowLeft: -1, ArrowRight: 1 },
+};
+
+async function renderRangeInFlow(flow: FlowFixture) {
+  const screen = render(
+    inFlow(
+      html`
+        <rc-range-slider data-testid="host" style="inline-size: 200px;">
+          <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+          <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
+        </rc-range-slider>
+      `,
+      flow,
+    ),
+  );
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+
+  await host.updateComplete;
+
+  return host;
+}
+
+async function deltaFor(host: RCRangeSlider, thumb: 0 | 1, key: string): Promise<number> {
+  host.value = [20, 80];
+  await host.updateComplete;
+
+  const before = host.value[thumb];
+
+  getThumbs(host)[thumb].dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+  await host.updateComplete;
+
+  return host.value[thumb] - before;
+}
+
+test.each(
+  FLOW_FIXTURES.flatMap((flow) =>
+    ([0, 1] as const).map((thumb) => [flowLabel(flow), thumb, flow] as const),
+  ),
+)(
+  'rc-range-slider moves with the arrow keys as rendered in %s (thumb %i)',
+  async (label, thumb, flow) => {
+    const host = await renderRangeInFlow(flow);
+
+    for (const [key, delta] of Object.entries(KEY_DELTAS[label])) {
+      expect(await deltaFor(host, thumb, key), key).toBe(delta);
+    }
+  },
+);
+
+test('rc-range-slider follows a direction flip at runtime in vertical text', async () => {
+  const host = await renderRangeInFlow({ dir: 'ltr', writingMode: 'vertical-rl' });
+  const wrapper = host.parentElement as HTMLElement;
+
+  expect(await deltaFor(host, 0, 'ArrowDown')).toBe(1);
+
+  // Let layout settle so only the key-time lookup can pick up the flip.
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  wrapper.dir = 'rtl';
+
+  expect(await deltaFor(host, 0, 'ArrowDown')).toBe(-1);
+  expect(await deltaFor(host, 0, 'ArrowUp')).toBe(1);
 });

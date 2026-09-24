@@ -2,10 +2,10 @@ import { LitElement, css, html, nothing } from 'lit';
 import type { ComplexAttributeConverter } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import {
-  arrowKeys,
   FlowController,
   NativeChildController,
   getDirectChildren,
+  inlineArrowKeys,
   isReversed,
   physicalAxis,
   renderedOrientation,
@@ -785,32 +785,30 @@ export class RCRangeSlider extends LitElement {
     const effectiveMin = thumb === 'low' ? min : low;
     const effectiveMax = thumb === 'low' ? high : max;
 
-    let next: number | null = null;
     const keys = this._valueKeys();
+    let next: number;
 
-    switch (e.key) {
-      case keys.increase:
-      case 'ArrowUp':
-        next = current + step;
-        break;
-      case keys.decrease:
-      case 'ArrowDown':
-        next = current - step;
-        break;
-      case 'PageUp':
-        next = current + bigStep;
-        break;
-      case 'PageDown':
-        next = current - bigStep;
-        break;
-      case 'Home':
-        next = effectiveMin;
-        break;
-      case 'End':
-        next = effectiveMax;
-        break;
-      default:
-        return;
+    if (keys.increase.includes(e.key)) {
+      next = current + step;
+    } else if (keys.decrease.includes(e.key)) {
+      next = current - step;
+    } else {
+      switch (e.key) {
+        case 'PageUp':
+          next = current + bigStep;
+          break;
+        case 'PageDown':
+          next = current - bigStep;
+          break;
+        case 'Home':
+          next = effectiveMin;
+          break;
+        case 'End':
+          next = effectiveMax;
+          break;
+        default:
+          return;
+      }
     }
 
     e.preventDefault();
@@ -970,17 +968,25 @@ export class RCRangeSlider extends LitElement {
   }
 
   /**
-   * The left/right keys that raise and lower the value. They swap in RTL, as
-   * the APG describes; Up and Down always raise and lower.
+   * The arrow keys that raise and lower the value, matching a native range
+   * input. The keys along the rendered track move the thumb the way it moves
+   * on screen: Right/Left, swapped in RTL as the APG describes, or Down/Up in
+   * vertical text, where the track runs from the inline start. The cross-axis
+   * keys raise with Up or Right. A `vertical` slider always runs bottom to top.
    */
-  private _valueKeys(): { increase: string; decrease: string } {
+  private _valueKeys(): { increase: readonly string[]; decrease: readonly string[] } {
     if (this.orientation === 'vertical') {
-      return { increase: 'ArrowRight', decrease: 'ArrowLeft' };
+      return { increase: ['ArrowUp', 'ArrowRight'], decrease: ['ArrowDown', 'ArrowLeft'] };
     }
 
-    const { next, prev } = arrowKeys('horizontal', resolveFlow(this));
+    const flow = resolveFlow(this);
+    const { next, prev } = inlineArrowKeys(flow);
+    const horizontal = flow.inline === 'x';
 
-    return { increase: next, decrease: prev };
+    return {
+      increase: [next, horizontal ? 'ArrowUp' : 'ArrowRight'],
+      decrease: [prev, horizontal ? 'ArrowDown' : 'ArrowLeft'],
+    };
   }
 
   private _normalizeValue([low, high]: [number, number]): [number, number] {
