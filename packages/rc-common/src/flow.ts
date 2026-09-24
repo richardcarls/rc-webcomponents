@@ -89,7 +89,7 @@ export function isReversed(axis: LogicalAxis, flow: Flow): boolean {
 }
 
 /** Whether a physical axis runs right to left (x) or bottom to top (y) in this flow. */
-function isPhysicalReversed(axis: PhysicalAxis, flow: Flow): boolean {
+export function isPhysicalReversed(axis: PhysicalAxis, flow: Flow): boolean {
   return flow.inline === axis ? flow.inlineReversed : flow.blockReversed;
 }
 

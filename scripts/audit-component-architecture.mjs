@@ -240,7 +240,7 @@ export const PHYSICAL_CSS_ALLOWLIST = {
   'packages/rc-virtual-canvas/src/rc-virtual-canvas.styles.ts': 'canvas pixel space is physical',
   'packages/rc-virtual-canvas/src/rc-virtual-canvas.ts': 'canvas pixel space is physical',
   'packages/rc-common/src/AnchorController.ts':
-    'pending: -start/-end placements align physically, wrong in RTL',
+    'emits physical CSS only after resolving the placement against the flow',
   'packages/rc-splitter/src/rc-splitter.styles.ts': 'pending: physical borders and offsets',
   'packages/rc-slider/src/rc-slider.ts': 'pending: fill and tick offsets start from the left',
   'packages/rc-range-slider/src/rc-range-slider.ts':

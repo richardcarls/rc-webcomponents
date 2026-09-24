@@ -324,7 +324,7 @@ export class RCAdaptiveMenu extends LitElement {
   protected override updated(changed: Map<PropertyKey, unknown>): void {
     if (changed.has('orientation')) {
       this._anchor.setOptions({
-        placement: this.orientation === 'vertical' ? 'right-start' : 'bottom-end',
+        placement: this.orientation === 'vertical' ? 'inline-end-start' : 'bottom-end',
       });
     }
 
