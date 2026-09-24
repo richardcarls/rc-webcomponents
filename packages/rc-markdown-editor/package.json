@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@rcarls/rc-button": "workspace:*",
+    "@rcarls/rc-common": "workspace:*",
     "@rcarls/rc-select": "workspace:*",
     "@rcarls/rc-textarea": "workspace:*",
     "@rcarls/rc-toolbar": "workspace:*"

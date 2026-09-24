@@ -1,3 +1,4 @@
+import { isPhysicalReversed, resolveFlow } from '@rcarls/rc-common';
 import type { RCTextareaPluginAPI, DecorationInput } from './types.js';
 
 export interface LineAction {
@@ -331,7 +332,10 @@ export class LineActionsController {
 
     const panelWidth = this._popover.offsetWidth || 120;
 
-    let left = hostRect.left;
+    // Aligned to the host's inline start: its right edge in RTL.
+    const startsRight = isPhysicalReversed('x', resolveFlow(this._api.host));
+
+    let left = startsRight ? hostRect.right - panelWidth : hostRect.left;
     left = Math.min(left, window.innerWidth - panelWidth - 8);
     left = Math.max(left, 8);
 

@@ -244,10 +244,10 @@ export const PHYSICAL_CSS_ALLOWLIST = {
   'packages/rc-markdown-editor/src/rc-markdown-editor.styles.ts':
     'pending: blockquote and list indents',
   'packages/rc-markdown-editor/src/rc-markdown-editor.ts':
-    'pending: link popover aligns to the physical left edge',
+    'positions the link popover in host pixel coordinates, aligned from the flow',
   'packages/rc-textarea/src/rc-textarea.styles.ts': 'pending: gutter border and wrap indent',
   'packages/rc-textarea/src/line-actions-controller.ts':
-    'pending: popover aligns to the physical left edge',
+    'positions the popover in viewport pixel coordinates, aligned from the flow',
 };
 
 /**

@@ -4869,6 +4869,7 @@ __metadata:
   dependencies:
     "@custom-elements-manifest/analyzer": "npm:0.11.0"
     "@rcarls/rc-button": "workspace:*"
+    "@rcarls/rc-common": "workspace:*"
     "@rcarls/rc-select": "workspace:*"
     "@rcarls/rc-textarea": "workspace:*"
     "@rcarls/rc-toolbar": "workspace:*"
