@@ -234,3 +234,17 @@ export function renderedOrientation(
 
   return axis === 'x' ? 'horizontal' : 'vertical';
 }
+
+/**
+ * The layout behind a rendered orientation: the inverse of
+ * {@link renderedOrientation}. Use it when all you can read is
+ * `aria-orientation`, which reports how a widget renders, and you need the
+ * layout to feed back into anything that renders it again. In vertical text a
+ * menubar row reports `vertical`, and its layout is `horizontal`.
+ */
+export function layoutOrientation(
+  rendered: 'horizontal' | 'vertical',
+  flow: Flow,
+): 'horizontal' | 'vertical' {
+  return (rendered === 'horizontal') === (flow.inline === 'x') ? 'horizontal' : 'vertical';
+}
