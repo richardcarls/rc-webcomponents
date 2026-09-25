@@ -30,4 +30,7 @@ Defaults move with them and render the same in horizontal LTR text:
 `rc-adaptive-menu`'s overflow menu at `block-end-end`, and `rc-fab-menu` at
 `block-start-end`. In vertical text these popups now open beside their
 trigger instead of over the next item. Vertical menubars and vertical
-adaptive menus open submenus at `inline-end-start`.
+adaptive menus open submenus at `inline-end-start`. Open popups also
+re-resolve their physical side and alignment when an ancestor's `dir`
+changes, and `rc-fab-menu` keeps its corner-aware default even when nested in
+a vertical menubar.

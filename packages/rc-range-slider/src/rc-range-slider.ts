@@ -4,8 +4,8 @@ import { property, state } from 'lit/decorators.js';
 import {
   FlowController,
   NativeChildController,
+  arrowKeys,
   getDirectChildren,
-  inlineArrowKeys,
   isReversed,
   physicalAxis,
   renderedOrientation,
@@ -103,7 +103,7 @@ function parseAttr(s: string, defaultVal: number): number {
  *   `inline-end`.
  * @attr orientation - `horizontal` runs along the inline axis like a native range input: right to
  *   left in RTL, and vertical in vertical text, where the thumbs report `aria-orientation` of
- *   `vertical`. `vertical` is always physically vertical, bottom to top.
+ *   `vertical`. `vertical` runs along the block axis, so it renders horizontally in vertical text.
  *
  * @cssprop [--rc-range-slider-accent=Highlight] - Accent color for selected range, thumb border, focus, hover, and active states.
  * @cssprop [--rc-range-slider-gap=var(--rc-control-gap)] - Gap between track and inline value display.
@@ -306,15 +306,9 @@ export class RCRangeSlider extends LitElement {
     .rc-range-slider-root[data-display='float'] .rc-range-slider-value {
       position: absolute;
       inset-block-start: var(--rc-range-slider-float-value-block-offset, -1.4em);
-      transform: translateX(-50%);
-    }
-
-    /* Positioned from the inline start, which is the right edge in RTL, so
-       centering pulls the other way. */
-    :host(:dir(rtl):not([orientation='vertical']))
-      .rc-range-slider-root[data-display='float']
-      .rc-range-slider-value {
-      transform: translateX(50%);
+      display: flex;
+      inline-size: 0;
+      justify-content: center;
     }
 
     .rc-range-slider-root[data-display='inline-start'] .rc-range-slider-values,
@@ -347,13 +341,11 @@ export class RCRangeSlider extends LitElement {
 
     :host([orientation='vertical']) .rc-range-slider-range {
       inset-inline: 0;
-      inset-block-start: auto;
+      inset-block: auto;
     }
 
     :host([orientation='vertical']) .rc-range-slider-thumb {
       inset-inline-start: 50%;
-      margin-block-start: 0;
-      transform: translateY(50%);
     }
 
     :host([orientation='vertical'])
@@ -361,7 +353,9 @@ export class RCRangeSlider extends LitElement {
       .rc-range-slider-value {
       inset-block-start: auto;
       inset-inline-start: var(--rc-range-slider-float-value-inline-offset, calc(100% + 0.5rem));
-      transform: translateY(50%);
+      flex-direction: column;
+      inline-size: auto;
+      block-size: 0;
     }
   `;
 
@@ -562,9 +556,7 @@ export class RCRangeSlider extends LitElement {
         aria-valuemax=${String(isLow ? this._highValue : this._max())}
         aria-valuenow=${String(value)}
         aria-valuetext=${valueText || nothing}
-        aria-orientation=${this.orientation === 'vertical'
-          ? 'vertical'
-          : renderedOrientation('horizontal', this._flow.flow)}
+        aria-orientation=${renderedOrientation(this.orientation, this._flow.flow)}
         aria-disabled=${this.disabled ? 'true' : nothing}
         aria-readonly=${this.readonly ? 'true' : nothing}
         style=${this._thumbStyle(value)}
@@ -887,10 +879,7 @@ export class RCRangeSlider extends LitElement {
     const span = this._max() - this._min();
     if (span <= 0) return min;
 
-    const pct =
-      this.orientation === 'vertical'
-        ? 1 - (e.clientY - rect.top) / rect.height
-        : this._inlineFraction(e, rect);
+    const pct = this._axisFraction(e, rect);
     const raw = pct * span + this._min();
 
     return snapToStep(raw, min, max, this._step());
@@ -915,7 +904,10 @@ export class RCRangeSlider extends LitElement {
     const hiCenter = this._thumbCenterStyle(hiPct);
 
     if (this.orientation === 'vertical') {
-      return [`bottom:${loCenter}`, `height:max(0px, calc(${hiCenter} - ${loCenter}))`].join(';');
+      return [
+        `inset-block-start:${loCenter}`,
+        `block-size:max(0px, calc(${hiCenter} - ${loCenter}))`,
+      ].join(';');
     }
 
     return [
@@ -929,7 +921,7 @@ export class RCRangeSlider extends LitElement {
     const center = this._thumbCenterStyle(pct);
 
     if (this.orientation === 'vertical') {
-      return `bottom:${center}`;
+      return `inset-block-start:${center};inset-inline-start:50%`;
     }
 
     return `inset-inline-start:${center};inset-block-start:50%`;
@@ -946,46 +938,41 @@ export class RCRangeSlider extends LitElement {
     const center = this._thumbCenterStyle(pct);
 
     if (this.orientation === 'vertical') {
-      return `bottom:${center}`;
+      return `inset-block-start:${center}`;
     }
 
     return `inset-inline-start:${center}`;
   }
 
   /**
-   * How far along the inline axis a pointer is, 0 at the inline start. That
-   * is the right edge in RTL and the top in vertical text, where a horizontal
-   * slider runs like the native range input it enhances.
+   * How far along the layout axis a pointer is, 0 at its logical start.
+   * Horizontal layout uses the inline axis; vertical layout uses block.
    */
-  private _inlineFraction(e: PointerEvent, rect: DOMRect): number {
+  private _axisFraction(e: PointerEvent, rect: DOMRect): number {
     const flow = resolveFlow(this);
-    const alongX = physicalAxis('inline', flow) === 'x';
+    const axis = this.orientation === 'horizontal' ? 'inline' : 'block';
+    const alongX = physicalAxis(axis, flow) === 'x';
     const fraction = alongX
       ? (e.clientX - rect.left) / rect.width
       : (e.clientY - rect.top) / rect.height;
 
-    return isReversed('inline', flow) ? 1 - fraction : fraction;
+    return isReversed(axis, flow) ? 1 - fraction : fraction;
   }
 
   /**
    * The arrow keys that raise and lower the value, matching a native range
    * input. The keys along the rendered track move the thumb the way it moves
-   * on screen: Right/Left, swapped in RTL as the APG describes, or Down/Up in
-   * vertical text, where the track runs from the inline start. The cross-axis
-   * keys raise with Up or Right. A `vertical` slider always runs bottom to top.
+   * on screen. The cross-axis keys keep the native range convention: Up or
+   * Right raises the value.
    */
   private _valueKeys(): { increase: readonly string[]; decrease: readonly string[] } {
-    if (this.orientation === 'vertical') {
-      return { increase: ['ArrowUp', 'ArrowRight'], decrease: ['ArrowDown', 'ArrowLeft'] };
-    }
-
     const flow = resolveFlow(this);
-    const { next, prev } = inlineArrowKeys(flow);
-    const horizontal = flow.inline === 'x';
+    const rendered = renderedOrientation(this.orientation, flow);
+    const { next, prev } = arrowKeys(rendered, flow);
 
     return {
-      increase: [next, horizontal ? 'ArrowUp' : 'ArrowRight'],
-      decrease: [prev, horizontal ? 'ArrowDown' : 'ArrowLeft'],
+      increase: [next, rendered === 'horizontal' ? 'ArrowUp' : 'ArrowRight'],
+      decrease: [prev, rendered === 'horizontal' ? 'ArrowDown' : 'ArrowLeft'],
     };
   }
 

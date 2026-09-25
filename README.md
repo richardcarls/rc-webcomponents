@@ -90,7 +90,8 @@ left-to-right horizontal text.
   its trigger's start edge aligns to the right edge in RTL
 - Arrow keys follow reading direction, as the APG describes for RTL: in a horizontal toolbar,
   ArrowLeft moves to the next item in RTL
-- `orientation="horizontal|vertical"` matches ARIA's `aria-orientation`, while scrolling regions
+- `orientation="horizontal|vertical"` names inline- and block-axis layouts; components expose the
+  physical orientation they actually render through `aria-orientation`, while scrolling regions
   take a logical `axis="block|inline"`
 
 ### Design-system neutral

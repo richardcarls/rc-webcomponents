@@ -147,6 +147,11 @@ export class RCFabMenu extends RCMenuButton {
     return 'block-start-end';
   }
 
+  /** Keeps the FAB-specific default independent of inherited menubar orientation. */
+  protected override get _effectivePlacement(): AnchorPlacement {
+    return this.placement;
+  }
+
   /** Dispatches the `rc-fab-menu-toggle` bubbling composed event with the requested open state. */
   protected override _dispatchToggle(open = this.open): void {
     this.dispatchEvent(

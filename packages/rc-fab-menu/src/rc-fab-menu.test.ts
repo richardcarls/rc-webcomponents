@@ -213,37 +213,40 @@ test('reduced motion zeros the popup scale but only shortens its opacity/overlay
 test.each([
   ['horizontal-tb', 'above'],
   ['vertical-rl', 'to the right of'],
-])('opens its menu toward the block start in %s (%s the trigger)', async (writingMode) => {
-  const screen = render(html`
-    <div style="writing-mode: ${writingMode};">
-      <rc-fab-menu data-testid="host">
-        <button slot="trigger" type="button" aria-label="Create">+</button>
-        <rc-menu label="Create">
-          <button>Recipe</button>
-        </rc-menu>
-      </rc-fab-menu>
-    </div>
-  `);
-  const $host = (await screen.getByTestId('host').element()) as RCFabMenu;
+])(
+  'keeps its default toward the block start in a vertical layout in %s (%s the trigger)',
+  async (writingMode) => {
+    const screen = render(html`
+      <div style="writing-mode: ${writingMode};">
+        <rc-fab-menu data-testid="host" orientation="vertical">
+          <button slot="trigger" type="button" aria-label="Create">+</button>
+          <rc-menu label="Create">
+            <button>Recipe</button>
+          </rc-menu>
+        </rc-fab-menu>
+      </div>
+    `);
+    const $host = (await screen.getByTestId('host').element()) as RCFabMenu;
 
-  await $host.updateComplete;
-  $host.open = true;
+    await $host.updateComplete;
+    $host.open = true;
 
-  const trigger = $host.querySelector('[slot="trigger"]') as HTMLElement;
-  const popup = $host.shadowRoot?.querySelector('#popup') as HTMLElement;
+    const trigger = $host.querySelector('[slot="trigger"]') as HTMLElement;
+    const popup = $host.shadowRoot?.querySelector('#popup') as HTMLElement;
 
-  // Pinned to the block-end corner, so the menu opens back toward the block
-  // start: above in horizontal text, to the right in vertical-rl.
-  await vi.waitFor(() => {
-    const menu = popup.getBoundingClientRect();
-    const button = trigger.getBoundingClientRect();
+    // Pinned to the block-end corner, so the menu opens back toward the block
+    // start: above in horizontal text, to the right in vertical-rl.
+    await vi.waitFor(() => {
+      const menu = popup.getBoundingClientRect();
+      const button = trigger.getBoundingClientRect();
 
-    if (writingMode === 'horizontal-tb') {
-      expect(menu.bottom).toBeLessThanOrEqual(button.top);
-    } else {
-      expect(menu.left).toBeGreaterThanOrEqual(button.right);
-    }
-  });
+      if (writingMode === 'horizontal-tb') {
+        expect(menu.bottom).toBeLessThanOrEqual(button.top);
+      } else {
+        expect(menu.left).toBeGreaterThanOrEqual(button.right);
+      }
+    });
 
-  $host.open = false;
-});
+    $host.open = false;
+  },
+);

@@ -284,8 +284,8 @@ test('rc-range-slider vertical range fill spans between thumb centers', async ()
   await host.updateComplete;
 
   const rangeEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="range"]');
-  expect(rangeEl?.getAttribute('style')).toContain('bottom:calc(25.000%');
-  expect(rangeEl?.getAttribute('style')).toContain('height:max(0px');
+  expect(rangeEl?.getAttribute('style')).toContain('inset-block-start:calc(25.000%');
+  expect(rangeEl?.getAttribute('style')).toContain('block-size:max(0px');
   expect(rangeEl?.getAttribute('style')).toContain('calc(75.000%');
 
   const trackEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="track"]');
@@ -543,6 +543,42 @@ test('rc-range-slider measures pointer positions from the right edge in RTL', as
   expect(host.value).toEqual([40, 80]);
 });
 
+test('rc-range-slider vertical layout measures pointer positions from the block start', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl;">
+      <rc-range-slider data-testid="host" orientation="vertical">
+        <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
+        <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
+      </rc-range-slider>
+    </div>
+  `);
+  const host = screen.getByTestId('host').element() as RCRangeSlider;
+
+  await host.updateComplete;
+
+  const group = host.shadowRoot?.querySelector<HTMLElement>('.rc-range-slider-group');
+
+  if (!group) {
+    throw new Error('Expected slider group');
+  }
+
+  group.getBoundingClientRect = () => new DOMRect(0, 0, 100, 20);
+
+  const pointer = (type: string, clientX: number) =>
+    group.dispatchEvent(
+      new PointerEvent(type, { bubbles: true, button: 0, clientX, clientY: 10, pointerId: 1 }),
+    );
+
+  // vertical-rl's block start is the right edge: 75px from the left is 25%
+  // along the block axis, nearest the low thumb at 20.
+  pointer('pointerdown', 75);
+  pointer('pointermove', 60);
+  pointer('pointerup', 60);
+  await host.updateComplete;
+
+  expect(host.value).toEqual([40, 80]);
+});
+
 test('rc-range-slider draws the fill from the right in RTL', async () => {
   const screen = render(html`
     <div dir="rtl" style="inline-size: 300px;">
@@ -582,11 +618,22 @@ const KEY_DELTAS: Record<string, Record<string, number>> = {
   'vertical-lr ltr': { ArrowUp: -1, ArrowDown: 1, ArrowLeft: -1, ArrowRight: 1 },
 };
 
-async function renderRangeInFlow(flow: FlowFixture) {
+const VERTICAL_KEY_DELTAS: Record<string, Record<string, number>> = {
+  'horizontal-tb ltr': { ArrowUp: -1, ArrowDown: 1, ArrowLeft: -1, ArrowRight: 1 },
+  'horizontal-tb rtl': { ArrowUp: -1, ArrowDown: 1, ArrowLeft: -1, ArrowRight: 1 },
+  'vertical-rl ltr': { ArrowUp: 1, ArrowDown: -1, ArrowLeft: 1, ArrowRight: -1 },
+  'vertical-rl rtl': { ArrowUp: 1, ArrowDown: -1, ArrowLeft: 1, ArrowRight: -1 },
+  'vertical-lr ltr': { ArrowUp: 1, ArrowDown: -1, ArrowLeft: -1, ArrowRight: 1 },
+};
+
+async function renderRangeInFlow(
+  flow: FlowFixture,
+  orientation: 'horizontal' | 'vertical' = 'horizontal',
+) {
   const screen = render(
     inFlow(
       html`
-        <rc-range-slider data-testid="host" style="inline-size: 200px;">
+        <rc-range-slider data-testid="host" orientation=${orientation} style="inline-size: 200px;">
           <input type="range" min="0" max="100" value="20" aria-label="Minimum" />
           <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
         </rc-range-slider>
@@ -623,6 +670,38 @@ test.each(
     const host = await renderRangeInFlow(flow);
 
     for (const [key, delta] of Object.entries(KEY_DELTAS[label])) {
+      expect(await deltaFor(host, thumb, key), key).toBe(delta);
+    }
+  },
+);
+
+test.each(
+  FLOW_FIXTURES.flatMap((flow) =>
+    ([0, 1] as const).map((thumb) => [flowLabel(flow), thumb, flow] as const),
+  ),
+)(
+  'rc-range-slider vertical layout moves with the block-axis keys in %s (thumb %i)',
+  async (label, thumb, flow) => {
+    const host = await renderRangeInFlow(flow, 'vertical');
+    const rendered = flow.writingMode === 'horizontal-tb' ? 'vertical' : 'horizontal';
+    const track = host.shadowRoot?.querySelector<HTMLElement>('[part~="track"]');
+    const trackRect = track?.getBoundingClientRect();
+
+    if (!trackRect) {
+      throw new Error('Expected slider track');
+    }
+
+    expect(getThumbs(host)[thumb].getAttribute('aria-orientation')).toBe(rendered);
+    expect(trackRect.width).toBeGreaterThan(0);
+    expect(trackRect.height).toBeGreaterThan(0);
+
+    if (rendered === 'vertical') {
+      expect(trackRect.height).toBeGreaterThan(trackRect.width);
+    } else {
+      expect(trackRect.width).toBeGreaterThan(trackRect.height);
+    }
+
+    for (const [key, delta] of Object.entries(VERTICAL_KEY_DELTAS[label])) {
       expect(await deltaFor(host, thumb, key), key).toBe(delta);
     }
   },

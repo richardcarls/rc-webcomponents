@@ -383,6 +383,49 @@ test('the applied positioning aligns a block-end-start popup to the right edge i
   ctl.hostDisconnected();
 });
 
+test('the applied positioning follows an ancestor direction change while open', async () => {
+  const screen = render(html`
+    <div data-testid="flow" dir="ltr">
+      <div
+        data-testid="anchor"
+        style="position: fixed; left: 150px; top: 100px; width: 120px; height: 40px;"
+      >
+        Anchor
+      </div>
+      <div data-testid="floating" style="width: 80px; height: 60px;">Floating</div>
+    </div>
+  `);
+  const flow = (await screen.getByTestId('flow').element()) as HTMLElement;
+  const anchor = (await screen.getByTestId('anchor').element()) as HTMLElement;
+  const floating = (await screen.getByTestId('floating').element()) as HTMLElement;
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    placement: 'block-end-start',
+    offset: 0,
+  });
+
+  ctl.hostConnected();
+
+  await vi.waitFor(() => {
+    const popup = floating.getBoundingClientRect();
+    const trigger = anchor.getBoundingClientRect();
+
+    expect(popup.left).toBeCloseTo(trigger.left, 0);
+  });
+
+  flow.dir = 'rtl';
+
+  await vi.waitFor(() => {
+    const popup = floating.getBoundingClientRect();
+    const trigger = anchor.getBoundingClientRect();
+
+    expect(popup.right).toBeCloseTo(trigger.right, 0);
+  });
+
+  ctl.hostDisconnected();
+});
+
 test('the applied positioning opens a block-end popup to the left in vertical-rl', async () => {
   const { anchor, floating } = await renderAnchorAndFloating(
     // A vertical row: the block end is on the left.

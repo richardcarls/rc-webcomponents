@@ -1,5 +1,5 @@
 ---
-'@rcarls/rc-range-slider': patch
+'@rcarls/rc-range-slider': minor
 ---
 
 Run a horizontal range slider along the inline axis, like the native range
@@ -10,5 +10,8 @@ the APG describes. In vertical text the slider runs from the inline start
 `aria-orientation="vertical"`, and the arrow keys move a thumb the way it
 moves on screen, with Right always raising and Left lowering, as a native
 range input does in Chromium. Thumbs are centered with logical margins, and
-the floating value is centered correctly in RTL. `orientation="vertical"`
-stays physically vertical, bottom to top.
+the floating value is centered correctly in every writing mode.
+
+`orientation="vertical"` now follows the block axis instead of forcing a
+physical bottom-to-top track. Its ARIA orientation, pointer mapping, arrow
+keys, range fill, thumbs, and floating values all turn with the writing mode.

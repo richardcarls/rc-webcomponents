@@ -97,7 +97,7 @@ export function ThemePreviewShowcase() {
             </span>
           </button>
           <strong>Component Sampler</strong>
-          <rc-menu-button slot="trailing" placement="bottom-end">
+          <rc-menu-button slot="trailing" placement="block-end-end">
             <button slot="trigger" type="button" aria-label="More actions">
               <span className="material-symbols-outlined" aria-hidden="true">
                 more_vert
