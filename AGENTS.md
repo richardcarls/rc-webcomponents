@@ -235,6 +235,10 @@ false` `@property` a matching `@attr` line; use bracket form (`@attr [name]`)
 - Package README, root README package summary, aggregate package exports, and
   aggregate React/Solid typings when public usage changes.
 
+Until 1.0, replace or remove superseded public API outright. Do not keep old
+names or values working as deprecated aliases. Mark the removal as breaking in
+its changeset (a minor bump in the fixed group) and list the migration.
+
 Axis and position vocabulary is shared across the collection:
 
 - `orientation="horizontal|vertical"` is only for widgets that expose
@@ -254,8 +258,9 @@ Axis and position vocabulary is shared across the collection:
   `aria-orientation` attribute is already physical and is used as is.
 - `axis="block|inline|both"` is for scrolling and geometry (`rc-scroller`,
   `rc-virtual-scroller`) and is logical.
-- Position-like values use logical `start`/`end` and `inline-*` sides.
-  Physical `x`/`y`/`left`/`right` belong to internal pointer and geometry math,
+- Position-like values use logical `start`/`end` and `inline-*`/`block-*`
+  sides, including popup placements and pinned corners. Physical
+  `x`/`y`/`top`/`bottom`/`left`/`right` belong to internal pointer and geometry math,
   and to `DragGestureController` and `ResizeController`, which model raw
   pointer deltas and CSS `resize` and say so in their docs.
 
