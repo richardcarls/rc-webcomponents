@@ -82,5 +82,10 @@ collapse the shared trailing track and place trailing metadata below content:
 }
 ```
 
+To render only part of a long list, wrap it in `rc-virtual-scroller` and give
+each rendered row `aria-posinset` and `aria-setsize` for its place in the whole set. The list
+then gives first- and last-row styling only to the set's real first and last
+rows, not to the ends of the rendered slice.
+
 Import `@rcarls/rc-list` to use the classes without registering them, or import
 `@rcarls/rc-list/define` to register `<rc-list>` and `<rc-list-item>`.

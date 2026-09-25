@@ -464,3 +464,37 @@ test('rc-list-item reduced motion shortens the effects transitions rather than z
   expect(motionBlock).toContain('transition-duration: 50ms;');
   expect(motionBlock).not.toContain('transition-duration: 0ms');
 });
+
+test('takes row positions from aria-posinset and aria-setsize when a slice is rendered', async () => {
+  // Rows 51 to 53 of 300, as a virtualized list renders them.
+  const screen = render(html`
+    <rc-list data-testid="list" variant="segmented">
+      <rc-list-item data-testid="a" aria-posinset="51" aria-setsize="300">Row 51</rc-list-item>
+      <rc-list-item data-testid="b" aria-posinset="52" aria-setsize="300">Row 52</rc-list-item>
+      <rc-list-item data-testid="c" aria-posinset="53" aria-setsize="300">Row 53</rc-list-item>
+    </rc-list>
+  `);
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const rows = await Promise.all(
+    ['a', 'b', 'c'].map(async (id) => (await screen.getByTestId(id).element()) as RCListItem),
+  );
+
+  await settle(list);
+
+  expect(rows.map((row) => row.dataset.rcListPosition)).toEqual(['middle', 'middle', 'middle']);
+
+  // The true ends of the set still get their end styling.
+  rows[0]!.setAttribute('aria-posinset', '1');
+  rows[2]!.setAttribute('aria-posinset', '300');
+  await settle(list);
+
+  expect(rows.map((row) => row.dataset.rcListPosition)).toEqual(['first', 'middle', 'last']);
+
+  // A set of one is the only row.
+  rows[1]!.hidden = true;
+  rows[2]!.hidden = true;
+  rows[0]!.setAttribute('aria-setsize', '1');
+  await settle(list);
+
+  expect(rows[0]!.dataset.rcListPosition).toBe('only');
+});
