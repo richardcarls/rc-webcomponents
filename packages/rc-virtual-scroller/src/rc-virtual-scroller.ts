@@ -438,12 +438,39 @@ export class RCVirtualScroller extends LitElement {
    * than a configured count keeps `auto-fill` and container queries the
    * single source of truth.
    */
+  /**
+   * How many items share the first line, counted from where they render: the
+   * leading run of items that start where the first one does along the
+   * windowed axis. Unlike the track count, this holds when an item spans
+   * several tracks, such as cards aligned through subgrid across every row of
+   * a column-flow shelf. Returns `undefined` when every rendered item sits on
+   * the first line, since the line's real length is then unknown.
+   */
+  private _itemsInFirstLine(items: HTMLCollection, firstRect: DOMRect): number | undefined {
+    const lineStart = (rect: DOMRect) => {
+      const box = logicalRect(rect, firstRect, this._flow);
+
+      return this.axis === 'inline' ? box.inlineStart : box.blockStart;
+    };
+
+    for (let index = 1; index < items.length; index++) {
+      const item = items.item(index);
+
+      if (item && Math.abs(lineStart(item.getBoundingClientRect())) > SUBPIXEL_EPSILON) {
+        return index;
+      }
+    }
+
+    return undefined;
+  }
+
   private _measureGrid(container: Element): void {
     const styles = getComputedStyle(container);
-
-    this._itemsPerLine = trackCount(
+    const tracks = trackCount(
       this.axis === 'inline' ? styles.gridTemplateRows : styles.gridTemplateColumns,
     );
+
+    this._itemsPerLine = tracks;
 
     const items = container.children;
     const firstItem = items.item(0);
@@ -453,6 +480,9 @@ export class RCVirtualScroller extends LitElement {
     }
 
     const firstRect = firstItem.getBoundingClientRect();
+
+    this._itemsPerLine = this._itemsInFirstLine(items, firstRect) ?? tracks;
+
     // The offset between two items a full line apart is the pitch with the
     // gap already included, which beats adding a separately parsed gap to a
     // measured size.

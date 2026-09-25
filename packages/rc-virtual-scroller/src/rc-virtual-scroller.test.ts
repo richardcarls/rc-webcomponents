@@ -267,6 +267,39 @@ test('reads grid rows as the line for a column-flow grid on the inline axis', as
   expect(range().end % 4).toBe(0);
 });
 
+test('counts one item per line when each item spans every track of the line', async () => {
+  // A shelf whose cards span all row tracks to align through subgrid: three
+  // row tracks, but one card per column.
+  const style = document.createElement('style');
+
+  style.textContent = '[data-testid="list"] > * { grid-row: 1 / -1; }';
+  document.head.append(style);
+
+  try {
+    const { range, port, portFlow } = await mount(
+      { count: 500, axis: 'inline' },
+      {
+        listStyle:
+          'display: grid; grid-auto-flow: column; grid-template-rows: auto auto 1fr; grid-auto-columns: 40px; gap: 0; margin: 0; padding: 0;',
+      },
+    );
+
+    await vi.waitFor(() => expect(range().itemsPerLine).toBe(1));
+
+    expect(range().lineSize).toBeCloseTo(ITEM_SIZE, 0);
+
+    // One column per item, so a port of five columns shows five items, plus
+    // two lines of overscan on each side.
+    setScrollOffset(port, 'inline', 100 * ITEM_SIZE, portFlow);
+
+    await vi.waitFor(() => expect(range().start).toBe(98));
+
+    expect(range().end).toBe(107);
+  } finally {
+    style.remove();
+  }
+});
+
 test('reports the whole collection and no spacers when disabled', async () => {
   const { host, list, range } = await mount({ count: 60, disabled: true });
 
