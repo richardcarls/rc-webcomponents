@@ -353,6 +353,16 @@ yarn audit:performance
 yarn benchmark:browser
 ```
 
+`test`, `test:full`, `ci`, `benchmark:browser`, and `test:screenshots:update` run inside the
+Playwright Docker image whose version matches `yarn.lock`, through
+`scripts/playwright-env.mjs`, on every host and in CI. Docker is required. The wrapper bind-mounts
+the checkout and keeps every `node_modules` in its own volume, so it works from Windows and
+macOS too, and it installs dependencies there only when `yarn.lock` changes. Each script has a
+`:host` variant (`test:host`, `test:full:host`, ...) that runs on the host browser, for quick
+single-file iteration only: record screenshot baselines and benchmark budgets only through the
+wrapper (`yarn test:screenshots:update`, `yarn benchmark:browser:update`), since fonts and system
+libraries differ between hosts. Per-package `test:browser` scripts also run on the host.
+
 New package `test:browser` scripts must include `--run` (`vitest --run`). Without it
 Vitest defaults to watch mode. The root `test` script runs the shared test projects with
 Chromium locally; use `test:full` for the full local browser matrix, sequenced one browser at a
@@ -370,10 +380,12 @@ Update tracked size or runtime budgets only after reviewing the generated
 ## Testing
 
 Tests run live DOM in real browsers via Playwright and Vitest browser mode;
-there is no jsdom. Locally, the root suite and package suites default to Chromium.
-Use `yarn test:full` for Chromium, Firefox, and WebKit; CI always uses that same
-sequential full matrix. Browser settings are shared via `vitest.browser.config.ts`, and
-the root `vitest.config.ts` separates ordinary, geometry-sensitive, theme, and
+there is no jsdom. They run inside the pinned Playwright Docker image (see
+_Commands_). Locally, the root suite and package suites default to Chromium.
+Use `yarn test:full` for Chromium, Firefox, and WebKit, which runs locally too in the
+image; CI always uses that same sequential full matrix. Browser settings are shared via
+`vitest.browser.config.ts`, and the root `vitest.config.ts` separates ordinary,
+geometry-sensitive, theme, and
 browser-independent tests with bounded concurrency.
 
 ```ts
