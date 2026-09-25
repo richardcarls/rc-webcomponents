@@ -184,11 +184,13 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 
 ## Development
 
-This project uses Yarn 4.x (Berry) workspaces and plug-and-play (PnP).
+This project uses Yarn 4.x (Berry) workspaces with the `node-modules` linker.
 
 Vite builds ESM and UMD output plus type declarations. Tests run with Vitest Browser Mode and
-Playwright. The default local suite uses Chromium; `yarn test:full` runs Chromium, Firefox, and
-WebKit sequentially to bound browser-session resource use. CI always runs the full browser matrix.
+Playwright inside the Playwright Docker image matching the locked Playwright version, locally and
+in CI, so screenshots and benchmarks render the same everywhere; Docker is required. The default
+local suite uses Chromium; `yarn test:full` runs Chromium, Firefox, and WebKit sequentially to
+bound browser-session resource use. CI always runs the full browser matrix.
 The documentation site uses Docusaurus.
 
 After `yarn build`, `yarn audit:performance` checks package and theme size budgets and

@@ -284,6 +284,10 @@ test('keeps the focused item in range after scrolling away from it', async () =>
   target.focus();
   expect(document.activeElement).toBe(target);
 
+  // WebKit scrolls a newly focused element into view at the next rendering
+  // update, which would undo a scroll made in the same frame.
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
   port.scrollTop = 100 * ITEM_SIZE;
 
   await vi.waitFor(() => expect(range().end).toBeGreaterThan(100));

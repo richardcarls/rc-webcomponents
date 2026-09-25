@@ -16,22 +16,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Enable Corepack
-        run: corepack enable
-
+      # Only runs the wrapper, which needs no dependencies. Everything else,
+      # including the install, happens inside the pinned Playwright image, the
+      # same one local runs use.
       - uses: actions/setup-node@v5
         with:
-          node-version: '22'
-          cache: yarn
+          node-version: '24'
 
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox webkit
-
-      - name: Build, validate packages, and test
-        run: yarn ci
+      - name: Build, validate packages, and test in the Playwright image
+        run: node scripts/playwright-env.mjs ci:host
 
       - name: Upload performance report
         if: always()
@@ -39,4 +32,12 @@ jobs:
         with:
           name: performance-report
           path: .performance/
+          if-no-files-found: ignore
+
+      - name: Upload visual test diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-test-diffs
+          path: .vitest-attachments/
           if-no-files-found: ignore
