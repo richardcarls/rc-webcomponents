@@ -234,6 +234,8 @@ export class RCMenuButton extends LitElement {
   /**
    * Preferred placement of the popup relative to the trigger button. Reads the
    * default until the author sets one.
+   *
+   * @default 'block-end-start'
    */
   @property({ reflect: true })
   get placement(): AnchorPlacement {

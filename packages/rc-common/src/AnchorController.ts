@@ -1,6 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { isPhysicalReversed, resolveFlow, type Flow } from './flow.js';
+import { observeDirection } from './observeDirection.js';
 import { RafScheduler } from './RafScheduler.js';
 import { getVisualViewportBounds } from './visualViewport.js';
 
@@ -240,11 +241,16 @@ export class AnchorController implements ReactiveController {
   private _resizeObserver: ResizeObserver | null = null;
   private _intersectionObserver: IntersectionObserver | null = null;
   private _mutationObserver: MutationObserver | null = null;
+  private _unobserveDirection: (() => void) | null = null;
   private _$observedAnchor: Element | null = null;
   private _$observedFloating: Element | null = null;
 
   private readonly _handleGeometryChange = (): void => {
     this._scheduleClamp();
+  };
+
+  private readonly _handleDirectionChange = (): void => {
+    this._applyAndPolyfill();
   };
 
   constructor(host: ReactiveControllerHost, options: AnchorOptions) {
@@ -265,11 +271,14 @@ export class AnchorController implements ReactiveController {
 
   hostConnected(): void {
     this._connected = true;
+    this._unobserveDirection ??= observeDirection(this._handleDirectionChange);
     this._applyAndPolyfill();
   }
 
   hostDisconnected(): void {
     this._connected = false;
+    this._unobserveDirection?.();
+    this._unobserveDirection = null;
     this._cleanup();
   }
 
