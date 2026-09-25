@@ -260,7 +260,7 @@ export class RCAdaptiveMenu extends LitElement {
   private readonly _anchor = new AnchorController(this, {
     anchor: () => this._$trigger,
     floating: () => this._$popup,
-    placement: 'bottom-end',
+    placement: 'block-end-end',
     offset: 4,
     shadowHost: () => this,
   });
@@ -324,7 +324,7 @@ export class RCAdaptiveMenu extends LitElement {
   protected override updated(changed: Map<PropertyKey, unknown>): void {
     if (changed.has('orientation')) {
       this._anchor.setOptions({
-        placement: this.orientation === 'vertical' ? 'inline-end-start' : 'bottom-end',
+        placement: this.orientation === 'vertical' ? 'inline-end-start' : 'block-end-end',
       });
     }
 

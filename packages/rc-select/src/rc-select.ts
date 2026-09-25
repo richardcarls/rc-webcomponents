@@ -292,7 +292,7 @@ export class RCSelect extends LitElement {
     anchor: () => this._$anchor ?? null,
     floating: () => this._$listbox ?? null,
     shadowHost: () => this,
-    placement: 'bottom-start',
+    placement: 'block-end-start',
     offset: 2,
   });
 

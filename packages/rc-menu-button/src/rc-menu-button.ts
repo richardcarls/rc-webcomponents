@@ -121,10 +121,11 @@ export interface RCMenuButtonToggleEvent {
  *   like a menubar row, or `vertical` along the block axis. It picks the arrow key that opens
  *   the menu, following how that layout renders, so the keys turn with RTL and vertical text.
  *   Inherits from a parent `rc-menubar` or `[role="menubar"]` when unset.
- * @attr placement - Preferred placement of the popup relative to the trigger: `top` or `bottom`,
- *   or `inline-start`/`inline-end` to open beside it toward the reading direction, each with an
- *   optional `-start`/`-end` edge alignment that follows the reading direction too. Physical
- *   `left*`/`right*` values still work but are deprecated.
+ * @attr placement - Preferred placement of the popup relative to the trigger, in logical terms:
+ *   `block-start`/`block-end` (above or below in horizontal text, beside it in vertical text) or
+ *   `inline-start`/`inline-end` (beside it along the reading direction), each with an optional
+ *   `-start`/`-end` edge alignment. Defaults to `block-end-start`, or `inline-end-start` under
+ *   vertical orientation when unset.
  * @attr icon-only - Hints that the slotted trigger has no visible label, so themes can size
  *   it and its touch target as an icon button (see `--rc-menu-button-icon-size` and
  *   `--rc-menu-button-touch-target-*` above). Purely a styling hook; RCMenuButton does not read
@@ -228,24 +229,43 @@ export class RCMenuButton extends LitElement {
   @property({ type: String, reflect: true })
   orientation: 'horizontal' | 'vertical' | undefined;
 
-  /** Preferred placement of the popup relative to the trigger button. */
+  private _placement: AnchorPlacement | undefined;
+
+  /**
+   * Preferred placement of the popup relative to the trigger button. Reads the
+   * default until the author sets one.
+   */
   @property({ reflect: true })
-  placement: AnchorPlacement = 'bottom-start';
+  get placement(): AnchorPlacement {
+    return this._placement ?? this._defaultPlacement;
+  }
+
+  set placement(value: AnchorPlacement | null | undefined) {
+    const oldValue = this.placement;
+
+    this._placement = value ?? undefined;
+    this.requestUpdate('placement', oldValue);
+  }
+
+  /** The placement used when the author sets none. Subclasses override it. */
+  protected get _defaultPlacement(): AnchorPlacement {
+    return 'block-end-start';
+  }
 
   /**
    * Popup placement adjusted for orientation.
    *
-   * Switches from `bottom-start` to `inline-end-start` when the resolved
-   * orientation is `vertical`, so vertical menubars open submenus to the side,
-   * toward the inline end.
+   * Without an author placement, a menu button whose resolved orientation is
+   * `vertical` opens at `inline-end-start`, so vertical menubars open
+   * submenus to the side, toward the inline end.
    */
   protected get _effectivePlacement(): AnchorPlacement {
-    if (this.placement !== 'bottom-start') {
-      return this.placement;
+    if (this._placement) {
+      return this._placement;
     }
 
     // Opens toward the inline end, which is the left in RTL.
-    return this._resolvedOrientation === 'vertical' ? 'inline-end-start' : this.placement;
+    return this._resolvedOrientation === 'vertical' ? 'inline-end-start' : this._defaultPlacement;
   }
 
   /**
@@ -298,7 +318,7 @@ export class RCMenuButton extends LitElement {
     anchor: () => this._$root ?? null,
     floating: () => this._$popup ?? null,
     shadowHost: () => this,
-    placement: 'bottom-start',
+    placement: 'block-end-start',
     offset: 2,
   });
 

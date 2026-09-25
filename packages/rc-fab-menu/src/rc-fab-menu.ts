@@ -50,7 +50,9 @@ export type RCFabMenuPosition = 'bottom-end' | 'bottom-start' | 'top-end' | 'top
  * @fires rc-fab-menu-toggle - Fired when user interaction opens or closes the action menu.
  *
  * @attr position - Viewport corner where the floating action menu trigger is anchored.
- * @attr placement - Preferred placement of the action menu relative to the trigger button.
+ * @attr placement - Preferred placement of the action menu relative to the trigger button, in
+ *   logical terms (see `rc-menu-button`). Defaults to `block-start-end`: back toward the block
+ *   start from the corner the trigger is pinned to, aligned to the inline end.
  *
  * @cssprop [--rc-fab-menu-position-css=fixed] - CSS position value for the floating wrapper.
  * @cssprop [--rc-fab-menu-inset-block=1.5rem] - Distance from the block-axis edge; falls back
@@ -132,9 +134,13 @@ export class RCFabMenu extends RCMenuButton {
   @property({ type: String, reflect: true })
   position: RCFabMenuPosition = 'bottom-end';
 
-  /** Preferred placement of the action menu relative to the trigger button. */
-  @property({ reflect: true })
-  override placement: AnchorPlacement = 'top-end';
+  /**
+   * The trigger is pinned to the block-end corner, so the menu opens back
+   * toward the block start, aligned to the inline end.
+   */
+  protected override get _defaultPlacement(): AnchorPlacement {
+    return 'block-start-end';
+  }
 
   /** Dispatches the `rc-fab-menu-toggle` bubbling composed event with the requested open state. */
   protected override _dispatchToggle(open = this.open): void {
