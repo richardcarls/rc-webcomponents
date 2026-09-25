@@ -7,11 +7,13 @@ import {
   arrowKeys,
   inlineArrowKeys,
   clientSize,
+  layoutOrientation,
   getScrollOffset,
   logicalDelta,
   logicalRect,
   physicalAxis,
   physicalOffset,
+  renderedOrientation,
   resolveFlow,
   scrollSize,
   setScrollOffset,
@@ -262,3 +264,22 @@ test.each([
 ] as const)('inlineArrowKeys points next toward the inline end (%#)', (flow, next, prev) => {
   expect(inlineArrowKeys(flow)).toMatchObject({ next, prev });
 });
+
+test.each([
+  // [flow label, layout, rendered]: written out, not derived.
+  ['horizontal-tb ltr', 'horizontal', 'horizontal'],
+  ['horizontal-tb rtl', 'vertical', 'vertical'],
+  ['vertical-rl ltr', 'horizontal', 'vertical'],
+  ['vertical-rl rtl', 'vertical', 'horizontal'],
+  ['vertical-lr ltr', 'horizontal', 'vertical'],
+] as const)(
+  'layoutOrientation inverts renderedOrientation in %s (%s layout)',
+  (label, layout, rendered) => {
+    const flow = EXPECTED[label]!;
+    const other = layout === 'horizontal' ? 'vertical' : 'horizontal';
+
+    expect(renderedOrientation(layout, flow)).toBe(rendered);
+    expect(layoutOrientation(rendered, flow)).toBe(layout);
+    expect(layoutOrientation(renderedOrientation(other, flow), flow)).toBe(other);
+  },
+);

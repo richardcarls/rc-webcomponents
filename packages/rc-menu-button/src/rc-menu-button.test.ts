@@ -869,3 +869,42 @@ test.each([
     await expectActiveMenuItem(item1);
   },
 );
+
+test.each([
+  // A menubar row in vertical text renders vertically and says so.
+  ['vertical-rl', 'vertical', 'ArrowLeft', 'ArrowDown'],
+  // A vertical menubar in horizontal text: the reading is already a layout.
+  ['horizontal-tb', 'vertical', 'ArrowRight', 'ArrowDown'],
+])(
+  'RCMenuButton reads a plain menubar aria-orientation as rendered in %s (%s)',
+  async (writingMode, ariaOrientation, opens, ignored) => {
+    const screen = render(html`
+      <div style="writing-mode: ${writingMode};">
+        <div role="menubar" aria-orientation=${ariaOrientation}>
+          <rc-menu-button data-testid="host">
+            <button slot="trigger" role="menuitem" data-testid="trigger">Options</button>
+            <rc-menu label="Options">
+              <button data-testid="item-one">Cut</button>
+              <button data-testid="item-two">Copy</button>
+            </rc-menu>
+          </rc-menu-button>
+        </div>
+      </div>
+    `);
+
+    const trigger = screen.getByTestId('trigger');
+    const item1 = screen.getByTestId('item-one');
+    const { $host, $trigger } = await prepareKeyboardInteraction(screen, 2);
+
+    pressKey($trigger, ignored);
+    await $host.updateComplete;
+
+    await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    pressKey($trigger, opens);
+    await $host.updateComplete;
+
+    await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expectActiveMenuItem(item1);
+  },
+);
