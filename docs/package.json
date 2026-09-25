@@ -12,23 +12,27 @@
     "@docusaurus/core": "^3.10.1",
     "@docusaurus/preset-classic": "^3.10.1",
     "@mdx-js/react": "^3.1.1",
+    "@rcarls/rc-textarea": "workspace:^",
     "@rcarls/rc-textarea-plugin-markdown": "workspace:^",
     "@rcarls/rc-theme-material": "workspace:^",
     "@rcarls/rc-theme-substrate": "workspace:^",
     "@rcarls/rc-theme-win31": "workspace:^",
     "@rcarls/rc-webcomponents": "workspace:^",
-    "clsx": "^2.1.1",
     "highlight.js": "^11.11.1",
     "lit": "^3.0.0",
-    "prism-react-renderer": "^2.4.1",
+    "mdast-util-from-markdown": "^2.0.2",
+    "micromark": "^4.0.2",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.10.1",
+    "@docusaurus/plugin-content-docs": "3.10.1",
     "@docusaurus/tsconfig": "^3.10.1",
     "@docusaurus/types": "^3.10.1",
     "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0"
+    "@types/react-dom": "^19.2.0",
+    "vite": "^7.1.7"
   }
 }

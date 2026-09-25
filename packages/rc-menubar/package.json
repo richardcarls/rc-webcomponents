@@ -46,7 +46,6 @@
   },
   "dependencies": {
     "@rcarls/rc-common": "workspace:*",
-    "@rcarls/rc-menu": "workspace:*",
     "@rcarls/rc-menu-button": "workspace:*"
   },
   "devDependencies": {

@@ -44,6 +44,7 @@
     "@rcarls/rc-segmented-button": "workspace:*",
     "@rcarls/rc-toolbar": "workspace:*",
     "@vitest/browser-playwright": "4.1.5",
+    "lit": "^3.0.0",
     "playwright": "^1.56.0",
     "vite": "^7.1.7",
     "vitest": "^4.0.6"

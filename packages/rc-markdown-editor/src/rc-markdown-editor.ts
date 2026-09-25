@@ -74,6 +74,10 @@ const MDAST_OPTIONS = {
   mdastExtensions: [gfmStrikethroughFromMarkdown()],
 };
 
+interface MarkdownTree {
+  type: string;
+}
+
 const SAFE_RICH_ELEMENTS = new Set([
   'A',
   'BLOCKQUOTE',
@@ -379,7 +383,7 @@ export class RcMarkdownEditor extends LitElement {
   protected _pluginApi: RCTextareaPluginAPI | null = null;
   protected _ignoreRichMutations = false;
   protected _richViewRendered = false;
-  protected _cachedTree: ReturnType<typeof fromMarkdown> | null = null;
+  protected _cachedTree: MarkdownTree | null = null;
   protected _renderedMode: EditorMode | null = null;
 
   // Lit calls updated() before firstUpdated() on the first cycle — guard
@@ -750,14 +754,11 @@ export class RcMarkdownEditor extends LitElement {
     });
   }
 
-  protected _getCodeBlockLanguage(
-    tree: ReturnType<typeof fromMarkdown>,
-    offset: number,
-  ): string | null {
+  protected _getCodeBlockLanguage(tree: MarkdownTree, offset: number): string | null {
     let lang: string | null = null;
 
     visit(
-      tree,
+      tree as ReturnType<typeof fromMarkdown>,
       'code',
       (node: {
         lang?: string | null;
