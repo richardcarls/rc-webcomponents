@@ -50,10 +50,10 @@ import '@rcarls/rc-fab/define';
 
 ## Key attributes and CSS custom properties
 
-| Attribute / property | Description                                                                     |
-| -------------------- | ------------------------------------------------------------------------------- |
-| `position`           | Viewport corner: `bottom-end` (default), `bottom-start`, `top-end`, `top-start` |
-| `scroll-reveal`      | Reveal the FAB only after scrolling past `--rc-fab-scroll-threshold`            |
+| Attribute / property | Description                                                                                                                       |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `position`           | Viewport corner: `block-end-inline-end` (default), `block-end-inline-start`, `block-start-inline-end`, `block-start-inline-start` |
+| `scroll-reveal`      | Reveal the FAB only after scrolling past `--rc-fab-scroll-threshold`                                                              |
 
 | CSS custom property         | Default              | Description                                                                                                                                            |
 | --------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |

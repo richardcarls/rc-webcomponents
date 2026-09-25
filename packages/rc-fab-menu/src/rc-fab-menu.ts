@@ -18,7 +18,11 @@ declare global {
 /** Detail payload for the `rc-fab-menu-toggle` event. */
 export type RCFabMenuToggleEvent = RCMenuButtonToggleEvent;
 
-export type RCFabMenuPosition = 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+export type RCFabMenuPosition =
+  | 'block-end-inline-end'
+  | 'block-end-inline-start'
+  | 'block-start-inline-end'
+  | 'block-start-inline-start';
 
 /**
  * Floating action button menu wrapper for an `rc-menu` action surface.
@@ -49,7 +53,8 @@ export type RCFabMenuPosition = 'bottom-end' | 'bottom-start' | 'top-end' | 'top
  *
  * @fires rc-fab-menu-toggle - Fired when user interaction opens or closes the action menu.
  *
- * @attr position - Viewport corner where the floating action menu trigger is anchored.
+ * @attr position - Logical viewport corner where the trigger is anchored: `block-end-inline-end`
+ *   (default), `block-end-inline-start`, `block-start-inline-end`, or `block-start-inline-start`.
  * @attr placement - Preferred placement of the action menu relative to the trigger button, in
  *   logical terms (see `rc-menu-button`). Defaults to `block-start-end`: back toward the block
  *   start from the corner the trigger is pinned to, aligned to the inline end.
@@ -132,7 +137,7 @@ export class RCFabMenu extends RCMenuButton {
 
   /** Viewport corner where the floating action menu trigger is anchored. */
   @property({ type: String, reflect: true })
-  position: RCFabMenuPosition = 'bottom-end';
+  position: RCFabMenuPosition = 'block-end-inline-end';
 
   /**
    * The trigger is pinned to the block-end corner, so the menu opens back

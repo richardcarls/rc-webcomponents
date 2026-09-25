@@ -162,7 +162,7 @@ test('default placement opens the menu above the floating action button', async 
 
   await $host.updateComplete;
 
-  expect($host.position).toBe('bottom-end');
+  expect($host.position).toBe('block-end-inline-end');
   expect($host.placement).toBe('block-start-end');
 });
 

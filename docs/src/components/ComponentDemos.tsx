@@ -1034,7 +1034,7 @@ export function AdaptiveNavigationDemo() {
             <rc-navigation-rail style={{ viewTransitionName: 'adaptive-navigation' }}>
               <rc-fab
                 slot="header"
-                position="top-start"
+                position="block-start-inline-start"
                 style={{ '--rc-fab-position': 'static' } as CSSProperties}
               >
                 <button type="button" aria-label="New note">
@@ -1603,7 +1603,7 @@ export function FabDemo() {
 
           {/* Extended FAB — always visible */}
           <rc-fab
-            position="bottom-start"
+            position="block-end-inline-start"
             style={{ '--rc-fab-position': 'absolute' } as CSSProperties}
           >
             <button type="button">
