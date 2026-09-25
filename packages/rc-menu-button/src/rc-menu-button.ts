@@ -5,6 +5,8 @@ import {
   AnchorController,
   keyInteraction,
   keyNavigation,
+  layoutOrientation,
+  resolveFlow,
   type AnchorPlacement,
   type KeyboardNavigationAction,
 } from '@rcarls/rc-common';
@@ -258,15 +260,19 @@ export class RCMenuButton extends LitElement {
     const $menubar = this.closest('rc-menubar, [role="menubar"]');
 
     if ($menubar) {
-      const orientation =
-        $menubar.getAttribute('orientation') ?? $menubar.getAttribute('aria-orientation');
+      const orientation = $menubar.getAttribute('orientation');
 
-      if (orientation === 'vertical') {
-        return 'vertical';
+      if (orientation === 'vertical' || orientation === 'horizontal') {
+        return orientation;
       }
 
-      if (orientation === 'horizontal') {
-        return 'horizontal';
+      // Without a layout attribute, only aria-orientation is left, and it
+      // reports how the menubar renders; in vertical text that is the other
+      // orientation from its layout.
+      const rendered = $menubar.getAttribute('aria-orientation');
+
+      if (rendered === 'vertical' || rendered === 'horizontal') {
+        return layoutOrientation(rendered, resolveFlow($menubar));
       }
     }
 
