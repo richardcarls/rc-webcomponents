@@ -87,22 +87,14 @@ export function nodeModulesVolume(prefix, dir) {
   return `${prefix}-nm-${slug}`;
 }
 
-/**
- * The shell run inside the container: install only when yarn.lock changed
- * since the last install into these volumes, then run the host variant.
- */
+/** The shell run inside the container: validate the cached install, then run the host variant. */
 export const CONTAINER_SCRIPT = [
   'set -e',
   'mkdir -p "$HOME" "$COREPACK_BIN"',
   'corepack enable --install-directory "$COREPACK_BIN" >/dev/null',
   // The image ships a global Yarn 1; the project's pinned Yarn must win.
   'export PATH="$COREPACK_BIN:$PATH"',
-  'stamp="$PWD/node_modules/.rc-lock-stamp"',
-  'hash="$(sha256sum yarn.lock | cut -d" " -f1)"',
-  'if [ "$(cat "$stamp" 2>/dev/null)" != "$hash" ]; then',
-  '  yarn install --immutable',
-  '  echo "$hash" > "$stamp"',
-  'fi',
+  'yarn install --immutable',
   'exec yarn "$@"',
 ].join('\n');
 

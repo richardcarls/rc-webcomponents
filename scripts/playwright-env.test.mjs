@@ -130,6 +130,11 @@ test('ends with the container script and the host variant of the requested scrip
   ]);
 });
 
+test('validates the cached install on every container run', () => {
+  assert.match(CONTAINER_SCRIPT, /^yarn install --immutable$/m);
+  assert.doesNotMatch(CONTAINER_SCRIPT, /rc-lock-stamp|sha256sum/);
+});
+
 test('requests a TTY only for an interactive terminal', () => {
   assert.ok(!argsFor().includes('-it'));
   assert.ok(argsFor({ tty: true }).includes('-it'));
