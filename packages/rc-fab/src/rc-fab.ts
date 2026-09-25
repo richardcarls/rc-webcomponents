@@ -63,7 +63,8 @@ declare global {
  * @slot default - The native `<button>` element. The button's own accessible
  *   name (text content or `aria-label`) serves as the FAB's accessible name.
  *
- * @attr position - Viewport corner where the FAB is anchored.
+ * @attr position - Logical viewport corner where the FAB is anchored: `block-end-inline-end`
+ *   (default), `block-end-inline-start`, `block-start-inline-end`, or `block-start-inline-start`.
  * @attr scroll-reveal - Reveal the FAB only after the page scrolls past
  *   `--rc-fab-scroll-threshold`.
  * @attr [scroll-below-threshold] - Present when `scroll-reveal` is active and the page hasn't
@@ -127,7 +128,11 @@ export class RCFab extends LitElement {
 
   /** Viewport corner where the FAB is anchored. Uses logical inline/block directions. */
   @property({ type: String, reflect: true })
-  position: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start' = 'bottom-end';
+  position:
+    | 'block-end-inline-end'
+    | 'block-end-inline-start'
+    | 'block-start-inline-end'
+    | 'block-start-inline-start' = 'block-end-inline-end';
 
   /** Reveal the FAB only after the page scrolls past `--rc-fab-scroll-threshold` (default 300 px). Uses CSS scroll-driven animations; falls back to a passive scroll listener in unsupported browsers. */
   @property({ type: Boolean, attribute: 'scroll-reveal', reflect: true })

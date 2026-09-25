@@ -13,17 +13,17 @@ export const fabStyles = css`
     display: none;
   }
 
-  :host([position='bottom-start']) {
+  :host([position='block-end-inline-start']) {
     inset-inline-end: unset;
     inset-inline-start: var(--rc-fab-inset-inline, 1.5rem);
   }
 
-  :host([position='top-end']) {
+  :host([position='block-start-inline-end']) {
     inset-block-end: unset;
     inset-block-start: var(--rc-fab-inset-block, 1.5rem);
   }
 
-  :host([position='top-start']) {
+  :host([position='block-start-inline-start']) {
     inset-block-end: unset;
     inset-block-start: var(--rc-fab-inset-block, 1.5rem);
     inset-inline-end: unset;

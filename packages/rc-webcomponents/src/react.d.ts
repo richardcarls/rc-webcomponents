@@ -546,7 +546,11 @@ export type RCMenuButtonRef = HTMLElement & {
 
 /** Public API surface of `<rc-fab-menu>`. */
 export type RCFabMenuRef = RCMenuButtonRef & {
-  position: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+  position:
+    | 'block-end-inline-end'
+    | 'block-end-inline-start'
+    | 'block-start-inline-end'
+    | 'block-start-inline-start';
 };
 
 export type RCFabMenuToggleDetail = {
@@ -1002,7 +1006,11 @@ declare module 'react' {
         open?: boolean;
         'default-open'?: boolean;
         placement?: RCMenuButtonPlacement;
-        position?: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+        position?:
+          | 'block-end-inline-end'
+          | 'block-end-inline-start'
+          | 'block-start-inline-end'
+          | 'block-start-inline-start';
       };
 
       'rc-navigation-bar': React.DetailedHTMLProps<
@@ -1123,7 +1131,11 @@ declare module 'react' {
       };
 
       'rc-fab': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        position?: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+        position?:
+          | 'block-end-inline-end'
+          | 'block-end-inline-start'
+          | 'block-start-inline-end'
+          | 'block-start-inline-start';
         'scroll-reveal'?: boolean;
       };
 

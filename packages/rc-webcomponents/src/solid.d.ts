@@ -432,7 +432,11 @@ export type RCMenuButtonToggleDetail = {
 
 /** Public API surface of `<rc-fab-menu>`. */
 export type RCFabMenuRef = RCMenuButtonRef & {
-  position: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+  position:
+    | 'block-end-inline-end'
+    | 'block-end-inline-start'
+    | 'block-start-inline-end'
+    | 'block-start-inline-start';
 };
 
 export type RCFabMenuToggleDetail = RCMenuButtonToggleDetail;
@@ -1051,7 +1055,12 @@ declare module 'solid-js' {
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
         placement?: RCMenuButtonPlacement;
-        position?: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start' | string;
+        position?:
+          | 'block-end-inline-end'
+          | 'block-end-inline-start'
+          | 'block-start-inline-end'
+          | 'block-start-inline-start'
+          | string;
         'on:rc-fab-menu-toggle'?: (e: CustomEvent<RCFabMenuToggleDetail>) => void;
       };
 
@@ -1184,7 +1193,12 @@ declare module 'solid-js' {
       };
 
       'rc-fab': JSX.HTMLAttributes<HTMLElement> & {
-        position?: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start' | string;
+        position?:
+          | 'block-end-inline-end'
+          | 'block-end-inline-start'
+          | 'block-start-inline-end'
+          | 'block-start-inline-start'
+          | string;
         'scroll-reveal'?: boolean | string;
       };
 
