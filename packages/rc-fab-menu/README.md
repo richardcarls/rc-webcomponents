@@ -44,10 +44,10 @@ standalone menu package.
 `rc-fab-menu` inherits `open`, `defaultOpen`, `openMenu()`, `closeMenu()`, and `toggleMenu()`
 from `rc-menu-button` unchanged. It also overrides `placement`'s default (see below).
 
-| Property    | Attribute   | Type                                                         | Default        | Description                                                                                                                  |
-| ----------- | ----------- | ------------------------------------------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `position`  | `position`  | `'bottom-end' \| 'bottom-start' \| 'top-end' \| 'top-start'` | `'bottom-end'` | Viewport corner where the trigger is anchored.                                                                               |
-| `placement` | `placement` | `AnchorPlacement`                                            | `'top-end'`    | Preferred popup placement. Overrides `rc-menu-button`'s `'bottom-start'` default so the action menu opens above the trigger. |
+| Property    | Attribute   | Type                                                         | Default             | Description                                                                                                                                                                                                   |
+| ----------- | ----------- | ------------------------------------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `position`  | `position`  | `'bottom-end' \| 'bottom-start' \| 'top-end' \| 'top-start'` | `'bottom-end'`      | Viewport corner where the trigger is anchored.                                                                                                                                                                |
+| `placement` | `placement` | `AnchorPlacement`                                            | `'block-start-end'` | Preferred popup placement. Overrides `rc-menu-button`'s `'block-end-start'` default: the trigger is pinned to the block-end corner, so the menu opens back toward the block start, aligned to the inline end. |
 
 | Event                | Detail              | Description                                                  |
 | -------------------- | ------------------- | ------------------------------------------------------------ |

@@ -163,7 +163,7 @@ test('default placement opens the menu above the floating action button', async 
   await $host.updateComplete;
 
   expect($host.position).toBe('bottom-end');
-  expect($host.placement).toBe('top-end');
+  expect($host.placement).toBe('block-start-end');
 });
 
 test('has no automated accessibility violations while closed and open', async () => {
@@ -208,4 +208,42 @@ test('reduced motion zeros the popup scale but only shortens its opacity/overlay
   expect(motionBlock).toContain('opacity 50ms');
   expect(motionBlock).toContain('overlay 50ms allow-discrete');
   expect(motionBlock).toContain('display 50ms allow-discrete');
+});
+
+test.each([
+  ['horizontal-tb', 'above'],
+  ['vertical-rl', 'to the right of'],
+])('opens its menu toward the block start in %s (%s the trigger)', async (writingMode) => {
+  const screen = render(html`
+    <div style="writing-mode: ${writingMode};">
+      <rc-fab-menu data-testid="host">
+        <button slot="trigger" type="button" aria-label="Create">+</button>
+        <rc-menu label="Create">
+          <button>Recipe</button>
+        </rc-menu>
+      </rc-fab-menu>
+    </div>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCFabMenu;
+
+  await $host.updateComplete;
+  $host.open = true;
+
+  const trigger = $host.querySelector('[slot="trigger"]') as HTMLElement;
+  const popup = $host.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  // Pinned to the block-end corner, so the menu opens back toward the block
+  // start: above in horizontal text, to the right in vertical-rl.
+  await vi.waitFor(() => {
+    const menu = popup.getBoundingClientRect();
+    const button = trigger.getBoundingClientRect();
+
+    if (writingMode === 'horizontal-tb') {
+      expect(menu.bottom).toBeLessThanOrEqual(button.top);
+    } else {
+      expect(menu.left).toBeGreaterThanOrEqual(button.right);
+    }
+  });
+
+  $host.open = false;
 });

@@ -55,7 +55,7 @@ function asPrivate(ctl: AnchorController): PrivateAnchorController {
   return ctl as unknown as PrivateAnchorController;
 }
 
-test('_positionFallback positions a right-start placement beside the anchor, not below it', async () => {
+test('_positionFallback positions an inline-end-start placement beside the anchor, not below it', async () => {
   const { anchor, floating } = await renderAnchorAndFloating(
     'left: 100px; top: 200px; width: 50px; height: 40px;',
   );
@@ -63,7 +63,7 @@ test('_positionFallback positions a right-start placement beside the anchor, not
     new AnchorController(createHost(), {
       anchor,
       floating,
-      placement: 'right-start',
+      placement: 'inline-end-start',
       offset: 8,
     }),
   );
@@ -77,7 +77,7 @@ test('_positionFallback positions a right-start placement beside the anchor, not
   expect(rect.top).toBeCloseTo(200, 0);
 });
 
-test('_positionFallback flips right-start to the left when the right side has no room', async () => {
+test('_positionFallback flips inline-end-start to the left when the right side has no room', async () => {
   const { anchor, floating } = await renderAnchorAndFloating(
     `left: ${window.innerWidth - 60}px; top: 200px; width: 50px; height: 40px;`,
   );
@@ -85,7 +85,7 @@ test('_positionFallback flips right-start to the left when the right side has no
     new AnchorController(createHost(), {
       anchor,
       floating,
-      placement: 'right-start',
+      placement: 'inline-end-start',
       offset: 8,
     }),
   );
@@ -98,7 +98,7 @@ test('_positionFallback flips right-start to the left when the right side has no
   expect(rect.top).toBeCloseTo(200, 0);
 });
 
-test('_positionFallback keeps top/bottom placements working as before', async () => {
+test('_positionFallback places a block-end-start popup below the anchor', async () => {
   const { anchor, floating } = await renderAnchorAndFloating(
     'left: 100px; top: 200px; width: 50px; height: 40px;',
   );
@@ -106,7 +106,7 @@ test('_positionFallback keeps top/bottom placements working as before', async ()
     new AnchorController(createHost(), {
       anchor,
       floating,
-      placement: 'bottom-start',
+      placement: 'block-end-start',
       offset: 8,
     }),
   );
@@ -280,35 +280,48 @@ const VERTICAL_RL: Flow = {
   blockReversed: true,
   rtl: false,
 };
+const VERTICAL_RL_RTL: Flow = { ...VERTICAL_RL, inlineReversed: true, rtl: true };
+const VERTICAL_LR: Flow = { ...VERTICAL_RL, blockReversed: false };
 
 test.each([
-  // LTR is unchanged for every existing physical placement.
-  [HORIZONTAL_LTR_FLOW, 'bottom-start', 'bottom-start'],
-  [HORIZONTAL_LTR_FLOW, 'right-start', 'right-start'],
+  // Horizontal LTR: block sides are top/bottom, inline sides left/right.
+  [HORIZONTAL_LTR_FLOW, 'block-end-start', 'bottom-start'],
+  [HORIZONTAL_LTR_FLOW, 'block-start-end', 'top-end'],
+  [HORIZONTAL_LTR_FLOW, 'block-end', 'bottom'],
   [HORIZONTAL_LTR_FLOW, 'inline-end-start', 'right-start'],
   [HORIZONTAL_LTR_FLOW, 'inline-start', 'left'],
-  // RTL: alignment suffixes and logical sides follow the reading direction.
-  [RTL, 'bottom-start', 'bottom-end'],
-  [RTL, 'top-end', 'top-start'],
-  [RTL, 'bottom', 'bottom'],
+  // RTL: inline sides and alignment suffixes follow the reading direction.
+  [RTL, 'block-end-start', 'bottom-end'],
+  [RTL, 'block-start-end', 'top-start'],
+  [RTL, 'block-end', 'bottom'],
   [RTL, 'inline-end-start', 'left-start'],
   [RTL, 'inline-start-end', 'right-end'],
-  [RTL, 'right-start', 'right-start'],
   // vertical-rl: the inline axis runs top to bottom, lines right to left.
+  [VERTICAL_RL, 'block-end-start', 'left-start'],
+  [VERTICAL_RL, 'block-start', 'right'],
   [VERTICAL_RL, 'inline-end-start', 'bottom-end'],
-  [VERTICAL_RL, 'bottom-start', 'bottom-end'],
+  [VERTICAL_RL_RTL, 'block-end-start', 'left-end'],
+  [VERTICAL_RL_RTL, 'inline-end', 'top'],
+  // vertical-lr: lines run left to right.
+  [VERTICAL_LR, 'block-end-start', 'right-start'],
+  [VERTICAL_LR, 'block-start-end', 'left-end'],
 ] as const)('resolveAnchorPlacement(%#): %s resolves %s to %s', (flow, placement, expected) => {
   expect(resolveAnchorPlacement(placement, flow)).toBe(expected);
 });
 
-test("_positionFallback aligns a bottom-start popup to the anchor's right edge in RTL", async () => {
+test("_positionFallback aligns a block-end-start popup to the anchor's right edge in RTL", async () => {
   const { anchor, floating } = await renderAnchorAndFloating(
     // Well inside the narrow test viewport so the viewport clamp stays out of it.
     'direction: rtl; left: 150px; top: 100px; width: 120px; height: 40px;',
     'width: 200px; height: 80px;',
   );
   const ctl = asPrivate(
-    new AnchorController(createHost(), { anchor, floating, placement: 'bottom-start', offset: 0 }),
+    new AnchorController(createHost(), {
+      anchor,
+      floating,
+      placement: 'block-end-start',
+      offset: 0,
+    }),
   );
 
   ctl._positionFallback();
@@ -343,7 +356,7 @@ test('_positionFallback opens an inline-end submenu to the left in RTL', async (
   expect(popup.top).toBeCloseTo(trigger.top, 0);
 });
 
-test('the applied positioning aligns a bottom-start popup to the right edge in RTL', async () => {
+test('the applied positioning aligns a block-end-start popup to the right edge in RTL', async () => {
   const { anchor, floating } = await renderAnchorAndFloating(
     'direction: rtl; left: 150px; top: 100px; width: 120px; height: 40px;',
     'width: 200px; height: 80px;',
@@ -351,7 +364,7 @@ test('the applied positioning aligns a bottom-start popup to the right edge in R
   const ctl = new AnchorController(createHost(), {
     anchor,
     floating,
-    placement: 'bottom-start',
+    placement: 'block-end-start',
     offset: 0,
   });
 
@@ -365,6 +378,57 @@ test('the applied positioning aligns a bottom-start popup to the right edge in R
 
     expect(popup.right).toBeCloseTo(trigger.right, 0);
     expect(popup.top).toBeCloseTo(trigger.bottom, 0);
+  });
+
+  ctl.hostDisconnected();
+});
+
+test('the applied positioning opens a block-end popup to the left in vertical-rl', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    // A vertical row: the block end is on the left.
+    'writing-mode: vertical-rl; left: 250px; top: 100px; width: 40px; height: 120px;',
+    'width: 80px; height: 160px;',
+  );
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    placement: 'block-end-start',
+    offset: 0,
+  });
+
+  ctl.hostConnected();
+
+  await vi.waitFor(() => {
+    const popup = floating.getBoundingClientRect();
+    const trigger = anchor.getBoundingClientRect();
+
+    expect(popup.right).toBeCloseTo(trigger.left, 0);
+    expect(popup.top).toBeCloseTo(trigger.top, 0);
+  });
+
+  ctl.hostDisconnected();
+});
+
+test('the applied positioning flips a block-end popup to the block start without room', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    // No room on the left, the block end in vertical-rl.
+    'writing-mode: vertical-rl; left: 10px; top: 100px; width: 40px; height: 120px;',
+    'width: 80px; height: 160px;',
+  );
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    placement: 'block-end-start',
+    offset: 0,
+  });
+
+  ctl.hostConnected();
+
+  await vi.waitFor(() => {
+    expect(floating.getBoundingClientRect().left).toBeCloseTo(
+      anchor.getBoundingClientRect().right,
+      0,
+    );
   });
 
   ctl.hostDisconnected();

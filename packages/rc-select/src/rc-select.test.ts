@@ -1151,3 +1151,36 @@ test.each([
     expect(enterChipNav).toHaveBeenCalledTimes(1);
   },
 );
+
+test('opens the listbox at the block end in vertical text', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl; position: fixed; left: 250px; top: 20px;">
+      <rc-select data-testid="host">
+        <select aria-label="Fruit">
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+        </select>
+      </rc-select>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCSelect;
+
+  await host.updateComplete;
+  host.openPopup();
+
+  const anchor = host.renderRoot.querySelector('#anchor') as HTMLElement;
+  const listbox = host.renderRoot.querySelector('rc-listbox') as HTMLElement;
+
+  // The block end is on the left in vertical-rl.
+  await vi.waitFor(() => {
+    expect(listbox.getBoundingClientRect().right).toBeLessThanOrEqual(
+      anchor.getBoundingClientRect().left,
+    );
+    expect(listbox.getBoundingClientRect().top).toBeCloseTo(
+      anchor.getBoundingClientRect().top,
+      0,
+    );
+  });
+
+  host.closePopup();
+});

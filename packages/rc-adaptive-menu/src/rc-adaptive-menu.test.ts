@@ -540,3 +540,32 @@ test('has no automated accessibility violations in its live open state', async (
 
   await expectNoA11yViolations(host);
 });
+
+test('opens the overflow popup at the block end, inline-end aligned, in vertical text', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl; position: fixed; left: 250px; top: 400px;">
+      <rc-adaptive-menu data-testid="host">
+        <button type="button" slot="overflow">Utility</button>
+      </rc-adaptive-menu>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCAdaptiveMenu;
+
+  await settle(host);
+  host.openMenu('none');
+
+  const trigger = host.shadowRoot?.querySelector('#overflow-trigger') as HTMLElement;
+  const popup = host.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  // Left of the trigger (the block end), bottom edges aligned (the inline end).
+  // Placed low enough that the popup has room to extend upward.
+  await vi.waitFor(() => {
+    expect(popup.getBoundingClientRect().right).toBeLessThanOrEqual(
+      trigger.getBoundingClientRect().left,
+    );
+    expect(popup.getBoundingClientRect().bottom).toBeCloseTo(
+      trigger.getBoundingClientRect().bottom,
+      0,
+    );
+  });
+});

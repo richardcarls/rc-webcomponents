@@ -908,3 +908,32 @@ test.each([
     await expectActiveMenuItem(item1);
   },
 );
+
+test('RCMenuButton opens its popup at the block end in vertical text', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl; position: fixed; left: 250px; top: 20px;">
+      <rc-menu-button data-testid="host">
+        <button slot="trigger">Options</button>
+        <rc-menu label="Options">
+          <button>Cut</button>
+          <button>Copy</button>
+        </rc-menu>
+      </rc-menu-button>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCMenuButton;
+
+  await host.updateComplete;
+  host.open = true;
+
+  const root = host.shadowRoot?.querySelector('#root') as HTMLElement;
+  const popup = host.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  // The block end is on the left in vertical-rl: beside the trigger, not below it.
+  await vi.waitFor(() => {
+    expect(popup.getBoundingClientRect().right).toBeLessThanOrEqual(
+      root.getBoundingClientRect().left,
+    );
+    expect(popup.getBoundingClientRect().top).toBeCloseTo(root.getBoundingClientRect().top, 0);
+  });
+});

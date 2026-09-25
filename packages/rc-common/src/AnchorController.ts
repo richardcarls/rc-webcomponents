@@ -4,7 +4,11 @@ import { isPhysicalReversed, resolveFlow, type Flow } from './flow.js';
 import { RafScheduler } from './RafScheduler.js';
 import { getVisualViewportBounds } from './visualViewport.js';
 
-/** A placement on a fixed physical side, after resolving against the flow. */
+/**
+ * A placement on a fixed physical side: what {@link resolveAnchorPlacement}
+ * returns after resolving an {@link AnchorPlacement} against the flow. It is
+ * an output only; placements are always given logically.
+ */
 export type PhysicalAnchorPlacement =
   | 'top'
   | 'top-start'
@@ -20,17 +24,22 @@ export type PhysicalAnchorPlacement =
   | 'right-end';
 
 /**
- * Where to place the floating element relative to its anchor.
+ * Where to place the floating element relative to its anchor, in logical
+ * terms that follow the writing mode and direction.
  *
- * The side is `top`/`bottom`, or a logical `inline-start`/`inline-end` that
- * follows the reading direction (a submenu opening at `inline-end` opens to
- * the left in RTL). The optional `-start`/`-end` suffix aligns to the
- * logical start or end edge along the other axis, so `bottom-start` aligns
- * right edges in RTL. `left*`/`right*` sides are physical and deprecated in
- * favor of `inline-*`.
+ * The side is `block-start`/`block-end` (above/below a row in horizontal text,
+ * to its sides in vertical text) or `inline-start`/`inline-end` (beside it
+ * along the reading direction, so `inline-end` opens to the left in RTL). The
+ * optional `-start`/`-end` suffix aligns to the start or end edge along the
+ * other axis, so `block-end-start` aligns right edges in RTL.
  */
 export type AnchorPlacement =
-  | PhysicalAnchorPlacement
+  | 'block-start'
+  | 'block-start-start'
+  | 'block-start-end'
+  | 'block-end'
+  | 'block-end-start'
+  | 'block-end-end'
   | 'inline-start'
   | 'inline-start-start'
   | 'inline-start-end'
@@ -40,30 +49,24 @@ export type AnchorPlacement =
 
 /**
  * Resolves a placement to a physical side and alignment for a given flow.
- * Logical sides map through the inline axis; alignment suffixes flip where
- * the cross axis runs right to left or bottom to top.
+ * The side maps through its logical axis; alignment suffixes flip where the
+ * cross axis runs right to left or bottom to top.
  */
 export function resolveAnchorPlacement(
   placement: AnchorPlacement,
   flow: Flow,
 ): PhysicalAnchorPlacement {
-  const logical = /^inline-(start|end)(?:-(start|end))?$/.exec(placement);
-
-  let side: 'top' | 'bottom' | 'left' | 'right';
-  let align: 'start' | 'end' | undefined;
-
-  if (logical) {
-    const [, edge, suffix] = logical;
-    const towardEnd = (edge === 'end') !== flow.inlineReversed;
-
-    side = flow.inline === 'x' ? (towardEnd ? 'right' : 'left') : towardEnd ? 'bottom' : 'top';
-    align = suffix as 'start' | 'end' | undefined;
-  } else {
-    const [physicalSide, suffix] = placement.split('-');
-
-    side = physicalSide as typeof side;
-    align = suffix as 'start' | 'end' | undefined;
-  }
+  // An unrecognized value, such as a physical placement set from untyped
+  // HTML, falls back to the default rather than failing to position.
+  const [, axis, edge, suffix] = /^(block|inline)-(start|end)(?:-(start|end))?$/.exec(
+    placement,
+  ) ?? ['', 'block', 'end', 'start'];
+  const physical = axis === 'inline' ? flow.inline : flow.block;
+  const reversed = axis === 'inline' ? flow.inlineReversed : flow.blockReversed;
+  const towardEnd = (edge === 'end') !== reversed;
+  const side: 'top' | 'bottom' | 'left' | 'right' =
+    physical === 'x' ? (towardEnd ? 'right' : 'left') : towardEnd ? 'bottom' : 'top';
+  const align = suffix as 'start' | 'end' | undefined;
 
   if (!align) {
     return side;
@@ -85,7 +88,7 @@ export interface AnchorOptions {
   anchor: Element | (() => Element | null);
   /** The floating element to position. Accepts an element reference or getter. */
   floating: Element | (() => Element | null);
-  /** Preferred placement relative to the anchor. Defaults to `'bottom-start'`. */
+  /** Preferred placement relative to the anchor. Defaults to `'block-end-start'`. */
   placement?: AnchorPlacement;
   /** Gap between anchor and floating in px. Defaults to `4`. */
   offset?: number;
@@ -573,7 +576,7 @@ export class AnchorController implements ReactiveController {
    * direction. Read at every apply, since a `dir` change fires no event.
    */
   private _physicalPlacement(anchor: Element): PhysicalAnchorPlacement {
-    return resolveAnchorPlacement(this._opts.placement ?? 'bottom-start', resolveFlow(anchor));
+    return resolveAnchorPlacement(this._opts.placement ?? 'block-end-start', resolveFlow(anchor));
   }
 
   private _apply(): boolean {
