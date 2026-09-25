@@ -21,6 +21,26 @@ declare global {
 }
 
 /**
+ * A row's position in the whole set. A virtualized list renders only a slice,
+ * so rows that carry `aria-posinset` and `aria-setsize` are placed by those,
+ * and only the set's real first and last rows get end styling. Other rows are
+ * placed by their rendered order.
+ */
+function rowPosition(item: Element, index: number, count: number): RCListPosition {
+  const position = Number(item.getAttribute('aria-posinset'));
+  const size = Number(item.getAttribute('aria-setsize'));
+  const [at, of] = position > 0 && size > 0 ? [position - 1, size] : [index, count];
+
+  if (of === 1) {
+    return 'only';
+  }
+
+  return at === 0 ? 'first' : at === of - 1 ? 'last' : 'middle';
+}
+
+type RCListPosition = 'only' | 'first' | 'middle' | 'last';
+
+/**
  * Shared-column list layout with optional native-backed selection.
  *
  * In `single` and `multiple` selection modes, each direct `rc-list-item`
@@ -91,7 +111,15 @@ export class RCList extends LitElement {
       this._mutationObserver.observe(this, {
         attributes: true,
         subtree: true,
-        attributeFilter: ['checked', 'disabled', 'has-leading', 'has-trailing', 'hidden'],
+        attributeFilter: [
+          'aria-posinset',
+          'aria-setsize',
+          'checked',
+          'disabled',
+          'has-leading',
+          'has-trailing',
+          'hidden',
+        ],
       });
     }
   }
@@ -180,14 +208,7 @@ export class RCList extends LitElement {
     );
 
     for (const [index, item] of items.entries()) {
-      item.dataset.rcListPosition =
-        items.length === 1
-          ? 'only'
-          : index === 0
-            ? 'first'
-            : index === items.length - 1
-              ? 'last'
-              : 'middle';
+      item.dataset.rcListPosition = rowPosition(item, index, items.length);
 
       if (expectedType) {
         const input = this._inputFor(item);

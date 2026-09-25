@@ -52,7 +52,8 @@ declare global {
  *   forwarded surface clicks.
  * @attr [has-leading] - Reflected when the leading slot has content.
  * @attr [has-trailing] - Reflected when the trailing slot has content.
- * @attr [data-rc-list-position] - Visible row position assigned by the parent list.
+ * @attr [data-rc-list-position] - Row position assigned by the parent list: from `aria-posinset`
+ *   and `aria-setsize` when the row has them (a virtualized slice), otherwise from rendered order.
  *
  * @cssprop [--rc-list-item-min-block-size=3rem] - Minimum rendered row height.
  * @cssprop [--rc-list-item-padding-block=0.5rem] - Row block padding.
