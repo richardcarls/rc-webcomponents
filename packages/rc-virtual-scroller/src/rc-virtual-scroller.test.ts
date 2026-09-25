@@ -360,3 +360,53 @@ test('leaves the slotted list accessible', async () => {
 
   await expectNoA11yViolations(host);
 });
+
+test('keeps its range and scroll position when its pane is hidden and shown', async () => {
+  const { port, range, portFlow } = await mount({ count: 500 });
+  const pane = port.parentElement as HTMLElement;
+
+  setScrollOffset(port, 'block', 100 * ITEM_SIZE, portFlow);
+  await vi.waitFor(() => expect(range().start).toBe(98));
+
+  // An app shell hides a pane with display: none while another view is open.
+  pane.style.display = 'none';
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  pane.style.display = '';
+
+  await vi.waitFor(() => {
+    expect(getScrollOffset(port, 'block', resolveFlow(port))).toBeCloseTo(100 * ITEM_SIZE, -1);
+    expect(range().start).toBe(98);
+  });
+});
+
+test('measures once a pane it mounted inside while hidden is shown', async () => {
+  const screen = render(html`
+    <div data-testid="pane" style="display: none;">
+      <div
+        data-testid="port"
+        style="block-size: ${PORT_SIZE}px; inline-size: ${PORT_SIZE}px; overflow: auto;"
+      >
+        <rc-virtual-scroller data-testid="host" count="500" item-size=${ITEM_SIZE} overscan="2">
+          <ul data-testid="list" style=${LIST_STYLE.block}></ul>
+        </rc-virtual-scroller>
+      </div>
+    </div>
+  `);
+  const pane = (await screen.getByTestId('pane').element()) as HTMLElement;
+  const host = (await screen.getByTestId('host').element()) as RCVirtualScroller;
+  const list = (await screen.getByTestId('list').element()) as HTMLElement;
+  const range = bindSlice(host, list, 'block');
+
+  await host.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  pane.style.display = '';
+
+  // A first window sized for the port, from real geometry.
+  await vi.waitFor(() => {
+    expect(range().measured).toBe(true);
+    expect(range().start).toBe(0);
+    expect(range().end).toBeGreaterThan(PORT_SIZE / ITEM_SIZE);
+    expect(range().end).toBeLessThan(20);
+  });
+});
