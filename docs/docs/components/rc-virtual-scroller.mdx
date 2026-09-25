@@ -116,8 +116,12 @@ pages and vertical text need no configuration.
 used for the first frame and whenever nothing can be measured yet.
 
 Items per line and line pitch are measured from the slotted container rather
-than configured. On the block axis a line holds one item per grid column; on
-the inline axis, one item per grid row. The pitch is the offset between two
+than configured. Items per line counts the rendered items that start where the
+first one does along the windowed axis, so an item spanning several tracks,
+such as a card aligned through subgrid across a shelf's rows, still counts as
+one. Until a second line has rendered, it falls back to one item per grid
+column on the block axis, or per grid row on the inline axis. The pitch is the
+offset between two
 items one line apart, which keeps `auto-fill`, container queries, and the gap
 authoritative in CSS instead of duplicated in JavaScript.
 `rc-virtual-scroller-range` reports `itemsPerLine`, `lineSize`, and a

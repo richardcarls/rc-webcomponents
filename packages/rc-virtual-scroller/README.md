@@ -77,12 +77,15 @@ reasonable value matters for the first paint and for restoring a saved scroll
 position.
 
 Items per line and line pitch are measured from the slotted container rather
-than configured. On the block axis a line holds one item per grid column
-(`grid-template-columns`); on the inline axis, one item per grid row
-(`grid-template-rows`). Grid columns and rows are logical, so this holds in
-vertical writing modes too. The pitch is the offset between two items one line
-apart, which keeps `auto-fill`, container queries, and the gap authoritative in
-CSS instead of duplicated in JavaScript. `rc-virtual-scroller-range` reports
+than configured. Items per line counts the rendered items that start where the
+first one does along the windowed axis, so an item spanning several tracks,
+such as a card aligned through subgrid across a shelf's rows, still counts as
+one. Until a second line has rendered, it falls back to one item per grid
+column (`grid-template-columns`) on the block axis, or per grid row
+(`grid-template-rows`) on the inline axis. Grid columns and rows are logical,
+so this holds in vertical writing modes too. The pitch is the offset between
+two items one line apart, which keeps `auto-fill`, container queries, and the
+gap authoritative in CSS instead of duplicated in JavaScript. `rc-virtual-scroller-range` reports
 `itemsPerLine`, `lineSize`, and a `measured` flag that is `false` while the
 geometry is still the `item-size` estimate.
 
