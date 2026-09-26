@@ -25,6 +25,7 @@
     "test:screenshots:update:host": "RC_TEST_BROWSER=chromium vitest --run rendered.test --update",
     "cem:analyze": "cem analyze",
     "docs": "yarn cem:analyze && yarn workspace @rcarls/rc-docs run dev",
+    "docs:typecheck": "tsc --noEmit -p docs/tsconfig.json",
     "docs:build": "yarn cem:analyze && yarn workspace @rcarls/rc-docs run build",
     "audit:component-architecture": "yarn cem:analyze && node scripts/audit-component-architecture.mjs",
     "audit:api-surfaces": "node scripts/audit-api-surfaces.mjs",

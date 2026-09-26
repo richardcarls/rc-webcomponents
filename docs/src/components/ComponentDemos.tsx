@@ -1118,7 +1118,7 @@ export function AdaptiveNavigationDemo() {
           </p>
           {!showRail ? (
             <rc-fab
-              position="block-end"
+              position="block-end-inline-end"
               style={
                 {
                   '--rc-fab-position': 'absolute',
@@ -1671,7 +1671,7 @@ export function ListboxDemo() {
       return;
     }
 
-    async function applyOptions() {
+    const applyOptions = async () => {
       if (typeof customElements !== 'undefined') {
         await customElements.whenDefined('rc-listbox');
       }
@@ -1691,7 +1691,7 @@ export function ListboxDemo() {
       ];
 
       listbox.setSelectedValues(['berries']);
-    }
+    };
 
     void applyOptions();
   }, []);
