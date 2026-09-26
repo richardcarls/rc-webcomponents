@@ -14,6 +14,8 @@ import {
   type Flow,
   type LogicalAxis,
 } from '@rcarls/rc-common';
+import { calculateWindow, positive, whole, type Geometry } from './range.js';
+import { sampleLayout } from './sample.js';
 
 import virtualScrollerStyles from './rc-virtual-scroller.styles.js';
 
@@ -22,19 +24,18 @@ export type RCVirtualScrollerAlign = 'start' | 'center' | 'end' | 'nearest';
 
 export interface RCVirtualScrollerRangeDetail {
   /** First item index the consumer should render, inclusive. */
-  start: number;
+  readonly start: number;
   /** Item index one past the last the consumer should render. */
-  end: number;
+  readonly end: number;
   /**
-   * Items in one line across the scrolling axis: grid columns when scrolling
-   * the block axis, grid rows when scrolling the inline axis, `1` when the
-   * container is not a grid.
+   * Effective items in one line: the explicit override, inferred uniform grid
+   * capacity accounting for spans, or one for a non-grid collection.
    */
-  itemsPerLine: number;
+  readonly itemsPerLine: number;
   /** Line pitch in pixels along the scrolling axis, including the gap. */
-  lineSize: number;
+  readonly lineSize: number;
   /** `false` while `lineSize` is still the `item-size` estimate, `true` once a real line was measured. */
-  measured: boolean;
+  readonly measured: boolean;
 }
 
 declare global {
@@ -49,30 +50,6 @@ declare global {
 
 /** Line pitch differences below this are measurement noise, not a real change. */
 const LINE_SIZE_EPSILON = 0.5;
-
-/**
- * Rect-derived offsets carry sub-pixel snapping (Firefox reports a view start
- * of 3999.98 where 4000 was scrolled), which is enough to floor into the
- * previous line. Half a pixel of tolerance on each edge absorbs it; it only
- * ever affects a line that is at most half a pixel on screen, well inside the
- * overscan.
- */
-const SUBPIXEL_EPSILON = 0.5;
-
-/** Returns the focused element, following open shadow roots down. */
-function deepActiveElement(): Element | null {
-  let active = document.activeElement;
-
-  while (active?.shadowRoot?.activeElement) {
-    active = active.shadowRoot.activeElement;
-  }
-
-  return active;
-}
-
-function trackCount(tracks: string): number {
-  return tracks && tracks !== 'none' ? tracks.split(/\s+/).filter(Boolean).length : 1;
-}
 
 /**
  * Reports which slice of a long collection is currently on screen and reserves
@@ -97,10 +74,13 @@ function trackCount(tracks: string): number {
  * `grid-auto-flow: column`). Direction and writing mode are read from the
  * element's own computed style, so RTL and vertical text need no configuration.
  *
- * Items per line and line pitch are measured from the slotted container rather
- * than configured, so container queries and `auto-fill` stay authoritative.
- * `item-size` is only the estimate used for the first frame, before a real
- * line exists to measure.
+ * Virtualization requires sequential DOM-order items with uniform line pitch
+ * and capacity (the final line may be partial). Regular grids, uniform numeric
+ * spans, lists, and nonwrapping shelves are measured from CSS. Use
+ * `items-per-line` for ambiguous grid capacity; it does not enable variable
+ * pitch, masonry, dense placement, or reordered items. Detectably unsupported
+ * layouts render the full collection and warn in development. `item-size` is
+ * only a bootstrap estimate. Hidden layouts retain their last valid window.
  *
  * Accessibility is the consumer's, because the consumer owns the roles. A
  * virtualized set must still tell assistive technology its real size: put
@@ -118,6 +98,7 @@ function trackCount(tracks: string): number {
  * @attr axis - Logical axis to window along: `block` (the default) or `inline`.
  * @attr count - Total number of items in the collection, including the ones not rendered.
  * @attr item-size - Estimated line pitch in pixels, used until a real line can be measured.
+ * @attr items-per-line - Explicit grid capacity; zero (the default) restores automatic inference.
  * @attr overscan - Extra lines rendered beyond each edge of the viewport. Defaults to `2`.
  * @attr disabled - Reports the whole collection as the range and stops measuring.
  * @attr [first] - Reflected, computed. First item index in the current range.
@@ -142,22 +123,68 @@ export class RCVirtualScroller extends LitElement {
   @property({ reflect: true })
   axis: RCVirtualScrollerAxis = 'block';
 
-  /** Total number of items in the collection, including the ones not rendered. */
+  private _count = 0;
+  private _itemSize = 0;
+  private _overscan = 2;
+  private _capacity = 0;
+
+  /** Total collection size, normalized to a nonnegative integer. Invalid values become zero. Host writes are silent. */
   @property({ type: Number })
-  count = 0;
+  get count(): number {
+    return this._count;
+  }
+
+  set count(value: number) {
+    const old = this._count;
+
+    this._count = whole(value);
+    this.requestUpdate('count', old);
+  }
 
   /**
    * Estimated line pitch in pixels, used for the first frame and whenever no
    * line is available to measure. Get this roughly right: it is what the very
    * first `rc-virtual-scroller-range` is computed from, and what a restored
-   * scroll position lands against.
+   * scroll position lands against. Invalid or nonpositive values become zero.
+   * Host writes are silent.
    */
   @property({ type: Number, attribute: 'item-size' })
-  itemSize = 0;
+  get itemSize(): number {
+    return this._itemSize;
+  }
 
-  /** Extra lines rendered beyond each edge of the viewport. */
+  set itemSize(value: number) {
+    const old = this._itemSize;
+
+    this._itemSize = positive(value);
+    this.requestUpdate('itemSize', old);
+  }
+
+  /** Grid capacity override, normalized to a nonnegative integer; zero means automatic. Host writes are silent. */
+  @property({ type: Number, attribute: 'items-per-line' })
+  get itemsPerLine(): number {
+    return this._capacity;
+  }
+
+  set itemsPerLine(value: number) {
+    const old = this._capacity;
+
+    this._capacity = whole(value);
+    this.requestUpdate('itemsPerLine', old);
+  }
+
+  /** Extra lines beyond each viewport edge, floored to an integer. Invalid/negative values become two. Host writes are silent. */
   @property({ type: Number })
-  overscan = 2;
+  get overscan(): number {
+    return this._overscan;
+  }
+
+  set overscan(value: number) {
+    const old = this._overscan;
+
+    this._overscan = whole(value, 2);
+    this.requestUpdate('overscan', old);
+  }
 
   /**
    * Reports the whole collection as the range and stops measuring. An escape
@@ -176,13 +203,15 @@ export class RCVirtualScroller extends LitElement {
   @property({ attribute: false })
   scrollTarget: Element | null = null;
 
-  /** Reflected, computed. See the class doc comment. */
-  @property({ type: Number, reflect: true })
-  first = 0;
+  /** Read-only first reported item index, also exposed as the computed `first` attribute. */
+  get first(): number {
+    return this._lastDetail?.start ?? 0;
+  }
 
-  /** Reflected, computed. See the class doc comment. */
-  @property({ type: Number, reflect: true })
-  last = -1;
+  /** Read-only last reported item index, or -1 for an empty range; also exposed as `last`. */
+  get last(): number {
+    return (this._lastDetail?.end ?? 0) - 1;
+  }
 
   /**
    * The most recently reported range, or `null` before the first measurement.
@@ -203,11 +232,14 @@ export class RCVirtualScroller extends LitElement {
 
   private readonly _frame = new RafScheduler(this);
 
-  private _itemsPerLine = 1;
-
-  private _lineSize = 0;
-
-  private _measured = false;
+  private _geometry: Geometry = { itemsPerLine: 1, lineSize: 0, measured: false };
+  private _needsSample = true;
+  private _resetGeometry = false;
+  private _unsupported = false;
+  private readonly _warnedLayouts = new Set<string>();
+  private _$container: Element | null = null;
+  private _$scrollSource: EventTarget | null = null;
+  private _contentObserver: MutationObserver | null = null;
 
   /** The host's own flow, resolved with the scroll target rather than per frame. */
   private _flow: Flow = HORIZONTAL_LTR_FLOW;
@@ -233,11 +265,16 @@ export class RCVirtualScroller extends LitElement {
 
     if (typeof ResizeObserver === 'function') {
       this._resizeObserver = new ResizeObserver(this._requestResolve);
-      this._resizeObserver.observe(this);
+    }
+
+    if (typeof MutationObserver === 'function') {
+      this._contentObserver = new MutationObserver(this._requestSample);
     }
 
     // A direction flip reverses the inline axis without resizing anything.
     this._unobserveDirection = observeDirection(this._requestResolve);
+    this.ownerDocument.defaultView?.addEventListener('resize', this._requestResolve);
+    this._requestResolve();
   }
 
   override disconnectedCallback(): void {
@@ -246,6 +283,11 @@ export class RCVirtualScroller extends LitElement {
     this._detachScrollTarget();
     this._resizeObserver?.disconnect();
     this._resizeObserver = null;
+    this._observingLayout = false;
+    this._contentObserver?.disconnect();
+    this._contentObserver = null;
+    this._$container = null;
+    this.ownerDocument.defaultView?.removeEventListener('resize', this._requestResolve);
     this._unobserveDirection?.();
     this._unobserveDirection = null;
 
@@ -264,14 +306,13 @@ export class RCVirtualScroller extends LitElement {
   }
 
   protected override updated(changed: Map<PropertyKey, unknown>): void {
-    if (changed.has('axis')) {
-      // A line pitch measured along the other axis means nothing on this one.
-      this._lineSize = 0;
-      this._measured = false;
+    if (changed.has('axis') || changed.has('itemsPerLine')) {
+      this._resetGeometry = true;
     }
 
     if (
       changed.has('axis') ||
+      changed.has('itemsPerLine') ||
       changed.has('count') ||
       changed.has('itemSize') ||
       changed.has('overscan') ||
@@ -301,6 +342,10 @@ export class RCVirtualScroller extends LitElement {
     index: number,
     options: { align?: RCVirtualScrollerAlign; behavior?: ScrollBehavior } = {},
   ): void {
+    if (!this.isConnected || !Number.isFinite(index) || this.count === 0 || this._unsupported) {
+      return;
+    }
+
     const target = this._resolvedTarget ?? this._attachScrollTarget();
     const lineSize = this._effectiveLineSize();
 
@@ -312,8 +357,8 @@ export class RCVirtualScroller extends LitElement {
     // flipped in this same task, before the observer's notice arrives.
     this._flow = resolveFlow(this);
 
-    const clamped = Math.min(Math.max(index, 0), Math.max(this.count - 1, 0));
-    const lineStart = Math.floor(clamped / this._itemsPerLine) * lineSize;
+    const clamped = Math.min(Math.max(Math.floor(index), 0), Math.max(this.count - 1, 0));
+    const lineStart = Math.floor(clamped / this._geometry.itemsPerLine) * lineSize;
     const { viewStart, viewSize } = this._view(target);
     const align = options.align ?? 'start';
 
@@ -350,7 +395,7 @@ export class RCVirtualScroller extends LitElement {
    * such as a font load or a theme swap.
    */
   measure(): void {
-    this._measured = false;
+    this._resetGeometry = true;
     this._requestResolve();
   }
 
@@ -361,13 +406,20 @@ export class RCVirtualScroller extends LitElement {
    * the resize's work.
    */
   private readonly _requestEvaluate = (): void => {
-    this._frame.schedule(() => this._evaluate());
+    if (this.isConnected) {
+      this._frame.schedule(() => this._evaluate());
+    }
+  };
+
+  private readonly _requestSample = (): void => {
+    this._needsSample = true;
+    this._requestEvaluate();
   };
 
   /** Requests an evaluation that re-finds the scrollport and flow first. */
   private readonly _requestResolve = (): void => {
     this._needsResolve = true;
-    this._requestEvaluate();
+    this._requestSample();
   };
 
   private _attachScrollTarget(): Element | null {
@@ -379,20 +431,22 @@ export class RCVirtualScroller extends LitElement {
 
     this._detachScrollTarget();
     this._resolvedTarget = next;
-    next?.addEventListener('scroll', this._requestEvaluate, { passive: true });
+    this._$scrollSource = next === this._documentScroller() ? this.ownerDocument : next;
+    this._$scrollSource?.addEventListener('scroll', this._requestEvaluate, { passive: true });
 
     return next;
   }
 
   private _detachScrollTarget(): void {
-    this._resolvedTarget?.removeEventListener('scroll', this._requestEvaluate);
+    this._$scrollSource?.removeEventListener('scroll', this._requestEvaluate);
+    this._$scrollSource = null;
     this._resolvedTarget = null;
   }
 
   /** The scroll target's visible client box in viewport coordinates. */
   private _portRect(target: Element): DOMRect {
-    if (target === (document.scrollingElement ?? document.documentElement)) {
-      const root = document.documentElement;
+    if (target === this._documentScroller()) {
+      const root = this.ownerDocument.documentElement;
 
       return new DOMRect(0, 0, root.clientWidth, root.clientHeight);
     }
@@ -405,6 +459,10 @@ export class RCVirtualScroller extends LitElement {
       target.clientWidth,
       target.clientHeight,
     );
+  }
+
+  private _documentScroller(): Element {
+    return this.ownerDocument.scrollingElement ?? this.ownerDocument.documentElement;
   }
 
   /**
@@ -421,193 +479,181 @@ export class RCVirtualScroller extends LitElement {
       : { viewStart: view.blockStart, viewSize: view.blockSize };
   }
 
-  /** The consumer's slotted container, i.e. the element holding the items. */
-  private _container(): Element | null {
-    return this.firstElementChild;
-  }
-
   private _effectiveLineSize(): number {
-    return this._lineSize > 0 ? this._lineSize : this.itemSize;
+    return this._geometry.measured ? this._geometry.lineSize : this.itemSize;
   }
 
-  /**
-   * Reads the item grid from the slotted container. Grid columns are inline
-   * tracks and grid rows are block tracks in every writing mode, so lines
-   * stacked along the block axis hold one item per column, and lines along
-   * the inline axis hold one item per row. Reading the resolved tracks rather
-   * than a configured count keeps `auto-fill` and container queries the
-   * single source of truth.
-   */
-  /**
-   * How many items share the first line, counted from where they render: the
-   * leading run of items that start where the first one does along the
-   * windowed axis. Unlike the track count, this holds when an item spans
-   * several tracks, such as cards aligned through subgrid across every row of
-   * a column-flow shelf. Returns `undefined` when every rendered item sits on
-   * the first line, since the line's real length is then unknown.
-   */
-  private _itemsInFirstLine(items: HTMLCollection, firstRect: DOMRect): number | undefined {
-    const lineStart = (rect: DOMRect) => {
-      const box = logicalRect(rect, firstRect, this._flow);
+  /** Rebind observers only when their actual targets changed. */
+  private _observeLayout(): void {
+    const $container = this.firstElementChild;
+    const $oldTarget = this._resolvedTarget;
 
-      return this.axis === 'inline' ? box.inlineStart : box.blockStart;
-    };
+    this._attachScrollTarget();
 
-    for (let index = 1; index < items.length; index++) {
-      const item = items.item(index);
+    if ($container !== this._$container) {
+      this._$container = $container;
+      this._resetGeometry = true;
+      this._contentObserver?.disconnect();
 
-      if (item && Math.abs(lineStart(item.getBoundingClientRect())) > SUBPIXEL_EPSILON) {
-        return index;
+      if ($container) {
+        this._contentObserver?.observe($container, { childList: true });
       }
-    }
-
-    return undefined;
-  }
-
-  private _measureGrid(container: Element): void {
-    const styles = getComputedStyle(container);
-    const tracks = trackCount(
-      this.axis === 'inline' ? styles.gridTemplateRows : styles.gridTemplateColumns,
-    );
-
-    this._itemsPerLine = tracks;
-
-    const items = container.children;
-    const firstItem = items.item(0);
-
-    if (!firstItem) {
+    } else if ($oldTarget === this._resolvedTarget && this._observingLayout) {
       return;
     }
 
-    const firstRect = firstItem.getBoundingClientRect();
+    this._observingLayout = true;
+    this._resizeObserver?.disconnect();
+    this._resizeObserver?.observe(this);
 
-    this._itemsPerLine = this._itemsInFirstLine(items, firstRect) ?? tracks;
-
-    // The offset between two items a full line apart is the pitch with the
-    // gap already included, which beats adding a separately parsed gap to a
-    // measured size.
-    const nextLineItem = items.item(this._itemsPerLine);
-
-    let lineSize = 0;
-
-    if (nextLineItem) {
-      const offset = logicalRect(nextLineItem.getBoundingClientRect(), firstRect, this._flow);
-
-      lineSize = this.axis === 'inline' ? offset.inlineStart : offset.blockStart;
+    if ($container) {
+      this._resizeObserver?.observe($container);
     }
 
-    if (lineSize <= 0) {
-      const own = logicalRect(firstRect, firstRect, this._flow);
-      const gap = Number.parseFloat(this.axis === 'inline' ? styles.columnGap : styles.rowGap);
-
-      lineSize =
-        (this.axis === 'inline' ? own.inlineSize : own.blockSize) +
-        (Number.isFinite(gap) ? gap : 0);
-    }
-
-    // A container of `display: contents` items measures as zero; keep the
-    // estimate rather than dividing the scroll space by nothing.
-    if (lineSize > 0) {
-      this._lineSize = lineSize;
-      this._measured = true;
+    if (this._resolvedTarget && this._resolvedTarget !== this._documentScroller()) {
+      this._resizeObserver?.observe(this._resolvedTarget);
     }
   }
 
-  /**
-   * The focused item's index, or `-1`. Items are the container's children, so
-   * the focused item's index is its DOM position offset by the current range
-   * start, which is the only place the rendered slice's own numbering exists.
-   */
-  private _focusedIndex(container: Element): number {
-    const active = deepActiveElement();
+  private _observingLayout = false;
 
-    if (!active || !this.contains(active)) {
-      return -1;
+  /**
+   * Focus retargets to a closed shadow host. Stop at the item that owns it,
+   * rather than asking ordinary contains() to cross a shadow boundary.
+   */
+  private _focusedIndex($container: Element): number {
+    const root = this.getRootNode();
+    let $active =
+      root instanceof ShadowRoot ? root.activeElement : this.ownerDocument.activeElement;
+
+    while ($active) {
+      let $ancestor: Element | null = $active;
+
+      while ($ancestor && $ancestor.parentElement !== $container) {
+        const ancestorRoot: Node = $ancestor.getRootNode();
+
+        $ancestor =
+          $ancestor.assignedSlot ??
+          $ancestor.parentElement ??
+          (ancestorRoot instanceof ShadowRoot ? ancestorRoot.host : null);
+      }
+
+      if ($ancestor) {
+        return this.first + Array.prototype.indexOf.call($container.children, $ancestor);
+      }
+
+      $active = $active.shadowRoot?.activeElement ?? null;
     }
 
-    const items = Array.from(container.children);
-    const position = items.findIndex((item) => item === active || item.contains(active));
-
-    return position < 0 ? -1 : this.first + position;
+    return -1;
   }
 
   private _evaluate(): void {
+    if (!this.isConnected) {
+      return;
+    }
+
     if (this._needsResolve || !this._resolvedTarget) {
       this._needsResolve = false;
-      // Deliberately not on the scroll path: walking ancestors and reading the
-      // flow cost a getComputedStyle each, which has no business running per
-      // frame. A resize, slotchange, focus change, or `dir` change requests
-      // this pass.
-      this._attachScrollTarget();
+      this._observeLayout();
       this._flow = resolveFlow(this);
     }
 
-    const container = this._container();
+    const $container = this._$container;
+    const $target = this._resolvedTarget;
 
-    if (this.disabled || !container || this.count <= 0) {
+    if (this.disabled || !$container || this.count === 0) {
       this._applyRange(0, this.count, 0, 0);
 
       return;
     }
 
-    this._measureGrid(container);
+    if (!$target || !this.getClientRects().length || !$target.getClientRects().length) {
+      // An unavailable layout is not a new measurement. Only clamp a changed
+      // collection; preserve the mounted slice and spacer geometry while hidden.
+      if (this._lastDetail && this._lastDetail.end > this.count) {
+        this._applyRange(
+          Math.min(this.first, this.count),
+          this.count,
+          this._spacerStart,
+          this._spacerEnd,
+        );
+      }
+
+      return;
+    }
+
+    if (this._resetGeometry) {
+      this._resetGeometry = false;
+
+      this._geometry = {
+        itemsPerLine: this.itemsPerLine || 1,
+        lineSize: this.itemSize,
+        measured: false,
+      };
+
+      this._needsSample = true;
+    }
+
+    if (this._needsSample) {
+      this._needsSample = false;
+
+      const sample = sampleLayout(
+        $container,
+        this.axis,
+        this._flow,
+        this.itemsPerLine,
+        this._geometry,
+      );
+
+      this._unsupported = sample.kind === 'unsupported';
+
+      if (sample.kind === 'unsupported') {
+        if (import.meta.env.DEV && !this._warnedLayouts.has(sample.reason)) {
+          this._warnedLayouts.add(sample.reason);
+
+          console.warn(
+            `[rc-virtual-scroller] ${sample.reason} Rendering the full collection.`,
+            this,
+          );
+        }
+      } else {
+        this._geometry = sample.geometry;
+      }
+    }
 
     const lineSize = this._effectiveLineSize();
-    const target = this._resolvedTarget;
 
-    if (!lineSize || !target) {
-      // Nothing measurable to window against yet; rendering everything is the
-      // only answer that cannot be wrong.
+    if (this._unsupported || !lineSize) {
       this._applyRange(0, this.count, 0, 0);
 
       return;
     }
 
-    const perLine = this._itemsPerLine;
-    const lines = Math.ceil(this.count / perLine);
-    const { viewStart, viewSize } = this._view(target);
+    const range = calculateWindow({
+      ...this._geometry,
+      lineSize,
+      count: this.count,
+      overscan: this.overscan,
+      ...this._view($target),
+      focused: this._focusedIndex($container),
+    });
 
-    let firstLine =
-      Math.floor((Math.max(0, viewStart) + SUBPIXEL_EPSILON) / lineSize) - this.overscan;
-    let lastLine = Math.ceil((viewStart + viewSize - SUBPIXEL_EPSILON) / lineSize) + this.overscan;
-
-    firstLine = Math.min(Math.max(firstLine, 0), lines);
-    lastLine = Math.min(Math.max(lastLine, firstLine), lines);
-
-    let start = firstLine * perLine;
-    let end = Math.min(lastLine * perLine, this.count);
-
-    // Unmounting the focused element resets focus to <body> with no error and
-    // no visible cause, which is how a keyboard user loses their place mid
-    // scroll. Widening keeps the range contiguous, so the consumer's render
-    // stays a plain slice; it collapses again as soon as focus moves.
-    const focused = this._focusedIndex(container);
-
-    if (focused >= 0) {
-      const focusedLine = Math.floor(focused / perLine);
-
-      start = Math.min(start, focusedLine * perLine);
-      end = Math.max(end, Math.min((focusedLine + 1) * perLine, this.count));
-    }
-
-    const linesBefore = Math.floor(start / perLine);
-    const linesAfter = lines - Math.ceil(end / perLine);
-
-    this._applyRange(start, end, linesBefore * lineSize, Math.max(0, linesAfter) * lineSize);
+    this._applyRange(range.start, range.end, range.spacerStart, range.spacerEnd);
   }
 
   private _applyRange(start: number, end: number, spacerStart: number, spacerEnd: number): void {
     this._spacerStart = spacerStart;
     this._spacerEnd = spacerEnd;
-    this.first = start;
-    this.last = end - 1;
+    this.setAttribute('first', String(start));
+    this.setAttribute('last', String(end - 1));
 
     const detail: RCVirtualScrollerRangeDetail = {
       start,
       end,
-      itemsPerLine: this._itemsPerLine,
+      itemsPerLine: this._geometry.itemsPerLine,
       lineSize: this._effectiveLineSize(),
-      measured: this._measured,
+      measured: this._geometry.measured,
     };
     const previous = this._lastDetail;
 
@@ -625,7 +671,7 @@ export class RCVirtualScroller extends LitElement {
       return;
     }
 
-    this._lastDetail = detail;
+    this._lastDetail = Object.freeze(detail);
 
     this.dispatchEvent(
       new CustomEvent<RCVirtualScrollerRangeDetail>('rc-virtual-scroller-range', {

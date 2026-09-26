@@ -1,5 +1,5 @@
 import type { Config } from '@docusaurus/types';
-import type { Preset } from '@docusaurus/types';
+import type * as Preset from '@docusaurus/preset-classic';
 
 // Set by the docs deploy workflow's next-docs build only; everything else
 // (local dev, the stable build) falls through to the stable variant.
@@ -35,8 +35,8 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css',
         },
-      },
-    ] satisfies Preset.Options,
+      } satisfies Preset.Options,
+    ],
   ],
   themeConfig: {
     navbar: {

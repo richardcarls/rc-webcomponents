@@ -314,7 +314,7 @@ test('keeps the focused item in range after scrolling away from it', async () =>
 
   const target = list.querySelector('[data-index="1"] button') as HTMLButtonElement;
 
-  target.focus();
+  target.focus({ preventScroll: true });
   expect(document.activeElement).toBe(target);
 
   // WebKit scrolls a newly focused element into view at the next rendering
@@ -405,12 +405,262 @@ test('keeps its range and scroll position when its pane is hidden and shown', as
   pane.style.display = 'none';
   await new Promise((resolve) => requestAnimationFrame(resolve));
   await new Promise((resolve) => requestAnimationFrame(resolve));
+  expect(range().start).toBe(98);
   pane.style.display = '';
 
   await vi.waitFor(() => {
     expect(getScrollOffset(port, 'block', resolveFlow(port))).toBeCloseTo(100 * ITEM_SIZE, -1);
     expect(range().start).toBe(98);
   });
+});
+
+test('settles a one-card spanning shelf with no overscan', async () => {
+  const { host, list, port, range } = await mount({ count: 500, axis: 'inline', overscan: 0 });
+
+  port.style.inlineSize = '40px';
+
+  list.style.cssText =
+    'display:grid;grid-auto-flow:column;grid-template-rows:10px 10px 20px;grid-auto-columns:40px;margin:0;padding:0';
+
+  for (const $item of list.children) {
+    ($item as HTMLElement).style.gridRow = '1 / -1';
+  }
+
+  // Apply the same span to newly rendered cards without global test CSS.
+  host.addEventListener('rc-virtual-scroller-range', () => {
+    for (const $item of list.children) {
+      ($item as HTMLElement).style.gridRow = '1 / -1';
+    }
+  });
+
+  host.measure();
+  await vi.waitFor(() => expect(range().end).toBe(1));
+
+  const listener = vi.fn();
+
+  host.addEventListener('rc-virtual-scroller-range', listener);
+
+  for (let i = 0; i < 8; i++) {
+    await new Promise(requestAnimationFrame);
+  }
+
+  expect(range().itemsPerLine).toBe(1);
+  expect(listener).not.toHaveBeenCalled();
+});
+
+test('uses track pitch when items in the same grid row have different alignment', async () => {
+  const { host, list, range } = await mount({ count: 500 });
+
+  list.style.gridTemplateColumns = '[start a] 100px [middle] 100px [end]';
+  list.style.gridAutoRows = '40px';
+
+  const $first = list.firstElementChild as HTMLElement;
+
+  $first.style.blockSize = '20px';
+  $first.style.alignSelf = 'end';
+  host.measure();
+  await vi.waitFor(() => expect(range().itemsPerLine).toBe(2));
+  expect(range().lineSize).toBe(40);
+});
+
+test('an explicit capacity handles named spans and removal restores inference', async () => {
+  const { host, list, range } = await mount({ count: 500 });
+
+  list.style.gridTemplateColumns = '[start] 100px [middle] 100px [end]';
+  list.style.gridAutoRows = '40px';
+  host.setAttribute('items-per-line', '1');
+
+  for (const $item of list.children) {
+    ($item as HTMLElement).style.gridColumn = 'start / end';
+  }
+
+  host.measure();
+  await vi.waitFor(() => expect(range().itemsPerLine).toBe(1));
+  expect(range().measured).toBe(true);
+
+  for (const $item of list.children) {
+    ($item as HTMLElement).style.gridColumn = '';
+  }
+
+  host.removeAttribute('items-per-line');
+  await vi.waitFor(() => expect(range().itemsPerLine).toBe(2));
+  expect(host.itemsPerLine).toBe(0);
+});
+
+test('enlarging only the scrollport fills the newly visible space', async () => {
+  const { host, port, range } = await mount({ count: 500 });
+  const before = host.getBoundingClientRect().height;
+
+  port.style.blockSize = '600px';
+  await vi.waitFor(() => expect(range().end).toBe(17));
+  expect(host.getBoundingClientRect().height).toBe(before);
+});
+
+test.each(
+  FLOW_FIXTURES.flatMap((flow) => (['block', 'inline'] as const).map((axis) => ({ flow, axis }))),
+)('measures full-track spans on $axis in $flow', async ({ flow, axis }) => {
+  const { host, list, port, portFlow, range } = await mount({ count: 500, axis }, { flow });
+
+  list.style.cssText =
+    axis === 'inline'
+      ? 'display:grid;grid-auto-flow:column;grid-template-rows:10px 10px 20px;grid-auto-columns:40px;margin:0;padding:0'
+      : 'display:grid;grid-template-columns:1fr 1fr 1fr;grid-auto-rows:40px;margin:0;padding:0';
+
+  const applySpans = () => {
+    for (const $item of list.children) {
+      ($item as HTMLElement).style[axis === 'inline' ? 'gridRow' : 'gridColumn'] = '1 / -1';
+    }
+  };
+
+  applySpans();
+  host.addEventListener('rc-virtual-scroller-range', applySpans);
+  host.measure();
+  await vi.waitFor(() => expect(range().itemsPerLine).toBe(1));
+  setScrollOffset(port, axis, 4000, portFlow);
+  await vi.waitFor(() => expect(range().start).toBe(98));
+  expect(range().lineSize).toBeCloseTo(40, 0);
+});
+
+test('preserves mounted rows throughout a hidden pane', async () => {
+  const { host, port, list, range } = await mount({ count: 500 });
+
+  port.scrollTop = 4000;
+  await vi.waitFor(() => expect(range().start).toBe(98));
+
+  const $rows = Array.from(list.children);
+  const before = range();
+
+  port.style.display = 'none';
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
+  host.measure();
+  await new Promise(requestAnimationFrame);
+  expect(range()).toBe(before);
+  expect(Array.from(list.children)).toEqual($rows);
+  port.style.display = '';
+  await vi.waitFor(() => expect(range().start).toBe(98));
+  expect(Array.from(list.children)).toEqual($rows);
+});
+
+test('rebinds an explicit scroll target and cleans up the old listener', async () => {
+  const { host, port, range } = await mount({ count: 500 });
+  const $outer = port.parentElement!;
+
+  $outer.style.cssText += ';block-size:300px;overflow:auto;';
+  port.style.blockSize = '600px';
+  host.scrollTarget = $outer;
+  await host.updateComplete;
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
+
+  const rect = vi.spyOn(host, 'getBoundingClientRect');
+
+  try {
+    port.dispatchEvent(new Event('scroll'));
+    await new Promise(requestAnimationFrame);
+    expect(rect).not.toHaveBeenCalled();
+    $outer.scrollTop = 120;
+    await vi.waitFor(() => expect(range().start).toBeGreaterThan(0));
+  } finally {
+    rect.mockRestore();
+  }
+});
+
+test.each(['open', 'closed'] as const)('keeps focus within a %s item shadow root', async (mode) => {
+  const { host, list, port, range } = await mount({ count: 500 });
+  const $item = list.children[1]!;
+  const $button = $item.querySelector('button')!;
+  const $shell = document.createElement('span');
+  const $shadow = $shell.attachShadow({ mode });
+
+  $item.append($shell);
+  $shadow.append($button);
+  $button.focus();
+  await new Promise(requestAnimationFrame);
+  port.scrollTop = 4000;
+  await vi.waitFor(() => expect(range().end).toBeGreaterThan(100));
+  expect(range().start).toBe(1);
+  expect($button.isConnected).toBe(true);
+  expect($shadow.activeElement).toBe($button);
+  $button.blur();
+  await vi.waitFor(() => expect(host.first).toBeGreaterThan(1));
+});
+
+test('reconnects inside a shadow root and observes the outer scrollport', async () => {
+  const { host, port, range } = await mount({ count: 500 });
+  const $shell = document.createElement('div');
+
+  port.append($shell);
+  $shell.attachShadow({ mode: 'closed' }).append(host);
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
+  port.scrollTop = 4000;
+  await vi.waitFor(() => expect(range().start).toBe(98));
+});
+
+test('renders unsupported variable-pitch grids in full and deduplicates warnings', async () => {
+  const { host, list, range } = await mount({ count: 60 });
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+  try {
+    list.style.gridAutoRows = '40px 60px';
+    host.measure();
+    await vi.waitFor(() => expect(range().end).toBe(60));
+    host.measure();
+    await new Promise(requestAnimationFrame);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(spacerSize(host, 'spacer-end', 'block')).toBe(0);
+  } finally {
+    warn.mockRestore();
+  }
+});
+
+test('normalizes numeric configuration and ignores writes to computed output attributes', async () => {
+  const { host, range } = await mount({ count: 500 });
+
+  host.count = 3.9;
+  host.overscan = -2;
+  host.itemSize = Infinity;
+  host.itemsPerLine = NaN;
+  await host.updateComplete;
+  await vi.waitFor(() => expect(range().end).toBe(3));
+  expect(host.count).toBe(3);
+  expect(host.overscan).toBe(2);
+  expect(host.itemSize).toBe(0);
+  expect(host.itemsPerLine).toBe(0);
+  host.setAttribute('first', '100');
+  expect(host.first).toBe(0);
+
+  expect(
+    Object.getOwnPropertyDescriptor(Object.getPrototypeOf(host), 'first')?.set,
+  ).toBeUndefined();
+});
+
+test('does not resample item styles or rectangles on unchanged scroll-only frames', async () => {
+  const { host, list, port } = await mount({ count: 500 });
+
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
+
+  const $first = list.firstElementChild!;
+  const rect = vi.spyOn($first, 'getBoundingClientRect');
+  const styles = vi.spyOn(window, 'getComputedStyle');
+
+  try {
+    port.scrollTop = 1;
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    expect(host.first).toBe(0);
+    expect(rect).not.toHaveBeenCalled();
+
+    expect(
+      styles.mock.calls.filter(([element]) => element === $first || element === list),
+    ).toHaveLength(0);
+  } finally {
+    rect.mockRestore();
+    styles.mockRestore();
+  }
 });
 
 test('measures once a pane it mounted inside while hidden is shown', async () => {

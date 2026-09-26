@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import hljs from 'highlight.js/lib/core';
 import rust from 'highlight.js/lib/languages/rust';
 
+import type { RCVirtualScrollerRef } from '@rcarls/rc-webcomponents/react';
 import type {
   RCAppBarRef,
   RCBottomSheetRef,
@@ -393,6 +394,7 @@ const VIRTUAL_SCROLLER_DEMO_CSS = `
 }
 
 .virtual-scroller-demo-list li {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   block-size: 3rem;
@@ -410,48 +412,89 @@ const VIRTUAL_SCROLLER_DEMO_CSS = `
 const VIRTUAL_SCROLLER_DEMO_COUNT = 2000;
 
 export function VirtualScrollerDemo() {
-  const listRef = useRef<HTMLUListElement | null>(null);
+  const [$host, setHost] = useState<RCVirtualScrollerRef | null>(null);
   const [range, setRange] = useState({ start: 0, end: 0 });
+  const [layout, setLayout] = useState('list');
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
-    const list = listRef.current;
-
-    if (!list) {
+    if (!$host) {
       return;
     }
 
-    for (let index = list.children.length; index < range.end - range.start; index += 1) {
-      list.append(document.createElement('li'));
+    const onRange = (event: Event) => {
+      setRange((event as CustomEvent<RCVirtualScrollerRangeDetail>).detail);
+    };
+
+    $host.addEventListener('rc-virtual-scroller-range', onRange);
+
+    if ($host.range) {
+      setRange($host.range);
     }
 
-    while (list.children.length > range.end - range.start) {
-      list.lastElementChild?.remove();
-    }
+    return () => $host.removeEventListener('rc-virtual-scroller-range', onRange);
+  }, [$host]);
 
-    for (let i = 0; i < list.children.length; i += 1) {
-      const item = list.children[i];
-      const index = range.start + i;
-
-      if (item) {
-        item.setAttribute('aria-setsize', String(VIRTUAL_SCROLLER_DEMO_COUNT));
-        item.setAttribute('aria-posinset', String(index + 1));
-        item.textContent = `Recipe #${index + 1}`;
-      }
-    }
-  }, [range]);
+  useEffect(() => {
+    $host?.measure();
+  }, [$host, layout]);
 
   return (
     <DemoFrame defaultTheme="material">
       <style>{VIRTUAL_SCROLLER_DEMO_CSS}</style>
-      <div className="virtual-scroller-demo-port">
+      <label>
+        Layout{' '}
+        <select value={layout} onChange={(event) => setLayout(event.target.value)}>
+          <option value="list">List</option>
+          <option value="grid">Auto-fill grid</option>
+          <option value="span">Named spans (explicit capacity)</option>
+        </select>
+      </label>{' '}
+      <label>
+        <input
+          type="checkbox"
+          checked={expanded}
+          onChange={(event) => setExpanded(event.target.checked)}
+        />{' '}
+        Taller scroll container
+      </label>
+      <div
+        className="virtual-scroller-demo-port"
+        style={{ blockSize: expanded ? '24rem' : '16rem' }}
+      >
         <rc-virtual-scroller
+          ref={setHost}
           count={VIRTUAL_SCROLLER_DEMO_COUNT}
           item-size={48}
-          onrc-virtual-scroller-range={(event: CustomEvent<RCVirtualScrollerRangeDetail>) => {
-            setRange({ start: event.detail.start, end: event.detail.end });
-          }}
+          items-per-line={layout === 'span' ? 1 : undefined}
         >
-          <ul className="virtual-scroller-demo-list" ref={listRef} aria-label="Recipes" />
+          <ul
+            className="virtual-scroller-demo-list"
+            aria-label="Recipes"
+            style={{
+              gridTemplateColumns:
+                layout === 'grid'
+                  ? 'repeat(auto-fill, minmax(10rem, 1fr))'
+                  : layout === 'span'
+                    ? '[card-start] 1fr 1fr [card-end]'
+                    : '1fr',
+            }}
+          >
+            {Array.from({ length: range.end - range.start }, (_, offset) => {
+              const index = range.start + offset;
+
+              return (
+                <li
+                  key={index}
+                  aria-setsize={VIRTUAL_SCROLLER_DEMO_COUNT}
+                  aria-posinset={index + 1}
+                  style={{ gridColumn: layout === 'span' ? 'card-start / card-end' : undefined }}
+                >
+                  Recipe #{index + 1}
+                </li>
+              );
+            })}
+          </ul>
         </rc-virtual-scroller>
       </div>
       <p className="virtual-scroller-demo-status" aria-live="polite">
@@ -1075,7 +1118,7 @@ export function AdaptiveNavigationDemo() {
           </p>
           {!showRail ? (
             <rc-fab
-              position="block-end"
+              position="block-end-inline-end"
               style={
                 {
                   '--rc-fab-position': 'absolute',
@@ -1628,7 +1671,7 @@ export function ListboxDemo() {
       return;
     }
 
-    async function applyOptions() {
+    const applyOptions = async () => {
       if (typeof customElements !== 'undefined') {
         await customElements.whenDefined('rc-listbox');
       }
@@ -1648,7 +1691,7 @@ export function ListboxDemo() {
       ];
 
       listbox.setSelectedValues(['berries']);
-    }
+    };
 
     void applyOptions();
   }, []);
