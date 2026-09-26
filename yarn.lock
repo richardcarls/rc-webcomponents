@@ -5154,7 +5154,7 @@ __metadata:
     vite-plugin-dts: "npm:^4.5.4"
   peerDependencies:
     "@lezer/common": ">=1.0.0"
-    "@rcarls/rc-textarea": "workspace:*"
+    "@rcarls/rc-textarea": "workspace:>=0.2.0 <1.0.0"
     shiki: ">=1.0.0"
     unified: ">=11.0.0"
   peerDependenciesMeta:
@@ -5180,7 +5180,7 @@ __metadata:
     vite: "npm:^7.1.7"
     vite-plugin-dts: "npm:^4.5.4"
   peerDependencies:
-    "@rcarls/rc-textarea": "workspace:*"
+    "@rcarls/rc-textarea": "workspace:>=0.2.0 <1.0.0"
     mdast-util-from-markdown: ">=2.0.0"
     micromark: ">=4.0.0"
     unist-util-visit: ">=5.0.0"

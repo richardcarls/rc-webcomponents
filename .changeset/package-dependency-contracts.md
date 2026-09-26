@@ -9,6 +9,5 @@ Correct package dependency declarations and prevent bundled Markdown implementat
 leaking into the editor declarations.
 
 BREAKING CHANGE: `@rcarls/rc-textarea-adapters` now treats `@rcarls/rc-textarea` as a peer instead
-of installing it as a runtime dependency, and both textarea extension packages require the
-matching synchronized `@rcarls/rc-textarea` release. Install the same version of
-`@rcarls/rc-textarea` alongside either extension package when upgrading.
+of installing it as a runtime dependency. Both textarea extension packages require a compatible
+pre-1 `@rcarls/rc-textarea` release; install it alongside either extension package when upgrading.

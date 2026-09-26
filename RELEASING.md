@@ -76,8 +76,15 @@ git commit -m "chore(release): version packages to 0.4.1"
 ```
 
 Inspect the diff immediately after `version:packages`. Every public package must have the same
-stable version, internal source ranges must remain `workspace:*`, and all pending intent files
-must be consumed. Stop if Changesets computes an unexpected version.
+stable version, internal source ranges must retain their `workspace:` protocol, and all pending
+intent files must be consumed. Stop if Changesets computes an unexpected version.
+
+Use `workspace:*` only when a published internal peer must match the synchronized package version
+exactly. Changesets normalizes that peer range to the current exact version before calculating the
+release plan, so a fixed-group minor bump outside it escalates the group to a major release. When
+the peer supports multiple pre-1 releases, declare that compatibility explicitly, such as
+`workspace:>=0.2.0 <1.0.0`, and verify the expected version with `yarn changeset status` before
+cutting the release branch.
 
 The publishing dry run creates and inspects every package tarball, then performs read-only npm
 lookups to confirm every public package name already exists. It must report the dependency order,
