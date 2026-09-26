@@ -7,6 +7,7 @@ import {
   findNearestSnapIndex,
   findNextSnapIndex,
   HORIZONTAL_LTR_FLOW,
+  RafScheduler,
   clientSize,
   getScrollOffset,
   keyNavigation,
@@ -33,6 +34,16 @@ export type RCCarouselChangeTrigger = 'api' | 'button' | 'keyboard' | 'swipe';
 export interface RCCarouselChangeDetail {
   index: number;
   trigger: RCCarouselChangeTrigger;
+}
+
+interface TrackMeasurement {
+  track: HTMLDivElement;
+  flow: Flow;
+  step: number;
+}
+
+interface InitialPositionSample extends TrackMeasurement {
+  offset: number;
 }
 
 declare global {
@@ -141,6 +152,7 @@ export class RCCarousel extends LitElement {
   private _suppressSync = false;
   private _pendingInstant = false;
   private _settleTimer: ReturnType<typeof setTimeout> | undefined;
+  private readonly _initialPosition = new RafScheduler(this);
 
   /** Wraps past the first/last slide back to the other end, seamlessly. */
   @property({ type: Boolean, reflect: true })
@@ -301,6 +313,10 @@ export class RCCarousel extends LitElement {
     if (!this.hasAttribute('aria-roledescription')) {
       this.setAttribute('aria-roledescription', 'carousel');
     }
+
+    if (this.hasUpdated && !this._mounted) {
+      this._queueInitialPosition();
+    }
   }
 
   override disconnectedCallback(): void {
@@ -326,8 +342,7 @@ export class RCCarousel extends LitElement {
     }
 
     this._syncActiveItemAccessibility(this.activeIndex);
-    this._scrollToIndex(this.activeIndex, true);
-    this._mounted = true;
+    this._queueInitialPosition();
   }
 
   protected override updated(changed: Map<string, unknown>): void {
@@ -347,6 +362,12 @@ export class RCCarousel extends LitElement {
     }
 
     this._syncActiveItemAccessibility(this.activeIndex);
+
+    if (!this._mounted) {
+      this._queueInitialPosition();
+
+      return;
+    }
 
     if (this._suppressSync) {
       this._suppressSync = false;
@@ -431,8 +452,9 @@ export class RCCarousel extends LitElement {
    * an index and reading back a settled scroll position can stay in terms
    * of real indices while the clones do the seamless-wrap work.
    */
-  private _trackSlots(): { point: number; index: number; isClone: boolean }[] {
-    const step = this._itemStep();
+  private _trackSlots(
+    step = this._itemStep(),
+  ): { point: number; index: number; isClone: boolean }[] {
     const count = this._items.length;
 
     if (!this.loop || count < 2) {
@@ -447,20 +469,45 @@ export class RCCarousel extends LitElement {
   }
 
   private _itemStep(): number {
-    if (!this._trackEl) {
+    const measurement = this._measureTrack();
+
+    if (!measurement) {
       return 1;
     }
 
-    const first = this._items[0];
-    const flow = this._resolveFlow();
+    this._applyFlow(measurement.flow);
 
-    if (!(first instanceof HTMLElement)) {
-      return clientSize(this._trackEl, 'inline', flow);
+    return measurement.step;
+  }
+
+  private _measureTrack(): TrackMeasurement | null {
+    const track = this._trackEl;
+
+    if (!track) {
+      return null;
     }
 
-    const gap = Number.parseFloat(getComputedStyle(this._trackEl).columnGap || '0') || 0;
+    const first = this._items[0];
+    const flow = resolveFlow(track);
+    const step =
+      first instanceof HTMLElement
+        ? (flow.inline === 'x' ? first.offsetWidth : first.offsetHeight) +
+          (Number.parseFloat(getComputedStyle(track).columnGap || '0') || 0)
+        : clientSize(track, 'inline', flow);
 
-    return (flow.inline === 'x' ? first.offsetWidth : first.offsetHeight) + gap;
+    return { track, flow, step };
+  }
+
+  private _applyFlow(flow: Flow): void {
+    this._flow = flow;
+
+    const axis = physicalAxis('inline', flow);
+
+    // Never rebind mid-gesture; the next drag picks the new axis up.
+    if (!this._dragging && axis !== this._dragAxis) {
+      this._dragAxis = axis;
+      this._dragController.setOptions({ axis });
+    }
   }
 
   /**
@@ -475,15 +522,7 @@ export class RCCarousel extends LitElement {
       return this._flow;
     }
 
-    this._flow = resolveFlow(this._trackEl);
-
-    const axis = physicalAxis('inline', this._flow);
-
-    // Never rebind mid-gesture; the next drag picks the new axis up.
-    if (!this._dragging && axis !== this._dragAxis) {
-      this._dragAxis = axis;
-      this._dragController.setOptions({ axis });
-    }
+    this._applyFlow(resolveFlow(this._trackEl));
 
     return this._flow;
   }
@@ -539,6 +578,40 @@ export class RCCarousel extends LitElement {
     // Explicit per call, not an ambient CSS default — see the comment on
     // #track in rc-carousel.styles.ts.
     this._setTrackOffset(offset, instant || reducedMotion ? 'auto' : 'smooth');
+  }
+
+  private _queueInitialPosition(): void {
+    this._initialPosition.schedulePhased(
+      () => this._sampleInitialPosition(),
+      (sample) => this._applyInitialPosition(sample),
+    );
+  }
+
+  private _sampleInitialPosition(): InitialPositionSample | null {
+    const measurement = this._measureTrack();
+
+    if (!measurement) {
+      return null;
+    }
+
+    const slot = this._trackSlots(measurement.step).find(
+      (candidate) => !candidate.isClone && candidate.index === this.activeIndex,
+    );
+
+    return {
+      ...measurement,
+      offset: slot ? slot.point : this.activeIndex * measurement.step,
+    };
+  }
+
+  private _applyInitialPosition(sample: InitialPositionSample | null): void {
+    if (!sample || !this.isConnected || this._trackEl !== sample.track) {
+      return;
+    }
+
+    this._applyFlow(sample.flow);
+    setScrollOffset(sample.track, 'inline', sample.offset, sample.flow, 'auto');
+    this._mounted = true;
   }
 
   /**

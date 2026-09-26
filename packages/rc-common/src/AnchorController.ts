@@ -95,7 +95,8 @@ export interface AnchorOptions {
   offset?: number;
   /** Flip to opposite side when clipped by viewport. Defaults to `true`. */
   flip?: boolean;
-  disabled?: boolean;
+  /** Whether positioning is inactive. Accepts a boolean or a getter for live popup state. */
+  disabled?: boolean | (() => boolean);
   /**
    * The LitElement shadow host. When provided, positioning CSS is injected into
    * the shadow root's adoptedStyleSheets so it reaches shadow-DOM floating elements,
@@ -300,6 +301,12 @@ export class AnchorController implements ReactiveController {
     return typeof shadowHost === 'function' ? shadowHost() : (shadowHost ?? null);
   }
 
+  private _disabled(): boolean {
+    const { disabled } = this._opts;
+
+    return typeof disabled === 'function' ? disabled() : (disabled ?? false);
+  }
+
   private _applyAndPolyfill(): void {
     if (!this._connected || !this._apply()) {
       return;
@@ -310,7 +317,7 @@ export class AnchorController implements ReactiveController {
       this._scheduleClamp();
     } else {
       void this._applyPolyfillOrFallback().then(() => {
-        if (this._connected && !this._opts.disabled) {
+        if (this._connected && !this._disabled()) {
           this._startWatchingGeometry();
           this._scheduleClamp();
         }
@@ -324,7 +331,7 @@ export class AnchorController implements ReactiveController {
    * avoiding permanent layout polling while a popup is idle.
    */
   private _scheduleClamp(): void {
-    if (!this._connected || this._opts.disabled) {
+    if (!this._connected || this._disabled()) {
       return;
     }
 
@@ -339,7 +346,7 @@ export class AnchorController implements ReactiveController {
   }
 
   private _runClampTick(): void {
-    if (!this._connected || this._opts.disabled) {
+    if (!this._connected || this._disabled()) {
       this._stopClampLoop();
 
       return;
@@ -567,7 +574,7 @@ export class AnchorController implements ReactiveController {
   private async _applyPolyfillOrFallback(): Promise<void> {
     const fn = await _loadPolyfill();
 
-    if (!this._connected || this._opts.disabled) {
+    if (!this._connected || this._disabled()) {
       return;
     }
 
@@ -589,7 +596,7 @@ export class AnchorController implements ReactiveController {
   }
 
   private _apply(): boolean {
-    if (this._opts.disabled) {
+    if (this._disabled()) {
       this._cleanup();
 
       return false;

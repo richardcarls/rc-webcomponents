@@ -155,6 +155,7 @@ export class RCAppBar extends LitElement {
   private readonly _scroll = new ScrollObserverController(this, {
     target: () => this._resolveScrollTarget(),
     threshold: this.scrollThreshold,
+    initialEvaluation: 'frame',
     disabled: true,
     onChange: (scrolled) => {
       this._observedScrolled = scrolled;

@@ -644,6 +644,9 @@ async function renderRangeInFlow(
   const host = screen.getByTestId('host').element() as RCRangeSlider;
 
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await host.updateComplete;
 
   return host;
 }

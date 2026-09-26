@@ -383,6 +383,7 @@ test('hide behavior hides downward and reveals upward or near the top', async ()
 
   host.scrollTarget = sc;
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   scrollTo(sc, 50);
   expect(host.hasAttribute('data-hidden')).toBe(true);
@@ -420,6 +421,7 @@ test('controlled mode applies endpoints silently and ignores the observer', asyn
   host.scrolled = true;
   host.scrollTarget = sc;
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   expect(host.hasAttribute('data-scrolled')).toBe(true);
   expect(host.hasAttribute('data-collapsed')).toBe(true);
@@ -447,6 +449,7 @@ test('uncontrolled threshold state and event behavior is preserved', async () =>
   host.addEventListener('rc-app-bar-scroll', onScroll);
   host.scrollTarget = sc;
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   scrollTo(sc, 50);
   expect(host.hasAttribute('data-scrolled')).toBe(false);
@@ -471,11 +474,15 @@ test('releasing controlled mode hands state back to the observer', async () => {
   host.scrolled = false;
   host.scrollTarget = sc;
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   scrollTo(sc, 50);
   expect(host.hasAttribute('data-scrolled')).toBe(false);
 
   host.scrolled = undefined;
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await host.updateComplete;
+
   expect(host.hasAttribute('data-scrolled')).toBe(true);
 });
 

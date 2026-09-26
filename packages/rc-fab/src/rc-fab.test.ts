@@ -1,9 +1,8 @@
 import { html } from 'lit';
-import { test, expect } from 'vitest';
+import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
-
 import './define.js';
 import type { RCFab } from './rc-fab.js';
 
@@ -128,7 +127,9 @@ test('scroll-reveal: has no automated accessibility violations', async () => {
 });
 
 test('scroll-reveal JS fallback: sets scroll-below-threshold below threshold', async () => {
-  if (CSS.supports('animation-timeline: scroll()')) return;
+  if (CSS.supports('animation-timeline: scroll()')) {
+    return;
+  }
 
   const screen = render(html`
     <rc-fab data-testid="host" scroll-reveal>
@@ -140,11 +141,15 @@ test('scroll-reveal JS fallback: sets scroll-below-threshold below threshold', a
   await host.updateComplete;
 
   // Document scroll is 0, which is less than the default 300px threshold
-  expect(host.hasAttribute('scroll-below-threshold')).toBe(true);
+  await vi.waitFor(() => {
+    expect(host.hasAttribute('scroll-below-threshold')).toBe(true);
+  });
 });
 
 test('scroll-reveal JS fallback: removes scroll-below-threshold when scroll-reveal is disabled', async () => {
-  if (CSS.supports('animation-timeline: scroll()')) return;
+  if (CSS.supports('animation-timeline: scroll()')) {
+    return;
+  }
 
   const screen = render(html`
     <rc-fab data-testid="host" scroll-reveal>
@@ -154,7 +159,10 @@ test('scroll-reveal JS fallback: removes scroll-below-threshold when scroll-reve
   const host = (await screen.getByTestId('host').element()) as RCFab;
 
   await host.updateComplete;
-  expect(host.hasAttribute('scroll-below-threshold')).toBe(true);
+
+  await vi.waitFor(() => {
+    expect(host.hasAttribute('scroll-below-threshold')).toBe(true);
+  });
 
   host.scrollReveal = false;
   await host.updateComplete;
@@ -178,6 +186,7 @@ test('scroll-reveal reduced motion shortens the opacity/visibility fade in both 
   );
 
   expect(timelineBlock).toContain('@media (prefers-reduced-motion: reduce)');
+
   expect(timelineBlock).toMatch(
     /animation-range:\s*calc\(var\(--rc-fab-scroll-threshold, 300px\) - 8px\)/,
   );

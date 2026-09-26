@@ -182,6 +182,7 @@ export class RCFab extends LitElement {
     this._scrollCtrl = new ScrollObserverController(this, {
       target: () => findNearestScrollAncestor(this),
       threshold,
+      initialEvaluation: 'frame',
       onScroll: (scrollTop) => {
         this.toggleAttribute('scroll-below-threshold', scrollTop < threshold);
       },

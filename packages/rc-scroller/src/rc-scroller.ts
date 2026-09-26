@@ -19,6 +19,13 @@ export type RCScrollerLayout = 'none' | 'content';
 /** Pixels of remaining scroll distance below which an edge counts as reached. */
 const BOUNDARY_THRESHOLD = 4;
 
+interface BoundaryState {
+  blockStart: boolean;
+  blockEnd: boolean;
+  inlineStart: boolean;
+  inlineEnd: boolean;
+}
+
 declare global {
   interface HTMLElementTagNameMap {
     'rc-scroller': RCScroller;
@@ -53,6 +60,8 @@ declare global {
  * @attr [at-inline-start] - Reflected, computed. The inline-start equivalent, always
  *   present when the inline axis isn't scrollable (`axis="block"`).
  * @attr [at-inline-end] - Reflected, computed. The inline-end equivalent of `at-inline-start`.
+ *   Initial boundary attributes settle in the first animation frame after
+ *   mount so multiple scrollers can share one layout sampling phase.
  *
  * @cssprop [--rc-scroller-overscroll-behavior=contain] - Overscroll behavior on enabled axes.
  * @cssprop [--rc-scroller-overflow-anchor=auto] - Browser scroll anchoring behavior.
@@ -116,7 +125,7 @@ export class RCScroller extends LitElement {
     // scrollWidth/clientHeight etc. don't yet reflect real layout. Also
     // covers connecting already scrolled (bfcache restore, fragment nav)
     // rather than waiting for the first scroll/resize event.
-    this._evaluateBoundaries();
+    this._queueBoundaryEvaluation();
   }
 
   override disconnectedCallback(): void {
@@ -133,7 +142,7 @@ export class RCScroller extends LitElement {
 
   protected override updated(changed: Map<PropertyKey, unknown>): void {
     if (changed.has('axis') || changed.has('layout')) {
-      this._evaluateBoundaries();
+      this._queueBoundaryEvaluation();
     }
   }
 
@@ -142,7 +151,7 @@ export class RCScroller extends LitElement {
    * reads layout, so boundary state is recomputed at most once per frame.
    */
   private readonly _onScroll = (): void => {
-    this._frame.schedule(() => this._evaluateBoundaries());
+    this._queueBoundaryEvaluation();
   };
 
   private _edges(axis: LogicalAxis, flow: Flow): [start: boolean, end: boolean] {
@@ -152,15 +161,29 @@ export class RCScroller extends LitElement {
     return [offset <= BOUNDARY_THRESHOLD, offset >= max - BOUNDARY_THRESHOLD];
   }
 
-  private _evaluateBoundaries(): void {
+  private _queueBoundaryEvaluation(): void {
+    this._frame.schedulePhased(
+      () => this._sampleBoundaries(),
+      (state) => this._applyBoundaries(state),
+    );
+  }
+
+  private _sampleBoundaries(): BoundaryState {
     // Read at measure time: a dir or writing-mode change on an ancestor fires
     // no event of its own.
     const flow = resolveFlow(this);
-
-    [this.atBlockStart, this.atBlockEnd] =
+    const [blockStart, blockEnd] =
       this.axis !== 'inline' ? this._edges('block', flow) : [true, true];
-
-    [this.atInlineStart, this.atInlineEnd] =
+    const [inlineStart, inlineEnd] =
       this.axis !== 'block' ? this._edges('inline', flow) : [true, true];
+
+    return { blockStart, blockEnd, inlineStart, inlineEnd };
+  }
+
+  private _applyBoundaries(state: BoundaryState): void {
+    this.atBlockStart = state.blockStart;
+    this.atBlockEnd = state.blockEnd;
+    this.atInlineStart = state.inlineStart;
+    this.atInlineEnd = state.inlineEnd;
   }
 }

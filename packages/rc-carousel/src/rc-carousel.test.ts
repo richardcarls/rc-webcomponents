@@ -136,6 +136,33 @@ test('defaultActiveIndex seeds uncontrolled activeIndex, and stops applying once
   expect(carousel.activeIndex).toBe(2);
 });
 
+test('mounting a batch performs no synchronous flow or item geometry reads', async () => {
+  const styleReads = vi.spyOn(window, 'getComputedStyle');
+  const carousels = Array.from({ length: 6 }, () => {
+    const carousel = document.createElement('rc-carousel') as RCCarousel;
+
+    carousel.setAttribute('aria-label', 'Batch carousel');
+
+    carousel.innerHTML = `
+      <rc-carousel-item>One</rc-carousel-item>
+      <rc-carousel-item>Two</rc-carousel-item>
+    `;
+
+    document.body.append(carousel);
+
+    return carousel;
+  });
+
+  await Promise.all(carousels.map((carousel) => carousel.updateComplete));
+  expect(styleReads).not.toHaveBeenCalled();
+
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  expect(styleReads).toHaveBeenCalled();
+
+  carousels.forEach((carousel) => carousel.remove());
+  styleReads.mockRestore();
+});
+
 test('a controlled activeIndex overrides uncontrolled state and does not self-advance', async () => {
   const screen = render(threeItems());
   const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
