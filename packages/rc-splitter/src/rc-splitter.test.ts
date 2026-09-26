@@ -1142,6 +1142,32 @@ describe('RCSplitter', () => {
       expect(host.value).toBe(240);
     });
 
+    test('reads a snap duration expressed in seconds as milliseconds', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          value="100"
+          snap-points="0 100 240"
+          style="width: 400px; height: 300px; --rc-splitter-snap-duration: .25s;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+
+      await host.updateComplete;
+      await waitForInit(host);
+
+      host.snapTo(2);
+
+      await vi.waitFor(() => {
+        const [animation] = host.shadowRoot?.getAnimations() ?? [];
+
+        expect(animation?.effect?.getTiming().duration).toBe(250);
+      });
+    });
+
     test('slow release settles at the nearest authored point', async () => {
       const screen = render(html`
         <rc-splitter

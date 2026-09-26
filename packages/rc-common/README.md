@@ -77,6 +77,7 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `TypeaheadController`                                                                    | Printable-key buffering for composite widget typeahead                                                 |
 | `findNearestScrollAncestor` | Locating the nearest scrolling ancestor through assigned slots and shadow hosts; falls back to the element's owner document |
 | `findNearestSnapIndex`, `findNextSnapIndex`, `findExtremeSnapIndex`                      | Choosing numeric anchor indices without assigning component meaning                                    |
+| `parseCssTime`                                                                           | Reading a CSS `<time>` custom property (`300ms`, `.3s`) as milliseconds for Web Animations             |
 | `isFocusable`                                                                            | Filtering focusable items for keyboard navigation                                                      |
 | `isEventFromInteractiveDescendant`                                                       | Detecting composed clicks already owned by a nested interactive control                                |
 | `DEFAULT_INTERACTIVE_SELECTOR`                                                           | Reusing the default selector used to identify nested interactive descendants                           |

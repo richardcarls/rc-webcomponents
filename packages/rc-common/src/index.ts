@@ -23,3 +23,4 @@ export * from './nativeChild.js';
 export * from './RovingTabIndexMixin.js';
 export * from './sliderUtils.js';
 export * from './snapUtils.js';
+export * from './cssTime.js';

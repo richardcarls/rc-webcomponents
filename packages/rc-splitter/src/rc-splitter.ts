@@ -10,6 +10,7 @@ import {
   keyInteraction,
   keyNavigation,
   logicalDelta,
+  parseCssTime,
   physicalAxis,
   renderedOrientation,
   resolveFlow,
@@ -544,10 +545,11 @@ export class RCSplitter extends LitElement {
   }
 
   protected _snapDuration(): number {
-    const raw = getComputedStyle(this).getPropertyValue('--rc-splitter-snap-duration').trim();
-    const parsed = Number.parseFloat(raw);
+    const raw = getComputedStyle(this).getPropertyValue('--rc-splitter-snap-duration');
 
-    return Number.isFinite(parsed) ? parsed : DEFAULT_SNAP_DURATION_MS;
+    // Themes may resolve motion tokens in seconds (`.3s`); Web Animations
+    // durations are milliseconds.
+    return parseCssTime(raw) ?? DEFAULT_SNAP_DURATION_MS;
   }
 
   protected _onPrimaryChange(_e: Event) {
