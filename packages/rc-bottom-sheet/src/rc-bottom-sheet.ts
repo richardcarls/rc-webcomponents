@@ -4,6 +4,7 @@ import { RCDialog } from '@rcarls/rc-dialog';
 import {
   findExtremeSnapIndex,
   findNearestSnapIndex,
+  parseCssTime,
   type ResizeDirection,
   type ResizeLifecycleDetail,
   type ResizeOrigin,
@@ -617,12 +618,11 @@ export class RCBottomSheet extends RCDialog {
   }
 
   private _snapDuration($dialog: HTMLDialogElement): number {
-    const raw = getComputedStyle($dialog)
-      .getPropertyValue('--rc-bottom-sheet-snap-duration')
-      .trim();
-    const parsed = Number.parseFloat(raw);
+    const raw = getComputedStyle($dialog).getPropertyValue('--rc-bottom-sheet-snap-duration');
 
-    return Number.isFinite(parsed) ? parsed : DEFAULT_SNAP_DURATION_MS;
+    // Themes may resolve motion tokens in seconds (`.3s`); Web Animations
+    // durations are milliseconds.
+    return parseCssTime(raw) ?? DEFAULT_SNAP_DURATION_MS;
   }
 
   private _snapEasing($dialog: HTMLDialogElement): string {

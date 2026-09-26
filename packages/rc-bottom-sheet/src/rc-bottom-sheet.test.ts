@@ -152,6 +152,34 @@ test('absolute non-modal sheets can dock to a positioned parent', async () => {
   $host.close();
 });
 
+test('reads a snap duration expressed in seconds as milliseconds', async () => {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="120px 320px">
+      <dialog aria-label="Details" style="--rc-bottom-sheet-snap-duration: .25s;">Details</dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+  $host.snapTo(0, 'instant');
+  $host.snapTo(1);
+
+  // The snap animation, not rc-dialog's own entrance animation.
+  const animation = $host
+    .querySelector('dialog')
+    ?.getAnimations()
+    .find((candidate) =>
+      (candidate.effect as KeyframeEffect | null)
+        ?.getKeyframes()
+        .some((keyframe) => 'height' in keyframe),
+    );
+
+  expect(animation?.effect?.getTiming().duration).toBe(250);
+
+  $host.close();
+});
+
 test('snapTo keeps a fixed sheet docked inside a layout-containing ancestor', async () => {
   const resizeStartSpy = vi.fn();
   const screen = render(html`
