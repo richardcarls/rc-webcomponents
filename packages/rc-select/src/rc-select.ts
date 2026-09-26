@@ -294,6 +294,7 @@ export class RCSelect extends LitElement {
     shadowHost: () => this,
     placement: 'block-end-start',
     offset: 2,
+    disabled: () => !this.open || this._activePopupMode === 'dialog',
   });
 
   /** Element that owns `aria-activedescendant` for the currently rendered popup. */

@@ -383,6 +383,30 @@ test('the applied positioning aligns a block-end-start popup to the right edge i
   ctl.hostDisconnected();
 });
 
+test('a live disabled getter skips placement reads until the popup opens', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    'left: 100px; top: 100px; width: 100px; height: 40px;',
+  );
+  let disabled = true;
+  const styleReads = vi.spyOn(window, 'getComputedStyle');
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    disabled: () => disabled,
+  });
+
+  ctl.hostConnected();
+  expect(styleReads).not.toHaveBeenCalled();
+
+  disabled = false;
+  ctl.update();
+
+  expect(styleReads).toHaveBeenCalled();
+
+  ctl.hostDisconnected();
+  styleReads.mockRestore();
+});
+
 test('the applied positioning follows an ancestor direction change while open', async () => {
   const screen = render(html`
     <div data-testid="flow" dir="ltr">

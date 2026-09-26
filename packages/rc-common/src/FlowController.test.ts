@@ -79,3 +79,16 @@ test('stops following the direction once disconnected', async () => {
   await vi.waitFor(() => expect(witness.controller.flow.rtl).toBe(true));
   expect(gone.controller.flow.rtl).toBe(false);
 });
+
+test('does not resolve flow synchronously during connection', async () => {
+  const styleReads = vi.spyOn(window, 'getComputedStyle');
+  const { controller } = mountHost();
+
+  expect(styleReads).not.toHaveBeenCalled();
+
+  await nextFrame();
+
+  expect(styleReads).toHaveBeenCalledTimes(1);
+  expect(controller.flow.rtl).toBe(false);
+  styleReads.mockRestore();
+});

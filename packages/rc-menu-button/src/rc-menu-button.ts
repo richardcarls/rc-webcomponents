@@ -322,6 +322,7 @@ export class RCMenuButton extends LitElement {
     shadowHost: () => this,
     placement: 'block-end-start',
     offset: 2,
+    disabled: () => !this.open,
   });
 
   /** Bound handler for document click (light dismiss). Stored for `removeEventListener` pairing. */

@@ -84,6 +84,10 @@ at all (nothing more to reveal counts as already at both of its edges).
 Style an edge affordance from outside the shadow root by targeting the
 attribute directly, for example an edge-fade mask on an inline scroller:
 
+Initial boundary state settles in the first animation frame after mount. This
+keeps a batch of scrollers from alternating layout reads with reflected-state
+writes while the route is still being inserted.
+
 ```css
 rc-scroller[axis='inline'] {
   mask-image: linear-gradient(

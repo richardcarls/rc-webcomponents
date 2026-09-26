@@ -48,10 +48,13 @@ function expectChange(cb: ReturnType<typeof vi.fn>, scrolled: boolean, scrollTop
   expect(cb).toHaveBeenCalledWith(scrolled, expect.closeTo(scrollTop, 0));
 }
 
+const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
 test('fires onChange(true) once when crossing the threshold', async () => {
   const sc = await renderScrollContainer();
   const cb = vi.fn();
   const ctl = new ScrollObserverController(createHost(), { target: sc, onChange: cb });
+
   ctl.hostConnected();
 
   scrollTo(sc, 50);
@@ -69,6 +72,7 @@ test('fires onChange(false) when scrolling back above the threshold', async () =
   const sc = await renderScrollContainer();
   const cb = vi.fn();
   const ctl = new ScrollObserverController(createHost(), { target: sc, onChange: cb });
+
   ctl.hostConnected();
 
   scrollTo(sc, 50);
@@ -91,6 +95,7 @@ test('below-threshold offsets do not set scrolled', async () => {
     threshold: 10,
     onChange: cb,
   });
+
   ctl.hostConnected();
 
   scrollTo(sc, 9);
@@ -105,6 +110,7 @@ test('repeated scroll events produce a single flip callback', async () => {
   const sc = await renderScrollContainer();
   const cb = vi.fn();
   const ctl = new ScrollObserverController(createHost(), { target: sc, onChange: cb });
+
   ctl.hostConnected();
 
   // Every event is evaluated, but only the flip reports.
@@ -122,6 +128,7 @@ test('setOptions retargets the listener to a new container', async () => {
   const second = await renderScrollContainer();
   const cb = vi.fn();
   const ctl = new ScrollObserverController(createHost(), { target: first, onChange: cb });
+
   ctl.hostConnected();
 
   ctl.setOptions({ target: second });
@@ -143,6 +150,7 @@ test('disabled silences callbacks; re-enabling re-evaluates the position', async
     onChange: cb,
     disabled: true,
   });
+
   ctl.hostConnected();
 
   scrollTo(sc, 50);
@@ -157,10 +165,12 @@ test('disabled silences callbacks; re-enabling re-evaluates the position', async
 
 test('already-scrolled target fires the initial onChange at attach', async () => {
   const sc = await renderScrollContainer();
+
   sc.scrollTop = 50;
 
   const cb = vi.fn();
   const ctl = new ScrollObserverController(createHost(), { target: sc, onChange: cb });
+
   ctl.hostConnected();
 
   expectChange(cb, true, 50);
@@ -173,6 +183,7 @@ test('hostDisconnected detaches the listener cleanly', async () => {
   const sc = await renderScrollContainer();
   const cb = vi.fn();
   const ctl = new ScrollObserverController(createHost(), { target: sc, onChange: cb });
+
   ctl.hostConnected();
   ctl.hostDisconnected();
 
@@ -186,6 +197,7 @@ test('null target and getter targets are handled without errors', async () => {
   const cb = vi.fn();
 
   const inert = new ScrollObserverController(createHost(), { target: null, onChange: cb });
+
   inert.hostConnected();
   inert.hostDisconnected();
   expect(cb).not.toHaveBeenCalled();
@@ -194,6 +206,7 @@ test('null target and getter targets are handled without errors', async () => {
     target: () => sc,
     onChange: cb,
   });
+
   viaGetter.hostConnected();
 
   scrollTo(sc, 50);
@@ -206,6 +219,7 @@ test('requestUpdate is called on the host when the state flips', async () => {
   const sc = await renderScrollContainer();
   const host = createHost();
   const ctl = new ScrollObserverController(host, { target: sc });
+
   ctl.hostConnected();
 
   scrollTo(sc, 50);
@@ -220,6 +234,7 @@ test('onScroll reports every evaluated offset and delta', async () => {
   const sc = await renderScrollContainer();
   const cb = vi.fn();
   const ctl = new ScrollObserverController(createHost(), { target: sc, onScroll: cb });
+
   ctl.hostConnected();
 
   expect(cb).toHaveBeenLastCalledWith(0, 0);
@@ -240,6 +255,7 @@ test('onScroll delta resets after retargeting', async () => {
   const second = await renderScrollContainer();
   const cb = vi.fn();
   const ctl = new ScrollObserverController(createHost(), { target: first, onScroll: cb });
+
   ctl.hostConnected();
 
   scrollTo(first, 50);
@@ -249,4 +265,47 @@ test('onScroll delta resets after retargeting', async () => {
   expect(cb).toHaveBeenLastCalledWith(expect.closeTo(30, 0), 0);
 
   ctl.hostDisconnected();
+});
+
+test('frame initial evaluation defers the scroll-offset read and preserves restored state', async () => {
+  const sc = await renderScrollContainer();
+
+  sc.scrollTop = 50;
+
+  const read = vi.spyOn(sc, 'scrollTop', 'get');
+  const cb = vi.fn();
+  const ctl = new ScrollObserverController(createHost(), {
+    target: sc,
+    initialEvaluation: 'frame',
+    onChange: cb,
+  });
+
+  ctl.hostConnected();
+
+  expect(read).not.toHaveBeenCalled();
+  expect(cb).not.toHaveBeenCalled();
+
+  await nextFrame();
+
+  expect(read).toHaveBeenCalledTimes(1);
+  expectChange(cb, true, 50);
+  expect(ctl.scrolled).toBe(true);
+
+  ctl.hostDisconnected();
+});
+
+test('disconnect cancels a queued frame initial evaluation', async () => {
+  const sc = await renderScrollContainer();
+  const read = vi.spyOn(sc, 'scrollTop', 'get');
+  const ctl = new ScrollObserverController(createHost(), {
+    target: sc,
+    initialEvaluation: 'frame',
+  });
+
+  ctl.hostConnected();
+  ctl.hostDisconnected();
+
+  await nextFrame();
+
+  expect(read).not.toHaveBeenCalled();
 });

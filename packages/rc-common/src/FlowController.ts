@@ -2,6 +2,7 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { HORIZONTAL_LTR_FLOW, resolveFlow, type Flow } from './flow.js';
 import { observeDirection } from './observeDirection.js';
+import { RafScheduler } from './RafScheduler.js';
 
 function sameFlow(a: Flow, b: Flow): boolean {
   return (
@@ -16,9 +17,11 @@ function sameFlow(a: Flow, b: Flow): boolean {
  * Keeps a host's resolved writing mode and direction current for rendering,
  * such as an `aria-orientation` that must report the rendered orientation.
  *
- * Re-resolves on connect, whenever a `dir` attribute changes in the document,
- * and whenever the host resizes. Requests an update only when the flow
- * actually changed. A writing-mode switch is only caught when it changes the
+ * Re-resolves in a shared animation-frame sampling phase after connect,
+ * whenever a `dir` attribute changes in the document, and whenever the host
+ * resizes. Requests an update only when the flow actually changed. The public
+ * {@link refresh} method remains synchronous for explicit invalidation. A
+ * writing-mode switch is only caught when it changes the
  * host's logical size: ResizeObserver compares inline and block sizes, so a
  * logically sized host that turns keeps both and reports nothing. Call
  * {@link refresh} after such a switch, or after `direction` set by a
@@ -34,6 +37,8 @@ export class FlowController implements ReactiveController {
 
   private _unobserveDirection: (() => void) | null = null;
 
+  private readonly _frame = new RafScheduler();
+
   constructor(host: ReactiveControllerHost & Element) {
     this._host = host;
     host.addController(this);
@@ -44,24 +49,35 @@ export class FlowController implements ReactiveController {
   }
 
   hostConnected(): void {
-    this.refresh();
-    this._unobserveDirection ??= observeDirection(() => this.refresh());
+    this._scheduleRefresh();
+    this._unobserveDirection ??= observeDirection(() => this._scheduleRefresh());
 
     if (typeof ResizeObserver === 'function') {
-      this._observer ??= new ResizeObserver(() => this.refresh());
+      this._observer ??= new ResizeObserver(() => this._scheduleRefresh());
       this._observer.observe(this._host);
     }
   }
 
   hostDisconnected(): void {
+    this._frame.cancel();
     this._observer?.disconnect();
     this._unobserveDirection?.();
     this._unobserveDirection = null;
   }
 
   refresh(): void {
-    const next = resolveFlow(this._host);
+    this._frame.cancel();
+    this._apply(resolveFlow(this._host));
+  }
 
+  private _scheduleRefresh(): void {
+    this._frame.schedulePhased(
+      () => resolveFlow(this._host),
+      (next) => this._apply(next),
+    );
+  }
+
+  private _apply(next: Flow): void {
     if (!sameFlow(next, this._flow)) {
       this._flow = next;
       this._host.requestUpdate();

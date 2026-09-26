@@ -1,19 +1,25 @@
 import type { LitElement } from 'lit';
 
 import type { RCAdaptiveMenu } from '@rcarls/rc-adaptive-menu';
+import type { RCAppBar } from '@rcarls/rc-app-bar';
+import type { RCCarousel } from '@rcarls/rc-carousel';
 import type { RCCombobox } from '@rcarls/rc-combobox';
 import type { RCMenuButton } from '@rcarls/rc-menu-button';
 import type { RCNavigationRail } from '@rcarls/rc-navigation-rail';
 import type { RCSelect } from '@rcarls/rc-select';
+import type { RCScroller } from '@rcarls/rc-scroller';
 import type { RCSwitch } from '@rcarls/rc-switch';
 import type { RCTextarea } from '@rcarls/rc-textarea';
 import '@rcarls/rc-adaptive-menu/define';
+import '@rcarls/rc-app-bar/define';
 import '@rcarls/rc-button/define';
+import '@rcarls/rc-carousel/define';
 import '@rcarls/rc-combobox/define';
 import '@rcarls/rc-menu-button/define';
 import '@rcarls/rc-menu/define';
 import '@rcarls/rc-navigation-rail/define';
 import '@rcarls/rc-select/define';
+import '@rcarls/rc-scroller/define';
 import '@rcarls/rc-switch/define';
 import '@rcarls/rc-textarea/define';
 
@@ -240,6 +246,69 @@ async function createSelects(): Promise<void> {
   await Promise.all(Array.from($root.children, (element) => settle(element)));
 }
 
+async function mountRouteComponentBatch(): Promise<void> {
+  resetRoot();
+
+  const fragment = document.createDocumentFragment();
+  const hosts: LitElement[] = [];
+
+  for (let index = 0; index < 40; index += 1) {
+    const host = document.createElement('rc-scroller') as RCScroller;
+
+    host.style.blockSize = '6rem';
+    host.innerHTML = `<div style="block-size: 12rem">Scrollable ${index}</div>`;
+    hosts.push(host);
+    fragment.append(host);
+  }
+
+  for (let index = 0; index < 30; index += 1) {
+    const host = document.createElement('rc-carousel') as RCCarousel;
+
+    host.setAttribute('aria-label', `Carousel ${index}`);
+
+    host.innerHTML = `
+      <rc-carousel-item>One</rc-carousel-item>
+      <rc-carousel-item>Two</rc-carousel-item>
+      <rc-carousel-item>Three</rc-carousel-item>
+    `;
+
+    hosts.push(host);
+    fragment.append(host);
+  }
+
+  for (let index = 0; index < 20; index += 1) {
+    const host = document.createElement('rc-menu-button') as RCMenuButton;
+
+    host.innerHTML = `
+      <button slot="trigger">Menu ${index}</button>
+      <rc-menu label="Menu ${index}"><button>Action</button></rc-menu>
+    `;
+
+    hosts.push(host);
+    fragment.append(host);
+  }
+
+  for (let index = 0; index < 10; index += 1) {
+    const host = document.createElement('rc-app-bar') as RCAppBar;
+
+    host.textContent = `Title ${index}`;
+    hosts.push(host);
+    fragment.append(host);
+  }
+
+  for (let index = 0; index < 10; index += 1) {
+    const host = document.createElement('rc-select') as RCSelect;
+
+    host.innerHTML = `<select aria-label="Choice ${index}">${options(5)}</select>`;
+    hosts.push(host);
+    fragment.append(host);
+  }
+
+  $root.append(fragment);
+  await Promise.all(hosts.map((host) => settle(host)));
+  await nextFrame();
+}
+
 async function openAndFilterCombobox(): Promise<void> {
   resetRoot();
 
@@ -334,6 +403,7 @@ async function settleAnchoredPopup(): Promise<void> {
 const scenarios: Record<string, () => Promise<void>> = {
   create100Buttons: createButtons,
   create50Selects: createSelects,
+  mount220RouteComponents: mountRouteComponentBatch,
   filter1000OptionCombobox: openAndFilterCombobox,
   render1000LineTextarea: renderLargeTextarea,
   update50ActionAdaptiveMenu: updateAdaptiveMenu,

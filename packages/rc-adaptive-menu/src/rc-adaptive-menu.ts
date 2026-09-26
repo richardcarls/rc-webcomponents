@@ -263,6 +263,7 @@ export class RCAdaptiveMenu extends LitElement {
     placement: 'block-end-end',
     offset: 4,
     shadowHost: () => this,
+    disabled: () => !this.open || !this.hasAttribute('data-overflow'),
   });
 
   override connectedCallback(): void {

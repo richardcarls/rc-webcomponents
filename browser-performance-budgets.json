@@ -9,6 +9,10 @@
       "median": 48.39999997615814,
       "p95": 91.39999997615814
     },
+    "mount220RouteComponents": {
+      "median": 49.09999990463257,
+      "p95": 51.10000014305115
+    },
     "filter1000OptionCombobox": {
       "median": 144,
       "p95": 192.39999997615814
@@ -62,6 +66,10 @@
     "create50Selects": {
       "median": 58.07999997138977,
       "p95": 109.67999997138976
+    },
+    "mount220RouteComponents": {
+      "median": 58.91999988555908,
+      "p95": 61.32000017166138
     },
     "filter1000OptionCombobox": {
       "median": 172.79999999999998,
