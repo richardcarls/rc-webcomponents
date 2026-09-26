@@ -23,6 +23,7 @@ export default defineConfig({
             include: ['packages/*/src/**/*.test.ts'],
             exclude: [
               'packages/*/src/**/*.unit.test.ts',
+              'packages/rc-virtual-scroller/src/**/*.geometry.test.ts',
               'packages/rc-bottom-sheet/src/**/*.test.ts',
               'packages/rc-splitter/src/**/*.test.ts',
             ],
@@ -37,6 +38,7 @@ export default defineConfig({
           {
             name: 'browser-geometry',
             include: [
+              'packages/rc-virtual-scroller/src/**/*.geometry.test.ts',
               'packages/rc-bottom-sheet/src/**/*.test.ts',
               'packages/rc-splitter/src/**/*.test.ts',
             ],

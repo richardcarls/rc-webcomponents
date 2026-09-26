@@ -75,7 +75,7 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `RovingTabIndexMixin`                                                                    | Roving tabindex for components whose child controls receive real DOM focus                             |
 | `ScrollObserverController`                                                               | Scroll threshold and delta observation for scroll-driven component state                               |
 | `TypeaheadController`                                                                    | Printable-key buffering for composite widget typeahead                                                 |
-| `findNearestScrollAncestor`                                                              | Locating the nearest scrollable ancestor for scroll-driven behavior                                    |
+| `findNearestScrollAncestor` | Locating the nearest scrolling ancestor through assigned slots and shadow hosts; falls back to the element's owner document |
 | `findNearestSnapIndex`, `findNextSnapIndex`, `findExtremeSnapIndex`                      | Choosing numeric anchor indices without assigning component meaning                                    |
 | `isFocusable`                                                                            | Filtering focusable items for keyboard navigation                                                      |
 | `isEventFromInteractiveDescendant`                                                       | Detecting composed clicks already owned by a nested interactive control                                |

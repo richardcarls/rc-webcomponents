@@ -71,37 +71,69 @@ the element's own flow, so it never depends on the sign conventions of
 
 ## Geometry
 
-`count` is the true total. `item-size` is the estimated line pitch in pixels;
-it is used for the first frame and whenever nothing can be measured yet, so a
-reasonable value matters for the first paint and for restoring a saved scroll
-position.
+Virtualization supports sequential DOM-order collections with **uniform line
+pitch and capacity**; the final line may be partial. Use ordinary lists,
+shelves without wrapping, regular grids, or uniform numeric grid spans. Masonry,
+variable-height lines, dense placement, and reordered collections are outside
+this contract. When a sampled layout is demonstrably unsupported, the component
+reports the whole collection, removes its spacers, and warns in development.
 
-Items per line and line pitch are measured from the slotted container rather
-than configured. Items per line counts the rendered items that start where the
-first one does along the windowed axis, so an item spanning several tracks,
-such as a card aligned through subgrid across a shelf's rows, still counts as
-one. Until a second line has rendered, it falls back to one item per grid
-column (`grid-template-columns`) on the block axis, or per grid row
-(`grid-template-rows`) on the inline axis. Grid columns and rows are logical,
-so this holds in vertical writing modes too. The pitch is the offset between
-two items one line apart, which keeps `auto-fill`, container queries, and the
-gap authoritative in CSS instead of duplicated in JavaScript. `rc-virtual-scroller-range` reports
-`itemsPerLine`, `lineSize`, and a `measured` flag that is `false` while the
-geometry is still the `item-size` estimate.
+Automatic grid measurement reads resolved tracks and their gaps, so differently
+aligned items in the same track do not become separate lines. Uniform spans,
+including `1 / -1`, count as items rather than individual tracks. Container
+queries and `auto-fill` remain authoritative.
 
-`overscan` (default `2`) is how many extra lines render past each edge.
-`disabled` reports the whole collection as the range and stops measuring, which
-makes an A/B against the non-virtualized cost a one-attribute change.
+For ambiguous uniform grid placement, set `items-per-line` to the number of
+items in each line. The override controls capacity, not pitch or CSS placement;
+it does not enable virtualization of variable-height layouts. Remove the attribute,
+or assign `itemsPerLine = 0`, to restore automatic inference.
 
-The element measures against the nearest scrolling ancestor. Set the
-`scrollTarget` property when that ancestor only becomes scrollable after its own
-upgrade, or when the real scrollport is further up the tree.
+```html
+<rc-virtual-scroller axis="inline" count="500" item-size="160" items-per-line="1">
+  <ul class="shelf">
+    <!-- One card per column, spanning named row tracks. -->
+  </ul>
+</rc-virtual-scroller>
+```
 
-`scrollToIndex(index, { align, behavior })` scrolls an arbitrary index into
-view along `axis`, including one that is not currently rendered. `align` is
-`start` (the default), `center`, `end`, or `nearest`. It is accurate to the
-current line pitch, so it is only as accurate as `item-size` until at least one
-line has rendered.
+`count` is the true total. `item-size` estimates line pitch until it can be
+measured; it never overrides measured geometry. `overscan` defaults to two
+extra lines at each viewport edge. A one-line slice retains its established
+geometry instead of reverting to a contradictory track-count estimate.
+
+Numeric inputs are normalized: `count` and `items-per-line` are floored
+nonnegative integers with a fallback of zero; `overscan` is floored with a
+fallback of two for negative values, infinity, or NaN. Zero, negative, or invalid
+`item-size` becomes zero. Without a usable pitch the full collection is
+reported so it can be measured.
+
+`rc-virtual-scroller-range` reports the effective `itemsPerLine`, `lineSize`,
+and `measured` (whether pitch comes from real layout). `first`, `last`, and
+`range` are read-only outputs. The `first` and `last` attributes report the
+computed state; author writes do not control the window.
+
+The nearest scrolling ancestor is found through slots and shadow hosts.
+Document scrolling and viewport resizing are supported. Set `scrollTarget`
+when the intended scrollport differs from the automatically resolved ancestor.
+Resizing the scrollport fills newly visible space even when the host itself
+does not resize. A pane hidden with `display: none` retains its mounted slice
+and geometry until layout becomes available again.
+
+Call `measure()` after changes that observers cannot see, such as a stylesheet
+writing-mode change that preserves logical size, a font/theme change that only
+affects item internals, or repositioning the collection without resizing it.
+Consumers should commit the requested slice promptly; after an asynchronous
+render commit, call `measure()` if the container's children and size did not
+change.
+
+`scrollToIndex(index, { align, behavior })` uses the current line pitch.
+Alignment is `start` (default), `center`, `end`, or `nearest`. Finite
+indices are floored and clamped; infinity and NaN are ignored.
+`disabled` reports the full collection with zero spacers.
+
+To migrate code that assigned `first` or `last`, use `scrollToIndex()`
+for navigation and read `range` for rendering. Supply `items-per-line`
+when a uniform grid's placement cannot be inferred.
 
 ## Accessibility
 

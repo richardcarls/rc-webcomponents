@@ -64,11 +64,11 @@ export type RCScrollerRef = HTMLElement & {
 export type RCVirtualScrollerAxis = 'block' | 'inline';
 
 export type RCVirtualScrollerRangeDetail = {
-  start: number;
-  end: number;
-  itemsPerLine: number;
-  lineSize: number;
-  measured: boolean;
+  readonly start: number;
+  readonly end: number;
+  readonly itemsPerLine: number;
+  readonly lineSize: number;
+  readonly measured: boolean;
 };
 
 /** Public API surface of `<rc-virtual-scroller>`. */
@@ -76,6 +76,7 @@ export type RCVirtualScrollerRef = HTMLElement & {
   axis: RCVirtualScrollerAxis;
   count: number;
   itemSize: number;
+  itemsPerLine: number;
   overscan: number;
   disabled: boolean;
   scrollTarget: Element | null;
@@ -796,6 +797,7 @@ declare module 'solid-js' {
         axis?: RCVirtualScrollerAxis;
         count?: number | string;
         'item-size'?: number | string;
+        'items-per-line'?: number | string;
         overscan?: number | string;
         disabled?: boolean | string;
         'prop:scrollTarget'?: Element | null | undefined;
