@@ -96,8 +96,11 @@ container, set `--rc-bottom-sheet-position: absolute`, and open it with
 `show()`. The sheet then docks to that container's block-end edge rather than
 the viewport.
 
-Declare snap points as CSS heights in ascending order. Slow releases settle at
-the nearest point. A decisive upward or downward swipe (`500` pixels per second
+Declare snap points as CSS heights in ascending order. Any length works,
+including `calc()` and `var()`. Each point is resolved inside the sheet when a
+snap applies, so a custom property the page sets or animates, for example from
+a scroll timeline, is read at its current value. Percentages are of the viewport
+height. Slow releases settle at the nearest point. A decisive upward or downward swipe (`500` pixels per second
 by default) settles at the last or first point, respectively. When
 `swipe-dismiss` is enabled, dragging downward by at least `96` pixels requests
 close before velocity-based snapping applies.

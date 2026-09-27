@@ -58,8 +58,11 @@ For an embedded non-modal sheet, place the component in a positioned container,
 set `--rc-bottom-sheet-position: absolute`, and open it with `show()`. The sheet
 then docks to that container's block-end edge instead of the viewport.
 
-List `snap-points` as CSS heights in ascending order. Slow drag releases
-settle at the nearest point; a swipe at `swipe-velocity` or faster settles at
+List `snap-points` as CSS heights in ascending order. Any length works,
+including `calc()` and `var()`; each is resolved inside the sheet when a snap
+applies, so a custom property the page animates is read at its current value.
+Percentages are of the viewport height. Slow drag releases settle at the
+nearest point; a swipe at `swipe-velocity` or faster settles at
 the first or last point. Settling animates unless the user prefers reduced
 motion. `rc-bottom-sheet-resize-start` fires as an interactive resize begins,
 before the sheet geometry changes, so consumers can prepare content that the

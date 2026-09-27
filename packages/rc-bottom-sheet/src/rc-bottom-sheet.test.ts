@@ -152,6 +152,50 @@ test('absolute non-modal sheets can dock to a positioned parent', async () => {
   $host.close();
 });
 
+test('resolves var() and calc() snap points in the sheet context at snap time', async () => {
+  const screen = render(html`
+    <div data-testid="context" style="--peek: 90px;">
+      <rc-bottom-sheet
+        data-testid="host"
+        snap-points="var(--peek, 40px) calc(100px + 2rem) nonsense 300px"
+      >
+        <dialog aria-label="Details">Details</dialog>
+      </rc-bottom-sheet>
+    </div>
+  `);
+  const $context = (await screen.getByTestId('context').element()) as HTMLElement;
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+  const $dialog = $host.querySelector('dialog');
+
+  if (!$dialog) {
+    throw new Error('Expected the sheet dialog to render.');
+  }
+
+  const height = () => Math.round($dialog.getBoundingClientRect().height);
+
+  await $host.updateComplete;
+  $host.show();
+
+  $host.snapTo(0, 'instant');
+  expect(height()).toBe(90);
+
+  $host.snapTo(1, 'instant');
+  expect(height()).toBe(132);
+
+  // The invalid entry is dropped, so the last point is index 2.
+  $host.snapTo(2, 'instant');
+  expect(height()).toBe(300);
+
+  // The inherited custom property is read again at its current value.
+  $context.style.setProperty('--peek', '110px');
+  $host.snapTo(0, 'instant');
+  expect(height()).toBe(110);
+
+  expect([...$host.children]).toEqual([$dialog]);
+
+  $host.close();
+});
+
 test('reads a snap duration expressed in seconds as milliseconds', async () => {
   const screen = render(html`
     <rc-bottom-sheet data-testid="host" snap-points="120px 320px">
