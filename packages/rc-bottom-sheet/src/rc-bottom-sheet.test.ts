@@ -46,14 +46,12 @@ test('rc-bottom-sheet fades in and out through CSS alone, with no JavaScript gat
   $host.showModal();
   expect($host.open).toBe(true);
 
-  await wait(250);
-  expect(getComputedStyle($dialog).opacity).toBe('1');
+  await vi.waitFor(() => expect(getComputedStyle($dialog).opacity).toBe('1'));
 
   $host.close();
   expect($host.open).toBe(false);
 
-  await wait(250);
-  expect(getComputedStyle($dialog).opacity).toBe('0');
+  await vi.waitFor(() => expect(getComputedStyle($dialog).opacity).toBe('0'));
 });
 
 test('rc-bottom-sheet entrance does not shift measured geometry, unlike a slide transform would', async () => {
@@ -192,6 +190,51 @@ test('resolves var() and calc() snap points in the sheet context at snap time', 
   expect(height()).toBe(110);
 
   expect([...$host.children]).toEqual([$dialog]);
+
+  $host.close();
+});
+
+test('resolves functional snap-point heights in vertical writing modes', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl; --peek: 90px;">
+      <rc-bottom-sheet data-testid="host" snap-points="var(--peek) calc(100px + 2rem)">
+        <dialog aria-label="Details">Details</dialog>
+      </rc-bottom-sheet>
+    </div>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  await $host.updateComplete;
+  $host.show();
+
+  $host.snapTo(0, 'instant');
+  expect(Math.round($dialog.getBoundingClientRect().height)).toBe(90);
+
+  $host.snapTo(1, 'instant');
+  expect(Math.round($dialog.getBoundingClientRect().height)).toBe(132);
+
+  $host.close();
+});
+
+test('keeps percentages inside calc() viewport-relative under transformed ancestors', async () => {
+  const screen = render(html`
+    <div style="width: 400px; height: 300px; transform: translateZ(0);">
+      <rc-bottom-sheet data-testid="host" snap-points="calc(50% - 10px)">
+        <dialog aria-label="Details">Details</dialog>
+      </rc-bottom-sheet>
+    </div>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  await $host.updateComplete;
+  $host.show();
+  $host.snapTo(0, 'instant');
+
+  expect(Math.round($dialog.getBoundingClientRect().height)).toBe(
+    Math.round(window.innerHeight / 2 - 10),
+  );
 
   $host.close();
 });
@@ -416,9 +459,9 @@ test('authored bottom-sheet handle resizes vertically from the top edge', async 
   $host.close();
 });
 
-test('snap-points snaps to the nearest declared height on resize release', async () => {
+test('snap-points resolves once and snaps to the nearest height on resize release', async () => {
   const screen = render(html`
-    <rc-bottom-sheet data-testid="host" snap-points="200px 320px 460px">
+    <rc-bottom-sheet data-testid="host" snap-points="calc(200px) calc(320px) calc(460px)">
       <dialog
         aria-labelledby="sheet-title"
         style="position: fixed; left: 100px; top: 240px; width: 360px; height: 280px; margin: 0;"
@@ -436,11 +479,14 @@ test('snap-points snaps to the nearest declared height on resize release', async
 
   const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
   const $handle = $host.querySelector('[data-rc-bottom-sheet-handle]') as HTMLButtonElement;
+  const appendSpy = vi.spyOn($host, 'append');
   const start = $dialog.getBoundingClientRect();
 
   firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
   firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 52 });
   firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 52 });
+
+  expect(appendSpy).toHaveBeenCalledTimes(1);
 
   // The settle now animates rather than applying instantly.
   await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320));
