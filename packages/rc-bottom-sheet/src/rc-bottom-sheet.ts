@@ -45,6 +45,39 @@ export interface RCBottomSheetSnapDetail {
 const DEFAULT_SNAP_DURATION_MS = 300;
 const DEFAULT_SNAP_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
+/**
+ * Splits a `snap-points` value on whitespace outside parentheses, so a
+ * `calc()` or `var()` entry with inner spaces stays one snap point.
+ */
+function splitSnapPoints(value: string): string[] {
+  const points: string[] = [];
+  let depth = 0;
+  let current = '';
+
+  for (const character of value.trim()) {
+    if (character === '(') {
+      depth += 1;
+    } else if (character === ')') {
+      depth = Math.max(0, depth - 1);
+    }
+
+    if (depth === 0 && /\s/.test(character)) {
+      if (current) {
+        points.push(current);
+        current = '';
+      }
+    } else {
+      current += character;
+    }
+  }
+
+  if (current) {
+    points.push(current);
+  }
+
+  return points;
+}
+
 const LIGHT_DOM_CSS = `
 @layer rc-base {
   rc-bottom-sheet > dialog {
@@ -261,7 +294,8 @@ function pinBlockBox(target: HTMLElement): DOMRect {
  * @attr resize-handle - CSS selector, scoped to the inner `<dialog>`, for explicit resize
  *   handles. Defaults to `[data-rc-bottom-sheet-handle]`; inherited from `rc-dialog`.
  * @attr snap-points - Whitespace-separated CSS heights, in ascending order, addressable by
- *   `snapTo()` and settled to on drag release.
+ *   `snapTo()` and settled to on drag release. Accepts `calc()` and `var()`, resolved in the
+ *   sheet's context when each snap applies; percentages are of the viewport height.
  * @attr swipe-dismiss - Whether a decisive downward swipe of at least 96 pixels requests close.
  * @attr swipe-velocity - Minimum release velocity, in pixels per second, that counts as a
  *   decisive swipe rather than a slow deliberate drag.
@@ -338,6 +372,10 @@ export class RCBottomSheet extends RCDialog {
    *
    * Each height becomes an addressable snap target. Slow releases choose the
    * nearest target, while decisive swipes choose the first or last target.
+   * Any CSS length works, including `calc()` and `var()`, and is resolved in
+   * the sheet's own context when a snap is applied, so a custom property the
+   * page animates (for example from a scroll timeline) is read at its current
+   * value. Percentages are of the viewport height.
    */
   @property({ type: String, attribute: 'snap-points' })
   snapPoints = '';
@@ -637,9 +675,7 @@ export class RCBottomSheet extends RCDialog {
       return [];
     }
 
-    return this.snapPoints
-      .trim()
-      .split(/\s+/)
+    return splitSnapPoints(this.snapPoints)
       .map((point) => this._resolveSnapPoint(point))
       .filter((point): point is number => Number.isFinite(point) && point > 0);
   }
@@ -647,18 +683,19 @@ export class RCBottomSheet extends RCDialog {
   private _resolveSnapPoint(point: string): number {
     const numeric = Number.parseFloat(point);
 
-    if (!Number.isFinite(numeric)) {
-      return Number.NaN;
+    if (Number.isFinite(numeric)) {
+      if (point.endsWith('%')) {
+        return window.innerHeight * (numeric / 100);
+      }
+
+      if (point.endsWith('px') || String(numeric) === point) {
+        return numeric;
+      }
     }
 
-    if (point.endsWith('%')) {
-      return window.innerHeight * (numeric / 100);
-    }
-
-    if (point.endsWith('px') || String(numeric) === point) {
-      return numeric;
-    }
-
+    // Measure inside the host so relative units, `var()`, and inherited
+    // custom properties resolve against the sheet's context rather than the
+    // document root's. An invalid value leaves the probe with no height.
     const probe = document.createElement('div');
 
     Object.assign(probe.style, {
@@ -670,7 +707,7 @@ export class RCBottomSheet extends RCDialog {
       inset: '0 auto auto 0',
     });
 
-    document.body.append(probe);
+    this.append(probe);
 
     const height = probe.getBoundingClientRect().height;
 
