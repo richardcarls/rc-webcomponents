@@ -497,12 +497,12 @@ export class RCBottomSheet extends RCDialog {
       // sheet is dragged upward, so a positive velocity is a swipe up.
       const targetIndex = findExtremeSnapIndex(points, velocity > 0 ? 1 : -1);
 
-      this._snapToIndex(targetIndex, 'animated', 'drag');
+      this._snapToIndex(targetIndex, 'animated', 'drag', points);
 
       return;
     }
 
-    this._snapToNearestPoint('drag');
+    this._snapToNearestPoint('drag', points);
   }
 
   private _shouldSwipeDismiss(detail: ResizeLifecycleDetail): boolean {
@@ -512,9 +512,11 @@ export class RCBottomSheet extends RCDialog {
     );
   }
 
-  private _snapToNearestPoint(trigger: 'drag' | 'api' = 'api'): void {
+  private _snapToNearestPoint(
+    trigger: 'drag' | 'api' = 'api',
+    points = this._resolvedSnapPoints(),
+  ): void {
     const $dialog = this._$dialog;
-    const points = this._resolvedSnapPoints();
 
     if (!$dialog || points.length === 0) {
       return;
@@ -523,16 +525,16 @@ export class RCBottomSheet extends RCDialog {
     const height = $dialog.getBoundingClientRect().height;
     const nearestIndex = findNearestSnapIndex(points, height);
 
-    this._snapToIndex(nearestIndex, 'animated', trigger);
+    this._snapToIndex(nearestIndex, 'animated', trigger, points);
   }
 
   private _snapToIndex(
     index: number,
     behavior: 'animated' | 'instant',
     trigger: 'drag' | 'api',
+    points = this._resolvedSnapPoints(),
   ): void {
     const $dialog = this._$dialog;
-    const points = this._resolvedSnapPoints();
 
     if (!$dialog || points.length === 0) {
       return;
@@ -675,45 +677,90 @@ export class RCBottomSheet extends RCDialog {
       return [];
     }
 
-    return splitSnapPoints(this.snapPoints)
-      .map((point) => this._resolveSnapPoint(point))
-      .filter((point): point is number => Number.isFinite(point) && point > 0);
-  }
+    const resolved: number[] = [];
+    const measured: Array<{ index: number; point: string; probe: HTMLElement }> = [];
 
-  private _resolveSnapPoint(point: string): number {
-    const numeric = Number.parseFloat(point);
+    for (const point of splitSnapPoints(this.snapPoints)) {
+      const numeric = Number.parseFloat(point);
 
-    if (Number.isFinite(numeric)) {
-      if (point.endsWith('%')) {
-        return window.innerHeight * (numeric / 100);
-      }
+      if (Number.isFinite(numeric) && point.endsWith('%')) {
+        resolved.push(window.innerHeight * (numeric / 100));
+      } else if (Number.isFinite(numeric) && (point.endsWith('px') || String(numeric) === point)) {
+        resolved.push(numeric);
+      } else {
+        const probe = document.createElement('div');
 
-      if (point.endsWith('px') || String(numeric) === point) {
-        return numeric;
+        resolved.push(Number.NaN);
+        measured.push({ index: resolved.length - 1, point, probe });
       }
     }
 
-    // Measure inside the host so relative units, `var()`, and inherited
-    // custom properties resolve against the sheet's context rather than the
-    // document root's. An invalid value leaves the probe with no height.
-    const probe = document.createElement('div');
+    if (measured.length > 0) {
+      this._measureSnapPoints(measured, resolved);
+    }
 
-    Object.assign(probe.style, {
-      position: 'fixed',
-      visibility: 'hidden',
-      pointerEvents: 'none',
-      blockSize: point,
-      inlineSize: '0',
-      inset: '0 auto auto 0',
-    });
+    return resolved.filter((point) => Number.isFinite(point) && point > 0);
+  }
 
-    this.append(probe);
+  private _measureSnapPoints(
+    entries: Array<{ index: number; point: string; probe: HTMLElement }>,
+    resolved: number[],
+  ): void {
+    const context = document.createElement('div');
 
-    const height = probe.getBoundingClientRect().height;
+    const important = (element: HTMLElement, property: string, value: string): void => {
+      element.style.setProperty(property, value, 'important');
+    };
 
-    probe.remove();
+    // Give percentage expressions an explicit viewport-height containing
+    // block. This keeps `calc(50% - ...)` equivalent to a plain `50%` even
+    // when a transformed ancestor establishes the fixed containing block.
+    important(context, 'all', 'initial');
+    important(context, 'position', 'fixed');
+    important(context, 'display', 'block');
+    important(context, 'visibility', 'hidden');
+    important(context, 'pointer-events', 'none');
+    important(context, 'overflow', 'hidden');
+    important(context, 'box-sizing', 'border-box');
+    important(context, 'width', '0');
+    important(context, 'height', `${window.innerHeight}px`);
+    important(context, 'margin', '0');
+    important(context, 'padding', '0');
+    important(context, 'border', '0');
+    important(context, 'font', 'inherit');
+    important(context, 'writing-mode', 'horizontal-tb');
+    important(context, 'inset', '0 auto auto 0');
 
-    return height;
+    for (const { point, probe } of entries) {
+      important(probe, 'all', 'initial');
+      important(probe, 'position', 'absolute');
+      important(probe, 'display', 'block');
+      important(probe, 'box-sizing', 'border-box');
+      important(probe, 'width', '0');
+      important(probe, 'height', point);
+      important(probe, 'min-height', '0');
+      important(probe, 'max-height', 'none');
+      important(probe, 'margin', '0');
+      important(probe, 'padding', '0');
+      important(probe, 'border', '0');
+      important(probe, 'font', 'inherit');
+      important(probe, 'writing-mode', 'horizontal-tb');
+      important(probe, 'inset', '0 auto auto 0');
+      context.append(probe);
+    }
+
+    this.append(context);
+
+    try {
+      // All probes are attached before the first style/layout read. Reading
+      // computed physical height avoids transforms and writing mode changing
+      // the CSS-pixel value that will be assigned to dialog.style.height.
+      for (const { index, probe } of entries) {
+        resolved[index] = Number.parseFloat(getComputedStyle(probe).height);
+      }
+    } finally {
+      context.remove();
+    }
   }
 }
 
