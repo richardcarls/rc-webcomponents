@@ -13,6 +13,67 @@ import { saveSelection } from './selection.js';
 import './define.js';
 
 describe('line disclosures', () => {
+  test.each([0, 4])('renders a trailing disclosure at line-start offset %i', async (offset) => {
+    const screen = render(html`
+      <rc-textarea data-testid="host" auto-grow read-only>
+        <textarea aria-label="Source"></textarea>
+      </rc-textarea>
+    `);
+    const $host = screen.getByTestId('host').element() as RCTextarea;
+    let controller: LineDisclosureController;
+    let api: RCTextareaPluginAPI;
+
+    $host.value = 'One\nTwo';
+
+    $host.usePlugin({
+      mount(pluginApi) {
+        api = pluginApi;
+        controller = new LineDisclosureController(api);
+      },
+      update() {
+        api.setDecorations(
+          controller.getDecorations([
+            {
+              key: 'start',
+              offset,
+              label: 'Line details',
+              revision: '1',
+              createContent: () => document.createElement('p'),
+            },
+          ]),
+        );
+      },
+      destroy() {
+        controller.clear();
+      },
+    });
+
+    await $host.updateComplete;
+
+    const $editor = getEditor($host);
+
+    await vi.waitFor(() => {
+      expect(
+        $editor
+          .querySelectorAll('.line')
+          [offset === 0 ? 0 : 1]?.querySelector('.line-disclosure-trigger'),
+      ).toBeTruthy();
+    });
+
+    const $line = $editor.querySelectorAll('.line')[offset === 0 ? 0 : 1]!;
+    const $button = $line.querySelector<HTMLButtonElement>('.line-disclosure-trigger')!;
+    const $panel = $line.querySelector<HTMLElement>('.line-disclosure-panel')!;
+
+    expect($panel).toBeTruthy();
+
+    $button.click();
+
+    expect($button.getAttribute('aria-expanded')).toBe('true');
+    expect($panel.hidden).toBe(false);
+    expect(getText($editor)).toBe('One\nTwo');
+    await expectNoA11yViolations($host);
+  });
+
   test('opens a gutter disclosure only from its button', async () => {
     const screen = render(html`
       <rc-textarea data-testid="host" gutter auto-grow read-only>

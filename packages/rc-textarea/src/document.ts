@@ -51,6 +51,13 @@ function buildLineContent(
 
   const boundaries = [...boundarySet].sort((a, b) => a - b);
 
+  // A line start has no preceding segment to append 'after' widgets from.
+  for (const widget of widgetDecorations) {
+    if (widget.offset === lineStart && widget.side === 'after') {
+      $line.appendChild(createWidget(widget));
+    }
+  }
+
   for (let i = 0; i < boundaries.length - 1; i++) {
     const segmentStart = boundaries[i]!;
     const segmentEnd = boundaries[i + 1]!;
