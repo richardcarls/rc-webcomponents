@@ -124,18 +124,27 @@ export const selectStyles = css`
     max-height: var(--rc-select-max-height, 20em);
     overflow-y: auto;
     overflow-block: auto;
-    background: var(--rc-surface, Canvas);
+    background: var(
+      --rc-select-listbox-background,
+      var(--rc-popup-background, var(--rc-surface, Canvas))
+    );
     border: var(
       --rc-select-listbox-border,
-      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
+      var(--rc-popup-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)))
     );
-    border-radius: var(--rc-select-listbox-radius, var(--rc-control-radius, 0));
+    border-radius: var(--rc-select-listbox-radius, var(--rc-popup-radius, var(--rc-radius-sm, 0)));
     box-shadow: var(
       --rc-select-shadow,
-      var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
+      var(
+        --rc-popup-shadow,
+        var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
+      )
     );
-    color: var(--rc-field-text, FieldText);
-    padding-block: var(--rc-select-listbox-padding-block, var(--rc-control-padding-block, 0.25em));
+    color: var(--rc-select-listbox-color, var(--rc-popup-color, var(--rc-field-text, FieldText)));
+    padding-block: var(
+      --rc-select-listbox-padding-block,
+      var(--rc-popup-padding-block, var(--rc-control-padding-block, 0.25em))
+    );
     --rc-listbox-option-gap: var(--rc-item-gap, 0.4em);
     --rc-listbox-option-padding-block: var(--rc-item-padding-block, 0.3em);
     --rc-listbox-option-padding-inline: var(--rc-item-padding-inline, 0.75em);

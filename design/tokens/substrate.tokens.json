@@ -47,6 +47,35 @@
           }
         },
         {
+          "name": "color/computed/adaptive-menu-trigger-hover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-hover-background)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-hover-background",
+          "description": "Resolved from --rc-adaptive-menu-trigger-hover-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.975447,
+              "g": 0.914491,
+              "b": 0.872875,
+              "a": 1,
+              "hex": "#f9e9df"
+            },
+            "Dark": {
+              "r": 0.170646,
+              "g": 0.118181,
+              "b": 0.06808,
+              "a": 1,
+              "hex": "#2c1e11"
+            }
+          }
+        },
+        {
           "name": "color/computed/app-bar-bg",
           "type": "COLOR",
           "scopes": [
@@ -1520,43 +1549,6 @@
           }
         },
         {
-          "name": "adaptive-menu/popup-background",
-          "type": "COLOR",
-          "scopes": [
-            "FRAME_FILL",
-            "SHAPE_FILL"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-adaptive-menu-popup-background)"
-          },
-          "cssVar": "--rc-adaptive-menu-popup-background",
-          "description": "Applied where rc-theme-substrate is themed.",
-          "values": {
-            "Value": {
-              "alias": "color/surface",
-              "collection": "Color"
-            }
-          }
-        },
-        {
-          "name": "adaptive-menu/popup-color",
-          "type": "COLOR",
-          "scopes": [
-            "TEXT_FILL"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-adaptive-menu-popup-color)"
-          },
-          "cssVar": "--rc-adaptive-menu-popup-color",
-          "description": "Applied where rc-theme-substrate is themed.",
-          "values": {
-            "Value": {
-              "alias": "field/text",
-              "collection": "RC Contract"
-            }
-          }
-        },
-        {
           "name": "adaptive-menu/popup-min-inline-size",
           "type": "FLOAT",
           "scopes": [
@@ -1569,40 +1561,6 @@
           "description": "Applied where rc-theme-substrate is themed.",
           "values": {
             "Value": 192
-          }
-        },
-        {
-          "name": "adaptive-menu/popup-padding-block",
-          "type": "FLOAT",
-          "scopes": [
-            "GAP",
-            "WIDTH_HEIGHT"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-adaptive-menu-popup-padding-block)"
-          },
-          "cssVar": "--rc-adaptive-menu-popup-padding-block",
-          "description": "Applied where rc-theme-substrate is themed.",
-          "values": {
-            "Value": 6
-          }
-        },
-        {
-          "name": "adaptive-menu/popup-radius",
-          "type": "FLOAT",
-          "scopes": [
-            "CORNER_RADIUS"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-adaptive-menu-popup-radius)"
-          },
-          "cssVar": "--rc-adaptive-menu-popup-radius",
-          "description": "Applied where rc-theme-substrate is themed.",
-          "values": {
-            "Value": {
-              "alias": "radius/lg",
-              "collection": "Radius"
-            }
           }
         },
         {
@@ -1690,6 +1648,25 @@
           "values": {
             "Value": {
               "alias": "color/on-surface-muted",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-hover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-hover-background)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-hover-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/adaptive-menu-trigger-hover-background",
               "collection": "Color"
             }
           }
@@ -2855,24 +2832,6 @@
           }
         },
         {
-          "name": "combobox/listbox-radius",
-          "type": "FLOAT",
-          "scopes": [
-            "CORNER_RADIUS"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-combobox-listbox-radius)"
-          },
-          "cssVar": "--rc-combobox-listbox-radius",
-          "description": "Applied where rc-theme-substrate is themed.",
-          "values": {
-            "Value": {
-              "alias": "radius/lg",
-              "collection": "Radius"
-            }
-          }
-        },
-        {
           "name": "combobox/radius",
           "type": "FLOAT",
           "scopes": [
@@ -3413,6 +3372,77 @@
             "Value": {
               "alias": "core/motion-spatial-easing-fast",
               "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "core/popup-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popup-background)"
+          },
+          "cssVar": "--rc-popup-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/popup-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popup-color)"
+          },
+          "cssVar": "--rc-popup-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "field/text",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "core/popup-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popup-padding-block)"
+          },
+          "cssVar": "--rc-popup-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 6
+          }
+        },
+        {
+          "name": "core/popup-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popup-radius)"
+          },
+          "cssVar": "--rc-popup-radius",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/lg",
+              "collection": "Radius"
             }
           }
         },
@@ -5522,6 +5552,25 @@
           }
         },
         {
+          "name": "menu/background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-menu-background)"
+          },
+          "cssVar": "--rc-menu-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-raised",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "menu/check-size",
           "type": "FLOAT",
           "scopes": [
@@ -5624,6 +5673,22 @@
               "alias": "size/item-padding-inline",
               "collection": "Size"
             }
+          }
+        },
+        {
+          "name": "menu/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-menu-padding-block)"
+          },
+          "cssVar": "--rc-menu-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 4
           }
         },
         {
@@ -6712,24 +6777,6 @@
             "Value": {
               "alias": "core/control-block-size",
               "collection": "RC Contract"
-            }
-          }
-        },
-        {
-          "name": "select/listbox-radius",
-          "type": "FLOAT",
-          "scopes": [
-            "CORNER_RADIUS"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-select-listbox-radius)"
-          },
-          "cssVar": "--rc-select-listbox-radius",
-          "description": "Applied where rc-theme-substrate is themed.",
-          "values": {
-            "Value": {
-              "alias": "radius/lg",
-              "collection": "Radius"
             }
           }
         },
@@ -7940,12 +7987,6 @@
     "note": "Composite values are CSS shorthands with no single-variable Figma equivalent; bind their parts individually. Forced-colors and reduced-motion overrides are accessibility fallbacks Figma cannot express.",
     "composite": [
       {
-        "property": "--rc-adaptive-menu-popup-border",
-        "raw": "var(--rc-border, 1px solid ButtonBorder)",
-        "name": "adaptive-menu/popup-border",
-        "reason": "aliases a composite shorthand"
-      },
-      {
         "property": "--rc-adaptive-menu-trigger-background",
         "raw": "transparent",
         "name": "adaptive-menu/trigger-background"
@@ -8034,18 +8075,6 @@
         "property": "--rc-chip-text-decoration",
         "raw": "none",
         "name": "chip/text-decoration"
-      },
-      {
-        "property": "--rc-combobox-listbox-border",
-        "raw": "var(--rc-border)",
-        "name": "combobox/listbox-border",
-        "reason": "aliases a composite shorthand"
-      },
-      {
-        "property": "--rc-combobox-shadow",
-        "raw": "var(--rc-shadow)",
-        "name": "combobox/shadow",
-        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-dialog-border",
@@ -8253,6 +8282,12 @@
         "reason": "aliases a composite shorthand"
       },
       {
+        "property": "--rc-menu-shadow",
+        "raw": "var(--rc-shadow, none)",
+        "name": "menu/shadow",
+        "reason": "aliases a composite shorthand"
+      },
+      {
         "property": "--rc-menubar-item-background",
         "raw": "transparent",
         "name": "menubar/item-background"
@@ -8337,6 +8372,12 @@
         "name": "navigation-rail/item-text-decoration"
       },
       {
+        "property": "--rc-popup-border",
+        "raw": "var(--rc-border)",
+        "name": "core/popup-border",
+        "reason": "aliases a composite shorthand"
+      },
+      {
         "property": "--rc-progress-fill-transition-easing",
         "raw": "var(--rc-motion-effects-easing-fast, ease-out)",
         "name": "progress/fill-transition-easing",
@@ -8374,18 +8415,6 @@
         "property": "--rc-segmented-button-segment-gap",
         "raw": "0.5em",
         "name": "segmented-button/segment-gap"
-      },
-      {
-        "property": "--rc-select-listbox-border",
-        "raw": "var(--rc-border)",
-        "name": "select/listbox-border",
-        "reason": "aliases a composite shorthand"
-      },
-      {
-        "property": "--rc-select-shadow",
-        "raw": "var(--rc-shadow)",
-        "name": "select/shadow",
-        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-snackbar-action-bg",
@@ -8476,12 +8505,6 @@
       }
     ],
     "unresolved": [
-      {
-        "property": "--rc-adaptive-menu-popup-shadow",
-        "raw": "var(--substrate-shadow-lg, none)",
-        "reason": "literal",
-        "scope": "rc-theme-substrate"
-      },
       {
         "property": "--rc-bottom-sheet-shadow",
         "raw": "var(--substrate-shadow-lg, none)",
@@ -8575,6 +8598,12 @@
       {
         "property": "--rc-navigation-rail-item-color",
         "raw": "var(--rc-muted-color, CanvasText)",
+        "reason": "literal",
+        "scope": "rc-theme-substrate"
+      },
+      {
+        "property": "--rc-popup-shadow",
+        "raw": "var(--substrate-shadow-lg, none)",
         "reason": "literal",
         "scope": "rc-theme-substrate"
       },

@@ -86,6 +86,14 @@ let _uid = 0;
 /** Structural CSS injected into the root that contains rc-listbox's light-DOM options. */
 const LIGHT_DOM_CSS = `
 @layer rc-base {
+  rc-listbox {
+    font-family: var(--rc-item-font-family, inherit);
+    font-size: var(--rc-item-font-size, inherit);
+    font-weight: var(--rc-item-font-weight, inherit);
+    line-height: var(--rc-item-line-height, inherit);
+    letter-spacing: var(--rc-item-letter-spacing, inherit);
+  }
+
   rc-listbox ul {
     list-style: none;
     margin: 0;
@@ -190,6 +198,11 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-listbox-selected-color=HighlightText] - Text color of a selected option.
  * @cssprop [--rc-listbox-disabled-color=GrayText] - Text color of a disabled option.
  * @cssprop [--rc-listbox-disabled-opacity=1] - Opacity of a disabled option.
+ * @cssprop [--rc-item-font-family=inherit] - Option font family; shared with menu and adaptive-menu items.
+ * @cssprop [--rc-item-font-size=inherit] - Option font size; shared with menu and adaptive-menu items.
+ * @cssprop [--rc-item-font-weight=inherit] - Option font weight; shared with menu and adaptive-menu items.
+ * @cssprop [--rc-item-line-height=inherit] - Option line height; shared with menu and adaptive-menu items.
+ * @cssprop [--rc-item-letter-spacing=inherit] - Option letter spacing; shared with menu and adaptive-menu items.
  */
 export class RCListbox extends LitElement {
   static override styles = css`

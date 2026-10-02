@@ -23,6 +23,12 @@
     --rc-border-style: solid;
     --rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
     --rc-shadow: var(--substrate-shadow-md, 0 2px 8px rgb(0 0 0 / 15%));
+    --rc-popup-background: var(--substrate-surface, Canvas);
+    --rc-popup-color: var(--rc-field-text, CanvasText);
+    --rc-popup-border: var(--rc-border);
+    --rc-popup-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-popup-shadow: var(--substrate-shadow-lg, none);
+    --rc-popup-padding-block: 0.375rem;
     --rc-font-family: var(--substrate-font-family, inherit);
     --rc-font-size: var(--substrate-font-size, 1em);
     --rc-font-weight: var(--substrate-font-weight, 400);
@@ -155,15 +161,9 @@
   :host(.rc-theme-substrate) rc-combobox {
     --rc-select-control-block-size: var(--rc-control-block-size);
     --rc-select-radius: var(--rc-control-radius);
-    --rc-select-shadow: var(--rc-shadow);
-    --rc-select-listbox-radius: var(--substrate-radius-lg, 0.75rem);
-    --rc-select-listbox-border: var(--rc-border);
     --rc-select-chip-radius: var(--substrate-radius-sm, 0.25rem);
     --rc-combobox-control-block-size: var(--rc-control-block-size);
     --rc-combobox-radius: var(--rc-control-radius);
-    --rc-combobox-shadow: var(--rc-shadow);
-    --rc-combobox-listbox-radius: var(--substrate-radius-lg, 0.75rem);
-    --rc-combobox-listbox-border: var(--rc-border);
     --rc-combobox-chip-radius: var(--substrate-radius-sm, 0.25rem);
   }
 

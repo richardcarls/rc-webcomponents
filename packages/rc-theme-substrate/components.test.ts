@@ -432,7 +432,7 @@ test('components that previously had no contract now expose themed tokens', () =
     [
       'rc-adaptive-menu',
       [
-        '--rc-adaptive-menu-popup-background',
+        '--rc-adaptive-menu-popup-min-inline-size',
         '--rc-adaptive-menu-trigger-color',
         '--rc-adaptive-menu-item-min-block-size',
       ],

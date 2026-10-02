@@ -34,6 +34,31 @@
       calc(var(--md-sys-elevation-level4, 8px) * 2)
       color-mix(in srgb, var(--md-sys-color-shadow, #000) 24%, transparent);
     --rc-shadow: var(--rc-shadow-level2);
+    /*
+     * Menus, select and combobox listboxes, and adaptive-menu popups share the
+     * MD3 menu container. Set here rather than per element so the values also
+     * inherit into popups rendered inside other shadow roots.
+     */
+    --rc-popup-background: var(
+      --md-menu-container-color,
+      var(--md-sys-color-surface-container, Canvas)
+    );
+    --rc-popup-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-popup-border: 0;
+    --rc-popup-radius: var(
+      --md-menu-container-shape,
+      var(--md-sys-shape-corner-extra-small, 0.25rem)
+    );
+    --rc-popup-shadow: var(--rc-shadow);
+    --rc-adaptive-menu-popup-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%);
+    --rc-popup-padding-block: 0.5rem;
+    /* Menu, listbox, and adaptive-menu items use the MD3 body-large scale. */
+    --rc-item-font-family: var(--md-sys-typescale-body-large-font, inherit);
+    --rc-item-font-size: var(--md-sys-typescale-body-large-size, 1rem);
+    --rc-item-font-weight: var(--md-sys-typescale-body-large-weight, 400);
+    --rc-item-line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
+    --rc-item-letter-spacing: var(--md-sys-typescale-body-large-tracking, 0.03125rem);
+    --rc-item-icon-size: 1.5rem;
     --rc-font-family: var(--md-sys-typescale-body-medium-font, inherit);
     --rc-font-size: var(--md-sys-typescale-body-medium-size, 0.875rem);
     --rc-line-height: var(--md-sys-typescale-body-medium-line-height, 1.25rem);
@@ -142,7 +167,10 @@
      * (emphasized) is unchanged from spec.
      */
     --rc-motion-spatial-duration-fast: var(--md-sys-motion-duration-medium2, 300ms);
-    --rc-motion-spatial-easing-fast: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+    --rc-motion-spatial-easing-fast: var(
+      --md-sys-motion-easing-emphasized,
+      cubic-bezier(0.2, 0, 0, 1)
+    );
     --rc-motion-spatial-duration-default: var(--md-sys-motion-duration-medium4, 400ms);
     --rc-motion-spatial-easing-default: var(--rc-motion-spatial-easing-fast);
     --rc-motion-spatial-duration-slow: var(--md-sys-motion-duration-long2, 500ms);
@@ -172,13 +200,6 @@
     );
     --rc-select-border: 1px solid
       var(--md-outlined-select-text-field-outline-color, var(--md-sys-color-outline, ButtonBorder));
-    --rc-select-listbox-radius: var(
-      --md-menu-container-shape,
-      var(--md-sys-shape-corner-extra-small, 0.25rem)
-    );
-    --rc-select-listbox-border: 0;
-    --rc-select-listbox-padding-block: 0.5rem;
-    --rc-select-shadow: var(--rc-shadow);
     --rc-select-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
     --rc-select-chip-padding-block: 0.375rem;
     --rc-select-chip-padding-inline-start: 0.75rem;
@@ -230,13 +251,6 @@
     );
     --rc-combobox-border: 1px solid
       var(--md-outlined-text-field-outline-color, var(--md-sys-color-outline, ButtonBorder));
-    --rc-combobox-listbox-radius: var(
-      --md-menu-container-shape,
-      var(--md-sys-shape-corner-extra-small, 0.25rem)
-    );
-    --rc-combobox-listbox-border: 0;
-    --rc-combobox-listbox-padding-block: 0.5rem;
-    --rc-combobox-shadow: var(--rc-shadow);
     --rc-combobox-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
     --rc-combobox-chip-padding-block: 0.375rem;
     --rc-combobox-chip-padding-inline-start: 0.75rem;
@@ -423,19 +437,9 @@
     );
   }
 
-  .rc-theme-material rc-menu,
-  :host(.rc-theme-material) rc-menu {
-    --rc-menu-padding-block: 0.5rem;
-    --rc-menu-background: var(
-      --md-menu-container-color,
-      var(--md-sys-color-surface-container, Canvas)
-    );
-    --rc-menu-border: 0;
-    --rc-menu-radius: var(
-      --md-menu-container-shape,
-      var(--md-sys-shape-corner-extra-small, 0.25rem)
-    );
-    --rc-menu-shadow: var(--rc-shadow);
+  /* Declared on the theme root so menus inside other shadow roots inherit it. */
+  .rc-theme-material,
+  :host(.rc-theme-material) {
     --rc-menu-color: var(
       --md-menu-item-label-text-color,
       var(--md-sys-color-on-surface, CanvasText)
@@ -653,6 +657,7 @@
       --rc-shadow-level2: none;
       --rc-shadow-level3: none;
       --rc-shadow: none;
+      --rc-popup-border: 1px solid ButtonBorder;
       --rc-disabled-opacity: 1;
     }
 

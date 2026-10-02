@@ -601,3 +601,57 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
     );
   },
 );
+
+test('popups and their items keep the Material menu style inside foreign shadow roots', async () => {
+  const scope = document.createElement('div');
+  const host = document.createElement('div');
+  const shadowRoot = host.attachShadow({ mode: 'open' });
+  const adaptiveMenu = document.createElement('rc-adaptive-menu');
+  const menuButton = document.createElement('rc-menu-button');
+  const menu = document.createElement('rc-menu');
+
+  scope.className = 'rc-theme-material';
+  adaptiveMenu.setAttribute('max-shown', '0');
+  const label = Object.assign(document.createElement('span'), { textContent: 'Edit' });
+  const action = document.createElement('button');
+
+  label.setAttribute('data-rc-menu-label', '');
+  action.append(label);
+  adaptiveMenu.append(action);
+  menuButton.append(menu);
+  shadowRoot.append(adaptiveMenu, menuButton);
+  scope.append(host);
+  document.body.append(scope);
+  await settle(shadowRoot.host);
+  await Promise.all(
+    [adaptiveMenu, menuButton, menu].map(
+      (element) => (element as Element & { updateComplete?: Promise<unknown> }).updateComplete,
+    ),
+  );
+
+  const popup = adaptiveMenu.shadowRoot!.querySelector<HTMLElement>('#popup')!;
+  const popupShadow = getComputedStyle(scope).getPropertyValue('--rc-adaptive-menu-popup-shadow');
+
+  expect(popupShadow).toContain('0 1px 2px');
+  expect(popupShadow).toContain('0 2px 6px 2px');
+  expect(getComputedStyle(popup).boxShadow).not.toBe(getComputedStyle(menu).boxShadow);
+
+  // The theme's control radius is fully rounded; popups must not inherit it.
+  for (const surface of [popup, menu]) {
+    const styles = getComputedStyle(surface);
+
+    expect(styles.borderStartStartRadius).toBe('4px');
+    expect(styles.borderTopWidth).toBe('0px');
+    expect(styles.paddingBlockStart).toBe('8px');
+  }
+
+  // MD3 menu items use the body-large type scale.
+  for (const text of [label, menu]) {
+    const styles = getComputedStyle(text);
+
+    expect(styles.fontSize).toBe('16px');
+    expect(styles.lineHeight).toBe('24px');
+  }
+
+  expect(getComputedStyle(label).letterSpacing).toBe('0.5px');
+});

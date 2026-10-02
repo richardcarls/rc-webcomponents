@@ -746,7 +746,6 @@ test('adaptive menu receives Material trigger, popup, and row geometry', () => {
   scope.append(menu);
 
   const styles = getComputedStyle(menu);
-  const nestedStyles = getComputedStyle(nestedMenuAction);
 
   expect(styles.getPropertyValue('--rc-adaptive-menu-trigger-inline-size')).toBe('2rem');
   expect(styles.getPropertyValue('--rc-adaptive-menu-trigger-block-size')).toBe('2.5rem');
@@ -755,9 +754,8 @@ test('adaptive menu receives Material trigger, popup, and row geometry', () => {
   expect(styles.getPropertyValue('--rc-adaptive-menu-icon-size')).toBe('1.5rem');
   expect(styles.getPropertyValue('--rc-adaptive-menu-item-min-block-size')).toBe('3rem');
   expect(styles.getPropertyValue('--rc-adaptive-menu-item-padding-inline')).toBe('0.75rem');
-  expect(styles.getPropertyValue('--rc-adaptive-menu-popup-background')).not.toBe('');
-  expect(nestedStyles.getPropertyValue('--rc-menu-button-trigger-block-size')).toBe('3rem');
-  expect(nestedStyles.getPropertyValue('--rc-menu-button-icon-size')).toBe('100%');
+  expect(styles.getPropertyValue('--rc-adaptive-menu-popup-min-inline-size')).toBe('7rem');
+  expect(styles.getPropertyValue('--rc-adaptive-menu-trigger-hover-background')).not.toBe('');
 
   nestedMenuAction.removeAttribute('data-rc-action-overflowed');
   nestedMenuAction.setAttribute('data-rc-action-promoted', '');

@@ -91,9 +91,24 @@ export const adaptiveMenuStyles = css`
     border-radius: var(--rc-adaptive-menu-trigger-radius, var(--rc-control-radius, 0));
     background: var(--rc-adaptive-menu-trigger-background, ButtonFace);
     color: var(--rc-adaptive-menu-trigger-color, ButtonText);
+    box-shadow: var(--rc-adaptive-menu-trigger-shadow, none);
     font: inherit;
     line-height: 1;
     cursor: pointer;
+  }
+
+  #overflow-trigger:hover {
+    background: var(
+      --rc-adaptive-menu-trigger-hover-background,
+      var(--rc-adaptive-menu-trigger-background, ButtonFace)
+    );
+  }
+
+  #overflow-trigger:active {
+    box-shadow: var(
+      --rc-adaptive-menu-trigger-active-shadow,
+      var(--rc-adaptive-menu-trigger-shadow, none)
+    );
   }
 
   #overflow-trigger::before {
@@ -138,15 +153,33 @@ export const adaptiveMenuStyles = css`
     max-inline-size: var(--rc-adaptive-menu-popup-max-inline-size, calc(100dvi - 0.5rem));
     max-block-size: var(--rc-adaptive-menu-popup-max-block-size, calc(100dvb - 0.5rem));
     margin: 0;
-    padding-block: var(--rc-adaptive-menu-popup-padding-block, 0.25em);
-    border: var(--rc-adaptive-menu-popup-border, var(--rc-border, 1px solid ButtonBorder));
-    border-radius: var(--rc-adaptive-menu-popup-radius, var(--rc-control-radius, 0));
-    background: var(--rc-adaptive-menu-popup-background, var(--rc-surface, Canvas));
+    padding-block: var(
+      --rc-adaptive-menu-popup-padding-block,
+      var(--rc-popup-padding-block, 0.25em)
+    );
+    border: var(
+      --rc-adaptive-menu-popup-border,
+      var(--rc-popup-border, var(--rc-border, 1px solid ButtonBorder))
+    );
+    border-radius: var(
+      --rc-adaptive-menu-popup-radius,
+      var(--rc-popup-radius, var(--rc-radius-sm, 0))
+    );
+    background: var(
+      --rc-adaptive-menu-popup-background,
+      var(--rc-popup-background, var(--rc-surface, Canvas))
+    );
     box-shadow: var(
       --rc-adaptive-menu-popup-shadow,
-      var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
+      var(
+        --rc-popup-shadow,
+        var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
+      )
     );
-    color: var(--rc-adaptive-menu-popup-color, var(--rc-field-text, CanvasText));
+    color: var(
+      --rc-adaptive-menu-popup-color,
+      var(--rc-popup-color, var(--rc-field-text, CanvasText))
+    );
     overflow: auto;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;

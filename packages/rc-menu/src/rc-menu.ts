@@ -120,6 +120,13 @@ const LIGHT_DOM_CSS = `
     justify-content: center;
   }
 
+  rc-menu :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])
+    :is([data-rc-icon], [data-rc-menu-leading], [data-rc-menu-icon]) {
+    flex: none;
+    font-size: var(--rc-item-icon-size, inherit);
+    line-height: var(--rc-item-icon-size, inherit);
+  }
+
   rc-menu [data-rc-menu-label] {
     flex: 1 1 auto;
     min-inline-size: 0;
@@ -201,12 +208,12 @@ const LIGHT_DOM_CSS = `
  * @attr label - Accessible label for the menu; synced to `aria-label` on the host.
  *
  * @cssprop [--rc-menu-min-width=10em] - Minimum width of the menu panel.
- * @cssprop [--rc-menu-padding-block=0.25em] - Block (top/bottom) padding inside the panel.
- * @cssprop [--rc-menu-background=Canvas] - Background color; falls back through --rc-surface.
- * @cssprop [--rc-menu-border=1px solid ButtonBorder] - Border; falls back through --rc-border.
- * @cssprop [--rc-menu-radius=var(--rc-control-radius)] - Menu panel border radius.
- * @cssprop [--rc-menu-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Box shadow; falls back through --rc-shadow.
- * @cssprop [--rc-menu-color=CanvasText] - Text color; falls back through --rc-field-text.
+ * @cssprop [--rc-menu-padding-block=var(--rc-popup-padding-block)] - Block (top/bottom) padding inside the panel.
+ * @cssprop [--rc-menu-background=var(--rc-popup-background)] - Background color.
+ * @cssprop [--rc-menu-border=var(--rc-popup-border)] - Border.
+ * @cssprop [--rc-menu-radius=var(--rc-popup-radius)] - Menu panel border radius.
+ * @cssprop [--rc-menu-shadow=var(--rc-popup-shadow)] - Box shadow.
+ * @cssprop [--rc-menu-color=var(--rc-popup-color)] - Text color.
  * @cssprop [--rc-menu-max-inline-size=calc(100dvi - 0.5rem)] - Viewport-aware maximum inline size.
  * @cssprop [--rc-menu-max-block-size=calc(100dvb - 0.5rem)] - Viewport-aware maximum block size; taller menus scroll.
  * @cssprop [--rc-menu-item-min-block-size=0] - Minimum block size for menu item rows.
@@ -229,6 +236,12 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-menu-separator-margin-inline=0px] - Separator inline margin; set to match item padding for inset separators.
  * @cssprop [--rc-menu-group-label-padding-block=0.1em] - Block padding on `[data-group-label]` section headings.
  * @cssprop [--rc-menu-group-label-color=GrayText] - Text color of `[data-group-label]` section headings.
+ * @cssprop [--rc-item-font-family=var(--rc-font-family)] - Item font family; shared with listbox and adaptive-menu items.
+ * @cssprop [--rc-item-font-size=var(--rc-font-size)] - Item font size; shared with listbox and adaptive-menu items.
+ * @cssprop [--rc-item-font-weight=inherit] - Item font weight; shared with listbox and adaptive-menu items.
+ * @cssprop [--rc-item-line-height=var(--rc-line-height)] - Item line height; shared with listbox and adaptive-menu items.
+ * @cssprop [--rc-item-letter-spacing=inherit] - Item letter spacing; shared with listbox and adaptive-menu items.
+ * @cssprop [--rc-item-icon-size=inherit] - Size of icons marked with `data-rc-icon`, `data-rc-menu-leading`, or `data-rc-menu-icon`.
  */
 export class RCMenu extends LitElement {
   static styles = [menuStyles];

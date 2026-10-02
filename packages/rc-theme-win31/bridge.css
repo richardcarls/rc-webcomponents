@@ -32,6 +32,13 @@
     --rc-border-style: solid;
     --rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
     --rc-shadow: none;
+    /* A 3.1 menu is a flat panel with a hard frame and a hard drop shadow. */
+    --rc-popup-background: var(--win31-color-menu);
+    --rc-popup-color: var(--win31-color-menu-text);
+    --rc-popup-border: var(--win31-border);
+    --rc-popup-radius: var(--win31-radius);
+    --rc-popup-shadow: var(--win31-drop-shadow);
+    --rc-popup-padding-block: var(--win31-unit);
 
     --rc-font-family: var(--win31-font-family);
     --rc-font-size: var(--win31-font-size);
@@ -199,15 +206,17 @@
   :host(.rc-theme-win31) rc-combobox {
     --rc-select-control-block-size: calc(20 * var(--win31-unit));
     --rc-select-radius: var(--win31-radius);
+    /* Drop-down lists are field surfaces, not menus. */
     --rc-select-shadow: none;
-    --rc-select-listbox-radius: var(--win31-radius);
-    --rc-select-listbox-border: var(--rc-border);
+    --rc-select-listbox-background: var(--rc-surface);
+    --rc-select-listbox-color: var(--rc-field-text);
     --rc-select-chip-radius: var(--win31-radius);
     --rc-combobox-control-block-size: calc(20 * var(--win31-unit));
     --rc-combobox-radius: var(--win31-radius);
     --rc-combobox-shadow: none;
-    --rc-combobox-listbox-radius: var(--win31-radius);
-    --rc-combobox-listbox-border: var(--rc-border);
+    --rc-combobox-listbox-background: var(--rc-surface);
+    --rc-combobox-listbox-color: var(--rc-field-text);
+    --rc-combobox-listbox-padding-block: var(--rc-control-padding-block);
     --rc-combobox-chip-radius: var(--win31-radius);
   }
 

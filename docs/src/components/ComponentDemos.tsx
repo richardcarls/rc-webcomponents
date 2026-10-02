@@ -2177,7 +2177,30 @@ export function TextareaDisclosureDemo() {
     let source: string | undefined;
 
     editor.usePlugin({
-      mount(api) { disclosures = new LineDisclosureController(api); },
+      mount(api) {
+        api.adoptStyleSheet(`
+          .line-disclosure-trigger .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 1.5em;
+            line-height: 1;
+            white-space: nowrap;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+          }
+        `);
+
+        disclosures = new LineDisclosureController(api, {
+          createTriggerIcon(expanded) {
+            const $icon = document.createElement('span');
+
+            $icon.className = 'material-symbols-outlined';
+            $icon.textContent = expanded ? 'expand_less' : 'expand_more';
+
+            return $icon;
+          },
+        });
+      },
       update(value, api) {
         if (source !== value) {
           disclosures.clear();

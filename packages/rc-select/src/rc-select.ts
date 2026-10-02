@@ -104,11 +104,13 @@ declare global {
  * @cssprop [--rc-select-gap=var(--rc-control-gap)] - Gap between trigger content, chips, and icon.
  * @cssprop [--rc-select-radius=var(--rc-control-radius)] - Trigger border radius.
  * @cssprop [--rc-select-border=var(--rc-border)] - Trigger border.
- * @cssprop [--rc-select-listbox-radius=var(--rc-control-radius)] - Popup listbox border radius.
+ * @cssprop [--rc-select-listbox-radius=var(--rc-popup-radius)] - Popup listbox border radius.
  * @cssprop [--rc-select-listbox-duration=150ms] - Popup listbox open/close fade transition duration.
- * @cssprop [--rc-select-listbox-border=var(--rc-border)] - Popup listbox border.
- * @cssprop [--rc-select-shadow=var(--rc-shadow)] - Popup listbox box shadow.
- * @cssprop [--rc-select-listbox-padding-block=var(--rc-control-padding-block)] - Popup listbox block padding.
+ * @cssprop [--rc-select-listbox-border=var(--rc-popup-border)] - Popup listbox border.
+ * @cssprop [--rc-select-listbox-background=var(--rc-popup-background)] - Popup listbox background.
+ * @cssprop [--rc-select-listbox-color=var(--rc-popup-color)] - Popup listbox text color.
+ * @cssprop [--rc-select-shadow=var(--rc-popup-shadow)] - Popup listbox box shadow.
+ * @cssprop [--rc-select-listbox-padding-block=var(--rc-popup-padding-block)] - Popup listbox block padding.
  * @cssprop [--rc-select-chip-radius=var(--rc-radius-md)] - Multi-select chip border radius.
  * @cssprop [--rc-select-chip-padding-block=0.1em] - Multi-select chip block-axis padding.
  * @cssprop [--rc-select-chip-padding-inline-start=0.3em] - Multi-select chip leading padding.
