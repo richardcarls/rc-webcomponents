@@ -47,6 +47,35 @@
           }
         },
         {
+          "name": "color/computed/adaptive-menu-trigger-hover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-hover-background)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-hover-background",
+          "description": "Resolved from --rc-adaptive-menu-trigger-hover-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.975447,
+              "g": 0.914491,
+              "b": 0.872875,
+              "a": 1,
+              "hex": "#f9e9df"
+            },
+            "Dark": {
+              "r": 0.170646,
+              "g": 0.118181,
+              "b": 0.06808,
+              "a": 1,
+              "hex": "#2c1e11"
+            }
+          }
+        },
+        {
           "name": "color/computed/app-bar-bg",
           "type": "COLOR",
           "scopes": [
@@ -1619,6 +1648,25 @@
           "values": {
             "Value": {
               "alias": "color/on-surface-muted",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "adaptive-menu/trigger-hover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-hover-background)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-hover-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/adaptive-menu-trigger-hover-background",
               "collection": "Color"
             }
           }
@@ -5504,6 +5552,25 @@
           }
         },
         {
+          "name": "menu/background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-menu-background)"
+          },
+          "cssVar": "--rc-menu-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-raised",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "menu/check-size",
           "type": "FLOAT",
           "scopes": [
@@ -5606,6 +5673,22 @@
               "alias": "size/item-padding-inline",
               "collection": "Size"
             }
+          }
+        },
+        {
+          "name": "menu/padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-menu-padding-block)"
+          },
+          "cssVar": "--rc-menu-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 4
           }
         },
         {
@@ -8196,6 +8279,12 @@
         "property": "--rc-markdown-editor-toolbar-select-border",
         "raw": "var(--rc-border, 1px solid ButtonBorder)",
         "name": "markdown-editor/toolbar-select-border",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-menu-shadow",
+        "raw": "var(--rc-shadow, none)",
+        "name": "menu/shadow",
         "reason": "aliases a composite shorthand"
       },
       {

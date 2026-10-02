@@ -1688,6 +1688,35 @@
           }
         },
         {
+          "name": "color/computed/adaptive-menu-trigger-hover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-hover-background)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-hover-background",
+          "description": "Resolved from --rc-adaptive-menu-trigger-hover-background, which composes a color at use time.",
+          "values": {
+            "Light": {
+              "r": 0.286275,
+              "g": 0.270588,
+              "b": 0.309804,
+              "a": 0.08,
+              "hex": "#49454f"
+            },
+            "Dark": {
+              "r": 0.792157,
+              "g": 0.768627,
+              "b": 0.815686,
+              "a": 0.08,
+              "hex": "#cac4d0"
+            }
+          }
+        },
+        {
           "name": "color/computed/app-bar-bg",
           "type": "COLOR",
           "scopes": [
@@ -5937,6 +5966,25 @@
           }
         },
         {
+          "name": "adaptive-menu/trigger-hover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-adaptive-menu-trigger-hover-background)"
+          },
+          "cssVar": "--rc-adaptive-menu-trigger-hover-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/computed/adaptive-menu-trigger-hover-background",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "adaptive-menu/trigger-inline-size",
           "type": "FLOAT",
           "scopes": [
@@ -7799,6 +7847,34 @@
           }
         },
         {
+          "name": "core/item-font-size",
+          "type": "FLOAT",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-item-font-size)"
+          },
+          "cssVar": "--rc-item-font-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
+          "name": "core/item-font-weight",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-item-font-weight)"
+          },
+          "cssVar": "--rc-item-font-weight",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 400
+          }
+        },
+        {
           "name": "core/item-gap",
           "type": "FLOAT",
           "scopes": [
@@ -7811,6 +7887,51 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 12
+          }
+        },
+        {
+          "name": "core/item-icon-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-item-icon-size)"
+          },
+          "cssVar": "--rc-item-icon-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 24
+          }
+        },
+        {
+          "name": "core/item-letter-spacing",
+          "type": "FLOAT",
+          "scopes": [
+            "LETTER_SPACING"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-item-letter-spacing)"
+          },
+          "cssVar": "--rc-item-letter-spacing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0.5
+          }
+        },
+        {
+          "name": "core/item-line-height",
+          "type": "FLOAT",
+          "scopes": [
+            "LINE_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-item-line-height)"
+          },
+          "cssVar": "--rc-item-line-height",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 24
           }
         },
         {
@@ -14895,6 +15016,12 @@
       {
         "property": "--rc-font-family",
         "raw": "var(--md-sys-typescale-body-medium-font, inherit)",
+        "reason": "literal",
+        "scope": "rc-theme-material"
+      },
+      {
+        "property": "--rc-item-font-family",
+        "raw": "var(--md-sys-typescale-body-large-font, inherit)",
         "reason": "literal",
         "scope": "rc-theme-material"
       },

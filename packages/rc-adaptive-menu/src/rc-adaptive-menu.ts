@@ -71,6 +71,54 @@ const LIGHT_DOM_CSS = `
     text-decoration: none;
   }
 
+  /*
+   * Overflowed rc-button and rc-menu-button wrappers render as menu rows.
+   * Their own tokens map onto the item tokens so a theme sizes every row
+   * from one place.
+   */
+  rc-adaptive-menu > rc-button[data-rc-action-overflowed] {
+    display: block;
+    min-inline-size: 100%;
+    min-block-size: 0;
+    --rc-button-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-button-icon-size: 100%;
+    --rc-button-touch-target-inline-size: 100%;
+    --rc-button-touch-target-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-button-padding-inline: var(--rc-adaptive-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
+    --rc-button-padding-block: var(--rc-adaptive-menu-item-padding-block, var(--rc-item-padding-block, 0.3em));
+    --rc-button-radius: 0;
+    --rc-button-bg: transparent;
+    --rc-button-color: currentColor;
+    --rc-button-border: 0;
+    --rc-button-state-layer-bg: currentColor;
+    --rc-button-progress-color: currentColor;
+  }
+
+  rc-adaptive-menu > rc-menu-button[data-rc-action-overflowed] {
+    display: block;
+    min-inline-size: 100%;
+    min-block-size: 0;
+    --rc-menu-button-trigger-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-menu-button-icon-size: 100%;
+    --rc-menu-button-touch-target-inline-size: 100%;
+    --rc-menu-button-touch-target-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-menu-button-trigger-padding-block: var(--rc-adaptive-menu-item-padding-block, var(--rc-item-padding-block, 0.3em));
+    --rc-menu-button-trigger-padding-inline: var(--rc-adaptive-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
+    --rc-menu-button-trigger-gap: var(--rc-adaptive-menu-item-gap, var(--rc-item-gap, 0.5em));
+    --rc-menu-button-trigger-radius: 0;
+    --rc-menu-button-trigger-border: 0;
+    --rc-menu-button-trigger-background: transparent;
+    --rc-menu-button-trigger-color: currentColor;
+    --rc-menu-button-trigger-hover-color: currentColor;
+    --rc-menu-button-trigger-open-color: currentColor;
+  }
+
+  rc-adaptive-menu > rc-menu-button[data-rc-action-overflowed] > [slot='trigger'] {
+    justify-content: flex-start;
+    inline-size: 100%;
+    min-inline-size: 100%;
+  }
+
   rc-adaptive-menu [data-rc-menu-leading],
   rc-adaptive-menu [data-rc-menu-trailing] {
     flex: none;
@@ -79,9 +127,22 @@ const LIGHT_DOM_CSS = `
     justify-content: center;
   }
 
+  rc-adaptive-menu > [data-rc-action-overflowed] [data-rc-menu-leading] {
+    font-size: var(--rc-item-icon-size, inherit);
+    line-height: var(--rc-item-icon-size, inherit);
+  }
+
   rc-adaptive-menu [data-rc-menu-label] {
     flex: 1 1 auto;
     min-inline-size: 0;
+  }
+
+  rc-adaptive-menu > [data-rc-action-overflowed] [data-rc-menu-label] {
+    font-family: var(--rc-item-font-family, inherit);
+    font-size: var(--rc-item-font-size, inherit);
+    font-weight: var(--rc-item-font-weight, inherit);
+    line-height: var(--rc-item-line-height, inherit);
+    letter-spacing: var(--rc-item-letter-spacing, inherit);
   }
 
   rc-adaptive-menu [data-rc-menu-trailing],
@@ -161,6 +222,15 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-adaptive-menu-trigger-radius=var(--rc-control-radius)] - Overflow trigger radius.
  * @cssprop [--rc-adaptive-menu-trigger-background=ButtonFace] - Overflow trigger background.
  * @cssprop [--rc-adaptive-menu-trigger-color=ButtonText] - Overflow trigger color.
+ * @cssprop [--rc-adaptive-menu-trigger-hover-background=var(--rc-adaptive-menu-trigger-background)] - Overflow trigger background under the pointer.
+ * @cssprop [--rc-adaptive-menu-trigger-shadow=none] - Overflow trigger box shadow.
+ * @cssprop [--rc-adaptive-menu-trigger-active-shadow=var(--rc-adaptive-menu-trigger-shadow)] - Overflow trigger box shadow while pressed.
+ * @cssprop [--rc-item-font-family=inherit] - Overflow action label font family; shared with menu and listbox items.
+ * @cssprop [--rc-item-font-size=inherit] - Overflow action label font size; shared with menu and listbox items.
+ * @cssprop [--rc-item-font-weight=inherit] - Overflow action label font weight; shared with menu and listbox items.
+ * @cssprop [--rc-item-line-height=inherit] - Overflow action label line height; shared with menu and listbox items.
+ * @cssprop [--rc-item-letter-spacing=inherit] - Overflow action label letter spacing; shared with menu and listbox items.
+ * @cssprop [--rc-item-icon-size=inherit] - Overflow action leading icon size; shared with menu items.
  * @cssprop [--rc-adaptive-menu-icon-size=1.5em] - Default overflow icon size.
  * @cssprop [--rc-adaptive-menu-popup-min-inline-size=10em] - Overflow popup minimum inline size.
  * @cssprop [--rc-adaptive-menu-popup-max-inline-size=calc(100dvi - 0.5rem)] - Overflow popup viewport-aware inline limit.

@@ -3,9 +3,10 @@
    * A 3.1 menu is a flat surface panel with a hard one-pixel frame and a hard
    * one-pixel drop shadow. Menus are the one place 3.1 did highlight under the
    * pointer, so the hover tokens are live here where they are transparent for
-   * list rows.
+   * list rows. Tokens are declared on the theme root so menus inside other
+   * shadow roots inherit them.
    */
-  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) {
     --rc-menu-min-width: calc(142 * var(--win31-unit));
     --rc-menu-item-min-block-size: calc(20 * var(--win31-unit));
     --rc-menu-item-padding-block: 0;
@@ -27,6 +28,9 @@
     --rc-menu-separator-border: var(--win31-hairline) solid var(--win31-color-shadow);
     --rc-menu-separator-margin-block: var(--win31-unit);
     --rc-menu-separator-margin-inline: 0;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu {
     font-family: var(--win31-font-family);
     font-size: var(--win31-font-size);
     line-height: 1;

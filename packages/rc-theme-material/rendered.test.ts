@@ -602,7 +602,7 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
   },
 );
 
-test('popup surfaces keep the Material menu container inside foreign shadow roots', async () => {
+test('popups and their items keep the Material menu style inside foreign shadow roots', async () => {
   const scope = document.createElement('div');
   const host = document.createElement('div');
   const shadowRoot = host.attachShadow({ mode: 'open' });
@@ -612,7 +612,12 @@ test('popup surfaces keep the Material menu container inside foreign shadow root
 
   scope.className = 'rc-theme-material';
   adaptiveMenu.setAttribute('max-shown', '0');
-  adaptiveMenu.append(Object.assign(document.createElement('button'), { textContent: 'Edit' }));
+  const label = Object.assign(document.createElement('span'), { textContent: 'Edit' });
+  const action = document.createElement('button');
+
+  label.setAttribute('data-rc-menu-label', '');
+  action.append(label);
+  adaptiveMenu.append(action);
   menuButton.append(menu);
   shadowRoot.append(adaptiveMenu, menuButton);
   scope.append(host);
@@ -634,4 +639,14 @@ test('popup surfaces keep the Material menu container inside foreign shadow root
     expect(styles.borderTopWidth).toBe('0px');
     expect(styles.paddingBlockStart).toBe('8px');
   }
+
+  // MD3 menu items use the body-large type scale.
+  for (const text of [label, menu]) {
+    const styles = getComputedStyle(text);
+
+    expect(styles.fontSize).toBe('16px');
+    expect(styles.lineHeight).toBe('24px');
+  }
+
+  expect(getComputedStyle(label).letterSpacing).toBe('0.5px');
 });

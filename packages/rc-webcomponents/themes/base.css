@@ -80,6 +80,17 @@
   --rc-popup-radius: var(--rc-radius-sm);
   --rc-popup-shadow: var(--rc-shadow);
   --rc-popup-padding-block: var(--rc-control-padding-block);
+
+  /*
+   * Menu, listbox, and adaptive-menu item type. Left to inherit so items
+   * follow their surrounding text unless a theme sets an item type scale.
+   */
+  --rc-item-font-family: inherit;
+  --rc-item-font-size: inherit;
+  --rc-item-font-weight: inherit;
+  --rc-item-line-height: inherit;
+  --rc-item-letter-spacing: inherit;
+  --rc-item-icon-size: inherit;
 }
 
 @supports (color: AccentColor) {

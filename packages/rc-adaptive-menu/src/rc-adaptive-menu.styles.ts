@@ -91,9 +91,24 @@ export const adaptiveMenuStyles = css`
     border-radius: var(--rc-adaptive-menu-trigger-radius, var(--rc-control-radius, 0));
     background: var(--rc-adaptive-menu-trigger-background, ButtonFace);
     color: var(--rc-adaptive-menu-trigger-color, ButtonText);
+    box-shadow: var(--rc-adaptive-menu-trigger-shadow, none);
     font: inherit;
     line-height: 1;
     cursor: pointer;
+  }
+
+  #overflow-trigger:hover {
+    background: var(
+      --rc-adaptive-menu-trigger-hover-background,
+      var(--rc-adaptive-menu-trigger-background, ButtonFace)
+    );
+  }
+
+  #overflow-trigger:active {
+    box-shadow: var(
+      --rc-adaptive-menu-trigger-active-shadow,
+      var(--rc-adaptive-menu-trigger-shadow, none)
+    );
   }
 
   #overflow-trigger::before {

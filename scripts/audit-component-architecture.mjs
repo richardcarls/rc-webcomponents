@@ -195,7 +195,10 @@ export const ANIMATED_LAYOUT_PROPERTY_BUDGETS = {
 };
 
 export const PACKAGE_ID_SELECTOR_BUDGETS = {
-  'rc-adaptive-menu': 14,
+  // Grew by two when the overflow trigger gained token-driven :hover and
+  // :active states, so themes no longer need ::part rules that cannot reach
+  // menus inside other shadow roots.
+  'rc-adaptive-menu': 16,
   'rc-app-bar': 29,
   'rc-carousel': 7,
   'rc-chip-group': 10,

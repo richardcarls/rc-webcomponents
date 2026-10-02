@@ -51,6 +51,13 @@
     );
     --rc-popup-shadow: var(--rc-shadow);
     --rc-popup-padding-block: 0.5rem;
+    /* Menu, listbox, and adaptive-menu items use the MD3 body-large scale. */
+    --rc-item-font-family: var(--md-sys-typescale-body-large-font, inherit);
+    --rc-item-font-size: var(--md-sys-typescale-body-large-size, 1rem);
+    --rc-item-font-weight: var(--md-sys-typescale-body-large-weight, 400);
+    --rc-item-line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
+    --rc-item-letter-spacing: var(--md-sys-typescale-body-large-tracking, 0.03125rem);
+    --rc-item-icon-size: 1.5rem;
     --rc-font-family: var(--md-sys-typescale-body-medium-font, inherit);
     --rc-font-size: var(--md-sys-typescale-body-medium-size, 0.875rem);
     --rc-line-height: var(--md-sys-typescale-body-medium-line-height, 1.25rem);
@@ -159,7 +166,10 @@
      * (emphasized) is unchanged from spec.
      */
     --rc-motion-spatial-duration-fast: var(--md-sys-motion-duration-medium2, 300ms);
-    --rc-motion-spatial-easing-fast: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+    --rc-motion-spatial-easing-fast: var(
+      --md-sys-motion-easing-emphasized,
+      cubic-bezier(0.2, 0, 0, 1)
+    );
     --rc-motion-spatial-duration-default: var(--md-sys-motion-duration-medium4, 400ms);
     --rc-motion-spatial-easing-default: var(--rc-motion-spatial-easing-fast);
     --rc-motion-spatial-duration-slow: var(--md-sys-motion-duration-long2, 500ms);
@@ -426,8 +436,9 @@
     );
   }
 
-  .rc-theme-material rc-menu,
-  :host(.rc-theme-material) rc-menu {
+  /* Declared on the theme root so menus inside other shadow roots inherit it. */
+  .rc-theme-material,
+  :host(.rc-theme-material) {
     --rc-menu-color: var(
       --md-menu-item-label-text-color,
       var(--md-sys-color-on-surface, CanvasText)

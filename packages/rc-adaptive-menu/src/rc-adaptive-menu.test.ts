@@ -569,3 +569,61 @@ test('opens the overflow popup at the block end, inline-end aligned, in vertical
     );
   });
 });
+
+test('styles overflowed rows from inherited item tokens inside a foreign shadow root', async () => {
+  const outer = document.createElement('div');
+  const shadowRoot = outer.attachShadow({ mode: 'open' });
+  const host = document.createElement('rc-adaptive-menu');
+  const action = document.createElement('button');
+  const leading = document.createElement('span');
+  const label = document.createElement('span');
+  const nested = document.createElement('rc-menu-button');
+  const nestedTrigger = document.createElement('button');
+
+  outer.style.cssText = [
+    '--rc-item-font-size: 17px',
+    '--rc-item-letter-spacing: 0.5px',
+    '--rc-item-icon-size: 22px',
+    '--rc-adaptive-menu-item-min-block-size: 44px',
+    '--rc-adaptive-menu-trigger-background: rgb(1, 2, 3)',
+    '--rc-adaptive-menu-trigger-hover-background: rgb(4, 5, 6)',
+  ].join(';');
+
+  host.setAttribute('max-shown', '0');
+  action.type = 'button';
+  leading.setAttribute('data-rc-menu-leading', '');
+  leading.textContent = '*';
+  label.setAttribute('data-rc-menu-label', '');
+  label.textContent = 'Edit';
+  action.append(leading, label);
+  nestedTrigger.type = 'button';
+  nestedTrigger.slot = 'trigger';
+  nestedTrigger.textContent = 'More';
+  nested.append(nestedTrigger);
+  host.append(action, nested);
+  shadowRoot.append(host);
+  document.body.append(outer);
+
+  try {
+    await settle(host);
+
+    const trigger = host.shadowRoot!.querySelector<HTMLButtonElement>('#overflow-trigger')!;
+
+    expect(action).toHaveAttribute('data-rc-action-overflowed');
+    expect(nested).toHaveAttribute('data-rc-action-overflowed');
+    expect(getComputedStyle(label).fontSize).toBe('17px');
+    expect(getComputedStyle(label).letterSpacing).toBe('0.5px');
+    expect(getComputedStyle(leading).fontSize).toBe('22px');
+
+    expect(getComputedStyle(nested).getPropertyValue('--rc-menu-button-trigger-block-size').trim())
+      .toBe('44px');
+
+    expect(getComputedStyle(trigger).backgroundColor).toBe('rgb(1, 2, 3)');
+
+    await userEvent.hover(trigger);
+
+    expect(getComputedStyle(trigger).backgroundColor).toBe('rgb(4, 5, 6)');
+  } finally {
+    outer.remove();
+  }
+});

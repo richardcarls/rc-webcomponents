@@ -21,9 +21,11 @@ export const menuStyles = css`
       )
     );
     color: var(--rc-menu-color, var(--rc-popup-color, var(--rc-field-text, CanvasText)));
-    font-family: var(--rc-font-family, inherit);
-    font-size: var(--rc-font-size, inherit);
-    line-height: var(--rc-line-height, normal);
+    font-family: var(--rc-item-font-family, var(--rc-font-family, inherit));
+    font-size: var(--rc-item-font-size, var(--rc-font-size, inherit));
+    font-weight: var(--rc-item-font-weight, inherit);
+    line-height: var(--rc-item-line-height, var(--rc-line-height, normal));
+    letter-spacing: var(--rc-item-letter-spacing, inherit);
     max-inline-size: var(--rc-menu-max-inline-size, calc(100dvi - 0.5rem));
     max-block-size: var(--rc-menu-max-block-size, calc(100dvb - 0.5rem));
     overflow: auto;

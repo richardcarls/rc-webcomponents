@@ -8875,6 +8875,18 @@
     ],
     "unresolved": [
       {
+        "property": "--rc-adaptive-menu-trigger-active-shadow",
+        "raw": "var(--win31-bevel-inset-1)",
+        "reason": "literal",
+        "scope": "rc-theme-"
+      },
+      {
+        "property": "--rc-adaptive-menu-trigger-shadow",
+        "raw": "var(--win31-bevel-outset-1)",
+        "reason": "literal",
+        "scope": "rc-theme-"
+      },
+      {
         "property": "--rc-dialog-shadow",
         "raw": "var(--win31-dialog-frame)",
         "reason": "literal",
