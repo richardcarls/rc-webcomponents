@@ -630,6 +630,11 @@ test('popups and their items keep the Material menu style inside foreign shadow 
   );
 
   const popup = adaptiveMenu.shadowRoot!.querySelector<HTMLElement>('#popup')!;
+  const popupShadow = getComputedStyle(scope).getPropertyValue('--rc-adaptive-menu-popup-shadow');
+
+  expect(popupShadow).toContain('0 1px 2px');
+  expect(popupShadow).toContain('0 2px 6px 2px');
+  expect(getComputedStyle(popup).boxShadow).not.toBe(getComputedStyle(menu).boxShadow);
 
   // The theme's control radius is fully rounded; popups must not inherit it.
   for (const surface of [popup, menu]) {

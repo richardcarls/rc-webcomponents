@@ -24,4 +24,6 @@ popup surface tokens such as `--rc-menu-radius` or
 `--rc-adaptive-menu-popup-background`; override the `--rc-popup-*` tokens
 instead. Material select and combobox listboxes now use the menu container
 color, Material forced-colors popups gain a border, and Substrate listboxes use
-the menu shadow and padding.
+the menu shadow and padding. Material retains its two-layer adaptive-menu popup
+shadow through a component token while other popups continue using the shared
+shadow.

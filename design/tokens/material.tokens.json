@@ -14430,6 +14430,11 @@
     "note": "Composite values are CSS shorthands with no single-variable Figma equivalent; bind their parts individually. Forced-colors and reduced-motion overrides are accessibility fallbacks Figma cannot express.",
     "composite": [
       {
+        "property": "--rc-adaptive-menu-popup-shadow",
+        "raw": "0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%)",
+        "name": "adaptive-menu/popup-shadow"
+      },
+      {
         "property": "--rc-adaptive-menu-trigger-background",
         "raw": "transparent",
         "name": "adaptive-menu/trigger-background"

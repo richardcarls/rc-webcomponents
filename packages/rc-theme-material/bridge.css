@@ -50,6 +50,7 @@
       var(--md-sys-shape-corner-extra-small, 0.25rem)
     );
     --rc-popup-shadow: var(--rc-shadow);
+    --rc-adaptive-menu-popup-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%);
     --rc-popup-padding-block: 0.5rem;
     /* Menu, listbox, and adaptive-menu items use the MD3 body-large scale. */
     --rc-item-font-family: var(--md-sys-typescale-body-large-font, inherit);
