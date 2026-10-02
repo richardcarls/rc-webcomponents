@@ -11,7 +11,7 @@ For the internal rendering architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
 - Mark decorations style character ranges.
 - Line decorations add classes, attributes, gutter content, or diagnostic messages to logical
   lines.
-- Widget decorations insert non-editable inline DOM elements at character offsets.
+- Widget decorations insert non-editable inline, block, or trailing DOM elements at character offsets.
 
 Decorations never change the submitted textarea value. Offsets are always absolute character
 indices into the current plain-text value unless a helper explicitly says otherwise.
@@ -210,7 +210,9 @@ interface LineDecoration {
   message?: string;
   messageClassName?: string;
   attributes?: Record<string, string>;
-  gutterContent?: string | null;
+  gutterContent?: string | HTMLElement | null;
+  gutterLineNumber?: boolean;
+  gutterAccessible?: boolean;
 }
 ```
 
@@ -231,6 +233,12 @@ api.setDecorations([
 ```
 
 Use `gutterContent: null` to suppress built-in gutter content for a line.
+An `HTMLElement` supplies a plugin-owned marker or control. Set
+`gutterAccessible: true` when the cell contains a control. Other cells stay
+hidden from assistive technology.
+Set `gutterLineNumber: true` to retain the built-in number before custom
+content when the host also has `line-numbers`. The number and custom content
+share the first-line alignment even when a block widget expands the row.
 
 ### WidgetDecoration
 
@@ -241,10 +249,28 @@ interface WidgetDecoration {
   offset: number;
   create(): HTMLElement;
   side?: 'before' | 'after';
+  key?: string;
+  layout?: 'inline' | 'block' | 'trailing';
+  accessible?: boolean;
 }
 ```
 
-`create()` is called during each render. Return a new element each time.
+Without a key, `create()` is called when the line rebuilds; return a new element.
+With a key, unchanged lines retain their DOM. Change the key when content changes.
+`layout` defaults to inline; block widgets participate in line height and trailing
+widgets reserve space at the logical line end. Set `accessible: true` for controls
+or meaningful content (the default wrapper is decorative). Such controls receive
+normal Tab navigation rather than tab insertion.
+
+`LineDisclosureController` composes buttons with block panels, retaining
+independent expansion by key. Pass a `revision` when content changes, call `clear()`
+on source changes and plugin destruction, and keep recipe/domain policy outside
+the controller. Set `gutterLine` to move the button into the gutter;
+`createGutterContent(button)` can wrap it with a decorative status marker. The
+button remains the sole disclosure control. Use `updateGutterContent(wrapper)`
+to refresh its marker without replacing the focused button. The constructor's
+optional `createTriggerIcon(expanded)` renders a decorative icon in the labeled
+button. See the documentation site's disclosure demo for a complete example.
 
 ```ts
 api.setDecorations([

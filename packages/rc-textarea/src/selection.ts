@@ -77,6 +77,12 @@ export function domToTextOffset(
     }
 
     const $line = $lines[lineIdx]!;
+
+    // Firefox's Select All uses the editor itself as the range boundary.
+    if ($targetNode === $root && $root.childNodes[targetNodeOffset] === $line) {
+      return totalOffset;
+    }
+
     const result = walkForOffset($line, $targetNode, targetNodeOffset, totalOffset);
 
     if (result.found) {
