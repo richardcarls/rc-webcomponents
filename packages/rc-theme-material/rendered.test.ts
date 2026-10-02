@@ -601,3 +601,37 @@ test.runIf(isChromium).each(['light', 'dark'] as const)(
     );
   },
 );
+
+test('popup surfaces keep the Material menu container inside foreign shadow roots', async () => {
+  const scope = document.createElement('div');
+  const host = document.createElement('div');
+  const shadowRoot = host.attachShadow({ mode: 'open' });
+  const adaptiveMenu = document.createElement('rc-adaptive-menu');
+  const menuButton = document.createElement('rc-menu-button');
+  const menu = document.createElement('rc-menu');
+
+  scope.className = 'rc-theme-material';
+  adaptiveMenu.setAttribute('max-shown', '0');
+  adaptiveMenu.append(Object.assign(document.createElement('button'), { textContent: 'Edit' }));
+  menuButton.append(menu);
+  shadowRoot.append(adaptiveMenu, menuButton);
+  scope.append(host);
+  document.body.append(scope);
+  await settle(shadowRoot.host);
+  await Promise.all(
+    [adaptiveMenu, menuButton, menu].map(
+      (element) => (element as Element & { updateComplete?: Promise<unknown> }).updateComplete,
+    ),
+  );
+
+  const popup = adaptiveMenu.shadowRoot!.querySelector<HTMLElement>('#popup')!;
+
+  // The theme's control radius is fully rounded; popups must not inherit it.
+  for (const surface of [popup, menu]) {
+    const styles = getComputedStyle(surface);
+
+    expect(styles.borderStartStartRadius).toBe('4px');
+    expect(styles.borderTopWidth).toBe('0px');
+    expect(styles.paddingBlockStart).toBe('8px');
+  }
+});

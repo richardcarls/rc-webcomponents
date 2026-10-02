@@ -125,10 +125,9 @@ test('the component-scoped radius tokens are square too', () => {
   // read from one.
   for (const token of [
     '--rc-select-radius',
-    '--rc-select-listbox-radius',
     '--rc-select-chip-radius',
     '--rc-combobox-radius',
-    '--rc-combobox-listbox-radius',
+    '--rc-popup-radius',
   ] as const) {
     expect(styles.getPropertyValue(token).trim(), token).toBe('0');
   }

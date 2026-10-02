@@ -7,12 +7,6 @@
    */
   :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-menu {
     --rc-menu-min-width: calc(142 * var(--win31-unit));
-    --rc-menu-padding-block: var(--win31-unit);
-    --rc-menu-background: var(--win31-color-menu);
-    --rc-menu-color: var(--win31-color-menu-text);
-    --rc-menu-border: var(--win31-border);
-    --rc-menu-radius: var(--win31-radius);
-    --rc-menu-shadow: var(--win31-drop-shadow);
     --rc-menu-item-min-block-size: calc(20 * var(--win31-unit));
     --rc-menu-item-padding-block: 0;
     --rc-menu-item-padding-inline: calc(18 * var(--win31-unit)) calc(34 * var(--win31-unit));

@@ -68,6 +68,18 @@
   --rc-motion-duration: var(--rc-motion-effects-duration-default);
 
   --rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
+
+  /*
+   * Floating surfaces: menus, adaptive-menu popups, and select and combobox
+   * listboxes. Kept separate from the control tokens so a rounded or filled
+   * control shape never leaks onto a popup panel.
+   */
+  --rc-popup-background: var(--rc-surface);
+  --rc-popup-color: var(--rc-field-text);
+  --rc-popup-border: var(--rc-border);
+  --rc-popup-radius: var(--rc-radius-sm);
+  --rc-popup-shadow: var(--rc-shadow);
+  --rc-popup-padding-block: var(--rc-control-padding-block);
 }
 
 @supports (color: AccentColor) {

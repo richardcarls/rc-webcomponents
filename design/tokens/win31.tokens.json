@@ -945,43 +945,6 @@
           }
         },
         {
-          "name": "adaptive-menu/popup-background",
-          "type": "COLOR",
-          "scopes": [
-            "FRAME_FILL",
-            "SHAPE_FILL"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-adaptive-menu-popup-background)"
-          },
-          "cssVar": "--rc-adaptive-menu-popup-background",
-          "description": "Applied where rc-theme- is themed.",
-          "values": {
-            "Value": {
-              "alias": "color/menu",
-              "collection": "Color"
-            }
-          }
-        },
-        {
-          "name": "adaptive-menu/popup-color",
-          "type": "COLOR",
-          "scopes": [
-            "TEXT_FILL"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-adaptive-menu-popup-color)"
-          },
-          "cssVar": "--rc-adaptive-menu-popup-color",
-          "description": "Applied where rc-theme- is themed.",
-          "values": {
-            "Value": {
-              "alias": "color/menu-text",
-              "collection": "Color"
-            }
-          }
-        },
-        {
           "name": "adaptive-menu/popup-min-inline-size",
           "type": "FLOAT",
           "scopes": [
@@ -994,40 +957,6 @@
           "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 142
-          }
-        },
-        {
-          "name": "adaptive-menu/popup-padding-block",
-          "type": "FLOAT",
-          "scopes": [
-            "GAP",
-            "WIDTH_HEIGHT"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-adaptive-menu-popup-padding-block)"
-          },
-          "cssVar": "--rc-adaptive-menu-popup-padding-block",
-          "description": "Applied where rc-theme- is themed.",
-          "values": {
-            "Value": 1
-          }
-        },
-        {
-          "name": "adaptive-menu/popup-radius",
-          "type": "FLOAT",
-          "scopes": [
-            "CORNER_RADIUS"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-adaptive-menu-popup-radius)"
-          },
-          "cssVar": "--rc-adaptive-menu-popup-radius",
-          "description": "Applied where rc-theme- is themed.",
-          "values": {
-            "Value": {
-              "alias": "radius/radius",
-              "collection": "Radius"
-            }
           }
         },
         {
@@ -2132,20 +2061,58 @@
           }
         },
         {
-          "name": "combobox/listbox-radius",
-          "type": "FLOAT",
+          "name": "combobox/listbox-background",
+          "type": "COLOR",
           "scopes": [
-            "CORNER_RADIUS"
+            "FRAME_FILL",
+            "SHAPE_FILL"
           ],
           "codeSyntax": {
-            "WEB": "var(--rc-combobox-listbox-radius)"
+            "WEB": "var(--rc-combobox-listbox-background)"
           },
-          "cssVar": "--rc-combobox-listbox-radius",
+          "cssVar": "--rc-combobox-listbox-background",
           "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
-              "alias": "radius/radius",
-              "collection": "Radius"
+              "alias": "core/surface",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "combobox/listbox-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-combobox-listbox-color)"
+          },
+          "cssVar": "--rc-combobox-listbox-color",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "field/text",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "combobox/listbox-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-combobox-listbox-padding-block)"
+          },
+          "cssVar": "--rc-combobox-listbox-padding-block",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/control-padding-block",
+              "collection": "RC Contract"
             }
           }
         },
@@ -2612,6 +2579,77 @@
           "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
+          }
+        },
+        {
+          "name": "core/popup-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popup-background)"
+          },
+          "cssVar": "--rc-popup-background",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/menu",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/popup-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popup-color)"
+          },
+          "cssVar": "--rc-popup-color",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/menu-text",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/popup-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popup-padding-block)"
+          },
+          "cssVar": "--rc-popup-padding-block",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": 1
+          }
+        },
+        {
+          "name": "core/popup-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popup-radius)"
+          },
+          "cssVar": "--rc-popup-radius",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/radius",
+              "collection": "Radius"
+            }
           }
         },
         {
@@ -5098,25 +5136,6 @@
           }
         },
         {
-          "name": "menu/background",
-          "type": "COLOR",
-          "scopes": [
-            "FRAME_FILL",
-            "SHAPE_FILL"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-menu-background)"
-          },
-          "cssVar": "--rc-menu-background",
-          "description": "Applied where rc-theme- is themed.",
-          "values": {
-            "Value": {
-              "alias": "color/menu",
-              "collection": "Color"
-            }
-          }
-        },
-        {
           "name": "menu/check-color",
           "type": "COLOR",
           "scopes": [
@@ -5149,24 +5168,6 @@
             "Value": {
               "alias": "size/check-size",
               "collection": "Size"
-            }
-          }
-        },
-        {
-          "name": "menu/color",
-          "type": "COLOR",
-          "scopes": [
-            "TEXT_FILL"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-menu-color)"
-          },
-          "cssVar": "--rc-menu-color",
-          "description": "Applied where rc-theme- is themed.",
-          "values": {
-            "Value": {
-              "alias": "color/menu-text",
-              "collection": "Color"
             }
           }
         },
@@ -5320,40 +5321,6 @@
           "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 142
-          }
-        },
-        {
-          "name": "menu/padding-block",
-          "type": "FLOAT",
-          "scopes": [
-            "GAP",
-            "WIDTH_HEIGHT"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-menu-padding-block)"
-          },
-          "cssVar": "--rc-menu-padding-block",
-          "description": "Applied where rc-theme- is themed.",
-          "values": {
-            "Value": 1
-          }
-        },
-        {
-          "name": "menu/radius",
-          "type": "FLOAT",
-          "scopes": [
-            "CORNER_RADIUS"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-menu-radius)"
-          },
-          "cssVar": "--rc-menu-radius",
-          "description": "Applied where rc-theme- is themed.",
-          "values": {
-            "Value": {
-              "alias": "radius/radius",
-              "collection": "Radius"
-            }
           }
         },
         {
@@ -6828,6 +6795,43 @@
           }
         },
         {
+          "name": "select/listbox-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-select-listbox-background)"
+          },
+          "cssVar": "--rc-select-listbox-background",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "core/surface",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
+          "name": "select/listbox-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-select-listbox-color)"
+          },
+          "cssVar": "--rc-select-listbox-color",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "field/text",
+              "collection": "RC Contract"
+            }
+          }
+        },
+        {
           "name": "select/listbox-padding-block",
           "type": "FLOAT",
           "scopes": [
@@ -6841,24 +6845,6 @@
           "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
-          }
-        },
-        {
-          "name": "select/listbox-radius",
-          "type": "FLOAT",
-          "scopes": [
-            "CORNER_RADIUS"
-          ],
-          "codeSyntax": {
-            "WEB": "var(--rc-select-listbox-radius)"
-          },
-          "cssVar": "--rc-select-listbox-radius",
-          "description": "Applied where rc-theme- is themed.",
-          "values": {
-            "Value": {
-              "alias": "radius/radius",
-              "collection": "Radius"
-            }
           }
         },
         {
@@ -8203,12 +8189,6 @@
     "note": "Composite values are CSS shorthands with no single-variable Figma equivalent; bind their parts individually. Forced-colors and reduced-motion overrides are accessibility fallbacks Figma cannot express.",
     "composite": [
       {
-        "property": "--rc-adaptive-menu-popup-border",
-        "raw": "var(--win31-border)",
-        "name": "adaptive-menu/popup-border",
-        "reason": "aliases a composite shorthand"
-      },
-      {
         "property": "--rc-adaptive-menu-trigger-border",
         "raw": "var(--win31-border)",
         "name": "adaptive-menu/trigger-border",
@@ -8288,12 +8268,6 @@
         "property": "--rc-chip-text-decoration",
         "raw": "none",
         "name": "chip/text-decoration"
-      },
-      {
-        "property": "--rc-combobox-listbox-border",
-        "raw": "var(--rc-border)",
-        "name": "combobox/listbox-border",
-        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-combobox-shadow",
@@ -8507,12 +8481,6 @@
         "name": "markdown-editor/toolbar-select-border"
       },
       {
-        "property": "--rc-menu-border",
-        "raw": "var(--win31-border)",
-        "name": "menu/border",
-        "reason": "aliases a composite shorthand"
-      },
-      {
         "property": "--rc-menu-button-trigger-border",
         "raw": "var(--win31-border)",
         "name": "menu-button/trigger-border",
@@ -8646,6 +8614,12 @@
         "name": "navigation-rail/item-text-decoration"
       },
       {
+        "property": "--rc-popup-border",
+        "raw": "var(--win31-border)",
+        "name": "core/popup-border",
+        "reason": "aliases a composite shorthand"
+      },
+      {
         "property": "--rc-scroller-scrollbar-color",
         "raw": "var(--win31-color-surface) var(--win31-color-shadow)",
         "name": "scroller/scrollbar-color"
@@ -8692,12 +8666,6 @@
         "property": "--rc-segmented-button-selected-icon-display",
         "raw": "none",
         "name": "segmented-button/selected-icon-display"
-      },
-      {
-        "property": "--rc-select-listbox-border",
-        "raw": "var(--rc-border)",
-        "name": "select/listbox-border",
-        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-select-shadow",
@@ -8907,12 +8875,6 @@
     ],
     "unresolved": [
       {
-        "property": "--rc-adaptive-menu-popup-shadow",
-        "raw": "var(--win31-drop-shadow)",
-        "reason": "literal",
-        "scope": "rc-theme-"
-      },
-      {
         "property": "--rc-dialog-shadow",
         "raw": "var(--win31-dialog-frame)",
         "reason": "literal",
@@ -8955,7 +8917,7 @@
         "scope": "rc-theme-"
       },
       {
-        "property": "--rc-menu-shadow",
+        "property": "--rc-popup-shadow",
         "raw": "var(--win31-drop-shadow)",
         "reason": "literal",
         "scope": "rc-theme-"

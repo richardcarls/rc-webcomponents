@@ -159,7 +159,8 @@ test('maps open menu surfaces without choosing a consumer button variant', () =>
   menuButton.append(menu);
   scope.append(menuButton);
 
-  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-background')).not.toBe('');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-popup-background')).not.toBe('');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-popup-border')).toBe('0');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-min-block-size')).toBe('3rem');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-padding-block')).toBe('0');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-hover-bg')).not.toBe('');
@@ -222,7 +223,7 @@ test('maps the supported core component set', () => {
     ['rc-search-bar', '--rc-search-bar-bg'],
     ['rc-bottom-sheet', '--rc-bottom-sheet-bg'],
     ['rc-app-bar', '--rc-app-bar-bg'],
-    ['rc-menu', '--rc-menu-background'],
+    ['rc-menu', '--rc-menu-item-min-block-size'],
     ['rc-menu-button', '--rc-menu-button-trigger-radius'],
     ['rc-menubar', '--rc-menubar-background'],
     ['rc-toolbar', '--rc-toolbar-radius'],

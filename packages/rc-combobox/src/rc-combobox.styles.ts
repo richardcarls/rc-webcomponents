@@ -147,20 +147,29 @@ export const comboboxStyles = css`
   rc-listbox {
     overflow-y: auto;
     overflow-block: auto;
-    background: var(--rc-surface, Canvas);
+    background: var(
+      --rc-combobox-listbox-background,
+      var(--rc-popup-background, var(--rc-surface, Canvas))
+    );
     border: var(
       --rc-combobox-listbox-border,
-      var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder))
+      var(--rc-popup-border, var(--rc-border, 1px solid var(--rc-border-color, ButtonBorder)))
     );
-    border-radius: var(--rc-combobox-listbox-radius, var(--rc-control-radius, 0));
+    border-radius: var(
+      --rc-combobox-listbox-radius,
+      var(--rc-popup-radius, var(--rc-radius-sm, 0))
+    );
     box-shadow: var(
       --rc-combobox-shadow,
-      var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
+      var(
+        --rc-popup-shadow,
+        var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
+      )
     );
-    color: var(--rc-field-text, FieldText);
+    color: var(--rc-combobox-listbox-color, var(--rc-popup-color, var(--rc-field-text, FieldText)));
     padding-block: var(
       --rc-combobox-listbox-padding-block,
-      var(--rc-control-padding-block, 0.25em)
+      var(--rc-popup-padding-block, var(--rc-control-padding-block, 0.25em))
     );
     --rc-listbox-option-gap: var(--rc-item-gap, 0.4em);
     --rc-listbox-option-padding-block: var(--rc-item-padding-block, 0.3em);
@@ -202,8 +211,7 @@ export const comboboxStyles = css`
     [part='listbox']:popover-open {
       opacity: 1;
       transition:
-        opacity var(--rc-combobox-listbox-duration, 150ms)
-          var(--rc-motion-effects-easing-enter, ease-out),
+        opacity var(--rc-combobox-listbox-duration, 150ms) var(--rc-motion-effects-easing-enter, ease-out),
         overlay var(--rc-combobox-listbox-duration, 150ms) allow-discrete,
         display var(--rc-combobox-listbox-duration, 150ms) allow-discrete;
     }
@@ -211,8 +219,7 @@ export const comboboxStyles = css`
     [part='listbox']:not(:popover-open) {
       opacity: 0;
       transition:
-        opacity var(--rc-combobox-listbox-duration, 150ms)
-          var(--rc-motion-effects-easing-exit, ease-in),
+        opacity var(--rc-combobox-listbox-duration, 150ms) var(--rc-motion-effects-easing-exit, ease-in),
         overlay var(--rc-combobox-listbox-duration, 150ms) allow-discrete,
         display var(--rc-combobox-listbox-duration, 150ms) allow-discrete;
     }

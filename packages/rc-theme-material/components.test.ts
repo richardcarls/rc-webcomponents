@@ -755,7 +755,7 @@ test('adaptive menu receives Material trigger, popup, and row geometry', () => {
   expect(styles.getPropertyValue('--rc-adaptive-menu-icon-size')).toBe('1.5rem');
   expect(styles.getPropertyValue('--rc-adaptive-menu-item-min-block-size')).toBe('3rem');
   expect(styles.getPropertyValue('--rc-adaptive-menu-item-padding-inline')).toBe('0.75rem');
-  expect(styles.getPropertyValue('--rc-adaptive-menu-popup-background')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-adaptive-menu-popup-min-inline-size')).toBe('7rem');
   expect(nestedStyles.getPropertyValue('--rc-menu-button-trigger-block-size')).toBe('3rem');
   expect(nestedStyles.getPropertyValue('--rc-menu-button-icon-size')).toBe('100%');
 
