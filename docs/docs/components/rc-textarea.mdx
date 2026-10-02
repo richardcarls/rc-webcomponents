@@ -10,6 +10,7 @@ import {
   TextareaBasicDemo,
   TextareaMarkdownDemo,
   TextareaHljsDemo,
+  TextareaDisclosureDemo,
 } from '@site/src/components/ComponentDemos';
 
 # rc-textarea
@@ -27,6 +28,37 @@ Textarea wrapper with line decorations, gutter rendering, inline widgets, and pl
     { label: 'Theme previews', href: '/guide/theme-previews' },
   ]}
 />
+
+## Expandable line information
+
+<TextareaDisclosureDemo />
+
+`LineDisclosureController` creates independent, initially collapsed disclosures
+using accessible buttons and block widgets. Buttons can sit in the trailing lane
+or gutter. Supply stable keys and a
+content revision, then pass `getDecorations()` into `api.setDecorations()`. Call
+`clear()` on source changes and plugin destruction. Changing only presentation
+can retain expansion state. This is not source-range folding.
+
+Pass `createTriggerIcon(expanded)` to the controller constructor to use an icon
+component instead of the default text chevron. The returned element is decorative;
+the button keeps its accessible label and expanded state.
+
+Widget decorations accept `layout: 'inline' | 'block' | 'trailing'`,
+`accessible`, and `key`. Change a widget key when its content changes; keyed lines
+retain their DOM on otherwise identical updates. `LineDecoration.gutterContent`
+also accepts a plugin-owned `HTMLElement`. Set `gutterAccessible: true` when a
+cell contains a control; other gutter cells stay hidden from assistive technology.
+Pass `gutterLine` to a disclosure to place its button in the gutter. The button
+remains the sole disclosure control. `createGutterContent(button)` can place a
+decorative status icon beside it. Use `updateGutterContent` to refresh that
+wrapper in place when its icon changes.
+
+Use `--rc-textarea-trailing-size` (default `2.5em`) to reserve control space. Plugins
+can style `.line-disclosure-trigger` and `.line-disclosure-panel` through
+`api.adoptStyleSheet()`. Enter and Space activate the native button; Tab navigates
+instead of inserting a tab when accessible widgets are present. Copying source
+excludes widget text, and disclosure changes do not enter undo history.
 
 ## Installation
 
@@ -392,7 +424,8 @@ interface LineDecoration {
   message?: string; // rendered via ::after — not in selection or clipboard
   messageClassName?: string;
   attributes?: Record<string, string>;
-  gutterContent?: string | null; // string: custom label; null: suppress; undefined: use default
+  gutterContent?: string | HTMLElement | null; // null: suppress; undefined: use default
+  gutterAccessible?: boolean; // expose this cell when it contains a control
 }
 ```
 

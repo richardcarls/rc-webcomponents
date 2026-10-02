@@ -37,6 +37,7 @@ import type {
   RCVirtualScrollerRangeDetail,
 } from '@rcarls/rc-webcomponents/react';
 import type { RCTextareaPluginAPI } from '@rcarls/rc-textarea';
+import { LineDisclosureController } from '@rcarls/rc-textarea';
 
 hljs.registerLanguage('rust', rust);
 
@@ -2159,6 +2160,55 @@ export function TextareaDemo() {
     <DemoFrame>
       <rc-textarea line-numbers>
         <textarea aria-label="Notes" defaultValue={'TODO: test seasoning\nSimmer until tender.'} />
+      </rc-textarea>
+    </DemoFrame>
+  );
+}
+
+export function TextareaDisclosureDemo() {
+  const [editor, setEditor] = useState<RCTextareaRef | null>(null);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+
+    let disclosures: LineDisclosureController;
+    let source: string | undefined;
+
+    editor.usePlugin({
+      mount(api) { disclosures = new LineDisclosureController(api); },
+      update(value, api) {
+        if (source !== value) {
+          disclosures.clear();
+          source = value;
+        }
+
+        api.setDecorations(disclosures.getDecorations([{
+          key: 'explanation',
+          offset: value.split('\n')[0].length,
+          gutterLine: 1,
+          label: 'Show first-line information',
+          revision: '1',
+          createContent: () => {
+            const $message = document.createElement('p');
+
+            $message.textContent = 'This block is presentation only. Editing and copying preserve the source text.';
+
+            return $message;
+          },
+        }]));
+      },
+      destroy() { disclosures.clear(); },
+    });
+
+    return () => editor.removePlugin();
+  }, [editor]);
+
+  return (
+    <DemoFrame>
+      <rc-textarea ref={setEditor} gutter auto-grow word-wrap>
+        <textarea aria-label="Disclosure example" defaultValue={'A line with more information\nThe following line moves down when expanded.'} />
       </rc-textarea>
     </DemoFrame>
   );

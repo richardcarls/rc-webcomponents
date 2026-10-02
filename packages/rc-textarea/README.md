@@ -95,6 +95,8 @@ When the user edits, the slotted textarea is kept in sync and dispatches a nativ
 
 Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
 the slotted textarea with `aria-label` or a real `<label for="...">`.
+Use `gutterLineNumber: true` with custom content to display the built-in number
+and a plugin control together when `line-numbers` is enabled.
 
 The main JavaScript-only properties are:
 
@@ -306,6 +308,14 @@ syntax highlighter.
 | `Enter`                           | Inserts a line break.                                        |
 
 ## More Detail
+
+`LineDisclosureController` adds independent expandable line information without
+changing source text. It uses accessible buttons and block widgets. Buttons can
+sit at the trailing edge, with space reserved by `--rc-textarea-trailing-size`
+(default `2.5em`), or in the gutter. See the
+[interactive disclosure demo](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea#expandable-line-information)
+for setup, keyboard behavior, lifecycle, and styling hooks. With accessible widgets
+present, Tab moves focus instead of inserting a tab. Legacy widgets remain unchanged.
 
 - [PLUGIN_AUTHORING.md](PLUGIN_AUTHORING.md) covers custom plugins, decoration types,
   selection APIs, stylesheet injection, and parser/highlighter recipes.

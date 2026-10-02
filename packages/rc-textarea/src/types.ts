@@ -80,13 +80,21 @@ export interface LineDecoration {
   attributes?: Record<string, string>;
 
   /**
-   * Override the built-in gutter cell text for this line.
+   * Override the built-in gutter cell content for this line.
    *
    * - `string`    — custom label (e.g. `"!"`, `"▶"`)
+   * - `HTMLElement` — plugin-owned marker or control; reuse its node between updates.
+   *   Set `gutterAccessible` when it contains an interactive control.
    * - `null`      — force empty cell (suppress built-in content)
    * - `undefined` — use the built-in mode default (`line-numbers`, `gutter`, etc.)
    */
-  gutterContent?: string | null;
+  gutterContent?: string | HTMLElement | null;
+
+  /** Keep the built-in line number before custom gutter content when `line-numbers` is enabled. */
+  gutterLineNumber?: boolean;
+
+  /** Expose this gutter cell to assistive technology when it contains a control. */
+  gutterAccessible?: boolean;
 }
 
 /**
@@ -104,11 +112,22 @@ export interface WidgetDecoration {
   /** Character offset. Widget is placed before (or after) the character at this position. */
   offset: number;
 
-  /** Factory called each render cycle. Must return a new element each time. */
+  /** Create widget content when its line rebuilds. With a stable key, content may be reused. */
   create(): HTMLElement;
 
   /** Whether to place the widget before or after the character at `offset`. Default: 'before'. */
   side?: 'before' | 'after';
+
+  /** Preserve this widget's line DOM while its key and decorations remain unchanged.
+   * Change the key when its content changes. Scope keys to the owning plugin.
+   */
+  key?: string;
+
+  /** Place the widget inline, below its logical line, or in a reserved trailing lane. */
+  layout?: 'inline' | 'block' | 'trailing';
+
+  /** Expose interactive or meaningful widget content to assistive technology. Default: false. */
+  accessible?: boolean;
 }
 
 /** Decorations are visual formatting applied to the field content without affecting

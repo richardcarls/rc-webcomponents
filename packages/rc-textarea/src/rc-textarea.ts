@@ -145,6 +145,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-font-size=1em] - Font size
  * @cssprop [--rc-textarea-line-height=1.5] - Line height
  * @cssprop [--rc-textarea-padding=0.5em] - Padding inside the field area
+ * @cssprop [--rc-textarea-trailing-size=2.5em] - Reserved inline space and minimum block size for trailing controls
  * @cssprop [--rc-textarea-focus-outline=2px solid Highlight] - Focus ring outline
  * @cssprop [--rc-textarea-caret-color=FieldText] - Caret color
  * @cssprop [--rc-textarea-active-line-bg=transparent] - Active line highlight color
@@ -152,6 +153,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-gutter-color=GrayText] - Gutter text color
  * @cssprop [--rc-textarea-gutter-border=1px solid ButtonBorder] - Gutter right border
  * @cssprop [--rc-textarea-gutter-font-family=var(--rc-textarea-font-family, monospace)] - Gutter font family
+ * @cssprop [--rc-textarea-gutter-content-gap=0.25em] - Gap between a retained line number and custom gutter content
  * @cssprop [--rc-textarea-gutter-padding-inline-end=0.75em] - Space between gutter labels and text
  * @cssprop [--rc-line-actions-gap=2px] - Gap between inline line actions; popover actions default to 4px
  * @cssprop [--rc-line-actions-margin-start=6px] - Inline-start margin before line actions
@@ -331,7 +333,10 @@ export class RCTextarea extends LitElement {
   protected _resizeObserver: ResizeObserver | null = null;
 
   /** Cached per-line gutter labels from the last render — reused by ResizeObserver. */
-  protected _gutterLabels: (string | null)[] = [];
+  protected _gutterLabels: (string | HTMLElement | null | { number: string; content: string | HTMLElement })[] = [];
+
+  /** Gutter cells with explicitly accessible plugin controls. */
+  protected _accessibleGutterLines = new Set<number>();
 
   /**
    * The current field value.
@@ -441,6 +446,10 @@ export class RCTextarea extends LitElement {
   }
 
   override updated(changed: Map<string, unknown>): void {
+    if (changed.has('lineNumbers') || changed.has('gutter')) {
+      this._scheduleRender();
+    }
+
     if (changed.has('readOnly')) {
       if (this._$editor) {
         this._$editor.contentEditable = this.readOnly ? 'false' : 'true';
@@ -562,6 +571,8 @@ export class RCTextarea extends LitElement {
     $editor.addEventListener('input', this._onInputEvent);
     $editor.addEventListener('keydown', this._onKeyDown);
     $editor.addEventListener('paste', this._onPaste);
+    $editor.addEventListener('copy', this._onCopy);
+    $editor.addEventListener('cut', this._onCopy);
 
     $editor.addEventListener('focus', () => {
       this.dispatchEvent(
@@ -595,6 +606,10 @@ export class RCTextarea extends LitElement {
   };
 
   protected _onBeforeInput = (event: InputEvent): void => {
+    if (this.readOnly || this._isWidgetEvent(event)) {
+      return;
+    }
+
     // Virtual keyboards may emit no keydown. Keep their browser-generated
     // blocks out of the component's model-owned `.line` document as well.
     if (
@@ -757,6 +772,10 @@ export class RCTextarea extends LitElement {
   }
 
   protected _onKeyDown = (e: KeyboardEvent): void => {
+    if (this.readOnly || this._isWidgetEvent(e)) {
+      return;
+    }
+
     // Native contenteditable line breaks do not reliably retain `.line`, so
     // apply physical-keyboard Enter through the plain-text model first.
     if (e.key === 'Enter' && !this._composing && !e.isComposing) {
@@ -767,6 +786,10 @@ export class RCTextarea extends LitElement {
     }
 
     if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (this._$editor?.querySelector('.widget:not([aria-hidden])')) {
+        return;
+      }
+
       e.preventDefault();
       this._insertText('\t');
 
@@ -791,15 +814,20 @@ export class RCTextarea extends LitElement {
     }
   };
 
+  protected _isWidgetEvent(event: Event): boolean {
+    return event.composedPath().some(
+      ($node) => $node instanceof HTMLElement && $node.classList.contains('widget'),
+    );
+  }
+
   protected _insertText(text: string): void {
     if (!this._$editor) {
       return;
     }
 
-    // execCommand('insertText') does not handle \n — browsers create new divs
-    // that lack the 'line' class, so getText() loses all content
-    // after the first newline. Apply multi-line inserts directly to the value model.
-    if (text.includes('\n')) {
+    // Native multiline insertion and empty replacement can leave browser-owned
+    // blocks or placeholder breaks. Apply these edits directly to the text model.
+    if (text.includes('\n') || text === '') {
       const selection = saveSelection(this._$editor) ?? this._savedSelection;
       const anchor = Math.min(selection?.anchorOffset ?? 0, selection?.focusOffset ?? 0);
       const focus = Math.max(selection?.anchorOffset ?? 0, selection?.focusOffset ?? 0);
@@ -909,7 +937,34 @@ export class RCTextarea extends LitElement {
     this._insertText(text);
   }
 
+  protected _onCopy = (event: ClipboardEvent): void => {
+    if (!this._$editor || this._isWidgetEvent(event) || !event.clipboardData ||
+        !this._$editor.querySelector('.widget')) {
+      return;
+    }
+
+    const selection = saveSelection(this._$editor);
+
+    if (!selection || selection.anchorOffset === selection.focusOffset) {
+      return;
+    }
+
+    const from = Math.min(selection.anchorOffset, selection.focusOffset);
+    const to = Math.max(selection.anchorOffset, selection.focusOffset);
+
+    event.clipboardData.setData('text/plain', getText(this._$editor).slice(from, to));
+    event.preventDefault();
+
+    if (event.type === 'cut' && !this.readOnly) {
+      this._insertText('');
+    }
+  };
+
   protected _onPaste = (e: ClipboardEvent): void => {
+    if (this.readOnly || this._isWidgetEvent(e)) {
+      return;
+    }
+
     e.preventDefault();
 
     const text = e.clipboardData?.getData('text/plain') ?? '';
@@ -1315,11 +1370,23 @@ export class RCTextarea extends LitElement {
         return;
       }
 
+      const $focusedWidget = this.shadowRoot?.activeElement;
+      // A presentation refresh may run before selectionchange updates the saved
+      // offsets. Preserve the live range unless a source edit has queued a new caret.
+      const selectionToRestore = getText(this._$editor) === renderValue
+        ? saveSelection(this._$editor) ?? this._savedSelection
+        : this._savedSelection;
+
       this._document.build(renderValue, allDecorations);
 
+      if ($focusedWidget instanceof HTMLElement && $focusedWidget !== this._$editor &&
+          $focusedWidget.isConnected && this.shadowRoot?.activeElement !== $focusedWidget) {
+        $focusedWidget.focus({ preventScroll: true });
+      }
+
       // Restore cursor
-      if (this._savedSelection) {
-        restoreSelection(this._$editor, this._savedSelection);
+      if (selectionToRestore && this.shadowRoot?.activeElement === this._$editor) {
+        restoreSelection(this._$editor, selectionToRestore);
       }
 
       // Re-apply active line (DOM was rebuilt; old reference is stale)
@@ -1346,22 +1413,45 @@ export class RCTextarea extends LitElement {
   protected _computeGutterLabels(
     allDecorations: Decoration[],
     value = this._value,
-  ): (string | null)[] {
+  ): (string | HTMLElement | null | { number: string; content: string | HTMLElement })[] {
     const lines = value.split('\n');
 
-    const overrides = new Map<number, string | null>();
+    const overrides = new Map<number, string | HTMLElement | null>();
+
+    const accessibleLines = new Set<number>();
+    const numberedOverrides = new Set<number>();
 
     for (const dec of allDecorations) {
       if (dec.type === 'line' && dec.gutterContent !== undefined) {
         overrides.set(dec.line, dec.gutterContent);
+
+        if (dec.gutterAccessible) {
+          accessibleLines.add(dec.line);
+        } else {
+          accessibleLines.delete(dec.line);
+        }
+
+        if (dec.gutterLineNumber) {
+          numberedOverrides.add(dec.line);
+        } else {
+          numberedOverrides.delete(dec.line);
+        }
       }
     }
+
+    this._accessibleGutterLines = accessibleLines;
 
     return lines.map((_, i) => {
       const lineNum = i + 1;
 
       if (overrides.has(lineNum)) {
-        return overrides.get(lineNum)!;
+        const content = overrides.get(lineNum)!;
+
+        if (this.lineNumbers && numberedOverrides.has(lineNum) && content !== null) {
+          return { number: String(lineNum), content };
+        }
+
+        return content;
       }
 
       if (this.lineNumbers) {
@@ -1377,9 +1467,8 @@ export class RCTextarea extends LitElement {
    * Synchronize the pixel height of each gutter cell to match the
    * corresponding `.line` element in the editor.
    *
-   * In non-word-wrap mode the gutter uses a uniform `line-height` mirrored
-   * from the editor's first line. In word-wrap mode each cell gets an explicit
-   * `height` so wrapped lines stay vertically aligned with their gutter label.
+   * In non-word-wrap mode without block widgets the gutter uses a uniform
+   * line height. Wrapped lines and block widgets use per-line heights instead.
    * Also copies the editor's computed `paddingTop`/`paddingBottom` to the
    * gutter to compensate for browser UA overrides on contenteditable.
    */
@@ -1408,7 +1497,7 @@ export class RCTextarea extends LitElement {
     const $lineEls = this._$editor.querySelectorAll<HTMLElement>('.line');
     const $spans = this._$gutterCells.children;
 
-    if (!this.wordWrap) {
+    if (!this.wordWrap && !this._$editor.querySelector('.widget--block')) {
       // Chrome UA overrides line-height on contenteditable (even via var() fallback,
       // but not inline styles), giving the editor a different natural cell height
       // than the gutter's CSS 1.5× value. Mirror the first line's actual height.
@@ -1449,7 +1538,7 @@ export class RCTextarea extends LitElement {
    * `_gutterLabels` is updated first; otherwise the cached labels are reused
    * (called by the `ResizeObserver` without a new render pass).
    */
-  protected _syncGutter(labels?: (string | null)[]): void {
+  protected _syncGutter(labels?: (string | HTMLElement | null | { number: string; content: string | HTMLElement })[]): void {
     if (!this.lineNumbers && !this.gutter) {
       return;
     }
@@ -1463,6 +1552,14 @@ export class RCTextarea extends LitElement {
     }
 
     const current = this._gutterLabels;
+
+    const $gutter = this._$gutterCells.parentElement;
+
+    if (this._accessibleGutterLines.size > 0) {
+      $gutter?.removeAttribute('aria-hidden');
+    } else {
+      $gutter?.setAttribute('aria-hidden', 'true');
+    }
 
     // Sync count
     while (this._$gutterCells.children.length < current.length) {
@@ -1481,7 +1578,47 @@ export class RCTextarea extends LitElement {
       const label = current[i] ?? '';
       const $span = this._$gutterCells.children[i] as HTMLElement;
 
-      if ($span.textContent !== label) {
+      $span.setAttribute('aria-hidden', String(!this._accessibleGutterLines.has(i + 1)));
+
+      if (typeof label === 'object' && label !== null && !(label instanceof HTMLElement)) {
+        let $row = $span.firstElementChild;
+
+        if (!$row?.classList.contains('gutter-cell-composite')) {
+          $row = document.createElement('span');
+
+          $row.className = 'gutter-cell-composite';
+
+          const $number = document.createElement('span');
+
+          $number.className = 'gutter-cell-number';
+
+          const $content = document.createElement('span');
+
+          $content.className = 'gutter-cell-content';
+
+          $row.append($number, $content);
+          $span.replaceChildren($row);
+        }
+
+        const $number = $row.firstElementChild!;
+        const $content = $row.lastElementChild!;
+
+        if ($number.textContent !== label.number) {
+          $number.textContent = label.number;
+        }
+
+        if (label.content instanceof HTMLElement) {
+          if ($content.firstChild !== label.content) {
+            $content.replaceChildren(label.content);
+          }
+        } else if ($content.textContent !== label.content || $content.firstElementChild) {
+          $content.textContent = label.content;
+        }
+      } else if (label instanceof HTMLElement) {
+        if ($span.firstChild !== label) {
+          $span.replaceChildren(label);
+        }
+      } else if ($span.textContent !== label || $span.firstElementChild) {
         $span.textContent = label;
       }
     }

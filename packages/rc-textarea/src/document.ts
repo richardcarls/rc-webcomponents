@@ -26,6 +26,10 @@ function buildLineContent(
     // Empty line needs a <br> so contenteditable allows cursor placement
     $line.appendChild(document.createElement('br'));
 
+    for (const widget of widgetDecorations) {
+      $line.appendChild(createWidget(widget));
+    }
+
     return;
   }
 
@@ -124,6 +128,14 @@ function buildLineContent(
 function createWidget(decoration: WidgetDecoration): HTMLSpanElement {
   const $span = RCWidgetBlot.create() as HTMLSpanElement;
 
+  if (decoration.accessible) {
+    $span.removeAttribute('aria-hidden');
+  }
+
+  if (decoration.layout) {
+    $span.classList.add(`widget--${decoration.layout}`);
+  }
+
   $span.appendChild(decoration.create());
 
   return $span;
@@ -131,6 +143,8 @@ function createWidget(decoration: WidgetDecoration): HTMLSpanElement {
 
 export class RCDocument {
   private readonly scroll: RCScrollBlot;
+
+  private readonly lineSignatures = new WeakMap<HTMLElement, string>();
 
   constructor($documentRoot: HTMLDivElement) {
     const registry = createRegistry();
@@ -181,6 +195,26 @@ export class RCDocument {
       const lineNum = i + 1;
       const lineStart = lineStartOffset;
       const lineEnd = lineStart + lineText.length;
+      const lineDecorations = lineDecorationsMap.get(lineNum) ?? [];
+      const marks = markDecorations.filter((d) => d.from < lineEnd && d.to > lineStart);
+      const widgets = widgetDecorations.filter((d) => d.offset >= lineStart && d.offset <= lineEnd);
+      // Only opt-in keyed widgets promise stable content between plugin passes.
+      const signature = widgets.length > 0 && widgets.every((widget) => widget.key)
+        ? JSON.stringify([lineText, [...lineDecorations, ...marks, ...widgets].map(
+            ({ id: _id, ...decoration }) => decoration.type === 'line'
+              ? { ...decoration, gutterContent: undefined }
+              : decoration,
+          )])
+        : undefined;
+
+      const $existing = $lines[i];
+
+      if ($existing && signature && this.lineSignatures.get($existing) === signature &&
+          getLineText($existing) === lineText) {
+        lineStartOffset += lineText.length + 1;
+
+        continue;
+      }
 
       // Reuse an existing line element when available, otherwise create a new one.
       let $block: HTMLElement;
@@ -206,8 +240,6 @@ export class RCDocument {
       }
 
       // Apply line decorations
-      const lineDecorations = lineDecorationsMap.get(lineNum) ?? [];
-
       for (const decoration of lineDecorations) {
         if (decoration.className) {
           for (const cls of decoration.className.split(/\s+/).filter(Boolean)) {
@@ -223,10 +255,17 @@ export class RCDocument {
       }
 
       // Narrow decorations to those overlapping this line
-      const marks = markDecorations.filter((d) => d.from < lineEnd && d.to > lineStart);
-      const widgets = widgetDecorations.filter((d) => d.offset >= lineStart && d.offset <= lineEnd);
-
       buildLineContent($block, lineText, lineStart, marks, widgets);
+
+      if (widgets.some((widget) => widget.layout === 'trailing')) {
+        $block.classList.add('line--trailing-widget');
+      }
+
+      if (signature) {
+        this.lineSignatures.set($block, signature);
+      } else {
+        this.lineSignatures.delete($block);
+      }
 
       // Set diagnostic message via data attribute — rendered by ::after pseudo-element
       // so it is completely outside the DOM selection and clipboard path.
@@ -335,6 +374,7 @@ function extractRawText($el: HTMLElement): string {
       if (node.tagName === 'BR') {
         result += '\n';
         firstBlock = false;
+
         continue;
       }
 

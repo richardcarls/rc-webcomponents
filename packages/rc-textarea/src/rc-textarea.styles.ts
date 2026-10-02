@@ -1,6 +1,38 @@
 import { css } from 'lit';
 
 export const styles = css`
+  .widget.widget--block {
+    display: block;
+    white-space: normal;
+  }
+
+  .line--trailing-widget {
+    position: relative;
+    padding-inline-end: var(--rc-textarea-trailing-size, 2.5em);
+    min-block-size: var(--rc-textarea-trailing-size, 2.5em);
+  }
+
+  .widget--trailing {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: 0;
+    inline-size: var(--rc-textarea-trailing-size, 2.5em);
+    white-space: normal;
+  }
+
+  .line-disclosure-trigger {
+    box-sizing: border-box;
+    inline-size: 100%;
+    min-block-size: var(--rc-textarea-trailing-size, 2.5em);
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+  }
+
+  .line-disclosure-panel[hidden] {
+    display: none;
+  }
+
   :host {
     display: block;
     box-sizing: border-box;
@@ -51,6 +83,21 @@ export const styles = css`
   .gutter-cell {
     display: block;
     white-space: pre;
+  }
+
+  .gutter-cell-composite {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--rc-textarea-gutter-content-gap, 0.25em);
+  }
+
+  .gutter-cell-number {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gutter-cell-content {
+    display: inline-flex;
+    align-items: center;
   }
 
   .gutter-cell--active {
