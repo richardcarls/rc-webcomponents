@@ -168,7 +168,7 @@ test('Material uses standard-duration bottom-sheet snaps', () => {
   );
 });
 
-test('nested field controls defer compact geometry and multiline label inset to the field', () => {
+test('nested field controls defer compact geometry and multiline label offset to the field', () => {
   const $scope = renderScope();
   const $field = document.createElement('rc-field');
   const $select = document.createElement('rc-select');
@@ -190,7 +190,15 @@ test('nested field controls defer compact geometry and multiline label inset to 
     '1.5rem',
   );
 
-  expect(getComputedStyle($label).insetBlockStart).toBe('8px');
+  expect(getComputedStyle($select).getPropertyValue('--rc-select-padding-block')).toBe('0');
+  expect(getComputedStyle($combobox).getPropertyValue('--rc-combobox-padding-block')).toBe('0');
+
+  // The filled field's own block padding places the floated label, multiline or not.
+  expect(getComputedStyle($label).insetBlockStart).toBe('0px');
+
+  expect(getComputedStyle($labelField.host).getPropertyValue('--rc-field-padding')).toBe(
+    '0.5rem 1rem calc(0.5rem - 1px)',
+  );
 });
 
 test('nested standard lists reset segmented item radius', () => {

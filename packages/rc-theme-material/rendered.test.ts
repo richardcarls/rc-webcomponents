@@ -1,5 +1,5 @@
 import { page } from 'vitest/browser';
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 
 import '@rcarls/rc-adaptive-menu/define';
 import '@rcarls/rc-button/define';
@@ -159,6 +159,71 @@ test('rc-select and rc-combobox lose their own chrome when composed as rc-field 
   expect($comboboxField.hasAttribute('data-focused')).toBe(true);
   expect($comboboxAnchor.matches(':focus-within')).toBe(true);
   expect(getComputedStyle($comboboxAnchor).outlineStyle).toBe('none');
+});
+
+test('floated field labels share one offset while chip rows grow the filled field', async () => {
+  const scope = document.createElement('div');
+  const options = '<option selected>Beef</option><option selected>Cheap</option>';
+
+  scope.className = 'rc-theme-material';
+  scope.style.inlineSize = '360px';
+
+  scope.innerHTML = `
+    <rc-field data-k="text"><label slot="label">Name</label><input value="Tacos"></rc-field>
+    <rc-field data-k="select">
+      <label slot="label">Difficulty</label>
+      <rc-select data-rc-field-control>
+        <select><option value=""></option><option value="easy" selected>Easy</option></select>
+      </rc-select>
+    </rc-field>
+    <rc-field data-k="chips">
+      <label slot="label">Categories</label>
+      <rc-select data-rc-field-control><select multiple>${options}</select></rc-select>
+    </rc-field>
+    <rc-field data-k="dense">
+      <label slot="label">Categories</label>
+      <rc-select class="rc-select--dense" data-rc-field-control>
+        <select multiple>${options}</select>
+      </rc-select>
+    </rc-field>
+    <rc-field class="rc-field--outlined" data-k="outlined-text">
+      <label slot="label">Name</label><input value="Tacos">
+    </rc-field>
+    <rc-field class="rc-field--outlined" data-k="outlined-select">
+      <label slot="label">Difficulty</label>
+      <rc-select data-rc-field-control>
+        <select><option value=""></option><option value="easy" selected>Easy</option></select>
+      </rc-select>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  await vi.waitFor(() =>
+    expect(
+      scope.querySelector('[data-k="chips"] rc-select')!.shadowRoot!.querySelector('rc-chip'),
+    ).not.toBeNull(),
+  );
+
+  const geometry = (key: string) => {
+    const $field = scope.querySelector<HTMLElement>(`[data-k="${key}"]`)!;
+    const field = $field.shadowRoot!.querySelector('[part~="field"]')!.getBoundingClientRect();
+    const label = $field.shadowRoot!.querySelector('[part~="label"]')!.getBoundingClientRect();
+
+    return { height: Math.round(field.height), labelTop: Math.round(label.top - field.top) };
+  };
+
+  expect(geometry('text')).toEqual({ height: 56, labelTop: 8 });
+  expect(geometry('select')).toEqual({ height: 56, labelTop: 8 });
+  expect(geometry('chips')).toEqual({ height: 64, labelTop: 8 });
+  expect(geometry('dense')).toEqual({ height: 56, labelTop: 8 });
+
+  // Outlined labels ride the top border instead.
+  expect(geometry('outlined-text').labelTop).toBeLessThan(0);
+  expect(geometry('outlined-select').labelTop).toBe(geometry('outlined-text').labelTop);
+
+  scope.remove();
 });
 
 test('dialog-mode combobox fills the current visual viewport', async () => {

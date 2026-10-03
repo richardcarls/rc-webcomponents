@@ -57,6 +57,23 @@ import '@rcarls/rc-webcomponents/rc-combobox/define';
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
+Inside a Material `rc-field`, a row of selected chips grows the field below its floated label, so
+the label keeps the same offset as every other field. Add `rc-combobox--dense` to render 1.5rem chips that
+fit on the field's single input line and keep a populated field at the standard 56px height. The
+chips keep their full touch target.
+
+```html
+<rc-field>
+  <label slot="label" for="categories">Categories</label>
+  <rc-combobox class="rc-combobox--dense" data-rc-field-control multiple>
+    <select id="categories" multiple>
+      <option selected>Beef</option>
+      <option selected>Cheap</option>
+    </select>
+  </rc-combobox>
+</rc-field>
+```
+
 ## Allow Create
 
 Add the `allow-create` attribute to show a **"Create 'X'"** option when typed text has no exact match in the option list. Activating it inserts the new option into the native `<select>`, selects it, and fires `rc-combobox-create`.
