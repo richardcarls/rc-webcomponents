@@ -34,8 +34,20 @@
     --rc-field-supporting-font-size: var(--md-sys-typescale-body-small-size, 0.75rem);
   }
 
+  /*
+   * Filled fields reserve their block padding on the container instead of
+   * centering the label and control inside the minimum height, so the floated
+   * label stays 8px below the top edge however tall the control grows. The
+   * trailing padding gives back the 1px active indicator so a single-line
+   * field stays at the 56px minimum.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:not(.rc-field--outlined) {
+    --rc-field-padding: 0.5rem 1rem calc(0.5rem - 1px);
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field) {
     position: relative;
+    align-items: stretch;
     border-block-end: 1px solid
       var(
         --md-filled-text-field-active-indicator-color,
@@ -98,12 +110,9 @@
     min-block-size: var(--_rc-field-input-line-height);
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(content) {
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field.rc-field--outlined[data-multiline]::part(content) {
     padding-block: 0.5rem;
-  }
-
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(label) {
-    inset-block-start: 0.5rem;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-multiline]::part(control) {
@@ -131,12 +140,22 @@
     inline-size: 100%;
   }
 
+  /* Text starts on the input line under the floated label, as a native textarea. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field:not(.rc-field--outlined)
+    > rc-textarea[data-rc-field-control] {
+    --rc-textarea-padding: 0 1rem 0.5rem;
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field
     > rc-select[data-rc-field-control] {
     --rc-select-control-block-size: var(--md-sys-typescale-body-large-line-height, 1.5rem);
     --rc-select-border: 0;
     --rc-select-radius: 0;
+    --rc-select-padding-block: 0;
+    --rc-chip-touch-target-overlap-block-start: 0.5rem;
+    --rc-chip-touch-target-overlap-block-end: 0.5rem;
     --rc-field: transparent;
     inline-size: 100%;
   }
@@ -159,6 +178,8 @@
     border-color: transparent;
     background: transparent;
     box-shadow: none;
+    /* rc-field's label and active indicator already show focus. */
+    outline: none;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
@@ -167,10 +188,33 @@
     --rc-combobox-control-block-size: var(--md-sys-typescale-body-large-line-height, 1.5rem);
     --rc-combobox-border: 0;
     --rc-combobox-radius: 0;
+    --rc-combobox-padding-block: 0;
     --rc-chip-touch-target-overlap-block-start: 0.5rem;
     --rc-chip-touch-target-overlap-block-end: 0.5rem;
     --rc-field: transparent;
     inline-size: 100%;
+  }
+
+  /*
+   * Full-size chips are taller than the input line, so keep a little space
+   * between their outline and the floated label. Dense chips sit on the
+   * input line and need none.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field:not(.rc-field--outlined)
+    > :is(
+      rc-combobox:not(.rc-combobox--dense),
+      rc-select:not(.rc-select--dense)
+    )[data-rc-field-control]::part(chips) {
+    padding-block-start: 0.25rem;
+  }
+
+  /* Dense chips leave more of the 3rem touch target to overlap. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > :is(rc-combobox.rc-combobox--dense, rc-select.rc-select--dense)[data-rc-field-control] {
+    --rc-chip-touch-target-overlap-block-start: 0.75rem;
+    --rc-chip-touch-target-overlap-block-end: 0.75rem;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
@@ -182,6 +226,8 @@
     border-color: transparent;
     background: transparent;
     box-shadow: none;
+    /* rc-field's label and active indicator already show focus. */
+    outline: none;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
@@ -195,6 +241,17 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-control-provider]:not(.rc-field--outlined) {
+    --rc-field-padding: 0.5rem 0 calc(0.5rem - 1px);
+  }
+
+  /* A multiline control provider supplies its own trailing block space. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-control-provider][data-multiline]:not(.rc-field--outlined) {
+    --rc-field-padding: 0.5rem 0 0;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field[data-control-provider]::part(label) {
     inset-inline-start: 1rem;
   }
@@ -205,7 +262,7 @@
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-field[data-control-provider][data-multiline]::part(content) {
+    rc-field.rc-field--outlined[data-control-provider][data-multiline]::part(content) {
     /*
      * A single-line field's label gets its resting space above the field's
      * top edge for free: #field centers content within its own taller

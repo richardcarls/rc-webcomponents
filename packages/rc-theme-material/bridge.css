@@ -201,7 +201,7 @@
     --rc-select-border: 1px solid
       var(--md-outlined-select-text-field-outline-color, var(--md-sys-color-outline, ButtonBorder));
     --rc-select-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
-    --rc-select-chip-padding-block: 0.375rem;
+    --rc-select-chip-padding-block: 0;
     --rc-select-chip-padding-inline-start: 0.75rem;
     --rc-field: var(
       --md-outlined-select-text-field-container-color,
@@ -252,7 +252,7 @@
     --rc-combobox-border: 1px solid
       var(--md-outlined-text-field-outline-color, var(--md-sys-color-outline, ButtonBorder));
     --rc-combobox-chip-radius: var(--md-sys-shape-corner-small, 0.5rem);
-    --rc-combobox-chip-padding-block: 0.375rem;
+    --rc-combobox-chip-padding-block: 0;
     --rc-combobox-chip-padding-inline-start: 0.75rem;
     --rc-field: var(--md-outlined-text-field-container-color, var(--md-sys-color-surface, Field));
     --rc-field-text: var(

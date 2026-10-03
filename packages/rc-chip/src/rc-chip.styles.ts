@@ -27,7 +27,7 @@ export const chipStyles = css`
   }
 
   :host([readonly]) {
-    min-block-size: var(--rc-chip-block-size, auto);
+    min-block-size: var(--_rc-chip-group-readonly-min-block-size, var(--rc-chip-block-size, auto));
   }
 
   :host([hidden]) {

@@ -64,7 +64,8 @@ declare global {
  * @attr show-less-label - Label for the expanded overflow action.
  *
  * @cssprop [--rc-chip-group-column-gap=0.5rem] - Inline gap between items.
- * @cssprop [--rc-chip-group-row-gap=0] - Block gap between wrapped rows.
+ * @cssprop [--rc-chip-group-row-gap=0] - Block gap between wrapped rows. Slotted readonly chips
+ *   keep `--rc-chip-touch-target-block-size` so every row shares the disclosure toggle's pitch.
  * @cssprop [--rc-chip-group-padding-block=0] - Group block-axis padding.
  * @cssprop [--rc-chip-group-scroll-padding-inline=0] - Horizontal scroll padding.
  * @cssprop [--rc-chip-group-scrollbar-width=none] - Standards-based scrollbar width.

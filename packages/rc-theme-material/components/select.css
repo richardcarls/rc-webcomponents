@@ -65,6 +65,19 @@
     --rc-chip-remove-target-size: 1.5rem;
   }
 
+  /*
+   * Dense chips fit one chip row on the field's single input line, so a
+   * populated field keeps the unified 56px height. The touch target is
+   * unchanged.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select.rc-select--dense::part(chips) {
+    --rc-chip-block-size: 1.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-select.rc-select--dense::part(chip) {
+    min-block-size: 1.5rem;
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-select::part(chip):hover {
     background: color-mix(
       in srgb,

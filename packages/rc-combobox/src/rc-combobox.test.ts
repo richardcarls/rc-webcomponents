@@ -585,6 +585,26 @@ test('multiple: chips render from value property', async () => {
   );
 });
 
+test('multiple: chip touch-target overlap is returned between wrapped rows', async () => {
+  const screen = render(makeCombobox({ multiple: true }));
+  const $host = screen.container.querySelector('rc-combobox') as RCCombobox;
+
+  $host.style.cssText =
+    'inline-size: 9rem; --rc-chip-block-size: 32px; --rc-chip-touch-target-block-size: 48px; ' +
+    '--rc-chip-touch-target-overlap-block-start: 8px; --rc-chip-touch-target-overlap-block-end: 8px; ' +
+    '--rc-combobox-chip-padding-block: 0;';
+  $host.value = ['apple', 'banana'];
+
+  await getHost(screen);
+
+  const [first, second] = [...$host.renderRoot.querySelectorAll('[part~="chip"]')].map(
+    ($chip) => $chip.getBoundingClientRect(),
+  );
+
+  expect(second.top).toBeGreaterThan(first.top);
+  expect(second.top - first.bottom).toBeCloseTo(16, 0);
+});
+
 test('--rc-combobox-toggle-size controls the toggle button inline size', async () => {
   const screen = render(makeCombobox());
   const $host = await getHost(screen);

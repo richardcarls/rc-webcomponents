@@ -38,6 +38,20 @@
     --rc-chip-remove-target-size: 1.5rem;
   }
 
+  /*
+   * Dense chips fit one chip row on the field's single input line, so a
+   * populated field keeps the unified 56px height. The touch target is
+   * unchanged.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-combobox.rc-combobox--dense::part(chips) {
+    --rc-chip-block-size: 1.5rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-combobox.rc-combobox--dense::part(chip) {
+    min-block-size: 1.5rem;
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-combobox::part(toggle) {
     border-radius: var(--md-sys-shape-corner-full, 999px);
     color: var(

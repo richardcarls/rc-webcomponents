@@ -1,8 +1,10 @@
 import { page } from 'vitest/browser';
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 
 import '@rcarls/rc-adaptive-menu/define';
 import '@rcarls/rc-button/define';
+import '@rcarls/rc-chip-group/define';
+import '@rcarls/rc-chip/define';
 import '@rcarls/rc-combobox/define';
 import '@rcarls/rc-dialog/define';
 import '@rcarls/rc-field/define';
@@ -80,6 +82,7 @@ test('Material fields render filled and outlined native-control compositions', a
   expect(getComputedStyle($outlinedSurface!).borderTopWidth).toBe('1px');
   expect($outlined.hasAttribute('data-multiline')).toBe(true);
   expect($filled.querySelector('input')?.isConnected).toBe(true);
+
   expect($filledLabel!.getBoundingClientRect().left).toBe(
     $filledControl!.getBoundingClientRect().left,
   );
@@ -152,6 +155,124 @@ test('rc-select and rc-combobox lose their own chrome when composed as rc-field 
   // and box-shadow are what actually determine whether chrome is visible here.
   expect(getComputedStyle($selectTrigger).borderWidth).toBe('0px');
   expect(getComputedStyle($selectTrigger).boxShadow).toBe('none');
+
+  $combobox.shadowRoot!.querySelector<HTMLInputElement>('[part~="input"]')!.focus();
+  await settle($comboboxField);
+
+  expect($comboboxField.hasAttribute('data-focused')).toBe(true);
+  expect($comboboxAnchor.matches(':focus-within')).toBe(true);
+  expect(getComputedStyle($comboboxAnchor).outlineStyle).toBe('none');
+});
+
+test('readonly Material chips keep visible space between wrapped rows', async () => {
+  const $scope = document.createElement('div');
+
+  $scope.className = 'rc-theme-material';
+
+  $scope.innerHTML = `
+    <rc-chip-group layout="auto" max-rows="1" default-expanded style="inline-size: 12rem">
+      ${Array.from(
+        { length: 6 },
+        (_, index) => `<rc-chip readonly><span data-rc-chip-label>Chip ${index}</span></rc-chip>`,
+      ).join('')}
+    </rc-chip-group>
+  `;
+
+  document.body.append($scope);
+  await settle($scope);
+
+  const $group = $scope.querySelector('rc-chip-group')!;
+
+  await vi.waitFor(() =>
+    expect($group.shadowRoot!.querySelector<HTMLElement>('#toggle-wrap')!.hidden).toBe(false),
+  );
+
+  const $chips = [...$group.querySelectorAll<HTMLElement>('rc-chip')];
+  const chipRows = [...new Set($chips.map(($chip) => $chip.getBoundingClientRect().top))];
+
+  expect($chips.map(($chip) => $chip.getBoundingClientRect().height)).toEqual(Array(6).fill(48));
+  expect($chips[0].querySelector('[data-rc-chip-label]')!.getBoundingClientRect().height).toBe(32);
+  expect(chipRows.length).toBeGreaterThan(1);
+  expect(chipRows[1] - chipRows[0]).toBe(48);
+
+  $scope.remove();
+});
+
+test('floated field labels share one offset while chip rows grow the filled field', async () => {
+  const scope = document.createElement('div');
+  const options = '<option selected>Beef</option><option selected>Cheap</option>';
+
+  scope.className = 'rc-theme-material';
+  scope.style.inlineSize = '360px';
+
+  scope.innerHTML = `
+    <rc-field data-k="text"><label slot="label">Name</label><input value="Tacos"></rc-field>
+    <rc-field data-k="select">
+      <label slot="label">Difficulty</label>
+      <rc-select data-rc-field-control>
+        <select><option value=""></option><option value="easy" selected>Easy</option></select>
+      </rc-select>
+    </rc-field>
+    <rc-field data-k="chips">
+      <label slot="label">Categories</label>
+      <rc-select data-rc-field-control><select multiple>${options}</select></rc-select>
+    </rc-field>
+    <rc-field data-k="dense">
+      <label slot="label">Categories</label>
+      <rc-select class="rc-select--dense" data-rc-field-control>
+        <select multiple>${options}</select>
+      </rc-select>
+    </rc-field>
+    <rc-field class="rc-field--outlined" data-k="outlined-text">
+      <label slot="label">Name</label><input value="Tacos">
+    </rc-field>
+    <rc-field class="rc-field--outlined" data-k="outlined-select">
+      <label slot="label">Difficulty</label>
+      <rc-select data-rc-field-control>
+        <select><option value=""></option><option value="easy" selected>Easy</option></select>
+      </rc-select>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  await vi.waitFor(() =>
+    expect(
+      scope.querySelector('[data-k="chips"] rc-select')!.shadowRoot!.querySelector('rc-chip'),
+    ).not.toBeNull(),
+  );
+
+  const geometry = (key: string) => {
+    const $field = scope.querySelector<HTMLElement>(`[data-k="${key}"]`)!;
+    const field = $field.shadowRoot!.querySelector('[part~="field"]')!.getBoundingClientRect();
+    const label = $field.shadowRoot!.querySelector('[part~="label"]')!.getBoundingClientRect();
+
+    return { height: Math.round(field.height), labelTop: Math.round(label.top - field.top) };
+  };
+
+  expect(geometry('text')).toEqual({ height: 56, labelTop: 8 });
+  expect(geometry('select')).toEqual({ height: 56, labelTop: 8 });
+  expect(geometry('chips')).toEqual({ height: 68, labelTop: 8 });
+  expect(geometry('dense')).toEqual({ height: 56, labelTop: 8 });
+
+  const $chipsField = scope.querySelector<HTMLElement>('[data-k="chips"]')!;
+  const chipTop = $chipsField
+    .querySelector('rc-select')!
+    .shadowRoot!.querySelector('rc-chip button')!
+    .getBoundingClientRect().top;
+  const labelBottom = $chipsField
+    .shadowRoot!.querySelector('[part~="label"]')!
+    .getBoundingClientRect().bottom;
+
+  // Full-size chips keep a small gap below the floated label.
+  expect(Math.round(chipTop - labelBottom)).toBe(4);
+
+  // Outlined labels ride the top border instead.
+  expect(geometry('outlined-text').labelTop).toBeLessThan(0);
+  expect(geometry('outlined-select').labelTop).toBe(geometry('outlined-text').labelTop);
+
+  scope.remove();
 });
 
 test('dialog-mode combobox fills the current visual viewport', async () => {

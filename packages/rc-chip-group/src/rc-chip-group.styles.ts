@@ -5,6 +5,8 @@ export const chipGroupStyles = css`
     display: block;
     min-inline-size: 0;
     color-scheme: inherit;
+    /* Match readonly row pitch to the disclosure toggle without enlarging chip chrome. */
+    --_rc-chip-group-readonly-min-block-size: var(--rc-chip-touch-target-block-size, 3rem);
   }
 
   :host([hidden]) {
