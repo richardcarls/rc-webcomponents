@@ -648,6 +648,27 @@ test('multiple: chips render for selected values', async () => {
   );
 });
 
+test('multiple: chip touch-target overlap is returned between wrapped rows', async () => {
+  const screen = render(makeSelectedSelect());
+  const host = screen.container.querySelector('rc-select') as RCSelect;
+
+  host.style.cssText =
+    'inline-size: 9rem; --rc-chip-block-size: 32px; --rc-chip-touch-target-block-size: 48px; ' +
+    '--rc-chip-touch-target-overlap-block-start: 8px; --rc-chip-touch-target-overlap-block-end: 8px; ' +
+    '--rc-select-chip-padding-block: 0;';
+
+  await getHost(screen);
+
+  await vi.waitFor(() => expect(host.renderRoot.querySelectorAll('[part~="chip"]')).toHaveLength(2));
+
+  const [first, second] = [...host.renderRoot.querySelectorAll('[part~="chip"]')].map(($chip) =>
+    $chip.getBoundingClientRect(),
+  );
+
+  expect(second.top).toBeGreaterThan(first.top);
+  expect(second.top - first.bottom).toBeCloseTo(16, 0);
+});
+
 test('multiple: chip remove button click removes the value', async () => {
   const screen = render(makeSelect({ multiple: true }));
   const host = await getHost(screen);

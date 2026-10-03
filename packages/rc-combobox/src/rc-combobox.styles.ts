@@ -54,7 +54,16 @@ export const comboboxStyles = css`
     max-inline-size: 100%;
     min-inline-size: 0;
     --rc-chip-group-column-gap: var(--rc-combobox-gap, var(--rc-control-gap, 0.25em));
-    --rc-chip-group-row-gap: 0;
+    /*
+     * Chip touch-target overlap tokens inherit to every chip, but they are
+     * only meant to reach into the field's own block padding. Returning the
+     * same space between rows keeps interior rows on the full touch-target
+     * pitch instead of collapsing them onto each other.
+     */
+    --rc-chip-group-row-gap: calc(
+      var(--rc-chip-touch-target-overlap-block-start, 0px) +
+        var(--rc-chip-touch-target-overlap-block-end, 0px)
+    );
   }
 
   /* Input-chip chrome; rc-chip keeps the native button as the removal action. */

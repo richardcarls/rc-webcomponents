@@ -119,6 +119,45 @@ test('restores authored chip variants when coordination ends', async () => {
   expect($chip.variant).toBe('input');
 });
 
+test('expanded readonly chips keep one row pitch with the disclosure toggle', async () => {
+  const screen = render(html`
+    <rc-chip-group
+      data-testid="host"
+      style="inline-size: 12rem; --rc-chip-group-column-gap: 0; --rc-chip-group-row-gap: 0; --rc-chip-block-size: 32px; --rc-chip-touch-target-block-size: 48px;"
+      max-rows="1"
+      default-expanded
+    >
+      ${Array.from(
+        { length: 8 },
+        (_, index) => html`
+          <rc-chip readonly>
+            <span data-rc-chip-label style="inline-size: 5rem;">${index}</span>
+          </rc-chip>
+        `,
+      )}
+    </rc-chip-group>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('wrap'));
+
+  const rowTops = [
+    ...new Set(
+      [...host.querySelectorAll<HTMLElement>('rc-chip > [data-rc-chip-label]')].map((label) =>
+        Math.round(label.getBoundingClientRect().top),
+      ),
+    ),
+  ];
+  const pitches = rowTops.slice(1).map((top, index) => top - rowTops[index]);
+
+  expect(rowTops.length).toBeGreaterThan(2);
+  expect(new Set(pitches)).toEqual(new Set([48]));
+});
+
 test('auto layout collapses after max rows and toggles back to wrapped layout', async () => {
   const listener = vi.fn();
   const screen = render(html`
