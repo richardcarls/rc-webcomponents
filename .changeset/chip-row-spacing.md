@@ -1,4 +1,5 @@
 ---
+'@rcarls/rc-chip': patch
 '@rcarls/rc-chip-group': patch
 '@rcarls/rc-combobox': patch
 '@rcarls/rc-select': patch

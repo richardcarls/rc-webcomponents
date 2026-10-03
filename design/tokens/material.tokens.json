@@ -7527,7 +7527,7 @@
           "cssVar": "--rc-combobox-chip-padding-block",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 6
+            "Value": 0
           }
         },
         {
@@ -12708,7 +12708,7 @@
           "cssVar": "--rc-select-chip-padding-block",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 6
+            "Value": 0
           }
         },
         {

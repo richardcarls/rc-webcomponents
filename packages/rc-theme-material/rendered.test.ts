@@ -3,6 +3,8 @@ import { afterEach, expect, test, vi } from 'vitest';
 
 import '@rcarls/rc-adaptive-menu/define';
 import '@rcarls/rc-button/define';
+import '@rcarls/rc-chip-group/define';
+import '@rcarls/rc-chip/define';
 import '@rcarls/rc-combobox/define';
 import '@rcarls/rc-dialog/define';
 import '@rcarls/rc-field/define';
@@ -80,6 +82,7 @@ test('Material fields render filled and outlined native-control compositions', a
   expect(getComputedStyle($outlinedSurface!).borderTopWidth).toBe('1px');
   expect($outlined.hasAttribute('data-multiline')).toBe(true);
   expect($filled.querySelector('input')?.isConnected).toBe(true);
+
   expect($filledLabel!.getBoundingClientRect().left).toBe(
     $filledControl!.getBoundingClientRect().left,
   );
@@ -159,6 +162,40 @@ test('rc-select and rc-combobox lose their own chrome when composed as rc-field 
   expect($comboboxField.hasAttribute('data-focused')).toBe(true);
   expect($comboboxAnchor.matches(':focus-within')).toBe(true);
   expect(getComputedStyle($comboboxAnchor).outlineStyle).toBe('none');
+});
+
+test('readonly Material chips keep visible space between wrapped rows', async () => {
+  const $scope = document.createElement('div');
+
+  $scope.className = 'rc-theme-material';
+
+  $scope.innerHTML = `
+    <rc-chip-group layout="auto" max-rows="1" default-expanded style="inline-size: 12rem">
+      ${Array.from(
+        { length: 6 },
+        (_, index) => `<rc-chip readonly><span data-rc-chip-label>Chip ${index}</span></rc-chip>`,
+      ).join('')}
+    </rc-chip-group>
+  `;
+
+  document.body.append($scope);
+  await settle($scope);
+
+  const $group = $scope.querySelector('rc-chip-group')!;
+
+  await vi.waitFor(() =>
+    expect($group.shadowRoot!.querySelector<HTMLElement>('#toggle-wrap')!.hidden).toBe(false),
+  );
+
+  const $chips = [...$group.querySelectorAll<HTMLElement>('rc-chip')];
+  const chipRows = [...new Set($chips.map(($chip) => $chip.getBoundingClientRect().top))];
+
+  expect($chips.map(($chip) => $chip.getBoundingClientRect().height)).toEqual(Array(6).fill(48));
+  expect($chips[0].querySelector('[data-rc-chip-label]')!.getBoundingClientRect().height).toBe(32);
+  expect(chipRows.length).toBeGreaterThan(1);
+  expect(chipRows[1] - chipRows[0]).toBe(48);
+
+  $scope.remove();
 });
 
 test('floated field labels share one offset while chip rows grow the filled field', async () => {

@@ -5,6 +5,8 @@ export const chipGroupStyles = css`
     display: block;
     min-inline-size: 0;
     color-scheme: inherit;
+    /* Match readonly row pitch to the disclosure toggle without enlarging chip chrome. */
+    --_rc-chip-group-readonly-min-block-size: var(--rc-chip-touch-target-block-size, 3rem);
   }
 
   :host([hidden]) {
@@ -48,16 +50,6 @@ export const chipGroupStyles = css`
 
   ::slotted(*) {
     flex: 0 0 auto;
-  }
-
-  /*
-   * A readonly chip drops its touch-target minimum, but the disclosure toggle
-   * keeps its own, so wrapped rows would otherwise alternate between the
-   * toggle's pitch and the compact chip's. Matching the touch target keeps
-   * every row on one pitch, the spacing that row-gap 0 themes rely on.
-   */
-  ::slotted(rc-chip[readonly]) {
-    min-block-size: var(--rc-chip-touch-target-block-size, 3rem);
   }
 
   #toggle-wrap {
