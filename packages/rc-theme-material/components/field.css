@@ -195,6 +195,20 @@
     inline-size: 100%;
   }
 
+  /*
+   * Full-size chips are taller than the input line, so keep a little space
+   * between their outline and the floated label. Dense chips sit on the
+   * input line and need none.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field:not(.rc-field--outlined)
+    > :is(
+      rc-combobox:not(.rc-combobox--dense),
+      rc-select:not(.rc-select--dense)
+    )[data-rc-field-control]::part(chips) {
+    padding-block-start: 0.25rem;
+  }
+
   /* Dense chips leave more of the 3rem touch target to overlap. */
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field

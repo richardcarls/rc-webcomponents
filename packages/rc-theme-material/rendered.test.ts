@@ -216,8 +216,20 @@ test('floated field labels share one offset while chip rows grow the filled fiel
 
   expect(geometry('text')).toEqual({ height: 56, labelTop: 8 });
   expect(geometry('select')).toEqual({ height: 56, labelTop: 8 });
-  expect(geometry('chips')).toEqual({ height: 64, labelTop: 8 });
+  expect(geometry('chips')).toEqual({ height: 68, labelTop: 8 });
   expect(geometry('dense')).toEqual({ height: 56, labelTop: 8 });
+
+  const $chipsField = scope.querySelector<HTMLElement>('[data-k="chips"]')!;
+  const chipTop = $chipsField
+    .querySelector('rc-select')!
+    .shadowRoot!.querySelector('rc-chip button')!
+    .getBoundingClientRect().top;
+  const labelBottom = $chipsField
+    .shadowRoot!.querySelector('[part~="label"]')!
+    .getBoundingClientRect().bottom;
+
+  // Full-size chips keep a small gap below the floated label.
+  expect(Math.round(chipTop - labelBottom)).toBe(4);
 
   // Outlined labels ride the top border instead.
   expect(geometry('outlined-text').labelTop).toBeLessThan(0);
