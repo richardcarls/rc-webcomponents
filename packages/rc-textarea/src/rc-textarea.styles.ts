@@ -224,6 +224,10 @@ export const styles = css`
     pointer-events: none;
   }
 
+  :host([read-only]) .line--active::before {
+    content: none;
+  }
+
   /* Error-lens -style end-of-line diagnostic message */
   .line[data-message]::after {
     content: attr(data-message);

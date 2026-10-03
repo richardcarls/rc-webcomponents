@@ -2,7 +2,13 @@ import { LitElement, html } from 'lit';
 import type { CSSResultGroup } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { NativeChildController, warnMissingDirectChild } from '@rcarls/rc-common';
+import {
+  FlowController,
+  logicalRect,
+  NativeChildController,
+  resolveFlow,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 import { RCDocument, getText } from './document.js';
 import {
   getSelectionFocusNode,
@@ -285,6 +291,8 @@ export class RCTextarea extends LitElement {
     },
   });
 
+  protected readonly _flowController = new FlowController(this);
+
   /** Plugin-owned decorations */
   protected _pluginDecorations = new Map<string, Decoration>();
 
@@ -331,6 +339,8 @@ export class RCTextarea extends LitElement {
   protected _undoIndex = -1;
 
   protected _resizeObserver: ResizeObserver | null = null;
+
+  protected _gutterBlockAxis: 'x' | 'y' | null = null;
 
   /** Cached per-line gutter labels from the last render — reused by ResizeObserver. */
   protected _gutterLabels: (string | HTMLElement | null | { number: string; content: string | HTMLElement })[] = [];
@@ -457,6 +467,10 @@ export class RCTextarea extends LitElement {
 
       this._syncGutterHeights();
       this._textareaController.sync();
+    }
+
+    if (this._$editor && resolveFlow(this._$editor).block !== this._gutterBlockAxis) {
+      this._syncGutterHeights();
     }
   }
 
@@ -1464,12 +1478,12 @@ export class RCTextarea extends LitElement {
   }
 
   /**
-   * Synchronize the pixel height of each gutter cell to match the
+   * Synchronize the block size of each gutter cell to match the
    * corresponding `.line` element in the editor.
    *
    * In non-word-wrap mode without block widgets the gutter uses a uniform
    * line height. Wrapped lines and block widgets use per-line heights instead.
-   * Also copies the editor's computed `paddingTop`/`paddingBottom` to the
+   * Also copies the editor's computed block padding to the
    * gutter to compensate for browser UA overrides on contenteditable.
    */
   protected _syncGutterHeights(): void {
@@ -1477,32 +1491,36 @@ export class RCTextarea extends LitElement {
       return;
     }
 
-    // Sync vertical padding from the editor's computed values.
+    // Sync block padding from the editor's computed values.
     // Browser UA overrides (Chrome/Firefox on contenteditable) cause 0.5em to
     // resolve to different pixel values on the gutter vs the editor, producing
     // a constant vertical offset. The read-only rule (padding: 0 on #editor)
     // also needs the gutter to match — this one call covers both cases.
     const computedStyle = getComputedStyle(this._$editor);
-    const paddingTop = computedStyle.paddingTop;
-    const paddingBottom = computedStyle.paddingBottom;
+    const paddingBlockStart = computedStyle.paddingBlockStart;
+    const paddingBlockEnd = computedStyle.paddingBlockEnd;
 
-    if (this._$gutterCells.style.paddingTop !== paddingTop) {
-      this._$gutterCells.style.paddingTop = paddingTop;
+    if (this._$gutterCells.style.paddingBlockStart !== paddingBlockStart) {
+      this._$gutterCells.style.paddingBlockStart = paddingBlockStart;
     }
 
-    if (this._$gutterCells.style.paddingBottom !== paddingBottom) {
-      this._$gutterCells.style.paddingBottom = paddingBottom;
+    if (this._$gutterCells.style.paddingBlockEnd !== paddingBlockEnd) {
+      this._$gutterCells.style.paddingBlockEnd = paddingBlockEnd;
     }
 
     const $lineEls = this._$editor.querySelectorAll<HTMLElement>('.line');
     const $spans = this._$gutterCells.children;
+    const flow = resolveFlow(this._$editor);
+    const editorRect = this._$editor.getBoundingClientRect();
+
+    this._gutterBlockAxis = flow.block;
 
     if (!this.wordWrap && !this._$editor.querySelector('.widget--block')) {
       // Chrome UA overrides line-height on contenteditable (even via var() fallback,
       // but not inline styles), giving the editor a different natural cell height
-      // than the gutter's CSS 1.5× value. Mirror the first line's actual height.
+      // than the gutter's CSS 1.5× value. Mirror the first line's actual block size.
       if ($lineEls.length > 0) {
-        const lineHeight = `${$lineEls[0].getBoundingClientRect().height}px`;
+        const lineHeight = `${logicalRect($lineEls[0].getBoundingClientRect(), editorRect, flow).blockSize}px`;
 
         if (this._$gutterCells.style.lineHeight !== lineHeight) {
           this._$gutterCells.style.lineHeight = lineHeight;
@@ -1510,24 +1528,28 @@ export class RCTextarea extends LitElement {
       }
 
       for (let i = 0; i < $spans.length; i++) {
-        ($spans[i] as HTMLElement).style.height = '';
+        ($spans[i] as HTMLElement).style.blockSize = '';
       }
 
       return;
     }
 
-    // word-wrap: per-span explicit heights drive alignment; clear any forced line-height.
+    // word-wrap: per-span explicit block sizes drive alignment; clear any forced line-height.
     if (this._$gutterCells.style.lineHeight) {
       this._$gutterCells.style.lineHeight = '';
     }
 
     for (let i = 0; i < $lineEls.length && i < $spans.length; i++) {
-      const height = $lineEls[i]!.getBoundingClientRect().height;
-      const heightStyle = `${height}px`;
+      const blockSize = logicalRect(
+        $lineEls[i]!.getBoundingClientRect(),
+        editorRect,
+        flow,
+      ).blockSize;
+      const blockSizeStyle = `${blockSize}px`;
       const $span = $spans[i] as HTMLElement;
 
-      if ($span.style.height !== heightStyle) {
-        $span.style.height = heightStyle;
+      if ($span.style.blockSize !== blockSizeStyle) {
+        $span.style.blockSize = blockSizeStyle;
       }
     }
   }
