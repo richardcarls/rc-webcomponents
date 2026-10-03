@@ -148,7 +148,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-trailing-size=2.5em] - Reserved inline space and minimum block size for trailing controls
  * @cssprop [--rc-textarea-focus-outline=2px solid Highlight] - Focus ring outline
  * @cssprop [--rc-textarea-caret-color=FieldText] - Caret color
- * @cssprop [--rc-textarea-active-line-bg=transparent] - Active line highlight color
+ * @cssprop [--rc-textarea-active-line-bg=transparent] - Active line highlight color, including editor and gutter padding
  * @cssprop [--rc-textarea-gutter-bg=Canvas] - Gutter background color
  * @cssprop [--rc-textarea-gutter-color=GrayText] - Gutter text color
  * @cssprop [--rc-textarea-gutter-border=1px solid ButtonBorder] - Gutter right border

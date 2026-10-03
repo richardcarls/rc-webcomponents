@@ -255,7 +255,7 @@ The component reads inherited tokens where possible:
 | `--rc-textarea-border`                    | `1px solid ButtonBorder`                    | Field border.                         |
 | `--rc-textarea-border-radius`             | `2px`                                       | Field corner radius.                  |
 | `--rc-textarea-focus-outline`             | `2px solid Highlight`                       | Focus ring.                           |
-| `--rc-textarea-active-line-bg`            | `transparent`                               | Active line background.               |
+| `--rc-textarea-active-line-bg`            | `transparent`                               | Full-width active line highlight.     |
 | `--rc-textarea-gutter-bg`                 | `Canvas`                                    | Gutter background.                    |
 | `--rc-textarea-gutter-color`              | `GrayText`                                  | Gutter text color.                    |
 | `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`                    | Gutter separator.                     |
