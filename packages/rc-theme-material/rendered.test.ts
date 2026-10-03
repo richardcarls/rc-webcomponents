@@ -152,6 +152,13 @@ test('rc-select and rc-combobox lose their own chrome when composed as rc-field 
   // and box-shadow are what actually determine whether chrome is visible here.
   expect(getComputedStyle($selectTrigger).borderWidth).toBe('0px');
   expect(getComputedStyle($selectTrigger).boxShadow).toBe('none');
+
+  $combobox.shadowRoot!.querySelector<HTMLInputElement>('[part~="input"]')!.focus();
+  await settle($comboboxField);
+
+  expect($comboboxField.hasAttribute('data-focused')).toBe(true);
+  expect($comboboxAnchor.matches(':focus-within')).toBe(true);
+  expect(getComputedStyle($comboboxAnchor).outlineStyle).toBe('none');
 });
 
 test('dialog-mode combobox fills the current visual viewport', async () => {

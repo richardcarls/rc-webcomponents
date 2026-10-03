@@ -159,6 +159,8 @@
     border-color: transparent;
     background: transparent;
     box-shadow: none;
+    /* rc-field's label and active indicator already show focus. */
+    outline: none;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
@@ -182,6 +184,8 @@
     border-color: transparent;
     background: transparent;
     box-shadow: none;
+    /* rc-field's label and active indicator already show focus. */
+    outline: none;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
