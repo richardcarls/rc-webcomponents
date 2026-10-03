@@ -101,7 +101,21 @@ export const styles = css`
   }
 
   .gutter-cell--active {
+    position: relative;
+    isolation: isolate;
     color: var(--rc-textarea-color, var(--rc-field-text, FieldText));
+    background: var(--rc-textarea-active-line-bg, transparent);
+  }
+
+  .gutter-cell--active::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset-block: 0;
+    inset-inline-start: calc(-1 * var(--rc-textarea-padding, 0.5em));
+    inset-inline-end: calc(-1 * var(--rc-textarea-gutter-padding-inline-end, 0.75em));
+    background: inherit;
+    pointer-events: none;
   }
 
   #editor-area {
@@ -188,9 +202,26 @@ export const styles = css`
     display: block;
   }
 
-  /* Active line highlight — opt-in via CSS custom property. */
+  :host(:not([word-wrap])) .line {
+    inline-size: max-content;
+    min-inline-size: 100%;
+  }
+
+  /* Paint the active row through the editor padding without clipping its text
+     or overflowing into adjacent rows. */
   .line--active {
+    isolation: isolate;
     background: var(--rc-textarea-active-line-bg, transparent);
+  }
+
+  .line--active::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset-block: 0;
+    inset-inline: calc(-1 * var(--rc-textarea-padding, 0.5em));
+    background: inherit;
+    pointer-events: none;
   }
 
   /* Error-lens -style end-of-line diagnostic message */

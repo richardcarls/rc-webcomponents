@@ -4,6 +4,7 @@ import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import type { RCTextarea } from './rc-textarea.js';
 import type { RCTextareaPluginAPI } from './types.js';
 import {
@@ -82,6 +83,112 @@ describe('RCTextarea — basic rendering', () => {
     await userEvent.click($secondLine);
 
     await expect.poll(() => $editor.querySelector('.line--active')).toBe($secondLine);
+  });
+
+  test('extends the active line highlight edge to edge through the gutter', async () => {
+    const host = await renderTextarea();
+
+    host.lineNumbers = true;
+    host.style.setProperty('--rc-textarea-active-line-bg', 'rgb(1, 2, 3)');
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $secondLine = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+
+    if (!$secondLine) {
+      throw new Error('Expected a second editor line');
+    }
+
+    await userEvent.click($secondLine);
+
+    await expect
+      .poll(() => getGutterCells(host).children[1]?.classList.contains('gutter-cell--active'))
+      .toBe(true);
+
+    const $gutterCell = getGutterCells(host).children[1]!;
+    const editorPadding = getComputedStyle($editor).paddingInlineStart;
+    const gutterPadding = getComputedStyle(getGutterCells(host)).paddingInlineStart;
+
+    for (const [$row, padding] of [
+      [$secondLine, editorPadding],
+      [$gutterCell, gutterPadding],
+    ] as const) {
+      const style = getComputedStyle($row);
+      const highlight = getComputedStyle($row, '::before');
+
+      expect(style.backgroundColor).toBe('rgb(1, 2, 3)');
+      expect(style.clipPath).toBe('none');
+      expect(highlight.backgroundColor).toBe('rgb(1, 2, 3)');
+      expect(parseFloat(highlight.insetInlineStart)).toBe(-parseFloat(padding));
+      expect(highlight.insetBlockStart).toBe('0px');
+      expect(highlight.insetBlockEnd).toBe('0px');
+    }
+  });
+
+  test.each(FLOW_FIXTURES)('keeps the highlight within its row in %s', async (flow) => {
+    const host = await renderTextarea(
+      inFlow(
+        html`
+          <rc-textarea data-testid="host" line-numbers style="inline-size: 16rem; block-size: 8rem">
+            <textarea aria-label="Notes"></textarea>
+          </rc-textarea>
+        `,
+        flow,
+      ),
+    );
+
+    host.style.setProperty('--rc-textarea-active-line-bg', 'rgb(1, 2, 3)');
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $secondLine = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+
+    await userEvent.click($secondLine);
+
+    await expect.poll(() => $secondLine.classList.contains('line--active')).toBe(true);
+
+    const highlight = getComputedStyle($secondLine, '::before');
+    const padding = getComputedStyle($editor).paddingInlineStart;
+
+    expect(highlight.insetBlockStart, flowLabel(flow)).toBe('0px');
+    expect(highlight.insetBlockEnd, flowLabel(flow)).toBe('0px');
+    expect(parseFloat(highlight.insetInlineStart), flowLabel(flow)).toBe(-parseFloat(padding));
+    expect(getComputedStyle($secondLine).clipPath, flowLabel(flow)).toBe('none');
+  });
+
+  test('keeps a long active line hittable after horizontal scrolling', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" style="inline-size: 16rem">
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = `First line\n${'Long line '.repeat(300)}`;
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $line = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+
+    await userEvent.click($line, { position: { x: 10, y: 10 } });
+
+    await expect.poll(() => $line.classList.contains('line--active')).toBe(true);
+
+    $editor.scrollLeft = $editor.scrollWidth;
+
+    const editorRect = $editor.getBoundingClientRect();
+    const lineRect = $line.getBoundingClientRect();
+    const $hit = host.shadowRoot!.elementFromPoint(
+      editorRect.right - 16,
+      lineRect.top + lineRect.height / 2,
+    );
+
+    expect($editor.scrollLeft).toBeGreaterThan(window.innerWidth);
+    expect($line.contains($hit) || $hit === $line).toBe(true);
   });
 
   test('falls back when shadow selection access has no local range', async () => {
