@@ -62,6 +62,14 @@ Set `resize="none"` to hold the sheet at its current snap point, for example
 while it has nothing more to reveal. The option is reactive, so restoring
 `resize="vertical"` re-enables dragging between snap points.
 
+The sheet stays docked at its block-end edge: snapping sets only its height,
+and its position is left to CSS. A software keyboard that resizes the viewport
+(`interactive-widget=resizes-content`) re-applies the current snap point above
+the keyboard. When a field inside the sheet takes focus, the sheet scrolls it
+into view within its own scroll containers, and grows past its snap height and
+maximum block size only when scrolling cannot reveal it, returning to its snap
+point once focus leaves the sheet.
+
 List `snap-points` as CSS heights in ascending order. Any length works,
 including `calc()` and `var()`; each is resolved inside the sheet when a snap
 applies, so a custom property the page animates is read at its current value.

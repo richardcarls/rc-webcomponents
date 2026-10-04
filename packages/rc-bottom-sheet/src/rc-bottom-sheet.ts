@@ -190,50 +190,47 @@ const LIGHT_DOM_CSS = `
 // fling; a real swipe travels at least this far even if it's very quick.
 const MIN_SWIPE_DISTANCE = 24;
 
-/**
- * Pins only the block-axis (top/height) geometry as inline styles, leaving
- * the inline axis (left/width) to CSS. `@rcarls/rc-common`'s
- * `pinElementBox` pins all four edges — appropriate for its own drag-resize
- * gesture math, where the inline axis can genuinely change — but a bottom
- * sheet only ever resizes/repositions along the block axis; its own
- * `LIGHT_DOM_CSS` deliberately leaves the inline axis owned by
- * `inset-inline`/`inline-size` custom properties (e.g. so a host page can
- * confine a sheet to a layout pane narrower than the viewport). Pinning
- * `left`/`width` here would freeze whatever the *unconfined* box happened
- * to measure at pin time as an inline style, which — having higher
- * cascade priority than any stylesheet rule — permanently overrides that
- * confinement regardless of specificity or layers.
- */
-function pinBlockBox(target: HTMLElement): DOMRect {
-  const rect = target.getBoundingClientRect();
-  const styles = getComputedStyle(target);
-  // `getBoundingClientRect().top` is viewport-relative, while an authored
-  // `top` value is relative to the element's fixed/absolute containing block.
-  // They are only interchangeable when the viewport is that containing block.
-  // Derive the current *visual* top from the offset parent's box when one is
-  // available. `offsetTop` itself is insufficient here because it ignores an
-  // in-flight Web Animation; `getComputedStyle().top` can have the opposite
-  // problem for fixed positioning, reporting a viewport-relative used value.
-  const offsetParent = target.offsetParent as HTMLElement | null;
-  const computedTop = Number.parseFloat(styles.top);
-  const localTop = offsetParent
-    ? rect.top -
-      offsetParent.getBoundingClientRect().top -
-      offsetParent.clientTop +
-      offsetParent.scrollTop
-    : Number.isFinite(computedTop)
-      ? computedTop
-      : rect.top;
+// Space kept below a field the sheet grows to reveal above a keyboard.
+const FOCUS_REVEAL_MARGIN = 16;
 
-  if (styles.position === 'static') {
-    target.style.position = 'fixed';
+// Inline geometry a drag gesture (`pinElementBox`) or an earlier pin may
+// leave behind. A docked sheet hands all of it back to its stylesheet.
+const DOCK_RELEASED_PROPERTIES = [
+  'inset',
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'inset-block-start',
+  'inset-block-end',
+  'inset-inline-start',
+  'inset-inline-end',
+  'width',
+  'margin',
+  'translate',
+] as const;
+
+/**
+ * Docks the sheet to its block-end edge and pins only its rendered height.
+ *
+ * A bottom sheet's position belongs to CSS (`inset-block-end` and the
+ * inline insets), so it stays docked when the viewport, a software keyboard,
+ * or a moving containing block changes the space around it. Only the height
+ * is frozen inline, as the one value snapping controls. Inline edges that a
+ * drag gesture pinned are released here: `top` measured against a containing
+ * block that later moves, or a leftover `bottom: auto`, would otherwise strand
+ * the sheet away from its edge, and a pinned `left`/`width` would override
+ * the inline-axis confinement a host page sets through custom properties.
+ */
+function dockBlockBox(target: HTMLElement): DOMRect {
+  const rect = target.getBoundingClientRect();
+
+  for (const property of DOCK_RELEASED_PROPERTIES) {
+    target.style.removeProperty(property);
   }
 
-  target.style.translate = 'none';
-  target.style.insetBlockStart = 'auto';
   target.style.marginBlock = '0';
   target.style.boxSizing = 'border-box';
-  target.style.top = `${localTop}px`;
   target.style.height = `${rect.height}px`;
 
   return rect;
@@ -404,43 +401,63 @@ export class RCBottomSheet extends RCDialog {
 
   // Snap-point heights are resolved from the *current* viewport at the
   // moment a snap is applied (dvh units, or a probe-element measurement for
-  // other CSS units) and then frozen as inline styles by pinBlockBox — nothing
-  // re-derives them afterward. A window resize/maximize/restore while a
-  // sheet is open (without the user dragging it) otherwise leaves it pinned
-  // to stale pre-resize geometry. Track the last-applied index so a resize
-  // can re-run the same snap against fresh geometry.
+  // other CSS units) and then frozen as an inline height — nothing re-derives
+  // them afterward. A window resize (maximize/restore, or a software keyboard
+  // under `interactive-widget=resizes-content`) otherwise leaves the sheet at
+  // a stale height. Track the last-applied index so a resize can re-run the
+  // same snap against fresh geometry; the sheet's docked position needs no
+  // re-derivation.
   private _lastSnapIndex: number | null = null;
+  // True while the sheet is grown past its snap height (and CSS maximum) to
+  // keep a focused field visible above a software keyboard.
+  private _extendedForFocus = false;
   private readonly _onWindowResize = (): void => {
     if (!this.open || this._lastSnapIndex === null) {
       return;
     }
 
-    // _snapToIndex re-measures via pinBlockBox's getBoundingClientRect(),
-    // but that reads back whatever is *currently rendered* — the stale
-    // pin from before this resize, still anchored to the old viewport.
-    // For a fixed-height snap point (no dvh in play) that stale box's
-    // bottom edge is unchanged, so re-deriving from it would compute the
-    // exact same (now wrong) target. Clear the previous pin first so the
-    // dialog reverts to its CSS-driven position (inset-block-end-anchored)
-    // before re-measuring, the same as an as-yet-never-snapped sheet.
+    this._extendedForFocus = false;
+    this._$dialog?.style.removeProperty('max-block-size');
+    this._snapToIndex(this._lastSnapIndex, 'instant', 'api');
+    this._revealFocusedField();
+  };
+
+  private readonly _onFocusIn = (): void => {
+    this._revealFocusedField();
+  };
+
+  private readonly _onFocusOut = (event: FocusEvent): void => {
     const $dialog = this._$dialog;
 
-    $dialog?.style.removeProperty('top');
-    $dialog?.style.removeProperty('height');
-    $dialog?.style.removeProperty('inset-block-start');
+    if (
+      !this._extendedForFocus ||
+      !$dialog ||
+      (event.relatedTarget instanceof Node && $dialog.contains(event.relatedTarget))
+    ) {
+      return;
+    }
 
-    this._snapToIndex(this._lastSnapIndex, 'instant', 'api');
+    this._extendedForFocus = false;
+    $dialog.style.removeProperty('max-block-size');
+
+    if (this._lastSnapIndex !== null) {
+      this._snapToIndex(this._lastSnapIndex, 'animated', 'api');
+    }
   };
 
   override connectedCallback(): void {
     super.connectedCallback();
     RCBottomSheet._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
     window.addEventListener('resize', this._onWindowResize);
+    this.addEventListener('focusin', this._onFocusIn);
+    this.addEventListener('focusout', this._onFocusOut);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     window.removeEventListener('resize', this._onWindowResize);
+    this.removeEventListener('focusin', this._onFocusIn);
+    this.removeEventListener('focusout', this._onFocusOut);
   }
 
   /**
@@ -466,6 +483,13 @@ export class RCBottomSheet extends RCDialog {
   }
 
   protected override _onResizeStart(detail: ResizeLifecycleDetail): void {
+    // A gesture interrupts a running snap. The resize controller has already
+    // pinned the animated box inline, so dropping the animation's forwards
+    // fill keeps the sheet where it is instead of letting the snap settle
+    // over the gesture.
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
+
     this.dispatchEvent(
       new CustomEvent<RCBottomSheetResizeStartDetail>('rc-bottom-sheet-resize-start', {
         bubbles: true,
@@ -540,11 +564,9 @@ export class RCBottomSheet extends RCDialog {
       return;
     }
 
-    // Pinning (border-box, explicit top/height) is normally established by
-    // the first drag gesture; snapTo() must do the same so a sheet that has
-    // never been dragged still measures and sets height consistently.
-    const rect = pinBlockBox($dialog);
-    const pinnedTop = $dialog.style.top;
+    // Dock before measuring: a drag gesture leaves its own edge pins inline,
+    // and an earlier snap leaves an explicit height to animate from.
+    const rect = dockBlockBox($dialog);
     const clampedIndex = Math.max(0, Math.min(index, points.length - 1));
     const requestedHeight = points[clampedIndex];
 
@@ -558,19 +580,13 @@ export class RCBottomSheet extends RCDialog {
 
     $dialog.style.height = `${requestedHeight}px`;
 
+    // CSS min/max block-size can make the effective height differ from the
+    // authored snap point; snap events report what actually renders.
     const targetHeight = $dialog.getBoundingClientRect().height;
 
-    // Restore the current visual box before applying or animating the target.
-    // CSS min/max block-size can make targetHeight differ from the authored
-    // snap point; anchoring from the effective height keeps the block-end edge
-    // fixed in either case.
-    $dialog.style.top = pinnedTop;
     $dialog.style.height = `${rect.height}px`;
 
-    const currentTop = Number.parseFloat(pinnedTop);
-    const targetTop = currentTop + rect.height - targetHeight;
-
-    this._applySnap($dialog, targetTop, targetHeight, behavior, () => {
+    this._applySnap($dialog, targetHeight, behavior, () => {
       this.dispatchEvent(
         new CustomEvent<RCBottomSheetSnapDetail>('rc-bottom-sheet-snap', {
           bubbles: true,
@@ -583,22 +599,19 @@ export class RCBottomSheet extends RCDialog {
 
   private _applySnap(
     $dialog: HTMLDialogElement,
-    top: number,
     height: number,
     behavior: 'animated' | 'instant',
     onSettled: () => void,
   ): void {
     // Measure before cancelling any in-flight animation. `_snapToIndex()`
-    // normally pins and cancels first, while this ordering also keeps direct
+    // normally docks and cancels first, while this ordering also keeps direct
     // calls robust if applying a snap is refactored later.
-    const fromRect = $dialog.getBoundingClientRect();
-    const fromTop = Number.parseFloat($dialog.style.top);
+    const fromHeight = $dialog.getBoundingClientRect().height;
 
     this._activeSnapAnimation?.cancel();
     this._activeSnapAnimation = null;
 
-    if (behavior === 'instant' || this._reducedMotion?.matches) {
-      $dialog.style.top = `${top}px`;
+    if (behavior === 'instant' || this._reducedMotion?.matches || fromHeight === height) {
       $dialog.style.height = `${height}px`;
 
       onSettled();
@@ -606,17 +619,10 @@ export class RCBottomSheet extends RCDialog {
       return;
     }
 
-    if (fromTop === top && fromRect.height === height) {
-      onSettled();
-
-      return;
-    }
-
+    // The sheet is docked at its block-end edge, so animating its height
+    // alone moves the visible top edge.
     const animation = $dialog.animate(
-      [
-        { top: `${fromTop}px`, height: `${fromRect.height}px` },
-        { top: `${top}px`, height: `${height}px` },
-      ],
+      [{ height: `${fromHeight}px` }, { height: `${height}px` }],
       {
         duration: this._snapDuration($dialog),
         easing: this._snapEasing($dialog),
@@ -638,7 +644,6 @@ export class RCBottomSheet extends RCDialog {
         // Persist the known target explicitly before removing the animation's
         // forwards fill. Unlike commitStyles(), this remains safe if a test or
         // consumer detaches the dialog as the finished promise resolves.
-        $dialog.style.top = `${top}px`;
         $dialog.style.height = `${height}px`;
         animation.cancel();
         this._activeSnapAnimation = null;
@@ -655,6 +660,64 @@ export class RCBottomSheet extends RCDialog {
         }
       },
     );
+  }
+
+  /**
+   * Keeps a focused field inside the sheet visible, as Android and Material
+   * sheets do above a software keyboard: scroll it into view within the
+   * sheet's own scroll containers, then grow the sheet past its snap height
+   * and CSS maximum (up to the space above its docked edge) only when
+   * scrolling cannot reveal it.
+   */
+  private _revealFocusedField(): void {
+    const $dialog = this._$dialog;
+    const $focused = document.activeElement;
+
+    if (!this.open || !$dialog || !($focused instanceof HTMLElement) || !$dialog.contains($focused)) {
+      return;
+    }
+
+    for (
+      let $scroller = $focused.parentElement;
+      $scroller && $dialog.contains($scroller);
+      $scroller = $scroller.parentElement
+    ) {
+      if (
+        $scroller.scrollHeight <= $scroller.clientHeight ||
+        !/auto|scroll/.test(getComputedStyle($scroller).overflowY)
+      ) {
+        continue;
+      }
+
+      const box = $scroller.getBoundingClientRect();
+      const field = $focused.getBoundingClientRect();
+
+      if (field.bottom > box.bottom) {
+        $scroller.scrollTop += Math.min(field.bottom - box.bottom, field.top - box.top);
+      } else if (field.top < box.top) {
+        $scroller.scrollTop -= box.top - field.top;
+      }
+    }
+
+    const sheet = $dialog.getBoundingClientRect();
+    const field = $focused.getBoundingClientRect();
+
+    if (field.bottom <= sheet.bottom) {
+      return;
+    }
+
+    // Growing the docked sheet lifts its content with its top edge, so the
+    // field needs the sheet to be as tall as the field's offset from the
+    // sheet's top, plus breathing room, bounded by the space above the
+    // docked edge.
+    const height = Math.min(field.bottom - sheet.top + FOCUS_REVEAL_MARGIN, sheet.bottom);
+
+    this._activeSnapAnimation?.cancel();
+    this._activeSnapAnimation = null;
+    this._extendedForFocus = true;
+    dockBlockBox($dialog);
+    $dialog.style.maxBlockSize = 'none';
+    $dialog.style.height = `${height}px`;
   }
 
   private _snapDuration($dialog: HTMLDialogElement): number {
