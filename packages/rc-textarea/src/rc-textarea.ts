@@ -178,7 +178,8 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-font-family=monospace] - Font family
  * @cssprop [--rc-textarea-font-size=1em] - Font size
  * @cssprop [--rc-textarea-line-height=1.5] - Line height
- * @cssprop [--rc-textarea-padding=0.5em] - Padding inside the field area
+ * @cssprop [--rc-textarea-padding-block=0.5em] - Block padding of the editor and gutter; any `padding-block` value
+ * @cssprop [--rc-textarea-padding-inline=0.5em] - Inline padding on both sides of the editor and before the gutter; one length, which the active line highlight bleeds through
  * @cssprop [--rc-textarea-gutter-min-inline-size=24px] - Minimum width of the gutter, including its padding
  * @cssprop [--rc-textarea-trailing-size=2.5em] - Reserved inline space and minimum block size for trailing controls
  * @cssprop [--rc-textarea-focus-outline=2px solid Highlight] - Focus ring outline

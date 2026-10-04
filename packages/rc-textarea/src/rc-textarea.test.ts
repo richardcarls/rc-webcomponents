@@ -118,7 +118,8 @@ describe('RCTextarea — basic rendering', () => {
       const style = getComputedStyle($row);
       const highlight = getComputedStyle($row, '::before');
 
-      expect(style.backgroundColor).toBe('rgb(1, 2, 3)');
+      // The row itself stays clear so a translucent color is not doubled.
+      expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
       expect(style.clipPath).toBe('none');
       expect(highlight.backgroundColor).toBe('rgb(1, 2, 3)');
       expect(parseFloat(highlight.insetInlineStart)).toBe(-parseFloat(padding));
@@ -159,6 +160,49 @@ describe('RCTextarea — basic rendering', () => {
     expect(parseFloat(highlight.insetInlineStart), flowLabel(flow)).toBe(-parseFloat(padding));
     expect(getComputedStyle($secondLine).clipPath, flowLabel(flow)).toBe('none');
   });
+
+  test.each(FLOW_FIXTURES)(
+    'bleeds the highlight through inline padding when block padding is asymmetric in %s',
+    async (flow) => {
+      // A field-composed editor: no block-start padding under the floating label.
+      const host = await renderTextarea(
+        inFlow(
+          html`
+            <rc-textarea
+              data-testid="host"
+              gutter
+              style="inline-size: 16rem; block-size: 8rem; --rc-textarea-padding-block: 0 8px; --rc-textarea-padding-inline: 16px"
+            >
+              <textarea aria-label="Notes"></textarea>
+            </rc-textarea>
+          `,
+          flow,
+        ),
+      );
+
+      host.style.setProperty('--rc-textarea-active-line-bg', 'rgb(1, 2, 3)');
+      host.value = 'First line\nSecond line';
+
+      await waitRender();
+
+      const $editor = getEditor(host);
+      const $secondLine = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+
+      await userEvent.click($secondLine);
+
+      await expect
+        .poll(() => getGutterCells(host).children[1]?.classList.contains('gutter-cell--active'))
+        .toBe(true);
+
+      const line = getComputedStyle($secondLine, '::before');
+      const gutter = getComputedStyle(getGutterCells(host).children[1]!, '::before');
+
+      expect(getComputedStyle($editor).paddingBlockStart, flowLabel(flow)).toBe('0px');
+      expect(line.insetInlineStart, flowLabel(flow)).toBe('-16px');
+      expect(line.insetInlineEnd, flowLabel(flow)).toBe('-16px');
+      expect(gutter.insetInlineStart, flowLabel(flow)).toBe('-16px');
+    },
+  );
 
   test('keeps a long active line hittable after horizontal scrolling', async () => {
     const host = await renderTextarea(html`

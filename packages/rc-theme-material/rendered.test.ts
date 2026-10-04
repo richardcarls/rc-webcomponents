@@ -1,4 +1,5 @@
 import { page } from 'vitest/browser';
+import { userEvent } from 'vitest/browser';
 import { afterEach, expect, test, vi } from 'vitest';
 
 import '@rcarls/rc-adaptive-menu/define';
@@ -11,6 +12,7 @@ import '@rcarls/rc-field/define';
 import '@rcarls/rc-list/define';
 import '@rcarls/rc-menu-button/define';
 import '@rcarls/rc-select/define';
+import '@rcarls/rc-textarea/define';
 
 import './theme.css';
 import { logicalInsets, unexpectedOverflow } from '../../test-helpers/rendered-ui';
@@ -99,6 +101,45 @@ test('Material fields render filled and outlined native-control compositions', a
   expect($empty.hasAttribute('data-focused')).toBe(true);
 
   await expect.poll(() => $emptyLabel!.getBoundingClientRect().top).toBeLessThan(restingTop);
+});
+
+test('filled Material field aligns a textarea gutter with its floated label', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label" for="ingredient-notes">Ingredients</label>
+      <rc-textarea data-rc-field-control gutter>
+        <textarea id="ingredient-notes" name="ingredients">Flour\nWater</textarea>
+      </rc-textarea>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const $field = scope.querySelector('rc-field')!;
+  const $textarea = scope.querySelector('textarea')!;
+  const $host = scope.querySelector('rc-textarea')!;
+  const $editor = $host.shadowRoot!.querySelector<HTMLElement>('#editor')!;
+  const $gutter = $host.shadowRoot!.querySelector<HTMLElement>('#gutter-cells')!;
+  const $label = $field.shadowRoot!.querySelector<HTMLElement>('[part="label"]')!;
+  const $firstLine = $editor.querySelector<HTMLElement>('.line')!;
+
+  expect($field.control).toBe($textarea);
+  expect($textarea.isConnected).toBe(true);
+  expect(getComputedStyle($editor).paddingBlockStart).toBe('0px');
+  expect(getComputedStyle($editor).paddingInlineStart).toBe('16px');
+  expect($gutter.getBoundingClientRect().width).toBeGreaterThanOrEqual(48);
+  expect($label.getBoundingClientRect().bottom).toBeLessThanOrEqual($firstLine.getBoundingClientRect().top);
+
+  $host.style.setProperty('--rc-textarea-active-line-bg', 'rgb(1, 2, 3)');
+  await userEvent.click($firstLine);
+
+  await vi.waitFor(() => expect($firstLine.classList.contains('line--active')).toBe(true));
+  expect(getComputedStyle($firstLine, '::before').insetInlineStart).toBe('-16px');
 });
 
 test('rc-select and rc-combobox lose their own chrome when composed as rc-field control providers', async () => {

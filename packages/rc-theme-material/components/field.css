@@ -144,7 +144,8 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field:not(.rc-field--outlined)
     > rc-textarea[data-rc-field-control] {
-    --rc-textarea-padding: 0 1rem 0.5rem;
+    --rc-textarea-padding-block: 0 0.5rem;
+    --rc-textarea-padding-inline: 1rem;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))

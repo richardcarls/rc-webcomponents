@@ -83,7 +83,8 @@
     --rc-textarea-border: 0;
     --rc-textarea-border-radius: 0;
     --rc-textarea-background: transparent;
-    --rc-textarea-padding: 0;
+    --rc-textarea-padding-block: 0;
+    --rc-textarea-padding-inline: 0;
     inline-size: 100%;
   }
 

@@ -102,9 +102,10 @@ export const styles = css`
   }
 
   #gutter-cells {
-    padding: var(--rc-textarea-padding, 0.5em);
-    padding-inline-end: var(--rc-textarea-gutter-padding-inline-end, 0.75em);
     box-sizing: border-box;
+    padding-block: var(--rc-textarea-padding-block, 0.5em);
+    padding-inline: var(--rc-textarea-padding-inline, 0.5em)
+      var(--rc-textarea-gutter-padding-inline-end, 0.75em);
     font-family: var(--rc-textarea-gutter-font-family, var(--rc-textarea-font-family, monospace));
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);
@@ -122,6 +123,7 @@ export const styles = css`
   .line[hidden] {
     display: none;
   }
+
   .gutter-cell-composite {
     display: inline-flex;
     align-items: center;
@@ -141,7 +143,6 @@ export const styles = css`
     position: relative;
     isolation: isolate;
     color: var(--rc-textarea-color, var(--rc-field-text, FieldText));
-    background: var(--rc-textarea-active-line-bg, transparent);
   }
 
   .gutter-cell--active::before {
@@ -149,9 +150,9 @@ export const styles = css`
     position: absolute;
     z-index: -1;
     inset-block: 0;
-    inset-inline-start: calc(-1 * var(--rc-textarea-padding, 0.5em));
+    inset-inline-start: calc(-1 * var(--rc-textarea-padding-inline, 0.5em));
     inset-inline-end: calc(-1 * var(--rc-textarea-gutter-padding-inline-end, 0.75em));
-    background: inherit;
+    background: var(--rc-textarea-active-line-bg, transparent);
     pointer-events: none;
   }
 
@@ -168,7 +169,8 @@ export const styles = css`
     width: 100%;
     min-height: 100%;
     box-sizing: border-box;
-    padding: var(--rc-textarea-padding, 0.5em);
+    padding-block: var(--rc-textarea-padding-block, 0.5em);
+    padding-inline: var(--rc-textarea-padding-inline, 0.5em);
     font-family: var(--rc-textarea-font-family, monospace);
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);
@@ -244,11 +246,13 @@ export const styles = css`
     min-inline-size: 100%;
   }
 
-  /* Paint the active row through the editor padding without clipping its text
-     or overflowing into adjacent rows. */
+  /* Paint the active row through the editor's inline padding without clipping
+     its text or overflowing into adjacent rows. The padding is one length, so
+     negating it stays valid, and logical insets follow RTL and vertical text.
+     Only the pseudo-element paints, so a translucent color tints the row and
+     its bleed evenly instead of doubling over the row itself. */
   .line--active {
     isolation: isolate;
-    background: var(--rc-textarea-active-line-bg, transparent);
   }
 
   .line--active::before {
@@ -256,8 +260,8 @@ export const styles = css`
     position: absolute;
     z-index: -1;
     inset-block: 0;
-    inset-inline: calc(-1 * var(--rc-textarea-padding, 0.5em));
-    background: inherit;
+    inset-inline: calc(-1 * var(--rc-textarea-padding-inline, 0.5em));
+    background: var(--rc-textarea-active-line-bg, transparent);
     pointer-events: none;
   }
 
