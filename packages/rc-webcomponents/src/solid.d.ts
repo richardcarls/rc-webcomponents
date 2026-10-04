@@ -97,6 +97,7 @@ export type RCListSelection = 'none' | 'single' | 'multiple';
 export type RCListRef = HTMLElement & {
   variant: RCListVariant;
   selection: RCListSelection;
+  ordered: boolean;
 };
 
 /** Public API surface of `<rc-list-item>`. */
@@ -105,6 +106,15 @@ export type RCListItemRef = HTMLElement & {
   disabled: boolean;
   interactive: boolean;
   actionTarget: string;
+  /** Expanded state of the `details` region; host writes take control, `undefined` releases it. */
+  get expanded(): boolean;
+  set expanded(value: boolean | undefined);
+  defaultExpanded: boolean;
+};
+
+/** Detail shape for `rc-list-item-toggle`. */
+export type RCListItemToggleDetail = {
+  expanded: boolean;
 };
 
 export type RCSwitchChangeDetail = {
@@ -824,6 +834,7 @@ declare module 'solid-js' {
       'rc-list': JSX.HTMLAttributes<RCListRef> & {
         variant?: RCListVariant;
         selection?: RCListSelection;
+        ordered?: boolean | string;
       };
 
       'rc-list-item': JSX.HTMLAttributes<RCListItemRef> & {
@@ -835,6 +846,11 @@ declare module 'solid-js' {
         'prop:disabled'?: boolean | undefined;
         'prop:interactive'?: boolean | undefined;
         'prop:actionTarget'?: string | undefined;
+        expanded?: boolean | string;
+        'default-expanded'?: boolean | string;
+        'prop:expanded'?: boolean | undefined;
+        'prop:defaultExpanded'?: boolean | undefined;
+        'on:rc-list-item-toggle'?: (e: CustomEvent<RCListItemToggleDetail>) => void;
       };
 
       'rc-switch': JSX.HTMLAttributes<RCSwitchRef> & {

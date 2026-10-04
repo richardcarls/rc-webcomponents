@@ -34,6 +34,43 @@ input. Links, buttons, inputs, and other interactive descendants retain their
 own behavior. Radios in a single-selection list should share a `name`, just as
 they would in an unenhanced native radio group.
 
+## Ordered lists
+
+Set `ordered` when item order carries meaning, such as recipe steps. Each visible item receives
+`aria-posinset` and `aria-setsize`, so assistive technology reports its position. The list
+renders no counters: numbering the content shows, if any, stays in the item text. Items that
+already carry authored positions, as in a virtualized slice, keep them.
+
+```html
+<rc-list ordered aria-label="Directions">
+  <rc-list-item>1. Heat the oven.</rc-list-item>
+  <rc-list-item>2. Mix the batter.</rc-list-item>
+</rc-list>
+```
+
+## Expandable details
+
+An item can carry a supporting region below its row in the `details` slot. Mark a button inside
+the item, usually in the `trailing` slot, with `data-rc-list-item-toggle`. The item wires the
+button's `aria-expanded` and `aria-controls`, keeps the region `hidden` while collapsed, and
+fires `rc-list-item-toggle` with the requested state. Use `default-expanded` for an initial
+uncontrolled state, or set `expanded` to control it; assign `undefined` to release control.
+
+```html
+<rc-list aria-label="Ingredients">
+  <rc-list-item>
+    3 garlic cloves, chopped
+    <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Garlic details">
+      i
+    </button>
+    <div slot="details">"garlic" is not a recognized unit of measure.</div>
+  </rc-list-item>
+</rc-list>
+```
+
+The region spans the text and trailing columns, so its content wraps freely even while the row
+text truncates.
+
 ## Action targets
 
 For a row whose primary action is not its selection input, set `interactive`

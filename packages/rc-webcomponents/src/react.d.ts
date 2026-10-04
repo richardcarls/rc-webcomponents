@@ -343,6 +343,7 @@ export type RCListSelection = 'none' | 'single' | 'multiple';
 export type RCListRef = HTMLElement & {
   variant: RCListVariant;
   selection: RCListSelection;
+  ordered: boolean;
 };
 
 /** Public API surface of `<rc-list-item>`. */
@@ -351,6 +352,15 @@ export type RCListItemRef = HTMLElement & {
   disabled: boolean;
   interactive: boolean;
   actionTarget: string;
+  /** Expanded state of the `details` region; host writes take control, `undefined` releases it. */
+  get expanded(): boolean;
+  set expanded(value: boolean | undefined);
+  defaultExpanded: boolean;
+};
+
+/** Detail shape for `rc-list-item-toggle`. */
+export type RCListItemToggleDetail = {
+  expanded: boolean;
 };
 
 /** Public API surface of `<rc-switch>`. */
@@ -837,6 +847,7 @@ declare module 'react' {
       'rc-list': React.DetailedHTMLProps<React.HTMLAttributes<RCListRef>, RCListRef> & {
         variant?: RCListVariant;
         selection?: RCListSelection;
+        ordered?: boolean;
       };
 
       'rc-list-item': React.DetailedHTMLProps<
@@ -847,6 +858,8 @@ declare module 'react' {
         disabled?: boolean;
         interactive?: boolean;
         'action-target'?: string;
+        expanded?: boolean;
+        'default-expanded'?: boolean;
       };
 
       'rc-switch': React.DetailedHTMLProps<React.HTMLAttributes<RCSwitchRef>, RCSwitchRef> & {

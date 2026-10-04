@@ -77,8 +77,28 @@ export const listItemStyles = css`
   }
 
   [part='leading'][hidden],
-  [part='trailing'][hidden] {
+  [part='trailing'][hidden],
+  [part='details'][hidden] {
     display: none;
+  }
+
+  /* The supporting region spans the text and trailing columns on its own row,
+     outside the content cell's single-line clipping. */
+  [part='details'] {
+    position: relative;
+    z-index: 1;
+    grid-column: var(--rc-list-item-details-grid-column, content-start / trailing-end);
+    min-inline-size: 0;
+    padding-block-end: var(--rc-list-item-details-padding-block-end, 0);
+    color: var(--rc-list-item-details-color, inherit);
+    animation: rc-list-item-details-reveal var(--rc-list-item-details-duration, 0ms)
+      var(--rc-list-item-transition-easing, ease);
+  }
+
+  @keyframes rc-list-item-details-reveal {
+    from {
+      opacity: 0;
+    }
   }
 
   ::slotted(*) {
@@ -149,6 +169,10 @@ export const listItemStyles = css`
     [part='row'],
     [part='state-layer'] {
       transition-duration: 50ms;
+    }
+
+    [part='details'] {
+      animation-duration: min(var(--rc-list-item-details-duration, 0ms), 50ms);
     }
   }
 `;

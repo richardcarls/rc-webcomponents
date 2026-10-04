@@ -26,6 +26,13 @@ declare global {
  * and only the set's real first and last rows get end styling. Other rows are
  * placed by their rendered order.
  */
+// Writing an unchanged value would still notify the list's own attribute observer.
+function setAttributeIfChanged($element: Element, name: string, value: string): void {
+  if ($element.getAttribute(name) !== value) {
+    $element.setAttribute(name, value);
+  }
+}
+
 function rowPosition(item: Element, index: number, count: number): RCListPosition {
   const position = Number(item.getAttribute('aria-posinset'));
   const size = Number(item.getAttribute('aria-setsize'));
@@ -54,6 +61,9 @@ type RCListPosition = 'only' | 'first' | 'middle' | 'last';
  *
  * @attr variant - Appearance hint: `standard` or `segmented`.
  * @attr selection - Native selection coordination: `none`, `single`, or `multiple`.
+ * @attr ordered - Marks the item order as meaningful. Visible items without authored
+ *   `aria-posinset`/`aria-setsize` receive their position so assistive technology reports it.
+ *   No counters are rendered; item content carries any visible numbering.
  * @attr [has-leading] - Reflected when a visible item uses the leading slot.
  * @attr [has-trailing] - Reflected when a visible item uses the trailing slot.
  *
@@ -89,6 +99,17 @@ export class RCList extends LitElement {
   /** Native selection coordination mode. */
   @property({ reflect: true })
   selection: RCListSelection = 'none';
+
+  /** Whether item order is meaningful; positions are exposed without rendered counters. */
+  @property({ type: Boolean, reflect: true })
+  ordered = false;
+
+  /**
+   * Positions this list wrote, by item. An item whose attributes no longer
+   * match was repositioned by its author, possibly after the first sync, and
+   * is left alone from then on.
+   */
+  private readonly _positionedItems = new Map<RCListItem, { posinset: string; setsize: string }>();
 
   constructor() {
     super();
@@ -136,7 +157,7 @@ export class RCList extends LitElement {
   }
 
   protected override updated(changed: Map<PropertyKey, unknown>): void {
-    if (changed.has('selection')) {
+    if (changed.has('selection') || changed.has('ordered')) {
       this._queueSync();
     }
   }
@@ -207,6 +228,8 @@ export class RCList extends LitElement {
       items.some((item) => item.hasAttribute('has-trailing')),
     );
 
+    this._syncOrderedPositions(items);
+
     for (const [index, item] of items.entries()) {
       item.dataset.rcListPosition = rowPosition(item, index, items.length);
 
@@ -256,6 +279,47 @@ export class RCList extends LitElement {
     }
   }
 
+  /**
+   * Expose each visible item's position in an ordered list. Items that carry
+   * authored positions (a virtualized slice) keep them; positions this list
+   * wrote are released when the item leaves or the list stops being ordered.
+   */
+  private _syncOrderedPositions(items: RCListItem[]): void {
+    for (const [$item, written] of this._positionedItems) {
+      if (
+        $item.getAttribute('aria-posinset') !== written.posinset ||
+        $item.getAttribute('aria-setsize') !== written.setsize
+      ) {
+        // Authored after this list positioned it: hand the attributes over.
+        this._positionedItems.delete($item);
+      } else if (!this.ordered || !items.includes($item)) {
+        this._releasePosition($item);
+      }
+    }
+
+    if (!this.ordered) {
+      return;
+    }
+
+    for (const [index, $item] of items.entries()) {
+      if (!this._positionedItems.has($item) && $item.hasAttribute('aria-posinset')) {
+        continue;
+      }
+
+      const written = { posinset: String(index + 1), setsize: String(items.length) };
+
+      this._positionedItems.set($item, written);
+      setAttributeIfChanged($item, 'aria-posinset', written.posinset);
+      setAttributeIfChanged($item, 'aria-setsize', written.setsize);
+    }
+  }
+
+  private _releasePosition($item: RCListItem): void {
+    $item.removeAttribute('aria-posinset');
+    $item.removeAttribute('aria-setsize');
+    this._positionedItems.delete($item);
+  }
+
   private _restoreItem($item: RCListItem, state: AuthoredItemState): void {
     $item.selected = state.selected;
     $item.disabled = state.disabled;
@@ -266,6 +330,10 @@ export class RCList extends LitElement {
   private _restoreAllItems(): void {
     for (const [$item, state] of this._authoredItemState) {
       this._restoreItem($item, state);
+    }
+
+    for (const $item of this._positionedItems.keys()) {
+      this._releasePosition($item);
     }
 
     this._authoredItemState.clear();
