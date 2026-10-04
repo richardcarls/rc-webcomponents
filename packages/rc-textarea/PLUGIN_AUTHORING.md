@@ -12,6 +12,7 @@ For the internal rendering architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
 - Line decorations add classes, attributes, gutter content, or diagnostic messages to logical
   lines.
 - Widget decorations insert non-editable inline, block, or trailing DOM elements at character offsets.
+- Fold decorations hide complete source lines without removing them from the plain-text value.
 
 Decorations never change the submitted textarea value. Offsets are always absolute character
 indices into the current plain-text value unless a helper explicitly says otherwise.
@@ -262,15 +263,21 @@ widgets reserve space at the logical line end. Set `accessible: true` for contro
 or meaningful content (the default wrapper is decorative). Such controls receive
 normal Tab navigation rather than tab insertion.
 
-`LineDisclosureController` composes buttons with block panels, retaining
-independent expansion by key. Pass a `revision` when content changes, call `clear()`
-on source changes and plugin destruction, and keep recipe/domain policy outside
-the controller. Set `gutterLine` to move the button into the gutter;
-`createGutterContent(button)` can wrap it with a decorative status marker. The
-button remains the sole disclosure control. Use `updateGutterContent(wrapper)`
-to refresh its marker without replacing the focused button. The constructor's
-optional `createTriggerIcon(expanded)` renders a decorative icon in the labeled
-button. See the documentation site's disclosure demo for a complete example.
+Import `FoldingActionController` from `@rcarls/rc-textarea/folding`.
+The controller owns the accessible button and expansion state, not panel
+content or syntax rules. Give each action a stable `key`, `label`, `target`, and
+`gutterLine` or trailing `offset`. A target is either a caller-owned panel element
+or `{ fromLine, toLine }`, the inclusive one-based source lines hidden when collapsed.
+Enable `gutter` or `lineNumbers` on the host before using gutter actions.
+Source ranges start expanded; use `initiallyExpanded: false` for diagnostic panels.
+Render panel content separately as an accessible block widget and change its widget
+key when that content changes. The controller sets `hidden`, `aria-expanded`, and
+`aria-controls` for panel targets; source lines keep their text and offsets.
+`createGutterContent(button)` and `updateGutterContent(wrapper)` support decorative
+status markers. Call `clear()` when document identity changes and in `destroy()`.
+Use `createTriggerIcon(expanded)` in the controller options for a decorative icon.
+Its button and supplied icon expose the `fold-trigger` and `fold-icon` CSS parts;
+consumer styles can target them with `rc-textarea::part(...)`.
 
 ```ts
 api.setDecorations([

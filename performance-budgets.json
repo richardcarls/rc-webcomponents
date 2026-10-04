@@ -24,12 +24,12 @@
       "lazyChunks": 1
     },
     "textarea": {
-      "initialRaw": 101932,
-      "initialGzip": 26850,
-      "initialBrotli": 23628,
-      "totalRaw": 101932,
-      "totalGzip": 26850,
-      "totalBrotli": 23628,
+      "initialRaw": 111495,
+      "initialGzip": 29157,
+      "initialBrotli": 25513,
+      "totalRaw": 111495,
+      "totalGzip": 29157,
+      "totalBrotli": 25513,
       "largestLazyGzip": 0,
       "initialChunks": 1,
       "lazyChunks": 0
@@ -143,10 +143,10 @@
       "lazyChunks": 1
     },
     "textarea": {
-      "initialGzip": 28193,
-      "initialBrotli": 24810,
-      "totalGzip": 28193,
-      "totalBrotli": 24810,
+      "initialGzip": 30604,
+      "initialBrotli": 26781,
+      "totalGzip": 30604,
+      "totalBrotli": 26781,
       "largestLazyGzip": 1024,
       "initialChunks": 1,
       "lazyChunks": 0

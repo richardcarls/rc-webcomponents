@@ -19,6 +19,7 @@ import type {
   RCTextareaPluginAPI,
   TextPattern,
   MarkDecoration,
+  FoldDecoration,
   Token,
 } from './types.js';
 import { generateId } from './types.js';
@@ -35,6 +36,37 @@ interface UndoEntry {
   value: string;
   anchorOffset: number;
   focusOffset: number;
+}
+
+interface FoldBounds {
+  from: number;
+  to: number;
+  anchorEnd: number;
+  reveal: () => void;
+}
+
+function getFoldBounds(value: string, folds: readonly FoldDecoration[]): FoldBounds[] {
+  const lines = value.split('\n');
+  const starts: number[] = [];
+  let offset = 0;
+
+  for (const line of lines) {
+    starts.push(offset);
+    offset += line.length + 1;
+  }
+
+  return folds.flatMap((fold) => {
+    if (fold.fromLine < 2 || fold.toLine < fold.fromLine || fold.toLine > lines.length) {
+      return [];
+    }
+
+    return [{
+      from: starts[fold.fromLine - 1]!,
+      to: starts[fold.toLine - 1]! + lines[fold.toLine - 1]!.length,
+      anchorEnd: starts[fold.fromLine - 2]! + lines[fold.fromLine - 2]!.length,
+      reveal: fold.reveal,
+    }];
+  });
 }
 
 const MAX_UNDO = 100;
@@ -92,7 +124,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
 }
 
 /**
- * Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.
+ * Textarea wrapper with line decorations, gutter rendering, folding actions, and plugin hooks.
  *
  * Provide a native `<textarea>` as the direct child when the component is
  * editable. Read-only displays may be driven from `value` or `defaultValue`.
@@ -126,6 +158,8 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @csspart root - The outer flex container wrapping the gutter and editor area.
  * @csspart gutter - The gutter column container.
  * @csspart gutter-cells - The gutter's line-label list.
+ * @csspart fold-trigger - Native button created by a folding action; style its visual appearance without changing its target or keyboard behavior.
+ * @csspart fold-icon - Consumer-supplied icon inside a folding action button, when provided.
  * @csspart editor-area - The container positioning the editor over the slotted textarea.
  * @csspart editor - The contenteditable field surface.
  *
@@ -145,6 +179,7 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @cssprop [--rc-textarea-font-size=1em] - Font size
  * @cssprop [--rc-textarea-line-height=1.5] - Line height
  * @cssprop [--rc-textarea-padding=0.5em] - Padding inside the field area
+ * @cssprop [--rc-textarea-gutter-min-inline-size=24px] - Minimum width of the gutter, including its padding
  * @cssprop [--rc-textarea-trailing-size=2.5em] - Reserved inline space and minimum block size for trailing controls
  * @cssprop [--rc-textarea-focus-outline=2px solid Highlight] - Focus ring outline
  * @cssprop [--rc-textarea-caret-color=FieldText] - Caret color
@@ -337,6 +372,13 @@ export class RCTextarea extends LitElement {
 
   /** Gutter cells with explicitly accessible plugin controls. */
   protected _accessibleGutterLines = new Set<number>();
+
+  /** Collapsed source ranges from the most recent render. */
+  protected _foldedRanges: FoldDecoration[] = [];
+
+  protected _foldBounds: FoldBounds[] = [];
+
+  protected _hiddenGutterLines = new Set<number>();
 
   /**
    * The current field value.
@@ -610,6 +652,12 @@ export class RCTextarea extends LitElement {
       return;
     }
 
+    if (this._revealFoldForEdit(event.inputType)) {
+      event.preventDefault();
+
+      return;
+    }
+
     // Virtual keyboards may emit no keydown. Keep their browser-generated
     // blocks out of the component's model-owned `.line` document as well.
     if (
@@ -621,6 +669,53 @@ export class RCTextarea extends LitElement {
       this._insertText('\n');
     }
   };
+
+  protected _revealFoldAtOffset(offset: number): boolean {
+    for (const fold of this._foldBounds) {
+      if (offset >= fold.from && offset <= fold.to) {
+        fold.reveal();
+
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  protected _revealFoldForEdit(inputType: string): boolean {
+    if (!this._$editor) {
+      return false;
+    }
+
+    const selection = saveSelection(this._$editor) ?? this._savedSelection;
+
+    if (!selection) {
+      return false;
+    }
+
+    const start = Math.min(selection.anchorOffset, selection.focusOffset);
+    const end = Math.max(selection.anchorOffset, selection.focusOffset);
+
+    for (const fold of this._foldBounds) {
+      const intersects = start < fold.to && end > fold.from;
+      const entersHiddenLine = start === end && start >= fold.from && start <= fold.to;
+      const deletesIntoFold = start === end && (
+        inputType.endsWith('Forward') && start === fold.anchorEnd ||
+        inputType.endsWith('Backward') && start === fold.to + 1
+      );
+      const insertsLineIntoFold = start === end && start === fold.anchorEnd &&
+        (inputType === 'insertParagraph' || inputType === 'insertLineBreak' ||
+          inputType === 'insertFromPaste');
+
+      if (intersects || entersHiddenLine || deletesIntoFold || insertsLineIntoFold) {
+        fold.reveal();
+
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   protected _onInput(): void {
     if (!this._$editor) {
@@ -684,6 +779,11 @@ export class RCTextarea extends LitElement {
 
     if (selection) {
       this._savedSelection = selection;
+
+      if (selection.anchorOffset === selection.focusOffset &&
+          this._revealFoldAtOffset(selection.focusOffset)) {
+        return;
+      }
 
       this.dispatchEvent(
         new CustomEvent('rc-textarea-select', {
@@ -780,6 +880,11 @@ export class RCTextarea extends LitElement {
     // apply physical-keyboard Enter through the plain-text model first.
     if (e.key === 'Enter' && !this._composing && !e.isComposing) {
       e.preventDefault();
+
+      if (this._revealFoldForEdit('insertParagraph')) {
+        return;
+      }
+
       this._insertText('\n');
 
       return;
@@ -939,7 +1044,7 @@ export class RCTextarea extends LitElement {
 
   protected _onCopy = (event: ClipboardEvent): void => {
     if (!this._$editor || this._isWidgetEvent(event) || !event.clipboardData ||
-        !this._$editor.querySelector('.widget')) {
+        (!this._$editor.querySelector('.widget') && this._foldedRanges.length === 0)) {
       return;
     }
 
@@ -966,6 +1071,10 @@ export class RCTextarea extends LitElement {
     }
 
     e.preventDefault();
+
+    if (this._revealFoldForEdit('insertFromPaste')) {
+      return;
+    }
 
     const text = e.clipboardData?.getData('text/plain') ?? '';
 
@@ -1365,6 +1474,19 @@ export class RCTextarea extends LitElement {
         ...this._externalDecorations.map((d) => ({ ...d, id: generateId() })),
       ];
 
+      this._foldedRanges = allDecorations.filter(
+        (decoration): decoration is FoldDecoration => decoration.type === 'fold',
+      );
+
+      this._foldBounds = getFoldBounds(renderValue, this._foldedRanges);
+
+      this._hiddenGutterLines = new Set(
+        this._foldedRanges.flatMap((fold) =>
+          Array.from({ length: Math.max(0, fold.toLine - fold.fromLine + 1) },
+            (_, index) => fold.fromLine + index),
+        ),
+      );
+
       // Rebuild the Parchment tree
       if (!this._$editor) {
         return;
@@ -1373,9 +1495,23 @@ export class RCTextarea extends LitElement {
       const $focusedWidget = this.shadowRoot?.activeElement;
       // A presentation refresh may run before selectionchange updates the saved
       // offsets. Preserve the live range unless a source edit has queued a new caret.
-      const selectionToRestore = getText(this._$editor) === renderValue
+      let selectionToRestore = getText(this._$editor) === renderValue
         ? saveSelection(this._$editor) ?? this._savedSelection
         : this._savedSelection;
+
+      if (selectionToRestore?.anchorOffset === selectionToRestore?.focusOffset) {
+        const focusOffset = selectionToRestore?.focusOffset;
+        const hidden = this._foldBounds.filter((fold) =>
+          focusOffset !== undefined && focusOffset >= fold.from && focusOffset <= fold.to,
+        );
+
+        if (hidden.length > 0) {
+          const anchorEnd = Math.min(...hidden.map((fold) => fold.anchorEnd));
+
+          selectionToRestore = { anchorOffset: anchorEnd, focusOffset: anchorEnd };
+          this._savedSelection = selectionToRestore;
+        }
+      }
 
       this._document.build(renderValue, allDecorations);
 
@@ -1579,6 +1715,7 @@ export class RCTextarea extends LitElement {
       const $span = this._$gutterCells.children[i] as HTMLElement;
 
       $span.setAttribute('aria-hidden', String(!this._accessibleGutterLines.has(i + 1)));
+      $span.hidden = this._hiddenGutterLines.has(i + 1);
 
       if (typeof label === 'object' && label !== null && !(label instanceof HTMLElement)) {
         let $row = $span.firstElementChild;

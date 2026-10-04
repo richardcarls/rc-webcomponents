@@ -15,7 +15,7 @@ import {
 
 # rc-textarea
 
-Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.
+Textarea wrapper with line decorations, gutter rendering, folding actions, and plugin hooks.
 
 <AtAGlance
   packageName="@rcarls/rc-textarea"
@@ -70,7 +70,7 @@ Plain textarea with `auto-grow` and no gutter — the minimal starting point.
 </TabItem>
 <TabItem value="markdown" label="Markdown">
 
-Uses `@rcarls/rc-textarea-plugin-markdown` for live Markdown decoration and an HTML preview panel below the editor.
+Uses `@rcarls/rc-textarea-plugin-markdown` for live Markdown decoration, gutter folding of heading sections and multiline blocks, and an HTML preview panel below the editor. Folded source remains in the form value.
 
 <TextareaMarkdownDemo />
 
@@ -119,7 +119,7 @@ Expand information below a line without changing the textarea's source text.
 
 <TextareaDisclosureDemo />
 
-See [Expandable line information](#expandable-line-information) for controller and styling details.
+See [Folding actions](#folding-actions) for controller and styling details.
 
 </TabItem>
 </Tabs>
@@ -188,6 +188,7 @@ editor.addEventListener('rc-textarea-change', (e) => {
 | `--rc-textarea-font-size`                 | `1em`                                 | Editor and gutter font size.          |
 | `--rc-textarea-line-height`               | `1.5`                                 | Editor and gutter line height.        |
 | `--rc-textarea-padding`                   | `0.5em`                               | Editor and gutter padding.            |
+| `--rc-textarea-gutter-min-inline-size`     | `24px`                               | Minimum gutter width including padding; Material uses `48px`. |
 | `--rc-textarea-background`                | `Field`                               | Field background.                     |
 | `--rc-textarea-color`                     | `var(--rc-field-text, FieldText)`     | Field text color.                     |
 | `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)` | Caret color.                          |
@@ -218,11 +219,18 @@ rc-textarea {
 
 ### CSS parts
 
-The exposed CSS parts are `root`, `gutter`, `gutter-cells`, `editor-area`, and `editor`.
+The exposed CSS parts are `root`, `gutter`, `gutter-cells`, `editor-area`, `editor`,
+`fold-trigger`, and `fold-icon`. The last two exist when a folding action is rendered;
+`fold-icon` exists only when its plugin supplies an icon.
 
 ```css
 rc-textarea::part(editor) {
   tab-size: 2;
+}
+
+rc-textarea::part(fold-trigger) {
+  border-radius: 0.25em;
+  color: CanvasText;
 }
 ```
 
@@ -260,34 +268,49 @@ editor.addPattern({
 });
 ```
 
-## Expandable line information
+## Folding actions
 
-`LineDisclosureController` creates independent, initially collapsed disclosures
-using accessible buttons and block widgets. Buttons can sit in the trailing lane
-or gutter. Supply stable keys and a
-content revision, then pass `getDecorations()` into `api.setDecorations()`. Call
-`clear()` on source changes and plugin destruction. Changing only presentation
-can retain expansion state. This is not source-range folding.
+Import `FoldingActionController` from `@rcarls/rc-textarea/folding` or
+`@rcarls/rc-webcomponents/rc-textarea/folding` when using the aggregate package.
 
-Pass `createTriggerIcon(expanded)` to the controller constructor to use an icon
-component instead of the default text chevron. The returned element is decorative;
-the button keeps its accessible label and expanded state.
+`FoldingActionController` creates independent native buttons with `aria-expanded`.
+Give each action a stable key, a contextual label, and a target: an app-owned panel
+element or `{ fromLine, toLine }` for inclusive, one-based source lines after its
+anchor. Source folds start expanded; set `initiallyExpanded: false` for diagnostic
+panels. The controller manages panel visibility and focus return; plugins create
+panel content as an accessible block widget and version its widget key when content
+changes. `clear()` resets folding state when document identity changes or the plugin
+is destroyed. A Markdown plugin can supply parser-backed ranges without teaching
+the editor Markdown grammar.
 
-Widget decorations accept `layout: 'inline' | 'block' | 'trailing'`,
-`accessible`, and `key`. Change a widget key when its content changes; keyed lines
-retain their DOM on otherwise identical updates. `LineDecoration.gutterContent`
-also accepts a plugin-owned `HTMLElement`. Set `gutterAccessible: true` when a
-cell contains a control; other gutter cells stay hidden from assistive technology.
-Pass `gutterLine` to a disclosure to place its button in the gutter. The button
-remains the sole disclosure control. `createGutterContent(button)` can place a
-decorative status icon beside it. Use `updateGutterContent` to refresh that
-wrapper in place when its icon changes.
+Supply an icon with the controller's `createTriggerIcon(expanded)` option. The
+icon is decorative and receives the `fold-icon` CSS part. The built-in Markdown
+plugin forwards the same option through its factory:
 
-Use `--rc-textarea-trailing-size` (default `2.5em`) to reserve control space. Plugins
-can style `.line-disclosure-trigger` and `.line-disclosure-panel` through
-`api.adoptStyleSheet()`. Enter and Space activate the native button; Tab navigates
-instead of inserting a tab when accessible widgets are present. Copying source
-excludes widget text, and disclosure changes do not enter undo history.
+```ts
+const plugin = createMarkdownPlugin({
+  folding: {
+    createTriggerIcon(expanded) {
+      const icon = document.createElement('span');
+      icon.textContent = expanded ? '▾' : '▸';
+      return icon;
+    },
+  },
+});
+```
+
+Use `::part(fold-trigger)` and `::part(fold-icon)` from consumer CSS to style the
+control and icon. Keep focus visibility and the button's hit area intact.
+
+`gutterLine` places a control in the gutter; a trailing `offset` uses the reserved
+lane sized by `--rc-textarea-trailing-size`. `createGutterContent(button)` and
+`updateGutterContent(wrapper)` add and refresh a decorative status marker. The
+gutter has a 24px minimum width in the base component and 48px in Material.
+Each row follows its text line height, so an inline folding control can be shorter
+than 24px under [WCAG 2.5.8's line-height exception](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum).
+The full gutter cell is the hit area for a single action; multiple actions share
+the cell without overlapping targets. Enter and Space activate the native button.
+Folding never changes the field value or undo history.
 
 ## Plugin API
 

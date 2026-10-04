@@ -28,6 +28,7 @@ export default defineConfig({
         'rc-webcomponents': resolve(__dirname, 'src/index.ts'),
         'rc-webcomponents-define': resolve(__dirname, 'src/define.ts'),
         ...componentEntries,
+        'rc-textarea/folding': resolve(__dirname, 'src/rc-textarea/folding.ts'),
       },
       formats: ['es'],
     },

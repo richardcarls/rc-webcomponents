@@ -37,7 +37,7 @@ import type {
   RCVirtualScrollerRangeDetail,
 } from '@rcarls/rc-webcomponents/react';
 import type { RCTextareaPluginAPI } from '@rcarls/rc-textarea';
-import { LineDisclosureController } from '@rcarls/rc-textarea';
+import { FoldingActionController } from '@rcarls/rc-textarea/folding';
 
 hljs.registerLanguage('rust', rust);
 
@@ -2173,13 +2173,18 @@ export function TextareaDisclosureDemo() {
       return;
     }
 
-    let disclosures: LineDisclosureController;
+    let folding: FoldingActionController;
     let source: string | undefined;
+    const $panel = document.createElement('div');
+    const $message = document.createElement('p');
+
+    $message.textContent = 'This block is presentation only. Editing and copying preserve the source text.';
+    $panel.append($message);
 
     editor.usePlugin({
       mount(api) {
         api.adoptStyleSheet(`
-          .line-disclosure-trigger .material-symbols-outlined {
+          .fold-action-trigger .material-symbols-outlined {
             font-family: 'Material Symbols Outlined';
             font-weight: normal;
             font-style: normal;
@@ -2190,7 +2195,7 @@ export function TextareaDisclosureDemo() {
           }
         `);
 
-        disclosures = new LineDisclosureController(api, {
+        folding = new FoldingActionController(api, {
           createTriggerIcon(expanded) {
             const $icon = document.createElement('span');
 
@@ -2203,26 +2208,22 @@ export function TextareaDisclosureDemo() {
       },
       update(value, api) {
         if (source !== value) {
-          disclosures.clear();
+          folding.clear();
           source = value;
         }
 
-        api.setDecorations(disclosures.getDecorations([{
-          key: 'explanation',
-          offset: value.split('\n')[0].length,
-          gutterLine: 1,
-          label: 'Show first-line information',
-          revision: '1',
-          createContent: () => {
-            const $message = document.createElement('p');
+        const offset = value.split('\n')[0].length;
 
-            $message.textContent = 'This block is presentation only. Editing and copying preserve the source text.';
-
-            return $message;
-          },
-        }]));
+        api.setDecorations([
+          ...folding.getDecorations([{
+            key: 'explanation', gutterLine: 1,
+            label: 'First-line information', target: $panel, initiallyExpanded: false,
+          }]),
+          { type: 'widget', offset, side: 'after', layout: 'block', accessible: true,
+            key: 'explanation-panel', create: () => $panel },
+        ]);
       },
-      destroy() { disclosures.clear(); },
+      destroy() { folding.clear(); },
     });
 
     return () => editor.removePlugin();

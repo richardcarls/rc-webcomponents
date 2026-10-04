@@ -89,7 +89,7 @@ const packages = [
   ],
   [
     'rc-textarea',
-    'Textarea wrapper with line decorations and plugin hooks',
+    'Textarea wrapper with line decorations, folding actions, and plugin hooks',
     '/components/rc-textarea',
   ],
   [

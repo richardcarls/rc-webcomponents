@@ -176,6 +176,7 @@ export class RCDocument {
     const lineDecorationsMap = new Map<number, LineDecoration[]>();
     const markDecorations: MarkDecoration[] = [];
     const widgetDecorations: WidgetDecoration[] = [];
+    const foldedLines = new Set<number>();
 
     for (const decoration of decorations) {
       if (decoration.type === 'line') {
@@ -186,8 +187,12 @@ export class RCDocument {
         lineDecorationsMap.set(decoration.line, lineDecorations);
       } else if (decoration.type === 'mark') {
         markDecorations.push(decoration);
-      } else {
+      } else if (decoration.type === 'widget') {
         widgetDecorations.push(decoration);
+      } else {
+        for (let line = Math.max(2, decoration.fromLine); line <= decoration.toLine && line <= lines.length; line++) {
+          foldedLines.add(line);
+        }
       }
     }
 
@@ -205,9 +210,10 @@ export class RCDocument {
       const lineDecorations = lineDecorationsMap.get(lineNum) ?? [];
       const marks = markDecorations.filter((d) => d.from < lineEnd && d.to > lineStart);
       const widgets = widgetDecorations.filter((d) => d.offset >= lineStart && d.offset <= lineEnd);
+      const folded = foldedLines.has(lineNum);
       // Only opt-in keyed widgets promise stable content between plugin passes.
       const signature = widgets.length > 0 && widgets.every((widget) => widget.key)
-        ? JSON.stringify([lineText, [...lineDecorations, ...marks, ...widgets].map(
+        ? JSON.stringify([lineText, folded, [...lineDecorations, ...marks, ...widgets].map(
             ({ id: _id, ...decoration }) => decoration.type === 'line'
               ? { ...decoration, gutterContent: undefined }
               : decoration,
@@ -247,6 +253,10 @@ export class RCDocument {
       }
 
       // Apply line decorations
+      if (folded) {
+        $block.hidden = true;
+      }
+
       for (const decoration of lineDecorations) {
         if (decoration.className) {
           for (const cls of decoration.className.split(/\s+/).filter(Boolean)) {

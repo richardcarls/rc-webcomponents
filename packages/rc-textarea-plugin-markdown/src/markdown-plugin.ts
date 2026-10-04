@@ -1,17 +1,37 @@
 import { fromMarkdown } from 'mdast-util-from-markdown';
+import { gfmTableFromMarkdown } from 'mdast-util-gfm-table';
 import { visit } from 'unist-util-visit';
 import { micromark } from 'micromark';
+import { gfmTable, gfmTableHtml } from 'micromark-extension-gfm-table';
 
-import type { RCTextareaPlugin, RCTextareaPluginAPI, DecorationInput } from '@rcarls/rc-textarea';
+import {
+  type RCTextarea,
+  type RCTextareaPlugin,
+  type RCTextareaPluginAPI,
+  type DecorationInput,
+} from '@rcarls/rc-textarea';
+import {
+  FoldingActionController,
+  type FoldingAction,
+  type FoldingActionControllerOptions,
+} from '@rcarls/rc-textarea/folding';
+
+/** Visual options for the Markdown plugin's folding actions. */
+export interface MarkdownPluginOptions {
+  folding?: FoldingActionControllerOptions;
+}
 
 /** Minimal shape of a unist node as used by visit(). */
 interface VisitNode {
   type: string;
   position?: {
-    start: { offset?: number };
-    end: { offset?: number };
+    start: { offset?: number; line: number };
+    end: { offset?: number; line: number };
   };
 }
+
+const TABLE_SYNTAX = gfmTable();
+const TABLE_AST = gfmTableFromMarkdown();
 
 /** Decoration styles applied per MDAST node type. */
 const DECORATION_MAP: Record<string, Partial<Omit<DecorationInput, 'type' | 'from' | 'to'>>> = {
@@ -25,16 +45,93 @@ const DECORATION_MAP: Record<string, Partial<Omit<DecorationInput, 'type' | 'fro
 
 /** Render a markdown string to safe HTML using micromark (no raw HTML passthrough). */
 export function getMarkdownPreviewHtml(value: string): string {
-  return micromark(value);
+  return micromark(value, {
+    extensions: [TABLE_SYNTAX],
+    htmlExtensions: [gfmTableHtml()],
+  });
 }
 
-function buildPlugin(): RCTextareaPlugin & { getPreviewHtml(value: string): string } {
+function buildPlugin(options: MarkdownPluginOptions = {}): RCTextareaPlugin & {
+  getPreviewHtml(value: string): string;
+} {
+  let folding: FoldingActionController | null = null;
+  let host: RCTextarea | null = null;
+  let enabledGutter = false;
+
   return {
     getPreviewHtml: getMarkdownPreviewHtml,
 
+    mount(api: RCTextareaPluginAPI): void {
+      host = api.host as RCTextarea;
+      enabledGutter = !host.gutter && !host.lineNumbers;
+
+      if (enabledGutter) {
+        host.gutter = true;
+      }
+
+      folding = new FoldingActionController(api, options.folding);
+    },
+
+    destroy(): void {
+      folding?.clear();
+      folding = null;
+
+      if (host && enabledGutter) {
+        host.gutter = false;
+      }
+
+      host = null;
+      enabledGutter = false;
+    },
+
     update(value: string, api: RCTextareaPluginAPI): void {
-      const tree = fromMarkdown(value);
+      const tree = fromMarkdown(value, {
+        extensions: [TABLE_SYNTAX],
+        mdastExtensions: [TABLE_AST],
+      });
       const decorations: DecorationInput[] = [];
+      const actions: FoldingAction[] = [];
+      const lines = value.split('\n');
+      const keyCounts = new Map<string, number>();
+
+      const addFold = (node: VisitNode, kind: string, fromLine: number, toLine: number): void => {
+        const line = node.position?.start.line;
+
+        if (line === undefined || fromLine > toLine) {
+          return;
+        }
+
+        const title = lines[line - 1]?.trim() ?? '';
+        const baseKey = `${kind}:${title}`;
+        const occurrence = keyCounts.get(baseKey) ?? 0;
+
+        keyCounts.set(baseKey, occurrence + 1);
+
+        actions.push({
+          key: `${baseKey}:${occurrence}`,
+          gutterLine: line,
+          label: `${kind} at line ${line}: ${title}`,
+          target: { fromLine, toLine },
+        });
+      };
+
+      const headings = tree.children.filter((node) => node.type === 'heading');
+
+      for (let index = 0; index < headings.length; index++) {
+        const heading = headings[index]!;
+        const fromLine = (heading.position?.end.line ?? 0) + 1;
+        let toLine = lines.length;
+
+        for (let next = index + 1; next < headings.length; next++) {
+          if (headings[next]!.depth <= heading.depth) {
+            toLine = headings[next]!.position!.start.line - 1;
+
+            break;
+          }
+        }
+
+        addFold(heading, `Heading level ${heading.depth}`, fromLine, toLine);
+      }
 
       visit(tree, (node: VisitNode) => {
         const style = DECORATION_MAP[node.type];
@@ -44,9 +141,13 @@ function buildPlugin(): RCTextareaPlugin & { getPreviewHtml(value: string): stri
         if (style !== undefined && start !== undefined && end !== undefined) {
           decorations.push({ type: 'mark', from: start, to: end, ...style } as DecorationInput);
         }
+
+        if (node.position && ['list', 'code', 'blockquote', 'table'].includes(node.type)) {
+          addFold(node, node.type, node.position.start.line + 1, node.position.end.line);
+        }
       });
 
-      api.setDecorations(decorations);
+      api.setDecorations([...decorations, ...(folding?.getDecorations(actions) ?? [])]);
     },
   };
 }
@@ -55,8 +156,8 @@ function buildPlugin(): RCTextareaPlugin & { getPreviewHtml(value: string): stri
 export const markdownPlugin = buildPlugin();
 
 /** Factory for cases where multiple independent instances are needed. */
-export function createMarkdownPlugin(): RCTextareaPlugin & {
+export function createMarkdownPlugin(options: MarkdownPluginOptions = {}): RCTextareaPlugin & {
   getPreviewHtml(value: string): string;
 } {
-  return buildPlugin();
+  return buildPlugin(options);
 }

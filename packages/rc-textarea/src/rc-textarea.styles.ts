@@ -20,16 +20,47 @@ export const styles = css`
     white-space: normal;
   }
 
-  .line-disclosure-trigger {
+  .fold-action-trigger {
     box-sizing: border-box;
     inline-size: 100%;
-    min-block-size: var(--rc-textarea-trailing-size, 2.5em);
+    block-size: 1lh;
+    padding: 0;
+    border: 0;
+    background: transparent;
     cursor: pointer;
     color: inherit;
     font: inherit;
   }
 
-  .line-disclosure-panel[hidden] {
+  .gutter-cell {
+    position: relative;
+  }
+
+  .gutter-cell > .fold-action-trigger::before,
+  .gutter-cell > :not(.fold-action-group) .fold-action-trigger::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .fold-action-group,
+  .fold-action-single {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: top;
+  }
+
+  .fold-action-group .fold-action-trigger {
+    min-inline-size: 24px;
+  }
+
+  /* The trailing lane gives its trigger a target taller than one line; a gutter
+     trigger sizes to its own row instead. */
+  .widget--trailing .fold-action-trigger {
+    min-block-size: var(--rc-textarea-trailing-size, 2.5em);
+  }
+
+  .widget--block [hidden] {
     display: none;
   }
 
@@ -73,18 +104,24 @@ export const styles = css`
   #gutter-cells {
     padding: var(--rc-textarea-padding, 0.5em);
     padding-inline-end: var(--rc-textarea-gutter-padding-inline-end, 0.75em);
+    box-sizing: border-box;
     font-family: var(--rc-textarea-gutter-font-family, var(--rc-textarea-font-family, monospace));
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);
     text-align: end;
-    min-inline-size: 2.5ch;
+    min-inline-size: var(--rc-textarea-gutter-min-inline-size, 24px);
   }
 
   .gutter-cell {
     display: block;
+    min-inline-size: var(--rc-textarea-gutter-min-inline-size, 24px);
     white-space: pre;
   }
 
+  .gutter-cell[hidden],
+  .line[hidden] {
+    display: none;
+  }
   .gutter-cell-composite {
     display: inline-flex;
     align-items: center;

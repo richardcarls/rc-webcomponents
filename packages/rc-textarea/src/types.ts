@@ -130,16 +130,29 @@ export interface WidgetDecoration {
   accessible?: boolean;
 }
 
+/** Hide complete source lines while retaining their text and model offsets. */
+export interface FoldDecoration {
+  id: string;
+  type: 'fold';
+  /** First hidden line, one-based and inclusive. */
+  fromLine: number;
+  /** Last hidden line, one-based and inclusive. */
+  toLine: number;
+  /** Reveal this range before a user edit or caret move enters its hidden lines. */
+  reveal(): void;
+}
+
 /** Decorations are visual formatting applied to the field content without affecting
  *  the underlying plain text value.
  */
-export type Decoration = MarkDecoration | LineDecoration | WidgetDecoration;
+export type Decoration = MarkDecoration | LineDecoration | WidgetDecoration | FoldDecoration;
 
 /** Input shape for creating a decoration — id-less variant of each decoration type. */
 export type DecorationInput =
   | Omit<MarkDecoration, 'id'>
   | Omit<LineDecoration, 'id'>
-  | Omit<WidgetDecoration, 'id'>;
+  | Omit<WidgetDecoration, 'id'>
+  | Omit<FoldDecoration, 'id'>;
 
 /**
  * A semantic token produced by an external tokenizer (lezer, tree-sitter, shiki, etc.).
