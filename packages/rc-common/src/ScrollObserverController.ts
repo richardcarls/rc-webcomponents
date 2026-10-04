@@ -65,6 +65,7 @@ export class ScrollObserverController implements ReactiveController {
   private readonly _initialFrame = new RafScheduler();
 
   private readonly _onScroll = () => this._evaluate();
+  private _disposed = false;
 
   constructor(host: ReactiveControllerHost, options: ScrollObserverOptions) {
     this._host = host;
@@ -79,17 +80,36 @@ export class ScrollObserverController implements ReactiveController {
 
   /** Reconfigure the controller: detaches, merges options, and reattaches. */
   setOptions(next: Partial<ScrollObserverOptions>): void {
+    if (this._disposed) {
+      return;
+    }
+
     this._detach();
     Object.assign(this._opts, next);
     this._attach();
   }
 
   hostConnected(): void {
+    if (this._disposed) {
+      return;
+    }
+
     this._attach();
   }
 
   hostDisconnected(): void {
     this._detach();
+  }
+
+  /** Detaches the listener or pending frame and removes the controller permanently. */
+  dispose(): void {
+    if (this._disposed) {
+      return;
+    }
+
+    this._disposed = true;
+    this._detach();
+    this._host.removeController(this);
   }
 
   private _resolveTarget(): ScrollObserverTarget | null {

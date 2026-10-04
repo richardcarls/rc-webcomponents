@@ -166,8 +166,7 @@ export class RCFab extends LitElement {
 
   private _syncScrollFallback(): void {
     if (this._scrollCtrl) {
-      this._scrollCtrl.setOptions({ disabled: true });
-      this.removeController(this._scrollCtrl);
+      this._scrollCtrl.dispose();
       this._scrollCtrl = undefined;
 
       this.removeAttribute('scroll-below-threshold');

@@ -1,5 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { ControllerEffects } from './ControllerEffects.js';
 import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
 
 export interface DragOptions {
@@ -36,8 +37,14 @@ export class DragController implements ReactiveController {
 
   private readonly _gesture: DragGestureController;
   private readonly _onKeyDown: (e: KeyboardEvent) => void;
+  private readonly _host: ReactiveControllerHost;
+  private readonly _handleEffects = new Map<Element, ControllerEffects>();
+  private _connected = false;
+  private _disposed = false;
 
   constructor(host: ReactiveControllerHost, options: DragOptions) {
+    this._host = host;
+
     this._opts = {
       axis: 'both',
       step: 4,
@@ -63,7 +70,12 @@ export class DragController implements ReactiveController {
     host.addController(this);
   }
 
+  /** Reconfigures drag behavior and rebinds the handle when it changes. */
   setOptions(next: Partial<DragOptions>): void {
+    if (this._disposed) {
+      return;
+    }
+
     const prevHandle = this._handle();
 
     Object.assign(this._opts, next);
@@ -71,18 +83,40 @@ export class DragController implements ReactiveController {
 
     const nextHandle = this._handle();
 
-    if (prevHandle !== nextHandle) {
+    if (this._connected && prevHandle !== nextHandle) {
       this._detachFrom(prevHandle);
       this._attachTo(nextHandle);
     }
   }
 
   hostConnected(): void {
+    if (this._disposed || this._connected) {
+      return;
+    }
+
+    this._connected = true;
     this._attachTo(this._handle());
   }
 
   hostDisconnected(): void {
+    this._connected = false;
     this._detachFrom(this._handle());
+  }
+
+  /**
+   * Detaches the handle (undoing the `tabindex` it added) and removes the
+   * controller and its gesture from the host for good. Use it to replace a
+   * controller when move options change after setup.
+   */
+  dispose(): void {
+    if (this._disposed) {
+      return;
+    }
+
+    this._disposed = true;
+    this._gesture.dispose();
+    this.hostDisconnected();
+    this._host.removeController(this);
   }
 
   private _handle(): Element {
@@ -94,15 +128,24 @@ export class DragController implements ReactiveController {
   }
 
   private _attachTo(handle: Element): void {
-    handle.addEventListener('keydown', this._onKeyDown as EventListener);
+    if (this._handleEffects.has(handle)) {
+      return;
+    }
+
+    const effects = new ControllerEffects();
+
+    effects.listen(handle, 'keydown', this._onKeyDown as EventListener);
 
     if (!handle.hasAttribute('tabindex')) {
-      (handle as HTMLElement).setAttribute('tabindex', '0');
+      effects.setAttribute(handle, 'tabindex', '0');
     }
+
+    this._handleEffects.set(handle, effects);
   }
 
   private _detachFrom(handle: Element): void {
-    handle.removeEventListener('keydown', this._onKeyDown as EventListener);
+    this._handleEffects.get(handle)?.dispose();
+    this._handleEffects.delete(handle);
   }
 
   private _canStartGesture(event: PointerEvent): boolean {

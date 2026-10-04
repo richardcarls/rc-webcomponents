@@ -100,6 +100,10 @@ The controller owns pointer capture and cleanup, but leaves state changes,
 thresholds, logical direction, snapping, and action confirmation to its
 consumer.
 
+Changing options or detaching the host cancels an active gesture. Call
+`dispose()` when removing the controller permanently; it releases pointer
+capture and reports cancellation before removing itself from the host.
+
 ### `DragController`
 
 A `ReactiveController` that adds pointer-driven drag-to-move to any `LitElement` host. It binds
@@ -122,6 +126,10 @@ class MyPanel extends LitElement {
 The controller pins explicit `top` and `left` values on the host the first time the user drags,
 clearing centering transforms that would fight manual positioning. Pointer capture provides
 reliable drag-end detection across shadow boundaries.
+
+Use `setOptions()` to reconfigure an attached controller. Call `dispose()`
+when removing it permanently; owned handle focusability is restored without
+overwriting later author changes.
 
 **Keyboard:** Arrow keys move by `step` px; Shift multiplies by 10.
 
@@ -155,6 +163,10 @@ class MyPanel extends LitElement {
 
 It works alongside `DragController`: `ResizeController` registers a capture-phase listener that
 intercepts pointer events before the drag handler.
+
+`dispose()` removes the injected grip, listeners, and temporary handle styles.
+Author styles and later author changes are preserved. Completed resize geometry
+remains on the target.
 
 **Options:**
 
@@ -243,6 +255,9 @@ by default so restored scroll state is immediately observable. Set
 `initialEvaluation: 'frame'` when mounting many scroll-driven components: the
 controller resolves the target and samples its initial offset in the shared
 frame read phase, then attaches and applies state before paint.
+
+Call `dispose()` when removing the observer permanently; it also cancels a
+pending frame evaluation.
 
 ---
 
