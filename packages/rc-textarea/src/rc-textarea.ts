@@ -167,7 +167,8 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @attr gutter - Enable the gutter column without any built-in content.
  * @attr word-wrap - Wrap long lines within the field to prevent horizontal overflow.
  * @attr auto-grow - Allow the field to grow vertically with content to prevent vertical overflow.
- * @attr read-only - Disable editing. The field renders as a styled read-only display.
+ * @attr [data-readonly] - Reflected while the slotted `<textarea>` is `readonly`. The editor stays
+ *   focusable and selectable, announces `aria-readonly`, and blocks edits.
  * @attr value - Current field value.
  * @attr default-value - Initial uncontrolled value.
  *
@@ -233,9 +234,16 @@ export class RCTextarea extends LitElement {
   @property({ type: Boolean, attribute: 'auto-grow', reflect: true })
   autoGrow = false;
 
-  /** Disable editing. The field renders as a styled read-only display. */
-  @property({ type: Boolean, attribute: 'read-only', reflect: true })
-  readOnly = false;
+  /**
+   * Whether the slotted `<textarea>` is `readonly`. The native control is the
+   * source of truth; set `readonly` on it to change this state.
+   */
+  get readOnly(): boolean {
+    return this._readOnly;
+  }
+
+  private _readOnly = false;
+  private _textareaAttributeObserver: MutationObserver | null = null;
 
   /** Declarative plugin hook for framework integrations. */
   @property({ attribute: false })
@@ -311,7 +319,7 @@ export class RCTextarea extends LitElement {
     observe: true,
     onChange: ($textarea, $previousTextarea) => this._setupTextarea($textarea, $previousTextarea),
     onMissing: () => {
-      if (import.meta.env.DEV && !this.readOnly) {
+      if (import.meta.env.DEV) {
         warnMissingDirectChild(this, {
           selector: ':scope > textarea',
           message:
@@ -443,6 +451,13 @@ export class RCTextarea extends LitElement {
     }
 
     document.addEventListener('selectionchange', this._docSelectionChangeHandler);
+
+    const $textarea = this._$textareaRef?.deref();
+
+    if ($textarea) {
+      this._observeTextarea($textarea);
+      this._syncReadOnly();
+    }
   }
 
   override disconnectedCallback(): void {
@@ -458,6 +473,7 @@ export class RCTextarea extends LitElement {
 
     this._cursorCallbacks.clear();
     this._resizeObserver?.disconnect();
+    this._textareaAttributeObserver?.disconnect();
     this._$textareaRef?.deref()?.removeEventListener('invalid', this._onTextareaInvalid);
 
     if (this._rafHandle !== null) {
@@ -481,10 +497,11 @@ export class RCTextarea extends LitElement {
 
     this._resizeObserver.observe(this);
 
-    // In editable mode a slotted <textarea> fires slotchange, which calls
-    // _onSlotChange → _scheduleRender. In read-only mode no textarea is
-    // required, so slotchange may never fire; call _scheduleRender here to seed
-    // the first render when value/defaultValue was set before upgrade or connection.
+    // A slotted <textarea> fires slotchange, which calls _onSlotChange →
+    // _scheduleRender, but slotchange may not fire when the textarea was
+    // present before upgrade; seed the first render here when value or
+    // defaultValue was set before upgrade or connection.
+    this._syncReadOnly();
     this._scheduleRender();
   }
 
@@ -492,14 +509,45 @@ export class RCTextarea extends LitElement {
     if (changed.has('lineNumbers') || changed.has('gutter')) {
       this._scheduleRender();
     }
+  }
 
-    if (changed.has('readOnly')) {
-      if (this._$editor) {
-        this._$editor.contentEditable = this.readOnly ? 'false' : 'true';
+  private _observeTextarea($textarea: HTMLTextAreaElement): void {
+    this._textareaAttributeObserver ??= new MutationObserver(() => this._syncReadOnly());
+    this._textareaAttributeObserver.disconnect();
+
+    this._textareaAttributeObserver.observe($textarea, {
+      attributes: true,
+      attributeFilter: ['readonly'],
+    });
+  }
+
+  /**
+   * Mirror the native textarea's `readonly` attribute: the editor stays a
+   * focusable, selectable textbox that announces `aria-readonly`, and edits
+   * are blocked by the existing input guards.
+   */
+  protected _syncReadOnly(): void {
+    const readOnly = this._$textareaRef?.deref()?.readOnly ?? false;
+    const changed = readOnly !== this._readOnly;
+
+    this._readOnly = readOnly;
+    this.toggleAttribute('data-readonly', readOnly);
+
+    if (this._$editor) {
+      this._$editor.contentEditable = readOnly ? 'false' : 'true';
+
+      if (readOnly) {
+        this._$editor.setAttribute('aria-readonly', 'true');
+        this._$editor.tabIndex = 0;
+      } else {
+        this._$editor.removeAttribute('aria-readonly');
+        this._$editor.removeAttribute('tabindex');
       }
+    }
 
-      this._syncGutterHeights();
-      this._textareaController.sync();
+    if (changed) {
+      // The plugin transform hook only applies while read-only.
+      this._scheduleRender();
     }
   }
 
@@ -514,7 +562,7 @@ export class RCTextarea extends LitElement {
           <div
             id="editor"
             part="editor"
-            contenteditable=${this.readOnly ? 'false' : 'true'}
+            contenteditable=${this._readOnly ? 'false' : 'true'}
             role="textbox"
             aria-multiline="true"
             spellcheck="false"
@@ -540,8 +588,11 @@ export class RCTextarea extends LitElement {
       $previousTextarea.removeEventListener('invalid', this._onTextareaInvalid);
     }
 
+    this._textareaAttributeObserver?.disconnect();
+
     if (!$textarea) {
       this._$textareaRef = null;
+      this._syncReadOnly();
 
       return;
     }
@@ -587,6 +638,9 @@ export class RCTextarea extends LitElement {
 
     // Wire up form validation feedback
     $textarea.addEventListener('invalid', this._onTextareaInvalid);
+
+    this._observeTextarea($textarea);
+    this._syncReadOnly();
 
     // Sync typography from textarea's computed style to editor
     this._syncTypography($textarea);
@@ -1617,8 +1671,7 @@ export class RCTextarea extends LitElement {
     // Sync vertical padding from the editor's computed values.
     // Browser UA overrides (Chrome/Firefox on contenteditable) cause 0.5em to
     // resolve to different pixel values on the gutter vs the editor, producing
-    // a constant vertical offset. The read-only rule (padding: 0 on #editor)
-    // also needs the gutter to match — this one call covers both cases.
+    // a constant vertical offset.
     const computedStyle = getComputedStyle(this._$editor);
     const paddingTop = computedStyle.paddingTop;
     const paddingBottom = computedStyle.paddingBottom;

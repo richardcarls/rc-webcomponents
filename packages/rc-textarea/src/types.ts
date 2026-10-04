@@ -428,8 +428,8 @@ export interface RCTextareaPlugin {
   destroy?(): void;
 
   /**
-   * Display-layer value transform — called before `update`/`highlight` in
-   * read-only mode.
+   * Display-layer value transform — called before `update`/`highlight`
+   * while the slotted textarea is `readonly`.
    *
    * Return a non-null string to substitute it as the rendered
    * text passed to all subsequent hooks and to the document builder.

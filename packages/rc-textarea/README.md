@@ -91,7 +91,11 @@ When the user edits, the slotted textarea is kept in sync and dispatches a nativ
 | `gutter`       | `gutter`      | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`. |
 | `word-wrap`    | `wordWrap`    | Wrap long lines instead of scrolling horizontally.                                  |
 | `auto-grow`    | `autoGrow`    | Let the field grow vertically with content.                                         |
-| `read-only`    | `readOnly`    | Render selectable, non-editable content.                                            |
+
+Read-only state comes from the slotted native control: set `readonly` on the `<textarea>`. The
+editor keeps the enabled field appearance, stays focusable and selectable, announces
+`aria-readonly`, and rejects edits. The host reflects `data-readonly`, and the `readOnly` getter
+reports the state.
 
 Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
 the slotted textarea with `aria-label` or a real `<label for="...">`.

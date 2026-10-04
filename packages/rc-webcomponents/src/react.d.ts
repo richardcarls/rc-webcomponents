@@ -674,7 +674,8 @@ export type RCTextareaRef = HTMLElement & {
   gutter: boolean;
   wordWrap: boolean;
   autoGrow: boolean;
-  readOnly: boolean;
+  /** Read-only state of the slotted textarea; set `readonly` on the textarea to change it. */
+  readonly readOnly: boolean;
   usePlugin(plugin: RCTextareaPlugin): void;
   removePlugin(): void;
   wrapSelection(prefix: string, suffix: string): void;
@@ -1187,7 +1188,6 @@ declare module 'react' {
         gutter?: boolean;
         'word-wrap'?: boolean;
         'auto-grow'?: boolean;
-        'read-only'?: boolean;
       };
     }
   }

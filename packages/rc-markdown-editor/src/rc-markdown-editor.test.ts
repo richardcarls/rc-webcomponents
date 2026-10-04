@@ -90,7 +90,8 @@ describe('RcMarkdownEditor value ownership', () => {
     host.readOnly = true;
     await host.updateComplete;
 
-    expect(source).toHaveAttribute('read-only');
+    expect(source.querySelector('textarea')).toHaveAttribute('readonly');
+    await expect.poll(() => source.hasAttribute('data-readonly')).toBe(true);
   });
 });
 

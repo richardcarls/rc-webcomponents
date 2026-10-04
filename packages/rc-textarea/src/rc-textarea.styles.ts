@@ -204,15 +204,9 @@ export const styles = css`
     height: auto;
   }
 
-  :host([read-only]) #root {
-    border: none;
-    background: transparent;
-    border-radius: 0;
-  }
-
-  :host([read-only]) #editor {
-    cursor: default;
-    padding: 0;
+  /* A read-only field keeps its enabled appearance and focus ring; it only
+     stops accepting edits. */
+  :host([data-readonly]) #editor {
     -webkit-user-modify: read-only;
   }
 

@@ -293,7 +293,9 @@
     color: transparent;
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:hover::part(field) {
+  /* A read-only field keeps its focus indicator but no hover affordance, since
+     hovering cannot lead to an edit. */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:not([data-readonly]):hover::part(field) {
     border-block-end-color: var(--md-sys-color-on-surface, CanvasText);
     background: color-mix(
       in srgb,

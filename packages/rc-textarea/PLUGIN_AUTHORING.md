@@ -68,8 +68,8 @@ interface RCTextareaPlugin {
 }
 ```
 
-`transform()` runs only in read-only mode and substitutes the display-layer text without
-changing `editor.value` or the slotted textarea value.
+`transform()` runs only while the slotted textarea is `readonly` and substitutes the
+display-layer text without changing `editor.value` or the slotted textarea value.
 
 `update()` is the general-purpose hook. Use it when you already have decoration objects from a
 parser, linter, or tokenizer.
@@ -565,8 +565,7 @@ editor.addPattern({
 ### Read-Only Preview Transform
 
 ```ts
-editor.readOnly = true;
-
+// <rc-textarea><textarea aria-label="Preview" readonly></textarea></rc-textarea>
 editor.usePlugin({
   transform(value) {
     return value.trimEnd();

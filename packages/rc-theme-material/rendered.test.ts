@@ -142,6 +142,40 @@ test('filled Material field aligns a textarea gutter with its floated label', as
   expect(getComputedStyle($firstLine, '::before').insetInlineStart).toBe('-16px');
 });
 
+test('filled Material field shows a read-only textarea as a focusable field without hover', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label" for="preview-notes">Ingredients</label>
+      <rc-textarea data-rc-field-control>
+        <textarea id="preview-notes" readonly>Flour</textarea>
+      </rc-textarea>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const $field = scope.querySelector('rc-field')!;
+  const $host = scope.querySelector('rc-textarea')!;
+  const $editor = $host.shadowRoot!.querySelector<HTMLElement>('#editor')!;
+  const $surface = $field.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
+  const resting = getComputedStyle($surface).backgroundColor;
+
+  await vi.waitFor(() => expect($field).toHaveAttribute('data-readonly'));
+  expect($editor).toHaveAttribute('aria-readonly', 'true');
+  expect($editor).toHaveAccessibleName('Ingredients');
+
+  await userEvent.hover($surface);
+  expect(getComputedStyle($surface).backgroundColor).toBe(resting);
+
+  await userEvent.click($editor);
+  await vi.waitFor(() => expect($field).toHaveAttribute('data-focused'));
+});
+
 test('rc-select and rc-combobox lose their own chrome when composed as rc-field control providers', async () => {
   const scope = document.createElement('div');
 

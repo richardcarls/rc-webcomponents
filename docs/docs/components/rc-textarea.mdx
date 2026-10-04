@@ -134,7 +134,11 @@ See [Folding actions](#folding-actions) for controller and styling details.
 | `gutter`       | `gutter`      | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`. |
 | `word-wrap`    | `wordWrap`    | Wrap long lines instead of scrolling horizontally.                                  |
 | `auto-grow`    | `autoGrow`    | Let the field grow vertically with content.                                         |
-| `read-only`    | `readOnly`    | Render selectable, non-editable content.                                            |
+
+Read-only state comes from the slotted native control: set `readonly` on the `<textarea>`. The
+editor keeps the enabled field appearance, stays focusable and selectable, announces
+`aria-readonly`, and rejects edits. The host reflects `data-readonly`, and the `readOnly` getter
+reports the state.
 
 Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
 the slotted textarea with `aria-label` or a real `<label for="...">`.
@@ -360,7 +364,7 @@ interface RCTextareaPlugin {
   mount?(api: RCTextareaPluginAPI): void;
   destroy?(): void;
 
-  /** Display-layer transform — read-only mode only. */
+  /** Display-layer transform — only while the textarea is readonly. */
   transform?(value: string, api: RCTextareaPluginAPI): string | null | void;
 
   /** Imperative decoration hook. May be async. */
@@ -380,8 +384,8 @@ interface RCTextareaPlugin {
 At least one of `update` or `highlight` must be provided. Async hooks are allowed — if a
 newer render starts while a hook is pending, stale results are discarded.
 
-`transform()` runs only in read-only mode and substitutes the display-layer text without
-changing `editor.value` or the slotted textarea value.
+`transform()` runs only while the slotted textarea is `readonly` and substitutes the
+display-layer text without changing `editor.value` or the slotted textarea value.
 
 ### External updates
 
@@ -801,8 +805,7 @@ editor.usePlugin({
 ### Read-only preview transform
 
 ```ts
-editor.readOnly = true;
-
+// <rc-textarea><textarea aria-label="Preview" readonly></textarea></rc-textarea>
 editor.usePlugin({
   transform(value) {
     return value.trimEnd();

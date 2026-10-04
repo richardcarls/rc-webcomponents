@@ -498,7 +498,8 @@ export type RCTextareaRef = HTMLElement & {
   gutter: boolean;
   wordWrap: boolean;
   autoGrow: boolean;
-  readOnly: boolean;
+  /** Read-only state of the slotted textarea; set `readonly` on the textarea to change it. */
+  readonly readOnly: boolean;
   usePlugin(plugin: RCTextareaPlugin): void;
   removePlugin(): void;
   wrapSelection(prefix: string, suffix: string): void;
@@ -1260,7 +1261,6 @@ declare module 'solid-js' {
         gutter?: boolean | string;
         'word-wrap'?: boolean | string;
         'auto-grow'?: boolean | string;
-        'read-only'?: boolean | string;
         'on:rc-textarea-change'?: (e: CustomEvent<RCTextareaChangeDetail>) => void;
         'on:rc-textarea-focus'?: (e: CustomEvent) => void;
         'on:rc-textarea-blur'?: (e: CustomEvent) => void;

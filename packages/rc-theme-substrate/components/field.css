@@ -41,7 +41,8 @@
   }
 
   /* Same hover and focus treatment rc-select, rc-combobox, and rc-textarea use. */
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field:hover::part(field) {
+  /* Read-only fields keep focus treatment but skip the hover affordance. */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field:not([data-readonly]):hover::part(field) {
     border-color: color-mix(in srgb, var(--rc-accent, Highlight) 55%, var(--rc-border-color));
   }
 

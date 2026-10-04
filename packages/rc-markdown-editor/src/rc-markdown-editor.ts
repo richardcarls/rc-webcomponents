@@ -520,9 +520,10 @@ export class RcMarkdownEditor extends LitElement {
         <rc-textarea
           id="source-editor"
           word-wrap
-          ?read-only=${this.readOnly}
           @rc-change=${this._onSourceChange}
-        ></rc-textarea>
+        >
+          <textarea aria-label="Markdown source" ?readonly=${this.readOnly}></textarea>
+        </rc-textarea>
       </div>
 
       ${this._linkPopoverOpen

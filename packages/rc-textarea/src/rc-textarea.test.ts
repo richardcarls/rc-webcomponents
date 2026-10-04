@@ -1,5 +1,5 @@
 import { html, type TemplateResult } from 'lit';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
@@ -442,26 +442,73 @@ describe('RCTextarea — value', () => {
 });
 
 describe('RCTextarea — readOnly', () => {
-  test('readOnly controls contentEditable in both directions', async () => {
+  test('follows the native textarea readonly attribute in both directions', async () => {
     const host = await renderTextarea(html`
-      <rc-textarea data-testid="host" read-only>
-        <textarea aria-label="Notes"></textarea>
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Notes" readonly>First line</textarea>
+      </rc-textarea>
+    `);
+    const $textarea = host.querySelector('textarea')!;
+    const $editor = getEditor(host);
+
+    expect(host.readOnly).toBe(true);
+    expect(host).toHaveAttribute('data-readonly');
+    expect($editor.contentEditable).toBe('false');
+    expect($editor).toHaveAttribute('aria-readonly', 'true');
+
+    $textarea.readOnly = false;
+
+    await expect.poll(() => $editor.contentEditable).toBe('true');
+    expect(host.readOnly).toBe(false);
+    expect(host).not.toHaveAttribute('data-readonly');
+    expect($editor).not.toHaveAttribute('aria-readonly');
+
+    $textarea.readOnly = true;
+
+    await expect.poll(() => $editor.contentEditable).toBe('false');
+    expect($editor).toHaveAttribute('aria-readonly', 'true');
+  });
+
+  test('stays a named, focusable, selectable textbox that rejects edits', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Notes" readonly>Keep this</textarea>
+      </rc-textarea>
+    `);
+    const $editor = getEditor(host);
+    const changes = vi.fn();
+
+    host.addEventListener('rc-textarea-change', changes);
+
+    expect($editor).toHaveAttribute('role', 'textbox');
+    expect($editor).toHaveAccessibleName('Notes');
+    expect($editor.tabIndex).toBe(0);
+
+    $editor.focus();
+    expect(host.shadowRoot!.activeElement).toBe($editor);
+
+    await userEvent.keyboard('typed');
+
+    expect(host.value).toBe('Keep this');
+    expect(changes).not.toHaveBeenCalled();
+
+    const selection = (host.shadowRoot as ShadowRoot & { getSelection?: () => Selection }).getSelection?.()
+      ?? document.getSelection()!;
+
+    selection.selectAllChildren($editor);
+    expect(selection.toString()).toContain('Keep this');
+    await expectNoA11yViolations(host);
+  });
+
+  test('keeps the enabled field appearance', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" style="--rc-textarea-padding-inline: 16px">
+        <textarea aria-label="Notes" readonly>Text</textarea>
       </rc-textarea>
     `);
 
-    expect(getEditor(host).contentEditable).toBe('false');
-
-    host.readOnly = false;
-
-    await host.updateComplete;
-
-    expect(getEditor(host).contentEditable).toBe('true');
-
-    host.readOnly = true;
-
-    await host.updateComplete;
-
-    expect(getEditor(host).contentEditable).toBe('false');
+    expect(getComputedStyle(getEditor(host)).paddingInlineStart).toBe('16px');
+    expect(getComputedStyle(host.shadowRoot!.querySelector('#root')!).borderTopStyle).not.toBe('none');
   });
 });
 

@@ -58,8 +58,8 @@ test('folds source lines without changing the editor value or native form contro
 
 test('keeps an app-owned panel, its controls, and fold state in sync', async () => {
   const screen = render(html`
-    <rc-textarea data-testid="host" gutter read-only>
-      <textarea aria-label="Notes"></textarea>
+    <rc-textarea data-testid="host" gutter>
+      <textarea aria-label="Notes" readonly></textarea>
     </rc-textarea>
   `);
   const host = screen.getByTestId('host').element() as RCTextarea;
