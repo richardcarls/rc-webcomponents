@@ -82,7 +82,9 @@ top-origin resize, downward swipe-dismiss, and fixed positioning at the
 viewport's bottom edge. Add an optional
 `[data-rc-bottom-sheet-handle]` element inside the dialog for a themed resize
 handle. Use `snap-points` to snap the sheet to declared CSS heights after
-resize gestures.
+resize gestures. Set `resize="none"` to hold the sheet at its current snap
+point; the option is reactive, so restoring `resize="vertical"` re-enables
+dragging.
 
 Without a theme, the authored handle uses a 32 by 4 pixel pill indicator,
 centered inside a full-width, 48 pixel-high target.

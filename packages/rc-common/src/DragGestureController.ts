@@ -89,7 +89,7 @@ export interface DragGestureOptions {
   onMove?: (detail: DragGestureDetail) => void;
   /** Called when the active pointer is released. */
   onEnd?: (detail: DragGestureDetail) => void;
-  /** Called when the active gesture is cancelled or loses pointer capture. */
+  /** Called when the active gesture is cancelled, loses capture, or is detached. */
   onCancel?: (detail: DragGestureDetail) => void;
 }
 
@@ -116,8 +116,14 @@ export class DragGestureController implements ReactiveController {
   private _samples: PointerSample[] = [];
   private _activated = false;
   private _rejected = false;
+  private readonly _host: ReactiveControllerHost;
+  private _lastEvent: PointerEvent | null = null;
+  private _boundCapture = false;
+  private _disposed = false;
 
   constructor(host: ReactiveControllerHost, options: DragGestureOptions) {
+    this._host = host;
+
     this._options = {
       axis: 'both',
       activation: 'immediate',
@@ -135,22 +141,49 @@ export class DragGestureController implements ReactiveController {
     host.addController(this);
   }
 
-  /** Updates behavior or the target resolver and safely rebinds listeners. */
+  /** Updates behavior or the target resolver, cancelling any active gesture first. */
   setOptions(options: Partial<DragGestureOptions>): void {
+    if (this._disposed) {
+      return;
+    }
+
+    if (this._pointerId !== null && this._lastEvent) {
+      this._cancel(this._lastEvent);
+    }
+
     Object.assign(this._options, options);
     this._bindTarget();
   }
 
   hostConnected(): void {
+    if (this._disposed) {
+      return;
+    }
+
     this._bindTarget();
   }
 
   hostUpdated(): void {
+    if (this._disposed) {
+      return;
+    }
+
     this._bindTarget();
   }
 
   hostDisconnected(): void {
     this._unbindTarget();
+  }
+
+  /** Cancels an active gesture, then removes listeners and the controller permanently. */
+  dispose(): void {
+    if (this._disposed) {
+      return;
+    }
+
+    this._disposed = true;
+    this._unbindTarget();
+    this._host.removeController(this);
   }
 
   private _resolveTarget(): HTMLElement | null {
@@ -163,15 +196,16 @@ export class DragGestureController implements ReactiveController {
   private _bindTarget(): void {
     const $target = this._resolveTarget();
 
-    if ($target === this._$target) {
+    if ($target === this._$target && this._boundCapture === this._options.capture) {
       return;
     }
 
     this._unbindTarget();
     this._$target = $target;
+    this._boundCapture = this._options.capture;
 
     this._$target?.addEventListener('pointerdown', this._onPointerDown, {
-      capture: this._options.capture,
+      capture: this._boundCapture,
     });
   }
 
@@ -180,12 +214,14 @@ export class DragGestureController implements ReactiveController {
       return;
     }
 
+    if (this._pointerId !== null && this._lastEvent) {
+      this._cancel(this._lastEvent);
+    }
+
     this._$target.removeEventListener('pointerdown', this._onPointerDown, {
-      capture: this._options.capture,
+      capture: this._boundCapture,
     });
 
-    this._removeCycleListeners(this._$target);
-    this._reset();
     this._$target = null;
   }
 
@@ -203,6 +239,7 @@ export class DragGestureController implements ReactiveController {
     this._startX = event.clientX;
     this._startY = event.clientY;
     this._startTime = event.timeStamp;
+    this._lastEvent = event;
     this._samples = [{ x: event.clientX, y: event.clientY, time: event.timeStamp }];
     this._activated = false;
     this._rejected = false;
@@ -229,6 +266,7 @@ export class DragGestureController implements ReactiveController {
     }
 
     this._recordSample(event);
+    this._lastEvent = event;
 
     if (!this._activated && !this._resolveIntent(event)) {
       return;
@@ -247,6 +285,7 @@ export class DragGestureController implements ReactiveController {
     }
 
     this._recordSample(event);
+    this._lastEvent = event;
 
     if (this._activated) {
       this._options.onEnd?.(this._detail(event));
@@ -324,7 +363,15 @@ export class DragGestureController implements ReactiveController {
     }
 
     if (this._activated) {
-      this._options.onCancel?.(this._detail(event));
+      this._activated = false;
+
+      try {
+        this._options.onCancel?.(this._detail(event));
+      } finally {
+        this._finish();
+      }
+
+      return;
     }
 
     this._finish();
@@ -406,6 +453,7 @@ export class DragGestureController implements ReactiveController {
 
   private _reset(): void {
     this._pointerId = null;
+    this._lastEvent = null;
     this._samples = [];
     this._activated = false;
     this._rejected = false;

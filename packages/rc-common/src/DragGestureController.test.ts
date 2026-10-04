@@ -34,6 +34,10 @@ class DragGestureTestHost extends LitElement {
     this._gesture.setOptions({ axis, activation });
   }
 
+  disposeGesture(): void {
+    this._gesture.dispose();
+  }
+
   override render() {
     return this.alternate
       ? html`<button data-handle type="button"></button>`
@@ -171,6 +175,37 @@ test('removes active-cycle listeners when disconnected', async () => {
 
   expect($host.onMove).not.toHaveBeenCalled();
   expect($host.onEnd).not.toHaveBeenCalled();
+  expect($host.onCancel).toHaveBeenCalledOnce();
+});
+
+test('dispose cancels an active gesture once and releases pointer capture', async () => {
+  const { $host, $handle } = await setup();
+  const release = vi.spyOn($handle, 'releasePointerCapture').mockImplementation(() => {});
+
+  vi.spyOn($handle, 'hasPointerCapture').mockReturnValue(true);
+
+  firePointer($handle, 'pointerdown', { clientX: 10 });
+  firePointer($handle, 'pointermove', { clientX: 20 });
+  $host.disposeGesture();
+  $host.disposeGesture();
+  firePointer($handle, 'pointerup', { clientX: 30 });
+
+  expect($host.onCancel).toHaveBeenCalledOnce();
+  expect($host.onCancel.mock.calls[0][0].deltaX).toBe(10);
+  expect($host.onEnd).not.toHaveBeenCalled();
+  expect(release).toHaveBeenCalledWith(1);
+});
+
+test('changing options cancels an active gesture before accepting another', async () => {
+  const { $host, $handle } = await setup();
+
+  firePointer($handle, 'pointerdown');
+  $host.setGestureOptions('x', 'axis');
+  firePointer($handle, 'pointerdown');
+  firePointer($handle, 'pointermove', { clientX: 12 });
+
+  expect($host.onCancel).toHaveBeenCalledOnce();
+  expect($host.onStart).toHaveBeenCalledTimes(2);
 });
 
 test('rebinds when a target is replaced after render', async () => {

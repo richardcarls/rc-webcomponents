@@ -126,6 +126,9 @@ export class RCDialog extends LitElement {
    *
    * Use `move-handle` to restrict dragging to a specific child
    * element (e.g. a titlebar).
+   *
+   * Reactive: changing this or any other `move-*` option after setup
+   * rebuilds the move behavior and re-queries `move-handle`.
    */
   @property({ type: Boolean, reflect: true })
   movable = false;
@@ -142,7 +145,13 @@ export class RCDialog extends LitElement {
   @property({ type: Number, attribute: 'move-step' })
   moveStep = 4;
 
-  /** Enable resizing, mirroring the CSS `resize` property values. */
+  /**
+   * Enable resizing, mirroring the CSS `resize` property values.
+   *
+   * Reactive: changing this or any other `resize-*` option after setup
+   * rebuilds the resize behavior and re-queries `resize-handle` matches, so
+   * `'none'` turns resizing off and restores the handles' focusability.
+   */
   @property({ type: String, reflect: true })
   resize: 'none' | 'both' | 'horizontal' | 'vertical' = 'none';
 
@@ -231,6 +240,14 @@ export class RCDialog extends LitElement {
   protected _suppressNextCloseToggle = false;
 
   private _trackingVisualViewport = false;
+
+  private _dragController: DragController | null = null;
+  // Move-relevant options the current controller was built from.
+  private _dragConfig: readonly (string | number)[] = [];
+
+  private _resizeControllers: ResizeController[] = [];
+  // Resize-relevant options the current controllers were built from.
+  private _resizeConfig: readonly (string | number)[] = [];
 
   /** The element that had focus when the dialog was opened; restored on close. */
   protected _$opener: Element | null = null;
@@ -392,53 +409,8 @@ export class RCDialog extends LitElement {
       }
     }
 
-    if (this.variant !== 'fullscreen' && (this.movable || this.moveHandle)) {
-      const $handle = this.moveHandle
-        ? ($dialog.querySelector<Element>(this.moveHandle) ?? $dialog)
-        : $dialog;
-
-      new DragController(this, {
-        target: $dialog,
-        handle: $handle,
-        bounds: this.moveBounds,
-        step: this.moveStep,
-      });
-    }
-
-    if (this.variant !== 'fullscreen' && this.resize !== 'none') {
-      const $handles = this._resizeHandles($dialog);
-
-      if ($handles.length > 0) {
-        for (const $handle of $handles) {
-          // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
-          new ResizeController(this, {
-            target: $dialog,
-            direction: this._resizeDirectionForHandle($handle),
-            handle: $handle,
-            origin: this._resizeOriginForHandle($handle),
-            threshold: this.resizeThreshold,
-            step: this.resizeStep,
-            bounds: this.moveBounds,
-            onResizeStart: (detail) => this._onResizeStart(detail),
-            onResize: (detail) => this._onResize(detail),
-            onResizeEnd: (detail) => this._onResizeEnd(detail),
-          });
-        }
-      } else {
-        // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
-        new ResizeController(this, {
-          target: $dialog,
-          direction: this.resize,
-          origin: this.resizeOrigin,
-          threshold: this.resizeThreshold,
-          step: this.resizeStep,
-          bounds: this.moveBounds,
-          onResizeStart: (detail) => this._onResizeStart(detail),
-          onResize: (detail) => this._onResize(detail),
-          onResizeEnd: (detail) => this._onResizeEnd(detail),
-        });
-      }
-    }
+    this._syncDragController($dialog, true);
+    this._syncResizeControllers($dialog, true);
 
     if (this._controlledOpen !== undefined) {
       this._applyOpen(this._controlledOpen, true, this.modal);
@@ -458,6 +430,11 @@ export class RCDialog extends LitElement {
 
     if (changed.has('variant')) {
       this._syncVisualViewportTracking();
+    }
+
+    if (this._$wired?.deref() === $dialog) {
+      this._syncDragController($dialog);
+      this._syncResizeControllers($dialog);
     }
 
     if (changed.has('closedBy')) {
@@ -510,6 +487,8 @@ export class RCDialog extends LitElement {
     $dialog.removeEventListener('close', this._onClose);
     $dialog.removeEventListener('cancel', this._onCancel);
     $dialog.removeEventListener('click', this._onBackdropClick);
+    this._syncDragController(null, true);
+    this._syncResizeControllers(null, true);
 
     this._$wired = null;
     this._$opener = null;
@@ -583,6 +562,122 @@ export class RCDialog extends LitElement {
 
   /** Hook for subclasses to respond after a resize gesture has settled. */
   protected _onResizeEnd(_detail: ResizeLifecycleDetail): void {}
+
+  /**
+   * Rebuilds the move controller when the move options differ from the ones
+   * it was built from, or unconditionally when `force` is set (a newly wired
+   * or torn-down `<dialog>`).
+   */
+  private _syncDragController($dialog: HTMLDialogElement | null, force = false): void {
+    const enabled =
+      !!$dialog && this.variant !== 'fullscreen' && (this.movable || !!this.moveHandle);
+    const config = enabled ? [this.moveHandle, this.moveBounds, this.moveStep] : [];
+
+    if (!force && this._sameControllerConfig(config, this._dragConfig)) {
+      return;
+    }
+
+    this._dragConfig = config;
+    this._dragController?.dispose();
+    this._dragController = null;
+
+    if (!enabled) {
+      return;
+    }
+
+    const $handle = this.moveHandle
+      ? ($dialog.querySelector<Element>(this.moveHandle) ?? $dialog)
+      : $dialog;
+
+    this._dragController = new DragController(this, {
+      target: $dialog,
+      handle: $handle,
+      bounds: this.moveBounds,
+      step: this.moveStep,
+    });
+  }
+
+  /**
+   * Rebuilds the resize controllers when the resize options differ from the
+   * ones they were built from, or unconditionally when `force` is set (a
+   * newly wired or torn-down `<dialog>`).
+   */
+  private _syncResizeControllers($dialog: HTMLDialogElement | null, force = false): void {
+    const config = $dialog
+      ? [
+          this.variant === 'fullscreen' ? 'none' : this.resize,
+          this.resizeOrigin,
+          this.resizeHandle,
+          this.resizeThreshold,
+          this.resizeStep,
+          this.moveBounds,
+        ]
+      : [];
+
+    if (!force && this._sameControllerConfig(config, this._resizeConfig)) {
+      return;
+    }
+
+    this._resizeConfig = config;
+
+    for (const controller of this._resizeControllers) {
+      controller.dispose();
+    }
+
+    this._resizeControllers = [];
+
+    if (!$dialog || this.variant === 'fullscreen' || this.resize === 'none') {
+      return;
+    }
+
+    const lifecycle = {
+      onResizeStart: (detail: ResizeLifecycleDetail) => this._onResizeStart(detail),
+      onResize: (detail: ResizeLifecycleDetail) => this._onResize(detail),
+      onResizeEnd: (detail: ResizeLifecycleDetail) => this._onResizeEnd(detail),
+    };
+    const $handles = this._resizeHandles($dialog);
+    // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
+    const shared = {
+      target: $dialog,
+      threshold: this.resizeThreshold,
+      step: this.resizeStep,
+      bounds: this.moveBounds,
+      ...lifecycle,
+    };
+
+    if ($handles.length === 0) {
+      this._resizeControllers.push(
+        new ResizeController(this, {
+          ...shared,
+          direction: this.resize,
+          origin: this.resizeOrigin,
+        }),
+      );
+
+      return;
+    }
+
+    for (const $handle of $handles) {
+      this._resizeControllers.push(
+        new ResizeController(this, {
+          ...shared,
+          direction: this._resizeDirectionForHandle($handle),
+          handle: $handle,
+          origin: this._resizeOriginForHandle($handle),
+        }),
+      );
+    }
+  }
+
+  private _sameControllerConfig(
+    current: readonly (string | number)[],
+    previous: readonly (string | number)[],
+  ): boolean {
+    return (
+      current.length === previous.length &&
+      current.every((value, index) => value === previous[index])
+    );
+  }
 
   protected _resizeHandles($dialog: HTMLDialogElement): Element[] {
     if (!this.resizeHandle) {

@@ -163,6 +163,40 @@ test('disabled silences callbacks; re-enabling re-evaluates the position', async
   ctl.hostDisconnected();
 });
 
+test('dispose removes a listener and cannot reattach on reconnect', async () => {
+  const sc = await renderScrollContainer();
+  const onScroll = vi.fn();
+  const host = createHost();
+  const removeController = vi.spyOn(host, 'removeController');
+  const ctl = new ScrollObserverController(host, { target: sc, onScroll });
+
+  ctl.hostConnected();
+  onScroll.mockClear();
+  ctl.dispose();
+  ctl.dispose();
+  ctl.hostConnected();
+  scrollTo(sc, 50);
+
+  expect(onScroll).not.toHaveBeenCalled();
+  expect(removeController).toHaveBeenCalledOnce();
+});
+
+test('dispose cancels a queued initial frame evaluation', async () => {
+  const sc = await renderScrollContainer();
+  const onScroll = vi.fn();
+  const ctl = new ScrollObserverController(createHost(), {
+    target: sc,
+    initialEvaluation: 'frame',
+    onScroll,
+  });
+
+  ctl.hostConnected();
+  ctl.dispose();
+  await nextFrame();
+
+  expect(onScroll).not.toHaveBeenCalled();
+});
+
 test('already-scrolled target fires the initial onChange at attach', async () => {
   const sc = await renderScrollContainer();
 

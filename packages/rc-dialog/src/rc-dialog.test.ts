@@ -422,6 +422,132 @@ test('explicit resize handle grows top-origin vertical dialogs upward', async ()
   host.close();
 });
 
+test('resize reacts to changes after setup', async () => {
+  const screen = render(html`
+    <rc-dialog
+      data-testid="host"
+      resize="vertical"
+      resize-origin="top"
+      resize-handle="#resize-handle"
+    >
+      <dialog
+        aria-labelledby="t"
+        style="position: fixed; left: 100px; top: 300px; width: 320px; height: 120px; margin: 0;"
+      >
+        <span id="t">Title</span>
+        <span id="resize-handle" data-rc-dialog-resize-axis="y">Resize</span>
+        <button type="button">Close</button>
+      </dialog>
+    </rc-dialog>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.show();
+
+  const dialog = host.querySelector('dialog') as HTMLDialogElement;
+  const handle = host.querySelector('#resize-handle') as HTMLElement;
+
+  const dragUp = (distance: number) => {
+    const { left, top } = dialog.getBoundingClientRect();
+
+    firePointerEvent(handle, 'pointerdown', { clientX: left + 20, clientY: top });
+    firePointerEvent(handle, 'pointermove', { clientX: left + 20, clientY: top - distance });
+    firePointerEvent(handle, 'pointerup', { clientX: left + 20, clientY: top - distance });
+  };
+
+  expect(handle.getAttribute('tabindex')).toBe('0');
+
+  host.resize = 'none';
+
+  await host.updateComplete;
+
+  const fixed = Math.round(dialog.getBoundingClientRect().height);
+
+  dragUp(40);
+
+  expect(Math.round(dialog.getBoundingClientRect().height)).toBe(fixed);
+  expect(handle.hasAttribute('tabindex')).toBe(false);
+
+  host.resize = 'vertical';
+
+  await host.updateComplete;
+
+  dragUp(40);
+
+  // Exactly one controller is live again: the drag applies once.
+  expect(Math.round(dialog.getBoundingClientRect().height)).toBe(fixed + 40);
+  expect(handle.getAttribute('tabindex')).toBe('0');
+
+  host.close();
+});
+
+test('move options react to changes after setup', async () => {
+  const screen = render(html`
+    <rc-dialog data-testid="host" movable>
+      <dialog
+        aria-labelledby="t"
+        style="position: fixed; left: 100px; top: 100px; width: 320px; height: 120px; margin: 0;"
+      >
+        <span id="t" class="titlebar">Title</span>
+        <button type="button">Close</button>
+      </dialog>
+    </rc-dialog>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.show();
+
+  const dialog = host.querySelector('dialog') as HTMLDialogElement;
+  // Moves go left: the test viewport is too narrow to move this dialog right.
+  const titlebar = host.querySelector('.titlebar') as HTMLElement;
+  const left = () => Math.round(dialog.getBoundingClientRect().left);
+
+  const pressArrowLeft = ($el: HTMLElement) => {
+    $el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+  };
+
+  expect(dialog.getAttribute('tabindex')).toBe('0');
+
+  host.movable = false;
+
+  await host.updateComplete;
+
+  const fixed = left();
+
+  pressArrowLeft(dialog);
+
+  expect(left()).toBe(fixed);
+  expect(dialog.hasAttribute('tabindex')).toBe(false);
+
+  host.moveHandle = '.titlebar';
+
+  await host.updateComplete;
+
+  // The handle moved to the titlebar; the dialog itself no longer moves.
+  expect(titlebar.getAttribute('tabindex')).toBe('0');
+  expect(dialog.hasAttribute('tabindex')).toBe(false);
+
+  pressArrowLeft(dialog);
+
+  expect(left()).toBe(fixed);
+
+  // The first move pins the dialog's box; measure the step after it.
+  pressArrowLeft(titlebar);
+
+  const pinned = left();
+
+  pressArrowLeft(titlebar);
+
+  // Exactly one controller is live: the step applies once.
+  expect(left()).toBe(pinned - 4);
+
+  host.close();
+});
+
 test('top-origin resize clamps to a CSS-only max-height instead of sliding the dialog', async () => {
   const screen = render(html`
     <rc-dialog

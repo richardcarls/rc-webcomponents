@@ -193,3 +193,254 @@ test('moves the corner grip after a writing-mode change once a pointer enters', 
 
   ctl.hostDisconnected();
 });
+
+test('dispose restores the handle and removes the controller from its host', async () => {
+  const screen = render(html`
+    <div data-testid="target" style="position: fixed; inline-size: 200px; block-size: 100px;">
+      <span data-testid="handle">Resize</span>
+    </div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const $handle = (await screen.getByTestId('handle').element()) as HTMLElement;
+  const host = createHost();
+  const removeController = vi.spyOn(host, 'removeController');
+  const ctl = new ResizeController(host, {
+    target: $target,
+    handle: $handle,
+    direction: 'vertical',
+  });
+
+  ctl.hostConnected();
+
+  expect($handle.getAttribute('tabindex')).toBe('0');
+  expect($handle.style.touchAction).toBe('none');
+
+  ctl.dispose();
+
+  expect($handle.hasAttribute('tabindex')).toBe(false);
+  expect($handle.style.cursor).toBe('');
+  expect($handle.style.touchAction).toBe('');
+  // The controller and its pointer gesture both leave the host.
+  expect(removeController).toHaveBeenCalledTimes(2);
+  expect(removeController).toHaveBeenCalledWith(ctl);
+
+  const before = $target.getBoundingClientRect();
+
+  $handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+
+  expect($target.getBoundingClientRect().height).toBe(before.height);
+});
+
+test('dispose keeps an author tabindex on the handle', async () => {
+  const screen = render(html`
+    <div data-testid="target" style="position: fixed; inline-size: 200px; block-size: 100px;">
+      <span data-testid="handle" tabindex="-1">Resize</span>
+    </div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const $handle = (await screen.getByTestId('handle').element()) as HTMLElement;
+  const ctl = new ResizeController(createHost(), {
+    target: $target,
+    handle: $handle,
+    direction: 'vertical',
+  });
+
+  ctl.hostConnected();
+  ctl.dispose();
+
+  expect($handle.getAttribute('tabindex')).toBe('-1');
+});
+
+test('dispose restores authored handle styles and keeps later tabindex changes', async () => {
+  const screen = render(html`
+    <div data-testid="target">
+      <span data-testid="handle" style="cursor: grab; touch-action: pan-x">Resize</span>
+    </div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const $handle = (await screen.getByTestId('handle').element()) as HTMLElement;
+  const ctl = new ResizeController(createHost(), {
+    target: $target,
+    handle: $handle,
+    direction: 'vertical',
+  });
+
+  ctl.hostConnected();
+  $handle.setAttribute('tabindex', '-1');
+  ctl.dispose();
+  ctl.dispose();
+
+  expect($handle.getAttribute('tabindex')).toBe('-1');
+  expect($handle.style.cursor).toBe('grab');
+  expect($handle.style.touchAction).toBe('pan-x');
+});
+
+test('dispose keeps handle styles changed by the author after attachment', async () => {
+  const screen = render(html`
+    <div data-testid="target"><span data-testid="handle">Resize</span></div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const $handle = (await screen.getByTestId('handle').element()) as HTMLElement;
+  const ctl = new ResizeController(createHost(), {
+    target: $target,
+    handle: $handle,
+    direction: 'vertical',
+  });
+
+  ctl.hostConnected();
+  $handle.style.cursor = 'grab';
+  $handle.style.touchAction = 'pan-y';
+  ctl.dispose();
+
+  expect($handle.style.cursor).toBe('grab');
+  expect($handle.style.touchAction).toBe('pan-y');
+});
+
+test('edge resize disposal restores the cursor and removes an idle grip', async () => {
+  const screen = render(html`
+    <div data-testid="target" style="width: 200px; height: 100px; cursor: grab"></div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const ctl = new ResizeController(createHost(), { target: $target, direction: 'both' });
+
+  ctl.hostConnected();
+
+  const box = $target.getBoundingClientRect();
+
+  $target.dispatchEvent(
+    new PointerEvent('pointermove', {
+      bubbles: true,
+      clientX: box.right - 2,
+      clientY: box.top + box.height / 2,
+    }),
+  );
+
+  expect($target.style.cursor).toBe('e-resize');
+  expect($target.querySelector('[data-rc-resize-corner]')).not.toBeNull();
+
+  ctl.dispose();
+
+  expect($target.style.cursor).toBe('grab');
+  expect($target.querySelector('[data-rc-resize-corner]')).toBeNull();
+  expect($target.style.position).toBe('');
+});
+
+test('setOptions replaces the handle and restores the previous handle', async () => {
+  const screen = render(html`
+    <div data-testid="target">
+      <span data-testid="first">First</span>
+      <span data-testid="second">Second</span>
+    </div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const $first = (await screen.getByTestId('first').element()) as HTMLElement;
+  const $second = (await screen.getByTestId('second').element()) as HTMLElement;
+  const ctl = new ResizeController(createHost(), {
+    target: $target,
+    handle: $first,
+    direction: 'vertical',
+  });
+
+  ctl.hostConnected();
+  ctl.setOptions({ handle: $second });
+
+  expect($first.hasAttribute('tabindex')).toBe(false);
+  expect($first.style.touchAction).toBe('');
+  expect($second.getAttribute('tabindex')).toBe('0');
+  expect($second.style.touchAction).toBe('none');
+
+  ctl.dispose();
+
+  expect($second.hasAttribute('tabindex')).toBe(false);
+});
+
+test('setOptions disables and re-enables pointer resizing on an explicit handle', async () => {
+  const screen = render(html`
+    <div data-testid="target" style="position: fixed; width: 200px; height: 100px">
+      <span data-testid="handle">Resize</span>
+    </div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const $handle = (await screen.getByTestId('handle').element()) as HTMLElement;
+  const onResizeStart = vi.fn();
+  const host = createHost();
+
+  vi.spyOn(host, 'addController').mockImplementation((controller) => controller.hostConnected?.());
+
+  const ctl = new ResizeController(host, {
+    target: $target,
+    handle: $handle,
+    direction: 'vertical',
+    onResizeStart,
+  });
+
+  ctl.setOptions({ direction: 'none' });
+  expect($handle.hasAttribute('tabindex')).toBe(false);
+
+  $handle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1 }));
+  expect(onResizeStart).not.toHaveBeenCalled();
+
+  ctl.setOptions({ direction: 'vertical' });
+  $handle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1 }));
+  expect(onResizeStart).toHaveBeenCalledOnce();
+
+  ctl.dispose();
+});
+
+test('disconnect restores handle styles and reconnect reapplies them', async () => {
+  const screen = render(html`
+    <div data-testid="target"><span data-testid="handle" style="cursor: grab">Resize</span></div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const $handle = (await screen.getByTestId('handle').element()) as HTMLElement;
+  const ctl = new ResizeController(createHost(), {
+    target: $target,
+    handle: $handle,
+    direction: 'vertical',
+  });
+
+  ctl.hostConnected();
+  ctl.hostDisconnected();
+  expect($handle.style.cursor).toBe('grab');
+
+  ctl.hostConnected();
+  expect($handle.style.cursor).toBe('s-resize');
+
+  ctl.dispose();
+  expect($handle.style.cursor).toBe('grab');
+});
+
+test('dispose stops an active resize and releases its pointer', async () => {
+  const screen = render(html`
+    <div data-testid="target" style="position: fixed; width: 200px; height: 100px">
+      <span data-testid="handle">Resize</span>
+    </div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const $handle = (await screen.getByTestId('handle').element()) as HTMLElement;
+  const release = vi.spyOn($handle, 'releasePointerCapture').mockImplementation(() => {});
+  const onResize = vi.fn();
+
+  vi.spyOn($handle, 'hasPointerCapture').mockReturnValue(true);
+
+  const host = createHost();
+
+  vi.spyOn(host, 'addController').mockImplementation((controller) => controller.hostConnected?.());
+
+  const ctl = new ResizeController(host, {
+    target: $target,
+    handle: $handle,
+    direction: 'vertical',
+    onResize,
+  });
+
+  $handle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1 }));
+  ctl.dispose();
+
+  $handle.dispatchEvent(
+    new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientY: 40 }),
+  );
+
+  expect(onResize).not.toHaveBeenCalled();
+  expect(release).toHaveBeenCalledWith(1);
+});

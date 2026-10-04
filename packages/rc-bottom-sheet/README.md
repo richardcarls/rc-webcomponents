@@ -58,6 +58,10 @@ For an embedded non-modal sheet, place the component in a positioned container,
 set `--rc-bottom-sheet-position: absolute`, and open it with `show()`. The sheet
 then docks to that container's block-end edge instead of the viewport.
 
+Set `resize="none"` to hold the sheet at its current snap point, for example
+while it has nothing more to reveal. The option is reactive, so restoring
+`resize="vertical"` re-enables dragging between snap points.
+
 List `snap-points` as CSS heights in ascending order. Any length works,
 including `calc()` and `var()`; each is resolved inside the sheet when a snap
 applies, so a custom property the page animates is read at its current value.
