@@ -54,6 +54,11 @@ target. Keep a direct-child handle at the top of the dialog so that target
 starts at the sheet's draggable edge; when authoring custom dialog padding,
 leave its block-start padding at zero.
 
+A handle can also hold the sheet's title, which widens the drag target to the
+whole header. Set `--rc-bottom-sheet-handle-offset` to a length, such as
+`0.75rem`, to keep the indicator in its own row at the top of the handle, and
+pad the title below it.
+
 For an embedded non-modal sheet, place the component in a positioned container,
 set `--rc-bottom-sheet-position: absolute`, and open it with `show()`. The sheet
 then docks to that container's block-end edge instead of the viewport.

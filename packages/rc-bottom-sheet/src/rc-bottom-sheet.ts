@@ -117,7 +117,7 @@ const LIGHT_DOM_CSS = `
   rc-bottom-sheet > dialog > [data-rc-bottom-sheet-handle]::before {
     content: '';
     position: absolute;
-    inset-block-start: 50%;
+    inset-block-start: var(--rc-bottom-sheet-handle-offset, 50%);
     inset-inline-start: 50%;
     inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
     block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);
@@ -312,6 +312,8 @@ function dockBlockBox(target: HTMLElement): DOMRect {
  * @cssprop [--rc-bottom-sheet-handle-inline-size=2rem] - Resize handle width.
  * @cssprop [--rc-bottom-sheet-handle-block-size=0.25rem] - Resize handle height.
  * @cssprop [--rc-bottom-sheet-handle-radius=999px] - Resize handle corner radius.
+ * @cssprop [--rc-bottom-sheet-handle-offset=50%] - Block-start position of the handle indicator's
+ *   center within its target. Set a length to pin it above a title inside the handle.
  * @cssprop [--rc-bottom-sheet-handle-target-inline-size=100%] - Pointer target width for a direct-child handle.
  * @cssprop [--rc-bottom-sheet-handle-target-block-size=3rem] - Pointer target height for a direct-child handle.
  * @cssprop [--rc-bottom-sheet-handle-target-margin=0] - Margin around a direct-child handle target.
