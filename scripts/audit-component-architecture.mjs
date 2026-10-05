@@ -96,8 +96,13 @@ export const PRIVATE_THEME_TOKEN_CONTRACTS = {
     '--_rc-button-ripple-easing',
     '--_rc-button-ripple-enabled',
     '--_rc-button-ripple-opacity',
+    // Grouped field legend: the caption line a group reserves (none when
+    // outlined) and the legend's float offset, shared by filled and outlined.
+    '--_rc-field-group-label-space',
     '--_rc-field-input-line-height',
     '--_rc-field-label-line-height',
+    '--_rc-field-legend-x',
+    '--_rc-field-legend-y',
   ]),
   'rc-theme-substrate': new Set(),
   'rc-theme-win31': new Set(),

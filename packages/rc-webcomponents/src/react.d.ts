@@ -750,6 +750,8 @@ export type RCFieldRef = HTMLElement & {
   counter: boolean;
   invalid: boolean;
   readonly control: RCFieldControl | null;
+  readonly group: HTMLFieldSetElement | null;
+  readonly controls: RCFieldControl[];
   focus(options?: FocusOptions): void;
   blur(): void;
   sync(): void;

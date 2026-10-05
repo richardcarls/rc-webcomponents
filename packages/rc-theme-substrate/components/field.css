@@ -54,7 +54,8 @@
 
   /* Same hover and focus treatment rc-select, rc-combobox, and rc-textarea use. */
   /* Read-only fields keep focus treatment but skip the hover affordance. */
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field:not([data-readonly]):hover::part(field) {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field:not([data-readonly]):hover::part(field) {
     border-color: color-mix(in srgb, var(--rc-accent, Highlight) 55%, var(--rc-border-color));
   }
 
@@ -62,7 +63,11 @@
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-invalid]::part(label) {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-invalid]::part(label),
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field[data-group][data-invalid]
+    > fieldset
+    > legend {
     color: var(--rc-field-error-color, red);
   }
 

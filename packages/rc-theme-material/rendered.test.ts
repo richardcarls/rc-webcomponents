@@ -133,7 +133,10 @@ test('filled Material field aligns a textarea gutter with its floated label', as
   expect(getComputedStyle($editor).paddingBlockStart).toBe('0px');
   expect(getComputedStyle($editor).paddingInlineStart).toBe('16px');
   expect($gutter.getBoundingClientRect().width).toBeGreaterThanOrEqual(48);
-  expect($label.getBoundingClientRect().bottom).toBeLessThanOrEqual($firstLine.getBoundingClientRect().top);
+
+  expect($label.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    $firstLine.getBoundingClientRect().top,
+  );
 
   $host.style.setProperty('--rc-textarea-active-line-bg', 'rgb(1, 2, 3)');
   await userEvent.click($firstLine);
@@ -214,6 +217,150 @@ test('filled Material field clears a page focus outline on its native control', 
   } finally {
     $reset.remove();
   }
+});
+
+test('a grouped Material field matches a single field with its legend as the floated label', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+  scope.style.cssText = 'display:grid;gap:16px;inline-size:20rem;';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label" for="single-amount">Amount per serving</label>
+      <input id="single-amount" type="number" value="1">
+    </rc-field>
+    <rc-field>
+      <fieldset>
+        <legend>Serving size</legend>
+        <input type="number" aria-label="Amount" value="1">
+        <input type="text" aria-label="Note" placeholder="e.g. heaping">
+        <select aria-label="Unit">
+          <option>g</option>
+          <option selected>cups</option>
+        </select>
+      </fieldset>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const [$single, $group] = scope.querySelectorAll('rc-field');
+  const singleLabel = $single.shadowRoot!.querySelector<HTMLElement>('[part="label"]')!;
+  const singleSurface = $single.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
+  const groupSurface = $group.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
+  const legend = $group.querySelector('legend')!;
+  const amount = $group.querySelector('input')!;
+  const unit = $group.querySelector('select')!;
+  const singleRect = singleSurface.getBoundingClientRect();
+  const groupRect = groupSurface.getBoundingClientRect();
+  const labelRect = singleLabel.getBoundingClientRect();
+  const legendRect = legend.getBoundingClientRect();
+
+  expect($group).toHaveAttribute('data-group');
+  expect(Math.round(groupRect.height)).toBe(Math.round(singleRect.height));
+  expect(legendRect.top - groupRect.top).toBeCloseTo(labelRect.top - singleRect.top, 0);
+  expect(legendRect.left - groupRect.left).toBeCloseTo(labelRect.left - singleRect.left, 0);
+  expect(getComputedStyle(legend).fontSize).toBe(getComputedStyle(singleLabel).fontSize);
+  expect(amount.getBoundingClientRect().width).toBeGreaterThan(unit.getBoundingClientRect().width);
+  expect(amount.getBoundingClientRect().right).toBeLessThanOrEqual(
+    unit.getBoundingClientRect().left,
+  );
+
+  // A grouped placeholder waits for focus, like a single field's under its resting label.
+  const note = $group.querySelector<HTMLInputElement>('input[aria-label="Note"]')!;
+
+  expect(getComputedStyle(note, '::placeholder').color).toBe('rgba(0, 0, 0, 0)');
+
+  await userEvent.click(unit);
+  await vi.waitFor(() => expect($group).toHaveAttribute('data-focused'));
+  expect(getComputedStyle(note, '::placeholder').color).not.toBe('rgba(0, 0, 0, 0)');
+  expect(getComputedStyle(unit).outlineStyle).toBe('none');
+  // The legend's color transitions with the label's.
+  await vi.waitFor(() =>
+    expect(getComputedStyle(legend).color).not.toBe(getComputedStyle(singleLabel).color),
+  );
+  await userEvent.keyboard('{Escape}');
+});
+
+test('a grouped Material legend rests and floats like a single field label', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+  scope.style.cssText = 'display:grid;gap:16px;inline-size:20rem;';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label" for="single-empty">Amount</label>
+      <input id="single-empty" type="number">
+    </rc-field>
+    <rc-field>
+      <fieldset>
+        <legend>Serving size</legend>
+        <input type="number" aria-label="Amount">
+        <select aria-label="Unit"><option>cups</option></select>
+      </fieldset>
+    </rc-field>
+    <rc-field class="rc-field--outlined">
+      <label slot="label" for="outlined-empty">Amount</label>
+      <input id="outlined-empty" type="number">
+    </rc-field>
+    <rc-field class="rc-field--outlined">
+      <fieldset>
+        <legend>Serving size</legend>
+        <input type="number" aria-label="Amount">
+        <select aria-label="Unit"><option>cups</option></select>
+      </fieldset>
+    </rc-field>
+    <rc-field>
+      <fieldset>
+        <legend>Price</legend>
+        <select aria-label="Currency"><option>USD</option></select>
+        <input type="number" aria-label="Amount">
+      </fieldset>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const [$single, $group, $outlinedSingle, $outlinedGroup, $leading] =
+    scope.querySelectorAll('rc-field');
+  const label = $single.shadowRoot!.querySelector<HTMLElement>('[part="label"]')!;
+  const legend = $group.querySelector('legend')!;
+  const offset = ($field: Element, $text: Element) =>
+    $text.getBoundingClientRect().top -
+    $field.shadowRoot!.querySelector('[part="field"]')!.getBoundingClientRect().top;
+  const waitForTransitions = () => new Promise((resolve) => setTimeout(resolve, 400));
+
+  // Resting: the empty, idle group's legend sits on the input line in body-large type.
+  expect(getComputedStyle(legend).fontSize).toBe(getComputedStyle(label).fontSize);
+  expect(getComputedStyle(legend).fontSize).toBe('16px');
+  await waitForTransitions();
+  expect(offset($group, legend)).toBeCloseTo(offset($single, label), 0);
+
+  expect(
+    offset($outlinedGroup, $outlinedGroup.querySelector('legend')!) -
+      offset($outlinedSingle, $outlinedSingle.shadowRoot!.querySelector('[part="label"]')!),
+  ).toBeCloseTo(0, 0);
+
+  // A group led by an addon keeps its legend floated.
+  expect(getComputedStyle($leading.querySelector('legend')!).fontSize).toBe('12px');
+
+  // Floated: focus lifts both to the caption line.
+  $group.querySelector('input')!.focus();
+  $single.querySelector('input')!.focus();
+  $group.querySelector('input')!.focus();
+  await vi.waitFor(() => expect($group).toHaveAttribute('data-focused'));
+  await waitForTransitions();
+  expect(getComputedStyle(legend).fontSize).toBe('12px');
+
+  $single.querySelector('input')!.value = '1';
+  $single.sync();
+  await settle(scope);
+  await waitForTransitions();
+  expect(offset($group, legend)).toBeCloseTo(offset($single, label), 0);
 });
 
 test('rc-select and rc-combobox lose their own chrome when composed as rc-field control providers', async () => {
