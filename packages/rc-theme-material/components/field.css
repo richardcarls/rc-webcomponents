@@ -162,6 +162,18 @@
   }
 
   /*
+   * rc-field resets the slotted native control's outline, but a ::slotted()
+   * rule loses to any page rule, such as a reset's Firefox :-moz-focusring
+   * outline. The field already shows focus, so clear the control's own
+   * outline from the light DOM too.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > :is(input, select, textarea):focus-visible {
+    outline: none;
+  }
+
+  /*
    * rc-select's own hover/focus-visible/open chrome is hardcoded border-color and
    * box-shadow, not resettable custom properties like the resting border above, so a
    * more specific selector is the only way to suppress it once rc-field's own #field

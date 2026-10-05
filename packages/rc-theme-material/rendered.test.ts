@@ -176,6 +176,46 @@ test('filled Material field shows a read-only textarea as a focusable field with
   await vi.waitFor(() => expect($field).toHaveAttribute('data-focused'));
 });
 
+test('filled Material field clears a page focus outline on its native control', async () => {
+  const scope = document.createElement('div');
+  const $reset = document.createElement('style');
+
+  scope.className = 'rc-theme-material';
+
+  // A page reset ordered before the theme, such as modern-normalize's Firefox
+  // :-moz-focusring rule. Layer order is fixed once theme.css loads, so the
+  // theme's earlier defaults sublayer stands in for the page's reset layer.
+  $reset.textContent = `
+    @layer rc-theme-material.defaults {
+      :focus-visible { outline: 1px dotted ButtonText; }
+    }
+  `;
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label" for="portion-quantity">Quantity</label>
+      <input id="portion-quantity" type="number" value="1">
+    </rc-field>
+  `;
+
+  document.head.append($reset);
+  document.body.append(scope);
+  await settle(scope);
+
+  const $field = scope.querySelector('rc-field')!;
+  const $input = scope.querySelector('input')!;
+
+  try {
+    await userEvent.click($input);
+    await vi.waitFor(() => expect($field).toHaveAttribute('data-focused'));
+    expect($input).toHaveFocus();
+    expect($input.matches(':focus-visible')).toBe(true);
+    expect(getComputedStyle($input).outlineStyle).toBe('none');
+  } finally {
+    $reset.remove();
+  }
+});
+
 test('rc-select and rc-combobox lose their own chrome when composed as rc-field control providers', async () => {
   const scope = document.createElement('div');
 

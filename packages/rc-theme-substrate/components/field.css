@@ -40,6 +40,18 @@
       box-shadow var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
   }
 
+  /*
+   * rc-field resets the slotted native control's outline, but a ::slotted()
+   * rule loses to any page rule, such as a reset's Firefox :-moz-focusring
+   * outline. The field already shows focus, so clear the control's own
+   * outline from the light DOM too.
+   */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field
+    > :is(input, select, textarea):focus-visible {
+    outline: none;
+  }
+
   /* Same hover and focus treatment rc-select, rc-combobox, and rc-textarea use. */
   /* Read-only fields keep focus treatment but skip the hover affordance. */
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field:not([data-readonly]):hover::part(field) {
