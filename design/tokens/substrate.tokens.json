@@ -7620,16 +7620,32 @@
           }
         },
         {
-          "name": "textarea/padding",
+          "name": "textarea/padding-block",
           "type": "FLOAT",
           "scopes": [
             "GAP",
             "WIDTH_HEIGHT"
           ],
           "codeSyntax": {
-            "WEB": "var(--rc-textarea-padding)"
+            "WEB": "var(--rc-textarea-padding-block)"
           },
-          "cssVar": "--rc-textarea-padding",
+          "cssVar": "--rc-textarea-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "textarea/padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-textarea-padding-inline)"
+          },
+          "cssVar": "--rc-textarea-padding-inline",
           "description": "Applied where rc-theme-substrate is themed.",
           "values": {
             "Value": 12

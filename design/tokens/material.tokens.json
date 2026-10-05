@@ -9503,6 +9503,40 @@
           }
         },
         {
+          "name": "list-item/details-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-details-color)"
+          },
+          "cssVar": "--rc-list-item-details-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/on-surface-variant",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "list-item/details-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-details-duration)"
+          },
+          "cssVar": "--rc-list-item-details-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-short2",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
           "name": "list-item/disabled-opacity",
           "type": "FLOAT",
           "scopes": [
@@ -13724,16 +13758,47 @@
           }
         },
         {
-          "name": "textarea/padding",
+          "name": "textarea/gutter-min-inline-size",
+          "type": "FLOAT",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-textarea-gutter-min-inline-size)"
+          },
+          "cssVar": "--rc-textarea-gutter-min-inline-size",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 48
+          }
+        },
+        {
+          "name": "textarea/padding-block",
           "type": "FLOAT",
           "scopes": [
             "GAP",
             "WIDTH_HEIGHT"
           ],
           "codeSyntax": {
-            "WEB": "var(--rc-textarea-padding)"
+            "WEB": "var(--rc-textarea-padding-block)"
           },
-          "cssVar": "--rc-textarea-padding",
+          "cssVar": "--rc-textarea-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 16
+          }
+        },
+        {
+          "name": "textarea/padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-textarea-padding-inline)"
+          },
+          "cssVar": "--rc-textarea-padding-inline",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 16
