@@ -65,7 +65,10 @@ short and tell the tool to read `AGENTS.md` before project work.
 - Shadow styles rely on shadow-tree scoping rather than document cascade layers.
   Injected light-DOM structural CSS belongs in the `rc-base` layer and uses one
   `data-rc-light-dom-base` sentinel per root. Theme styles declare their complete
-  layer order and keep component rules in the theme's `.components` layer.
+  layer order, starting with `rc-base` so injected structural CSS stays below the theme
+  whenever it loads, and keep component rules in the theme's `.components` layer. The
+  `.overrides` layer is only for contextual rules that must beat every component variant,
+  such as `rc-adaptive-menu` overflow rows.
   Remember that normal author rules outside a layer outrank layered rules, while
   `!important` reverses layer precedence.
 - Runtime measurement may write inline geometry styles, such as splitter sizes.

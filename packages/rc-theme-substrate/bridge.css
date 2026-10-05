@@ -1,4 +1,5 @@
-@layer rc-theme-substrate.defaults, rc-theme-substrate.bridge, rc-theme-substrate.components;
+@layer rc-base, rc-theme-substrate.defaults, rc-theme-substrate.bridge, rc-theme-substrate.components,
+  rc-theme-substrate.overrides;
 
 @layer rc-theme-substrate.bridge {
   /*

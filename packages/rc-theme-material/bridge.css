@@ -1,4 +1,5 @@
-@layer rc-theme-material.defaults, rc-theme-material.bridge, rc-theme-material.components;
+@layer rc-base, rc-theme-material.defaults, rc-theme-material.bridge, rc-theme-material.components,
+  rc-theme-material.overrides;
 
 @layer rc-theme-material.bridge {
   /*

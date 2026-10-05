@@ -679,6 +679,15 @@ test('adaptive overflow labels use Material menu-item typography', async () => {
     expect(style.lineHeight).toBe('24px');
   }
 
+  // Overflow rows take the adaptive menu's item tokens, not icon-button sizing
+  // and colors, whatever order the page declares its cascade layers in.
+  const overflowButton = scope.querySelector<HTMLElement>('rc-button')!;
+  const overflowButtonStyle = getComputedStyle(overflowButton);
+
+  expect(overflowButton).toHaveAttribute('data-rc-action-overflowed');
+  expect(overflowButtonStyle.getPropertyValue('--rc-button-icon-size').trim()).toBe('100%');
+  expect(overflowButtonStyle.getPropertyValue('--rc-button-bg').trim()).toBe('transparent');
+
   const submenu = scope.querySelector('rc-menu-button');
   const submenuTrigger = submenu?.querySelector<HTMLButtonElement>('[slot="trigger"]');
 

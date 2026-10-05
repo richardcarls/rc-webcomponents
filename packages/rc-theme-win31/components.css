@@ -1,4 +1,5 @@
-@layer rc-theme-win31.defaults, rc-theme-win31.bridge, rc-theme-win31.components;
+@layer rc-base, rc-theme-win31.defaults, rc-theme-win31.bridge, rc-theme-win31.components,
+  rc-theme-win31.overrides;
 
 @import './components/icons.css';
 @import './components/listbox.css';

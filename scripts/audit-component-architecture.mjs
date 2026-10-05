@@ -22,6 +22,7 @@ export const MARKER_CONTRACTS = {
   'data-rc-field-control': 'authored-behavior',
   'data-rc-icon': 'authored-structure',
   'data-rc-light-dom-base': 'style-sentinel',
+  'data-rc-list-item-toggle': 'authored-behavior',
   'data-rc-list-leading': 'authored-structure',
   'data-rc-list-position': 'component-state',
   'data-rc-list-supporting': 'authored-structure',
@@ -142,7 +143,9 @@ export const THEME_SELECTOR_BUDGETS = {
     // Grew with rc-field coverage: the field's own anatomy plus the resets a
     // control provider needs so its chrome stops nesting inside the field's.
     parts: 45,
-    markerHooks: 22,
+    // +1: the overrides layer keeps rc-adaptive-menu overflow rows on the
+    // menu's item tokens ([data-rc-action-overflowed]).
+    markerHooks: 23,
     importantDeclarations: 1,
     idSelectors: 0,
     modifierHooks: 0,
@@ -152,7 +155,10 @@ export const THEME_SELECTOR_BUDGETS = {
     // shadow-owned elements than the modern themes do. The !important
     // declarations are the icon-geometry and forced-colors overrides.
     parts: 115,
-    markerHooks: 19,
+    // +3: the overrides layer keeps rc-adaptive-menu overflow rows on the
+    // menu's item tokens, including the native-control reset Win31 needs
+    // because it draws buttons on the control rather than through tokens.
+    markerHooks: 22,
     importantDeclarations: 8,
     idSelectors: 0,
     modifierHooks: 0,
