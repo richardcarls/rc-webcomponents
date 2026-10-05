@@ -276,6 +276,110 @@ test('preserves horizontal scroll while selected chip geometry is remeasured', a
   expect(selectedRect.right).toBeLessThanOrEqual(rootRect.right + 0.5);
 });
 
+function lateMarkerGroup(name: string) {
+  return html`
+    <fieldset>
+      <legend>Sort by</legend>
+      <rc-chip-group
+        data-testid="host"
+        kind="filter"
+        selection="single"
+        layout="scroll"
+        style="inline-size: 12rem;"
+      >
+        ${Array.from(
+          { length: 8 },
+          (_, index) => html`
+            <rc-chip>
+              <label>
+                <input type="radio" name=${name} value=${index} ?checked=${index === 0} />
+                ${index === 0 ? html`<span data-selected-marker>✓✓</span>` : ''} Option ${index + 1}
+              </label>
+            </rc-chip>
+          `,
+        )}
+      </rc-chip-group>
+    </fieldset>
+  `;
+}
+
+function frames(count: number): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const step = (remaining: number) =>
+      remaining ? requestAnimationFrame(() => step(remaining - 1)) : resolve();
+
+    step(count);
+  });
+}
+
+/** Moves the check mark like an app re-rendering after its own state change. */
+async function moveMarkerLater(host: RCChipGroup, $to: HTMLInputElement): Promise<void> {
+  // The old mark leaves first, shortening the row so the scroll offset clamps,
+  // and the new one arrives in a later frame.
+  await frames(4);
+  host.querySelector('[data-selected-marker]')?.remove();
+  await frames(4);
+
+  const marker = document.createElement('span');
+
+  marker.dataset.selectedMarker = '';
+  marker.textContent = '✓✓';
+  $to.insertAdjacentElement('afterend', marker);
+  await frames(4);
+}
+
+test('keeps a selected end chip visible when an app moves the check mark later', async () => {
+  const screen = render(lateMarkerGroup('late-marker'));
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+  const radios = host.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+  const last = radios[radios.length - 1];
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
+  root.scrollLeft = root.scrollWidth;
+  expect(root.scrollLeft).toBeGreaterThan(0);
+
+  last.click();
+  await vi.waitFor(() => expect(last.checked).toBe(true));
+  await moveMarkerLater(host, last);
+
+  await vi.waitFor(() => {
+    const rootRect = root.getBoundingClientRect();
+    const selectedRect = last.closest('rc-chip')!.getBoundingClientRect();
+
+    expect(selectedRect.left).toBeGreaterThanOrEqual(rootRect.left - 0.5);
+    expect(selectedRect.right).toBeLessThanOrEqual(rootRect.right + 0.5);
+  });
+});
+
+test('a user scroll after selecting releases the chip from later reveals', async () => {
+  const screen = render(lateMarkerGroup('late-marker-released'));
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+  const radios = host.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+  const last = radios[radios.length - 1];
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
+  root.scrollLeft = root.scrollWidth;
+
+  last.click();
+  await vi.waitFor(() => expect(last.checked).toBe(true));
+  await frames(4);
+
+  // The user scrolls back to the start before the app's late re-render.
+  root.dispatchEvent(new WheelEvent('wheel', { deltaX: -1000, bubbles: true }));
+  root.scrollLeft = 0;
+  await moveMarkerLater(host, last);
+
+  expect(root.scrollLeft).toBe(0);
+});
+
 test('host expanded writes are silent', async () => {
   const listener = vi.fn();
   const screen = render(html`<rc-chip-group data-testid="host"></rc-chip-group>`);

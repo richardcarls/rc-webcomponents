@@ -88,6 +88,12 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   private _targetVisibilityFrame: number | undefined;
   private _pendingScrollOffset: number | undefined;
   private _pendingScrollTarget: HTMLElement | undefined;
+  /**
+   * The chip a selection last changed, kept in view while chips resize after
+   * the change (an app moving a check mark a frame later shortens the row and
+   * clamps the scroll offset) until the user scrolls the row themselves.
+   */
+  private _revealTarget: HTMLElement | undefined;
 
   /** Chips run vertically (vertical writing mode); drives aria-orientation. */
   @state()
@@ -216,6 +222,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
 
     this._pendingScrollOffset = undefined;
     this._pendingScrollTarget = undefined;
+    this._revealTarget = undefined;
     this._restoreAuthoredVariants();
   }
 
@@ -437,12 +444,19 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
           ($target): $target is HTMLElement =>
             $target instanceof HTMLElement && assigned.has($target),
         );
+
+      this._revealTarget = this._pendingScrollTarget;
     }
 
     queueMicrotask(() => {
       this._syncNativeSelection();
       this._scheduleMeasure();
     });
+  };
+
+  /** The user taking the row's scroll releases the pinned reveal target. */
+  private readonly _releaseRevealTarget = (): void => {
+    this._revealTarget = undefined;
   };
 
   private readonly _toggleExpanded = (): void => {
@@ -484,10 +498,13 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
     }
 
     if (this.layout !== 'auto') {
-      if (this.layout === 'scroll' && this._pendingScrollOffset !== undefined) {
-        const $target = this._pendingScrollTarget;
+      if (this.layout === 'scroll') {
+        const $target = this._pendingScrollTarget ?? this._revealTarget;
 
-        this._setInlineScrollOffset(this._pendingScrollOffset);
+        if (this._pendingScrollOffset !== undefined) {
+          this._setInlineScrollOffset(this._pendingScrollOffset);
+        }
+
         this._keepTargetVisible($target);
         this._scheduleTargetVisibility($target);
       }
@@ -539,7 +556,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
     }
 
     if (wasScrolling && this._resolvedLayout === 'scroll') {
-      const $target = this._pendingScrollTarget;
+      const $target = this._pendingScrollTarget ?? this._revealTarget;
 
       this._setInlineScrollOffset(scrollOffset);
       this._keepTargetVisible($target);
@@ -628,6 +645,9 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
         aria-orientation=${assist && this._inlineVertical ? 'vertical' : nothing}
         @keydown=${this._handleKeyDown}
         @change=${{ handleEvent: this._handleChange, capture: true }}
+        @pointerdown=${this._releaseRevealTarget}
+        @wheel=${{ handleEvent: this._releaseRevealTarget, passive: true }}
+        @touchstart=${{ handleEvent: this._releaseRevealTarget, passive: true }}
       >
         <span id="toggle-wrap" ?hidden=${!showToggle}>
           <rc-chip id="toggle" part="toggle" variant="assist">
