@@ -363,6 +363,14 @@ single-file iteration only: record screenshot baselines and benchmark budgets on
 wrapper (`yarn test:screenshots:update`, `yarn benchmark:browser:update`), since fonts and system
 libraries differ between hosts. Per-package `test:browser` scripts also run on the host.
 
+Agents run every suite, screenshot check, and final result through the wrapper. Host runs
+(`:host` scripts and per-package `test:browser`) are for one file or package while iterating;
+host screenshot comparisons fail by design. The container's memory is capped at
+`TEST_DOCKER_MEMORY` (default `4g`), so an overrun is killed inside it instead of taking down
+desktop apps. Never run two browser suites at once, including this repo's and a consuming
+app's. A "Browser connection was closed" error or a container exit of 137 usually means memory
+ran out: check `journalctl -k | grep -i oom` before treating it as a test failure.
+
 New package `test:browser` scripts must include `--run` (`vitest --run`). Without it
 Vitest defaults to watch mode. The root `test` script runs the shared test projects with
 Chromium locally; use `test:full` for the full local browser matrix, sequenced one browser at a

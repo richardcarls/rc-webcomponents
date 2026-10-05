@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 
 import {
   CONTAINER_SCRIPT,
+  DEFAULT_MEMORY,
   dockerRunArgs,
   imageTag,
   nodeModulesVolume,
@@ -93,7 +94,22 @@ test('mounts the checkout and gives every node_modules its own volume', () => {
   assert.ok(args.includes('rcwc-test-cache:/cache'));
   assert.ok(args.includes('rcwc-test-nm-root:/work/node_modules'));
   assert.ok(args.includes('rcwc-test-nm-packages-rc-common:/work/packages/rc-common/node_modules'));
-  assert.deepEqual(args.slice(0, 4), ['run', '--rm', '--init', '--ipc=host']);
+  assert.deepEqual(args.slice(0, 3), ['run', '--rm', '--init']);
+});
+
+test('caps container memory without swap and sizes shared memory', () => {
+  const flag = (args, name) => args[args.indexOf(name) + 1];
+  const args = argsFor();
+
+  assert.equal(flag(args, '--memory'), DEFAULT_MEMORY);
+  assert.equal(flag(args, '--memory-swap'), DEFAULT_MEMORY);
+  assert.equal(flag(args, '--shm-size'), '1g');
+  assert.ok(!args.includes('--ipc=host'));
+
+  const custom = argsFor({ env: { TEST_DOCKER_MEMORY: '6g' } });
+
+  assert.equal(flag(custom, '--memory'), '6g');
+  assert.equal(flag(custom, '--memory-swap'), '6g');
 });
 
 test('runs as the host user on Linux and as the image default elsewhere', () => {
