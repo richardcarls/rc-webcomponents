@@ -264,6 +264,7 @@ test('a grouped Material field matches a single field with its legend as the flo
   expect(legendRect.left - groupRect.left).toBeCloseTo(labelRect.left - singleRect.left, 0);
   expect(getComputedStyle(legend).fontSize).toBe(getComputedStyle(singleLabel).fontSize);
   expect(amount.getBoundingClientRect().width).toBeGreaterThan(unit.getBoundingClientRect().width);
+
   expect(amount.getBoundingClientRect().right).toBeLessThanOrEqual(
     unit.getBoundingClientRect().left,
   );
@@ -277,10 +278,12 @@ test('a grouped Material field matches a single field with its legend as the flo
   await vi.waitFor(() => expect($group).toHaveAttribute('data-focused'));
   expect(getComputedStyle(note, '::placeholder').color).not.toBe('rgba(0, 0, 0, 0)');
   expect(getComputedStyle(unit).outlineStyle).toBe('none');
+
   // The legend's color transitions with the label's.
   await vi.waitFor(() =>
     expect(getComputedStyle(legend).color).not.toBe(getComputedStyle(singleLabel).color),
   );
+
   await userEvent.keyboard('{Escape}');
 });
 
@@ -1004,6 +1007,7 @@ test('popups and their items keep the Material menu style inside foreign shadow 
 
   scope.className = 'rc-theme-material';
   adaptiveMenu.setAttribute('max-shown', '0');
+
   const label = Object.assign(document.createElement('span'), { textContent: 'Edit' });
   const action = document.createElement('button');
 
@@ -1015,6 +1019,7 @@ test('popups and their items keep the Material menu style inside foreign shadow 
   scope.append(host);
   document.body.append(scope);
   await settle(shadowRoot.host);
+
   await Promise.all(
     [adaptiveMenu, menuButton, menu].map(
       (element) => (element as Element & { updateComplete?: Promise<unknown> }).updateComplete,
@@ -1046,4 +1051,53 @@ test('popups and their items keep the Material menu style inside foreign shadow 
   }
 
   expect(getComputedStyle(label).letterSpacing).toBe('0.5px');
+});
+
+test('reorderable list handles and lifted items follow the Material dragged state', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-list reorderable>
+      <rc-list-item data-testid="lifted">
+        Alpha
+        <button slot="trailing" type="button" data-rc-reorder-handle aria-label="Reorder Alpha">⠿</button>
+      </rc-list-item>
+      <rc-list-item>
+        Beta
+        <button slot="trailing" type="button" data-rc-reorder-handle aria-label="Reorder Beta">⠿</button>
+      </rc-list-item>
+    </rc-list>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const $item = scope.querySelector('rc-list-item') as HTMLElement;
+  const $handle = $item.querySelector('button') as HTMLButtonElement;
+  const $row = $item.shadowRoot?.querySelector('[part="row"]') as HTMLElement;
+  const handleStyles = getComputedStyle($handle);
+
+  expect(handleStyles.touchAction).toBe('none');
+  expect(handleStyles.minBlockSize).toBe('48px');
+  expect(handleStyles.minInlineSize).toBe('48px');
+  expect(getComputedStyle($row).boxShadow).toBe('none');
+
+  $item.toggleAttribute('data-dragging', true);
+
+  const probe = document.createElement('div');
+
+  probe.style.background = 'var(--md-sys-color-surface-container-high)';
+  scope.append(probe);
+
+  // The row transitions its surface, so wait for it to settle.
+  await vi.waitFor(() => {
+    expect(getComputedStyle($row).boxShadow).not.toBe('none');
+    expect(getComputedStyle($row).backgroundColor).toBe(getComputedStyle(probe).backgroundColor);
+  });
+
+  expect(getComputedStyle($item).zIndex).toBe('1');
+
+  scope.remove();
 });
