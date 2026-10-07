@@ -144,6 +144,21 @@ export const listItemStyles = css`
     background: var(--rc-list-item-selected-background, transparent);
   }
 
+  /* The lifted item paints above the items it passes over. */
+  :host([data-dragging]) {
+    position: relative;
+    z-index: 1;
+  }
+
+  :host([data-dragging]) [part='row'] {
+    background: var(--rc-list-item-dragged-background, var(--rc-list-item-background, Canvas));
+    box-shadow: var(--rc-list-item-dragged-box-shadow, var(--rc-list-item-box-shadow, none));
+  }
+
+  :host([data-dragging]) [part='state-layer'] {
+    opacity: var(--rc-list-item-dragged-state-layer-opacity, 0.16);
+  }
+
   :host([disabled]) {
     cursor: default;
     opacity: var(--rc-list-item-disabled-opacity, 0.38);
@@ -154,7 +169,8 @@ export const listItemStyles = css`
       border-color: CanvasText;
     }
 
-    :host([selected]) [part='row'] {
+    :host([selected]) [part='row'],
+    :host([data-dragging]) [part='row'] {
       outline: 2px solid Highlight;
       outline-offset: -2px;
     }

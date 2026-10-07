@@ -568,6 +568,26 @@ export function ListDemo() {
           </rc-list>
         </section>
         <section>
+          <h3>Reorderable</h3>
+          <rc-list reorderable aria-label="Course order">
+            {['Starter', 'Main', 'Dessert'].map((course) => (
+              <rc-list-item key={course}>
+                {course}
+                <button
+                  slot="trailing"
+                  type="button"
+                  data-rc-reorder-handle=""
+                  aria-label={`Reorder ${course}`}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    drag_indicator
+                  </span>
+                </button>
+              </rc-list-item>
+            ))}
+          </rc-list>
+        </section>
+        <section>
           <h3>Segmented selection</h3>
           <rc-list variant="segmented" selection="single" aria-label="Delivery speed">
             <rc-list-item>

@@ -75,6 +75,7 @@ let detailsIdCounter = 0;
  * @attr default-expanded - Initial expanded state for uncontrolled usage.
  * @attr [has-leading] - Reflected when the leading slot has content.
  * @attr [has-trailing] - Reflected when the trailing slot has content.
+ * @attr [data-dragging] - Set by a `reorderable` parent list while this item is lifted.
  * @attr [data-rc-list-position] - Row position assigned by the parent list: from `aria-posinset`
  *   and `aria-setsize` when the row has them (a virtualized slice), otherwise from rendered order.
  *
@@ -106,6 +107,14 @@ let detailsIdCounter = 0;
  * @cssprop [--rc-list-item-focus-state-layer-opacity=0.1] - Focus state opacity.
  * @cssprop [--rc-list-item-pressed-state-layer-opacity=0.1] - Pressed state opacity.
  * @cssprop [--rc-list-item-disabled-opacity=0.38] - Disabled row opacity.
+ * @cssprop [--rc-list-item-dragged-background=Canvas] - Surface of an item lifted for reordering.
+ *   Falls back to `--rc-list-item-background`, then `Canvas`, so the item stays opaque.
+ * @cssprop [--rc-list-item-dragged-box-shadow=none] - Shadow of a lifted item. Falls back to
+ *   `--rc-list-item-box-shadow`.
+ * @cssprop [--rc-list-item-dragged-state-layer-opacity=0.16] - Lifted item state opacity.
+ * @cssprop [--rc-list-item-reorder-duration=0ms] - Duration of the shift that makes room for a
+ *   lifted item. Read from the item, applied from light-DOM base styles.
+ * @cssprop [--rc-list-item-reorder-easing=ease] - Easing of that shift.
  * @cssprop [--rc-list-item-transition-duration=0ms] - Row state transition duration.
  * @cssprop [--rc-list-item-transition-easing=ease] - Row state transition easing.
  * @cssprop [--rc-list-item-details-grid-column=content-start / trailing-end] - Details region

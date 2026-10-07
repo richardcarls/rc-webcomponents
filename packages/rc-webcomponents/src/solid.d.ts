@@ -98,6 +98,25 @@ export type RCListRef = HTMLElement & {
   variant: RCListVariant;
   selection: RCListSelection;
   ordered: boolean;
+  reorderable: boolean;
+  /** Overrides for the reorder announcements and handle hint. Positions are 1-based. */
+  reorderMessages: RCListReorderMessages | undefined;
+};
+
+/** Detail shape for `rc-list-reorder`. Positions are 0-based among visible items. */
+export type RCListReorderDetail = {
+  item: RCListItemRef;
+  from: number;
+  to: number;
+};
+
+/** Overridable `rc-list` reorder announcements. */
+export type RCListReorderMessages = {
+  instructions?: string;
+  grabbed?: (position: number, count: number) => string;
+  moved?: (position: number, count: number) => string;
+  dropped?: (position: number, count: number) => string;
+  canceled?: (position: number, count: number) => string;
 };
 
 /** Public API surface of `<rc-list-item>`. */
@@ -837,6 +856,9 @@ declare module 'solid-js' {
         variant?: RCListVariant;
         selection?: RCListSelection;
         ordered?: boolean | string;
+        reorderable?: boolean | string;
+        'prop:reorderMessages'?: RCListReorderMessages | undefined;
+        'on:rc-list-reorder'?: (e: CustomEvent<RCListReorderDetail>) => void;
       };
 
       'rc-list-item': JSX.HTMLAttributes<RCListItemRef> & {
