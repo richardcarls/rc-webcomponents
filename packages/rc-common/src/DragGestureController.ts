@@ -299,7 +299,11 @@ export class DragGestureController implements ReactiveController {
   };
 
   private _onLostPointerCapture = (event: PointerEvent): void => {
-    if (event.pointerId === this._pointerId) {
+    // Touch input is implicitly captured to the element first touched. When
+    // that is a descendant of the target, moving capture to the target makes
+    // the descendant lose it, and that event bubbles here; only the target's
+    // own loss ends the gesture.
+    if (event.pointerId === this._pointerId && event.composedPath()[0] === this._$target) {
       this._cancel(event);
     }
   };
