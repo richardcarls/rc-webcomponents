@@ -109,6 +109,7 @@ export class DragGestureController implements ReactiveController {
     Pick<DragGestureOptions, 'target' | 'canStart' | 'onStart' | 'onMove' | 'onEnd' | 'onCancel'>;
 
   private _$target: HTMLElement | null = null;
+  private _$captureTarget: Element | null = null;
   private _pointerId: number | null = null;
   private _startX = 0;
   private _startY = 0;
@@ -250,6 +251,13 @@ export class DragGestureController implements ReactiveController {
       return;
     }
 
+    // Direct-manipulation pointers are implicitly captured to the hit target.
+    // Keep that target instead of transferring capture to the delegated listener.
+    const $origin = event.composedPath()[0];
+
+    this._$captureTarget =
+      event.pointerType === 'mouse' || !($origin instanceof Element) ? $target : $origin;
+
     $target.addEventListener('pointermove', this._onPointerMove);
     $target.addEventListener('pointerup', this._onPointerUp);
     $target.addEventListener('pointercancel', this._onPointerCancel);
@@ -299,11 +307,7 @@ export class DragGestureController implements ReactiveController {
   };
 
   private _onLostPointerCapture = (event: PointerEvent): void => {
-    // Touch input is implicitly captured to the element first touched. When
-    // that is a descendant of the target, moving capture to the target makes
-    // the descendant lose it, and that event bubbles here; only the target's
-    // own loss ends the gesture.
-    if (event.pointerId === this._pointerId && event.composedPath()[0] === this._$target) {
+    if (event.pointerId === this._pointerId && event.composedPath()[0] === this._$captureTarget) {
       this._cancel(event);
     }
   };
@@ -344,7 +348,12 @@ export class DragGestureController implements ReactiveController {
     }
 
     this._activated = true;
-    this._capturePointer($target, event.pointerId);
+
+    const $captureTarget = this._$captureTarget ?? $target;
+
+    if (!$captureTarget.hasPointerCapture(event.pointerId)) {
+      this._capturePointer($captureTarget, event.pointerId);
+    }
 
     if (this._options.focusOnStart) {
       $target.focus();
@@ -383,14 +392,15 @@ export class DragGestureController implements ReactiveController {
 
   private _finish(): void {
     const $target = this._$target;
+    const $captureTarget = this._$captureTarget;
     const pointerId = this._pointerId;
 
     if ($target) {
       this._removeCycleListeners($target);
+    }
 
-      if (pointerId !== null) {
-        this._releasePointer($target, pointerId);
-      }
+    if ($captureTarget && pointerId !== null) {
+      this._releasePointer($captureTarget, pointerId);
     }
 
     this._reset();
@@ -435,7 +445,7 @@ export class DragGestureController implements ReactiveController {
     };
   }
 
-  private _capturePointer($target: HTMLElement, pointerId: number): void {
+  private _capturePointer($target: Element, pointerId: number): void {
     try {
       $target.setPointerCapture(pointerId);
     } catch (error) {
@@ -445,7 +455,7 @@ export class DragGestureController implements ReactiveController {
     }
   }
 
-  private _releasePointer($target: HTMLElement, pointerId: number): void {
+  private _releasePointer($target: Element, pointerId: number): void {
     try {
       if ($target.hasPointerCapture(pointerId)) {
         $target.releasePointerCapture(pointerId);
@@ -457,6 +467,7 @@ export class DragGestureController implements ReactiveController {
 
   private _reset(): void {
     this._pointerId = null;
+    this._$captureTarget = null;
     this._lastEvent = null;
     this._samples = [];
     this._activated = false;

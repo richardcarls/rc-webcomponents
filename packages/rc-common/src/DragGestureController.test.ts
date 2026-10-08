@@ -150,7 +150,27 @@ test('treats lost pointer capture as cancellation', async () => {
   expect($host.onCancel).toHaveBeenCalledOnce();
 });
 
-test('ignores a descendant losing its implicit touch capture', async () => {
+test('keeps touch capture on the original descendant', async () => {
+  const { $host, $handle } = await setup();
+  const $child = document.createElement('span');
+
+  $handle.append($child);
+
+  const childCapture = vi.spyOn($child, 'setPointerCapture');
+  const handleCapture = vi.spyOn($handle, 'setPointerCapture');
+
+  firePointer($child, 'pointerdown');
+  firePointer($child, 'pointermove', { clientX: 12 });
+  firePointer($child, 'pointermove', { clientX: 24 });
+  firePointer($child, 'pointerup', { clientX: 24 });
+
+  expect(childCapture).toHaveBeenCalledWith(1);
+  expect(handleCapture).not.toHaveBeenCalled();
+  expect($host.onCancel).not.toHaveBeenCalled();
+  expect($host.onEnd).toHaveBeenCalledOnce();
+});
+
+test('cancels when the original descendant loses touch capture', async () => {
   const { $host, $handle } = await setup();
   const $child = document.createElement('span');
 
@@ -158,13 +178,9 @@ test('ignores a descendant losing its implicit touch capture', async () => {
 
   firePointer($child, 'pointerdown');
   firePointer($child, 'pointermove', { clientX: 12 });
-  // Moving capture to the target releases the child's implicit touch capture.
   firePointer($child, 'lostpointercapture');
-  firePointer($child, 'pointermove', { clientX: 24 });
-  firePointer($child, 'pointerup', { clientX: 24 });
 
-  expect($host.onCancel).not.toHaveBeenCalled();
-  expect($host.onEnd).toHaveBeenCalledOnce();
+  expect($host.onCancel).toHaveBeenCalledOnce();
 });
 
 test('continues when synthetic pointer capture is unavailable', async () => {

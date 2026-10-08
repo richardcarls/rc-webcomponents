@@ -5,12 +5,14 @@ import { findNearestScrollAncestor } from './findNearestScrollAncestor.js';
 import {
   arrowKeys,
   getScrollOffset,
+  isReversed,
   logicalDelta,
   logicalRect,
   physicalOffset,
   renderedOrientation,
   resolveFlow,
   type Flow,
+  type LogicalAxis,
 } from './flow.js';
 import { LiveAnnouncer } from './LiveAnnouncer.js';
 
@@ -130,7 +132,7 @@ export class ReorderController implements ReactiveController {
   private readonly _gesture: DragGestureController;
   private _pending: { item: HTMLElement } | null = null;
   private _session: PointerSession | KeyboardSession | null = null;
-  private readonly _translated = new Set<HTMLElement>();
+  private readonly _translated = new Map<HTMLElement, { value: string; priority: string }>();
   private _announcer: LiveAnnouncer | null = null;
   private _autoScrollFrame = 0;
   private _restoringFocus = false;
@@ -281,7 +283,7 @@ export class ReorderController implements ReactiveController {
       slots,
       step: stepFor(slots, from),
       scroller,
-      scrollStart: getScrollOffset(scroller, 'block', flow),
+      scrollStart: scrollOffsetAlongBlock(scroller, flow),
       pointerDelta: 0,
       x: detail.x,
       y: detail.y,
@@ -313,7 +315,7 @@ export class ReorderController implements ReactiveController {
   }
 
   private _layoutPointer(session: PointerSession): void {
-    const scrolled = getScrollOffset(session.scroller, 'block', session.flow) - session.scrollStart;
+    const scrolled = scrollOffsetAlongBlock(session.scroller, session.flow) - session.scrollStart;
     const delta = session.pointerDelta + scrolled;
     const { slots, from } = session;
     const center = slots[from].start + delta + slots[from].size / 2;
@@ -355,25 +357,43 @@ export class ReorderController implements ReactiveController {
 
   private _translate($item: HTMLElement, blockOffset: number, flow: Flow): void {
     if (blockOffset === 0) {
-      if (this._translated.delete($item)) {
-        $item.style.removeProperty('translate');
-      }
+      this._restoreTranslation($item);
 
       return;
     }
 
     const { x, y } = physicalOffset({ inline: 0, block: blockOffset }, flow);
 
-    $item.style.translate = `${x}px ${y}px`;
-    this._translated.add($item);
+    if (!this._translated.has($item)) {
+      this._translated.set($item, {
+        value: $item.style.getPropertyValue('translate'),
+        priority: $item.style.getPropertyPriority('translate'),
+      });
+    }
+
+    $item.style.setProperty('translate', `${x}px ${y}px`);
   }
 
   private _clearTranslations(): void {
-    for (const $item of this._translated) {
-      $item.style.removeProperty('translate');
+    for (const $item of this._translated.keys()) {
+      this._restoreTranslation($item);
+    }
+  }
+
+  private _restoreTranslation($item: HTMLElement): void {
+    const original = this._translated.get($item);
+
+    if (!original) {
+      return;
     }
 
-    this._translated.clear();
+    this._translated.delete($item);
+
+    if (original.value) {
+      $item.style.setProperty('translate', original.value, original.priority);
+    } else {
+      $item.style.removeProperty('translate');
+    }
   }
 
   private _queueAutoScroll(): void {
@@ -396,13 +416,11 @@ export class ReorderController implements ReactiveController {
         return;
       }
 
-      const before = getScrollOffset(session.scroller, 'block', session.flow);
+      const before = scrollOffsetAlongBlock(session.scroller, session.flow);
 
-      session.scroller.scrollBy(
-        session.flow.block === 'x' ? { left: speed } : { top: speed },
-      );
+      session.scroller.scrollBy(session.flow.block === 'x' ? { left: speed } : { top: speed });
 
-      if (getScrollOffset(session.scroller, 'block', session.flow) !== before) {
+      if (scrollOffsetAlongBlock(session.scroller, session.flow) !== before) {
         this._layoutPointer(session);
         this._queueAutoScroll();
       }
@@ -473,6 +491,15 @@ export class ReorderController implements ReactiveController {
     }
 
     if (session?.mode === 'keyboard') {
+      const target = this._resolve(event);
+      const currentItem = this._items()[session.current];
+
+      if (!target || target.item !== currentItem) {
+        this._drop();
+
+        return;
+      }
+
       this._keyboardStep(event, session);
 
       return;
@@ -573,7 +600,10 @@ export class ReorderController implements ReactiveController {
     const next = event.relatedTarget;
 
     if (next instanceof Node) {
-      if (!session.item.contains(next)) {
+      const currentItem = this._items()[session.current];
+      const $handle = this._handleOf(currentItem);
+
+      if (!$handle?.contains(next)) {
         this._drop();
       }
 
@@ -593,7 +623,7 @@ export class ReorderController implements ReactiveController {
       const $item = items.includes(session.item) ? session.item : items[session.current];
       const $handle = this._handleOf($item);
 
-      if ($active && $active !== this._host.ownerDocument.body && !$item?.contains($active)) {
+      if ($active && $active !== this._host.ownerDocument.body && !$handle?.contains($active)) {
         this._drop();
       } else if ($handle && $active !== $handle) {
         $handle.focus();
@@ -608,7 +638,9 @@ export class ReorderController implements ReactiveController {
       return;
     }
 
-    if (!event.composedPath().includes(session.item)) {
+    const $handle = this._handleOf(this._items()[session.current]);
+
+    if (!$handle || !event.composedPath().includes($handle)) {
       this._drop();
     }
   };
@@ -708,6 +740,15 @@ export class ReorderController implements ReactiveController {
 
     this._clearTranslations();
   }
+}
+
+/** Scroller position along the host's block axis, using the scroller's own scroll origin. */
+function scrollOffsetAlongBlock(scroller: Element, hostFlow: Flow): number {
+  const scrollerFlow = resolveFlow(scroller);
+  const axis: LogicalAxis = scrollerFlow.block === hostFlow.block ? 'block' : 'inline';
+  const offset = getScrollOffset(scroller, axis, scrollerFlow);
+
+  return isReversed(axis, scrollerFlow) === hostFlow.blockReversed ? offset : -offset;
 }
 
 /** Distance the neighbors of the lifted slot shift by: its size plus the gap after it. */

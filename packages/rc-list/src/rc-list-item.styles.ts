@@ -6,6 +6,8 @@ export const listItemStyles = css`
     grid-column: 1 / -1;
     grid-template-columns: subgrid;
     min-inline-size: 0;
+    /* Keep internal z-index layers below a different item when it is lifted. */
+    isolation: isolate;
     color: var(--rc-list-item-color, CanvasText);
     color-scheme: inherit;
   }
