@@ -9555,6 +9555,43 @@
           }
         },
         {
+          "name": "list-item/dragged-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-dragged-background)"
+          },
+          "cssVar": "--rc-list-item-dragged-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-container-high",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "list-item/dragged-state-layer-opacity",
+          "type": "FLOAT",
+          "scopes": [
+            "OPACITY"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-dragged-state-layer-opacity)"
+          },
+          "cssVar": "--rc-list-item-dragged-state-layer-opacity",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "state/dragged-state-layer-opacity",
+              "collection": "State"
+            }
+          }
+        },
+        {
           "name": "list-item/focus-state-layer-opacity",
           "type": "FLOAT",
           "scopes": [
@@ -9686,6 +9723,38 @@
             "Value": {
               "alias": "state/pressed-state-layer-opacity",
               "collection": "State"
+            }
+          }
+        },
+        {
+          "name": "list-item/reorder-duration",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-reorder-duration)"
+          },
+          "cssVar": "--rc-list-item-reorder-duration",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/duration-medium1",
+              "collection": "Motion"
+            }
+          }
+        },
+        {
+          "name": "list-item/reorder-easing",
+          "type": "STRING",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-list-item-reorder-easing)"
+          },
+          "cssVar": "--rc-list-item-reorder-easing",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "motion/easing-standard",
+              "collection": "Motion"
             }
           }
         },
@@ -14754,6 +14823,12 @@
         "property": "--rc-list-item-divider",
         "raw": "1px solid var(--md-sys-color-outline-variant, GrayText)",
         "name": "list-item/divider"
+      },
+      {
+        "property": "--rc-list-item-dragged-box-shadow",
+        "raw": "var(--rc-shadow-level4, var(--rc-shadow, none))",
+        "name": "list-item/dragged-box-shadow",
+        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-listbox-option-transition",

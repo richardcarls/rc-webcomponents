@@ -66,6 +66,9 @@ export const REMOVED_TOKEN_CONTRACTS = new Set([
 ]);
 
 export const CROSS_COMPONENT_TOKEN_CONTRACTS = {
+  '--rc-chip-touch-target-block-size': ['rc-chip-group'],
+  '--rc-chip-touch-target-overlap-block-start': ['rc-combobox', 'rc-select'],
+  '--rc-chip-touch-target-overlap-block-end': ['rc-combobox', 'rc-select'],
   '--rc-chip-remove-offset-inline': ['rc-combobox', 'rc-select'],
   '--rc-chip-remove-target-size': ['rc-combobox', 'rc-select'],
   '--rc-anchor-viewport-block-size': ['rc-combobox'],
@@ -134,7 +137,8 @@ export const THEME_OWNED_TOKEN_PREFIXES = {
 
 export const THEME_SELECTOR_BUDGETS = {
   'rc-theme-material': {
-    parts: 108,
+    // Grouped fields and expanded list details add three part selectors.
+    parts: 111,
     // Dialog surfaces add no marker coupling; the retained growth comes from
     // documented chip-icon and visible-list-position contracts.
     markerHooks: 71,
@@ -144,7 +148,8 @@ export const THEME_SELECTOR_BUDGETS = {
     // (raw text included 3 !important mentions inside a prose comment).
     importantDeclarations: 9,
     idSelectors: 3,
-    modifierHooks: 59,
+    // Grouped and provider-backed field variants add fifteen modifier selectors.
+    modifierHooks: 74,
   },
   'rc-theme-substrate': {
     // Grew with rc-field coverage: the field's own anatomy plus the resets a
