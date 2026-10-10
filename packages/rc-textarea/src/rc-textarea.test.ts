@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
+import { logicalRect, resolveFlow } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import type { RCTextarea } from './rc-textarea.js';
@@ -152,13 +153,135 @@ describe('RCTextarea — basic rendering', () => {
 
     await expect.poll(() => $secondLine.classList.contains('line--active')).toBe(true);
 
+    await expect
+      .poll(() => getGutterCells(host).children[1]?.classList.contains('gutter-cell--active'))
+      .toBe(true);
+
     const highlight = getComputedStyle($secondLine, '::before');
     const padding = getComputedStyle($editor).paddingInlineStart;
+    const $gutterCells = getGutterCells(host);
+    const $gutterCell = $gutterCells.children[1] as HTMLElement;
+    const resolvedFlow = resolveFlow($editor);
+    const lineRect = logicalRect(
+      $secondLine.getBoundingClientRect(),
+      $editor.getBoundingClientRect(),
+      resolvedFlow,
+    );
+    const gutterRect = logicalRect(
+      $gutterCell.getBoundingClientRect(),
+      $gutterCells.getBoundingClientRect(),
+      resolvedFlow,
+    );
 
     expect(highlight.insetBlockStart, flowLabel(flow)).toBe('0px');
     expect(highlight.insetBlockEnd, flowLabel(flow)).toBe('0px');
     expect(parseFloat(highlight.insetInlineStart), flowLabel(flow)).toBe(-parseFloat(padding));
     expect(getComputedStyle($secondLine).clipPath, flowLabel(flow)).toBe('none');
+    expect(Math.abs(gutterRect.blockStart - lineRect.blockStart), flowLabel(flow)).toBeLessThan(1);
+    expect(Math.abs(gutterRect.blockSize - lineRect.blockSize), flowLabel(flow)).toBeLessThan(1);
+
+    host.parentElement!.dir = flow.dir === 'ltr' ? 'rtl' : 'ltr';
+
+    await new Promise(requestAnimationFrame);
+
+    const flippedFlow = resolveFlow($editor);
+    const flippedLine = logicalRect(
+      $secondLine.getBoundingClientRect(),
+      $editor.getBoundingClientRect(),
+      flippedFlow,
+    );
+    const flippedGutter = logicalRect(
+      $gutterCell.getBoundingClientRect(),
+      $gutterCells.getBoundingClientRect(),
+      flippedFlow,
+    );
+
+    expect(
+      Math.abs(flippedGutter.blockStart - flippedLine.blockStart),
+      flowLabel(flow),
+    ).toBeLessThan(1);
+
+    expect(Math.abs(flippedGutter.blockSize - flippedLine.blockSize), flowLabel(flow)).toBeLessThan(
+      1,
+    );
+  });
+
+  test('aligns wrapped gutter cells in vertical writing', async () => {
+    const host = await renderTextarea(
+      inFlow(
+        html`
+          <rc-textarea
+            data-testid="host"
+            line-numbers
+            word-wrap
+            style="inline-size: 6rem; block-size: 12rem"
+          >
+            <textarea aria-label="Notes"></textarea>
+          </rc-textarea>
+        `,
+        { dir: 'ltr', writingMode: 'vertical-rl' },
+      ),
+    );
+
+    host.value = 'A long sentence that wraps across multiple columns\nShort';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $gutterCells = getGutterCells(host);
+    const flow = resolveFlow($editor);
+    const lineRect = logicalRect(
+      $editor.querySelector<HTMLElement>('.line')!.getBoundingClientRect(),
+      $editor.getBoundingClientRect(),
+      flow,
+    );
+    const gutterRect = logicalRect(
+      ($gutterCells.children[0] as HTMLElement).getBoundingClientRect(),
+      $gutterCells.getBoundingClientRect(),
+      flow,
+    );
+
+    expect(lineRect.blockSize).toBeGreaterThan(20);
+    expect(Math.abs(gutterRect.blockSize - lineRect.blockSize)).toBeLessThan(1);
+  });
+
+  test('realigns gutter cells after an ancestor writing-mode change', async () => {
+    const host = await renderTextarea(
+      inFlow(
+        html`
+          <rc-textarea data-testid="host" line-numbers style="inline-size: 16rem; block-size: 8rem">
+            <textarea aria-label="Notes"></textarea>
+          </rc-textarea>
+        `,
+        { dir: 'ltr', writingMode: 'horizontal-tb' },
+      ),
+    );
+
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    host.parentElement!.style.writingMode = 'vertical-rl';
+
+    await vi.waitFor(() => {
+      const $editor = getEditor(host);
+      const $gutterCells = getGutterCells(host);
+      const flow = resolveFlow($editor);
+      const lineRect = logicalRect(
+        $editor.querySelector<HTMLElement>('.line')!.getBoundingClientRect(),
+        $editor.getBoundingClientRect(),
+        flow,
+      );
+      const gutterRect = logicalRect(
+        ($gutterCells.children[0] as HTMLElement).getBoundingClientRect(),
+        $gutterCells.getBoundingClientRect(),
+        flow,
+      );
+
+      expect(flow.block).toBe('x');
+      expect(Math.abs(gutterRect.blockStart - lineRect.blockStart)).toBeLessThan(1);
+      expect(Math.abs(gutterRect.blockSize - lineRect.blockSize)).toBeLessThan(1);
+    });
   });
 
   test.each(FLOW_FIXTURES)(
@@ -442,6 +565,27 @@ describe('RCTextarea — value', () => {
 });
 
 describe('RCTextarea — readOnly', () => {
+  test('does not add inline overflow for a highlighted short line', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" style="inline-size: 16rem; --rc-textarea-active-line-bg: red">
+        <textarea aria-label="Notes" readonly></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $secondLine = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+
+    expect($editor.scrollWidth).toBe($editor.clientWidth);
+
+    $secondLine.classList.add('line--active');
+
+    expect($editor.scrollWidth).toBe($editor.clientWidth);
+  });
+
   test('follows the native textarea readonly attribute in both directions', async () => {
     const host = await renderTextarea(html`
       <rc-textarea data-testid="host">
@@ -492,8 +636,9 @@ describe('RCTextarea — readOnly', () => {
     expect(host.value).toBe('Keep this');
     expect(changes).not.toHaveBeenCalled();
 
-    const selection = (host.shadowRoot as ShadowRoot & { getSelection?: () => Selection }).getSelection?.()
-      ?? document.getSelection()!;
+    const selection =
+      (host.shadowRoot as ShadowRoot & { getSelection?: () => Selection }).getSelection?.() ??
+      document.getSelection()!;
 
     selection.selectAllChildren($editor);
     expect(selection.toString()).toContain('Keep this');
@@ -508,7 +653,10 @@ describe('RCTextarea — readOnly', () => {
     `);
 
     expect(getComputedStyle(getEditor(host)).paddingInlineStart).toBe('16px');
-    expect(getComputedStyle(host.shadowRoot!.querySelector('#root')!).borderTopStyle).not.toBe('none');
+
+    expect(getComputedStyle(host.shadowRoot!.querySelector('#root')!).borderTopStyle).not.toBe(
+      'none',
+    );
   });
 });
 

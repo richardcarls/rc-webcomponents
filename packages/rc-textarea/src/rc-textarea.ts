@@ -2,7 +2,13 @@ import { LitElement, html } from 'lit';
 import type { CSSResultGroup } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { NativeChildController, warnMissingDirectChild } from '@rcarls/rc-common';
+import {
+  FlowController,
+  logicalRect,
+  NativeChildController,
+  resolveFlow,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 import { RCDocument, getText } from './document.js';
 import {
   getSelectionFocusNode,
@@ -60,12 +66,14 @@ function getFoldBounds(value: string, folds: readonly FoldDecoration[]): FoldBou
       return [];
     }
 
-    return [{
-      from: starts[fold.fromLine - 1]!,
-      to: starts[fold.toLine - 1]! + lines[fold.toLine - 1]!.length,
-      anchorEnd: starts[fold.fromLine - 2]! + lines[fold.fromLine - 2]!.length,
-      reveal: fold.reveal,
-    }];
+    return [
+      {
+        from: starts[fold.fromLine - 1]!,
+        to: starts[fold.toLine - 1]! + lines[fold.toLine - 1]!.length,
+        anchorEnd: starts[fold.fromLine - 2]! + lines[fold.fromLine - 2]!.length,
+        reveal: fold.reveal,
+      },
+    ];
   });
 }
 
@@ -329,6 +337,8 @@ export class RCTextarea extends LitElement {
     },
   });
 
+  protected readonly _flowController = new FlowController(this);
+
   /** Plugin-owned decorations */
   protected _pluginDecorations = new Map<string, Decoration>();
 
@@ -376,8 +386,15 @@ export class RCTextarea extends LitElement {
 
   protected _resizeObserver: ResizeObserver | null = null;
 
+  protected _gutterBlockAxis: 'x' | 'y' | null = null;
+
   /** Cached per-line gutter labels from the last render — reused by ResizeObserver. */
-  protected _gutterLabels: (string | HTMLElement | null | { number: string; content: string | HTMLElement })[] = [];
+  protected _gutterLabels: (
+    | string
+    | HTMLElement
+    | null
+    | { number: string; content: string | HTMLElement }
+  )[] = [];
 
   /** Gutter cells with explicitly accessible plugin controls. */
   protected _accessibleGutterLines = new Set<number>();
@@ -548,6 +565,10 @@ export class RCTextarea extends LitElement {
     if (changed) {
       // The plugin transform hook only applies while read-only.
       this._scheduleRender();
+    }
+
+    if (this._$editor && resolveFlow(this._$editor).block !== this._gutterBlockAxis) {
+      this._syncGutterHeights();
     }
   }
 
@@ -754,12 +775,15 @@ export class RCTextarea extends LitElement {
     for (const fold of this._foldBounds) {
       const intersects = start < fold.to && end > fold.from;
       const entersHiddenLine = start === end && start >= fold.from && start <= fold.to;
-      const deletesIntoFold = start === end && (
-        inputType.endsWith('Forward') && start === fold.anchorEnd ||
-        inputType.endsWith('Backward') && start === fold.to + 1
-      );
-      const insertsLineIntoFold = start === end && start === fold.anchorEnd &&
-        (inputType === 'insertParagraph' || inputType === 'insertLineBreak' ||
+      const deletesIntoFold =
+        start === end &&
+        ((inputType.endsWith('Forward') && start === fold.anchorEnd) ||
+          (inputType.endsWith('Backward') && start === fold.to + 1));
+      const insertsLineIntoFold =
+        start === end &&
+        start === fold.anchorEnd &&
+        (inputType === 'insertParagraph' ||
+          inputType === 'insertLineBreak' ||
           inputType === 'insertFromPaste');
 
       if (intersects || entersHiddenLine || deletesIntoFold || insertsLineIntoFold) {
@@ -835,8 +859,10 @@ export class RCTextarea extends LitElement {
     if (selection) {
       this._savedSelection = selection;
 
-      if (selection.anchorOffset === selection.focusOffset &&
-          this._revealFoldAtOffset(selection.focusOffset)) {
+      if (
+        selection.anchorOffset === selection.focusOffset &&
+        this._revealFoldAtOffset(selection.focusOffset)
+      ) {
         return;
       }
 
@@ -975,9 +1001,9 @@ export class RCTextarea extends LitElement {
   };
 
   protected _isWidgetEvent(event: Event): boolean {
-    return event.composedPath().some(
-      ($node) => $node instanceof HTMLElement && $node.classList.contains('widget'),
-    );
+    return event
+      .composedPath()
+      .some(($node) => $node instanceof HTMLElement && $node.classList.contains('widget'));
   }
 
   protected _insertText(text: string): void {
@@ -1098,8 +1124,12 @@ export class RCTextarea extends LitElement {
   }
 
   protected _onCopy = (event: ClipboardEvent): void => {
-    if (!this._$editor || this._isWidgetEvent(event) || !event.clipboardData ||
-        (!this._$editor.querySelector('.widget') && this._foldedRanges.length === 0)) {
+    if (
+      !this._$editor ||
+      this._isWidgetEvent(event) ||
+      !event.clipboardData ||
+      (!this._$editor.querySelector('.widget') && this._foldedRanges.length === 0)
+    ) {
       return;
     }
 
@@ -1537,8 +1567,10 @@ export class RCTextarea extends LitElement {
 
       this._hiddenGutterLines = new Set(
         this._foldedRanges.flatMap((fold) =>
-          Array.from({ length: Math.max(0, fold.toLine - fold.fromLine + 1) },
-            (_, index) => fold.fromLine + index),
+          Array.from(
+            { length: Math.max(0, fold.toLine - fold.fromLine + 1) },
+            (_, index) => fold.fromLine + index,
+          ),
         ),
       );
 
@@ -1550,14 +1582,15 @@ export class RCTextarea extends LitElement {
       const $focusedWidget = this.shadowRoot?.activeElement;
       // A presentation refresh may run before selectionchange updates the saved
       // offsets. Preserve the live range unless a source edit has queued a new caret.
-      let selectionToRestore = getText(this._$editor) === renderValue
-        ? saveSelection(this._$editor) ?? this._savedSelection
-        : this._savedSelection;
+      let selectionToRestore =
+        getText(this._$editor) === renderValue
+          ? (saveSelection(this._$editor) ?? this._savedSelection)
+          : this._savedSelection;
 
       if (selectionToRestore?.anchorOffset === selectionToRestore?.focusOffset) {
         const focusOffset = selectionToRestore?.focusOffset;
-        const hidden = this._foldBounds.filter((fold) =>
-          focusOffset !== undefined && focusOffset >= fold.from && focusOffset <= fold.to,
+        const hidden = this._foldBounds.filter(
+          (fold) => focusOffset !== undefined && focusOffset >= fold.from && focusOffset <= fold.to,
         );
 
         if (hidden.length > 0) {
@@ -1570,8 +1603,12 @@ export class RCTextarea extends LitElement {
 
       this._document.build(renderValue, allDecorations);
 
-      if ($focusedWidget instanceof HTMLElement && $focusedWidget !== this._$editor &&
-          $focusedWidget.isConnected && this.shadowRoot?.activeElement !== $focusedWidget) {
+      if (
+        $focusedWidget instanceof HTMLElement &&
+        $focusedWidget !== this._$editor &&
+        $focusedWidget.isConnected &&
+        this.shadowRoot?.activeElement !== $focusedWidget
+      ) {
         $focusedWidget.focus({ preventScroll: true });
       }
 
@@ -1655,12 +1692,12 @@ export class RCTextarea extends LitElement {
   }
 
   /**
-   * Synchronize the pixel height of each gutter cell to match the
+   * Synchronize the block size of each gutter cell to match the
    * corresponding `.line` element in the editor.
    *
    * In non-word-wrap mode without block widgets the gutter uses a uniform
    * line height. Wrapped lines and block widgets use per-line heights instead.
-   * Also copies the editor's computed `paddingTop`/`paddingBottom` to the
+   * Also copies the editor's computed block padding to the
    * gutter to compensate for browser UA overrides on contenteditable.
    */
   protected _syncGutterHeights(): void {
@@ -1668,31 +1705,35 @@ export class RCTextarea extends LitElement {
       return;
     }
 
-    // Sync vertical padding from the editor's computed values.
+    // Sync block padding from the editor's computed values.
     // Browser UA overrides (Chrome/Firefox on contenteditable) cause 0.5em to
     // resolve to different pixel values on the gutter vs the editor, producing
     // a constant vertical offset.
     const computedStyle = getComputedStyle(this._$editor);
-    const paddingTop = computedStyle.paddingTop;
-    const paddingBottom = computedStyle.paddingBottom;
+    const paddingBlockStart = computedStyle.paddingBlockStart;
+    const paddingBlockEnd = computedStyle.paddingBlockEnd;
 
-    if (this._$gutterCells.style.paddingTop !== paddingTop) {
-      this._$gutterCells.style.paddingTop = paddingTop;
+    if (this._$gutterCells.style.paddingBlockStart !== paddingBlockStart) {
+      this._$gutterCells.style.paddingBlockStart = paddingBlockStart;
     }
 
-    if (this._$gutterCells.style.paddingBottom !== paddingBottom) {
-      this._$gutterCells.style.paddingBottom = paddingBottom;
+    if (this._$gutterCells.style.paddingBlockEnd !== paddingBlockEnd) {
+      this._$gutterCells.style.paddingBlockEnd = paddingBlockEnd;
     }
 
     const $lineEls = this._$editor.querySelectorAll<HTMLElement>('.line');
     const $spans = this._$gutterCells.children;
+    const flow = resolveFlow(this._$editor);
+    const editorRect = this._$editor.getBoundingClientRect();
+
+    this._gutterBlockAxis = flow.block;
 
     if (!this.wordWrap && !this._$editor.querySelector('.widget--block')) {
       // Chrome UA overrides line-height on contenteditable (even via var() fallback,
       // but not inline styles), giving the editor a different natural cell height
-      // than the gutter's CSS 1.5× value. Mirror the first line's actual height.
+      // than the gutter's CSS 1.5× value. Mirror the first line's actual block size.
       if ($lineEls.length > 0) {
-        const lineHeight = `${$lineEls[0].getBoundingClientRect().height}px`;
+        const lineHeight = `${logicalRect($lineEls[0].getBoundingClientRect(), editorRect, flow).blockSize}px`;
 
         if (this._$gutterCells.style.lineHeight !== lineHeight) {
           this._$gutterCells.style.lineHeight = lineHeight;
@@ -1700,24 +1741,28 @@ export class RCTextarea extends LitElement {
       }
 
       for (let i = 0; i < $spans.length; i++) {
-        ($spans[i] as HTMLElement).style.height = '';
+        ($spans[i] as HTMLElement).style.blockSize = '';
       }
 
       return;
     }
 
-    // word-wrap: per-span explicit heights drive alignment; clear any forced line-height.
+    // word-wrap: per-span explicit block sizes drive alignment; clear any forced line-height.
     if (this._$gutterCells.style.lineHeight) {
       this._$gutterCells.style.lineHeight = '';
     }
 
     for (let i = 0; i < $lineEls.length && i < $spans.length; i++) {
-      const height = $lineEls[i]!.getBoundingClientRect().height;
-      const heightStyle = `${height}px`;
+      const blockSize = logicalRect(
+        $lineEls[i]!.getBoundingClientRect(),
+        editorRect,
+        flow,
+      ).blockSize;
+      const blockSizeStyle = `${blockSize}px`;
       const $span = $spans[i] as HTMLElement;
 
-      if ($span.style.height !== heightStyle) {
-        $span.style.height = heightStyle;
+      if ($span.style.blockSize !== blockSizeStyle) {
+        $span.style.blockSize = blockSizeStyle;
       }
     }
   }
@@ -1728,7 +1773,9 @@ export class RCTextarea extends LitElement {
    * `_gutterLabels` is updated first; otherwise the cached labels are reused
    * (called by the `ResizeObserver` without a new render pass).
    */
-  protected _syncGutter(labels?: (string | HTMLElement | null | { number: string; content: string | HTMLElement })[]): void {
+  protected _syncGutter(
+    labels?: (string | HTMLElement | null | { number: string; content: string | HTMLElement })[],
+  ): void {
     if (!this.lineNumbers && !this.gutter) {
       return;
     }
