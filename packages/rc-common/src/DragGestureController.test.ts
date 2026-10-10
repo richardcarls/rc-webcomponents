@@ -183,6 +183,55 @@ test('cancels when the original descendant loses touch capture', async () => {
   expect($host.onCancel).toHaveBeenCalledOnce();
 });
 
+test('cancels when a removed touch descendant loses capture', async () => {
+  const { $host, $handle } = await setup();
+  const $child = document.createElement('span');
+
+  $handle.append($child);
+
+  firePointer($child, 'pointerdown');
+  firePointer($child, 'pointermove', { clientX: 12 });
+  $child.remove();
+  firePointer($child, 'lostpointercapture');
+  firePointer($handle, 'pointerdown');
+
+  expect($host.onCancel).toHaveBeenCalledOnce();
+  expect($host.onStart).toHaveBeenCalledTimes(2);
+});
+
+test('cancels when capture loss for a removed descendant reaches the document', async () => {
+  const { $host, $handle } = await setup();
+  const $child = document.createElement('span');
+
+  $handle.append($child);
+
+  firePointer($child, 'pointerdown');
+  firePointer($child, 'pointermove', { clientX: 12 });
+  $child.remove();
+  firePointer(document, 'lostpointercapture');
+  firePointer($handle, 'pointerdown');
+
+  expect($host.onCancel).toHaveBeenCalledOnce();
+  expect($host.onStart).toHaveBeenCalledTimes(2);
+});
+
+test('ends a drag when a removed touch descendant releases outside the target', async () => {
+  const { $host, $handle } = await setup();
+  const $child = document.createElement('span');
+
+  $handle.append($child);
+
+  firePointer($child, 'pointerdown');
+  firePointer($child, 'pointermove', { clientX: 12 });
+  $child.remove();
+  firePointer(document.body, 'pointerup', { clientX: 24 });
+  firePointer($handle, 'pointerdown');
+
+  expect($host.onCancel).toHaveBeenCalledOnce();
+  expect($host.onEnd).not.toHaveBeenCalled();
+  expect($host.onStart).toHaveBeenCalledTimes(2);
+});
+
 test('continues when synthetic pointer capture is unavailable', async () => {
   const { $host, $handle } = await setup();
   const capture = vi.spyOn($handle, 'setPointerCapture').mockImplementation(() => {
