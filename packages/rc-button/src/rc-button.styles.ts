@@ -83,7 +83,13 @@ export const buttonStyles = css`
     box-shadow: var(--rc-button-shadow, revert);
     font: var(--rc-button-font, revert);
     white-space: nowrap;
-    overflow: hidden;
+    /*
+     * clip, not hidden: a hidden overflow makes the button a scroll
+     * container, whose automatic minimum size is zero, so content-sized
+     * contexts (a min-content table column, an auto grid track) squeeze it
+     * narrower than its label and the label spills past the host.
+     */
+    overflow: clip;
     box-sizing: border-box;
     z-index: 0;
     transition: var(--rc-button-transition, revert);
