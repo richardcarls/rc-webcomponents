@@ -98,6 +98,8 @@ declare global {
  *   generated multi-select chips.
  * @cssprop [--rc-chip-remove-offset-inline=0.125rem] - Inherited edge offset reserved by
  *   generated multi-select chips.
+ * @cssprop [--rc-chip-touch-target-overlap-block-start=0px] - Space returned between wrapped chip rows after a touch target overlaps the field's leading padding.
+ * @cssprop [--rc-chip-touch-target-overlap-block-end=0px] - Space returned between wrapped chip rows after a touch target overlaps the field's trailing padding.
  * @cssprop [--rc-combobox-toggle-size=1.1em] - Inline size of the toggle button's icon area.
  */
 export class RCCombobox extends RCSelect {

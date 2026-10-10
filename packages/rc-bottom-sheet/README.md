@@ -54,6 +54,11 @@ target. Keep a direct-child handle at the top of the dialog so that target
 starts at the sheet's draggable edge; when authoring custom dialog padding,
 leave its block-start padding at zero.
 
+A handle can also hold the sheet's title, which widens the drag target to the
+whole header. Set `--rc-bottom-sheet-handle-offset` to a length, such as
+`0.75rem`, to keep the indicator in its own row at the top of the handle, and
+pad the title below it.
+
 For an embedded non-modal sheet, place the component in a positioned container,
 set `--rc-bottom-sheet-position: absolute`, and open it with `show()`. The sheet
 then docks to that container's block-end edge instead of the viewport.
@@ -61,6 +66,14 @@ then docks to that container's block-end edge instead of the viewport.
 Set `resize="none"` to hold the sheet at its current snap point, for example
 while it has nothing more to reveal. The option is reactive, so restoring
 `resize="vertical"` re-enables dragging between snap points.
+
+The sheet stays docked at its block-end edge: snapping sets only its height,
+and its position is left to CSS. A software keyboard that resizes the viewport
+(`interactive-widget=resizes-content`) re-applies the current snap point above
+the keyboard. When a field inside the sheet takes focus, the sheet scrolls it
+into view within its own scroll containers, and grows past its snap height and
+maximum block size only when scrolling cannot reveal it, returning to its snap
+point once focus leaves the sheet.
 
 List `snap-points` as CSS heights in ascending order. Any length works,
 including `calc()` and `var()`; each is resolved inside the sheet when a snap

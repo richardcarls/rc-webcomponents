@@ -40,6 +40,12 @@
       "types": "./src/react.d.ts"
     },
     "./themes/base.css": "./themes/base.css",
+    "./rc-textarea/folding": {
+      "import": {
+        "types": "./dist/types/rc-textarea/folding.d.ts",
+        "default": "./dist/rc-textarea/folding.js"
+      }
+    },
     "./rc-accordion": {
       "import": {
         "types": "./dist/types/rc-accordion/index.d.ts",

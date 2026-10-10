@@ -22,9 +22,11 @@ export const MARKER_CONTRACTS = {
   'data-rc-field-control': 'authored-behavior',
   'data-rc-icon': 'authored-structure',
   'data-rc-light-dom-base': 'style-sentinel',
+  'data-rc-list-item-toggle': 'authored-behavior',
   'data-rc-list-leading': 'authored-structure',
   'data-rc-list-position': 'component-state',
   'data-rc-list-supporting': 'authored-structure',
+  'data-rc-live-announcer': 'internal-controller',
   'data-rc-menu-icon': 'authored-structure',
   'data-rc-menu-label': 'authored-structure',
   'data-rc-menu-leading': 'authored-structure',
@@ -36,6 +38,7 @@ export const MARKER_CONTRACTS = {
   'data-rc-navigation-indicator': 'authored-behavior',
   'data-rc-navigation-label': 'authored-structure',
   'data-rc-range-slider-reflector': 'internal-component',
+  'data-rc-reorder-handle': 'authored-behavior',
   'data-rc-resize-corner': 'internal-controller',
   'data-rc-scroller-span': 'authored-behavior',
   'data-rc-segmented-button-selected-icon': 'authored-structure',
@@ -63,6 +66,9 @@ export const REMOVED_TOKEN_CONTRACTS = new Set([
 ]);
 
 export const CROSS_COMPONENT_TOKEN_CONTRACTS = {
+  '--rc-chip-touch-target-block-size': ['rc-chip-group'],
+  '--rc-chip-touch-target-overlap-block-start': ['rc-combobox', 'rc-select'],
+  '--rc-chip-touch-target-overlap-block-end': ['rc-combobox', 'rc-select'],
   '--rc-chip-remove-offset-inline': ['rc-combobox', 'rc-select'],
   '--rc-chip-remove-target-size': ['rc-combobox', 'rc-select'],
   '--rc-anchor-viewport-block-size': ['rc-combobox'],
@@ -95,8 +101,13 @@ export const PRIVATE_THEME_TOKEN_CONTRACTS = {
     '--_rc-button-ripple-easing',
     '--_rc-button-ripple-enabled',
     '--_rc-button-ripple-opacity',
+    // Grouped field legend: the caption line a group reserves (none when
+    // outlined) and the legend's float offset, shared by filled and outlined.
+    '--_rc-field-group-label-space',
     '--_rc-field-input-line-height',
     '--_rc-field-label-line-height',
+    '--_rc-field-legend-x',
+    '--_rc-field-legend-y',
   ]),
   'rc-theme-substrate': new Set(),
   'rc-theme-win31': new Set(),
@@ -126,7 +137,8 @@ export const THEME_OWNED_TOKEN_PREFIXES = {
 
 export const THEME_SELECTOR_BUDGETS = {
   'rc-theme-material': {
-    parts: 108,
+    // Grouped fields and expanded list details add three part selectors.
+    parts: 111,
     // Dialog surfaces add no marker coupling; the retained growth comes from
     // documented chip-icon and visible-list-position contracts.
     markerHooks: 71,
@@ -136,13 +148,16 @@ export const THEME_SELECTOR_BUDGETS = {
     // (raw text included 3 !important mentions inside a prose comment).
     importantDeclarations: 9,
     idSelectors: 3,
-    modifierHooks: 59,
+    // Grouped and provider-backed field variants add fifteen modifier selectors.
+    modifierHooks: 74,
   },
   'rc-theme-substrate': {
     // Grew with rc-field coverage: the field's own anatomy plus the resets a
     // control provider needs so its chrome stops nesting inside the field's.
     parts: 45,
-    markerHooks: 22,
+    // +1: the overrides layer keeps rc-adaptive-menu overflow rows on the
+    // menu's item tokens ([data-rc-action-overflowed]).
+    markerHooks: 23,
     importantDeclarations: 1,
     idSelectors: 0,
     modifierHooks: 0,
@@ -152,7 +167,10 @@ export const THEME_SELECTOR_BUDGETS = {
     // shadow-owned elements than the modern themes do. The !important
     // declarations are the icon-geometry and forced-colors overrides.
     parts: 115,
-    markerHooks: 19,
+    // +3: the overrides layer keeps rc-adaptive-menu overflow rows on the
+    // menu's item tokens, including the native-control reset Win31 needs
+    // because it draws buttons on the control rather than through tokens.
+    markerHooks: 22,
     importantDeclarations: 8,
     idSelectors: 0,
     modifierHooks: 0,

@@ -65,7 +65,10 @@ short and tell the tool to read `AGENTS.md` before project work.
 - Shadow styles rely on shadow-tree scoping rather than document cascade layers.
   Injected light-DOM structural CSS belongs in the `rc-base` layer and uses one
   `data-rc-light-dom-base` sentinel per root. Theme styles declare their complete
-  layer order and keep component rules in the theme's `.components` layer.
+  layer order, starting with `rc-base` so injected structural CSS stays below the theme
+  whenever it loads, and keep component rules in the theme's `.components` layer. The
+  `.overrides` layer is only for contextual rules that must beat every component variant,
+  such as `rc-adaptive-menu` overflow rows.
   Remember that normal author rules outside a layer outrank layered rules, while
   `!important` reverses layer precedence.
 - Runtime measurement may write inline geometry styles, such as splitter sizes.
@@ -362,6 +365,14 @@ macOS too, and it installs dependencies there only when `yarn.lock` changes. Eac
 single-file iteration only: record screenshot baselines and benchmark budgets only through the
 wrapper (`yarn test:screenshots:update`, `yarn benchmark:browser:update`), since fonts and system
 libraries differ between hosts. Per-package `test:browser` scripts also run on the host.
+
+Agents run every suite, screenshot check, and final result through the wrapper. Host runs
+(`:host` scripts and per-package `test:browser`) are for one file or package while iterating;
+host screenshot comparisons fail by design. The container's memory is capped at
+`TEST_DOCKER_MEMORY` (default `4g`), so an overrun is killed inside it instead of taking down
+desktop apps. Never run two browser suites at once, including this repo's and a consuming
+app's. A "Browser connection was closed" error or a container exit of 137 usually means memory
+ran out: check `journalctl -k | grep -i oom` before treating it as a test failure.
 
 New package `test:browser` scripts must include `--run` (`vitest --run`). Without it
 Vitest defaults to watch mode. The root `test` script runs the shared test projects with

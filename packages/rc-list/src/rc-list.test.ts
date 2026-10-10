@@ -1,8 +1,10 @@
 import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import './define.js';
 import type { RCListItem } from './rc-list-item.js';
 import type { RCList } from './rc-list.js';
@@ -497,4 +499,212 @@ test('takes row positions from aria-posinset and aria-setsize when a slice is re
   await settle(list);
 
   expect(rows[0]!.dataset.rcListPosition).toBe('only');
+});
+
+test('an ordered list exposes item positions without rendering counters', async () => {
+  const screen = render(html`
+    <rc-list data-testid="list" ordered aria-label="Steps">
+      <rc-list-item data-testid="first">1. Heat the oven.</rc-list-item>
+      <rc-list-item data-testid="second">2. Mix.</rc-list-item>
+      <rc-list-item data-testid="third">3. Bake.</rc-list-item>
+    </rc-list>
+  `);
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const items = await Promise.all(
+    ['first', 'second', 'third'].map(async (id) => (await screen.getByTestId(id).element()) as RCListItem),
+  );
+
+  await settle(list);
+
+  expect(items.map((item) => item.getAttribute('aria-posinset'))).toEqual(['1', '2', '3']);
+  expect(items.every((item) => item.getAttribute('aria-setsize') === '3')).toBe(true);
+  expect(items[0]!.textContent).toBe('1. Heat the oven.');
+  expect(getComputedStyle(items[0]!, '::before').content).toBe('none');
+
+  items[1]!.hidden = true;
+  await settle(list);
+
+  expect(items[0]!.getAttribute('aria-setsize')).toBe('2');
+  expect(items[2]!.getAttribute('aria-posinset')).toBe('2');
+  expect(items[1]!.hasAttribute('aria-posinset')).toBe(false);
+
+  list.ordered = false;
+  await settle(list);
+
+  expect(items.some((item) => item.hasAttribute('aria-posinset'))).toBe(false);
+  await expectNoA11yViolations(list);
+});
+
+test('an ordered list keeps authored positions from a virtualized slice', async () => {
+  const screen = render(html`
+    <rc-list data-testid="list" ordered>
+      <rc-list-item data-testid="item" aria-posinset="41" aria-setsize="80">Step</rc-list-item>
+    </rc-list>
+  `);
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const item = (await screen.getByTestId('item').element()) as RCListItem;
+
+  await settle(list);
+  list.ordered = false;
+  await settle(list);
+
+  expect(item.getAttribute('aria-posinset')).toBe('41');
+  expect(item.getAttribute('aria-setsize')).toBe('80');
+});
+
+function renderExpandable() {
+  const screen = render(html`
+    <rc-list data-testid="list" aria-label="Ingredients">
+      <rc-list-item data-testid="item">
+        2 garlic cloves
+        <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Details">i</button>
+        <div slot="details" data-testid="details">"garlic" resembles "gallon".</div>
+      </rc-list-item>
+    </rc-list>
+  `);
+
+  return screen;
+}
+
+test('a details toggle expands the supporting region and wires its state', async () => {
+  const screen = renderExpandable();
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const item = (await screen.getByTestId('item').element()) as RCListItem;
+  const details = (await screen.getByTestId('details').element()) as HTMLElement;
+  const toggle = item.querySelector('button')!;
+  const toggled = vi.fn();
+
+  item.addEventListener('rc-list-item-toggle', (event) => toggled(event.detail.expanded));
+  await settle(list);
+
+  expect(details.hidden).toBe(true);
+  expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  expect(toggle).toHaveAttribute('aria-controls', details.id);
+
+  toggle.focus();
+  await userEvent.keyboard('{Enter}');
+  await settle(list);
+
+  expect(details.hidden).toBe(false);
+  expect(item.expanded).toBe(true);
+  expect(item).toHaveAttribute('expanded');
+  expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  expect(toggled).toHaveBeenLastCalledWith(true);
+
+  // The region spans the text and trailing columns below the row.
+  const row = item.shadowRoot!.querySelector<HTMLElement>('[part="content"]')!.getBoundingClientRect();
+  const region = details.getBoundingClientRect();
+
+  expect(region.top).toBeGreaterThanOrEqual(row.bottom - 1);
+  expect(region.right).toBeGreaterThan(row.right);
+  await expectNoA11yViolations(list);
+
+  await userEvent.click(toggle);
+  await settle(list);
+
+  expect(details.hidden).toBe(true);
+  expect(toggled).toHaveBeenLastCalledWith(false);
+});
+
+test('a controlled item reports requested state without changing until the host does', async () => {
+  const screen = renderExpandable();
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const item = (await screen.getByTestId('item').element()) as RCListItem;
+  const details = (await screen.getByTestId('details').element()) as HTMLElement;
+  const toggled = vi.fn();
+
+  item.expanded = false;
+  item.addEventListener('rc-list-item-toggle', (event) => toggled(event.detail.expanded));
+  await settle(list);
+
+  await userEvent.click(item.querySelector('button')!);
+  await settle(list);
+
+  expect(toggled).toHaveBeenCalledWith(true);
+  expect(details.hidden).toBe(true);
+
+  item.expanded = true;
+  await settle(list);
+  expect(details.hidden).toBe(false);
+
+  item.expanded = undefined;
+  await settle(list);
+  expect(item.expanded).toBe(false);
+});
+
+test('default-expanded opens the region initially for uncontrolled use', async () => {
+  const screen = render(html`
+    <rc-list data-testid="list">
+      <rc-list-item data-testid="item" default-expanded>
+        Row
+        <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Details">i</button>
+        <div slot="details" data-testid="details">Supporting text</div>
+      </rc-list-item>
+    </rc-list>
+  `);
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const details = (await screen.getByTestId('details').element()) as HTMLElement;
+
+  await settle(list);
+  expect(details.hidden).toBe(false);
+});
+
+test.each(FLOW_FIXTURES)('places expanded details below the row in %s', async (flow) => {
+  const screen = render(
+    inFlow(
+      html`
+        <rc-list data-testid="list" aria-label="Ingredients" style="inline-size: 16rem">
+          <rc-list-item data-testid="item" default-expanded>
+            Row
+            <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Details">i</button>
+            <div slot="details" data-testid="details">Supporting text</div>
+          </rc-list-item>
+        </rc-list>
+      `,
+      flow,
+    ),
+  );
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const item = (await screen.getByTestId('item').element()) as RCListItem;
+  const details = (await screen.getByTestId('details').element()) as HTMLElement;
+
+  await settle(list);
+
+  const content = item.shadowRoot!.querySelector<HTMLElement>('[part="content"]')!.getBoundingClientRect();
+  const region = details.getBoundingClientRect();
+
+  // "Below" is the block-end side: down in horizontal text, left in vertical-rl,
+  // right in vertical-lr. Direction does not change the block axis.
+  if (flow.writingMode === 'horizontal-tb') {
+    expect(region.top, flowLabel(flow)).toBeGreaterThanOrEqual(content.bottom - 1);
+  } else if (flow.writingMode === 'vertical-rl') {
+    expect(region.right, flowLabel(flow)).toBeLessThanOrEqual(content.left + 1);
+  } else {
+    expect(region.left, flowLabel(flow)).toBeGreaterThanOrEqual(content.right - 1);
+  }
+});
+
+test('an ordered list hands positions to an author who sets them after the first sync', async () => {
+  const screen = render(html`
+    <rc-list data-testid="list" ordered aria-label="Bake">
+      <rc-list-item data-testid="item">3. Bake.</rc-list-item>
+    </rc-list>
+  `);
+  const list = (await screen.getByTestId('list').element()) as RCList;
+  const item = (await screen.getByTestId('item').element()) as RCListItem;
+
+  await settle(list);
+  expect(item.getAttribute('aria-posinset')).toBe('1');
+
+  // A framework applying a dynamic attribute after insertion: step 3 of 3 overall.
+  item.setAttribute('aria-posinset', '3');
+  item.setAttribute('aria-setsize', '3');
+  await settle(list);
+
+  expect(item.getAttribute('aria-posinset')).toBe('3');
+  expect(item.getAttribute('aria-setsize')).toBe('3');
+
+  list.ordered = false;
+  await settle(list);
+  expect(item.getAttribute('aria-posinset')).toBe('3');
 });

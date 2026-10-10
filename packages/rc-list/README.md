@@ -34,6 +34,92 @@ input. Links, buttons, inputs, and other interactive descendants retain their
 own behavior. Radios in a single-selection list should share a `name`, just as
 they would in an unenhanced native radio group.
 
+## Ordered lists
+
+Set `ordered` when item order carries meaning, such as recipe steps. Each visible item receives
+`aria-posinset` and `aria-setsize`, so assistive technology reports its position. The list
+renders no counters: numbering the content shows, if any, stays in the item text. Items that
+already carry authored positions, as in a virtualized slice, keep them.
+
+```html
+<rc-list ordered aria-label="Directions">
+  <rc-list-item>1. Heat the oven.</rc-list-item>
+  <rc-list-item>2. Mix the batter.</rc-list-item>
+</rc-list>
+```
+
+## Reordering
+
+Set `reorderable` to let people change the order. It implies `ordered`. Give each item a native
+`<button data-rc-reorder-handle>`, usually in the `trailing` slot, and label it yourself. Handles
+without an authored `aria-description` get a short keyboard hint, which `reorderMessages` can
+replace along with every announcement.
+
+- **Pointer:** press a handle and drag. The lifted item follows the pointer, the items it passes
+  shift out of its way, and the nearest scroll container scrolls near its edges. Escape cancels.
+  A press without movement stays a plain button press.
+- **Keyboard:** Space or Enter picks the item up. The block-axis arrow keys, Home, and End move
+  it, Space or Enter drops it, and Escape returns it to where it started. Moving focus away
+  drops it. Each step is announced through a polite live region in the nearest open dialog or
+  popover, else the document body.
+
+Each committed move fires a cancelable `rc-list-reorder` event with `{ item, from, to }`. Left
+alone, the list moves the item's node itself, so plain HTML needs no script. A framework that
+renders the items cancels the event and reorders its own data; focus returns to the moved
+item's handle even when the framework replaces the item's nodes. A pointer drag fires once on
+drop. The keyboard fires on every step, and once more when a reorder is canceled.
+
+```html
+<rc-list reorderable aria-label="Photo order">
+  <rc-list-item>
+    Cover photo
+    <button slot="trailing" type="button" data-rc-reorder-handle aria-label="Reorder cover photo">
+      ⠿
+    </button>
+  </rc-list-item>
+  <rc-list-item>
+    Plated
+    <button slot="trailing" type="button" data-rc-reorder-handle aria-label="Reorder plated">
+      ⠿
+    </button>
+  </rc-list-item>
+</rc-list>
+```
+
+```js
+list.addEventListener('rc-list-reorder', (event) => {
+  event.preventDefault();
+  photos = move(photos, event.detail.from, event.detail.to);
+});
+```
+
+While an item is lifted it carries `data-dragging` and the list carries `data-reordering`. Themes
+style the lifted item with the `--rc-list-item-dragged-*` properties and animate the shifting
+items with `--rc-list-item-reorder-duration`. Reduced motion turns that shift off.
+
+## Expandable details
+
+An item can carry a supporting region below its row in the `details` slot. Mark a button inside
+the item, usually in the `trailing` slot, with `data-rc-list-item-toggle`. The item wires the
+button's `aria-expanded` and `aria-controls`, keeps the region `hidden` while collapsed, and
+fires `rc-list-item-toggle` with the requested state. Use `default-expanded` for an initial
+uncontrolled state, or set `expanded` to control it; assign `undefined` to release control.
+
+```html
+<rc-list aria-label="Ingredients">
+  <rc-list-item>
+    3 garlic cloves, chopped
+    <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Garlic details">
+      i
+    </button>
+    <div slot="details">"garlic" is not a recognized unit of measure.</div>
+  </rc-list-item>
+</rc-list>
+```
+
+The region spans the text and trailing columns, so its content wraps freely even while the row
+text truncates.
+
 ## Action targets
 
 For a row whose primary action is not its selection input, set `interactive`

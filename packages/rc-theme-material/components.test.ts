@@ -47,7 +47,7 @@ test('aggregate component styles cover every visual RC component', () => {
     ['rc-bottom-sheet', ['--rc-bottom-sheet-bg', '']],
     ['rc-search-bar', ['display', 'inline']],
     ['rc-field', ['--rc-field-min-block-size', '']],
-    ['rc-textarea', ['--rc-textarea-padding', '1rem']],
+    ['rc-textarea', ['--rc-textarea-padding-inline', '1rem']],
     ['rc-markdown-editor', ['--rc-markdown-editor-padding', '1rem']],
     ['rc-transfer-list', ['--rc-transfer-list-gap', '1rem']],
     ['rc-app-bar', ['font-family', '']],

@@ -1,6 +1,7 @@
 @layer rc-theme-substrate.components {
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-textarea {
-    --rc-textarea-padding: 0.75rem;
+    --rc-textarea-padding-block: 0.75rem;
+    --rc-textarea-padding-inline: 0.75rem;
     --rc-textarea-border: var(--rc-border, 1px solid ButtonBorder);
     --rc-textarea-border-radius: var(--substrate-radius-lg, 0.75rem);
     --rc-textarea-background: var(--rc-field, Field);

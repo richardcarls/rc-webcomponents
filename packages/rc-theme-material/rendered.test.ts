@@ -1,4 +1,5 @@
 import { page } from 'vitest/browser';
+import { userEvent } from 'vitest/browser';
 import { afterEach, expect, test, vi } from 'vitest';
 
 import '@rcarls/rc-adaptive-menu/define';
@@ -11,6 +12,7 @@ import '@rcarls/rc-field/define';
 import '@rcarls/rc-list/define';
 import '@rcarls/rc-menu-button/define';
 import '@rcarls/rc-select/define';
+import '@rcarls/rc-textarea/define';
 
 import './theme.css';
 import { logicalInsets, unexpectedOverflow } from '../../test-helpers/rendered-ui';
@@ -99,6 +101,269 @@ test('Material fields render filled and outlined native-control compositions', a
   expect($empty.hasAttribute('data-focused')).toBe(true);
 
   await expect.poll(() => $emptyLabel!.getBoundingClientRect().top).toBeLessThan(restingTop);
+});
+
+test('filled Material field aligns a textarea gutter with its floated label', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label" for="ingredient-notes">Ingredients</label>
+      <rc-textarea data-rc-field-control gutter>
+        <textarea id="ingredient-notes" name="ingredients">Flour\nWater</textarea>
+      </rc-textarea>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const $field = scope.querySelector('rc-field')!;
+  const $textarea = scope.querySelector('textarea')!;
+  const $host = scope.querySelector('rc-textarea')!;
+  const $editor = $host.shadowRoot!.querySelector<HTMLElement>('#editor')!;
+  const $gutter = $host.shadowRoot!.querySelector<HTMLElement>('#gutter-cells')!;
+  const $label = $field.shadowRoot!.querySelector<HTMLElement>('[part="label"]')!;
+  const $firstLine = $editor.querySelector<HTMLElement>('.line')!;
+
+  expect($field.control).toBe($textarea);
+  expect($textarea.isConnected).toBe(true);
+  expect(getComputedStyle($editor).paddingBlockStart).toBe('0px');
+  expect(getComputedStyle($editor).paddingInlineStart).toBe('16px');
+  expect($gutter.getBoundingClientRect().width).toBeGreaterThanOrEqual(48);
+
+  expect($label.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    $firstLine.getBoundingClientRect().top,
+  );
+
+  $host.style.setProperty('--rc-textarea-active-line-bg', 'rgb(1, 2, 3)');
+  await userEvent.click($firstLine);
+
+  await vi.waitFor(() => expect($firstLine.classList.contains('line--active')).toBe(true));
+  expect(getComputedStyle($firstLine, '::before').insetInlineStart).toBe('-16px');
+});
+
+test('filled Material field shows a read-only textarea as a focusable field without hover', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label" for="preview-notes">Ingredients</label>
+      <rc-textarea data-rc-field-control>
+        <textarea id="preview-notes" readonly>Flour</textarea>
+      </rc-textarea>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const $field = scope.querySelector('rc-field')!;
+  const $host = scope.querySelector('rc-textarea')!;
+  const $editor = $host.shadowRoot!.querySelector<HTMLElement>('#editor')!;
+  const $surface = $field.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
+  const resting = getComputedStyle($surface).backgroundColor;
+
+  await vi.waitFor(() => expect($field).toHaveAttribute('data-readonly'));
+  expect($editor).toHaveAttribute('aria-readonly', 'true');
+  expect($editor).toHaveAccessibleName('Ingredients');
+
+  await userEvent.hover($surface);
+  expect(getComputedStyle($surface).backgroundColor).toBe(resting);
+
+  await userEvent.click($editor);
+  await vi.waitFor(() => expect($field).toHaveAttribute('data-focused'));
+});
+
+test('filled Material field clears a page focus outline on its native control', async () => {
+  const scope = document.createElement('div');
+  const $reset = document.createElement('style');
+
+  scope.className = 'rc-theme-material';
+
+  // A page reset ordered before the theme, such as modern-normalize's Firefox
+  // :-moz-focusring rule. Layer order is fixed once theme.css loads, so the
+  // theme's earlier defaults sublayer stands in for the page's reset layer.
+  $reset.textContent = `
+    @layer rc-theme-material.defaults {
+      :focus-visible { outline: 1px dotted ButtonText; }
+    }
+  `;
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label" for="portion-quantity">Quantity</label>
+      <input id="portion-quantity" type="number" value="1">
+    </rc-field>
+  `;
+
+  document.head.append($reset);
+  document.body.append(scope);
+  await settle(scope);
+
+  const $field = scope.querySelector('rc-field')!;
+  const $input = scope.querySelector('input')!;
+
+  try {
+    await userEvent.click($input);
+    await vi.waitFor(() => expect($field).toHaveAttribute('data-focused'));
+    expect($input).toHaveFocus();
+    expect($input.matches(':focus-visible')).toBe(true);
+    expect(getComputedStyle($input).outlineStyle).toBe('none');
+  } finally {
+    $reset.remove();
+  }
+});
+
+test('a grouped Material field matches a single field with its legend as the floated label', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+  scope.style.cssText = 'display:grid;gap:16px;inline-size:20rem;';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label" for="single-amount">Amount per serving</label>
+      <input id="single-amount" type="number" value="1">
+    </rc-field>
+    <rc-field>
+      <fieldset>
+        <legend>Serving size</legend>
+        <input type="number" aria-label="Amount" value="1">
+        <input type="text" aria-label="Note" placeholder="e.g. heaping">
+        <select aria-label="Unit">
+          <option>g</option>
+          <option selected>cups</option>
+        </select>
+      </fieldset>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const [$single, $group] = scope.querySelectorAll('rc-field');
+  const singleLabel = $single.shadowRoot!.querySelector<HTMLElement>('[part="label"]')!;
+  const singleSurface = $single.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
+  const groupSurface = $group.shadowRoot!.querySelector<HTMLElement>('[part="field"]')!;
+  const legend = $group.querySelector('legend')!;
+  const amount = $group.querySelector('input')!;
+  const unit = $group.querySelector('select')!;
+  const singleRect = singleSurface.getBoundingClientRect();
+  const groupRect = groupSurface.getBoundingClientRect();
+  const labelRect = singleLabel.getBoundingClientRect();
+  const legendRect = legend.getBoundingClientRect();
+
+  expect($group).toHaveAttribute('data-group');
+  expect(Math.round(groupRect.height)).toBe(Math.round(singleRect.height));
+  expect(legendRect.top - groupRect.top).toBeCloseTo(labelRect.top - singleRect.top, 0);
+  expect(legendRect.left - groupRect.left).toBeCloseTo(labelRect.left - singleRect.left, 0);
+  expect(getComputedStyle(legend).fontSize).toBe(getComputedStyle(singleLabel).fontSize);
+  expect(amount.getBoundingClientRect().width).toBeGreaterThan(unit.getBoundingClientRect().width);
+
+  expect(amount.getBoundingClientRect().right).toBeLessThanOrEqual(
+    unit.getBoundingClientRect().left,
+  );
+
+  // A grouped placeholder waits for focus, like a single field's under its resting label.
+  const note = $group.querySelector<HTMLInputElement>('input[aria-label="Note"]')!;
+
+  expect(getComputedStyle(note, '::placeholder').color).toBe('rgba(0, 0, 0, 0)');
+
+  await userEvent.click(unit);
+  await vi.waitFor(() => expect($group).toHaveAttribute('data-focused'));
+  expect(getComputedStyle(note, '::placeholder').color).not.toBe('rgba(0, 0, 0, 0)');
+  expect(getComputedStyle(unit).outlineStyle).toBe('none');
+
+  // The legend's color transitions with the label's.
+  await vi.waitFor(() =>
+    expect(getComputedStyle(legend).color).not.toBe(getComputedStyle(singleLabel).color),
+  );
+
+  await userEvent.keyboard('{Escape}');
+});
+
+test('a grouped Material legend rests and floats like a single field label', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+  scope.style.cssText = 'display:grid;gap:16px;inline-size:20rem;';
+
+  scope.innerHTML = `
+    <rc-field>
+      <label slot="label" for="single-empty">Amount</label>
+      <input id="single-empty" type="number">
+    </rc-field>
+    <rc-field>
+      <fieldset>
+        <legend>Serving size</legend>
+        <input type="number" aria-label="Amount">
+        <select aria-label="Unit"><option>cups</option></select>
+      </fieldset>
+    </rc-field>
+    <rc-field class="rc-field--outlined">
+      <label slot="label" for="outlined-empty">Amount</label>
+      <input id="outlined-empty" type="number">
+    </rc-field>
+    <rc-field class="rc-field--outlined">
+      <fieldset>
+        <legend>Serving size</legend>
+        <input type="number" aria-label="Amount">
+        <select aria-label="Unit"><option>cups</option></select>
+      </fieldset>
+    </rc-field>
+    <rc-field>
+      <fieldset>
+        <legend>Price</legend>
+        <select aria-label="Currency"><option>USD</option></select>
+        <input type="number" aria-label="Amount">
+      </fieldset>
+    </rc-field>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const [$single, $group, $outlinedSingle, $outlinedGroup, $leading] =
+    scope.querySelectorAll('rc-field');
+  const label = $single.shadowRoot!.querySelector<HTMLElement>('[part="label"]')!;
+  const legend = $group.querySelector('legend')!;
+  const offset = ($field: Element, $text: Element) =>
+    $text.getBoundingClientRect().top -
+    $field.shadowRoot!.querySelector('[part="field"]')!.getBoundingClientRect().top;
+  const waitForTransitions = () => new Promise((resolve) => setTimeout(resolve, 400));
+
+  // Resting: the empty, idle group's legend sits on the input line in body-large type.
+  expect(getComputedStyle(legend).fontSize).toBe(getComputedStyle(label).fontSize);
+  expect(getComputedStyle(legend).fontSize).toBe('16px');
+  await waitForTransitions();
+  expect(offset($group, legend)).toBeCloseTo(offset($single, label), 0);
+
+  expect(
+    offset($outlinedGroup, $outlinedGroup.querySelector('legend')!) -
+      offset($outlinedSingle, $outlinedSingle.shadowRoot!.querySelector('[part="label"]')!),
+  ).toBeCloseTo(0, 0);
+
+  // A group led by an addon keeps its legend floated.
+  expect(getComputedStyle($leading.querySelector('legend')!).fontSize).toBe('12px');
+
+  // Floated: focus lifts both to the caption line.
+  $group.querySelector('input')!.focus();
+  $single.querySelector('input')!.focus();
+  $group.querySelector('input')!.focus();
+  await vi.waitFor(() => expect($group).toHaveAttribute('data-focused'));
+  await waitForTransitions();
+  expect(getComputedStyle(legend).fontSize).toBe('12px');
+
+  $single.querySelector('input')!.value = '1';
+  $single.sync();
+  await settle(scope);
+  await waitForTransitions();
+  expect(offset($group, legend)).toBeCloseTo(offset($single, label), 0);
 });
 
 test('rc-select and rc-combobox lose their own chrome when composed as rc-field control providers', async () => {
@@ -564,6 +829,15 @@ test('adaptive overflow labels use Material menu-item typography', async () => {
     expect(style.lineHeight).toBe('24px');
   }
 
+  // Overflow rows take the adaptive menu's item tokens, not icon-button sizing
+  // and colors, whatever order the page declares its cascade layers in.
+  const overflowButton = scope.querySelector<HTMLElement>('rc-button')!;
+  const overflowButtonStyle = getComputedStyle(overflowButton);
+
+  expect(overflowButton).toHaveAttribute('data-rc-action-overflowed');
+  expect(overflowButtonStyle.getPropertyValue('--rc-button-icon-size').trim()).toBe('100%');
+  expect(overflowButtonStyle.getPropertyValue('--rc-button-bg').trim()).toBe('transparent');
+
   const submenu = scope.querySelector('rc-menu-button');
   const submenuTrigger = submenu?.querySelector<HTMLButtonElement>('[slot="trigger"]');
 
@@ -733,6 +1007,7 @@ test('popups and their items keep the Material menu style inside foreign shadow 
 
   scope.className = 'rc-theme-material';
   adaptiveMenu.setAttribute('max-shown', '0');
+
   const label = Object.assign(document.createElement('span'), { textContent: 'Edit' });
   const action = document.createElement('button');
 
@@ -744,6 +1019,7 @@ test('popups and their items keep the Material menu style inside foreign shadow 
   scope.append(host);
   document.body.append(scope);
   await settle(shadowRoot.host);
+
   await Promise.all(
     [adaptiveMenu, menuButton, menu].map(
       (element) => (element as Element & { updateComplete?: Promise<unknown> }).updateComplete,
@@ -775,4 +1051,53 @@ test('popups and their items keep the Material menu style inside foreign shadow 
   }
 
   expect(getComputedStyle(label).letterSpacing).toBe('0.5px');
+});
+
+test('reorderable list handles and lifted items follow the Material dragged state', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <rc-list reorderable>
+      <rc-list-item data-testid="lifted">
+        Alpha
+        <button slot="trailing" type="button" data-rc-reorder-handle aria-label="Reorder Alpha">⠿</button>
+      </rc-list-item>
+      <rc-list-item>
+        Beta
+        <button slot="trailing" type="button" data-rc-reorder-handle aria-label="Reorder Beta">⠿</button>
+      </rc-list-item>
+    </rc-list>
+  `;
+
+  document.body.append(scope);
+  await settle(scope);
+
+  const $item = scope.querySelector('rc-list-item') as HTMLElement;
+  const $handle = $item.querySelector('button') as HTMLButtonElement;
+  const $row = $item.shadowRoot?.querySelector('[part="row"]') as HTMLElement;
+  const handleStyles = getComputedStyle($handle);
+
+  expect(handleStyles.touchAction).toBe('none');
+  expect(handleStyles.minBlockSize).toBe('48px');
+  expect(handleStyles.minInlineSize).toBe('48px');
+  expect(getComputedStyle($row).boxShadow).toBe('none');
+
+  $item.toggleAttribute('data-dragging', true);
+
+  const probe = document.createElement('div');
+
+  probe.style.background = 'var(--md-sys-color-surface-container-high)';
+  scope.append(probe);
+
+  // The row transitions its surface, so wait for it to settle.
+  await vi.waitFor(() => {
+    expect(getComputedStyle($row).boxShadow).not.toBe('none');
+    expect(getComputedStyle($row).backgroundColor).toBe(getComputedStyle(probe).backgroundColor);
+  });
+
+  expect(getComputedStyle($item).zIndex).toBe('1');
+
+  scope.remove();
 });

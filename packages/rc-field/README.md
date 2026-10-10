@@ -41,6 +41,36 @@ after upgrade; an ancestor native label can wrap the complete field instead. Nat
 Call `sync()` after changing `.value` programmatically. Native input events, constraint attributes,
 form reset, and control replacement synchronize automatically.
 
+## Grouped controls
+
+A `<fieldset>` placed directly inside the field groups several native controls into one field, such
+as an amount and its unit. The `<legend>` names the group and shows as the field label, and each
+control keeps its own accessible name, so a screen reader announces the group and then each
+control. Supporting text describes the fieldset.
+
+```html
+<rc-field>
+  <fieldset>
+    <legend>Serving size</legend>
+    <input type="number" name="amount" aria-label="Amount" />
+    <select name="unit" aria-label="Unit">
+      <option value="g">g</option>
+      <option value="cup">cups</option>
+    </select>
+  </fieldset>
+  <small slot="hint">Optional</small>
+</rc-field>
+```
+
+The first text-like input or textarea is the primary control: `control` returns it, `focus()`
+moves to it, and `data-populated` follows its value. The field stays focused while focus moves
+between its controls. `data-disabled` follows the fieldset's `disabled`, `data-required` any
+required control, and `data-invalid` any control that fails validation, which also gets
+`aria-invalid`. Use `controls` for every grouped control and `group` for the fieldset.
+
+The primary control grows to fill the row. Selects and enhanced controls such as `rc-select` keep
+their own width and attach before or after it in source order.
+
 ## Material theme
 
 Import `@rcarls/rc-theme-material/theme.css` and place the field under `.rc-theme-material`.
@@ -85,4 +115,4 @@ or wrapped by an enhancing control provider the same way as `rc-textarea`:
 ```
 
 A multiple select's populated state comes from `selectedOptions`, not `.value` (which only ever
-reflects the first *selected* option in tree order and can read empty even with a real selection).
+reflects the first _selected_ option in tree order and can read empty even with a real selection).

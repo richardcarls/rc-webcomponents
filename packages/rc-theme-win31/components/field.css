@@ -29,6 +29,12 @@
     font-size: var(--win31-font-size);
   }
 
+  /* A grouped field's legend reads like the label above a single field. */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field[data-group] > fieldset > legend {
+    margin-block-end: var(--win31-gap-tight);
+    color: var(--win31-color-frame);
+  }
+
   :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field::part(supporting-text),
   :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field::part(hint),
   :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-field::part(counter) {

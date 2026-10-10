@@ -109,6 +109,7 @@ export class DragGestureController implements ReactiveController {
     Pick<DragGestureOptions, 'target' | 'canStart' | 'onStart' | 'onMove' | 'onEnd' | 'onCancel'>;
 
   private _$target: HTMLElement | null = null;
+  private _$captureTarget: Element | null = null;
   private _pointerId: number | null = null;
   private _startX = 0;
   private _startY = 0;
@@ -250,10 +251,25 @@ export class DragGestureController implements ReactiveController {
       return;
     }
 
+    // Direct-manipulation pointers are implicitly captured to the hit target.
+    // Keep that target instead of transferring capture to the delegated listener.
+    const $origin = event.composedPath()[0];
+
+    this._$captureTarget =
+      event.pointerType === 'mouse' || !($origin instanceof Element) ? $target : $origin;
+
     $target.addEventListener('pointermove', this._onPointerMove);
     $target.addEventListener('pointerup', this._onPointerUp);
     $target.addEventListener('pointercancel', this._onPointerCancel);
-    $target.addEventListener('lostpointercapture', this._onLostPointerCapture);
+    this._$captureTarget.addEventListener('lostpointercapture', this._onLostPointerCapture);
+
+    // Capture loss can be retargeted to the document when its element is removed.
+    // A pointer released elsewhere also needs to end the cycle after that removal.
+    const document = $target.ownerDocument;
+
+    document.addEventListener('lostpointercapture', this._onLostPointerCapture);
+    document.addEventListener('pointerup', this._onDocumentPointerUp);
+    document.addEventListener('pointercancel', this._onPointerCancel);
 
     if (this._options.activation === 'immediate') {
       this._activate(event);
@@ -298,8 +314,26 @@ export class DragGestureController implements ReactiveController {
     this._cancel(event);
   };
 
-  private _onLostPointerCapture = (event: PointerEvent): void => {
-    if (event.pointerId === this._pointerId) {
+  private _onDocumentPointerUp = (event: PointerEvent): void => {
+    if (event.pointerId !== this._pointerId) {
+      return;
+    }
+
+    if (this._$captureTarget && !this._$captureTarget.isConnected) {
+      this._cancel(event);
+
+      return;
+    }
+
+    this._onPointerUp(event);
+  };
+
+  private _onLostPointerCapture = (event: Event): void => {
+    if (
+      event instanceof PointerEvent &&
+      event.pointerId === this._pointerId &&
+      (event.composedPath()[0] === this._$captureTarget || !this._$captureTarget?.isConnected)
+    ) {
       this._cancel(event);
     }
   };
@@ -340,7 +374,12 @@ export class DragGestureController implements ReactiveController {
     }
 
     this._activated = true;
-    this._capturePointer($target, event.pointerId);
+
+    const $captureTarget = this._$captureTarget ?? $target;
+
+    if (!$captureTarget.hasPointerCapture(event.pointerId)) {
+      this._capturePointer($captureTarget, event.pointerId);
+    }
 
     if (this._options.focusOnStart) {
       $target.focus();
@@ -379,14 +418,15 @@ export class DragGestureController implements ReactiveController {
 
   private _finish(): void {
     const $target = this._$target;
+    const $captureTarget = this._$captureTarget;
     const pointerId = this._pointerId;
 
     if ($target) {
       this._removeCycleListeners($target);
+    }
 
-      if (pointerId !== null) {
-        this._releasePointer($target, pointerId);
-      }
+    if ($captureTarget && pointerId !== null) {
+      this._releasePointer($captureTarget, pointerId);
     }
 
     this._reset();
@@ -396,7 +436,13 @@ export class DragGestureController implements ReactiveController {
     $target.removeEventListener('pointermove', this._onPointerMove);
     $target.removeEventListener('pointerup', this._onPointerUp);
     $target.removeEventListener('pointercancel', this._onPointerCancel);
-    $target.removeEventListener('lostpointercapture', this._onLostPointerCapture);
+    this._$captureTarget?.removeEventListener('lostpointercapture', this._onLostPointerCapture);
+
+    const document = $target.ownerDocument;
+
+    document.removeEventListener('lostpointercapture', this._onLostPointerCapture);
+    document.removeEventListener('pointerup', this._onDocumentPointerUp);
+    document.removeEventListener('pointercancel', this._onPointerCancel);
   }
 
   private _recordSample(event: PointerEvent): void {
@@ -431,7 +477,7 @@ export class DragGestureController implements ReactiveController {
     };
   }
 
-  private _capturePointer($target: HTMLElement, pointerId: number): void {
+  private _capturePointer($target: Element, pointerId: number): void {
     try {
       $target.setPointerCapture(pointerId);
     } catch (error) {
@@ -441,7 +487,7 @@ export class DragGestureController implements ReactiveController {
     }
   }
 
-  private _releasePointer($target: HTMLElement, pointerId: number): void {
+  private _releasePointer($target: Element, pointerId: number): void {
     try {
       if ($target.hasPointerCapture(pointerId)) {
         $target.releasePointerCapture(pointerId);
@@ -453,6 +499,7 @@ export class DragGestureController implements ReactiveController {
 
   private _reset(): void {
     this._pointerId = null;
+    this._$captureTarget = null;
     this._lastEvent = null;
     this._samples = [];
     this._activated = false;

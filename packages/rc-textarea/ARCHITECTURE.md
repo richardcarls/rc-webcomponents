@@ -23,8 +23,8 @@ native textarea synchronization at the same time.
 - Accessible widgets opt out of the decorative `aria-hidden` wrapper. Keyboard events from
   widgets bypass text editing; source copy/cut excludes widget content. Gutter cells
   remain decorative unless a plugin explicitly exposes a control.
-- `LineDisclosureController` manages transient expansion independently of source text.
-  It is a presentation primitive, not a source-range folding implementation.
+- `FoldingActionController` manages transient expansion for caller-owned panels and
+  source-line ranges. Folded source remains in the plain-text model and hidden DOM lines.
 
 ## DOM Structure
 

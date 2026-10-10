@@ -144,7 +144,8 @@
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field:not(.rc-field--outlined)
     > rc-textarea[data-rc-field-control] {
-    --rc-textarea-padding: 0 1rem 0.5rem;
+    --rc-textarea-padding-block: 0 0.5rem;
+    --rc-textarea-padding-inline: 1rem;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))
@@ -158,6 +159,18 @@
     --rc-chip-touch-target-overlap-block-end: 0.5rem;
     --rc-field: transparent;
     inline-size: 100%;
+  }
+
+  /*
+   * rc-field resets the slotted native control's outline, but a ::slotted()
+   * rule loses to any page rule, such as a reset's Firefox :-moz-focusring
+   * outline. The field already shows focus, so clear the control's own
+   * outline from the light DOM too.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field
+    > :is(input, select, textarea):focus-visible {
+    outline: none;
   }
 
   /*
@@ -288,11 +301,19 @@
     > input::placeholder,
   :where(.rc-theme-material, :host(.rc-theme-material))
     rc-field[data-has-label]:not([data-focused]):not([data-populated])
-    > textarea::placeholder {
+    > textarea::placeholder,
+  /* A group's legend never rests in the input, so its placeholders wait for focus instead. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-group]:not([data-focused])
+    > fieldset
+    > :is(input, textarea)::placeholder {
     color: transparent;
   }
 
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field:hover::part(field) {
+  /* A read-only field keeps its focus indicator but no hover affordance, since
+     hovering cannot lead to an edit. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field:not([data-readonly]):hover::part(field) {
     border-block-end-color: var(--md-sys-color-on-surface, CanvasText);
     background: color-mix(
       in srgb,
@@ -337,7 +358,116 @@
     color: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 38%, transparent);
   }
 
+  /*
+   * Grouped controls: a <fieldset> whose <legend> names the field. The legend
+   * uses the floating label mechanics: it rests on the input line while the
+   * group is idle and its primary input empty, and floats to the caption line
+   * on focus or once the primary input has a value. A leading addon already
+   * occupies the input line's start, so a group that begins with one keeps its
+   * legend floated. The primary text input grows and selects or enhanced
+   * controls attach before or after it, connected by the shared container and
+   * active indicator rather than chrome of their own.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-group] > fieldset {
+    --rc-field-control-gap: 0.75rem;
+    padding-block-start: var(--_rc-field-group-label-space, var(--_rc-field-label-line-height));
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-group] > fieldset > legend {
+    position: absolute;
+    z-index: 1;
+    inset-inline-start: 0;
+    inset-block-start: 0;
+    max-inline-size: 100%;
+    overflow: hidden;
+    font-family: var(--md-sys-typescale-body-small-font, inherit);
+    font-size: var(--md-sys-typescale-body-small-size, 0.75rem);
+    line-height: var(--md-sys-typescale-body-small-line-height, 1rem);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translate(var(--_rc-field-legend-x, 0), var(--_rc-field-legend-y, 0));
+    transform-origin: left top;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-group]:not([data-focused]):not([data-populated])
+    > fieldset:has(> legend + :is(input, textarea))
+    > legend {
+    inset-block-start: 50%;
+    font-family: var(--md-sys-typescale-body-large-font, inherit);
+    font-size: var(--md-sys-typescale-body-large-size, 1rem);
+    line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
+    --_rc-field-legend-y: -50%;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-group][data-focused]
+    > fieldset
+    > legend {
+    color: var(--md-sys-color-primary, Highlight);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-group][data-invalid]
+    > fieldset
+    > legend {
+    color: var(--md-sys-color-error, red);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-group][data-disabled]
+    > fieldset
+    > legend {
+    color: color-mix(in srgb, var(--md-sys-color-on-surface, CanvasText) 38%, transparent);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-group]
+    > fieldset
+    > :is(input, textarea) {
+    caret-color: var(--md-sys-color-primary, Highlight);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-group]
+    > fieldset
+    > :is(input, select, textarea):focus-visible {
+    outline: none;
+  }
+
+  /* WebKit gives a native select a taller minimum than the input line. */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-group] > fieldset > select {
+    block-size: var(--_rc-field-input-line-height);
+    field-sizing: content;
+    cursor: pointer;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field[data-group]
+    > fieldset
+    > rc-select[data-rc-field-control] {
+    --rc-select-control-block-size: var(--md-sys-typescale-body-large-line-height, 1.5rem);
+    --rc-select-border: 0;
+    --rc-select-radius: 0;
+    --rc-select-padding-block: 0;
+    --rc-field: transparent;
+  }
+
+  /* The outlined legend rides the outline like a floated outlined label. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-field.rc-field--outlined[data-group]
+    > fieldset
+    > legend {
+    --_rc-field-legend-x: -0.25rem;
+    --_rc-field-legend-y: -50%;
+    padding-inline: 0.25rem;
+    background: var(--md-sys-color-surface, Canvas);
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-field.rc-field--outlined {
+    /* The outlined label rides the outline, so a group reserves no caption line. */
+    --_rc-field-group-label-space: 0;
     --rc-field-min-block-size: max(3.5em, calc(var(--_rc-field-input-line-height) + 2em));
     --rc-field-background: transparent;
     --rc-field-radius: var(
@@ -399,6 +529,7 @@
   @media (prefers-reduced-motion: no-preference) {
     :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field),
     :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(label),
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-field[data-group] > fieldset > legend,
     :where(.rc-theme-material, :host(.rc-theme-material)) rc-field::part(field)::after {
       /*
        * inset-block-start and font-size move the label's box (the floating

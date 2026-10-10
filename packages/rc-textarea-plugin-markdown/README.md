@@ -1,6 +1,11 @@
 # @rcarls/rc-textarea-plugin-markdown
 
-Markdown decoration plugin for `rc-textarea`.
+Markdown decoration and folding plugin for `rc-textarea`. Its gutter actions fold heading
+sections, multiline lists, code blocks, block quotes, and GFM tables while preserving source text.
+
+Use `createMarkdownPlugin({ folding: { createTriggerIcon } })` to choose its
+folding icon. Style the button and icon through `rc-textarea::part(fold-trigger)`
+and `rc-textarea::part(fold-icon)`.
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-textarea](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea).
 

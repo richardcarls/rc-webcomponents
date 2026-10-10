@@ -343,6 +343,26 @@ export type RCListSelection = 'none' | 'single' | 'multiple';
 export type RCListRef = HTMLElement & {
   variant: RCListVariant;
   selection: RCListSelection;
+  ordered: boolean;
+  reorderable: boolean;
+  /** Overrides for the reorder announcements and handle hint. Positions are 1-based. */
+  reorderMessages: RCListReorderMessages | undefined;
+};
+
+/** Detail shape for `rc-list-reorder`. Positions are 0-based among visible items. */
+export type RCListReorderDetail = {
+  item: RCListItemRef;
+  from: number;
+  to: number;
+};
+
+/** Overridable `rc-list` reorder announcements. */
+export type RCListReorderMessages = {
+  instructions?: string;
+  grabbed?: (position: number, count: number) => string;
+  moved?: (position: number, count: number) => string;
+  dropped?: (position: number, count: number) => string;
+  canceled?: (position: number, count: number) => string;
 };
 
 /** Public API surface of `<rc-list-item>`. */
@@ -351,6 +371,15 @@ export type RCListItemRef = HTMLElement & {
   disabled: boolean;
   interactive: boolean;
   actionTarget: string;
+  /** Expanded state of the `details` region; host writes take control, `undefined` releases it. */
+  get expanded(): boolean;
+  set expanded(value: boolean | undefined);
+  defaultExpanded: boolean;
+};
+
+/** Detail shape for `rc-list-item-toggle`. */
+export type RCListItemToggleDetail = {
+  expanded: boolean;
 };
 
 /** Public API surface of `<rc-switch>`. */
@@ -674,7 +703,8 @@ export type RCTextareaRef = HTMLElement & {
   gutter: boolean;
   wordWrap: boolean;
   autoGrow: boolean;
-  readOnly: boolean;
+  /** Read-only state of the slotted textarea; set `readonly` on the textarea to change it. */
+  readonly readOnly: boolean;
   usePlugin(plugin: RCTextareaPlugin): void;
   removePlugin(): void;
   wrapSelection(prefix: string, suffix: string): void;
@@ -739,6 +769,8 @@ export type RCFieldRef = HTMLElement & {
   counter: boolean;
   invalid: boolean;
   readonly control: RCFieldControl | null;
+  readonly group: HTMLFieldSetElement | null;
+  readonly controls: RCFieldControl[];
   focus(options?: FocusOptions): void;
   blur(): void;
   sync(): void;
@@ -836,6 +868,8 @@ declare module 'react' {
       'rc-list': React.DetailedHTMLProps<React.HTMLAttributes<RCListRef>, RCListRef> & {
         variant?: RCListVariant;
         selection?: RCListSelection;
+        ordered?: boolean;
+        reorderable?: boolean;
       };
 
       'rc-list-item': React.DetailedHTMLProps<
@@ -846,6 +880,8 @@ declare module 'react' {
         disabled?: boolean;
         interactive?: boolean;
         'action-target'?: string;
+        expanded?: boolean;
+        'default-expanded'?: boolean;
       };
 
       'rc-switch': React.DetailedHTMLProps<React.HTMLAttributes<RCSwitchRef>, RCSwitchRef> & {
@@ -1187,7 +1223,6 @@ declare module 'react' {
         gutter?: boolean;
         'word-wrap'?: boolean;
         'auto-grow'?: boolean;
-        'read-only'?: boolean;
       };
     }
   }

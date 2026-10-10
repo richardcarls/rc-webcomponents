@@ -86,6 +86,14 @@ resize gestures. Set `resize="none"` to hold the sheet at its current snap
 point; the option is reactive, so restoring `resize="vertical"` re-enables
 dragging.
 
+The sheet stays docked at its block-end edge: snapping sets only its height,
+and its position is left to CSS. A software keyboard that resizes the viewport
+(`interactive-widget=resizes-content`) re-applies the current snap point above
+the keyboard. When a field inside the sheet takes focus, the sheet scrolls it
+into view within its own scroll containers, and grows past its snap height and
+maximum block size only when scrolling cannot reveal it, returning to its snap
+point once focus leaves the sheet.
+
 Without a theme, the authored handle uses a 32 by 4 pixel pill indicator,
 centered inside a full-width, 48 pixel-high target.
 

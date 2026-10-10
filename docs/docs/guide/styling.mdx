@@ -261,18 +261,27 @@ place it in the `rc-base` layer and deduplicate it per document or shadow root.
 Unlayered consumer rules therefore override these structural defaults without
 selector specificity contests.
 
-Each packaged theme declares three ordered layers:
+Each packaged theme declares its four ordered layers after `rc-base`:
 
 ```css
-@layer rc-theme.defaults, rc-theme.bridge, rc-theme.components;
+@layer rc-base, rc-theme.defaults, rc-theme.bridge, rc-theme.components, rc-theme.overrides;
 ```
+
+Naming `rc-base` first keeps component structural CSS below the theme even though
+components inject it at runtime, after the theme stylesheet has loaded. A layer is
+ordered by its first declaration, so without this an injected `rc-base` would become
+the last and strongest layer. An application that declares its own layer order should
+also list `rc-base` before the theme layers.
 
 The real names include the theme package, such as
 `rc-theme-material.components`. Defaults own the theme's raw source tokens,
 the bridge maps those tokens to shared and component RC tokens, and components
 hold element-specific recipes, parts, contextual selectors, and visual
-variants. Normal application rules outside a layer outrank all three theme layers,
-which provides a straightforward consumer override path. Avoid routine
+variants. Overrides hold the few contextual rules that must beat every component
+variant, such as `rc-adaptive-menu` overflow rows, which restyle a moved `rc-button`
+or `rc-menu-button` as a menu row whatever its own variant. Normal application rules
+outside a layer outrank all four theme layers, which provides a straightforward
+consumer override path. Avoid routine
 `!important`: important declarations reverse layer precedence.
 
 This is also why a packaged theme's class belongs on a container, as shown

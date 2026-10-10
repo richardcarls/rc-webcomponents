@@ -519,3 +519,178 @@ test('has no automated accessibility violations', async () => {
 
   await expectNoA11yViolations($field);
 });
+
+function groupFixture(attributes = '') {
+  return fieldFixture(html`
+    <form>
+      <rc-field data-testid="field">
+        <fieldset ?disabled=${attributes.includes('disabled')}>
+          <legend>Serving size</legend>
+          <input
+            type="number"
+            name="amount"
+            aria-label="Amount"
+            min="1"
+            ?required=${attributes.includes('required')}
+          />
+          <select name="unit" aria-label="Unit">
+            <option value="g">g</option>
+            <option value="cup">cups</option>
+          </select>
+        </fieldset>
+        <small slot="hint">Optional</small>
+        <span slot="error">Enter an amount</span>
+      </rc-field>
+    </form>
+  `);
+}
+
+test('groups fieldset controls into one field named by its legend', async () => {
+  const $field = await groupFixture();
+  const $group = $field.querySelector('fieldset')!;
+  const $amount = $field.querySelector<HTMLInputElement>('input')!;
+  const $unit = $field.querySelector<HTMLSelectElement>('select')!;
+
+  expect($field).toHaveAttribute('data-group');
+  expect($field.group).toBe($group);
+  expect($field.control).toBe($amount);
+  expect($field.controls).toEqual([$amount, $unit]);
+  expect($group).toHaveAccessibleName('Serving size');
+  expect($amount).toHaveAccessibleName('Amount');
+  expect($unit).toHaveAccessibleName('Unit');
+  expect($group).toHaveAccessibleDescription('Optional');
+  expect($amount).not.toHaveAttribute('aria-describedby');
+});
+
+test('the primary control is the first text-like input, wherever it sits in the group', async () => {
+  const $field = await fieldFixture(html`
+    <rc-field data-testid="field">
+      <fieldset>
+        <legend>Price</legend>
+        <select aria-label="Currency">
+          <option>USD</option>
+        </select>
+        <input type="text" aria-label="Amount" />
+      </fieldset>
+    </rc-field>
+  `);
+  const $amount = $field.querySelector('input')!;
+
+  expect($field.control).toBe($amount);
+
+  $field.focus();
+  expect(document.activeElement).toBe($amount);
+});
+
+test('a group stays focused while focus moves between its controls', async () => {
+  const $field = await groupFixture();
+  const $amount = $field.querySelector('input')!;
+  const $unit = $field.querySelector('select')!;
+  const changes: boolean[] = [];
+  const observer = new MutationObserver(() => changes.push($field.hasAttribute('data-focused')));
+
+  $amount.focus();
+  await vi.waitFor(() => expect($field).toHaveAttribute('data-focused'));
+  observer.observe($field, { attributes: true, attributeFilter: ['data-focused'] });
+
+  $unit.focus();
+  await tick();
+  expect($field).toHaveAttribute('data-focused');
+  expect(changes).toEqual([]);
+
+  $unit.blur();
+  await vi.waitFor(() => expect($field).not.toHaveAttribute('data-focused'));
+  observer.disconnect();
+});
+
+test('populated state follows the primary control, not the always-filled addon', async () => {
+  const $field = await groupFixture();
+  const $amount = $field.querySelector('input')!;
+
+  expect($field).not.toHaveAttribute('data-populated');
+
+  $amount.value = '2';
+  $amount.dispatchEvent(new Event('input', { bubbles: true }));
+  await vi.waitFor(() => expect($field).toHaveAttribute('data-populated'));
+});
+
+test('a disabled fieldset disables the field', async () => {
+  const $field = await groupFixture('disabled');
+
+  expect($field).toHaveAttribute('data-disabled');
+});
+
+test('validation marks the failing grouped control and describes the group with the error', async () => {
+  const $field = await groupFixture('required');
+  const $group = $field.querySelector('fieldset')!;
+  const $amount = $field.querySelector('input')!;
+  const $unit = $field.querySelector('select')!;
+
+  expect($field).toHaveAttribute('data-required');
+  expect($field).not.toHaveAttribute('data-invalid');
+
+  $field.closest('form')!.checkValidity();
+  await vi.waitFor(() => expect($field).toHaveAttribute('data-invalid'));
+
+  expect($amount).toHaveAttribute('aria-invalid', 'true');
+  expect($unit).not.toHaveAttribute('aria-invalid');
+  expect($group).toHaveAccessibleDescription('Enter an amount');
+
+  $amount.value = '3';
+  $amount.dispatchEvent(new Event('input', { bubbles: true }));
+  await vi.waitFor(() => expect($field).not.toHaveAttribute('data-invalid'));
+
+  expect($amount).not.toHaveAttribute('aria-invalid');
+  expect($group).toHaveAccessibleDescription('Optional');
+});
+
+test('lays out the legend above the controls and grows the text input', async () => {
+  const $field = await fieldFixture(html`
+    <rc-field data-testid="field" style="inline-size: 20rem;">
+      <fieldset>
+        <legend>Serving size</legend>
+        <input type="number" aria-label="Amount" />
+        <select aria-label="Unit">
+          <option>cups</option>
+        </select>
+      </fieldset>
+    </rc-field>
+  `);
+  const legend = $field.querySelector('legend')!.getBoundingClientRect();
+  const amount = $field.querySelector('input')!.getBoundingClientRect();
+  const unit = $field.querySelector('select')!.getBoundingClientRect();
+
+  expect(legend.bottom).toBeLessThanOrEqual(amount.top + 0.5);
+  expect(amount.right).toBeLessThanOrEqual(unit.left + 0.5);
+  expect(amount.width).toBeGreaterThan(unit.width);
+  expect(getComputedStyle($field.querySelector('fieldset')!).borderTopWidth).toBe('0px');
+});
+
+test('warns when a grouped control has no accessible name', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+  await fieldFixture(html`
+    <rc-field data-testid="field">
+      <fieldset>
+        <legend>Serving size</legend>
+        <input type="number" aria-label="Amount" />
+        <select>
+          <option>cups</option>
+        </select>
+      </fieldset>
+    </rc-field>
+  `);
+
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('Each grouped control needs its own accessible name'),
+    expect.any(HTMLSelectElement),
+  );
+
+  warn.mockRestore();
+});
+
+test('a grouped field has no automated accessibility violations', async () => {
+  const $field = await groupFixture('required');
+
+  await expectNoA11yViolations($field.closest('form')!);
+});

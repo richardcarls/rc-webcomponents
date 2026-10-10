@@ -881,3 +881,150 @@ test('snapTo() clamps finite indices and ignores non-finite indices', async () =
 
   $host.close();
 });
+
+test('window resize re-docks a sheet a drag gesture left pinned away from its edge', async () => {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="132px 400px">
+      <dialog aria-label="Nutrition"><button>Done</button></dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $host.snapTo(1, 'instant');
+
+  // What ResizeController's pinElementBox leaves behind after a drag: every
+  // edge pinned, including `bottom: auto`, against the pre-resize viewport.
+  Object.assign($dialog.style, {
+    inset: 'auto',
+    top: `${window.innerHeight + 400}px`,
+    left: '0px',
+    width: '300px',
+    margin: '0px',
+  });
+
+  window.dispatchEvent(new Event('resize'));
+
+  const docked = $dialog.getBoundingClientRect();
+
+  expect(Math.round(docked.bottom)).toBe(Math.round(window.innerHeight));
+  expect(Math.round(docked.height)).toBe(400);
+  expect($dialog.style.top).toBe('');
+  expect($dialog.style.width).toBe('');
+
+  $host.close();
+});
+
+test('snaps stay docked when the containing block moves afterward', async () => {
+  const screen = render(html`
+    <div
+      data-testid="frame"
+      style="position: fixed; inset: 100px 0 0; contain: layout;"
+    >
+      <rc-bottom-sheet data-testid="host" snap-points="132px 300px">
+        <dialog aria-label="Nutrition"><button>Done</button></dialog>
+      </rc-bottom-sheet>
+    </div>
+  `);
+  const $frame = (await screen.getByTestId('frame').element()) as HTMLElement;
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $host.snapTo(1, 'instant');
+
+  // A collapsing app bar moves the containing block's top edge, not its
+  // bottom edge.
+  $frame.style.top = '40px';
+
+  const after = $dialog.getBoundingClientRect();
+
+  expect(Math.round(after.bottom)).toBe(Math.round(window.innerHeight));
+  expect(Math.round(after.height)).toBe(300);
+
+  $host.close();
+});
+
+test('a focused field scrolls into view within the sheet', async () => {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="200px">
+      <dialog aria-label="Nutrition" style="display: flex; flex-direction: column; padding: 0;">
+        <button>Done</button>
+        <div data-testid="body" style="flex: 1; min-block-size: 0; overflow: auto;">
+          <div style="block-size: 600px;"></div>
+          <input data-testid="field" aria-label="Quantity" />
+        </div>
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+  const $field = (await screen.getByTestId('field').element()) as HTMLInputElement;
+
+  await $host.updateComplete;
+  $host.show();
+  $host.snapTo(0, 'instant');
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $field.focus({ preventScroll: true });
+  // A software keyboard resizing the viewport re-runs the reveal as well.
+  window.dispatchEvent(new Event('resize'));
+
+  const sheet = $dialog.getBoundingClientRect();
+  const field = $field.getBoundingClientRect();
+
+  expect(field.top).toBeGreaterThanOrEqual(sheet.top);
+  expect(field.bottom).toBeLessThanOrEqual(sheet.bottom);
+  // Scrolling sufficed, so the sheet keeps its snap height.
+  expect(Math.round(sheet.height)).toBe(200);
+
+  $host.close();
+});
+
+test('a focused field the sheet cannot scroll to grows the sheet past its maximum until focus leaves', async () => {
+  const screen = render(html`
+    <button data-testid="outside">Outside</button>
+    <rc-bottom-sheet data-testid="host" snap-points="132px">
+      <dialog aria-label="Nutrition" style="max-block-size: 150px; overflow: hidden; padding: 0;">
+        <button>Done</button>
+        <div style="block-size: 220px;"></div>
+        <input data-testid="field" aria-label="Quantity" />
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+  const $field = (await screen.getByTestId('field').element()) as HTMLInputElement;
+  const $outside = (await screen.getByTestId('outside').element()) as HTMLButtonElement;
+
+  await $host.updateComplete;
+  $host.show();
+  $host.snapTo(0, 'instant');
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $field.focus({ preventScroll: true });
+
+  const sheet = $dialog.getBoundingClientRect();
+  const field = $field.getBoundingClientRect();
+
+  expect(field.bottom).toBeLessThanOrEqual(sheet.bottom);
+  expect(sheet.height).toBeGreaterThan(150);
+  expect(Math.round(sheet.bottom)).toBe(Math.round(window.innerHeight));
+
+  $outside.focus();
+
+  await vi.waitFor(() => {
+    expect(Math.round($dialog.getBoundingClientRect().height)).toBe(132);
+  });
+
+  expect($dialog.style.maxBlockSize).toBe('');
+
+  $host.close();
+});

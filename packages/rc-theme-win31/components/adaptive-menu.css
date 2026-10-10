@@ -31,3 +31,78 @@
     cursor: default;
   }
 }
+
+/*
+ * An action rc-adaptive-menu moves into its overflow renders as a menu row.
+ * rc-adaptive-menu maps the action's own tokens onto its item tokens in rc-base,
+ * which sits below every theme layer, so this layer repeats the mapping above the
+ * theme's button and menu-button variants (filled, tonal, icon-only sizes, and so
+ * on) that would otherwise restyle the row as a standalone control.
+ */
+@layer rc-theme-win31.overrides {
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-adaptive-menu
+    > rc-button[data-rc-action-overflowed] {
+    --rc-button-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-button-icon-size: 100%;
+    --rc-button-touch-target-inline-size: 100%;
+    --rc-button-touch-target-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-button-padding-inline: var(
+      --rc-adaptive-menu-item-padding-inline,
+      var(--rc-item-padding-inline, 0.75em)
+    );
+    --rc-button-padding-block: var(
+      --rc-adaptive-menu-item-padding-block,
+      var(--rc-item-padding-block, 0.3em)
+    );
+    --rc-button-radius: 0;
+    --rc-button-bg: transparent;
+    --rc-button-color: currentColor;
+    --rc-button-border: 0;
+    --rc-button-state-layer-bg: currentColor;
+    --rc-button-progress-color: currentColor;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-adaptive-menu
+    > rc-menu-button[data-rc-action-overflowed] {
+    --rc-menu-button-trigger-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-menu-button-icon-size: 100%;
+    --rc-menu-button-touch-target-inline-size: 100%;
+    --rc-menu-button-touch-target-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-menu-button-trigger-padding-block: var(
+      --rc-adaptive-menu-item-padding-block,
+      var(--rc-item-padding-block, 0.3em)
+    );
+    --rc-menu-button-trigger-padding-inline: var(
+      --rc-adaptive-menu-item-padding-inline,
+      var(--rc-item-padding-inline, 0.75em)
+    );
+    --rc-menu-button-trigger-gap: var(--rc-adaptive-menu-item-gap, var(--rc-item-gap, 0.5em));
+    --rc-menu-button-trigger-radius: 0;
+    --rc-menu-button-trigger-border: 0;
+    --rc-menu-button-trigger-background: transparent;
+    --rc-menu-button-trigger-color: currentColor;
+    --rc-menu-button-trigger-hover-color: currentColor;
+    --rc-menu-button-trigger-open-color: currentColor;
+  }
+
+  /* Win31 draws its buttons on the native control, not through tokens. */
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-adaptive-menu
+    > :is(rc-button, rc-menu-button)[data-rc-action-overflowed]
+    > :is(button, a[href]) {
+    inline-size: 100%;
+    min-inline-size: 0;
+    min-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    block-size: auto;
+    padding: var(--rc-adaptive-menu-item-padding-block, var(--rc-item-padding-block, 0.3em))
+      var(--rc-adaptive-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    text-align: start;
+  }
+}

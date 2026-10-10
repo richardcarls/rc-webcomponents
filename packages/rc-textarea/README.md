@@ -1,6 +1,6 @@
 # rc-textarea
 
-Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.
+Textarea wrapper with line decorations, gutter rendering, folding actions, and plugin hooks.
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-textarea](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea).
 
@@ -91,7 +91,11 @@ When the user edits, the slotted textarea is kept in sync and dispatches a nativ
 | `gutter`       | `gutter`      | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`. |
 | `word-wrap`    | `wordWrap`    | Wrap long lines instead of scrolling horizontally.                                  |
 | `auto-grow`    | `autoGrow`    | Let the field grow vertically with content.                                         |
-| `read-only`    | `readOnly`    | Render selectable, non-editable content.                                            |
+
+Read-only state comes from the slotted native control: set `readonly` on the `<textarea>`. The
+editor keeps the enabled field appearance, stays focusable and selectable, announces
+`aria-readonly`, and rejects edits. The host reflects `data-readonly`, and the `readOnly` getter
+reports the state.
 
 Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
 the slotted textarea with `aria-label` or a real `<label for="...">`.
@@ -248,7 +252,9 @@ The component reads inherited tokens where possible:
 | `--rc-textarea-font-family`               | `monospace`                                 | Editor font family.                   |
 | `--rc-textarea-font-size`                 | `1em`                                       | Editor and gutter font size.          |
 | `--rc-textarea-line-height`               | `1.5`                                       | Editor and gutter line height.        |
-| `--rc-textarea-padding`                   | `0.5em`                                     | Editor and gutter padding.            |
+| `--rc-textarea-padding-block`             | `0.5em`                                     | Editor and gutter block padding; any `padding-block` value. |
+| `--rc-textarea-padding-inline`            | `0.5em`                                     | Editor inline padding (both sides) and gutter start padding; one length, which the active line highlight bleeds through. |
+| `--rc-textarea-gutter-min-inline-size`     | `24px`                                     | Minimum gutter width including padding; Material uses `48px`. |
 | `--rc-textarea-background`                | `Field`                                     | Field background.                     |
 | `--rc-textarea-color`                     | `var(--rc-field-text, FieldText)`           | Field text color.                     |
 | `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)`       | Caret color.                          |
@@ -285,7 +291,8 @@ rc-textarea {
 
 ### Parts And Decoration Styles
 
-The exposed CSS parts are `root`, `gutter`, `gutter-cells`, `editor-area`, and `editor`.
+The exposed CSS parts are `root`, `gutter`, `gutter-cells`, `editor-area`, `editor`,
+`fold-trigger`, and `fold-icon` (when a plugin supplies an icon).
 
 ```css
 rc-textarea::part(editor) {
@@ -309,13 +316,12 @@ syntax highlighter.
 
 ## More Detail
 
-`LineDisclosureController` adds independent expandable line information without
-changing source text. It uses accessible buttons and block widgets. Buttons can
-sit at the trailing edge, with space reserved by `--rc-textarea-trailing-size`
-(default `2.5em`), or in the gutter. See the
-[interactive disclosure demo](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea#expandable-line-information)
-for setup, keyboard behavior, lifecycle, and styling hooks. With accessible widgets
-present, Tab moves focus instead of inserting a tab. Legacy widgets remain unchanged.
+`FoldingActionController` provides independent accessible buttons for caller-owned panels
+or source-line ranges. It retains expansion by key and leaves content creation to the plugin.
+Source folds hide complete editor and gutter lines while preserving the submitted text.
+Buttons can sit in the gutter or trailing lane. See the
+[interactive folding examples](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea#folding-actions)
+for setup and lifecycle details.
 
 - [PLUGIN_AUTHORING.md](PLUGIN_AUTHORING.md) covers custom plugins, decoration types,
   selection APIs, stylesheet injection, and parser/highlighter recipes.

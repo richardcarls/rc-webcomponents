@@ -10,7 +10,10 @@
  * repository is bind-mounted, so build output, screenshots, and reports land
  * on the host; every node_modules directory is a named volume instead, since
  * a Windows or macOS host's native binaries cannot run in the Linux image.
- * Inside the image (RC_PLAYWRIGHT_ENV=1) the script runs directly.
+ * TEST_DOCKER_MEMORY sets the container memory limit (default 4g), so a
+ * runaway browser is killed inside the container instead of the host's
+ * desktop apps. Inside the image (RC_PLAYWRIGHT_ENV=1) the script runs
+ * directly.
  */
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -21,6 +24,8 @@ import { fileURLToPath } from 'node:url';
 export const IMAGE_REPOSITORY = 'mcr.microsoft.com/playwright';
 export const WORKDIR = '/work';
 export const CACHE_DIR = '/cache';
+export const DEFAULT_MEMORY = '4g';
+export const SHM_SIZE = '1g';
 
 /** Host variables a script may read inside the container. */
 export const PASSTHROUGH_ENV = [
@@ -105,7 +110,13 @@ export const CONTAINER_SCRIPT = [
  */
 export function dockerRunArgs({ root, image, prefix, dirs, script, args, user, env, tty }) {
   const home = user ? '/tmp/home' : '/root';
-  const run = ['run', '--rm', '--init', '--ipc=host'];
+  const memory = env.TEST_DOCKER_MEMORY || DEFAULT_MEMORY;
+  const run = [
+    'run', '--rm', '--init',
+    // Equal limits disable swap, so an overrun is killed inside the container.
+    '--memory', memory, '--memory-swap', memory,
+    '--shm-size', SHM_SIZE,
+  ];
 
   if (tty) {
     run.push('-it');

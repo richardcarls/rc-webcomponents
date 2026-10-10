@@ -40,8 +40,22 @@
       box-shadow var(--rc-motion-duration, 160ms) var(--substrate-motion-easing, ease);
   }
 
+  /*
+   * rc-field resets the slotted native control's outline, but a ::slotted()
+   * rule loses to any page rule, such as a reset's Firefox :-moz-focusring
+   * outline. The field already shows focus, so clear the control's own
+   * outline from the light DOM too.
+   */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field
+    > :is(input, select, textarea):focus-visible {
+    outline: none;
+  }
+
   /* Same hover and focus treatment rc-select, rc-combobox, and rc-textarea use. */
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field:hover::part(field) {
+  /* Read-only fields keep focus treatment but skip the hover affordance. */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field:not([data-readonly]):hover::part(field) {
     border-color: color-mix(in srgb, var(--rc-accent, Highlight) 55%, var(--rc-border-color));
   }
 
@@ -49,7 +63,11 @@
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
   }
 
-  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-invalid]::part(label) {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-field[data-invalid]::part(label),
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-field[data-group][data-invalid]
+    > fieldset
+    > legend {
     color: var(--rc-field-error-color, red);
   }
 
@@ -83,7 +101,8 @@
     --rc-textarea-border: 0;
     --rc-textarea-border-radius: 0;
     --rc-textarea-background: transparent;
-    --rc-textarea-padding: 0;
+    --rc-textarea-padding-block: 0;
+    --rc-textarea-padding-inline: 0;
     inline-size: 100%;
   }
 

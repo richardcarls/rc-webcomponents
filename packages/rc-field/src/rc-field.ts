@@ -24,7 +24,67 @@ const CONTROL_SELECTOR = [
   ':scope > [data-rc-field-control] > input',
   ':scope > [data-rc-field-control] > textarea',
   ':scope > [data-rc-field-control] > select',
+  ':scope > fieldset',
 ].join(', ');
+
+/**
+ * Structural light-DOM CSS for group mode. `::slotted()` reaches only the fieldset, so its
+ * legend and controls are laid out from the containing document or shadow root, in `rc-base`
+ * below every theme layer.
+ */
+const LIGHT_DOM_CSS = `
+@layer rc-base {
+  rc-field > fieldset {
+    box-sizing: border-box;
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--rc-field-control-gap, var(--rc-control-gap, 0.25rem));
+    min-inline-size: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  /* A floated legend is not the fieldset's rendered legend, so it lays out as a flex item
+     on its own row, where the field label sits. */
+  rc-field > fieldset > legend {
+    float: inline-start;
+    flex: 0 0 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    color: var(--rc-field-label-color, var(--rc-field-text, CanvasText));
+    line-height: 1.25;
+  }
+
+  rc-field > fieldset > :is(input, textarea, select) {
+    box-sizing: border-box;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    box-shadow: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Text-like controls grow; selects and enhanced controls attach as leading or trailing
+     addons in source order. */
+  rc-field > fieldset > :is(input, textarea) {
+    flex: 1 1 0;
+  }
+
+  rc-field > fieldset > :is(select, [data-rc-field-control]) {
+    flex: none;
+  }
+}
+`;
 
 const TEXT_INPUT_TYPES = new Set([
   'date',
@@ -43,6 +103,16 @@ const TEXT_INPUT_TYPES = new Set([
 
 let fieldId = 0;
 
+/** The native controls a fieldset groups, including those owned by enhancing providers. */
+function groupControls($group: HTMLFieldSetElement): RCFieldControl[] {
+  return [...$group.elements].filter(
+    ($element): $element is RCFieldControl =>
+      $element instanceof HTMLInputElement ||
+      $element instanceof HTMLTextAreaElement ||
+      $element instanceof HTMLSelectElement,
+  );
+}
+
 /**
  * Accessible field wrapper for a native input, textarea, or select with labels and supporting
  * text.
@@ -56,11 +126,18 @@ let fieldId = 0;
  * `data-readonly`, `data-required`, `data-invalid`, `data-multiline`, `data-has-label`, and
  * `data-validation-attempted` for themes.
  *
+ * A direct `<fieldset>` child groups several native controls into one field, such as an amount
+ * and its unit. Its `<legend>` names the group and shows as the field label, and each control
+ * keeps its own accessible name. The first text-like input or textarea is the primary control,
+ * and the others attach before or after it in source order. Supporting text describes the
+ * fieldset.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-field rc-field docs}
  * @see {@link https://m3.material.io/components/text-fields/overview Material Design 3 text fields}
  *
  * @slot - Required native `<input>`, `<textarea>`, or `<select>` control. An enhancing direct
- *   child marked `data-rc-field-control` may own the native control as its direct child.
+ *   child marked `data-rc-field-control` may own the native control as its direct child. A
+ *   `<fieldset>` with a `<legend>` instead groups several controls into one field.
  * @slot label - Visible label; use a native `<label>` unless an ancestor label wraps the field
  * @slot leading - Leading icon or control outside the editable content
  * @slot trailing - Trailing icon or control outside the editable content
@@ -82,6 +159,7 @@ let fieldId = 0;
  * @attr [data-has-label] - Present when the field has content in its label slot
  * @attr [data-validation-attempted] - Present after the native control dispatches `invalid`
  * @attr [data-control-provider] - Present when an enhancing direct child owns the native control
+ * @attr [data-group] - Present when a `<fieldset>` groups several controls into the field
  *
  * @cssprop [--rc-field-min-block-size=var(--rc-control-block-size, 2.5rem)] - Minimum field surface block size
  * @cssprop [--rc-field-gap=var(--rc-control-gap, 0.5rem)] - Gap between leading, content, and trailing regions
@@ -117,6 +195,30 @@ let fieldId = 0;
  */
 export class RCField extends LitElement {
   static styles = [fieldStyles];
+
+  private static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
+
+  private static _ensureBaseStyles(root: Node): void {
+    if (
+      !(root instanceof Document || root instanceof ShadowRoot) ||
+      RCField._styledRoots.has(root)
+    ) {
+      return;
+    }
+
+    RCField._styledRoots.add(root);
+
+    const $style = (root instanceof Document ? root : root.ownerDocument).createElement('style');
+
+    $style.setAttribute('data-rc-light-dom-base', 'rc-field');
+    $style.textContent = LIGHT_DOM_CSS;
+
+    if (root instanceof Document) {
+      root.head.append($style);
+    } else {
+      root.append($style);
+    }
+  }
 
   /** Shows the current native value length and `maxlength`, when present. */
   @property({ type: Boolean, reflect: true })
@@ -169,6 +271,9 @@ export class RCField extends LitElement {
   private _multiline = false;
 
   @state()
+  private _grouped = false;
+
+  @state()
   private _validationAttempted = false;
 
   @state()
@@ -180,6 +285,10 @@ export class RCField extends LitElement {
   private _$controlRef: WeakRef<RCFieldControl> | null = null;
 
   private _$controlProviderRef: WeakRef<HTMLElement> | null = null;
+
+  private _$groupRef: WeakRef<HTMLFieldSetElement> | null = null;
+
+  private _groupObserver: MutationObserver | null = null;
 
   private _$formRef: WeakRef<HTMLFormElement> | null = null;
 
@@ -195,30 +304,55 @@ export class RCField extends LitElement {
 
   private _managedControlId: string | null = null;
 
-  private _managedAriaInvalid = false;
+  private _managedAriaInvalid = new Set<RCFieldControl>();
 
-  private readonly _controlController = new NativeChildController<RCFieldControl>(this, {
+  private readonly _controlController = new NativeChildController<
+    RCFieldControl | HTMLFieldSetElement
+  >(this, {
     selector: CONTROL_SELECTOR,
     observe: { childList: true, subtree: true },
-    onChange: ($control, $previousControl) => this._setupControl($control, $previousControl),
+    onChange: ($root, $previousRoot) => this._setupRoot($root, $previousRoot),
     onMissing: () => {
       if (import.meta.env.DEV) {
         warnMissingDirectChild(this, {
           selector: CONTROL_SELECTOR,
           childDescription:
-            'native <input> or <textarea>, optionally inside a data-rc-field-control provider',
+            'native <input> or <textarea>, optionally inside a data-rc-field-control provider, ' +
+            'or a <fieldset> grouping several controls',
         });
       }
     },
   });
 
-  /** Returns the native control, or `null` when the field is incomplete. */
+  /**
+   * Returns the native control, or `null` when the field is incomplete. In a group, this is the
+   * primary control: the first text-like input or textarea, or else the first control.
+   */
   get control(): RCFieldControl | null {
     return this._$controlRef?.deref() ?? null;
   }
 
+  /** Returns the `<fieldset>` that groups the field's controls, or `null` for a single control. */
+  get group(): HTMLFieldSetElement | null {
+    return this._$groupRef?.deref() ?? null;
+  }
+
+  /** Returns every native control the field manages, in source order. */
+  get controls(): RCFieldControl[] {
+    const $group = this.group;
+
+    if ($group) {
+      return groupControls($group);
+    }
+
+    const $control = this.control;
+
+    return $control ? [$control] : [];
+  }
+
   override connectedCallback(): void {
     super.connectedCallback();
+    RCField._ensureBaseStyles(this.getRootNode());
 
     this._compositionObserver ??= new MutationObserver(() => this._queueSync());
 
@@ -231,7 +365,14 @@ export class RCField extends LitElement {
 
   override disconnectedCallback(): void {
     this._compositionObserver?.disconnect();
-    this._teardownControl(this.control);
+
+    const $group = this.group;
+
+    if ($group) {
+      this._teardownGroup($group);
+    } else {
+      this._teardownControl(this.control);
+    }
 
     super.disconnectedCallback();
   }
@@ -256,20 +397,98 @@ export class RCField extends LitElement {
   /** Re-reads native value, validity, attributes, slots, and accessible relationships. */
   public sync(): void {
     this._controlController.sync();
+    this._syncGroupControl();
     this._syncSlots();
     this._syncForm();
     this._syncState();
     this._syncAssociations();
   }
 
-  private _setupControl(
-    $control: RCFieldControl | null,
-    $previousControl: RCFieldControl | null,
+  private _setupRoot(
+    $root: RCFieldControl | HTMLFieldSetElement | null,
+    $previousRoot: RCFieldControl | HTMLFieldSetElement | null,
   ): void {
-    if ($previousControl) {
-      this._teardownControl($previousControl);
+    if ($previousRoot instanceof HTMLFieldSetElement) {
+      this._teardownGroup($previousRoot);
+    } else if ($previousRoot) {
+      this._teardownControl($previousRoot);
     }
 
+    if ($root instanceof HTMLFieldSetElement) {
+      this._setupGroup($root);
+    } else {
+      this._setupControl($root);
+    }
+  }
+
+  private _setupGroup($group: HTMLFieldSetElement): void {
+    this._$groupRef = new WeakRef($group);
+    this._$controlProviderRef = null;
+    this._grouped = true;
+    this._focused = $group.matches(':focus-within');
+    this._validationAttempted = false;
+    this._nativeInvalid = false;
+    this._validationMessage = '';
+
+    $group.addEventListener('input', this._onControlInput);
+    $group.addEventListener('change', this._onControlChange);
+    $group.addEventListener('focusin', this._onGroupFocusIn);
+    $group.addEventListener('focusout', this._onGroupFocusOut);
+    $group.addEventListener('invalid', this._onControlInvalid, true);
+    $group.addEventListener('compositionend', this._onCompositionEnd);
+
+    this._groupObserver ??= new MutationObserver(() => this._queueSync());
+
+    this._groupObserver.observe($group, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['disabled', 'maxlength', 'placeholder', 'readonly', 'required', 'type'],
+    });
+
+    this.sync();
+    this._warnGroupComposition($group);
+  }
+
+  private _teardownGroup($group: HTMLFieldSetElement): void {
+    $group.removeEventListener('input', this._onControlInput);
+    $group.removeEventListener('change', this._onControlChange);
+    $group.removeEventListener('focusin', this._onGroupFocusIn);
+    $group.removeEventListener('focusout', this._onGroupFocusOut);
+    $group.removeEventListener('invalid', this._onControlInvalid, true);
+    $group.removeEventListener('compositionend', this._onCompositionEnd);
+    this._groupObserver?.disconnect();
+    this._$groupRef = null;
+    this._grouped = false;
+    this._$formRef?.deref()?.removeEventListener('reset', this._onFormReset);
+    this._$formRef = null;
+    this._restoreAssociations($group);
+    this._$controlRef = null;
+  }
+
+  /** Re-resolves a group's primary control after its contents change. */
+  private _syncGroupControl(): void {
+    const $group = this.group;
+
+    if (!$group) {
+      return;
+    }
+
+    const $controls = groupControls($group);
+    const $primary =
+      $controls.find(
+        ($control) =>
+          $control instanceof HTMLTextAreaElement ||
+          ($control instanceof HTMLInputElement && TEXT_INPUT_TYPES.has($control.type)),
+      ) ??
+      $controls[0] ??
+      null;
+
+    this._$controlRef = $primary ? new WeakRef($primary) : null;
+    this._hasControl = $primary !== null;
+  }
+
+  private _setupControl($control: RCFieldControl | null): void {
     this._$controlRef = $control ? new WeakRef($control) : null;
 
     const $provider = $control?.parentElement?.matches('[data-rc-field-control]')
@@ -358,7 +577,7 @@ export class RCField extends LitElement {
   private readonly _onControlInput = (): void => {
     this._syncState();
 
-    if (!this.control?.validity.valid) {
+    if (this.controls.some(($control) => !$control.validity.valid)) {
       return;
     }
 
@@ -390,10 +609,36 @@ export class RCField extends LitElement {
     this._syncState();
   };
 
-  private readonly _onControlInvalid = (): void => {
+  private readonly _onGroupFocusIn = (): void => {
+    this._focused = true;
+    this._reflectStates();
+  };
+
+  /** Moving focus between the group's own controls keeps the field focused. */
+  private readonly _onGroupFocusOut = (event: FocusEvent): void => {
+    const $next = event.relatedTarget;
+
+    if ($next instanceof Node && this.group?.contains($next)) {
+      return;
+    }
+
+    this._focused = false;
+    this._syncState();
+  };
+
+  private readonly _onControlInvalid = (event: Event): void => {
+    const $target = event.target;
+
+    const message =
+      $target instanceof HTMLInputElement ||
+      $target instanceof HTMLTextAreaElement ||
+      $target instanceof HTMLSelectElement
+        ? $target.validationMessage
+        : (this.control?.validationMessage ?? '');
+
     this._validationAttempted = true;
     this._nativeInvalid = true;
-    this._validationMessage = this.control?.validationMessage ?? '';
+    this._validationMessage = message;
     this._syncState();
     this._syncAssociations();
   };
@@ -419,14 +664,22 @@ export class RCField extends LitElement {
           : Boolean($control.selectedOptions[0]?.label.trim())
         : Boolean($control?.value);
 
-    this._disabled = this._effectiveDisabled($control);
+    const $group = this.group;
+    const $controls = this.controls;
+
+    this._disabled = $group
+      ? $group.disabled || ($controls.length > 0 && $controls.every(($item) => $item.disabled))
+      : this._effectiveDisabled($control);
+
     this._readOnly = $control instanceof HTMLSelectElement ? false : ($control?.readOnly ?? false);
-    this._required = $control?.required ?? false;
-    this._multiline = $control instanceof HTMLTextAreaElement;
+    this._required = $controls.some(($item) => $item.required);
+    this._multiline = !$group && $control instanceof HTMLTextAreaElement;
 
     if ($control && this._validationAttempted) {
-      this._nativeInvalid = !$control.validity.valid;
-      this._validationMessage = this._nativeInvalid ? $control.validationMessage : '';
+      const $invalid = $controls.find(($item) => !$item.validity.valid);
+
+      this._nativeInvalid = $invalid !== undefined;
+      this._validationMessage = $invalid?.validationMessage ?? '';
     }
 
     this._reflectStates();
@@ -460,6 +713,7 @@ export class RCField extends LitElement {
     this.toggleAttribute('data-has-label', this._hasLabel);
     this.toggleAttribute('data-validation-attempted', this._validationAttempted);
     this.toggleAttribute('data-control-provider', this._$controlProviderRef?.deref() !== undefined);
+    this.toggleAttribute('data-group', this._grouped);
   }
 
   private _effectiveInvalid(): boolean {
@@ -487,11 +741,15 @@ export class RCField extends LitElement {
       return;
     }
 
-    this._restoreAssociations($control, false);
+    const $group = this.group;
+    // A group's description belongs to the fieldset, announced on entering the group.
+    const $described: HTMLElement = $group ?? $control;
+
+    this._restoreAssociations($described, false);
 
     const $label = this.querySelector<HTMLLabelElement>(":scope > label[slot='label']");
 
-    if ($label && !$label.htmlFor) {
+    if ($label && !$label.htmlFor && !$group) {
       const controlId = this._ensureId($control, 'control');
 
       $label.htmlFor = controlId;
@@ -511,43 +769,52 @@ export class RCField extends LitElement {
     }
 
     if (descriptionIds.length) {
-      const authorIds = ($control.getAttribute('aria-describedby') ?? '')
+      const authorIds = ($described.getAttribute('aria-describedby') ?? '')
         .split(/\s+/)
         .filter(Boolean);
       const ids = [...new Set([...authorIds, ...descriptionIds])];
 
-      $control.setAttribute('aria-describedby', ids.join(' '));
+      $described.setAttribute('aria-describedby', ids.join(' '));
       this._managedDescriptionIds = new Set(descriptionIds);
     }
 
-    if (this._effectiveInvalid() && !$control.hasAttribute('aria-invalid')) {
-      $control.setAttribute('aria-invalid', 'true');
-      this._managedAriaInvalid = true;
+    if (this._effectiveInvalid()) {
+      // A forced `invalid` marks the primary control; native failures mark each failing one.
+      const $invalid = $group
+        ? this.controls.filter(($item) => this._validationAttempted && !$item.validity.valid)
+        : [$control];
+
+      for (const $item of $invalid.length ? $invalid : [$control]) {
+        if (!$item.hasAttribute('aria-invalid')) {
+          $item.setAttribute('aria-invalid', 'true');
+          this._managedAriaInvalid.add($item);
+        }
+      }
     }
   }
 
-  private _restoreAssociations($control: RCFieldControl, restoreIds = true): void {
+  private _restoreAssociations($described: HTMLElement, restoreIds = true): void {
     if (this._managedDescriptionIds.size) {
-      const ids = ($control.getAttribute('aria-describedby') ?? '')
+      const ids = ($described.getAttribute('aria-describedby') ?? '')
         .split(/\s+/)
         .filter((id) => id && !this._managedDescriptionIds.has(id));
 
       if (ids.length) {
-        $control.setAttribute('aria-describedby', ids.join(' '));
+        $described.setAttribute('aria-describedby', ids.join(' '));
       } else {
-        $control.removeAttribute('aria-describedby');
+        $described.removeAttribute('aria-describedby');
       }
     }
 
     this._managedDescriptionIds.clear();
 
-    if (this._managedAriaInvalid) {
-      if ($control.getAttribute('aria-invalid') === 'true') {
-        $control.removeAttribute('aria-invalid');
+    for (const $item of this._managedAriaInvalid) {
+      if ($item.getAttribute('aria-invalid') === 'true') {
+        $item.removeAttribute('aria-invalid');
       }
-
-      this._managedAriaInvalid = false;
     }
+
+    this._managedAriaInvalid.clear();
 
     const managedLabel = this._managedLabel;
 
@@ -566,8 +833,8 @@ export class RCField extends LitElement {
 
       this._managedIds = [];
 
-      if (this._managedControlId && $control.id === this._managedControlId) {
-        $control.removeAttribute('id');
+      if (this._managedControlId && $described.id === this._managedControlId) {
+        $described.removeAttribute('id');
       }
 
       this._managedControlId = null;
@@ -590,6 +857,39 @@ export class RCField extends LitElement {
     }
 
     return id;
+  }
+
+  private _warnGroupComposition($group: HTMLFieldSetElement): void {
+    if (!import.meta.env.DEV) {
+      return;
+    }
+
+    if (!$group.querySelector(':scope > legend')) {
+      console.warn(
+        '[rc-field] A grouped field needs a <legend> as the first child of its <fieldset> to name the group.',
+        $group,
+      );
+    }
+
+    if (this.querySelector(":scope > [slot='label']")) {
+      console.warn(
+        '[rc-field] A grouped field is labeled by its <legend>; remove the slotted label.',
+        this,
+      );
+    }
+
+    for (const $control of groupControls($group)) {
+      if (
+        !$control.labels?.length &&
+        !$control.getAttribute('aria-label') &&
+        !$control.getAttribute('aria-labelledby')
+      ) {
+        console.warn(
+          '[rc-field] Each grouped control needs its own accessible name, such as aria-label.',
+          $control,
+        );
+      }
+    }
   }
 
   private _warnComposition($control: RCFieldControl): void {

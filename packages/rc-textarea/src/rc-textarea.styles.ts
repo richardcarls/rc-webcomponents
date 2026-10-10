@@ -20,16 +20,47 @@ export const styles = css`
     white-space: normal;
   }
 
-  .line-disclosure-trigger {
+  .fold-action-trigger {
     box-sizing: border-box;
     inline-size: 100%;
-    min-block-size: var(--rc-textarea-trailing-size, 2.5em);
+    block-size: 1lh;
+    padding: 0;
+    border: 0;
+    background: transparent;
     cursor: pointer;
     color: inherit;
     font: inherit;
   }
 
-  .line-disclosure-panel[hidden] {
+  .gutter-cell {
+    position: relative;
+  }
+
+  .gutter-cell > .fold-action-trigger::before,
+  .gutter-cell > :not(.fold-action-group) .fold-action-trigger::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .fold-action-group,
+  .fold-action-single {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: top;
+  }
+
+  .fold-action-group .fold-action-trigger {
+    min-inline-size: 24px;
+  }
+
+  /* The trailing lane gives its trigger a target taller than one line; a gutter
+     trigger sizes to its own row instead. */
+  .widget--trailing .fold-action-trigger {
+    min-block-size: var(--rc-textarea-trailing-size, 2.5em);
+  }
+
+  .widget--block [hidden] {
     display: none;
   }
 
@@ -71,18 +102,26 @@ export const styles = css`
   }
 
   #gutter-cells {
-    padding: var(--rc-textarea-padding, 0.5em);
-    padding-inline-end: var(--rc-textarea-gutter-padding-inline-end, 0.75em);
+    box-sizing: border-box;
+    padding-block: var(--rc-textarea-padding-block, 0.5em);
+    padding-inline: var(--rc-textarea-padding-inline, 0.5em)
+      var(--rc-textarea-gutter-padding-inline-end, 0.75em);
     font-family: var(--rc-textarea-gutter-font-family, var(--rc-textarea-font-family, monospace));
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);
     text-align: end;
-    min-inline-size: 2.5ch;
+    min-inline-size: var(--rc-textarea-gutter-min-inline-size, 24px);
   }
 
   .gutter-cell {
     display: block;
+    min-inline-size: var(--rc-textarea-gutter-min-inline-size, 24px);
     white-space: pre;
+  }
+
+  .gutter-cell[hidden],
+  .line[hidden] {
+    display: none;
   }
 
   .gutter-cell-composite {
@@ -104,7 +143,6 @@ export const styles = css`
     position: relative;
     isolation: isolate;
     color: var(--rc-textarea-color, var(--rc-field-text, FieldText));
-    background: var(--rc-textarea-active-line-bg, transparent);
   }
 
   .gutter-cell--active::before {
@@ -112,9 +150,9 @@ export const styles = css`
     position: absolute;
     z-index: -1;
     inset-block: 0;
-    inset-inline-start: calc(-1 * var(--rc-textarea-padding, 0.5em));
+    inset-inline-start: calc(-1 * var(--rc-textarea-padding-inline, 0.5em));
     inset-inline-end: calc(-1 * var(--rc-textarea-gutter-padding-inline-end, 0.75em));
-    background: inherit;
+    background: var(--rc-textarea-active-line-bg, transparent);
     pointer-events: none;
   }
 
@@ -131,7 +169,8 @@ export const styles = css`
     width: 100%;
     min-height: 100%;
     box-sizing: border-box;
-    padding: var(--rc-textarea-padding, 0.5em);
+    padding-block: var(--rc-textarea-padding-block, 0.5em);
+    padding-inline: var(--rc-textarea-padding-inline, 0.5em);
     font-family: var(--rc-textarea-font-family, monospace);
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);
@@ -165,15 +204,9 @@ export const styles = css`
     height: auto;
   }
 
-  :host([read-only]) #root {
-    border: none;
-    background: transparent;
-    border-radius: 0;
-  }
-
-  :host([read-only]) #editor {
-    cursor: default;
-    padding: 0;
+  /* A read-only field keeps its enabled appearance and focus ring; it only
+     stops accepting edits. */
+  :host([data-readonly]) #editor {
     -webkit-user-modify: read-only;
   }
 
@@ -207,11 +240,13 @@ export const styles = css`
     min-inline-size: 100%;
   }
 
-  /* Paint the active row through the editor padding without clipping its text
-     or overflowing into adjacent rows. */
+  /* Paint the active row through the editor's inline padding without clipping
+     its text or overflowing into adjacent rows. The padding is one length, so
+     negating it stays valid, and logical insets follow RTL and vertical text.
+     Only the pseudo-element paints, so a translucent color tints the row and
+     its bleed evenly instead of doubling over the row itself. */
   .line--active {
     isolation: isolate;
-    background: var(--rc-textarea-active-line-bg, transparent);
   }
 
   .line--active::before {
@@ -219,8 +254,8 @@ export const styles = css`
     position: absolute;
     z-index: -1;
     inset-block: 0;
-    inset-inline: calc(-1 * var(--rc-textarea-padding, 0.5em));
-    background: inherit;
+    inset-inline: calc(-1 * var(--rc-textarea-padding-inline, 0.5em));
+    background: var(--rc-textarea-active-line-bg, transparent);
     pointer-events: none;
   }
 

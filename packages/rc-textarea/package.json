@@ -4,7 +4,7 @@
     "access": "public"
   },
   "version": "0.6.0",
-  "description": "Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.",
+  "description": "Textarea wrapper with line decorations, gutter rendering, folding actions, and plugin hooks.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
@@ -28,6 +28,12 @@
       "import": {
         "types": "./dist/types/packages/rc-textarea/src/define.d.ts",
         "default": "./dist/rc-textarea-define.js"
+      }
+    },
+    "./folding": {
+      "import": {
+        "types": "./dist/types/packages/rc-textarea/src/folding.d.ts",
+        "default": "./dist/rc-textarea-folding.js"
       }
     }
   },
