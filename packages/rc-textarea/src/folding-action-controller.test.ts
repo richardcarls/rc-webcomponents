@@ -3,6 +3,7 @@ import { expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
+import { logicalRect, resolveFlow } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import { FLOW_FIXTURES, inFlow } from '../../../test-helpers/flow.js';
 import { FoldingActionController } from './folding-action-controller.js';
@@ -254,8 +255,15 @@ test.each(FLOW_FIXTURES)('keeps gutter folding operable through a live flow chan
   const $button = getGutterCells(host).querySelector<HTMLButtonElement>('button')!;
   const $flow = screen.getByTestId('flow').element() as HTMLElement;
 
-  expect(getGutterCells(host).querySelector('.gutter-cell')!.getBoundingClientRect().width)
-    .toBeGreaterThanOrEqual(24);
+  const $cells = getGutterCells(host);
+  const cellRect = logicalRect(
+    $cells.querySelector<HTMLElement>('.gutter-cell')!.getBoundingClientRect(),
+    $cells.getBoundingClientRect(),
+    resolveFlow(getEditor(host)),
+  );
+
+  // The cell's block size follows its line, so the target floor is on the gutter's inline size.
+  expect(cellRect.inlineSize).toBeGreaterThanOrEqual(24);
 
   $flow.dir = flow.dir === 'ltr' ? 'rtl' : 'ltr';
   await new Promise((resolve) => requestAnimationFrame(resolve));
