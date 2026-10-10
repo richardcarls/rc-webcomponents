@@ -67,6 +67,32 @@ test('preserves native button appearance without theme tokens', async () => {
   }
 });
 
+test('keeps a labeled button at its label width in a min-content table column', async () => {
+  const screen = render(html`
+    <table style="inline-size: 20rem; border-collapse: collapse">
+      <colgroup><col /><col style="inline-size: 1px" /></colgroup>
+      <tr>
+        <td>Pattern</td>
+        <td data-testid="cell" style="padding: 0; white-space: nowrap">
+          <rc-button data-testid="host"><button type="button">Cancel changes</button></rc-button>
+        </td>
+      </tr>
+    </table>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+  const cell = await screen.getByTestId('cell').element();
+
+  await flushButton(host);
+
+  const button = host.querySelector('button') as HTMLButtonElement;
+
+  expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
+
+  expect(cell.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+    button.getBoundingClientRect().width,
+  );
+});
+
 test('styles a direct native anchor child the same as a button child', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   const screen = render(html`
