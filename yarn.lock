@@ -5221,10 +5221,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-theme-material@workspace:packages/rc-theme-material"
   dependencies:
+    "@rcarls/rc-accordion": "workspace:*"
     "@rcarls/rc-adaptive-menu": "workspace:*"
     "@rcarls/rc-button": "workspace:*"
     "@rcarls/rc-combobox": "workspace:*"
     "@rcarls/rc-dialog": "workspace:*"
+    "@rcarls/rc-disclosure": "workspace:*"
     "@rcarls/rc-field": "workspace:*"
     "@rcarls/rc-list": "workspace:*"
     "@rcarls/rc-menu-button": "workspace:*"

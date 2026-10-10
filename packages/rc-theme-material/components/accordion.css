@@ -1,20 +1,67 @@
 @layer rc-theme-material.components {
   /*
-   * Only the group box. Panels inside an accordion take the same
-   * `--rc-disclosure-*` mapping as a standalone disclosure, which disclosure.css
-   * sets for `rc-accordion` as well, so the panel recipe is not repeated here.
+   * Only the group box and the panel shapes. Panels inside an accordion take
+   * the same `--rc-disclosure-*` mapping as a standalone disclosure, which
+   * disclosure.css sets for `rc-accordion` as well, so the panel recipe is not
+   * repeated here.
    */
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-accordion {
-    --rc-accordion-gap: 0.5rem;
+    /*
+     * Grouped like a segmented `rc-list`: a 2px gap, no outline, extra-small
+     * inner corners, and extra-large outer corners on the first and last panel,
+     * so an accordion reads as one expandable list rather than a card stack.
+     */
+    --rc-accordion-gap: 0.125rem;
 
     /* Laid out before the element upgrades; see disclosure.css. */
     display: grid;
-    gap: var(--rc-accordion-gap, 0.5rem);
+    gap: var(--rc-accordion-gap, 0.125rem);
     border: 0;
     background: transparent;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-accordion > rc-disclosure {
     display: block;
+  }
+
+  /*
+   * Set on the items, not inherited from the group: disclosure.css maps the
+   * standalone outline and radius onto every `rc-disclosure`, wrapped or not.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-accordion > :is(rc-disclosure, details) {
+    --rc-disclosure-border: 0;
+    --rc-disclosure-radius: var(--md-sys-shape-corner-extra-small, 0.25rem);
+  }
+
+  /* Shape both the native panel and its summary hover surface at logical ends. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    :is(
+      rc-accordion > details:first-child,
+      rc-accordion > details:first-child > summary,
+      rc-accordion > rc-disclosure:first-child > details,
+      rc-accordion > rc-disclosure:first-child > details > summary
+    ) {
+    border-start-start-radius: var(--md-sys-shape-corner-extra-large, 1.75rem);
+    border-start-end-radius: var(--md-sys-shape-corner-extra-large, 1.75rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    :is(
+      rc-accordion > details:last-child,
+      rc-accordion > details:last-child > summary,
+      rc-accordion > rc-disclosure:last-child > details,
+      rc-accordion > rc-disclosure:last-child > details > summary
+    ) {
+    border-end-start-radius: var(--md-sys-shape-corner-extra-large, 1.75rem);
+    border-end-end-radius: var(--md-sys-shape-corner-extra-large, 1.75rem);
+  }
+
+  /* Without the surface fills, gaps alone would not separate the panels. */
+  @media (forced-colors: active) {
+    :where(.rc-theme-material, :host(.rc-theme-material))
+      rc-accordion
+      > :is(rc-disclosure, details) {
+      --rc-disclosure-border: 1px solid CanvasText;
+    }
   }
 }

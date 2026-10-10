@@ -901,7 +901,7 @@ test('disclosure maps Material tokens onto the shared panel properties', () => {
   expect(styles.getPropertyValue('--rc-disclosure-summary-min-block-size').trim()).toBe('3.5rem');
 });
 
-test('the summary keeps its list-item box so the native marker still renders', () => {
+test('the summary swaps the native marker for a centered trailing chevron', () => {
   const scope = renderScope();
   const disclosure = document.createElement('rc-disclosure');
 
@@ -915,13 +915,26 @@ test('the summary keeps its list-item box so the native marker still renders', (
   scope.append(disclosure);
 
   const summary = disclosure.querySelector('summary');
+  const details = disclosure.querySelector('details');
 
   expect(summary).not.toBeNull();
 
-  // `display: grid` drops the list-item box, which silently removes the
-  // disclosure triangle. Material styles `::marker` and draws no replacement,
-  // so setting grid here left the control with no expand affordance at all.
-  expect(getComputedStyle(summary!).display).toBe('list-item');
+  // Dropping the list-item box removes the native marker, so the theme has to
+  // draw its own affordance in the same change, or the control has none.
+  const styles = getComputedStyle(summary!);
+  const chevron = getComputedStyle(summary!, '::after');
+
+  expect(styles.display).toBe('grid');
+  expect(styles.alignItems).toBe('center');
+  expect(chevron.content).toBe('""');
+  expect(chevron.borderTopWidth).toBe('2px');
+  expect(chevron.rotate).toBe('135deg');
+
+  // Zero the turn so the open-state rotation reads without waiting it out.
+  disclosure.style.setProperty('--rc-motion-spatial-duration-fast', '0ms');
+  details!.open = true;
+
+  expect(getComputedStyle(summary!, '::after').rotate).toBe('315deg');
 });
 
 test('accordion styles direct and wrapped disclosures from one shared mapping', () => {
@@ -949,11 +962,58 @@ test('accordion styles direct and wrapped disclosures from one shared mapping', 
 
   // Both supported child forms resolve the same property names to the same
   // values, which is what keeps one panel recipe honest.
-  for (const token of ['--rc-disclosure-radius', '--rc-disclosure-summary-min-block-size']) {
+  for (const token of ['--rc-disclosure-summary-min-block-size', '--rc-disclosure-content-color']) {
     expect(getComputedStyle(accordion).getPropertyValue(token).trim(), token).toBe(
       getComputedStyle(wrapped!).getPropertyValue(token).trim(),
     );
   }
 
-  expect(getComputedStyle(accordion).getPropertyValue('--rc-accordion-gap').trim()).toBe('0.5rem');
+  expect(getComputedStyle(accordion).getPropertyValue('--rc-accordion-gap').trim()).toBe(
+    '0.125rem',
+  );
+});
+
+test('accordion panels share the small inner radius and drop the standalone outline', () => {
+  const scope = renderScope();
+  const accordion = document.createElement('rc-accordion');
+
+  accordion.innerHTML = ['First', 'Middle', 'Last']
+    .map(
+      (label) =>
+        `<rc-disclosure><details><summary>${label}</summary><p>Body</p></details></rc-disclosure>`,
+    )
+    .join('');
+
+  scope.append(accordion);
+
+  // Logical outer corners are applied to native panels and covered in the
+  // rendered flow tests; every child still supplies the same base radius.
+  const items = [...accordion.children].map((item) => {
+    const styles = getComputedStyle(item);
+
+    return {
+      border: styles.getPropertyValue('--rc-disclosure-border').trim(),
+      radius: styles.getPropertyValue('--rc-disclosure-radius').trim(),
+    };
+  });
+
+  expect(getComputedStyle(accordion).rowGap).toBe('2px');
+
+  for (const item of items) {
+    expect(item.border).toBe('0');
+    expect(item.radius).toBe('0.25rem');
+  }
+});
+
+test('a standalone disclosure keeps its outlined, uniformly rounded panel', () => {
+  const scope = renderScope();
+  const disclosure = document.createElement('rc-disclosure');
+
+  disclosure.innerHTML = '<details><summary>Alone</summary><p>Body</p></details>';
+  scope.append(disclosure);
+
+  const styles = getComputedStyle(disclosure);
+
+  expect(styles.getPropertyValue('--rc-disclosure-border')).toContain('1px solid');
+  expect(styles.getPropertyValue('--rc-disclosure-radius').trim()).toBe('1rem');
 });
