@@ -4,8 +4,9 @@ name: rc-theme-material
 description: >
   Material Design 3 composition guide for building Android-style progressive
   web apps from rc-webcomponents with the rc-theme-material theme. Values below
-  are the M3 baseline scheme the theme vendors in defaults.css; an app that
-  brings its own scheme overrides the matching --md-sys-* variables.
+  include the M3 baseline tokens the theme vendors in defaults.css and
+  composition guidance for spacing; an app that brings its own scheme
+  overrides the matching --md-sys-* variables.
 
 colors:
   # Light / dark pairs resolve through light-dark() on --md-sys-color-*.
@@ -150,13 +151,13 @@ typography:
 
 rounded:
   # --md-sys-shape-corner-*
-  none: 0
+  none: 0px
   extra-small: 4px # snackbar, inner corners of segmented lists and accordions
   small: 8px # chips, menus
   medium: 12px # cards
   large: 16px # standalone disclosures, FAB
   extra-large: 28px # dialogs, bottom sheet top corners, segmented group ends
-  full: 9999px # buttons, icon buttons, navigation indicators
+  full: 999px # buttons, icon buttons, navigation indicators
 
 spacing:
   # 4dp grid. Window margins follow the width class.
@@ -279,10 +280,11 @@ Three owners, kept apart:
 
 Rules that follow from this:
 
-- **Build on native children.** Every component wraps a native element you
-  author: `<button>` in `rc-button`, `<dialog>` in `rc-dialog`, `<details>` in
-  `rc-disclosure`, `<input>` in `rc-field`. Keep those children in the DOM and
-  label them; they carry the accessibility and form behavior.
+- **Build on native children where required.** Components such as `rc-button`,
+  `rc-dialog`, `rc-disclosure` and `rc-field` wrap an authored `<button>`,
+  `<dialog>`, `<details>` or `<input>`. Keep required native children in the DOM
+  and label them; they carry the accessibility and form behavior. Containers
+  such as `rc-app-bar` and `rc-accordion` have different child contracts.
 - **Style through tokens.** Adapt with `--md-sys-*` (system) and
   `--rc-<component>-*` (component) properties, theme classes and documented
   `data-*` hooks. Never target shadow internals or `--_rc-*` private tokens.
@@ -592,7 +594,7 @@ navigation component chosen by size class, and at most one FAB.
 ```html
 <body>
   <rc-app-bar scroll-target="#content">
-    <span>Library</span>
+    <h1 class="app-title">Library</h1>
     <rc-adaptive-menu slot="trailing" label="Library actions" max-shown="1">
       <rc-button icon-only class="rc-icon-button--standard" data-priority="20">
         <button type="button" aria-label="Search">
@@ -619,6 +621,13 @@ navigation component chosen by size class, and at most one FAB.
     </button>
   </rc-fab>
 </body>
+```
+
+```css
+.app-title {
+  margin: 0;
+  font-weight: inherit;
+}
 ```
 
 - **Top app bar.** The default is the small bar. Add
@@ -1081,8 +1090,9 @@ widths; route between panes instead.
 - **Render timing.** Slotted controls in a Lit-based component can't take
   focus until the component has rendered. Await `updateComplete` on the
   component before calling `focus()` on something you just slotted.
-- **Typings.** `@rcarls/rc-webcomponents/solid` and `/react` provide JSX
-  typings for attributes and `prop:` bindings.
+- **Typings.** `@rcarls/rc-webcomponents/solid` provides JSX typings for
+  attributes and Solid's `prop:` bindings. The `/react` typings cover
+  attributes and events, but do not use `prop:` syntax.
 
 ## Do's and Don'ts
 
