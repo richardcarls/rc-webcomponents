@@ -41,10 +41,10 @@ function bindSlice(
     measured: false,
   };
 
-  host.addEventListener('rc-virtual-scroller-range', (event) => {
-    const { start, end } = event.detail;
+  const applyRange = (detail: RCVirtualScrollerRangeDetail): void => {
+    const { start, end } = detail;
 
-    latest = event.detail;
+    latest = detail;
 
     for (let i = entries.length - 1; i >= 0; i -= 1) {
       const entry = entries[i];
@@ -78,10 +78,37 @@ function bindSlice(
 
       entries.splice(insertAt < 0 ? entries.length : insertAt, 0, { index, node: item });
     }
-  });
+  };
+
+  host.addEventListener('rc-virtual-scroller-range', (event) => applyRange(event.detail));
+
+  // The first range may have fired during an awaited locator lookup. Seed
+  // from the component's public snapshot before waiting for another event.
+  if (host.range) {
+    applyRange(host.range);
+  }
 
   return () => latest;
 }
+
+test('renders the current range when a consumer subscribes after the first event', async () => {
+  const screen = render(html`
+    <div style="block-size: ${PORT_SIZE}px; overflow: auto;">
+      <rc-virtual-scroller data-testid="late-host" count="500" item-size="40">
+        <ul style=${LIST_STYLE.block}></ul>
+      </rc-virtual-scroller>
+    </div>
+  `);
+  const host = (await screen.getByTestId('late-host').element()) as RCVirtualScroller;
+  const list = host.querySelector('ul') as HTMLElement;
+
+  await vi.waitFor(() => expect(host.range?.end).toBeGreaterThan(0));
+
+  const range = bindSlice(host, list, 'block');
+
+  await vi.waitFor(() => expect(range().measured).toBe(true));
+  expect(list.children.length).toBeGreaterThan(0);
+});
 
 const LIST_STYLE: Record<RCVirtualScrollerAxis, string> = {
   block: 'display: grid; grid-template-columns: 1fr; gap: 0; margin: 0; padding: 0;',
