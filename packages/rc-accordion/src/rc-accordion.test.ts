@@ -19,10 +19,12 @@ function getElement<T>($items: T[], index: number): T {
   return $item;
 }
 
-test('rc-accordion closes sibling disclosures', async () => {
+test('rc-accordion asks a controlled sibling disclosure to close', async () => {
+  const toggleSpy = vi.fn();
+
   const screen = render(html`
     <rc-accordion>
-      <rc-disclosure data-testid="one" open>
+      <rc-disclosure data-testid="one" open @rc-disclosure-toggle=${toggleSpy as EventListener}>
         <details open>
           <summary>One</summary>
           <p>One body</p>
@@ -38,19 +40,50 @@ test('rc-accordion closes sibling disclosures', async () => {
   `);
 
   const $one = screen.getByTestId('one').element() as RCDisclosure;
+
+  await screen.getByText('Two', { exact: true }).click();
+
+  await vi.waitFor(() =>
+    expect(toggleSpy).toHaveBeenCalledWith(expect.objectContaining({ detail: { open: false } })),
+  );
+
+  expect($one.open).toBe(true);
+});
+
+test('rc-accordion leaves closed disclosures free to reopen', async () => {
+  const screen = render(html`
+    <rc-accordion>
+      <rc-disclosure data-testid="one">
+        <details>
+          <summary>One</summary>
+          <p>One body</p>
+        </details>
+      </rc-disclosure>
+      <rc-disclosure data-testid="two">
+        <details>
+          <summary>Two</summary>
+          <p>Two body</p>
+        </details>
+      </rc-disclosure>
+    </rc-accordion>
+  `);
+
+  const $one = screen.getByTestId('one').element() as RCDisclosure;
   const $two = screen.getByTestId('two').element() as RCDisclosure;
-  const $twoDetails = $two.querySelector('details');
 
-  if (!$twoDetails) {
-    throw new Error('Expected second disclosure details.');
+  for (const [summary, $opened, $closed] of [
+    ['One', $one, $two],
+    ['Two', $two, $one],
+    ['One', $one, $two],
+    ['Two', $two, $one],
+  ] as const) {
+    await screen.getByText(summary, { exact: true }).click();
+
+    await vi.waitFor(() => {
+      expect($opened.open).toBe(true);
+      expect($closed.open).toBe(false);
+    });
   }
-
-  $two.open = true;
-
-  $twoDetails.dispatchEvent(new Event('toggle'));
-
-  expect($one.open).toBe(false);
-  expect($two.open).toBe(true);
 });
 
 test('rc-accordion closes sibling native details', async () => {
