@@ -479,7 +479,13 @@ Measure when your app shell mounts and on resize, not once at module load.
   navigation works at every size.
 - **Supporting pane.** Primary content plus a secondary pane (filters,
   details). Compact moves the pane into a bottom sheet; expanded docks it at
-  the inline end.
+  the inline end. Content that stays relevant throughout the task belongs in
+  a persistent pane once the container is wide enough; a transient overlay
+  is for one-off tasks. Decide from the container's width, not the device
+  type. In compact-height landscape, dock support surfaces at the inline end
+  instead of using a sheet.
+- **List-detail Back.** Show Back in the single-pane presentation; suppress it
+  only while the parent list is visible beside the detail.
 - **Feed.** A grid of cards whose column count comes from container width:
 
   ```css
@@ -559,6 +565,8 @@ The theme splits motion into **spatial** (position, size) and **effects**
   toggles). Reserve emphasized and expressive motion for prominent container
   or route transitions.
 - Effects motion never overshoots.
+- Don't apply expressive motion to repeated progression, timers or
+  decorative loops.
 - Under `prefers-reduced-motion`, the theme zeroes spatial durations and
   shortens effects durations. Your app's own transitions should read the same
   tokens so they follow suit:
@@ -619,6 +627,13 @@ navigation component chosen by size class, and at most one FAB.
   to shrink on scroll. `.rc-app-bar--center-aligned` is for a single centered
   title on a root screen. `scroll-behavior="hide"` suits long reading views.
   Always set `scroll-target` to the element that actually scrolls.
+- **App bar title.** The title slot holds the screen's one page heading, so
+  the body doesn't repeat it. A collapsed or small bar shows one line with an
+  ellipsis; an expanded title may wrap to a few lines before clipping. Put
+  status (step, sync state) in a one-line subtitle under the title. Never put
+  a progress indicator in a top app bar: it is not part of the M3 anatomy.
+- **App bar actions** are 24px icons centered in independent 48px targets.
+  Don't let margins meant for labeled buttons shrink or offset them.
 - **App bar slots.** `leading` holds back or close (never a hamburger when a
   rail is visible). `trailing` holds at most two or three icon actions; put
   the rest in `rc-adaptive-menu` overflow. Author each action as an
@@ -628,7 +643,10 @@ navigation component chosen by size class, and at most one FAB.
   The component never measures space, so write `max-shown` from size-class
   state. Utilities like Settings and Help belong in overflow, not in
   navigation.
-- **Navigation.** Three to five top-level destinations. Render
+- **Navigation.** Three to five top-level destinations. Don't render a
+  navigation suite with a single destination, or with disabled or unreleased
+  ones; until there are two, the app bar title links home and utilities live
+  in overflow. Render
   `rc-navigation-bar` on compact width or compact height, and
   `rc-navigation-rail` otherwise; switch the element from app state, keeping
   the same links and `aria-current="page"`. Put the screen's FAB in the rail's
@@ -640,6 +658,9 @@ navigation component chosen by size class, and at most one FAB.
   an extended FAB. Anchor with `position` and keep it clear of the navigation
   bar. `scroll-reveal` suits a back-to-top button, not the primary action. Use
   `rc-fab-menu` when the action needs two to six choices.
+- **Floating layer.** The FAB and other floating controls clear whatever is
+  docked at the bottom: the navigation bar, and a persistent sheet's peek by
+  16px plus the safe-area inset.
 
 ### Actions and emphasis
 
@@ -676,6 +697,9 @@ navigation component chosen by size class, and at most one FAB.
   announced through `aria-pressed`.
 - Menus open from `rc-menu-button`; give an icon-only trigger an accessible
   name. `.rc-menu-button--narrow` is for tight app-bar trailing groups.
+  A submenu row's trailing glyph goes in the nested `rc-menu-button`'s
+  `indicator` slot; `rc-menu` never generates one.
+- Put an icon before the label, never after it.
 
 ### Dialogs
 
@@ -738,6 +762,10 @@ choice from app state:
   theme styles the slot, not your heading's UA defaults.
 - **Scroll a body region**, never the dialog surface; the app bar's
   `scroll-target` points at it.
+- **Dialog actions are content-sized** and aligned to the inline end, dismiss
+  before confirm, each with a 48px target. They wrap only when text scaling or
+  width requires it and never stretch into full-width rows (Android's
+  `dismissButton`/`confirmButton` model).
 - **Dismiss is never destructive.** Back, Escape and the scrim all cancel.
   Set `light-dismiss` only for dialogs whose dismissal loses nothing.
 - **Single-choice dialogs** for enumerated settings use native radios in an
@@ -783,6 +811,14 @@ coexists with the page.
 - Cap the top snap point below the status bar (`90dvh`); a sheet that fills
   the screen should be a full-screen dialog.
 - Do not stack sheets or open a dialog from a sheet's own content.
+- Keep the drag handle in its own band above the sheet content, as M3 places
+  it. Draw keyboard focus inside the sheet's clipped corners, since an outline
+  outside them is cut off.
+- A standard, non-modal sheet that stays open over the page uses its own
+  container tone so it reads as a separate surface.
+- Don't add swipe paging between tabs inside a sheet. Horizontal swipes
+  compete with vertical resizing, scrolling and the browser's edge-back
+  gesture; switch tabs explicitly.
 
 ### Lists and settings
 
@@ -824,12 +860,22 @@ for icon geometry), the default headline and supporting text, `trailing`
   }
   ```
 
+- Segmented button rows span the row on compact and cap at about 30rem on
+  wider panes. Drop the selected checkmark when the row is too narrow for
+  three worded segments. `rc-list` sizes one shared trailing column for all
+  its rows, so put segmented-button rows in a list without trailing content.
 - Settings on expanded windows become list-detail: the category list on the
   start side, the selected category on the end side.
 - Use the standard (non-segmented) list for content collections and dense
   results; use dividers sparingly.
 - `selection="single"` or `"multiple"` with native radios or checkboxes makes
   a selectable list. `reorderable` adds drag handles with keyboard support.
+- **Drag is never the only path.** Wherever items reorder by drag, also offer
+  visible move-earlier and move-later actions, and announce the new position
+  in a live region that exists before the move.
+- **Contextual selection.** For per-item actions in a grid or list, select
+  first and then show the actions for the selected item, rather than a
+  permanent action row on every item or a hidden long-press menu.
 - Keep one primary target per row. A trailing icon button is a second target
   only when the row itself does something else.
 
@@ -901,6 +947,10 @@ rc-card.card-outlined {
 - `selected` shows a selection outline for multi-select collections.
 - Use `rc-carousel` for a scrollable row of media, not for primary content
   the user must see.
+- Media needs a failure state. A missing or broken image renders a
+  placeholder surface, never the browser's broken-image icon or the alt text
+  as the visual. Card media is decorative (`alt=""`) when the title names the
+  item.
 
 ### Search
 
@@ -933,6 +983,9 @@ rc-card.card-outlined {
   with a form. `rc-slider` and `rc-range-slider` wrap `<input type="range">`.
 - Validate on submit and on blur, not per keystroke. Errors replace the hint
   and say how to fix the problem.
+- **Show saved data as content, not as read-only fields.** Detail views use
+  lists, paragraphs and chips. A read-only field is a form state: use it only
+  inside a form, for a value that can't change.
 - Full-width fields on compact; on wider windows, bound field width to the
   content (about 280–560px) instead of stretching across the pane.
 
@@ -968,6 +1021,8 @@ rc-card.card-outlined {
   most one action, typically Undo for a reversible change; never use one
   for errors that need a decision (use a dialog) or for messages
   that must persist (use inline text). Choose a `queue-policy` deliberately.
+  Undo restores the exact previous state. An action that changed nothing
+  says so and offers no Undo.
 - **Progress.** `rc-progress` wraps `<progress>` as an M3 linear indicator.
   Determinate when you know the amount; `indeterminate` otherwise. Label it,
   and use `value-text` for a readable status. The theme has no circular

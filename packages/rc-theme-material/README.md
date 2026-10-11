@@ -91,8 +91,16 @@ bridge and component style layers:
 coding agents. It covers which component fills which Material role, adaptive
 layouts by window size class, dialogs, sheets, lists, navigation and
 feedback, with the baseline token values in machine-readable front matter. It
-ships in the package, so agents in a consuming app can read it from
-`node_modules/@rcarls/rc-theme-material/DESIGN.md`.
+ships in the package and is exported as `@rcarls/rc-theme-material/DESIGN.md`,
+so agents in a consuming app can read it from `node_modules`, or under Yarn
+Plug'n'Play with:
+
+```sh
+yarn node -e "process.stdout.write(require('fs').readFileSync(require.resolve('@rcarls/rc-theme-material/DESIGN.md'), 'utf8'))"
+```
+
+App design documents should reference it for Material 3 composition and keep
+only their own overrides, branding and product patterns.
 
 ## Theming scope
 
