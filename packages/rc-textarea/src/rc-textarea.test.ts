@@ -313,6 +313,8 @@ describe('RCTextarea — basic rendering', () => {
 
       await userEvent.click($secondLine);
 
+      await expect.poll(() => $secondLine.classList.contains('line--active')).toBe(true);
+
       await expect
         .poll(() => getGutterCells(host).children[1]?.classList.contains('gutter-cell--active'))
         .toBe(true);
