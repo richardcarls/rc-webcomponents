@@ -17,7 +17,7 @@ import type { RCTextareaPlugin } from '@rcarls/rc-textarea';
 
 /** Public API surface of `<rc-disclosure>`. */
 export type RCDisclosureRef = HTMLElement & {
-  open: boolean;
+  open: boolean | undefined;
   defaultOpen: boolean;
 };
 

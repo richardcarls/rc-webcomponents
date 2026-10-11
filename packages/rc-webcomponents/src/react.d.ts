@@ -435,7 +435,8 @@ export type RCSnackbarRef = HTMLElement & {
 
 /** Public API surface of `<rc-disclosure>`. */
 export type RCDisclosureRef = HTMLElement & {
-  open: boolean;
+  open: boolean | undefined;
+  defaultOpen: boolean;
 };
 
 /** Public API surface of `<rc-accordion>`. */
@@ -802,6 +803,8 @@ declare module 'react' {
         RCDisclosureRef
       > & {
         open?: boolean;
+        'default-open'?: boolean;
+        'onrc-disclosure-toggle'?: (event: CustomEvent<RCDisclosureToggleDetail>) => void;
       };
 
       'rc-accordion': React.DetailedHTMLProps<
