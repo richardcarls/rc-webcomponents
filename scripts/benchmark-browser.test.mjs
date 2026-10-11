@@ -8,6 +8,7 @@ import {
   countBudget,
   createRuntimeBaseline,
   createRuntimeBudgets,
+  runBenchmarkAttempts,
   timingBudget,
 } from './benchmark-browser.mjs';
 
@@ -52,10 +53,13 @@ test('the motion metrics added for frame sampling have the right budget semantic
   );
 });
 
-test('createRuntimeBudgets covers median and p95 values', () => {
-  assert.deepEqual(createRuntimeBudgets({ example: { median: 10, p95: 20, samples: [] } }), {
-    example: { median: 15, p95: 25 },
-  });
+test('createRuntimeBudgets excludes diagnostic samples', () => {
+  assert.deepEqual(
+    createRuntimeBudgets({ example: { median: 10, p95: 20, samples: [], frameWaitSamples: [] } }),
+    {
+      example: { median: 15, p95: 25 },
+    },
+  );
 });
 
 test('createRuntimeBaseline preserves measurements separately from limits', () => {
@@ -80,4 +84,27 @@ test('compareRuntimeResults reports missing and over-budget measurements', () =>
     'slow.median: 11.00ms exceeds 10.00ms.',
     'slow.p95: 20.00ms exceeds 19.00ms.',
   ]);
+});
+
+test('runBenchmarkAttempts keeps a failing first attempt when a full retry passes', async () => {
+  let runs = 0;
+  const attempts = await runBenchmarkAttempts(
+    async () => ({ example: { median: ++runs === 1 ? 20 : 8, p95: 9 } }),
+    { example: { median: 10, p95: 10 } },
+  );
+
+  assert.equal(runs, 2);
+  assert.match(attempts[0].errors[0], /median/);
+  assert.deepEqual(attempts[1].errors, []);
+  assert.equal(typeof attempts[0].runner.elapsedMs, 'number');
+});
+
+test('runBenchmarkAttempts preserves a reproducible budget failure', async () => {
+  const attempts = await runBenchmarkAttempts(async () => ({ example: { median: 20, p95: 20 } }), {
+    example: { median: 10, p95: 10 },
+  });
+
+  assert.equal(attempts.length, 2);
+  assert.equal(attempts[0].errors.length, 2);
+  assert.equal(attempts[1].errors.length, 2);
 });

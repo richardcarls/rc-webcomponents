@@ -70,9 +70,9 @@ Each motion scenario adds three metrics beyond median and p95:
   since a dropped frame moves in ~16.7&nbsp;ms quanta and a proportional
   budget would be meaningless at that scale.
 - **`animationCount`**: the peak number of concurrent `Animation` objects
-  found across the scenario's whole shadow tree (`getAnimations({ subtree:
-  true })` does not cross into a shadow root from its host in this browser,
-  so the harness walks every shadow boundary explicitly). Fully
+  found across the scenario's whole shadow tree. In this browser,
+  `getAnimations({ subtree: true })` does not cross from a host into its shadow
+  root, so the harness walks every shadow boundary explicitly. Fully
   deterministic and machine-independent, and the metric most likely to catch
   a theme change that animates more properties than intended.
 
@@ -83,8 +83,14 @@ racing the whole settle step against a 4-second wall-clock cap regardless. A
 theme with every duration at zero, like win31, resolves through this path
 immediately: `getAnimations()` reports nothing to wait for.
 
-The report, including every sample, is uploaded as a CI artifact. Other
-browser engines remain correctness gates; Chromium is the stable timing gate.
+The report, including every sample, is uploaded as a CI artifact. For non-motion
+scenarios, `frameWaitSamples` records the union of time spent awaiting animation
+frames within each timed sample. The report also keeps runner CPU/load context
+and every full-suite attempt. A budget failure triggers one complete retry;
+the gate still fails if the retry exceeds a budget. These diagnostics help
+separate runner contention from a repeatable slowdown without removing frame
+waits from the measured user-facing time. Other browser engines remain
+correctness gates; Chromium is the stable timing gate.
 
 ## Running the audits
 

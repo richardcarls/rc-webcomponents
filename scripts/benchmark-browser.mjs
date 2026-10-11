@@ -1,5 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { availableParallelism, loadavg } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
@@ -19,7 +21,7 @@ function readJson(path) {
  * report detail, not a budgeted metric, so it's excluded here rather than
  * required to have a RUNTIME_METRICS entry.
  */
-const NON_METRIC_RESULT_FIELDS = new Set(['samples']);
+const NON_METRIC_RESULT_FIELDS = new Set(['samples', 'frameWaitSamples']);
 
 /*
  * Three budget semantics, mirroring BYTE_METRICS/COUNT_METRICS in
@@ -194,12 +196,53 @@ async function runBenchmarks() {
   }
 }
 
+/** Re-run the whole suite once after a budget failure, retaining both attempts. */
+export async function runBenchmarkAttempts(run, budgets, maxAttempts = 2) {
+  const attempts = [];
+
+  for (let index = 0; index < maxAttempts; index += 1) {
+    const startedAt = performance.now();
+    const cpuBefore = process.cpuUsage();
+    const loadBefore = loadavg();
+    const results = await run();
+    const errors = budgets ? compareRuntimeResults(results, budgets) : [];
+
+    attempts.push({
+      results,
+      errors,
+      runner: {
+        elapsedMs: performance.now() - startedAt,
+        processCpuUs: process.cpuUsage(cpuBefore),
+        availableParallelism: availableParallelism(),
+        loadBefore,
+        loadAfter: loadavg(),
+      },
+    });
+
+    if (errors.length === 0) {
+      break;
+    }
+
+    if (index + 1 < maxAttempts) {
+      console.warn(
+        `Browser performance budgets failed on attempt ${index + 1}; retrying the full suite once.`,
+      );
+    }
+  }
+
+  return attempts;
+}
+
 async function main() {
-  const results = await runBenchmarks();
+  const budgets = UPDATE_BASELINE ? null : readJson(BASELINE_PATH).budgets;
+  const attempts = await runBenchmarkAttempts(runBenchmarks, budgets, UPDATE_BASELINE ? 1 : 2);
+  const lastAttempt = attempts.at(-1);
+  const results = lastAttempt.results;
   const report = {
     generatedAt: new Date().toISOString(),
     browser: 'chromium',
     results,
+    attempts,
   };
 
   mkdirSync(dirname(REPORT_PATH), { recursive: true });
@@ -225,10 +268,12 @@ async function main() {
   );
 
   if (!UPDATE_BASELINE) {
-    const errors = compareRuntimeResults(results, readJson(BASELINE_PATH).budgets);
-
-    if (errors.length > 0) {
-      throw new Error(`Browser performance budgets failed:\n${errors.join('\n')}`);
+    if (lastAttempt.errors.length > 0) {
+      throw new Error(
+        `Browser performance budgets failed after ${attempts.length} attempts:\n${attempts
+          .map((attempt, index) => `Attempt ${index + 1}:\n${attempt.errors.join('\n')}`)
+          .join('\n')}`,
+      );
     }
   }
 }

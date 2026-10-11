@@ -27,6 +27,7 @@ type BenchmarkResult = {
   median: number;
   p95: number;
   samples: number[];
+  frameWaitSamples: number[];
 };
 
 type MotionBenchmarkResult = {
@@ -51,8 +52,28 @@ function percentile(samples: number[], percentileValue: number): number {
   return sorted[index] ?? 0;
 }
 
+let measuringFrameWaits = false;
+let pendingFrameWaits = 0;
+let frameWaitStartedAt = 0;
+let frameWaitMs = 0;
+let frameWaitGeneration = 0;
+
 function nextFrame(): Promise<void> {
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+  const generation = frameWaitGeneration;
+
+  if (measuringFrameWaits && pendingFrameWaits++ === 0) {
+    frameWaitStartedAt = performance.now();
+  }
+
+  return new Promise((resolve) =>
+    requestAnimationFrame(() => {
+      if (measuringFrameWaits && generation === frameWaitGeneration && --pendingFrameWaits === 0) {
+        frameWaitMs += performance.now() - frameWaitStartedAt;
+      }
+
+      resolve();
+    }),
+  );
 }
 
 async function settle(element: Element): Promise<void> {
@@ -557,18 +578,30 @@ async function measureScenario(run: () => Promise<void>): Promise<BenchmarkResul
   }
 
   const samples: number[] = [];
+  const frameWaitSamples: number[] = [];
 
   for (let index = 0; index < measuredRuns; index += 1) {
+    frameWaitMs = 0;
+    pendingFrameWaits = 0;
+    frameWaitGeneration += 1;
+    measuringFrameWaits = true;
+
     const startedAt = performance.now();
 
-    await run();
-    samples.push(performance.now() - startedAt);
+    try {
+      await run();
+      samples.push(performance.now() - startedAt);
+      frameWaitSamples.push(frameWaitMs);
+    } finally {
+      measuringFrameWaits = false;
+    }
   }
 
   return {
     median: percentile(samples, 0.5),
     p95: percentile(samples, 0.95),
     samples,
+    frameWaitSamples,
   };
 }
 
