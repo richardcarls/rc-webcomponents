@@ -34,6 +34,7 @@ jobs:
           name: performance-report
           path: .performance/
           if-no-files-found: ignore
+          include-hidden-files: true
 
       - name: Upload visual test diffs
         if: failure()

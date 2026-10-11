@@ -52,6 +52,15 @@ jobs:
       - name: Build, validate packages, and test in the Playwright image
         run: node scripts/playwright-env.mjs ci:host
 
+      - name: Upload performance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: .performance/
+          if-no-files-found: ignore
+          include-hidden-files: true
+
       - name: Upload visual test diffs
         if: failure()
         uses: actions/upload-artifact@v4
