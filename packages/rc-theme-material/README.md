@@ -85,6 +85,15 @@ bridge and component style layers:
 @import '@rcarls/rc-theme-material/theme.css';
 ```
 
+## Designing with the theme
+
+[`DESIGN.md`](./DESIGN.md) is a Material 3 composition guide written for AI
+coding agents. It covers which component fills which Material role, adaptive
+layouts by window size class, dialogs, sheets, lists, navigation and
+feedback, with the baseline token values in machine-readable front matter. It
+ships in the package, so agents in a consuming app can read it from
+`node_modules/@rcarls/rc-theme-material/DESIGN.md`.
+
 ## Theming scope
 
 The full style layer styles native controls when their intent is established by
@@ -98,37 +107,10 @@ Fonts and icons are not bundled; websites and applications may provide
 ### Icon font wiring
 
 The theme sizes and centers icon markers but never sets `font-family` on them,
-because no font ships with it. Until the application supplies one, an icon
-marker renders as its literal text, so a navigation toggle shows the word
-`menu` rather than a glyph.
-
-Every marker in the catalog needs that one declaration. Wire them all at once
-rather than adding each as you adopt the component it belongs to:
-
-```css
-:is(
-  [data-rc-icon],
-  [data-rc-button-icon],
-  [data-rc-button-selected-icon],
-  [data-rc-chip-icon],
-  [data-rc-menu-icon],
-  [data-rc-navigation-icon],
-  [data-rc-navigation-collapse-icon],
-  [data-rc-navigation-expand-icon],
-  [data-rc-segmented-button-selected-icon]
-) {
-  font-family: 'Material Symbols Outlined';
-}
-```
-
-Three of those carry no sizing from the theme, so give them a `font-size`
-alongside the font where an application uses them:
-`data-rc-navigation-collapse-icon`, `data-rc-navigation-expand-icon`, and
-`data-rc-segmented-button-selected-icon`.
-
-For the rest, the shared `--rc-icon-font-size` and `--rc-icon-font-line-height`
-tokens keep glyph geometry consistent and can be overridden at the theme
-boundary or on one component.
+because no font ships with it. Until the application supplies one, a marker
+renders its literal text, so a navigation toggle shows the word `menu`. See
+[Fonts and icons](./DESIGN.md#fonts-and-icons) in the design guide for the
+one rule that wires every marker.
 
 ### Icon-button modifiers
 

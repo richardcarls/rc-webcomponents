@@ -298,6 +298,11 @@ directly usable public packages.
   the most specific docs page for the public package.
 - The Docusaurus docs workspace is the canonical home for public component docs,
   examples, and live demos.
+- `packages/rc-theme-material/DESIGN.md` is the agent-facing Material 3
+  composition guide and ships with the package. Update it in the same change
+  as any theme class hook, `data-*` hook, variant, token mapping, or component
+  attribute it names, and keep its front matter values in sync with
+  `defaults.css`. `yarn test:design-guide` checks both.
 - Package READMEs are npm landing pages and should stay short unless a package
   has usage details that do not fit naturally in the docs site. Do not maintain a
   competing exhaustive API table in a package README when the generated docs API

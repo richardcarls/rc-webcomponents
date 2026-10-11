@@ -29,6 +29,7 @@
     "*.css",
     "components",
     "constraints",
+    "DESIGN.md",
     "README.md"
   ],
   "scripts": {
