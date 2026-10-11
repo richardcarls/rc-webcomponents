@@ -247,26 +247,26 @@ The component reads inherited tokens where possible:
 
 ### Component Tokens
 
-| Token                                     | Default                                     | Use                                   |
-| ----------------------------------------- | ------------------------------------------- | ------------------------------------- |
-| `--rc-textarea-font-family`               | `monospace`                                 | Editor font family.                   |
-| `--rc-textarea-font-size`                 | `1em`                                       | Editor and gutter font size.          |
-| `--rc-textarea-line-height`               | `1.5`                                       | Editor and gutter line height.        |
-| `--rc-textarea-padding-block`             | `0.5em`                                     | Editor and gutter block padding; any `padding-block` value. |
+| Token                                     | Default                                     | Use                                                                                                                      |
+| ----------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `--rc-textarea-font-family`               | `monospace`                                 | Editor font family.                                                                                                      |
+| `--rc-textarea-font-size`                 | `1em`                                       | Editor and gutter font size.                                                                                             |
+| `--rc-textarea-line-height`               | `1.5`                                       | Editor and gutter line height.                                                                                           |
+| `--rc-textarea-padding-block`             | `0.5em`                                     | Editor and gutter block padding; any `padding-block` value.                                                              |
 | `--rc-textarea-padding-inline`            | `0.5em`                                     | Editor inline padding (both sides) and gutter start padding; one length, which the active line highlight bleeds through. |
-| `--rc-textarea-gutter-min-inline-size`     | `24px`                                     | Minimum gutter width including padding; Material uses `48px`. |
-| `--rc-textarea-background`                | `Field`                                     | Field background.                     |
-| `--rc-textarea-color`                     | `var(--rc-field-text, FieldText)`           | Field text color.                     |
-| `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)`       | Caret color.                          |
-| `--rc-textarea-border`                    | `1px solid ButtonBorder`                    | Field border.                         |
-| `--rc-textarea-border-radius`             | `2px`                                       | Field corner radius.                  |
-| `--rc-textarea-focus-outline`             | `2px solid Highlight`                       | Focus ring.                           |
-| `--rc-textarea-active-line-bg`            | `transparent`                               | Full-width active line highlight.     |
-| `--rc-textarea-gutter-bg`                 | `Canvas`                                    | Gutter background.                    |
-| `--rc-textarea-gutter-color`              | `GrayText`                                  | Gutter text color.                    |
-| `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`                    | Gutter separator.                     |
-| `--rc-textarea-gutter-font-family`        | `var(--rc-textarea-font-family, monospace)` | Gutter font family.                   |
-| `--rc-textarea-gutter-padding-inline-end` | `0.75em`                                    | Space between gutter labels and text. |
+| `--rc-textarea-gutter-min-inline-size`    | `24px`                                      | Minimum gutter width including padding; Material uses `48px`.                                                            |
+| `--rc-textarea-background`                | `Field`                                     | Field background.                                                                                                        |
+| `--rc-textarea-color`                     | `var(--rc-field-text, FieldText)`           | Field text color.                                                                                                        |
+| `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)`       | Caret color.                                                                                                             |
+| `--rc-textarea-border`                    | `1px solid ButtonBorder`                    | Field border.                                                                                                            |
+| `--rc-textarea-border-radius`             | `2px`                                       | Field corner radius.                                                                                                     |
+| `--rc-textarea-focus-outline`             | `2px solid Highlight`                       | Focus ring.                                                                                                              |
+| `--rc-textarea-active-line-bg`            | `transparent`                               | Full-width active line highlight.                                                                                        |
+| `--rc-textarea-gutter-bg`                 | `Canvas`                                    | Gutter background.                                                                                                       |
+| `--rc-textarea-gutter-color`              | `GrayText`                                  | Gutter text color.                                                                                                       |
+| `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`                    | Gutter separator.                                                                                                        |
+| `--rc-textarea-gutter-font-family`        | `var(--rc-textarea-font-family, monospace)` | Gutter font family.                                                                                                      |
+| `--rc-textarea-gutter-padding-inline-end` | `0.75em`                                    | Space between gutter labels and text.                                                                                    |
 
 Line actions added by plugins use the `--rc-line-action-*` family. Inline actions default to
 compact, inherited styling; popover actions use `Canvas`, `ButtonText`, and `ButtonFace` system

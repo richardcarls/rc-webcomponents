@@ -110,11 +110,7 @@ export function main(args = process.argv.slice(2)) {
     return;
   }
 
-  const {
-    outputDirectory: outputArgument,
-    packageName,
-    version,
-  } = parseBootstrapArguments(args);
+  const { outputDirectory: outputArgument, packageName, version } = parseBootstrapArguments(args);
   const root = process.cwd();
   const directory = outputArgument
     ? resolve(root, outputArgument)

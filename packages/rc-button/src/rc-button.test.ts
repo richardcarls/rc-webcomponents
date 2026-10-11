@@ -70,7 +70,10 @@ test('preserves native button appearance without theme tokens', async () => {
 test('keeps a labeled button at its label width in a min-content table column', async () => {
   const screen = render(html`
     <table style="inline-size: 20rem; border-collapse: collapse">
-      <colgroup><col /><col style="inline-size: 1px" /></colgroup>
+      <colgroup>
+        <col />
+        <col style="inline-size: 1px" />
+      </colgroup>
       <tr>
         <td>Pattern</td>
         <td data-testid="cell" style="padding: 0; white-space: nowrap">

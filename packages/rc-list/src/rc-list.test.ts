@@ -511,7 +511,9 @@ test('an ordered list exposes item positions without rendering counters', async 
   `);
   const list = (await screen.getByTestId('list').element()) as RCList;
   const items = await Promise.all(
-    ['first', 'second', 'third'].map(async (id) => (await screen.getByTestId(id).element()) as RCListItem),
+    ['first', 'second', 'third'].map(
+      async (id) => (await screen.getByTestId(id).element()) as RCListItem,
+    ),
   );
 
   await settle(list);
@@ -557,7 +559,9 @@ function renderExpandable() {
     <rc-list data-testid="list" aria-label="Ingredients">
       <rc-list-item data-testid="item">
         2 garlic cloves
-        <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Details">i</button>
+        <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Details">
+          i
+        </button>
         <div slot="details" data-testid="details">"garlic" resembles "gallon".</div>
       </rc-list-item>
     </rc-list>
@@ -592,7 +596,9 @@ test('a details toggle expands the supporting region and wires its state', async
   expect(toggled).toHaveBeenLastCalledWith(true);
 
   // The region spans the text and trailing columns below the row.
-  const row = item.shadowRoot!.querySelector<HTMLElement>('[part="content"]')!.getBoundingClientRect();
+  const row = item
+    .shadowRoot!.querySelector<HTMLElement>('[part="content"]')!
+    .getBoundingClientRect();
   const region = details.getBoundingClientRect();
 
   expect(region.top).toBeGreaterThanOrEqual(row.bottom - 1);
@@ -637,7 +643,9 @@ test('default-expanded opens the region initially for uncontrolled use', async (
     <rc-list data-testid="list">
       <rc-list-item data-testid="item" default-expanded>
         Row
-        <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Details">i</button>
+        <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Details">
+          i
+        </button>
         <div slot="details" data-testid="details">Supporting text</div>
       </rc-list-item>
     </rc-list>
@@ -656,7 +664,9 @@ test.each(FLOW_FIXTURES)('places expanded details below the row in %s', async (f
         <rc-list data-testid="list" aria-label="Ingredients" style="inline-size: 16rem">
           <rc-list-item data-testid="item" default-expanded>
             Row
-            <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Details">i</button>
+            <button slot="trailing" type="button" data-rc-list-item-toggle aria-label="Details">
+              i
+            </button>
             <div slot="details" data-testid="details">Supporting text</div>
           </rc-list-item>
         </rc-list>
@@ -670,7 +680,9 @@ test.each(FLOW_FIXTURES)('places expanded details below the row in %s', async (f
 
   await settle(list);
 
-  const content = item.shadowRoot!.querySelector<HTMLElement>('[part="content"]')!.getBoundingClientRect();
+  const content = item
+    .shadowRoot!.querySelector<HTMLElement>('[part="content"]')!
+    .getBoundingClientRect();
   const region = details.getBoundingClientRect();
 
   // "Below" is the block-end side: down in horizontal text, left in vertical-rl,

@@ -272,12 +272,7 @@ function readNativeSelectionEndpoints(
   $root: Element,
   selection: Selection | null,
 ): SelectionEndpoints | null {
-  if (
-    !selection ||
-    selection.rangeCount === 0 ||
-    !selection.anchorNode ||
-    !selection.focusNode
-  ) {
+  if (!selection || selection.rangeCount === 0 || !selection.anchorNode || !selection.focusNode) {
     return null;
   }
 

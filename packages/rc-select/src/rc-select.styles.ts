@@ -191,7 +191,8 @@ export const selectStyles = css`
     [part='listbox']:popover-open {
       opacity: 1;
       transition:
-        opacity var(--rc-select-listbox-duration, 150ms) var(--rc-motion-effects-easing-enter, ease-out),
+        opacity var(--rc-select-listbox-duration, 150ms)
+          var(--rc-motion-effects-easing-enter, ease-out),
         overlay var(--rc-select-listbox-duration, 150ms) allow-discrete,
         display var(--rc-select-listbox-duration, 150ms) allow-discrete;
     }
@@ -199,7 +200,8 @@ export const selectStyles = css`
     [part='listbox']:not(:popover-open) {
       opacity: 0;
       transition:
-        opacity var(--rc-select-listbox-duration, 150ms) var(--rc-motion-effects-easing-exit, ease-in),
+        opacity var(--rc-select-listbox-duration, 150ms)
+          var(--rc-motion-effects-easing-exit, ease-in),
         overlay var(--rc-select-listbox-duration, 150ms) allow-discrete,
         display var(--rc-select-listbox-duration, 150ms) allow-discrete;
     }

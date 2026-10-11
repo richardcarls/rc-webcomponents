@@ -122,8 +122,12 @@ test('directional easing pairs decelerate-shaped curves with entering and accele
     return getComputedStyle(probe).transitionTimingFunction;
   };
 
-  expect(resolvedTimingFunction('--rc-motion-effects-easing-enter')).toBe('cubic-bezier(0, 0, 0, 1)');
-  expect(resolvedTimingFunction('--rc-motion-effects-easing-exit')).toBe('cubic-bezier(0.3, 0, 1, 1)');
+  expect(resolvedTimingFunction('--rc-motion-effects-easing-enter')).toBe(
+    'cubic-bezier(0, 0, 0, 1)',
+  );
+  expect(resolvedTimingFunction('--rc-motion-effects-easing-exit')).toBe(
+    'cubic-bezier(0.3, 0, 1, 1)',
+  );
 
   expect(resolvedTimingFunction('--rc-motion-spatial-easing-enter')).toBe(
     'cubic-bezier(0.05, 0.7, 0.1, 1)',

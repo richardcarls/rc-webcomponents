@@ -72,16 +72,22 @@ test('listbox fades in and out through CSS alone, with no JavaScript gating the 
   // openPopup()/closePopup() are synchronous; nothing waits on a transition.
   host.openPopup();
 
-  await Promise.all(listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  await Promise.all(
+    listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
   await new Promise((resolve) => requestAnimationFrame(resolve));
-  await Promise.all(listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  await Promise.all(
+    listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
 
   expect(getComputedStyle(listbox).opacity).toBe('1');
 
   host.closePopup(false);
 
   await new Promise((resolve) => requestAnimationFrame(resolve));
-  await Promise.all(listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  await Promise.all(
+    listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
 
   // The exit fade must actually be visible, not skipped by an instant
   // display: none racing ahead of it: closing relies on allow-discrete
@@ -659,7 +665,9 @@ test('multiple: chip touch-target overlap is returned between wrapped rows', asy
 
   await getHost(screen);
 
-  await vi.waitFor(() => expect(host.renderRoot.querySelectorAll('[part~="chip"]')).toHaveLength(2));
+  await vi.waitFor(() =>
+    expect(host.renderRoot.querySelectorAll('[part~="chip"]')).toHaveLength(2),
+  );
 
   const [first, second] = [...host.renderRoot.querySelectorAll('[part~="chip"]')].map(($chip) =>
     $chip.getBoundingClientRect(),
@@ -1197,10 +1205,7 @@ test('opens the listbox at the block end in vertical text', async () => {
     expect(listbox.getBoundingClientRect().right).toBeLessThanOrEqual(
       anchor.getBoundingClientRect().left,
     );
-    expect(listbox.getBoundingClientRect().top).toBeCloseTo(
-      anchor.getBoundingClientRect().top,
-      0,
-    );
+    expect(listbox.getBoundingClientRect().top).toBeCloseTo(anchor.getBoundingClientRect().top, 0);
   });
 
   host.closePopup();

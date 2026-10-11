@@ -921,10 +921,7 @@ test('window resize re-docks a sheet a drag gesture left pinned away from its ed
 
 test('snaps stay docked when the containing block moves afterward', async () => {
   const screen = render(html`
-    <div
-      data-testid="frame"
-      style="position: fixed; inset: 100px 0 0; contain: layout;"
-    >
+    <div data-testid="frame" style="position: fixed; inset: 100px 0 0; contain: layout;">
       <rc-bottom-sheet data-testid="host" snap-points="132px 300px">
         <dialog aria-label="Nutrition"><button>Done</button></dialog>
       </rc-bottom-sheet>

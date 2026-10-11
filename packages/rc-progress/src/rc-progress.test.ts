@@ -72,16 +72,16 @@ test('rc-progress indeterminate sweep travels start-to-end in both writing direc
   // direction is physical, not logical, so the sign of this internal token
   // is what keeps the sweep going start-to-end as the writing direction
   // flips, rather than the animation itself changing per direction.
-  expect(getComputedStyle(host).getPropertyValue('--_rc-progress-indeterminate-direction').trim()).toBe(
-    '1',
-  );
+  expect(
+    getComputedStyle(host).getPropertyValue('--_rc-progress-indeterminate-direction').trim(),
+  ).toBe('1');
 
   host.dir = 'rtl';
   await host.updateComplete;
 
-  expect(getComputedStyle(host).getPropertyValue('--_rc-progress-indeterminate-direction').trim()).toBe(
-    '-1',
-  );
+  expect(
+    getComputedStyle(host).getPropertyValue('--_rc-progress-indeterminate-direction').trim(),
+  ).toBe('-1');
 });
 
 test('rc-progress default value display renders a percentage', async () => {

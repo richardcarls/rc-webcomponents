@@ -220,7 +220,8 @@ export const comboboxStyles = css`
     [part='listbox']:popover-open {
       opacity: 1;
       transition:
-        opacity var(--rc-combobox-listbox-duration, 150ms) var(--rc-motion-effects-easing-enter, ease-out),
+        opacity var(--rc-combobox-listbox-duration, 150ms)
+          var(--rc-motion-effects-easing-enter, ease-out),
         overlay var(--rc-combobox-listbox-duration, 150ms) allow-discrete,
         display var(--rc-combobox-listbox-duration, 150ms) allow-discrete;
     }
@@ -228,7 +229,8 @@ export const comboboxStyles = css`
     [part='listbox']:not(:popover-open) {
       opacity: 0;
       transition:
-        opacity var(--rc-combobox-listbox-duration, 150ms) var(--rc-motion-effects-easing-exit, ease-in),
+        opacity var(--rc-combobox-listbox-duration, 150ms)
+          var(--rc-motion-effects-easing-exit, ease-in),
         overlay var(--rc-combobox-listbox-duration, 150ms) allow-discrete,
         display var(--rc-combobox-listbox-duration, 150ms) allow-discrete;
     }

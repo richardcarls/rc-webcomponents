@@ -2198,7 +2198,8 @@ export function TextareaDisclosureDemo() {
     const $panel = document.createElement('div');
     const $message = document.createElement('p');
 
-    $message.textContent = 'This block is presentation only. Editing and copying preserve the source text.';
+    $message.textContent =
+      'This block is presentation only. Editing and copying preserve the source text.';
     $panel.append($message);
 
     editor.usePlugin({
@@ -2235,15 +2236,29 @@ export function TextareaDisclosureDemo() {
         const offset = value.split('\n')[0].length;
 
         api.setDecorations([
-          ...folding.getDecorations([{
-            key: 'explanation', gutterLine: 1,
-            label: 'First-line information', target: $panel, initiallyExpanded: false,
-          }]),
-          { type: 'widget', offset, side: 'after', layout: 'block', accessible: true,
-            key: 'explanation-panel', create: () => $panel },
+          ...folding.getDecorations([
+            {
+              key: 'explanation',
+              gutterLine: 1,
+              label: 'First-line information',
+              target: $panel,
+              initiallyExpanded: false,
+            },
+          ]),
+          {
+            type: 'widget',
+            offset,
+            side: 'after',
+            layout: 'block',
+            accessible: true,
+            key: 'explanation-panel',
+            create: () => $panel,
+          },
         ]);
       },
-      destroy() { folding.clear(); },
+      destroy() {
+        folding.clear();
+      },
     });
 
     return () => editor.removePlugin();
@@ -2252,7 +2267,12 @@ export function TextareaDisclosureDemo() {
   return (
     <DemoFrame>
       <rc-textarea ref={setEditor} gutter auto-grow word-wrap>
-        <textarea aria-label="Disclosure example" defaultValue={'A line with more information\nThe following line moves down when expanded.'} />
+        <textarea
+          aria-label="Disclosure example"
+          defaultValue={
+            'A line with more information\nThe following line moves down when expanded.'
+          }
+        />
       </rc-textarea>
     </DemoFrame>
   );

@@ -1,5 +1,5 @@
 ---
-"@rcarls/rc-textarea": minor
+'@rcarls/rc-textarea': minor
 ---
 
 Add independent line disclosures with accessible gutter or trailing controls,

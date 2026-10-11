@@ -7,7 +7,8 @@
     --rc-listbox-option-transition:
       background-color var(--substrate-motion-effects-duration-default, 160ms)
         var(--substrate-motion-easing, ease),
-      color var(--substrate-motion-effects-duration-default, 160ms) var(--substrate-motion-easing, ease);
+      color var(--substrate-motion-effects-duration-default, 160ms)
+        var(--substrate-motion-easing, ease);
     --rc-listbox-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
     --rc-listbox-hover-color: var(--rc-field-text, FieldText);
     --rc-listbox-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
