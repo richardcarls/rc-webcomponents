@@ -615,8 +615,9 @@ test('styles overflowed rows from inherited item tokens inside a foreign shadow 
     expect(getComputedStyle(label).letterSpacing).toBe('0.5px');
     expect(getComputedStyle(leading).fontSize).toBe('22px');
 
-    expect(getComputedStyle(nested).getPropertyValue('--rc-menu-button-trigger-block-size').trim())
-      .toBe('44px');
+    expect(
+      getComputedStyle(nested).getPropertyValue('--rc-menu-button-trigger-block-size').trim(),
+    ).toBe('44px');
 
     expect(getComputedStyle(trigger).backgroundColor).toBe('rgb(1, 2, 3)');
 

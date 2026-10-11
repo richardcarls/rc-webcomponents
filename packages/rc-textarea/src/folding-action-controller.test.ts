@@ -25,14 +25,24 @@ test('folds source lines without changing the editor value or native form contro
   host.value = '## Heading\nHidden one\nHidden two\nVisible';
 
   host.usePlugin({
-    mount(api) { folding = new FoldingActionController(api); },
-    update(_value, api) {
-      api.setDecorations(folding.getDecorations([{
-        key: 'heading', gutterLine: 1, label: 'Heading section',
-        target: { fromLine: 2, toLine: 3 },
-      }]));
+    mount(api) {
+      folding = new FoldingActionController(api);
     },
-    destroy() { folding.clear(); },
+    update(_value, api) {
+      api.setDecorations(
+        folding.getDecorations([
+          {
+            key: 'heading',
+            gutterLine: 1,
+            label: 'Heading section',
+            target: { fromLine: 2, toLine: 3 },
+          },
+        ]),
+      );
+    },
+    destroy() {
+      folding.clear();
+    },
   });
 
   await vi.waitFor(() => expect(getGutterCells(host).querySelector('button')).not.toBeNull());
@@ -80,15 +90,28 @@ test('keeps an app-owned panel, its controls, and fold state in sync', async () 
     },
     update() {
       api.setDecorations([
-        ...folding.getDecorations([{
-          key: 'details', gutterLine: 1, label: 'Ingredient details',
-          target: $panel, initiallyExpanded: false,
-        }]),
-        { type: 'widget', offset: api.value.length, layout: 'block',
-          key: 'details-panel', accessible: true, create: () => $panel },
+        ...folding.getDecorations([
+          {
+            key: 'details',
+            gutterLine: 1,
+            label: 'Ingredient details',
+            target: $panel,
+            initiallyExpanded: false,
+          },
+        ]),
+        {
+          type: 'widget',
+          offset: api.value.length,
+          layout: 'block',
+          key: 'details-panel',
+          accessible: true,
+          create: () => $panel,
+        },
       ]);
     },
-    destroy() { folding.clear(); },
+    destroy() {
+      folding.clear();
+    },
   });
 
   await vi.waitFor(() => expect(getGutterCells(host).querySelector('button')).not.toBeNull());
@@ -120,14 +143,24 @@ test('reveals a collapsed range before deleting into its hidden source', async (
   host.value = 'Heading\nHidden\nFollowing';
 
   host.usePlugin({
-    mount(api) { folding = new FoldingActionController(api); },
-    update(_value, api) {
-      api.setDecorations(folding.getDecorations([{
-        key: 'heading', gutterLine: 1, label: 'Heading section',
-        target: { fromLine: 2, toLine: 2 },
-      }]));
+    mount(api) {
+      folding = new FoldingActionController(api);
     },
-    destroy() { folding.clear(); },
+    update(_value, api) {
+      api.setDecorations(
+        folding.getDecorations([
+          {
+            key: 'heading',
+            gutterLine: 1,
+            label: 'Heading section',
+            target: { fromLine: 2, toLine: 2 },
+          },
+        ]),
+      );
+    },
+    destroy() {
+      folding.clear();
+    },
   });
 
   await vi.waitFor(() => expect(getGutterCells(host).querySelector('button')).not.toBeNull());
@@ -169,14 +202,20 @@ test('retains a nested fold when its parent closes and opens', async () => {
   host.value = 'Parent\nChild\nDetail\nAfter';
 
   host.usePlugin({
-    mount(api) { folding = new FoldingActionController(api); },
-    update(_value, api) {
-      api.setDecorations(folding.getDecorations([
-        { key: 'parent', gutterLine: 1, label: 'Parent', target: { fromLine: 2, toLine: 3 } },
-        { key: 'child', gutterLine: 2, label: 'Child', target: { fromLine: 3, toLine: 3 } },
-      ]));
+    mount(api) {
+      folding = new FoldingActionController(api);
     },
-    destroy() { folding.clear(); },
+    update(_value, api) {
+      api.setDecorations(
+        folding.getDecorations([
+          { key: 'parent', gutterLine: 1, label: 'Parent', target: { fromLine: 2, toLine: 3 } },
+          { key: 'child', gutterLine: 2, label: 'Child', target: { fromLine: 3, toLine: 3 } },
+        ]),
+      );
+    },
+    destroy() {
+      folding.clear();
+    },
   });
 
   await vi.waitFor(() => expect(getGutterCells(host).querySelectorAll('button')).toHaveLength(2));
@@ -205,14 +244,25 @@ test('gives two actions on one gutter line separate keyboard targets', async () 
   host.value = 'Anchor\nOne\nTwo';
 
   host.usePlugin({
-    mount(api) { folding = new FoldingActionController(api); },
-    update(_value, api) {
-      api.setDecorations(folding.getDecorations([
-        { key: 'first', gutterLine: 1, label: 'First fold', target: { fromLine: 2, toLine: 2 } },
-        { key: 'second', gutterLine: 1, label: 'Second fold', target: { fromLine: 3, toLine: 3 } },
-      ]));
+    mount(api) {
+      folding = new FoldingActionController(api);
     },
-    destroy() { folding.clear(); },
+    update(_value, api) {
+      api.setDecorations(
+        folding.getDecorations([
+          { key: 'first', gutterLine: 1, label: 'First fold', target: { fromLine: 2, toLine: 2 } },
+          {
+            key: 'second',
+            gutterLine: 1,
+            label: 'Second fold',
+            target: { fromLine: 3, toLine: 3 },
+          },
+        ]),
+      );
+    },
+    destroy() {
+      folding.clear();
+    },
   });
 
   await vi.waitFor(() => expect(getGutterCells(host).querySelectorAll('button')).toHaveLength(2));
@@ -229,49 +279,70 @@ test('gives two actions on one gutter line separate keyboard targets', async () 
   expect($second!.getAttribute('aria-expanded')).toBe('true');
 });
 
-test.each(FLOW_FIXTURES)('keeps gutter folding operable through a live flow change: %o', async (flow) => {
-  const screen = render(inFlow(html`
-    <rc-textarea data-testid="host" gutter>
-      <textarea aria-label="Source"></textarea>
-    </rc-textarea>
-  `, flow));
-  const host = screen.getByTestId('host').element() as RCTextarea;
-  let folding: FoldingActionController;
+test.each(FLOW_FIXTURES)(
+  'keeps gutter folding operable through a live flow change: %o',
+  async (flow) => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-textarea data-testid="host" gutter>
+            <textarea aria-label="Source"></textarea>
+          </rc-textarea>
+        `,
+        flow,
+      ),
+    );
+    const host = screen.getByTestId('host').element() as RCTextarea;
+    let folding: FoldingActionController;
 
-  host.value = 'Heading\nHidden';
+    host.value = 'Heading\nHidden';
 
-  host.usePlugin({
-    mount(api) { folding = new FoldingActionController(api); },
-    update(_value, api) {
-      api.setDecorations(folding.getDecorations([{
-        key: 'section', gutterLine: 1, label: 'Section', target: { fromLine: 2, toLine: 2 },
-      }]));
-    },
-    destroy() { folding.clear(); },
-  });
+    host.usePlugin({
+      mount(api) {
+        folding = new FoldingActionController(api);
+      },
+      update(_value, api) {
+        api.setDecorations(
+          folding.getDecorations([
+            {
+              key: 'section',
+              gutterLine: 1,
+              label: 'Section',
+              target: { fromLine: 2, toLine: 2 },
+            },
+          ]),
+        );
+      },
+      destroy() {
+        folding.clear();
+      },
+    });
 
-  await vi.waitFor(() => expect(getGutterCells(host).querySelector('button')).not.toBeNull());
+    await vi.waitFor(() => expect(getGutterCells(host).querySelector('button')).not.toBeNull());
 
-  const $button = getGutterCells(host).querySelector<HTMLButtonElement>('button')!;
-  const $flow = screen.getByTestId('flow').element() as HTMLElement;
+    const $button = getGutterCells(host).querySelector<HTMLButtonElement>('button')!;
+    const $flow = screen.getByTestId('flow').element() as HTMLElement;
 
-  const $cells = getGutterCells(host);
-  const cellRect = logicalRect(
-    $cells.querySelector<HTMLElement>('.gutter-cell')!.getBoundingClientRect(),
-    $cells.getBoundingClientRect(),
-    resolveFlow(getEditor(host)),
-  );
+    const $cells = getGutterCells(host);
+    const cellRect = logicalRect(
+      $cells.querySelector<HTMLElement>('.gutter-cell')!.getBoundingClientRect(),
+      $cells.getBoundingClientRect(),
+      resolveFlow(getEditor(host)),
+    );
 
-  // The cell's block size follows its line, so the target floor is on the gutter's inline size.
-  expect(cellRect.inlineSize).toBeGreaterThanOrEqual(24);
+    // The cell's block size follows its line, so the target floor is on the gutter's inline size.
+    expect(cellRect.inlineSize).toBeGreaterThanOrEqual(24);
 
-  $flow.dir = flow.dir === 'ltr' ? 'rtl' : 'ltr';
-  await new Promise((resolve) => requestAnimationFrame(resolve));
-  $button.click();
+    $flow.dir = flow.dir === 'ltr' ? 'rtl' : 'ltr';
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    $button.click();
 
-  await vi.waitFor(() => expect(getEditor(host).querySelectorAll('.line[hidden]')).toHaveLength(1));
-  expect(getGutterCells(host).querySelectorAll('.gutter-cell[hidden]')).toHaveLength(1);
-  $button.click();
+    await vi.waitFor(() =>
+      expect(getEditor(host).querySelectorAll('.line[hidden]')).toHaveLength(1),
+    );
+    expect(getGutterCells(host).querySelectorAll('.gutter-cell[hidden]')).toHaveLength(1);
+    $button.click();
 
-  await vi.waitFor(() => expect(getEditor(host).querySelector('.line[hidden]')).toBeNull());
-});
+    await vi.waitFor(() => expect(getEditor(host).querySelector('.line[hidden]')).toBeNull());
+  },
+);

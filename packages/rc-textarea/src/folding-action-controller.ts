@@ -48,10 +48,7 @@ export class FoldingActionController {
 
   private readonly options: FoldingActionControllerOptions;
 
-  constructor(
-    api: RCTextareaPluginAPI,
-    options: FoldingActionControllerOptions = {},
-  ) {
+  constructor(api: RCTextareaPluginAPI, options: FoldingActionControllerOptions = {}) {
     this.api = api;
     this.options = options;
   }
@@ -78,7 +75,10 @@ export class FoldingActionController {
 
       entry.$button.setAttribute('aria-controls', entry.target.id);
 
-      if (!entry.expanded && entry.target.contains(this.api.host.shadowRoot?.activeElement ?? null)) {
+      if (
+        !entry.expanded &&
+        entry.target.contains(this.api.host.shadowRoot?.activeElement ?? null)
+      ) {
         entry.$button.focus();
       }
 
@@ -109,10 +109,13 @@ export class FoldingActionController {
         throw new TypeError('A folding action requires a gutterLine or offset.');
       }
 
-      if (!(action.target instanceof HTMLElement) &&
-          (action.gutterLine === undefined || action.target.fromLine < 2 ||
-            action.target.fromLine <= action.gutterLine ||
-            action.target.toLine < action.target.fromLine)) {
+      if (
+        !(action.target instanceof HTMLElement) &&
+        (action.gutterLine === undefined ||
+          action.target.fromLine < 2 ||
+          action.target.fromLine <= action.gutterLine ||
+          action.target.toLine < action.target.fromLine)
+      ) {
         throw new RangeError('A source fold requires a gutter anchor before its hidden lines.');
       }
 
@@ -155,16 +158,25 @@ export class FoldingActionController {
         gutterGroups.set(action.gutterLine, group);
       } else {
         result.push({
-          type: 'widget', offset: action.offset!, side: 'after',
-          key: `fold-trigger:${action.key}`, layout: 'trailing', accessible: true,
+          type: 'widget',
+          offset: action.offset!,
+          side: 'after',
+          key: `fold-trigger:${action.key}`,
+          layout: 'trailing',
+          accessible: true,
           create: () => entry!.$button,
         });
       }
 
-      if (!(action.target instanceof HTMLElement) && !entry.expanded &&
-          action.target.toLine >= action.target.fromLine) {
+      if (
+        !(action.target instanceof HTMLElement) &&
+        !entry.expanded &&
+        action.target.toLine >= action.target.fromLine
+      ) {
         result.push({
-          type: 'fold', fromLine: action.target.fromLine, toLine: action.target.toLine,
+          type: 'fold',
+          fromLine: action.target.fromLine,
+          toLine: action.target.toLine,
           reveal: () => {
             entry!.expanded = true;
             this.applyState(entry!);
@@ -190,13 +202,20 @@ export class FoldingActionController {
 
       $group.className = contents.length > 1 ? 'fold-action-group' : 'fold-action-single';
 
-      if (contents.length !== $group.children.length ||
-          contents.some((content, index) => $group.children[index] !== content)) {
+      if (
+        contents.length !== $group.children.length ||
+        contents.some((content, index) => $group.children[index] !== content)
+      ) {
         $group.replaceChildren(...contents);
       }
 
-      result.push({ type: 'line', line, gutterContent: $group,
-        gutterAccessible: true, gutterLineNumber: true });
+      result.push({
+        type: 'line',
+        line,
+        gutterContent: $group,
+        gutterAccessible: true,
+        gutterLineNumber: true,
+      });
     }
 
     return result;
@@ -220,8 +239,10 @@ export class FoldingActionController {
   private release(entry: Entry): void {
     const $active = this.api.host.shadowRoot?.activeElement;
 
-    if ($active === entry.$button || entry.target instanceof HTMLElement &&
-        entry.target.contains($active ?? null)) {
+    if (
+      $active === entry.$button ||
+      (entry.target instanceof HTMLElement && entry.target.contains($active ?? null))
+    ) {
       this.api.host.shadowRoot?.querySelector<HTMLElement>('[part="editor"]')?.focus();
     }
   }

@@ -134,12 +134,16 @@ test('reduced motion zeroes spatial duration but only shortens effects duration'
     expect(declaration?.style.getPropertyValue(token).trim(), token).toBe('0ms');
   }
 
-  const effectsFast = declaration?.style.getPropertyValue('--rc-motion-effects-duration-fast').trim();
+  const effectsFast = declaration?.style
+    .getPropertyValue('--rc-motion-effects-duration-fast')
+    .trim();
   const effectsDefault = declaration?.style
     .getPropertyValue('--rc-motion-effects-duration-default')
     .trim();
 
-  const effectsSlow = declaration?.style.getPropertyValue('--rc-motion-effects-duration-slow').trim();
+  const effectsSlow = declaration?.style
+    .getPropertyValue('--rc-motion-effects-duration-slow')
+    .trim();
 
   for (const value of [effectsFast, effectsDefault, effectsSlow]) {
     expect(value).not.toBe('0ms');

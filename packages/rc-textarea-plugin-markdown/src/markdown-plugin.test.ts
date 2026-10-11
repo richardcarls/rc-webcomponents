@@ -19,22 +19,32 @@ const SOURCE = [
 
 test('folds Markdown heading sections by level without changing source', async () => {
   const screen = render(html`
-    <rc-textarea data-testid="host"><textarea name="markdown" aria-label="Markdown"></textarea></rc-textarea>
+    <rc-textarea data-testid="host">
+      <textarea name="markdown" aria-label="Markdown"></textarea>
+    </rc-textarea>
   `);
   const host = screen.getByTestId('host').element() as RCTextarea;
 
   host.value = SOURCE;
   host.plugin = createMarkdownPlugin();
 
-  await vi.waitFor(() => expect(host.shadowRoot?.querySelectorAll('.fold-action-trigger').length).toBeGreaterThan(0));
+  await vi.waitFor(() =>
+    expect(host.shadowRoot?.querySelectorAll('.fold-action-trigger').length).toBeGreaterThan(0),
+  );
 
-  const $buttons = [...host.shadowRoot!.querySelectorAll<HTMLButtonElement>('.fold-action-trigger')];
-  const $ingredients = $buttons.find(($button) => $button.getAttribute('aria-label')?.startsWith('Heading level 2 at line 3'))!;
+  const $buttons = [
+    ...host.shadowRoot!.querySelectorAll<HTMLButtonElement>('.fold-action-trigger'),
+  ];
+  const $ingredients = $buttons.find(($button) =>
+    $button.getAttribute('aria-label')?.startsWith('Heading level 2 at line 3'),
+  )!;
 
   expect(host.gutter).toBe(true);
   $ingredients.click();
 
-  await vi.waitFor(() => expect(host.shadowRoot!.querySelectorAll('#editor .line[hidden]')).toHaveLength(2));
+  await vi.waitFor(() =>
+    expect(host.shadowRoot!.querySelectorAll('#editor .line[hidden]')).toHaveLength(2),
+  );
 
   const $lines = host.shadowRoot!.querySelectorAll<HTMLElement>('#editor .line');
 
@@ -44,7 +54,9 @@ test('folds Markdown heading sections by level without changing source', async (
 
   $ingredients.click();
 
-  await vi.waitFor(() => expect(host.shadowRoot!.querySelector('#editor .line[hidden]')).toBeNull());
+  await vi.waitFor(() =>
+    expect(host.shadowRoot!.querySelector('#editor .line[hidden]')).toBeNull(),
+  );
   await expectNoA11yViolations(host);
 });
 
@@ -73,10 +85,13 @@ test('offers folds for multiline lists, code, blockquotes, and GFM tables', asyn
   host.value = source;
   host.plugin = plugin;
 
-  await vi.waitFor(() => expect(host.shadowRoot?.querySelectorAll('.fold-action-trigger')).toHaveLength(4));
+  await vi.waitFor(() =>
+    expect(host.shadowRoot?.querySelectorAll('.fold-action-trigger')).toHaveLength(4),
+  );
 
-  const labels = [...host.shadowRoot!.querySelectorAll<HTMLButtonElement>('.fold-action-trigger')]
-    .map(($button) => $button.getAttribute('aria-label'));
+  const labels = [
+    ...host.shadowRoot!.querySelectorAll<HTMLButtonElement>('.fold-action-trigger'),
+  ].map(($button) => $button.getAttribute('aria-label'));
 
   expect(labels.some((label) => label?.startsWith('list at line 1'))).toBe(true);
   expect(labels.some((label) => label?.startsWith('code at line 4'))).toBe(true);
@@ -119,7 +134,9 @@ test('exposes a custom fold icon and styles its public parts from consumer CSS',
       },
     });
 
-    await vi.waitFor(() => expect(host.shadowRoot?.querySelector('[part~="fold-trigger"]')).not.toBeNull());
+    await vi.waitFor(() =>
+      expect(host.shadowRoot?.querySelector('[part~="fold-trigger"]')).not.toBeNull(),
+    );
 
     const $button = host.shadowRoot!.querySelector<HTMLButtonElement>('[part~="fold-trigger"]')!;
     const $icon = $button.querySelector<HTMLElement>('[part~="fold-icon"]')!;

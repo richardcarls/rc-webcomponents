@@ -31,10 +31,7 @@ test('requires exactly one @rcarls-scoped package name and defaults to version 0
 
   assert.throws(() => parseBootstrapArguments([]), /A package name is required/);
 
-  assert.throws(
-    () => parseBootstrapArguments(['some-package']),
-    /must be scoped under @rcarls\//,
-  );
+  assert.throws(() => parseBootstrapArguments(['some-package']), /must be scoped under @rcarls\//);
 
   assert.throws(
     () => parseBootstrapArguments(['@rcarls/one', '@rcarls/two']),

@@ -37,7 +37,10 @@ test('reduced motion zeroes spatial duration but only shortens effects duration'
       // components declare their own entrance/exit motion behind that
       // opposite condition, and a broader match here would find one of
       // those first instead of this theme's reduced-motion override.
-      if (rule instanceof CSSMediaRule && rule.conditionText.includes('prefers-reduced-motion: reduce')) {
+      if (
+        rule instanceof CSSMediaRule &&
+        rule.conditionText.includes('prefers-reduced-motion: reduce')
+      ) {
         return rule;
       }
 
@@ -71,19 +74,27 @@ test('reduced motion zeroes spatial duration but only shortens effects duration'
     );
 
   expect(declaration).toBeDefined();
-  expect(declaration?.style.getPropertyValue('--rc-motion-spatial-duration-fast').trim()).toBe('0ms');
+  expect(declaration?.style.getPropertyValue('--rc-motion-spatial-duration-fast').trim()).toBe(
+    '0ms',
+  );
 
   expect(declaration?.style.getPropertyValue('--rc-motion-spatial-duration-default').trim()).toBe(
     '0ms',
   );
 
-  expect(declaration?.style.getPropertyValue('--rc-motion-spatial-duration-slow').trim()).toBe('0ms');
+  expect(declaration?.style.getPropertyValue('--rc-motion-spatial-duration-slow').trim()).toBe(
+    '0ms',
+  );
 
-  const effectsFast = declaration?.style.getPropertyValue('--rc-motion-effects-duration-fast').trim();
+  const effectsFast = declaration?.style
+    .getPropertyValue('--rc-motion-effects-duration-fast')
+    .trim();
   const effectsDefault = declaration?.style
     .getPropertyValue('--rc-motion-effects-duration-default')
     .trim();
-  const effectsSlow = declaration?.style.getPropertyValue('--rc-motion-effects-duration-slow').trim();
+  const effectsSlow = declaration?.style
+    .getPropertyValue('--rc-motion-effects-duration-slow')
+    .trim();
 
   for (const value of [effectsFast, effectsDefault, effectsSlow]) {
     expect(value).not.toBe('0ms');

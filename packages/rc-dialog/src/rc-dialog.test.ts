@@ -95,7 +95,9 @@ test('rc-dialog backdrop fades with the surface rather than snapping instantly',
   const $dialog = host.querySelector('dialog') as HTMLDialogElement;
 
   await nextFrame();
-  await Promise.all($dialog.getAnimations({ subtree: true }).map((animation) => animation.finished));
+  await Promise.all(
+    $dialog.getAnimations({ subtree: true }).map((animation) => animation.finished),
+  );
 
   const backdropStyles = getComputedStyle($dialog, '::backdrop');
 

@@ -190,7 +190,11 @@ export class RCDocument {
       } else if (decoration.type === 'widget') {
         widgetDecorations.push(decoration);
       } else {
-        for (let line = Math.max(2, decoration.fromLine); line <= decoration.toLine && line <= lines.length; line++) {
+        for (
+          let line = Math.max(2, decoration.fromLine);
+          line <= decoration.toLine && line <= lines.length;
+          line++
+        ) {
           foldedLines.add(line);
         }
       }
@@ -212,18 +216,27 @@ export class RCDocument {
       const widgets = widgetDecorations.filter((d) => d.offset >= lineStart && d.offset <= lineEnd);
       const folded = foldedLines.has(lineNum);
       // Only opt-in keyed widgets promise stable content between plugin passes.
-      const signature = widgets.length > 0 && widgets.every((widget) => widget.key)
-        ? JSON.stringify([lineText, folded, [...lineDecorations, ...marks, ...widgets].map(
-            ({ id: _id, ...decoration }) => decoration.type === 'line'
-              ? { ...decoration, gutterContent: undefined }
-              : decoration,
-          )])
-        : undefined;
+      const signature =
+        widgets.length > 0 && widgets.every((widget) => widget.key)
+          ? JSON.stringify([
+              lineText,
+              folded,
+              [...lineDecorations, ...marks, ...widgets].map(({ id: _id, ...decoration }) =>
+                decoration.type === 'line'
+                  ? { ...decoration, gutterContent: undefined }
+                  : decoration,
+              ),
+            ])
+          : undefined;
 
       const $existing = $lines[i];
 
-      if ($existing && signature && this.lineSignatures.get($existing) === signature &&
-          getLineText($existing) === lineText) {
+      if (
+        $existing &&
+        signature &&
+        this.lineSignatures.get($existing) === signature &&
+        getLineText($existing) === lineText
+      ) {
         lineStartOffset += lineText.length + 1;
 
         continue;

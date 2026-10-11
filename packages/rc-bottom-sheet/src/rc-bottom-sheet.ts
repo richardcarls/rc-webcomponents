@@ -623,14 +623,11 @@ export class RCBottomSheet extends RCDialog {
 
     // The sheet is docked at its block-end edge, so animating its height
     // alone moves the visible top edge.
-    const animation = $dialog.animate(
-      [{ height: `${fromHeight}px` }, { height: `${height}px` }],
-      {
-        duration: this._snapDuration($dialog),
-        easing: this._snapEasing($dialog),
-        fill: 'forwards',
-      },
-    );
+    const animation = $dialog.animate([{ height: `${fromHeight}px` }, { height: `${height}px` }], {
+      duration: this._snapDuration($dialog),
+      easing: this._snapEasing($dialog),
+      fill: 'forwards',
+    });
 
     this._activeSnapAnimation = animation;
 
@@ -675,7 +672,12 @@ export class RCBottomSheet extends RCDialog {
     const $dialog = this._$dialog;
     const $focused = document.activeElement;
 
-    if (!this.open || !$dialog || !($focused instanceof HTMLElement) || !$dialog.contains($focused)) {
+    if (
+      !this.open ||
+      !$dialog ||
+      !($focused instanceof HTMLElement) ||
+      !$dialog.contains($focused)
+    ) {
       return;
     }
 

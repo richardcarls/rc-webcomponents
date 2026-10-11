@@ -26,7 +26,9 @@ test('fades and slides in through CSS alone, with no JavaScript gating the timin
   expect(host.open).toBe(true);
 
   await nextFrame();
-  await Promise.all(host.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  await Promise.all(
+    host.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
 
   const openStyles = getComputedStyle(host);
 
@@ -37,7 +39,9 @@ test('fades and slides in through CSS alone, with no JavaScript gating the timin
   expect(host.open).toBe(false);
 
   await nextFrame();
-  await Promise.all(host.getAnimations().map((animation) => animation.finished.catch(() => undefined)));
+  await Promise.all(
+    host.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
 
   expect(getComputedStyle(host).opacity).toBe('0');
 });

@@ -2,7 +2,9 @@ import { fileURLToPath } from 'node:url';
 import { playwright } from '@vitest/browser-playwright';
 import type { BrowserConfigOptions, InlineConfig } from 'vitest/node';
 
-const BROWSER_SETUP_FILE = fileURLToPath(new URL('./test-helpers/browser-setup.ts', import.meta.url));
+const BROWSER_SETUP_FILE = fileURLToPath(
+  new URL('./test-helpers/browser-setup.ts', import.meta.url),
+);
 
 const BROWSER_NAMES = ['chromium', 'firefox', 'webkit'] as const;
 

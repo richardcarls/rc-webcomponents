@@ -597,8 +597,8 @@ test('multiple: chip touch-target overlap is returned between wrapped rows', asy
 
   await getHost(screen);
 
-  const [first, second] = [...$host.renderRoot.querySelectorAll('[part~="chip"]')].map(
-    ($chip) => $chip.getBoundingClientRect(),
+  const [first, second] = [...$host.renderRoot.querySelectorAll('[part~="chip"]')].map(($chip) =>
+    $chip.getBoundingClientRect(),
   );
 
   expect(second.top).toBeGreaterThan(first.top);

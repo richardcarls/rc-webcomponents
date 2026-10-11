@@ -112,10 +112,16 @@ export function dockerRunArgs({ root, image, prefix, dirs, script, args, user, e
   const home = user ? '/tmp/home' : '/root';
   const memory = env.TEST_DOCKER_MEMORY || DEFAULT_MEMORY;
   const run = [
-    'run', '--rm', '--init',
+    'run',
+    '--rm',
+    '--init',
     // Equal limits disable swap, so an overrun is killed inside the container.
-    '--memory', memory, '--memory-swap', memory,
-    '--shm-size', SHM_SIZE,
+    '--memory',
+    memory,
+    '--memory-swap',
+    memory,
+    '--shm-size',
+    SHM_SIZE,
   ];
 
   if (tty) {
