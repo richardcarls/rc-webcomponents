@@ -582,7 +582,7 @@
           },
           "cssVar": "--win31-control-height",
           "values": {
-            "Value": 22
+            "Value": 23
           }
         },
         {
@@ -8809,7 +8809,7 @@
       },
       {
         "property": "--win31-dither-track",
-        "raw": "url('data:image/svg+xml",
+        "raw": "conic-gradient( var(--win31-color-highlight) 0 25%, var(--win31-color-surface) 0 50%, var(--win31-color-highlight) 0 75%, var(--win31-color-surface) 0 )",
         "name": "texture/track"
       },
       {
