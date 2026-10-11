@@ -414,10 +414,10 @@ sheets. Import `defaults.css` before any selective import, or supply the
 Three properties of the theme are deliberate and worth knowing before you
 adopt it:
 
-- **It is light only.** Windows 3.1 had no dark mode. It had something
-  arguably better, around twenty user-selectable whole-system color schemes,
-  and every component stylesheet here reads only the `--win31-color-*` tokens
-  so a scheme is a class that overrides those and nothing else.
+- **It is light only.** Windows 3.1 had user-selectable whole-system color
+  schemes rather than an automatic dark mode. Override the `--win31-color-*`
+  roles together. The dither follows the surface token, while the black glyph
+  image tokens may need replacement for a contrasting scheme.
 - **It has no hover states**, except on menus, which is period-correct and can
   surprise people. Push buttons and list rows look identical at rest and under
   the pointer.
@@ -436,3 +436,5 @@ any proportion:
 
 See [Theme previews](./theme-previews) to compare components with and without
 each packaged theme applied.
+The package [design guide](https://github.com/richardcarls/rc-webcomponents/blob/develop/packages/rc-theme-win31/DESIGN.md)
+documents composition, historical references, and visual limitations.

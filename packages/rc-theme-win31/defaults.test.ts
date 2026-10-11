@@ -28,7 +28,17 @@ test('bundled defaults provide scoped Windows 3.1 tokens', () => {
   expect(styles.getPropertyValue('--win31-color-selection').trim()).toBe('#000080');
   expect(styles.getPropertyValue('--win31-radius').trim()).toBe('0');
   expect(styles.getPropertyValue('--win31-font-family')).not.toBe('');
-  expect(styles.getPropertyValue('--win31-dither-track')).toContain('data:image/svg+xml');
+  expect(styles.getPropertyValue('--win31-dither-track')).toContain('conic-gradient');
+});
+
+test('dither follows an application surface-color override', () => {
+  const scope = renderScope();
+
+  scope.style.setProperty('--win31-color-surface', '#123456');
+  scope.style.setProperty('--win31-color-highlight', '#abcdef');
+
+  expect(getComputedStyle(scope).getPropertyValue('--win31-dither-track')).toContain('#123456');
+  expect(getComputedStyle(scope).getPropertyValue('--win31-dither-track')).toContain('#abcdef');
 });
 
 test('metrics resolve to the pixel sizes derived from the MS Sans Serif 8pt cell', () => {
@@ -40,7 +50,7 @@ test('metrics resolve to the pixel sizes derived from the MS Sans Serif 8pt cell
   // A dialog unit is 1.5px horizontally and 1.625px vertically at a 6 by 13
   // cell, which puts the standard 50 by 14 DLU push button at 75 by 23px.
   for (const [token, expected] of [
-    ['--win31-control-height', '22px'],
+    ['--win31-control-height', '23px'],
     ['--win31-title-height', '24px'],
     ['--win31-menu-height', '27px'],
     ['--win31-toolbar-height', '31px'],
@@ -63,7 +73,7 @@ test('one unit token scales every metric without changing a ratio', () => {
   scope.append(probe);
 
   for (const [token, expected] of [
-    ['--win31-control-height', '44px'],
+    ['--win31-control-height', '46px'],
     ['--win31-listbox-row-height', '34px'],
     ['--win31-scrollbar-size', '32px'],
     ['--win31-font-size', '26px'],
