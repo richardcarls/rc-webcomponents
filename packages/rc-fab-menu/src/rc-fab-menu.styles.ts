@@ -97,7 +97,18 @@ export const fabMenuStyles = css`
     box-shadow: var(--rc-fab-menu-disabled-shadow, revert);
   }
 
+  /*
+   * These styles replace rc-menu-button's rather than extend them, so the popup
+   * restates its reset of the UA [popover] border, padding, and Canvas
+   * background. The slotted rc-menu draws the visible surface.
+   */
   #popup {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    overflow: visible;
+    color: inherit;
     z-index: var(--rc-fab-menu-popup-z-index, var(--rc-menu-button-popup-z-index, 1000));
     transform-origin: var(--rc-fab-menu-popup-transform-origin, bottom right);
   }
