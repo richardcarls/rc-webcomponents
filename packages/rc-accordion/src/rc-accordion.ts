@@ -6,16 +6,8 @@ const NAVIGATION_KEYS = ['ArrowDown', 'ArrowUp', 'Home', 'End'] as const;
 
 type NavigationKey = (typeof NAVIGATION_KEYS)[number];
 
-type RCDisclosureElement = HTMLElement & {
-  open: boolean;
-};
-
 function isNavigationKey(key: string): key is NavigationKey {
   return NAVIGATION_KEYS.includes(key as NavigationKey);
-}
-
-function isRCDisclosureElement($el: Element | null): $el is RCDisclosureElement {
-  return $el?.localName === 'rc-disclosure';
 }
 
 declare global {
@@ -232,18 +224,6 @@ export class RCAccordion extends HTMLElement {
     this._enforceSingleOpen($opened);
   };
 
-  private _setDetailsOpen($target: HTMLDetailsElement, open: boolean): void {
-    const $parent = $target.parentElement;
-
-    if (isRCDisclosureElement($parent)) {
-      $parent.open = open;
-
-      return;
-    }
-
-    $target.open = open;
-  }
-
   private _onChildrenChanged(records: MutationRecord[]): void {
     this._syncNativeGroupNames();
 
@@ -299,9 +279,14 @@ export class RCAccordion extends HTMLElement {
       return;
     }
 
+    // Close the native <details> rather than an rc-disclosure wrapper's `open`
+    // property: writing that property takes control of the disclosure, which
+    // then refuses to reopen from its summary. A wrapper reads the native
+    // toggle like any user toggle, so an uncontrolled one stays uncontrolled
+    // and a controlled one receives the close as a request.
     for (const $el of $openDetails) {
       if ($el !== $keepOpen) {
-        this._setDetailsOpen($el, false);
+        $el.open = false;
       }
     }
   }

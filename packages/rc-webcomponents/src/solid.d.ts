@@ -18,6 +18,7 @@ import type { RCTextareaPlugin } from '@rcarls/rc-textarea';
 /** Public API surface of `<rc-disclosure>`. */
 export type RCDisclosureRef = HTMLElement & {
   open: boolean;
+  defaultOpen: boolean;
 };
 
 export type RCDisclosureToggleDetail = {
@@ -786,6 +787,9 @@ declare module 'solid-js' {
     interface IntrinsicElements {
       'rc-disclosure': JSX.HTMLAttributes<RCDisclosureRef> & {
         open?: boolean | string;
+        'default-open'?: boolean | string;
+        'prop:open'?: boolean | undefined;
+        'prop:defaultOpen'?: boolean | undefined;
         'on:rc-disclosure-toggle'?: (e: CustomEvent<RCDisclosureToggleDetail>) => void;
       };
 
