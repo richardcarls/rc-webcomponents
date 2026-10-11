@@ -55,13 +55,11 @@ proportion changing. This is the bitmap-interface answer to responsive sizing.
 
 ## What is deliberate
 
-- **Light only.** Windows 3.1 had no dark mode. It had around twenty
-  user-selectable whole-system color schemes instead, which is arguably the
-  stronger idea and predates `prefers-color-scheme` by three decades. Every
-  component stylesheet reads only the `--win31-color-*` tokens, so a scheme is a
-  class that overrides those and nothing else. The named period schemes are not
-  shipped yet: their values live in the original `CONTROL.INI` and are not
-  worth guessing.
+- **Light only.** Windows 3.1 had no dark mode. It had user-selectable
+  whole-system color schemes instead. Override the `--win31-color-*` roles as
+  a set; the dither follows the surface token, while the baseline glyph SVGs
+  remain black and may need replacement for a contrasting scheme. Named period
+  schemes are not shipped without verified values.
 - **No hover states**, except on menus. That is period-correct and it does
   surprise people. Push buttons and list rows are identical at rest and under
   the pointer. The upside is that every affordance is legible without a pointer,
@@ -93,13 +91,12 @@ on through `move-handle`:
 <rc-dialog movable move-handle="header">
   <dialog aria-labelledby="save-title">
     <header>
-      <button aria-label="System menu"></button>
       <h2 id="save-title">Save Changes</h2>
     </header>
     <p>Save changes before closing?</p>
     <footer>
-      <button data-rc-win31-default>OK</button>
-      <button>Cancel</button>
+      <rc-button data-rc-win31-default><button>OK</button></rc-button>
+      <rc-button><button>Cancel</button></rc-button>
     </footer>
   </dialog>
 </rc-dialog>
@@ -129,6 +126,9 @@ every glyph in this package is redrawn as SVG or CSS.
 
 ## Documentation
 
+- [`DESIGN.md`](./DESIGN.md) gives composition guidance, historical sources,
+  and the limits of the web recreation. It ships as
+  `@rcarls/rc-theme-win31/DESIGN.md` for package-aware tools.
 - [Theme previews](https://richardcarls.github.io/rc-webcomponents/guide/theme-previews)
 - [Styling guide](https://richardcarls.github.io/rc-webcomponents/guide/styling)
 

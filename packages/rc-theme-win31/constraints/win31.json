@@ -11,7 +11,7 @@
     {
       "id": "button.container",
       "selector": "rc-button > button",
-      "geometry": { "minBlockSize": "22px" },
+      "geometry": { "minBlockSize": "23px" },
       "source": "dialogUnits"
     },
     {
