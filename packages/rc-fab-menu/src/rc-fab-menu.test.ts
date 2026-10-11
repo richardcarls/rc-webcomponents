@@ -166,6 +166,34 @@ test('default placement opens the menu above the floating action button', async 
   expect($host.placement).toBe('block-start-end');
 });
 
+test('open popup leaves the surface to rc-menu without UA popover chrome', async () => {
+  const screen = render(html`
+    <rc-fab-menu data-testid="host">
+      <button slot="trigger" type="button" aria-label="Create"></button>
+      <rc-menu label="Create">
+        <button>Recipe</button>
+      </rc-menu>
+    </rc-fab-menu>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCFabMenu;
+
+  await $host.updateComplete;
+  $host.openMenu();
+  await $host.updateComplete;
+
+  const popup = $host.shadowRoot?.querySelector('#popup') as HTMLElement;
+  const styles = getComputedStyle(popup);
+
+  expect(popup.matches(':popover-open')).toBe(true);
+  expect(styles.borderTopWidth).toBe('0px');
+  expect(styles.borderInlineStartWidth).toBe('0px');
+  expect(styles.paddingTop).toBe('0px');
+  expect(styles.paddingInlineStart).toBe('0px');
+  expect(styles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+
+  $host.closeMenu();
+});
+
 test('has no automated accessibility violations while closed and open', async () => {
   const screen = render(html`
     <rc-fab-menu data-testid="host">
