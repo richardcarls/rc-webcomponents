@@ -924,7 +924,7 @@ test('the summary swaps the native marker for a centered trailing chevron', () =
   const styles = getComputedStyle(summary!);
   const chevron = getComputedStyle(summary!, '::after');
 
-  expect(styles.display).toBe('grid');
+  expect(styles.display).toBe('flex');
   expect(styles.alignItems).toBe('center');
   expect(chevron.content).toBe('""');
   expect(chevron.borderTopWidth).toBe('2px');
@@ -935,6 +935,30 @@ test('the summary swaps the native marker for a centered trailing chevron', () =
   details!.open = true;
 
   expect(getComputedStyle(summary!, '::after').rotate).toBe('315deg');
+});
+
+test('the disclosure chevron follows all authored summary children', () => {
+  const $scope = renderScope();
+  const $disclosure = document.createElement('rc-disclosure');
+
+  $disclosure.innerHTML = `
+    <details>
+      <summary><span>Icon</span><span>Details</span></summary>
+      <p>Body</p>
+    </details>
+  `;
+
+  $scope.append($disclosure);
+
+  const $summary = $disclosure.querySelector('summary');
+  const $title = $summary?.querySelector('span:last-child');
+
+  if (!$summary || !$title) {
+    throw new Error('Missing disclosure summary content');
+  }
+
+  expect($title.getBoundingClientRect().width).toBeGreaterThan(24);
+  expect($summary.getBoundingClientRect().height).toBeLessThanOrEqual(56);
 });
 
 test('accordion styles direct and wrapped disclosures from one shared mapping', () => {

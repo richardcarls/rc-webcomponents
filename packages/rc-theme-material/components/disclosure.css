@@ -89,13 +89,12 @@
      * Material replaces the native marker with a trailing expand chevron, the
      * Android expandable-list-item affordance, so it owns both halves of that
      * swap: hiding `::marker` and drawing the replacement. That is what makes
-     * dropping the `list-item` box safe, and grid is what lets the title center
-     * in the 56px row instead of sitting at its top edge.
+     * dropping the `list-item` box safe. Flex centers the authored summary
+     * content without assigning one of its children to the chevron column.
      */
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 1.5rem;
+    display: flex;
     align-items: center;
-    column-gap: 1rem;
+    gap: 1rem;
 
     /* The accordion applies matching logical outer corners to this hover surface. */
     border-radius: var(--rc-disclosure-radius, 0);
@@ -130,7 +129,8 @@
     content: '';
     direction: ltr;
     writing-mode: horizontal-tb;
-    justify-self: center;
+    flex: none;
+    margin-inline-start: auto;
     inline-size: 0.4375rem;
     block-size: 0.4375rem;
     border-block-start: 2px solid currentColor;
