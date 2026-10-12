@@ -9,9 +9,8 @@
    * bridge.css alone when providing your own --win31-* tokens.
    *
    * Values are the stock "Windows Default" scheme. Windows 3.1 shipped around
-   * twenty further named Control Panel schemes; every component stylesheet in
-   * this package reads only the --win31-color-* tokens below, so a scheme is a
-   * class that overrides those and nothing else.
+   * twenty further named Control Panel schemes. A color scheme overrides the
+   * --win31-color-* roles; image assets may need matching replacements.
    */
   .rc-theme-win31,
   :host(.rc-theme-win31) {
@@ -68,7 +67,7 @@
      * 96 DPI. One horizontal dialog unit is 1.5px, one vertical unit 1.625px,
      * which puts the standard 50 by 14 DLU push button at 75 by 23 pixels.
      */
-    --win31-control-height: calc(22 * var(--win31-unit));
+    --win31-control-height: calc(23 * var(--win31-unit));
     --win31-title-height: calc(24 * var(--win31-unit));
     --win31-menu-height: calc(27 * var(--win31-unit));
     --win31-toolbar-height: calc(31 * var(--win31-unit));
@@ -136,7 +135,12 @@
      * One-bit dither, the period way to say "less" without an alpha channel.
      * Used for scrollbar tracks and latched toggle faces.
      */
-    --win31-dither-track: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgLTAuNSAyIDIiIHNoYXBlLXJlbmRlcmluZz0iY3Jpc3BFZGdlcyI+PHBhdGggc3Ryb2tlPSIjYzBjMGMwIiBkPSJNMCAwaDFNMSAxaDEiIC8+PC9zdmc+');
+    --win31-dither-track: conic-gradient(
+      var(--win31-color-highlight) 0 25%,
+      var(--win31-color-surface) 0 50%,
+      var(--win31-color-highlight) 0 75%,
+      var(--win31-color-surface) 0
+    );
     --win31-dither-size: calc(2 * var(--win31-unit));
 
     /*

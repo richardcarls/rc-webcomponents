@@ -49,7 +49,7 @@ test('push buttons are beveled, square, and motionless', () => {
 
   const styles = getComputedStyle(button);
 
-  expect(styles.minBlockSize).toBe('22px');
+  expect(styles.minBlockSize).toBe('23px');
   expect(styles.borderRadius).toBe('0px');
   expect(styles.boxShadow).not.toBe('none');
   expect(styles.transitionDuration).toBe('0s');
@@ -207,7 +207,7 @@ test('a latched toolbar button inverts its bevel and takes the dithered face', (
 
   expect(restingStyles.inlineSize).toBe('27px');
   expect(restingStyles.backgroundImage).toBe('none');
-  expect(latchedStyles.backgroundImage).toContain('data:image/svg+xml');
+  expect(latchedStyles.backgroundImage).toContain('conic-gradient');
   expect(latchedStyles.boxShadow).not.toBe(restingStyles.boxShadow);
 });
 

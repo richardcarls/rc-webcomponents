@@ -370,6 +370,29 @@ Apply the `rc-theme-material` class to a container to scope the theme:
 </div>
 ```
 
+### Scale text within a Material theme region
+
+Add `data-rc-type-scale` to a region and set `--rc-type-scale` to a positive
+number. The full `theme.css` bundle multiplies Material type sizes and line
+heights, along with RC text tokens, inside that region. Text outside it retains
+its existing scale.
+
+```html
+<div class="rc-theme-material">
+  <main data-rc-type-scale style="--rc-type-scale: 1.25">
+    <p>Reading view</p>
+    <rc-button><button type="button">Continue</button></rc-button>
+  </main>
+</div>
+```
+
+Place the marker on the `rc-theme-material` root to scale the whole theme.
+A nested marker uses its own factor in place of the outer factor. If you import
+only `bridge.css` with your own Material tokens, the marker scales RC text
+tokens from those values; your application's Material tokens remain unchanged.
+When both final Material type tokens and their `*-value` source tokens are
+present, the source tokens supply the scale baseline.
+
 For `rc-button[icon-only]`, Material supplies
 `rc-button--extra-small`, `rc-button--medium`, `rc-button--large`, and
 `rc-button--extra-large` size classes. Combine them with
@@ -418,10 +441,10 @@ sheets. Import `defaults.css` before any selective import, or supply the
 Three properties of the theme are deliberate and worth knowing before you
 adopt it:
 
-- **It is light only.** Windows 3.1 had no dark mode. It had something
-  arguably better, around twenty user-selectable whole-system color schemes,
-  and every component stylesheet here reads only the `--win31-color-*` tokens
-  so a scheme is a class that overrides those and nothing else.
+- **It is light only.** Windows 3.1 had user-selectable whole-system color
+  schemes rather than an automatic dark mode. Override the `--win31-color-*`
+  roles together. The dither follows the surface token, while the black glyph
+  image tokens may need replacement for a contrasting scheme.
 - **It has no hover states**, except on menus, which is period-correct and can
   surprise people. Push buttons and list rows look identical at rest and under
   the pointer.
@@ -440,3 +463,5 @@ any proportion:
 
 See [Theme previews](./theme-previews) to compare components with and without
 each packaged theme applied.
+The package [design guide](https://github.com/richardcarls/rc-webcomponents/blob/develop/packages/rc-theme-win31/DESIGN.md)
+documents composition, historical references, and visual limitations.

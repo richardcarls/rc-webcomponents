@@ -345,10 +345,10 @@ test('a mix weight written as a calc still resolves', () => {
 });
 
 test('a metric scaled from a unit token resolves to a real length', () => {
-  // The Windows 3.1 theme writes the factor first, as calc(22 * var(--unit)),
+  // The Windows 3.1 theme writes the factor first, as calc(2 * var(--unit)),
   // which is the commuted form of what Material writes. Without it every
   // metric, and every bridge token aliasing one, degrades to a composite.
-  assert.deepEqual(variable(win31, 'Size', 'size/control-height').values, { Value: 22 });
+  assert.deepEqual(variable(win31, 'Size', 'size/control-height').values, { Value: 23 });
   assert.deepEqual(variable(win31, 'Size', 'size/listbox-row-height').values, { Value: 17 });
   assert.deepEqual(variable(win31, 'Size', 'size/scrollbar-size').values, { Value: 16 });
 

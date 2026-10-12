@@ -650,6 +650,65 @@
     );
   }
 
+  /*
+   * Scale RC text from the unscaled Material values. The bundled defaults
+   * expose *-value tokens; bridge-only consumers can supply Material type
+   * tokens, which the bridge leaves unchanged.
+   */
+  /* A marked theme root itself must outrank its own token rule above. */
+  :where(.rc-theme-material [data-rc-type-scale], :host(.rc-theme-material) [data-rc-type-scale]),
+  .rc-theme-material[data-rc-type-scale],
+  :host(.rc-theme-material[data-rc-type-scale]) {
+    --rc-item-font-size: calc(
+      var(--md-sys-typescale-body-large-size-value, var(--md-sys-typescale-body-large-size, 1rem)) *
+        var(--rc-type-scale, 1)
+    );
+    --rc-item-line-height: calc(
+      var(
+          --md-sys-typescale-body-large-line-height-value,
+          var(--md-sys-typescale-body-large-line-height, 1.5rem)
+        ) *
+        var(--rc-type-scale, 1)
+    );
+    --rc-font-size: calc(
+      var(
+          --md-sys-typescale-body-medium-size-value,
+          var(--md-sys-typescale-body-medium-size, 0.875rem)
+        ) *
+        var(--rc-type-scale, 1)
+    );
+    --rc-line-height: calc(
+      var(
+          --md-sys-typescale-body-medium-line-height-value,
+          var(--md-sys-typescale-body-medium-line-height, 1.25rem)
+        ) *
+        var(--rc-type-scale, 1)
+    );
+    --rc-button-font: 500
+      calc(
+        var(
+            --md-sys-typescale-label-large-size-value,
+            var(--md-sys-typescale-label-large-size, 0.875rem)
+          ) *
+          var(--rc-type-scale, 1)
+      ) /
+      calc(
+        var(
+            --md-sys-typescale-label-large-line-height-value,
+            var(--md-sys-typescale-label-large-line-height, 1.25rem)
+          ) *
+          var(--rc-type-scale, 1)
+      )
+      var(--rc-font-family);
+    --rc-menu-shortcut-size: calc(
+      var(
+          --md-sys-typescale-label-large-size-value,
+          var(--md-sys-typescale-label-large-size, 0.875rem)
+        ) *
+        var(--rc-type-scale, 1)
+    );
+  }
+
   @media (forced-colors: active) {
     .rc-theme-material,
     :host(.rc-theme-material) {

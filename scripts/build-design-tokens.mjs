@@ -365,7 +365,7 @@ function createResolver(byProperty) {
 
       /*
        * Multiplication is commutative, and a theme that scales every metric
-       * from one unit writes the factor first: calc(22 * var(--unit)). Without
+       * from one unit writes the factor first: calc(2 * var(--unit)). Without
        * this the whole metric set resolves as composite, and so does every
        * bridge token that aliases it.
        */

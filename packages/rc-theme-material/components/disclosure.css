@@ -62,7 +62,6 @@
 
     --rc-disclosure-duration: var(--rc-motion-effects-duration-slow, 300ms);
     --rc-disclosure-easing: var(--rc-theme-material-disclosure-easing);
-    --rc-accordion-gap: 0.125rem;
   }
 
   /*
@@ -85,9 +84,73 @@
     > details
     > summary {
     -webkit-tap-highlight-color: transparent;
-    border-radius: calc(var(--md-sys-shape-corner-large, 1rem) - 1px);
+
+    /*
+     * Material replaces the native marker with a trailing expand chevron, the
+     * Android expandable-list-item affordance, so it owns both halves of that
+     * swap: hiding `::marker` and drawing the replacement. That is what makes
+     * dropping the `list-item` box safe. Flex centers the authored summary
+     * content without assigning one of its children to the chevron column.
+     */
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    /* The accordion applies matching logical outer corners to this hover surface. */
+    border-radius: var(--rc-disclosure-radius, 0);
     transition: background-color var(--rc-motion-effects-duration-fast, 150ms)
       var(--rc-theme-material-disclosure-easing);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > summary::marker {
+    content: '';
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /*
+   * A border-drawn chevron rather than a masked icon, so forced-colors mode
+   * repaints it as a system color without a separate override. Keep its own
+   * axes horizontal and left-to-right so inherited RTL or vertical writing
+   * does not turn the down/up affordance sideways.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > summary::after {
+    content: '';
+    direction: ltr;
+    writing-mode: horizontal-tb;
+    flex: none;
+    margin-inline-start: auto;
+    inline-size: 0.4375rem;
+    block-size: 0.4375rem;
+    border-block-start: 2px solid currentColor;
+    border-inline-end: 2px solid currentColor;
+    color: var(--rc-disclosure-summary-marker-color, currentColor);
+    translate: 0 -0.125rem;
+    rotate: 135deg;
+    transition:
+      rotate var(--rc-motion-spatial-duration-fast, 300ms)
+        var(--rc-theme-material-disclosure-easing),
+      translate var(--rc-motion-spatial-duration-fast, 300ms)
+        var(--rc-theme-material-disclosure-easing);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    :is(rc-disclosure, rc-accordion)
+    > details[open]
+    > summary::after {
+    translate: 0 0.125rem;
+    rotate: 315deg;
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material))

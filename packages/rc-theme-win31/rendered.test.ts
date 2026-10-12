@@ -69,9 +69,11 @@ test('controls render at the sizes the dialog-unit derivation predicts', async (
   expect(getComputedStyle($button).minBlockSize).toBe(
     constraint('button.container').geometry.minBlockSize,
   );
+
   expect(getComputedStyle($toolbarButton).inlineSize).toBe(
     constraint('toolbar.button').geometry.inlineSize,
   );
+
   expect(getComputedStyle($toolbarButton).blockSize).toBe(
     constraint('toolbar.button').geometry.blockSize,
   );
@@ -93,7 +95,7 @@ test('the dialog caption bar matches the recorded window-chrome constraint', asy
       <dialog open aria-labelledby="win31-title">
         <header><button aria-label="System menu"></button><h2 id="win31-title">Save Changes</h2></header>
         <p>Save changes before closing?</p>
-        <footer><button data-rc-win31-default>OK</button><button>Cancel</button></footer>
+        <footer><rc-button data-rc-win31-default><button>OK</button></rc-button><rc-button><button>Cancel</button></rc-button></footer>
       </dialog>
     </rc-dialog>
   `);
@@ -107,6 +109,13 @@ test('the dialog caption bar matches the recorded window-chrome constraint', asy
   expect(getComputedStyle($header).minBlockSize).toBe(expected.geometry.minBlockSize);
   expect(getComputedStyle($title).fontWeight).toBe(expected.typography.weight);
   expect(getComputedStyle($title).textAlign).toBe(expected.typography.align);
+
+  const $defaultButton = scope.querySelector<HTMLElement>(
+    'rc-button[data-rc-win31-default] > button',
+  );
+
+  expect($defaultButton).not.toBeNull();
+  expect(getComputedStyle($defaultButton!).outlineStyle).toBe('solid');
 });
 
 test('every themed element stays square and motionless', async () => {

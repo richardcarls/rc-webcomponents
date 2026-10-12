@@ -1013,6 +1013,111 @@
    * Elevation shadows are zeroed throughout, since tonal/shadow elevation
    * isn't part of the forced-colors palette either.
    */
+
+  /*
+   * Scoped type scale. An element marked data-rc-type-scale multiplies every
+   * Material type size and line height beneath it by --rc-type-scale
+   * (default 1), for a region such as a hands-busy reading view that needs
+   * larger text than the rest of the page. Tokens set on the theme root are
+   * resolved there, so the scaled values are derived again on the marked
+   * element; bridge.css does the same for the RC text tokens built on them.
+   */
+  /* A marked theme root itself must outrank its own token rule above. */
+  :where(.rc-theme-material [data-rc-type-scale], :host(.rc-theme-material) [data-rc-type-scale]),
+  .rc-theme-material[data-rc-type-scale],
+  :host(.rc-theme-material[data-rc-type-scale]) {
+    --md-sys-typescale-display-large-size: calc(
+      var(--md-sys-typescale-display-large-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-display-large-line-height: calc(
+      var(--md-sys-typescale-display-large-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-display-medium-size: calc(
+      var(--md-sys-typescale-display-medium-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-display-medium-line-height: calc(
+      var(--md-sys-typescale-display-medium-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-display-small-size: calc(
+      var(--md-sys-typescale-display-small-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-display-small-line-height: calc(
+      var(--md-sys-typescale-display-small-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-large-size: calc(
+      var(--md-sys-typescale-headline-large-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-large-line-height: calc(
+      var(--md-sys-typescale-headline-large-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-medium-size: calc(
+      var(--md-sys-typescale-headline-medium-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-medium-line-height: calc(
+      var(--md-sys-typescale-headline-medium-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-small-size: calc(
+      var(--md-sys-typescale-headline-small-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-small-line-height: calc(
+      var(--md-sys-typescale-headline-small-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-large-size: calc(
+      var(--md-sys-typescale-title-large-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-large-line-height: calc(
+      var(--md-sys-typescale-title-large-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-medium-size: calc(
+      var(--md-sys-typescale-title-medium-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-medium-line-height: calc(
+      var(--md-sys-typescale-title-medium-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-small-size: calc(
+      var(--md-sys-typescale-title-small-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-small-line-height: calc(
+      var(--md-sys-typescale-title-small-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-large-size: calc(
+      var(--md-sys-typescale-body-large-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-large-line-height: calc(
+      var(--md-sys-typescale-body-large-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-medium-size: calc(
+      var(--md-sys-typescale-body-medium-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-medium-line-height: calc(
+      var(--md-sys-typescale-body-medium-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-small-size: calc(
+      var(--md-sys-typescale-body-small-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-small-line-height: calc(
+      var(--md-sys-typescale-body-small-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-large-size: calc(
+      var(--md-sys-typescale-label-large-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-large-line-height: calc(
+      var(--md-sys-typescale-label-large-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-medium-size: calc(
+      var(--md-sys-typescale-label-medium-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-medium-line-height: calc(
+      var(--md-sys-typescale-label-medium-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-small-size: calc(
+      var(--md-sys-typescale-label-small-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-small-line-height: calc(
+      var(--md-sys-typescale-label-small-line-height-value) * var(--rc-type-scale, 1)
+    );
+  }
+
   @media (forced-colors: active) {
     .rc-theme-material,
     :host(.rc-theme-material) {

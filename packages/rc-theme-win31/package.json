@@ -22,12 +22,14 @@
     "./defaults.css": "./defaults.css",
     "./components.css": "./components.css",
     "./components/*.css": "./components/*.css",
-    "./theme.css": "./theme.css"
+    "./theme.css": "./theme.css",
+    "./DESIGN.md": "./DESIGN.md"
   },
   "files": [
     "*.css",
     "components",
-    "README.md"
+    "README.md",
+    "DESIGN.md"
   ],
   "scripts": {
     "build": "echo 'CSS-only package, no build step'",
