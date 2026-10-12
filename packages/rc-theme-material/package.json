@@ -38,10 +38,12 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "devDependencies": {
+    "@rcarls/rc-accordion": "workspace:*",
     "@rcarls/rc-adaptive-menu": "workspace:*",
     "@rcarls/rc-button": "workspace:*",
     "@rcarls/rc-combobox": "workspace:*",
     "@rcarls/rc-dialog": "workspace:*",
+    "@rcarls/rc-disclosure": "workspace:*",
     "@rcarls/rc-field": "workspace:*",
     "@rcarls/rc-list": "workspace:*",
     "@rcarls/rc-menu-button": "workspace:*",
