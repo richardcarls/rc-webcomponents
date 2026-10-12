@@ -39,9 +39,15 @@ const declarations = new Map(
 );
 
 function resolveToken(name) {
-  const value = declarations.get(name);
+  // Scoped overrides redefine final type tokens; the guide records their
+  // unscaled source values from the bundled defaults.
+  const sourceName =
+    name.startsWith('--md-sys-typescale-') && /-(?:size|line-height)$/.test(name)
+      ? `${name}-value`
+      : name;
+  const value = declarations.get(sourceName);
 
-  assert.ok(value, `${name} exists in defaults.css`);
+  assert.ok(value, `${sourceName} exists in defaults.css`);
 
   const reference = value.match(/^var\((--[a-z0-9-]+)\)$/);
 

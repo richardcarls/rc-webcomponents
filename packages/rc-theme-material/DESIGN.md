@@ -437,6 +437,18 @@ assignments:
 
 Keep reading measure near 40–75 characters; widen panes, not lines.
 
+For a reading region, add `data-rc-type-scale` and set a positive
+`--rc-type-scale` factor. With `theme.css`, the Material type sizes and line
+heights and the RC text tokens derived from them scale inside the region.
+With `bridge.css` alone, RC text tokens scale from the application's Material
+values while those Material tokens remain unchanged. A nested marked region
+uses its own factor. The front matter above records the unscaled bundled
+`*-value` sources; update those source tokens alongside branded final values.
+
+```html
+<main data-rc-type-scale style="--rc-type-scale: 1.25">…</main>
+```
+
 ## Layout and window size classes
 
 ### Size classes
@@ -915,7 +927,8 @@ several).
 - Seed the initial state with `default-open`. `open` is the **controlled**
   state: the disclosure then ignores its own summary, and the accordion's
   close arrives as an `rc-disclosure-toggle` request your code must honor.
-- Keep summaries to one line of title text; put explanation in the panel.
+- Keep summaries to one line of title text; an optional leading icon remains
+  before the trailing chevron. Put explanation in the panel.
 - Use disclosures for optional help and secondary detail, not for primary
   form fields or navigation.
 
