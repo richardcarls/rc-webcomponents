@@ -95,6 +95,33 @@ Fonts and icons are not bundled; websites and applications may provide
 [Roboto](https://fonts.google.com/specimen/Roboto) and
 [Material Symbols](https://fonts.google.com/icons) through other means.
 
+### Scoped type scale
+
+Mark a region with `data-rc-type-scale` and set `--rc-type-scale` to enlarge or
+shrink its text, such as a reading view used at arm's length. Every Material type
+size and line height beneath the marked element, and the RC text tokens built on
+them, are multiplied by the factor. Text outside the region is unchanged.
+
+```html
+<main data-rc-type-scale style="--rc-type-scale: 1.25">…</main>
+```
+
+Marking the theme root itself scales the whole page, for an app-wide text size
+setting. A nested marked region uses its own `--rc-type-scale`; to compound it
+with a page-wide factor, keep that factor in a separate custom property and
+multiply, since a property can't refer to its own inherited value:
+
+```html
+<html class="rc-theme-material" data-rc-type-scale style="--app-scale: 0.75; --rc-type-scale: var(--app-scale)">
+  …
+  <p data-rc-type-scale style="--rc-type-scale: calc(var(--app-scale) * 1.25)">…</p>
+</html>
+```
+
+The scaled sizes come from the bundled `defaults.css` token values. An
+application that supplies its own `--md-sys-typescale-*` values with `bridge.css`
+alone scales its own tokens instead.
+
 ### Icon font wiring
 
 The theme sizes and centers icon markers but never sets `font-family` on them,

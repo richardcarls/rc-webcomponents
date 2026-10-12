@@ -1101,3 +1101,66 @@ test('reorderable list handles and lifted items follow the Material dragged stat
 
   scope.remove();
 });
+
+test('a data-rc-type-scale region scales Material type and RC text tokens', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+
+  scope.innerHTML = `
+    <p data-testid="outside" style="font: var(--md-sys-typescale-body-large-size) / var(--md-sys-typescale-body-large-line-height) sans-serif">Outside</p>
+    <section data-rc-type-scale style="--rc-type-scale: 1.5">
+      <p data-testid="inside" style="font: var(--md-sys-typescale-body-large-size) / var(--md-sys-typescale-body-large-line-height) sans-serif">Inside</p>
+      <rc-list>
+        <rc-list-item>Scaled row</rc-list-item>
+      </rc-list>
+      <rc-button><button type="button">Scaled button</button></rc-button>
+    </section>
+    <rc-list data-testid="outside-list">
+      <rc-list-item>Unscaled row</rc-list-item>
+    </rc-list>
+  `;
+  document.body.append(scope);
+  await settle(scope);
+
+  const outside = getComputedStyle(scope.querySelector('[data-testid="outside"]')!);
+  const inside = getComputedStyle(scope.querySelector('[data-testid="inside"]')!);
+
+  expect(outside.fontSize).toBe('16px');
+  expect(outside.lineHeight).toBe('24px');
+  expect(inside.fontSize).toBe('24px');
+  expect(inside.lineHeight).toBe('36px');
+
+  // RC tokens derived on the theme root are derived again inside the region.
+  const rowContent = (selector: string) =>
+    scope.querySelector(selector)!.shadowRoot!.querySelector('[part~="content"]')!;
+  const scaledRow = getComputedStyle(rowContent('section rc-list-item'));
+  const unscaledRow = getComputedStyle(rowContent('[data-testid="outside-list"] rc-list-item'));
+
+  expect(unscaledRow.fontSize).toBe('16px');
+  expect(scaledRow.fontSize).toBe('24px');
+
+  const button = scope.querySelector('section rc-button button')!;
+
+  expect(getComputedStyle(button).fontSize).toBe('21px');
+});
+
+test('a theme root marked data-rc-type-scale scales its own type tokens', async () => {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-material';
+  scope.setAttribute('data-rc-type-scale', '');
+  scope.style.setProperty('--rc-type-scale', '0.75');
+  scope.innerHTML = `
+    <p style="font: var(--md-sys-typescale-body-large-size) / var(--md-sys-typescale-body-large-line-height) sans-serif">Scaled</p>
+    <rc-button><button type="button">Scaled button</button></rc-button>
+  `;
+  document.body.append(scope);
+  await settle(scope);
+
+  const text = getComputedStyle(scope.querySelector('p')!);
+
+  expect(text.fontSize).toBe('12px');
+  expect(text.lineHeight).toBe('18px');
+  expect(getComputedStyle(scope.querySelector('rc-button button')!).fontSize).toBe('10.5px');
+});
