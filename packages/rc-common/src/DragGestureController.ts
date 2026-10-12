@@ -1,7 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 export type DragGestureAxis = 'both' | 'x' | 'y';
-export type DragGestureActivation = 'axis' | 'immediate';
+export type DragGestureActivation = 'axis' | 'immediate' | 'press';
 
 export interface DragGestureDetail {
   /** Pointer event that produced this lifecycle update. */
@@ -51,13 +51,22 @@ export interface DragGestureOptions {
   axis?: DragGestureAxis;
 
   /**
-   * Whether to activate immediately or wait for dominant-axis intent.
-   * Delayed axis activation preserves cross-axis scrolling.
+   * When the gesture activates. `immediate` activates on press. `axis` waits
+   * for movement along the allowed axis, which preserves cross-axis
+   * scrolling. `press` waits for the pointer to be held still for
+   * `pressDelay`, a long press, which preserves scrolling in every direction:
+   * moving `activationDistance` first gives the pointer back to the browser.
    */
   activation?: DragGestureActivation;
 
-  /** Distance required before delayed axis activation. Defaults to 8 pixels. */
+  /**
+   * Distance required before axis activation, or that gives up a press
+   * before it activates. Defaults to 8 pixels.
+   */
   activationDistance?: number;
+
+  /** How long a press must be held before press activation. Defaults to 400 milliseconds. */
+  pressDelay?: number;
 
   /** Required allowed-axis dominance over the cross axis. Defaults to 1.25. */
   axisLockRatio?: number;
@@ -121,6 +130,7 @@ export class DragGestureController implements ReactiveController {
   private _lastEvent: PointerEvent | null = null;
   private _boundCapture = false;
   private _disposed = false;
+  private _pressTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(host: ReactiveControllerHost, options: DragGestureOptions) {
     this._host = host;
@@ -129,6 +139,7 @@ export class DragGestureController implements ReactiveController {
       axis: 'both',
       activation: 'immediate',
       activationDistance: 8,
+      pressDelay: 400,
       axisLockRatio: 1.25,
       velocityWindow: 100,
       minVelocityDuration: 8,
@@ -273,6 +284,43 @@ export class DragGestureController implements ReactiveController {
 
     if (this._options.activation === 'immediate') {
       this._activate(event);
+    } else if (this._options.activation === 'press') {
+      this._startPress($target);
+    }
+  };
+
+  /**
+   * Waits out a long press. Until it activates, the browser keeps the pointer
+   * and may scroll. Once it does, touch scrolling and the browser's own
+   * long-press behavior, a context menu or text selection, are held off.
+   */
+  private _startPress($target: HTMLElement): void {
+    // Registered before any move so the browser treats these touches as
+    // cancelable; they are only canceled once the press activates.
+    $target.addEventListener('touchmove', this._onTouchMove, { passive: false });
+    $target.addEventListener('contextmenu', this._onContextMenu);
+
+    this._pressTimer = setTimeout(() => {
+      this._pressTimer = undefined;
+
+      if (this._lastEvent && !this._rejected) {
+        this._activate(this._lastEvent);
+      }
+    }, this._options.pressDelay);
+  }
+
+  private _onTouchMove = (event: TouchEvent): void => {
+    if (this._activated && event.cancelable) {
+      event.preventDefault();
+    }
+  };
+
+  private _onContextMenu = (event: Event): void => {
+    if (this._activated) {
+      event.preventDefault();
+    } else {
+      // A native context menu that opens before the press delay wins the gesture.
+      this._finish();
     }
   };
 
@@ -344,6 +392,14 @@ export class DragGestureController implements ReactiveController {
     const distance = Math.hypot(deltaX, deltaY);
 
     if (distance < this._options.activationDistance) {
+      return false;
+    }
+
+    // A press that moves before it activates is a scroll or swipe instead.
+    if (this._options.activation === 'press') {
+      this._rejected = true;
+      this._finish();
+
       return false;
     }
 
@@ -433,6 +489,10 @@ export class DragGestureController implements ReactiveController {
   }
 
   private _removeCycleListeners($target: HTMLElement): void {
+    clearTimeout(this._pressTimer);
+    this._pressTimer = undefined;
+    $target.removeEventListener('touchmove', this._onTouchMove);
+    $target.removeEventListener('contextmenu', this._onContextMenu);
     $target.removeEventListener('pointermove', this._onPointerMove);
     $target.removeEventListener('pointerup', this._onPointerUp);
     $target.removeEventListener('pointercancel', this._onPointerCancel);
