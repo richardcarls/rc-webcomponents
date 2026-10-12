@@ -11,28 +11,53 @@ application work all affect real results.
 
 ## Bundle baselines
 
-Consumer-style Vite builds measure minified initial and lazy output with gzip
-and Brotli compression. The tracked baseline currently records these initial
-gzip sizes:
+Consumer-style Vite builds measure minified initial and lazy JavaScript output;
+the CSS audit inlines theme imports and compresses the source. Both use gzip
+and Brotli. The tracked baseline records these initial sizes in decimal kB:
 
-| Entry                               | Initial gzip |
-| ----------------------------------- | -----------: |
-| `@rcarls/rc-button/define`          |      11.7 kB |
-| `@rcarls/rc-select/define`          |      41.9 kB |
-| `@rcarls/rc-textarea/define`        |      26.5 kB |
-| `@rcarls/rc-markdown-editor/define` |     106.9 kB |
-| Aggregate class export              |     187.2 kB |
-| Aggregate define export             |     187.0 kB |
-| Base theme CSS                      |       0.9 kB |
-| Material theme CSS                  |      29.8 kB |
-| Substrate theme CSS                 |      11.5 kB |
-| Windows 3.1 theme CSS               |      17.7 kB |
+| Entry                               | Initial gzip | Initial Brotli |
+| ----------------------------------- | -----------: | -------------: |
+| `@rcarls/rc-button/define`          |      11.8 kB |        10.5 kB |
+| `@rcarls/rc-select/define`          |      47.7 kB |        40.5 kB |
+| `@rcarls/rc-textarea/define`        |      29.5 kB |        25.8 kB |
+| `@rcarls/rc-markdown-editor/define` |     116.1 kB |        96.4 kB |
+| Aggregate class export              |     216.1 kB |       166.1 kB |
+| Aggregate define export             |     216.3 kB |       166.4 kB |
+| Base theme CSS                      |       1.2 kB |         1.0 kB |
+| Material theme CSS                  |      33.9 kB |        26.3 kB |
+| Substrate theme CSS                 |      13.2 kB |        10.9 kB |
+| Windows 3.1 theme CSS               |      18.7 kB |        15.3 kB |
 
 `rc-select` and aggregate entries also retain the anchor-positioning polyfill as
 a lazy chunk. The complete raw, gzip, Brotli, and chunk-count data lives in
 `performance-budgets.json`. Each byte budget allows five percent or 1 kB above
 the recorded measurement, whichever is larger; chunk counts may not grow
 without an intentional baseline update.
+
+Material is the broadest theme and has the largest theme budget: 35.6 kB gzip
+and 27.6 kB Brotli, five percent above its measured CSS. The aggregate define
+entry retains separate 227.1 kB initial gzip and 270.0 kB total gzip budgets.
+Using both full entries gives a combined initial ceiling of 262.7 kB gzip;
+importing one component instead of the aggregate is substantially smaller.
+
+For scale, pinned published CSS assets measured without minification using
+the same compressors are
+[Bootstrap 5.3.8](https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.css)
+at 32.9 kB gzip / 24.5 kB Brotli,
+[Material Components Web 14](https://cdn.jsdelivr.net/npm/material-components-web@14.0.0/dist/material-components-web.css)
+at 49.6 / 33.2 kB, and
+[Shoelace 2.20.1 light theme](https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css)
+at 4.2 / 3.2 kB. The RC audit compresses its import-inlined CSS. Shoelace
+also ships component styles inside its JavaScript, so its theme file covers
+less than the RC Material theme.
+
+For a JavaScript comparison, bundling `@material/web@2.5.0/all.js` with the
+same Vite settings and dependencies included yields 92.9 kB gzip / 68.9 kB
+Brotli. The RC aggregate define entry is 216.3 / 166.4 kB at its recorded
+baseline. It includes Lit and the library's Markdown editor, virtual
+scrolling, and other behaviors; Material Web embeds its component styles in
+JavaScript. These full-collection figures are context for the budget, not
+interchangeable per-component costs.
 
 ## Browser scenarios
 
