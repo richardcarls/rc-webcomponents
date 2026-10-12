@@ -42,6 +42,7 @@ export const MARKER_CONTRACTS = {
   'data-rc-resize-corner': 'internal-controller',
   'data-rc-scroller-span': 'authored-behavior',
   'data-rc-segmented-button-selected-icon': 'authored-structure',
+  'data-rc-type-scale': 'authored-theme-hook',
   'data-rc-view-transition': 'authored-theme-hook',
   'data-rc-win31-default': 'authored-theme-hook',
   'data-rc-win31-inactive': 'authored-theme-hook',
@@ -867,7 +868,15 @@ export function runAudit(root = DEFAULT_ROOT) {
     ),
     ...listFiles(join(root, 'packages/rc-theme-win31/components'), (path) => path.endsWith('.css')),
   ];
-  const discoveredMarkers = new Set(markerFiles.flatMap((path) => [...extractMarkers(read(path))]));
+  const themeEntryFiles = ['rc-theme-material', 'rc-theme-substrate', 'rc-theme-win31'].flatMap(
+    (theme) =>
+      readdirSync(join(root, 'packages', theme), { withFileTypes: true })
+        .filter((entry) => entry.isFile() && entry.name.endsWith('.css'))
+        .map((entry) => join(root, 'packages', theme, entry.name)),
+  );
+  const discoveredMarkers = new Set(
+    [...markerFiles, ...themeEntryFiles].flatMap((path) => [...extractMarkers(read(path))]),
+  );
 
   errors.push(...findMarkerContractErrors(discoveredMarkers));
 

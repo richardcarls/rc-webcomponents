@@ -366,6 +366,29 @@ Apply the `rc-theme-material` class to a container to scope the theme:
 </div>
 ```
 
+### Scale text within a Material theme region
+
+Add `data-rc-type-scale` to a region and set `--rc-type-scale` to a positive
+number. The full `theme.css` bundle multiplies Material type sizes and line
+heights, along with RC text tokens, inside that region. Text outside it retains
+its existing scale.
+
+```html
+<div class="rc-theme-material">
+  <main data-rc-type-scale style="--rc-type-scale: 1.25">
+    <p>Reading view</p>
+    <rc-button><button type="button">Continue</button></rc-button>
+  </main>
+</div>
+```
+
+Place the marker on the `rc-theme-material` root to scale the whole theme.
+A nested marker uses its own factor in place of the outer factor. If you import
+only `bridge.css` with your own Material tokens, the marker scales RC text
+tokens from those values; your application's Material tokens remain unchanged.
+When both final Material type tokens and their `*-value` source tokens are
+present, the source tokens supply the scale baseline.
+
 For `rc-button[icon-only]`, Material supplies
 `rc-button--extra-small`, `rc-button--medium`, `rc-button--large`, and
 `rc-button--extra-large` size classes. Combine them with

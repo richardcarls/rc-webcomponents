@@ -10,3 +10,5 @@ related line heights) again from the scaled values, so lists, buttons, menus, an
 text in the region grow together.
 
 Marking the theme root itself scales the whole page, for an app-wide text size setting.
+With `bridge.css` alone, RC text scales from the application's Material type tokens;
+the application's Material tokens remain unchanged.

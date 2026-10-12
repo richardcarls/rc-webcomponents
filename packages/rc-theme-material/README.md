@@ -118,9 +118,14 @@ multiply, since a property can't refer to its own inherited value:
 </html>
 ```
 
-The scaled sizes come from the bundled `defaults.css` token values. An
-application that supplies its own `--md-sys-typescale-*` values with `bridge.css`
-alone scales its own tokens instead.
+With `theme.css`, the Material type tokens and RC text tokens scale from the
+bundled `defaults.css` values. With `bridge.css` alone, RC text tokens scale from
+the application's Material type tokens; the application's own
+`--md-sys-typescale-*` tokens remain unchanged. Supply both size and line-height
+tokens for the roles used by RC components when customizing the bridge. If your
+Material token environment also defines matching `*-size-value` or
+`*-line-height-value` source tokens, those are the scale baseline; update them
+alongside branded final values.
 
 ### Icon font wiring
 
