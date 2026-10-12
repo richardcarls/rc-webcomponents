@@ -114,6 +114,9 @@ type RCListPosition = 'only' | 'first' | 'middle' | 'last';
  * - Pointer: press the handle and drag. The lifted item follows the pointer, the items
  *   it passes shift out of its way, and the nearest scroll container scrolls near its
  *   edges. Escape cancels.
+ * - Touch and pen: as on Android, a long press anywhere on an item also picks it up, then
+ *   drag. Moving before the press completes scrolls the list instead. A mouse drags only
+ *   by the handle. Item text cannot be selected in a reorderable list.
  * - Keyboard: Space or Enter picks the item up, the block-axis arrow keys, Home, and End
  *   move it, Space or Enter drops it, and Escape returns it. Leaving the handle drops it.
  *

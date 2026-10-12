@@ -44,6 +44,13 @@ export const listStyles = css`
   ::slotted(rc-list-item) {
     grid-column: item-start / item-end;
   }
+
+  /* A long press on a reorderable item picks it up, not its text. */
+  :host([reorderable]) ::slotted(rc-list-item) {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
 `;
 
 export default listStyles;

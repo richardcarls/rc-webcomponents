@@ -280,6 +280,180 @@ test('a canceled reorder event leaves the nodes to the consumer', async () => {
   expect(order(list)).toEqual(NAMES);
 });
 
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Longer than the 400ms long-press delay. */
+const LONG_PRESS = 450;
+
+test('a touch long press on an item, away from its handle, picks it up', async () => {
+  const list = await setup();
+  const $alpha = item(list, 'Alpha');
+  const start = center($alpha);
+  const step = center(item(list, 'Beta')).y - start.y;
+  const touch = { pointerType: 'touch', clientX: start.x };
+
+  firePointer($alpha, 'pointerdown', { ...touch, clientY: start.y });
+  await wait(LONG_PRESS);
+
+  expect($alpha.hasAttribute('data-dragging')).toBe(true);
+
+  firePointer($alpha, 'pointermove', { ...touch, clientY: start.y + step * 1.2 });
+  firePointer($alpha, 'pointerup', { ...touch, clientY: start.y + step * 1.2 });
+  await settle(list);
+
+  expect(order(list)).toEqual(['Beta', 'Alpha', 'Gamma']);
+});
+
+test('a touch that moves before the long press completes scrolls instead', async () => {
+  const list = await setup();
+  const listener = vi.fn();
+
+  list.addEventListener('rc-list-reorder', listener);
+
+  const $alpha = item(list, 'Alpha');
+  const start = center($alpha);
+  const touch = { pointerType: 'touch', clientX: start.x };
+
+  firePointer($alpha, 'pointerdown', { ...touch, clientY: start.y });
+  firePointer($alpha, 'pointermove', { ...touch, clientY: start.y + 24 });
+  await wait(LONG_PRESS);
+
+  expect($alpha.hasAttribute('data-dragging')).toBe(false);
+
+  firePointer($alpha, 'pointerup', { ...touch, clientY: start.y + 24 });
+  await settle(list);
+
+  expect(listener).not.toHaveBeenCalled();
+});
+
+test('a mouse long press on an item does not pick it up', async () => {
+  const list = await setup();
+  const $alpha = item(list, 'Alpha');
+  const start = center($alpha);
+
+  firePointer($alpha, 'pointerdown', { clientX: start.x, clientY: start.y });
+  await wait(LONG_PRESS);
+
+  expect($alpha.hasAttribute('data-dragging')).toBe(false);
+
+  firePointer($alpha, 'pointerup', { clientX: start.x, clientY: start.y });
+});
+
+test('a long-press drag only swallows its own pointer click in the lifted item', async () => {
+  const list = await setup();
+  const $alpha = item(list, 'Alpha');
+  const $menu = document.createElement('button');
+  const $outside = document.createElement('button');
+  const onClick = vi.fn();
+  const onOutsideClick = vi.fn();
+
+  $menu.type = 'button';
+  $menu.textContent = 'More';
+  $menu.addEventListener('click', onClick);
+  $outside.type = 'button';
+  $outside.addEventListener('click', onOutsideClick);
+  $alpha.append($menu);
+  list.after($outside);
+  await settle(list);
+
+  const start = center($menu);
+  const touch = { pointerType: 'touch', clientX: start.x, clientY: start.y };
+
+  firePointer($menu, 'pointerdown', touch);
+  await wait(LONG_PRESS);
+
+  expect($alpha.hasAttribute('data-dragging')).toBe(true);
+
+  firePointer($menu, 'pointerup', touch);
+
+  $outside.click();
+  expect(onOutsideClick).toHaveBeenCalledOnce();
+
+  // A keyboard or programmatic click and another pointer remain usable.
+  $menu.click();
+
+  $menu.dispatchEvent(
+    new PointerEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      detail: 1,
+      pointerId: 2,
+      pointerType: 'touch',
+    }),
+  );
+
+  expect(onClick).toHaveBeenCalledTimes(2);
+
+  $menu.dispatchEvent(
+    new PointerEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      detail: 1,
+      pointerId: 1,
+      pointerType: 'touch',
+    }),
+  );
+
+  expect(onClick).toHaveBeenCalledTimes(2);
+
+  // Once the ending click is swallowed, the same control works again.
+  $menu.click();
+
+  expect(onClick).toHaveBeenCalledTimes(3);
+  $outside.remove();
+});
+
+test('a context menu before the long-press delay leaves the item alone', async () => {
+  const list = await setup();
+  const $alpha = item(list, 'Alpha');
+  const start = center($alpha);
+  const touch = { pointerType: 'touch', clientX: start.x, clientY: start.y };
+
+  firePointer($alpha, 'pointerdown', touch);
+
+  const contextMenu = new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+  });
+
+  $alpha.dispatchEvent(contextMenu);
+
+  expect(contextMenu.defaultPrevented).toBe(false);
+
+  await wait(LONG_PRESS);
+  expect($alpha.hasAttribute('data-dragging')).toBe(false);
+
+  firePointer($alpha, 'pointerup', touch);
+});
+
+test('a long press holds off the browser context menu', async () => {
+  const list = await setup();
+  const $alpha = item(list, 'Alpha');
+  const start = center($alpha);
+  const touch = { pointerType: 'touch', clientX: start.x, clientY: start.y };
+
+  firePointer($alpha, 'pointerdown', touch);
+  await wait(LONG_PRESS);
+
+  const contextMenu = new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+  });
+
+  $alpha.dispatchEvent(contextMenu);
+
+  expect(contextMenu.defaultPrevented).toBe(true);
+
+  firePointer($alpha, 'pointerup', touch);
+  await settle(list);
+});
+
 test('a handle press without movement does not reorder', async () => {
   const list = await setup();
   const listener = vi.fn();

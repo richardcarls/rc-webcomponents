@@ -113,7 +113,11 @@ const AUTO_SCROLL_MAX_SPEED = 16;
  * its consumer do so.
  *
  * Pointer: a drag starts once a handle is pressed and moved a few pixels, so a
- * plain click still focuses or activates the handle. The nearest scroll
+ * plain click still focuses or activates the handle. On touch and pen, as on
+ * Android, a long press anywhere else on an item also picks it up; moving
+ * before the press completes scrolls instead, and the click that would follow
+ * the drop is swallowed so the press does not also activate a control in the
+ * item. A mouse drags only by the handle. The nearest scroll
  * container scrolls while the pointer is near its block edges, and Escape
  * cancels.
  *
@@ -130,6 +134,8 @@ export class ReorderController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & HTMLElement;
   private readonly _options: ReorderOptions;
   private readonly _gesture: DragGestureController;
+  private readonly _pressGesture: DragGestureController;
+  private _activeGesture: DragGestureController | null = null;
   private _pending: { item: HTMLElement } | null = null;
   private _session: PointerSession | KeyboardSession | null = null;
   private readonly _translated = new Map<HTMLElement, { value: string; priority: string }>();
@@ -146,10 +152,36 @@ export class ReorderController implements ReactiveController {
       activation: 'axis',
       axis: 'both',
       canStart: (event) => this._canStart(event),
-      onStart: (detail) => this._pointerStart(detail),
+      onStart: (detail) => this._pointerStart(detail, this._gesture),
       onMove: (detail) => this._pointerMove(detail),
       onEnd: () => this._pointerEnd(),
       onCancel: () => this._cancel(),
+    });
+
+    this._pressGesture = new DragGestureController(host, {
+      target: host,
+      activation: 'press',
+      canStart: (event) => this._canStartPress(event),
+      onStart: (detail) => this._pointerStart(detail, this._pressGesture),
+      onMove: (detail) => this._pointerMove(detail),
+      onEnd: (detail) => {
+        const item = this._session?.mode === 'pointer' ? this._session.item : null;
+
+        this._pointerEnd();
+
+        if (item) {
+          this._swallowNextClick(item, detail);
+        }
+      },
+      onCancel: (detail) => {
+        const item = this._session?.mode === 'pointer' ? this._session.item : null;
+
+        this._cancel();
+
+        if (item) {
+          this._swallowNextClick(item, detail);
+        }
+      },
     });
 
     host.addController(this);
@@ -177,7 +209,7 @@ export class ReorderController implements ReactiveController {
   cancel(): void {
     if (this._session?.mode === 'pointer') {
       // Cancelling the gesture routes through onCancel.
-      this._gesture.setOptions({});
+      this._activeGesture?.setOptions({});
 
       return;
     }
@@ -252,10 +284,66 @@ export class ReorderController implements ReactiveController {
     return target !== null;
   }
 
-  private _pointerStart(detail: DragGestureDetail): void {
+  /** Whether a touch or pen press on an item, away from its handle, may long-press it. */
+  private _canStartPress(event: PointerEvent): boolean {
+    if (event.pointerType === 'mouse' || this._session || this._isDisabled()) {
+      return false;
+    }
+
+    // The handle drags without waiting.
+    if (this._resolve(event)) {
+      return false;
+    }
+
+    const path = event.composedPath();
+    const item = this._items().find(($item) => path.includes($item));
+
+    this._pending = item ? { item } : null;
+
+    return item !== undefined;
+  }
+
+  /**
+   * Swallows the click that follows lifting a pointer after a long-press
+   * drag, which would otherwise activate whatever control the press began on.
+   */
+  private _swallowNextClick(item: HTMLElement, detail: DragGestureDetail): void {
+    const document = this._host.ownerDocument;
+
+    const swallow = (event: MouseEvent): void => {
+      // Keyboard clicks have no click count. Modern pointer clicks carry the
+      // original pointer ID; older MouseEvent clicks use the lifted item.
+      if (
+        event.detail === 0 ||
+        !event.composedPath().includes(item) ||
+        (event instanceof PointerEvent &&
+          event.pointerId > 0 &&
+          event.pointerId !== detail.pointerId)
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      stop();
+    };
+
+    const stop = (): void => {
+      clearTimeout(timer);
+      document.removeEventListener('click', swallow, true);
+    };
+
+    // A click from this pointer arrives right after its release, or not at all.
+    const timer = setTimeout(stop, 400);
+
+    document.addEventListener('click', swallow, true);
+  }
+
+  private _pointerStart(detail: DragGestureDetail, gesture: DragGestureController): void {
     const item = this._pending?.item;
 
     this._pending = null;
+    this._activeGesture = gesture;
 
     const items = this._items();
     const from = item ? items.indexOf(item) : -1;
@@ -733,6 +821,7 @@ export class ReorderController implements ReactiveController {
     this._host.ownerDocument.removeEventListener('pointerdown', this._onDocumentPointerDown, true);
     this._session = null;
     this._pending = null;
+    this._activeGesture = null;
 
     if (hadSession) {
       this._options.onActiveChange?.(null, null);

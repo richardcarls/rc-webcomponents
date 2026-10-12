@@ -58,6 +58,10 @@ replace along with every announcement.
 - **Pointer:** press a handle and drag. The lifted item follows the pointer, the items it passes
   shift out of its way, and the nearest scroll container scrolls near its edges. Escape cancels.
   A press without movement stays a plain button press.
+- **Touch and pen:** as on Android, a long press anywhere on an item also picks it up, then
+  drag. Moving before the press completes scrolls the list instead, and lifting the finger
+  after the drag does not also activate a control in the item. A mouse drags only by the
+  handle. Item text cannot be selected in a `reorderable` list.
 - **Keyboard:** Space or Enter picks the item up. The block-axis arrow keys, Home, and End move
   it, Space or Enter drops it, and Escape returns it to where it started. Moving focus away
   drops it. Each step is announced through a polite live region in the nearest open dialog or
