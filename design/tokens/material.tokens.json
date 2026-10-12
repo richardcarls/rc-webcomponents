@@ -5781,7 +5781,7 @@
           "cssVar": "--rc-accordion-gap",
           "description": "Applied where rc-theme-material is themed.",
           "values": {
-            "Value": 8
+            "Value": 2
           }
         },
         {
@@ -8545,6 +8545,19 @@
           }
         },
         {
+          "name": "disclosure/border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-disclosure-border)"
+          },
+          "cssVar": "--rc-disclosure-border",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
           "name": "disclosure/color",
           "type": "COLOR",
           "scopes": [
@@ -8660,7 +8673,7 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": {
-              "alias": "shape/corner-large",
+              "alias": "shape/corner-extra-small",
               "collection": "Shape"
             }
           }
@@ -14670,11 +14683,6 @@
         "raw": "var(--rc-shadow-level3, var(--rc-shadow, none))",
         "name": "dialog/shadow",
         "reason": "aliases a composite shorthand"
-      },
-      {
-        "property": "--rc-disclosure-border",
-        "raw": "1px solid var(--md-sys-color-outline-variant, ButtonBorder)",
-        "name": "disclosure/border"
       },
       {
         "property": "--rc-disclosure-content-font",

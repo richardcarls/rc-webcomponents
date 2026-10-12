@@ -1324,7 +1324,9 @@ function buildDocument(theme) {
   for (const entry of defaultDecls) {
     const match = theme.typescale.exec(entry.property);
 
-    if (!match) {
+    // Text styles describe the unscoped theme baseline. A scoped type-scale
+    // override has the same property name but depends on a runtime factor.
+    if (!match || isStateScoped(entry.scope)) {
       continue;
     }
 

@@ -80,8 +80,20 @@ test('every variable carries a var() code syntax for Dev Mode', () => {
 });
 
 test('rem dimensions convert to pixels', () => {
-  // --md-sys-typescale-body-large-size is 1rem in the source CSS.
-  assert.equal(material.textStyles.find((s) => s.name === 'Material/body-large').size, 16);
+  // --substrate-font-size is 0.95rem in the source CSS.
+  assert.equal(substrate.textStyles.find((style) => style.name === 'Substrate/body').size, 15.2);
+});
+
+test('Material text styles retain baseline dimensions beside scoped overrides', () => {
+  const body = material.textStyles.find((style) => style.name === 'Material/body-large');
+
+  assert.equal(body.size, 16);
+  assert.equal(body['line-height'], 24);
+
+  for (const style of material.textStyles) {
+    assert.equal(typeof style.size, 'number', `${style.name} has a literal size`);
+    assert.equal(typeof style['line-height'], 'number', `${style.name} has a literal line height`);
+  }
 });
 
 test('text styles follow variable references to literal font values', () => {
