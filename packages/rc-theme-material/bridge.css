@@ -650,6 +650,25 @@
     );
   }
 
+
+  /*
+   * Scoped type scale (see defaults.css): these RC text tokens are built from
+   * the Material type scale on the theme root, so a data-rc-type-scale element
+   * derives them again from its scaled sizes.
+   */
+  /* A marked theme root itself must outrank its own token rule above. */
+  :where(.rc-theme-material [data-rc-type-scale], :host(.rc-theme-material) [data-rc-type-scale]),
+  .rc-theme-material[data-rc-type-scale],
+  :host(.rc-theme-material[data-rc-type-scale]) {
+    --rc-item-font-size: var(--md-sys-typescale-body-large-size, 1rem);
+    --rc-item-line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
+    --rc-font-size: var(--md-sys-typescale-body-medium-size, 0.875rem);
+    --rc-line-height: var(--md-sys-typescale-body-medium-line-height, 1.25rem);
+    --rc-button-font: 500 var(--md-sys-typescale-label-large-size, 0.875rem) /
+      var(--md-sys-typescale-label-large-line-height, 1.25rem) var(--rc-font-family);
+    --rc-menu-shortcut-size: var(--md-sys-typescale-label-large-size, 0.875rem);
+  }
+
   @media (forced-colors: active) {
     .rc-theme-material,
     :host(.rc-theme-material) {
