@@ -95,7 +95,10 @@ behind the bar and fills its space while it is hidden:
 
 .content .sticky-filters {
   position: sticky;
-  inset-block-start: var(--rc-app-bar-visible-block-size, 4rem);
+  /* Sticky offsets are measured inside the scroller's padding. */
+  inset-block-start: calc(
+    var(--rc-app-bar-visible-block-size, 4rem) - var(--rc-app-bar-block-size, 4rem)
+  );
   transition: inset-block-start 200ms ease;
 }
 ```

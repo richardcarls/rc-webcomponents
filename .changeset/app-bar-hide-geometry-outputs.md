@@ -9,7 +9,8 @@ target: `--rc-app-bar-block-size`, its measured block size, and
 `--rc-app-bar-visible-block-size`, the same value or `0px` while hidden. Hiding only translates
 the bar, so a layout can now give its space back: stack the bar over the scroll container,
 reserve the block size as the container's block-start padding and scroll padding, and pin
-sticky content at the visible size. The bar removes both values when it stops hiding, changes
+sticky content at the visible size minus the block size, since sticky offsets are measured
+inside that padding. The bar removes both values when it stops hiding, changes
 target, or disconnects.
 
 The Material design guide documents this recipe and the compact-height patterns for landscape

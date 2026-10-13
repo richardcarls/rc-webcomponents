@@ -674,8 +674,9 @@ navigation component chosen by size class, and at most one FAB.
   the top app bar on scroll (`scroll-behavior="hide"`), and an expanded bar
   starts compact. Stack the bar over its scroll container and reserve
   `var(--rc-app-bar-block-size)` as the container's block-start padding and
-  scroll padding; sticky content below the bar pins at
-  `var(--rc-app-bar-visible-block-size)`, which the bar publishes on its
+  scroll padding. Sticky offsets are measured inside that padding, so sticky
+  content below the bar pins at `calc(var(--rc-app-bar-visible-block-size) -
+  var(--rc-app-bar-block-size))`; both values are published on the bar's
   scroll target. Hands-busy task bars and full-screen dialog bars stay pinned,
   since they carry actions the task needs.
 - **App bar title.** The title slot holds the screen's one page heading, so

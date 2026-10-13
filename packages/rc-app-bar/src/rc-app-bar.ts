@@ -53,8 +53,11 @@ export interface RCAppBarScrollDetail {
  * Hiding only translates the bar, so a layout wins the space back by letting
  * the scroll container run under the bar, reserving
  * `var(--rc-app-bar-block-size)` as its block-start padding and scroll
- * padding, and pinning sticky descendants at
- * `var(--rc-app-bar-visible-block-size)`. These are read-only outputs: the
+ * padding. Sticky offsets are measured inside that padding, so a sticky
+ * descendant pins at `calc(var(--rc-app-bar-visible-block-size) -
+ * var(--rc-app-bar-block-size))`, while a fixed descendant of a wrapper
+ * without that padding pins at `var(--rc-app-bar-visible-block-size)`. These
+ * are read-only outputs: the
  * bar overwrites them on every size or visibility change and removes them
  * when it stops hiding, changes target, or disconnects.
  *
