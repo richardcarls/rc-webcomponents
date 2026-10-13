@@ -2,6 +2,7 @@ import { property } from 'lit/decorators.js';
 
 import { RCDialog } from '@rcarls/rc-dialog';
 import {
+  cssZoom,
   findExtremeSnapIndex,
   findNearestSnapIndex,
   parseCssTime,
@@ -222,8 +223,8 @@ const DOCK_RELEASED_PROPERTIES = [
  * the sheet away from its edge, and a pinned `left`/`width` would override
  * the inline-axis confinement a host page sets through custom properties.
  */
-function dockBlockBox(target: HTMLElement): DOMRect {
-  const rect = target.getBoundingClientRect();
+function dockBlockBox(target: HTMLElement): number {
+  const height = localHeight(target);
 
   for (const property of DOCK_RELEASED_PROPERTIES) {
     target.style.removeProperty(property);
@@ -231,9 +232,18 @@ function dockBlockBox(target: HTMLElement): DOMRect {
 
   target.style.marginBlock = '0';
   target.style.boxSizing = 'border-box';
-  target.style.height = `${rect.height}px`;
+  target.style.height = `${height}px`;
 
-  return rect;
+  return height;
+}
+
+/**
+ * The element's rendered height in its own CSS pixels, the unit its `height`
+ * takes. A measured box is in viewport pixels, which differ from those when an
+ * ancestor has a CSS zoom, such as an app-wide interface size.
+ */
+function localHeight(target: HTMLElement): number {
+  return target.getBoundingClientRect().height / cssZoom(target);
 }
 
 /**
@@ -280,7 +290,8 @@ function dockBlockBox(target: HTMLElement): DOMRect {
  * @fires rc-bottom-sheet-resize-start - Fires when an interactive resize begins.
  *   `detail: { height, inputType }`
  * @fires rc-bottom-sheet-snap - Fires after a drag release or `snapTo()` call
- *   settles at its snap target. `detail: { index, height, trigger }`
+ *   settles at its snap target. `detail: { index, height, trigger }`, with `height` in the
+ *   sheet's own CSS pixels, the unit of its snap points.
  *
  * @attr light-dismiss - When present, a click on the backdrop area calls `requestClose()`.
  *   Present by default; inherited from `rc-dialog`.
@@ -548,7 +559,7 @@ export class RCBottomSheet extends RCDialog {
       return;
     }
 
-    const height = $dialog.getBoundingClientRect().height;
+    const height = localHeight($dialog);
     const nearestIndex = findNearestSnapIndex(points, height);
 
     this._snapToIndex(nearestIndex, 'animated', trigger, points);
@@ -568,7 +579,7 @@ export class RCBottomSheet extends RCDialog {
 
     // Dock before measuring: a drag gesture leaves its own edge pins inline,
     // and an earlier snap leaves an explicit height to animate from.
-    const rect = dockBlockBox($dialog);
+    const dockedHeight = dockBlockBox($dialog);
     const clampedIndex = Math.max(0, Math.min(index, points.length - 1));
     const requestedHeight = points[clampedIndex];
 
@@ -584,9 +595,9 @@ export class RCBottomSheet extends RCDialog {
 
     // CSS min/max block-size can make the effective height differ from the
     // authored snap point; snap events report what actually renders.
-    const targetHeight = $dialog.getBoundingClientRect().height;
+    const targetHeight = localHeight($dialog);
 
-    $dialog.style.height = `${rect.height}px`;
+    $dialog.style.height = `${dockedHeight}px`;
 
     this._applySnap($dialog, targetHeight, behavior, () => {
       this.dispatchEvent(
@@ -608,7 +619,7 @@ export class RCBottomSheet extends RCDialog {
     // Measure before cancelling any in-flight animation. `_snapToIndex()`
     // normally docks and cancels first, while this ordering also keeps direct
     // calls robust if applying a snap is refactored later.
-    const fromHeight = $dialog.getBoundingClientRect().height;
+    const fromHeight = localHeight($dialog);
 
     this._activeSnapAnimation?.cancel();
     this._activeSnapAnimation = null;
@@ -714,7 +725,8 @@ export class RCBottomSheet extends RCDialog {
     // field needs the sheet to be as tall as the field's offset from the
     // sheet's top, plus breathing room, bounded by the space above the
     // docked edge.
-    const height = Math.min(field.bottom - sheet.top + FOCUS_REVEAL_MARGIN, sheet.bottom);
+    const height =
+      Math.min(field.bottom - sheet.top + FOCUS_REVEAL_MARGIN, sheet.bottom) / cssZoom($dialog);
 
     this._activeSnapAnimation?.cancel();
     this._activeSnapAnimation = null;
@@ -744,6 +756,9 @@ export class RCBottomSheet extends RCDialog {
       return [];
     }
 
+    // Snap heights are in the sheet's own CSS pixels, like its `height`; the
+    // viewport height is not when an ancestor has a CSS zoom.
+    const viewportHeight = window.innerHeight / cssZoom(this);
     const resolved: number[] = [];
     const measured: Array<{ index: number; point: string; probe: HTMLElement }> = [];
 
@@ -751,7 +766,7 @@ export class RCBottomSheet extends RCDialog {
       const numeric = Number.parseFloat(point);
 
       if (Number.isFinite(numeric) && point.endsWith('%')) {
-        resolved.push(window.innerHeight * (numeric / 100));
+        resolved.push(viewportHeight * (numeric / 100));
       } else if (Number.isFinite(numeric) && (point.endsWith('px') || String(numeric) === point)) {
         resolved.push(numeric);
       } else {
@@ -763,7 +778,7 @@ export class RCBottomSheet extends RCDialog {
     }
 
     if (measured.length > 0) {
-      this._measureSnapPoints(measured, resolved);
+      this._measureSnapPoints(measured, resolved, viewportHeight);
     }
 
     return resolved.filter((point) => Number.isFinite(point) && point > 0);
@@ -772,6 +787,7 @@ export class RCBottomSheet extends RCDialog {
   private _measureSnapPoints(
     entries: Array<{ index: number; point: string; probe: HTMLElement }>,
     resolved: number[],
+    viewportHeight: number,
   ): void {
     const context = document.createElement('div');
 
@@ -790,7 +806,7 @@ export class RCBottomSheet extends RCDialog {
     important(context, 'overflow', 'hidden');
     important(context, 'box-sizing', 'border-box');
     important(context, 'width', '0');
-    important(context, 'height', `${window.innerHeight}px`);
+    important(context, 'height', `${viewportHeight}px`);
     important(context, 'margin', '0');
     important(context, 'padding', '0');
     important(context, 'border', '0');

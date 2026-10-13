@@ -1025,3 +1025,53 @@ test('a focused field the sheet cannot scroll to grows the sheet past its maximu
 
   $host.close();
 });
+
+test.runIf('currentCSSZoom' in Element.prototype)(
+  'snaps and drags in the sheet’s own pixels under an ancestor zoom',
+  async () => {
+    const snapSpy = vi.fn();
+    const screen = render(html`
+      <div style="zoom: 0.8">
+        <rc-bottom-sheet data-testid="host" snap-points="100px 300px" @rc-bottom-sheet-snap=${snapSpy}>
+          <dialog aria-labelledby="sheet-title">
+            <h2 id="sheet-title">Filter recipes</h2>
+            <button type="button" data-rc-bottom-sheet-handle>Resize sheet</button>
+          </dialog>
+        </rc-bottom-sheet>
+      </div>
+    `);
+    const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+    await $host.updateComplete;
+    $host.show();
+
+    const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+    const $handle = $host.querySelector('[data-rc-bottom-sheet-handle]') as HTMLButtonElement;
+
+    // Snapping again to the same point keeps its height rather than zooming
+    // the measured height a second time.
+    $host.snapTo(0, 'instant');
+    $host.snapTo(0, 'instant');
+
+    expect($dialog.getBoundingClientRect().height).toBeCloseTo(80, 0);
+    expect(snapSpy.mock.calls.at(-1)?.[0].detail.height).toBeCloseTo(100, 0);
+
+    const start = $dialog.getBoundingClientRect();
+
+    firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
+    firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 120 });
+
+    // The dragged edge follows the pointer and the sheet stays docked.
+    const dragged = $dialog.getBoundingClientRect();
+
+    expect(dragged.top).toBeCloseTo(start.top - 120, 0);
+    expect(dragged.bottom).toBeCloseTo(window.innerHeight, 0);
+
+    firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 120 });
+
+    await vi.waitFor(() => expect($dialog.getBoundingClientRect().height).toBeCloseTo(240, 0));
+    expect($dialog.getBoundingClientRect().bottom).toBeCloseTo(window.innerHeight, 0);
+
+    $host.close();
+  },
+);

@@ -311,6 +311,30 @@ test('fullscreen variant tracks the visual viewport only while open', async () =
   expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-height')).toBe('');
 });
 
+test.runIf('currentCSSZoom' in Element.prototype)(
+  'fullscreen variant covers the viewport under an ancestor zoom',
+  async () => {
+    const screen = render(html`
+      <div style="zoom: 0.8">
+        <rc-dialog data-testid="host" variant="fullscreen">
+          <dialog aria-label="Zoomed fullscreen test"><button>Close</button></dialog>
+        </rc-dialog>
+      </div>
+    `);
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+    await host.updateComplete;
+    host.showModal();
+
+    const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
+
+    expect(rect.width).toBeCloseTo(window.visualViewport?.width ?? window.innerWidth, 0);
+    expect(rect.height).toBeCloseTo(window.visualViewport?.height ?? window.innerHeight, 0);
+
+    host.close();
+  },
+);
+
 test('rc-dialog restores focus to the opener on close', async () => {
   const screen = render(html`
     <div>

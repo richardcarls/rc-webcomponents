@@ -1,6 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { ControllerEffects } from './ControllerEffects.js';
+import { cssZoom } from './cssZoom.js';
 import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
 import { isPhysicalReversed, resolveFlow } from './flow.js';
 import { observeDirection } from './observeDirection.js';
@@ -92,6 +93,10 @@ export function pinElementBox(target: HTMLElement): DOMRect {
       offsetParent.scrollTop
     : rect.top;
 
+  // The measurements are viewport pixels; the element's own lengths are
+  // scaled by its effective zoom (an ancestor's CSS zoom), so undo it.
+  const zoom = cssZoom(target);
+
   if (getComputedStyle(target).position === 'static') {
     target.style.position = 'fixed';
   }
@@ -100,10 +105,10 @@ export function pinElementBox(target: HTMLElement): DOMRect {
   target.style.inset = 'auto';
   target.style.margin = '0';
   target.style.boxSizing = 'border-box';
-  target.style.left = `${localLeft}px`;
-  target.style.top = `${localTop}px`;
-  target.style.width = `${rect.width}px`;
-  target.style.height = `${rect.height}px`;
+  target.style.left = `${localLeft / zoom}px`;
+  target.style.top = `${localTop / zoom}px`;
+  target.style.width = `${rect.width / zoom}px`;
+  target.style.height = `${rect.height / zoom}px`;
 
   return rect;
 }
@@ -133,10 +138,16 @@ export class ResizeController implements ReactiveController {
     >;
 
   private _resizing: ResizeEdge | null = null;
+  /**
+   * The gesture's start size and position, in the target's own CSS pixels:
+   * what its style lengths take, before its effective zoom.
+   */
   private _startW = 0;
   private _startH = 0;
   private _startLeft = 0;
   private _startTop = 0;
+  /** The target's effective CSS zoom for the current gesture. */
+  private _zoom = 1;
   private _lastDeltaX = 0;
   private _lastDeltaY = 0;
   private _velocityX = 0;
@@ -720,7 +731,7 @@ export class ResizeController implements ReactiveController {
     this._lastDeltaY = detail.deltaY;
     this._velocityX = detail.velocityX;
     this._velocityY = detail.velocityY;
-    this._applyDelta(this._resizing, detail.deltaX, detail.deltaY);
+    this._applyDelta(this._resizing, detail.deltaX / this._zoom, detail.deltaY / this._zoom);
     this._opts.onResize?.(this._lifecycleDetail('pointer'));
   }
 
@@ -735,10 +746,11 @@ export class ResizeController implements ReactiveController {
     this._positionEffects = null;
 
     const target = this._target();
-    const rect = this._pinPosition(target);
 
-    this._startW = rect.width;
-    this._startH = rect.height;
+    this._pinPosition(target);
+    this._zoom = cssZoom(target);
+    this._startW = Number.parseFloat(target.style.width);
+    this._startH = Number.parseFloat(target.style.height);
     // pinElementBox writes coordinates in the target's actual containing
     // block. Keep subsequent pointer deltas in that same coordinate space;
     // DOMRect left/top are viewport-relative and would reintroduce the
@@ -783,8 +795,8 @@ export class ResizeController implements ReactiveController {
     return {
       edge: this._resizing ?? this._handleEdge(),
       inputType,
-      startWidth: this._startW,
-      startHeight: this._startH,
+      startWidth: this._startW * this._zoom,
+      startHeight: this._startH * this._zoom,
       width: target.getBoundingClientRect().width,
       height: target.getBoundingClientRect().height,
       deltaX: this._lastDeltaX,
@@ -863,7 +875,8 @@ export class ResizeController implements ReactiveController {
     this._positionEffects?.abandon();
     this._positionEffects = null;
 
-    const rect = this._pinPosition(target);
+    this._pinPosition(target);
+
     const edge = this._keyboardEdge(e.key);
 
     if (!edge) {
@@ -871,10 +884,11 @@ export class ResizeController implements ReactiveController {
     }
 
     this._resizing = edge;
-    this._startW = rect.width;
-    this._startH = rect.height;
-    this._startLeft = rect.left;
-    this._startTop = rect.top;
+    this._zoom = cssZoom(target);
+    this._startW = Number.parseFloat(target.style.width);
+    this._startH = Number.parseFloat(target.style.height);
+    this._startLeft = Number.parseFloat(target.style.left);
+    this._startTop = Number.parseFloat(target.style.top);
 
     const step = e.shiftKey ? this._opts.step * 10 : this._opts.step;
 
@@ -912,7 +926,7 @@ export class ResizeController implements ReactiveController {
 
   private _applyDelta(edge: ResizeEdge, dx: number, dy: number): void {
     const target = this._target();
-    const [minL, minT, maxR, maxB] = this._boundsRect();
+    const [minL, minT, maxR, maxB] = this._boundsRect().map((value) => value / this._zoom);
     const minW = this._effectiveMinW;
     const minH = this._effectiveMinH;
     const maxW = this._effectiveMaxW;
