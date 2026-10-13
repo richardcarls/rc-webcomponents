@@ -60,8 +60,15 @@ export const DISCLOSURE_BASE_CSS = `
     color: var(--rc-disclosure-summary-marker-color, currentColor);
   }
 
-  ${SUMMARY}:hover {
-    background: var(--rc-disclosure-summary-hover-background, transparent);
+  /*
+   * Touch browsers keep :hover on the last tapped element, which would leave
+   * a just-toggled summary looking highlighted, so only a hovering pointer
+   * gets the layer.
+   */
+  @media (hover: hover) {
+    ${SUMMARY}:hover {
+      background: var(--rc-disclosure-summary-hover-background, transparent);
+    }
   }
 
   ${SUMMARY}:focus-visible {
