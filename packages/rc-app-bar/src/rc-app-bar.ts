@@ -77,6 +77,8 @@ export interface RCAppBarScrollDetail {
  * @attr scroll-behavior - Visual response to observed scrolling: `pinned`, `collapse`, or `hide`.
  * @attr scroll-target - CSS selector (or `"window"`) for the scroll container to observe.
  * @attr scroll-threshold - Scroll offset in px past which the bar is scrolled (strict `>`).
+ * @attr hide-distance - With `scroll-behavior="hide"`, how far in px the target must scroll in
+ *   one direction before the bar hides or reveals. Defaults to `32`.
  * @attr center-symmetric - Opt-in: mirrors leading/trailing edge widths so `slot="center"`
  *   content stays exactly viewport-centered. Default: fills the flexible middle column instead,
  *   centered within available space once capped by `--rc-app-bar-center-max-inline-size`.
@@ -140,7 +142,19 @@ export class RCAppBar extends LitElement {
   @property({ type: Number, attribute: 'scroll-threshold' })
   scrollThreshold = 4;
 
+  /**
+   * With `scroll-behavior="hide"`, how far in px the target must scroll in one
+   * direction before the bar hides or reveals, so a small reversal while
+   * reading or a fling settling does not toggle it. Within `scrollThreshold`
+   * of the top the bar always shows.
+   */
+  @property({ type: Number, attribute: 'hide-distance' })
+  hideDistance = 32;
+
   private _scrolled: boolean | undefined = undefined;
+
+  /** Signed scroll travel since the last change of direction, in hide mode. */
+  private _hideTravel = 0;
 
   @state()
   private _observedScrolled = false;
@@ -406,14 +420,20 @@ export class RCAppBar extends LitElement {
       this._setCollapseProgress(0);
     }
 
-    if (this.scrollBehavior === 'hide') {
-      if (scrollTop <= this.scrollThreshold || delta < 0) {
-        this._setHidden(false);
-      } else if (delta > 0) {
-        this._setHidden(true);
-      }
-    } else {
+    if (this.scrollBehavior !== 'hide') {
+      this._hideTravel = 0;
       this._setHidden(false);
+    } else if (scrollTop <= this.scrollThreshold) {
+      this._hideTravel = 0;
+      this._setHidden(false);
+    } else if (delta !== 0) {
+      // A change of direction starts the count again.
+      this._hideTravel =
+        Math.sign(delta) === Math.sign(this._hideTravel) ? this._hideTravel + delta : delta;
+
+      if (Math.abs(this._hideTravel) >= this.hideDistance) {
+        this._setHidden(this._hideTravel > 0);
+      }
     }
   }
 

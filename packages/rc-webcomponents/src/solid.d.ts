@@ -694,6 +694,7 @@ export type RCAppBarRef = HTMLElement & {
   scrolled: boolean | undefined;
   scrollTarget: Element | Document | Window | string | null;
   scrollThreshold: number;
+  hideDistance: number;
 };
 
 export type RCAppBarScrollDetail = {
@@ -1254,6 +1255,7 @@ declare module 'solid-js' {
         'scroll-behavior'?: 'pinned' | 'collapse' | 'hide';
         'scroll-target'?: string;
         'scroll-threshold'?: number | string;
+        'hide-distance'?: number | string;
         'prop:scrolled'?: boolean | undefined;
         'prop:scrollTarget'?: Element | Document | Window | string | null;
         'on:rc-app-bar-scroll'?: (e: CustomEvent<RCAppBarScrollDetail>) => void;
