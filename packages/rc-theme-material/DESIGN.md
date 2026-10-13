@@ -457,22 +457,41 @@ uses its own factor. The front matter above records the unscaled bundled
 
 ### Size classes
 
-Use Android's window size classes. Read them from the viewport in app code
-(`matchMedia`) and expose them as state:
+Use Android's window size classes, on both axes. They describe the window
+the app has, not the device: split screen, resizable windows and folding
+change them while the app runs, so never derive a device type from them.
+Read them from the viewport in app code (`matchMedia`), expose them as state,
+and publish them on the root element for CSS (see the snippet below):
 
-| Width class | Range       | Navigation                            | Typical layout                                  |
-| ----------- | ----------- | ------------------------------------- | ----------------------------------------------- |
-| Compact     | < 600px     | Navigation bar                        | Single pane, full-screen dialogs, bottom sheets |
-| Medium      | 600–839px   | Navigation rail                       | Single pane, wider margins, basic dialogs       |
-| Expanded    | 840–1199px  | Navigation rail (optionally expanded) | List-detail, supporting pane                    |
-| Large       | 1200–1599px | Expanded rail                         | Two panes with a bounded detail track           |
-| Extra-large | ≥ 1600px    | Expanded rail                         | Same composition, larger margins                |
+| Width class | Range       | Navigation                            | Typical layout                                                    |
+| ----------- | ----------- | ------------------------------------- | ----------------------------------------------------------------- |
+| Compact     | < 600px     | Navigation bar                        | Single pane, full-screen dialogs, bottom sheets                   |
+| Medium      | 600–839px   | Navigation rail                       | Single pane, wider margins, basic dialogs                         |
+| Expanded    | 840–1199px  | Navigation rail (optionally expanded) | List-detail, supporting pane                                      |
+| Large       | 1200–1599px | Expanded rail                         | A fixed list pane, a bounded detail, an optional third pane       |
+| Extra-large | ≥ 1600px    | Expanded rail                         | Three panes or more grid columns, capped measure, TV-safe margins |
 
 | Height class | Range     | Effect                                                                                                          |
 | ------------ | --------- | --------------------------------------------------------------------------------------------------------------- |
 | Compact      | < 480px   | Landscape phone: prefer the navigation bar, move bottom actions to the inline end, dock panes instead of sheets |
 | Medium       | 480–899px | Standard                                                                                                        |
 | Expanded     | ≥ 900px   | More vertical room; do not stretch reading measure                                                              |
+
+The window classes choose the shell; everything inside a pane adapts to the
+pane through container queries (see
+[Choosing the adaptive mechanism](#choosing-the-adaptive-mechanism)). Combine
+the two axes like this:
+
+| Shell decision | Rule                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------ |
+| Navigation     | Bar when width **or** height is compact; rail otherwise; the expanded rail is offered from expanded    |
+| Panes          | One at compact width or compact height; two from expanded width with medium height; a third from large |
+| App bar        | Hides on scroll at compact height; a medium or large title starts compact there                        |
+| FAB            | In the rail's header when a rail shows; otherwise at the bottom inline end                             |
+
+Two panes need height as well as width: a phone in landscape is often
+expanded width (915px and up) but has no room for a second pane, so it shows
+one pane with Back, like a compact window.
 
 Android's default navigation suite shows a navigation bar when the width
 **or** height is compact, and a rail otherwise
@@ -500,15 +519,27 @@ At compact height, list and reading screens follow these patterns:
 - **Sticky chip rows** stay on one row (`rc-chip-group max-rows="1"`).
 
 ```js
-const widthClass = () =>
-  matchMedia('(min-width: 840px)').matches
-    ? 'expanded'
-    : matchMedia('(min-width: 600px)').matches
-      ? 'medium'
-      : 'compact';
+const widthClass = (w) =>
+  w >= 1600
+    ? 'xlarge'
+    : w >= 1200
+      ? 'large'
+      : w >= 840
+        ? 'expanded'
+        : w >= 600
+          ? 'medium'
+          : 'compact';
+const heightClass = (h) => (h >= 900 ? 'expanded' : h >= 480 ? 'medium' : 'compact');
+
+const publish = () => {
+  document.documentElement.dataset.widthClass = widthClass(innerWidth);
+  document.documentElement.dataset.heightClass = heightClass(innerHeight);
+};
 ```
 
 Measure when your app shell mounts and on resize, not once at module load.
+Shell CSS can then select on `:root[data-height-class='compact']` without a
+script gate of its own.
 
 ### Canonical layouts
 
@@ -531,7 +562,18 @@ Measure when your app shell mounts and on resize, not once at module load.
   instead (see the compact-height list above). The FAB sits in the rail's header or floats at the
   bottom inline end, so neither pane ever has to make room for it.
 - **List-detail Back.** Show Back in the single-pane presentation; suppress it
-  only while the parent list is visible beside the detail.
+  only while the parent list is visible beside the detail. When the window
+  grows to two panes, keep the selected detail and mark it in the list; when
+  it shrinks, keep the detail and hide the list.
+- **Pane sizes.** A fixed pane (a list, filters, a supporting pane) is 360px
+  and the other pane is flexible; at compact height a docked pane may narrow
+  to about a third of the window. Separate panes with a 24px spacer, which
+  can hold an `rc-splitter` handle when the user should resize. Margins are
+  16px at compact width and 24px from medium.
+- **Large windows.** From large width, add structure rather than stretch the
+  expanded layout: keep the list pane fixed, bound the reading measure (about
+  44rem), and give a supporting pane, such as nutrition beside a recipe, its
+  own third column. Feeds add columns instead of widening cards.
 - **Feed.** A grid of cards whose column count comes from container width:
 
   ```css
@@ -560,6 +602,34 @@ expanded`, `rc-adaptive-menu max-shown`, `rc-splitter orientation`,
 Container queries style descendants; they cannot set attributes. Never hide
 controls with CSS to "move" them; use `rc-adaptive-menu` so hidden actions
 reach the overflow menu.
+
+Split the work between window and container: window size classes decide the
+shell (navigation type, pane count), container queries decide everything
+inside a pane, so a component works the same in a list pane, a feed or a
+dialog. Inside a pane, prefer intrinsic layout that needs no breakpoint at
+all: `auto-fill` grids with `minmax()`, wrapping rows with a flex basis, and
+`clamp()` for space. Newer CSS fits as progressive enhancement:
+
+- `:has()` lays out columns from which panes are mounted, and anchor
+  positioning keeps the FAB beside a sheet or pane.
+- `@container scroll-state(stuck)` can raise a bar's elevation once it
+  sticks, without a scroll listener.
+- Same-document view transitions animate panes opening and closing.
+- `interpolate-size: allow-keywords` animates a surface to an `auto` size.
+
+### TV and other distant screens
+
+Layout readiness, not a separate 10-foot mode:
+
+- Keep essential controls inside a 5% overscan margin (48px at the sides,
+  27px top and bottom) on extra-large windows that may be a TV; backgrounds
+  still run to the edge.
+- Every control must be reachable with arrow keys or a D-pad and show the
+  focus ring. Rows and grids suit arrow movement; a hover-only or swipe-only
+  affordance is never the only way in.
+- Composite widgets (chip groups, tabs, toolbars) move focus with arrow keys
+  through roving focus; where the browser supports the `focusgroup`
+  attribute, it can replace that script.
 
 ### Edge-to-edge
 
