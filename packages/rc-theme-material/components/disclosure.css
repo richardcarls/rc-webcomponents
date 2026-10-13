@@ -53,7 +53,7 @@
     );
     --rc-disclosure-focus-ring-offset: -2px;
 
-    --rc-disclosure-content-padding-block: 0 1rem;
+    --rc-disclosure-content-padding-block: 0.5rem 1rem;
     --rc-disclosure-content-padding-inline: 1rem;
     --rc-disclosure-content-color: var(--md-sys-color-on-surface-variant, CanvasText);
     --rc-disclosure-content-font: var(--md-sys-typescale-body-medium-size, 0.875rem) /
