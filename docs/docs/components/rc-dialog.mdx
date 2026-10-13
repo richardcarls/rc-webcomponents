@@ -69,6 +69,23 @@ action.
 </rc-dialog>
 ```
 
+## Side sheet variant
+
+Use `variant="side"` for a modal side sheet: the surface docks to the inline end at full block
+size, pads its docked edges with the safe-area insets, and rounds only its start corners. Move
+and resize behavior is disabled for this variant, as for fullscreen. A theme sets its inline
+size, background, start-corner radius, and shadow through `--rc-dialog-side-inline-size`,
+`--rc-dialog-side-background`, `--rc-dialog-side-radius`, and `--rc-dialog-side-shadow`.
+
+```html
+<rc-dialog variant="side" light-dismiss>
+  <dialog aria-labelledby="filters-title">
+    <h2 id="filters-title">Filters</h2>
+    <form method="dialog"><button value="apply">Apply</button></form>
+  </dialog>
+</rc-dialog>
+```
+
 ## Live demo
 
 <DialogDemo />
@@ -80,7 +97,10 @@ The default demo mode shows the component without a package theme. Use the share
 Set `--rc-dialog-min-inline-size`, `--rc-dialog-max-inline-size`, and
 `--rc-dialog-max-block-size` on `<rc-dialog>` or a theme scope to bound the
 standard surface. The Material theme supplies its viewport-clamped 280px to
-560px dialog width. `--rc-dialog-scrim` customizes the modal backdrop.
+560px dialog width. The surface fits its content inside those bounds; set
+`--rc-dialog-inline-size: 100%` for a dialog whose fluid content would
+otherwise shrink it to its minimum. `--rc-dialog-scrim` customizes the modal
+backdrop.
 
 ## API
 

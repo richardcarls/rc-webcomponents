@@ -49,7 +49,7 @@ Place a `<dialog>` element directly inside `<rc-dialog>`. The inner `<dialog>` m
 | ----------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `open`            | `open`             | `boolean`                                                                                                      | None         | Controlled open state. Setting to `true`/`false` opens/closes the dialog silently (no `rc-dialog-toggle` event). Reads the inner `<dialog>.open` value.                                               |
 | `defaultOpen`     | `default-open`     | `boolean`                                                                                                      | `false`      | Uncontrolled initial open state. The component takes ownership after initialization.                                                                                                                  |
-| `variant`         | `variant`          | `'standard' \| 'fullscreen'`                                                                                   | `'standard'` | Surface presentation. Fullscreen themes the direct child dialog to the current visual viewport and disables move/resize controllers.                                                                  |
+| `variant`         | `variant`          | `'standard' \| 'fullscreen' \| 'side'`                                                                       | `'standard'` | Surface presentation. Fullscreen fits the direct child dialog to the current visual viewport; side docks it to the inline end at full height. Both disable move/resize controllers. |
 | `modal`           | None               | `boolean`                                                                                                      | `true`       | Whether controlled `open` / `defaultOpen` opens as modal (`showModal`) or non-modal (`show`). No effect on direct `showModal()` / `show()` calls. JS property only; no attribute.                     |
 | `movable`         | `movable`          | `boolean`                                                                                                      | `false`      | Enable drag-to-move. Named `movable` (not `draggable`) to avoid colliding with the HTML `draggable` attribute. Reactive: changing any `move-*` option after setup rebuilds the move behavior.         |
 | `moveHandle`      | `move-handle`      | `string`                                                                                                       | `''`         | CSS selector for the drag handle within the inner `<dialog>` (for example, `'.titlebar'`). Defaults to the whole dialog.                                                                              |
@@ -98,6 +98,8 @@ returnValue: string; // The return value set when the dialog last closed.
 
 Set the `--rc-dialog-min-inline-size`, `--rc-dialog-max-inline-size`, and
 `--rc-dialog-max-block-size` surface bounds on `<rc-dialog>` or a theme scope.
+The surface fits its content by default; set `--rc-dialog-inline-size: 100%`
+for a dialog whose fluid content would otherwise shrink it to its minimum.
 The component also exposes surface padding, border, radius, background,
 foreground, shadow, and `--rc-dialog-scrim` properties. Theme packages map
 their design-system values onto those public properties.
@@ -137,6 +139,24 @@ still owns the native dialog content and accessible header/actions.
       <h2 id="picker-title">Categories</h2>
       <button onclick="picker.close('done')">Done</button>
     </header>
+  </dialog>
+</rc-dialog>
+```
+
+### Side sheet
+
+`variant="side"` docks the dialog to the inline end at full block size, a modal side sheet. It
+pads its docked edges with the safe-area insets, rounds only its start corners, and never moves
+or resizes. Theme its inline size, background, start-corner radius, and shadow with
+`--rc-dialog-side-inline-size`, `--rc-dialog-side-background`, `--rc-dialog-side-radius`, and
+`--rc-dialog-side-shadow`.
+
+```html
+<rc-dialog id="filters" variant="side" light-dismiss>
+  <dialog aria-labelledby="filters-title">
+    <h2 id="filters-title">Filters</h2>
+    …
+    <form method="dialog"><button value="apply">Apply</button></form>
   </dialog>
 </rc-dialog>
 ```

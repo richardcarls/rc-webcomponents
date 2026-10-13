@@ -5,6 +5,7 @@ import { html } from 'lit';
 import './define.js';
 import type { RCDialog } from './rc-dialog.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { inFlow } from '../../../test-helpers/flow.js';
 
 /*
  * @starting-style only applies at the first style recalc after an element
@@ -1098,4 +1099,112 @@ test('the visual viewport values are outputs, not theme inputs', async () => {
   // and shadow rather than leaving a theme to remember to.
   expect(styles.borderRadius).toBe('0px');
   expect(styles.boxShadow).toBe('none');
+});
+
+/** Resolves the native `<dialog>` an rc-dialog wraps, failing the test when it is missing. */
+function innerDialog($host: Element): HTMLDialogElement {
+  const $dialog = $host.querySelector(':scope > dialog');
+
+  if (!($dialog instanceof HTMLDialogElement)) {
+    throw new Error('Expected a direct child <dialog>.');
+  }
+
+  return $dialog;
+}
+
+test('a standard dialog fits its content unless a preferred inline size is set', async () => {
+  const screen = render(html`
+    <rc-dialog
+      data-testid="fit"
+      default-open
+      style="--rc-dialog-min-inline-size: 200px; --rc-dialog-max-inline-size: 500px"
+    >
+      <dialog aria-label="Fit"><div style="inline-size: 100%">Fluid</div></dialog>
+    </rc-dialog>
+    <rc-dialog
+      data-testid="task"
+      default-open
+      style="--rc-dialog-min-inline-size: 200px; --rc-dialog-max-inline-size: 500px; --rc-dialog-inline-size: 100%"
+    >
+      <dialog aria-label="Task"><div style="inline-size: 100%">Fluid</div></dialog>
+    </rc-dialog>
+  `);
+
+  const $fit = innerDialog(await screen.getByTestId('fit').element());
+  const $task = innerDialog(await screen.getByTestId('task').element());
+
+  // Fluid content has no intrinsic width, so a fit-content surface settles on its minimum.
+  expect($fit.getBoundingClientRect().width).toBe(200);
+  expect($task.getBoundingClientRect().width).toBe(Math.min(500, window.innerWidth));
+});
+
+for (const dir of ['ltr', 'rtl'] as const) {
+  test(`side variant docks to the inline end at full block size (${dir})`, async () => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-dialog
+            data-testid="host"
+            variant="side"
+            movable
+            resize="both"
+            default-open
+            style="--rc-dialog-radius: 12px; --rc-dialog-side-inline-size: 300px"
+          >
+            <dialog aria-label="Filters"><button>Apply</button></dialog>
+          </rc-dialog>
+        `,
+        { dir, writingMode: 'horizontal-tb' },
+      ),
+    );
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+    await host.updateComplete;
+
+    const $dialog = innerDialog(host);
+    const rect = $dialog.getBoundingClientRect();
+    const styles = getComputedStyle($dialog);
+
+    expect(rect.width).toBe(300);
+    expect(rect.top).toBe(0);
+    expect(rect.height).toBe(window.innerHeight);
+
+    if (dir === 'ltr') {
+      expect(rect.right).toBe(window.innerWidth);
+      expect(styles.borderTopLeftRadius).toBe('12px');
+      expect(styles.borderTopRightRadius).toBe('0px');
+    } else {
+      expect(rect.left).toBe(0);
+      expect(styles.borderTopRightRadius).toBe('12px');
+      expect(styles.borderTopLeftRadius).toBe('0px');
+    }
+
+    // A docked surface neither moves nor resizes, and only fullscreen tracks the viewport.
+    expect(styles.resize).toBe('none');
+    expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-width')).toBe('');
+  });
+}
+
+test('side variant never exceeds the viewport and stays modal', async () => {
+  const screen = render(html`
+    <button data-testid="outside">Outside</button>
+    <rc-dialog
+      data-testid="host"
+      variant="side"
+      style="--rc-dialog-side-inline-size: 200vw"
+    >
+      <dialog aria-label="Wide side sheet"><button>Inside</button></dialog>
+    </rc-dialog>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.showModal();
+
+  const $dialog = innerDialog(host);
+
+  expect($dialog.getBoundingClientRect().width).toBe(window.innerWidth);
+  expect($dialog.matches(':modal')).toBe(true);
+
+  await expectNoA11yViolations(host);
 });

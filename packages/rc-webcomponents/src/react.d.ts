@@ -505,7 +505,7 @@ export type RCDialogResizeOrigin =
 export type RCDialogRef = HTMLElement & {
   open: boolean | undefined;
   defaultOpen: boolean;
-  variant: 'standard' | 'fullscreen';
+  variant: 'standard' | 'fullscreen' | 'side';
   movable: boolean;
   moveHandle: string;
   moveBounds: 'viewport' | 'parent';
@@ -981,7 +981,7 @@ declare module 'react' {
       'rc-dialog': React.DetailedHTMLProps<React.HTMLAttributes<RCDialogRef>, RCDialogRef> & {
         open?: boolean;
         'default-open'?: boolean;
-        variant?: 'standard' | 'fullscreen';
+        variant?: 'standard' | 'fullscreen' | 'side';
         movable?: boolean;
         'move-handle'?: string;
         'move-bounds'?: 'viewport' | 'parent';
