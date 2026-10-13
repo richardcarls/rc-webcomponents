@@ -14753,7 +14753,7 @@
       },
       {
         "property": "--rc-disclosure-content-padding-block",
-        "raw": "0 1rem",
+        "raw": "0.5rem 1rem",
         "name": "disclosure/content-padding-block"
       },
       {
