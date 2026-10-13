@@ -438,6 +438,32 @@ test('hide behavior publishes its geometry onto the scroll target', async () => 
   });
 });
 
+test('a hidden bar reveals itself when focus moves into it', async () => {
+  const screen = render(html`
+    <div data-testid="sc" style="height: 100px; overflow-y: auto;">
+      <div style="height: 1000px;"></div>
+    </div>
+    <rc-app-bar data-testid="host" scroll-behavior="hide">
+      <button slot="leading" data-testid="back">Back</button>
+      <span>Title</span>
+    </rc-app-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+
+  host.scrollTarget = sc;
+  await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  scrollTo(sc, 50);
+  expect(host.hasAttribute('data-hidden')).toBe(true);
+
+  (await screen.getByTestId('back').element() as HTMLButtonElement).focus();
+
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+});
+
 test('geometry outputs follow the hide behavior, the target, and the connection', async () => {
   const screen = render(html`
     <div data-testid="first" style="height: 100px; overflow-y: auto;"></div>

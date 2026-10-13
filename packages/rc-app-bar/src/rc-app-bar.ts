@@ -44,6 +44,8 @@ export interface RCAppBarScrollDetail {
  * ElementInternals custom states. These are computed outputs, not settable
  * attributes.
  *
+ * A hidden bar reveals itself when focus moves into it.
+ *
  * With `scroll-behavior="hide"`, the bar also publishes its geometry onto its
  * scroll target, the element it observes (`document.documentElement` for
  * `window`): `--rc-app-bar-block-size` is its measured block size and
@@ -219,6 +221,7 @@ export class RCAppBar extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    this.addEventListener('focusin', this._onFocusIn);
     this._connectResizeObserver();
 
     if (this.hasUpdated) {
@@ -229,6 +232,7 @@ export class RCAppBar extends LitElement {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    this.removeEventListener('focusin', this._onFocusIn);
     this._resizeObserver?.disconnect();
     this._cancelQueuedLayoutMeasure();
     this._syncGeometryOutputs();
@@ -462,6 +466,11 @@ export class RCAppBar extends LitElement {
 
     this.style.setProperty(name, value);
   }
+
+  /** A hidden bar reveals itself when focus moves into it, so focus never lands off screen. */
+  private readonly _onFocusIn = (): void => {
+    this._setHidden(false);
+  };
 
   private _setHidden(hidden: boolean): void {
     if (hidden === this._hidden) {
