@@ -427,10 +427,13 @@ export class RCDialog extends LitElement {
     this._syncDragController($dialog, true);
     this._syncResizeControllers($dialog, true);
 
+    // A dialog that is already open when it connects is part of the page as
+    // it loads, not a response to the user, so a non-modal one leaves focus
+    // where it is.
     if (this._controlledOpen !== undefined) {
-      this._applyOpen(this._controlledOpen, true, this.modal);
+      this._applyOpen(this._controlledOpen, true, this.modal, this.modal);
     } else if (this.defaultOpen) {
-      this._applyOpen(true, true, this.modal);
+      this._applyOpen(true, true, this.modal, this.modal);
     }
 
     this._syncVisualViewportTracking();
@@ -743,8 +746,10 @@ export class RCDialog extends LitElement {
    * @param open - whether to open (`true`) or close (`false`)
    * @param silent - when `true`, suppresses the outgoing `rc-dialog-toggle` event
    * @param modal - whether to call `showModal()` (`true`) or `show()` (`false`)
+   * @param moveFocus - whether a non-modal open moves focus into the dialog, as
+   *   `show()` does natively. A modal open always does.
    */
-  protected _applyOpen(open: boolean, silent: boolean, modal = true): boolean {
+  protected _applyOpen(open: boolean, silent: boolean, modal = true, moveFocus = true): boolean {
     const $dialog = this._$dialog;
 
     if (!$dialog) {
@@ -758,7 +763,24 @@ export class RCDialog extends LitElement {
 
       // Capture focus owner before the dialog steals it, so we can restore on close.
       this._$opener = document.activeElement;
-      modal ? $dialog.showModal() : $dialog.show();
+
+      if (modal) {
+        $dialog.showModal();
+      } else {
+        $dialog.show();
+
+        // show() always moves focus in; hand it back to where it was.
+        if (!moveFocus && $dialog.contains(document.activeElement)) {
+          const $opener = this._$opener;
+
+          if ($opener instanceof HTMLElement && $opener !== document.body && $opener.isConnected) {
+            $opener.focus({ preventScroll: true });
+          } else if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
+        }
+      }
+
       this._syncVisualViewportTracking();
       this.requestUpdate('open');
 

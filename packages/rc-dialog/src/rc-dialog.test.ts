@@ -787,6 +787,32 @@ test('show() moves initial focus inside the dialog', async () => {
   host.close();
 });
 
+test('a non-modal dialog already open when it connects leaves focus in place', async () => {
+  const screen = render(html`
+    <div>
+      <button data-testid="outside">Outside</button>
+      <div data-testid="slot"></div>
+    </div>
+  `);
+  const outside = (await screen.getByTestId('outside').element()) as HTMLButtonElement;
+  const slot = await screen.getByTestId('slot').element();
+
+  outside.focus();
+
+  const host = document.createElement('rc-dialog') as RCDialog;
+
+  host.modal = false;
+  host.open = true;
+  host.innerHTML = '<dialog aria-label="Docked"><button>Inside</button></dialog>';
+  slot.append(host);
+  await host.updateComplete;
+
+  expect(host.querySelector('dialog')?.open).toBe(true);
+  expect(document.activeElement).toBe(outside);
+
+  host.open = false;
+});
+
 // Group D — focus fallback when opener is removed from DOM
 
 test('focus falls back to document.body when opener is removed before close', async () => {
