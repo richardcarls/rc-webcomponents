@@ -468,11 +468,11 @@ Use Android's window size classes. Read them from the viewport in app code
 | Large       | 1200–1599px | Expanded rail                         | Two panes with a bounded detail track           |
 | Extra-large | ≥ 1600px    | Expanded rail                         | Same composition, larger margins                |
 
-| Height class | Range     | Effect                                                                                               |
-| ------------ | --------- | ---------------------------------------------------------------------------------------------------- |
-| Compact      | < 480px   | Landscape phone: prefer the navigation bar, move bottom actions to the inline end, avoid tall sheets |
-| Medium       | 480–899px | Standard                                                                                             |
-| Expanded     | ≥ 900px   | More vertical room; do not stretch reading measure                                                   |
+| Height class | Range     | Effect                                                                                                          |
+| ------------ | --------- | --------------------------------------------------------------------------------------------------------------- |
+| Compact      | < 480px   | Landscape phone: prefer the navigation bar, move bottom actions to the inline end, dock panes instead of sheets |
+| Medium       | 480–899px | Standard                                                                                                        |
+| Expanded     | ≥ 900px   | More vertical room; do not stretch reading measure                                                              |
 
 Android's default navigation suite shows a navigation bar when the width
 **or** height is compact, and a rail otherwise
@@ -485,8 +485,10 @@ At compact height, list and reading screens follow these patterns:
 - **App bars** hide on scroll and give their space back; see
   [Components and composition patterns](#components-and-composition-patterns)
   for the layout recipe.
-- **Modal sheets** become side sheets (`rc-dialog variant="side"`), and a
-  persistent sheet becomes a docked supporting pane.
+- **Sheets** become panes docked in the layout. Controls that shape the
+  content, such as filters, dock at the inline start; content about the
+  selection docks at the inline end. A short form that does not fit a pane is
+  a full-screen dialog. See [Sheets and the FAB](#sheets-and-the-fab).
 - **Dialogs** for multi-field tasks are full-screen.
 - **Tall media** is capped by the pane's height. Make the scroll region a
   `container-type: size` container, which is safe because layout already
@@ -513,12 +515,17 @@ Measure when your app shell mounts and on resize, not once at module load.
   resize. Keep the URL as the source of truth for the selection so back
   navigation works at every size.
 - **Supporting pane.** Primary content plus a secondary pane (filters,
-  details). Compact moves the pane into a bottom sheet; expanded docks it at
-  the inline end. Content that stays relevant throughout the task belongs in
-  a persistent pane once the container is wide enough; a transient overlay
-  is for one-off tasks. Decide from the container's width, not the device
-  type. In compact-height landscape, dock support surfaces at the inline end
-  instead of using a sheet.
+  details). Compact width moves the pane into a bottom sheet or below the
+  content; medium and wider dock it beside the content. Content that stays
+  relevant throughout the task belongs in a persistent pane once the
+  container is wide enough; a transient overlay is for one-off tasks. Decide
+  from the container's width, not the device type. In compact-height
+  landscape, dock the pane from medium width instead of using a sheet.
+- **Pane order.** Panes that shape the content, such as filters and sort,
+  dock at the inline start, after the navigation rail: rail, filters,
+  content. Panes about the current content, such as nutrition or details,
+  dock at the inline end. The FAB sits in the rail's header or floats at the
+  bottom inline end, so neither pane ever has to make room for it.
 - **List-detail Back.** Show Back in the single-pane presentation; suppress it
   only while the parent list is visible beside the detail.
 - **Feed.** A grid of cards whose column count comes from container width:
@@ -676,7 +683,7 @@ navigation component chosen by size class, and at most one FAB.
   `var(--rc-app-bar-block-size)` as the container's block-start padding and
   scroll padding. Sticky offsets are measured inside that padding, so sticky
   content below the bar pins at `calc(var(--rc-app-bar-visible-block-size) -
-  var(--rc-app-bar-block-size))`; both values are published on the bar's
+var(--rc-app-bar-block-size))`; both values are published on the bar's
   scroll target. Hands-busy task bars and full-screen dialog bars stay pinned,
   since they carry actions the task needs.
 - **App bar title.** The title slot holds the screen's one page heading, so
@@ -872,6 +879,26 @@ coexists with the page.
   compete with vertical resizing, scrolling and the browser's edge-back
   gesture; switch tabs explicitly.
 
+### Sheets and the FAB
+
+A floating action button and a sheet compete for the same edges: the FAB
+floats at the bottom inline end, a side sheet covers the inline end, and a
+bottom sheet covers the bottom. Moving the FAB out of a sheet's way is a sign
+the screen wants a different surface.
+
+- Don't open a side sheet on a screen that has a FAB. Dock the same content as
+  a pane in the layout (Material's standard side sheet, which stays visible
+  while the content is used), or use a full-screen dialog for a short task.
+- At compact height, don't open a bottom sheet on a screen that has a FAB,
+  modal or standard: what is left above it cannot hold both the content and
+  the FAB. Dock a pane from medium width, or use a full-screen dialog.
+- On taller windows a bottom sheet may share a screen with a FAB; the FAB
+  clears the sheet's peek (see the floating layer under App shell) and a modal
+  sheet's scrim covers it while open.
+- When the navigation rail is shown, the FAB moves into the rail's `header`
+  slot (Compose Material 3 `NavigationRail` and `WideNavigationRail` take the
+  FAB in their header), so docked panes beside the rail never meet it.
+
 ### Side sheets
 
 `rc-dialog variant="side"` is the modal side sheet: docked to the inline end at
@@ -893,8 +920,9 @@ scrim. It fades rather than sliding, like every other surface here.
 
 - Use a side sheet for the same content a modal bottom sheet carries when the
   window is compact in height, such as a landscape phone, where a bottom
-  sheet would leave only a strip of content. Write `variant` from app state;
-  the sheet's content and actions stay the same.
+  sheet would leave only a strip of content, and only on a screen without a
+  FAB; see [Sheets and the FAB](#sheets-and-the-fab). Write `variant` from app
+  state; the sheet's content and actions stay the same.
 - Scroll a body region and keep the actions outside it, so they never leave
   the screen.
 - A side sheet that stays open beside content is a docked supporting pane,
