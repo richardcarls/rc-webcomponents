@@ -63,6 +63,42 @@ Scroll behaviors are exclusive:
 
 The component never consumes, stops, or rewrites the document's scroll.
 
+`hide` only translates the bar, so on its own it frees no layout space. While
+hiding, the bar publishes read-only geometry onto its scroll target:
+`--rc-app-bar-block-size` (its measured block size) and
+`--rc-app-bar-visible-block-size` (the same, or `0px` while hidden). Let the
+scroll container run under the bar and reserve that size, so content scrolls
+behind the bar and fills its space while it is hidden:
+
+```css
+.screen {
+  display: grid;
+  grid-template: 'stack' 1fr / 1fr;
+}
+
+.screen > header,
+.screen > .content {
+  grid-area: stack;
+}
+
+.screen > header {
+  z-index: 1;
+  align-self: start;
+}
+
+.content {
+  overflow-y: auto;
+  padding-block-start: var(--rc-app-bar-block-size, 4rem);
+  scroll-padding-block-start: var(--rc-app-bar-block-size, 4rem);
+}
+
+.content .sticky-filters {
+  position: sticky;
+  inset-block-start: var(--rc-app-bar-visible-block-size, 4rem);
+  transition: inset-block-start 200ms ease;
+}
+```
+
 ## Center-slot composition
 
 The optional `center` slot, useful for desktop controls or an

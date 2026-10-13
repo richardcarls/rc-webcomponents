@@ -69,6 +69,43 @@ midpoint regardless of asymmetric leading/trailing widths instead:
 </rc-app-bar>
 ```
 
+## Reclaiming space with hide
+
+`scroll-behavior="hide"` only translates the bar. While hiding, the bar
+publishes `--rc-app-bar-block-size` and `--rc-app-bar-visible-block-size`
+(`0px` while hidden) onto its scroll target. Stack the bar over its scroll
+container and reserve that size, so content scrolls behind the bar and fills
+its space while it is hidden:
+
+```css
+.screen {
+  display: grid;
+  grid-template: 'stack' 1fr / 1fr;
+}
+
+.screen > header,
+.screen > .content {
+  grid-area: stack;
+}
+
+.screen > header {
+  z-index: 1;
+  align-self: start;
+}
+
+.content {
+  overflow-y: auto;
+  padding-block-start: var(--rc-app-bar-block-size, 4rem);
+  scroll-padding-block-start: var(--rc-app-bar-block-size, 4rem);
+}
+
+.content .sticky-filters {
+  position: sticky;
+  inset-block-start: var(--rc-app-bar-visible-block-size, 4rem);
+  transition: inset-block-start 200ms ease;
+}
+```
+
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.

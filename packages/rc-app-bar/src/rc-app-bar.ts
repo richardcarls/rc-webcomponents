@@ -44,6 +44,18 @@ export interface RCAppBarScrollDetail {
  * ElementInternals custom states. These are computed outputs, not settable
  * attributes.
  *
+ * With `scroll-behavior="hide"`, the bar also publishes its geometry onto its
+ * scroll target, the element it observes (`document.documentElement` for
+ * `window`): `--rc-app-bar-block-size` is its measured block size and
+ * `--rc-app-bar-visible-block-size` is the same value, or `0px` while hidden.
+ * Hiding only translates the bar, so a layout wins the space back by letting
+ * the scroll container run under the bar, reserving
+ * `var(--rc-app-bar-block-size)` as its block-start padding and scroll
+ * padding, and pinning sticky descendants at
+ * `var(--rc-app-bar-visible-block-size)`. These are read-only outputs: the
+ * bar overwrites them on every size or visibility change and removes them
+ * when it stops hiding, changes target, or disconnects.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-app-bar rc-app-bar docs}
  * @see {@link https://m3.material.io/components/top-app-bar/overview Material 3 Top app bar}
  *
@@ -77,6 +89,10 @@ export interface RCAppBarScrollDetail {
  * @cssprop [--rc-app-bar-transition-duration=200ms] - Endpoint and hide duration
  * @cssprop [--rc-app-bar-scroll-divider=1px solid GrayText] - Scrolled divider
  * @cssprop [--rc-app-bar-collapse-progress=0] - Collapse animation progress 0–1; read-only
+ * @cssprop --rc-app-bar-block-size - Read-only output on the scroll target in hide mode: the
+ *   bar's measured block size.
+ * @cssprop --rc-app-bar-visible-block-size - Read-only output on the scroll target in hide mode:
+ *   the bar's block size while shown, `0px` while hidden.
  * @cssprop [--rc-app-bar-title-font-size] - Compact-row title font size (opt-in; inherits when unset)
  * @cssprop [--rc-app-bar-expanded-title-font-size] - Expanded-row title font size (opt-in)
  * @csspart root - The grid container
@@ -150,6 +166,12 @@ export class RCAppBar extends LitElement {
 
   private _resizeObserver: ResizeObserver | null = null;
 
+  private _hostResizeObserver: ResizeObserver | null = null;
+
+  private _blockSize = 0;
+
+  private _$geometryTarget: HTMLElement | null = null;
+
   private readonly _layoutMeasure = new RafScheduler(this);
 
   private readonly _scroll = new ScrollObserverController(this, {
@@ -201,6 +223,7 @@ export class RCAppBar extends LitElement {
 
     if (this.hasUpdated) {
       this._queueLayoutMeasure();
+      this._syncGeometryOutputs();
     }
   }
 
@@ -208,6 +231,7 @@ export class RCAppBar extends LitElement {
     super.disconnectedCallback();
     this._resizeObserver?.disconnect();
     this._cancelQueuedLayoutMeasure();
+    this._syncGeometryOutputs();
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
@@ -229,6 +253,7 @@ export class RCAppBar extends LitElement {
     this._queueLayoutMeasure();
     this._syncScrollObserver();
     this._syncVisualState();
+    this._syncGeometryOutputs();
   }
 
   protected override updated(changed: PropertyValues): void {
@@ -242,6 +267,10 @@ export class RCAppBar extends LitElement {
       changed.has('_hasTrailing')
     ) {
       this._queueLayoutMeasure();
+    }
+
+    if (changed.has('scrollTarget') || changed.has('scrollBehavior')) {
+      this._syncGeometryOutputs();
     }
 
     this._syncStateOutputs();
@@ -442,6 +471,62 @@ export class RCAppBar extends LitElement {
     this._hidden = hidden;
     this.toggleAttribute('data-hidden', hidden);
     this._setCustomState('hidden', hidden);
+    this._writeGeometryOutputs();
+  }
+
+  /**
+   * Publishes geometry onto the scroll target while the bar can hide, and
+   * removes it from a target the bar no longer publishes to.
+   */
+  private _syncGeometryOutputs(): void {
+    const $target =
+      this.isConnected && this.scrollBehavior === 'hide' ? this._resolveGeometryTarget() : null;
+
+    if ($target !== this._$geometryTarget) {
+      this._$geometryTarget?.style.removeProperty('--rc-app-bar-block-size');
+      this._$geometryTarget?.style.removeProperty('--rc-app-bar-visible-block-size');
+      this._$geometryTarget = $target;
+    }
+
+    if (!$target) {
+      this._hostResizeObserver?.disconnect();
+
+      return;
+    }
+
+    if (!this._hostResizeObserver && 'ResizeObserver' in globalThis) {
+      this._hostResizeObserver = new ResizeObserver(([entry]) => {
+        this._blockSize = entry?.borderBoxSize?.[0]?.blockSize ?? this._blockSize;
+        this._writeGeometryOutputs();
+      });
+    }
+
+    this._hostResizeObserver?.observe(this);
+    this._writeGeometryOutputs();
+  }
+
+  private _resolveGeometryTarget(): HTMLElement | null {
+    const target = this._resolveScrollTarget();
+
+    if (target instanceof HTMLElement) {
+      return target;
+    }
+
+    // A window or document target scrolls the root element; another element has no style to write.
+    return target === null || target instanceof Element ? null : this.ownerDocument.documentElement;
+  }
+
+  private _writeGeometryOutputs(): void {
+    const $target = this._$geometryTarget;
+
+    if (!$target) {
+      return;
+    }
+
+    const blockSize = `${this._blockSize}px`;
+
+    $target.style.setProperty('--rc-app-bar-block-size', blockSize);
+    $target.style.setProperty('--rc-app-bar-visible-block-size', this._hidden ? '0px' : blockSize);
   }
 
   private _syncStateOutputs(): void {
