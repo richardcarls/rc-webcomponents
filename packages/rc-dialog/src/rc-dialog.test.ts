@@ -311,6 +311,30 @@ test('fullscreen variant tracks the visual viewport only while open', async () =
   expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-height')).toBe('');
 });
 
+test.runIf('currentCSSZoom' in Element.prototype)(
+  'fullscreen variant covers the viewport under an ancestor zoom',
+  async () => {
+    const screen = render(html`
+      <div style="zoom: 0.8">
+        <rc-dialog data-testid="host" variant="fullscreen">
+          <dialog aria-label="Zoomed fullscreen test"><button>Close</button></dialog>
+        </rc-dialog>
+      </div>
+    `);
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+    await host.updateComplete;
+    host.showModal();
+
+    const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
+
+    expect(rect.width).toBeCloseTo(window.visualViewport?.width ?? window.innerWidth, 0);
+    expect(rect.height).toBeCloseTo(window.visualViewport?.height ?? window.innerHeight, 0);
+
+    host.close();
+  },
+);
+
 test('rc-dialog restores focus to the opener on close', async () => {
   const screen = render(html`
     <div>
@@ -761,6 +785,32 @@ test('show() moves initial focus inside the dialog', async () => {
   expect($dialog.contains(document.activeElement)).toBe(true);
 
   host.close();
+});
+
+test('a non-modal dialog already open when it connects leaves focus in place', async () => {
+  const screen = render(html`
+    <div>
+      <button data-testid="outside">Outside</button>
+      <div data-testid="slot"></div>
+    </div>
+  `);
+  const outside = (await screen.getByTestId('outside').element()) as HTMLButtonElement;
+  const slot = await screen.getByTestId('slot').element();
+
+  outside.focus();
+
+  const host = document.createElement('rc-dialog') as RCDialog;
+
+  host.modal = false;
+  host.open = true;
+  host.innerHTML = '<dialog aria-label="Docked"><button>Inside</button></dialog>';
+  slot.append(host);
+  await host.updateComplete;
+
+  expect(host.querySelector('dialog')?.open).toBe(true);
+  expect(document.activeElement).toBe(outside);
+
+  host.open = false;
 });
 
 // Group D — focus fallback when opener is removed from DOM
