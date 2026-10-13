@@ -485,10 +485,13 @@ At compact height, list and reading screens follow these patterns:
 - **App bars** hide on scroll and give their space back; see
   [Components and composition patterns](#components-and-composition-patterns)
   for the layout recipe.
-- **Sheets** become panes docked in the layout. Controls that shape the
-  content, such as filters, dock at the inline start; content about the
-  selection docks at the inline end. A short form that does not fit a pane is
-  a full-screen dialog. See [Sheets and the FAB](#sheets-and-the-fab).
+- **Sheets** leave the screen. Controls that shape the content, such as
+  filters, dock as a pane at the inline start. Content about the selection,
+  such as nutrition, becomes a second column that scrolls with the page: a
+  pane pinned at the inline end would push the FAB toward the middle of the
+  screen, while a scrolling column lets the FAB keep its corner and float
+  over it like any other content. A short form is a full-screen dialog. See
+  [Sheets and the FAB](#sheets-and-the-fab).
 - **Dialogs** for multi-field tasks are full-screen.
 - **Tall media** is capped by the pane's height. Make the scroll region a
   `container-type: size` container, which is safe because layout already
@@ -524,7 +527,8 @@ Measure when your app shell mounts and on resize, not once at module load.
 - **Pane order.** Panes that shape the content, such as filters and sort,
   dock at the inline start, after the navigation rail: rail, filters,
   content. Panes about the current content, such as nutrition or details,
-  dock at the inline end. The FAB sits in the rail's header or floats at the
+  dock at the inline end; at compact height they scroll with the content
+  instead (see the compact-height list above). The FAB sits in the rail's header or floats at the
   bottom inline end, so neither pane ever has to make room for it.
 - **List-detail Back.** Show Back in the single-pane presentation; suppress it
   only while the parent list is visible beside the detail.
@@ -891,7 +895,8 @@ the screen wants a different surface.
   while the content is used), or use a full-screen dialog for a short task.
 - At compact height, don't open a bottom sheet on a screen that has a FAB,
   modal or standard: what is left above it cannot hold both the content and
-  the FAB. Dock a pane from medium width, or use a full-screen dialog.
+  the FAB. From medium width, dock a start pane or add a scrolling column;
+  otherwise use a full-screen dialog or let the content follow in the page.
 - On taller windows a bottom sheet may share a screen with a FAB; the FAB
   clears the sheet's peek (see the floating layer under App shell) and a modal
   sheet's scrim covers it while open.
