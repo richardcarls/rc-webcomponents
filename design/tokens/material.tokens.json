@@ -8473,6 +8473,25 @@
           }
         },
         {
+          "name": "dialog/fullscreen-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-fullscreen-background)"
+          },
+          "cssVar": "--rc-dialog-fullscreen-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
           "name": "dialog/padding",
           "type": "FLOAT",
           "scopes": [

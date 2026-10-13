@@ -831,10 +831,6 @@ dimensions, and write the choice from app state:
   verbs rather than OK.
 - Use `default-open` for an initially open uncontrolled dialog; `open` makes
   the dialog controlled (see [Framework notes](#framework-notes)).
-- The theme's full-screen surface currently uses the dialog background. For the
-  M3 `surface` role, set
-  `--rc-dialog-fullscreen-background: var(--md-sys-color-surface)` on
-  full-screen dialogs.
 
 ### Bottom sheets
 

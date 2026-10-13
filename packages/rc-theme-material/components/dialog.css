@@ -17,6 +17,9 @@
     --rc-dialog-shadow: var(--rc-shadow-level3, var(--rc-shadow, none));
     --rc-dialog-scrim: color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent);
 
+    /* Material 3 full-screen dialog: the page surface, like its top app bar. */
+    --rc-dialog-fullscreen-background: var(--md-sys-color-surface, Canvas);
+
     /* Material 3 modal side sheet: a low container at level 1, rounded on its leading edge. */
     --rc-dialog-side-background: var(--md-sys-color-surface-container-low, Canvas);
     --rc-dialog-side-radius: var(--md-sys-shape-corner-large, 1rem);
