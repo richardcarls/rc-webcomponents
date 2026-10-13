@@ -60,7 +60,10 @@ Scroll behaviors are exclusive:
   height, then keeps the compact row visible.
 - `hide` hides the complete bar while scrolling down past `scroll-threshold`
   and reveals it when scrolling up, returning near the top, or when focus
-  moves into the bar, so keyboard focus never lands off screen.
+  moves into the bar, so keyboard focus never lands off screen. It hides or
+  reveals only after the target scrolls `hide-distance` (32px by default) in
+  one direction, so small reversals while reading or as a fling settles leave
+  it as it is.
 
 The component never consumes, stops, or rewrites the document's scroll.
 

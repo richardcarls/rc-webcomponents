@@ -392,13 +392,53 @@ test('hide behavior hides downward and reveals upward or near the top', async ()
     expect(host.matches(':state(hidden)')).toBe(true);
   }
 
-  scrollTo(sc, 40);
+  scrollTo(sc, 10);
   expect(host.hasAttribute('data-hidden')).toBe(false);
 
   scrollTo(sc, 60);
   expect(host.hasAttribute('data-hidden')).toBe(true);
 
   scrollTo(sc, 0);
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+});
+
+test('hide behavior waits for the hide distance in one direction before toggling', async () => {
+  const screen = render(html`
+    <div data-testid="sc" style="height: 100px; overflow-y: auto;">
+      <div style="height: 1000px;"></div>
+    </div>
+    <rc-app-bar data-testid="host" scroll-behavior="hide" hide-distance="32">
+      <span>Title</span>
+    </rc-app-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+
+  host.scrollTarget = sc;
+  await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  // Short downward steps add up until they cover the distance.
+  scrollTo(sc, 20);
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+  scrollTo(sc, 40);
+  expect(host.hasAttribute('data-hidden')).toBe(true);
+
+  // Small reversals, as when a fling settles, leave it hidden.
+  scrollTo(sc, 300);
+  scrollTo(sc, 299);
+  scrollTo(sc, 301);
+  scrollTo(sc, 280);
+  expect(host.hasAttribute('data-hidden')).toBe(true);
+
+  scrollTo(sc, 268);
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+
+  // Each change of direction starts the count again.
+  scrollTo(sc, 290);
+  scrollTo(sc, 280);
+  scrollTo(sc, 300);
   expect(host.hasAttribute('data-hidden')).toBe(false);
 });
 
@@ -428,7 +468,7 @@ test('hide behavior publishes its geometry onto the scroll target', async () => 
   expect(sc.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('0px');
   expect(sc.style.getPropertyValue('--rc-app-bar-block-size')).toBe('64px');
 
-  scrollTo(sc, 40);
+  scrollTo(sc, 10);
   expect(sc.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('64px');
 
   host.style.height = '80px';

@@ -746,6 +746,7 @@ export type RCAppBarRef = HTMLElement & {
   scrolled: boolean | undefined;
   scrollTarget: Element | Document | Window | string | null;
   scrollThreshold: number;
+  hideDistance: number;
 };
 
 /** Public API surface of `<rc-search-bar>`. */
@@ -1185,6 +1186,7 @@ declare module 'react' {
         'scroll-behavior'?: 'pinned' | 'collapse' | 'hide';
         'scroll-target'?: string;
         'scroll-threshold'?: number | string;
+        'hide-distance'?: number | string;
         scrollTarget?: Element | Document | Window | string | null;
       };
 
