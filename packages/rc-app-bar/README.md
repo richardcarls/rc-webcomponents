@@ -59,7 +59,8 @@ Scroll behaviors are exclusive:
 - `collapse` continuously shrinks an expanded title row over its measured
   height, then keeps the compact row visible.
 - `hide` hides the complete bar while scrolling down past `scroll-threshold`
-  and reveals it when scrolling up or returning near the top.
+  and reveals it when scrolling up, returning near the top, or when focus
+  moves into the bar, so keyboard focus never lands off screen.
 
 The component never consumes, stops, or rewrites the document's scroll.
 
