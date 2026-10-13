@@ -475,7 +475,24 @@ Use Android's window size classes. Read them from the viewport in app code
 | Expanded     | ≥ 900px   | More vertical room; do not stretch reading measure                                                   |
 
 Android's default navigation suite shows a navigation bar when the width
-**or** height is compact, and a rail otherwise.
+**or** height is compact, and a rail otherwise
+(`NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo` in the `androidx`
+`material3-adaptive-navigation-suite` library). Its newer `navigationSuiteType`
+uses a short bar with each label beside its icon at compact height.
+
+At compact height, list and reading screens follow these patterns:
+
+- **App bars** hide on scroll and give their space back; see
+  [Components and composition patterns](#components-and-composition-patterns)
+  for the layout recipe.
+- **Modal sheets** become side sheets (`rc-dialog variant="side"`), and a
+  persistent sheet becomes a docked supporting pane.
+- **Dialogs** for multi-field tasks are full-screen.
+- **Tall media** is capped by the pane's height. Make the scroll region a
+  `container-type: size` container, which is safe because layout already
+  gives it a definite size, and query its height or use `cqb` units: a
+  window media query cannot see how much the bars and panes have taken.
+- **Sticky chip rows** stay on one row (`rc-chip-group max-rows="1"`).
 
 ```js
 const widthClass = () =>
@@ -653,6 +670,14 @@ navigation component chosen by size class, and at most one FAB.
   to shrink on scroll. `.rc-app-bar--center-aligned` is for a single centered
   title on a root screen. `scroll-behavior="hide"` suits long reading views.
   Always set `scroll-target` to the element that actually scrolls.
+- **Compact height.** On a landscape phone, list and reading screens hide
+  the top app bar on scroll (`scroll-behavior="hide"`), and an expanded bar
+  starts compact. Stack the bar over its scroll container and reserve
+  `var(--rc-app-bar-block-size)` as the container's block-start padding and
+  scroll padding; sticky content below the bar pins at
+  `var(--rc-app-bar-visible-block-size)`, which the bar publishes on its
+  scroll target. Hands-busy task bars and full-screen dialog bars stay pinned,
+  since they carry actions the task needs.
 - **App bar title.** The title slot holds the screen's one page heading, so
   the body doesn't repeat it. A collapsed or small bar shows one line with an
   ellipsis; an expanded title may wrap to a few lines before clipping. Put

@@ -402,6 +402,88 @@ test('hide behavior hides downward and reveals upward or near the top', async ()
   expect(host.hasAttribute('data-hidden')).toBe(false);
 });
 
+test('hide behavior publishes its geometry onto the scroll target', async () => {
+  const screen = render(html`
+    <div data-testid="sc" style="height: 100px; overflow-y: auto;">
+      <div style="height: 1000px;"></div>
+    </div>
+    <rc-app-bar data-testid="host" scroll-behavior="hide" style="display: block; height: 64px;">
+      <span>Title</span>
+    </rc-app-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+
+  host.scrollTarget = sc;
+  await host.updateComplete;
+
+  await vi.waitFor(() => {
+    expect(sc.style.getPropertyValue('--rc-app-bar-block-size')).toBe('64px');
+  });
+
+  expect(sc.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('64px');
+
+  scrollTo(sc, 50);
+  expect(sc.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('0px');
+  expect(sc.style.getPropertyValue('--rc-app-bar-block-size')).toBe('64px');
+
+  scrollTo(sc, 40);
+  expect(sc.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('64px');
+
+  host.style.height = '80px';
+
+  await vi.waitFor(() => {
+    expect(sc.style.getPropertyValue('--rc-app-bar-block-size')).toBe('80px');
+  });
+});
+
+test('geometry outputs follow the hide behavior, the target, and the connection', async () => {
+  const screen = render(html`
+    <div data-testid="first" style="height: 100px; overflow-y: auto;"></div>
+    <div data-testid="second" style="height: 100px; overflow-y: auto;"></div>
+    <rc-app-bar data-testid="host" style="display: block; height: 56px;">
+      <span>Title</span>
+    </rc-app-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const first = (await screen.getByTestId('first').element()) as HTMLElement;
+  const second = (await screen.getByTestId('second').element()) as HTMLElement;
+
+  host.scrollTarget = first;
+  await host.updateComplete;
+
+  // A pinned bar keeps its own space, so it publishes nothing.
+  expect(first.style.getPropertyValue('--rc-app-bar-block-size')).toBe('');
+
+  host.scrollBehavior = 'hide';
+  await host.updateComplete;
+
+  await vi.waitFor(() => {
+    expect(first.style.getPropertyValue('--rc-app-bar-block-size')).toBe('56px');
+  });
+
+  host.scrollTarget = second;
+  await host.updateComplete;
+
+  expect(first.style.getPropertyValue('--rc-app-bar-block-size')).toBe('');
+  expect(first.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('');
+  expect(second.style.getPropertyValue('--rc-app-bar-block-size')).toBe('56px');
+
+  host.scrollBehavior = 'pinned';
+  await host.updateComplete;
+
+  expect(second.style.getPropertyValue('--rc-app-bar-block-size')).toBe('');
+
+  host.scrollBehavior = 'hide';
+  await host.updateComplete;
+  host.remove();
+
+  expect(second.style.getPropertyValue('--rc-app-bar-block-size')).toBe('');
+  expect(second.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('');
+});
+
 test('controlled mode applies endpoints silently and ignores the observer', async () => {
   const screen = render(html`
     <div data-testid="sc" style="height: 100px; overflow-y: auto;">
