@@ -236,6 +236,10 @@ components:
     backgroundColor: '{colors.surface-container-low}'
     rounded: '{rounded.extra-large}'
     handle: 32x4px
+  side-sheet:
+    backgroundColor: '{colors.surface-container-low}'
+    rounded: '{rounded.large}'
+    maxWidth: 400px
   chip:
     backgroundColor: '{colors.surface-container-low}'
     selectedBackgroundColor: '{colors.secondary-container}'
@@ -394,7 +398,7 @@ control.
   | Role                        | Use                                                                       |
   | --------------------------- | ------------------------------------------------------------------------- |
   | `surface`                   | Page background, top app bar at rest, navigation rail, full-screen dialog |
-  | `surface-container-low`     | Cards, bottom sheets, disclosures and segmented list items, chips         |
+  | `surface-container-low`     | Cards, bottom and side sheets, disclosures, segmented list items, chips   |
   | `surface-container`         | Navigation bar, scrolled app bar, toolbars, menus' listbox                |
   | `surface-container-high`    | Basic dialogs                                                             |
   | `surface-container-highest` | Filled text fields                                                        |
@@ -561,6 +565,7 @@ reach the overflow menu.
 | Chips, menus                                 | small                                                       |
 | Cards                                        | medium                                                      |
 | FAB, standalone disclosure                   | large                                                       |
+| Side sheet leading corners                   | large                                                       |
 | Dialogs, bottom sheet top corners            | extra-large                                                 |
 | Full-screen dialog                           | none                                                        |
 | Segmented list or accordion group            | extra-large outer ends, extra-small inner corners, 2px gaps |
@@ -724,12 +729,12 @@ navigation component chosen by size class, and at most one FAB.
 
 ### Dialogs
 
-Material has two dialog presentations. Choose by window size, and write the
-choice from app state:
+Material has two dialog presentations. Choose by window size class, in both
+dimensions, and write the choice from app state:
 
 |         | Basic dialog                                                      | Full-screen dialog                                                        |
 | ------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| When    | Medium and wider; short tasks and confirmations on any size       | Compact width only; multi-field tasks or long content                     |
+| When    | Medium and wider; short tasks and confirmations on any size       | Compact width or compact height; multi-field tasks or long content        |
 | Surface | `surface-container-high`, extra-large corners, 280–560px wide     | `surface`, no corners, fills the visual viewport                          |
 | Header  | Headline (optional icon above it)                                 | Small top app bar: close (×) leading, title, confirm text button trailing |
 | Actions | Footer, end-aligned: dismiss as text, confirm as filled (or text) | Confirm in the app bar; no footer                                         |
@@ -773,8 +778,8 @@ choice from app state:
 </rc-dialog>
 ```
 
-- **Adapt one dialog, don't fork it.** At the 600px boundary, switch `variant`
-  between `fullscreen` and `standard` and move the two actions between the app
+- **Adapt one dialog, don't fork it.** At the 600px width or 480px height
+  boundary, switch `variant` between `fullscreen` and `standard` and move the two actions between the app
   bar and the footer. If a button had focus, return focus to the same action
   in its new position after the components finish rendering (await the app
   bar's `updateComplete` before focusing a slotted button).
@@ -783,6 +788,10 @@ choice from app state:
   theme styles the slot, not your heading's UA defaults.
 - **Scroll a body region**, never the dialog surface; the app bar's
   `scroll-target` points at it.
+- **Size task dialogs to their maximum.** A basic dialog fits its content, so
+  a dialog whose content is fluid (a search field, a list) shrinks to its
+  280px minimum. Set `--rc-dialog-inline-size: 100%` on it to use the full
+  560px.
 - **Dialog actions are content-sized** and aligned to the inline end, dismiss
   before confirm, each with a 48px target. They wrap only when text scaling or
   width requires it and never stretch into full-width rows (Android's
@@ -840,6 +849,34 @@ coexists with the page.
 - Don't add swipe paging between tabs inside a sheet. Horizontal swipes
   compete with vertical resizing, scrolling and the browser's edge-back
   gesture; switch tabs explicitly.
+
+### Side sheets
+
+`rc-dialog variant="side"` is the modal side sheet: docked to the inline end at
+full height, at most 400px wide, rounded on its leading edge, with the shared
+scrim. It fades rather than sliding, like every other surface here.
+
+```html
+<rc-dialog id="filters" variant="side" light-dismiss>
+  <dialog aria-labelledby="filters-title">
+    <h2 id="filters-title">Filters</h2>
+    <div class="dialog-body">…</div>
+    <form method="dialog" class="dialog-actions">
+      <rc-button class="rc-button--text"><button value="cancel">Cancel</button></rc-button>
+      <rc-button><button value="apply">Apply</button></rc-button>
+    </form>
+  </dialog>
+</rc-dialog>
+```
+
+- Use a side sheet for the same content a modal bottom sheet carries when the
+  window is compact in height, such as a landscape phone, where a bottom
+  sheet would leave only a strip of content. Write `variant` from app state;
+  the sheet's content and actions stay the same.
+- Scroll a body region and keep the actions outside it, so they never leave
+  the screen.
+- A side sheet that stays open beside content is a docked supporting pane,
+  not a dialog. Lay it out in the page instead.
 
 ### Lists and settings
 

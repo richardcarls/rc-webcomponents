@@ -13,7 +13,7 @@ import {
 } from '@rcarls/rc-common';
 import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
 
-export type RCDialogVariant = 'standard' | 'fullscreen';
+export type RCDialogVariant = 'standard' | 'fullscreen' | 'side';
 
 /** Detail shape for `rc-dialog-close` and `rc-dialog-request-close`. */
 export interface RCDialogCloseEvent {
@@ -80,11 +80,13 @@ declare global {
  * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute.
  * @attr light-dismiss - When present and the dialog is modal, a click on the backdrop area calls
  *   `requestClose()`.
- * @attr variant - Surface presentation: `standard` (default) or visual-viewport-filling
- *   `fullscreen`.
+ * @attr variant - Surface presentation: `standard` (default), visual-viewport-filling
+ *   `fullscreen`, or `side`, a modal side sheet docked to the inline end.
  * @prop modal - Whether controlled open state uses `showModal()` instead of `show()`.
  *   JavaScript property only; no attribute is observed.
  *
+ * @cssprop [--rc-dialog-inline-size=fit-content] - Standard surface preferred inline size. Set
+ *   `100%` for a task dialog whose fluid content would otherwise shrink it to its minimum.
  * @cssprop [--rc-dialog-min-inline-size=auto] - Standard surface minimum inline size.
  * @cssprop [--rc-dialog-max-inline-size=none] - Standard surface maximum inline size.
  * @cssprop [--rc-dialog-max-block-size=calc(100dvb - 2rem)] - Standard surface block bound. The
@@ -101,6 +103,13 @@ declare global {
  * @cssprop [--rc-dialog-fullscreen-padding-inline] - Fullscreen inline padding, safe-area aware.
  * @cssprop [--rc-dialog-fullscreen-background] - Fullscreen background. Defers to
  *   `--rc-dialog-background` when unset.
+ * @cssprop [--rc-dialog-side-inline-size=min(100%, 25rem)] - Side sheet inline size.
+ * @cssprop [--rc-dialog-side-background] - Side sheet background. Defers to
+ *   `--rc-dialog-background` when unset.
+ * @cssprop [--rc-dialog-side-radius] - Side sheet start-corner radius. Defers to
+ *   `--rc-dialog-radius` when unset.
+ * @cssprop [--rc-dialog-side-shadow] - Side sheet shadow. Defers to `--rc-dialog-shadow` when
+ *   unset.
  * @cssprop --rc-dialog-visual-viewport-left - Read-only fullscreen visual viewport left edge.
  * @cssprop --rc-dialog-visual-viewport-top - Read-only fullscreen visual viewport top edge.
  * @cssprop --rc-dialog-visual-viewport-width - Read-only fullscreen visual viewport width.
@@ -108,7 +117,10 @@ declare global {
  *
  * Fullscreen geometry, meaning position, size, margin, radius, and shadow, is structural rather
  * than themable: filling the visual viewport is what keeps the surface correct under browser zoom
- * and a software keyboard.
+ * and a software keyboard. Side sheet placement is structural too: the surface docks to the inline
+ * end at full block size, with safe-area padding on its docked edges; only its inline size,
+ * background, start-corner radius, and shadow are themable. Neither docked variant moves or
+ * resizes, so `movable` and `resize` apply to the standard variant only.
  *
  * This element also writes `--rc-dialog-visual-viewport-left`, `-top`, `-width`, and `-height`
  * onto itself while a fullscreen dialog is open. Those are geometry outputs, not theme inputs:
@@ -202,7 +214,10 @@ export class RCDialog extends LitElement {
   @property({ type: Boolean, attribute: 'light-dismiss' })
   lightDismiss = false;
 
-  /** Surface presentation. Fullscreen geometry follows the visual viewport while open. */
+  /**
+   * Surface presentation. Fullscreen geometry follows the visual viewport while open; a side
+   * sheet docks to the inline end at full block size.
+   */
   @property({ type: String, reflect: true })
   variant: RCDialogVariant = 'standard';
 
@@ -563,6 +578,11 @@ export class RCDialog extends LitElement {
   /** Hook for subclasses to respond after a resize gesture has settled. */
   protected _onResizeEnd(_detail: ResizeLifecycleDetail): void {}
 
+  /** Whether the variant docks the surface, which rules out moving and resizing it. */
+  private get _isDocked(): boolean {
+    return this.variant !== 'standard';
+  }
+
   /**
    * Rebuilds the move controller when the move options differ from the ones
    * it was built from, or unconditionally when `force` is set (a newly wired
@@ -570,7 +590,7 @@ export class RCDialog extends LitElement {
    */
   private _syncDragController($dialog: HTMLDialogElement | null, force = false): void {
     const enabled =
-      !!$dialog && this.variant !== 'fullscreen' && (this.movable || !!this.moveHandle);
+      !!$dialog && !this._isDocked && (this.movable || !!this.moveHandle);
     const config = enabled ? [this.moveHandle, this.moveBounds, this.moveStep] : [];
 
     if (!force && this._sameControllerConfig(config, this._dragConfig)) {
@@ -605,7 +625,7 @@ export class RCDialog extends LitElement {
   private _syncResizeControllers($dialog: HTMLDialogElement | null, force = false): void {
     const config = $dialog
       ? [
-          this.variant === 'fullscreen' ? 'none' : this.resize,
+          this._isDocked ? 'none' : this.resize,
           this.resizeOrigin,
           this.resizeHandle,
           this.resizeThreshold,
@@ -626,7 +646,7 @@ export class RCDialog extends LitElement {
 
     this._resizeControllers = [];
 
-    if (!$dialog || this.variant === 'fullscreen' || this.resize === 'none') {
+    if (!$dialog || this._isDocked || this.resize === 'none') {
       return;
     }
 

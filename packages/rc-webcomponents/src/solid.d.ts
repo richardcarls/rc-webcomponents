@@ -347,7 +347,7 @@ export type RCDialogResizeOrigin =
 export type RCDialogRef = HTMLElement & {
   open: boolean | undefined;
   defaultOpen: boolean;
-  variant: 'standard' | 'fullscreen';
+  variant: 'standard' | 'fullscreen' | 'side';
   movable: boolean;
   moveHandle: string;
   moveBounds: 'viewport' | 'parent';
@@ -1016,7 +1016,7 @@ declare module 'solid-js' {
       'rc-dialog': JSX.HTMLAttributes<RCDialogRef> & {
         open?: boolean | string;
         defaultOpen?: boolean | string;
-        variant?: 'standard' | 'fullscreen';
+        variant?: 'standard' | 'fullscreen' | 'side';
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
         'prop:modal'?: boolean | undefined;

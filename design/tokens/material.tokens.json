@@ -8526,6 +8526,43 @@
           }
         },
         {
+          "name": "dialog/side-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-side-background)"
+          },
+          "cssVar": "--rc-dialog-side-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-container-low",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "dialog/side-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-dialog-side-radius)"
+          },
+          "cssVar": "--rc-dialog-side-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-large",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
           "name": "disclosure/background",
           "type": "COLOR",
           "scopes": [
@@ -14682,6 +14719,12 @@
         "property": "--rc-dialog-shadow",
         "raw": "var(--rc-shadow-level3, var(--rc-shadow, none))",
         "name": "dialog/shadow",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-dialog-side-shadow",
+        "raw": "var(--rc-shadow-level1, var(--rc-shadow, none))",
+        "name": "dialog/side-shadow",
         "reason": "aliases a composite shorthand"
       },
       {

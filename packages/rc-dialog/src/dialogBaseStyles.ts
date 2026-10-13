@@ -12,11 +12,13 @@
  */
 const SURFACE = 'rc-dialog > dialog';
 const FULLSCREEN = "rc-dialog[variant='fullscreen'] > dialog";
+const SIDE = "rc-dialog[variant='side'] > dialog";
 
 export const DIALOG_BASE_CSS = `
 @layer rc-base {
   ${SURFACE} {
     box-sizing: border-box;
+    inline-size: var(--rc-dialog-inline-size, fit-content);
     min-inline-size: var(--rc-dialog-min-inline-size, auto);
     max-inline-size: var(--rc-dialog-max-inline-size, none);
     /*
@@ -148,6 +150,42 @@ export const DIALOG_BASE_CSS = `
     box-shadow: none;
     resize: none;
     transform: none;
+  }
+
+  /*
+   * A modal side sheet docks to the inline end at full block size. It keeps
+   * the standard surface's fade rather than sliding in, for the same reason
+   * the standard surface does not scale: consumers measure the box right
+   * after showModal(). Only the start corners are rounded, since the end
+   * edge meets the viewport.
+   */
+  ${SIDE} {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+    inline-size: var(--rc-dialog-side-inline-size, min(100%, 25rem));
+    block-size: 100dvb;
+    max-inline-size: 100%;
+    max-block-size: none;
+    margin: 0;
+    padding-block: max(var(--rc-dialog-padding, 1em), env(safe-area-inset-top))
+      max(var(--rc-dialog-padding, 1em), env(safe-area-inset-bottom));
+    padding-inline: var(--rc-dialog-padding, 1em)
+      max(var(--rc-dialog-padding, 1em), env(safe-area-inset-right));
+    background: var(--rc-dialog-side-background, var(--rc-dialog-background, Canvas));
+    border-radius: 0;
+    border-start-start-radius: var(--rc-dialog-side-radius, var(--rc-dialog-radius, 0));
+    border-end-start-radius: var(--rc-dialog-side-radius, var(--rc-dialog-radius, 0));
+    box-shadow: var(--rc-dialog-side-shadow, var(--rc-dialog-shadow, none));
+    resize: none;
+    transform: none;
+  }
+
+  /* Safe-area insets are physical, so the docked edge swaps them in RTL. */
+  ${SIDE}:dir(rtl) {
+    padding-inline: var(--rc-dialog-padding, 1em)
+      max(var(--rc-dialog-padding, 1em), env(safe-area-inset-left));
   }
 }
 `;

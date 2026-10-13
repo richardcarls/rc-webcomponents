@@ -16,6 +16,11 @@
     --rc-dialog-color: var(--md-sys-color-on-surface, CanvasText);
     --rc-dialog-shadow: var(--rc-shadow-level3, var(--rc-shadow, none));
     --rc-dialog-scrim: color-mix(in srgb, var(--md-sys-color-scrim, #000) 32%, transparent);
+
+    /* Material 3 modal side sheet: a low container at level 1, rounded on its leading edge. */
+    --rc-dialog-side-background: var(--md-sys-color-surface-container-low, Canvas);
+    --rc-dialog-side-radius: var(--md-sys-shape-corner-large, 1rem);
+    --rc-dialog-side-shadow: var(--rc-shadow-level1, var(--rc-shadow, none));
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-dialog > dialog {
