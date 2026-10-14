@@ -289,9 +289,28 @@ export class RCSearchBar extends LitElement {
     }
   };
 
-  private readonly _onInputBlur = (): void => {
-    this._focused = false;
+  // Focus moving from the input to the component's own controls (the clear
+  // button shown on focus, suggestions) keeps it focused; otherwise the clear
+  // button would turn inert while it receives Tab focus and drop focus to
+  // <body>. Event retargeting reports a move into the shadow root as the host.
+  private readonly _onInputBlur = (e: FocusEvent): void => {
+    if (!this._containsFocusTarget(e.relatedTarget)) {
+      this._focused = false;
+    }
   };
+
+  private readonly _onHostFocusOut = (e: FocusEvent): void => {
+    if (!this._containsFocusTarget(e.relatedTarget)) {
+      this._focused = false;
+    }
+  };
+
+  private _containsFocusTarget(target: EventTarget | null): boolean {
+    return (
+      target instanceof Node &&
+      (target === this || this.contains(target) || Boolean(this.shadowRoot?.contains(target)))
+    );
+  }
 
   private readonly _disabledObserver = new MutationObserver(() => {
     const $input = this._$input();
@@ -407,10 +426,12 @@ export class RCSearchBar extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     RCSearchBar._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
+    this.addEventListener('focusout', this._onHostFocusOut);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    this.removeEventListener('focusout', this._onHostFocusOut);
 
     this._focused = false;
     this._open = false;

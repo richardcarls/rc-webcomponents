@@ -1,5 +1,6 @@
 import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
@@ -391,6 +392,36 @@ test('show-clear-on-focus: clear button shows on focus with no value, hides on b
 
   $input.dispatchEvent(new FocusEvent('blur'));
   await $host.updateComplete;
+  expect(clearButton($host).inert).toBe(true);
+});
+
+test('show-clear-on-focus: Tab from the input reaches the clear button and keeps focus', async () => {
+  const screen = render(html`
+    <rc-search-bar data-testid="host" show-clear-on-focus>
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+    <button type="button">After</button>
+  `);
+
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+  await $host.updateComplete;
+
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
+
+  $input.focus();
+  await $host.updateComplete;
+  await userEvent.keyboard('{Tab}');
+  await $host.updateComplete;
+
+  expect($host.shadowRoot?.activeElement).toBe(clearButton($host));
+  expect(clearButton($host).inert).toBe(false);
+
+  await userEvent.keyboard('{Tab}');
+  await $host.updateComplete;
+
+  expect(document.activeElement?.textContent).toBe('After');
   expect(clearButton($host).inert).toBe(true);
 });
 
