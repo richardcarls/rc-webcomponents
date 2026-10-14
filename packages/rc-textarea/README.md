@@ -309,6 +309,8 @@ syntax highlighter.
 | Key                               | Behavior                                                     |
 | --------------------------------- | ------------------------------------------------------------ |
 | `Tab`                             | Inserts `\t`.                                                |
+| `Escape`, then `Tab`              | Moves focus to the next control instead of inserting `\t`.   |
+| `Shift+Tab`                       | Moves focus to the previous control.                         |
 | `Ctrl/Cmd+Z`                      | Undo.                                                        |
 | `Ctrl/Cmd+Y` / `Ctrl/Cmd+Shift+Z` | Redo.                                                        |
 | `Paste`                           | Inserts plain text only and normalizes line endings to `\n`. |
