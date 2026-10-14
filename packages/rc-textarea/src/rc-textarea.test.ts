@@ -491,6 +491,45 @@ describe('RCTextarea — value', () => {
     expect(multiline[2].textContent).toBe('line three');
   });
 
+  test('Tab inserts a tab, while Escape then Tab and Shift+Tab move focus', async () => {
+    const screen = render(html`
+      <button type="button">Before</button>
+      <rc-textarea data-testid="host">
+        <textarea name="notes" aria-label="Notes"></textarea>
+      </rc-textarea>
+      <button type="button">After</button>
+    `);
+    const host = screen.getByTestId('host').element() as RCTextarea;
+
+    await host.updateComplete;
+
+    host.value = 'Mix';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+
+    placeCaretAtEnd(editor);
+
+    await userEvent.keyboard('{Tab}');
+
+    await waitRender();
+
+    expect(host.value).toBe('Mix\t');
+
+    await userEvent.keyboard('{Escape}{Tab}');
+
+    expect(document.activeElement?.textContent).toBe('After');
+    expect(host.value).toBe('Mix\t');
+
+    placeCaretAtEnd(editor);
+
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+
+    expect(document.activeElement?.textContent).toBe('Before');
+    expect(host.value).toBe('Mix\t');
+  });
+
   test('Enter at the end of a line immediately renders a trailing empty line', async () => {
     const host = await renderTextarea();
 

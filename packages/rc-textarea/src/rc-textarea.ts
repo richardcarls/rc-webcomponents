@@ -364,6 +364,8 @@ export class RCTextarea extends LitElement {
   protected _savedSelection: SavedSelection | null = null;
   protected _rafHandle: number | null = null;
   protected _composing = false;
+  /** Set by Escape: the next Tab moves focus instead of inserting `\t`. */
+  private _tabMovesFocus = false;
   protected _isRendering = false;
 
   /** The currently highlighted `.line` element (active line). */
@@ -702,6 +704,8 @@ export class RCTextarea extends LitElement {
     });
 
     $editor.addEventListener('blur', () => {
+      this._tabMovesFocus = false;
+
       this.dispatchEvent(
         new CustomEvent('rc-textarea-blur', {
           bubbles: true,
@@ -971,8 +975,21 @@ export class RCTextarea extends LitElement {
       return;
     }
 
-    if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      if (this._$editor?.querySelector('.widget:not([aria-hidden])')) {
+    // Tab inserts a tab character, so the editor must offer a way out
+    // (WCAG 2.1.2): Escape releases the next Tab to move focus, as in
+    // CodeMirror, and Shift+Tab always moves focus back.
+    if (e.key === 'Escape') {
+      this._tabMovesFocus = true;
+
+      return;
+    }
+
+    const tabMovesFocus = this._tabMovesFocus;
+
+    this._tabMovesFocus = false;
+
+    if (e.key === 'Tab' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (tabMovesFocus || this._$editor?.querySelector('.widget:not([aria-hidden])')) {
         return;
       }
 
