@@ -485,13 +485,14 @@ the two axes like this:
 | Shell decision | Rule                                                                                                   |
 | -------------- | ------------------------------------------------------------------------------------------------------ |
 | Navigation     | Bar when width **or** height is compact; rail otherwise; the expanded rail is offered from expanded    |
-| Panes          | One at compact width or compact height; two from expanded width with medium height; a third from large |
+| Primary route panes | One route page or fragment at compact width or compact height; list-detail begins at expanded width with medium height; a third may appear from large |
 | App bar        | Hides on scroll at compact height; a medium or large title starts compact there                        |
 | FAB            | In the rail's header when a rail shows; otherwise at the bottom inline end                             |
 
-Two panes need height as well as width: a phone in landscape is often
-expanded width (915px and up) but has no room for a second pane, so it shows
-one pane with Back, like a compact window.
+List-detail needs height as well as width: a phone in landscape is often
+expanded width (915px and up) but has no room for the parent list beside the
+detail, so it shows one route page or fragment with Back. A supporting content
+column may still share that page when it can scroll with the primary content.
 
 Android's default navigation suite shows a navigation bar when the width
 **or** height is compact, and a rail otherwise
@@ -504,13 +505,12 @@ At compact height, list and reading screens follow these patterns:
 - **App bars** hide on scroll and give their space back; see
   [Components and composition patterns](#components-and-composition-patterns)
   for the layout recipe.
-- **Sheets** leave the screen. Controls that shape the content, such as
-  filters, dock as a pane at the inline start. Content about the selection,
-  such as nutrition, becomes a second column that scrolls with the page: a
-  pane pinned at the inline end would push the FAB toward the middle of the
-  screen, while a scrolling column lets the FAB keep its corner and float
-  over it like any other content. A short form is a full-screen dialog. See
-  [Sheets and the FAB](#sheets-and-the-fab).
+- **Sheets** leave the screen. Open transient controls, such as filters or an
+  ingredients list, in a full-screen dialog at any width. Content about the
+  selection, such as nutrition, may become a second column that scrolls with
+  the page: a pane pinned at the inline end would push the FAB toward the
+  middle of the screen, while a scrolling column lets it keep its corner.
+  See [Sheets and the FAB](#sheets-and-the-fab).
 - **Dialogs** for multi-field tasks are full-screen.
 - **Tall media** is capped by the pane's height. Make the scroll region a
   `container-type: size` container, which is safe because layout already
@@ -549,15 +549,17 @@ script gate of its own.
   resize. Keep the URL as the source of truth for the selection so back
   navigation works at every size.
 - **Supporting pane.** Primary content plus a secondary pane (filters,
-  details). Compact width moves the pane into a bottom sheet or below the
-  content; medium and wider dock it beside the content. Content that stays
-  relevant throughout the task belongs in a persistent pane once the
-  container is wide enough; a transient overlay is for one-off tasks. Decide
-  from the container's width, not the device type. In compact-height
-  landscape, dock the pane from medium width instead of using a sheet.
-- **Pane order.** Panes that shape the content, such as filters and sort,
-  dock at the inline start, after the navigation rail: rail, filters,
-  content. Panes about the current content, such as nutrition or details,
+  details). On a sufficiently tall screen, compact width moves the pane into
+  a bottom sheet or below the content; medium and wider may dock it beside
+  the content. Content that stays relevant throughout the task belongs in a
+  persistent pane once the container is wide enough; a transient overlay is
+  for one-off tasks. Decide from the container's width and available height,
+  not the device type. At compact height, use a full-screen dialog for
+  transient controls and a scrolling column for supporting content that can
+  remain visible without narrowing the primary task.
+- **Pane order.** When height permits docking, panes that shape the content,
+  such as filters and sort, dock at the inline start, after the navigation
+  rail: rail, filters, content. Panes about the current content, such as nutrition or details,
   dock at the inline end; at compact height they scroll with the content
   instead (see the compact-height list above). The FAB sits in the rail's header or floats at the
   bottom inline end, so neither pane ever has to make room for it.
@@ -565,9 +567,9 @@ script gate of its own.
   only while the parent list is visible beside the detail. When the window
   grows to two panes, keep the selected detail and mark it in the list; when
   it shrinks, keep the detail and hide the list.
-- **Pane sizes.** A fixed pane (a list, filters, a supporting pane) is 360px
-  and the other pane is flexible; at compact height a docked pane may narrow
-  to about a third of the window. Separate panes with a 24px spacer, which
+- **Pane sizes.** At medium or greater height, a fixed pane (a list, filters,
+  or supporting content) is 360px and the other pane is flexible. Separate
+  panes with a 24px spacer, which
   can hold an `rc-splitter` handle when the user should resize. Margins are
   16px at compact width and 24px from medium.
 - **Large windows.** From large width, add structure rather than stretch the
@@ -589,14 +591,14 @@ script gate of its own.
 From narrowest to broadest:
 
 1. One geometry token, such as `--rc-carousel-slide-size`.
-2. A coordinated token set for tracks or placement, as with `rc-card` and
+1. A coordinated token set for tracks or placement, as with `rc-card` and
    `rc-list-item` region tokens, often inside a container query.
-3. An attribute or property written from app state when the mode changes
+1. An attribute or property written from app state when the mode changes
    ARIA, keyboard behavior, focus, popup placement or rendered controls:
    `rc-dialog variant`, `rc-search-bar variant`, `rc-navigation-rail
 expanded`, `rc-adaptive-menu max-shown`, `rc-splitter orientation`,
    `rc-toolbar orientation`.
-4. A component's own `auto` mode, only where it measures a failure it owns,
+1. A component's own `auto` mode, only where it measures a failure it owns,
    such as `rc-chip-group layout="auto"` with `max-rows`.
 
 Container queries style descendants; they cannot set attributes. Never hide
@@ -604,7 +606,7 @@ controls with CSS to "move" them; use `rc-adaptive-menu` so hidden actions
 reach the overflow menu.
 
 Split the work between window and container: window size classes decide the
-shell (navigation type, pane count), container queries decide everything
+shell (navigation type, primary route pane count), container queries decide everything
 inside a pane, so a component works the same in a list pane, a feed or a
 dialog. Inside a pane, prefer intrinsic layout that needs no breakpoint at
 all: `auto-fill` grids with `minmax()`, wrapping rows with a flex basis, and
@@ -621,7 +623,7 @@ all: `auto-fill` grids with `minmax()`, wrapping rows with a flex basis, and
 
 Layout readiness, not a separate 10-foot mode:
 
-- Keep essential controls inside a 5% overscan margin (48px at the sides,
+- Keep essential controls inside a 5% safe margin (48px at the sides,
   27px top and bottom) on extra-large windows that may be a TV; backgrounds
   still run to the edge.
 - Every control must be reachable with arrow keys or a D-pad and show the
@@ -659,7 +661,7 @@ Layout readiness, not a separate 10-foot mode:
 | Component                                    | Corner                                                      |
 | -------------------------------------------- | ----------------------------------------------------------- |
 | Buttons, icon buttons, navigation indicators | full                                                        |
-| Snackbar                                     | extra-small                                                 |
+| `rc-snackbar`                                | extra-small                                                 |
 | Chips, menus                                 | small                                                       |
 | Cards                                        | medium                                                      |
 | FAB, standalone disclosure                   | large                                                       |
@@ -886,8 +888,9 @@ dimensions, and write the choice from app state:
 ```
 
 - **Adapt one dialog, don't fork it.** At the 600px width or 480px height
-  boundary, switch `variant` between `fullscreen` and `standard` and move the two actions between the app
-  bar and the footer. If a button had focus, return focus to the same action
+  boundary, switch `variant` between `fullscreen` and `standard` and move the
+  two actions between the app bar and the footer. If a button had focus,
+  return focus to the same action
   in its new position after the components finish rendering (await the app
   bar's `updateComplete` before focusing a slotted button).
 - **Reset heading styles** on an `<h2>` used as an app bar or dialog title
@@ -965,8 +968,8 @@ the screen wants a different surface.
   while the content is used), or use a full-screen dialog for a short task.
 - At compact height, don't open a bottom sheet on a screen that has a FAB,
   modal or standard: what is left above it cannot hold both the content and
-  the FAB. From medium width, dock a start pane or add a scrolling column;
-  otherwise use a full-screen dialog or let the content follow in the page.
+  the FAB. Use a full-screen dialog for transient controls at every width;
+  supporting content may form a scrolling column or follow in the page.
 - On taller windows a bottom sheet may share a screen with a FAB; the FAB
   clears the sheet's peek (see the floating layer under App shell) and a modal
   sheet's scrim covers it while open.
@@ -1199,7 +1202,7 @@ rc-card.card-outlined {
 
 ### Feedback and progress
 
-- **Snackbars.** `rc-snackbar.show({ message, actionLabel })` for brief,
+- **Transient messages.** `rc-snackbar.show({ message, actionLabel })` for brief,
   low-priority messages at the bottom; keep them clear of the navigation bar
   and FAB. At
   most one action, typically Undo for a reversible change; never use one
@@ -1269,7 +1272,7 @@ widths; route between panes instead.
   attributes and Solid's `prop:` bindings. The `/react` typings cover
   attributes and events, but do not use `prop:` syntax.
 
-## Do's and Don'ts
+## Implementation guidance
 
 ### Do
 
