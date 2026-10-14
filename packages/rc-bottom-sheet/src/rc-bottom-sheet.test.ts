@@ -676,6 +676,33 @@ test('a fast downward swipe collapses to the lowest snap point regardless of rel
   $host.close();
 });
 
+test('snapTo() before the inner dialog is attached applies when the sheet opens', async () => {
+  const snapSpy = vi.fn();
+  const $host = document.createElement('rc-bottom-sheet') as RCBottomSheet;
+
+  // A framework ref runs once the host exists, before its children are added.
+  $host.setAttribute('snap-points', '120px 320px');
+  $host.addEventListener('rc-bottom-sheet-snap', snapSpy);
+  document.body.append($host);
+  $host.snapTo(0, 'instant');
+
+  const $dialog = document.createElement('dialog');
+
+  $dialog.setAttribute('aria-label', 'Ingredients');
+  $dialog.innerHTML = '<button>Done</button><p style="block-size: 480px">Long content</p>';
+  $host.append($dialog);
+  $host.modal = false;
+  $host.open = true;
+
+  try {
+    await vi.waitFor(() => expect($dialog.open).toBe(true));
+    await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(120));
+    expect(snapSpy.mock.calls.at(-1)?.[0].detail).toMatchObject({ index: 0, trigger: 'api' });
+  } finally {
+    $host.remove();
+  }
+});
+
 test('snapTo() settles to a specific index and fires rc-bottom-sheet-snap with an api trigger', async () => {
   const snapSpy = vi.fn();
   const screen = render(html`

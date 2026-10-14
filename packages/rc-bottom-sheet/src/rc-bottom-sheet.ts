@@ -421,6 +421,9 @@ export class RCBottomSheet extends RCDialog {
   // same snap against fresh geometry; the sheet's docked position needs no
   // re-derivation.
   private _lastSnapIndex: number | null = null;
+  // A snapTo() that arrived before the inner <dialog> was attached, as from a
+  // framework ref callback; applied when the sheet first opens.
+  private _pendingSnap: { index: number; behavior: 'animated' | 'instant' } | null = null;
   // True while the sheet is grown past its snap height (and CSS maximum) to
   // keep a focused field visible above a software keyboard.
   private _extendedForFocus = false;
@@ -492,7 +495,30 @@ export class RCBottomSheet extends RCDialog {
       return;
     }
 
+    if (!this._$dialog) {
+      this._pendingSnap = { index: Math.trunc(index), behavior };
+
+      return;
+    }
+
     this._snapToIndex(Math.trunc(index), behavior, 'api');
+  }
+
+  protected override _applyOpen(
+    open: boolean,
+    silent: boolean,
+    modal = true,
+    moveFocus = true,
+  ): boolean {
+    const applied = super._applyOpen(open, silent, modal, moveFocus);
+    const pending = this._pendingSnap;
+
+    if (applied && open && pending) {
+      this._pendingSnap = null;
+      this._snapToIndex(pending.index, pending.behavior, 'api');
+    }
+
+    return applied;
   }
 
   protected override _onResizeStart(detail: ResizeLifecycleDetail): void {
