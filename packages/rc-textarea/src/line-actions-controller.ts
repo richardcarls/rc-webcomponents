@@ -20,8 +20,9 @@ export interface LineActionsOptions {
   position?: 'append';
 
   /**
-   * Create and return a DOM element for the given icon name (e.g. `'mdi-lock-outline'`).
-   * Called when `action.iconName` is set. Return `null` to fall back to text label.
+   * Create and return a DOM element for the given icon name (e.g. `'mdi-lock-outline'`),
+   * such as an `<svg>` or an icon custom element. Called when `action.iconName` is set.
+   * Return `null` to fall back to text label.
    *
    * @example
    * ```ts
@@ -32,7 +33,7 @@ export interface LineActionsOptions {
    * }
    * ```
    */
-  createIcon?: (iconName: string) => HTMLElement | null;
+  createIcon?: (iconName: string) => Element | null;
 
   /**
    * Full control over button content. Called instead of the default icon/label
