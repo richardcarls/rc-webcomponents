@@ -122,6 +122,19 @@ test('icons follow Material sizes by component context', () => {
   expect(getComputedStyle(chipIcon).fontSize).toBe('18px');
 });
 
+test('empty icon slots keep their square before the icon renders', () => {
+  const scope = renderScope();
+  const chipIcon = document.createElement('span');
+  const navigationIcon = document.createElement('span');
+
+  chipIcon.dataset.rcChipIcon = '';
+  navigationIcon.dataset.rcNavigationIcon = '';
+  scope.append(chipIcon, navigationIcon);
+
+  expect(chipIcon.getBoundingClientRect()).toMatchObject({ width: 18, height: 18 });
+  expect(navigationIcon.getBoundingClientRect()).toMatchObject({ width: 24, height: 24 });
+});
+
 test('Material chips use the MD3 leading-icon spacing', () => {
   const $scope = renderScope();
   const $chip = document.createElement('rc-chip');
