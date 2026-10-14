@@ -28,7 +28,7 @@ export interface FoldingAction {
 
 export interface FoldingActionControllerOptions {
   /** Render a decorative icon for the current expansion state. */
-  createTriggerIcon?: (expanded: boolean) => HTMLElement | null;
+  createTriggerIcon?: (expanded: boolean) => Element | null;
 }
 
 interface Entry {

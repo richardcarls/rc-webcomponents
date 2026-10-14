@@ -211,6 +211,20 @@ test('a latched toolbar button inverts its bevel and takes the dithered face', (
   expect(latchedStyles.boxShadow).not.toBe(restingStyles.boxShadow);
 });
 
+test('an empty compact icon slot keeps its square before the icon renders', () => {
+  const scope = renderScope();
+  const chipIcon = document.createElement('span');
+
+  chipIcon.dataset.rcChipIcon = '';
+  scope.append(chipIcon);
+
+  const { width, height } = chipIcon.getBoundingClientRect();
+
+  expect(width).toBeGreaterThan(0);
+  expect(width).toBe(Number.parseFloat(getComputedStyle(chipIcon).fontSize));
+  expect(height).toBe(width);
+});
+
 test('nothing in the theme is rounded or animated', () => {
   const scope = renderScope();
 

@@ -27,6 +27,9 @@
     :where([data-rc-button-icon], [data-rc-button-selected-icon], [data-rc-chip-icon]) {
     display: inline-grid;
     place-items: center;
+    /* Reserve the icon square while an SVG icon element is still empty. */
+    min-inline-size: 1em;
+    min-block-size: 1em;
     font-size: var(--rc-compact-icon-font-size, var(--win31-check-size));
     line-height: var(
       --rc-compact-icon-font-line-height,

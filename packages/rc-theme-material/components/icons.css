@@ -3,6 +3,13 @@
     :where([data-rc-icon], [data-rc-navigation-icon]) {
     display: inline-grid;
     place-items: center;
+    /*
+     * Reserve the icon square even while the slot is empty, as an SVG icon
+     * element (such as <iconify-icon>) is for a frame after it mounts. An
+     * icon-font glyph already fills 1em, so it renders the same.
+     */
+    min-inline-size: 1em;
+    min-block-size: 1em;
     font-size: var(--rc-icon-font-size, 1.5rem);
     /*
      * Unlayered icon-font boilerplate otherwise beats this layered theme rule.
@@ -16,6 +23,8 @@
     :where([data-rc-button-icon], [data-rc-button-selected-icon], [data-rc-chip-icon]) {
     display: inline-grid;
     place-items: center;
+    min-inline-size: 1em;
+    min-block-size: 1em;
     font-size: var(--rc-compact-icon-font-size, 1.125rem);
     line-height: var(
       --rc-compact-icon-font-line-height,
