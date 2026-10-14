@@ -44,7 +44,8 @@ export interface RCAppBarScrollDetail {
  * ElementInternals custom states. These are computed outputs, not settable
  * attributes.
  *
- * A hidden bar reveals itself when focus moves into it.
+ * A hidden bar reveals itself when focus moves into it and stays visible
+ * while it contains focus.
  *
  * With `scroll-behavior="hide"`, the bar also publishes its geometry onto its
  * scroll target, the element it observes (`document.documentElement` for
@@ -426,6 +427,9 @@ export class RCAppBar extends LitElement {
     } else if (scrollTop <= this.scrollThreshold) {
       this._hideTravel = 0;
       this._setHidden(false);
+    } else if (this.matches(':focus-within')) {
+      this._hideTravel = 0;
+      this._setHidden(false);
     } else if (delta !== 0) {
       // A change of direction starts the count again.
       this._hideTravel =
@@ -490,8 +494,9 @@ export class RCAppBar extends LitElement {
     this.style.setProperty(name, value);
   }
 
-  /** A hidden bar reveals itself when focus moves into it, so focus never lands off screen. */
+  /** Reveal the bar and start fresh after focus enters it. */
   private readonly _onFocusIn = (): void => {
+    this._hideTravel = 0;
     this._setHidden(false);
   };
 

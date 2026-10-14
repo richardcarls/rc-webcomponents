@@ -478,7 +478,7 @@ test('hide behavior publishes its geometry onto the scroll target', async () => 
   });
 });
 
-test('a hidden bar reveals itself when focus moves into it', async () => {
+test('a hidden bar remains visible while focused and counts a fresh hide distance afterward', async () => {
   const screen = render(html`
     <div data-testid="sc" style="height: 100px; overflow-y: auto;">
       <div style="height: 1000px;"></div>
@@ -487,6 +487,7 @@ test('a hidden bar reveals itself when focus moves into it', async () => {
       <button slot="leading" data-testid="back">Back</button>
       <span>Title</span>
     </rc-app-bar>
+    <button data-testid="outside">Outside</button>
   `);
 
   const host = (await screen.getByTestId('host').element()) as RCAppBar;
@@ -499,9 +500,20 @@ test('a hidden bar reveals itself when focus moves into it', async () => {
   scrollTo(sc, 50);
   expect(host.hasAttribute('data-hidden')).toBe(true);
 
-  (await screen.getByTestId('back').element() as HTMLButtonElement).focus();
+  ((await screen.getByTestId('back').element()) as HTMLButtonElement).focus();
 
   expect(host.hasAttribute('data-hidden')).toBe(false);
+
+  scrollTo(sc, 120);
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+
+  ((await screen.getByTestId('outside').element()) as HTMLButtonElement).focus();
+
+  scrollTo(sc, 140);
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+
+  scrollTo(sc, 160);
+  expect(host.hasAttribute('data-hidden')).toBe(true);
 });
 
 test('geometry outputs follow the hide behavior, the target, and the connection', async () => {
