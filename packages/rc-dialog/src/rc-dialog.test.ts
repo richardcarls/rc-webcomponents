@@ -96,6 +96,7 @@ test('rc-dialog backdrop fades with the surface rather than snapping instantly',
   const $dialog = host.querySelector('dialog') as HTMLDialogElement;
 
   await nextFrame();
+
   await Promise.all(
     $dialog.getAnimations({ subtree: true }).map((animation) => animation.finished),
   );
@@ -1235,14 +1236,39 @@ for (const dir of ['ltr', 'rtl'] as const) {
   });
 }
 
+for (const dir of ['ltr', 'rtl'] as const) {
+  test(`side variant follows the inline end in vertical writing mode (${dir})`, async () => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-dialog
+            data-testid="host"
+            variant="side"
+            default-open
+            style="--rc-dialog-side-inline-size: 300px"
+          >
+            <dialog aria-label="Filters"><button>Apply</button></dialog>
+          </rc-dialog>
+        `,
+        { dir, writingMode: 'vertical-rl' },
+      ),
+    );
+    const $host = await screen.getByTestId('host').element();
+
+    await ($host as RCDialog).updateComplete;
+
+    const rect = innerDialog($host).getBoundingClientRect();
+
+    expect(rect.width).toBe(window.innerWidth);
+    expect(rect.height).toBe(300);
+    expect(dir === 'ltr' ? rect.bottom : rect.top).toBe(dir === 'ltr' ? window.innerHeight : 0);
+  });
+}
+
 test('side variant never exceeds the viewport and stays modal', async () => {
   const screen = render(html`
     <button data-testid="outside">Outside</button>
-    <rc-dialog
-      data-testid="host"
-      variant="side"
-      style="--rc-dialog-side-inline-size: 200vw"
-    >
+    <rc-dialog data-testid="host" variant="side" style="--rc-dialog-side-inline-size: 200vw">
       <dialog aria-label="Wide side sheet"><button>Inside</button></dialog>
     </rc-dialog>
   `);

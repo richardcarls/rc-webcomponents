@@ -118,7 +118,7 @@ declare global {
  * Fullscreen geometry, meaning position, size, margin, radius, and shadow, is structural rather
  * than themable: filling the visual viewport is what keeps the surface correct under browser zoom
  * and a software keyboard. Side sheet placement is structural too: the surface docks to the inline
- * end at full block size, with safe-area padding on its docked edges; only its inline size,
+ * end at full block size, with physical safe-area padding on every edge; only its inline size,
  * background, start-corner radius, and shadow are themable. Neither docked variant moves or
  * resizes, so `movable` and `resize` apply to the standard variant only.
  *
@@ -592,8 +592,7 @@ export class RCDialog extends LitElement {
    * or torn-down `<dialog>`).
    */
   private _syncDragController($dialog: HTMLDialogElement | null, force = false): void {
-    const enabled =
-      !!$dialog && !this._isDocked && (this.movable || !!this.moveHandle);
+    const enabled = !!$dialog && !this._isDocked && (this.movable || !!this.moveHandle);
     const config = enabled ? [this.moveHandle, this.moveBounds, this.moveStep] : [];
 
     if (!force && this._sameControllerConfig(config, this._dragConfig)) {

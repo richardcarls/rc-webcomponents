@@ -5,7 +5,7 @@
 ---
 
 `rc-dialog` gains `variant="side"`, a modal side sheet. The surface docks to the inline end at
-full block size, pads its docked edges with the safe-area insets, and rounds only its start
+full block size, pads every edge for the physical safe-area insets, and rounds only its start
 corners. Like the fullscreen variant, it never moves or resizes. Theme it with
 `--rc-dialog-side-inline-size`, `--rc-dialog-side-background`, `--rc-dialog-side-radius`, and
 `--rc-dialog-side-shadow`. A landscape phone can now show a sheet's content beside the page

@@ -256,7 +256,8 @@ export const PHYSICAL_CSS_ALLOWLIST = {
   'packages/rc-common/src/DragController.ts': 'pins a dragged box at physical pointer coordinates',
   'packages/rc-common/src/ResizeController.ts':
     'resizes a pinned box from physical pointer coordinates, at an end corner resolved from the flow',
-  'packages/rc-dialog/src/dialogBaseStyles.ts': 'visual-viewport offsets are physical',
+  'packages/rc-dialog/src/dialogBaseStyles.ts':
+    'visual-viewport offsets and viewport safe-area insets are physical',
   'packages/rc-theme-material/components/select.css': 'visual-viewport offsets are physical',
   'packages/rc-theme-substrate/components/select.css': 'visual-viewport offsets are physical',
   'packages/rc-virtual-canvas/src/rc-virtual-canvas.styles.ts': 'canvas pixel space is physical',

@@ -146,7 +146,7 @@ still owns the native dialog content and accessible header/actions.
 ### Side sheet
 
 `variant="side"` docks the dialog to the inline end at full block size, a modal side sheet. It
-pads its docked edges with the safe-area insets, rounds only its start corners, and never moves
+pads every edge for the physical safe-area insets, rounds only its start corners, and never moves
 or resizes. Theme its inline size, background, start-corner radius, and shadow with
 `--rc-dialog-side-inline-size`, `--rc-dialog-side-background`, `--rc-dialog-side-radius`, and
 `--rc-dialog-side-shadow`.

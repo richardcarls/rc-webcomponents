@@ -169,10 +169,12 @@ export const DIALOG_BASE_CSS = `
     max-inline-size: 100%;
     max-block-size: none;
     margin: 0;
-    padding-block: max(var(--rc-dialog-padding, 1em), env(safe-area-inset-top))
-      max(var(--rc-dialog-padding, 1em), env(safe-area-inset-bottom));
-    padding-inline: var(--rc-dialog-padding, 1em)
-      max(var(--rc-dialog-padding, 1em), env(safe-area-inset-right));
+    /* Safe-area insets are physical, including in vertical writing modes. */
+    padding:
+      max(var(--rc-dialog-padding, 1em), env(safe-area-inset-top))
+      max(var(--rc-dialog-padding, 1em), env(safe-area-inset-right))
+      max(var(--rc-dialog-padding, 1em), env(safe-area-inset-bottom))
+      max(var(--rc-dialog-padding, 1em), env(safe-area-inset-left));
     background: var(--rc-dialog-side-background, var(--rc-dialog-background, Canvas));
     border-radius: 0;
     border-start-start-radius: var(--rc-dialog-side-radius, var(--rc-dialog-radius, 0));
@@ -180,12 +182,6 @@ export const DIALOG_BASE_CSS = `
     box-shadow: var(--rc-dialog-side-shadow, var(--rc-dialog-shadow, none));
     resize: none;
     transform: none;
-  }
-
-  /* Safe-area insets are physical, so the docked edge swaps them in RTL. */
-  ${SIDE}:dir(rtl) {
-    padding-inline: var(--rc-dialog-padding, 1em)
-      max(var(--rc-dialog-padding, 1em), env(safe-area-inset-left));
   }
 }
 `;
