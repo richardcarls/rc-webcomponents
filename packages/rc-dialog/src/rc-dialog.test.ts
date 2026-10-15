@@ -336,6 +336,32 @@ test.runIf('currentCSSZoom' in Element.prototype)(
   },
 );
 
+test.runIf('currentCSSZoom' in Element.prototype)(
+  'fullscreen variant covers the viewport under a zoom when the host has no box',
+  async () => {
+    // A host styled display: contents (to stay out of a parent grid) reports
+    // currentCSSZoom as 1, so the zoom must come from the inner dialog.
+    const screen = render(html`
+      <div style="zoom: 0.7">
+        <rc-dialog data-testid="host" variant="fullscreen" style="display: contents">
+          <dialog aria-label="Contents host fullscreen test"><button>Close</button></dialog>
+        </rc-dialog>
+      </div>
+    `);
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+    await host.updateComplete;
+    host.showModal();
+
+    const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
+
+    expect(rect.width).toBeCloseTo(window.visualViewport?.width ?? window.innerWidth, 0);
+    expect(rect.height).toBeCloseTo(window.visualViewport?.height ?? window.innerHeight, 0);
+
+    host.close();
+  },
+);
+
 test('rc-dialog restores focus to the opener on close', async () => {
   const screen = render(html`
     <div>
