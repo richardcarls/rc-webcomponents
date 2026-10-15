@@ -676,6 +676,33 @@ test('a fast downward swipe collapses to the lowest snap point regardless of rel
   $host.close();
 });
 
+test.runIf('currentCSSZoom' in Element.prototype)(
+  'percentage snap points resolve under a zoom when the host has no box',
+  async () => {
+    const screen = render(html`
+      <div style="zoom: 0.7">
+        <rc-bottom-sheet data-testid="host" snap-points="40%" style="display: contents">
+          <dialog aria-label="Zoomed sheet"><button>Done</button></dialog>
+        </rc-bottom-sheet>
+      </div>
+    `);
+    const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+    await $host.updateComplete;
+    $host.show();
+    $host.snapTo(0, 'instant');
+
+    const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+    // A percentage is of the viewport on screen, whatever the ancestor zoom;
+    // a display: contents host reports no zoom, so it is read from the dialog.
+    // (40% stays under the default 70dvh cap, which the zoom scales.)
+    expect($dialog.getBoundingClientRect().height).toBeCloseTo(window.innerHeight * 0.4, 0);
+
+    $host.close();
+  },
+);
+
 test('snapTo() before the inner dialog is attached applies when the sheet opens', async () => {
   const snapSpy = vi.fn();
   const $host = document.createElement('rc-bottom-sheet') as RCBottomSheet;

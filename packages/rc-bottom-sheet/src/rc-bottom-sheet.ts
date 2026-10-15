@@ -783,8 +783,9 @@ export class RCBottomSheet extends RCDialog {
     }
 
     // Snap heights are in the sheet's own CSS pixels, like its `height`; the
-    // viewport height is not when an ancestor has a CSS zoom.
-    const viewportHeight = window.innerHeight / cssZoom(this);
+    // viewport height is not when an ancestor has a CSS zoom. The inner
+    // <dialog> carries the zoom even when the host is `display: contents`.
+    const viewportHeight = window.innerHeight / cssZoom(this._$dialog ?? this);
     const resolved: number[] = [];
     const measured: Array<{ index: number; point: string; probe: HTMLElement }> = [];
 

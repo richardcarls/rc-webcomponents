@@ -818,8 +818,11 @@ export class RCDialog extends LitElement {
     const bounds = getVisualViewportBounds($window);
     // The bounds are viewport pixels, but lengths set here are zoomed again
     // when an ancestor such as the root has a CSS zoom (an app-wide interface
-    // size), so convert them to the dialog's own pixels.
-    const zoom = (this as Element & { currentCSSZoom?: number }).currentCSSZoom || 1;
+    // size), so convert them to the dialog's own pixels. Read the zoom from
+    // the inner <dialog>: a host styled `display: contents` has no box, and
+    // `currentCSSZoom` reports 1 for it.
+    const $zoomSource: Element = this._$dialog ?? this;
+    const zoom = ($zoomSource as Element & { currentCSSZoom?: number }).currentCSSZoom || 1;
     const px = (value: number) => `${value / zoom}px`;
 
     this.style.setProperty('--rc-dialog-visual-viewport-left', px(bounds.left));
