@@ -34,6 +34,37 @@ test('pinElementBox preserves visual geometry inside a containing block', async 
   );
 });
 
+test('pinElementBox preserves geometry in a scrolled, zoomed containing block', async () => {
+  const screen = render(html`
+    <div
+      data-testid="container"
+      style="position: fixed; left: 64px; top: 96px; width: 300px; height: 250px; border: 4px solid; overflow: auto; zoom: 0.8;"
+    >
+      <div
+        data-testid="target"
+        style="position: absolute; left: 180px; top: 150px; width: 80px; height: 60px;"
+      ></div>
+      <div style="width: 600px; height: 500px;"></div>
+    </div>
+  `);
+  const $container = (await screen.getByTestId('container').element()) as HTMLElement;
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+
+  $container.scrollLeft = 40;
+  $container.scrollTop = 30;
+
+  const before = $target.getBoundingClientRect();
+
+  pinElementBox($target);
+
+  const after = $target.getBoundingClientRect();
+
+  expect(after.left).toBeCloseTo(before.left, 0);
+  expect(after.top).toBeCloseTo(before.top, 0);
+  expect(after.right).toBeCloseTo(before.right, 0);
+  expect(after.bottom).toBeCloseTo(before.bottom, 0);
+});
+
 function createHost(): ReactiveControllerHost {
   return {
     addController() {},

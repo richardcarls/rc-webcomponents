@@ -80,22 +80,20 @@ export interface ResizeOptions {
 export function pinElementBox(target: HTMLElement): DOMRect {
   const rect = target.getBoundingClientRect();
   const offsetParent = target.offsetParent as HTMLElement | null;
+  const zoom = cssZoom(target);
+
+  // Viewport coordinates need conversion to local CSS pixels. Client borders
+  // and scroll offsets are already local CSS pixels and must stay unscaled.
   const localLeft = offsetParent
-    ? rect.left -
-      offsetParent.getBoundingClientRect().left -
+    ? (rect.left - offsetParent.getBoundingClientRect().left) / zoom -
       offsetParent.clientLeft +
       offsetParent.scrollLeft
-    : rect.left;
+    : rect.left / zoom;
   const localTop = offsetParent
-    ? rect.top -
-      offsetParent.getBoundingClientRect().top -
+    ? (rect.top - offsetParent.getBoundingClientRect().top) / zoom -
       offsetParent.clientTop +
       offsetParent.scrollTop
-    : rect.top;
-
-  // The measurements are viewport pixels; the element's own lengths are
-  // scaled by its effective zoom (an ancestor's CSS zoom), so undo it.
-  const zoom = cssZoom(target);
+    : rect.top / zoom;
 
   if (getComputedStyle(target).position === 'static') {
     target.style.position = 'fixed';
@@ -105,8 +103,8 @@ export function pinElementBox(target: HTMLElement): DOMRect {
   target.style.inset = 'auto';
   target.style.margin = '0';
   target.style.boxSizing = 'border-box';
-  target.style.left = `${localLeft / zoom}px`;
-  target.style.top = `${localTop / zoom}px`;
+  target.style.left = `${localLeft}px`;
+  target.style.top = `${localTop}px`;
   target.style.width = `${rect.width / zoom}px`;
   target.style.height = `${rect.height / zoom}px`;
 
