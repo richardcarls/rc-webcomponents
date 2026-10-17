@@ -732,11 +732,14 @@ export class RCBottomSheet extends RCDialog {
 
       const box = $scroller.getBoundingClientRect();
       const field = $focused.getBoundingClientRect();
+      const scrollerZoom = cssZoom($scroller);
 
       if (field.bottom > box.bottom) {
-        $scroller.scrollTop += Math.min(field.bottom - box.bottom, field.top - box.top);
+        const deltaViewportPx = Math.min(field.bottom - box.bottom, field.top - box.top);
+
+        $scroller.scrollTop += deltaViewportPx / scrollerZoom;
       } else if (field.top < box.top) {
-        $scroller.scrollTop -= box.top - field.top;
+        $scroller.scrollTop -= (box.top - field.top) / scrollerZoom;
       }
     }
 
