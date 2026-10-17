@@ -3,6 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import {
+  cssZoom,
   RafScheduler,
   ScrollObserverController,
   type ScrollObserverTarget,
@@ -173,9 +174,9 @@ export class RCAppBar extends LitElement {
 
   private _hidden = false;
 
-  private _collapseDistance = 0;
+  private _collapseDistanceHostCssPx = 0;
 
-  private _collapseOffsetDistance = 0;
+  private _collapseOffsetHostCssPx = 0;
 
   private _collapseProgress = 0;
 
@@ -353,8 +354,8 @@ export class RCAppBar extends LitElement {
       const contentHeight = Math.max(nextDistance - padding, 0);
       const endpointCompactHeight = Math.max(compactHeight, contentHeight);
 
-      this._collapseDistance = nextDistance;
-      this._collapseOffsetDistance = compactHeight - (endpointCompactHeight - contentHeight) / 2;
+      this._collapseDistanceHostCssPx = nextDistance;
+      this._collapseOffsetHostCssPx = compactHeight - (endpointCompactHeight - contentHeight) / 2;
       this._setGeometryProperty('--_rc-app-bar-collapse-distance', `${nextDistance}px`);
       this._applyCollapseGeometry();
     }
@@ -397,21 +398,26 @@ export class RCAppBar extends LitElement {
     }
   }
 
-  private _onObservedScroll(scrollTop: number, delta: number): void {
+  private _onObservedScroll(scrollTopCssPx: number, deltaCssPx: number): void {
     if (this._scrolled !== undefined) {
       return;
     }
 
     if (this.scrollBehavior === 'collapse' && this.variant === 'expanded') {
-      if (this._collapseDistance <= 0) {
+      if (this._collapseDistanceHostCssPx <= 0) {
         return;
       }
 
-      const distance = this._collapseDistance;
-      let progress = Math.min(Math.max(scrollTop / distance, 0), 1);
+      const target = this._resolveScrollTarget();
+      const targetZoom =
+        target instanceof Element && target !== this.ownerDocument.scrollingElement
+          ? cssZoom(target)
+          : 1;
+      const scrollTopHostCssPx = (scrollTopCssPx * targetZoom) / cssZoom(this);
+      let progress = Math.min(Math.max(scrollTopHostCssPx / this._collapseDistanceHostCssPx, 0), 1);
 
       if (this._reducedMotion?.matches) {
-        progress = scrollTop > this.scrollThreshold ? 1 : 0;
+        progress = scrollTopCssPx > this.scrollThreshold ? 1 : 0;
       } else {
         progress = progress >= 0.999 ? 1 : progress;
       }
@@ -424,16 +430,18 @@ export class RCAppBar extends LitElement {
     if (this.scrollBehavior !== 'hide') {
       this._hideTravel = 0;
       this._setHidden(false);
-    } else if (scrollTop <= this.scrollThreshold) {
+    } else if (scrollTopCssPx <= this.scrollThreshold) {
       this._hideTravel = 0;
       this._setHidden(false);
     } else if (this.matches(':focus-within')) {
       this._hideTravel = 0;
       this._setHidden(false);
-    } else if (delta !== 0) {
+    } else if (deltaCssPx !== 0) {
       // A change of direction starts the count again.
       this._hideTravel =
-        Math.sign(delta) === Math.sign(this._hideTravel) ? this._hideTravel + delta : delta;
+        Math.sign(deltaCssPx) === Math.sign(this._hideTravel)
+          ? this._hideTravel + deltaCssPx
+          : deltaCssPx;
 
       if (Math.abs(this._hideTravel) >= this.hideDistance) {
         this._setHidden(this._hideTravel > 0);
@@ -478,8 +486,8 @@ export class RCAppBar extends LitElement {
   }
 
   private _applyCollapseGeometry(): void {
-    const offset = this._collapseOffsetDistance * this._collapseProgress;
-    const remainingRow = this._collapseDistance * (1 - this._collapseProgress);
+    const offset = this._collapseOffsetHostCssPx * this._collapseProgress;
+    const remainingRow = this._collapseDistanceHostCssPx * (1 - this._collapseProgress);
 
     this._setGeometryProperty('--_rc-app-bar-collapse-offset', `${-offset}px`);
     this._setGeometryProperty('--_rc-app-bar-expanded-size', `${remainingRow}px`);
