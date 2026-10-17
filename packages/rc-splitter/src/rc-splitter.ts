@@ -2,6 +2,7 @@ import { LitElement, html, nothing } from 'lit';
 import { property, state, query, queryAssignedElements } from 'lit/decorators.js';
 
 import {
+  cssZoom,
   DragGestureController,
   FlowController,
   findNearestSnapIndex,
@@ -505,7 +506,8 @@ export class RCSplitter extends LitElement {
 
   protected async _settleToValue(value: number, behavior: 'animated' | 'instant'): Promise<void> {
     const $primary = this._$primary;
-    const fromSize = this._sizeAlong($primary.getBoundingClientRect(), this._paneAxis);
+    const fromSizeCssPx =
+      this._sizeAlong($primary.getBoundingClientRect(), this._paneAxis) / cssZoom($primary);
 
     this._activeSnapAnimation?.cancel();
     this._activeSnapAnimation = null;
@@ -516,15 +518,16 @@ export class RCSplitter extends LitElement {
       return;
     }
 
-    const toSize = this._sizeAlong($primary.getBoundingClientRect(), this._paneAxis);
+    const toSizeCssPx =
+      this._sizeAlong($primary.getBoundingClientRect(), this._paneAxis) / cssZoom($primary);
 
-    if (fromSize === toSize) {
+    if (fromSizeCssPx === toSizeCssPx) {
       return;
     }
 
     const property = this._paneAxis === 'inline' ? 'inlineSize' : 'blockSize';
     const animation = $primary.animate(
-      [{ [property]: `${fromSize}px` }, { [property]: `${toSize}px` }],
+      [{ [property]: `${fromSizeCssPx}px` }, { [property]: `${toSizeCssPx}px` }],
       {
         duration: this._snapDuration(),
         easing: SNAP_EASING,
@@ -581,7 +584,7 @@ export class RCSplitter extends LitElement {
   }
 
   protected _measureHostSize(axis: 'inline' | 'block'): number {
-    const measuredSize = this._sizeAlong(this.getBoundingClientRect(), axis);
+    const measuredSize = this._sizeAlong(this.getBoundingClientRect(), axis) / cssZoom(this);
 
     if (measuredSize > 0) {
       return Math.ceil(measuredSize);
@@ -612,7 +615,7 @@ export class RCSplitter extends LitElement {
               this._measureHostSize('inline')
             : // ...otherwise try to use the first lightDOM element's auto height, and cache it
               this._initialMax ||
-              Math.ceil(this._sizeAlong(clientRect, 'block')) ||
+              Math.ceil(this._sizeAlong(clientRect, 'block') / cssZoom(this)) ||
               this._measureHostSize('block');
 
         // After initialization, ignore spurious zero measurements (e.g. during

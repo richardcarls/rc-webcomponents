@@ -1119,6 +1119,38 @@ describe('RCSplitter', () => {
   });
 
   describe('anchored settling', () => {
+    test('length values and snap keyframes use local CSS pixels under zoom', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          value="100"
+          snap-points="100 240"
+          style="width: 400px; height: 300px; zoom: 0.8;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+
+      await host.updateComplete;
+
+      const separator = await waitForInit(host);
+
+      expect(Number(separator.getAttribute('aria-valuemax'))).toBeCloseTo(400, 0);
+      expect(getPrimary(host).getBoundingClientRect().width).toBeCloseTo(80, 0);
+
+      host.snapTo(1);
+
+      await vi.waitFor(() => {
+        const [animation] = host.shadowRoot?.getAnimations() ?? [];
+        const frames = (animation?.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
+
+        expect(frames[0]?.inlineSize).toBe('100px');
+        expect(frames[1]?.inlineSize).toBe('240px');
+      });
+    });
+
     test('snapTo() clamps finite indices and ignores non-finite indices', async () => {
       const screen = render(html`
         <rc-splitter
