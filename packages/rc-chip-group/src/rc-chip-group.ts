@@ -2,6 +2,7 @@ import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
 import {
+  cssZoom,
   getScrollOffset,
   inlineArrowKeys,
   isFocusable,
@@ -585,15 +586,17 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
       flow,
     );
     const targetEnd = target.inlineStart + target.inlineSize;
-    const delta =
+    const deltaViewportPx =
       target.inlineStart < 0
         ? target.inlineStart
         : targetEnd > root.inlineSize
           ? targetEnd - root.inlineSize
           : 0;
 
-    if (delta !== 0) {
-      this._setInlineScrollOffset(this._inlineScrollOffset() + delta);
+    if (deltaViewportPx !== 0) {
+      this._setInlineScrollOffset(
+        this._inlineScrollOffset() + deltaViewportPx / cssZoom(this._$root),
+      );
     }
   }
 
