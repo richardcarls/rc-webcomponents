@@ -3,6 +3,7 @@ import type { CSSResultGroup } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
 import {
+  cssZoom,
   FlowController,
   logicalRect,
   NativeChildController,
@@ -1742,6 +1743,7 @@ export class RCTextarea extends LitElement {
     const $spans = this._$gutterCells.children;
     const flow = resolveFlow(this._$editor);
     const editorRect = this._$editor.getBoundingClientRect();
+    const gutterZoom = cssZoom(this._$gutterCells);
 
     this._gutterBlockAxis = flow.block;
 
@@ -1750,7 +1752,12 @@ export class RCTextarea extends LitElement {
       // but not inline styles), giving the editor a different natural cell height
       // than the gutter's CSS 1.5× value. Mirror the first line's actual block size.
       if ($lineEls.length > 0) {
-        const lineHeight = `${logicalRect($lineEls[0].getBoundingClientRect(), editorRect, flow).blockSize}px`;
+        const lineHeightViewportPx = logicalRect(
+          $lineEls[0].getBoundingClientRect(),
+          editorRect,
+          flow,
+        ).blockSize;
+        const lineHeight = `${lineHeightViewportPx / gutterZoom}px`;
 
         if (this._$gutterCells.style.lineHeight !== lineHeight) {
           this._$gutterCells.style.lineHeight = lineHeight;
@@ -1770,12 +1777,12 @@ export class RCTextarea extends LitElement {
     }
 
     for (let i = 0; i < $lineEls.length && i < $spans.length; i++) {
-      const blockSize = logicalRect(
+      const blockSizeViewportPx = logicalRect(
         $lineEls[i]!.getBoundingClientRect(),
         editorRect,
         flow,
       ).blockSize;
-      const blockSizeStyle = `${blockSize}px`;
+      const blockSizeStyle = `${blockSizeViewportPx / gutterZoom}px`;
       const $span = $spans[i] as HTMLElement;
 
       if ($span.style.blockSize !== blockSizeStyle) {
