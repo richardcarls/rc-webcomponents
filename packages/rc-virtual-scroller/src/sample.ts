@@ -1,17 +1,22 @@
-import { logicalRect, type Flow, type LogicalAxis } from '@rcarls/rc-common';
+import { cssZoom, logicalRect, type Flow, type LogicalAxis } from '@rcarls/rc-common';
 import { resolvedTracks, trackSpan, type Geometry } from './range.js';
 
 export type LayoutSample =
   | { kind: 'ready' | 'incomplete'; geometry: Geometry }
   | { kind: 'unsupported'; reason: string };
 
-/** Sample regular line geometry without changing the consumer's layout. */
+/**
+ * Sample regular line geometry without changing the consumer's layout.
+ * Geometry is reported in the host's CSS pixels, whatever units each
+ * measurement is read in.
+ */
 export function sampleLayout(
   $container: Element,
   axis: LogicalAxis,
   flow: Flow,
   override: number,
   previous: Geometry,
+  hostZoom = 1,
 ): LayoutSample {
   const styles = getComputedStyle($container);
   const $items = $container.children;
@@ -97,9 +102,16 @@ export function sampleLayout(
       return unsupported('Grid lines must have a uniform pitch.');
     }
 
+    // Computed tracks and gaps are in the container's own CSS pixels.
+    const containerToHostCssScale = cssZoom($container) / hostZoom;
+
     return {
       kind: 'ready',
-      geometry: { itemsPerLine: capacity, lineSize: trackSize + gap, measured: true },
+      geometry: {
+        itemsPerLine: capacity,
+        lineSize: (trackSize + gap) * containerToHostCssScale,
+        measured: true,
+      },
     };
   }
 
@@ -119,7 +131,8 @@ export function sampleLayout(
   const firstRect = $first.getBoundingClientRect();
   const own = logicalRect(firstRect, firstRect, flow);
   const extent = axis === 'inline' ? own.inlineSize : own.blockSize;
-  let pitch = extent + gap;
+  // Rects are in viewport pixels; the computed gap is in the container's own.
+  let pitch = extent + gap * cssZoom($container);
 
   for (let i = 1; i < Math.min($items.length, 3); i++) {
     const $item = $items.item(i);
@@ -142,6 +155,6 @@ export function sampleLayout(
   }
 
   return pitch > 0
-    ? { kind: 'ready', geometry: { itemsPerLine: 1, lineSize: pitch, measured: true } }
+    ? { kind: 'ready', geometry: { itemsPerLine: 1, lineSize: pitch / hostZoom, measured: true } }
     : { kind: 'incomplete', geometry: previous };
 }

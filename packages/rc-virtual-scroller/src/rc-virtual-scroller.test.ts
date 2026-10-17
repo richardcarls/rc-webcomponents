@@ -720,3 +720,148 @@ test('measures once a pane it mounted inside while hidden is shown', async () =>
     expect(range().end).toBeLessThan(20);
   });
 });
+
+describe.each([
+  ['the scroll container and the host', 'port'],
+  ['only the host', 'host'],
+  ['only the slotted list', 'list'],
+] as const)('under CSS zoom on %s', (_label, zoomed) => {
+  const ZOOM = 0.8;
+
+  describe.each([
+    ['a grid list', LIST_STYLE.block],
+    ['a block list', 'display: block; margin: 0; padding: 0;'],
+  ])('with %s', (_list, listStyle) => {
+    async function mountZoomed() {
+      const screen = render(html`
+        <div style=${zoomed === 'port' ? `zoom: ${ZOOM}` : ''}>
+          <div data-testid="port" style="block-size: ${PORT_SIZE}px; overflow: auto;">
+            <div style=${zoomed === 'host' ? `zoom: ${ZOOM}` : ''}>
+              <rc-virtual-scroller data-testid="host" count="500" item-size="30">
+                <ul
+                  data-testid="list"
+                  style=${`${listStyle} ${zoomed === 'list' ? `zoom: ${ZOOM};` : ''}`}
+                ></ul>
+              </rc-virtual-scroller>
+            </div>
+          </div>
+        </div>
+      `);
+      const port = (await screen.getByTestId('port').element()) as HTMLElement;
+      const host = (await screen.getByTestId('host').element()) as RCVirtualScroller;
+      const list = (await screen.getByTestId('list').element()) as HTMLElement;
+      const range = bindSlice(host, list, 'block');
+
+      await vi.waitFor(() => expect(range().measured).toBe(true));
+
+      const hostPixelsPerItem = zoomed === 'list' ? ITEM_SIZE * ZOOM : ITEM_SIZE;
+      const portPixelsPerItem = zoomed === 'port' ? ITEM_SIZE : ITEM_SIZE * ZOOM;
+
+      return { host, list, port, range, hostPixelsPerItem, portPixelsPerItem };
+    }
+
+    /** Rendered items reach past both edges of the port, wherever it is scrolled. */
+    function expectViewCovered(port: HTMLElement, list: HTMLElement) {
+      const view = port.getBoundingClientRect();
+      const first = list.firstElementChild?.getBoundingClientRect();
+      const last = list.lastElementChild?.getBoundingClientRect();
+
+      expect(first?.top).toBeLessThanOrEqual(view.top + 0.5);
+      expect(last?.bottom).toBeGreaterThanOrEqual(view.bottom - 0.5);
+    }
+
+    test('measures line pitch in host pixels and keeps the window on screen deep in the list', async () => {
+      const { host, list, port, range, hostPixelsPerItem, portPixelsPerItem } = await mountZoomed();
+
+      expect(range().lineSize).toBeCloseTo(hostPixelsPerItem, 1);
+
+      port.scrollTop = 400 * portPixelsPerItem;
+
+      await vi.waitFor(() => expect(range().start).toBe(398));
+
+      expect(spacerSize(host, 'spacer-start', 'block')).toBeCloseTo(398 * hostPixelsPerItem, 0);
+
+      expect(port.scrollHeight).toBeCloseTo(500 * portPixelsPerItem, -1);
+      expectViewCovered(port, list);
+    });
+
+    test('scrolls an index to the start of the view', async () => {
+      const { host, list, port, range, portPixelsPerItem } = await mountZoomed();
+
+      host.scrollToIndex(300);
+
+      await vi.waitFor(() => expect(range().start).toBe(298));
+
+      expect(port.scrollTop).toBeCloseTo(300 * portPixelsPerItem, -1);
+      expectViewCovered(port, list);
+    });
+  });
+});
+
+test('re-evaluates the window when host zoom changes after mount', async () => {
+  const screen = render(html`
+    <div data-testid="port" style="block-size: ${PORT_SIZE}px; overflow: auto;">
+      <div data-testid="zoom-wrap">
+        <rc-virtual-scroller data-testid="host" count="500" item-size="30">
+          <ul data-testid="list" style=${LIST_STYLE.block}></ul>
+        </rc-virtual-scroller>
+      </div>
+    </div>
+  `);
+  const port = (await screen.getByTestId('port').element()) as HTMLElement;
+  const zoomWrap = (await screen.getByTestId('zoom-wrap').element()) as HTMLElement;
+  const host = (await screen.getByTestId('host').element()) as RCVirtualScroller;
+  const list = (await screen.getByTestId('list').element()) as HTMLElement;
+  const range = bindSlice(host, list, 'block');
+
+  await vi.waitFor(() => expect(range().measured).toBe(true));
+
+  port.scrollTop = 1000;
+
+  await vi.waitFor(() => expect(range().start).toBe(23));
+
+  zoomWrap.style.zoom = '0.8';
+
+  await vi.waitFor(() => expect(range().start).toBe(29));
+
+  const view = port.getBoundingClientRect();
+
+  expect(list.firstElementChild?.getBoundingClientRect().top).toBeLessThanOrEqual(view.top + 0.5);
+
+  expect(list.lastElementChild?.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(
+    view.bottom - 0.5,
+  );
+});
+
+test('scrolls an index through the document scroller when the host is zoomed', async () => {
+  const initialScrollY = window.scrollY;
+  const screen = render(html`
+    <div style="block-size: 300px;"></div>
+    <div style="zoom: 0.8;">
+      <rc-virtual-scroller data-testid="host" count="500" item-size="30">
+        <ul data-testid="list" style=${LIST_STYLE.block}></ul>
+      </rc-virtual-scroller>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCVirtualScroller;
+  const list = (await screen.getByTestId('list').element()) as HTMLElement;
+  const range = bindSlice(host, list, 'block');
+
+  try {
+    host.scrollTarget = document.scrollingElement;
+    await host.updateComplete;
+    await vi.waitFor(() => expect(range().measured).toBe(true));
+
+    host.scrollToIndex(300);
+
+    await vi.waitFor(() => expect(range().start).toBe(298));
+
+    const first = list.firstElementChild?.getBoundingClientRect();
+    const last = list.lastElementChild?.getBoundingClientRect();
+
+    expect(first?.top).toBeLessThanOrEqual(0.5);
+    expect(last?.bottom).toBeGreaterThanOrEqual(window.innerHeight - 0.5);
+  } finally {
+    window.scrollTo(0, initialScrollY);
+  }
+});

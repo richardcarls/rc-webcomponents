@@ -5,6 +5,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import {
   HORIZONTAL_LTR_FLOW,
   RafScheduler,
+  cssZoom,
   findNearestScrollAncestor,
   isReversed,
   logicalRect,
@@ -379,13 +380,19 @@ export class RCVirtualScroller extends LitElement {
     // A relative scroll, expressed in the host's own flow, means the scroll
     // container's origin (negative scrollLeft in RTL and vertical-rl) never
     // has to be interpreted here.
-    const delta = (desired - viewStart) * (isReversed(this.axis, this._flow) ? -1 : 1);
+    // The scroll target scrolls in its own CSS pixels, which differ from the
+    // host's when only one of them sits under a `zoom`.
+    const hostZoom = cssZoom(this);
+    const targetZoom = target === this._documentScroller() ? 1 : cssZoom(target);
+    const scrollDeltaTargetCssPx =
+      ((desired - viewStart) * hostZoom * (isReversed(this.axis, this._flow) ? -1 : 1)) /
+      targetZoom;
     const behavior = options.behavior ?? 'auto';
 
     if (physicalAxis(this.axis, this._flow) === 'x') {
-      target.scrollBy({ left: delta, behavior });
+      target.scrollBy({ left: scrollDeltaTargetCssPx, behavior });
     } else {
-      target.scrollBy({ top: delta, behavior });
+      target.scrollBy({ top: scrollDeltaTargetCssPx, behavior });
     }
   }
 
@@ -444,20 +451,23 @@ export class RCVirtualScroller extends LitElement {
   }
 
   /** The scroll target's visible client box in viewport coordinates. */
-  private _portRect(target: Element): DOMRect {
+  private _portViewportRect(target: Element): DOMRect {
     if (target === this._documentScroller()) {
       const root = this.ownerDocument.documentElement;
 
       return new DOMRect(0, 0, root.clientWidth, root.clientHeight);
     }
 
-    const rect = target.getBoundingClientRect();
+    // The client box is in the target's own CSS pixels; the rect is in
+    // viewport pixels. Under CSS `zoom` they differ by the target's zoom.
+    const viewportRect = target.getBoundingClientRect();
+    const targetZoom = cssZoom(target);
 
     return new DOMRect(
-      rect.left + target.clientLeft,
-      rect.top + target.clientTop,
-      target.clientWidth,
-      target.clientHeight,
+      viewportRect.left + target.clientLeft * targetZoom,
+      viewportRect.top + target.clientTop * targetZoom,
+      target.clientWidth * targetZoom,
+      target.clientHeight * targetZoom,
     );
   }
 
@@ -470,13 +480,25 @@ export class RCVirtualScroller extends LitElement {
    * measured from the host's start edge along `axis` in the host's own flow.
    * Working from the two rects rather than from `scrollTop`/`scrollLeft`
    * keeps the arithmetic identical in every writing mode and direction.
+   * Reported in the host's own CSS pixels, the unit its spacers are written in.
    */
   private _view(target: Element): { viewStart: number; viewSize: number } {
-    const view = logicalRect(this._portRect(target), this.getBoundingClientRect(), this._flow);
+    const viewViewportPx = logicalRect(
+      this._portViewportRect(target),
+      this.getBoundingClientRect(),
+      this._flow,
+    );
+    const hostZoom = cssZoom(this);
 
     return this.axis === 'inline'
-      ? { viewStart: view.inlineStart, viewSize: view.inlineSize }
-      : { viewStart: view.blockStart, viewSize: view.blockSize };
+      ? {
+          viewStart: viewViewportPx.inlineStart / hostZoom,
+          viewSize: viewViewportPx.inlineSize / hostZoom,
+        }
+      : {
+          viewStart: viewViewportPx.blockStart / hostZoom,
+          viewSize: viewViewportPx.blockSize / hostZoom,
+        };
   }
 
   private _effectiveLineSize(): number {
@@ -604,6 +626,7 @@ export class RCVirtualScroller extends LitElement {
         this._flow,
         this.itemsPerLine,
         this._geometry,
+        cssZoom(this),
       );
 
       this._unsupported = sample.kind === 'unsupported';
