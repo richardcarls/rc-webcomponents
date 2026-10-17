@@ -1,5 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { cssZoom } from './cssZoom.js';
 import { isPhysicalReversed, resolveFlow, type Flow } from './flow.js';
 import { observeDirection } from './observeDirection.js';
 import { RafScheduler } from './RafScheduler.js';
@@ -236,8 +237,8 @@ export class AnchorController implements ReactiveController {
   private _settleFramesRemaining = 0;
   private _stableFrames = 0;
   private _lastNaturalRect = '';
-  private _appliedDx = 0;
-  private _appliedDy = 0;
+  private _appliedTranslateXCssPx = 0;
+  private _appliedTranslateYCssPx = 0;
   private _geometryAbort: AbortController | null = null;
   private _resizeObserver: ResizeObserver | null = null;
   private _intersectionObserver: IntersectionObserver | null = null;
@@ -361,6 +362,7 @@ export class AnchorController implements ReactiveController {
     }
 
     const rect = $floating.getBoundingClientRect();
+    const floatingZoom = cssZoom($floating);
     const isVisible = rect.width > 0 || rect.height > 0;
 
     if (!isVisible) {
@@ -371,8 +373,8 @@ export class AnchorController implements ReactiveController {
     }
 
     const naturalRect = [
-      rect.left - this._appliedDx,
-      rect.top - this._appliedDy,
+      rect.left - this._appliedTranslateXCssPx * floatingZoom,
+      rect.top - this._appliedTranslateYCssPx * floatingZoom,
       rect.width,
       rect.height,
     ]
@@ -498,7 +500,7 @@ export class AnchorController implements ReactiveController {
    * clear the correction as unnecessary, then reapply it next frame once
    * the underlying overflow reappears — an every-frame flicker confirmed
    * by a real click landing on a mid-flicker frame in the browser test
-   * suite. `_appliedDx`/`_appliedDy` track the offset this method itself
+   * suite. `_appliedTranslateXCssPx`/`_appliedTranslateYCssPx` track the offset this method itself
    * last applied so it can subtract it back out and compute against the
    * element's natural, uncorrected position each time.
    */
@@ -523,38 +525,44 @@ export class AnchorController implements ReactiveController {
     }
 
     const viewport = getVisualViewportBounds($window);
+    const floatingZoom = cssZoom(floating);
 
     // Undo the previous tick's correction to get the natural rect.
-    const left = rect.left - this._appliedDx;
-    const right = rect.right - this._appliedDx;
-    const top = rect.top - this._appliedDy;
-    const bottom = rect.bottom - this._appliedDy;
+    const appliedXViewportPx = this._appliedTranslateXCssPx * floatingZoom;
+    const appliedYViewportPx = this._appliedTranslateYCssPx * floatingZoom;
+    const left = rect.left - appliedXViewportPx;
+    const right = rect.right - appliedXViewportPx;
+    const top = rect.top - appliedYViewportPx;
+    const bottom = rect.bottom - appliedYViewportPx;
 
-    let dx = 0;
-    let dy = 0;
+    let dxViewportPx = 0;
+    let dyViewportPx = 0;
 
     if (right > viewport.right - margin) {
-      dx = viewport.right - margin - right;
+      dxViewportPx = viewport.right - margin - right;
     }
 
-    if (left + dx < viewport.left + margin) {
-      dx = viewport.left + margin - left;
+    if (left + dxViewportPx < viewport.left + margin) {
+      dxViewportPx = viewport.left + margin - left;
     }
 
     if (bottom > viewport.bottom - margin) {
-      dy = viewport.bottom - margin - bottom;
+      dyViewportPx = viewport.bottom - margin - bottom;
     }
 
-    if (top + dy < viewport.top + margin) {
-      dy = viewport.top + margin - top;
+    if (top + dyViewportPx < viewport.top + margin) {
+      dyViewportPx = viewport.top + margin - top;
     }
 
-    this._appliedDx = dx;
-    this._appliedDy = dy;
+    this._appliedTranslateXCssPx = dxViewportPx / floatingZoom;
+    this._appliedTranslateYCssPx = dyViewportPx / floatingZoom;
 
-    const translate = dx || dy ? `${dx}px ${dy}px` : '';
-    const viewportInlineSize = `${Math.max(0, viewport.width - margin * 2)}px`;
-    const viewportBlockSize = `${Math.max(0, viewport.height - margin * 2)}px`;
+    const translate =
+      dxViewportPx || dyViewportPx
+        ? `${this._appliedTranslateXCssPx}px ${this._appliedTranslateYCssPx}px`
+        : '';
+    const viewportInlineSize = `${Math.max(0, viewport.width - margin * 2) / floatingZoom}px`;
+    const viewportBlockSize = `${Math.max(0, viewport.height - margin * 2) / floatingZoom}px`;
 
     if (floating.style.translate !== translate) {
       floating.style.translate = translate;
@@ -796,8 +804,8 @@ export class AnchorController implements ReactiveController {
   private _cleanup(): void {
     this._stopClampLoop();
     this._stopWatchingGeometry();
-    this._appliedDx = 0;
-    this._appliedDy = 0;
+    this._appliedTranslateXCssPx = 0;
+    this._appliedTranslateYCssPx = 0;
 
     const anchor = this._anchor();
     const floating = this._floating();

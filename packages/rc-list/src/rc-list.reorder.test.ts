@@ -192,6 +192,34 @@ test('a pointer drag previews the move, then moves the node on drop', async () =
   expect(item(list, 'Alpha').getAttribute('aria-posinset')).toBe('2');
 });
 
+test('a pointer drag keeps its preview aligned under CSS zoom', async () => {
+  const list = await setup(html`
+    <rc-list data-testid="list" reorderable style="inline-size: 16rem; zoom: 0.8;">
+      ${NAMES.map(itemTemplate)}
+    </rc-list>
+  `);
+  const alpha = item(list, 'Alpha');
+  const startTop = alpha.getBoundingClientRect().top;
+  const expectedViewportDelta = (center(item(list, 'Beta')).y - center(alpha).y) * 1.2;
+
+  const { drop } = await drag(list, 'Alpha', 'Beta');
+  const beta = item(list, 'Beta');
+
+  expect(alpha.getBoundingClientRect().top - startTop).toBeCloseTo(expectedViewportDelta, 0);
+
+  expect(Number.parseFloat(alpha.style.translate.split(' ')[1])).toBeCloseTo(
+    expectedViewportDelta / 0.8,
+    0,
+  );
+
+  expect(beta.style.translate).not.toBe('');
+
+  drop();
+  await settle(list);
+
+  expect(order(list)).toEqual(['Beta', 'Alpha', 'Gamma']);
+});
+
 test('a lifted row paints above a later row it overlaps', async () => {
   const list = await setup();
   const $alpha = item(list, 'Alpha');

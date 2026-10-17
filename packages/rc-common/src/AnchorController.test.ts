@@ -137,6 +137,33 @@ test('_clampToViewport nudges an off-screen floating element back within bounds'
   expect(rect.left).toBeGreaterThanOrEqual(0);
 });
 
+test('_clampToViewport stabilizes a zoomed floating element in one correction', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
+
+  floating.style.position = 'fixed';
+  floating.style.zoom = '0.8';
+  floating.style.left = `${window.innerWidth - 50}px`;
+  floating.style.top = '0px';
+
+  const ctl = asPrivate(new AnchorController(createHost(), { anchor, floating }));
+
+  ctl._clampToViewport();
+
+  const firstRight = floating.getBoundingClientRect().right;
+  const firstTranslate = floating.style.translate;
+
+  expect(firstRight).toBeCloseTo(window.innerWidth - 4, 0);
+
+  ctl._clampToViewport();
+
+  expect(floating.getBoundingClientRect().right).toBeCloseTo(firstRight, 1);
+  expect(floating.style.translate).toBe(firstTranslate);
+
+  expect(
+    Number.parseFloat(floating.style.getPropertyValue('--rc-anchor-viewport-inline-size')),
+  ).toBeCloseTo(((window.visualViewport?.width ?? window.innerWidth) - 8) / 0.8, 1);
+});
+
 test('_clampToViewport leaves an on-screen floating element untouched', async () => {
   const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
 

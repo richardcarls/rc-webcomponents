@@ -1,5 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { cssZoom } from './cssZoom.js';
 import { logicalRect, physicalOffset, resolveFlow } from './flow.js';
 import { observeDirection } from './observeDirection.js';
 
@@ -196,11 +197,12 @@ export class NavigationIndicatorController implements ReactiveController {
     const flow = resolveFlow(container);
     const box = logicalRect(targetRect, containerRect, flow);
     const { x, y } = physicalOffset({ inline: box.inlineStart, block: box.blockStart }, flow);
+    const indicatorZoom = cssZoom(indicator);
 
     indicator.toggleAttribute('hidden', false);
-    indicator.style.inlineSize = `${box.inlineSize}px`;
-    indicator.style.blockSize = `${box.blockSize}px`;
-    indicator.style.transform = `translate(${x}px, ${y}px)`;
+    indicator.style.inlineSize = `${box.inlineSize / indicatorZoom}px`;
+    indicator.style.blockSize = `${box.blockSize / indicatorZoom}px`;
+    indicator.style.transform = `translate(${x / indicatorZoom}px, ${y / indicatorZoom}px)`;
   }
 }
 
