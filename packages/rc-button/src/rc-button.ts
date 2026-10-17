@@ -2,6 +2,8 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
+import { cssZoom, logicalRect, resolveFlow } from '@rcarls/rc-common';
+
 import buttonStyles from './rc-button.styles.js';
 
 declare global {
@@ -612,14 +614,22 @@ export class RCButton extends LitElement {
       return;
     }
 
-    const bounds = this._$button!.getBoundingClientRect();
-    const x = event.clientX - bounds.left;
-    const y = event.clientY - bounds.top;
-    const radius = Math.hypot(Math.max(x, bounds.width - x), Math.max(y, bounds.height - y));
+    const bounds = this._$stateLayer.getBoundingClientRect();
+    const flow = resolveFlow(this._$stateLayer);
+    const point = logicalRect(new DOMRect(event.clientX, event.clientY, 0, 0), bounds, flow);
+    const box = logicalRect(bounds, bounds, flow);
+    const radiusViewportPx = Math.hypot(
+      Math.max(point.inlineStart, box.inlineSize - point.inlineStart),
+      Math.max(point.blockStart, box.blockSize - point.blockStart),
+    );
+    const layerZoom = cssZoom(this._$stateLayer);
+    const rippleInlineCssPx = point.inlineStart / layerZoom;
+    const rippleBlockCssPx = point.blockStart / layerZoom;
+    const rippleSizeCssPx = (radiusViewportPx * 2) / layerZoom;
 
-    this._$stateLayer.style.setProperty('--_rc-button-ripple-x', `${x}px`);
-    this._$stateLayer.style.setProperty('--_rc-button-ripple-y', `${y}px`);
-    this._$stateLayer.style.setProperty('--_rc-button-ripple-size', `${radius * 2}px`);
+    this._$stateLayer.style.setProperty('--_rc-button-ripple-x', `${rippleInlineCssPx}px`);
+    this._$stateLayer.style.setProperty('--_rc-button-ripple-y', `${rippleBlockCssPx}px`);
+    this._$stateLayer.style.setProperty('--_rc-button-ripple-size', `${rippleSizeCssPx}px`);
     this._$stateLayer.removeAttribute('data-rippling');
     this._$stateLayer.getBoundingClientRect();
     this._$stateLayer.setAttribute('data-rippling', '');
