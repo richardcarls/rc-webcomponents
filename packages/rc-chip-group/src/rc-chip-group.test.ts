@@ -355,6 +355,32 @@ test('keeps a selected end chip visible when an app moves the check mark later',
   });
 });
 
+test('reveals an off-screen chip under CSS zoom', async () => {
+  const screen = render(lateMarkerGroup('zoomed-reveal'));
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  host.style.zoom = '0.5';
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+  const lastChip = host.querySelectorAll<HTMLElement>('rc-chip').item(7)!;
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
+
+  root.scrollLeft = 0;
+
+  (host as unknown as { _keepTargetVisible(target: HTMLElement): void })._keepTargetVisible(
+    lastChip,
+  );
+
+  const rootRect = root.getBoundingClientRect();
+  const selectedRect = lastChip.getBoundingClientRect();
+
+  expect(root.scrollLeft).toBeGreaterThan(0);
+  // WebKit rounds scrollLeft to CSS pixels, allowing a subpixel visual remainder.
+  expect(selectedRect.right).toBeLessThanOrEqual(rootRect.right + 1);
+});
+
 test('a user scroll after selecting releases the chip from later reveals', async () => {
   const screen = render(lateMarkerGroup('late-marker-released'));
   const host = (await screen.getByTestId('host').element()) as RCChipGroup;
