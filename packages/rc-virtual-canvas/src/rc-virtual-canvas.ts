@@ -66,10 +66,10 @@ export type RCVirtualCanvasPointerInit = {
   /** Browser client y coordinate from the source event */
   clientY: number;
 
-  /** Content x coordinate mapped through the current backing-store scale */
+  /** Content x coordinate in CSS pixels */
   contentX: number;
 
-  /** Content y coordinate mapped through the current backing-store scale */
+  /** Content y coordinate in CSS pixels */
   contentY: number;
 
   /** Frozen viewport snapshot at the moment the pointer event fired */
@@ -373,8 +373,8 @@ export class RCVirtualCanvas extends LitElement {
   }
 
   /**
-   * Converts browser client coordinates to content coordinates using the current
-   * backing-store scale.
+   * Converts browser client coordinates to CSS-pixel content coordinates.
+   * Canvas backing-store resolution does not change content coordinates.
    *
    * @param clientX - Browser client x coordinate (e.g. from a pointer event)
    * @param clientY - Browser client y coordinate
@@ -386,13 +386,13 @@ export class RCVirtualCanvas extends LitElement {
    * });
    */
   clientToContent(clientX: number, clientY: number) {
-    const canvasRect = this._getCanvasClientRect();
-    const scaleX = this._getViewportScaleX(canvasRect);
-    const scaleY = this._getViewportScaleY(canvasRect);
+    const canvasViewportRect = this._getCanvasClientRect();
+    const clientToContentScaleX = this._getClientToContentScaleX(canvasViewportRect);
+    const clientToContentScaleY = this._getClientToContentScaleY(canvasViewportRect);
 
     return Object.freeze({
-      x: this._viewRect.x + (clientX - canvasRect.left) * scaleX,
-      y: this._viewRect.y + (clientY - canvasRect.top) * scaleY,
+      x: this._viewRect.x + (clientX - canvasViewportRect.left) * clientToContentScaleX,
+      y: this._viewRect.y + (clientY - canvasViewportRect.top) * clientToContentScaleY,
     });
   }
 
@@ -404,17 +404,16 @@ export class RCVirtualCanvas extends LitElement {
    *
    * @example
    * const { x, y } = vc.contentToClient(contentX, contentY);
-   * tooltip.style.left = `${x}px`;
-   * tooltip.style.top = `${y}px`;
+   * const elementAtPoint = document.elementFromPoint(x, y);
    */
   contentToClient(x: number, y: number) {
-    const canvasRect = this._getCanvasClientRect();
-    const scaleX = this._getViewportScaleX(canvasRect);
-    const scaleY = this._getViewportScaleY(canvasRect);
+    const canvasViewportRect = this._getCanvasClientRect();
+    const clientToContentScaleX = this._getClientToContentScaleX(canvasViewportRect);
+    const clientToContentScaleY = this._getClientToContentScaleY(canvasViewportRect);
 
     return Object.freeze({
-      x: canvasRect.left + (x - this._viewRect.x) / scaleX,
-      y: canvasRect.top + (y - this._viewRect.y) / scaleY,
+      x: canvasViewportRect.left + (x - this._viewRect.x) / clientToContentScaleX,
+      y: canvasViewportRect.top + (y - this._viewRect.y) / clientToContentScaleY,
     });
   }
 
@@ -434,8 +433,9 @@ export class RCVirtualCanvas extends LitElement {
   /**
    * Ratio of canvas backing-store pixels to CSS pixels along the x-axis.
    *
-   * Equals `devicePixelRatio` when `autoResizeCanvas` is `true`. Use as the x-scale
-   * factor in `ctx.scale()` to draw at CSS pixel resolution.
+   * Use as the x-scale factor in `ctx.scale()` to draw at CSS pixel resolution.
+   * When `autoResizeCanvas` is true, CSS zoom changes this ratio along with
+   * the backing-store resolution.
    *
    * @example
    * vc.addEventListener('rc-virtual-canvas-render', ({ detail: { viewRect } }) => {
@@ -446,21 +446,21 @@ export class RCVirtualCanvas extends LitElement {
    * });
    */
   get canvasScaleX(): number {
-    const canvasRect = this._getCanvasClientRect();
+    const cssWidth = this._getCanvasCssWidth();
 
-    return this._getViewportScaleX(canvasRect);
+    return cssWidth > 0 ? this._viewRect.width / cssWidth : 1;
   }
 
   /**
    * Ratio of canvas backing-store pixels to CSS pixels along the y-axis.
    *
-   * Equals `devicePixelRatio` when `autoResizeCanvas` is `true`. Use as the y-scale
-   * factor in `ctx.scale()` to draw at CSS pixel resolution.
+   * Use as the y-scale factor in `ctx.scale()` to draw at CSS pixel resolution.
+   * CSS zoom can make this ratio differ from `devicePixelRatio`.
    */
   get canvasScaleY(): number {
-    const canvasRect = this._getCanvasClientRect();
+    const cssHeight = this._getCanvasCssHeight();
 
-    return this._getViewportScaleY(canvasRect);
+    return cssHeight > 0 ? this._viewRect.height / cssHeight : 1;
   }
 
   /** Maps pointer and mouse events to content coordinates and dispatches `rc-virtual-canvas-pointer` */
@@ -670,12 +670,28 @@ export class RCVirtualCanvas extends LitElement {
     return fallbackHeight;
   }
 
-  protected _getViewportScaleX(canvasRect: DOMRect) {
-    return canvasRect.width > 0 ? this._viewRect.width / canvasRect.width : 1;
+  protected _getCanvasCssWidth(): number {
+    return this._$canvas?.clientWidth ?? this.clientWidth;
   }
 
-  protected _getViewportScaleY(canvasRect: DOMRect) {
-    return canvasRect.height > 0 ? this._viewRect.height / canvasRect.height : 1;
+  protected _getCanvasCssHeight(): number {
+    return this._$canvas?.clientHeight ?? this.clientHeight;
+  }
+
+  protected _getClientToContentScaleX(canvasViewportRect: DOMRect): number {
+    const canvasCssWidth = this._getCanvasCssWidth();
+
+    return canvasViewportRect.width > 0 && canvasCssWidth > 0
+      ? canvasCssWidth / canvasViewportRect.width
+      : 1;
+  }
+
+  protected _getClientToContentScaleY(canvasViewportRect: DOMRect): number {
+    const canvasCssHeight = this._getCanvasCssHeight();
+
+    return canvasViewportRect.height > 0 && canvasCssHeight > 0
+      ? canvasCssHeight / canvasViewportRect.height
+      : 1;
   }
 
   render() {

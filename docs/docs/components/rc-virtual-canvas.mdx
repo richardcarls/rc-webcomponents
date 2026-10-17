@@ -70,7 +70,7 @@ These are computed getters exposed for rendering convenience — they do not app
 
 | Property       | Type     | Description                                                                                                                                                                                                                       |
 | -------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `canvasScaleX` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the x-axis. Equals `devicePixelRatio` when `autoResizeCanvas` is true. Use this as the x-scale factor in `ctx.scale()` to convert the canvas context to CSS pixel space. |
+| `canvasScaleX` | `number` | Ratio of backing-store pixels to local CSS pixels along the x-axis. CSS zoom can make it differ from `devicePixelRatio`. Use it to scale the drawing context to CSS pixel space. |
 | `canvasScaleY` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the y-axis.                                                                                                                                                              |
 
 ### Zoom and scale
@@ -79,3 +79,7 @@ These are computed getters exposed for rendering convenience — they do not app
 
 - Scaling the canvas context (`ctx.scale(zoom, zoom)`) before drawing, and
 - Adjusting `contentWidth` and `contentHeight` to reflect the scaled content dimensions so the scrollable area matches.
+
+CSS `zoom` on the component or an ancestor changes the canvas's rendered size and backing-store
+resolution. `clientToContent()` and `contentToClient()` continue to use CSS-pixel content
+coordinates; `canvasScaleX` and `canvasScaleY` report the backing-store pixels per local CSS pixel.
