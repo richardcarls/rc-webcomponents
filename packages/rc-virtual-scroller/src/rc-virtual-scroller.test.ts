@@ -854,13 +854,18 @@ test('scrolls an index through the document scroller when the host is zoomed', a
 
     host.scrollToIndex(300);
 
-    await vi.waitFor(() => expect(range().start).toBe(298));
+    // Firefox may quantize the document scroll offset just below the requested
+    // pixel, including one additional overscan item at the leading edge.
+    await vi.waitFor(() => expect(range().start).toBeGreaterThanOrEqual(297));
+    expect(range().start).toBeLessThanOrEqual(298);
 
     const first = list.firstElementChild?.getBoundingClientRect();
     const last = list.lastElementChild?.getBoundingClientRect();
+    const requested = list.children.item(300 - range().start)?.getBoundingClientRect();
 
     expect(first?.top).toBeLessThanOrEqual(0.5);
     expect(last?.bottom).toBeGreaterThanOrEqual(window.innerHeight - 0.5);
+    expect(requested?.top).toBeCloseTo(0, 0);
   } finally {
     window.scrollTo(0, initialScrollY);
   }
