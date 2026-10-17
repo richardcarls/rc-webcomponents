@@ -7,7 +7,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
 import { visit } from 'unist-util-visit';
 
-import { isPhysicalReversed, resolveFlow } from '@rcarls/rc-common';
+import { cssZoom, isPhysicalReversed, resolveFlow } from '@rcarls/rc-common';
 import type { RCTextarea, RCTextareaPluginAPI, DecorationInput } from '@rcarls/rc-textarea';
 import type {
   ActiveFormats,
@@ -1425,15 +1425,16 @@ export class RcMarkdownEditor extends LitElement {
 
     const rangeRect = this._$savedRange.getBoundingClientRect();
     const hostRect = this.getBoundingClientRect();
+    const popoverZoom = cssZoom(this._$linkPopover);
 
     // Aligned to the selection's inline start: its right edge in RTL.
     const startsRight = isPhysicalReversed('x', resolveFlow(this));
-    const left = startsRight
-      ? rangeRect.right - hostRect.left - this._$linkPopover.offsetWidth
+    const leftViewportPx = startsRight
+      ? rangeRect.right - hostRect.left - this._$linkPopover.offsetWidth * popoverZoom
       : rangeRect.left - hostRect.left;
 
-    this._$linkPopover.style.top = `${rangeRect.bottom - hostRect.top + 4}px`;
-    this._$linkPopover.style.left = `${Math.max(0, left)}px`;
+    this._$linkPopover.style.top = `${(rangeRect.bottom - hostRect.top) / popoverZoom + 4}px`;
+    this._$linkPopover.style.left = `${Math.max(0, leftViewportPx / popoverZoom)}px`;
   }
 
   protected _applyLink = () => {
