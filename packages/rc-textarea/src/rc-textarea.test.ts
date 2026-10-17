@@ -245,6 +245,50 @@ describe('RCTextarea — basic rendering', () => {
     expect(Math.abs(gutterRect.blockSize - lineRect.blockSize)).toBeLessThan(1);
   });
 
+  test.each([false, true])('aligns gutter rows under CSS zoom with word wrap %s', async (wrap) => {
+    const host = await renderTextarea(html`
+      <rc-textarea
+        data-testid="host"
+        line-numbers
+        ?word-wrap=${wrap}
+        style="inline-size: 8rem; block-size: 10rem; zoom: 0.8;"
+      >
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = 'A long sentence that wraps across multiple rows\nShort';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+    const gutter = getGutterCells(host);
+    const flow = resolveFlow(editor);
+
+    await vi.waitFor(() => {
+      const lines = editor.querySelectorAll<HTMLElement>('.line');
+      const cells = gutter.querySelectorAll<HTMLElement>('.gutter-cell');
+
+      expect(cells.length).toBe(2);
+
+      for (let index = 0; index < lines.length; index += 1) {
+        const line = logicalRect(
+          lines[index].getBoundingClientRect(),
+          editor.getBoundingClientRect(),
+          flow,
+        );
+        const cell = logicalRect(
+          cells[index].getBoundingClientRect(),
+          gutter.getBoundingClientRect(),
+          flow,
+        );
+
+        expect(Math.abs(cell.blockSize - line.blockSize)).toBeLessThan(1);
+        expect(Math.abs(cell.blockStart - line.blockStart)).toBeLessThan(1);
+      }
+    });
+  });
+
   test('realigns gutter cells after an ancestor writing-mode change', async () => {
     const host = await renderTextarea(
       inFlow(
