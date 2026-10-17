@@ -33,6 +33,7 @@ import '@rcarls/rc-splitter/define';
 import '@rcarls/rc-switch/define';
 import '@rcarls/rc-textarea/define';
 import '@rcarls/rc-toolbar/define';
+import '@rcarls/rc-tooltip/define';
 import '@rcarls/rc-transfer-list/define';
 import '@rcarls/rc-virtual-canvas/define';
 import '@rcarls/rc-virtual-scroller/define';

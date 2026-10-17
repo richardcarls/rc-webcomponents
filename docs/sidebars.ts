@@ -81,6 +81,7 @@ const sidebars: SidebarsConfig = {
         'components/rc-disclosure',
         'components/rc-markdown-editor',
         'components/rc-menu-button',
+        'components/rc-tooltip',
         'components/rc-snackbar',
         'components/rc-splitter',
       ],

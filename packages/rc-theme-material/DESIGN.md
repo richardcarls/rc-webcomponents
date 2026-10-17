@@ -36,7 +36,7 @@ colors:
   on-surface-variant: '#49454f'
   outline: '#79747e'
   outline-variant: '#cac4d0'
-  inverse-surface: '#313033' # snackbar
+  inverse-surface: '#313033' # snackbar, tooltip
   inverse-on-surface: '#f4eff4'
   inverse-primary: '#d0bcff'
   scrim: '#000000'
@@ -152,7 +152,7 @@ typography:
 rounded:
   # --md-sys-shape-corner-*
   none: 0px
-  extra-small: 4px # snackbar, inner corners of segmented lists and accordions
+  extra-small: 4px # snackbar, tooltip, inner corners of segmented lists and accordions
   small: 8px # chips, menus
   medium: 12px # cards
   large: 16px # standalone disclosures, FAB
@@ -255,6 +255,10 @@ components:
     backgroundColor: '{colors.inverse-surface}'
     textColor: '{colors.inverse-on-surface}'
     actionColor: '{colors.inverse-primary}'
+    rounded: '{rounded.extra-small}'
+  tooltip:
+    backgroundColor: '{colors.inverse-surface}'
+    textColor: '{colors.inverse-on-surface}'
     rounded: '{rounded.extra-small}'
 ---
 
@@ -662,6 +666,7 @@ Layout readiness, not a separate 10-foot mode:
 | -------------------------------------------- | ----------------------------------------------------------- |
 | Buttons, icon buttons, navigation indicators | full                                                        |
 | `rc-snackbar`                                | extra-small                                                 |
+| `rc-tooltip`                                 | extra-small                                                 |
 | Chips, menus                                 | small                                                       |
 | Cards                                        | medium                                                      |
 | FAB, standalone disclosure                   | large                                                       |
@@ -1217,6 +1222,11 @@ rc-card.card-outlined {
 - **Live regions.** Announce outcomes, such as Saved or 3 items imported, not
   every tick of progress.
 - **Empty states** use body text and one action, not an illustration alone.
+
+- **Tooltips.** Use `rc-tooltip` for concise descriptive text attached to a
+  focused or hovered trigger. Keep the content non-interactive, and use it for
+  supplemental context rather than required instructions. The theme maps its
+  surface to `inverse-surface` and its text to `inverse-on-surface`.
 
 ### Toolbars
 

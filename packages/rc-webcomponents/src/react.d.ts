@@ -268,6 +268,25 @@ export type RCSnackbarCloseDetail = {
   message: string;
 };
 
+export type RCTooltipPlacement =
+  | 'block-start'
+  | 'block-start-start'
+  | 'block-start-end'
+  | 'block-end'
+  | 'block-end-start'
+  | 'block-end-end'
+  | 'inline-start'
+  | 'inline-start-start'
+  | 'inline-start-end'
+  | 'inline-end'
+  | 'inline-end-start'
+  | 'inline-end-end';
+
+/** Public API surface of `<rc-tooltip>`. */
+export type RCTooltipRef = HTMLElement & {
+  placement: RCTooltipPlacement;
+};
+
 // ── Ref types ────────────────────────────────────────────────────────────────
 
 /** Public API surface of `<rc-button>`. */
@@ -936,6 +955,10 @@ declare module 'react' {
         'action-label'?: string;
         duration?: number | string;
         'queue-policy'?: RCSnackbarQueuePolicy;
+      };
+
+      'rc-tooltip': React.DetailedHTMLProps<React.HTMLAttributes<RCTooltipRef>, RCTooltipRef> & {
+        placement?: RCTooltipPlacement;
       };
 
       'rc-listbox': React.DetailedHTMLProps<React.HTMLAttributes<RCListboxRef>, RCListboxRef> & {

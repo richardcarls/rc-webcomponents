@@ -466,6 +466,18 @@
         "default": "./dist/rc-toolbar/define.js"
       }
     },
+    "./rc-tooltip": {
+      "import": {
+        "types": "./dist/types/rc-tooltip/index.d.ts",
+        "default": "./dist/rc-tooltip/index.js"
+      }
+    },
+    "./rc-tooltip/define": {
+      "import": {
+        "types": "./dist/types/rc-tooltip/define.d.ts",
+        "default": "./dist/rc-tooltip/define.js"
+      }
+    },
     "./rc-transfer-list": {
       "import": {
         "types": "./dist/types/rc-transfer-list/index.d.ts",
@@ -548,6 +560,7 @@
     "@rcarls/rc-switch": "workspace:*",
     "@rcarls/rc-textarea": "workspace:*",
     "@rcarls/rc-toolbar": "workspace:*",
+    "@rcarls/rc-tooltip": "workspace:*",
     "@rcarls/rc-transfer-list": "workspace:*",
     "@rcarls/rc-virtual-canvas": "workspace:*",
     "@rcarls/rc-virtual-scroller": "workspace:*"

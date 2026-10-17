@@ -221,6 +221,25 @@ export type RCSnackbarCloseDetail = {
   message: string;
 };
 
+export type RCTooltipPlacement =
+  | 'block-start'
+  | 'block-start-start'
+  | 'block-start-end'
+  | 'block-end'
+  | 'block-end-start'
+  | 'block-end-end'
+  | 'inline-start'
+  | 'inline-start-start'
+  | 'inline-start-end'
+  | 'inline-end'
+  | 'inline-end-start'
+  | 'inline-end-end';
+
+/** Public API surface of `<rc-tooltip>`. */
+export type RCTooltipRef = HTMLElement & {
+  placement: RCTooltipPlacement;
+};
+
 export type RCSnackbarRef = HTMLElement & {
   open: boolean;
   message: string;
@@ -947,6 +966,10 @@ declare module 'solid-js' {
         'prop:duration'?: number | undefined;
         'on:rc-snackbar-action'?: (e: CustomEvent<RCSnackbarActionDetail>) => void;
         'on:rc-snackbar-close'?: (e: CustomEvent<RCSnackbarCloseDetail>) => void;
+      };
+
+      'rc-tooltip': JSX.HTMLAttributes<RCTooltipRef> & {
+        placement?: RCTooltipPlacement;
       };
 
       'rc-listbox': JSX.HTMLAttributes<RCListboxRef> & {

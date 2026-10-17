@@ -1888,6 +1888,19 @@ export function MenuButtonDemo() {
   );
 }
 
+export function TooltipDemo() {
+  return (
+    <DemoFrame>
+      <rc-tooltip placement="block-end">
+        <button slot="trigger" type="button">
+          Hover or focus me
+        </button>
+        <span slot="content">This text describes the trigger.</span>
+      </rc-tooltip>
+    </DemoFrame>
+  );
+}
+
 export function MenubarDemo() {
   const [menubarEl, setMenubarEl] = useState<HTMLElement | null>(null);
   const setMenubarRef = useCallback((element: HTMLElement | null) => {
@@ -2200,6 +2213,7 @@ export function TextareaDisclosureDemo() {
 
     $message.textContent =
       'This block is presentation only. Editing and copying preserve the source text.';
+
     $panel.append($message);
 
     editor.usePlugin({

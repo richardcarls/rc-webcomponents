@@ -33,6 +33,7 @@ export * from '@rcarls/rc-splitter';
 export * from '@rcarls/rc-switch';
 export * from '@rcarls/rc-textarea';
 export * from '@rcarls/rc-toolbar';
+export * from '@rcarls/rc-tooltip';
 export * from '@rcarls/rc-transfer-list';
 export * from '@rcarls/rc-virtual-canvas';
 export * from '@rcarls/rc-virtual-scroller';

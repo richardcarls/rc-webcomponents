@@ -1,0 +1,11 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-tooltip {
+    --rc-tooltip-padding-block: 0.5rem;
+    --rc-tooltip-padding-inline: 0.75rem;
+    --rc-tooltip-border: 0;
+    --rc-tooltip-radius: var(--md-sys-shape-corner-extra-small, 0.25rem);
+    --rc-tooltip-background: var(--md-sys-color-inverse-surface, CanvasText);
+    --rc-tooltip-color: var(--md-sys-color-inverse-on-surface, Canvas);
+    --rc-tooltip-shadow: var(--rc-shadow-level2, none);
+  }
+}
