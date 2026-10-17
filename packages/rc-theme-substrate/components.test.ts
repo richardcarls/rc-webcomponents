@@ -46,6 +46,27 @@ function renderPart(scope: HTMLElement, tagName: string, partName: string): HTML
   return part;
 }
 
+test('dialog entrance motion leaves surface geometry untransformed', () => {
+  const $scope = renderScope();
+  const $host = document.createElement('rc-dialog');
+  const $dialog = document.createElement('dialog');
+
+  $dialog.setAttribute('open', '');
+  $host.append($dialog);
+  $scope.append($host);
+
+  const openStyle = getComputedStyle($dialog);
+  const transitionProperties = openStyle.transitionProperty.split(',').map((value) => value.trim());
+
+  expect(transitionProperties).toContain('opacity');
+  expect(transitionProperties).not.toContain('transform');
+  expect(openStyle.transform).toBe('none');
+
+  $dialog.removeAttribute('open');
+
+  expect(getComputedStyle($dialog).transform).toBe('none');
+});
+
 test('aggregate component styles cover the reference styling surface', () => {
   const scope = renderScope();
   const expectations = new Map<string, [string, string]>([

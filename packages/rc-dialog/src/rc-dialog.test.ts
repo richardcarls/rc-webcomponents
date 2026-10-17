@@ -312,55 +312,49 @@ test('fullscreen variant tracks the visual viewport only while open', async () =
   expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-height')).toBe('');
 });
 
-test.runIf('currentCSSZoom' in Element.prototype)(
-  'fullscreen variant covers the viewport under an ancestor zoom',
-  async () => {
-    const screen = render(html`
-      <div style="zoom: 0.8">
-        <rc-dialog data-testid="host" variant="fullscreen">
-          <dialog aria-label="Zoomed fullscreen test"><button>Close</button></dialog>
-        </rc-dialog>
-      </div>
-    `);
-    const host = (await screen.getByTestId('host').element()) as RCDialog;
+test('fullscreen variant covers the viewport under an ancestor zoom', async () => {
+  const screen = render(html`
+    <div style="zoom: 0.8">
+      <rc-dialog data-testid="host" variant="fullscreen">
+        <dialog aria-label="Zoomed fullscreen test"><button>Close</button></dialog>
+      </rc-dialog>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
 
-    await host.updateComplete;
-    host.showModal();
+  await host.updateComplete;
+  host.showModal();
 
-    const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
+  const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
 
-    expect(rect.width).toBeCloseTo(window.visualViewport?.width ?? window.innerWidth, 0);
-    expect(rect.height).toBeCloseTo(window.visualViewport?.height ?? window.innerHeight, 0);
+  expect(rect.width).toBeCloseTo(window.visualViewport?.width ?? window.innerWidth, 0);
+  expect(rect.height).toBeCloseTo(window.visualViewport?.height ?? window.innerHeight, 0);
 
-    host.close();
-  },
-);
+  host.close();
+});
 
-test.runIf('currentCSSZoom' in Element.prototype)(
-  'fullscreen variant covers the viewport under a zoom when the host has no box',
-  async () => {
-    // A host styled display: contents (to stay out of a parent grid) reports
-    // currentCSSZoom as 1, so the zoom must come from the inner dialog.
-    const screen = render(html`
-      <div style="zoom: 0.7">
-        <rc-dialog data-testid="host" variant="fullscreen" style="display: contents">
-          <dialog aria-label="Contents host fullscreen test"><button>Close</button></dialog>
-        </rc-dialog>
-      </div>
-    `);
-    const host = (await screen.getByTestId('host').element()) as RCDialog;
+test('fullscreen variant covers the viewport under a zoom when the host has no box', async () => {
+  // A host styled display: contents (to stay out of a parent grid) reports
+  // currentCSSZoom as 1, so the zoom must come from the inner dialog.
+  const screen = render(html`
+    <div style="zoom: 0.7">
+      <rc-dialog data-testid="host" variant="fullscreen" style="display: contents">
+        <dialog aria-label="Contents host fullscreen test"><button>Close</button></dialog>
+      </rc-dialog>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
 
-    await host.updateComplete;
-    host.showModal();
+  await host.updateComplete;
+  host.showModal();
 
-    const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
+  const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
 
-    expect(rect.width).toBeCloseTo(window.visualViewport?.width ?? window.innerWidth, 0);
-    expect(rect.height).toBeCloseTo(window.visualViewport?.height ?? window.innerHeight, 0);
+  expect(rect.width).toBeCloseTo(window.visualViewport?.width ?? window.innerWidth, 0);
+  expect(rect.height).toBeCloseTo(window.visualViewport?.height ?? window.innerHeight, 0);
 
-    host.close();
-  },
-);
+  host.close();
+});
 
 test('rc-dialog restores focus to the opener on close', async () => {
   const screen = render(html`

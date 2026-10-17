@@ -2,6 +2,7 @@ import { LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import {
+  cssZoom,
   DragController,
   getVisualViewportBounds,
   NativeChildController,
@@ -822,8 +823,8 @@ export class RCDialog extends LitElement {
     // the inner <dialog>: a host styled `display: contents` has no box, and
     // `currentCSSZoom` reports 1 for it.
     const $zoomSource: Element = this._$dialog ?? this;
-    const zoom = ($zoomSource as Element & { currentCSSZoom?: number }).currentCSSZoom || 1;
-    const px = (value: number) => `${value / zoom}px`;
+    const dialogZoom = cssZoom($zoomSource);
+    const px = (viewportPx: number) => `${viewportPx / dialogZoom}px`;
 
     this.style.setProperty('--rc-dialog-visual-viewport-left', px(bounds.left));
     this.style.setProperty('--rc-dialog-visual-viewport-top', px(bounds.top));

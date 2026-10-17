@@ -47,8 +47,8 @@ export const DIALOG_BASE_CSS = `
 
   /*
    * A native <dialog> can animate its own open/close entirely through CSS:
-   * @starting-style plus transition-behavior: allow-discrete lets it fade and
-   * scale in and out without any JavaScript coordinating the timing.
+   * @starting-style plus transition-behavior: allow-discrete lets it fade in
+   * and out without any JavaScript coordinating the timing.
    * showModal()/close() still run synchronously; the discrete transition on
    * display/overlay is what keeps the surface (and its backdrop) rendered
    * and interactive for the duration of the exit transition instead of
