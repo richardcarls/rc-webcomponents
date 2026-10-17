@@ -79,7 +79,7 @@ that triggers native scroll events.
 
 | Property       | Type     | Description                                                                                                                  |
 | -------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `canvasScaleX` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the x-axis (≈ `devicePixelRatio` when `autoResizeCanvas` is `true`) |
+| `canvasScaleX` | `number` | Ratio of canvas backing-store pixels to local CSS pixels along the x-axis; CSS zoom can make it differ from `devicePixelRatio` |
 | `canvasScaleY` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the y-axis                                                          |
 
 ### Methods
@@ -89,7 +89,7 @@ that triggers native scroll events.
 | `getViewRect()`                     | Returns an immutable snapshot of the current viewport rectangle                                  |
 | `scrollToContent(x, y, options?)`   | Scrolls so the content coordinate is at the viewport origin                                      |
 | `centerOnContent(x, y, options?)`   | Scrolls so the content coordinate is centered in the viewport                                    |
-| `clientToContent(clientX, clientY)` | Converts browser client coordinates to content coordinates using the current backing-store scale |
+| `clientToContent(clientX, clientY)` | Converts browser client coordinates to content coordinates in CSS pixels |
 | `contentToClient(x, y)`             | Converts content coordinates back to browser client coordinates                                  |
 | `requestRender(reason?)`            | Queues a render event; required when `renderMode` is `'manual'`                                  |
 
@@ -152,9 +152,14 @@ The component maps scroll position directly to content coordinates:
 - `viewRect.y` = `scrollTop` of the internal scroll container
 - `viewRect.width` / `viewRect.height` = canvas dimensions in device pixels (high-DPI aware)
 
+`clientToContent()` and `contentToClient()` use CSS-pixel content coordinates. The
+canvas backing-store resolution does not change pointer coordinates. Use
+`canvasScaleX` and `canvasScaleY` only when scaling the drawing context.
+
 When drawing, offset your scene by `viewRect.x` and `viewRect.y` to align the visible portion with the canvas origin:
 
 ```js
+ctx.setTransform(vc.canvasScaleX, 0, 0, vc.canvasScaleY, 0, 0);
 ctx.translate(-viewRect.x, -viewRect.y);
 drawEntireScene(ctx);
 ctx.resetTransform();
