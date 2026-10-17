@@ -1,4 +1,12 @@
 @layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar {
+    /*
+     * The bar is already the full-height field, so the shared outset ring
+     * floats off its edge and crowds the app bar. Draw it on the edge instead.
+     */
+    --rc-focus-ring-offset: -2px;
+  }
+
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-search-bar::part(root) {
     box-sizing: border-box;
     transition:
