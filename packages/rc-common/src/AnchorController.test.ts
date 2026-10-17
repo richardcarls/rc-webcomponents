@@ -120,6 +120,67 @@ test('_positionFallback places a block-end-start popup below the anchor', async 
   expect(rect.top).toBeCloseTo(anchorRect.bottom + 8, 0);
 });
 
+test('_positionFallback aligns a floating element under CSS zoom', async () => {
+  const screen = render(html`
+    <div style="zoom: 0.8">
+      <div
+        data-testid="anchor"
+        style="position: fixed; left: 100px; top: 200px; width: 50px; height: 40px;"
+      ></div>
+      <div data-testid="floating" style="width: 200px; height: 160px;"></div>
+    </div>
+  `);
+  const anchor = (await screen.getByTestId('anchor').element()) as HTMLElement;
+  const floating = (await screen.getByTestId('floating').element()) as HTMLElement;
+  const ctl = asPrivate(
+    new AnchorController(createHost(), {
+      anchor,
+      floating,
+      placement: 'block-end-start',
+      offset: 8,
+    }),
+  );
+
+  ctl._positionFallback();
+
+  const anchorRect = anchor.getBoundingClientRect();
+  const floatingRect = floating.getBoundingClientRect();
+
+  expect(floatingRect.left).toBeCloseTo(anchorRect.left, 0);
+  expect(floatingRect.top).toBeCloseTo(anchorRect.bottom + 8 * 0.8, 0);
+  expect(floatingRect.width).toBeGreaterThanOrEqual(anchorRect.width);
+});
+
+test('_positionFallback places a side popup under CSS zoom', async () => {
+  const screen = render(html`
+    <div style="zoom: 0.8">
+      <div
+        data-testid="anchor"
+        style="position: fixed; left: 100px; top: 200px; width: 50px; height: 40px;"
+      ></div>
+      <div data-testid="floating" style="width: 200px; height: 160px;"></div>
+    </div>
+  `);
+  const anchor = (await screen.getByTestId('anchor').element()) as HTMLElement;
+  const floating = (await screen.getByTestId('floating').element()) as HTMLElement;
+  const ctl = asPrivate(
+    new AnchorController(createHost(), {
+      anchor,
+      floating,
+      placement: 'inline-end-start',
+      offset: 8,
+    }),
+  );
+
+  ctl._positionFallback();
+
+  const anchorRect = anchor.getBoundingClientRect();
+  const floatingRect = floating.getBoundingClientRect();
+
+  expect(floatingRect.left).toBeCloseTo(anchorRect.right + 8 * 0.8, 0);
+  expect(floatingRect.top).toBeCloseTo(anchorRect.top, 0);
+});
+
 test('_clampToViewport nudges an off-screen floating element back within bounds', async () => {
   const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
 

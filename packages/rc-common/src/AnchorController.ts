@@ -722,17 +722,19 @@ export class AnchorController implements ReactiveController {
     const viewport = getVisualViewportBounds($window);
     const vw = $window.innerWidth;
     const vh = $window.innerHeight;
+    const floatingZoom = cssZoom(floating);
+    const offsetViewportPx = offset * floatingZoom;
 
     floating.style.position = 'fixed';
     floating.style.boxSizing = 'border-box';
-    floating.style.minWidth = `${rect.width}px`;
+    floating.style.minWidth = `${rect.width / floatingZoom}px`;
     floating.style.top = '';
     floating.style.bottom = '';
     floating.style.left = '';
     floating.style.right = '';
 
-    const popupWidth = floating.offsetWidth || rect.width;
-    const popupHeight = floating.offsetHeight || 0;
+    const popupWidthViewportPx = (floating.offsetWidth || rect.width / floatingZoom) * floatingZoom;
+    const popupHeightViewportPx = floating.offsetHeight * floatingZoom;
     const side = placement.split('-')[0] as 'top' | 'bottom' | 'left' | 'right';
     const align: 'start' | 'end' | 'center' = placement.endsWith('-start')
       ? 'start'
@@ -747,57 +749,79 @@ export class AnchorController implements ReactiveController {
       const spaceAbove = rect.top - viewport.top;
 
       if (flip) {
-        if (side === 'bottom' && spaceBelow < popupHeight + offset && spaceAbove > spaceBelow) {
+        if (
+          side === 'bottom' &&
+          spaceBelow < popupHeightViewportPx + offsetViewportPx &&
+          spaceAbove > spaceBelow
+        ) {
           resolvedSide = 'top';
-        } else if (side === 'top' && spaceAbove < popupHeight + offset && spaceBelow > spaceAbove) {
+        } else if (
+          side === 'top' &&
+          spaceAbove < popupHeightViewportPx + offsetViewportPx &&
+          spaceBelow > spaceAbove
+        ) {
           resolvedSide = 'bottom';
         }
       }
 
       if (resolvedSide === 'top') {
-        floating.style.bottom = `${vh - rect.top + offset}px`;
+        floating.style.bottom = `${(vh - rect.top + offsetViewportPx) / floatingZoom}px`;
       } else {
-        floating.style.top = `${rect.bottom + offset}px`;
+        floating.style.top = `${(rect.bottom + offsetViewportPx) / floatingZoom}px`;
       }
 
-      let left =
+      let leftViewportPx =
         align === 'end'
-          ? rect.right - popupWidth
+          ? rect.right - popupWidthViewportPx
           : align === 'start'
             ? rect.left
-            : rect.left + rect.width / 2 - popupWidth / 2;
+            : rect.left + rect.width / 2 - popupWidthViewportPx / 2;
 
-      left = Math.max(viewport.left + margin, Math.min(left, viewport.right - popupWidth - margin));
+      leftViewportPx = Math.max(
+        viewport.left + margin,
+        Math.min(leftViewportPx, viewport.right - popupWidthViewportPx - margin),
+      );
 
-      floating.style.left = `${left}px`;
+      floating.style.left = `${leftViewportPx / floatingZoom}px`;
     } else {
       const spaceRight = viewport.right - rect.right;
       const spaceLeft = rect.left - viewport.left;
 
       if (flip) {
-        if (side === 'right' && spaceRight < popupWidth + offset && spaceLeft > spaceRight) {
+        if (
+          side === 'right' &&
+          spaceRight < popupWidthViewportPx + offsetViewportPx &&
+          spaceLeft > spaceRight
+        ) {
           resolvedSide = 'left';
-        } else if (side === 'left' && spaceLeft < popupWidth + offset && spaceRight > spaceLeft) {
+        } else if (
+          side === 'left' &&
+          spaceLeft < popupWidthViewportPx + offsetViewportPx &&
+          spaceRight > spaceLeft
+        ) {
           resolvedSide = 'right';
         }
       }
 
       if (resolvedSide === 'left') {
-        floating.style.right = `${vw - rect.left + offset}px`;
+        floating.style.right = `${(vw - rect.left + offsetViewportPx) / floatingZoom}px`;
       } else {
-        floating.style.left = `${rect.right + offset}px`;
+        floating.style.left = `${(rect.right + offsetViewportPx) / floatingZoom}px`;
       }
 
-      let top =
+      let topViewportPx =
         align === 'end'
-          ? rect.bottom - popupHeight
+          ? rect.bottom - popupHeightViewportPx
           : align === 'start'
             ? rect.top
-            : rect.top + rect.height / 2 - popupHeight / 2;
+            : rect.top + rect.height / 2 - popupHeightViewportPx / 2;
 
-      top = Math.max(viewport.top + margin, Math.min(top, viewport.bottom - popupHeight - margin));
+      topViewportPx = Math.max(
+        viewport.top + margin,
+        Math.min(topViewportPx, viewport.bottom - popupHeightViewportPx - margin),
+      );
 
-      floating.style.top = `${top}px`;
+      floating.style.top = `${topViewportPx / floatingZoom}px`;
     }
   }
 
