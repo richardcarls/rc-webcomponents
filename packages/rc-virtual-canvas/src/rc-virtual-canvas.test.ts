@@ -579,10 +579,13 @@ test.each([1, 0.8])('RCVirtualCanvas exposes backing-store scale under zoom %s',
   const $canvas = screen.getByTestId('canvas').element() as HTMLCanvasElement;
 
   await vi.waitFor(() => {
-    expect($canvas.width).toBeCloseTo(
+    const zoomedBackingWidth = Math.round(
       $canvas.getBoundingClientRect().width * window.devicePixelRatio,
-      0,
     );
+    const localBackingWidth = Math.round($canvas.clientWidth * window.devicePixelRatio);
+
+    // WebKit reports the local CSS size for devicePixelContentBoxSize under zoom.
+    expect([zoomedBackingWidth, localBackingWidth]).toContain($canvas.width);
   });
 
   expect($host.canvasScaleX).toBeCloseTo($canvas.width / $canvas.clientWidth, 5);
