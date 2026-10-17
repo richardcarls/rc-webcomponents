@@ -15,12 +15,10 @@
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog > dialog {
     opacity: 1;
-    transform: translateY(0) scale(1);
     transition:
       display var(--substrate-motion-duration-slow, 240ms) allow-discrete,
       overlay var(--substrate-motion-duration-slow, 240ms) allow-discrete,
-      opacity var(--substrate-motion-duration-slow, 240ms) var(--substrate-motion-easing, ease),
-      transform var(--substrate-motion-duration-slow, 240ms) var(--substrate-motion-easing, ease);
+      opacity var(--substrate-motion-duration-slow, 240ms) var(--substrate-motion-easing, ease);
     transition-behavior: allow-discrete;
   }
 
@@ -32,12 +30,10 @@
   @starting-style {
     :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog > dialog[open] {
       opacity: 0;
-      transform: translateY(0.5rem) scale(0.98);
     }
   }
 
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-dialog > dialog:not([open]) {
     opacity: 0;
-    transform: translateY(0.5rem) scale(0.98);
   }
 }
