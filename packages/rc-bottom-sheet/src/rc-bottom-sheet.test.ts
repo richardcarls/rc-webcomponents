@@ -1003,41 +1003,46 @@ test('snaps stay docked when the containing block moves afterward', async () => 
   $host.close();
 });
 
-test('a focused field scrolls into view within the sheet', async () => {
-  const screen = render(html`
-    <rc-bottom-sheet data-testid="host" snap-points="200px">
-      <dialog aria-label="Nutrition" style="display: flex; flex-direction: column; padding: 0;">
-        <button>Done</button>
-        <div data-testid="body" style="flex: 1; min-block-size: 0; overflow: auto;">
-          <div style="block-size: 600px;"></div>
-          <input data-testid="field" aria-label="Quantity" />
-        </div>
-      </dialog>
-    </rc-bottom-sheet>
-  `);
-  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
-  const $field = (await screen.getByTestId('field').element()) as HTMLInputElement;
+test.each([1, 0.8])(
+  'a focused field scrolls into view within the sheet at zoom %s',
+  async (zoom) => {
+    const screen = render(html`
+      <div style="zoom: ${zoom}">
+        <rc-bottom-sheet data-testid="host" snap-points="200px">
+          <dialog aria-label="Nutrition" style="display: flex; flex-direction: column; padding: 0;">
+            <button>Done</button>
+            <div data-testid="body" style="flex: 1; min-block-size: 0; overflow: auto;">
+              <div style="block-size: 600px;"></div>
+              <input data-testid="field" aria-label="Quantity" />
+            </div>
+          </dialog>
+        </rc-bottom-sheet>
+      </div>
+    `);
+    const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+    const $field = (await screen.getByTestId('field').element()) as HTMLInputElement;
 
-  await $host.updateComplete;
-  $host.show();
-  $host.snapTo(0, 'instant');
+    await $host.updateComplete;
+    $host.show();
+    $host.snapTo(0, 'instant');
 
-  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+    const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
 
-  $field.focus({ preventScroll: true });
-  // A software keyboard resizing the viewport re-runs the reveal as well.
-  window.dispatchEvent(new Event('resize'));
+    $field.focus({ preventScroll: true });
+    // A software keyboard resizing the viewport re-runs the reveal as well.
+    window.dispatchEvent(new Event('resize'));
 
-  const sheet = $dialog.getBoundingClientRect();
-  const field = $field.getBoundingClientRect();
+    const sheet = $dialog.getBoundingClientRect();
+    const field = $field.getBoundingClientRect();
 
-  expect(field.top).toBeGreaterThanOrEqual(sheet.top);
-  expect(field.bottom).toBeLessThanOrEqual(sheet.bottom);
-  // Scrolling sufficed, so the sheet keeps its snap height.
-  expect(Math.round(sheet.height)).toBe(200);
+    expect(field.top).toBeGreaterThanOrEqual(sheet.top);
+    expect(field.bottom).toBeLessThanOrEqual(sheet.bottom);
+    // Scrolling sufficed, so the sheet keeps its snap height.
+    expect(Math.round(sheet.height)).toBe(Math.round(200 * zoom));
 
-  $host.close();
-});
+    $host.close();
+  },
+);
 
 test('a focused field the sheet cannot scroll to grows the sheet past its maximum until focus leaves', async () => {
   const screen = render(html`
@@ -1086,7 +1091,11 @@ test.runIf('currentCSSZoom' in Element.prototype)(
     const snapSpy = vi.fn();
     const screen = render(html`
       <div style="zoom: 0.8">
-        <rc-bottom-sheet data-testid="host" snap-points="100px 300px" @rc-bottom-sheet-snap=${snapSpy}>
+        <rc-bottom-sheet
+          data-testid="host"
+          snap-points="100px 300px"
+          @rc-bottom-sheet-snap=${snapSpy}
+        >
           <dialog aria-labelledby="sheet-title">
             <h2 id="sheet-title">Filter recipes</h2>
             <button type="button" data-rc-bottom-sheet-handle>Resize sheet</button>
@@ -1113,7 +1122,11 @@ test.runIf('currentCSSZoom' in Element.prototype)(
     const start = $dialog.getBoundingClientRect();
 
     firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
-    firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 120 });
+
+    firePointerEvent($handle, 'pointermove', {
+      clientX: start.left + 20,
+      clientY: start.top - 120,
+    });
 
     // The dragged edge follows the pointer and the sheet stays docked.
     const dragged = $dialog.getBoundingClientRect();
