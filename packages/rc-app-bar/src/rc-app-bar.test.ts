@@ -368,6 +368,50 @@ test('continuous collapse maps expanded-row scroll distance to progress', async 
   expect(host.hasAttribute('data-collapsed')).toBe(true);
 });
 
+test('continuous collapse converts a zoomed scroll target into host CSS pixels', async () => {
+  const screen = render(html`
+    <div
+      data-testid="sc"
+      style="height: 100px; overflow-y: auto; overflow-anchor: none; zoom: 0.8;"
+    >
+      <rc-app-bar
+        data-testid="host"
+        variant="expanded"
+        scroll-behavior="collapse"
+        style="zoom: 0.8;"
+      >
+        <div style="height: 80px">Recipe</div>
+      </rc-app-bar>
+      <div style="height: 1000px;"></div>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+
+  host.scrollTarget = sc;
+  await host.updateComplete;
+
+  let distanceHostCssPx = 0;
+
+  await vi.waitFor(() => {
+    distanceHostCssPx = Number.parseFloat(
+      host.style.getPropertyValue('--_rc-app-bar-collapse-distance'),
+    );
+
+    expect(distanceHostCssPx).toBeGreaterThan(0);
+  });
+
+  // The host has 0.64 effective zoom; the scroller has 0.8.
+  scrollTo(sc, (distanceHostCssPx * 0.64) / 0.8 / 2);
+
+  expect(
+    Number.parseFloat(host.style.getPropertyValue('--rc-app-bar-collapse-progress')),
+  ).toBeCloseTo(0.5, 1);
+
+  scrollTo(sc, (distanceHostCssPx * 0.64) / 0.8 + 2);
+  expect(host.hasAttribute('data-collapsed')).toBe(true);
+});
+
 test('hide behavior hides downward and reveals upward or near the top', async () => {
   const screen = render(html`
     <div data-testid="sc" style="height: 100px; overflow-y: auto;">
