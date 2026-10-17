@@ -1,6 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
+import { cssZoom } from './cssZoom.js';
 import { findNearestScrollAncestor } from './findNearestScrollAncestor.js';
 import {
   arrowKeys,
@@ -88,8 +89,8 @@ interface PointerSession {
   slots: Slot[];
   step: number;
   scroller: Element;
-  scrollStart: number;
-  pointerDelta: number;
+  scrollStartCssPx: number;
+  pointerDeltaViewportPx: number;
   x: number;
   y: number;
 }
@@ -371,8 +372,8 @@ export class ReorderController implements ReactiveController {
       slots,
       step: stepFor(slots, from),
       scroller,
-      scrollStart: scrollOffsetAlongBlock(scroller, flow),
-      pointerDelta: 0,
+      scrollStartCssPx: scrollOffsetAlongBlock(scroller, flow),
+      pointerDeltaViewportPx: 0,
       x: detail.x,
       y: detail.y,
     };
@@ -392,7 +393,7 @@ export class ReorderController implements ReactiveController {
     session.x = detail.x;
     session.y = detail.y;
 
-    session.pointerDelta = logicalDelta(
+    session.pointerDeltaViewportPx = logicalDelta(
       { dx: detail.deltaX, dy: detail.deltaY },
       'block',
       session.flow,
@@ -403,10 +404,15 @@ export class ReorderController implements ReactiveController {
   }
 
   private _layoutPointer(session: PointerSession): void {
-    const scrolled = scrollOffsetAlongBlock(session.scroller, session.flow) - session.scrollStart;
-    const delta = session.pointerDelta + scrolled;
+    const scrollDeltaCssPx =
+      scrollOffsetAlongBlock(session.scroller, session.flow) - session.scrollStartCssPx;
+    const scrollerZoom =
+      session.scroller === this._host.ownerDocument.scrollingElement
+        ? 1
+        : cssZoom(session.scroller);
+    const deltaViewportPx = session.pointerDeltaViewportPx + scrollDeltaCssPx * scrollerZoom;
     const { slots, from } = session;
-    const center = slots[from].start + delta + slots[from].size / 2;
+    const center = slots[from].start + deltaViewportPx + slots[from].size / 2;
     let to = from;
 
     for (let index = from + 1; index < slots.length; index += 1) {
@@ -432,7 +438,7 @@ export class ReorderController implements ReactiveController {
       let offset = 0;
 
       if ($item === session.item) {
-        offset = delta;
+        offset = deltaViewportPx;
       } else if (index > from && index <= to) {
         offset = -session.step;
       } else if (index < from && index >= to) {
@@ -443,14 +449,15 @@ export class ReorderController implements ReactiveController {
     });
   }
 
-  private _translate($item: HTMLElement, blockOffset: number, flow: Flow): void {
-    if (blockOffset === 0) {
+  private _translate($item: HTMLElement, blockOffsetViewportPx: number, flow: Flow): void {
+    if (blockOffsetViewportPx === 0) {
       this._restoreTranslation($item);
 
       return;
     }
 
-    const { x, y } = physicalOffset({ inline: 0, block: blockOffset }, flow);
+    const blockOffsetCssPx = blockOffsetViewportPx / cssZoom($item);
+    const { x, y } = physicalOffset({ inline: 0, block: blockOffsetCssPx }, flow);
 
     if (!this._translated.has($item)) {
       this._translated.set($item, {

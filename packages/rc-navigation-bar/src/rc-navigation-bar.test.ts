@@ -100,6 +100,39 @@ test('positions the indicator on the aria-current link target', async () => {
   expect(indicator?.style.blockSize).toBe('32px');
 });
 
+test('positions the indicator over its target under CSS zoom', async () => {
+  const screen = render(html`
+    <rc-navigation-bar data-testid="host" style="display: block; inline-size: 240px; zoom: 0.8;">
+      <a href="/recipes">Recipes</a>
+      <a href="/settings" aria-current="page">
+        <span
+          data-testid="target"
+          data-rc-navigation-icon
+          style="display: inline-block; inline-size: 48px; block-size: 32px;"
+          >S</span
+        >
+      </a>
+    </rc-navigation-bar>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCNavigationBar;
+  const target = await screen.getByTestId('target').element();
+
+  await host.updateComplete;
+  await nextFrame();
+
+  const indicator = host.shadowRoot?.querySelector<HTMLElement>('#indicator');
+
+  await vi.waitFor(() => expect(indicator?.style.inlineSize).not.toBe(''));
+
+  const indicatorRect = indicator?.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+
+  expect(indicatorRect?.left).toBeCloseTo(targetRect.left, 0);
+  expect(indicatorRect?.top).toBeCloseTo(targetRect.top, 0);
+  expect(indicatorRect?.width).toBeCloseTo(targetRect.width, 0);
+  expect(indicatorRect?.height).toBeCloseTo(targetRect.height, 0);
+});
+
 test('updates the indicator when aria-current moves between links', async () => {
   const screen = render(html`
     <rc-navigation-bar data-testid="host" style="display: block; inline-size: 240px;">
