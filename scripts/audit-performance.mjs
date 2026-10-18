@@ -19,6 +19,9 @@ const COUNT_METRICS = ['initialChunks', 'lazyChunks'];
 
 const JAVASCRIPT_SCENARIOS = {
   button: ['rc-button', './define'],
+  // Guards rc-dialog's on-demand move and resize code: a plain dialog must not
+  // pull the drag and resize controllers into its initial load.
+  dialog: ['rc-dialog', './define'],
   select: ['rc-select', './define'],
   textarea: ['rc-textarea', './define'],
   markdownEditor: ['rc-markdown-editor', './define'],
