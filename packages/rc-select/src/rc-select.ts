@@ -17,9 +17,25 @@ import type {
   ListboxSelectableOption,
 } from '@rcarls/rc-listbox';
 import type { RCDialog, RCDialogCloseEvent } from '@rcarls/rc-dialog';
-import '@rcarls/rc-dialog/define';
 
 import { selectStyles } from './rc-select.styles.js';
+
+// The dialog popup and the selected-value chips register on first use, so a
+// popover single select ships neither.
+let dialogDefined: Promise<unknown> | undefined;
+let chipsDefined: Promise<unknown> | undefined;
+
+function defineDialog(): Promise<unknown> {
+  dialogDefined ??= import('@rcarls/rc-dialog/define');
+
+  return dialogDefined;
+}
+
+function defineChips(): Promise<unknown> {
+  chipsDefined ??= import('@rcarls/rc-chip-group/define');
+
+  return chipsDefined;
+}
 
 export type RCSelectValue = string | string[];
 export type RCSelectPopupMode = 'popover' | 'dialog';
@@ -48,6 +64,11 @@ declare global {
  * Wraps a native `<select>` (default slot) as the form value reflector while
  * rendering a custom button trigger and popup listbox. Popup placement
  * and `aria-activedescendant` virtual keyboard navigation are supported.
+ *
+ * The fullscreen dialog popup (`popup-mode="dialog"`) and the selected-value
+ * chips of a `multiple` select load on first use, so a popover single select
+ * ships neither. Importing `@rcarls/rc-select/define` therefore no longer
+ * registers `rc-dialog` or `rc-chip-group` by itself.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-select rc-select docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/combobox/ WAI-ARIA Combobox pattern}
@@ -340,6 +361,15 @@ export class RCSelect extends LitElement {
   override updated(changed: PropertyValues) {
     super.updated(changed);
     this.toggleAttribute('has-value', this._selectedValues.size > 0);
+
+    // Start loading before the first dialog open or chip render needs it.
+    if (this.popupMode === 'dialog') {
+      void defineDialog();
+    }
+
+    if (this.multiple) {
+      void defineChips();
+    }
   }
 
   /**
@@ -370,6 +400,8 @@ export class RCSelect extends LitElement {
       this.requestUpdate();
 
       void this.updateComplete.then(async () => {
+        await defineDialog();
+
         const $dialogHost = this._$dialogHost;
 
         if (!this.open || this._activePopupMode !== 'dialog' || !$dialogHost) {
@@ -411,7 +443,8 @@ export class RCSelect extends LitElement {
 
     if (this._activePopupMode === 'dialog') {
       this._discardDialogSelection();
-      this._$dialogHost?.close('cancel');
+      // The dialog may not have upgraded yet when closed during its first load.
+      this._$dialogHost?.close?.('cancel');
       this._finishDialogClose(returnFocus);
 
       return;

@@ -21,28 +21,30 @@ The tracked baseline records these initial sizes in decimal kB:
 | Entry                               | Initial gzip | Initial Brotli |
 | ----------------------------------- | -----------: | -------------: |
 | `@rcarls/rc-button/define`          |      10.8 kB |         9.7 kB |
-| `@rcarls/rc-select/define`          |      39.7 kB |        34.0 kB |
+| `@rcarls/rc-select/define`          |      29.1 kB |        25.5 kB |
 | `@rcarls/rc-textarea/define`        |      30.5 kB |        26.7 kB |
-| `@rcarls/rc-markdown-editor/define` |     106.2 kB |        88.5 kB |
-| Aggregate class export              |     206.1 kB |       159.3 kB |
-| Aggregate define export             |     205.8 kB |       159.5 kB |
+| `@rcarls/rc-markdown-editor/define` |      76.9 kB |        65.2 kB |
+| Aggregate class export              |     206.1 kB |       159.4 kB |
+| Aggregate define export             |     206.1 kB |       159.7 kB |
 | Base theme CSS                      |       1.2 kB |         1.0 kB |
 | Material theme CSS                  |      33.9 kB |        26.3 kB |
 | Substrate theme CSS                 |      13.2 kB |        10.9 kB |
 | Windows 3.1 theme CSS               |      18.7 kB |        15.3 kB |
 
-`rc-select` keeps dialog move and resize code in a lazy chunk it never loads,
-since its dialog popup does not move or resize. The complete raw, gzip, Brotli,
-and chunk-count data lives in `performance-budgets.json`. Each byte budget allows five percent or 1 kB above
+`rc-select` loads its dialog popup and selected-value chips as lazy chunks the
+first time `popup-mode="dialog"` or `multiple` needs them, and keeps dialog move
+and resize code in a lazy chunk it never loads, since its dialog popup does not
+move or resize. The complete raw, gzip, Brotli, and chunk-count data lives in
+`performance-budgets.json`. Each byte budget allows five percent or 1 kB above
 the recorded measurement, whichever is larger; chunk counts may not grow
 without an intentional baseline update.
 
 Material is the broadest theme and has the largest theme budget: 35.6 kB gzip
 and 27.6 kB Brotli, five percent above its measured CSS. The aggregate define
-entry has a 216.1 kB gzip budget, which covers its whole load since it has no
+entry has a 216.4 kB gzip budget, which covers its whole load since it has no
 lazy chunks. Using both full entries gives a combined initial ceiling of
-251.7 kB gzip;
-importing one component instead of the aggregate is substantially smaller.
+252.0 kB gzip; importing one component instead of the aggregate is
+substantially smaller.
 
 For scale, pinned published CSS assets measured without minification using
 the same compressors are

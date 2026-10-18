@@ -13,15 +13,15 @@
       "lazyChunks": 0
     },
     "select": {
-      "initialRaw": 161634,
-      "initialGzip": 39720,
-      "initialBrotli": 33984,
-      "totalRaw": 197014,
-      "totalGzip": 47876,
-      "totalBrotli": 41154,
-      "largestLazyGzip": 8156,
+      "initialRaw": 111664,
+      "initialGzip": 29129,
+      "initialBrotli": 25538,
+      "totalRaw": 197659,
+      "totalGzip": 49856,
+      "totalBrotli": 43702,
+      "largestLazyGzip": 8158,
       "initialChunks": 2,
-      "lazyChunks": 1
+      "lazyChunks": 3
     },
     "textarea": {
       "initialRaw": 115828,
@@ -35,34 +35,34 @@
       "lazyChunks": 0
     },
     "markdownEditor": {
-      "initialRaw": 432867,
-      "initialGzip": 106175,
-      "initialBrotli": 88542,
-      "totalRaw": 468256,
-      "totalGzip": 114337,
-      "totalBrotli": 95714,
-      "largestLazyGzip": 8162,
-      "initialChunks": 2,
-      "lazyChunks": 1
-    },
-    "aggregateClasses": {
-      "initialRaw": 894767,
-      "initialGzip": 206067,
-      "initialBrotli": 159305,
-      "totalRaw": 894767,
-      "totalGzip": 206067,
-      "totalBrotli": 159305,
+      "initialRaw": 301966,
+      "initialGzip": 76946,
+      "initialBrotli": 65165,
+      "totalRaw": 301966,
+      "totalGzip": 76946,
+      "totalBrotli": 65165,
       "largestLazyGzip": 0,
       "initialChunks": 1,
       "lazyChunks": 0
     },
+    "aggregateClasses": {
+      "initialRaw": 894758,
+      "initialGzip": 206075,
+      "initialBrotli": 159358,
+      "totalRaw": 895282,
+      "totalGzip": 206406,
+      "totalBrotli": 159624,
+      "largestLazyGzip": 182,
+      "initialChunks": 1,
+      "lazyChunks": 2
+    },
     "aggregateDefine": {
-      "initialRaw": 897756,
-      "initialGzip": 205846,
-      "initialBrotli": 159503,
-      "totalRaw": 897756,
-      "totalGzip": 205846,
-      "totalBrotli": 159503,
+      "initialRaw": 898401,
+      "initialGzip": 206109,
+      "initialBrotli": 159678,
+      "totalRaw": 898401,
+      "totalGzip": 206109,
+      "totalBrotli": 159678,
       "largestLazyGzip": 0,
       "initialChunks": 1,
       "lazyChunks": 0
@@ -134,13 +134,13 @@
       "lazyChunks": 0
     },
     "select": {
-      "initialGzip": 41706,
-      "initialBrotli": 35684,
-      "totalGzip": 50270,
-      "totalBrotli": 43212,
-      "largestLazyGzip": 9180,
+      "initialGzip": 30586,
+      "initialBrotli": 26815,
+      "totalGzip": 52349,
+      "totalBrotli": 45888,
+      "largestLazyGzip": 9182,
       "initialChunks": 2,
-      "lazyChunks": 1
+      "lazyChunks": 3
     },
     "textarea": {
       "initialGzip": 32015,
@@ -152,28 +152,28 @@
       "lazyChunks": 0
     },
     "markdownEditor": {
-      "initialGzip": 111484,
-      "initialBrotli": 92970,
-      "totalGzip": 120054,
-      "totalBrotli": 100500,
-      "largestLazyGzip": 9186,
-      "initialChunks": 2,
-      "lazyChunks": 1
-    },
-    "aggregateClasses": {
-      "initialGzip": 216371,
-      "initialBrotli": 167271,
-      "totalGzip": 216371,
-      "totalBrotli": 167271,
+      "initialGzip": 80794,
+      "initialBrotli": 68424,
+      "totalGzip": 80794,
+      "totalBrotli": 68424,
       "largestLazyGzip": 1024,
       "initialChunks": 1,
       "lazyChunks": 0
     },
+    "aggregateClasses": {
+      "initialGzip": 216379,
+      "initialBrotli": 167326,
+      "totalGzip": 216727,
+      "totalBrotli": 167606,
+      "largestLazyGzip": 1206,
+      "initialChunks": 1,
+      "lazyChunks": 2
+    },
     "aggregateDefine": {
-      "initialGzip": 216139,
-      "initialBrotli": 167479,
-      "totalGzip": 216139,
-      "totalBrotli": 167479,
+      "initialGzip": 216415,
+      "initialBrotli": 167662,
+      "totalGzip": 216415,
+      "totalBrotli": 167662,
       "largestLazyGzip": 1024,
       "initialChunks": 1,
       "lazyChunks": 0

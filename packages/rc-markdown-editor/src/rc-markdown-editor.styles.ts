@@ -129,29 +129,26 @@ export const rmeStyles = css`
   }
 
   /* Heading select */
-  rc-editor-toolbar rc-select {
-    font-size: 0.8125em;
-    --rc-select-padding-block: 0.25em;
-    --rc-select-padding-inline: 0.35em;
-    --rc-select-border: var(--rc-markdown-editor-toolbar-select-border, 1px solid ButtonBorder);
-    --rc-select-radius: var(--rc-markdown-editor-toolbar-select-radius, 3px);
-  }
-
-  rc-editor-toolbar rc-select::part(trigger) {
-    min-width: 0;
+  rc-editor-toolbar .heading-select {
+    padding: 0.25em 0.35em;
+    border: var(--rc-markdown-editor-toolbar-select-border, 1px solid ButtonBorder);
+    border-radius: var(--rc-markdown-editor-toolbar-select-radius, 3px);
     background: var(--rc-markdown-editor-toolbar-select-background, ButtonFace);
     color: var(--rc-markdown-editor-toolbar-select-color, ButtonText);
+    font: inherit;
+    font-size: 0.8125em;
     cursor: pointer;
   }
 
-  rc-editor-toolbar rc-select::part(listbox) {
-    border-radius: 3px;
+  rc-editor-toolbar .heading-select:focus-visible {
+    outline: var(--rc-markdown-editor-toolbar-focus-outline, 2px solid Highlight);
+    outline-offset: var(--rc-markdown-editor-toolbar-focus-outline-offset, 1px);
   }
 
-  rc-editor-toolbar rc-select.toolbar-active::part(trigger) {
+  rc-editor-toolbar .heading-select.toolbar-active {
+    border-color: var(--rc-markdown-editor-toolbar-select-active-border-color, Highlight);
     background: var(--rc-markdown-editor-toolbar-select-active-background, Highlight);
     color: var(--rc-markdown-editor-toolbar-select-active-color, HighlightText);
-    border-color: var(--rc-markdown-editor-toolbar-select-active-border-color, Highlight);
   }
 
   /* Code block language input */
