@@ -378,3 +378,20 @@ test('the Windows 3.1 export carries its palette and its RC contract', () => {
 
   assert.ok(contract.variables.length > 250, 'the bridge should export its full contract');
 });
+
+test('scope descriptions name the themed component, never the theme class', () => {
+  for (const document of [material, substrate, win31]) {
+    for (const collection of document.collections) {
+      for (const entry of collection.variables) {
+        if (entry.description?.startsWith('Applied where')) {
+          assert.match(entry.description, /^Applied where rc-(?!theme-)[a-z0-9-]+ is themed\.$/);
+        }
+      }
+    }
+  }
+
+  assert.equal(
+    variable(win31, 'RC Contract', 'navigation-rail/bg')?.description,
+    'Applied where rc-navigation-rail is themed.',
+  );
+});

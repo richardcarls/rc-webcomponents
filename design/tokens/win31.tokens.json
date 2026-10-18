@@ -832,7 +832,7 @@
             "WEB": "var(--rc-accordion-gap)"
           },
           "cssVar": "--rc-accordion-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-accordion is themed.",
           "values": {
             "Value": 0
           }
@@ -847,7 +847,6 @@
             "WEB": "var(--rc-adaptive-menu-gap)"
           },
           "cssVar": "--rc-adaptive-menu-gap",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -865,7 +864,6 @@
             "WEB": "var(--rc-adaptive-menu-icon-size)"
           },
           "cssVar": "--rc-adaptive-menu-icon-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/check-size",
@@ -883,7 +881,6 @@
             "WEB": "var(--rc-adaptive-menu-item-gap)"
           },
           "cssVar": "--rc-adaptive-menu-item-gap",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -901,7 +898,6 @@
             "WEB": "var(--rc-adaptive-menu-item-min-block-size)"
           },
           "cssVar": "--rc-adaptive-menu-item-min-block-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -920,7 +916,6 @@
             "WEB": "var(--rc-adaptive-menu-item-padding-block)"
           },
           "cssVar": "--rc-adaptive-menu-item-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -939,7 +934,6 @@
             "WEB": "var(--rc-adaptive-menu-item-padding-inline)"
           },
           "cssVar": "--rc-adaptive-menu-item-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 8
           }
@@ -954,7 +948,6 @@
             "WEB": "var(--rc-adaptive-menu-popup-min-inline-size)"
           },
           "cssVar": "--rc-adaptive-menu-popup-min-inline-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 142
           }
@@ -970,7 +963,6 @@
             "WEB": "var(--rc-adaptive-menu-trigger-background)"
           },
           "cssVar": "--rc-adaptive-menu-trigger-background",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -988,7 +980,6 @@
             "WEB": "var(--rc-adaptive-menu-trigger-block-size)"
           },
           "cssVar": "--rc-adaptive-menu-trigger-block-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -1006,7 +997,6 @@
             "WEB": "var(--rc-adaptive-menu-trigger-color)"
           },
           "cssVar": "--rc-adaptive-menu-trigger-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -1024,7 +1014,6 @@
             "WEB": "var(--rc-adaptive-menu-trigger-inline-size)"
           },
           "cssVar": "--rc-adaptive-menu-trigger-inline-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -1043,7 +1032,6 @@
             "WEB": "var(--rc-adaptive-menu-trigger-padding)"
           },
           "cssVar": "--rc-adaptive-menu-trigger-padding",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -1058,7 +1046,6 @@
             "WEB": "var(--rc-adaptive-menu-trigger-radius)"
           },
           "cssVar": "--rc-adaptive-menu-trigger-radius",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -1077,7 +1064,7 @@
             "WEB": "var(--rc-app-bar-bg)"
           },
           "cssVar": "--rc-app-bar-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-app-bar is themed.",
           "values": {
             "Value": {
               "alias": "color/title-active",
@@ -1095,7 +1082,7 @@
             "WEB": "var(--rc-app-bar-color)"
           },
           "cssVar": "--rc-app-bar-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-app-bar is themed.",
           "values": {
             "Value": {
               "alias": "color/title-active-text",
@@ -1113,7 +1100,7 @@
             "WEB": "var(--rc-app-bar-compact-min-height)"
           },
           "cssVar": "--rc-app-bar-compact-min-height",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-app-bar is themed.",
           "values": {
             "Value": {
               "alias": "size/title-height",
@@ -1132,7 +1119,7 @@
             "WEB": "var(--rc-app-bar-expanded-padding-block)"
           },
           "cssVar": "--rc-app-bar-expanded-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-app-bar is themed.",
           "values": {
             "Value": 0
           }
@@ -1147,7 +1134,7 @@
             "WEB": "var(--rc-app-bar-expanded-title-font-size)"
           },
           "cssVar": "--rc-app-bar-expanded-title-font-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-app-bar is themed.",
           "values": {
             "Value": {
               "alias": "typography/title-font-size",
@@ -1165,7 +1152,7 @@
             "WEB": "var(--rc-app-bar-gap)"
           },
           "cssVar": "--rc-app-bar-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-app-bar is themed.",
           "values": {
             "Value": 0
           }
@@ -1181,7 +1168,7 @@
             "WEB": "var(--rc-app-bar-padding-inline)"
           },
           "cssVar": "--rc-app-bar-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-app-bar is themed.",
           "values": {
             "Value": 0
           }
@@ -1196,7 +1183,7 @@
             "WEB": "var(--rc-app-bar-title-font-size)"
           },
           "cssVar": "--rc-app-bar-title-font-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-app-bar is themed.",
           "values": {
             "Value": {
               "alias": "typography/title-font-size",
@@ -1215,7 +1202,7 @@
             "WEB": "var(--rc-app-bar-title-start-padding)"
           },
           "cssVar": "--rc-app-bar-title-start-padding",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-app-bar is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -1231,7 +1218,7 @@
             "WEB": "var(--rc-app-bar-transition-duration)"
           },
           "cssVar": "--rc-app-bar-transition-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-app-bar is themed.",
           "values": {
             "Value": 0
           }
@@ -1247,7 +1234,7 @@
             "WEB": "var(--rc-bottom-sheet-bg)"
           },
           "cssVar": "--rc-bottom-sheet-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-bottom-sheet is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -1265,7 +1252,7 @@
             "WEB": "var(--rc-bottom-sheet-color)"
           },
           "cssVar": "--rc-bottom-sheet-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-bottom-sheet is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -1283,7 +1270,7 @@
             "WEB": "var(--rc-bottom-sheet-handle-block-size)"
           },
           "cssVar": "--rc-bottom-sheet-handle-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-bottom-sheet is themed.",
           "values": {
             "Value": 4
           }
@@ -1298,7 +1285,7 @@
             "WEB": "var(--rc-bottom-sheet-handle-color)"
           },
           "cssVar": "--rc-bottom-sheet-handle-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-bottom-sheet is themed.",
           "values": {
             "Value": {
               "alias": "color/shadow",
@@ -1316,7 +1303,7 @@
             "WEB": "var(--rc-bottom-sheet-handle-inline-size)"
           },
           "cssVar": "--rc-bottom-sheet-handle-inline-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-bottom-sheet is themed.",
           "values": {
             "Value": 32
           }
@@ -1331,7 +1318,7 @@
             "WEB": "var(--rc-bottom-sheet-handle-radius)"
           },
           "cssVar": "--rc-bottom-sheet-handle-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-bottom-sheet is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -1350,7 +1337,7 @@
             "WEB": "var(--rc-bottom-sheet-padding)"
           },
           "cssVar": "--rc-bottom-sheet-padding",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-bottom-sheet is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-panel",
@@ -1368,7 +1355,7 @@
             "WEB": "var(--rc-bottom-sheet-radius)"
           },
           "cssVar": "--rc-bottom-sheet-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-bottom-sheet is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -1384,7 +1371,7 @@
             "WEB": "var(--rc-bottom-sheet-snap-duration)"
           },
           "cssVar": "--rc-bottom-sheet-snap-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-bottom-sheet is themed.",
           "values": {
             "Value": 0
           }
@@ -1400,7 +1387,6 @@
             "WEB": "var(--rc-button-bg)"
           },
           "cssVar": "--rc-button-bg",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -1418,7 +1404,6 @@
             "WEB": "var(--rc-button-block-size)"
           },
           "cssVar": "--rc-button-block-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "core/control-block-size",
@@ -1436,7 +1421,6 @@
             "WEB": "var(--rc-button-color)"
           },
           "cssVar": "--rc-button-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "button/text",
@@ -1454,7 +1438,6 @@
             "WEB": "var(--rc-button-focus-state-layer-opacity)"
           },
           "cssVar": "--rc-button-focus-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -1469,7 +1452,6 @@
             "WEB": "var(--rc-button-gap)"
           },
           "cssVar": "--rc-button-gap",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "core/control-gap",
@@ -1487,7 +1469,6 @@
             "WEB": "var(--rc-button-hover-state-layer-opacity)"
           },
           "cssVar": "--rc-button-hover-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -1503,7 +1484,6 @@
             "WEB": "var(--rc-button-padding-block)"
           },
           "cssVar": "--rc-button-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "core/control-padding-block",
@@ -1522,7 +1502,6 @@
             "WEB": "var(--rc-button-padding-inline)"
           },
           "cssVar": "--rc-button-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 8
           }
@@ -1537,7 +1516,6 @@
             "WEB": "var(--rc-button-pressed-state-layer-opacity)"
           },
           "cssVar": "--rc-button-pressed-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -1552,7 +1530,6 @@
             "WEB": "var(--rc-button-radius)"
           },
           "cssVar": "--rc-button-radius",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -1570,7 +1547,6 @@
             "WEB": "var(--rc-button-text)"
           },
           "cssVar": "--rc-button-text",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -1588,7 +1564,6 @@
             "WEB": "var(--rc-card-actions-gap)"
           },
           "cssVar": "--rc-card-actions-gap",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/gap",
@@ -1607,7 +1582,6 @@
             "WEB": "var(--rc-card-bg)"
           },
           "cssVar": "--rc-card-bg",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -1625,7 +1599,6 @@
             "WEB": "var(--rc-card-color)"
           },
           "cssVar": "--rc-card-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -1643,7 +1616,6 @@
             "WEB": "var(--rc-card-hover-state-layer-opacity)"
           },
           "cssVar": "--rc-card-hover-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -1659,7 +1631,6 @@
             "WEB": "var(--rc-card-padding-block)"
           },
           "cssVar": "--rc-card-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -1678,7 +1649,6 @@
             "WEB": "var(--rc-card-padding-inline)"
           },
           "cssVar": "--rc-card-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -1696,7 +1666,6 @@
             "WEB": "var(--rc-card-pressed-state-layer-opacity)"
           },
           "cssVar": "--rc-card-pressed-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -1711,7 +1680,6 @@
             "WEB": "var(--rc-card-radius)"
           },
           "cssVar": "--rc-card-radius",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -1729,7 +1697,6 @@
             "WEB": "var(--rc-card-subtitle-color)"
           },
           "cssVar": "--rc-card-subtitle-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -1748,7 +1715,6 @@
             "WEB": "var(--rc-chip-bg)"
           },
           "cssVar": "--rc-chip-bg",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -1766,7 +1732,6 @@
             "WEB": "var(--rc-chip-block-size)"
           },
           "cssVar": "--rc-chip-block-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -1784,7 +1749,6 @@
             "WEB": "var(--rc-chip-color)"
           },
           "cssVar": "--rc-chip-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -1802,7 +1766,7 @@
             "WEB": "var(--rc-chip-disabled-opacity)"
           },
           "cssVar": "--rc-chip-disabled-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-chip is themed.",
           "values": {
             "Value": 1
           }
@@ -1818,7 +1782,7 @@
             "WEB": "var(--rc-chip-focus-ring-offset)"
           },
           "cssVar": "--rc-chip-focus-ring-offset",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-chip is themed.",
           "values": {
             "Value": {
               "alias": "focus/focus-ring-offset",
@@ -1836,7 +1800,7 @@
             "WEB": "var(--rc-chip-focus-state-layer-opacity)"
           },
           "cssVar": "--rc-chip-focus-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-chip is themed.",
           "values": {
             "Value": 0
           }
@@ -1851,7 +1815,6 @@
             "WEB": "var(--rc-chip-gap)"
           },
           "cssVar": "--rc-chip-gap",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -1869,7 +1832,7 @@
             "WEB": "var(--rc-chip-hover-state-layer-opacity)"
           },
           "cssVar": "--rc-chip-hover-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-chip is themed.",
           "values": {
             "Value": 0
           }
@@ -1885,7 +1848,7 @@
             "WEB": "var(--rc-chip-padding-block)"
           },
           "cssVar": "--rc-chip-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-chip is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -1904,7 +1867,6 @@
             "WEB": "var(--rc-chip-padding-inline)"
           },
           "cssVar": "--rc-chip-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 8
           }
@@ -1919,7 +1881,7 @@
             "WEB": "var(--rc-chip-pressed-state-layer-opacity)"
           },
           "cssVar": "--rc-chip-pressed-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-chip is themed.",
           "values": {
             "Value": 0
           }
@@ -1934,7 +1896,6 @@
             "WEB": "var(--rc-chip-radius)"
           },
           "cssVar": "--rc-chip-radius",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -1952,7 +1913,7 @@
             "WEB": "var(--rc-chip-remove-radius)"
           },
           "cssVar": "--rc-chip-remove-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-chip is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -1970,7 +1931,7 @@
             "WEB": "var(--rc-chip-selected-border-color)"
           },
           "cssVar": "--rc-chip-selected-border-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-chip is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -1988,7 +1949,7 @@
             "WEB": "var(--rc-chip-selected-color)"
           },
           "cssVar": "--rc-chip-selected-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-chip is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -2004,7 +1965,7 @@
             "WEB": "var(--rc-chip-state-layer-transition-duration)"
           },
           "cssVar": "--rc-chip-state-layer-transition-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-chip is themed.",
           "values": {
             "Value": 0
           }
@@ -2019,7 +1980,7 @@
             "WEB": "var(--rc-combobox-chip-radius)"
           },
           "cssVar": "--rc-combobox-chip-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -2037,7 +1998,7 @@
             "WEB": "var(--rc-combobox-control-block-size)"
           },
           "cssVar": "--rc-combobox-control-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": 20
           }
@@ -2052,7 +2013,7 @@
             "WEB": "var(--rc-combobox-gap)"
           },
           "cssVar": "--rc-combobox-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-combobox is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -2071,7 +2032,7 @@
             "WEB": "var(--rc-combobox-listbox-background)"
           },
           "cssVar": "--rc-combobox-listbox-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "core/surface",
@@ -2089,7 +2050,7 @@
             "WEB": "var(--rc-combobox-listbox-color)"
           },
           "cssVar": "--rc-combobox-listbox-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "field/text",
@@ -2108,7 +2069,7 @@
             "WEB": "var(--rc-combobox-listbox-padding-block)"
           },
           "cssVar": "--rc-combobox-listbox-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "core/control-padding-block",
@@ -2126,7 +2087,7 @@
             "WEB": "var(--rc-combobox-radius)"
           },
           "cssVar": "--rc-combobox-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -2145,7 +2106,6 @@
             "WEB": "var(--rc-accent)"
           },
           "cssVar": "--rc-accent",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -2163,7 +2123,6 @@
             "WEB": "var(--rc-border-color)"
           },
           "cssVar": "--rc-border-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -2181,7 +2140,6 @@
             "WEB": "var(--rc-border-width)"
           },
           "cssVar": "--rc-border-width",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/hairline",
@@ -2199,7 +2157,6 @@
             "WEB": "var(--rc-control-block-size)"
           },
           "cssVar": "--rc-control-block-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -2217,7 +2174,6 @@
             "WEB": "var(--rc-control-gap)"
           },
           "cssVar": "--rc-control-gap",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -2236,7 +2192,6 @@
             "WEB": "var(--rc-control-padding-block)"
           },
           "cssVar": "--rc-control-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -2255,7 +2210,6 @@
             "WEB": "var(--rc-control-padding-inline)"
           },
           "cssVar": "--rc-control-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -2273,7 +2227,6 @@
             "WEB": "var(--rc-control-radius)"
           },
           "cssVar": "--rc-control-radius",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -2291,7 +2244,6 @@
             "WEB": "var(--rc-disabled-opacity)"
           },
           "cssVar": "--rc-disabled-opacity",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 1
           }
@@ -2307,7 +2259,6 @@
             "WEB": "var(--rc-focus-ring-offset)"
           },
           "cssVar": "--rc-focus-ring-offset",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "focus/focus-ring-offset",
@@ -2325,7 +2276,6 @@
             "WEB": "var(--rc-font-size)"
           },
           "cssVar": "--rc-font-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 13
           }
@@ -2338,7 +2288,6 @@
             "WEB": "var(--rc-font-weight)"
           },
           "cssVar": "--rc-font-weight",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 400
           }
@@ -2354,7 +2303,6 @@
             "WEB": "var(--rc-highlight)"
           },
           "cssVar": "--rc-highlight",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -2372,7 +2320,6 @@
             "WEB": "var(--rc-highlight-text)"
           },
           "cssVar": "--rc-highlight-text",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/selection-text",
@@ -2390,7 +2337,6 @@
             "WEB": "var(--rc-icon-font-line-height)"
           },
           "cssVar": "--rc-icon-font-line-height",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "core/icon-font-size",
@@ -2408,7 +2354,6 @@
             "WEB": "var(--rc-icon-font-size)"
           },
           "cssVar": "--rc-icon-font-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/check-size",
@@ -2426,7 +2371,6 @@
             "WEB": "var(--rc-item-gap)"
           },
           "cssVar": "--rc-item-gap",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -2445,7 +2389,6 @@
             "WEB": "var(--rc-item-padding-block)"
           },
           "cssVar": "--rc-item-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -2464,7 +2407,6 @@
             "WEB": "var(--rc-item-padding-inline)"
           },
           "cssVar": "--rc-item-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -2482,7 +2424,6 @@
             "WEB": "var(--rc-line-height)"
           },
           "cssVar": "--rc-line-height",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 1.1
           }
@@ -2495,7 +2436,6 @@
             "WEB": "var(--rc-motion-duration)"
           },
           "cssVar": "--rc-motion-duration",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "core/motion-effects-duration-default",
@@ -2511,7 +2451,6 @@
             "WEB": "var(--rc-motion-effects-duration-default)"
           },
           "cssVar": "--rc-motion-effects-duration-default",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -2524,7 +2463,6 @@
             "WEB": "var(--rc-motion-effects-duration-fast)"
           },
           "cssVar": "--rc-motion-effects-duration-fast",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -2537,7 +2475,6 @@
             "WEB": "var(--rc-motion-effects-duration-slow)"
           },
           "cssVar": "--rc-motion-effects-duration-slow",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -2550,7 +2487,6 @@
             "WEB": "var(--rc-motion-spatial-duration-default)"
           },
           "cssVar": "--rc-motion-spatial-duration-default",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -2563,7 +2499,6 @@
             "WEB": "var(--rc-motion-spatial-duration-fast)"
           },
           "cssVar": "--rc-motion-spatial-duration-fast",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -2576,7 +2511,6 @@
             "WEB": "var(--rc-motion-spatial-duration-slow)"
           },
           "cssVar": "--rc-motion-spatial-duration-slow",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -2592,7 +2526,6 @@
             "WEB": "var(--rc-popover-padding-block)"
           },
           "cssVar": "--rc-popover-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-panel",
@@ -2611,7 +2544,6 @@
             "WEB": "var(--rc-popover-padding-inline)"
           },
           "cssVar": "--rc-popover-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-panel",
@@ -2630,7 +2562,6 @@
             "WEB": "var(--rc-popup-background)"
           },
           "cssVar": "--rc-popup-background",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/menu",
@@ -2648,7 +2579,6 @@
             "WEB": "var(--rc-popup-color)"
           },
           "cssVar": "--rc-popup-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/menu-text",
@@ -2667,7 +2597,6 @@
             "WEB": "var(--rc-popup-padding-block)"
           },
           "cssVar": "--rc-popup-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 1
           }
@@ -2682,7 +2611,6 @@
             "WEB": "var(--rc-popup-radius)"
           },
           "cssVar": "--rc-popup-radius",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -2700,7 +2628,6 @@
             "WEB": "var(--rc-radius-md)"
           },
           "cssVar": "--rc-radius-md",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -2718,7 +2645,6 @@
             "WEB": "var(--rc-radius-sm)"
           },
           "cssVar": "--rc-radius-sm",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -2737,7 +2663,6 @@
             "WEB": "var(--rc-surface)"
           },
           "cssVar": "--rc-surface",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -2755,7 +2680,6 @@
             "WEB": "var(--rc-text-disabled)"
           },
           "cssVar": "--rc-text-disabled",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/disabled-text",
@@ -2773,7 +2697,6 @@
             "WEB": "var(--rc-thumb-radius)"
           },
           "cssVar": "--rc-thumb-radius",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -2792,7 +2715,6 @@
             "WEB": "var(--rc-tooltip-background)"
           },
           "cssVar": "--rc-tooltip-background",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/field",
@@ -2810,7 +2732,6 @@
             "WEB": "var(--rc-tooltip-color)"
           },
           "cssVar": "--rc-tooltip-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/field-text",
@@ -2829,7 +2750,6 @@
             "WEB": "var(--rc-tooltip-padding-block)"
           },
           "cssVar": "--rc-tooltip-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 2
           }
@@ -2845,7 +2765,6 @@
             "WEB": "var(--rc-tooltip-padding-inline)"
           },
           "cssVar": "--rc-tooltip-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -2863,7 +2782,6 @@
             "WEB": "var(--rc-tooltip-radius)"
           },
           "cssVar": "--rc-tooltip-radius",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -2882,7 +2800,7 @@
             "WEB": "var(--rc-dialog-background)"
           },
           "cssVar": "--rc-dialog-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-dialog is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -2900,7 +2818,7 @@
             "WEB": "var(--rc-dialog-color)"
           },
           "cssVar": "--rc-dialog-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-dialog is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -2919,7 +2837,7 @@
             "WEB": "var(--rc-dialog-fullscreen-background)"
           },
           "cssVar": "--rc-dialog-fullscreen-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-dialog is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -2938,7 +2856,7 @@
             "WEB": "var(--rc-dialog-fullscreen-padding-block)"
           },
           "cssVar": "--rc-dialog-fullscreen-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-dialog is themed.",
           "values": {
             "Value": 0
           }
@@ -2954,7 +2872,7 @@
             "WEB": "var(--rc-dialog-fullscreen-padding-inline)"
           },
           "cssVar": "--rc-dialog-fullscreen-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-dialog is themed.",
           "values": {
             "Value": 0
           }
@@ -2970,7 +2888,7 @@
             "WEB": "var(--rc-dialog-padding)"
           },
           "cssVar": "--rc-dialog-padding",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-dialog is themed.",
           "values": {
             "Value": 0
           }
@@ -2985,7 +2903,7 @@
             "WEB": "var(--rc-dialog-radius)"
           },
           "cssVar": "--rc-dialog-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-dialog is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -3004,7 +2922,7 @@
             "WEB": "var(--rc-disclosure-background)"
           },
           "cssVar": "--rc-disclosure-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -3022,7 +2940,7 @@
             "WEB": "var(--rc-disclosure-color)"
           },
           "cssVar": "--rc-disclosure-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -3040,7 +2958,7 @@
             "WEB": "var(--rc-disclosure-content-color)"
           },
           "cssVar": "--rc-disclosure-content-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -3059,7 +2977,7 @@
             "WEB": "var(--rc-disclosure-content-padding-block)"
           },
           "cssVar": "--rc-disclosure-content-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -3078,7 +2996,7 @@
             "WEB": "var(--rc-disclosure-content-padding-inline)"
           },
           "cssVar": "--rc-disclosure-content-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -3094,7 +3012,7 @@
             "WEB": "var(--rc-disclosure-duration)"
           },
           "cssVar": "--rc-disclosure-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": 0
           }
@@ -3110,7 +3028,7 @@
             "WEB": "var(--rc-disclosure-focus-ring-offset)"
           },
           "cssVar": "--rc-disclosure-focus-ring-offset",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "focus/focus-ring-offset",
@@ -3129,7 +3047,7 @@
             "WEB": "var(--rc-disclosure-open-background)"
           },
           "cssVar": "--rc-disclosure-open-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -3147,7 +3065,7 @@
             "WEB": "var(--rc-disclosure-radius)"
           },
           "cssVar": "--rc-disclosure-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -3165,7 +3083,7 @@
             "WEB": "var(--rc-disclosure-summary-color)"
           },
           "cssVar": "--rc-disclosure-summary-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -3183,7 +3101,7 @@
             "WEB": "var(--rc-disclosure-summary-gap)"
           },
           "cssVar": "--rc-disclosure-summary-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -3202,7 +3120,7 @@
             "WEB": "var(--rc-disclosure-summary-hover-background)"
           },
           "cssVar": "--rc-disclosure-summary-hover-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -3220,7 +3138,7 @@
             "WEB": "var(--rc-disclosure-summary-marker-color)"
           },
           "cssVar": "--rc-disclosure-summary-marker-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -3238,7 +3156,7 @@
             "WEB": "var(--rc-disclosure-summary-min-block-size)"
           },
           "cssVar": "--rc-disclosure-summary-min-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": 18
           }
@@ -3254,7 +3172,7 @@
             "WEB": "var(--rc-disclosure-summary-padding-block)"
           },
           "cssVar": "--rc-disclosure-summary-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -3273,7 +3191,7 @@
             "WEB": "var(--rc-disclosure-summary-padding-inline)"
           },
           "cssVar": "--rc-disclosure-summary-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-disclosure is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -3292,7 +3210,7 @@
             "WEB": "var(--rc-fab-menu-bg)"
           },
           "cssVar": "--rc-fab-menu-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -3311,7 +3229,7 @@
             "WEB": "var(--rc-fab-menu-bg-hover)"
           },
           "cssVar": "--rc-fab-menu-bg-hover",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -3330,7 +3248,7 @@
             "WEB": "var(--rc-fab-menu-bg-open)"
           },
           "cssVar": "--rc-fab-menu-bg-open",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -3348,7 +3266,7 @@
             "WEB": "var(--rc-fab-menu-color)"
           },
           "cssVar": "--rc-fab-menu-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -3366,7 +3284,7 @@
             "WEB": "var(--rc-fab-menu-disabled-opacity)"
           },
           "cssVar": "--rc-fab-menu-disabled-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": 1
           }
@@ -3382,7 +3300,7 @@
             "WEB": "var(--rc-fab-menu-focus-ring-offset)"
           },
           "cssVar": "--rc-fab-menu-focus-ring-offset",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": {
               "alias": "focus/focus-ring-offset",
@@ -3400,7 +3318,7 @@
             "WEB": "var(--rc-fab-menu-font-size)"
           },
           "cssVar": "--rc-fab-menu-font-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": 13
           }
@@ -3413,7 +3331,7 @@
             "WEB": "var(--rc-fab-menu-font-weight)"
           },
           "cssVar": "--rc-fab-menu-font-weight",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": 400
           }
@@ -3429,7 +3347,7 @@
             "WEB": "var(--rc-fab-menu-padding-block)"
           },
           "cssVar": "--rc-fab-menu-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -3448,7 +3366,7 @@
             "WEB": "var(--rc-fab-menu-padding-inline)"
           },
           "cssVar": "--rc-fab-menu-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": 8
           }
@@ -3461,7 +3379,7 @@
             "WEB": "var(--rc-fab-menu-popup-duration)"
           },
           "cssVar": "--rc-fab-menu-popup-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": 0
           }
@@ -3476,7 +3394,7 @@
             "WEB": "var(--rc-fab-menu-radius)"
           },
           "cssVar": "--rc-fab-menu-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -3494,7 +3412,7 @@
             "WEB": "var(--rc-fab-menu-size)"
           },
           "cssVar": "--rc-fab-menu-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": {
               "alias": "size/toolbar-height",
@@ -3512,7 +3430,7 @@
             "WEB": "var(--rc-fab-menu-trigger-gap)"
           },
           "cssVar": "--rc-fab-menu-trigger-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab-menu is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -3531,7 +3449,7 @@
             "WEB": "var(--rc-fab-bg)"
           },
           "cssVar": "--rc-fab-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -3550,7 +3468,7 @@
             "WEB": "var(--rc-fab-bg-hover)"
           },
           "cssVar": "--rc-fab-bg-hover",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -3568,7 +3486,7 @@
             "WEB": "var(--rc-fab-color)"
           },
           "cssVar": "--rc-fab-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -3586,7 +3504,7 @@
             "WEB": "var(--rc-fab-disabled-opacity)"
           },
           "cssVar": "--rc-fab-disabled-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": 1
           }
@@ -3602,7 +3520,7 @@
             "WEB": "var(--rc-fab-focus-ring-offset)"
           },
           "cssVar": "--rc-fab-focus-ring-offset",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": {
               "alias": "focus/focus-ring-offset",
@@ -3620,7 +3538,7 @@
             "WEB": "var(--rc-fab-font-size)"
           },
           "cssVar": "--rc-fab-font-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": 13
           }
@@ -3633,7 +3551,7 @@
             "WEB": "var(--rc-fab-font-weight)"
           },
           "cssVar": "--rc-fab-font-weight",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": 400
           }
@@ -3648,7 +3566,7 @@
             "WEB": "var(--rc-fab-gap)"
           },
           "cssVar": "--rc-fab-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -3667,7 +3585,7 @@
             "WEB": "var(--rc-fab-padding-block)"
           },
           "cssVar": "--rc-fab-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -3686,7 +3604,7 @@
             "WEB": "var(--rc-fab-padding-inline)"
           },
           "cssVar": "--rc-fab-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": 8
           }
@@ -3701,7 +3619,7 @@
             "WEB": "var(--rc-fab-radius)"
           },
           "cssVar": "--rc-fab-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -3719,7 +3637,7 @@
             "WEB": "var(--rc-fab-size)"
           },
           "cssVar": "--rc-fab-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-fab is themed.",
           "values": {
             "Value": {
               "alias": "size/toolbar-height",
@@ -3738,7 +3656,6 @@
             "WEB": "var(--rc-field)"
           },
           "cssVar": "--rc-field",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/field",
@@ -3756,7 +3673,6 @@
             "WEB": "var(--rc-field-error-color)"
           },
           "cssVar": "--rc-field-error-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -3774,7 +3690,6 @@
             "WEB": "var(--rc-field-text)"
           },
           "cssVar": "--rc-field-text",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/field-text",
@@ -3793,7 +3708,6 @@
             "WEB": "var(--rc-list-item-active-bg)"
           },
           "cssVar": "--rc-list-item-active-bg",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -3811,7 +3725,7 @@
             "WEB": "var(--rc-list-item-color)"
           },
           "cssVar": "--rc-list-item-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": {
               "alias": "color/field-text",
@@ -3829,7 +3743,6 @@
             "WEB": "var(--rc-list-item-disabled-opacity)"
           },
           "cssVar": "--rc-list-item-disabled-opacity",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 1
           }
@@ -3842,7 +3755,7 @@
             "WEB": "var(--rc-list-item-divider)"
           },
           "cssVar": "--rc-list-item-divider",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": 0
           }
@@ -3857,7 +3770,7 @@
             "WEB": "var(--rc-list-item-focus-state-layer-opacity)"
           },
           "cssVar": "--rc-list-item-focus-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": 0
           }
@@ -3872,7 +3785,6 @@
             "WEB": "var(--rc-list-item-gap)"
           },
           "cssVar": "--rc-list-item-gap",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "core/item-gap",
@@ -3890,7 +3802,7 @@
             "WEB": "var(--rc-list-item-hover-state-layer-opacity)"
           },
           "cssVar": "--rc-list-item-hover-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": 0
           }
@@ -3905,7 +3817,6 @@
             "WEB": "var(--rc-list-item-min-block-size)"
           },
           "cssVar": "--rc-list-item-min-block-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/listbox-row-height",
@@ -3924,7 +3835,6 @@
             "WEB": "var(--rc-list-item-padding-block)"
           },
           "cssVar": "--rc-list-item-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "core/item-padding-block",
@@ -3943,7 +3853,6 @@
             "WEB": "var(--rc-list-item-padding-inline)"
           },
           "cssVar": "--rc-list-item-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "core/item-padding-inline",
@@ -3961,7 +3870,7 @@
             "WEB": "var(--rc-list-item-pressed-state-layer-opacity)"
           },
           "cssVar": "--rc-list-item-pressed-state-layer-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": 0
           }
@@ -3977,7 +3886,7 @@
             "WEB": "var(--rc-list-item-selected-background)"
           },
           "cssVar": "--rc-list-item-selected-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -3996,7 +3905,6 @@
             "WEB": "var(--rc-list-item-selected-bg)"
           },
           "cssVar": "--rc-list-item-selected-bg",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -4014,7 +3922,6 @@
             "WEB": "var(--rc-list-item-selected-color)"
           },
           "cssVar": "--rc-list-item-selected-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/selection-text",
@@ -4030,7 +3937,7 @@
             "WEB": "var(--rc-list-item-transition-duration)"
           },
           "cssVar": "--rc-list-item-transition-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": 0
           }
@@ -4045,7 +3952,7 @@
             "WEB": "var(--rc-list-leading-gap)"
           },
           "cssVar": "--rc-list-leading-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": {
               "alias": "size/gap",
@@ -4064,7 +3971,7 @@
             "WEB": "var(--rc-list-padding-inline)"
           },
           "cssVar": "--rc-list-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": 0
           }
@@ -4079,7 +3986,7 @@
             "WEB": "var(--rc-list-row-gap)"
           },
           "cssVar": "--rc-list-row-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": 0
           }
@@ -4094,7 +4001,7 @@
             "WEB": "var(--rc-list-trailing-gap)"
           },
           "cssVar": "--rc-list-trailing-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-list is themed.",
           "values": {
             "Value": {
               "alias": "size/gap",
@@ -4113,7 +4020,7 @@
             "WEB": "var(--rc-listbox-active-bg)"
           },
           "cssVar": "--rc-listbox-active-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-listbox is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -4131,7 +4038,7 @@
             "WEB": "var(--rc-listbox-active-color)"
           },
           "cssVar": "--rc-listbox-active-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-listbox is themed.",
           "values": {
             "Value": {
               "alias": "color/selection-text",
@@ -4149,7 +4056,7 @@
             "WEB": "var(--rc-listbox-disabled-opacity)"
           },
           "cssVar": "--rc-listbox-disabled-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-listbox is themed.",
           "values": {
             "Value": 1
           }
@@ -4164,7 +4071,7 @@
             "WEB": "var(--rc-listbox-hover-color)"
           },
           "cssVar": "--rc-listbox-hover-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-listbox is themed.",
           "values": {
             "Value": {
               "alias": "color/field-text",
@@ -4182,7 +4089,7 @@
             "WEB": "var(--rc-listbox-option-gap)"
           },
           "cssVar": "--rc-listbox-option-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-listbox is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -4200,7 +4107,7 @@
             "WEB": "var(--rc-listbox-option-min-block-size)"
           },
           "cssVar": "--rc-listbox-option-min-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-listbox is themed.",
           "values": {
             "Value": {
               "alias": "size/listbox-row-height",
@@ -4219,7 +4126,7 @@
             "WEB": "var(--rc-listbox-option-padding-block)"
           },
           "cssVar": "--rc-listbox-option-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-listbox is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -4238,7 +4145,7 @@
             "WEB": "var(--rc-listbox-option-padding-inline)"
           },
           "cssVar": "--rc-listbox-option-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-listbox is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -4257,7 +4164,7 @@
             "WEB": "var(--rc-listbox-selected-bg)"
           },
           "cssVar": "--rc-listbox-selected-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-listbox is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -4275,7 +4182,7 @@
             "WEB": "var(--rc-listbox-selected-color)"
           },
           "cssVar": "--rc-listbox-selected-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-listbox is themed.",
           "values": {
             "Value": {
               "alias": "color/selection-text",
@@ -4294,7 +4201,7 @@
             "WEB": "var(--rc-markdown-editor-background)"
           },
           "cssVar": "--rc-markdown-editor-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/field",
@@ -4312,7 +4219,7 @@
             "WEB": "var(--rc-markdown-editor-border-radius)"
           },
           "cssVar": "--rc-markdown-editor-border-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -4330,7 +4237,7 @@
             "WEB": "var(--rc-markdown-editor-color)"
           },
           "cssVar": "--rc-markdown-editor-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/field-text",
@@ -4348,7 +4255,7 @@
             "WEB": "var(--rc-markdown-editor-font-size)"
           },
           "cssVar": "--rc-markdown-editor-font-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": 13
           }
@@ -4363,7 +4270,7 @@
             "WEB": "var(--rc-markdown-editor-line-height)"
           },
           "cssVar": "--rc-markdown-editor-line-height",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": 1.1
           }
@@ -4379,7 +4286,7 @@
             "WEB": "var(--rc-markdown-editor-padding)"
           },
           "cssVar": "--rc-markdown-editor-padding",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -4397,7 +4304,7 @@
             "WEB": "var(--rc-markdown-editor-src-blockquote-color)"
           },
           "cssVar": "--rc-markdown-editor-src-blockquote-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/shadow",
@@ -4415,7 +4322,7 @@
             "WEB": "var(--rc-markdown-editor-src-code-color)"
           },
           "cssVar": "--rc-markdown-editor-src-code-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -4433,7 +4340,7 @@
             "WEB": "var(--rc-markdown-editor-src-dim-color)"
           },
           "cssVar": "--rc-markdown-editor-src-dim-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/shadow",
@@ -4451,7 +4358,7 @@
             "WEB": "var(--rc-markdown-editor-src-heading-color)"
           },
           "cssVar": "--rc-markdown-editor-src-heading-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -4469,7 +4376,7 @@
             "WEB": "var(--rc-markdown-editor-src-link-color)"
           },
           "cssVar": "--rc-markdown-editor-src-link-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -4487,7 +4394,7 @@
             "WEB": "var(--rc-markdown-editor-src-list-color)"
           },
           "cssVar": "--rc-markdown-editor-src-list-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -4506,7 +4413,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-background)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -4525,7 +4432,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-button-active-background)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-button-active-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -4543,7 +4450,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-button-active-border)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-button-active-border",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -4561,7 +4468,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-button-active-color)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-button-active-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -4580,7 +4487,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-button-background)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-button-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -4598,7 +4505,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-button-color)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-button-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -4616,7 +4523,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-button-focus-opacity)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-button-focus-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": 0
           }
@@ -4631,7 +4538,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-button-hover-opacity)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-button-hover-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": 0
           }
@@ -4646,7 +4553,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-button-pressed-opacity)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-button-pressed-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": 0
           }
@@ -4661,7 +4568,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-button-radius)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-button-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -4679,7 +4586,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-button-size)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-button-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "size/toolbar-button-size",
@@ -4697,7 +4604,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-color)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -4716,7 +4623,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-focus-outline-offset)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-focus-outline-offset",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "focus/focus-ring-offset",
@@ -4734,7 +4641,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-gap)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": 3
           }
@@ -4750,7 +4657,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-input-background)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-input-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/field",
@@ -4768,7 +4675,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-input-color)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-input-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/field-text",
@@ -4786,7 +4693,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-input-radius)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-input-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -4805,7 +4712,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-padding)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-padding",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -4823,7 +4730,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-radius)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -4842,7 +4749,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-select-active-background)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-select-active-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/field",
@@ -4860,7 +4767,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-select-active-border-color)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-select-active-border-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -4878,7 +4785,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-select-active-color)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-select-active-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/field-text",
@@ -4897,7 +4804,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-select-background)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-select-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/field",
@@ -4915,7 +4822,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-select-color)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-select-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "color/field-text",
@@ -4933,7 +4840,7 @@
             "WEB": "var(--rc-markdown-editor-toolbar-select-radius)"
           },
           "cssVar": "--rc-markdown-editor-toolbar-select-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-markdown-editor is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -4951,7 +4858,7 @@
             "WEB": "var(--rc-menu-button-icon-size)"
           },
           "cssVar": "--rc-menu-button-icon-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "size/check-size",
@@ -4969,7 +4876,7 @@
             "WEB": "var(--rc-menu-button-indicator-color)"
           },
           "cssVar": "--rc-menu-button-indicator-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -4987,7 +4894,7 @@
             "WEB": "var(--rc-menu-button-indicator-size)"
           },
           "cssVar": "--rc-menu-button-indicator-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "size/check-size",
@@ -5003,7 +4910,7 @@
             "WEB": "var(--rc-menu-button-popup-duration)"
           },
           "cssVar": "--rc-menu-button-popup-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": 0
           }
@@ -5019,7 +4926,7 @@
             "WEB": "var(--rc-menu-button-trigger-background)"
           },
           "cssVar": "--rc-menu-button-trigger-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -5037,7 +4944,7 @@
             "WEB": "var(--rc-menu-button-trigger-block-size)"
           },
           "cssVar": "--rc-menu-button-trigger-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -5055,7 +4962,7 @@
             "WEB": "var(--rc-menu-button-trigger-color)"
           },
           "cssVar": "--rc-menu-button-trigger-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -5073,7 +4980,7 @@
             "WEB": "var(--rc-menu-button-trigger-gap)"
           },
           "cssVar": "--rc-menu-button-trigger-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -5092,7 +4999,7 @@
             "WEB": "var(--rc-menu-button-trigger-hover-background)"
           },
           "cssVar": "--rc-menu-button-trigger-hover-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -5110,7 +5017,7 @@
             "WEB": "var(--rc-menu-button-trigger-hover-border-color)"
           },
           "cssVar": "--rc-menu-button-trigger-hover-border-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -5128,7 +5035,7 @@
             "WEB": "var(--rc-menu-button-trigger-hover-color)"
           },
           "cssVar": "--rc-menu-button-trigger-hover-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -5147,7 +5054,7 @@
             "WEB": "var(--rc-menu-button-trigger-open-background)"
           },
           "cssVar": "--rc-menu-button-trigger-open-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -5165,7 +5072,7 @@
             "WEB": "var(--rc-menu-button-trigger-open-color)"
           },
           "cssVar": "--rc-menu-button-trigger-open-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "color/selection-text",
@@ -5184,7 +5091,7 @@
             "WEB": "var(--rc-menu-button-trigger-padding-block)"
           },
           "cssVar": "--rc-menu-button-trigger-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -5203,7 +5110,7 @@
             "WEB": "var(--rc-menu-button-trigger-padding-inline)"
           },
           "cssVar": "--rc-menu-button-trigger-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": 8
           }
@@ -5218,7 +5125,7 @@
             "WEB": "var(--rc-menu-button-trigger-radius)"
           },
           "cssVar": "--rc-menu-button-trigger-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menu-button is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -5237,7 +5144,6 @@
             "WEB": "var(--rc-menu-active-bg)"
           },
           "cssVar": "--rc-menu-active-bg",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -5255,7 +5161,6 @@
             "WEB": "var(--rc-menu-active-color)"
           },
           "cssVar": "--rc-menu-active-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/selection-text",
@@ -5273,7 +5178,6 @@
             "WEB": "var(--rc-menu-check-color)"
           },
           "cssVar": "--rc-menu-check-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/menu-text",
@@ -5291,7 +5195,6 @@
             "WEB": "var(--rc-menu-check-size)"
           },
           "cssVar": "--rc-menu-check-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/check-size",
@@ -5309,7 +5212,6 @@
             "WEB": "var(--rc-menu-disabled-color)"
           },
           "cssVar": "--rc-menu-disabled-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/disabled-text",
@@ -5327,7 +5229,6 @@
             "WEB": "var(--rc-menu-disabled-opacity)"
           },
           "cssVar": "--rc-menu-disabled-opacity",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 1
           }
@@ -5342,7 +5243,6 @@
             "WEB": "var(--rc-menu-group-label-color)"
           },
           "cssVar": "--rc-menu-group-label-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/menu-text",
@@ -5361,7 +5261,6 @@
             "WEB": "var(--rc-menu-hover-bg)"
           },
           "cssVar": "--rc-menu-hover-bg",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -5379,7 +5278,6 @@
             "WEB": "var(--rc-menu-hover-color)"
           },
           "cssVar": "--rc-menu-hover-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/selection-text",
@@ -5397,7 +5295,6 @@
             "WEB": "var(--rc-menu-item-gap)"
           },
           "cssVar": "--rc-menu-item-gap",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/gap",
@@ -5415,7 +5312,6 @@
             "WEB": "var(--rc-menu-item-min-block-size)"
           },
           "cssVar": "--rc-menu-item-min-block-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 20
           }
@@ -5431,7 +5327,6 @@
             "WEB": "var(--rc-menu-item-padding-block)"
           },
           "cssVar": "--rc-menu-item-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -5446,7 +5341,6 @@
             "WEB": "var(--rc-menu-min-width)"
           },
           "cssVar": "--rc-menu-min-width",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 142
           }
@@ -5459,7 +5353,6 @@
             "WEB": "var(--rc-menu-separator-margin-block)"
           },
           "cssVar": "--rc-menu-separator-margin-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 1
           }
@@ -5472,7 +5365,6 @@
             "WEB": "var(--rc-menu-separator-margin-inline)"
           },
           "cssVar": "--rc-menu-separator-margin-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -5487,7 +5379,6 @@
             "WEB": "var(--rc-menu-shortcut-size)"
           },
           "cssVar": "--rc-menu-shortcut-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 13
           }
@@ -5503,7 +5394,7 @@
             "WEB": "var(--rc-menubar-background)"
           },
           "cssVar": "--rc-menubar-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": {
               "alias": "color/menu",
@@ -5519,7 +5410,7 @@
             "WEB": "var(--rc-menubar-border)"
           },
           "cssVar": "--rc-menubar-border",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": 0
           }
@@ -5534,7 +5425,7 @@
             "WEB": "var(--rc-menubar-color)"
           },
           "cssVar": "--rc-menubar-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": {
               "alias": "color/menu-text",
@@ -5552,7 +5443,7 @@
             "WEB": "var(--rc-menubar-gap)"
           },
           "cssVar": "--rc-menubar-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": 0
           }
@@ -5567,7 +5458,7 @@
             "WEB": "var(--rc-menubar-item-block-size)"
           },
           "cssVar": "--rc-menubar-item-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": {
               "alias": "size/menu-height",
@@ -5583,7 +5474,7 @@
             "WEB": "var(--rc-menubar-item-border)"
           },
           "cssVar": "--rc-menubar-item-border",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": 0
           }
@@ -5598,7 +5489,7 @@
             "WEB": "var(--rc-menubar-item-color)"
           },
           "cssVar": "--rc-menubar-item-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": {
               "alias": "color/menu-text",
@@ -5616,7 +5507,7 @@
             "WEB": "var(--rc-menubar-item-gap)"
           },
           "cssVar": "--rc-menubar-item-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": 0
           }
@@ -5632,7 +5523,7 @@
             "WEB": "var(--rc-menubar-item-hover-background)"
           },
           "cssVar": "--rc-menubar-item-hover-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -5650,7 +5541,7 @@
             "WEB": "var(--rc-menubar-item-hover-color)"
           },
           "cssVar": "--rc-menubar-item-hover-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": {
               "alias": "color/selection-text",
@@ -5669,7 +5560,7 @@
             "WEB": "var(--rc-menubar-item-open-background)"
           },
           "cssVar": "--rc-menubar-item-open-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -5687,7 +5578,7 @@
             "WEB": "var(--rc-menubar-item-open-color)"
           },
           "cssVar": "--rc-menubar-item-open-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": {
               "alias": "color/selection-text",
@@ -5706,7 +5597,7 @@
             "WEB": "var(--rc-menubar-item-padding-block)"
           },
           "cssVar": "--rc-menubar-item-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": 0
           }
@@ -5722,7 +5613,7 @@
             "WEB": "var(--rc-menubar-item-padding-inline)"
           },
           "cssVar": "--rc-menubar-item-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": 9
           }
@@ -5737,7 +5628,7 @@
             "WEB": "var(--rc-menubar-item-radius)"
           },
           "cssVar": "--rc-menubar-item-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -5756,7 +5647,7 @@
             "WEB": "var(--rc-menubar-padding-block)"
           },
           "cssVar": "--rc-menubar-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": 0
           }
@@ -5772,7 +5663,7 @@
             "WEB": "var(--rc-menubar-padding-inline)"
           },
           "cssVar": "--rc-menubar-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": 0
           }
@@ -5787,7 +5678,7 @@
             "WEB": "var(--rc-menubar-radius)"
           },
           "cssVar": "--rc-menubar-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-menubar is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -5805,7 +5696,7 @@
             "WEB": "var(--rc-navigation-bar-active-color)"
           },
           "cssVar": "--rc-navigation-bar-active-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -5824,7 +5715,7 @@
             "WEB": "var(--rc-navigation-bar-bg)"
           },
           "cssVar": "--rc-navigation-bar-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -5842,7 +5733,7 @@
             "WEB": "var(--rc-navigation-bar-block-size)"
           },
           "cssVar": "--rc-navigation-bar-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "size/toolbar-height",
@@ -5860,7 +5751,7 @@
             "WEB": "var(--rc-navigation-bar-color)"
           },
           "cssVar": "--rc-navigation-bar-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -5879,7 +5770,7 @@
             "WEB": "var(--rc-navigation-bar-focus-ring-offset)"
           },
           "cssVar": "--rc-navigation-bar-focus-ring-offset",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "focus/focus-ring-offset",
@@ -5897,7 +5788,7 @@
             "WEB": "var(--rc-navigation-bar-gap)"
           },
           "cssVar": "--rc-navigation-bar-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": 3
           }
@@ -5910,7 +5801,7 @@
             "WEB": "var(--rc-navigation-bar-indicator-border)"
           },
           "cssVar": "--rc-navigation-bar-indicator-border",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": 0
           }
@@ -5923,7 +5814,7 @@
             "WEB": "var(--rc-navigation-bar-indicator-duration)"
           },
           "cssVar": "--rc-navigation-bar-indicator-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": 0
           }
@@ -5938,7 +5829,7 @@
             "WEB": "var(--rc-navigation-bar-indicator-radius)"
           },
           "cssVar": "--rc-navigation-bar-indicator-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -5956,7 +5847,7 @@
             "WEB": "var(--rc-navigation-bar-item-color)"
           },
           "cssVar": "--rc-navigation-bar-item-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -5974,7 +5865,7 @@
             "WEB": "var(--rc-navigation-bar-item-gap)"
           },
           "cssVar": "--rc-navigation-bar-item-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -5992,7 +5883,7 @@
             "WEB": "var(--rc-navigation-bar-item-min-block-size)"
           },
           "cssVar": "--rc-navigation-bar-item-min-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "size/toolbar-button-size",
@@ -6011,7 +5902,7 @@
             "WEB": "var(--rc-navigation-bar-item-padding-block)"
           },
           "cssVar": "--rc-navigation-bar-item-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": 0
           }
@@ -6027,7 +5918,7 @@
             "WEB": "var(--rc-navigation-bar-item-padding-inline)"
           },
           "cssVar": "--rc-navigation-bar-item-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -6046,7 +5937,7 @@
             "WEB": "var(--rc-navigation-bar-padding-block)"
           },
           "cssVar": "--rc-navigation-bar-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -6065,7 +5956,7 @@
             "WEB": "var(--rc-navigation-bar-padding-inline)"
           },
           "cssVar": "--rc-navigation-bar-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-bar is themed.",
           "values": {
             "Value": 3
           }
@@ -6080,7 +5971,7 @@
             "WEB": "var(--rc-navigation-rail-active-color)"
           },
           "cssVar": "--rc-navigation-rail-active-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -6099,7 +5990,7 @@
             "WEB": "var(--rc-navigation-rail-bg)"
           },
           "cssVar": "--rc-navigation-rail-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -6117,7 +6008,7 @@
             "WEB": "var(--rc-navigation-rail-color)"
           },
           "cssVar": "--rc-navigation-rail-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -6133,7 +6024,7 @@
             "WEB": "var(--rc-navigation-rail-duration)"
           },
           "cssVar": "--rc-navigation-rail-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": 0
           }
@@ -6148,7 +6039,7 @@
             "WEB": "var(--rc-navigation-rail-expanded-inline-size)"
           },
           "cssVar": "--rc-navigation-rail-expanded-inline-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": 160
           }
@@ -6163,7 +6054,7 @@
             "WEB": "var(--rc-navigation-rail-expanded-item-min-block-size)"
           },
           "cssVar": "--rc-navigation-rail-expanded-item-min-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -6182,7 +6073,7 @@
             "WEB": "var(--rc-navigation-rail-expanded-item-padding-inline)"
           },
           "cssVar": "--rc-navigation-rail-expanded-item-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -6201,7 +6092,7 @@
             "WEB": "var(--rc-navigation-rail-focus-ring-offset)"
           },
           "cssVar": "--rc-navigation-rail-focus-ring-offset",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "focus/focus-ring-offset",
@@ -6219,7 +6110,7 @@
             "WEB": "var(--rc-navigation-rail-gap)"
           },
           "cssVar": "--rc-navigation-rail-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": 3
           }
@@ -6232,7 +6123,7 @@
             "WEB": "var(--rc-navigation-rail-indicator-border)"
           },
           "cssVar": "--rc-navigation-rail-indicator-border",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": 0
           }
@@ -6245,7 +6136,7 @@
             "WEB": "var(--rc-navigation-rail-indicator-duration)"
           },
           "cssVar": "--rc-navigation-rail-indicator-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": 0
           }
@@ -6260,7 +6151,7 @@
             "WEB": "var(--rc-navigation-rail-indicator-radius)"
           },
           "cssVar": "--rc-navigation-rail-indicator-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -6278,7 +6169,7 @@
             "WEB": "var(--rc-navigation-rail-inline-size)"
           },
           "cssVar": "--rc-navigation-rail-inline-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "size/toolbar-height",
@@ -6296,7 +6187,7 @@
             "WEB": "var(--rc-navigation-rail-item-color)"
           },
           "cssVar": "--rc-navigation-rail-item-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -6314,7 +6205,7 @@
             "WEB": "var(--rc-navigation-rail-item-gap)"
           },
           "cssVar": "--rc-navigation-rail-item-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -6332,7 +6223,7 @@
             "WEB": "var(--rc-navigation-rail-item-min-block-size)"
           },
           "cssVar": "--rc-navigation-rail-item-min-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "size/toolbar-button-size",
@@ -6351,7 +6242,7 @@
             "WEB": "var(--rc-navigation-rail-item-padding-block)"
           },
           "cssVar": "--rc-navigation-rail-item-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": 0
           }
@@ -6367,7 +6258,7 @@
             "WEB": "var(--rc-navigation-rail-item-padding-inline)"
           },
           "cssVar": "--rc-navigation-rail-item-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -6386,7 +6277,7 @@
             "WEB": "var(--rc-navigation-rail-padding-block)"
           },
           "cssVar": "--rc-navigation-rail-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": 3
           }
@@ -6402,7 +6293,7 @@
             "WEB": "var(--rc-navigation-rail-padding-inline)"
           },
           "cssVar": "--rc-navigation-rail-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -6420,7 +6311,7 @@
             "WEB": "var(--rc-navigation-rail-toggle-size)"
           },
           "cssVar": "--rc-navigation-rail-toggle-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-navigation-rail is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -6438,7 +6329,7 @@
             "WEB": "var(--rc-progress-control-size)"
           },
           "cssVar": "--rc-progress-control-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-progress is themed.",
           "values": {
             "Value": {
               "alias": "size/check-size",
@@ -6457,7 +6348,7 @@
             "WEB": "var(--rc-progress-fill-background)"
           },
           "cssVar": "--rc-progress-fill-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-progress is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -6475,7 +6366,7 @@
             "WEB": "var(--rc-progress-gap)"
           },
           "cssVar": "--rc-progress-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-progress is themed.",
           "values": {
             "Value": {
               "alias": "size/gap",
@@ -6494,7 +6385,7 @@
             "WEB": "var(--rc-progress-track-background)"
           },
           "cssVar": "--rc-progress-track-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-progress is themed.",
           "values": {
             "Value": {
               "alias": "color/field",
@@ -6512,7 +6403,7 @@
             "WEB": "var(--rc-progress-track-opacity)"
           },
           "cssVar": "--rc-progress-track-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-progress is themed.",
           "values": {
             "Value": 1
           }
@@ -6527,7 +6418,7 @@
             "WEB": "var(--rc-progress-track-radius)"
           },
           "cssVar": "--rc-progress-track-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-progress is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -6545,7 +6436,7 @@
             "WEB": "var(--rc-progress-value-color)"
           },
           "cssVar": "--rc-progress-value-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-progress is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -6564,7 +6455,7 @@
             "WEB": "var(--rc-range-slider-accent)"
           },
           "cssVar": "--rc-range-slider-accent",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -6583,7 +6474,7 @@
             "WEB": "var(--rc-range-slider-thumb-background)"
           },
           "cssVar": "--rc-range-slider-thumb-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -6601,7 +6492,7 @@
             "WEB": "var(--rc-range-slider-thumb-border)"
           },
           "cssVar": "--rc-range-slider-thumb-border",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -6620,7 +6511,7 @@
             "WEB": "var(--rc-range-slider-track-background)"
           },
           "cssVar": "--rc-range-slider-track-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": {
               "alias": "color/field",
@@ -6639,7 +6530,7 @@
             "WEB": "var(--rc-scroller-content-padding-inline)"
           },
           "cssVar": "--rc-scroller-content-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-scroller is themed.",
           "values": {
             "Value": 0
           }
@@ -6654,7 +6545,7 @@
             "WEB": "var(--rc-scroller-content-row-gap)"
           },
           "cssVar": "--rc-scroller-content-row-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-scroller is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -6673,7 +6564,7 @@
             "WEB": "var(--rc-segmented-button-bg)"
           },
           "cssVar": "--rc-segmented-button-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -6691,7 +6582,7 @@
             "WEB": "var(--rc-segmented-button-color)"
           },
           "cssVar": "--rc-segmented-button-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -6709,7 +6600,7 @@
             "WEB": "var(--rc-segmented-button-disabled-opacity)"
           },
           "cssVar": "--rc-segmented-button-disabled-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": 1
           }
@@ -6722,7 +6613,7 @@
             "WEB": "var(--rc-segmented-button-divider)"
           },
           "cssVar": "--rc-segmented-button-divider",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": 0
           }
@@ -6738,7 +6629,7 @@
             "WEB": "var(--rc-segmented-button-focus-ring-offset)"
           },
           "cssVar": "--rc-segmented-button-focus-ring-offset",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": {
               "alias": "focus/focus-ring-offset",
@@ -6756,7 +6647,7 @@
             "WEB": "var(--rc-segmented-button-radius)"
           },
           "cssVar": "--rc-segmented-button-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -6774,7 +6665,7 @@
             "WEB": "var(--rc-segmented-button-segment-gap)"
           },
           "cssVar": "--rc-segmented-button-segment-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -6792,7 +6683,6 @@
             "WEB": "var(--rc-segmented-button-segment-min-block-size)"
           },
           "cssVar": "--rc-segmented-button-segment-min-block-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "core/control-block-size",
@@ -6811,7 +6701,7 @@
             "WEB": "var(--rc-segmented-button-segment-padding-block)"
           },
           "cssVar": "--rc-segmented-button-segment-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -6830,7 +6720,7 @@
             "WEB": "var(--rc-segmented-button-segment-padding-inline)"
           },
           "cssVar": "--rc-segmented-button-segment-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": 8
           }
@@ -6845,7 +6735,7 @@
             "WEB": "var(--rc-segmented-button-selected-color)"
           },
           "cssVar": "--rc-segmented-button-selected-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -6863,7 +6753,7 @@
             "WEB": "var(--rc-segmented-button-selected-icon-size)"
           },
           "cssVar": "--rc-segmented-button-selected-icon-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-segmented-button is themed.",
           "values": {
             "Value": {
               "alias": "size/check-size",
@@ -6881,7 +6771,7 @@
             "WEB": "var(--rc-select-chip-radius)"
           },
           "cssVar": "--rc-select-chip-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -6899,7 +6789,7 @@
             "WEB": "var(--rc-select-control-block-size)"
           },
           "cssVar": "--rc-select-control-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": 20
           }
@@ -6914,7 +6804,7 @@
             "WEB": "var(--rc-select-gap)"
           },
           "cssVar": "--rc-select-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -6933,7 +6823,7 @@
             "WEB": "var(--rc-select-listbox-background)"
           },
           "cssVar": "--rc-select-listbox-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "core/surface",
@@ -6951,7 +6841,7 @@
             "WEB": "var(--rc-select-listbox-color)"
           },
           "cssVar": "--rc-select-listbox-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "field/text",
@@ -6970,7 +6860,7 @@
             "WEB": "var(--rc-select-listbox-padding-block)"
           },
           "cssVar": "--rc-select-listbox-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": 0
           }
@@ -6986,7 +6876,7 @@
             "WEB": "var(--rc-select-padding-block)"
           },
           "cssVar": "--rc-select-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -7005,7 +6895,7 @@
             "WEB": "var(--rc-select-padding-inline)"
           },
           "cssVar": "--rc-select-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -7023,7 +6913,7 @@
             "WEB": "var(--rc-select-radius)"
           },
           "cssVar": "--rc-select-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -7041,7 +6931,7 @@
             "WEB": "var(--rc-select-toggle-indicator-size)"
           },
           "cssVar": "--rc-select-toggle-indicator-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-select is themed.",
           "values": {
             "Value": {
               "alias": "size/scrollbar-size",
@@ -7059,7 +6949,7 @@
             "WEB": "var(--rc-slider-control-size)"
           },
           "cssVar": "--rc-slider-control-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -7077,7 +6967,7 @@
             "WEB": "var(--rc-slider-gap)"
           },
           "cssVar": "--rc-slider-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": {
               "alias": "size/gap",
@@ -7096,7 +6986,7 @@
             "WEB": "var(--rc-slider-progress-background)"
           },
           "cssVar": "--rc-slider-progress-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -7115,7 +7005,7 @@
             "WEB": "var(--rc-slider-track-background)"
           },
           "cssVar": "--rc-slider-track-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": {
               "alias": "color/field",
@@ -7133,7 +7023,7 @@
             "WEB": "var(--rc-slider-track-opacity)"
           },
           "cssVar": "--rc-slider-track-opacity",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": 1
           }
@@ -7148,7 +7038,7 @@
             "WEB": "var(--rc-slider-track-radius)"
           },
           "cssVar": "--rc-slider-track-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -7166,7 +7056,7 @@
             "WEB": "var(--rc-slider-track-size)"
           },
           "cssVar": "--rc-slider-track-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": 4
           }
@@ -7181,7 +7071,7 @@
             "WEB": "var(--rc-slider-value-color)"
           },
           "cssVar": "--rc-slider-value-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-slider is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -7200,7 +7090,6 @@
             "WEB": "var(--rc-snackbar-action-bg)"
           },
           "cssVar": "--rc-snackbar-action-bg",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -7218,7 +7107,6 @@
             "WEB": "var(--rc-snackbar-action-color)"
           },
           "cssVar": "--rc-snackbar-action-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -7237,7 +7125,6 @@
             "WEB": "var(--rc-snackbar-action-padding-block)"
           },
           "cssVar": "--rc-snackbar-action-padding-block",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -7256,7 +7143,6 @@
             "WEB": "var(--rc-snackbar-action-padding-inline)"
           },
           "cssVar": "--rc-snackbar-action-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 8
           }
@@ -7271,7 +7157,6 @@
             "WEB": "var(--rc-snackbar-action-radius)"
           },
           "cssVar": "--rc-snackbar-action-radius",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -7290,7 +7175,6 @@
             "WEB": "var(--rc-snackbar-bg)"
           },
           "cssVar": "--rc-snackbar-bg",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -7308,7 +7192,6 @@
             "WEB": "var(--rc-snackbar-color)"
           },
           "cssVar": "--rc-snackbar-color",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -7327,7 +7210,7 @@
             "WEB": "var(--rc-snackbar-focus-ring-offset)"
           },
           "cssVar": "--rc-snackbar-focus-ring-offset",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-snackbar is themed.",
           "values": {
             "Value": {
               "alias": "focus/focus-ring-offset",
@@ -7345,7 +7228,7 @@
             "WEB": "var(--rc-snackbar-gap)"
           },
           "cssVar": "--rc-snackbar-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-snackbar is themed.",
           "values": {
             "Value": {
               "alias": "size/gap",
@@ -7364,7 +7247,7 @@
             "WEB": "var(--rc-snackbar-inset-block-end)"
           },
           "cssVar": "--rc-snackbar-inset-block-end",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-snackbar is themed.",
           "values": {
             "Value": 0
           }
@@ -7380,7 +7263,7 @@
             "WEB": "var(--rc-snackbar-inset-inline)"
           },
           "cssVar": "--rc-snackbar-inset-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-snackbar is themed.",
           "values": {
             "Value": 0
           }
@@ -7395,7 +7278,7 @@
             "WEB": "var(--rc-snackbar-min-block-size)"
           },
           "cssVar": "--rc-snackbar-min-block-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-snackbar is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -7414,7 +7297,7 @@
             "WEB": "var(--rc-snackbar-padding-block)"
           },
           "cssVar": "--rc-snackbar-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-snackbar is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -7433,7 +7316,7 @@
             "WEB": "var(--rc-snackbar-padding-inline)"
           },
           "cssVar": "--rc-snackbar-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-snackbar is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -7451,7 +7334,7 @@
             "WEB": "var(--rc-snackbar-radius)"
           },
           "cssVar": "--rc-snackbar-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-snackbar is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -7470,7 +7353,7 @@
             "WEB": "var(--rc-splitter-collapse-button-bg)"
           },
           "cssVar": "--rc-splitter-collapse-button-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-splitter is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -7488,7 +7371,7 @@
             "WEB": "var(--rc-splitter-collapse-button-color)"
           },
           "cssVar": "--rc-splitter-collapse-button-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-splitter is themed.",
           "values": {
             "Value": {
               "alias": "color/frame",
@@ -7507,7 +7390,7 @@
             "WEB": "var(--rc-splitter-collapse-button-hover-bg)"
           },
           "cssVar": "--rc-splitter-collapse-button-hover-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-splitter is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -7525,7 +7408,7 @@
             "WEB": "var(--rc-splitter-collapse-button-size)"
           },
           "cssVar": "--rc-splitter-collapse-button-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-splitter is themed.",
           "values": {
             "Value": {
               "alias": "size/scrollbar-size",
@@ -7543,7 +7426,7 @@
             "WEB": "var(--rc-splitter-handle-border-radius)"
           },
           "cssVar": "--rc-splitter-handle-border-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-splitter is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -7561,7 +7444,7 @@
             "WEB": "var(--rc-splitter-separator-color)"
           },
           "cssVar": "--rc-splitter-separator-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-splitter is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -7579,7 +7462,7 @@
             "WEB": "var(--rc-splitter-separator-handle-size)"
           },
           "cssVar": "--rc-splitter-separator-handle-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-splitter is themed.",
           "values": {
             "Value": 100
           }
@@ -7594,7 +7477,7 @@
             "WEB": "var(--rc-splitter-separator-size)"
           },
           "cssVar": "--rc-splitter-separator-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-splitter is themed.",
           "values": {
             "Value": 5
           }
@@ -7607,7 +7490,7 @@
             "WEB": "var(--rc-splitter-snap-duration)"
           },
           "cssVar": "--rc-splitter-snap-duration",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-splitter is themed.",
           "values": {
             "Value": 0
           }
@@ -7622,7 +7505,6 @@
             "WEB": "var(--rc-switch-native-block-size)"
           },
           "cssVar": "--rc-switch-native-block-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 100
           }
@@ -7637,7 +7519,6 @@
             "WEB": "var(--rc-switch-native-inline-size)"
           },
           "cssVar": "--rc-switch-native-inline-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 100
           }
@@ -7650,7 +7531,6 @@
             "WEB": "var(--rc-switch-native-margin)"
           },
           "cssVar": "--rc-switch-native-margin",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -7665,7 +7545,6 @@
             "WEB": "var(--rc-switch-native-opacity)"
           },
           "cssVar": "--rc-switch-native-opacity",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 0
           }
@@ -7681,7 +7560,6 @@
             "WEB": "var(--rc-switch-selected-track-bg)"
           },
           "cssVar": "--rc-switch-selected-track-bg",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -7697,7 +7575,6 @@
             "WEB": "var(--rc-switch-thumb-translate)"
           },
           "cssVar": "--rc-switch-thumb-translate",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 16
           }
@@ -7712,7 +7589,6 @@
             "WEB": "var(--rc-switch-track-block-size)"
           },
           "cssVar": "--rc-switch-track-block-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
               "alias": "size/control-height",
@@ -7730,7 +7606,6 @@
             "WEB": "var(--rc-switch-track-inline-size)"
           },
           "cssVar": "--rc-switch-track-inline-size",
-          "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": 36
           }
@@ -7745,7 +7620,7 @@
             "WEB": "var(--rc-toolbar-gap-inline)"
           },
           "cssVar": "--rc-toolbar-gap-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-toolbar is themed.",
           "values": {
             "Value": 3
           }
@@ -7761,7 +7636,7 @@
             "WEB": "var(--rc-toolbar-padding-block)"
           },
           "cssVar": "--rc-toolbar-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-toolbar is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -7780,7 +7655,7 @@
             "WEB": "var(--rc-toolbar-padding-inline)"
           },
           "cssVar": "--rc-toolbar-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-toolbar is themed.",
           "values": {
             "Value": 3
           }
@@ -7795,7 +7670,7 @@
             "WEB": "var(--rc-toolbar-radius)"
           },
           "cssVar": "--rc-toolbar-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-toolbar is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -7813,7 +7688,7 @@
             "WEB": "var(--rc-toolbar-vertical-radius)"
           },
           "cssVar": "--rc-toolbar-vertical-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-toolbar is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -7831,7 +7706,7 @@
             "WEB": "var(--rc-transfer-list-gap)"
           },
           "cssVar": "--rc-transfer-list-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-panel",
@@ -7850,7 +7725,7 @@
             "WEB": "var(--rc-transfer-list-listbox-bg)"
           },
           "cssVar": "--rc-transfer-list-listbox-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "color/field",
@@ -7868,7 +7743,7 @@
             "WEB": "var(--rc-transfer-list-listbox-color)"
           },
           "cssVar": "--rc-transfer-list-listbox-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "color/field-text",
@@ -7886,7 +7761,7 @@
             "WEB": "var(--rc-transfer-list-listbox-radius)"
           },
           "cssVar": "--rc-transfer-list-listbox-radius",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "radius/radius",
@@ -7904,7 +7779,7 @@
             "WEB": "var(--rc-transfer-list-option-gap)"
           },
           "cssVar": "--rc-transfer-list-option-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -7922,7 +7797,7 @@
             "WEB": "var(--rc-transfer-list-option-hover-color)"
           },
           "cssVar": "--rc-transfer-list-option-hover-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "color/field-text",
@@ -7941,7 +7816,7 @@
             "WEB": "var(--rc-transfer-list-option-padding-block)"
           },
           "cssVar": "--rc-transfer-list-option-padding-block",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-block",
@@ -7960,7 +7835,7 @@
             "WEB": "var(--rc-transfer-list-option-padding-inline)"
           },
           "cssVar": "--rc-transfer-list-option-padding-inline",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "size/padding-inline",
@@ -7979,7 +7854,7 @@
             "WEB": "var(--rc-transfer-list-option-selected-bg)"
           },
           "cssVar": "--rc-transfer-list-option-selected-bg",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "color/selection",
@@ -7997,7 +7872,7 @@
             "WEB": "var(--rc-transfer-list-option-selected-color)"
           },
           "cssVar": "--rc-transfer-list-option-selected-color",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "color/selection-text",
@@ -8015,7 +7890,7 @@
             "WEB": "var(--rc-transfer-list-panel-gap)"
           },
           "cssVar": "--rc-transfer-list-panel-gap",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-transfer-list is themed.",
           "values": {
             "Value": {
               "alias": "size/gap-tight",
@@ -8034,7 +7909,7 @@
             "WEB": "var(--rc-virtual-canvas-scrollbar-button-background)"
           },
           "cssVar": "--rc-virtual-canvas-scrollbar-button-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-virtual-canvas is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -8052,7 +7927,7 @@
             "WEB": "var(--rc-virtual-canvas-scrollbar-size)"
           },
           "cssVar": "--rc-virtual-canvas-scrollbar-size",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-virtual-canvas is themed.",
           "values": {
             "Value": {
               "alias": "size/scrollbar-size",
@@ -8071,7 +7946,7 @@
             "WEB": "var(--rc-virtual-canvas-scrollbar-thumb-background)"
           },
           "cssVar": "--rc-virtual-canvas-scrollbar-thumb-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-virtual-canvas is themed.",
           "values": {
             "Value": {
               "alias": "color/surface",
@@ -8090,7 +7965,7 @@
             "WEB": "var(--rc-virtual-canvas-scrollbar-track-background)"
           },
           "cssVar": "--rc-virtual-canvas-scrollbar-track-background",
-          "description": "Applied where rc-theme- is themed.",
+          "description": "Applied where rc-virtual-canvas is themed.",
           "values": {
             "Value": {
               "alias": "color/shadow",
@@ -9016,68 +8891,62 @@
       {
         "property": "--rc-adaptive-menu-trigger-active-shadow",
         "raw": "var(--win31-bevel-inset-1)",
-        "reason": "literal",
-        "scope": "rc-theme-"
+        "reason": "literal"
       },
       {
         "property": "--rc-adaptive-menu-trigger-shadow",
         "raw": "var(--win31-bevel-outset-1)",
-        "reason": "literal",
-        "scope": "rc-theme-"
+        "reason": "literal"
       },
       {
         "property": "--rc-dialog-shadow",
         "raw": "var(--win31-dialog-frame)",
         "reason": "literal",
-        "scope": "rc-theme-"
+        "scope": "rc-dialog"
       },
       {
         "property": "--rc-fab-font-family",
         "raw": "var(--win31-font-family)",
         "reason": "literal",
-        "scope": "rc-theme-"
+        "scope": "rc-fab"
       },
       {
         "property": "--rc-fab-menu-font-family",
         "raw": "var(--win31-font-family)",
         "reason": "literal",
-        "scope": "rc-theme-"
+        "scope": "rc-fab-menu"
       },
       {
         "property": "--rc-font-family",
         "raw": "var(--win31-font-family)",
-        "reason": "literal",
-        "scope": "rc-theme-"
+        "reason": "literal"
       },
       {
         "property": "--rc-markdown-editor-font-family",
         "raw": "var(--win31-font-family)",
         "reason": "literal",
-        "scope": "rc-theme-"
+        "scope": "rc-markdown-editor"
       },
       {
         "property": "--rc-markdown-editor-src-font-family",
         "raw": "var(--win31-font-family)",
         "reason": "literal",
-        "scope": "rc-theme-"
+        "scope": "rc-markdown-editor"
       },
       {
         "property": "--rc-menu-item-padding-inline",
         "raw": "calc(18 * var(--win31-unit)) calc(34 * var(--win31-unit))",
-        "reason": "calc-unresolved",
-        "scope": "rc-theme-"
+        "reason": "calc-unresolved"
       },
       {
         "property": "--rc-popup-shadow",
         "raw": "var(--win31-drop-shadow)",
-        "reason": "literal",
-        "scope": "rc-theme-"
+        "reason": "literal"
       },
       {
         "property": "--rc-tooltip-shadow",
         "raw": "var(--win31-drop-shadow)",
-        "reason": "literal",
-        "scope": "rc-theme-"
+        "reason": "literal"
       }
     ]
   }

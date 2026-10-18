@@ -1125,7 +1125,8 @@ function buildDocument(theme) {
 
   for (const entry of rcDecls) {
     const name = registry.get(entry.property).name;
-    const componentScope = entry.scope.match(/\brc-[a-z-]+\b/)?.[0] ?? null;
+    // The component element the rule targets, not the theme scope class.
+    const componentScope = entry.scope.match(/(?<![\w.-])rc-(?!theme-)[a-z0-9-]+/)?.[0] ?? null;
     const description = componentScope ? `Applied where ${componentScope} is themed.` : undefined;
     const shallow = shallowResolve(entry.value);
 
