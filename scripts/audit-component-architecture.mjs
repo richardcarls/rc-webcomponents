@@ -27,6 +27,7 @@ export const MARKER_CONTRACTS = {
   'data-rc-list-position': 'component-state',
   'data-rc-list-supporting': 'authored-structure',
   'data-rc-live-announcer': 'internal-controller',
+  'data-rc-material-rich-tooltip': 'authored-theme-hook',
   'data-rc-menu-icon': 'authored-structure',
   'data-rc-menu-label': 'authored-structure',
   'data-rc-menu-leading': 'authored-structure',
@@ -37,6 +38,7 @@ export const MARKER_CONTRACTS = {
   'data-rc-navigation-icon': 'authored-structure',
   'data-rc-navigation-indicator': 'authored-behavior',
   'data-rc-navigation-label': 'authored-structure',
+  'data-rc-popover-fallback-open': 'internal-controller',
   'data-rc-range-slider-reflector': 'internal-component',
   'data-rc-reorder-handle': 'authored-behavior',
   'data-rc-resize-corner': 'internal-controller',
@@ -142,7 +144,8 @@ export const THEME_SELECTOR_BUDGETS = {
     parts: 111,
     // Dialog surfaces add no marker coupling; the retained growth comes from
     // documented chip-icon and visible-list-position contracts.
-    markerHooks: 71,
+    // Four selectors opt the authored rich-tooltip structure into Material styling.
+    markerHooks: 75,
     // Dropped from 13: the reduced-motion refinement replaced a blunt
     // *, !important sweep (2 declarations) with token-level overrides.
     // The audit's own comment-stripping fix also corrected a false count
@@ -232,7 +235,8 @@ export const PACKAGE_ID_SELECTOR_BUDGETS = {
   'rc-markdown-editor': 19,
   // Grew with the popup's own open/close fade: enter, exit, and its
   // @starting-style all re-select #popup by ID.
-  'rc-menu-button': 12,
+  // The fallback-open rule gives the menu surface a box without the native API.
+  'rc-menu-button': 13,
   'rc-menubar': 3,
   'rc-navigation-bar': 4,
   'rc-navigation-rail': 18,
@@ -261,7 +265,6 @@ export const PHYSICAL_CSS_ALLOWLIST = {
   'packages/rc-theme-material/components/select.css': 'visual-viewport offsets are physical',
   'packages/rc-theme-substrate/components/select.css': 'visual-viewport offsets are physical',
   'packages/rc-virtual-canvas/src/rc-virtual-canvas.styles.ts': 'canvas pixel space is physical',
-  'packages/rc-virtual-canvas/src/rc-virtual-canvas.ts': 'canvas pixel space is physical',
   'packages/rc-common/src/AnchorController.ts':
     'emits physical CSS only after resolving the placement against the flow',
   'packages/rc-markdown-editor/src/rc-markdown-editor.ts':

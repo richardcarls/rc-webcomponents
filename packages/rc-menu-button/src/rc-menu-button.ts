@@ -3,6 +3,7 @@ import { property, query, state } from 'lit/decorators.js';
 
 import {
   AnchorController,
+  PopoverController,
   keyInteraction,
   keyNavigation,
   layoutOrientation,
@@ -325,6 +326,8 @@ export class RCMenuButton extends LitElement {
     disabled: () => !this.open,
   });
 
+  protected _popoverCtrl = new PopoverController(this, { element: () => this._$popup });
+
   /** Bound handler for document click (light dismiss). Stored for `removeEventListener` pairing. */
   protected _boundHandleDocumentClick = this._handleDocumentClick.bind(this);
 
@@ -563,17 +566,10 @@ export class RCMenuButton extends LitElement {
     if (changedProperties.has('open')) {
       this._syncTriggerAria();
 
-      // A pending update can flush after the host (and its shadow tree) has
-      // already been disconnected — e.g. a framework unmounting this element
-      // in the same tick as an `open` change. togglePopover() throws
-      // InvalidStateError on a disconnected popover, so guard on connectivity
-      // rather than letting that reach the caller.
-      if (this._$popup?.isConnected) {
-        this._$popup.togglePopover(this.open);
+      this._popoverCtrl.sync(this.open);
 
-        if (this.open) {
-          this._anchorCtrl.update();
-        }
+      if (this.open && this._$popup?.isConnected) {
+        this._anchorCtrl.update();
       }
     }
 

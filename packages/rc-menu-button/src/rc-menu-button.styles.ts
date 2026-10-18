@@ -181,6 +181,10 @@ export const menuButtonStyles = css`
     color: inherit;
   }
 
+  #popup[data-rc-popover-fallback-open] {
+    display: block;
+  }
+
   /*
    * Opacity only, deliberately not a scale or slide transform: AnchorController
    * (see rc-common) positions this popup and applies its own viewport-clamping

@@ -1,0 +1,47 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-popover {
+    --rc-popover-border: 0;
+    --rc-popover-background: var(--md-sys-color-surface-container, Canvas);
+    --rc-popover-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-popover-radius: var(--md-sys-shape-corner-medium, 0.75rem);
+    --rc-popover-shadow: var(--rc-shadow-level2, none);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-popover[data-rc-material-rich-tooltip] {
+    --rc-popover-max-inline-size: min(20rem, 100dvi - 1rem);
+    --rc-popover-padding-block: 0.75rem;
+    --rc-popover-padding-inline: 1rem;
+    --rc-popover-color: var(--md-sys-color-on-surface-variant, CanvasText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-popover[data-rc-material-rich-tooltip]
+    > [slot='content']
+    > h2 {
+    margin: 0 0 0.25rem;
+    color: var(--md-sys-color-on-surface, CanvasText);
+    font-family: var(--md-sys-typescale-title-small-font, inherit);
+    font-size: var(--md-sys-typescale-title-small-size, 0.875rem);
+    font-weight: var(--md-sys-typescale-title-small-weight, 500);
+    line-height: var(--md-sys-typescale-title-small-line-height, 1.25rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-popover[data-rc-material-rich-tooltip]
+    > [slot='content']
+    > p {
+    margin: 0;
+    font-family: var(--md-sys-typescale-body-medium-font, inherit);
+    font-size: var(--md-sys-typescale-body-medium-size, 0.875rem);
+    line-height: var(--md-sys-typescale-body-medium-line-height, 1.25rem);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-popover[data-rc-material-rich-tooltip]
+    > [slot='content']
+    > footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-block-start: 0.75rem;
+  }
+}

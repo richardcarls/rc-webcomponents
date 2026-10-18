@@ -3,6 +3,7 @@ import { property, query } from 'lit/decorators.js';
 
 import {
   AnchorController,
+  PopoverController,
   FlowController,
   isFocusable,
   keyNavigation,
@@ -335,6 +336,8 @@ export class RCAdaptiveMenu extends LitElement {
     shadowHost: () => this,
     disabled: () => !this.open || !this.hasAttribute('data-overflow'),
   });
+
+  private readonly _popover = new PopoverController(this, { element: () => this._$popup });
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -903,29 +906,14 @@ export class RCAdaptiveMenu extends LitElement {
   }
 
   private _syncOpenState(): void {
-    const $popup = this._$popup as HTMLDivElement & {
-      hidePopover?: () => void;
-      showPopover?: () => void;
-    };
+    const $popup = this._$popup;
 
     if (!$popup?.isConnected) {
       return;
     }
 
     if (this.open && this.hasAttribute('data-overflow')) {
-      let shown = false;
-
-      if (typeof $popup.showPopover === 'function') {
-        try {
-          $popup.showPopover();
-          shown = true;
-        } catch {
-          // The fallback attribute provides the same visible state when the
-          // Popover API exists only partially or rejects this element.
-        }
-      }
-
-      $popup.toggleAttribute('data-fallback-open', !shown);
+      this._popover.sync(true);
       this._$trigger.setAttribute('aria-expanded', 'true');
       this._anchor.update();
 
@@ -939,15 +927,7 @@ export class RCAdaptiveMenu extends LitElement {
       return;
     }
 
-    if (typeof $popup.hidePopover === 'function') {
-      try {
-        $popup.hidePopover();
-      } catch {
-        // A closed or unsupported popover needs no additional native cleanup.
-      }
-    }
-
-    $popup.removeAttribute('data-fallback-open');
+    this._popover.sync(false);
     this._$trigger.setAttribute('aria-expanded', 'false');
 
     if (this._restoreFocusWhenClosed) {

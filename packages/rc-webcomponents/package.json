@@ -322,6 +322,18 @@
         "default": "./dist/rc-navigation-rail/define.js"
       }
     },
+    "./rc-popover": {
+      "import": {
+        "types": "./dist/types/rc-popover/index.d.ts",
+        "default": "./dist/rc-popover/index.js"
+      }
+    },
+    "./rc-popover/define": {
+      "import": {
+        "types": "./dist/types/rc-popover/define.d.ts",
+        "default": "./dist/rc-popover/define.js"
+      }
+    },
     "./rc-progress": {
       "import": {
         "types": "./dist/types/rc-progress/index.d.ts",
@@ -466,6 +478,18 @@
         "default": "./dist/rc-toolbar/define.js"
       }
     },
+    "./rc-tooltip": {
+      "import": {
+        "types": "./dist/types/rc-tooltip/index.d.ts",
+        "default": "./dist/rc-tooltip/index.js"
+      }
+    },
+    "./rc-tooltip/define": {
+      "import": {
+        "types": "./dist/types/rc-tooltip/define.d.ts",
+        "default": "./dist/rc-tooltip/define.js"
+      }
+    },
     "./rc-transfer-list": {
       "import": {
         "types": "./dist/types/rc-transfer-list/index.d.ts",
@@ -536,6 +560,7 @@
     "@rcarls/rc-menubar": "workspace:*",
     "@rcarls/rc-navigation-bar": "workspace:*",
     "@rcarls/rc-navigation-rail": "workspace:*",
+    "@rcarls/rc-popover": "workspace:*",
     "@rcarls/rc-progress": "workspace:*",
     "@rcarls/rc-range-slider": "workspace:*",
     "@rcarls/rc-scroller": "workspace:*",
@@ -548,6 +573,7 @@
     "@rcarls/rc-switch": "workspace:*",
     "@rcarls/rc-textarea": "workspace:*",
     "@rcarls/rc-toolbar": "workspace:*",
+    "@rcarls/rc-tooltip": "workspace:*",
     "@rcarls/rc-transfer-list": "workspace:*",
     "@rcarls/rc-virtual-canvas": "workspace:*",
     "@rcarls/rc-virtual-scroller": "workspace:*"

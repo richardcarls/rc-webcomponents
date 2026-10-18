@@ -4,6 +4,7 @@ import { property, query, state } from 'lit/decorators.js';
 import {
   ActiveDescendantController,
   AnchorController,
+  PopoverController,
   inlineArrowKeys,
   NativeChildController,
   resolveFlow,
@@ -301,6 +302,8 @@ export class RCSelect extends LitElement {
     disabled: () => !this.open || this._activePopupMode === 'dialog',
   });
 
+  protected _popoverCtrl = new PopoverController(this, { element: () => this._$listbox ?? null });
+
   /** Element that owns `aria-activedescendant` for the currently rendered popup. */
   protected get _$activeDescendantHost(): HTMLElement | null {
     return this._$trigger ?? null;
@@ -389,7 +392,7 @@ export class RCSelect extends LitElement {
     }
 
     this.open = true;
-    this._$listbox.showPopover();
+    this._popoverCtrl.sync(true);
     this._anchorCtrl.update();
 
     this.dispatchEvent(new CustomEvent('rc-select-open', { bubbles: true, composed: true }));
@@ -415,7 +418,7 @@ export class RCSelect extends LitElement {
     }
 
     this.open = false;
-    this._$listbox.hidePopover();
+    this._popoverCtrl.sync(false);
     this._activeDescendantCtrl.clear();
 
     if (returnFocus) {

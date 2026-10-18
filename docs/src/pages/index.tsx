@@ -119,6 +119,16 @@ const packages = [
   ],
   ['rc-snackbar', 'Snackbar live-region host for brief status messages', '/components/rc-snackbar'],
   [
+    'rc-popover',
+    'Anchored non-modal surface around a native trigger and consumer-owned content',
+    '/components/rc-popover',
+  ],
+  [
+    'rc-tooltip',
+    'Tooltip wrapper for a consumer-owned trigger and descriptive content',
+    '/components/rc-tooltip',
+  ],
+  [
     'rc-disclosure',
     'Disclosure wrapper for native <details>/<summary>',
     '/components/rc-disclosure',

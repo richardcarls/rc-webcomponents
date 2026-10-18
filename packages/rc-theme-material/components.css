@@ -32,6 +32,8 @@
 @import './components/slider.css';
 @import './components/progress.css';
 @import './components/snackbar.css';
+@import './components/tooltip.css';
+@import './components/popover.css';
 @import './components/range-slider.css';
 @import './components/splitter.css';
 @import './components/switch.css';

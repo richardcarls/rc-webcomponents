@@ -268,6 +268,39 @@ export type RCSnackbarCloseDetail = {
   message: string;
 };
 
+export type RCTooltipPlacement =
+  | 'block-start'
+  | 'block-start-start'
+  | 'block-start-end'
+  | 'block-end'
+  | 'block-end-start'
+  | 'block-end-end'
+  | 'inline-start'
+  | 'inline-start-start'
+  | 'inline-start-end'
+  | 'inline-end'
+  | 'inline-end-start'
+  | 'inline-end-end';
+
+export type RCPopoverPlacement = RCTooltipPlacement;
+export type RCPopoverTriggerAction = 'toggle' | 'none';
+export type RCPopoverToggleDetail = { open: boolean };
+
+/** Public API surface of `<rc-popover>`. */
+export type RCPopoverRef = HTMLElement & {
+  open: boolean;
+  defaultOpen: boolean;
+  placement: RCPopoverPlacement;
+  triggerAction: RCPopoverTriggerAction;
+  openOnHover: boolean;
+  openOnFocus: boolean;
+};
+
+/** Public API surface of `<rc-tooltip>`. */
+export type RCTooltipRef = HTMLElement & {
+  placement: RCTooltipPlacement;
+};
+
 // ── Ref types ────────────────────────────────────────────────────────────────
 
 /** Public API surface of `<rc-button>`. */
@@ -936,6 +969,19 @@ declare module 'react' {
         'action-label'?: string;
         duration?: number | string;
         'queue-policy'?: RCSnackbarQueuePolicy;
+      };
+
+      'rc-popover': React.DetailedHTMLProps<React.HTMLAttributes<RCPopoverRef>, RCPopoverRef> & {
+        open?: boolean;
+        'default-open'?: boolean;
+        placement?: RCPopoverPlacement;
+        'trigger-action'?: RCPopoverTriggerAction;
+        'open-on-hover'?: boolean;
+        'open-on-focus'?: boolean;
+      };
+
+      'rc-tooltip': React.DetailedHTMLProps<React.HTMLAttributes<RCTooltipRef>, RCTooltipRef> & {
+        placement?: RCTooltipPlacement;
       };
 
       'rc-listbox': React.DetailedHTMLProps<React.HTMLAttributes<RCListboxRef>, RCListboxRef> & {

@@ -221,6 +221,39 @@ export type RCSnackbarCloseDetail = {
   message: string;
 };
 
+export type RCTooltipPlacement =
+  | 'block-start'
+  | 'block-start-start'
+  | 'block-start-end'
+  | 'block-end'
+  | 'block-end-start'
+  | 'block-end-end'
+  | 'inline-start'
+  | 'inline-start-start'
+  | 'inline-start-end'
+  | 'inline-end'
+  | 'inline-end-start'
+  | 'inline-end-end';
+
+export type RCPopoverPlacement = RCTooltipPlacement;
+export type RCPopoverTriggerAction = 'toggle' | 'none';
+export type RCPopoverToggleDetail = { open: boolean };
+
+/** Public API surface of `<rc-popover>`. */
+export type RCPopoverRef = HTMLElement & {
+  open: boolean;
+  defaultOpen: boolean;
+  placement: RCPopoverPlacement;
+  triggerAction: RCPopoverTriggerAction;
+  openOnHover: boolean;
+  openOnFocus: boolean;
+};
+
+/** Public API surface of `<rc-tooltip>`. */
+export type RCTooltipRef = HTMLElement & {
+  placement: RCTooltipPlacement;
+};
+
 export type RCSnackbarRef = HTMLElement & {
   open: boolean;
   message: string;
@@ -947,6 +980,21 @@ declare module 'solid-js' {
         'prop:duration'?: number | undefined;
         'on:rc-snackbar-action'?: (e: CustomEvent<RCSnackbarActionDetail>) => void;
         'on:rc-snackbar-close'?: (e: CustomEvent<RCSnackbarCloseDetail>) => void;
+      };
+
+      'rc-popover': JSX.HTMLAttributes<RCPopoverRef> & {
+        open?: boolean | string;
+        'default-open'?: boolean | string;
+        placement?: RCPopoverPlacement;
+        'trigger-action'?: RCPopoverTriggerAction;
+        'open-on-hover'?: boolean | string;
+        'open-on-focus'?: boolean | string;
+        'prop:open'?: boolean | undefined;
+        'on:rc-popover-toggle'?: (e: CustomEvent<RCPopoverToggleDetail>) => void;
+      };
+
+      'rc-tooltip': JSX.HTMLAttributes<RCTooltipRef> & {
+        placement?: RCTooltipPlacement;
       };
 
       'rc-listbox': JSX.HTMLAttributes<RCListboxRef> & {
