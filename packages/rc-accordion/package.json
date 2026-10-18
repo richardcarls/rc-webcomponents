@@ -44,6 +44,7 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "dependencies": {
+    "@rcarls/rc-common": "workspace:*",
     "@rcarls/rc-disclosure": "workspace:*"
   },
   "devDependencies": {

@@ -2,6 +2,7 @@ import { property } from 'lit/decorators.js';
 
 import { RCDialog } from '@rcarls/rc-dialog';
 import {
+  cssText,
   cssZoom,
   findExtremeSnapIndex,
   findNearestSnapIndex,
@@ -79,7 +80,7 @@ function splitSnapPoints(value: string): string[] {
   return points;
 }
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-bottom-sheet > dialog {
     position: var(--rc-bottom-sheet-position, fixed);

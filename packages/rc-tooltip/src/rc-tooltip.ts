@@ -1,7 +1,12 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { AnchorController, PopoverController, type AnchorPlacement } from '@rcarls/rc-common';
+import {
+  AnchorController,
+  type AnchorPlacement,
+  cssText,
+  PopoverController,
+} from '@rcarls/rc-common';
 
 import tooltipStyles from './rc-tooltip.styles.js';
 
@@ -23,7 +28,7 @@ type ContentState = {
 
 let tooltipId = 0;
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-tooltip > [slot='content'],
   rc-tooltip > :not([slot]) {

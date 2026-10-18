@@ -8254,6 +8254,24 @@
           }
         },
         {
+          "name": "core/popover-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popover-radius)"
+          },
+          "cssVar": "--rc-popover-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-medium",
+              "collection": "Shape"
+            }
+          }
+        },
+        {
           "name": "core/popup-background",
           "type": "COLOR",
           "scopes": [
@@ -8420,6 +8438,106 @@
           "description": "Applied where rc-theme-material is themed.",
           "values": {
             "Value": 10
+          }
+        },
+        {
+          "name": "core/tooltip-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-background)"
+          },
+          "cssVar": "--rc-tooltip-background",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/inverse-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/tooltip-border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-border)"
+          },
+          "cssVar": "--rc-tooltip-border",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "core/tooltip-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-color)"
+          },
+          "cssVar": "--rc-tooltip-color",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/inverse-on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/tooltip-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-padding-block)"
+          },
+          "cssVar": "--rc-tooltip-padding-block",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 8
+          }
+        },
+        {
+          "name": "core/tooltip-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-padding-inline)"
+          },
+          "cssVar": "--rc-tooltip-padding-inline",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": 12
+          }
+        },
+        {
+          "name": "core/tooltip-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-radius)"
+          },
+          "cssVar": "--rc-tooltip-radius",
+          "description": "Applied where rc-theme-material is themed.",
+          "values": {
+            "Value": {
+              "alias": "shape/corner-extra-small",
+              "collection": "Shape"
+            }
           }
         },
         {
@@ -15006,6 +15124,12 @@
         "name": "navigation-rail/item-text-decoration"
       },
       {
+        "property": "--rc-popover-shadow",
+        "raw": "var(--rc-shadow-level2, none)",
+        "name": "core/popover-shadow",
+        "reason": "aliases a composite shorthand"
+      },
+      {
         "property": "--rc-popup-shadow",
         "raw": "var(--rc-shadow)",
         "name": "core/popup-shadow",
@@ -15191,6 +15315,12 @@
         "property": "--rc-theme-material-disclosure-easing",
         "raw": "cubic-bezier( var(--md-sys-motion-easing-standard-x0, 0.2), var(--md-sys-motion-easing-standard-y0, 0), var(--md-sys-motion-easing-standard-x1, 0), var(--md-sys-motion-easing-standard-y1, 1) )",
         "name": "core/theme-material-disclosure-easing"
+      },
+      {
+        "property": "--rc-tooltip-shadow",
+        "raw": "var(--rc-shadow-level2, none)",
+        "name": "core/tooltip-shadow",
+        "reason": "aliases a composite shorthand"
       },
       {
         "property": "--rc-transfer-list-listbox-border",

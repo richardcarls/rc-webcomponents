@@ -2,11 +2,12 @@ import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
 import {
   ActiveDescendantController,
-  ItemsCollectionController,
+  cssText,
   type ItemsCollectionActionOption,
+  ItemsCollectionController,
+  type ItemsCollectionFilterStrategy,
   type ItemsCollectionOption,
   type ItemsCollectionSelectableOption,
-  type ItemsCollectionFilterStrategy,
 } from '@rcarls/rc-common';
 
 declare global {
@@ -84,7 +85,7 @@ export type RCListboxChangeEvent = RCListboxSelectChangeEvent | RCListboxActionC
 let _uid = 0;
 
 /** Structural CSS injected into the root that contains rc-listbox's light-DOM options. */
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-listbox {
     font-family: var(--rc-item-font-family, inherit);

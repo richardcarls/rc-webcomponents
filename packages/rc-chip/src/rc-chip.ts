@@ -2,6 +2,8 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
+import { cssText } from '@rcarls/rc-common';
+
 import chipStyles from './rc-chip.styles.js';
 
 declare global {
@@ -17,7 +19,7 @@ declare global {
 
 const TOGGLE_ROLES = new Set(['checkbox', 'menuitemcheckbox', 'menuitemradio', 'radio', 'switch']);
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-chip > :is(button, a, label, [data-rc-chip-label]) {
     position: relative;

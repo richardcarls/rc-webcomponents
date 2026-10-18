@@ -2,11 +2,16 @@ import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { NativeChildController, keyInteraction, warnMissingDirectChild } from '@rcarls/rc-common';
+import {
+  cssText,
+  keyInteraction,
+  NativeChildController,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 
 import searchBarStyles from './rc-search-bar.styles.js';
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-search-bar > input[type='search'] {
     flex: 1 1 auto;

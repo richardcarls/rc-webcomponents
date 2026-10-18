@@ -2,8 +2,9 @@ import { LitElement, html, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import {
-  NativeChildController,
+  cssText,
   getDirectChildren,
+  NativeChildController,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 
@@ -32,7 +33,7 @@ const CONTROL_SELECTOR = [
  * legend and controls are laid out from the containing document or shadow root, in `rc-base`
  * below every theme layer.
  */
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-field > fieldset {
     box-sizing: border-box;

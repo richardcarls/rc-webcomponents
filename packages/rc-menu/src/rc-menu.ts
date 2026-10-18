@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { ActiveDescendantController, isFocusable } from '@rcarls/rc-common';
+import { ActiveDescendantController, cssText, isFocusable } from '@rcarls/rc-common';
 
 import menuStyles from './rc-menu.styles.js';
 
@@ -30,7 +30,7 @@ export interface RCMenuActivateEvent {
 const MENU_ITEM_ROLES = ['menuitem', 'menuitemcheckbox', 'menuitemradio'] as const;
 
 /** Structural CSS for light-DOM menu items, injected into the containing document or shadow root. */
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   /* Item base layout */
   rc-menu [role='menuitem'],

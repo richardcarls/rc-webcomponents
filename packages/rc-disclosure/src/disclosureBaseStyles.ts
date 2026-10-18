@@ -1,3 +1,5 @@
+import { cssText } from '@rcarls/rc-common';
+
 /**
  * Light-DOM base styles for the disclosure panel recipe.
  *
@@ -17,17 +19,13 @@
  * a disclosure snaps open the way the platform does until a theme opts into
  * motion.
  */
-const PANEL = ':is(rc-disclosure, rc-accordion) > details';
-const SUMMARY = `${PANEL} > summary`;
-const CONTENT = `${PANEL} > :not(summary)`;
-
-export const DISCLOSURE_BASE_CSS = `
+export const DISCLOSURE_BASE_CSS = cssText`
 @layer rc-base {
   rc-disclosure {
     display: block;
   }
 
-  ${PANEL} {
+  :is(rc-disclosure, rc-accordion) > details {
     box-sizing: border-box;
     border: var(--rc-disclosure-border, 0);
     border-radius: var(--rc-disclosure-radius, 0);
@@ -35,7 +33,7 @@ export const DISCLOSURE_BASE_CSS = `
     color: var(--rc-disclosure-color, inherit);
   }
 
-  ${PANEL}[open] {
+  :is(rc-disclosure, rc-accordion) > details[open] {
     background: var(--rc-disclosure-open-background, var(--rc-disclosure-background, transparent));
     box-shadow: var(--rc-disclosure-open-shadow, none);
   }
@@ -45,7 +43,7 @@ export const DISCLOSURE_BASE_CSS = `
    * its \`list-item\` box, which silently removes the native disclosure marker,
    * so that choice belongs to whichever theme also supplies a replacement.
    */
-  ${SUMMARY} {
+  :is(rc-disclosure, rc-accordion) > details > summary {
     box-sizing: border-box;
     min-block-size: var(--rc-disclosure-summary-min-block-size, 0);
     padding-block: var(--rc-disclosure-summary-padding-block, 0);
@@ -56,7 +54,7 @@ export const DISCLOSURE_BASE_CSS = `
     cursor: pointer;
   }
 
-  ${SUMMARY}::marker {
+  :is(rc-disclosure, rc-accordion) > details > summary::marker {
     color: var(--rc-disclosure-summary-marker-color, currentColor);
   }
 
@@ -66,17 +64,17 @@ export const DISCLOSURE_BASE_CSS = `
    * gets the layer.
    */
   @media (hover: hover) {
-    ${SUMMARY}:hover {
+    :is(rc-disclosure, rc-accordion) > details > summary:hover {
       background: var(--rc-disclosure-summary-hover-background, transparent);
     }
   }
 
-  ${SUMMARY}:focus-visible {
+  :is(rc-disclosure, rc-accordion) > details > summary:focus-visible {
     outline: var(--rc-disclosure-focus-ring, var(--rc-focus-ring, 2px solid Highlight));
     outline-offset: var(--rc-disclosure-focus-ring-offset, 0);
   }
 
-  ${CONTENT} {
+  :is(rc-disclosure, rc-accordion) > details > :not(summary) {
     box-sizing: border-box;
     padding-block: var(--rc-disclosure-content-padding-block, 0);
     padding-inline: var(--rc-disclosure-content-padding-inline, 0);
@@ -92,11 +90,11 @@ export const DISCLOSURE_BASE_CSS = `
    * panel keeps the platform's snap-open behavior.
    */
   @supports selector(::details-content) {
-    ${PANEL} {
+    :is(rc-disclosure, rc-accordion) > details {
       interpolate-size: allow-keywords;
     }
 
-    ${PANEL}::details-content {
+    :is(rc-disclosure, rc-accordion) > details::details-content {
       block-size: 0;
       overflow: clip;
       content-visibility: hidden;
@@ -107,7 +105,7 @@ export const DISCLOSURE_BASE_CSS = `
       transition-behavior: allow-discrete;
     }
 
-    ${PANEL}[open]::details-content {
+    :is(rc-disclosure, rc-accordion) > details[open]::details-content {
       block-size: auto;
       content-visibility: visible;
     }
@@ -123,14 +121,14 @@ export const DISCLOSURE_BASE_CSS = `
    * cancel a theme's own reduced-motion handling.
    */
   @media (prefers-reduced-motion: reduce) {
-    ${PANEL},
-    ${SUMMARY},
-    ${CONTENT} {
+    :is(rc-disclosure, rc-accordion) > details,
+    :is(rc-disclosure, rc-accordion) > details > summary,
+    :is(rc-disclosure, rc-accordion) > details > :not(summary) {
       transition-duration: 50ms;
     }
 
     @supports selector(::details-content) {
-      ${PANEL}::details-content {
+      :is(rc-disclosure, rc-accordion) > details::details-content {
         transition-duration: 0ms;
       }
     }

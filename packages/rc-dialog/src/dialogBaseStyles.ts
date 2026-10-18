@@ -1,3 +1,5 @@
+import { cssText } from '@rcarls/rc-common';
+
 /**
  * Light-DOM base styles for the dialog surface.
  *
@@ -10,13 +12,9 @@
  * native element. Defaults stay close to a plain `<dialog>`, so the component
  * needs no theme to be usable.
  */
-const SURFACE = 'rc-dialog > dialog';
-const FULLSCREEN = "rc-dialog[variant='fullscreen'] > dialog";
-const SIDE = "rc-dialog[variant='side'] > dialog";
-
-export const DIALOG_BASE_CSS = `
+export const DIALOG_BASE_CSS = cssText`
 @layer rc-base {
-  ${SURFACE} {
+  rc-dialog > dialog {
     box-sizing: border-box;
     inline-size: var(--rc-dialog-inline-size, fit-content);
     min-inline-size: var(--rc-dialog-min-inline-size, auto);
@@ -41,7 +39,7 @@ export const DIALOG_BASE_CSS = `
     box-shadow: var(--rc-dialog-shadow, none);
   }
 
-  ${SURFACE}::backdrop {
+  rc-dialog > dialog::backdrop {
     background: var(--rc-dialog-scrim, color-mix(in srgb, CanvasText 32%, transparent));
   }
 
@@ -73,7 +71,7 @@ export const DIALOG_BASE_CSS = `
      * the state being transitioned TO: opening reads [open]'s (enter,
      * decelerating), closing reads :not([open])'s (exit, accelerating).
      */
-    ${SURFACE}[open] {
+    rc-dialog > dialog[open] {
       opacity: 1;
       transition:
         opacity var(--rc-motion-effects-duration-default, 200ms)
@@ -82,7 +80,7 @@ export const DIALOG_BASE_CSS = `
         display var(--rc-motion-effects-duration-default, 200ms) allow-discrete;
     }
 
-    ${SURFACE}:not([open]) {
+    rc-dialog > dialog:not([open]) {
       opacity: 0;
       transition:
         opacity var(--rc-motion-effects-duration-default, 200ms)
@@ -92,26 +90,26 @@ export const DIALOG_BASE_CSS = `
     }
 
     @starting-style {
-      ${SURFACE}[open] {
+      rc-dialog > dialog[open] {
         opacity: 0;
       }
     }
 
     /* The scrim fades in step with the surface, not instantly. */
-    ${SURFACE}[open]::backdrop {
+    rc-dialog > dialog[open]::backdrop {
       opacity: 1;
       transition: opacity var(--rc-motion-effects-duration-default, 200ms)
         var(--rc-motion-effects-easing-enter, ease-out);
     }
 
-    ${SURFACE}:not([open])::backdrop {
+    rc-dialog > dialog:not([open])::backdrop {
       opacity: 0;
       transition: opacity var(--rc-motion-effects-duration-default, 200ms)
         var(--rc-motion-effects-easing-exit, ease-in);
     }
 
     @starting-style {
-      ${SURFACE}[open]::backdrop {
+      rc-dialog > dialog[open]::backdrop {
         opacity: 0;
       }
     }
@@ -126,7 +124,7 @@ export const DIALOG_BASE_CSS = `
    * Only padding and background are left for a theme to set, since those are
    * the two that genuinely differ from the standard surface.
    */
-  ${FULLSCREEN} {
+  rc-dialog[variant='fullscreen'] > dialog {
     position: fixed;
     inset: auto;
     top: var(--rc-dialog-visual-viewport-top, 0);
@@ -159,7 +157,7 @@ export const DIALOG_BASE_CSS = `
    * after showModal(). Only the start corners are rounded, since the end
    * edge meets the viewport.
    */
-  ${SIDE} {
+  rc-dialog[variant='side'] > dialog {
     position: fixed;
     inset-block: 0;
     inset-inline-start: auto;

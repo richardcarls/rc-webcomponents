@@ -1,3 +1,5 @@
+import { cssText } from '@rcarls/rc-common';
+
 /**
  * Light-DOM base styles for `rc-list` reordering.
  *
@@ -5,7 +7,7 @@
  * shadow styles cannot reach them. A handle must not start native panning, or
  * a touch drag scrolls the page instead of moving the item.
  */
-export const LIST_BASE_CSS = `
+export const LIST_BASE_CSS = cssText`
 @layer rc-base {
   rc-list[reorderable] [data-rc-reorder-handle] {
     touch-action: none;

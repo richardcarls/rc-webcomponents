@@ -1,7 +1,12 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { AnchorController, PopoverController, type AnchorPlacement } from '@rcarls/rc-common';
+import {
+  AnchorController,
+  type AnchorPlacement,
+  cssText,
+  PopoverController,
+} from '@rcarls/rc-common';
 
 import popoverStyles from './rc-popover.styles.js';
 
@@ -37,7 +42,7 @@ type ContentState = {
 
 let popoverId = 0;
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-popover > [slot='content'] {
     position: fixed;
