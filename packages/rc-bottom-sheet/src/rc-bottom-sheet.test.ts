@@ -84,7 +84,8 @@ test('rc-bottom-sheet defaults and inherited dialog lifecycle integrate through 
   await $host.updateComplete;
   $host.addEventListener('rc-dialog-toggle', toggleSpy);
 
-  expect($host.lightDismiss).toBe(true);
+  expect($host.closedBy).toBe('any');
+  expect($host.querySelector('dialog')?.getAttribute('closedby')).toBe('any');
   expect($host.resize).toBe('vertical');
   expect($host.resizeOrigin).toBe('top');
   expect($host.resizeHandle).toBe('[data-rc-bottom-sheet-handle]');

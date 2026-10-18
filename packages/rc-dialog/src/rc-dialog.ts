@@ -3,20 +3,33 @@ import { property } from 'lit/decorators.js';
 
 import {
   cssZoom,
-  DragController,
   getVisualViewportBounds,
   isTextEntryFocused,
   NativeChildController,
-  ResizeController,
-  type ResizeDirection,
   type ResizeLifecycleDetail,
   type ResizeOrigin,
   SoftKeyboardViewport,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
+import type { DialogGeometry } from './geometry.js';
 
 export type RCDialogVariant = 'standard' | 'fullscreen' | 'side';
+
+// Shared by every dialog once loaded, so move and resize code ships only to
+// pages that use it.
+let loadedGeometry: typeof DialogGeometry | undefined;
+let geometryLoading: Promise<typeof DialogGeometry> | undefined;
+
+function loadGeometry(): Promise<typeof DialogGeometry> {
+  geometryLoading ??= import('./geometry.js').then(({ DialogGeometry }) => {
+    loadedGeometry = DialogGeometry;
+
+    return DialogGeometry;
+  });
+
+  return geometryLoading;
+}
 
 /** Detail shape for `rc-dialog-close` and `rc-dialog-request-close`. */
 export interface RCDialogCloseEvent {
@@ -46,6 +59,10 @@ declare global {
 /**
  * Draggable, resizable wrapper for a native <dialog>, following the WAI-ARIA Dialog Modal
  * pattern.
+ *
+ * Move and resize code loads on demand the first time `movable`, `move-handle`, or `resize`
+ * enables it, so dialogs that never move or resize do not ship it. Until it loads, an enabled
+ * dialog behaves as a static one.
  *
  * The surface and its backdrop fade in and out through CSS alone (`@starting-style` plus
  * a discrete `display`/`overlay` transition), using the shared `--rc-motion-effects-*`
@@ -80,9 +97,8 @@ declare global {
  *   resize handles.
  * @attr resize-threshold - Edge hit-test thickness in px for resize detection.
  * @attr resize-step - Keyboard arrow-key step in px for resizing.
- * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute.
- * @attr light-dismiss - When present and the dialog is modal, a click on the backdrop area calls
- *   `requestClose()`.
+ * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute. `any` also closes
+ *   on a backdrop click in browsers without native `closedby` support.
  * @attr variant - Surface presentation: `standard` (default), visual-viewport-filling
  *   `fullscreen`, or `side`, a modal side sheet docked to the inline end.
  * @prop modal - Whether controlled open state uses `showModal()` instead of `show()`.
@@ -202,22 +218,14 @@ export class RCDialog extends LitElement {
   /**
    * Proxied to the inner `<dialog closedby="...">` attribute.
    *
-   * Progressive enhancement, no-op in older browsers.
-   *
-   * - `'any'`          — Escape OR backdrop click closes the dialog.
+   * - `'any'`          — Escape OR backdrop click closes the dialog. Where the
+   *   browser lacks native `closedby`, a backdrop click calls `requestClose()`.
    * - `'closerequest'` — Escape only (browser default for modal dialogs).
    * - `'none'`         — Only programmatic `close()` / `requestClose()`.
-   * - `''`             — Attribute absent; use `light-dismiss` for JS fallback.
+   * - `''`             — Attribute absent; the browser default applies.
    */
   @property({ type: String, attribute: 'closed-by', reflect: true })
   closedBy: 'any' | 'closerequest' | 'none' | '' = '';
-
-  /**
-   * When true and the dialog is modal, a click on the backdrop area calls
-   * `requestClose()`.
-   */
-  @property({ type: Boolean, attribute: 'light-dismiss' })
-  lightDismiss = false;
 
   /**
    * Surface presentation. Fullscreen geometry follows the visual viewport while open; a side
@@ -266,13 +274,14 @@ export class RCDialog extends LitElement {
     onCloseTimeout: () => this._handleVisualViewportChange(),
   });
 
-  private _dragController: DragController | null = null;
-  // Move-relevant options the current controller was built from.
-  private _dragConfig: readonly (string | number)[] = [];
+  /**
+   * Move and resize implementation to use without loading it on demand. A
+   * subclass that always resizes imports `@rcarls/rc-dialog/geometry` and
+   * assigns its `DialogGeometry` here.
+   */
+  protected static _geometryClass: typeof DialogGeometry | undefined;
 
-  private _resizeControllers: ResizeController[] = [];
-  // Resize-relevant options the current controllers were built from.
-  private _resizeConfig: readonly (string | number)[] = [];
+  private _geometry: DialogGeometry | null = null;
 
   /** The element that had focus when the dialog was opened; restored on close. */
   protected _$opener: Element | null = null;
@@ -424,18 +433,8 @@ export class RCDialog extends LitElement {
     $dialog.addEventListener('close', this._onClose);
     $dialog.addEventListener('cancel', this._onCancel);
 
-    if (this.lightDismiss && 'closedBy' in HTMLDialogElement.prototype) {
-      $dialog.setAttribute('closedby', 'any');
-    } else if (this.lightDismiss) {
-      $dialog.addEventListener('click', this._onBackdropClick);
-    } else {
-      if (this.closedBy) {
-        $dialog.setAttribute('closedby', this.closedBy);
-      }
-    }
-
-    this._syncDragController($dialog, true);
-    this._syncResizeControllers($dialog, true);
+    this._syncClosedBy($dialog);
+    this._syncGeometry($dialog, true);
 
     // A dialog that is already open when it connects is part of the page as
     // it loads, not a response to the user, so a non-modal one leaves focus
@@ -461,33 +460,10 @@ export class RCDialog extends LitElement {
     }
 
     if (this._$wired?.deref() === $dialog) {
-      this._syncDragController($dialog);
-      this._syncResizeControllers($dialog);
-    }
+      this._syncGeometry($dialog);
 
-    if (changed.has('closedBy')) {
-      if (this.closedBy) {
-        $dialog.setAttribute('closedby', this.closedBy);
-      } else {
-        $dialog.removeAttribute('closedby');
-      }
-    }
-
-    if (changed.has('lightDismiss')) {
-      if (this.lightDismiss && 'closedBy' in HTMLDialogElement.prototype) {
-        // Native support available — delegate to closedby="any" instead of JS handler.
-        $dialog.setAttribute('closedby', 'any');
-        $dialog.removeEventListener('click', this._onBackdropClick);
-      } else if (this.lightDismiss) {
-        $dialog.addEventListener('click', this._onBackdropClick);
-      } else {
-        $dialog.removeEventListener('click', this._onBackdropClick);
-
-        if (this.closedBy) {
-          $dialog.setAttribute('closedby', this.closedBy);
-        } else {
-          $dialog.removeAttribute('closedby');
-        }
+      if (changed.has('closedBy')) {
+        this._syncClosedBy($dialog);
       }
     }
   }
@@ -515,8 +491,7 @@ export class RCDialog extends LitElement {
     $dialog.removeEventListener('close', this._onClose);
     $dialog.removeEventListener('cancel', this._onCancel);
     $dialog.removeEventListener('click', this._onBackdropClick);
-    this._syncDragController(null, true);
-    this._syncResizeControllers(null, true);
+    this._syncGeometry(null, true);
 
     this._$wired = null;
     this._$opener = null;
@@ -597,155 +572,75 @@ export class RCDialog extends LitElement {
   }
 
   /**
-   * Rebuilds the move controller when the move options differ from the ones
-   * it was built from, or unconditionally when `force` is set (a newly wired
-   * or torn-down `<dialog>`).
+   * Proxies `closed-by` to the inner `<dialog>`, and stands in for `any` with a
+   * backdrop click listener where the browser has no native `closedby`.
    */
-  private _syncDragController($dialog: HTMLDialogElement | null, force = false): void {
-    const enabled = !!$dialog && !this._isDocked && (this.movable || !!this.moveHandle);
-    const config = enabled ? [this.moveHandle, this.moveBounds, this.moveStep] : [];
-
-    if (!force && this._sameControllerConfig(config, this._dragConfig)) {
-      return;
+  private _syncClosedBy($dialog: HTMLDialogElement): void {
+    if (this.closedBy) {
+      $dialog.setAttribute('closedby', this.closedBy);
+    } else {
+      $dialog.removeAttribute('closedby');
     }
 
-    this._dragConfig = config;
-    this._dragController?.dispose();
-    this._dragController = null;
-
-    if (!enabled) {
-      return;
+    if (this.closedBy === 'any' && !('closedBy' in HTMLDialogElement.prototype)) {
+      $dialog.addEventListener('click', this._onBackdropClick);
+    } else {
+      $dialog.removeEventListener('click', this._onBackdropClick);
     }
-
-    const $handle = this.moveHandle
-      ? ($dialog.querySelector<Element>(this.moveHandle) ?? $dialog)
-      : $dialog;
-
-    this._dragController = new DragController(this, {
-      target: $dialog,
-      handle: $handle,
-      bounds: this.moveBounds,
-      step: this.moveStep,
-    });
   }
 
   /**
-   * Rebuilds the resize controllers when the resize options differ from the
-   * ones they were built from, or unconditionally when `force` is set (a
-   * newly wired or torn-down `<dialog>`).
+   * Builds, updates, or disposes the move and resize behavior. The first
+   * dialog that needs it loads the geometry module and syncs again once it
+   * arrives.
    */
-  private _syncResizeControllers($dialog: HTMLDialogElement | null, force = false): void {
-    const config = $dialog
-      ? [
-          this._isDocked ? 'none' : this.resize,
-          this.resizeOrigin,
-          this.resizeHandle,
-          this.resizeThreshold,
-          this.resizeStep,
-          this.moveBounds,
-        ]
-      : [];
+  private _syncGeometry($dialog: HTMLDialogElement | null, force = false): void {
+    const wanted =
+      !!$dialog && !this._isDocked && (this.movable || !!this.moveHandle || this.resize !== 'none');
 
-    if (!force && this._sameControllerConfig(config, this._resizeConfig)) {
-      return;
-    }
-
-    this._resizeConfig = config;
-
-    for (const controller of this._resizeControllers) {
-      controller.dispose();
-    }
-
-    this._resizeControllers = [];
-
-    if (!$dialog || this._isDocked || this.resize === 'none') {
-      return;
-    }
-
-    const lifecycle = {
-      onResizeStart: (detail: ResizeLifecycleDetail) => this._onResizeStart(detail),
-      onResize: (detail: ResizeLifecycleDetail) => this._onResize(detail),
-      onResizeEnd: (detail: ResizeLifecycleDetail) => this._onResizeEnd(detail),
-    };
-    const $handles = this._resizeHandles($dialog);
-    // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
-    const shared = {
-      target: $dialog,
-      threshold: this.resizeThreshold,
-      step: this.resizeStep,
-      bounds: this.moveBounds,
-      ...lifecycle,
-    };
-
-    if ($handles.length === 0) {
-      this._resizeControllers.push(
-        new ResizeController(this, {
-          ...shared,
-          direction: this.resize,
-          origin: this.resizeOrigin,
-        }),
-      );
+    if (!wanted) {
+      this._geometry?.dispose();
+      this._geometry = null;
 
       return;
     }
 
-    for (const $handle of $handles) {
-      this._resizeControllers.push(
-        new ResizeController(this, {
-          ...shared,
-          direction: this._resizeDirectionForHandle($handle),
-          handle: $handle,
-          origin: this._resizeOriginForHandle($handle),
-        }),
-      );
-    }
-  }
+    const Geometry = (this.constructor as typeof RCDialog)._geometryClass ?? loadedGeometry;
 
-  private _sameControllerConfig(
-    current: readonly (string | number)[],
-    previous: readonly (string | number)[],
-  ): boolean {
-    return (
-      current.length === previous.length &&
-      current.every((value, index) => value === previous[index])
-    );
-  }
+    if (!Geometry) {
+      void loadGeometry().then(() => {
+        const $current = this._$wired?.deref() ?? null;
 
-  protected _resizeHandles($dialog: HTMLDialogElement): Element[] {
-    if (!this.resizeHandle) {
-      return [];
+        if ($current) {
+          this._syncGeometry($current, true);
+        }
+      });
+
+      return;
     }
 
-    try {
-      return [...$dialog.querySelectorAll(this.resizeHandle)];
-    } catch {
-      if (import.meta.env.DEV) {
-        console.warn('[rc-dialog] Invalid resize-handle selector.', this.resizeHandle);
-      }
-
-      return [];
+    if (!this._geometry) {
+      this._geometry = new Geometry(this);
+      force = true;
     }
-  }
 
-  protected _resizeDirectionForHandle($handle: Element): ResizeDirection {
-    const axis = $handle.getAttribute('data-rc-dialog-resize-axis');
-
-    switch (axis) {
-      case 'x':
-        return 'horizontal';
-      case 'y':
-        return 'vertical';
-      case 'both':
-        return 'both';
-      default:
-        return this.resize;
-    }
-  }
-
-  protected _resizeOriginForHandle($handle: Element): ResizeOrigin {
-    return (
-      ($handle.getAttribute('data-rc-dialog-resize-origin') as ResizeOrigin | null) ??
-      this.resizeOrigin
+    this._geometry.sync(
+      $dialog,
+      {
+        movable: this.movable,
+        moveHandle: this.moveHandle,
+        moveBounds: this.moveBounds,
+        moveStep: this.moveStep,
+        resize: this.resize,
+        resizeOrigin: this.resizeOrigin,
+        resizeHandle: this.resizeHandle,
+        resizeThreshold: this.resizeThreshold,
+        resizeStep: this.resizeStep,
+        onResizeStart: (detail) => this._onResizeStart(detail),
+        onResize: (detail) => this._onResize(detail),
+        onResizeEnd: (detail) => this._onResizeEnd(detail),
+      },
+      force,
     );
   }
 
@@ -826,10 +721,7 @@ export class RCDialog extends LitElement {
     }
 
     const bounds = getVisualViewportBounds($window);
-    const { height } = this._keyboardViewport.next(
-      bounds,
-      isTextEntryFocused(this.ownerDocument),
-    );
+    const { height } = this._keyboardViewport.next(bounds, isTextEntryFocused(this.ownerDocument));
     // The bounds are viewport pixels, but lengths set here are zoomed again
     // when an ancestor such as the root has a CSS zoom (an app-wide interface
     // size), so convert them to the dialog's own pixels. Read the zoom from

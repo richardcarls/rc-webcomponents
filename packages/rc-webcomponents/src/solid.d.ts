@@ -392,7 +392,6 @@ export type RCDialogRef = HTMLElement & {
   resizeThreshold: number;
   resizeStep: number;
   closedBy: 'any' | 'closerequest' | 'none' | '';
-  lightDismiss: boolean;
   readonly returnValue: string;
   showModal(): void;
   show(): void;
@@ -1077,7 +1076,6 @@ declare module 'solid-js' {
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
         'prop:modal'?: boolean | undefined;
-        'prop:lightDismiss'?: boolean | undefined;
         movable?: boolean | string;
         'move-handle'?: string;
         'move-bounds'?: 'viewport' | 'parent';
@@ -1088,7 +1086,6 @@ declare module 'solid-js' {
         'resize-threshold'?: number | string;
         'resize-step'?: number | string;
         'closed-by'?: 'any' | 'closerequest' | 'none';
-        'light-dismiss'?: boolean | string;
         'on:rc-dialog-open'?: (e: CustomEvent) => void;
         'on:rc-dialog-toggle'?: (e: CustomEvent<RCDialogToggleDetail>) => void;
         'on:rc-dialog-close'?: (e: CustomEvent<RCDialogCloseDetail>) => void;
@@ -1102,9 +1099,8 @@ declare module 'solid-js' {
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
         'prop:modal'?: boolean | undefined;
-        'prop:lightDismiss'?: boolean | undefined;
         'prop:swipeDismiss'?: boolean | undefined;
-        'light-dismiss'?: boolean | string;
+        'closed-by'?: 'any' | 'closerequest' | 'none';
         resize?: 'none' | 'both' | 'horizontal' | 'vertical';
         'resize-origin'?: RCDialogResizeOrigin;
         'resize-handle'?: string;

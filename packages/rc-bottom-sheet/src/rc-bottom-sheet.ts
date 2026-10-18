@@ -1,6 +1,7 @@
 import { property } from 'lit/decorators.js';
 
 import { RCDialog } from '@rcarls/rc-dialog';
+import { DialogGeometry } from '@rcarls/rc-dialog/geometry';
 import {
   cssText,
   cssZoom,
@@ -253,7 +254,7 @@ function localHeight(target: HTMLElement): number {
  * The direct child `<dialog>` remains the semantic dialog surface and owns
  * content, labels, and form behavior. `rc-bottom-sheet` supplies the same
  * open/close lifecycle, focus restoration, cancel/request-close events, and
- * light-dismiss affordance as `rc-dialog`. The component docks the sheet to
+ * `closed-by` dismissal as `rc-dialog`. The component docks the sheet to
  * the viewport block-end by default, while themes provide its visual surface.
  *
  * Dragging the resize handle past a decisive velocity in either direction
@@ -294,8 +295,8 @@ function localHeight(target: HTMLElement): number {
  *   settles at its snap target. `detail: { index, height, trigger }`, with `height` in the
  *   sheet's own CSS pixels, the unit of its snap points.
  *
- * @attr light-dismiss - When present, a click on the backdrop area calls `requestClose()`.
- *   Present by default; inherited from `rc-dialog`.
+ * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute. Defaults to `any`, so
+ *   Escape or a backdrop click closes the sheet; inherited from `rc-dialog`.
  * @attr resize - Enables edge resizing, mirroring the CSS `resize` property values.
  *   Defaults to `vertical`; inherited from `rc-dialog`.
  * @attr resize-origin - Origin for resize edge hit-testing or explicit handles. Defaults to
@@ -357,14 +358,17 @@ export class RCBottomSheet extends RCDialog {
     }
   }
 
+  // Sheets always resize, so their move and resize behavior loads with them.
+  protected static override _geometryClass = DialogGeometry;
+
   /**
-   * Bottom sheets light-dismiss by default.
+   * Bottom sheets close on Escape or a backdrop click by default.
    *
-   * Set `light-dismiss="false"` as a property from JavaScript when a sheet must
-   * be closed only by explicit actions.
+   * Set `closed-by="closerequest"` when a backdrop click must not close the
+   * sheet, or `closed-by="none"` when only explicit actions may close it.
    */
-  @property({ type: Boolean, attribute: 'light-dismiss' })
-  override lightDismiss = true;
+  @property({ type: String, attribute: 'closed-by', reflect: true })
+  override closedBy: 'any' | 'closerequest' | 'none' | '' = 'any';
 
   /** Bottom sheets resize vertically from the top edge by default. */
   @property({ type: String, reflect: true })
