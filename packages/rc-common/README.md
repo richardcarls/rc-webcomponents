@@ -31,17 +31,13 @@ import {
   ScrollObserverController,
   TypeaheadController,
 } from '@rcarls/rc-common';
-import { RovingTabIndexMixin, keyInteraction, keyNavigation, mouseMove } from '@rcarls/rc-common';
+import { RovingTabIndexMixin, keyInteraction, keyNavigation } from '@rcarls/rc-common';
 import {
-  delegateClickTo,
-  DEFAULT_INTERACTIVE_SELECTOR,
   findExtremeSnapIndex,
   findNearestScrollAncestor,
   findNearestSnapIndex,
   findNextSnapIndex,
-  getDirectChild,
   getDirectChildren,
-  isEventFromInteractiveDescendant,
   isFocusable,
   pinElementBox,
   snapToStep,
@@ -56,34 +52,31 @@ All exports are tree-shakeable (`sideEffects: false`).
 
 Check this inventory before adding package-local interaction or DOM utility code.
 
-| Export                                                                                   | Use for                                                                                                                     |
-| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `ActiveDescendantController`                                                             | Managing `aria-activedescendant` virtual focus in listbox / combobox patterns                                               |
-| `AnchorController`                                                                       | Positioning floating UI relative to an anchor with native CSS anchor positioning and polyfill fallback                      |
-| `ClickDelegateController` / `delegateClickTo`                                            | Extending plain pointer clicks on a host to a same-root native anchor or button target                                      |
-| `DragController`                                                                         | Pointer and keyboard drag-to-move behavior                                                                                  |
-| `DragGestureController`                                                                  | Single-pointer activation, capture, deltas, duration, and recent velocity                                                   |
-| `ItemsCollectionController`                                                              | Filtering selectable and action items while preserving their distinct option kinds                                          |
-| `KeyboardInteractionDirective` / `keyInteraction`                                        | Tracking pointer vs keyboard interaction mode on a rendered element                                                         |
-| `KeyboardNavigationDirective` / `keyNavigation`                                          | Mapping APG arrow-key models to navigation actions                                                                          |
-| `MutationObserverController`                                                             | Lifecycle-safe `MutationObserver` wiring for light-DOM or shadow-DOM changes                                                |
-| `MouseMoveDirective` / `mouseMove`                                                       | Pointermove callbacks while a pointer drag is active                                                                        |
-| `NavigationIndicatorController`                                                          | Positioning a shared visual indicator against the current navigation item                                                   |
-| `NativeChildController`, `getDirectChild`, `getDirectChildren`, `warnMissingDirectChild` | Finding, validating, and tracking consumer-provided native light-DOM children                                               |
-| `RafScheduler`                                                                           | Coalescing repeated work into one animation frame and canceling on disconnect                                               |
-| `ResizeController`                                                                       | Pointer and keyboard resize behavior                                                                                        |
-| `RovingTabIndexMixin`                                                                    | Roving tabindex for components whose child controls receive real DOM focus                                                  |
-| `ScrollObserverController`                                                               | Scroll threshold and delta observation for scroll-driven component state                                                    |
-| `TypeaheadController`                                                                    | Printable-key buffering for composite widget typeahead                                                                      |
-| `findNearestScrollAncestor`                                                              | Locating the nearest scrolling ancestor through assigned slots and shadow hosts; falls back to the element's owner document |
-| `findNearestSnapIndex`, `findNextSnapIndex`, `findExtremeSnapIndex`                      | Choosing numeric anchor indices without assigning component meaning                                                         |
-| `parseCssTime`                                                                           | Reading a CSS `<time>` custom property (`300ms`, `.3s`) as milliseconds for Web Animations                                  |
-| `cssText`                                                                                | Tagging light-DOM structural CSS strings so package builds minify them                                                      |
-| `isFocusable`                                                                            | Filtering focusable items for keyboard navigation                                                                           |
-| `isEventFromInteractiveDescendant`                                                       | Detecting composed clicks already owned by a nested interactive control                                                     |
-| `DEFAULT_INTERACTIVE_SELECTOR`                                                           | Reusing the default selector used to identify nested interactive descendants                                                |
-| `pinElementBox`                                                                          | Converting an element's rendered box into explicit inline geometry for resize interactions                                  |
-| `snapToStep`, `valueToPercent`                                                           | Slider and range-slider numeric helpers                                                                                     |
+| Export                                                                 | Use for                                                                                                                     |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `ActiveDescendantController`                                           | Managing `aria-activedescendant` virtual focus in listbox / combobox patterns                                               |
+| `AnchorController`                                                     | Positioning floating UI relative to an anchor with native CSS anchor positioning and polyfill fallback                      |
+| `ClickDelegateController`                                              | Extending plain pointer clicks on a host to a same-root native anchor or button target                                      |
+| `DragController`                                                       | Pointer and keyboard drag-to-move behavior                                                                                  |
+| `DragGestureController`                                                | Single-pointer activation, capture, deltas, duration, and recent velocity                                                   |
+| `ItemsCollectionController`                                            | Filtering selectable and action items while preserving their distinct option kinds                                          |
+| `KeyboardInteractionDirective` / `keyInteraction`                      | Tracking pointer vs keyboard interaction mode on a rendered element                                                         |
+| `KeyboardNavigationDirective` / `keyNavigation`                        | Mapping APG arrow-key models to navigation actions                                                                          |
+| `MutationObserverController`                                           | Lifecycle-safe `MutationObserver` wiring for light-DOM or shadow-DOM changes                                                |
+| `NavigationIndicatorController`                                        | Positioning a shared visual indicator against the current navigation item                                                   |
+| `NativeChildController`, `getDirectChildren`, `warnMissingDirectChild` | Finding, validating, and tracking consumer-provided native light-DOM children                                               |
+| `RafScheduler`                                                         | Coalescing repeated work into one animation frame and canceling on disconnect                                               |
+| `ResizeController`                                                     | Pointer and keyboard resize behavior                                                                                        |
+| `RovingTabIndexMixin`                                                  | Roving tabindex for components whose child controls receive real DOM focus                                                  |
+| `ScrollObserverController`                                             | Scroll threshold and delta observation for scroll-driven component state                                                    |
+| `TypeaheadController`                                                  | Printable-key buffering for composite widget typeahead                                                                      |
+| `findNearestScrollAncestor`                                            | Locating the nearest scrolling ancestor through assigned slots and shadow hosts; falls back to the element's owner document |
+| `findNearestSnapIndex`, `findNextSnapIndex`, `findExtremeSnapIndex`    | Choosing numeric anchor indices without assigning component meaning                                                         |
+| `parseCssTime`                                                         | Reading a CSS `<time>` custom property (`300ms`, `.3s`) as milliseconds for Web Animations                                  |
+| `cssText`                                                              | Tagging light-DOM structural CSS strings so package builds minify them                                                      |
+| `isFocusable`                                                          | Filtering focusable items for keyboard navigation                                                                           |
+| `pinElementBox`                                                        | Converting an element's rendered box into explicit inline geometry for resize interactions                                  |
+| `snapToStep`, `valueToPercent`                                         | Slider and range-slider numeric helpers                                                                                     |
 
 ---
 
@@ -338,33 +331,9 @@ class ActionRow extends LitElement {
 }
 ```
 
-Use `delegateClickTo()` directly for a non-Lit host. The target remains its own
-keyboard tab stop; delegation extends pointer reach only.
-
----
-
-### `mouseMove` directive
-
-An `AsyncDirective` that fires a callback on pointer movement while a pointer drag is active. It
-supports drag-to-resize handles that need continuous delta tracking while preserving the
-historical `mouseMove` export name.
-
-```ts
-import { mouseMove } from '@rcarls/rc-common';
-
-// Inside a Lit render() method:
-html`
-  <div id="handle" ${mouseMove(this._onDrag)}></div>
-`;
-
-private _onDrag(e: MouseEvent) {
-  this._resize(e.movementX, e.movementY);
-}
-```
-
-It attaches `pointerdown` to the element, captures that pointer, then listens for `pointermove`,
-`pointerup`, `pointercancel`, and `lostpointercapture` on the same element for the active drag
-cycle. It focuses the handle on pointerdown.
+The target remains its own keyboard tab stop; delegation extends pointer reach
+only. Pass `interactiveSelector` to change which descendants count as already
+interactive.
 
 ---
 

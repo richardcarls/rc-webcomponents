@@ -65,5 +65,3 @@ export class MutationObserverController implements ReactiveController {
     this._attached = null;
   }
 }
-
-export default MutationObserverController;

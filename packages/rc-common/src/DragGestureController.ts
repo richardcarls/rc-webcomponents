@@ -566,5 +566,3 @@ export class DragGestureController implements ReactiveController {
     this._rejected = false;
   }
 }
-
-export default DragGestureController;

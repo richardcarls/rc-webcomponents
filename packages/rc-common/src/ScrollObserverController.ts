@@ -222,5 +222,3 @@ export class ScrollObserverController implements ReactiveController {
     this._host.requestUpdate();
   }
 }
-
-export default ScrollObserverController;

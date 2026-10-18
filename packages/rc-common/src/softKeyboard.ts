@@ -72,16 +72,14 @@ export function deepActiveElement(document: Document): Element | null {
  * Whether focusing the element raises a software keyboard: an editable
  * textarea, a text-like input, or editable content.
  */
-export function isTextEntryElement($element: Element | null): boolean {
+function isTextEntryElement($element: Element | null): boolean {
   if ($element instanceof HTMLTextAreaElement) {
     return !$element.readOnly && !$element.disabled;
   }
 
   if ($element instanceof HTMLInputElement) {
     return (
-      !$element.readOnly &&
-      !$element.disabled &&
-      TEXT_ENTRY_INPUT_TYPES.includes($element.type)
+      !$element.readOnly && !$element.disabled && TEXT_ENTRY_INPUT_TYPES.includes($element.type)
     );
   }
 

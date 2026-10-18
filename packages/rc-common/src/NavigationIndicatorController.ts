@@ -205,5 +205,3 @@ export class NavigationIndicatorController implements ReactiveController {
     indicator.style.transform = `translate(${x / indicatorZoom}px, ${y / indicatorZoom}px)`;
   }
 }
-
-export default NavigationIndicatorController;

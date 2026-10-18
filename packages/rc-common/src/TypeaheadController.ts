@@ -84,5 +84,3 @@ export class TypeaheadController<T> {
     this._timer = 0;
   }
 }
-
-export default TypeaheadController;

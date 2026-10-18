@@ -188,5 +188,3 @@ export class RafScheduler implements ReactiveController {
     }
   }
 }
-
-export default RafScheduler;

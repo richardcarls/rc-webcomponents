@@ -3,7 +3,6 @@ export * from './clickDelegate.js';
 export * from './ItemsCollectionController.js';
 export * from './KeyboardInteractionDirective.js';
 export * from './KeyboardNavigationDirective.js';
-export * from './MouseMoveDirective.js';
 export * from './DragController.js';
 export * from './DragGestureController.js';
 export * from './ResizeController.js';

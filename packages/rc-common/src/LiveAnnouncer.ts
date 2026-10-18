@@ -59,5 +59,3 @@ export class LiveAnnouncer {
     this._$region.remove();
   }
 }
-
-export default LiveAnnouncer;

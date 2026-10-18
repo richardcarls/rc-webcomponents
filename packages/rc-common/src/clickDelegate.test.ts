@@ -3,11 +3,7 @@ import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import {
-  ClickDelegateController,
-  delegateClickTo,
-  isEventFromInteractiveDescendant,
-} from './clickDelegate.js';
+import { ClickDelegateController, type ClickDelegateControllerOptions } from './clickDelegate.js';
 
 type HostElement = ReactiveControllerHost & HTMLElement;
 
@@ -55,199 +51,126 @@ function click(el: Element, init: MouseEventInit = {}): void {
   );
 }
 
-/**
- * `Event.composedPath()` only reflects the live propagation path while the
- * event is actually dispatching — it reads back empty once `dispatchEvent`
- * has returned. So, like the real call sites in `ClickDelegateController`
- * and both components, these tests must read it from inside a listener
- * attached before `click()` runs, not from a captured event afterward.
- */
-function clickAndCapture<T>(
-  el: Element,
-  host: Element,
-  compute: (event: MouseEvent) => T,
-  init: MouseEventInit = {},
-): T {
-  let result!: T;
-
-  const listener = (e: Event): void => {
-    result = compute(e as MouseEvent);
-  };
-
-  host.addEventListener('click', listener);
-  click(el, init);
-  host.removeEventListener('click', listener);
-
-  return result;
+interface Delegation {
+  target: HTMLAnchorElement;
+  onTargetClick: ReturnType<typeof vi.fn>;
+  controller: ClickDelegateController;
 }
 
-test('isEventFromInteractiveDescendant is false for a click on plain dead space', async () => {
+function delegate(
+  host: HostElement,
+  options: Partial<ClickDelegateControllerOptions> = {},
+): Delegation {
+  const target = host.querySelector<HTMLAnchorElement>('[data-testid="target"]')!;
+  const onTargetClick = vi.fn();
+
+  target.addEventListener('click', onTargetClick);
+
+  const controller = new ClickDelegateController(host, { target: () => target, ...options });
+
+  controller.hostConnected();
+
+  return { target, onTargetClick, controller };
+}
+
+test('forwards a plain click on dead space to the target and consumes it', async () => {
   const host = await renderHost();
+  const { onTargetClick } = delegate(host);
   const deadSpace = host.querySelector('[data-testid="dead-space"]')!;
+  const event = new MouseEvent('click', { bubbles: true, composed: true, cancelable: true });
 
-  const result = clickAndCapture(deadSpace, host, (event) =>
-    isEventFromInteractiveDescendant(event, host),
-  );
+  deadSpace.dispatchEvent(event);
 
-  expect(result).toBe(false);
+  expect(onTargetClick).toHaveBeenCalledOnce();
+  expect(event.defaultPrevented).toBe(true);
 });
 
-test('isEventFromInteractiveDescendant is true for a click on an interactive descendant', async () => {
+test('does nothing when the click already hit an interactive descendant', async () => {
   const host = await renderHost();
-  const nested = host.querySelector('[data-testid="nested"]')!;
+  const { onTargetClick } = delegate(host);
 
-  const result = clickAndCapture(nested, host, (event) =>
-    isEventFromInteractiveDescendant(event, host),
-  );
+  click(host.querySelector('[data-testid="nested"]')!);
 
-  expect(result).toBe(true);
+  expect(onTargetClick).not.toHaveBeenCalled();
 });
 
-test('isEventFromInteractiveDescendant respects a custom selector', async () => {
+test('respects a custom interactive selector', async () => {
   const host = await renderHost();
-  const target = host.querySelector('[data-testid="target"]')!;
+  const roleButton = document.createElement('span');
 
-  const result = clickAndCapture(target, host, (event) =>
-    isEventFromInteractiveDescendant(event, host, { interactiveSelector: 'button' }),
-  );
+  roleButton.setAttribute('role', 'button');
+  host.append(roleButton);
 
-  expect(result).toBe(false);
+  const defaults = delegate(host);
+
+  click(roleButton);
+  expect(defaults.onTargetClick).not.toHaveBeenCalled();
+  defaults.controller.hostDisconnected();
+
+  const custom = delegate(host, { interactiveSelector: 'button' });
+
+  click(roleButton);
+  expect(custom.onTargetClick).toHaveBeenCalledOnce();
 });
 
 test('contenteditable=false does not make a descendant interactive', async () => {
   const host = await renderHost();
+  const { onTargetClick } = delegate(host);
   const editable = document.createElement('span');
 
   editable.contentEditable = 'false';
   host.append(editable);
+  click(editable);
 
-  const result = clickAndCapture(editable, host, (event) =>
-    isEventFromInteractiveDescendant(event, host),
-  );
-
-  expect(result).toBe(false);
-});
-
-test('delegateClickTo forwards a plain click on dead space to the target', async () => {
-  const host = await renderHost();
-  const target = host.querySelector<HTMLAnchorElement>('[data-testid="target"]')!;
-  const deadSpace = host.querySelector('[data-testid="dead-space"]')!;
-  const onTargetClick = vi.fn();
-
-  target.addEventListener('click', onTargetClick);
-
-  const result = clickAndCapture(deadSpace, host, (event) => delegateClickTo(event, host, target));
-
-  expect(result).toBe(true);
   expect(onTargetClick).toHaveBeenCalledOnce();
 });
 
-test('delegateClickTo does nothing when the click already hit an interactive descendant', async () => {
+test('ignores non-primary-button clicks rather than forwarding them', async () => {
   const host = await renderHost();
-  const target = host.querySelector<HTMLAnchorElement>('[data-testid="target"]')!;
-  const nested = host.querySelector('[data-testid="nested"]')!;
-  const onTargetClick = vi.fn();
+  const { onTargetClick } = delegate(host);
 
-  target.addEventListener('click', onTargetClick);
+  click(host.querySelector('[data-testid="dead-space"]')!, { button: 1 });
 
-  const result = clickAndCapture(nested, host, (event) => delegateClickTo(event, host, target));
-
-  expect(result).toBe(false);
-  expect(onTargetClick).not.toHaveBeenCalled();
-});
-
-test('delegateClickTo ignores non-primary-button clicks rather than forwarding them', async () => {
-  const host = await renderHost();
-  const target = host.querySelector<HTMLAnchorElement>('[data-testid="target"]')!;
-  const deadSpace = host.querySelector('[data-testid="dead-space"]')!;
-  const onTargetClick = vi.fn();
-
-  target.addEventListener('click', onTargetClick);
-
-  const result = clickAndCapture(deadSpace, host, (event) => delegateClickTo(event, host, target), {
-    button: 1,
-  });
-
-  expect(result).toBe(false);
   expect(onTargetClick).not.toHaveBeenCalled();
 });
 
 test.each(['altKey', 'ctrlKey', 'metaKey', 'shiftKey'] as const)(
-  'delegateClickTo ignores clicks qualified by %s',
+  'ignores clicks qualified by %s',
   async (modifier) => {
     const host = await renderHost();
-    const target = host.querySelector<HTMLAnchorElement>('[data-testid="target"]')!;
-    const deadSpace = host.querySelector('[data-testid="dead-space"]')!;
-    const onTargetClick = vi.fn();
+    const { onTargetClick } = delegate(host);
 
-    target.addEventListener('click', onTargetClick);
+    click(host.querySelector('[data-testid="dead-space"]')!, { [modifier]: true });
 
-    const result = clickAndCapture(
-      deadSpace,
-      host,
-      (event) => delegateClickTo(event, host, target),
-      { [modifier]: true },
-    );
-
-    expect(result).toBe(false);
     expect(onTargetClick).not.toHaveBeenCalled();
   },
 );
 
-test('delegateClickTo does nothing without a target, or while disabled', async () => {
+test('does nothing without a target, or while disabled', async () => {
   const host = await renderHost();
-  const target = host.querySelector<HTMLAnchorElement>('[data-testid="target"]')!;
   const deadSpace = host.querySelector('[data-testid="dead-space"]')!;
-  const onTargetClick = vi.fn();
+  const withoutTarget = delegate(host, { target: () => null });
 
-  target.addEventListener('click', onTargetClick);
+  click(deadSpace);
+  withoutTarget.controller.hostDisconnected();
 
-  const withoutTarget = clickAndCapture(deadSpace, host, (event) =>
-    delegateClickTo(event, host, null),
-  );
-  const whileDisabled = clickAndCapture(deadSpace, host, (event) =>
-    delegateClickTo(event, host, target, { disabled: true }),
-  );
+  const whileDisabled = delegate(host, { disabled: () => true });
 
-  expect(withoutTarget).toBe(false);
-  expect(whileDisabled).toBe(false);
-  expect(onTargetClick).not.toHaveBeenCalled();
+  click(deadSpace);
+
+  expect(withoutTarget.onTargetClick).not.toHaveBeenCalled();
+  expect(whileDisabled.onTargetClick).not.toHaveBeenCalled();
 });
 
-test('ClickDelegateController wires and tears down delegation with the host lifecycle', async () => {
+test('tears down delegation with the host lifecycle', async () => {
   const host = await renderHost();
-  const target = host.querySelector<HTMLAnchorElement>('[data-testid="target"]')!;
+  const { onTargetClick, controller } = delegate(host);
   const deadSpace = host.querySelector('[data-testid="dead-space"]')!;
-  const onTargetClick = vi.fn();
 
-  target.addEventListener('click', onTargetClick);
-
-  const controller = new ClickDelegateController(host, { target: () => target });
-
-  controller.hostConnected();
   click(deadSpace);
   expect(onTargetClick).toHaveBeenCalledOnce();
 
   controller.hostDisconnected();
   click(deadSpace);
   expect(onTargetClick).toHaveBeenCalledOnce();
-});
-
-test('ClickDelegateController respects a disabled getter', async () => {
-  const host = await renderHost();
-  const target = host.querySelector<HTMLAnchorElement>('[data-testid="target"]')!;
-  const deadSpace = host.querySelector('[data-testid="dead-space"]')!;
-  const onTargetClick = vi.fn();
-
-  target.addEventListener('click', onTargetClick);
-
-  const controller = new ClickDelegateController(host, {
-    target: () => target,
-    disabled: () => true,
-  });
-
-  controller.hostConnected();
-  click(deadSpace);
-
-  expect(onTargetClick).not.toHaveBeenCalled();
 });
