@@ -63,35 +63,20 @@ function getFoldBounds(value: string, folds: readonly FoldDecoration[]): FoldBou
   }
 
   return folds.flatMap((fold) => {
-    if (fold.fromLine < 2 || fold.toLine < fold.fromLine) {
+    if (fold.fromLine < 2 || fold.toLine < fold.fromLine || fold.toLine > lines.length) {
       return [];
     }
 
-    const from = starts[fold.fromLine - 1];
-    const lastStart = starts[fold.toLine - 1];
-    const lastLine = lines[fold.toLine - 1];
-    const anchorStart = starts[fold.fromLine - 2];
-    const anchorLine = lines[fold.fromLine - 2];
-
-    // Out-of-range lines read as undefined.
-    if (
-      from === undefined ||
-      lastStart === undefined ||
-      lastLine === undefined ||
-      anchorStart === undefined ||
-      anchorLine === undefined
-    ) {
-      return [];
-    }
-
+    /* eslint-disable @typescript-eslint/no-non-null-assertion -- the range check keeps every line index in bounds */
     return [
       {
-        from,
-        to: lastStart + lastLine.length,
-        anchorEnd: anchorStart + anchorLine.length,
+        from: starts[fold.fromLine - 1]!,
+        to: starts[fold.toLine - 1]! + lines[fold.toLine - 1]!.length,
+        anchorEnd: starts[fold.fromLine - 2]! + lines[fold.fromLine - 2]!.length,
         reveal: fold.reveal,
       },
     ];
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   });
 }
 
@@ -1304,7 +1289,7 @@ export class RCTextarea extends LitElement {
    * API stays accurate across render frames without needing to be rebuilt.
    */
   protected _buildPluginApi(): RCTextareaPluginAPI {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- getters below rebind this
     const component = this;
 
     return {
