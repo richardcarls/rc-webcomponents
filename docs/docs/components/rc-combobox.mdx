@@ -112,7 +112,7 @@ In dialog mode, create events are deferred until Done and run before the selecti
 ```js
 combobox.addEventListener('rc-combobox-create', (event) => {
   if (event.detail.text.trim().length < 2) {
-    event.preventDefault(); // too short — block insertion
+    event.preventDefault(); // too short; block insertion
     showError('Tag must be at least 2 characters.');
   }
   // Otherwise the default runs: option is inserted and selected.
@@ -135,7 +135,7 @@ useEffect(() => {
   if (!el) return;
 
   const handleCreate = (e: Event) => {
-    e.preventDefault(); // React manages options — block component insertion.
+    e.preventDefault(); // React manages options; block component insertion.
     const { text } = (e as CustomEvent<{ text: string }>).detail;
     const value = text.trim().toLowerCase().replace(/\s+/g, '-');
     setOptions((prev) => [...prev, { value, label: text.trim() }]);
@@ -175,7 +175,7 @@ return (
 
 <ComboboxCreateReactDemo />
 
-### Form usage — ephemeral options until committed
+### Form usage: ephemeral options until committed
 
 Keep `options` (permanent) and `pendingOptions` (session-only) as separate state. Render both into the `<select>` so React controls all `<option>` elements. On submit, move the newly created selections into `options` with `setOptions`:
 
@@ -185,12 +185,12 @@ const [pendingOptions, setPendingOptions] = useState([]); // session-only
 const pendingValue = useRef(null);
 
 const handleCreate = (e) => {
-  e.preventDefault(); // React renders all <option> elements — block component insertion.
+  e.preventDefault(); // React renders all <option> elements; block component insertion.
   const { text } = e.detail;
   const newOpt = { value: text.toLowerCase(), label: text };
   setPendingOptions((prev) => [...prev, newOpt]);
   pendingValue.current = newOpt.value;
-  // (post-render useEffect selects pendingValue — same pattern as the React demo above)
+  // (post-render useEffect selects pendingValue; same pattern as the React demo above)
 };
 
 const handleSubmit = (e) => {
@@ -234,7 +234,7 @@ const handleReset = () => {
 
 ### Selection
 
-**Uncontrolled** (default): the component owns selection after mount. Use `<option selected>` or the `defaultValue` property for the initial value — `defaultValue` accepts `string | string[]` and has no HTML attribute form. Listen to `rc-select-change` to observe changes.
+**Uncontrolled** (default): the component owns selection after mount. Use `<option selected>` or the `defaultValue` property for the initial value. `defaultValue` accepts `string | string[]` and has no HTML attribute form. Listen to `rc-select-change` to observe changes.
 
 ```html
 <!-- initial selection via native attribute -->
@@ -246,7 +246,7 @@ const handleReset = () => {
 </rc-combobox>
 ```
 
-**Controlled**: write `el.value` (the property) to drive selection from outside the component. Programmatic writes apply selection silently — no `rc-select-change` is dispatched. Keep your state in sync by updating `el.value` in response to `rc-select-change`:
+**Controlled**: write `el.value` (the property) to drive selection from outside the component. Programmatic writes apply selection silently. No `rc-select-change` is dispatched. Keep your state in sync by updating `el.value` in response to `rc-select-change`:
 
 ```js
 // Drive selection from outside:

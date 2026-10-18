@@ -57,7 +57,7 @@ import '@rcarls/rc-webcomponents/rc-textarea/define';
 <Tabs>
 <TabItem value="basic" label="Basic" default>
 
-Plain textarea with `auto-grow` and no gutter — the minimal starting point.
+Plain textarea with `auto-grow` and no gutter. This is the minimal starting point.
 
 <TextareaBasicDemo />
 
@@ -242,7 +242,7 @@ rc-textarea::part(fold-trigger) {
 ### Decoration styles
 
 Decoration elements (`.mark`, `.line`, `.widget`) live inside the shadow root. Use
-`api.adoptStyleSheet()` from a plugin to reach them — document stylesheets cannot pierce the
+`api.adoptStyleSheet()` from a plugin to reach them; document stylesheets cannot pierce the
 shadow boundary.
 
 ## Pattern Highlights
@@ -364,14 +364,14 @@ interface RCTextareaPlugin {
   mount?(api: RCTextareaPluginAPI): void;
   destroy?(): void;
 
-  /** Display-layer transform — only while the textarea is readonly. */
+  /** Display-layer transform; only while the textarea is readonly. */
   transform?(value: string, api: RCTextareaPluginAPI): string | null | void;
 
   /** Imperative decoration hook. May be async. */
   update?(value: string, api: RCTextareaPluginAPI): void | Promise<void>;
 
   /**
-   * HTML compat hook — return HTML token spans from hljs/prism.
+   * HTML compat hook; return HTML token spans from hljs/prism.
    * The returned string is parsed via api.parseDecorationsFromHtml().
    */
   highlight?(
@@ -381,7 +381,7 @@ interface RCTextareaPlugin {
 }
 ```
 
-At least one of `update` or `highlight` must be provided. Async hooks are allowed — if a
+At least one of `update` or `highlight` must be provided. Async hooks are allowed. If a
 newer render starts while a hook is pending, stale results are discarded.
 
 `transform()` runs only while the slotted textarea is `readonly` and substitutes the
@@ -412,7 +412,7 @@ editor.usePlugin({
 </TabItem>
 <TabItem value="decorations" label="Decorations">
 
-When passing decorations to the API, omit `id` — the component assigns IDs.
+When passing decorations to the API, omit `id`; the component assigns IDs.
 
 ```ts
 type DecorationInput =
@@ -456,7 +456,7 @@ interface LineDecoration {
   type: 'line';
   line: number; // 1-based
   className?: string;
-  message?: string; // rendered via ::after — not in selection or clipboard
+  message?: string; // rendered via ::after; not in selection or clipboard
   messageClassName?: string;
   attributes?: Record<string, string>;
   gutterContent?: string | HTMLElement | null; // null: suppress; undefined: use default
@@ -500,7 +500,7 @@ interface WidgetDecoration {
   id: string;
   type: 'widget';
   offset: number;
-  create(): HTMLElement; // called on every render — return a new element each time
+  create(): HTMLElement; // called on every render; return a new element each time
   side?: 'before' | 'after';
 }
 ```
@@ -586,7 +586,7 @@ editor.usePlugin({
 });
 ```
 
-`getCursorRect()` returns viewport coordinates — suitable for anchoring autocomplete panels or
+`getCursorRect()` returns viewport coordinates, suitable for anchoring autocomplete panels or
 hover tooltips.
 
 ### Text mutation
@@ -1010,7 +1010,7 @@ each `.line` element and assigns explicit cell heights so wrapped lines stay ali
 | `src/line-decorator.ts`          | `createLineDecoratorPlugin()` helper for line-relative decoration logic.                                                              |
 | `src/line-actions-controller.ts` | Controller for action UI anchored to editor lines.                                                                                    |
 | `src/types.ts`                   | Public interfaces and utility types.                                                                                                  |
-| `src/rc-textarea.styles.ts`      | Shadow DOM layout, parts, tokens, and internal decoration selectors.                                                                  |
+| `src/rc-textarea.styles.ts`      | shadow DOM layout, parts, tokens, and internal decoration selectors.                                                                  |
 
 ### Styling contract
 

@@ -4,7 +4,7 @@ Sticky floating action button modeled after the [Material 3 Floating action butt
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-fab](https://richardcarls.github.io/rc-webcomponents/components/rc-fab).
 
-Use this for "back to top", sticky CTAs, chat launchers, and of course as FABs in your
+Use this for "back to top," sticky CTAs, chat launchers, and of course as FABs in your
 Material Design website or PWA.
 
 Place a native `<button>` as the direct child. The button's own accessible name (text
@@ -59,7 +59,7 @@ import '@rcarls/rc-fab/define';
 | --------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `--rc-fab-position`         | `fixed`              | CSS position value. Use `absolute` for layout-relative placement                                                                                       |
 | `--rc-fab-scroll-threshold` | `300px`              | Scroll distance before the FAB appears (requires `scroll-reveal`)                                                                                      |
-| `--rc-fab-scroll-timeline`  | `scroll(root block)` | Override scroll target for the CSS animation path (e.g. `scroll(nearest block)`)                                                                       |
+| `--rc-fab-scroll-timeline`  | `scroll(root block)` | Override scroll target for the CSS animation path (for example, `scroll(nearest block)`)                                                                       |
 | `--rc-fab-radius`           | _(native)_           | Border-radius; defers to the native button's radius until set. Use `9999px` for pill-shaped, `50%` for a circle, or `1rem` for Material rounded-square |
 | `--rc-fab-size`             | _(native)_           | Height and minimum width; defers to native button sizing until set (packaged themes set `3.5rem`)                                                      |
 | `--rc-fab-bg`               | _(native)_           | Button background color; defers to the native button's background until set                                                                            |
@@ -68,12 +68,12 @@ import '@rcarls/rc-fab/define';
 | `--rc-fab-inset-block`      | `1.5rem`             | Distance from the block-axis edge                                                                                                                      |
 | `--rc-fab-inset-inline`     | `1.5rem`             | Distance from the inline-axis edge                                                                                                                     |
 
-## Scroll-reveal behaviour
+## Scroll-reveal behavior
 
 `scroll-reveal` uses CSS scroll-driven animations (`animation-timeline: scroll()`).
 
 In browsers that do not yet support this API, a passive scroll listener provides
-equivalent behaviour.
+equivalent behavior.
 
 The `[scroll-below-threshold]` attribute is toggled on the host and CSS transitions
 handle the show/hide. The FAB is always visible in any remaining edge cases.

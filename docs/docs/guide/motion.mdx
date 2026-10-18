@@ -131,7 +131,7 @@ body across component and theme CSS, and errors on any layout property (box
 geometry, not paint) that isn't in `ANIMATED_LAYOUT_PROPERTY_BUDGETS` with a
 recorded justification. `transition: all` is a hard error everywhere, with no
 budget able to scope it. A few components carry a deliberate exception because
-they resize to content the theme can't predict from CSS alone — an indicator
+they resize to content the theme can't predict from CSS alone; an indicator
 tracking the selected item's box (`rc-navigation-bar`, `rc-navigation-rail`), a
 disclosure panel's real open height, a switch thumb whose box changes with the
 control's size, and a progress fill tracking literal percentage.

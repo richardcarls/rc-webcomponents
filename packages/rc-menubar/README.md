@@ -69,7 +69,7 @@ Place `rc-menu-button` elements as direct children. The menubar manages focus an
 
 | Property      | Attribute     | Type                         | Default        | Description                                                                                                                |
 | ------------- | ------------- | ---------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `label`       | `label`       | `string`                     | `'Menu'`       | `aria-label` for the menubar. Required — no visible label is rendered by the component.                                    |
+| `label`       | `label`       | `string`                     | `'Menu'`       | `aria-label` for the menubar. Required; no visible label is rendered by the component.                                    |
 | `orientation` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Layout direction and keyboard navigation axis. Propagated to child `rc-menu-button` elements for arrow-key open direction. |
 
 ### CSS custom properties
@@ -91,7 +91,7 @@ Place `rc-menu-button` elements as direct children. The menubar manages focus an
 | `--rc-menubar-item-radius`             | `var(--rc-control-radius)`                       | Child trigger border radius                       |
 | `--rc-menubar-item-background`         | `transparent`                                    | Child trigger background                          |
 | `--rc-menubar-item-color`              | `inherit`                                        | Child trigger text color                          |
-| `--rc-menubar-item-transition`         | —                                                | Child trigger state transition                    |
+| `--rc-menubar-item-transition`         | Not set                                          | Child trigger state transition                    |
 | `--rc-menubar-item-hover-background`   | `color-mix(in srgb, Highlight 8%, transparent)`  | Child trigger hover background                    |
 | `--rc-menubar-item-hover-color`        | `inherit`                                        | Child trigger hover text color                    |
 | `--rc-menubar-item-hover-border-color` | `transparent`                                    | Child trigger hover border color                  |
@@ -138,7 +138,7 @@ $previousItem: HTMLElement | undefined
 
 ---
 
-## Keyboard behaviour
+## Keyboard behavior
 
 Horizontal orientation (default):
 
@@ -159,7 +159,7 @@ For vertical orientation, `ArrowDown`/`ArrowUp` replace `ArrowRight`/`ArrowLeft`
 
 | Attribute          | Where              | Value                                            |
 | ------------------ | ------------------ | ------------------------------------------------ |
-| `role="menubar"`   | Host element       | —                                                |
+| `role="menubar"`   | Host element       | `menubar`                                        |
 | `aria-orientation` | Host element       | `"horizontal"` or `"vertical"`                   |
 | `aria-label`       | Host element       | Value of `label` property                        |
 | `tabindex="0"`     | Active trigger     | One trigger tabbable at a time (roving tabindex) |

@@ -12,7 +12,7 @@ import { FabDemo } from '@site/src/components/ComponentDemos';
 
 Sticky floating action button modeled after the [Material 3 Floating action button](https://m3.material.io/components/floating-action-button/overview), wrapping a consumer-supplied button with scroll-aware visibility.
 
-Use this for "back to top", sticky CTAs, chat launchers, and of course as FABs in your
+Use this for "back to top," sticky CTAs, chat launchers, and of course as FABs in your
 Material Design website or PWA.
 
 Place a native `<button>` as the direct child. The button's own accessible name (text
@@ -162,7 +162,7 @@ dialog open is wrapped in `document.startViewTransition()`.
 ```js
 document.getElementById('compose-btn').addEventListener('click', () => {
   document.startViewTransition(() => {
-    // open dialog or navigate — the browser morphs the FAB into the target
+    // open dialog or navigate; the browser morphs the FAB into the target
     dialog.showModal();
   });
 });
@@ -199,7 +199,7 @@ between them.
 </rc-fab>
 ```
 
-No JavaScript needed — enable cross-document transitions in CSS:
+No JavaScript needed: enable cross-document transitions in CSS:
 
 ```css
 @view-transition {
@@ -224,7 +224,7 @@ Pair with `view-transition-name` for an animated relocation.
 ### Extended FAB with scroll-driven label reveal
 
 Show a label as the user scrolls down, then collapse back to icon-only on
-scroll-up — entirely in CSS using a scroll-driven animation.
+scroll-up, entirely in CSS using a scroll-driven animation.
 
 ```html
 <rc-fab id="extended-fab">

@@ -110,9 +110,9 @@ The `#separator` uses `z-index: 1` so the touch target circle stacks above pane 
 
 ### Visual indicator
 
-The default drag indicator is a 3-dot grip, rendered as a `::before` pseudo-element inside the handle so the touch target (the handle element itself) and the visual remain independent. Hover highlights are scoped to the visual indicator only — they do not highlight the full separator strip.
+The default drag indicator is a 3-dot grip, rendered as a `::before` pseudo-element inside the handle so the touch target (the handle element itself) and the visual remain independent. Hover highlights are scoped to the visual indicator only; they do not highlight the full separator strip.
 
-Customise the indicator via CSS custom properties:
+Customize the indicator via CSS custom properties:
 
 ```css
 rc-splitter {
@@ -127,12 +127,12 @@ rc-splitter {
 
 ### Material 3 theme
 
-When `rc-theme-material` is applied, the splitter uses an M3-style drag indicator modelled after the [M3 bottom sheet drag handle](https://m3.material.io/components/bottom-sheets/overview):
+When `rc-theme-material` is applied, the splitter uses an M3-style drag indicator modeled after the [M3 bottom sheet drag handle](https://m3.material.io/components/bottom-sheets/overview):
 
-- **Strip width**: 24 px (`1.5rem`) — meets WCAG 2.5.8 in the cross axis (combined with the 24 px touch target circle on touch devices)
-- **Indicator**: 4 px × 32 px fully-rounded pill (`--rc-splitter-handle-pattern: none`, `--rc-splitter-handle-fill`, `--rc-splitter-handle-border-radius: 999px`)
+- **Strip width**: 24 px (`1.5rem`); meets WCAG 2.5.8 in the cross axis (combined with the 24 px touch target circle on touch devices)
+- **Indicator**: 4 px × 32 px fully rounded pill (`--rc-splitter-handle-pattern: none`, `--rc-splitter-handle-fill`, `--rc-splitter-handle-border-radius: 999px`)
 - **Color**: `on-surface-variant` at 40 % opacity
-- **Hover**: `primary` at 8 % opacity — on the pill only, not the strip
+- **Hover**: `primary` at 8 % opacity; on the pill only, not the strip
 - **Transition**: 150 ms with M3 standard easing
 
 All tokens are CSS custom properties so individual values can be overridden without replacing the whole theme layer.

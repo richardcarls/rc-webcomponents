@@ -256,6 +256,7 @@ export type RCTooltipRef = HTMLElement & {
 
 export type RCSnackbarRef = HTMLElement & {
   open: boolean;
+  defaultOpen: boolean;
   message: string;
   actionLabel: string;
   duration: number;
@@ -488,6 +489,9 @@ export type RCMenuButtonRef = HTMLElement & {
   defaultOpen: boolean;
   orientation: 'horizontal' | 'vertical' | undefined;
   placement: RCMenuButtonPlacement;
+  openMenu(focus?: 'first' | 'last'): void;
+  closeMenu(returnFocus?: boolean): void;
+  toggleMenu(): void;
 };
 
 export type RCMenuButtonToggleDetail = {
@@ -743,10 +747,14 @@ export type RCSearchBarRef = HTMLElement & {
   defaultValue: string | undefined;
   debounce: number;
   clearLabel: string;
+  allowNativeClear: boolean;
+  showClearOnFocus: boolean;
+  disabled: boolean;
   placeholder: string | undefined;
   showView(): void;
   closeView(): void;
   toggleView(): void;
+  clear(): void;
 };
 
 export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
@@ -1317,6 +1325,9 @@ declare module 'solid-js' {
         'prop:defaultOpen'?: boolean | undefined;
         debounce?: number | string;
         'clear-label'?: string;
+        'allow-native-clear'?: boolean | string;
+        'show-clear-on-focus'?: boolean | string;
+        disabled?: boolean | string;
         placeholder?: string;
         'default-value'?: string;
         'prop:value'?: string | undefined;

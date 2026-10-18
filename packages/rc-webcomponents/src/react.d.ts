@@ -457,6 +457,7 @@ export type RCChipGroupRef = HTMLElement & {
 /** Public API surface of `<rc-snackbar>`. */
 export type RCSnackbarRef = HTMLElement & {
   open: boolean;
+  defaultOpen: boolean;
   message: string;
   actionLabel: string;
   duration: number;
@@ -503,6 +504,7 @@ export type RCSelectRef = HTMLElement & {
   open: boolean;
   multiple: boolean;
   disabled: boolean;
+  required: boolean;
   placeholder: string;
   display: 'auto' | 'chips' | 'compact';
   popupMode: 'popover' | 'dialog';
@@ -515,6 +517,8 @@ export type RCSelectRef = HTMLElement & {
   readonly selectedValues: string[];
   openPopup(): void;
   closePopup(returnFocus?: boolean): void;
+  focus(options?: FocusOptions): void;
+  blur(): void;
 };
 
 /** Public API surface of `<rc-combobox>`. */
@@ -550,6 +554,7 @@ export type RCDialogRef = HTMLElement & {
   resizeStep: number;
   closedBy: 'any' | 'closerequest' | 'none' | '';
   lightDismiss: boolean;
+  modal: boolean;
   readonly returnValue: string;
   showModal(): void;
   show(): void;
@@ -606,6 +611,9 @@ export type RCMenuButtonRef = HTMLElement & {
   defaultOpen: boolean;
   orientation: 'horizontal' | 'vertical' | undefined;
   placement: RCMenuButtonPlacement;
+  openMenu(focus?: 'first' | 'last'): void;
+  closeMenu(returnFocus?: boolean): void;
+  toggleMenu(): void;
 };
 
 /** Public API surface of `<rc-fab-menu>`. */
@@ -775,11 +783,13 @@ export type RCVirtualCanvasRef = HTMLElement & {
 /** Public API surface of `<rc-app-bar>`. */
 export type RCAppBarRef = HTMLElement & {
   variant: 'compact' | 'expanded';
+  centerSymmetric: boolean;
   scrollBehavior: 'pinned' | 'collapse' | 'hide';
   scrolled: boolean | undefined;
   scrollTarget: Element | Document | Window | string | null;
   scrollThreshold: number;
   hideDistance: number;
+  readonly collapsed: boolean;
 };
 
 /** Public API surface of `<rc-search-bar>`. */
@@ -791,13 +801,17 @@ export type RCSearchBarRef = HTMLElement & {
   defaultValue: string | undefined;
   debounce: number;
   clearLabel: string;
+  allowNativeClear: boolean;
+  showClearOnFocus: boolean;
+  disabled: boolean;
   placeholder: string | undefined;
   showView(): void;
   closeView(): void;
   toggleView(): void;
+  clear(): void;
 };
 
-export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement;
+export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 /** Public API surface of `<rc-field>`. */
 export type RCFieldRef = HTMLElement & {
@@ -997,6 +1011,7 @@ declare module 'react' {
         open?: boolean;
         multiple?: boolean;
         disabled?: boolean;
+        required?: boolean;
         placeholder?: string;
         display?: 'auto' | 'chips' | 'compact';
         'popup-mode'?: 'popover' | 'dialog';
@@ -1012,6 +1027,7 @@ declare module 'react' {
         open?: boolean;
         multiple?: boolean;
         disabled?: boolean;
+        required?: boolean;
         placeholder?: string;
         display?: 'auto' | 'chips' | 'compact';
         'allow-create'?: boolean;
@@ -1093,6 +1109,7 @@ declare module 'react' {
       'rc-fab-menu': React.DetailedHTMLProps<React.HTMLAttributes<RCFabMenuRef>, RCFabMenuRef> & {
         open?: boolean;
         'default-open'?: boolean;
+        orientation?: 'horizontal' | 'vertical';
         placement?: RCMenuButtonPlacement;
         position?:
           | 'block-end-inline-end'
@@ -1229,6 +1246,7 @@ declare module 'react' {
 
       'rc-app-bar': React.DetailedHTMLProps<React.HTMLAttributes<RCAppBarRef>, RCAppBarRef> & {
         variant?: 'compact' | 'expanded';
+        'center-symmetric'?: boolean;
         'scroll-behavior'?: 'pinned' | 'collapse' | 'hide';
         'scroll-target'?: string;
         'scroll-threshold'?: number | string;
@@ -1245,6 +1263,9 @@ declare module 'react' {
         'default-open'?: boolean;
         debounce?: number | string;
         'clear-label'?: string;
+        'allow-native-clear'?: boolean;
+        'show-clear-on-focus'?: boolean;
+        disabled?: boolean;
         placeholder?: string;
         'default-value'?: string;
         value?: string;
