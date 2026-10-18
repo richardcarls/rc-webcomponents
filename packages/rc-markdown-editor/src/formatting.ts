@@ -1,5 +1,4 @@
 import type { Decoration } from '@rcarls/rc-textarea';
-
 import type { ActiveFormats, HeadingLevel } from './types.js';
 
 /**

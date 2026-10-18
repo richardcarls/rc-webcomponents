@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
+
 import {
   ActiveDescendantController,
   cssText,
@@ -217,10 +218,14 @@ export class RCListbox extends LitElement {
   private static readonly _styledRoots = new Set<Document | ShadowRoot>();
 
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCListbox._styledRoots.has(root)) return;
+    if (RCListbox._styledRoots.has(root)) {
+      return;
+    }
+
     RCListbox._styledRoots.add(root);
 
     const $style = document.createElement('style');
+
     $style.setAttribute('data-rc-light-dom-base', 'rc-listbox');
     $style.textContent = LIGHT_DOM_CSS;
 
@@ -372,7 +377,9 @@ export class RCListbox extends LitElement {
   set value(value: string | string[] | undefined) {
     this._value = value;
 
-    if (value === undefined) return;
+    if (value === undefined) {
+      return;
+    }
 
     this._selectionInitialized = true;
     this._applySelection(this._normalizeValue(value));
@@ -405,7 +412,9 @@ export class RCListbox extends LitElement {
   toggleOption(value: string): void {
     const option = this._itemsCollectionCtrl.allOptions.find((opt) => opt.value === value);
 
-    if (!option || option.kind === 'action' || option.disabled) return;
+    if (!option || option.kind === 'action' || option.disabled) {
+      return;
+    }
 
     const wasSelected = this._itemsCollectionCtrl.isSelected(value);
 
@@ -538,6 +547,8 @@ export class RCListbox extends LitElement {
       }
 
       case ' ':
+
+      // falls through
       case 'Enter': {
         e.preventDefault();
 
@@ -577,7 +588,9 @@ export class RCListbox extends LitElement {
   protected _selectActiveItem(): void {
     const activeOption = this._activeOption();
 
-    if (!activeOption || activeOption.kind === 'action' || activeOption.disabled) return;
+    if (!activeOption || activeOption.kind === 'action' || activeOption.disabled) {
+      return;
+    }
 
     const value = activeOption.value;
     const current = this._itemsCollectionCtrl.selectedValues;
@@ -596,7 +609,9 @@ export class RCListbox extends LitElement {
    * Returns `true` when `opt` passes the current `_filterText` and `filterStrategy`.
    */
   protected _isVisible(option: ListboxOption): boolean {
-    if (!this._filterText) return true;
+    if (!this._filterText) {
+      return true;
+    }
 
     const label = option.label.toLowerCase();
     const query = this._filterText.toLowerCase();

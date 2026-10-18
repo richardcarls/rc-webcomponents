@@ -53,7 +53,10 @@ export class TypeaheadController<T> {
     this._scheduleReset();
 
     const items = this._options.items();
-    if (!items.length) return null;
+
+    if (!items.length) {
+      return null;
+    }
 
     const startIndex = this._options.startIndex?.() ?? 0;
     const count = items.length;
@@ -65,6 +68,7 @@ export class TypeaheadController<T> {
 
       if (text.startsWith(this._buffer)) {
         this._options.onMatch(item, index);
+
         return item;
       }
     }
@@ -78,7 +82,9 @@ export class TypeaheadController<T> {
   }
 
   private _clearTimer(): void {
-    if (!this._timer) return;
+    if (!this._timer) {
+      return;
+    }
 
     window.clearTimeout(this._timer);
     this._timer = 0;

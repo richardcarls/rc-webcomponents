@@ -9,7 +9,6 @@ import {
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 import type { ListboxOption, RCListbox, RCListboxChangeEvent } from '@rcarls/rc-listbox';
-
 import '@rcarls/rc-listbox/define';
 import '@rcarls/rc-toolbar/define';
 
@@ -601,6 +600,7 @@ export class RCTransferList extends LitElement {
 
     if (ev.detail.reason === 'action') {
       e.stopPropagation();
+
       return;
     }
 

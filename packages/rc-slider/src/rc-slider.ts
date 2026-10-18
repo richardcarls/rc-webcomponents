@@ -2,6 +2,7 @@ import { LitElement, css, html, nothing } from 'lit';
 import type { ComplexAttributeConverter } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
 import { NativeChildController, valueToPercent, warnMissingDirectChild } from '@rcarls/rc-common';
 
 export interface RCSliderValueEvent {
@@ -29,10 +30,22 @@ type DisplayValue = 'float' | 'inline-start' | 'inline-end' | null;
  */
 const displayConverter: ComplexAttributeConverter<DisplayValue> = {
   fromAttribute(v: string | null): DisplayValue {
-    if (v === null) return null;
-    if (v === '' || v === 'float') return 'float';
-    if (v === 'inline-start') return 'inline-start';
-    if (v === 'inline-end') return 'inline-end';
+    if (v === null) {
+      return null;
+    }
+
+    if (v === '' || v === 'float') {
+      return 'float';
+    }
+
+    if (v === 'inline-start') {
+      return 'inline-start';
+    }
+
+    if (v === 'inline-end') {
+      return 'inline-end';
+    }
+
     return null;
   },
   toAttribute(v: DisplayValue): string | null {
@@ -46,8 +59,12 @@ const displayConverter: ComplexAttributeConverter<DisplayValue> = {
  * (empty string) or not a valid number.
  */
 function parseAttr(s: string, defaultVal: number): number {
-  if (s === '') return defaultVal;
+  if (s === '') {
+    return defaultVal;
+  }
+
   const n = parseFloat(s);
+
   return isNaN(n) ? defaultVal : n;
 }
 
@@ -248,8 +265,10 @@ export class RCSlider extends LitElement {
   get value(): number {
     return this._value ?? this._defaultValue ?? this._nativeInputValue;
   }
+
   set value(v: number) {
     const old = this._value;
+
     this._value = v;
     this._valueInitialized = true;
     this._applyValueToInput(v);
@@ -261,13 +280,17 @@ export class RCSlider extends LitElement {
   get defaultValue(): number | undefined {
     return this._defaultValue;
   }
+
   set defaultValue(v: number | undefined) {
     const old = this._defaultValue;
+
     this._defaultValue = v;
+
     if (!this._valueInitialized && this._value === undefined && v !== undefined) {
       this._applyValueToInput(v);
       this.requestUpdate('value', undefined);
     }
+
     this.requestUpdate('defaultValue', old);
   }
 
@@ -317,7 +340,10 @@ export class RCSlider extends LitElement {
 
   override updated(): void {
     const $input = this._$nativeInput;
-    if (!$input) return;
+
+    if (!$input) {
+      return;
+    }
 
     $input.disabled = this.disabled;
     this._syncAriaAttributes($input);
@@ -325,7 +351,10 @@ export class RCSlider extends LitElement {
 
   override render() {
     const $input = this._$nativeInput;
-    if (!$input) return nothing;
+
+    if (!$input) {
+      return nothing;
+    }
 
     const valueDisplay = html`
       <span
@@ -371,6 +400,7 @@ export class RCSlider extends LitElement {
 
   private get _nativeInputValue(): number {
     const value = this._$nativeInput?.valueAsNumber;
+
     return value === undefined || isNaN(value) ? 0 : value;
   }
 
@@ -381,6 +411,7 @@ export class RCSlider extends LitElement {
 
     if (!$input) {
       this._$nativeInput = null;
+
       return;
     }
 
@@ -404,22 +435,27 @@ export class RCSlider extends LitElement {
   private _applyInitialValueToInput($input: HTMLInputElement): void {
     if (this._value !== undefined) {
       this._applyValueToInput(this._value);
+
       return;
     }
 
     if (this._defaultValue !== undefined) {
       this._applyValueToInput(this._defaultValue);
+
       return;
     }
 
     const value = $input.valueAsNumber;
+
     if (!isNaN(value)) {
       this._defaultValue = value;
     }
   }
 
   private _applyValueToInput(value: number): void {
-    if (!this._$nativeInput) return;
+    if (!this._$nativeInput) {
+      return;
+    }
 
     this._$nativeInput.value = String(value);
   }
@@ -469,6 +505,7 @@ export class RCSlider extends LitElement {
 
     if (this.readonly) {
       $input.value = String(this.value);
+
       return;
     }
 
@@ -488,14 +525,23 @@ export class RCSlider extends LitElement {
   }
 
   private readonly _onKeydown = (e: KeyboardEvent): void => {
-    if (this.disabled || this.readonly) return;
-    if (e.key !== 'PageUp' && e.key !== 'PageDown') return;
+    if (this.disabled || this.readonly) {
+      return;
+    }
+
+    if (e.key !== 'PageUp' && e.key !== 'PageDown') {
+      return;
+    }
 
     e.preventDefault();
+
     const $input = e.currentTarget as HTMLInputElement;
 
-    if (e.key === 'PageUp') $input.stepUp(10);
-    else $input.stepDown(10);
+    if (e.key === 'PageUp') {
+      $input.stepUp(10);
+    } else {
+      $input.stepDown(10);
+    }
 
     this._commitInputValue($input);
 
@@ -519,7 +565,10 @@ export class RCSlider extends LitElement {
 
   private _progressStyle(): string {
     const $input = this._$nativeInput;
-    if (!$input) return '';
+
+    if (!$input) {
+      return '';
+    }
 
     const min = parseAttr($input.min, 0);
     const max = parseAttr($input.max, 100);
@@ -536,7 +585,10 @@ export class RCSlider extends LitElement {
 
   private _floatStyle(): string {
     const $input = this._$nativeInput;
-    if (!$input) return '';
+
+    if (!$input) {
+      return '';
+    }
 
     const min = parseAttr($input.min, 0);
     const max = parseAttr($input.max, 100);

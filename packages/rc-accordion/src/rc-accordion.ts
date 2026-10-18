@@ -1,5 +1,4 @@
 import { ensureDisclosureBaseStyles } from '@rcarls/rc-disclosure';
-
 import { ensureAccordionBaseStyles } from './accordionBaseStyles.js';
 
 const NAVIGATION_KEYS = ['ArrowDown', 'ArrowUp', 'Home', 'End'] as const;

@@ -1,7 +1,5 @@
 import { nothing } from 'lit';
-
 import { PartType, type PartInfo, type ElementPart } from 'lit/directive.js';
-
 import { directive, AsyncDirective } from 'lit/async-directive.js';
 
 import {
@@ -164,16 +162,24 @@ class KeyboardNavigationDirective extends AsyncDirective {
 
     // Navigation axis
     if (this._options.handleNavAxis !== false) {
-      if (key === navNext) action = e.shiftKey ? 'next-large' : 'next';
-      else if (key === navPrev) action = e.shiftKey ? 'prev-large' : 'prev';
-      else if (key === 'Home') action = 'start';
-      else if (key === 'End') action = 'end';
+      if (key === navNext) {
+        action = e.shiftKey ? 'next-large' : 'next';
+      } else if (key === navPrev) {
+        action = e.shiftKey ? 'prev-large' : 'prev';
+      } else if (key === 'Home') {
+        action = 'start';
+      } else if (key === 'End') {
+        action = 'end';
+      }
     }
 
     // Open axis (perpendicular to navigation)
     if (!action && this._options.handleOpenAxis) {
-      if (key === openFirst) action = 'open-to-first';
-      else if (key === openLast) action = 'open-to-last';
+      if (key === openFirst) {
+        action = 'open-to-first';
+      } else if (key === openLast) {
+        action = 'open-to-last';
+      }
     }
 
     // Enter / Space / Escape

@@ -38,6 +38,7 @@ export function matchPatternResults(
     let flags = pattern.pattern.flags.includes('g')
       ? pattern.pattern.flags
       : pattern.pattern.flags + 'g';
+
     if (pattern.captureGroups && !flags.includes('d')) {
       flags += 'd';
     }
@@ -45,6 +46,7 @@ export function matchPatternResults(
     const regex = new RegExp(pattern.pattern.source, flags);
 
     let match: RegExpExecArray | null;
+
     while ((match = regex.exec(value)) !== null) {
       // Skip zero-length matches to guard against infinite loops
       if (match[0].length === 0) {
