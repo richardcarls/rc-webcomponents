@@ -29,6 +29,12 @@
         "types": "./dist/types/packages/rc-dialog/src/define.d.ts",
         "default": "./dist/rc-dialog-define.js"
       }
+    },
+    "./geometry": {
+      "import": {
+        "types": "./dist/types/packages/rc-dialog/src/geometry.d.ts",
+        "default": "./dist/rc-dialog-geometry.js"
+      }
     }
   },
   "types": "./dist/types/packages/rc-dialog/src/index.d.ts",

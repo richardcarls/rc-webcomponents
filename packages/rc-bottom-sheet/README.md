@@ -44,7 +44,7 @@ must have `aria-labelledby` or `aria-label`.
 
 `rc-bottom-sheet` inherits `rc-dialog` methods and events, including
 `showModal()`, `show()`, `close()`, `requestClose()`, `rc-dialog-toggle`, and
-`rc-dialog-request-close`. It defaults to light dismiss, vertical top-origin
+`rc-dialog-request-close`. It defaults to `closed-by="any"` light dismiss, vertical top-origin
 resize, downward swipe-dismiss, and fixed positioning at the viewport's bottom
 edge. Add an optional
 `[data-rc-bottom-sheet-handle]` element inside the dialog for an authored

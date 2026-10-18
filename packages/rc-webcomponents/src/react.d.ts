@@ -553,7 +553,6 @@ export type RCDialogRef = HTMLElement & {
   resizeThreshold: number;
   resizeStep: number;
   closedBy: 'any' | 'closerequest' | 'none' | '';
-  lightDismiss: boolean;
   modal: boolean;
   readonly returnValue: string;
   showModal(): void;
@@ -1055,7 +1054,6 @@ declare module 'react' {
         'resize-threshold'?: number | string;
         'resize-step'?: number | string;
         'closed-by'?: 'any' | 'closerequest' | 'none';
-        'light-dismiss'?: boolean;
       };
 
       'rc-bottom-sheet': React.DetailedHTMLProps<
@@ -1064,7 +1062,7 @@ declare module 'react' {
       > & {
         open?: boolean;
         'default-open'?: boolean;
-        'light-dismiss'?: boolean;
+        'closed-by'?: 'any' | 'closerequest' | 'none';
         resize?: 'none' | 'both' | 'horizontal' | 'vertical';
         'resize-origin'?: RCDialogResizeOrigin;
         'resize-handle'?: string;

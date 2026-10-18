@@ -1,9 +1,10 @@
-import { test, expect, vi } from 'vitest';
+import { afterAll, beforeAll, test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
 import './define.js';
-import type { RCDialog } from './rc-dialog.js';
+import { DialogGeometry } from './geometry.js';
+import { RCDialog } from './rc-dialog.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import { inFlow } from '../../../test-helpers/flow.js';
 
@@ -27,6 +28,18 @@ function firePointerEvent(target: Element, type: string, init: PointerEventInit 
     }),
   );
 }
+
+// Move and resize tests use the geometry synchronously, as rc-bottom-sheet
+// does; the on-demand load has its own tests below.
+type GeometryStatics = { _geometryClass?: typeof DialogGeometry };
+
+beforeAll(() => {
+  (RCDialog as unknown as GeometryStatics)._geometryClass = DialogGeometry;
+});
+
+afterAll(() => {
+  delete (RCDialog as unknown as GeometryStatics)._geometryClass;
+});
 
 // Helper: render an rc-dialog wrapping a <dialog> with a label
 function renderDialog(extraAttrs = '') {
@@ -583,6 +596,41 @@ test('resize reacts to changes after setup', async () => {
   host.close();
 });
 
+test('a plain dialog builds no move or resize behavior', async () => {
+  const screen = renderDialog();
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+
+  expect((host as unknown as { _geometry: unknown })._geometry).toBeNull();
+});
+
+test('movable loads the geometry module on demand', async () => {
+  const statics = RCDialog as unknown as GeometryStatics;
+
+  delete statics._geometryClass;
+
+  try {
+    const screen = render(html`
+      <rc-dialog data-testid="host" movable>
+        <dialog aria-labelledby="t">
+          <span id="t">Title</span>
+          <button type="button">Close</button>
+        </dialog>
+      </rc-dialog>
+    `);
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+    const dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+    await host.updateComplete;
+
+    // The move handle becomes focusable once the loaded controller attaches.
+    await vi.waitFor(() => expect(dialog.getAttribute('tabindex')).toBe('0'));
+  } finally {
+    statics._geometryClass = DialogGeometry;
+  }
+});
+
 test('move options react to changes after setup', async () => {
   const screen = render(html`
     <rc-dialog data-testid="host" movable>
@@ -919,17 +967,11 @@ test('focus falls back to document.body when opener is removed before close', as
   await vi.waitFor(() => expect(document.activeElement).toBe(document.body));
 });
 
-// Group E — light-dismiss setup and behavior
+// Group E — closed-by dismissal
 
-test('light-dismiss sets closedby="any" on inner dialog when browser supports native closedby', async () => {
-  // When the browser supports the native closedby attribute, rc-dialog delegates
-  // backdrop dismissal to it rather than attaching a JS click handler.
-  if (!('closedBy' in HTMLDialogElement.prototype)) {
-    return;
-  }
-
+test('closed-by is proxied to the inner dialog and follows later changes', async () => {
   const screen = render(html`
-    <rc-dialog data-testid="host" light-dismiss>
+    <rc-dialog data-testid="host" closed-by="any">
       <dialog aria-labelledby="t">
         <span id="t">Title</span>
         <button>Close</button>
@@ -944,53 +986,75 @@ test('light-dismiss sets closedby="any" on inner dialog when browser supports na
   const $dialog = host.querySelector('dialog') as HTMLDialogElement;
 
   expect($dialog.getAttribute('closedby')).toBe('any');
-});
 
-test('light-dismiss JS fallback: backdrop click calls requestClose() when native closedby not supported', async () => {
-  // Only tests the JS click-handler path used in older browsers. Skip when the
-  // browser supports the native closedby attribute (which takes priority).
-  if ('closedBy' in HTMLDialogElement.prototype) {
-    return;
-  }
-
-  const requestCloseSpy = vi.fn();
-
-  const screen = render(html`
-    <rc-dialog data-testid="host" light-dismiss @rc-dialog-request-close=${requestCloseSpy}>
-      <dialog aria-labelledby="t">
-        <span id="t">Title</span>
-        <button>Close</button>
-      </dialog>
-    </rc-dialog>
-  `);
-
-  const host = (await screen.getByTestId('host').element()) as RCDialog;
-
+  host.closedBy = 'none';
   await host.updateComplete;
+  expect($dialog.getAttribute('closedby')).toBe('none');
 
-  host.showModal();
+  host.closedBy = '';
+  await host.updateComplete;
+  expect($dialog.hasAttribute('closedby')).toBe(false);
+});
 
-  // The JS backdrop handler fires when e.target === <dialog>. Dispatch directly
-  // on the <dialog> element to satisfy that check.
-  const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+test('closed-by="any" falls back to a backdrop click listener without native closedby', async () => {
+  // Hide native support so the fallback runs in every engine.
+  const descriptor = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'closedBy');
 
-  $dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  if (descriptor) {
+    delete (HTMLDialogElement.prototype as { closedBy?: string }).closedBy;
+  }
 
-  expect(requestCloseSpy).toHaveBeenCalledTimes(1);
+  try {
+    const requestCloseSpy = vi.fn();
 
-  if (host.open) {
-    host.close();
+    const screen = render(html`
+      <rc-dialog data-testid="host" closed-by="any" @rc-dialog-request-close=${requestCloseSpy}>
+        <dialog aria-labelledby="t">
+          <span id="t">Title</span>
+          <button>Close</button>
+        </dialog>
+      </rc-dialog>
+    `);
+
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+    await host.updateComplete;
+
+    host.showModal();
+
+    // The fallback fires when the click targets the <dialog> itself, which is
+    // where a backdrop click lands.
+    const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+    $dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    expect(requestCloseSpy).toHaveBeenCalledTimes(1);
+
+    host.closedBy = 'closerequest';
+    await host.updateComplete;
+    host.showModal();
+    $dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    expect(requestCloseSpy).toHaveBeenCalledTimes(1);
+
+    if (host.open) {
+      host.close();
+    }
+  } finally {
+    if (descriptor) {
+      Object.defineProperty(HTMLDialogElement.prototype, 'closedBy', descriptor);
+    }
   }
 });
 
-test('light-dismiss keeps dialog open when rc-dialog-request-close is prevented', async () => {
-  // Both the native (closedby="any" → cancel event) and JS fallback paths
-  // go through rc-dialog-request-close. Simulate via the cancel event, which
-  // is what the browser fires on backdrop click with closedby="any".
+test('closed-by="any" keeps the dialog open when rc-dialog-request-close is prevented', async () => {
+  // Both the native (closedby="any" → cancel event) and fallback paths go
+  // through rc-dialog-request-close. Simulate via the cancel event, which is
+  // what the browser fires on backdrop click with closedby="any".
   const screen = render(html`
     <rc-dialog
       data-testid="host"
-      light-dismiss
+      closed-by="any"
       @rc-dialog-request-close=${(e: Event) => e.preventDefault()}
     >
       <dialog aria-labelledby="t">

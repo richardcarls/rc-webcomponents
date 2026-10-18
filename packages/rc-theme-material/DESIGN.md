@@ -917,7 +917,7 @@ dimensions, and write the choice from app state:
   width requires it and never stretch into full-width rows (Android's
   `dismissButton`/`confirmButton` model).
 - **Dismiss is never destructive.** Back, Escape and the scrim all cancel.
-  Set `light-dismiss` only for dialogs whose dismissal loses nothing.
+  Set `closed-by="any"` only for dialogs whose dismissal loses nothing.
 - **Single-choice dialogs** for enumerated settings use native radios in an
   `rc-list selection="single"` and commit on confirm, or immediately on
   selection when there is no confirm button.
@@ -994,7 +994,7 @@ full height, at most 400px wide, rounded on its leading edge, with the shared
 scrim. It fades rather than sliding, like every other surface here.
 
 ```html
-<rc-dialog id="filters" variant="side" light-dismiss>
+<rc-dialog id="filters" variant="side" closed-by="any">
   <dialog aria-labelledby="filters-title">
     <h2 id="filters-title">Filters</h2>
     <div class="dialog-body">…</div>
