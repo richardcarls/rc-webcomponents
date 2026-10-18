@@ -67,7 +67,7 @@ remains the reference for individual attributes and events.
 
 The theme uses square geometry, bitmap-like marks, hard shadows, and an optional
 beveled control treatment associated with applications using CTL3D. The 1992
-[*Windows Interface: An Application Design Guide*](https://books.google.com/books/about/The_Windows_Interface.html?id=ONBQAAAAYAAJ)
+[_Windows Interface: An Application Design Guide_](https://books.google.com/books/about/The_Windows_Interface.html?id=ONBQAAAAYAAJ)
 is the period design reference. Microsoft's
 [dialog-unit conversion](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mapdialogrect)
 explains why pixel dimensions depend on the dialog font. The measurements in
@@ -188,3 +188,8 @@ custom palette colors inside that mode.
 Windows 3.1 equivalent. Their styles keep a themed app visually coherent but
 do not make them period patterns. Prefer menu commands and toolbars when the
 application is meant to resemble a contemporary Windows 3.1 program.
+
+Tooltips did not exist in Windows 3.1 either. `rc-tooltip` borrows the WinHelp
+definition popup instead: a white box with a hard one-pixel frame and drop
+shadow. `rc-popover` uses the same menu panel as other popups, with panel
+spacing.
