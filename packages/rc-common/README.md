@@ -55,7 +55,7 @@ Check this inventory before adding package-local interaction or DOM utility code
 | Export                                                                 | Use for                                                                                                                     |
 | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `ActiveDescendantController`                                           | Managing `aria-activedescendant` virtual focus in listbox / combobox patterns                                               |
-| `AnchorController`                                                     | Positioning floating UI relative to an anchor with native CSS anchor positioning and polyfill fallback                      |
+| `AnchorController`                                                     | Positioning floating UI relative to an anchor with native CSS anchor positioning and a script fallback                      |
 | `ClickDelegateController`                                              | Extending plain pointer clicks on a host to a same-root native anchor or button target                                      |
 | `DragController`                                                       | Pointer and keyboard drag-to-move behavior                                                                                  |
 | `DragGestureController`                                                | Single-pointer activation, capture, deltas, duration, and recent velocity                                                   |
@@ -174,9 +174,9 @@ remains on the target.
 ### `AnchorController`
 
 A `ReactiveController` that positions a floating element relative to an anchor using
-[CSS Anchor Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning),
-with automatic fallback through
-[`@oddbird/css-anchor-positioning`](https://github.com/oddbird/css-anchor-positioning).
+[CSS Anchor Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning)
+where the browser supports it fully, and script positioning with the same placement and flip
+rules elsewhere.
 
 ```ts
 import { LitElement } from 'lit';
@@ -193,7 +193,8 @@ class MyTooltip extends LitElement {
 
 It injects a `<style>` block into `<head>` for the `anchor-name` and `position-anchor`
 declarations. It supports `@position-try` fallback blocks for automatic flip behavior in native
-browsers; the polyfill does not support `position-try`.
+browsers. The script fallback flips on its own and re-positions when the page scrolls or the
+viewport, anchor, or floating element resizes.
 
 **Options:**
 
@@ -356,8 +357,8 @@ tabindex values during roving-tabindex management. Any `tabindex` attribute is t
 
 ## Browser support
 
-| Feature                         | Requirement                                            |
-| ------------------------------- | ------------------------------------------------------ |
-| Controllers and directives      | Any browser supporting Web Components + Pointer Events |
-| `AnchorController` (native)     | Chrome 125+, Safari 18+, Firefox (in development)      |
-| `AnchorController` (polyfilled) | Chrome 80+, Firefox 85+, Safari 14+                    |
+| Feature                     | Requirement                                            |
+| --------------------------- | ------------------------------------------------------ |
+| Controllers and directives  | Any browser supporting Web Components + Pointer Events |
+| `AnchorController` (native) | Chrome 125+, Safari 18+, Firefox (in development)      |
+| `AnchorController` (script) | Any browser supporting Web Components                  |
