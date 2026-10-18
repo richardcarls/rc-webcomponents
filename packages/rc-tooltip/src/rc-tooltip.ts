@@ -34,7 +34,7 @@ const LIGHT_DOM_CSS = `
     padding-block: var(--rc-tooltip-padding-block, 0.25em);
     padding-inline: var(--rc-tooltip-padding-inline, 0.5em);
     border: var(--rc-tooltip-border, 1px solid CanvasText);
-    border-radius: var(--rc-tooltip-radius, 0.125em);
+    border-radius: var(--rc-tooltip-radius, var(--rc-radius-sm, 0.125em));
     background: var(--rc-tooltip-background, CanvasText);
     color: var(--rc-tooltip-color, Canvas);
     box-shadow: var(--rc-tooltip-shadow, none);
@@ -76,7 +76,7 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-tooltip-padding-block=0.25em] - Tooltip block-axis padding.
  * @cssprop [--rc-tooltip-padding-inline=0.5em] - Tooltip inline-axis padding.
  * @cssprop [--rc-tooltip-border=1px solid CanvasText] - Tooltip border.
- * @cssprop [--rc-tooltip-radius=0.125em] - Tooltip corner radius.
+ * @cssprop [--rc-tooltip-radius=var(--rc-radius-sm)] - Tooltip corner radius.
  * @cssprop [--rc-tooltip-background=CanvasText] - Tooltip background.
  * @cssprop [--rc-tooltip-color=Canvas] - Tooltip text color.
  * @cssprop [--rc-tooltip-shadow=none] - Tooltip shadow.

@@ -1,5 +1,6 @@
 @layer rc-theme-material.components {
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-tooltip {
+  /* Declared on the theme root so tooltips inside other shadow roots inherit it. */
+  :where(.rc-theme-material, :host(.rc-theme-material)) {
     --rc-tooltip-padding-block: 0.5rem;
     --rc-tooltip-padding-inline: 0.75rem;
     --rc-tooltip-border: 0;

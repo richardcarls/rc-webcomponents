@@ -40,4 +40,6 @@
 @import './components/chip-group.css';
 @import './components/scroller.css';
 @import './components/virtual-scroller.css';
+@import './components/tooltip.css';
+@import './components/popover.css';
 @import './components/modes.css';

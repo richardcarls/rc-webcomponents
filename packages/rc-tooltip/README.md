@@ -64,7 +64,7 @@ viewport clamping.
 | `--rc-tooltip-padding-block`   | `0.25em`               | Block-axis padding.          |
 | `--rc-tooltip-padding-inline`  | `0.5em`                | Inline-axis padding.         |
 | `--rc-tooltip-border`          | `1px solid CanvasText` | Tooltip border.              |
-| `--rc-tooltip-radius`          | `0.125em`              | Tooltip corner radius.       |
+| `--rc-tooltip-radius`          | `var(--rc-radius-sm)`  | Tooltip corner radius.       |
 | `--rc-tooltip-background`      | `CanvasText`           | Tooltip background.          |
 | `--rc-tooltip-color`           | `Canvas`               | Tooltip text color.          |
 | `--rc-tooltip-shadow`          | `none`                 | Tooltip shadow.              |

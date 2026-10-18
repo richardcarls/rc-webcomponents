@@ -1,0 +1,13 @@
+@layer rc-theme-substrate.components {
+  /*
+   * The border, corner, and elevation come from the bridge's --rc-popup-*
+   * tokens. A popover sits on the raised surface like a menu, with item-scale
+   * padding. Declared on the theme root so popovers rendered inside other
+   * shadow roots inherit the same values.
+   */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) {
+    --rc-popover-background: var(--substrate-surface-raised, Canvas);
+    --rc-popover-padding-block: var(--substrate-item-padding-block, 0.55rem);
+    --rc-popover-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+  }
+}

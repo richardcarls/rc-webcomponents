@@ -672,6 +672,7 @@ Layout readiness, not a separate 10-foot mode:
 | `rc-snackbar`                                | extra-small                                                 |
 | `rc-tooltip`                                 | extra-small                                                 |
 | Chips, menus                                 | small                                                       |
+| `rc-popover`                                 | medium                                                      |
 | Cards                                        | medium                                                      |
 | FAB, standalone disclosure                   | large                                                       |
 | Side sheet leading corners                   | large                                                       |
