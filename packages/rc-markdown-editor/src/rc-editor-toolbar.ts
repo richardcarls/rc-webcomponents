@@ -2,7 +2,6 @@ import { LitElement, html, nothing, type SVGTemplateResult, type TemplateResult 
 import { property, state } from 'lit/decorators.js';
 
 import '@rcarls/rc-button/define';
-import '@rcarls/rc-select/define';
 import '@rcarls/rc-toolbar/define';
 import { icons } from './icons.js';
 import type { EditorToolbarAction, EditorToolbarActionDetail, HeadingLevel } from './types.js';
@@ -18,13 +17,13 @@ const HEADING_OPTIONS: Array<{ value: HeadingLevel | 'p'; label: string }> = [
 ];
 
 /**
- * Formatting toolbar for `<rc-markdown-editor>`. Renders themed `rc-button`,
- * `rc-select`, and `rc-toolbar` controls into its own light DOM so the parent
- * editor can provide their shared appearance.
+ * Formatting toolbar for `<rc-markdown-editor>`. Renders themed `rc-button` and
+ * `rc-toolbar` controls into its own light DOM so the parent editor can provide
+ * their shared appearance.
  *
  * Active-format properties are set by the parent editor and reflected as
- * `aria-pressed` on the corresponding buttons. Heading level is shown via an
- * `<rc-select>`. Code-block language is shown via a `<input>` when active.
+ * `aria-pressed` on the corresponding buttons. Heading level is shown via a
+ * native `<select>`. Code-block language is shown via a `<input>` when active.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-markdown-editor rc-markdown-editor docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/ WAI-ARIA Toolbar pattern}
@@ -143,7 +142,7 @@ export class RcEditorToolbar extends LitElement {
   };
 
   protected _onHeadingChange = (e: Event) => {
-    const value = (e as CustomEvent<{ value: string }>).detail.value as HeadingLevel | 'p';
+    const value = (e.target as HTMLSelectElement).value as HeadingLevel | 'p';
 
     this._dispatch('heading', { headingLevel: value === 'p' ? null : value });
   };
@@ -219,19 +218,20 @@ export class RcEditorToolbar extends LitElement {
         )}
         ${this._renderActionButton('link', 'Link', 'Link (Ctrl+K)', this.activeLink, icons.link)}
 
-        <rc-select
+        <select
+          class=${this.activeHeading ? 'heading-select toolbar-active' : 'heading-select'}
           title="Heading level"
-          placeholder="Heading level"
-          class=${this.activeHeading ? 'toolbar-active' : ''}
-          .value=${this.activeHeading ?? 'p'}
-          @rc-select-change=${this._onHeadingChange}
+          aria-label="Heading level"
+          @change=${this._onHeadingChange}
         >
-          <select aria-label="Heading level">
-            ${HEADING_OPTIONS.map(
-              ({ value, label }) => html` <option value=${value}>${label}</option> `,
-            )}
-          </select>
-        </rc-select>
+          ${HEADING_OPTIONS.map(
+            ({ value, label }) => html`
+              <option value=${value} .selected=${value === (this.activeHeading ?? 'p')}>
+                ${label}
+              </option>
+            `,
+          )}
+        </select>
 
         ${this._renderActionButton(
           'blockquote',
