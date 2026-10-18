@@ -5,11 +5,13 @@ import {
   cssZoom,
   DragController,
   getVisualViewportBounds,
+  isTextEntryFocused,
   NativeChildController,
   ResizeController,
   type ResizeDirection,
   type ResizeLifecycleDetail,
   type ResizeOrigin,
+  SoftKeyboardViewport,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
@@ -118,10 +120,12 @@ declare global {
  *
  * Fullscreen geometry, meaning position, size, margin, radius, and shadow, is structural rather
  * than themable: filling the visual viewport is what keeps the surface correct under browser zoom
- * and a software keyboard. Side sheet placement is structural too: the surface docks to the inline
- * end at full block size, with physical safe-area padding on every edge; only its inline size,
- * background, start-corner radius, and shadow are themable. Neither docked variant moves or
- * resizes, so `movable` and `resize` apply to the standard variant only.
+ * and a software keyboard. While a keyboard closes, the surface takes only growth, so the shorter
+ * transitional sizes some mobile browsers report do not flash through. Side sheet placement is
+ * structural too: the surface docks to the inline end at full block size, with physical safe-area
+ * padding on every edge; only its inline size, background, start-corner radius, and shadow are
+ * themable. Neither docked variant moves or resizes, so `movable` and `resize` apply to the
+ * standard variant only.
  *
  * This element also writes `--rc-dialog-visual-viewport-left`, `-top`, `-width`, and `-height`
  * onto itself while a fullscreen dialog is open. Those are geometry outputs, not theme inputs:
@@ -256,6 +260,11 @@ export class RCDialog extends LitElement {
   protected _suppressNextCloseToggle = false;
 
   private _trackingVisualViewport = false;
+
+  // Keeps a closing software keyboard's transitional sizes off the fullscreen surface.
+  private readonly _keyboardViewport = new SoftKeyboardViewport({
+    onCloseTimeout: () => this._handleVisualViewportChange(),
+  });
 
   private _dragController: DragController | null = null;
   // Move-relevant options the current controller was built from.
@@ -817,6 +826,10 @@ export class RCDialog extends LitElement {
     }
 
     const bounds = getVisualViewportBounds($window);
+    const { height } = this._keyboardViewport.next(
+      bounds,
+      isTextEntryFocused(this.ownerDocument),
+    );
     // The bounds are viewport pixels, but lengths set here are zoomed again
     // when an ancestor such as the root has a CSS zoom (an app-wide interface
     // size), so convert them to the dialog's own pixels. Read the zoom from
@@ -829,7 +842,7 @@ export class RCDialog extends LitElement {
     this.style.setProperty('--rc-dialog-visual-viewport-left', px(bounds.left));
     this.style.setProperty('--rc-dialog-visual-viewport-top', px(bounds.top));
     this.style.setProperty('--rc-dialog-visual-viewport-width', px(bounds.width));
-    this.style.setProperty('--rc-dialog-visual-viewport-height', px(bounds.height));
+    this.style.setProperty('--rc-dialog-visual-viewport-height', px(height));
   };
 
   private _syncVisualViewportTracking(): void {
@@ -869,6 +882,7 @@ export class RCDialog extends LitElement {
     }
 
     this._trackingVisualViewport = false;
+    this._keyboardViewport.reset();
     this.style.removeProperty('--rc-dialog-visual-viewport-left');
     this.style.removeProperty('--rc-dialog-visual-viewport-top');
     this.style.removeProperty('--rc-dialog-visual-viewport-width');

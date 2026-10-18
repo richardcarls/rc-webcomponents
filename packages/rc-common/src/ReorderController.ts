@@ -3,6 +3,7 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
 import { cssZoom } from './cssZoom.js';
 import { findNearestScrollAncestor } from './findNearestScrollAncestor.js';
+import { deepActiveElement } from './softKeyboard.js';
 import {
   arrowKeys,
   getScrollOffset,
@@ -882,16 +883,6 @@ function announcerRootFor($host: HTMLElement): ParentNode & Node {
   }
 
   return $host.ownerDocument.body;
-}
-
-function deepActiveElement(document: Document): Element | null {
-  let $active = document.activeElement;
-
-  while ($active?.shadowRoot?.activeElement) {
-    $active = $active.shadowRoot.activeElement;
-  }
-
-  return $active;
 }
 
 export default ReorderController;
