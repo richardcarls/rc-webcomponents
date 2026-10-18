@@ -21,6 +21,7 @@ The tracked baseline records these initial sizes in decimal kB:
 | Entry                               | Initial gzip | Initial Brotli |
 | ----------------------------------- | -----------: | -------------: |
 | `@rcarls/rc-button/define`          |      10.8 kB |         9.7 kB |
+| `@rcarls/rc-dialog/define`          |      11.7 kB |        10.5 kB |
 | `@rcarls/rc-select/define`          |      29.1 kB |        25.5 kB |
 | `@rcarls/rc-textarea/define`        |      30.5 kB |        26.7 kB |
 | `@rcarls/rc-markdown-editor/define` |      76.9 kB |        65.2 kB |
@@ -31,10 +32,12 @@ The tracked baseline records these initial sizes in decimal kB:
 | Substrate theme CSS                 |      13.2 kB |        10.9 kB |
 | Windows 3.1 theme CSS               |      18.7 kB |        15.3 kB |
 
-`rc-select` loads its dialog popup and selected-value chips as lazy chunks the
-first time `popup-mode="dialog"` or `multiple` needs them, and keeps dialog move
-and resize code in a lazy chunk it never loads, since its dialog popup does not
-move or resize. The complete raw, gzip, Brotli, and chunk-count data lives in
+`rc-dialog` loads its move and resize code as a lazy chunk the first time
+`movable`, `move-handle`, or `resize` enables it. `rc-select` loads its dialog
+popup and selected-value chips as lazy chunks the first time
+`popup-mode="dialog"` or `multiple` needs them, and keeps dialog move and resize
+code in a lazy chunk it never loads, since its dialog popup does not move or
+resize. The complete raw, gzip, Brotli, and chunk-count data lives in
 `performance-budgets.json`. Each byte budget allows five percent or 1 kB above
 the recorded measurement, whichever is larger; chunk counts may not grow
 without an intentional baseline update.

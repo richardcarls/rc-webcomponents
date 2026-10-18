@@ -12,6 +12,17 @@
       "initialChunks": 1,
       "lazyChunks": 0
     },
+    "dialog": {
+      "initialRaw": 40678,
+      "initialGzip": 11691,
+      "initialBrotli": 10511,
+      "totalRaw": 77117,
+      "totalGzip": 20151,
+      "totalBrotli": 17958,
+      "largestLazyGzip": 8460,
+      "initialChunks": 2,
+      "lazyChunks": 1
+    },
     "select": {
       "initialRaw": 111664,
       "initialGzip": 29129,
@@ -132,6 +143,15 @@
       "largestLazyGzip": 1024,
       "initialChunks": 1,
       "lazyChunks": 0
+    },
+    "dialog": {
+      "initialGzip": 12715,
+      "initialBrotli": 11535,
+      "totalGzip": 21175,
+      "totalBrotli": 18982,
+      "largestLazyGzip": 9484,
+      "initialChunks": 2,
+      "lazyChunks": 1
     },
     "select": {
       "initialGzip": 30586,
