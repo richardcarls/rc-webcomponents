@@ -3,7 +3,7 @@ import { state } from 'lit/decorators.js';
 
 import { isFocusable, type FocusableElement } from './isFocusable.js';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- TypeScript mixins require an any[] constructor
 type Constructor<T = object> = new (...args: any[]) => T;
 
 /**

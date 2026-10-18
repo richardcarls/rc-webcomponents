@@ -1304,7 +1304,7 @@ export class RCTextarea extends LitElement {
    * API stays accurate across render frames without needing to be rebuilt.
    */
   protected _buildPluginApi(): RCTextareaPluginAPI {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- getters below rebind this
     const component = this;
 
     return {
