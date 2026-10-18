@@ -91,5 +91,3 @@ class KeyboardInteractionDirective extends AsyncDirective {
 
 export const keyInteraction = directive(KeyboardInteractionDirective);
 export type { KeyboardInteractionDirective };
-
-export default keyInteraction;

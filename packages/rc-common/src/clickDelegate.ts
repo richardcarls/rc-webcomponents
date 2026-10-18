@@ -6,14 +6,9 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
  * alone — the descendant already handles its own click (natively, or via
  * its own listener), so forwarding it too would double-handle it.
  */
-export const DEFAULT_INTERACTIVE_SELECTOR =
+const DEFAULT_INTERACTIVE_SELECTOR =
   'a[href], button, input, select, textarea, summary, [role="button"], [role="link"], ' +
   '[contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"])';
-
-export interface InteractiveDescendantOptions {
-  /** Selector for descendants that already handle their own clicks. */
-  interactiveSelector?: string;
-}
 
 /**
  * True when `event`'s composed path already passes through an interactive
@@ -24,23 +19,12 @@ export interface InteractiveDescendantOptions {
  * the light tree the same way regardless of which shadow boundaries it
  * crosses, so this works whether `host` renders the descendant directly or
  * receives it through a slot.
- *
- * @example
- * ```ts
- * host.addEventListener('click', (event) => {
- *   if (!isEventFromInteractiveDescendant(event, host)) {
- *     openDetails();
- *   }
- * });
- * ```
  */
-export function isEventFromInteractiveDescendant(
+function isEventFromInteractiveDescendant(
   event: Event,
   host: HTMLElement,
-  options: InteractiveDescendantOptions = {},
+  selector: string,
 ): boolean {
-  const selector = options.interactiveSelector ?? DEFAULT_INTERACTIVE_SELECTOR;
-
   for (const entry of event.composedPath()) {
     if (entry === host) {
       return false;
@@ -54,15 +38,19 @@ export function isEventFromInteractiveDescendant(
   return false;
 }
 
-export interface DelegateClickOptions extends InteractiveDescendantOptions {
+export interface ClickDelegateControllerOptions {
+  /** Resolves the element to forward qualifying host clicks to. */
+  target: () => HTMLElement | null | undefined;
   /** Skip delegation entirely, e.g. while the host is disabled. */
-  disabled?: boolean;
+  disabled?: () => boolean;
+  /** Selector for descendants that already handle their own clicks. */
+  interactiveSelector?: string;
 }
 
 /**
- * Forwards `event` to `target` via a genuine `.click()` call — but only for
- * a plain, primary-button click on `host` that hasn't already landed on one
- * of its own interactive descendants. Returns whether it delegated.
+ * Forwards a host's plain, primary-button clicks to a target via a genuine
+ * `.click()` call, for the lifetime of the host's connection, unless the
+ * click already landed on one of the host's own interactive descendants.
  *
  * This is the "stretched link" / "block link" pattern's click-anywhere-in-
  * the-container half, implemented at the JS layer rather than via a CSS
@@ -75,7 +63,7 @@ export interface DelegateClickOptions extends InteractiveDescendantOptions {
  * whatever shadow-internal wrapper establishes that block (not the host you
  * meant to fill), and clipped by any `overflow` on an ancestor between the
  * two — both true of `rc-list-item`'s content region, which needs its own
- * `overflow: hidden` for label truncation. This function is for exactly
+ * `overflow: hidden` for label truncation. This controller is for exactly
  * that case: a host that can't offer a working CSS overlay for its slotted
  * content.
  *
@@ -92,56 +80,6 @@ export interface DelegateClickOptions extends InteractiveDescendantOptions {
  *   - Make `target` itself keyboard-reachable. `target` needs its own
  *     tab stop regardless (a native `<a>`/`<button>`) — this only extends
  *     *pointer* reach, the same as the CSS technique would.
- *
- * @example
- * ```ts
- * host.addEventListener('click', (event) => {
- *   delegateClickTo(event, host, host.querySelector(':scope > a[href]'));
- * });
- * ```
- */
-export function delegateClickTo(
-  event: MouseEvent,
-  host: HTMLElement,
-  target: HTMLElement | null | undefined,
-  options: DelegateClickOptions = {},
-): boolean {
-  if (
-    !target ||
-    options.disabled ||
-    event.defaultPrevented ||
-    event.button !== 0 ||
-    event.altKey ||
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    isEventFromInteractiveDescendant(event, host, options)
-  ) {
-    return false;
-  }
-
-  // The original click landed on plain dead space, so it had no default
-  // action to begin with — this just marks it consumed for any other
-  // listener further up the tree that checks `defaultPrevented`, and
-  // guards against the unusual case of `host` itself sitting inside an
-  // ancestor form/label where a plain click would otherwise do something.
-  event.preventDefault();
-  target.click();
-
-  return true;
-}
-
-export interface ClickDelegateControllerOptions extends InteractiveDescendantOptions {
-  /** Resolves the element to forward qualifying host clicks to. */
-  target: () => HTMLElement | null | undefined;
-  /** Skip delegation entirely, e.g. while the host is disabled. */
-  disabled?: () => boolean;
-}
-
-/**
- * Wires {@link delegateClickTo} to a host's own clicks for the lifetime of
- * its connection — the ergonomic entry point for a `LitElement` host; call
- * {@link delegateClickTo} directly outside a `ReactiveController` context.
  *
  * `target` and `disabled` are getters, not static values, so a host can
  * resolve its target dynamically (an `action-target` id-ref looked up by
@@ -180,11 +118,33 @@ export class ClickDelegateController implements ReactiveController {
   }
 
   private readonly _handleClick = (event: Event): void => {
-    delegateClickTo(event as MouseEvent, this._host, this._options.target(), {
-      interactiveSelector: this._options.interactiveSelector,
-      disabled: this._options.disabled?.(),
-    });
+    const target = this._options.target();
+    const click = event as MouseEvent;
+
+    if (
+      !target ||
+      this._options.disabled?.() ||
+      click.defaultPrevented ||
+      click.button !== 0 ||
+      click.altKey ||
+      click.ctrlKey ||
+      click.metaKey ||
+      click.shiftKey ||
+      isEventFromInteractiveDescendant(
+        click,
+        this._host,
+        this._options.interactiveSelector ?? DEFAULT_INTERACTIVE_SELECTOR,
+      )
+    ) {
+      return;
+    }
+
+    // The original click landed on plain dead space, so it had no default
+    // action to begin with — this just marks it consumed for any other
+    // listener further up the tree that checks `defaultPrevented`, and
+    // guards against the unusual case of the host itself sitting inside an
+    // ancestor form/label where a plain click would otherwise do something.
+    click.preventDefault();
+    target.click();
   };
 }
-
-export default ClickDelegateController;

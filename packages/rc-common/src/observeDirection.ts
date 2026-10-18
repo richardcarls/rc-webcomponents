@@ -48,5 +48,3 @@ export function observeDirection(listener: DirectionListener): () => void {
     }
   };
 }
-
-export default observeDirection;

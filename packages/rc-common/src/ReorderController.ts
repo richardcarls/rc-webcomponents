@@ -884,5 +884,3 @@ function announcerRootFor($host: HTMLElement): ParentNode & Node {
 
   return $host.ownerDocument.body;
 }
-
-export default ReorderController;

@@ -84,5 +84,3 @@ export class FlowController implements ReactiveController {
     }
   }
 }
-
-export default FlowController;

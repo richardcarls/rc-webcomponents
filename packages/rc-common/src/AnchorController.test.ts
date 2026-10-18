@@ -3,7 +3,8 @@ import type { ReactiveControllerHost } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { AnchorController, resolveAnchorPlacement } from './AnchorController.js';
+import { AnchorController } from './AnchorController.js';
+import { resolveAnchorPlacement } from './anchorPlacement.js';
 import { HORIZONTAL_LTR_FLOW, type Flow } from './flow.js';
 
 type FakeHost = ReactiveControllerHost;

@@ -239,5 +239,3 @@ class KeyboardNavigationDirective extends AsyncDirective {
 
 export const keyNavigation = directive(KeyboardNavigationDirective);
 export type { KeyboardNavigationDirective };
-
-export default keyNavigation;

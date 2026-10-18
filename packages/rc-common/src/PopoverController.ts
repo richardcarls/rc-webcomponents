@@ -1,7 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 /** Private visibility marker used only when the native Popover API cannot open a surface. */
-export const POPOVER_FALLBACK_OPEN = 'data-rc-popover-fallback-open';
+const POPOVER_FALLBACK_OPEN = 'data-rc-popover-fallback-open';
 
 export interface PopoverControllerOptions {
   /** The authored or rendered element with `popover="manual"`. */

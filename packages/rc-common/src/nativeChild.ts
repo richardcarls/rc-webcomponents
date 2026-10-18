@@ -29,14 +29,6 @@ export interface NativeChildControllerOptions<E extends Element> {
   observe?: boolean | MutationObserverInit;
 }
 
-/** Returns the first matching child under `host`, or `null` when absent. */
-export function getDirectChild<E extends Element = Element>(
-  host: ParentNode,
-  selector: string,
-): E | null {
-  return host.querySelector<E>(selector);
-}
-
 /** Returns all matching children under `host`. */
 export function getDirectChildren<E extends Element = Element>(
   host: ParentNode,
@@ -110,7 +102,7 @@ export class NativeChildController<E extends Element = Element> implements React
   /** Re-read the child from the host and invoke `onChange` when it changes. */
   sync(): E | null {
     const previous = this._child;
-    const next = getDirectChild<E>(this._host, this._options.selector);
+    const next = this._host.querySelector<E>(this._options.selector);
 
     this._child = next;
 
@@ -120,5 +112,3 @@ export class NativeChildController<E extends Element = Element> implements React
     return next;
   }
 }
-
-export default NativeChildController;
