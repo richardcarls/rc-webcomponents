@@ -29,8 +29,7 @@ export interface AnchorOptions {
   /**
    * The LitElement shadow host. When provided, positioning CSS is injected into
    * the shadow root's adoptedStyleSheets so it reaches shadow-DOM floating elements,
-   * including those promoted to the popover top layer. The polyfill is invoked
-   * with roots: [shadowHost] to scope its traversal to this shadow root.
+   * including those promoted to the popover top layer.
    */
   shadowHost?: HTMLElement | (() => HTMLElement | null);
 }
@@ -103,40 +102,11 @@ const INLINE_FLIP_PLACEMENT: Record<PhysicalAnchorPlacement, PhysicalAnchorPlace
 
 // Chrome 125+ only — full correct implementation including shadow DOM + popover top layer.
 // Firefox 134+ reports position-try-fallbacks support but lacks anchor-size() and has broken
-// shadow DOM anchor rendering; exclude it so the polyfill/fallback runs instead.
+// shadow DOM anchor rendering; exclude it so the script fallback runs instead.
 const _hasNativeAnchor =
   typeof CSS !== 'undefined' &&
   CSS.supports('position-try-fallbacks: flip-block') &&
   CSS.supports('min-width: anchor-size(width)');
-
-// ---- Polyfill ---------------------------------------------------------------
-
-type PolyfillFn = (opts?: {
-  roots?: (Document | HTMLElement)[];
-  useAnimationFrame?: boolean;
-  [key: string]: unknown;
-}) => Promise<unknown>;
-
-let _polyfillFn: PolyfillFn | null = null;
-let _polyfillPromise: Promise<PolyfillFn | null> | null = null;
-
-function _loadPolyfill(): Promise<PolyfillFn | null> {
-  if (_hasNativeAnchor) {
-    return Promise.resolve(null);
-  }
-
-  if (!_polyfillPromise) {
-    _polyfillPromise = import('@oddbird/css-anchor-positioning/fn')
-      .then((mod) => {
-        _polyfillFn = mod.default as unknown as PolyfillFn;
-
-        return _polyfillFn;
-      })
-      .catch(() => null);
-  }
-
-  return _polyfillPromise;
-}
 
 // ---- Controller -------------------------------------------------------------
 
@@ -144,13 +114,14 @@ let _uid = 0;
 
 /**
  * Positions a floating element relative to an anchor element using CSS
- * Anchor Positioning (native-first, polyfill on unsupported browsers via
- * `@oddbird/css-anchor-positioning`).
+ * Anchor Positioning where the browser supports it fully, and script
+ * positioning with the same placement and flip rules elsewhere. The script
+ * fallback re-runs when the page scrolls or the viewport, anchor, or
+ * floating element resizes.
  *
  * For shadow DOM components (pass `shadowHost`), positioning CSS is injected
  * into the shadow root's `adoptedStyleSheets` so it reaches floating elements
- * including those promoted to the popover top layer. The polyfill is invoked
- * with `roots: [shadowHost]` to scope its stylesheet traversal correctly.
+ * including those promoted to the popover top layer.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning
  */
@@ -179,8 +150,19 @@ export class AnchorController implements ReactiveController {
     this._scheduleClamp();
   };
 
+  // Scroll, resize, and intersection changes move the anchor, which the
+  // script fallback must follow. Attribute mutations only re-clamp, since the
+  // fallback's own inline style writes would otherwise feed back into it.
+  private readonly _handlePositionChange = (): void => {
+    if (!this._usesNativeAnchor() && this._connected && !this._disabled()) {
+      this._positionFallback();
+    }
+
+    this._scheduleClamp();
+  };
+
   private readonly _handleDirectionChange = (): void => {
-    this._applyAndPolyfill();
+    this._applyAndPosition();
   };
 
   constructor(host: ReactiveControllerHost, options: AnchorOptions) {
@@ -191,18 +173,18 @@ export class AnchorController implements ReactiveController {
 
   setOptions(next: Partial<AnchorOptions>): void {
     Object.assign(this._opts, next);
-    this._applyAndPolyfill();
+    this._applyAndPosition();
   }
 
   /** Re-apply positioning after the popup becomes visible or the anchor moves. */
   update(): void {
-    this._applyAndPolyfill();
+    this._applyAndPosition();
   }
 
   hostConnected(): void {
     this._connected = true;
     this._unobserveDirection ??= observeDirection(this._handleDirectionChange);
-    this._applyAndPolyfill();
+    this._applyAndPosition();
   }
 
   hostDisconnected(): void {
@@ -236,22 +218,23 @@ export class AnchorController implements ReactiveController {
     return typeof disabled === 'function' ? disabled() : (disabled ?? false);
   }
 
-  private _applyAndPolyfill(): void {
+  // A method rather than a direct read of the module constant, so tests can
+  // run the script fallback in engines with native support.
+  private _usesNativeAnchor(): boolean {
+    return _hasNativeAnchor;
+  }
+
+  private _applyAndPosition(): void {
     if (!this._connected || !this._apply()) {
       return;
     }
 
-    if (_hasNativeAnchor) {
-      this._startWatchingGeometry();
-      this._scheduleClamp();
-    } else {
-      void this._applyPolyfillOrFallback().then(() => {
-        if (this._connected && !this._disabled()) {
-          this._startWatchingGeometry();
-          this._scheduleClamp();
-        }
-      });
+    if (!this._usesNativeAnchor()) {
+      this._positionFallback();
     }
+
+    this._startWatchingGeometry();
+    this._scheduleClamp();
   }
 
   /**
@@ -358,23 +341,23 @@ export class AnchorController implements ReactiveController {
     const $window = $floating.ownerDocument.defaultView;
     const options = { passive: true, signal: this._geometryAbort.signal };
 
-    $floating.ownerDocument.addEventListener('scroll', this._handleGeometryChange, {
+    $floating.ownerDocument.addEventListener('scroll', this._handlePositionChange, {
       ...options,
       capture: true,
     });
 
-    $window?.addEventListener('resize', this._handleGeometryChange, options);
-    $window?.visualViewport?.addEventListener('resize', this._handleGeometryChange, options);
-    $window?.visualViewport?.addEventListener('scroll', this._handleGeometryChange, options);
+    $window?.addEventListener('resize', this._handlePositionChange, options);
+    $window?.visualViewport?.addEventListener('resize', this._handlePositionChange, options);
+    $window?.visualViewport?.addEventListener('scroll', this._handlePositionChange, options);
 
     if (typeof ResizeObserver === 'function') {
-      this._resizeObserver = new ResizeObserver(this._handleGeometryChange);
+      this._resizeObserver = new ResizeObserver(this._handlePositionChange);
       this._resizeObserver.observe($anchor);
       this._resizeObserver.observe($floating);
     }
 
     if (typeof IntersectionObserver === 'function') {
-      this._intersectionObserver = new IntersectionObserver(this._handleGeometryChange, {
+      this._intersectionObserver = new IntersectionObserver(this._handlePositionChange, {
         threshold: [0, 1],
       });
 
@@ -507,22 +490,6 @@ export class AnchorController implements ReactiveController {
     }
   }
 
-  private async _applyPolyfillOrFallback(): Promise<void> {
-    const fn = await _loadPolyfill();
-
-    if (!this._connected || this._disabled()) {
-      return;
-    }
-
-    const host = this._shadowHost();
-
-    if (fn) {
-      await fn({ roots: host ? [host] : undefined, useAnimationFrame: false });
-    } else {
-      this._positionFallback();
-    }
-  }
-
   /**
    * The configured placement resolved against the anchor's writing mode and
    * direction. Read at every apply, since a `dir` change fires no event.
@@ -620,8 +587,8 @@ export class AnchorController implements ReactiveController {
   }
 
   /**
-   * Hand-rolled positioning for browsers where neither native anchor
-   * positioning nor the polyfill is usable. Handles all four placement
+   * Hand-rolled positioning for browsers without full native anchor
+   * positioning. Handles all four placement
    * sides (not just top/bottom — a side flyout like a cascading submenu
    * needs its primary axis to be horizontal, offsetting by the anchor's
    * own width/height rather than always stacking below it), with the

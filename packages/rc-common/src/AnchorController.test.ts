@@ -37,13 +37,14 @@ async function renderAnchorAndFloating(
 
 // _positionFallback and _clampToViewport are private: they're pure DOM-rect
 // math with no public surface of their own, and both are specifically the
-// paths that only naturally run in browsers lacking full native/polyfill
+// paths that only naturally run in browsers lacking full native
 // anchor-positioning support (or, for the clamp, ones whose native support
 // resolves the base placement but doesn't correctly flip it) — conditions
 // this project's own browser test matrix can't reliably reproduce. Reaching
 // into them directly is the only way to exercise this logic in isolation.
 interface PrivateAnchorController {
   _clampLoopActive: boolean;
+  _usesNativeAnchor(): boolean;
   _positionFallback(): void;
   _clampToViewport(): void;
   _scheduleClamp(): void;
@@ -457,7 +458,7 @@ test('the applied positioning aligns a block-end-start popup to the right edge i
     offset: 0,
   });
 
-  // Whichever path this engine takes (native, polyfill, or fallback), the
+  // Whichever path this engine takes (native or fallback), the
   // rendered result must line up with the anchor's logical start edge.
   ctl.hostConnected();
 
@@ -466,6 +467,40 @@ test('the applied positioning aligns a block-end-start popup to the right edge i
     const trigger = anchor.getBoundingClientRect();
 
     expect(popup.right).toBeCloseTo(trigger.right, 0);
+    expect(popup.top).toBeCloseTo(trigger.bottom, 0);
+  });
+
+  ctl.hostDisconnected();
+});
+
+test('the script fallback follows its anchor when the viewport changes', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    'left: 100px; top: 100px; width: 120px; height: 40px;',
+    'width: 200px; height: 80px;',
+  );
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    placement: 'block-end-start',
+    offset: 0,
+  });
+
+  // Run the fallback even where this engine supports anchor positioning.
+  asPrivate(ctl)._usesNativeAnchor = () => false;
+  ctl.hostConnected();
+
+  await vi.waitFor(() => {
+    expect(floating.getBoundingClientRect().left).toBeCloseTo(100, 0);
+  });
+
+  anchor.style.left = '160px';
+  window.dispatchEvent(new Event('resize'));
+
+  await vi.waitFor(() => {
+    const popup = floating.getBoundingClientRect();
+    const trigger = anchor.getBoundingClientRect();
+
+    expect(popup.left).toBeCloseTo(trigger.left, 0);
     expect(popup.top).toBeCloseTo(trigger.bottom, 0);
   });
 

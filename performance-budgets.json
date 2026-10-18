@@ -13,15 +13,15 @@
       "lazyChunks": 0
     },
     "select": {
-      "initialRaw": 161892,
-      "initialGzip": 39818,
-      "initialBrotli": 34047,
-      "totalRaw": 366525,
-      "totalGzip": 88884,
-      "totalBrotli": 76461,
-      "largestLazyGzip": 40912,
+      "initialRaw": 161634,
+      "initialGzip": 39720,
+      "initialBrotli": 33984,
+      "totalRaw": 197014,
+      "totalGzip": 47876,
+      "totalBrotli": 41154,
+      "largestLazyGzip": 8156,
       "initialChunks": 2,
-      "lazyChunks": 2
+      "lazyChunks": 1
     },
     "textarea": {
       "initialRaw": 115828,
@@ -35,37 +35,37 @@
       "lazyChunks": 0
     },
     "markdownEditor": {
-      "initialRaw": 433116,
-      "initialGzip": 106274,
-      "initialBrotli": 88676,
-      "totalRaw": 637758,
-      "totalGzip": 155349,
-      "totalBrotli": 131101,
-      "largestLazyGzip": 40912,
+      "initialRaw": 432867,
+      "initialGzip": 106175,
+      "initialBrotli": 88542,
+      "totalRaw": 468256,
+      "totalGzip": 114337,
+      "totalBrotli": 95714,
+      "largestLazyGzip": 8162,
       "initialChunks": 2,
-      "lazyChunks": 2
+      "lazyChunks": 1
     },
     "aggregateClasses": {
-      "initialRaw": 895017,
-      "initialGzip": 206136,
-      "initialBrotli": 159213,
-      "totalRaw": 1064270,
-      "totalGzip": 247048,
-      "totalBrotli": 194461,
-      "largestLazyGzip": 40912,
+      "initialRaw": 894767,
+      "initialGzip": 206067,
+      "initialBrotli": 159305,
+      "totalRaw": 894767,
+      "totalGzip": 206067,
+      "totalBrotli": 159305,
+      "largestLazyGzip": 0,
       "initialChunks": 1,
-      "lazyChunks": 1
+      "lazyChunks": 0
     },
     "aggregateDefine": {
-      "initialRaw": 898006,
-      "initialGzip": 205938,
-      "initialBrotli": 159655,
-      "totalRaw": 1067259,
-      "totalGzip": 246850,
-      "totalBrotli": 194903,
-      "largestLazyGzip": 40912,
+      "initialRaw": 897756,
+      "initialGzip": 205846,
+      "initialBrotli": 159503,
+      "totalRaw": 897756,
+      "totalGzip": 205846,
+      "totalBrotli": 159503,
+      "largestLazyGzip": 0,
       "initialChunks": 1,
-      "lazyChunks": 1
+      "lazyChunks": 0
     },
     "aggregateSubpathDefine": {
       "initialRaw": 37714,
@@ -134,13 +134,13 @@
       "lazyChunks": 0
     },
     "select": {
-      "initialGzip": 41809,
-      "initialBrotli": 35750,
-      "totalGzip": 93329,
-      "totalBrotli": 80285,
-      "largestLazyGzip": 42958,
+      "initialGzip": 41706,
+      "initialBrotli": 35684,
+      "totalGzip": 50270,
+      "totalBrotli": 43212,
+      "largestLazyGzip": 9180,
       "initialChunks": 2,
-      "lazyChunks": 2
+      "lazyChunks": 1
     },
     "textarea": {
       "initialGzip": 32015,
@@ -152,31 +152,31 @@
       "lazyChunks": 0
     },
     "markdownEditor": {
-      "initialGzip": 111588,
-      "initialBrotli": 93110,
-      "totalGzip": 163117,
-      "totalBrotli": 137657,
-      "largestLazyGzip": 42958,
+      "initialGzip": 111484,
+      "initialBrotli": 92970,
+      "totalGzip": 120054,
+      "totalBrotli": 100500,
+      "largestLazyGzip": 9186,
       "initialChunks": 2,
-      "lazyChunks": 2
+      "lazyChunks": 1
     },
     "aggregateClasses": {
-      "initialGzip": 216443,
-      "initialBrotli": 167174,
-      "totalGzip": 259401,
-      "totalBrotli": 204185,
-      "largestLazyGzip": 42958,
+      "initialGzip": 216371,
+      "initialBrotli": 167271,
+      "totalGzip": 216371,
+      "totalBrotli": 167271,
+      "largestLazyGzip": 1024,
       "initialChunks": 1,
-      "lazyChunks": 1
+      "lazyChunks": 0
     },
     "aggregateDefine": {
-      "initialGzip": 216235,
-      "initialBrotli": 167638,
-      "totalGzip": 259193,
-      "totalBrotli": 204649,
-      "largestLazyGzip": 42958,
+      "initialGzip": 216139,
+      "initialBrotli": 167479,
+      "totalGzip": 216139,
+      "totalBrotli": 167479,
+      "largestLazyGzip": 1024,
       "initialChunks": 1,
-      "lazyChunks": 1
+      "lazyChunks": 0
     },
     "aggregateSubpathDefine": {
       "initialGzip": 11874,
