@@ -17,8 +17,11 @@ interface UnifiedProcessor {
 
 function visit(node: UnistNode, visitor: (n: UnistNode) => void): void {
   visitor(node);
+
   if (node.children) {
-    for (const child of node.children) visit(child, visitor);
+    for (const child of node.children) {
+      visit(child, visitor);
+    }
   }
 }
 
@@ -52,14 +55,17 @@ export function createUnifiedPlugin(
     update(value, api) {
       const tree = processor.parse(value);
       const decorations: DecorationInput[] = [];
+
       visit(tree, (node) => {
         const style = nodeTypeToStyle[node.type];
         const start = node.position?.start.offset;
         const end = node.position?.end.offset;
+
         if (style && start !== undefined && end !== undefined) {
           decorations.push({ type: 'mark', from: start, to: end, ...style });
         }
       });
+
       api.setDecorations(decorations);
     },
   };

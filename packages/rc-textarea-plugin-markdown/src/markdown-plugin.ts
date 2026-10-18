@@ -117,14 +117,13 @@ function buildPlugin(options: MarkdownPluginOptions = {}): RCTextareaPlugin & {
 
       const headings = tree.children.filter((node) => node.type === 'heading');
 
-      for (let index = 0; index < headings.length; index++) {
-        const heading = headings[index]!;
+      for (const [index, heading] of headings.entries()) {
         const fromLine = (heading.position?.end.line ?? 0) + 1;
         let toLine = lines.length;
 
-        for (let next = index + 1; next < headings.length; next++) {
-          if (headings[next]!.depth <= heading.depth) {
-            toLine = headings[next]!.position!.start.line - 1;
+        for (const later of headings.slice(index + 1)) {
+          if (later.depth <= heading.depth) {
+            toLine = (later.position?.start.line ?? toLine + 1) - 1;
 
             break;
           }

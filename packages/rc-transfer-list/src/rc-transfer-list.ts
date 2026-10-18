@@ -9,7 +9,6 @@ import {
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 import type { ListboxOption, RCListbox, RCListboxChangeEvent } from '@rcarls/rc-listbox';
-
 import '@rcarls/rc-listbox/define';
 import '@rcarls/rc-toolbar/define';
 
@@ -601,6 +600,7 @@ export class RCTransferList extends LitElement {
 
     if (ev.detail.reason === 'action') {
       e.stopPropagation();
+
       return;
     }
 
@@ -677,7 +677,12 @@ export class RCTransferList extends LitElement {
    * preserve user-determined order in form serialisation.
    */
   private _reorderSelectOptions(movedValues: Set<string>, delta: number): void {
-    const $select = this._$select!;
+    const $select = this._$select;
+
+    if (!$select) {
+      return;
+    }
+
     const $options = Array.from($select.options).filter(($option) => $option.selected);
 
     const start = delta < 0 ? 1 : $options.length - 2;

@@ -45,7 +45,9 @@ export function warnMissingDirectChild(
   host: Element,
   options: MissingDirectChildWarningOptions,
 ): boolean {
-  if (getDirectChildren(host, options.selector).length >= (options.minimum ?? 1)) return false;
+  if (getDirectChildren(host, options.selector).length >= (options.minimum ?? 1)) {
+    return false;
+  }
 
   const hostName = options.hostName ?? host.localName;
   const childDescription = options.childDescription ?? options.selector.replace(':scope > ', '');
@@ -85,9 +87,12 @@ export class NativeChildController<E extends Element = Element> implements React
   hostConnected(): void {
     this.sync();
 
-    if (!this._options.observe) return;
+    if (!this._options.observe) {
+      return;
+    }
 
     this._observer ??= new MutationObserver(() => this.sync());
+
     const observerOptions =
       this._options.observe === true ? { childList: true } : this._options.observe;
 
@@ -106,8 +111,13 @@ export class NativeChildController<E extends Element = Element> implements React
 
     this._child = next;
 
-    if (!next) this._options.onMissing?.(this._host);
-    if (next !== previous) this._options.onChange?.(next, previous);
+    if (!next) {
+      this._options.onMissing?.(this._host);
+    }
+
+    if (next !== previous) {
+      this._options.onChange?.(next, previous);
+    }
 
     return next;
   }

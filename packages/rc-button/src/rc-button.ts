@@ -303,11 +303,13 @@ export class RCButton extends LitElement {
   }
 
   protected get _progressPercentage(): number | undefined {
-    if (!this.progress || !Number.isFinite(this.progressValue)) {
+    const value = this.progressValue;
+
+    if (!this.progress || value === undefined || !Number.isFinite(value)) {
       return undefined;
     }
 
-    return Math.round(Math.min(100, Math.max(0, this.progressValue!)));
+    return Math.round(Math.min(100, Math.max(0, value)));
   }
 
   protected _handleSlotChange(): void {

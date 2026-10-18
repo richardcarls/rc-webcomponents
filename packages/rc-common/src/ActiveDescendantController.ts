@@ -91,22 +91,31 @@ export class ActiveDescendantController implements ReactiveController {
    */
   navigate(delta: 1 | -1): void {
     const items = this._opts.items();
-    if (items.length === 0) return;
+
+    if (items.length === 0) {
+      return;
+    }
 
     const wrap = this._opts.wrap ?? true;
     let index = this._activeIndex < 0 ? (delta > 0 ? -1 : items.length) : this._activeIndex;
 
     const max = items.length;
     let steps = 0;
+
     do {
       index += delta;
+
       if (wrap) {
         index = ((index % max) + max) % max;
       } else {
         index = Math.max(0, Math.min(max - 1, index));
       }
+
       steps++;
-      if (!this._isSkipped(items[index])) break;
+
+      if (!this._isSkipped(items[index])) {
+        break;
+      }
     } while (steps < max);
 
     this._setActive(items[index] ?? null, index);
@@ -116,34 +125,47 @@ export class ActiveDescendantController implements ReactiveController {
   navigateToFirst(): void {
     const items = this._opts.items();
     const index = items.findIndex((el) => !this._isSkipped(el));
-    if (index >= 0) this._setActive(items[index], index);
+
+    if (index >= 0) {
+      this._setActive(items[index], index);
+    }
   }
 
   /** Move the virtual cursor to the last non-skipped item. */
   navigateToLast(): void {
     const items = this._opts.items();
     let index = -1;
+
     for (let i = items.length - 1; i >= 0; i--) {
       if (!this._isSkipped(items[i])) {
         index = i;
         break;
       }
     }
-    if (index >= 0) this._setActive(items[index], index);
+
+    if (index >= 0) {
+      this._setActive(items[index], index);
+    }
   }
 
   /** Move the virtual cursor to the item at `index`. */
   navigateTo(index: number): void {
     const items = this._opts.items();
     const item = items[index];
-    if (item && !this._isSkipped(item)) this._setActive(item, index);
+
+    if (item && !this._isSkipped(item)) {
+      this._setActive(item, index);
+    }
   }
 
   /** Move the virtual cursor to a specific item reference. */
   navigateToItem(item: Element): void {
     const items = this._opts.items();
     const index = items.indexOf(item);
-    if (index >= 0 && !this._isSkipped(item)) this._setActive(item, index);
+
+    if (index >= 0 && !this._isSkipped(item)) {
+      this._setActive(item, index);
+    }
   }
 
   /**
@@ -156,13 +178,25 @@ export class ActiveDescendantController implements ReactiveController {
     this._activeIndex = -1;
 
     const host = this._opts.host();
-    if (host) host.removeAttribute('aria-activedescendant');
+
+    if (host) {
+      host.removeAttribute('aria-activedescendant');
+    }
   }
 
   private _isSkipped(item: Element): boolean {
-    if (!item) return true;
-    if ((item as HTMLElement).hidden) return true;
-    if (item.getAttribute('aria-disabled') === 'true') return true;
+    if (!item) {
+      return true;
+    }
+
+    if ((item as HTMLElement).hidden) {
+      return true;
+    }
+
+    if (item.getAttribute('aria-disabled') === 'true') {
+      return true;
+    }
+
     return this._opts.isSkipped?.(item) ?? false;
   }
 
@@ -172,10 +206,14 @@ export class ActiveDescendantController implements ReactiveController {
     this._activeIndex = index;
 
     const host = this._opts.host();
-    if (!host) return;
+
+    if (!host) {
+      return;
+    }
 
     if (!item) {
       host.removeAttribute('aria-activedescendant');
+
       return;
     }
 

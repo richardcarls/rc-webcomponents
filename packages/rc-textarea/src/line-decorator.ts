@@ -85,7 +85,9 @@ export function createLineDecoratorPlugin(
     },
 
     destroy() {
-      for (const cleanup of cleanups) cleanup();
+      for (const cleanup of cleanups) {
+        cleanup();
+      }
 
       cleanups.length = 0;
     },
@@ -95,6 +97,7 @@ export function createLineDecoratorPlugin(
       const decorations: DecorationInput[] = [];
 
       let lineStart = 0;
+
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 

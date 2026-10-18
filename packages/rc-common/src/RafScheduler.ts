@@ -131,8 +131,8 @@ export class RafScheduler implements ReactiveController {
    * other scheduler instances. Repeated calls keep only the latest task.
    *
    * @typeParam T - Snapshot returned by `sample` and passed to `apply`.
-   * @param sample - Reads browser state and returns a compact snapshot.
-   * @param apply - Mutates state or DOM from the sampled snapshot.
+   * @param sample - reads browser state and returns a compact snapshot
+   * @param apply - mutates state or DOM from the sampled snapshot
    * @example
    * ```ts
    * scheduler.schedulePhased(

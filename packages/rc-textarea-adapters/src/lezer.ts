@@ -41,12 +41,15 @@ export function createLezerPlugin(
       const tree = parser.parse(value);
       const cursor = tree.cursor();
       const decorations: DecorationInput[] = [];
+
       do {
         const style = nodeTypeToStyle[cursor.type.name];
+
         if (style) {
           decorations.push({ type: 'mark', from: cursor.from, to: cursor.to, ...style });
         }
       } while (cursor.next());
+
       api.setDecorations(decorations);
     },
   };

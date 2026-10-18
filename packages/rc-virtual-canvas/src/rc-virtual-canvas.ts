@@ -341,9 +341,9 @@ export class RCVirtualCanvas extends LitElement {
   /**
    * Scrolls so the content coordinate is at the viewport origin.
    *
-   * @param x - Content x coordinate in CSS pixels
-   * @param y - Content y coordinate in CSS pixels
-   * @param options - Native scroll options passed to scrollTo
+   * @param x - content x coordinate in CSS pixels
+   * @param y - content y coordinate in CSS pixels
+   * @param options - native scroll options passed to scrollTo
    */
   scrollToContent(x: number, y: number, options: ScrollOptions = {}) {
     this._$root.scrollTo({
@@ -360,9 +360,9 @@ export class RCVirtualCanvas extends LitElement {
   /**
    * Scrolls so the content coordinate is centered in the viewport.
    *
-   * @param x - Content x coordinate in CSS pixels
-   * @param y - Content y coordinate in CSS pixels
-   * @param options - Native scroll options passed to scrollTo
+   * @param x - content x coordinate in CSS pixels
+   * @param y - content y coordinate in CSS pixels
+   * @param options - native scroll options passed to scrollTo
    */
   centerOnContent(x: number, y: number, options: ScrollOptions = {}) {
     this.scrollToContent(
@@ -376,8 +376,8 @@ export class RCVirtualCanvas extends LitElement {
    * Converts browser client coordinates to CSS-pixel content coordinates.
    * Canvas backing-store resolution does not change content coordinates.
    *
-   * @param clientX - Browser client x coordinate (e.g. from a pointer event)
-   * @param clientY - Browser client y coordinate
+   * @param clientX - browser client x coordinate (e.g. from a pointer event)
+   * @param clientY - browser client y coordinate
    *
    * @example
    * vc.addEventListener('pointerdown', (e) => {
@@ -399,8 +399,8 @@ export class RCVirtualCanvas extends LitElement {
   /**
    * Converts content coordinates back to browser client coordinates.
    *
-   * @param x - Content x coordinate in CSS pixels
-   * @param y - Content y coordinate in CSS pixels
+   * @param x - content x coordinate in CSS pixels
+   * @param y - content y coordinate in CSS pixels
    *
    * @example
    * const { x, y } = vc.contentToClient(contentX, contentY);
@@ -424,7 +424,7 @@ export class RCVirtualCanvas extends LitElement {
    * schedules renders automatically; calling this with reason `'animation-frame'`
    * is a no-op when `renderMode` is `'viewport-change'`.
    *
-   * @param reason - Render reason reported in the event detail
+   * @param reason - render reason reported in the event detail
    */
   requestRender(reason: RCVirtualCanvasRenderReason = 'manual') {
     this._scheduleRender(reason);
@@ -514,7 +514,7 @@ export class RCVirtualCanvas extends LitElement {
   /**
    * RAF callback. Dispatches `rc-virtual-canvas-render` and re-schedules in continuous mode.
    *
-   * @param time - High-resolution timestamp from `requestAnimationFrame`
+   * @param time - high-resolution timestamp from `requestAnimationFrame`
    */
   protected _update(time: DOMHighResTimeStamp) {
     this._rafHandle = 0;

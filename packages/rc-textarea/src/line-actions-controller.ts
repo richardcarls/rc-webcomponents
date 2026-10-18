@@ -45,6 +45,7 @@ export interface LineActionsOptions {
 
 // Constructed once at module level and shared across all controller instances
 const WIDGET_SHEET = new CSSStyleSheet();
+
 WIDGET_SHEET.replaceSync(`
   .rc-line-actions {
     display: inline-flex;
@@ -266,16 +267,12 @@ export class LineActionsController {
     const lines = value.split('\n');
     let offset = 0;
 
-    for (let i = 0; i < lineIndex && i < lines.length; i++) {
+    for (const line of lines.slice(0, lineIndex)) {
       // +1 for the '\n'
-      offset += lines[i]!.length + 1;
+      offset += line.length + 1;
     }
 
-    if (lineIndex < lines.length) {
-      offset += lines[lineIndex]!.length;
-    }
-
-    return offset;
+    return offset + (lines[lineIndex]?.length ?? 0);
   }
 
   private _showPopover(actions: LineAction[]): void {
@@ -321,6 +318,7 @@ export class LineActionsController {
     const panelHeight = this._popover.offsetHeight || 32;
 
     let top: number;
+
     if (cursorRect) {
       top = cursorRect.bottom + 4;
 
@@ -337,6 +335,7 @@ export class LineActionsController {
     const startsRight = isPhysicalReversed('x', resolveFlow(this._api.host));
 
     let left = startsRight ? hostRect.right - panelWidth : hostRect.left;
+
     left = Math.min(left, window.innerWidth - panelWidth - 8);
     left = Math.max(left, 8);
 

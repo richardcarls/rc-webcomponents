@@ -1,7 +1,5 @@
 import { nothing } from 'lit';
-
 import { PartType, type PartInfo, type ElementPart } from 'lit/directive.js';
-
 import { directive, AsyncDirective } from 'lit/async-directive.js';
 
 import {
@@ -74,7 +72,7 @@ export interface KeyNavigationOptions {
 
 class KeyboardNavigationDirective extends AsyncDirective {
   private _element?: WeakRef<Element>;
-  private _keyDownHandle!: (ev: KeyboardEvent) => any;
+  private _keyDownHandle!: (ev: KeyboardEvent) => void;
   private _callback!: (action: KeyboardNavigationAction) => void;
   private _options: KeyNavigationOptions = {};
   /**
@@ -164,16 +162,24 @@ class KeyboardNavigationDirective extends AsyncDirective {
 
     // Navigation axis
     if (this._options.handleNavAxis !== false) {
-      if (key === navNext) action = e.shiftKey ? 'next-large' : 'next';
-      else if (key === navPrev) action = e.shiftKey ? 'prev-large' : 'prev';
-      else if (key === 'Home') action = 'start';
-      else if (key === 'End') action = 'end';
+      if (key === navNext) {
+        action = e.shiftKey ? 'next-large' : 'next';
+      } else if (key === navPrev) {
+        action = e.shiftKey ? 'prev-large' : 'prev';
+      } else if (key === 'Home') {
+        action = 'start';
+      } else if (key === 'End') {
+        action = 'end';
+      }
     }
 
     // Open axis (perpendicular to navigation)
     if (!action && this._options.handleOpenAxis) {
-      if (key === openFirst) action = 'open-to-first';
-      else if (key === openLast) action = 'open-to-last';
+      if (key === openFirst) {
+        action = 'open-to-first';
+      } else if (key === openLast) {
+        action = 'open-to-last';
+      }
     }
 
     // Enter / Space / Escape
@@ -204,8 +210,8 @@ class KeyboardNavigationDirective extends AsyncDirective {
   }
 
   /**
-   * @param _cb - Callback function invoked with the navigation action
-   * @param _options - Keyboard navigation behavior options.
+   * @param _cb - callback function invoked with the navigation action
+   * @param _options - keyboard navigation behavior options
    */
   render(_cb: (action: KeyboardNavigationAction) => void, _options?: KeyNavigationOptions) {
     return nothing;

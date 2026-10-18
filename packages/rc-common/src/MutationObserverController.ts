@@ -50,10 +50,15 @@ export class MutationObserverController implements ReactiveController {
   }
 
   private _attach(): void {
-    if (this._options.disabled || this._attached) return;
+    if (this._options.disabled || this._attached) {
+      return;
+    }
 
     const target = this._resolveTarget();
-    if (!target) return;
+
+    if (!target) {
+      return;
+    }
 
     this._observer ??= new MutationObserver(this._options.callback);
     this._observer.observe(target, this._options.observerOptions ?? { childList: true });
