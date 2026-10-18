@@ -21,6 +21,7 @@ export * from '@rcarls/rc-menu-button';
 export * from '@rcarls/rc-menubar';
 export * from '@rcarls/rc-navigation-bar';
 export * from '@rcarls/rc-navigation-rail';
+export * from '@rcarls/rc-popover';
 export * from '@rcarls/rc-progress';
 export * from '@rcarls/rc-range-slider';
 export * from '@rcarls/rc-scroller';

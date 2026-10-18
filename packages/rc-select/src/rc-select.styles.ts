@@ -188,7 +188,7 @@ export const selectStyles = css`
      * of this rule measured display: none and opacity: 0 only 300ms into
      * what should have been a 2-second exit fade.
      */
-    [part='listbox']:popover-open {
+    [part='listbox']:is(:popover-open, [data-rc-popover-fallback-open]) {
       opacity: 1;
       transition:
         opacity var(--rc-select-listbox-duration, 150ms)
@@ -197,7 +197,7 @@ export const selectStyles = css`
         display var(--rc-select-listbox-duration, 150ms) allow-discrete;
     }
 
-    [part='listbox']:not(:popover-open) {
+    [part='listbox']:not(:popover-open):not([data-rc-popover-fallback-open]) {
       opacity: 0;
       transition:
         opacity var(--rc-select-listbox-duration, 150ms)
@@ -207,13 +207,13 @@ export const selectStyles = css`
     }
 
     @starting-style {
-      [part='listbox']:popover-open {
+      [part='listbox']:is(:popover-open, [data-rc-popover-fallback-open]) {
         opacity: 0;
       }
     }
   }
 
-  [part='listbox']:not(:popover-open) {
+  [part='listbox']:not(:popover-open):not([data-rc-popover-fallback-open]) {
     display: none;
   }
 

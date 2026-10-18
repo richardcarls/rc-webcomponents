@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { AnchorController, type AnchorPlacement } from '@rcarls/rc-common';
+import { AnchorController, PopoverController, type AnchorPlacement } from '@rcarls/rc-common';
 
 import tooltipStyles from './rc-tooltip.styles.js';
 
@@ -12,11 +12,6 @@ declare global {
 }
 
 export type RCTooltipPlacement = AnchorPlacement;
-
-type PopoverElement = HTMLElement & {
-  hidePopover?: () => void;
-  showPopover?: () => void;
-};
 
 type ContentState = {
   id: string | null;
@@ -127,6 +122,8 @@ export class RCTooltip extends LitElement {
     offset: 4,
     disabled: () => !this._visible,
   });
+
+  private readonly _popover = new PopoverController(this, { element: () => this._$content });
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -346,7 +343,7 @@ export class RCTooltip extends LitElement {
       return;
     }
 
-    this._hidePopover(content);
+    this._popover.sync(false);
 
     if (state.id === null) {
       content.removeAttribute('id');
@@ -464,7 +461,7 @@ export class RCTooltip extends LitElement {
   }
 
   private _openTooltip(): void {
-    const content = this._$content as PopoverElement | null;
+    const content = this._$content;
 
     if (!content) {
       return;
@@ -475,20 +472,7 @@ export class RCTooltip extends LitElement {
     this._applyContentSemantics();
     content.hidden = false;
 
-    let shown = false;
-
-    if (typeof content.showPopover === 'function') {
-      try {
-        content.showPopover();
-        shown = true;
-      } catch {
-        // A partial or rejected Popover API falls back to the explicit state.
-      }
-    }
-
-    if (!shown) {
-      content.hidden = false;
-    }
+    this._popover.sync(true);
 
     this._anchor.update();
   }
@@ -500,24 +484,12 @@ export class RCTooltip extends LitElement {
     this.toggleAttribute('open', false);
 
     if (content) {
-      this._hidePopover(content);
+      this._popover.sync(false);
       content.hidden = true;
       content.setAttribute('aria-hidden', 'true');
     }
 
     this._anchor.update();
-  }
-
-  private _hidePopover(content: HTMLElement): void {
-    const popover = content as PopoverElement;
-
-    if (typeof popover.hidePopover === 'function') {
-      try {
-        popover.hidePopover();
-      } catch {
-        // The element may already be closed or disconnected.
-      }
-    }
   }
 }
 

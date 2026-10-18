@@ -1,0 +1,117 @@
+---
+title: rc-popover
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { PopoverDemo } from '@site/src/components/ComponentDemos';
+
+# rc-popover
+
+Anchored non-modal surface around a native trigger and consumer-owned content. It supplies
+placement, open-state control, and a Popover API fallback; content semantics and
+interaction remain the author's responsibility.
+
+<AtAGlance
+  packageName="@rcarls/rc-popover"
+  tag="rc-popover"
+  native="Consumer-owned trigger and content"
+  state="Controlled or uncontrolled open state"
+  events={['rc-popover-toggle']}
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-webcomponents/rc-popover/define';
+```
+
+## Usage
+
+Keep the trigger and surface as direct children. Native `popovertarget` and
+`popover` make the panel operable before upgrade. Give interactive content an
+appropriate role and accessible name; `rc-popover` does not assign one.
+
+```html
+<rc-popover placement="block-end-start">
+  <button slot="trigger" type="button" popovertarget="settings-panel" aria-haspopup="dialog">
+    Settings
+  </button>
+  <section
+    slot="content"
+    id="settings-panel"
+    popover
+    role="dialog"
+    aria-labelledby="settings-title"
+  >
+    <h2 id="settings-title">Display settings</h2>
+    <label><input type="checkbox" /> Show details</label>
+  </section>
+</rc-popover>
+```
+
+A button trigger toggles by default. Set `trigger-action="none"` for a panel
+controlled by application state or by optional `open-on-hover` and
+`open-on-focus`. Escape closes an open panel; a click outside also closes it.
+Focus inside the panel stays usable, and Escape returns focus to the trigger
+when focus was in the panel. `open` is a silent controlled host property;
+`default-open` initializes uncontrolled state. User requests dispatch
+`rc-popover-toggle` with `{open}`.
+
+## Material rich tooltip recipe
+
+The Material theme styles this optional composition. Use a named non-modal
+dialog when the content has a link or button; a `role="tooltip"` must not
+contain focusable controls. The `data-rc-material-rich-tooltip` marker is a
+public theme opt-in. Direct `h2`, `p`, and optional `footer` children receive
+title, body, and action spacing. The author controls the action's behavior.
+
+```html
+<rc-popover data-rc-material-rich-tooltip open-on-hover open-on-focus>
+  <button slot="trigger" type="button" popovertarget="feature-tip" aria-haspopup="dialog">
+    Feature info
+  </button>
+  <section
+    slot="content"
+    id="feature-tip"
+    popover
+    role="dialog"
+    aria-labelledby="feature-tip-title"
+  >
+    <h2 id="feature-tip-title">Export presets</h2>
+    <p>Save your export settings for next time.</p>
+    <footer><a href="/help/presets">Learn more</a></footer>
+  </section>
+</rc-popover>
+```
+
+Keep essential instructions visible without hover. For concise, non-interactive
+descriptions, use `rc-tooltip` instead.
+
+## Live demo
+
+<PopoverDemo />
+
+## API
+
+<ApiTable tag="rc-popover" />

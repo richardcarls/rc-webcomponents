@@ -185,7 +185,7 @@ export const adaptiveMenuStyles = css`
     scrollbar-gutter: stable;
   }
 
-  #popup:is(:popover-open, [data-fallback-open]) {
+  #popup:is(:popover-open, [data-rc-popover-fallback-open]) {
     display: flex;
   }
 `;

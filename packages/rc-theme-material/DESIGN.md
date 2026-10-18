@@ -260,6 +260,10 @@ components:
     backgroundColor: '{colors.inverse-surface}'
     textColor: '{colors.inverse-on-surface}'
     rounded: '{rounded.extra-small}'
+  rich-tooltip:
+    backgroundColor: '{colors.surface-container}'
+    textColor: '{colors.on-surface-variant}'
+    rounded: '{rounded.medium}'
 ---
 
 # rc-theme-material design guide
@@ -486,12 +490,12 @@ pane through container queries (see
 [Choosing the adaptive mechanism](#choosing-the-adaptive-mechanism)). Combine
 the two axes like this:
 
-| Shell decision | Rule                                                                                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------ |
-| Navigation     | Bar when width **or** height is compact; rail otherwise; the expanded rail is offered from expanded    |
+| Shell decision      | Rule                                                                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Navigation          | Bar when width **or** height is compact; rail otherwise; the expanded rail is offered from expanded                                                   |
 | Primary route panes | One route page or fragment at compact width or compact height; list-detail begins at expanded width with medium height; a third may appear from large |
-| App bar        | Hides on scroll at compact height; a medium or large title starts compact there                        |
-| FAB            | In the rail's header when a rail shows; otherwise at the bottom inline end                             |
+| App bar             | Hides on scroll at compact height; a medium or large title starts compact there                                                                       |
+| FAB                 | In the rail's header when a rail shows; otherwise at the bottom inline end                                                                            |
 
 List-detail needs height as well as width: a phone in landscape is often
 expanded width (915px and up) but has no room for the parent list beside the
@@ -1227,6 +1231,13 @@ rc-card.card-outlined {
   focused or hovered trigger. Keep the content non-interactive, and use it for
   supplemental context rather than required instructions. The theme maps its
   surface to `inverse-surface` and its text to `inverse-on-surface`.
+- **Rich tooltips.** Use `rc-popover data-rc-material-rich-tooltip` for an
+  explanatory panel with an optional action. Author a named non-modal dialog
+  surface in the `content` slot with direct `h2`, `p`, and optional `footer`
+  children. Set `open-on-hover` and `open-on-focus` only when users can move
+  into the content without closing it. The theme supplies the Material surface,
+  typography, spacing, and 320px maximum width; the authored action retains
+  native button or link behavior.
 
 ### Toolbars
 

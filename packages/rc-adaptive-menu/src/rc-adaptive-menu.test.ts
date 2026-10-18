@@ -520,7 +520,7 @@ test('uses the explicit fallback state when the Popover API is unavailable', asy
   host.openMenu('none');
   await host.updateComplete;
 
-  expect($popup).toHaveAttribute('data-fallback-open');
+  expect($popup).toHaveAttribute('data-rc-popover-fallback-open');
   expect(getComputedStyle($popup!).display).toBe('flex');
 });
 
@@ -563,6 +563,7 @@ test('opens the overflow popup at the block end, inline-end aligned, in vertical
     expect(popup.getBoundingClientRect().right).toBeLessThanOrEqual(
       trigger.getBoundingClientRect().left,
     );
+
     expect(popup.getBoundingClientRect().bottom).toBeCloseTo(
       trigger.getBoundingClientRect().bottom,
       0,

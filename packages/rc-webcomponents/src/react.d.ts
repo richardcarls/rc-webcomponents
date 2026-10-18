@@ -282,6 +282,20 @@ export type RCTooltipPlacement =
   | 'inline-end-start'
   | 'inline-end-end';
 
+export type RCPopoverPlacement = RCTooltipPlacement;
+export type RCPopoverTriggerAction = 'toggle' | 'none';
+export type RCPopoverToggleDetail = { open: boolean };
+
+/** Public API surface of `<rc-popover>`. */
+export type RCPopoverRef = HTMLElement & {
+  open: boolean;
+  defaultOpen: boolean;
+  placement: RCPopoverPlacement;
+  triggerAction: RCPopoverTriggerAction;
+  openOnHover: boolean;
+  openOnFocus: boolean;
+};
+
 /** Public API surface of `<rc-tooltip>`. */
 export type RCTooltipRef = HTMLElement & {
   placement: RCTooltipPlacement;
@@ -955,6 +969,15 @@ declare module 'react' {
         'action-label'?: string;
         duration?: number | string;
         'queue-policy'?: RCSnackbarQueuePolicy;
+      };
+
+      'rc-popover': React.DetailedHTMLProps<React.HTMLAttributes<RCPopoverRef>, RCPopoverRef> & {
+        open?: boolean;
+        'default-open'?: boolean;
+        placement?: RCPopoverPlacement;
+        'trigger-action'?: RCPopoverTriggerAction;
+        'open-on-hover'?: boolean;
+        'open-on-focus'?: boolean;
       };
 
       'rc-tooltip': React.DetailedHTMLProps<React.HTMLAttributes<RCTooltipRef>, RCTooltipRef> & {

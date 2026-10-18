@@ -28,6 +28,7 @@
       "@rcarls/rc-menubar",
       "@rcarls/rc-navigation-bar",
       "@rcarls/rc-navigation-rail",
+      "@rcarls/rc-popover",
       "@rcarls/rc-progress",
       "@rcarls/rc-range-slider",
       "@rcarls/rc-search-bar",

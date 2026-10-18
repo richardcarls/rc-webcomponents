@@ -21,6 +21,7 @@ import '@rcarls/rc-menu-button/define';
 import '@rcarls/rc-menubar/define';
 import '@rcarls/rc-navigation-bar/define';
 import '@rcarls/rc-navigation-rail/define';
+import '@rcarls/rc-popover/define';
 import '@rcarls/rc-progress/define';
 import '@rcarls/rc-range-slider/define';
 import '@rcarls/rc-scroller/define';

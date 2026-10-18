@@ -322,6 +322,18 @@
         "default": "./dist/rc-navigation-rail/define.js"
       }
     },
+    "./rc-popover": {
+      "import": {
+        "types": "./dist/types/rc-popover/index.d.ts",
+        "default": "./dist/rc-popover/index.js"
+      }
+    },
+    "./rc-popover/define": {
+      "import": {
+        "types": "./dist/types/rc-popover/define.d.ts",
+        "default": "./dist/rc-popover/define.js"
+      }
+    },
     "./rc-progress": {
       "import": {
         "types": "./dist/types/rc-progress/index.d.ts",
@@ -548,6 +560,7 @@
     "@rcarls/rc-menubar": "workspace:*",
     "@rcarls/rc-navigation-bar": "workspace:*",
     "@rcarls/rc-navigation-rail": "workspace:*",
+    "@rcarls/rc-popover": "workspace:*",
     "@rcarls/rc-progress": "workspace:*",
     "@rcarls/rc-range-slider": "workspace:*",
     "@rcarls/rc-scroller": "workspace:*",

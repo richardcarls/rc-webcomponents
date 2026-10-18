@@ -82,6 +82,7 @@ const sidebars: SidebarsConfig = {
         'components/rc-markdown-editor',
         'components/rc-menu-button',
         'components/rc-tooltip',
+        'components/rc-popover',
         'components/rc-snackbar',
         'components/rc-splitter',
       ],

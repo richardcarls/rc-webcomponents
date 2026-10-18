@@ -235,6 +235,20 @@ export type RCTooltipPlacement =
   | 'inline-end-start'
   | 'inline-end-end';
 
+export type RCPopoverPlacement = RCTooltipPlacement;
+export type RCPopoverTriggerAction = 'toggle' | 'none';
+export type RCPopoverToggleDetail = { open: boolean };
+
+/** Public API surface of `<rc-popover>`. */
+export type RCPopoverRef = HTMLElement & {
+  open: boolean;
+  defaultOpen: boolean;
+  placement: RCPopoverPlacement;
+  triggerAction: RCPopoverTriggerAction;
+  openOnHover: boolean;
+  openOnFocus: boolean;
+};
+
 /** Public API surface of `<rc-tooltip>`. */
 export type RCTooltipRef = HTMLElement & {
   placement: RCTooltipPlacement;
@@ -966,6 +980,17 @@ declare module 'solid-js' {
         'prop:duration'?: number | undefined;
         'on:rc-snackbar-action'?: (e: CustomEvent<RCSnackbarActionDetail>) => void;
         'on:rc-snackbar-close'?: (e: CustomEvent<RCSnackbarCloseDetail>) => void;
+      };
+
+      'rc-popover': JSX.HTMLAttributes<RCPopoverRef> & {
+        open?: boolean | string;
+        'default-open'?: boolean | string;
+        placement?: RCPopoverPlacement;
+        'trigger-action'?: RCPopoverTriggerAction;
+        'open-on-hover'?: boolean | string;
+        'open-on-focus'?: boolean | string;
+        'prop:open'?: boolean | undefined;
+        'on:rc-popover-toggle'?: (e: CustomEvent<RCPopoverToggleDetail>) => void;
       };
 
       'rc-tooltip': JSX.HTMLAttributes<RCTooltipRef> & {

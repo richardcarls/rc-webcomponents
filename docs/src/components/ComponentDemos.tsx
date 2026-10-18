@@ -1901,6 +1901,36 @@ export function TooltipDemo() {
   );
 }
 
+export function PopoverDemo() {
+  return (
+    <DemoFrame>
+      <rc-popover data-rc-material-rich-tooltip open-on-hover open-on-focus>
+        <button
+          slot="trigger"
+          type="button"
+          popoverTarget="rc-popover-demo-content"
+          aria-haspopup="dialog"
+        >
+          About presets
+        </button>
+        <section
+          slot="content"
+          id="rc-popover-demo-content"
+          popover="auto"
+          role="dialog"
+          aria-labelledby="rc-popover-demo-title"
+        >
+          <h2 id="rc-popover-demo-title">Export presets</h2>
+          <p>Save your export settings for next time.</p>
+          <footer>
+            <a href="/guide/styling">Learn more</a>
+          </footer>
+        </section>
+      </rc-popover>
+    </DemoFrame>
+  );
+}
+
 export function MenubarDemo() {
   const [menubarEl, setMenubarEl] = useState<HTMLElement | null>(null);
   const setMenubarRef = useCallback((element: HTMLElement | null) => {

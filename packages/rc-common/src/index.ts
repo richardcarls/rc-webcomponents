@@ -8,6 +8,7 @@ export * from './DragController.js';
 export * from './DragGestureController.js';
 export * from './ResizeController.js';
 export * from './AnchorController.js';
+export * from './PopoverController.js';
 export * from './ScrollObserverController.js';
 export * from './MutationObserverController.js';
 export * from './NavigationIndicatorController.js';
