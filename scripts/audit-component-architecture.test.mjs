@@ -216,8 +216,8 @@ test('the current component architecture satisfies hard guardrails', () => {
   const result = runAudit(process.cwd());
 
   assert.deepEqual(result.errors, []);
-  assert.equal(result.summary.componentPackages, 38);
-  assert.equal(result.summary.customElements, 41);
+  assert.equal(result.summary.componentPackages, 40);
+  assert.equal(result.summary.customElements, 43);
   assert.deepEqual(result.themeCoverage['rc-theme-substrate'].missing, []);
 
   assert.deepEqual(result.familyTokens['--rc-thumb-radius'], ['rc-range-slider', 'rc-slider']);

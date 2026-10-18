@@ -70,9 +70,9 @@
   --rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
 
   /*
-   * Floating surfaces: menus, adaptive-menu popups, and select and combobox
-   * listboxes. Kept separate from the control tokens so a rounded or filled
-   * control shape never leaks onto a popup panel.
+   * Floating surfaces: menus, adaptive-menu popups, popovers, and select and
+   * combobox listboxes. Kept separate from the control tokens so a rounded or
+   * filled control shape never leaks onto a popup panel.
    */
   --rc-popup-background: var(--rc-surface);
   --rc-popup-color: var(--rc-field-text);

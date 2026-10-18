@@ -48,11 +48,29 @@ const LIGHT_DOM_CSS = `
     margin: 0;
     padding-block: var(--rc-popover-padding-block, 0.75rem);
     padding-inline: var(--rc-popover-padding-inline, 0.75rem);
-    border: var(--rc-popover-border, 1px solid ButtonBorder);
-    border-radius: var(--rc-popover-radius, var(--rc-control-radius, 0.25rem));
-    background: var(--rc-popover-background, Canvas);
-    color: var(--rc-popover-color, CanvasText);
-    box-shadow: var(--rc-popover-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent));
+    border: var(
+      --rc-popover-border,
+      var(--rc-popup-border, var(--rc-border, 1px solid ButtonBorder))
+    );
+    border-radius: var(
+      --rc-popover-radius,
+      var(--rc-popup-radius, var(--rc-radius-sm, 0.25rem))
+    );
+    background: var(
+      --rc-popover-background,
+      var(--rc-popup-background, var(--rc-surface, Canvas))
+    );
+    color: var(
+      --rc-popover-color,
+      var(--rc-popup-color, var(--rc-field-text, CanvasText))
+    );
+    box-shadow: var(
+      --rc-popover-shadow,
+      var(
+        --rc-popup-shadow,
+        var(--rc-shadow, 0 2px 8px color-mix(in srgb, CanvasText 15%, transparent))
+      )
+    );
     font: inherit;
     overflow: auto;
     z-index: var(--rc-popover-z-index, 1);
@@ -92,11 +110,11 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-popover-max-block-size=calc(100dvb - 1rem)] - Maximum block size.
  * @cssprop [--rc-popover-padding-block=0.75rem] - Block padding.
  * @cssprop [--rc-popover-padding-inline=0.75rem] - Inline padding.
- * @cssprop [--rc-popover-border=1px solid ButtonBorder] - Surface border.
- * @cssprop [--rc-popover-radius=var(--rc-control-radius, 0.25rem)] - Corner radius.
- * @cssprop [--rc-popover-background=Canvas] - Surface background.
- * @cssprop [--rc-popover-color=CanvasText] - Surface text color.
- * @cssprop [--rc-popover-shadow=0 2px 8px color-mix(in srgb, CanvasText 15%, transparent)] - Surface shadow.
+ * @cssprop [--rc-popover-border=var(--rc-popup-border)] - Surface border.
+ * @cssprop [--rc-popover-radius=var(--rc-popup-radius)] - Corner radius.
+ * @cssprop [--rc-popover-background=var(--rc-popup-background)] - Surface background.
+ * @cssprop [--rc-popover-color=var(--rc-popup-color)] - Surface text color.
+ * @cssprop [--rc-popover-shadow=var(--rc-popup-shadow)] - Surface shadow.
  * @cssprop [--rc-popover-z-index=1] - Fallback stacking order.
  */
 export class RCPopover extends LitElement {

@@ -1,8 +1,11 @@
 @layer rc-theme-material.components {
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-popover {
-    --rc-popover-border: 0;
-    --rc-popover-background: var(--md-sys-color-surface-container, Canvas);
-    --rc-popover-color: var(--md-sys-color-on-surface, CanvasText);
+  /*
+   * The surface color, text color, and border come from the bridge's
+   * --rc-popup-* tokens. Only the popover's own corner and elevation differ
+   * from a menu container. Declared on the theme root so popovers rendered
+   * inside other shadow roots inherit the same values.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) {
     --rc-popover-radius: var(--md-sys-shape-corner-medium, 0.75rem);
     --rc-popover-shadow: var(--rc-shadow-level2, none);
   }

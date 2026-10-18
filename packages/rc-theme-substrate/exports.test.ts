@@ -23,6 +23,7 @@ const componentEntries = [
   'modes',
   'navigation-bar',
   'navigation-rail',
+  'popover',
   'range-slider',
   'search-bar',
   'select',
@@ -33,6 +34,7 @@ const componentEntries = [
   'switch',
   'textarea',
   'toolbar',
+  'tooltip',
   'transfer-list',
   'virtual-canvas',
 ] as const;

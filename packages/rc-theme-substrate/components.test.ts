@@ -100,6 +100,8 @@ test('aggregate component styles cover the reference styling surface', () => {
     ['rc-disclosure', ['display', 'block']],
     ['rc-accordion', ['display', 'grid']],
     ['rc-virtual-canvas', ['overflow', 'hidden']],
+    ['rc-popover', ['--rc-popover-padding-inline', '0.75rem']],
+    ['rc-tooltip', ['--rc-tooltip-border', '0']],
   ]);
 
   for (const [tagName, [property, expected]] of expectations) {
@@ -115,6 +117,20 @@ test('aggregate component styles cover the reference styling surface', () => {
       expect(value).toBe(expected);
     }
   }
+});
+
+test('popover and tooltip tokens reach surfaces inside nested shadow roots', () => {
+  const scope = renderScope();
+  const host = document.createElement('div');
+  const shadowRoot = host.attachShadow({ mode: 'open' });
+  const popover = document.createElement('rc-popover');
+  const tooltip = document.createElement('rc-tooltip');
+
+  shadowRoot.append(popover, tooltip);
+  scope.append(host);
+
+  expect(getComputedStyle(popover).getPropertyValue('--rc-popover-background')).not.toBe('');
+  expect(getComputedStyle(tooltip).getPropertyValue('--rc-tooltip-background')).not.toBe('');
 });
 
 test('canonical 0.7 component tokens replace removed theme-only names', () => {
