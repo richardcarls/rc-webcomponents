@@ -188,3 +188,8 @@ custom palette colors inside that mode.
 Windows 3.1 equivalent. Their styles keep a themed app visually coherent but
 do not make them period patterns. Prefer menu commands and toolbars when the
 application is meant to resemble a contemporary Windows 3.1 program.
+
+Tooltips did not exist in Windows 3.1 either. `rc-tooltip` borrows the WinHelp
+definition popup instead: a white box with a hard one-pixel frame and drop
+shadow. `rc-popover` uses the same menu panel as other popups, with panel
+spacing.

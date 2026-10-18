@@ -2582,6 +2582,44 @@
           }
         },
         {
+          "name": "core/popover-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popover-padding-block)"
+          },
+          "cssVar": "--rc-popover-padding-block",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/gap-panel",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "core/popover-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popover-padding-inline)"
+          },
+          "cssVar": "--rc-popover-padding-inline",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/gap-panel",
+              "collection": "Size"
+            }
+          }
+        },
+        {
           "name": "core/popup-background",
           "type": "COLOR",
           "scopes": [
@@ -2735,6 +2773,96 @@
             "WEB": "var(--rc-thumb-radius)"
           },
           "cssVar": "--rc-thumb-radius",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/radius",
+              "collection": "Radius"
+            }
+          }
+        },
+        {
+          "name": "core/tooltip-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-background)"
+          },
+          "cssVar": "--rc-tooltip-background",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/field",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/tooltip-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-color)"
+          },
+          "cssVar": "--rc-tooltip-color",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/field-text",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/tooltip-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-padding-block)"
+          },
+          "cssVar": "--rc-tooltip-padding-block",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": 2
+          }
+        },
+        {
+          "name": "core/tooltip-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-padding-inline)"
+          },
+          "cssVar": "--rc-tooltip-padding-inline",
+          "description": "Applied where rc-theme- is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/padding-inline",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "core/tooltip-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-radius)"
+          },
+          "cssVar": "--rc-tooltip-radius",
           "description": "Applied where rc-theme- is themed.",
           "values": {
             "Value": {
@@ -8778,6 +8906,17 @@
         "name": "switch/native-appearance"
       },
       {
+        "property": "--rc-tooltip-border",
+        "raw": "var(--win31-border)",
+        "name": "core/tooltip-border",
+        "reason": "aliases a composite shorthand"
+      },
+      {
+        "property": "--rc-tooltip-font",
+        "raw": "var(--win31-font-weight) var(--win31-font-size) / var(--win31-line-height) var(--win31-font-family)",
+        "name": "core/tooltip-font"
+      },
+      {
         "property": "--rc-transfer-list-listbox-border",
         "raw": "var(--win31-hairline) solid",
         "name": "transfer-list/listbox-border"
@@ -8930,6 +9069,12 @@
       },
       {
         "property": "--rc-popup-shadow",
+        "raw": "var(--win31-drop-shadow)",
+        "reason": "literal",
+        "scope": "rc-theme-"
+      },
+      {
+        "property": "--rc-tooltip-shadow",
         "raw": "var(--win31-drop-shadow)",
         "reason": "literal",
         "scope": "rc-theme-"

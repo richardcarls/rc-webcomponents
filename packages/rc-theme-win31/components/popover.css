@@ -1,0 +1,13 @@
+@layer rc-theme-win31.components {
+  /*
+   * A popover is a 3.1 popup panel: the bridge's --rc-popup-* tokens already
+   * give it the menu surface, hard one-pixel frame, square corners, and hard
+   * drop shadow. Only its padding needs the theme's panel spacing instead of
+   * the component's roomier default. Declared on the theme root so popovers
+   * inside other shadow roots inherit it.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) {
+    --rc-popover-padding-block: var(--win31-gap-panel);
+    --rc-popover-padding-inline: var(--win31-gap-panel);
+  }
+}

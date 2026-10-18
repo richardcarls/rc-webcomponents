@@ -251,3 +251,35 @@ test('nothing in the theme is rounded or animated', () => {
     getComputedStyle(menuButton).getPropertyValue('--rc-menu-button-popup-duration').trim(),
   ).toBe('0ms');
 });
+
+test('tooltips and popovers take popup chrome inside nested shadow roots', () => {
+  const scope = renderScope();
+  const host = document.createElement('div');
+  const shadowRoot = host.attachShadow({ mode: 'open' });
+  const tooltip = document.createElement('rc-tooltip');
+  const popover = document.createElement('rc-popover');
+
+  // Custom properties keep calc() unresolved, so a probe resolves the padding.
+  const probe = document.createElement('div');
+
+  probe.style.paddingBlock = 'var(--rc-popover-padding-block)';
+  probe.style.paddingInline = 'var(--rc-popover-padding-inline)';
+  popover.append(probe);
+  shadowRoot.append(tooltip, popover);
+  scope.append(host);
+
+  const tooltipStyles = getComputedStyle(tooltip);
+  const popoverStyles = getComputedStyle(popover);
+
+  // A tooltip borrows the WinHelp definition popup: white, framed, shadowed.
+  expect(tooltipStyles.getPropertyValue('--rc-tooltip-background').trim()).toBe('#ffffff');
+  expect(tooltipStyles.getPropertyValue('--rc-tooltip-color').trim()).toBe('#000000');
+  expect(tooltipStyles.getPropertyValue('--rc-tooltip-border').trim()).toBe('1px solid #000000');
+  expect(tooltipStyles.getPropertyValue('--rc-tooltip-radius').trim()).toBe('0');
+  expect(tooltipStyles.getPropertyValue('--rc-tooltip-shadow').trim()).not.toBe('');
+
+  // A popover keeps the bridge's menu panel and only tightens its padding.
+  expect(popoverStyles.getPropertyValue('--rc-popup-background').trim()).toBe('#c0c0c0');
+  expect(getComputedStyle(probe).paddingBlockStart).toBe('6px');
+  expect(getComputedStyle(probe).paddingInlineStart).toBe('6px');
+});
