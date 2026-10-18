@@ -119,29 +119,34 @@ export class FoldingActionController {
         throw new RangeError('A source fold requires a gutter anchor before its hidden lines.');
       }
 
-      let entry = this.entries.get(action.key);
+      let found = this.entries.get(action.key);
 
-      if (!entry) {
+      if (!found) {
         const $button = document.createElement('button');
 
         $button.type = 'button';
         $button.className = 'fold-action-trigger';
         $button.part.add('fold-trigger');
 
-        entry = {
+        const created: Entry = {
           $button,
           target: action.target,
           expanded: action.initiallyExpanded ?? true,
         };
 
-        this.entries.set(action.key, entry);
+        this.entries.set(action.key, created);
 
         $button.addEventListener('click', () => {
-          entry!.expanded = !entry!.expanded;
-          this.applyState(entry!);
+          created.expanded = !created.expanded;
+          this.applyState(created);
           this.api.scheduleUpdate();
         });
+
+        found = created;
       }
+
+      // A const keeps the entry narrowed inside the callbacks below.
+      const entry = found;
 
       entry.target = action.target;
       entry.$button.setAttribute('aria-label', action.label);
@@ -156,15 +161,15 @@ export class FoldingActionController {
 
         group.push(entry.$gutterContent);
         gutterGroups.set(action.gutterLine, group);
-      } else {
+      } else if (action.offset !== undefined) {
         result.push({
           type: 'widget',
-          offset: action.offset!,
+          offset: action.offset,
           side: 'after',
           key: `fold-trigger:${action.key}`,
           layout: 'trailing',
           accessible: true,
-          create: () => entry!.$button,
+          create: () => entry.$button,
         });
       }
 
@@ -178,8 +183,8 @@ export class FoldingActionController {
           fromLine: action.target.fromLine,
           toLine: action.target.toLine,
           reveal: () => {
-            entry!.expanded = true;
-            this.applyState(entry!);
+            entry.expanded = true;
+            this.applyState(entry);
             this.api.scheduleUpdate();
           },
         });

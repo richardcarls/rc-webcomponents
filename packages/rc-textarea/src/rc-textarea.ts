@@ -63,15 +63,32 @@ function getFoldBounds(value: string, folds: readonly FoldDecoration[]): FoldBou
   }
 
   return folds.flatMap((fold) => {
-    if (fold.fromLine < 2 || fold.toLine < fold.fromLine || fold.toLine > lines.length) {
+    if (fold.fromLine < 2 || fold.toLine < fold.fromLine) {
+      return [];
+    }
+
+    const from = starts[fold.fromLine - 1];
+    const lastStart = starts[fold.toLine - 1];
+    const lastLine = lines[fold.toLine - 1];
+    const anchorStart = starts[fold.fromLine - 2];
+    const anchorLine = lines[fold.fromLine - 2];
+
+    // Out-of-range lines read as undefined.
+    if (
+      from === undefined ||
+      lastStart === undefined ||
+      lastLine === undefined ||
+      anchorStart === undefined ||
+      anchorLine === undefined
+    ) {
       return [];
     }
 
     return [
       {
-        from: starts[fold.fromLine - 1]!,
-        to: starts[fold.toLine - 1]! + lines[fold.toLine - 1]!.length,
-        anchorEnd: starts[fold.fromLine - 2]! + lines[fold.fromLine - 2]!.length,
+        from,
+        to: lastStart + lastLine.length,
+        anchorEnd: anchorStart + anchorLine.length,
         reveal: fold.reveal,
       },
     ];
@@ -1216,21 +1233,25 @@ export class RCTextarea extends LitElement {
   }
 
   protected _undo(): void {
-    if (this._undoIndex <= 0) {
+    const entry = this._undoStack[this._undoIndex - 1];
+
+    if (!entry) {
       return;
     }
 
     this._undoIndex--;
-    this._applyUndoEntry(this._undoStack[this._undoIndex]!);
+    this._applyUndoEntry(entry);
   }
 
   protected _redo(): void {
-    if (this._undoIndex >= this._undoStack.length - 1) {
+    const entry = this._undoStack[this._undoIndex + 1];
+
+    if (!entry) {
       return;
     }
 
     this._undoIndex++;
-    this._applyUndoEntry(this._undoStack[this._undoIndex]!);
+    this._applyUndoEntry(entry);
   }
 
   protected _applyUndoEntry(entry: UndoEntry): void {
@@ -1337,13 +1358,13 @@ export class RCTextarea extends LitElement {
 
         let start = offset;
 
-        while (start > 0 && /\w/.test(text[start - 1]!)) {
+        while (start > 0 && /\w/.test(text.charAt(start - 1))) {
           start--;
         }
 
         let end = offset;
 
-        while (end < text.length && /\w/.test(text[end]!)) {
+        while (end < text.length && /\w/.test(text.charAt(end))) {
           end++;
         }
 
@@ -1689,10 +1710,9 @@ export class RCTextarea extends LitElement {
 
     return lines.map((_, i) => {
       const lineNum = i + 1;
+      const content = overrides.get(lineNum);
 
-      if (overrides.has(lineNum)) {
-        const content = overrides.get(lineNum)!;
-
+      if (content !== undefined) {
         if (this.lineNumbers && numberedOverrides.has(lineNum) && content !== null) {
           return { number: String(lineNum), content };
         }
@@ -1778,7 +1798,7 @@ export class RCTextarea extends LitElement {
 
     for (let i = 0; i < $lineEls.length && i < $spans.length; i++) {
       const blockSizeViewportPx = logicalRect(
-        $lineEls[i]!.getBoundingClientRect(),
+        $lineEls.item(i).getBoundingClientRect(),
         editorRect,
         flow,
       ).blockSize;
@@ -1831,7 +1851,7 @@ export class RCTextarea extends LitElement {
     }
 
     while (this._$gutterCells.children.length > current.length) {
-      this._$gutterCells.removeChild(this._$gutterCells.lastChild!);
+      this._$gutterCells.lastChild?.remove();
     }
 
     // Sync content (only write when changed)
@@ -1862,8 +1882,12 @@ export class RCTextarea extends LitElement {
           $span.replaceChildren($row);
         }
 
-        const $number = $row.firstElementChild!;
-        const $content = $row.lastElementChild!;
+        const $number = $row.querySelector(':scope > .gutter-cell-number');
+        const $content = $row.querySelector(':scope > .gutter-cell-content');
+
+        if (!$number || !$content) {
+          continue;
+        }
 
         if ($number.textContent !== label.number) {
           $number.textContent = label.number;

@@ -181,16 +181,16 @@ export class ItemsCollectionController implements ReactiveController {
   appendOption(opt: ItemsCollectionOption): void {
     this._optionsInitialized = true;
     this._options = [...this._options, opt];
-    this._ensureContainer();
 
+    const ul = this._ensureContainer();
     const li = this._createLiElement(opt, this._options.length - 1);
 
     this._liElements.push(li);
 
     if (this._createLi) {
-      this._ul!.insertBefore(li, this._createLi);
+      ul.insertBefore(li, this._createLi);
     } else {
-      this._ul!.appendChild(li);
+      ul.appendChild(li);
     }
 
     this._applyFilterToLi(li, opt);
@@ -250,8 +250,7 @@ export class ItemsCollectionController implements ReactiveController {
     };
 
     if (!this._createLi) {
-      this._ensureContainer();
-
+      const ul = this._ensureContainer();
       const li = document.createElement('li');
 
       li.setAttribute('id', `${this._idPrefix}-create`);
@@ -263,7 +262,7 @@ export class ItemsCollectionController implements ReactiveController {
         this._ensureCheckmark(li);
       }
 
-      this._ul!.appendChild(li);
+      ul.appendChild(li);
       this._createLi = li;
     }
 

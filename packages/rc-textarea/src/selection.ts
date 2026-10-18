@@ -71,12 +71,10 @@ export function domToTextOffset(
 
   let totalOffset = 0;
 
-  for (let lineIdx = 0; lineIdx < $lines.length; lineIdx++) {
+  for (const [lineIdx, $line] of $lines.entries()) {
     if (lineIdx > 0) {
       totalOffset++; // \n between lines
     }
-
-    const $line = $lines[lineIdx]!;
 
     // Firefox's Select All uses the editor itself as the range boundary.
     if ($targetNode === $root && $root.childNodes[targetNodeOffset] === $line) {
@@ -125,8 +123,8 @@ function walkForOffset(
     // Element node - targetNodeOffset is a child index
     let offset = currentOffset;
 
-    for (let i = 0; i < targetNodeOffset && i < $children.length; i++) {
-      offset += textModelLength($children[i]!);
+    for (const $child of $children.slice(0, targetNodeOffset)) {
+      offset += textModelLength($child);
     }
 
     return { found: true, offset: offset };
@@ -178,19 +176,16 @@ export function textOffsetToDom($root: Element, targetOffset: number): DomPositi
 
   let localOffset = targetOffset;
 
-  for (let i = 0; i < $lines.length; i++) {
+  for (const [i, $line] of $lines.entries()) {
     if (i > 0) {
       if (localOffset === 0) {
         // Position at boundary between lines — place at start of this line
-        const $line = $lines[i]!;
-
         return { node: $line, offset: 0 };
       }
 
       localOffset--; // consume the \n
     }
 
-    const $line = $lines[i]!;
     const lineLen = textModelLength($line);
 
     if (localOffset <= lineLen) {

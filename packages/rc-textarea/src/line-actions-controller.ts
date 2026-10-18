@@ -267,16 +267,12 @@ export class LineActionsController {
     const lines = value.split('\n');
     let offset = 0;
 
-    for (let i = 0; i < lineIndex && i < lines.length; i++) {
+    for (const line of lines.slice(0, lineIndex)) {
       // +1 for the '\n'
-      offset += lines[i]!.length + 1;
+      offset += line.length + 1;
     }
 
-    if (lineIndex < lines.length) {
-      offset += lines[lineIndex]!.length;
-    }
-
-    return offset;
+    return offset + (lines[lineIndex]?.length ?? 0);
   }
 
   private _showPopover(actions: LineAction[]): void {

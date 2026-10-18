@@ -58,9 +58,12 @@ function buildLineContent(
     }
   }
 
-  for (let i = 0; i < boundaries.length - 1; i++) {
-    const segmentStart = boundaries[i]!;
-    const segmentEnd = boundaries[i + 1]!;
+  for (const [i, segmentStart] of boundaries.entries()) {
+    const segmentEnd = boundaries[i + 1];
+
+    if (segmentEnd === undefined) {
+      break;
+    }
 
     // Insert widgets whose position falls at segmentStart ('before' side)
     for (const widget of widgetDecorations) {
@@ -206,8 +209,7 @@ export class RCDocument {
     // Absolute character offset of the first character on the current line
     let lineStartOffset = 0;
 
-    for (let i = 0; i < lines.length; i++) {
-      const lineText = lines[i]!;
+    for (const [i, lineText] of lines.entries()) {
       const lineNum = i + 1;
       const lineStart = lineStartOffset;
       const lineEnd = lineStart + lineText.length;
@@ -245,12 +247,12 @@ export class RCDocument {
       // Reuse an existing line element when available, otherwise create a new one.
       let $block: HTMLElement;
 
-      if (i < $lines.length) {
-        $block = $lines[i]!;
+      if ($existing) {
+        $block = $existing;
 
         // Remove all attributes so stale class names, data-*, and title don't bleed through
-        while ($block.attributes.length > 0) {
-          $block.removeAttribute($block.attributes[0]!.name);
+        for (const name of $block.getAttributeNames()) {
+          $block.removeAttribute(name);
         }
 
         $block.className = 'line';
@@ -326,7 +328,7 @@ export class RCDocument {
 
     // Remove trailing line elements left over from a shorter previous value
     while ($documentRoot.children.length > lines.length) {
-      $documentRoot.removeChild($documentRoot.lastChild!);
+      $documentRoot.lastChild?.remove();
     }
   }
 

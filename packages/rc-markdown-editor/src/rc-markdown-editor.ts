@@ -999,7 +999,7 @@ export class RcMarkdownEditor extends LitElement {
     const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
 
     const stripped = value.slice(lineStart).replace(/^#{1,6} /, '');
-    const prefix = level ? '#'.repeat(parseInt(level[1]!)) + ' ' : '';
+    const prefix = level ? '#'.repeat(Number(level.slice(1))) + ' ' : '';
 
     editor.value =
       value.slice(0, lineStart) +
