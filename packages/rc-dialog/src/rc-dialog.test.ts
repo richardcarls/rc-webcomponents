@@ -312,6 +312,58 @@ test('fullscreen variant tracks the visual viewport only while open', async () =
   expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-height')).toBe('');
 });
 
+test('fullscreen variant ignores the shorter size a closing keyboard reports', async () => {
+  const fullHeight = window.innerHeight;
+  const viewport = Object.assign(new EventTarget(), {
+    offsetLeft: 0,
+    offsetTop: 0,
+    width: window.innerWidth,
+    height: fullHeight,
+  });
+
+  Object.defineProperty(window, 'visualViewport', { configurable: true, get: () => viewport });
+
+  try {
+    const screen = render(html`
+      <rc-dialog data-testid="host" variant="fullscreen">
+        <dialog aria-label="Keyboard test">
+          <input aria-label="Servings" />
+          <button>Done</button>
+        </dialog>
+      </rc-dialog>
+    `);
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+    const writtenHeight = () => host.style.getPropertyValue('--rc-dialog-visual-viewport-height');
+
+    const resizeTo = (height: number) => {
+      viewport.height = height;
+      viewport.dispatchEvent(new Event('resize'));
+    };
+
+    await host.updateComplete;
+    host.showModal();
+    host.querySelector('input')?.focus();
+
+    // The keyboard opening, then a Firefox for Android close: shorter first, then full.
+    resizeTo(fullHeight - 240);
+
+    expect(writtenHeight()).toBe(`${fullHeight - 240}px`);
+
+    host.querySelector('button')?.focus();
+    resizeTo(fullHeight - 270);
+
+    expect(writtenHeight()).toBe(`${fullHeight - 240}px`);
+
+    resizeTo(fullHeight);
+
+    expect(writtenHeight()).toBe(`${fullHeight}px`);
+
+    host.close();
+  } finally {
+    delete (window as { visualViewport?: unknown }).visualViewport;
+  }
+});
+
 test('fullscreen variant covers the viewport under an ancestor zoom', async () => {
   const screen = render(html`
     <div style="zoom: 0.8">
