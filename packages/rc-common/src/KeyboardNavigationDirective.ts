@@ -72,7 +72,7 @@ export interface KeyNavigationOptions {
 
 class KeyboardNavigationDirective extends AsyncDirective {
   private _element?: WeakRef<Element>;
-  private _keyDownHandle!: (ev: KeyboardEvent) => any;
+  private _keyDownHandle!: (ev: KeyboardEvent) => void;
   private _callback!: (action: KeyboardNavigationAction) => void;
   private _options: KeyNavigationOptions = {};
   /**
