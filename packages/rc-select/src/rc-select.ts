@@ -434,7 +434,7 @@ export class RCSelect extends LitElement {
   /**
    * Closes the popup listbox.
    *
-   * @param returnFocus - When `true` (default), returns focus to the trigger.
+   * @param returnFocus - when `true` (default), returns focus to the trigger
    */
   closePopup(returnFocus = true) {
     if (!this.open) {
@@ -532,10 +532,10 @@ export class RCSelect extends LitElement {
    * In single-select mode only the first value is kept. Syncs `_$listbox` and the
    * native `<select>` but does NOT dispatch `rc-select-change`.
    *
-   * @param fromUser - Pass `true` only for a selection driven by real user interaction, so
+   * @param fromUser - pass `true` only for a selection driven by real user interaction, so
    *   `_syncNativeSelect` dispatches native `input`/`change` on the underlying `<select>` (a
    *   programmatic `value`/`defaultValue` write is not a native interaction and relies on an
-   *   external `sync()` call instead, the same as `rc-textarea`'s controlled-value contract).
+   *   external `sync()` call instead, the same as `rc-textarea`'s controlled-value contract)
    */
   protected _applySelection(values: string[], fromUser = false): void {
     const selectedValues = this.multiple ? values : values.slice(0, 1);
@@ -1089,9 +1089,9 @@ export class RCSelect extends LitElement {
    * Flips `selected` on each `<option>` in the native `<select>` to match `_selectedValues`;
    * no-op when no native select is present.
    *
-   * @param fromUser - When `true`, also dispatches native `input` and `change` on `$select`
+   * @param fromUser - when `true`, also dispatches native `input` and `change` on `$select`
    *   (in that order, matching a real `<select>`) so outside listeners, including an
-   *   `rc-field` ancestor treating this component as its control provider, observe the change.
+   *   `rc-field` ancestor treating this component as its control provider, observe the change
    */
   protected _syncNativeSelect(fromUser = false) {
     const $select = this._$selectRef?.deref();

@@ -337,7 +337,7 @@ export class RCMenu extends LitElement {
   /**
    * Move the virtual cursor to a specific item.
    *
-   * @param $item - The element to make active. No-op when null or undefined.
+   * @param $item - the element to make active. No-op when null or undefined
    */
   focusItem($item?: Element | null): void {
     if (!$item) {
@@ -351,7 +351,7 @@ export class RCMenu extends LitElement {
   /**
    * Move the virtual cursor to the item at `index`.
    *
-   * @param index - Zero-based index into the navigable items array.
+   * @param index - zero-based index into the navigable items array
    */
   focusItemAt(index: number): void {
     this.focus();

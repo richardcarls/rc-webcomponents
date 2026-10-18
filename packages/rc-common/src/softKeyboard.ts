@@ -135,8 +135,8 @@ export class SoftKeyboardViewport {
   /**
    * Returns the size to apply for a fresh measurement.
    *
-   * @param measured - The viewport as measured now.
-   * @param textEntryFocused - Whether a field that raises the keyboard has focus.
+   * @param measured - the viewport as measured now
+   * @param textEntryFocused - whether a field that raises the keyboard has focus
    */
   next(measured: ViewportSize, textEntryFocused: boolean): ViewportSize {
     const full = this._full;

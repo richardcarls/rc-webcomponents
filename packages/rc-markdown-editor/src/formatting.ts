@@ -6,9 +6,9 @@ import type { ActiveFormats, HeadingLevel } from './types.js';
  * `selectionStart`. Returns the updated string, or `null` if the cursor is not
  * inside a fenced code block.
  *
- * @param value - Full source editor value.
- * @param selectionStart - Cursor offset used to locate the containing fence.
- * @param language - Language string to write (empty string removes the token).
+ * @param value - full source editor value
+ * @param selectionStart - cursor offset used to locate the containing fence
+ * @param language - language string to write (empty string removes the token)
  */
 export function setCodeBlockLanguage(
   value: string,

@@ -651,7 +651,7 @@ export class RCDialog extends LitElement {
    * @param silent - when `true`, suppresses the outgoing `rc-dialog-toggle` event
    * @param modal - whether to call `showModal()` (`true`) or `show()` (`false`)
    * @param moveFocus - whether a non-modal open moves focus into the dialog, as
-   *   `show()` does natively. A modal open always does.
+   *   `show()` does natively. A modal open always does
    */
   protected _applyOpen(open: boolean, silent: boolean, modal = true, moveFocus = true): boolean {
     const $dialog = this._$dialog;

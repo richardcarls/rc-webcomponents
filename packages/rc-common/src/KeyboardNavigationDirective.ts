@@ -210,8 +210,8 @@ class KeyboardNavigationDirective extends AsyncDirective {
   }
 
   /**
-   * @param _cb - Callback function invoked with the navigation action
-   * @param _options - Keyboard navigation behavior options.
+   * @param _cb - callback function invoked with the navigation action
+   * @param _options - keyboard navigation behavior options
    */
   render(_cb: (action: KeyboardNavigationAction) => void, _options?: KeyNavigationOptions) {
     return nothing;
