@@ -104,12 +104,12 @@ chips keep their full touch target.
 
 To workaround this bug, `rc-select` force-disables the slotted `<select multiple>` and hooks into the associated form's `submit` and `formdata` events to preserve constraint validation and form data participation.
 
-Label activation on a disabled control is a spec-defined no-op, mitigating the issue while maintaining progressive enhancement with minimal lightdom meddling.
+Label activation on a disabled control is a spec-defined no-op, mitigating the issue while maintaining progressive enhancement with minimal light DOM meddling.
 
 However, there are two important caveats to this workaround:
 
-1. **No native validation bubble.** The browser cannot render its validation UI on a hidden control, so when submit-time enforcement finds the select invalid (e.g. `required` with nothing selected, or `setCustomValidity()`), the component cancels the submission, fires a cancelable `invalid` event on the select, and moves focus to the trigger. Call `preventDefault()` on the `invalid` event to supply your own error UI instead. `novalidate` forms, `formnovalidate` submitters, and `form.submit()` bypass enforcement, matching native scoping.
-2. **Disabling through the select is one-way after upgrade.** _Enabling_ by removing the select's `disabled` (attribute or property) is captured: the component mirrors the intent and keeps the guard in place. But _disabling_ through the select is not captured — the guard already holds the `disabled` attribute present, so re-setting it is indistinguishable from the guard's own writes. Set `disabled` on `<rc-select>` itself to disable the control after upgrade.
+1. **No native validation bubble.** The browser cannot render its validation UI on a hidden control, so when submit-time enforcement finds the select invalid (for example, `required` with nothing selected, or `setCustomValidity()`), the component cancels the submission, fires a cancelable `invalid` event on the select, and moves focus to the trigger. Call `preventDefault()` on the `invalid` event to supply your own error UI instead. `novalidate` forms, `formnovalidate` submitters, and `form.submit()` bypass enforcement, matching native scoping.
+2. **Disabling through the select is one-way after upgrade.** _Enabling_ by removing the select's `disabled` (attribute or property) is captured: the component mirrors the intent and keeps the guard in place. But _disabling_ through the select is not captured; the guard already holds the `disabled` attribute present, so re-setting it is indistinguishable from the guard's own writes. Set `disabled` on `<rc-select>` itself to disable the control after upgrade.
 
 ## API
 

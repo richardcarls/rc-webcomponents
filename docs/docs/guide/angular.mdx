@@ -91,10 +91,10 @@ has mounted. That is the controlled and uncontrolled contract every stateful
 `rc-*` component follows, not anything Angular-specific, but it is easy to trip
 over coming from Angular's usual one-way binding model.
 
-`rc-navigation-rail`'s `expanded` is one example: binding `[expanded]` does
-nothing after the first render. Bind the matching `default*` property for
-initial state and listen for the component's own event to learn about
-user-driven changes, as shown above.
+`rc-navigation-rail`'s `expanded` is one example: bind `expanded` when the
+application owns the state and use the matching `default*` property for an
+initial uncontrolled value. Listen for the component's own event to learn
+about user-driven changes, as shown above.
 
 ## Signal Forms
 
@@ -110,7 +110,7 @@ changes the value, so `[formField]` observes user input exactly as it would on
 a bare element:
 
 ```html
-<rc-select>
+<rc-select #categoryPicker>
   <select [formField]="productForm.category">
     <option value="soup">Soup</option>
     <option value="salad">Salad</option>
@@ -124,8 +124,13 @@ patches a value should write the component's own `value` property, which
 updates both the component and its native control:
 
 ```ts
+import { ElementRef, ViewChild } from '@angular/core';
+
+@ViewChild('categoryPicker', { read: ElementRef })
+private categoryPicker!: ElementRef<HTMLElement & { value: string }>;
+
 protected resetCategory(): void {
-  this.categoryRef().nativeElement.value = '';
+  this.categoryPicker.nativeElement.value = '';
 }
 ```
 

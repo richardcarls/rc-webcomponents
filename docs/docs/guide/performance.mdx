@@ -62,7 +62,7 @@ interchangeable per-component costs.
 ## Browser scenarios
 
 Headless Chromium measures three warmups followed by ten samples and records the
-median and 95th percentile for:
+median and p95 for:
 
 - creating 100 native-backed buttons
 - creating 50 selects with 20 options each
@@ -88,7 +88,7 @@ fixed wait), rather than trusting a single before/after timestamp:
 Each motion scenario adds three metrics beyond median and p95:
 
 - **`longFrames`**: rAF deltas over 32&nbsp;ms, summed across all ten measured
-  runs. Budgeted with zero headroom — any regression here is itself the
+  runs. Budgeted with zero headroom; any regression here is itself the
   signal, not noise to tolerate.
 - **`longestFrameMs`**: the single worst rAF delta observed. Budgeted against
   a fixed 50&nbsp;ms ceiling rather than a percentage of its own baseline,

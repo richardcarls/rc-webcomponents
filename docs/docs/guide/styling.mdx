@@ -7,7 +7,7 @@ title: Styling
 ## Design-system neutral by default
 
 Components ship without decorative visual opinions. The default appearance
-mirrors the UA stylesheet — buttons look like buttons, inputs look like
+mirrors the UA stylesheet; buttons look like buttons, inputs look like
 inputs. This lets them blend into any design system without fighting existing
 styles.
 
@@ -38,7 +38,7 @@ reference. Import it once at your application root to enable the token layer:
 @import '@rcarls/rc-webcomponents/themes/base.css';
 ```
 
-These tokens fall back to CSS system colors without the import — the file is
+These tokens fall back to CSS system colors without the import; the file is
 optional. Override any token at your theme boundary to adjust all components
 at once:
 
@@ -333,7 +333,7 @@ application code decides when to call `document.startViewTransition()`.
 ## Material theme
 
 The optional `@rcarls/rc-theme-material` package maps Material 3 design
-tokens to the RC token layer. It changes styling only — no behavior changes.
+tokens to the RC token layer. It changes styling only; no behavior changes.
 
 For composing components into a Material 3 app, including adaptive layouts,
 dialogs, sheets, lists and navigation, see the package's

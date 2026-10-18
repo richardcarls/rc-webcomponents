@@ -123,8 +123,8 @@ that triggers native scroll events.
 
 ```ts
 type ViewRect = {
-  x: number; // Scroll offset — the x origin of the visible window in content space
-  y: number; // Scroll offset — the y origin of the visible window in content space
+  x: number; // Scroll offset; the x origin of the visible window in content space
+  y: number; // Scroll offset; the y origin of the visible window in content space
   width: number; // Visible width in device pixels (from ResizeObserver devicePixelContentBoxSize)
   height: number; // Visible height in device pixels
 };
