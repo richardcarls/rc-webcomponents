@@ -1,3 +1,5 @@
+import { cssText } from '@rcarls/rc-common';
+
 /**
  * Light-DOM base styles for the accordion group box.
  *
@@ -7,7 +9,7 @@
  * recipe that `rc-disclosure` installs, so there is no parallel accordion-panel
  * vocabulary to keep in step.
  */
-export const ACCORDION_BASE_CSS = `
+export const ACCORDION_BASE_CSS = cssText`
 @layer rc-base {
   rc-accordion {
     display: grid;

@@ -3,11 +3,12 @@ import { property, query } from 'lit/decorators.js';
 
 import {
   AnchorController,
-  PopoverController,
+  cssText,
   FlowController,
   isFocusable,
-  keyNavigation,
   type KeyboardNavigationAction,
+  keyNavigation,
+  PopoverController,
   renderedOrientation,
 } from '@rcarls/rc-common';
 
@@ -40,7 +41,7 @@ type AuthoredState = {
 
 const ACTION_WRAPPERS = 'rc-button, rc-chip, rc-menu-button';
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-adaptive-menu > [data-rc-action-promoted],
   rc-adaptive-menu > [data-rc-action-overflowed] {

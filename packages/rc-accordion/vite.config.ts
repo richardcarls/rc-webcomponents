@@ -3,8 +3,11 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
+import { rcCssLiteralMinify } from '../../vite.shared.ts';
+
 export default defineConfig(({ command }) => ({
   plugins: [
+    ...rcCssLiteralMinify(),
     dts({
       outDir: 'dist/types',
       entryRoot: resolve(__dirname, '../..'),

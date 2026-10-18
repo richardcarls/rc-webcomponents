@@ -2,11 +2,11 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { NavigationIndicatorController } from '@rcarls/rc-common';
+import { cssText, NavigationIndicatorController } from '@rcarls/rc-common';
 
 import navigationRailStyles from './rc-navigation-rail.styles.js';
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-navigation-rail > a > [data-rc-navigation-icon] {
     align-self: center;

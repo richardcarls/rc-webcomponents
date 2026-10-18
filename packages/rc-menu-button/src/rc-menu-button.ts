@@ -3,13 +3,14 @@ import { property, query, state } from 'lit/decorators.js';
 
 import {
   AnchorController,
-  PopoverController,
+  type AnchorPlacement,
+  cssText,
+  type KeyboardNavigationAction,
   keyInteraction,
   keyNavigation,
   layoutOrientation,
+  PopoverController,
   resolveFlow,
-  type AnchorPlacement,
-  type KeyboardNavigationAction,
 } from '@rcarls/rc-common';
 import type { RCMenu } from '@rcarls/rc-menu';
 
@@ -21,7 +22,7 @@ declare global {
   }
 }
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   /*
    * Expands an icon-only trigger's clickable region beyond its visible box

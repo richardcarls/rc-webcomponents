@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { cssZoom, logicalRect, resolveFlow } from '@rcarls/rc-common';
+import { cssText, cssZoom, logicalRect, resolveFlow } from '@rcarls/rc-common';
 
 import buttonStyles from './rc-button.styles.js';
 
@@ -16,7 +16,7 @@ declare global {
   }
 }
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   /*
    * Icon-font utility classes commonly set display outside cascade layers.

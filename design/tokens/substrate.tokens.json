@@ -3376,6 +3376,63 @@
           }
         },
         {
+          "name": "core/popover-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popover-background)"
+          },
+          "cssVar": "--rc-popover-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/surface-raised",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/popover-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popover-padding-block)"
+          },
+          "cssVar": "--rc-popover-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/item-padding-block",
+              "collection": "Size"
+            }
+          }
+        },
+        {
+          "name": "core/popover-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-popover-padding-inline)"
+          },
+          "cssVar": "--rc-popover-padding-inline",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "size/item-padding-inline",
+              "collection": "Size"
+            }
+          }
+        },
+        {
           "name": "core/popup-background",
           "type": "COLOR",
           "scopes": [
@@ -3532,6 +3589,106 @@
           "description": "Applied where rc-theme-substrate is themed.",
           "values": {
             "Value": 9
+          }
+        },
+        {
+          "name": "core/tooltip-background",
+          "type": "COLOR",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-background)"
+          },
+          "cssVar": "--rc-tooltip-background",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/inverse-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/tooltip-border",
+          "type": "FLOAT",
+          "scopes": [],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-border)"
+          },
+          "cssVar": "--rc-tooltip-border",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 0
+          }
+        },
+        {
+          "name": "core/tooltip-color",
+          "type": "COLOR",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-color)"
+          },
+          "cssVar": "--rc-tooltip-color",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "color/inverse-on-surface",
+              "collection": "Color"
+            }
+          }
+        },
+        {
+          "name": "core/tooltip-padding-block",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-padding-block)"
+          },
+          "cssVar": "--rc-tooltip-padding-block",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 6
+          }
+        },
+        {
+          "name": "core/tooltip-padding-inline",
+          "type": "FLOAT",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-padding-inline)"
+          },
+          "cssVar": "--rc-tooltip-padding-inline",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": 10
+          }
+        },
+        {
+          "name": "core/tooltip-radius",
+          "type": "FLOAT",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "codeSyntax": {
+            "WEB": "var(--rc-tooltip-radius)"
+          },
+          "cssVar": "--rc-tooltip-radius",
+          "description": "Applied where rc-theme-substrate is themed.",
+          "values": {
+            "Value": {
+              "alias": "radius/sm",
+              "collection": "Radius"
+            }
           }
         },
         {
@@ -8638,6 +8795,12 @@
       {
         "property": "--rc-snackbar-shadow",
         "raw": "var(--substrate-shadow-lg, var(--rc-shadow))",
+        "reason": "literal",
+        "scope": "rc-theme-substrate"
+      },
+      {
+        "property": "--rc-tooltip-shadow",
+        "raw": "var(--substrate-shadow-sm, none)",
         "reason": "literal",
         "scope": "rc-theme-substrate"
       }

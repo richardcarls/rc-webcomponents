@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { arrowKeys, renderedOrientation, resolveFlow } from '@rcarls/rc-common';
+import { arrowKeys, cssText, renderedOrientation, resolveFlow } from '@rcarls/rc-common';
 
 import segmentedButtonStyles from './rc-segmented-button.styles.js';
 
@@ -16,7 +16,7 @@ declare global {
   }
 }
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   /*
    * The segmented appearance, behind one switch a theme sets.

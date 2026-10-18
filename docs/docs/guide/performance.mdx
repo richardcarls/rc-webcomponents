@@ -13,16 +13,19 @@ application work all affect real results.
 
 Consumer-style Vite builds measure minified initial and lazy JavaScript output;
 the CSS audit inlines theme imports and compresses the source. Both use gzip
-and Brotli. The tracked baseline records these initial sizes in decimal kB:
+and Brotli. Package builds minify the CSS in component template literals (Lit
+`css` styles and `cssText` light-DOM styles) with Lightning CSS, keeping
+source maps that point back to each template; HTML templates ship as written.
+The tracked baseline records these initial sizes in decimal kB:
 
 | Entry                               | Initial gzip | Initial Brotli |
 | ----------------------------------- | -----------: | -------------: |
-| `@rcarls/rc-button/define`          |      11.8 kB |        10.5 kB |
-| `@rcarls/rc-select/define`          |      47.7 kB |        40.5 kB |
-| `@rcarls/rc-textarea/define`        |      29.5 kB |        25.8 kB |
-| `@rcarls/rc-markdown-editor/define` |     116.1 kB |        96.4 kB |
-| Aggregate class export              |     216.1 kB |       166.1 kB |
-| Aggregate define export             |     216.3 kB |       166.4 kB |
+| `@rcarls/rc-button/define`          |      10.9 kB |         9.8 kB |
+| `@rcarls/rc-select/define`          |      47.0 kB |        40.1 kB |
+| `@rcarls/rc-textarea/define`        |      30.6 kB |        26.8 kB |
+| `@rcarls/rc-markdown-editor/define` |     113.3 kB |        94.5 kB |
+| Aggregate class export              |     205.6 kB |       159.4 kB |
+| Aggregate define export             |     205.4 kB |       159.4 kB |
 | Base theme CSS                      |       1.2 kB |         1.0 kB |
 | Material theme CSS                  |      33.9 kB |        26.3 kB |
 | Substrate theme CSS                 |      13.2 kB |        10.9 kB |
@@ -36,8 +39,8 @@ without an intentional baseline update.
 
 Material is the broadest theme and has the largest theme budget: 35.6 kB gzip
 and 27.6 kB Brotli, five percent above its measured CSS. The aggregate define
-entry retains separate 227.1 kB initial gzip and 270.0 kB total gzip budgets.
-Using both full entries gives a combined initial ceiling of 262.7 kB gzip;
+entry retains separate 215.6 kB initial gzip and 258.6 kB total gzip budgets.
+Using both full entries gives a combined initial ceiling of 251.2 kB gzip;
 importing one component instead of the aggregate is substantially smaller.
 
 For scale, pinned published CSS assets measured without minification using
