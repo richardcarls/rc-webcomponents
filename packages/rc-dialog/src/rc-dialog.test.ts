@@ -398,6 +398,31 @@ test('fullscreen variant covers the viewport under an ancestor zoom', async () =
   host.close();
 });
 
+test('fullscreen variant stays inside the viewport while its tracked size is stale', async () => {
+  // A rotation lays out the new orientation before the resize event that
+  // updates the tracked size, so a landscape width briefly meets a portrait
+  // viewport.
+  const screen = render(html`
+    <rc-dialog data-testid="host" variant="fullscreen">
+      <dialog aria-label="Stale size fullscreen test"><button>Close</button></dialog>
+    </rc-dialog>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.showModal();
+
+  host.style.setProperty('--rc-dialog-visual-viewport-width', `${window.innerWidth * 2}px`);
+  host.style.setProperty('--rc-dialog-visual-viewport-height', `${window.innerHeight * 2}px`);
+
+  const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
+
+  expect(rect.width).toBeLessThanOrEqual(document.documentElement.clientWidth);
+  expect(rect.height).toBeLessThanOrEqual(document.documentElement.clientHeight);
+
+  host.close();
+});
+
 test('fullscreen variant covers the viewport under a zoom when the host has no box', async () => {
   // A host styled display: contents (to stay out of a parent grid) reports
   // currentCSSZoom as 1, so the zoom must come from the inner dialog.
