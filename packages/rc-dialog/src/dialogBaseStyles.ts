@@ -119,7 +119,11 @@ export const DIALOG_BASE_CSS = cssText`
    * Fullscreen geometry is structural rather than a theme choice: the surface
    * fills the visual viewport, which is what keeps it correct under browser
    * zoom and a software keyboard. The viewport values are written by the
-   * component; see the note on RCDialog.
+   * component; see the note on RCDialog. They lag a rotation by a resize
+   * event, so the size is capped at the viewport: a stale landscape width
+   * would otherwise overflow the portrait layout, and Firefox Android widens
+   * the layout viewport to fit it and keeps it widened after the dialog
+   * closes.
    *
    * Only padding and background are left for a theme to set, since those are
    * the two that genuinely differ from the standard surface.
@@ -129,8 +133,8 @@ export const DIALOG_BASE_CSS = cssText`
     inset: auto;
     top: var(--rc-dialog-visual-viewport-top, 0);
     left: var(--rc-dialog-visual-viewport-left, 0);
-    inline-size: var(--rc-dialog-visual-viewport-width, 100dvw);
-    block-size: var(--rc-dialog-visual-viewport-height, 100dvh);
+    inline-size: min(var(--rc-dialog-visual-viewport-width, 100dvw), 100%);
+    block-size: min(var(--rc-dialog-visual-viewport-height, 100dvh), 100%);
     max-inline-size: none;
     max-block-size: none;
     margin: 0;
