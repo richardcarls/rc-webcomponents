@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from 'vitest';
 
-import { observeDirection } from './observeDirection.js';
+import { observeLocale } from './observeLocale.js';
 
 const cleanups: Array<() => void> = [];
 
@@ -22,7 +22,7 @@ test('notifies every subscriber when a dir attribute changes anywhere', async ()
   const first = vi.fn();
   const second = vi.fn();
 
-  cleanups.push(observeDirection(first), observeDirection(second));
+  cleanups.push(observeLocale(first), observeLocale(second));
   el.dir = 'rtl';
 
   await vi.waitFor(() => {
@@ -31,12 +31,22 @@ test('notifies every subscriber when a dir attribute changes anywhere', async ()
   });
 });
 
+test('notifies when a lang attribute changes', async () => {
+  const el = fixture();
+  const listener = vi.fn();
+
+  cleanups.push(observeLocale(listener));
+  el.lang = 'ar';
+
+  await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+});
+
 test('ignores other attribute changes', async () => {
   const el = fixture();
   const listener = vi.fn();
 
-  cleanups.push(observeDirection(listener));
-  el.setAttribute('lang', 'ar');
+  cleanups.push(observeLocale(listener));
+  el.setAttribute('title', 'Title');
   el.style.color = 'red';
   el.dir = 'rtl';
 
@@ -50,8 +60,8 @@ test('stops notifying after unsubscribing', async () => {
   const kept = vi.fn();
   const dropped = vi.fn();
 
-  cleanups.push(observeDirection(kept));
-  observeDirection(dropped)();
+  cleanups.push(observeLocale(kept));
+  observeLocale(dropped)();
   el.dir = 'rtl';
 
   await vi.waitFor(() => expect(kept).toHaveBeenCalledTimes(1));
@@ -62,8 +72,8 @@ test('observes again after every subscriber has left', async () => {
   const el = fixture();
   const listener = vi.fn();
 
-  observeDirection(vi.fn())();
-  cleanups.push(observeDirection(listener));
+  observeLocale(vi.fn())();
+  cleanups.push(observeLocale(listener));
   el.dir = 'rtl';
 
   await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));

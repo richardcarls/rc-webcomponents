@@ -93,9 +93,20 @@ short and tell the tool to read `AGENTS.md` before project work.
   flow at interaction or measure time, since a `dir` change on an ancestor
   fires no event. Anything cached from the flow (rendered attributes,
   measured offsets) must also subscribe through `FlowController` or
-  `observeDirection`, and its test should flip `dir` at runtime after layout
+  `observeLocale`, and its test should flip `dir` at runtime after layout
   settles, not only render in RTL. Test new geometry or keyboard behavior
   with the `FLOW_FIXTURES`/`inFlow` helpers in `test-helpers/flow.ts`.
+- Never hard-code user-facing text (an `aria-label`, `title`, placeholder,
+  role description, announcement, or visible button text) in a component.
+  Declare a `<Component>Messages` interface with English defaults, add it to
+  `RcMessageCatalog` by module augmentation, expose a `messages` property, and
+  read the text through `MessagesController` so it follows the element's own
+  `lang`, else `<html lang>`, and re-renders when either changes. An ancestor's
+  `lang` marks content and must not change component text. A per-instance name
+  a consumer usually sets (`label`, `low-label`) stays an attribute whose
+  default comes from the messages. Format numbers shown as text with
+  `numberFormat()` for the same locale. See `rc-common/README.md`
+  § Localization.
 - Shared interaction behavior belongs in `rc-common` as Lit directives or
   `ReactiveController` classes.
 - Before adding new interaction, focus, positioning, scrolling, pointer, resize,

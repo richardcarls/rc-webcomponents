@@ -4,7 +4,8 @@ import { ControllerEffects } from './ControllerEffects.js';
 import { cssZoom } from './cssZoom.js';
 import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
 import { isPhysicalReversed, resolveFlow } from './flow.js';
-import { observeDirection } from './observeDirection.js';
+import { resolveMessages } from './messages.js';
+import { observeLocale } from './observeLocale.js';
 
 export type ResizeDirection = 'none' | 'both' | 'horizontal' | 'vertical';
 
@@ -59,7 +60,19 @@ export interface ResizeOptions {
   onResizeStart?: (detail: ResizeLifecycleDetail) => void;
   onResize?: (detail: ResizeLifecycleDetail) => void;
   onResizeEnd?: (detail: ResizeLifecycleDetail) => void;
+  /** Text overrides for the injected corner grip. */
+  messages?: Partial<ResizeMessages>;
 }
+
+/** Text of the corner grip injected when no `handle` is given. */
+export interface ResizeMessages {
+  /** Accessible name of the corner grip. */
+  grip: string;
+}
+
+export const DEFAULT_RESIZE_MESSAGES: Readonly<ResizeMessages> = Object.freeze({
+  grip: 'Resize',
+});
 
 /**
  * Pins position and size as explicit border-box pixel values.
@@ -127,12 +140,26 @@ export class ResizeController implements ReactiveController {
   private _opts: Required<
     Omit<
       ResizeOptions,
-      'handle' | 'bounds' | 'maxWidth' | 'maxHeight' | 'onResizeStart' | 'onResize' | 'onResizeEnd'
+      | 'handle'
+      | 'bounds'
+      | 'maxWidth'
+      | 'maxHeight'
+      | 'onResizeStart'
+      | 'onResize'
+      | 'onResizeEnd'
+      | 'messages'
     >
   > &
     Pick<
       ResizeOptions,
-      'handle' | 'bounds' | 'maxWidth' | 'maxHeight' | 'onResizeStart' | 'onResize' | 'onResizeEnd'
+      | 'handle'
+      | 'bounds'
+      | 'maxWidth'
+      | 'maxHeight'
+      | 'onResizeStart'
+      | 'onResize'
+      | 'onResizeEnd'
+      | 'messages'
     >;
 
   private _resizing: ResizeEdge | null = null;
@@ -343,7 +370,7 @@ export class ResizeController implements ReactiveController {
 
     const effects = new ControllerEffects();
 
-    effects.add(observeDirection(this._onFlowInteraction));
+    effects.add(observeLocale(this._onFlowInteraction));
     effects.listen(this._handle() ?? this._target(), 'pointerenter', this._onFlowInteraction);
     this._flowEffects = effects;
   }
@@ -370,6 +397,7 @@ export class ResizeController implements ReactiveController {
 
     if (this._cornerBtn) {
       this._placeCornerButton(this._cornerBtn);
+      this._labelCornerButton(this._cornerBtn);
     }
   }
 
@@ -397,7 +425,6 @@ export class ResizeController implements ReactiveController {
     const btn = document.createElement('button');
 
     btn.setAttribute('data-rc-resize-corner', '');
-    btn.setAttribute('aria-label', 'Resize');
     btn.type = 'button';
 
     Object.assign(btn.style, {
@@ -411,6 +438,7 @@ export class ResizeController implements ReactiveController {
     });
 
     this._placeCornerButton(btn);
+    this._labelCornerButton(btn);
 
     btn.addEventListener('keydown', this._onKeyDown as EventListener);
     btn.addEventListener('focus', this._onFlowInteraction);
@@ -432,6 +460,20 @@ export class ResizeController implements ReactiveController {
       right: x === 'e' ? '0' : '',
       cursor: this._cornerCursor(),
     });
+  }
+
+  /** Names the grip in the target's locale; the flow observer re-runs it when `lang` changes. */
+  private _labelCornerButton(btn: HTMLButtonElement): void {
+    const { grip } = resolveMessages(
+      this._target(),
+      'resize',
+      DEFAULT_RESIZE_MESSAGES,
+      this._opts.messages,
+    );
+
+    if (btn.getAttribute('aria-label') !== grip) {
+      btn.setAttribute('aria-label', grip);
+    }
   }
 
   private _removeCornerButton(): void {

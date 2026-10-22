@@ -2,6 +2,7 @@ import { html, type ReactiveControllerHost } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from './messages.js';
 import { ResizeController, pinElementBox } from './ResizeController.js';
 
 test('pinElementBox preserves visual geometry inside a containing block', async () => {
@@ -474,4 +475,50 @@ test('dispose stops an active resize and releases its pointer', async () => {
 
   expect(onResize).not.toHaveBeenCalled();
   expect(release).toHaveBeenCalledWith(1);
+});
+
+test('names the grip in the target locale and renames it when lang changes', async () => {
+  registerMessages('ar', { resize: { grip: 'تغيير الحجم' } });
+
+  const screen = render(html`
+    <div
+      lang="ar"
+      dir="rtl"
+      data-testid="target"
+      style="position: fixed; top: 50px; left: 100px; inline-size: 200px; block-size: 100px;"
+    ></div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const ctl = new ResizeController(createHost(), { target: $target, direction: 'both' });
+
+  ctl.hostConnected();
+
+  const $grip = $target.querySelector<HTMLElement>('[data-rc-resize-corner]')!;
+
+  expect($grip.getAttribute('aria-label')).toBe('تغيير الحجم');
+
+  $target.lang = 'en';
+  await vi.waitFor(() => expect($grip.getAttribute('aria-label')).toBe('Resize'));
+
+  ctl.dispose();
+});
+
+test('a messages override names the grip', async () => {
+  const screen = render(html`
+    <div data-testid="target" style="position: fixed; inline-size: 200px; block-size: 100px;"></div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const ctl = new ResizeController(createHost(), {
+    target: $target,
+    direction: 'both',
+    messages: { grip: 'Resize panel' },
+  });
+
+  ctl.hostConnected();
+
+  expect($target.querySelector('[data-rc-resize-corner]')?.getAttribute('aria-label')).toBe(
+    'Resize panel',
+  );
+
+  ctl.dispose();
 });

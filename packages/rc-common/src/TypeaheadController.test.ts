@@ -41,3 +41,31 @@ test('reset clears the current buffer', () => {
   controller.reset();
   expect(controller.buffer).toBe('');
 });
+
+test('matches prefixes regardless of case and accents', () => {
+  const controller = new TypeaheadController<string>({
+    items: () => ['Banana', 'Éclair', 'Figs'],
+    text: (item) => item,
+    startIndex: () => 0,
+    onMatch: vi.fn(),
+  });
+
+  expect(controller.search('e')).toBe('Éclair');
+  expect(controller.search('C')).toBe('Éclair');
+});
+
+test('matches with the collation of the given locale', () => {
+  const items = ['Apple', 'Ångström'];
+  const swedish = new TypeaheadController<string>({
+    items: () => items,
+    text: (item) => item,
+    startIndex: () => 0,
+    onMatch: vi.fn(),
+    locale: () => 'sv',
+  });
+
+  // In Swedish, Å is its own letter rather than an accented A.
+  expect(swedish.search('a')).toBe('Apple');
+  swedish.reset();
+  expect(swedish.search('å')).toBe('Ångström');
+});

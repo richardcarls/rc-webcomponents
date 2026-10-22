@@ -62,6 +62,11 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `ItemsCollectionController`                                            | Filtering selectable and action items while preserving their distinct option kinds                                          |
 | `KeyboardInteractionDirective` / `keyInteraction`                      | Tracking pointer vs keyboard interaction mode on a rendered element                                                         |
 | `KeyboardNavigationDirective` / `keyNavigation`                        | Mapping APG arrow-key models to navigation actions                                                                          |
+| `LocaleController`                                                     | Re-rendering on a host's UI locale change, for `Intl` formatting in render                                                  |
+| `MessagesController`, `registerMessages`, `resolveMessages`            | Built-in component text: per-element overrides, registered translations, English defaults                                   |
+| `messagesLocale`, `observeLocale`                                      | Resolving a host's UI locale and reacting to any `dir` or `lang` change in the document                                     |
+| `numberFormat`, `collator`                                             | Shared, cached `Intl.NumberFormat` and `Intl.Collator` instances that tolerate an invalid locale                            |
+| `syncDefaultAttribute`                                                 | Writing a localized default attribute without overwriting an authored one                                                   |
 | `MutationObserverController`                                           | Lifecycle-safe `MutationObserver` wiring for light-DOM or shadow-DOM changes                                                |
 | `NavigationIndicatorController`                                        | Positioning a shared visual indicator against the current navigation item                                                   |
 | `NativeChildController`, `getDirectChildren`, `warnMissingDirectChild` | Finding, validating, and tracking consumer-provided native light-DOM children                                               |
@@ -79,6 +84,38 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `snapToStep`, `valueToPercent`                                         | Slider and range-slider numeric helpers                                                                                     |
 
 ---
+
+## Localization
+
+Components ship English text only. Each one resolves its built-in strings (button names, role
+descriptions, announcements) per key, in this order:
+
+1. The element's `messages` property (`reorderMessages` on `rc-list`).
+2. Text registered with `registerMessages()` for the element's locale: the exact tag, then its
+   base language (`de-CH`, then `de`).
+3. The English default.
+
+```ts
+import { registerMessages } from '@rcarls/rc-common';
+
+registerMessages('de', {
+  'rc-carousel': { previous: 'Vorherige Folie', next: 'Nächste Folie' },
+  'rc-search-bar': { clear: 'Suche löschen' },
+});
+```
+
+The locale is the element's own `lang` attribute, else `<html lang>`. An ancestor's `lang` is
+skipped on purpose: it usually marks content, such as a German recipe on an English page, while
+component chrome stays in the interface language. Interpolating entries are functions, such as
+`goToSlide: (position, count) => string`; numbers arrive unformatted, so format them in the
+translation when the locale needs other digits. Numbers a component formats itself, such as
+`rc-progress`'s percentage, use `Intl.NumberFormat` for the same locale.
+
+Each package declares its entry in the `RcMessageCatalog` interface, so `registerMessages()`
+type-checks scope names and keys for the packages you import. Registering text, or changing a
+`lang` or `dir` attribute, re-renders the affected components through `observeLocale()`, so a
+language switch needs no reload. Register before components connect to avoid a flash of
+English.
 
 ## API
 

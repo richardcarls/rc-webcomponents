@@ -2,6 +2,7 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import './define.js';
@@ -813,4 +814,22 @@ test('resolves the block axis when a lift starts, after a runtime writing-mode c
   await settle(list);
 
   expect(order(list)).toEqual(['Beta', 'Alpha', 'Gamma']);
+});
+
+test('describes handles in the list locale and rewrites them when lang changes', async () => {
+  registerMessages('ar', { reorder: { instructions: 'اضغط مسافة لإعادة الترتيب.' } });
+
+  const list = await setup(html`
+    <rc-list data-testid="list" lang="ar" dir="rtl" reorderable style="inline-size: 16rem">
+      ${NAMES.map(itemTemplate)}
+    </rc-list>
+  `);
+
+  expect(handle(list, 'Beta').getAttribute('aria-description')).toBe('اضغط مسافة لإعادة الترتيب.');
+
+  list.lang = 'en';
+
+  await vi.waitFor(() =>
+    expect(handle(list, 'Beta').getAttribute('aria-description')).toBe('Press Space to reorder.'),
+  );
 });

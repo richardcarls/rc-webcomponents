@@ -1,3 +1,5 @@
+import { collator } from './localeFormat.js';
+
 export interface TypeaheadControllerOptions<T> {
   /** Items searched by typeahead. */
   items: () => readonly T[];
@@ -9,13 +11,20 @@ export interface TypeaheadControllerOptions<T> {
   startIndex?: () => number;
   /** Buffer clear delay in milliseconds. Defaults to `500`. */
   timeout?: number;
+  /**
+   * Locale whose collation decides a match, such as `messagesLocale(host)`.
+   * Defaults to the runtime locale.
+   */
+  locale?: () => string | undefined;
 }
 
 /**
  * Small APG-style typeahead buffer for composite widgets.
  *
  * It handles printable-key buffering and timeout reset; consumers keep control
- * of focus, active descendant, and selection behavior.
+ * of focus, active descendant, and selection behavior. Prefixes match with an
+ * `Intl.Collator` at base sensitivity, so case and accents are ignored the way
+ * the locale ignores them: typing `e` finds `Éclair`.
  */
 export class TypeaheadController<T> {
   private _buffer = '';
@@ -49,7 +58,7 @@ export class TypeaheadController<T> {
   }
 
   search(char: string): T | null {
-    this._buffer += char.toLocaleLowerCase();
+    this._buffer += char;
     this._scheduleReset();
 
     const items = this._options.items();
@@ -60,13 +69,14 @@ export class TypeaheadController<T> {
 
     const startIndex = this._options.startIndex?.() ?? 0;
     const count = items.length;
+    const compare = collator(this._options.locale?.(), { sensitivity: 'base', usage: 'search' });
 
     for (let offset = 1; offset <= count; offset += 1) {
       const index = (startIndex + offset) % count;
       const item = items[index];
-      const text = this._options.text(item).trim().toLocaleLowerCase();
+      const text = this._options.text(item).trim();
 
-      if (text.startsWith(this._buffer)) {
+      if (compare.compare(text.slice(0, this._buffer.length), this._buffer) === 0) {
         this._options.onMatch(item, index);
 
         return item;

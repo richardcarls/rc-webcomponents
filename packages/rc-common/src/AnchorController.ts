@@ -7,7 +7,7 @@ import {
   resolveAnchorPlacement,
 } from './anchorPlacement.js';
 import { resolveFlow } from './flow.js';
-import { observeDirection } from './observeDirection.js';
+import { observeLocale } from './observeLocale.js';
 import { RafScheduler } from './RafScheduler.js';
 import { getVisualViewportBounds } from './visualViewport.js';
 
@@ -142,7 +142,7 @@ export class AnchorController implements ReactiveController {
   private _resizeObserver: ResizeObserver | null = null;
   private _intersectionObserver: IntersectionObserver | null = null;
   private _mutationObserver: MutationObserver | null = null;
-  private _unobserveDirection: (() => void) | null = null;
+  private _unobserveLocale: (() => void) | null = null;
   private _$observedAnchor: Element | null = null;
   private _$observedFloating: Element | null = null;
 
@@ -183,14 +183,14 @@ export class AnchorController implements ReactiveController {
 
   hostConnected(): void {
     this._connected = true;
-    this._unobserveDirection ??= observeDirection(this._handleDirectionChange);
+    this._unobserveLocale ??= observeLocale(this._handleDirectionChange);
     this._applyAndPosition();
   }
 
   hostDisconnected(): void {
     this._connected = false;
-    this._unobserveDirection?.();
-    this._unobserveDirection = null;
+    this._unobserveLocale?.();
+    this._unobserveLocale = null;
     this._cleanup();
   }
 
