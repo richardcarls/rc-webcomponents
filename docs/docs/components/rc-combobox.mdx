@@ -280,6 +280,12 @@ To workaround this bug, `rc-select` force-disables the slotted `<select multiple
 
 See the [rc-select Known Issues](./rc-select.mdx#known-issues) entry for consumer implications (pre-upgrade behavior, form submission, constraint validation).
 
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`. Override it with
+`messages`, or register it for every instance under `rc-combobox`: every `rc-select` key plus `search`; the "Create" option reads `rc-listbox` (`create`). See
+[Localization](../guide/localization).
+
 ## API
 
 <ApiTable tag="rc-combobox" />

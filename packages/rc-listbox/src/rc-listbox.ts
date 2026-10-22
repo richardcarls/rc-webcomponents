@@ -6,6 +6,7 @@ import {
   cssText,
   type ItemsCollectionActionOption,
   ItemsCollectionController,
+  MessagesController,
   type ItemsCollectionFilterStrategy,
   type ItemsCollectionOption,
   type ItemsCollectionSelectableOption,
@@ -154,6 +155,22 @@ const LIGHT_DOM_CSS = cssText`
 }
 `;
 
+/** Built-in text of `rc-listbox`. */
+export interface RCListboxMessages {
+  /** Text of the "Create" option for typed text that matches nothing. */
+  create: (text: string) => string;
+}
+
+export const DEFAULT_LISTBOX_MESSAGES: Readonly<RCListboxMessages> = Object.freeze({
+  create: (text: string) => `Create "${text}"`,
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-listbox': RCListboxMessages;
+  }
+}
+
 /**
  * A WAI-ARIA listbox component that renders a `<ul role="presentation">`
  * + `<li role="option">` subtree directly into its own light DOM to facilitate
@@ -170,6 +187,10 @@ const LIGHT_DOM_CSS = cssText`
  *   - Call `toggleOption()` for internal keyboard/pointer activation
  *   - Call `filterOptions()` to filter visible options
  *   - Read `navigableItems` to feed `ActiveDescendantController`
+ *
+ * The "Create" option's text follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every listbox through
+ * `registerMessages()` from `@rcarls/rc-common` under `rc-listbox`.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-listbox rc-listbox docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/listbox/ WAI-ARIA Listbox pattern}
@@ -260,6 +281,22 @@ export class RCListbox extends LitElement {
   @property({ attribute: 'filter-strategy', reflect: false })
   filterStrategy: FilterStrategy = 'contains';
 
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCListboxMessages> | undefined;
+
+  private _createText: string | null = null;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-listbox',
+    DEFAULT_LISTBOX_MESSAGES,
+    {
+      overrides: () => this.messages,
+      onChange: () => this.setCreateOption(this._createText),
+    },
+  );
+
   private _defaultValue: string | string[] | undefined;
   private _value: string | string[] | undefined;
   private _selectionInitialized = false;
@@ -310,6 +347,10 @@ export class RCListbox extends LitElement {
 
     if (changed.has('checkmark')) {
       this._itemsCollectionCtrl.checkmark = this.checkmark;
+    }
+
+    if (changed.has('messages')) {
+      this.setCreateOption(this._createText);
     }
   }
 
@@ -466,12 +507,18 @@ export class RCListbox extends LitElement {
   /**
    * Show or hide the "Create" option at the end of the list.
    *
-   * Pass `null` to hide it, or a non-empty string to show `Create "{label}"`.
+   * Pass `null` to hide it, or a non-empty string to show `Create "{label}"`
+   * in the listbox's locale.
    * Fires `rc-listbox-change` with `reason: 'action'` and `action: 'create'`
    * when activated.
    */
   setCreateOption(label: string | null): void {
-    this._itemsCollectionCtrl.setCreateOption(label);
+    this._createText = label;
+
+    this._itemsCollectionCtrl.setCreateOption(
+      label,
+      label === null ? undefined : this._messages.value.create(label.trim()),
+    );
   }
 
   /** Clears the active descendant when focus leaves the listbox. */

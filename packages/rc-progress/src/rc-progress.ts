@@ -3,7 +3,12 @@ import type { ComplexAttributeConverter, PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { NativeChildController, warnMissingDirectChild } from '@rcarls/rc-common';
+import {
+  LocaleController,
+  NativeChildController,
+  numberFormat,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -78,7 +83,8 @@ const displayConverter: ComplexAttributeConverter<DisplayValue> = {
  * @attr indeterminate - When present, the component removes the native `<progress>`'s
  *   `value` attribute instead of asking the consumer to bind `undefined` to it.
  * @attr display - Controls the live value display: absent (none), `overlay` (centered on
- *   the bar), `inline-start`, or `inline-end`.
+ *   the bar), `inline-start`, or `inline-end`. Without `value-text` it shows the rounded
+ *   percentage, formatted for the element's own `lang`, else `<html lang>`.
  * @attr value-text - Screen-reader value text, forwarded as `aria-valuetext` on the
  *   native `<progress>`. Also used as the default formatted display text when set.
  * @attr orientation - Orientation, forwarded to `aria-orientation`: `horizontal` or
@@ -349,6 +355,9 @@ export class RCProgress extends LitElement {
    */
   @property({ attribute: 'value-text' }) valueText = '';
 
+  /** Formats the default percentage in the element's own `lang`, else `<html lang>`. */
+  private readonly _locale = new LocaleController(this);
+
   /** Orientation; reflected as an attribute and forwarded to `aria-orientation`. */
   @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
 
@@ -447,9 +456,11 @@ export class RCProgress extends LitElement {
       return '';
     }
 
-    const percent = this.max > 0 ? (this.value / this.max) * 100 : 0;
+    const ratio = this.max > 0 ? this.value / this.max : 0;
 
-    return `${Math.round(percent)}%`;
+    return numberFormat(this._locale.locale, { style: 'percent', maximumFractionDigits: 0 }).format(
+      ratio,
+    );
   }
 
   private get _nativeProgressValue(): number {

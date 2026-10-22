@@ -3,6 +3,7 @@ import { afterEach, expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCAdaptiveMenu } from './rc-adaptive-menu.js';
@@ -628,4 +629,33 @@ test('styles overflowed rows from inherited item tokens inside a foreign shadow 
   } finally {
     outer.remove();
   }
+});
+
+test('names the toolbar and overflow trigger in its own locale; an authored label wins', async () => {
+  registerMessages('ar', { 'rc-adaptive-menu': { label: 'إجراءات', overflow: 'المزيد' } });
+
+  const screen = render(html`
+    <rc-adaptive-menu lang="ar" dir="rtl" max-shown="1">
+      <button type="button">First</button>
+      <button type="button">Second</button>
+    </rc-adaptive-menu>
+  `);
+  const host = screen.container.querySelector('rc-adaptive-menu') as RCAdaptiveMenu;
+
+  await host.updateComplete;
+
+  expect(host.shadowRoot?.querySelector('#overflow-trigger')?.getAttribute('aria-label')).toBe(
+    'المزيد',
+  );
+
+  expect(host.shadowRoot?.querySelector('[part~="root"]')?.getAttribute('aria-label')).toBe(
+    'إجراءات',
+  );
+
+  host.label = 'Recipe actions';
+  await host.updateComplete;
+
+  expect(host.shadowRoot?.querySelector('[part~="root"]')?.getAttribute('aria-label')).toBe(
+    'Recipe actions',
+  );
 });

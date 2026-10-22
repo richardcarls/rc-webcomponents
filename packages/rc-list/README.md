@@ -101,6 +101,13 @@ While an item is lifted it carries `data-dragging` and the list carries `data-re
 style the lifted item with the `--rc-list-item-dragged-*` properties and animate the shifting
 items with `--rc-list-item-reorder-duration`. Reduced motion turns that shift off.
 
+### Localizing the reorder text
+
+The handle hint and announcements follow the list's own `lang`, else `<html lang>`. Override
+them per list with `reorderMessages`, or for every list with `registerMessages()` from
+`@rcarls/rc-common` under `reorder` (`instructions`, `grabbed`, `moved`, `dropped`,
+`canceled`).
+
 ## Expandable details
 
 An item can carry a supporting region below its row in the `details` slot. Mark a button inside

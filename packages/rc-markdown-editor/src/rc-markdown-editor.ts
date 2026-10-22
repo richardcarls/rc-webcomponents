@@ -7,7 +7,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
 import { visit } from 'unist-util-visit';
 
-import { cssZoom, isPhysicalReversed, resolveFlow } from '@rcarls/rc-common';
+import { MessagesController, cssZoom, isPhysicalReversed, resolveFlow } from '@rcarls/rc-common';
 import type { RCTextarea, RCTextareaPluginAPI, DecorationInput } from '@rcarls/rc-textarea';
 import type {
   ActiveFormats,
@@ -201,6 +201,37 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
   // list and html (underline) nodes are handled dynamically in _setupSourcePlugin
 };
 
+/** Built-in text of `rc-markdown-editor`, apart from its toolbar's. */
+export interface RCMarkdownEditorMessages {
+  /** Accessible name of the source-mode textarea. */
+  source: string;
+  /** Accessible name of the link popover. */
+  linkPopover: string;
+  /** Accessible name of the link URL input. */
+  url: string;
+  applyLink: string;
+  openLink: string;
+  removeLink: string;
+  /** A tooltip with its keyboard shortcut, such as `Apply (Enter)`. */
+  shortcut: (label: string, keys: string) => string;
+}
+
+export const DEFAULT_MARKDOWN_EDITOR_MESSAGES: Readonly<RCMarkdownEditorMessages> = Object.freeze({
+  source: 'Markdown source',
+  linkPopover: 'Link',
+  url: 'URL',
+  applyLink: 'Apply',
+  openLink: 'Open link',
+  removeLink: 'Remove link',
+  shortcut: (label: string, keys: string) => `${label} (${keys})`,
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-markdown-editor': RCMarkdownEditorMessages;
+  }
+}
+
 /**
  * Rich/source Markdown editor with a formatting toolbar, backed by rc-textarea.
  *
@@ -219,6 +250,12 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
  *   <textarea id="body" name="body"></textarea>
  * </rc-markdown-editor>
  * ```
+ *
+ * Built-in text follows the element's own `lang`, else `<html lang>`: per
+ * element through `messages`, or for every editor through
+ * `registerMessages()` from `@rcarls/rc-common` under `rc-markdown-editor`
+ * and, for the toolbar, `rc-editor-toolbar`. The toolbar takes the editor's
+ * `lang`.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-markdown-editor rc-markdown-editor docs}
  *
@@ -287,6 +324,17 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
  */
 export class RcMarkdownEditor extends LitElement {
   static override styles = rmeStyles;
+
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCMarkdownEditorMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-markdown-editor',
+    DEFAULT_MARKDOWN_EDITOR_MESSAGES,
+    { overrides: () => this.messages },
+  );
 
   private _value: string | undefined;
   private _defaultValue = '';
@@ -496,12 +544,15 @@ export class RcMarkdownEditor extends LitElement {
   }
 
   override render() {
+    const m = this._messages.value;
+
     return html`
       <slot></slot>
 
       ${this.toolbar
         ? html`<rc-editor-toolbar
             part="toolbar"
+            lang=${this.getAttribute('lang') || nothing}
             @rc-toolbar-action=${this._onToolbarAction}
           ></rc-editor-toolbar>`
         : nothing}
@@ -518,19 +569,19 @@ export class RcMarkdownEditor extends LitElement {
 
       <div id="source-wrapper" ?hidden=${!this.sourceMode}>
         <rc-textarea id="source-editor" word-wrap @rc-change=${this._onSourceChange}>
-          <textarea aria-label="Markdown source" ?readonly=${this.readOnly}></textarea>
+          <textarea aria-label=${m.source} ?readonly=${this.readOnly}></textarea>
         </rc-textarea>
       </div>
 
       ${this._linkPopoverOpen
         ? html`
-            <div class="link-popover" role="dialog" aria-label="Link">
+            <div class="link-popover" role="dialog" aria-label=${m.linkPopover}>
               <input
                 type="url"
                 class="link-popover-input"
                 .value=${this._linkPopoverHref}
                 placeholder="https://"
-                aria-label="URL"
+                aria-label=${m.url}
                 @input=${(e: Event) => {
                   this._linkPopoverHref = (e.target as HTMLInputElement).value;
                 }}
@@ -539,7 +590,8 @@ export class RcMarkdownEditor extends LitElement {
               <button
                 type="button"
                 class="link-popover-btn"
-                title="Apply (Enter)"
+                aria-label=${m.applyLink}
+                title=${m.shortcut(m.applyLink, 'Enter')}
                 @click=${this._applyLink}
               >
                 ↵
@@ -547,7 +599,8 @@ export class RcMarkdownEditor extends LitElement {
               <button
                 type="button"
                 class="link-popover-btn"
-                title="Open link"
+                aria-label=${m.openLink}
+                title=${m.openLink}
                 ?disabled=${!this._linkPopoverHref}
                 @click=${this._openLinkHref}
               >
@@ -556,7 +609,8 @@ export class RcMarkdownEditor extends LitElement {
               <button
                 type="button"
                 class="link-popover-btn"
-                title="Remove link"
+                aria-label=${m.removeLink}
+                title=${m.removeLink}
                 @click=${this._removeLink}
               >
                 ✕

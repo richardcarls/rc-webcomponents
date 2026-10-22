@@ -3,6 +3,7 @@ import { test, expect, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCSearchBar } from './rc-search-bar.js';
@@ -662,4 +663,26 @@ test('slotted search view suggestions take precedence over datalist suggestions'
   );
 
   expect($host.shadowRoot!.querySelectorAll('button[part="suggestion"]')).toHaveLength(0);
+});
+
+test('names the clear button in its own locale, and an override wins', async () => {
+  registerMessages('ar', { 'rc-search-bar': { clear: 'مسح البحث' } });
+
+  const screen = render(html`
+    <rc-search-bar lang="ar" dir="rtl">
+      <input type="search" aria-label="بحث" />
+    </rc-search-bar>
+  `);
+  const host = screen.container.querySelector('rc-search-bar') as RCSearchBar;
+
+  await host.updateComplete;
+
+  const clear = () => host.shadowRoot?.querySelector('#clear')?.getAttribute('aria-label');
+
+  expect(clear()).toBe('مسح البحث');
+
+  host.messages = { clear: 'إلغاء' };
+  await host.updateComplete;
+
+  expect(clear()).toBe('إلغاء');
 });

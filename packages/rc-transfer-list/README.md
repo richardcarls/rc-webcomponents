@@ -53,15 +53,16 @@ switch layout automatically at viewport breakpoints.
 
 ### Properties
 
-| Property          | Attribute         | Type                           | Default             | Description                                                                   |
-| ----------------- | ----------------- | ------------------------------ | ------------------- | ----------------------------------------------------------------------------- |
-| `multiple`        | `multiple`        | `boolean`                      | `false`             | Allows multiple highlighted rows in each listbox.                             |
-| `compact`         | `compact`         | `boolean`                      | `false`             | Stacks the panels and action toolbar into a compact one-column layout.        |
-| `availableLabel`  | `available-label` | `string`                       | `'Available'`       | Visible label for the available list.                                         |
-| `selectedLabel`   | `selected-label`  | `string`                       | `'Selected'`        | Visible label for the selected list.                                          |
-| `available`       | -                 | `ListboxOption[]`              | native select state | Gets or replaces unselected options.                                          |
-| `selected`        | -                 | `ListboxOption[]`              | native select state | Gets or replaces selected options.                                            |
-| `defaultSelected` | -                 | `ListboxOption[] \| undefined` | `undefined`         | Initial uncontrolled selected options, applied before host `selected` writes. |
+| Property          | Attribute         | Type                              | Default             | Description                                                                   |
+| ----------------- | ----------------- | --------------------------------- | ------------------- | ----------------------------------------------------------------------------- |
+| `multiple`        | `multiple`        | `boolean`                         | `false`             | Allows multiple highlighted rows in each listbox.                             |
+| `compact`         | `compact`         | `boolean`                         | `false`             | Stacks the panels and action toolbar into a compact one-column layout.        |
+| `availableLabel`  | `available-label` | `string \| undefined`             | `available` message | Visible label for the available list.                                         |
+| `selectedLabel`   | `selected-label`  | `string \| undefined`             | `selected` message  | Visible label for the selected list.                                          |
+| `messages`        | -                 | `Partial<RCTransferListMessages>` | `undefined`         | Built-in text overrides; see Localization.                                    |
+| `available`       | -                 | `ListboxOption[]`                 | native select state | Gets or replaces unselected options.                                          |
+| `selected`        | -                 | `ListboxOption[]`                 | native select state | Gets or replaces selected options.                                            |
+| `defaultSelected` | -                 | `ListboxOption[] \| undefined`    | `undefined`         | Initial uncontrolled selected options, applied before host `selected` writes. |
 
 ### Methods
 
@@ -80,6 +81,14 @@ switch layout automatically at viewport breakpoints.
 | `rc-transfer-list-change` | `{ selected: ListboxOption[] }` | Fires after a user action changes the selected/right-hand list. |
 
 Host property writes to `available`, `selected`, or `defaultSelected` are silent.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`, and never an
+ancestor's `lang`, which usually marks content. Override it per element with the
+`messages` property, or for every instance with `registerMessages()` from
+`@rcarls/rc-common` under `rc-transfer-list`. Keys: `available`, `selected`, `actions`, `add`, `addAll`, `remove`, `clear`, `moveUp`, `moveDown`. The arrows on the action buttons are decorative and turn over in RTL. See the
+[rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).
 
 ## Keyboard
 

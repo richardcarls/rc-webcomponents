@@ -1,15 +1,20 @@
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
+
+import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import { FLOW_FIXTURES, flowLabel, inFlow, type FlowFixture } from '../../../test-helpers/flow.js';
-
 import './define.js';
 import type { RCRangeSlider } from './rc-range-slider.js';
 
 function getInputs(host: RCRangeSlider): [HTMLInputElement, HTMLInputElement] {
   const inputs = Array.from(host.querySelectorAll<HTMLInputElement>('input[type="range"]'));
-  if (inputs.length !== 2) throw new Error(`Expected 2 range inputs, got ${inputs.length}`);
+
+  if (inputs.length !== 2) {
+    throw new Error(`Expected 2 range inputs, got ${inputs.length}`);
+  }
+
   return [inputs[0], inputs[1]];
 }
 
@@ -17,7 +22,11 @@ function getThumbs(host: RCRangeSlider): [HTMLElement, HTMLElement] {
   const thumbs = Array.from(
     host.shadowRoot?.querySelectorAll<HTMLElement>('[role="slider"]') ?? [],
   );
-  if (thumbs.length !== 2) throw new Error(`Expected 2 slider thumbs, got ${thumbs.length}`);
+
+  if (thumbs.length !== 2) {
+    throw new Error(`Expected 2 slider thumbs, got ${thumbs.length}`);
+  }
+
   return [thumbs[0], thumbs[1]];
 }
 
@@ -29,6 +38,7 @@ test('rc-range-slider renders custom thumbs with stable tab order and dynamic AR
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowThumb, highThumb] = getThumbs(host);
@@ -56,6 +66,7 @@ test('rc-range-slider keeps native inputs in the DOM as hidden form reflectors',
     </form>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowInput, highInput] = getInputs(host);
@@ -80,9 +91,11 @@ test('rc-range-slider low thumb ArrowRight increments low value', async () => {
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowThumb] = getThumbs(host);
+
   lowThumb.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
   await host.updateComplete;
 
@@ -100,9 +113,11 @@ test('rc-range-slider high thumb ArrowLeft decrements high value', async () => {
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [, highThumb] = getThumbs(host);
+
   highThumb.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
   await host.updateComplete;
 
@@ -119,9 +134,11 @@ test('rc-range-slider keyboard clamps low and high thumbs at each other', async 
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowThumb, highThumb] = getThumbs(host);
+
   lowThumb.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
   await host.updateComplete;
   lowThumb.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
@@ -143,6 +160,7 @@ test('rc-range-slider Page and Home/End keys follow the APG bounds', async () =>
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowThumb, highThumb] = getThumbs(host);
@@ -174,13 +192,18 @@ test('rc-range-slider pointer drag updates nearest thumb without swapping tab or
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const group = host.shadowRoot?.querySelector<HTMLElement>('.rc-range-slider-group');
   const [lowThumb, highThumb] = getThumbs(host);
-  if (!group) throw new Error('Expected slider group');
+
+  if (!group) {
+    throw new Error('Expected slider group');
+  }
 
   group.getBoundingClientRect = () => new DOMRect(0, 0, 100, 20);
+
   group.dispatchEvent(
     new PointerEvent('pointerdown', {
       bubbles: true,
@@ -190,6 +213,7 @@ test('rc-range-slider pointer drag updates nearest thumb without swapping tab or
       pointerId: 1,
     }),
   );
+
   group.dispatchEvent(
     new PointerEvent('pointermove', {
       bubbles: true,
@@ -198,6 +222,7 @@ test('rc-range-slider pointer drag updates nearest thumb without swapping tab or
       pointerId: 1,
     }),
   );
+
   group.dispatchEvent(
     new PointerEvent('pointerup', {
       bubbles: true,
@@ -206,6 +231,7 @@ test('rc-range-slider pointer drag updates nearest thumb without swapping tab or
       pointerId: 1,
     }),
   );
+
   await host.updateComplete;
 
   expect(host.value).toEqual([40, 80]);
@@ -229,6 +255,7 @@ test('rc-range-slider fires input and change events via native input reflector',
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowInput] = getInputs(host);
@@ -250,9 +277,11 @@ test('rc-range-slider exposes aria-valuetext on each custom thumb', async () => 
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowThumb, highThumb] = getThumbs(host);
+
   expect(lowThumb.getAttribute('aria-valuetext')).toBe('$20');
   expect(highThumb.getAttribute('aria-valuetext')).toBe('$80');
 });
@@ -265,9 +294,11 @@ test('rc-range-slider range fill style reflects current values', async () => {
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const rangeEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="range"]');
+
   expect(rangeEl?.getAttribute('style')).toContain('inset-inline-start:calc(25.000%');
   expect(rangeEl?.getAttribute('style')).toContain('inline-size:max(0px');
   expect(rangeEl?.getAttribute('style')).toContain('calc(75.000%');
@@ -281,9 +312,11 @@ test('rc-range-slider vertical range fill spans between thumb centers', async ()
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const rangeEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="range"]');
+
   expect(rangeEl?.getAttribute('style')).toContain('inset-block-start:calc(25.000%');
   expect(rangeEl?.getAttribute('style')).toContain('block-size:max(0px');
   expect(rangeEl?.getAttribute('style')).toContain('calc(75.000%');
@@ -291,6 +324,7 @@ test('rc-range-slider vertical range fill spans between thumb centers', async ()
   const trackEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="track"]');
   const rangeRect = rangeEl!.getBoundingClientRect();
   const trackRect = trackEl!.getBoundingClientRect();
+
   expect(rangeRect.top).toBeGreaterThan(trackRect.top);
   expect(rangeRect.bottom).toBeLessThan(trackRect.bottom);
 });
@@ -303,16 +337,19 @@ test('rc-range-slider selected range and thumbs use the accent token with Highli
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const rangeEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="range"]');
   const thumbEl = host.shadowRoot?.querySelector<HTMLElement>('[part~="thumb"]');
 
   expect(getComputedStyle(rangeEl!).backgroundColor).toBe('rgb(1, 2, 3)');
+
   expect(getComputedStyle(rangeEl!).backgroundColor).not.toBe(
     getComputedStyle(host.shadowRoot!.querySelector<HTMLElement>('[part~="track"]')!)
       .backgroundColor,
   );
+
   expect(getComputedStyle(thumbEl!).borderTopColor).toBe(
     getComputedStyle(rangeEl!).backgroundColor,
   );
@@ -327,6 +364,7 @@ test('rc-range-slider renders track-background slot before range', async () => {
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const track = host.shadowRoot?.querySelector('[part="track"]');
@@ -347,9 +385,11 @@ test('rc-range-slider consumer-provided aria-label is not overwritten by low-lab
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowThumb, highThumb] = getThumbs(host);
+
   expect(lowThumb.getAttribute('aria-label')).toBe('From');
   expect(highThumb.getAttribute('aria-label')).toBe('To');
 });
@@ -362,10 +402,12 @@ test('rc-range-slider disabled syncs to both native inputs and custom thumbs', a
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowInput, highInput] = getInputs(host);
   const [lowThumb, highThumb] = getThumbs(host);
+
   expect(lowInput.disabled).toBe(true);
   expect(highInput.disabled).toBe(true);
   expect(lowThumb.getAttribute('aria-disabled')).toBe('true');
@@ -381,9 +423,11 @@ test('rc-range-slider readonly suppresses value updates on low thumb', async () 
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowThumb] = getThumbs(host);
+
   lowThumb.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
 
   expect(host.value[0]).toBe(20);
@@ -398,9 +442,11 @@ test('rc-range-slider applies default low-label and high-label when no label sou
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowThumb, highThumb] = getThumbs(host);
+
   expect(lowThumb.getAttribute('aria-label')).toBe('Minimum');
   expect(highThumb.getAttribute('aria-label')).toBe('Maximum');
 });
@@ -413,9 +459,11 @@ test('rc-range-slider display="float" renders value displays for both thumbs', a
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const displays = host.shadowRoot?.querySelectorAll('[part~="value-display"]');
+
   expect(displays?.length).toBe(2);
   await expect.element(screen.getByText('25')).toBeInTheDocument();
   await expect.element(screen.getByText('75')).toBeInTheDocument();
@@ -428,6 +476,7 @@ test('rc-range-slider has no automated accessibility violations', async () => {
       <input type="range" min="0" max="100" value="80" aria-label="Maximum" />
     </rc-range-slider>
   `);
+
   await expectNoA11yViolations(screen.getByTestId('host').element());
 });
 
@@ -439,12 +488,14 @@ test('rc-range-slider defaultValue sets initial [low, high] without controlling'
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   host.defaultValue = [15, 75];
   await host.updateComplete;
 
   expect(host.value).toEqual([15, 75]);
 
   const [lowInput, highInput] = getInputs(host);
+
   expect(lowInput.valueAsNumber).toBe(15);
   expect(highInput.valueAsNumber).toBe(75);
 });
@@ -457,6 +508,7 @@ test('rc-range-slider controlled value overrides defaultValue', async () => {
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   host.defaultValue = [15, 75];
   host.value = [25, 85];
   await host.updateComplete;
@@ -473,6 +525,7 @@ test('rc-range-slider setting defaultValue does not fire rc-range-slider-input',
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   host.defaultValue = [10, 90];
   await host.updateComplete;
 
@@ -487,6 +540,7 @@ test('rc-range-slider without defaultValue falls back to [0, 100]', async () => 
     </rc-range-slider>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   expect(host.value).toEqual([0, 100]);
@@ -502,6 +556,7 @@ test('rc-range-slider raises the low thumb with ArrowLeft in RTL', async () => {
     </div>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const [lowThumb] = getThumbs(host);
@@ -522,10 +577,14 @@ test('rc-range-slider measures pointer positions from the right edge in RTL', as
     </div>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const group = host.shadowRoot?.querySelector<HTMLElement>('.rc-range-slider-group');
-  if (!group) throw new Error('Expected slider group');
+
+  if (!group) {
+    throw new Error('Expected slider group');
+  }
 
   group.getBoundingClientRect = () => new DOMRect(0, 0, 100, 20);
 
@@ -589,6 +648,7 @@ test('rc-range-slider draws the fill from the right in RTL', async () => {
     </div>
   `);
   const host = screen.getByTestId('host').element() as RCRangeSlider;
+
   await host.updateComplete;
 
   const group = host.shadowRoot?.querySelector<HTMLElement>('.rc-range-slider-group');
@@ -723,4 +783,23 @@ test('rc-range-slider follows a direction flip at runtime in vertical text', asy
 
   expect(await deltaFor(host, 0, 'ArrowDown')).toBe(-1);
   expect(await deltaFor(host, 0, 'ArrowUp')).toBe(1);
+});
+
+test('names unnamed thumbs in its own locale; low-label wins', async () => {
+  registerMessages('ar', { 'rc-range-slider': { low: 'الحد الأدنى', high: 'الحد الأقصى' } });
+
+  const screen = render(html`
+    <rc-range-slider lang="ar" dir="rtl" aria-label="السعر" low-label="أقل سعر">
+      <input type="range" min="0" max="100" value="20" />
+      <input type="range" min="0" max="100" value="80" />
+    </rc-range-slider>
+  `);
+  const host = screen.container.querySelector('rc-range-slider') as RCRangeSlider;
+
+  await host.updateComplete;
+
+  const thumb = (name: string) => host.shadowRoot?.querySelector(`[data-thumb="${name}"]`);
+
+  await vi.waitFor(() => expect(thumb('high')?.getAttribute('aria-label')).toBe('الحد الأقصى'));
+  expect(thumb('low')?.getAttribute('aria-label')).toBe('أقل سعر');
 });

@@ -2,7 +2,7 @@ import { html } from 'lit';
 import { describe, expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import { logicalRect, resolveFlow, setScrollOffset } from '@rcarls/rc-common';
+import { logicalRect, registerMessages, resolveFlow, setScrollOffset } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import { unexpectedOverflow } from '../../../test-helpers/rendered-ui.js';
@@ -821,4 +821,119 @@ test('drags along the new inline axis after a writing-mode change', async () => 
   expect(track.classList.contains('dragging')).toBe(true);
 
   firePointerEvent(track, 'pointerup', { clientX: x, clientY: y - 40 });
+});
+
+describe('localization', () => {
+  registerMessages('ar', {
+    'rc-carousel': {
+      carousel: 'عرض دوّار',
+      slide: 'شريحة',
+      position: (position: number, count: number) => `${position} من ${count}`,
+      previous: 'الشريحة السابقة',
+      next: 'الشريحة التالية',
+      picker: 'اختر شريحة',
+      goToSlide: (position: number) => `انتقل إلى الشريحة ${position}`,
+    },
+  });
+
+  function arabic(attrs = 'lang="ar" dir="rtl"') {
+    return `
+      <rc-carousel data-testid="carousel" ${attrs} aria-label="صور" navigation pagination>
+        <rc-carousel-item data-testid="item-0">One</rc-carousel-item>
+        <rc-carousel-item data-testid="item-1">Two</rc-carousel-item>
+      </rc-carousel>
+    `;
+  }
+
+  async function mount(markup: string) {
+    const wrapper = document.createElement('div');
+
+    wrapper.innerHTML = markup;
+    document.body.append(wrapper);
+
+    const carousel = wrapper.querySelector<RCCarousel>('rc-carousel')!;
+
+    await settle(carousel);
+
+    return { wrapper, carousel, root: carousel.shadowRoot! };
+  }
+
+  test('renders registered text for its own lang', async () => {
+    const { wrapper, carousel, root } = await mount(arabic());
+
+    expect(carousel.getAttribute('aria-roledescription')).toBe('عرض دوّار');
+
+    const item = carousel.querySelector('rc-carousel-item')!;
+
+    expect(item.getAttribute('aria-roledescription')).toBe('شريحة');
+    expect(item.getAttribute('aria-label')).toBe('1 من 2');
+
+    expect(
+      root.querySelector('[part~="navigation-button-previous"]')?.getAttribute('aria-label'),
+    ).toBe('الشريحة السابقة');
+
+    expect(root.querySelector('#pagination')?.getAttribute('aria-label')).toBe('اختر شريحة');
+
+    expect(root.querySelector('[data-pagination-item]')?.getAttribute('aria-label')).toBe(
+      'انتقل إلى الشريحة 1',
+    );
+
+    wrapper.remove();
+  });
+
+  test("ignores an ancestor's content lang", async () => {
+    const { wrapper, carousel, root } = await mount(`<div lang="ar">${arabic('')}</div>`);
+
+    expect(carousel.getAttribute('aria-roledescription')).toBe('carousel');
+
+    expect(root.querySelector('[part~="navigation-button-next"]')?.getAttribute('aria-label')).toBe(
+      'Next slide',
+    );
+
+    wrapper.remove();
+  });
+
+  test('a messages override wins over registered text', async () => {
+    const { wrapper, carousel, root } = await mount(arabic());
+
+    carousel.messages = { next: 'Weiter' };
+    await settle(carousel);
+
+    expect(root.querySelector('[part~="navigation-button-next"]')?.getAttribute('aria-label')).toBe(
+      'Weiter',
+    );
+
+    expect(
+      root.querySelector('[part~="navigation-button-previous"]')?.getAttribute('aria-label'),
+    ).toBe('الشريحة السابقة');
+
+    wrapper.remove();
+  });
+
+  test('re-renders its text when its lang changes at runtime', async () => {
+    const { wrapper, carousel, root } = await mount(arabic());
+    const item = carousel.querySelector('rc-carousel-item')!;
+
+    carousel.lang = 'en';
+
+    await vi.waitFor(() => {
+      expect(carousel.getAttribute('aria-roledescription')).toBe('carousel');
+      expect(item.getAttribute('aria-roledescription')).toBe('slide');
+      expect(item.getAttribute('aria-label')).toBe('1 of 2');
+
+      expect(root.querySelector('#pagination')?.getAttribute('aria-label')).toBe(
+        'Choose slide to display',
+      );
+    });
+
+    wrapper.remove();
+  });
+
+  test('keeps an authored aria-roledescription', async () => {
+    const { wrapper, carousel } = await mount(arabic('lang="ar" aria-roledescription="gallery"'));
+
+    expect(carousel.getAttribute('aria-roledescription')).toBe('gallery');
+
+    wrapper.remove();
+  });
 });

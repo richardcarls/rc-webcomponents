@@ -228,10 +228,11 @@ export class ItemsCollectionController implements ReactiveController {
 
   /**
    * Show or hide the synthetic "Create" option at the end of the list.
-   * Pass `null` to remove it.
+   * Pass `null` to remove it. `label` is the option's visible text, such as
+   * `Create "pears"`; it defaults to the text itself.
    */
-  setCreateOption(label: string | null): void {
-    if (label === null) {
+  setCreateOption(text: string | null, label?: string): void {
+    if (text === null) {
       this._createLi?.remove();
       this._createLi = null;
       this._createOption = null;
@@ -239,13 +240,13 @@ export class ItemsCollectionController implements ReactiveController {
       return;
     }
 
-    const trimmed = label.trim();
+    const trimmed = text.trim();
 
     this._createOption = {
       kind: 'action',
       action: 'create',
       value: `create:${trimmed}`,
-      label: `Create "${trimmed}"`,
+      label: label ?? trimmed,
       data: { text: trimmed },
     };
 

@@ -4,6 +4,7 @@ import { property, state } from 'lit/decorators.js';
 
 import {
   FlowController,
+  MessagesController,
   NativeChildController,
   arrowKeys,
   getDirectChildren,
@@ -80,6 +81,25 @@ function parseAttr(s: string, defaultVal: number): number {
   return isNaN(n) ? defaultVal : n;
 }
 
+/** Built-in text of `rc-range-slider`. */
+export interface RCRangeSliderMessages {
+  /** Default name of the low thumb, when neither its input nor `low-label` names it. */
+  low: string;
+  /** Default name of the high thumb, when neither its input nor `high-label` names it. */
+  high: string;
+}
+
+export const DEFAULT_RANGE_SLIDER_MESSAGES: Readonly<RCRangeSliderMessages> = Object.freeze({
+  low: 'Minimum',
+  high: 'Maximum',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-range-slider': RCRangeSliderMessages;
+  }
+}
+
 /**
  * Two-thumb range slider backed by native range inputs for min/max values, following the
  * WAI-ARIA Multi-Thumb Slider pattern.
@@ -90,6 +110,10 @@ function parseAttr(s: string, defaultVal: number): number {
  * shadow thumbs become the focusable, accessible interaction surface.
  *
  * Form participation is handled natively by each input's `name` attribute.
+ *
+ * Built-in text (the default thumb names) follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every instance
+ * through `registerMessages()` from `@rcarls/rc-common` under `rc-range-slider`.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-range-slider rc-range-slider docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/ WAI-ARIA Multi-Thumb Slider pattern}
@@ -108,8 +132,9 @@ function parseAttr(s: string, defaultVal: number): number {
  * @attr disabled - Disables both thumbs and their hidden native input reflectors.
  * @attr readonly - Prevents edits while preserving normal focus and display.
  * @attr low-label - Accessible label for the low (min) thumb when the input does not provide one.
+ *   Defaults to the `low` message.
  * @attr high-label - Accessible label for the high (max) thumb when the input does not provide
- *   one.
+ *   one. Defaults to the `high` message.
  * @attr low-value-text - Formatted screen-reader text for the low value. Falls back to the raw
  *   number.
  * @attr high-value-text - Formatted screen-reader text for the high value. Falls back to the raw
@@ -430,11 +455,30 @@ export class RCRangeSlider extends LitElement {
   /** Prevents edits while preserving normal focus and display. */
   @property({ type: Boolean, reflect: true }) readonly = false;
 
-  /** Accessible label for the low (min) thumb when the input does not provide one. */
-  @property({ attribute: 'low-label' }) lowLabel = 'Minimum';
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCRangeSliderMessages> | undefined;
 
-  /** Accessible label for the high (max) thumb when the input does not provide one. */
-  @property({ attribute: 'high-label' }) highLabel = 'Maximum';
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-range-slider',
+    DEFAULT_RANGE_SLIDER_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
+  /**
+   * Accessible label for the low (min) thumb when the input does not provide one.
+   * Defaults to the `low` message.
+   */
+  @property({ attribute: 'low-label' }) lowLabel: string | undefined;
+
+  /**
+   * Accessible label for the high (max) thumb when the input does not provide one.
+   * Defaults to the `high` message.
+   */
+  @property({ attribute: 'high-label' }) highLabel: string | undefined;
 
   /** Formatted screen-reader text for the low value. Falls back to the raw number. */
   @property({ attribute: 'low-value-text' }) lowValueText = '';
@@ -1087,7 +1131,9 @@ export class RCRangeSlider extends LitElement {
 
   private _thumbLabel(thumb: RangeThumb): string | null {
     const $input = thumb === 'low' ? this._$lowInput : this._$highInput;
-    const fallback = thumb === 'low' ? this.lowLabel : this.highLabel;
+    const messages = this._messages.value;
+    const fallback =
+      thumb === 'low' ? (this.lowLabel ?? messages.low) : (this.highLabel ?? messages.high);
     const explicitLabel = $input?.getAttribute('aria-label');
 
     if (explicitLabel) {

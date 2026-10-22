@@ -1,8 +1,13 @@
 import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { inlineArrowKeys, resolveFlow } from '@rcarls/rc-common';
-import { RCSelect, type RCSelectPopupMode } from '@rcarls/rc-select';
+import { inlineArrowKeys, resolveFlow, resolveMessages } from '@rcarls/rc-common';
+import {
+  DEFAULT_SELECT_MESSAGES,
+  RCSelect,
+  type RCSelectMessages,
+  type RCSelectPopupMode,
+} from '@rcarls/rc-select';
 import type { FilterStrategy, RCListboxChangeEvent } from '@rcarls/rc-listbox';
 
 import { comboboxStyles } from './rc-combobox.styles.js';
@@ -17,6 +22,26 @@ export type RCComboboxPopupMode = RCSelectPopupMode;
 declare global {
   interface HTMLElementTagNameMap {
     'rc-combobox': RCCombobox;
+  }
+}
+
+/**
+ * Built-in text of `rc-combobox`: everything `rc-select` has, plus the
+ * dialog search label. The "Create" option's text belongs to `rc-listbox`.
+ */
+export interface RCComboboxMessages extends RCSelectMessages {
+  /** Visible label of the dialog search input. */
+  search: (name: string) => string;
+}
+
+export const DEFAULT_COMBOBOX_MESSAGES: Readonly<RCComboboxMessages> = Object.freeze({
+  ...DEFAULT_SELECT_MESSAGES,
+  search: (name: string) => `Search ${name}`,
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-combobox': RCComboboxMessages;
   }
 }
 
@@ -57,6 +82,12 @@ declare global {
  * @csspart dialog-actions - Dialog action group.
  * @csspart dialog-confirm - Commits pending dialog selection and closes the dialog.
  * @csspart dialog-cancel - Discards pending dialog selection and closes the dialog.
+ *
+ * Built-in text follows the element's own `lang`, else `<html lang>`: per
+ * element through `messages`, or for every combobox through
+ * `registerMessages()` from `@rcarls/rc-common` under `rc-combobox`, which
+ * does not inherit text registered under `rc-select`. The "Create" option
+ * reads `rc-listbox`.
  *
  * @attr allow-create - When present, shows a "Create 'X'" option for unmatched input.
  * @attr required - Inherited from `rc-select`; mirrors the slotted native `<select>`'s own
@@ -104,6 +135,13 @@ declare global {
  */
 export class RCCombobox extends RCSelect {
   static override styles = comboboxStyles;
+
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  declare messages: Partial<RCComboboxMessages> | undefined;
+
+  protected override get _text(): RCComboboxMessages {
+    return resolveMessages(this, 'rc-combobox', DEFAULT_COMBOBOX_MESSAGES, this.messages);
+  }
 
   /** When set, shows a "Create '{text}'" option for text that has no exact match. */
   @property({ type: Boolean, attribute: 'allow-create' })
@@ -584,11 +622,11 @@ export class RCCombobox extends RCSelect {
   }
 
   protected override _renderDialogBody() {
-    const title = this._accessibleName || 'Options';
+    const text = this._text;
 
     return html`
       <label part="dialog-search">
-        <span>Search ${title}</span>
+        <span>${text.search(this._accessibleName || text.options)}</span>
         <input
           id="dialog-input"
           part="dialog-input"
@@ -610,6 +648,7 @@ export class RCCombobox extends RCSelect {
       </label>
 
       <rc-listbox
+        lang=${this.getAttribute('lang') || nothing}
         id="dialog-listbox"
         part="listbox dialog-listbox"
         tabindex="-1"
@@ -725,6 +764,7 @@ export class RCCombobox extends RCSelect {
       </div>
 
       <rc-listbox
+        lang=${this.getAttribute('lang') || nothing}
         id="listbox"
         part="listbox"
         popover="manual"

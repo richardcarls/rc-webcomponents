@@ -72,3 +72,11 @@ Use `default-open` for initial uncontrolled state, or write `open` and handle
 requested by user interaction; property writes and `openMenu()`, `closeMenu()`,
 and `toggleMenu()` calls are silent. The `$actions`, `$promotedActions`, and
 `$overflowedActions` getters expose the original nodes in current DOM order.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`, and never an
+ancestor's `lang`, which usually marks content. Override it per element with the
+`messages` property, or for every instance with `registerMessages()` from
+`@rcarls/rc-common` under `rc-adaptive-menu`. Keys: `label`, `overflow`. `label` only applies when the `label` attribute is unset. See the
+[rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).

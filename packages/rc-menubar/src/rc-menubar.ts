@@ -3,6 +3,7 @@ import { property, state } from 'lit/decorators.js';
 
 import {
   arrowKeys,
+  MessagesController,
   FlowController,
   renderedOrientation,
   resolveFlow,
@@ -25,6 +26,22 @@ const IE_KEY_ALIASES: Record<string, string> = {
   Right: 'ArrowRight',
 };
 
+/** Built-in text of `rc-menubar`. */
+export interface RCMenubarMessages {
+  /** Default accessible name of the menubar, when `label` is unset. */
+  label: string;
+}
+
+export const DEFAULT_MENUBAR_MESSAGES: Readonly<RCMenubarMessages> = Object.freeze({
+  label: 'Menu',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-menubar': RCMenubarMessages;
+  }
+}
+
 /**
  * Menubar coordinator for rc-menu-button children with roving tabindex and submenu
  * handoff, following the WAI-ARIA Menubar pattern.
@@ -33,6 +50,10 @@ const IE_KEY_ALIASES: Record<string, string> = {
  * receive real focus — required for submenu handoff and screen reader announcements.
  *
  *
+ * Built-in text (the default menubar name) follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every instance
+ * through `registerMessages()` from `@rcarls/rc-common` under `rc-menubar`.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-menubar rc-menubar docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/menubar/ WAI-ARIA Menubar pattern}
  *
@@ -40,7 +61,7 @@ const IE_KEY_ALIASES: Record<string, string> = {
  *
  * @csspart root - The root container element
  *
- * @attr label - Accessible label for the `role="menubar"` element.
+ * @attr label - Accessible label for the `role="menubar"` element. Defaults to the `label` message.
  * @attr orientation - Layout along the inline (`horizontal`) or block (`vertical`) axis,
  *   propagated to child `rc-menu-button` elements. Both turn over in vertical writing
  *   modes; `aria-orientation` and the arrow keys follow the orientation actually rendered.
@@ -71,9 +92,22 @@ const IE_KEY_ALIASES: Record<string, string> = {
 export class RCMenubar extends LitElement {
   static styles = [menubarStyles];
 
-  /** Accessible label for the `role="menubar"` element. */
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCMenubarMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-menubar',
+    DEFAULT_MENUBAR_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
+  /** Accessible label for the `role="menubar"` element. Defaults to the `label` message. */
   @property({ type: String })
-  label = 'Menu';
+  label: string | undefined;
 
   /** Orientation of the menubar, controls which arrow keys move between items. */
   @property({ type: String, reflect: true })
@@ -135,7 +169,7 @@ export class RCMenubar extends LitElement {
   /** Writes `role`, `aria-label`, and `aria-orientation` to the host element. */
   protected _syncHostAria(): void {
     this.setAttribute('role', 'menubar');
-    this.setAttribute('aria-label', this.label);
+    this.setAttribute('aria-label', this.label ?? this._messages.value.label);
     this.setAttribute('aria-orientation', renderedOrientation(this.orientation, this._flow.flow));
   }
 

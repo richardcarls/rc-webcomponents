@@ -2,6 +2,7 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
 import type { RCCombobox, RCComboboxPopupMode } from './rc-combobox.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
@@ -59,6 +60,7 @@ test('listbox fades in and out through CSS alone, with no JavaScript gating the 
   host.openPopup();
 
   await new Promise((resolve) => requestAnimationFrame(resolve));
+
   await Promise.all(
     listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
   );
@@ -70,6 +72,7 @@ test('listbox fades in and out through CSS alone, with no JavaScript gating the 
   host.closePopup(false);
 
   await new Promise((resolve) => requestAnimationFrame(resolve));
+
   await Promise.all(
     listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
   );
@@ -593,6 +596,7 @@ test('multiple: chip touch-target overlap is returned between wrapped rows', asy
     'inline-size: 9rem; --rc-chip-block-size: 32px; --rc-chip-touch-target-block-size: 48px; ' +
     '--rc-chip-touch-target-overlap-block-start: 8px; --rc-chip-touch-target-overlap-block-end: 8px; ' +
     '--rc-combobox-chip-padding-block: 0;';
+
   $host.value = ['apple', 'banana'];
 
   await getHost(screen);
@@ -652,6 +656,7 @@ test('touch tap (pointerdown + pointerup) selects active option, closes popup, s
       cancelable: true,
     }),
   );
+
   $option.dispatchEvent(
     new PointerEvent('pointerup', {
       pointerType: 'touch',
@@ -660,6 +665,7 @@ test('touch tap (pointerdown + pointerup) selects active option, closes popup, s
       cancelable: true,
     }),
   );
+
   await $host.updateComplete;
 
   expect($host.open).toBe(false);
@@ -685,6 +691,7 @@ test('touch pointerdown alone (no pointerup) does not select, so scrolling is no
       cancelable: true,
     }),
   );
+
   await $host.updateComplete;
 
   expect($host.open).toBe(true);
@@ -720,9 +727,11 @@ test('autofill-style input event (inputType: insertReplacementText) is handled w
   // Mobile autofill/contact-suggestion services can replace the whole field
   // value in one InputEvent instead of a typed sequence.
   $input.value = '123 Autofilled Ave';
+
   $input.dispatchEvent(
     new InputEvent('input', { bubbles: true, inputType: 'insertReplacementText' }),
   );
+
   await $host.updateComplete;
 
   const $listbox = $host.renderRoot.querySelector('rc-listbox')!;
@@ -756,3 +765,28 @@ test.each([
     expect(focusLastChip).toHaveBeenCalledTimes(1);
   },
 );
+
+test('resolves its own rc-combobox text, not text registered for rc-select', async () => {
+  registerMessages('ar', {
+    'rc-select': { selectedItems: 'select scope' },
+    'rc-combobox': { selectedItems: 'العناصر المحددة' },
+  });
+
+  const screen = render(html`
+    <rc-combobox lang="ar" dir="rtl" multiple>
+      <select multiple aria-label="الفواكه">
+        <option value="a" selected>Apple</option>
+        <option value="b">Banana</option>
+      </select>
+    </rc-combobox>
+  `);
+  const host = screen.container.querySelector('rc-combobox') as RCCombobox;
+
+  await vi.waitFor(() =>
+    expect(host.shadowRoot?.querySelector('[part~="chips"]')?.getAttribute('aria-label')).toBe(
+      'العناصر المحددة',
+    ),
+  );
+
+  expect(host.shadowRoot?.querySelector('rc-listbox')?.getAttribute('lang')).toBe('ar');
+});

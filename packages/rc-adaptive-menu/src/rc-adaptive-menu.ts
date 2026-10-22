@@ -3,6 +3,7 @@ import { property, query } from 'lit/decorators.js';
 
 import {
   AnchorController,
+  MessagesController,
   cssText,
   FlowController,
   isFocusable,
@@ -155,6 +156,25 @@ const LIGHT_DOM_CSS = cssText`
 }
 `;
 
+/** Built-in text of `rc-adaptive-menu`. */
+export interface RCAdaptiveMenuMessages {
+  /** Default accessible name of the toolbar, when `label` is unset. */
+  label: string;
+  /** Accessible name of the overflow trigger and popup. */
+  overflow: string;
+}
+
+export const DEFAULT_ADAPTIVE_MENU_MESSAGES: Readonly<RCAdaptiveMenuMessages> = Object.freeze({
+  label: 'Actions',
+  overflow: 'More actions',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-adaptive-menu': RCAdaptiveMenuMessages;
+  }
+}
+
 /**
  * Priority-aware action toolbar that preserves authored light-DOM controls while moving
  * lower-priority actions into an overflow menu.
@@ -182,6 +202,10 @@ const LIGHT_DOM_CSS = cssText`
  * space — a responsive breakpoint, a container query, a window size class —
  * owns that decision itself and writes the resulting `max-shown` value down.
  *
+ * Built-in text (the toolbar and overflow names) follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every instance
+ * through `registerMessages()` from `@rcarls/rc-common` under `rc-adaptive-menu`.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-adaptive-menu rc-adaptive-menu docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/ WAI-ARIA Toolbar pattern}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/ WAI-ARIA Menu Button pattern}
@@ -192,7 +216,7 @@ const LIGHT_DOM_CSS = cssText`
  *
  * @fires rc-adaptive-menu-toggle - Fired when user interaction requests a change to `open`.
  *
- * @attr label - Accessible label for the toolbar. Defaults to `Actions`.
+ * @attr label - Accessible label for the toolbar. Defaults to the `label` message, `Actions`.
  * @attr max-shown - Maximum number of authored actions promoted ahead of the overflow trigger.
  *   A static declarative cap, not a measurement of available space — actions beyond it move to
  *   the overflow menu regardless of whether they'd visually fit. Defaults to 3.
@@ -201,7 +225,6 @@ const LIGHT_DOM_CSS = cssText`
  * @attr orientation - Toolbar layout along the inline (`horizontal`) or block (`vertical`) axis.
  *   `aria-orientation` and the arrow keys follow the orientation actually rendered, which turns
  *   over in vertical writing modes.
- * @attr overflow-label - Accessible label for the overflow trigger and popup. Defaults to `More actions`.
  *
  * @csspart root - Toolbar container.
  * @csspart overflow-trigger - Button that opens the overflow menu.
@@ -251,11 +274,24 @@ const LIGHT_DOM_CSS = cssText`
 export class RCAdaptiveMenu extends LitElement {
   static override styles = adaptiveMenuStyles;
 
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCAdaptiveMenuMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-adaptive-menu',
+    DEFAULT_ADAPTIVE_MENU_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
   private static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
 
-  /** Accessible label for the toolbar. */
+  /** Accessible label for the toolbar. Defaults to the `label` message. */
   @property({ type: String })
-  label = 'Actions';
+  label: string | undefined;
 
   /**
    * Maximum authored actions promoted ahead of the overflow trigger. A
@@ -312,10 +348,6 @@ export class RCAdaptiveMenu extends LitElement {
 
   /** Keeps the exposed aria-orientation on the orientation actually rendered. */
   protected readonly _flow = new FlowController(this);
-
-  /** Accessible name for the overflow trigger and popup. */
-  @property({ type: String, attribute: 'overflow-label' })
-  overflowLabel = 'More actions';
 
   @query('#overflow-trigger')
   private _$trigger!: HTMLButtonElement;
@@ -456,7 +488,7 @@ export class RCAdaptiveMenu extends LitElement {
         id="root"
         part="root"
         role="toolbar"
-        aria-label=${this.label}
+        aria-label=${this.label ?? this._messages.value.label}
         aria-orientation=${renderedOrientation(this.orientation, this._flow.flow)}
         ${keyNavigation(this._onToolbarNavigate, {
           navigationAxis: this.orientation,
@@ -471,8 +503,8 @@ export class RCAdaptiveMenu extends LitElement {
             aria-haspopup="menu"
             aria-expanded="false"
             aria-controls="popup"
-            aria-label=${this.overflowLabel}
-            title=${this.overflowLabel}
+            aria-label=${this._messages.value.overflow}
+            title=${this._messages.value.overflow}
             ${keyNavigation(this._onTriggerNavigate, {
               navigationAxis: this.orientation,
               handleNavAxis: false,
@@ -496,7 +528,7 @@ export class RCAdaptiveMenu extends LitElement {
         part="popup"
         popover="manual"
         role="menu"
-        aria-label=${this.overflowLabel}
+        aria-label=${this._messages.value.overflow}
         ${keyNavigation(this._onOverflowNavigate, {
           navigationAxis: 'vertical',
           handleEscape: true,

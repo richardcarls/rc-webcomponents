@@ -105,6 +105,12 @@ export const transferListStyles = css`
     white-space: nowrap;
   }
 
+  /* The arrows point along the inline axis, so they turn over in RTL. */
+  .arrow:dir(rtl) {
+    display: inline-block;
+    transform: scaleX(-1);
+  }
+
   slot:not([name]) {
     display: none;
   }

@@ -36,3 +36,11 @@ for the complete API, accessibility notes, and live demo.
 Import `@rcarls/rc-carousel` to use the classes without registering them, or
 import `@rcarls/rc-carousel/define` to register `<rc-carousel>` and
 `<rc-carousel-item>`.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`, and never an
+ancestor's `lang`, which usually marks content. Override it per element with the
+`messages` property, or for every instance with `registerMessages()` from
+`@rcarls/rc-common` under `rc-carousel`. Keys: `carousel`, `slide`, `position`, `previous`, `next`, `picker`, `goToSlide`. See the
+[rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).

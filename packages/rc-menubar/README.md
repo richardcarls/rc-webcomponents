@@ -67,10 +67,18 @@ Place `rc-menu-button` elements as direct children. The menubar manages focus an
 
 ### Properties / attributes
 
-| Property      | Attribute     | Type                         | Default        | Description                                                                                                                |
-| ------------- | ------------- | ---------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `label`       | `label`       | `string`                     | `'Menu'`       | `aria-label` for the menubar. Required; no visible label is rendered by the component.                                    |
-| `orientation` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Layout direction and keyboard navigation axis. Propagated to child `rc-menu-button` elements for arrow-key open direction. |
+| Property      | Attribute     | Type                         | Default         | Description                                                                                                                |
+| ------------- | ------------- | ---------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `label`       | `label`       | `string \| undefined`        | `label` message | `aria-label` for the menubar. Required; no visible label is rendered by the component.                                     |
+| `orientation` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'`  | Layout direction and keyboard navigation axis. Propagated to child `rc-menu-button` elements for arrow-key open direction. |
+
+### Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`, and never an
+ancestor's `lang`, which usually marks content. Override it per element with the
+`messages` property, or for every instance with `registerMessages()` from
+`@rcarls/rc-common` under `rc-menubar`. Keys: `label`. See the
+[rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).
 
 ### CSS custom properties
 

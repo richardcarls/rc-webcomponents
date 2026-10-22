@@ -11,6 +11,11 @@ Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-textarea](h
 
 Part of the [rc-webcomponents](https://github.com/richardcarls/rc-webcomponents) library.
 
+## Localization
+
+The plugin has no element of its own, so it reads no `lang` and no registered messages. Pass
+fold toggle text in `createMarkdownPlugin({ messages: { block, fold } })`.
+
 ## Documentation
 
 Full API, usage examples, and keyboard/accessibility notes are on the
