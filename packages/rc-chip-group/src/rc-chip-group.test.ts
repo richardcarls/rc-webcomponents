@@ -2,6 +2,7 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import type { RCChip } from '@rcarls/rc-chip';
@@ -546,3 +547,25 @@ test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
     );
   },
 );
+
+test('names an assist toolbar in its own locale; an authored label wins', async () => {
+  registerMessages('ar', { 'rc-chip-group': { label: 'إجراءات الشرائح' } });
+
+  const screen = render(html`
+    <rc-chip-group lang="ar" dir="rtl" kind="assist" layout="wrap">
+      <button type="button">One</button>
+    </rc-chip-group>
+  `);
+  const host = screen.container.querySelector('rc-chip-group') as RCChipGroup;
+
+  await host.updateComplete;
+
+  const root = () => host.shadowRoot?.querySelector('#root');
+
+  expect(root()?.getAttribute('aria-label')).toBe('إجراءات الشرائح');
+
+  host.label = 'Filters';
+  await host.updateComplete;
+
+  expect(root()?.getAttribute('aria-label')).toBe('Filters');
+});

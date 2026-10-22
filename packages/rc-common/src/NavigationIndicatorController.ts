@@ -2,7 +2,7 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { cssZoom } from './cssZoom.js';
 import { logicalRect, physicalOffset, resolveFlow } from './flow.js';
-import { observeDirection } from './observeDirection.js';
+import { observeLocale } from './observeLocale.js';
 
 export interface NavigationIndicatorControllerOptions {
   slot: () => HTMLSlotElement | null;
@@ -27,7 +27,7 @@ export class NavigationIndicatorController implements ReactiveController {
 
   private _resizeObserver?: ResizeObserver;
 
-  private _unobserveDirection?: () => void;
+  private _unobserveLocale?: () => void;
 
   private _frame = 0;
 
@@ -46,17 +46,17 @@ export class NavigationIndicatorController implements ReactiveController {
     // The indicator's offset is measured from the container's logical start,
     // which moves to the other side when the direction flips; the links keep
     // their sizes, so no resize would report it.
-    this._unobserveDirection ??= observeDirection(() => this.update());
+    this._unobserveLocale ??= observeLocale(() => this.update());
     this.sync();
   }
 
   hostDisconnected(): void {
     this._mutationObserver?.disconnect();
     this._resizeObserver?.disconnect();
-    this._unobserveDirection?.();
+    this._unobserveLocale?.();
     this._mutationObserver = undefined;
     this._resizeObserver = undefined;
-    this._unobserveDirection = undefined;
+    this._unobserveLocale = undefined;
 
     if (this._frame) {
       cancelAnimationFrame(this._frame);

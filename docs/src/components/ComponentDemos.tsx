@@ -2554,7 +2554,7 @@ export function AdaptiveMenuDemo() {
         </select>
       </label>
       <div style={{ inlineSize: '160px' }}>
-        <rc-adaptive-menu label="Recipe actions" max-shown={maxShown} overflow-label="More actions">
+        <rc-adaptive-menu label="Recipe actions" max-shown={maxShown}>
           {action('Favorite', 'favorite', 30)}
           {action('Edit', 'edit', 20)}
           {action('Share', 'share', 10)}

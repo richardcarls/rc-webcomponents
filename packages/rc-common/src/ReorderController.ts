@@ -17,6 +17,7 @@ import {
   type LogicalAxis,
 } from './flow.js';
 import { LiveAnnouncer } from './LiveAnnouncer.js';
+import { resolveMessages } from './messages.js';
 
 /** How the active reorder was started. */
 export type ReorderMode = 'pointer' | 'keyboard';
@@ -57,7 +58,10 @@ export interface ReorderOptions {
    */
   announcerRoot?: () => (ParentNode & Node) | null;
 
-  /** Announcement overrides, read when each message is spoken. */
+  /**
+   * Announcement overrides, read when each message is spoken. They win over
+   * text registered with `registerMessages()` under `reorder`.
+   */
   messages?: () => Partial<ReorderMessages> | undefined;
 
   /** Whether reordering is currently unavailable. */
@@ -219,9 +223,17 @@ export class ReorderController implements ReactiveController {
     this._cancel();
   }
 
-  /** The text of a message, honoring overrides. */
+  /**
+   * The text of a message in the host's locale: an override, else registered
+   * text, else the English default.
+   */
   message<K extends keyof ReorderMessages>(key: K): ReorderMessages[K] {
-    return this._options.messages?.()?.[key] ?? DEFAULT_REORDER_MESSAGES[key];
+    return resolveMessages(
+      this._host,
+      'reorder',
+      DEFAULT_REORDER_MESSAGES,
+      this._options.messages?.(),
+    )[key];
   }
 
   private _items(): readonly HTMLElement[] {

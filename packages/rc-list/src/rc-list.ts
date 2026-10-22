@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { ReorderController, type ReorderMessages } from '@rcarls/rc-common';
+import { ReorderController, observeLocale, type ReorderMessages } from '@rcarls/rc-common';
 import type { RCListItem } from './rc-list-item.js';
 import { ensureListBaseStyles } from './listBaseStyles.js';
 
@@ -143,6 +143,7 @@ export class RCList extends LitElement {
   private _$slot!: HTMLSlotElement;
 
   private _mutationObserver: MutationObserver | null = null;
+  private _unobserveLocale: (() => void) | null = null;
 
   /** Appearance hint. */
   @property({ reflect: true })
@@ -202,6 +203,8 @@ export class RCList extends LitElement {
     }
 
     this.addEventListener('change', this._handleChange);
+    // Handle hints are written into light DOM, so a new locale or registered text must rewrite them.
+    this._unobserveLocale ??= observeLocale(() => this._queueSync());
 
     const root = this.getRootNode();
 
@@ -232,6 +235,8 @@ export class RCList extends LitElement {
     super.disconnectedCallback();
     this.removeEventListener('change', this._handleChange);
     this._mutationObserver?.disconnect();
+    this._unobserveLocale?.();
+    this._unobserveLocale = null;
     this._restoreAllItems();
   }
 

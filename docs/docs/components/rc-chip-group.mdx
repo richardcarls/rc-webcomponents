@@ -99,6 +99,12 @@ decision without device-pixel-ratio special cases.
 - `kind="filter"` synchronizes native radio/checkbox state to direct
   `rc-chip` children. Put the group inside an author-owned fieldset.
 
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`. Override it with
+`messages`, or register it for every instance under `rc-chip-group`: `label`, `showAll`, `showLess`. See
+[Localization](../guide/localization).
+
 ## API
 
 <ApiTable tag="rc-chip-group" />

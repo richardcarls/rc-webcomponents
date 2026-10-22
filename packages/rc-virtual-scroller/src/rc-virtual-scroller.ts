@@ -9,7 +9,7 @@ import {
   findNearestScrollAncestor,
   isReversed,
   logicalRect,
-  observeDirection,
+  observeLocale,
   physicalAxis,
   resolveFlow,
   type Flow,
@@ -249,7 +249,7 @@ export class RCVirtualScroller extends LitElement {
 
   private _resizeObserver: ResizeObserver | null = null;
 
-  private _unobserveDirection: (() => void) | null = null;
+  private _unobserveLocale: (() => void) | null = null;
 
   private _lastDetail: RCVirtualScrollerRangeDetail | null = null;
 
@@ -273,7 +273,7 @@ export class RCVirtualScroller extends LitElement {
     }
 
     // A direction flip reverses the inline axis without resizing anything.
-    this._unobserveDirection = observeDirection(this._requestResolve);
+    this._unobserveLocale = observeLocale(this._requestResolve);
     this.ownerDocument.defaultView?.addEventListener('resize', this._requestResolve);
     this._requestResolve();
   }
@@ -289,8 +289,8 @@ export class RCVirtualScroller extends LitElement {
     this._contentObserver = null;
     this._$container = null;
     this.ownerDocument.defaultView?.removeEventListener('resize', this._requestResolve);
-    this._unobserveDirection?.();
-    this._unobserveDirection = null;
+    this._unobserveLocale?.();
+    this._unobserveLocale = null;
 
     super.disconnectedCallback();
   }

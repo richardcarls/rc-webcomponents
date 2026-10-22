@@ -3,6 +3,7 @@ import { property, query, state } from 'lit/decorators.js';
 
 import {
   arrowKeys,
+  MessagesController,
   MutationObserverController,
   NativeChildController,
   resolveFlow,
@@ -13,6 +14,40 @@ import '@rcarls/rc-listbox/define';
 import '@rcarls/rc-toolbar/define';
 
 import { transferListStyles } from './rc-transfer-list.styles.js';
+
+/** Built-in text of `rc-transfer-list`. */
+export interface RCTransferListMessages {
+  /** Default label of the available list, when `available-label` is unset. */
+  available: string;
+  /** Default label of the selected list, when `selected-label` is unset. */
+  selected: string;
+  /** Accessible name of the action toolbar. */
+  actions: string;
+  add: string;
+  addAll: string;
+  remove: string;
+  clear: string;
+  moveUp: string;
+  moveDown: string;
+}
+
+export const DEFAULT_TRANSFER_LIST_MESSAGES: Readonly<RCTransferListMessages> = Object.freeze({
+  available: 'Available',
+  selected: 'Selected',
+  actions: 'Transfer actions',
+  add: 'Add',
+  addAll: 'Add all',
+  remove: 'Remove',
+  clear: 'Clear',
+  moveUp: 'Move up',
+  moveDown: 'Move down',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-transfer-list': RCTransferListMessages;
+  }
+}
 
 export interface RCTransferListChangeEvent {
   /** Ordered selected/right-hand list options. */
@@ -40,12 +75,18 @@ declare global {
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-transfer-list rc-transfer-list docs}
  *
+ * Built-in text (action buttons, default list labels) follows the element's
+ * own `lang`, else `<html lang>`: per element through `messages`, or for
+ * every transfer list through `registerMessages()` from `@rcarls/rc-common`
+ * under `rc-transfer-list`. The direction arrows on the action buttons are
+ * decorative and turn with the inline direction.
+ *
  * @fires rc-transfer-list-change - Fires when the selected/right-hand list changes.
  *
  * @attr multiple - Enable multi-selection in both lists.
  * @attr compact - Stack the panels and action toolbar into a compact one-column layout.
- * @attr available-label - Visible label for the available list.
- * @attr selected-label - Visible label for the selected list.
+ * @attr available-label - Visible label for the available list. Defaults to the `available` message.
+ * @attr selected-label - Visible label for the selected list. Defaults to the `selected` message.
  *
  * @cssprop [--rc-transfer-list-gap=var(--rc-control-gap, 0.75rem)] - Gap between panels and the action toolbar
  * @cssprop [--rc-transfer-list-panel-gap=var(--rc-control-gap, 0.35rem)] - Gap between a panel label and its listbox
@@ -92,13 +133,24 @@ export class RCTransferList extends LitElement {
   @property({ type: Boolean, reflect: true })
   compact = false;
 
-  /** Visible label for the available list. */
+  /** Visible label for the available list. Defaults to the `available` message. */
   @property({ attribute: 'available-label' })
-  availableLabel = 'Available';
+  availableLabel: string | undefined;
 
-  /** Visible label for the selected list. */
+  /** Visible label for the selected list. Defaults to the `selected` message. */
   @property({ attribute: 'selected-label' })
-  selectedLabel = 'Selected';
+  selectedLabel: string | undefined;
+
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCTransferListMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-transfer-list',
+    DEFAULT_TRANSFER_LIST_MESSAGES,
+    { overrides: () => this.messages },
+  );
 
   @query('#available-list')
   private _$availableList?: RCListbox;
@@ -282,6 +334,7 @@ export class RCTransferList extends LitElement {
     const noSelectedSelection = this._selectedSelection.length === 0;
     const canMoveUp = this._canMoveSelected(selected, selectedValues, -1);
     const canMoveDown = this._canMoveSelected(selected, selectedValues, 1);
+    const m = this._messages.value;
 
     return html`
       <div
@@ -299,7 +352,9 @@ export class RCTransferList extends LitElement {
           data-empty=${noAvailable ? '' : nothing}
           data-has-selection=${!noAvailableSelection ? '' : nothing}
         >
-          <span part="label available-label" id="available-label">${this.availableLabel}</span>
+          <span part="label available-label" id="available-label"
+            >${this.availableLabel ?? m.available}</span
+          >
           <rc-listbox
             id="available-list"
             part="listbox available-listbox"
@@ -314,7 +369,7 @@ export class RCTransferList extends LitElement {
         <rc-toolbar
           id="actions"
           orientation=${this.compact ? 'horizontal' : 'vertical'}
-          label="Transfer actions"
+          label=${m.actions}
           part="actions"
           class="rc-transfer-list-actions"
         >
@@ -324,7 +379,7 @@ export class RCTransferList extends LitElement {
             ?disabled=${noAvailable || noAvailableSelection}
             @click=${this.addSelected}
           >
-            Add &#x2192;
+            ${m.add} <span class="arrow" aria-hidden="true">&#x2192;</span>
           </button>
 
           <button
@@ -333,7 +388,7 @@ export class RCTransferList extends LitElement {
             ?disabled=${noAvailable}
             @click=${this.addAll}
           >
-            Add all &#x2192;
+            ${m.addAll} <span class="arrow" aria-hidden="true">&#x2192;</span>
           </button>
 
           <button
@@ -342,7 +397,7 @@ export class RCTransferList extends LitElement {
             ?disabled=${noSelected || noSelectedSelection}
             @click=${this.removeSelected}
           >
-            &#x2190; Remove
+            <span class="arrow" aria-hidden="true">&#x2190;</span> ${m.remove}
           </button>
 
           <button
@@ -351,7 +406,7 @@ export class RCTransferList extends LitElement {
             ?disabled=${noSelected}
             @click=${this.clearSelected}
           >
-            &#x2190; Clear
+            <span class="arrow" aria-hidden="true">&#x2190;</span> ${m.clear}
           </button>
 
           <button
@@ -360,7 +415,7 @@ export class RCTransferList extends LitElement {
             ?disabled=${cannotReorder || noSelectedSelection}
             @click=${this._onMoveUp}
           >
-            Move up
+            ${m.moveUp}
           </button>
 
           <button
@@ -369,7 +424,7 @@ export class RCTransferList extends LitElement {
             ?disabled=${cannotReorder || noSelectedSelection}
             @click=${this._onMoveDown}
           >
-            Move down
+            ${m.moveDown}
           </button>
         </rc-toolbar>
 
@@ -380,7 +435,9 @@ export class RCTransferList extends LitElement {
           data-empty=${noSelected ? '' : nothing}
           data-has-selection=${!noSelectedSelection ? '' : nothing}
         >
-          <span part="label selected-label" id="selected-label">${this.selectedLabel}</span>
+          <span part="label selected-label" id="selected-label"
+            >${this.selectedLabel ?? m.selected}</span
+          >
 
           <rc-listbox
             id="selected-list"

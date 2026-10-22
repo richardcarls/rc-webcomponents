@@ -410,3 +410,21 @@ test('reduced motion zeros the determinate fill transition but stops the indeter
   expect(motionBlock).toContain('animation: none;');
   expect(motionBlock).toContain('translate: none;');
 });
+
+test('formats the default percentage for its own locale', async () => {
+  const screen = render(html`
+    <rc-progress lang="ar" dir="rtl" display="inline-end">
+      <progress max="100" value="25" aria-label="التقدم"></progress>
+    </rc-progress>
+  `);
+  const host = screen.container.querySelector('rc-progress') as RCProgress;
+
+  await host.updateComplete;
+
+  const expected = new Intl.NumberFormat('ar', { style: 'percent' }).format(0.25);
+
+  await vi.waitFor(() => expect(host.shadowRoot?.textContent).toContain(expected));
+
+  host.lang = 'en';
+  await vi.waitFor(() => expect(host.shadowRoot?.textContent).toContain('25%'));
+});

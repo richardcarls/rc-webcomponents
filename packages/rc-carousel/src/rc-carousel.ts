@@ -7,6 +7,7 @@ import {
   findNearestSnapIndex,
   findNextSnapIndex,
   HORIZONTAL_LTR_FLOW,
+  MessagesController,
   RafScheduler,
   clientSize,
   getScrollOffset,
@@ -15,6 +16,7 @@ import {
   physicalAxis,
   resolveFlow,
   setScrollOffset,
+  syncDefaultAttribute,
   warnMissingDirectChild,
   type DragGestureDetail,
   type Flow,
@@ -28,6 +30,38 @@ import carouselStyles from './rc-carousel.styles.js';
  * decisive swipe (advance one further slide) rather than settling to the
  * nearest snap point. */
 const DECISIVE_DRAG_VELOCITY = 300;
+
+/** Built-in text of `rc-carousel` and its slides. Positions are 1-based. */
+export interface RCCarouselMessages {
+  /** `aria-roledescription` of the carousel. */
+  carousel: string;
+  /** `aria-roledescription` of each slide. */
+  slide: string;
+  /** Default accessible name of each slide. */
+  position: (position: number, count: number) => string;
+  previous: string;
+  next: string;
+  /** Accessible name of the slide-picker group. */
+  picker: string;
+  /** Accessible name of each slide-picker button. */
+  goToSlide: (position: number, count: number) => string;
+}
+
+export const DEFAULT_CAROUSEL_MESSAGES: Readonly<RCCarouselMessages> = Object.freeze({
+  carousel: 'carousel',
+  slide: 'slide',
+  position: (position: number, count: number) => `${position} of ${count}`,
+  previous: 'Previous slide',
+  next: 'Next slide',
+  picker: 'Choose slide to display',
+  goToSlide: (position: number) => `Go to slide ${position}`,
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-carousel': RCCarouselMessages;
+  }
+}
 
 export type RCCarouselChangeTrigger = 'api' | 'button' | 'keyboard' | 'swipe';
 
@@ -104,6 +138,11 @@ const SETTLE_DEBOUNCE_MS = 120;
  * @attr mouse-dragging - Enables click-and-drag scrolling with a mouse.
  *   Touch/pen already get native scroll-snap physics; off by default.
  *
+ * Built-in text (button names, role descriptions, slide positions) follows
+ * the element's own `lang`, else `<html lang>`: per element through
+ * `messages`, or for every carousel through `registerMessages()` from
+ * `@rcarls/rc-common` under `rc-carousel`.
+ *
  * @cssprop [--rc-carousel-color=CanvasText] - Carousel foreground color.
  * @cssprop [--rc-carousel-gap=8px] - Space between slides.
  * @cssprop [--rc-carousel-slide-size=calc(100% - 4rem)] - Rendered size of
@@ -153,6 +192,20 @@ export class RCCarousel extends LitElement {
   private _pendingInstant = false;
   private _settleTimer: ReturnType<typeof setTimeout> | undefined;
   private readonly _initialPosition = new RafScheduler(this);
+  private _writtenRoleDescription: string | null = null;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-carousel',
+    DEFAULT_CAROUSEL_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCCarouselMessages> | undefined;
 
   /** Wraps past the first/last slide back to the other end, seamlessly. */
   @property({ type: Boolean, reflect: true })
@@ -310,9 +363,7 @@ export class RCCarousel extends LitElement {
       this.setAttribute('role', 'group');
     }
 
-    if (!this.hasAttribute('aria-roledescription')) {
-      this.setAttribute('aria-roledescription', 'carousel');
-    }
+    this._syncText();
 
     if (this.hasUpdated && !this._mounted) {
       this._queueInitialPosition();
@@ -347,6 +398,7 @@ export class RCCarousel extends LitElement {
 
   protected override updated(changed: Map<string, unknown>): void {
     super.updated(changed);
+    this._syncText();
 
     this._initPaginationTabIndex();
 
@@ -642,9 +694,24 @@ export class RCCarousel extends LitElement {
   }
 
   private _setItemPositions(): void {
+    const messages = this._messages.value;
+
     this._items.forEach((item, index) => {
-      item.position = `${index + 1} of ${this._items.length}`;
+      item.position = messages.position(index + 1, this._items.length);
+      item.roleDescription = messages.slide;
     });
+  }
+
+  /** Re-applies text written outside the template, for a new locale or `messages`. */
+  private _syncText(): void {
+    this._writtenRoleDescription = syncDefaultAttribute(
+      this,
+      'aria-roledescription',
+      this._messages.value.carousel,
+      this._writtenRoleDescription,
+    );
+
+    this._setItemPositions();
   }
 
   /**
@@ -981,6 +1048,7 @@ export class RCCarousel extends LitElement {
   protected override render() {
     const canPrev = this._canStep(-1);
     const canNext = this._canStep(1);
+    const messages = this._messages.value;
 
     return html`
       <div
@@ -1003,7 +1071,7 @@ export class RCCarousel extends LitElement {
               <button
                 type="button"
                 part="navigation-button navigation-button-previous"
-                aria-label="Previous slide"
+                aria-label=${messages.previous}
                 aria-disabled=${canPrev ? 'false' : 'true'}
                 @click=${() => {
                   if (canPrev) {
@@ -1031,7 +1099,7 @@ export class RCCarousel extends LitElement {
               <button
                 type="button"
                 part="navigation-button navigation-button-next"
-                aria-label="Next slide"
+                aria-label=${messages.next}
                 aria-disabled=${canNext ? 'false' : 'true'}
                 @click=${() => {
                   if (canNext) {
@@ -1065,7 +1133,7 @@ export class RCCarousel extends LitElement {
               id="pagination"
               part="pagination"
               role="group"
-              aria-label="Choose slide to display"
+              aria-label=${messages.picker}
               @focusin=${this._onPaginationFocus}
               ${keyNavigation(this._onPaginationNavigate, { navigationAxis: 'horizontal' })}
             >
@@ -1077,7 +1145,7 @@ export class RCCarousel extends LitElement {
                     part="pagination-item${index === this.activeIndex
                       ? ' pagination-item-active'
                       : ''}"
-                    aria-label="Go to slide ${index + 1}"
+                    aria-label=${messages.goToSlide(index + 1, this._items.length)}
                     aria-current=${index === this.activeIndex ? 'true' : 'false'}
                     aria-disabled=${index === this.activeIndex ? 'true' : 'false'}
                     @click=${() => this._setActiveIndex(index, 'button')}

@@ -1,0 +1,63 @@
+---
+title: Localization
+---
+
+# Localization
+
+Components ship English text only: button names, role descriptions, live-region
+announcements, and default labels. Each resolves that text per key, in this order:
+
+1. The element's `messages` property (`reorderMessages` on `rc-list`).
+2. Text registered with `registerMessages()` from `@rcarls/rc-common` for the element's
+   locale: the exact tag, then its base language (`de-CH`, then `de`).
+3. The English default.
+
+```ts
+import { registerMessages } from '@rcarls/rc-common';
+
+registerMessages('de', {
+  'rc-carousel': {
+    previous: 'Vorherige Folie',
+    next: 'Nächste Folie',
+    goToSlide: (position) => `Zu Folie ${position}`,
+  },
+  'rc-search-bar': { clear: 'Suche löschen' },
+});
+```
+
+Register before components connect so English never flashes. Registering later, or
+changing a `lang` or `dir` attribute, re-renders the affected components, so a language
+switch needs no reload.
+
+## Which locale
+
+The locale is the element's own `lang` attribute, else `<html lang>`. An ancestor's `lang`
+is skipped on purpose: it usually marks content, such as a German recipe on an English page,
+while component chrome stays in the interface language.
+
+```html
+<html lang="en">
+  <article lang="de">
+    <!-- Buttons read "Previous slide": the article's lang is content. -->
+    <rc-carousel aria-label="Fotos">…</rc-carousel>
+  </article>
+</html>
+```
+
+## Keys and numbers
+
+Each component page lists its keys under **Localization**. Interpolating entries are
+functions, such as `goToSlide: (position, count) => string`. Numbers arrive unformatted,
+so format them in the translation when the locale needs other digits. Numbers a component
+writes itself, such as `rc-progress`'s percentage and `rc-splitter`'s value text, use
+`Intl.NumberFormat` for the same locale.
+
+`RcMessageCatalog` types `registerMessages()`: each package adds its scope when you import
+it, so a misspelled scope or key fails to compile.
+
+## Per-instance names
+
+A name a consumer usually sets per instance stays an attribute: `label` on
+`rc-adaptive-menu`, `rc-chip-group`, `rc-menubar`, and `rc-splitter`; `available-label` and
+`selected-label` on `rc-transfer-list`; `low-label` and `high-label` on `rc-range-slider`.
+Unset, it falls back to a message.

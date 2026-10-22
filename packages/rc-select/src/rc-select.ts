@@ -4,6 +4,7 @@ import { property, query, state } from 'lit/decorators.js';
 import {
   ActiveDescendantController,
   AnchorController,
+  MessagesController,
   PopoverController,
   inlineArrowKeys,
   NativeChildController,
@@ -57,6 +58,37 @@ declare global {
   }
 }
 
+/** Built-in text of `rc-select`. */
+export interface RCSelectMessages {
+  /** Name of the popup and dialog when the select has no accessible name. */
+  options: string;
+  /** Accessible name of the selected-value chips. */
+  selectedItems: string;
+  /** Accessible name of a selected-value chip. */
+  remove: (label: string) => string;
+  /** Compact trigger text for several selected values. */
+  summary: (first: string, more: number) => string;
+  /** Dialog confirmation action. */
+  done: string;
+  /** Accessible name of the leading dialog cancel action. */
+  cancel: string;
+}
+
+export const DEFAULT_SELECT_MESSAGES: Readonly<RCSelectMessages> = Object.freeze({
+  options: 'Options',
+  selectedItems: 'Selected items',
+  remove: (label: string) => `Remove ${label}`,
+  summary: (first: string, more: number) => `${first}, +${more} more`,
+  done: 'Done',
+  cancel: 'Cancel',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-select': RCSelectMessages;
+  }
+}
+
 /**
  * Select-only combobox backed by a native <select>, following the WAI-ARIA Combobox
  * pattern.
@@ -78,6 +110,11 @@ declare global {
  * @slot display - Optional. Replaces the default value label in the trigger.
  * @slot toggle-indicator - Optional. Replaces the default chevron indicator. Accepts any
  *   element(s); the container shifts to inline-start in RTL via flex direction.
+ *
+ * Built-in text (chip names, the dialog actions, the compact summary) follows
+ * the element's own `lang`, else `<html lang>`: per element through
+ * `messages`, or for every select through `registerMessages()` from
+ * `@rcarls/rc-common` under `rc-select`.
  *
  * @fires rc-select-change - When user interaction changes selection.
  *   `detail: { value, selectedValues, selectedOptions }`
@@ -113,8 +150,6 @@ declare global {
  *   `'chips'`, or `'compact'`.
  * @attr popup-mode - Presents options in an anchored `popover` (default) or transactional
  *   modal `dialog`.
- * @attr dialog-confirm-label - Text for the dialog confirmation action.
- * @attr dialog-cancel-label - Accessible label for the leading cancel action.
  * @attr dialog-cancel-button - Shows or hides the leading cancel action.
  * @attr [has-value] - Present when one or more options are selected. Use with CSS
  *   selectors (e.g. `rc-select[has-value]`) for floating-label wrappers.
@@ -153,6 +188,19 @@ declare global {
 export class RCSelect extends LitElement {
   static override styles = selectStyles;
 
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCSelectMessages> | undefined;
+
+  private readonly _messages = new MessagesController(this, 'rc-select', DEFAULT_SELECT_MESSAGES, {
+    overrides: () => this.messages,
+  });
+
+  /** The resolved built-in text. Subclasses with more text resolve their own scope. */
+  protected get _text(): RCSelectMessages {
+    return this._messages.value;
+  }
+
   /** Reflects whether the popup listbox is open. */
   @property({ type: Boolean, reflect: true })
   open = false;
@@ -190,14 +238,6 @@ export class RCSelect extends LitElement {
   /** Presents options in an anchored popover or transactional modal dialog. */
   @property({ attribute: 'popup-mode', reflect: true })
   popupMode: RCSelectPopupMode = 'popover';
-
-  /** Text for the dialog confirmation action. */
-  @property({ attribute: 'dialog-confirm-label' })
-  dialogConfirmLabel = 'Done';
-
-  /** Accessible label for the leading dialog cancel action. */
-  @property({ attribute: 'dialog-cancel-label' })
-  dialogCancelLabel = 'Cancel';
 
   /** Whether the leading dialog cancel action is visible. */
   @property({ attribute: 'dialog-cancel-button', reflect: true })
@@ -1185,7 +1225,7 @@ export class RCSelect extends LitElement {
     const values = [...this._selectedValues];
     const first = this._labelFor(values[0]);
 
-    return `${first}, +${values.length - 1} more`;
+    return this._text.summary(first, values.length - 1);
   }
 
   /**
@@ -1487,10 +1527,11 @@ export class RCSelect extends LitElement {
   protected _renderDialogBody() {
     return html`
       <rc-listbox
+        lang=${this.getAttribute('lang') || nothing}
         id="dialog-listbox"
         part="listbox dialog-listbox"
         tabindex="0"
-        aria-label=${this._accessibleName || 'Options'}
+        aria-label=${this._accessibleName || this._text.options}
         ?multiple=${this.multiple}
         checkmark
         .options=${this._options}
@@ -1500,7 +1541,7 @@ export class RCSelect extends LitElement {
   }
 
   protected _renderDialogPopup() {
-    const title = this._accessibleName || 'Options';
+    const title = this._accessibleName || this._text.options;
     const showSelected = this.multiple && this._dialogSelectedValues.length > 0;
 
     return html`
@@ -1521,7 +1562,7 @@ export class RCSelect extends LitElement {
                   <button
                     part="dialog-cancel"
                     type="button"
-                    aria-label=${this.dialogCancelLabel}
+                    aria-label=${this._text.cancel}
                     @click=${() => this.closePopup()}
                   >
                     <svg
@@ -1543,7 +1584,7 @@ export class RCSelect extends LitElement {
 
             <div part="dialog-actions">
               <button part="dialog-confirm" type="button" @click=${this._commitDialogSelection}>
-                ${this.dialogConfirmLabel}
+                ${this._text.done}
               </button>
             </div>
           </header>
@@ -1571,6 +1612,7 @@ export class RCSelect extends LitElement {
       ${this._renderAnchor()}
 
       <rc-listbox
+        lang=${this.getAttribute('lang') || nothing}
         id="listbox"
         part="listbox"
         popover="manual"
@@ -1631,8 +1673,10 @@ export class RCSelect extends LitElement {
 
   /** Renders selected values as removable input chips inside the shared chip-group layout. */
   protected _renderChips(values: Iterable<string> = this._selectedValues, pending = false) {
+    const text = this._text;
+
     return html`
-      <rc-chip-group part="chips" kind="generic" layout="wrap" aria-label="Selected items">
+      <rc-chip-group part="chips" kind="generic" layout="wrap" aria-label=${text.selectedItems}>
         ${[...values].map((value) => {
           const label = this._labelFor(value);
 
@@ -1650,7 +1694,7 @@ export class RCSelect extends LitElement {
                 type="button"
                 part="chip"
                 tabindex="-1"
-                aria-label=${`Remove ${label}`}
+                aria-label=${text.remove(label)}
                 @click=${(event: MouseEvent) => event.stopPropagation()}
                 @keydown=${(event: KeyboardEvent) => this._handleChipKeyDown(event, value)}
               >

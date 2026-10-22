@@ -3,6 +3,8 @@ import { property, state, query, queryAssignedElements } from 'lit/decorators.js
 
 import {
   cssZoom,
+  MessagesController,
+  numberFormat,
   DragGestureController,
   FlowController,
   findNearestSnapIndex,
@@ -36,11 +38,35 @@ declare global {
   }
 }
 
+/** Built-in text of `rc-splitter`. */
+export interface RCSplitterMessages {
+  /** Default name of the primary pane, when `label` is unset. */
+  label: string;
+  expand: (label: string) => string;
+  collapse: (label: string) => string;
+}
+
+export const DEFAULT_SPLITTER_MESSAGES: Readonly<RCSplitterMessages> = Object.freeze({
+  label: 'Splitter',
+  expand: (label: string) => `Expand ${label}`,
+  collapse: (label: string) => `Collapse ${label}`,
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-splitter': RCSplitterMessages;
+  }
+}
+
 /**
  * Resizable pane splitter with pointer, keyboard, anchored settling, and
  * collapse/restore controls, following the WAI-ARIA Window Splitter pattern.
  *
  * Set `orientation="vertical"` for a vertical splitter
+ *
+ * Built-in text (the collapse button name and default pane name; the separator value text is formatted for the same locale) follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every instance
+ * through `registerMessages()` from `@rcarls/rc-common` under `rc-splitter`.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-splitter rc-splitter docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/ WAI-ARIA Window Splitter pattern}
@@ -51,7 +77,7 @@ declare global {
  * @fires rc-splitter-change - Fired when the separator position changes; `detail: { value, valueText }`
  *
  * @attr label - Accessible label applied to the primary pane and referenced by the separator
- *   handle's `aria-labelledby`.
+ *   handle's `aria-labelledby`. Defaults to the `label` message.
  * @attr orientation - Layout: `horizontal` places the panes side by side along the inline axis
  *   (left/right in LTR, right/left in RTL), `vertical` stacks them along the block axis. Both turn
  *   over in vertical writing modes; the separator's `aria-orientation`, arrow keys, and dragging
@@ -99,9 +125,22 @@ declare global {
 export class RCSplitter extends LitElement {
   static styles = [splitterStyles];
 
-  /** Accessible label for this splitter. Default label is 'Splitter'. */
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCSplitterMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-splitter',
+    DEFAULT_SPLITTER_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
+  /** Accessible label for this splitter. Defaults to the `label` message. */
   @property({ type: String })
-  label = 'Splitter';
+  label: string | undefined;
 
   /** Splitter orientation, for keyboard navigation and initial sizing. */
   @property({ type: String, reflect: true })
@@ -295,9 +334,20 @@ export class RCSplitter extends LitElement {
   @property({ type: Number, attribute: 'swipe-velocity' })
   swipeVelocity = 500;
 
-  /** A human-readable string representation of the value. */
+  /** The value as a CSS length, such as `40%` or `240px`. */
   get valueText() {
     return `${this.value}${this.mode === 'percent' ? '%' : 'px'}`;
+  }
+
+  /** The value for `aria-valuetext`, with digits in the splitter's locale. */
+  protected get _accessibleValueText(): string {
+    const locale = this._messages.locale;
+
+    return this.mode === 'percent'
+      ? numberFormat(locale, { style: 'percent', maximumFractionDigits: 2 }).format(
+          this.value / 100,
+        )
+      : `${numberFormat(locale, { maximumFractionDigits: 2 }).format(this.value)}px`;
   }
 
   @state()
@@ -683,11 +733,14 @@ export class RCSplitter extends LitElement {
       this._flow.flow,
     );
 
+    const m = this._messages.value;
+    const label = this.label ?? m.label;
+
     return html`
       <div
         id="primary"
         part="primary"
-        aria-label=${this.label}
+        aria-label=${label}
         style=${`${this._paneAxis === 'inline' ? 'inline' : 'block'}-size: ${this.valueText}`}
         ?hidden=${this.value === this._minValue}
       >
@@ -699,7 +752,7 @@ export class RCSplitter extends LitElement {
           ? html`<button
               id="collapse-button"
               part="collapse-button"
-              aria-label=${this._isCollapsed ? `Expand ${this.label}` : `Collapse ${this.label}`}
+              aria-label=${this._isCollapsed ? m.expand(label) : m.collapse(label)}
               aria-expanded=${String(!this._isCollapsed)}
               aria-controls="primary"
               @click=${this._onCollapseButtonClick}
@@ -717,7 +770,7 @@ export class RCSplitter extends LitElement {
           aria-orientation=${bar}
           data-bar=${bar}
           aria-valuenow=${this.value}
-          aria-valuetext=${this.valueText}
+          aria-valuetext=${this._accessibleValueText}
           aria-valuemin=${this._effectiveMin}
           aria-valuemax=${this._effectiveMax}
           @keydown=${this._onCollapseKeydown}

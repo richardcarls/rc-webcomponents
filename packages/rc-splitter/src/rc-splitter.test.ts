@@ -2,6 +2,7 @@ import { test, expect, describe, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
 import type { RCSplitter } from './rc-splitter.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
@@ -76,7 +77,9 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
+
       host.value = 100;
 
       expect(host).toBeInstanceOf(HTMLElement);
@@ -135,6 +138,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       expect(separator.getAttribute('aria-orientation')).toBe('horizontal');
@@ -169,6 +173,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       const initialValue = host.value;
@@ -209,6 +214,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       const initialValue = host.value;
@@ -306,6 +312,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       // Set a specific value
@@ -403,6 +410,7 @@ describe('RCSplitter', () => {
 
       host.addEventListener('rc-splitter-change', handleChange);
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       host.value = 120;
@@ -649,6 +657,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       host.value = -100;
@@ -671,6 +680,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       // Set a value that's not a multiple of step
@@ -736,6 +746,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       const primary = getPrimary(host);
@@ -1031,6 +1042,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       expect(Number(separator.getAttribute('aria-valuemin'))).toBe(50);
@@ -1365,10 +1377,12 @@ describe('RCSplitter direction and writing mode', () => {
       clientX: hostRect.right - 100,
       clientY: hostRect.top + 150,
     });
+
     firePointerEvent(separator, 'pointermove', {
       clientX: hostRect.right - 300,
       clientY: hostRect.top + 150,
     });
+
     firePointerEvent(separator, 'pointerup', {
       clientX: hostRect.right - 300,
       clientY: hostRect.top + 150,
@@ -1445,5 +1459,50 @@ describe('RCSplitter direction and writing mode', () => {
     // Side-by-side panes stack vertically on screen, so the value is a height.
     expect(getPrimary(host).getBoundingClientRect().height).toBeCloseTo(100, 0);
     expect(getPrimary(host).getBoundingClientRect().width).toBeCloseTo(300, 0);
+  });
+});
+
+describe('localization', () => {
+  test('names the collapse button and formats the value for its own locale', async () => {
+    registerMessages('ar', {
+      'rc-splitter': {
+        label: 'اللوحة',
+        collapse: (label: string) => `طي ${label}`,
+        expand: (label: string) => `توسيع ${label}`,
+      },
+    });
+
+    const screen = render(html`
+      <rc-splitter
+        lang="ar"
+        dir="rtl"
+        collapsible
+        mode="percent"
+        default-value="40"
+        style="width: 400px; height: 300px;"
+      >
+        <div>Primary</div>
+        <div slot="secondary">Secondary</div>
+      </rc-splitter>
+    `);
+    const host = screen.container.querySelector('rc-splitter') as RCSplitter;
+
+    await host.updateComplete;
+
+    const root = host.shadowRoot!;
+    const percent = new Intl.NumberFormat('ar', { style: 'percent', maximumFractionDigits: 2 });
+
+    await vi.waitFor(() =>
+      expect(root.querySelector('#collapse-button')?.getAttribute('aria-label')).toBe('طي اللوحة'),
+    );
+
+    expect(root.querySelector('#primary')?.getAttribute('aria-label')).toBe('اللوحة');
+
+    expect(root.querySelector('#separator-handle')?.getAttribute('aria-valuetext')).toBe(
+      percent.format(host.value / 100),
+    );
+
+    // The CSS length stays locale-free.
+    expect(host.valueText).toBe(`${host.value}%`);
   });
 });

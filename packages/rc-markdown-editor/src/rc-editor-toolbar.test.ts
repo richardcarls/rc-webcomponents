@@ -2,6 +2,7 @@ import { test, expect, describe } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
 import type { RcEditorToolbar } from './rc-editor-toolbar.js';
 import type { EditorToolbarActionDetail } from './types.js';
@@ -142,5 +143,33 @@ describe('RcEditorToolbar', () => {
     await host.updateComplete;
 
     await expectNoA11yViolations(host);
+  });
+});
+
+describe('localization', () => {
+  registerMessages('ar', {
+    'rc-editor-toolbar': {
+      toolbar: 'التنسيق',
+      bold: 'غامق',
+      heading: (level: number) => `عنوان ${level}`,
+    },
+  });
+
+  test('renders registered text for its own lang, with overrides on top', async () => {
+    const screen = render(html`<rc-editor-toolbar lang="ar" dir="rtl"></rc-editor-toolbar>`);
+    const host = (await screen.container.querySelector('rc-editor-toolbar')) as RcEditorToolbar;
+
+    await host.updateComplete;
+
+    expect(host.querySelector('rc-toolbar')?.getAttribute('label')).toBe('التنسيق');
+    expect(host.querySelector('[data-action="bold"]')?.getAttribute('aria-label')).toBe('غامق');
+    expect(host.querySelector('[data-action="bold"]')?.getAttribute('title')).toBe('غامق (Ctrl+B)');
+    expect(host.querySelector('option[value="h2"]')?.textContent?.trim()).toBe('عنوان 2');
+    expect(host.querySelector('[data-action="italic"]')?.getAttribute('aria-label')).toBe('Italic');
+
+    host.messages = { bold: 'Fett' };
+    await host.updateComplete;
+
+    expect(host.querySelector('[data-action="bold"]')?.getAttribute('aria-label')).toBe('Fett');
   });
 });

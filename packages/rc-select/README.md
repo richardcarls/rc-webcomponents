@@ -69,12 +69,19 @@ Escape, and imperative close discard the staged changes.
 | `placeholder`              | `string`                         | Text shown when no value is selected.                     |
 | `display`                  | `'auto' \| 'chips' \| 'compact'` | Controls multi-select display.                            |
 | `popupMode`                | `'popover' \| 'dialog'`          | Chooses anchored or transactional dialog presentation.    |
-| `dialogConfirmLabel`       | `string`                         | Dialog commit action label. Defaults to `Done`.           |
-| `dialogCancelLabel`        | `string`                         | Accessible label for the leading close action.            |
+| `messages`                 | `Partial<RCSelectMessages>`      | Built-in text overrides; see Localization.                |
 | `dialogCancelButton`       | `'visible' \| 'hidden'`          | Shows or hides the leading close action.                  |
 | `value`                    | `string \| string[]`             | Controlled selection. Programmatic writes apply silently. |
 | `openPopup()`              | `void`                           | Opens the listbox popover.                                |
 | `closePopup(returnFocus?)` | `void`                           | Closes the listbox and optionally restores focus.         |
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`, and never an
+ancestor's `lang`, which usually marks content. Override it per element with the
+`messages` property, or for every instance with `registerMessages()` from
+`@rcarls/rc-common` under `rc-select`. Keys: `options`, `selectedItems`, `remove`, `summary`, `done`, `cancel`. See the
+[rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).
 
 ## Events
 

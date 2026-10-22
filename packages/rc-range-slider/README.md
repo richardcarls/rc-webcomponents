@@ -48,3 +48,11 @@ Consumers can decorate the track with a real named slot:
 Visual thumb styling belongs to CSS parts, not native input pseudo-elements,
 because the upgraded interaction surface is custom shadow DOM. The fallback
 inputs remain ordinary native range controls before the component upgrades.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`, and never an
+ancestor's `lang`, which usually marks content. Override it per element with the
+`messages` property, or for every instance with `registerMessages()` from
+`@rcarls/rc-common` under `rc-range-slider`. Keys: `low`, `high`. They name a thumb only when neither its input nor `low-label`/`high-label` does. See the
+[rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).

@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
+import { syncDefaultAttribute } from '@rcarls/rc-common';
 import type { RCCarousel } from './rc-carousel.js';
 
 import carouselItemStyles from './rc-carousel-item.styles.js';
@@ -55,6 +56,16 @@ export class RCCarouselItem extends LitElement {
   @property({ type: String, attribute: false })
   position = '';
 
+  /**
+   * `aria-roledescription` assigned by the parent `rc-carousel` in its
+   * locale. Internal integration point, not a public API.
+   */
+  @property({ type: String, attribute: false })
+  roleDescription = 'slide';
+
+  private _writtenLabel: string | null = null;
+  private _writtenRoleDescription: string | null = null;
+
   constructor() {
     super();
     this._internals = this.attachInternals();
@@ -68,9 +79,7 @@ export class RCCarouselItem extends LitElement {
       this.setAttribute('role', 'group');
     }
 
-    if (!this.hasAttribute('aria-roledescription')) {
-      this.setAttribute('aria-roledescription', 'slide');
-    }
+    this._syncRoleDescription();
 
     this._observeIntersection();
   }
@@ -88,16 +97,32 @@ export class RCCarouselItem extends LitElement {
     if (changed.has('position')) {
       this._syncDefaultLabel();
     }
+
+    if (changed.has('roleDescription')) {
+      this._syncRoleDescription();
+    }
   }
 
   private _syncDefaultLabel(): void {
-    if (this.hasAttribute('aria-label') || this.hasAttribute('aria-labelledby')) {
+    if (this.hasAttribute('aria-labelledby') || !this.position) {
       return;
     }
 
-    if (this.position) {
-      this.setAttribute('aria-label', this.position);
-    }
+    this._writtenLabel = syncDefaultAttribute(
+      this,
+      'aria-label',
+      this.position,
+      this._writtenLabel,
+    );
+  }
+
+  private _syncRoleDescription(): void {
+    this._writtenRoleDescription = syncDefaultAttribute(
+      this,
+      'aria-roledescription',
+      this.roleDescription,
+      this._writtenRoleDescription,
+    );
   }
 
   /**

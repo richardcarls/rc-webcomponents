@@ -3,6 +3,7 @@ import { property, query, state } from 'lit/decorators.js';
 
 import {
   cssZoom,
+  MessagesController,
   getScrollOffset,
   inlineArrowKeys,
   isFocusable,
@@ -34,6 +35,28 @@ declare global {
   }
 }
 
+/** Built-in text of `rc-chip-group`. */
+export interface RCChipGroupMessages {
+  /** Default toolbar name for `kind="assist"`, when `label` is unset. */
+  label: string;
+  /** Collapsed overflow action. */
+  showAll: string;
+  /** Expanded overflow action. */
+  showLess: string;
+}
+
+export const DEFAULT_CHIP_GROUP_MESSAGES: Readonly<RCChipGroupMessages> = Object.freeze({
+  label: 'Chip actions',
+  showAll: 'Show all',
+  showLess: 'Show less',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-chip-group': RCChipGroupMessages;
+  }
+}
+
 /**
  * Adaptive chip layout for native controls, `rc-chip`, and arbitrary elements.
  * Natural wrapping is kept while content fits within `max-rows`; overflowing
@@ -44,6 +67,10 @@ declare global {
  * Filter groups preserve native radio/checkbox behavior: author a `<fieldset>`
  * around the group, then place one native input in each direct-child chip label.
  * Generic groups are layout-only and do not coordinate their children.
+ *
+ * Built-in text (the overflow toggle and default toolbar name) follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every instance
+ * through `registerMessages()` from `@rcarls/rc-common` under `rc-chip-group`.
  *
  * @slot - Direct chip or arbitrary-element children.
  *
@@ -60,9 +87,7 @@ declare global {
  * @attr selection - Filter semantics hint: `none`, `single`, or `multiple`.
  * @attr expanded - Current auto-layout disclosure state. Host writes are silent.
  * @attr default-expanded - Initial uncontrolled disclosure state.
- * @attr label - Accessible label for assist-toolbar semantics.
- * @attr show-all-label - Label for the collapsed overflow action.
- * @attr show-less-label - Label for the expanded overflow action.
+ * @attr label - Accessible label for assist-toolbar semantics. Defaults to the `label` message.
  *
  * @cssprop [--rc-chip-group-column-gap=0.5rem] - Inline gap between items.
  * @cssprop [--rc-chip-group-row-gap=0] - Block gap between wrapped rows. Slotted readonly chips
@@ -81,6 +106,19 @@ declare global {
  */
 export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   static override styles = chipGroupStyles;
+
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCChipGroupMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-chip-group',
+    DEFAULT_CHIP_GROUP_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
 
   private _expanded: boolean | undefined;
   private _defaultExpanded = false;
@@ -137,17 +175,12 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   @property({ reflect: true })
   selection: RCChipGroupSelection = 'none';
 
-  /** Accessible label used when `kind="assist"` exposes toolbar semantics. */
+  /**
+   * Accessible label used when `kind="assist"` exposes toolbar semantics.
+   * Defaults to the `label` message.
+   */
   @property()
-  label = 'Chip actions';
-
-  /** Collapsed overflow action label. */
-  @property({ attribute: 'show-all-label' })
-  showAllLabel = 'Show all';
-
-  /** Expanded overflow action label. */
-  @property({ attribute: 'show-less-label' })
-  showLessLabel = 'Show less';
+  label: string | undefined;
 
   /** Current auto-layout disclosure state. Host writes are silent. */
   @property({ type: Boolean, reflect: true })
@@ -645,7 +678,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
         part="root"
         data-mode=${this._resolvedLayout}
         role=${assist ? 'toolbar' : nothing}
-        aria-label=${assist ? this.label : nothing}
+        aria-label=${assist ? (this.label ?? this._messages.value.label) : nothing}
         aria-orientation=${assist && this._inlineVertical ? 'vertical' : nothing}
         @keydown=${this._handleKeyDown}
         @change=${{ handleEvent: this._handleChange, capture: true }}
@@ -668,7 +701,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
                   d="M3 17v2h6v-2zM3 5v2h10V5zm10 16v-2h8v-2h-8v-2h-2v6zM7 9v2H3v2h4v2h2V9zm14 4v-2H11v2zm-6-4h2V7h4V5h-4V3h-2z"
                 ></path>
               </svg>
-              ${this.expanded ? this.showLessLabel : this.showAllLabel}
+              ${this.expanded ? this._messages.value.showLess : this._messages.value.showAll}
             </button>
           </rc-chip>
           <span id="toggle-separator" part="toggle-separator" aria-hidden="true"></span>

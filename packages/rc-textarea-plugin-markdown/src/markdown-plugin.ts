@@ -16,9 +16,28 @@ import {
   type FoldingActionControllerOptions,
 } from '@rcarls/rc-textarea/folding';
 
-/** Visual options for the Markdown plugin's folding actions. */
+/** Text of the Markdown plugin's fold toggles. */
+export interface MarkdownPluginMessages {
+  /** Name of a foldable block from its MDAST type, such as `Heading level 2` or `code`. */
+  block: (type: string, depth?: number) => string;
+  /** Accessible name of a fold toggle. */
+  fold: (block: string, line: number, title: string) => string;
+}
+
+export const DEFAULT_MARKDOWN_PLUGIN_MESSAGES: Readonly<MarkdownPluginMessages> = Object.freeze({
+  block: (type: string, depth?: number) => (type === 'heading' ? `Heading level ${depth}` : type),
+  fold: (block: string, line: number, title: string) => `${block} at line ${line}: ${title}`,
+});
+
+/** Options for the Markdown plugin. */
 export interface MarkdownPluginOptions {
+  /** Visual options for the folding actions. */
   folding?: FoldingActionControllerOptions;
+  /**
+   * Fold toggle text overrides, for a non-English interface. The plugin has no
+   * element of its own, so it reads no `lang` and no registered messages.
+   */
+  messages?: Partial<MarkdownPluginMessages>;
 }
 
 /** Minimal shape of a unist node as used by visit(). */
@@ -54,6 +73,7 @@ export function getMarkdownPreviewHtml(value: string): string {
 function buildPlugin(options: MarkdownPluginOptions = {}): RCTextareaPlugin & {
   getPreviewHtml(value: string): string;
 } {
+  const messages = { ...DEFAULT_MARKDOWN_PLUGIN_MESSAGES, ...options.messages };
   let folding: FoldingActionController | null = null;
   let host: RCTextarea | null = null;
   let enabledGutter = false;
@@ -94,7 +114,7 @@ function buildPlugin(options: MarkdownPluginOptions = {}): RCTextareaPlugin & {
       const lines = value.split('\n');
       const keyCounts = new Map<string, number>();
 
-      const addFold = (node: VisitNode, kind: string, fromLine: number, toLine: number): void => {
+      const addFold = (node: VisitNode, block: string, fromLine: number, toLine: number): void => {
         const line = node.position?.start.line;
 
         if (line === undefined || fromLine > toLine) {
@@ -102,7 +122,9 @@ function buildPlugin(options: MarkdownPluginOptions = {}): RCTextareaPlugin & {
         }
 
         const title = lines[line - 1]?.trim() ?? '';
-        const baseKey = `${kind}:${title}`;
+        // Keys stay in English-free MDAST terms so a fold survives a locale change.
+        const depth = 'depth' in node ? `${node.depth as number}` : '';
+        const baseKey = `${node.type}${depth}:${title}`;
         const occurrence = keyCounts.get(baseKey) ?? 0;
 
         keyCounts.set(baseKey, occurrence + 1);
@@ -110,7 +132,7 @@ function buildPlugin(options: MarkdownPluginOptions = {}): RCTextareaPlugin & {
         actions.push({
           key: `${baseKey}:${occurrence}`,
           gutterLine: line,
-          label: `${kind} at line ${line}: ${title}`,
+          label: messages.fold(block, line, title),
           target: { fromLine, toLine },
         });
       };
@@ -129,7 +151,7 @@ function buildPlugin(options: MarkdownPluginOptions = {}): RCTextareaPlugin & {
           }
         }
 
-        addFold(heading, `Heading level ${heading.depth}`, fromLine, toLine);
+        addFold(heading, messages.block('heading', heading.depth), fromLine, toLine);
       }
 
       visit(tree, (node: VisitNode) => {
@@ -142,7 +164,12 @@ function buildPlugin(options: MarkdownPluginOptions = {}): RCTextareaPlugin & {
         }
 
         if (node.position && ['list', 'code', 'blockquote', 'table'].includes(node.type)) {
-          addFold(node, node.type, node.position.start.line + 1, node.position.end.line);
+          addFold(
+            node,
+            messages.block(node.type),
+            node.position.start.line + 1,
+            node.position.end.line,
+          );
         }
       });
 

@@ -1,7 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { HORIZONTAL_LTR_FLOW, resolveFlow, type Flow } from './flow.js';
-import { observeDirection } from './observeDirection.js';
+import { observeLocale } from './observeLocale.js';
 import { RafScheduler } from './RafScheduler.js';
 
 function sameFlow(a: Flow, b: Flow): boolean {
@@ -35,7 +35,7 @@ export class FlowController implements ReactiveController {
 
   private _observer: ResizeObserver | null = null;
 
-  private _unobserveDirection: (() => void) | null = null;
+  private _unobserveLocale: (() => void) | null = null;
 
   private readonly _frame = new RafScheduler();
 
@@ -50,7 +50,7 @@ export class FlowController implements ReactiveController {
 
   hostConnected(): void {
     this._scheduleRefresh();
-    this._unobserveDirection ??= observeDirection(() => this._scheduleRefresh());
+    this._unobserveLocale ??= observeLocale(() => this._scheduleRefresh());
 
     if (typeof ResizeObserver === 'function') {
       this._observer ??= new ResizeObserver(() => this._scheduleRefresh());
@@ -61,8 +61,8 @@ export class FlowController implements ReactiveController {
   hostDisconnected(): void {
     this._frame.cancel();
     this._observer?.disconnect();
-    this._unobserveDirection?.();
-    this._unobserveDirection = null;
+    this._unobserveLocale?.();
+    this._unobserveLocale = null;
   }
 
   refresh(): void {

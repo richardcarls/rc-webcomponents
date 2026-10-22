@@ -94,3 +94,11 @@ listbox.addEventListener('rc-listbox-change', (event) => {
 - Disabled options render with `aria-disabled="true"` and are omitted from
   `navigableItems`.
 - Multi-select mode reflects `aria-multiselectable="true"`.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`, and never an
+ancestor's `lang`, which usually marks content. Override it per element with the
+`messages` property, or for every instance with `registerMessages()` from
+`@rcarls/rc-common` under `rc-listbox`. Keys: `create`. See the
+[rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).

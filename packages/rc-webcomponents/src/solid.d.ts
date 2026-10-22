@@ -198,9 +198,16 @@ export type RCChipGroupRef = HTMLElement & {
   selection: RCChipGroupSelection;
   expanded: boolean;
   defaultExpanded: boolean;
-  label: string;
-  showAllLabel: string;
-  showLessLabel: string;
+  label: string | undefined;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCChipGroupMessages | undefined;
+};
+
+/** Overridable `<rc-chip-group>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCChipGroupMessages = {
+  label?: string;
+  showAll?: string;
+  showLess?: string;
 };
 
 export type RCSnackbarQueuePolicy = 'queue' | 'replace';
@@ -288,6 +295,13 @@ export type RCListboxRef = HTMLElement & {
   filterOptions(text: string): void;
   clearFilter(): void;
   setCreateOption(label: string | null): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCListboxMessages | undefined;
+};
+
+/** Overridable `<rc-listbox>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCListboxMessages = {
+  create?: (text: string) => string;
 };
 
 /** Public API surface of `<rc-select>`. */
@@ -343,8 +357,6 @@ export type RCSelectRef = HTMLElement & {
   placeholder: string;
   display: 'auto' | 'chips' | 'compact';
   popupMode: 'popover' | 'dialog';
-  dialogConfirmLabel: string;
-  dialogCancelLabel: string;
   dialogCancelButton: 'visible' | 'hidden';
   value: RCSelectValue;
   defaultValue: RCSelectValue | undefined;
@@ -354,12 +366,30 @@ export type RCSelectRef = HTMLElement & {
   closePopup(returnFocus?: boolean): void;
   focus(options?: FocusOptions): void;
   blur(): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCSelectMessages | undefined;
+};
+
+/** Overridable `<rc-select>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCSelectMessages = {
+  options?: string;
+  selectedItems?: string;
+  remove?: (label: string) => string;
+  summary?: (first: string, more: number) => string;
+  done?: string;
+  cancel?: string;
 };
 
 /** Public API surface of `<rc-combobox>`. */
 export type RCComboboxRef = RCSelectRef & {
   allowCreate: boolean;
   filterStrategy: 'prefix' | 'contains' | ((label: string, query: string) => boolean);
+  messages: RCComboboxMessages | undefined;
+};
+
+/** Overridable `<rc-combobox>` built-in text: every `rc-select` key plus `search`. */
+export type RCComboboxMessages = RCSelectMessages & {
+  search?: (name: string) => string;
 };
 
 export type RCComboboxCreateDetail = {
@@ -454,18 +484,25 @@ export type RCAdaptiveMenuToggleDetail = {
 
 /** Public API surface of `<rc-adaptive-menu>`. */
 export type RCAdaptiveMenuRef = HTMLElement & {
-  label: string;
+  label: string | undefined;
   maxShown: number;
   open: boolean;
   defaultOpen: boolean;
   orientation: 'horizontal' | 'vertical';
-  overflowLabel: string;
   readonly $actions: HTMLElement[];
   readonly $promotedActions: HTMLElement[];
   readonly $overflowedActions: HTMLElement[];
   openMenu(focus?: 'first' | 'last' | 'none'): void;
   closeMenu(returnFocus?: boolean): void;
   toggleMenu(focus?: 'first' | 'last' | 'none'): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCAdaptiveMenuMessages | undefined;
+};
+
+/** Overridable `<rc-adaptive-menu>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCAdaptiveMenuMessages = {
+  label?: string;
+  overflow?: string;
 };
 
 /** Public API surface of `<rc-menu-button>`. */
@@ -529,8 +566,15 @@ export type RCNavigationRailToggleDetail = {
 
 /** Public API surface of `<rc-menubar>`. */
 export type RCMenubarRef = HTMLElement & {
-  label: string;
+  label: string | undefined;
   orientation: 'horizontal' | 'vertical';
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCMenubarMessages | undefined;
+};
+
+/** Overridable `<rc-menubar>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCMenubarMessages = {
+  label?: string;
 };
 
 /** Public API surface of `<rc-toolbar>`. */
@@ -541,7 +585,7 @@ export type RCToolbarRef = HTMLElement & {
 
 /** Public API surface of `<rc-splitter>`. */
 export type RCSplitterRef = HTMLElement & {
-  label: string;
+  label: string | undefined;
   orientation: 'horizontal' | 'vertical';
   mode: 'length' | 'percent' | 'fixed';
   step: number;
@@ -554,6 +598,15 @@ export type RCSplitterRef = HTMLElement & {
   snapPoints: string;
   swipeVelocity: number;
   snapTo(index: number, behavior?: 'animated' | 'instant'): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCSplitterMessages | undefined;
+};
+
+/** Overridable `<rc-splitter>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCSplitterMessages = {
+  label?: string;
+  expand?: (label: string) => string;
+  collapse?: (label: string) => string;
 };
 
 export type RCTextareaRef = HTMLElement & {
@@ -579,6 +632,43 @@ export type RCMarkdownEditorRef = HTMLElement & {
   sourceMode: boolean;
   defaultSourceMode: boolean;
   readOnly: boolean;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCMarkdownEditorMessages | undefined;
+};
+
+/** Overridable `<rc-editor-toolbar>` built-in text. */
+export type RCEditorToolbarMessages = {
+  toolbar?: string;
+  bold?: string;
+  italic?: string;
+  underline?: string;
+  strikethrough?: string;
+  inlineCode?: string;
+  link?: string;
+  headingLevel?: string;
+  paragraph?: string;
+  heading?: (level: number) => string;
+  blockquote?: string;
+  bulletList?: string;
+  orderedList?: string;
+  codeBlock?: string;
+  codeBlockLanguage?: string;
+  languagePlaceholder?: string;
+  languageHint?: string;
+  sourceMode?: string;
+  sourceModeHint?: string;
+  shortcut?: (label: string, keys: string) => string;
+};
+
+/** Overridable `<rc-markdown-editor>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCMarkdownEditorMessages = {
+  source?: string;
+  linkPopover?: string;
+  url?: string;
+  applyLink?: string;
+  openLink?: string;
+  removeLink?: string;
+  shortcut?: (label: string, keys: string) => string;
 };
 
 export type RCMarkdownEditorFormats = {
@@ -686,12 +776,20 @@ export type RCRangeSliderRef = HTMLElement & {
   defaultValue: [number, number] | undefined;
   disabled: boolean;
   readonly: boolean;
-  lowLabel: string;
-  highLabel: string;
+  lowLabel: string | undefined;
+  highLabel: string | undefined;
   lowValueText: string;
   highValueText: string;
   display: 'float' | 'inline-start' | 'inline-end' | null;
   orientation: 'horizontal' | 'vertical';
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCRangeSliderMessages | undefined;
+};
+
+/** Overridable `<rc-range-slider>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCRangeSliderMessages = {
+  low?: string;
+  high?: string;
 };
 
 export type RCRangeSliderChangeDetail = {
@@ -707,8 +805,8 @@ export type RCTransferListOption = {
 export type RCTransferListRef = HTMLElement & {
   multiple: boolean;
   compact: boolean;
-  availableLabel: string;
-  selectedLabel: string;
+  availableLabel: string | undefined;
+  selectedLabel: string | undefined;
   available: RCTransferListOption[];
   selected: RCTransferListOption[];
   defaultSelected: RCTransferListOption[] | undefined;
@@ -717,6 +815,21 @@ export type RCTransferListRef = HTMLElement & {
   removeSelected(): void;
   clearSelected(): void;
   moveSelected(delta: number): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCTransferListMessages | undefined;
+};
+
+/** Overridable `<rc-transfer-list>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCTransferListMessages = {
+  available?: string;
+  selected?: string;
+  actions?: string;
+  add?: string;
+  addAll?: string;
+  remove?: string;
+  clear?: string;
+  moveUp?: string;
+  moveDown?: string;
 };
 
 export type RCTransferListChangeDetail = {
@@ -745,7 +858,6 @@ export type RCSearchBarRef = HTMLElement & {
   value: string;
   defaultValue: string | undefined;
   debounce: number;
-  clearLabel: string;
   allowNativeClear: boolean;
   showClearOnFocus: boolean;
   disabled: boolean;
@@ -754,6 +866,13 @@ export type RCSearchBarRef = HTMLElement & {
   closeView(): void;
   toggleView(): void;
   clear(): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCSearchBarMessages | undefined;
+};
+
+/** Overridable `<rc-search-bar>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCSearchBarMessages = {
+  clear?: string;
 };
 
 export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
@@ -807,6 +926,19 @@ export type RCCarouselRef = HTMLElement & {
   next(): void;
   previous(): void;
   goToIndex(index: number, instant?: boolean): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCCarouselMessages | undefined;
+};
+
+/** Overridable `<rc-carousel>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCCarouselMessages = {
+  carousel?: string;
+  slide?: string;
+  position?: (position: number, count: number) => string;
+  previous?: string;
+  next?: string;
+  picker?: string;
+  goToSlide?: (position: number, count: number) => string;
 };
 
 /** Public API surface of `<rc-carousel-item>`. */
@@ -882,6 +1014,7 @@ declare module 'solid-js' {
       };
 
       'rc-carousel': JSX.HTMLAttributes<RCCarouselRef> & {
+        'prop:messages'?: RCCarouselMessages | undefined;
         'active-index'?: number | string;
         defaultActiveIndex?: number | string;
         'default-active-index'?: number | string;
@@ -960,6 +1093,7 @@ declare module 'solid-js' {
       };
 
       'rc-chip-group': JSX.HTMLAttributes<RCChipGroupRef> & {
+        'prop:messages'?: RCChipGroupMessages | undefined;
         layout?: RCChipGroupLayout;
         'max-rows'?: number | string;
         kind?: RCChipGroupKind;
@@ -968,8 +1102,6 @@ declare module 'solid-js' {
         defaultExpanded?: boolean | string;
         'default-expanded'?: boolean | string;
         label?: string;
-        'show-all-label'?: string;
-        'show-less-label'?: string;
         'prop:expanded'?: boolean | undefined;
         'prop:defaultExpanded'?: boolean | undefined;
         'on:rc-chip-group-toggle'?: (e: CustomEvent<RCChipGroupToggleDetail>) => void;
@@ -1005,6 +1137,7 @@ declare module 'solid-js' {
       };
 
       'rc-listbox': JSX.HTMLAttributes<RCListboxRef> & {
+        'prop:messages'?: RCListboxMessages | undefined;
         multiple?: boolean | string;
         checkmark?: boolean | string;
         'filter-strategy'?: 'prefix' | 'contains';
@@ -1018,6 +1151,7 @@ declare module 'solid-js' {
       };
 
       'rc-select': JSX.HTMLAttributes<RCSelectRef> & {
+        'prop:messages'?: RCSelectMessages | undefined;
         open?: boolean | string;
         multiple?: boolean | string;
         disabled?: boolean | string;
@@ -1025,8 +1159,6 @@ declare module 'solid-js' {
         placeholder?: string;
         display?: 'auto' | 'chips' | 'compact';
         'popup-mode'?: 'popover' | 'dialog';
-        'dialog-confirm-label'?: string;
-        'dialog-cancel-label'?: string;
         'dialog-cancel-button'?: 'visible' | 'hidden';
         value?: RCSelectValue;
         defaultValue?: RCSelectValue;
@@ -1042,6 +1174,7 @@ declare module 'solid-js' {
       };
 
       'rc-combobox': JSX.HTMLAttributes<RCComboboxRef> & {
+        'prop:messages'?: RCComboboxMessages | undefined;
         open?: boolean | string;
         multiple?: boolean | string;
         disabled?: boolean | string;
@@ -1051,8 +1184,6 @@ declare module 'solid-js' {
         'allow-create'?: boolean | string;
         'filter-strategy'?: 'prefix' | 'contains';
         'popup-mode'?: 'popover' | 'dialog';
-        'dialog-confirm-label'?: string;
-        'dialog-cancel-label'?: string;
         'dialog-cancel-button'?: 'visible' | 'hidden';
         value?: RCSelectValue;
         defaultValue?: RCSelectValue;
@@ -1127,6 +1258,7 @@ declare module 'solid-js' {
       };
 
       'rc-adaptive-menu': JSX.HTMLAttributes<RCAdaptiveMenuRef> & {
+        'prop:messages'?: RCAdaptiveMenuMessages | undefined;
         label?: string;
         'max-shown'?: number | string;
         open?: boolean | string;
@@ -1134,7 +1266,6 @@ declare module 'solid-js' {
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
         orientation?: 'horizontal' | 'vertical';
-        'overflow-label'?: string;
         'on:rc-adaptive-menu-toggle'?: (e: CustomEvent<RCAdaptiveMenuToggleDetail>) => void;
       };
 
@@ -1180,6 +1311,7 @@ declare module 'solid-js' {
       };
 
       'rc-menubar': JSX.HTMLAttributes<RCMenubarRef> & {
+        'prop:messages'?: RCMenubarMessages | undefined;
         label?: string;
         orientation?: 'horizontal' | 'vertical';
       };
@@ -1222,6 +1354,7 @@ declare module 'solid-js' {
       };
 
       'rc-range-slider': JSX.HTMLAttributes<RCRangeSliderRef> & {
+        'prop:messages'?: RCRangeSliderMessages | undefined;
         min?: number | string;
         max?: number | string;
         step?: number | string;
@@ -1240,6 +1373,7 @@ declare module 'solid-js' {
       };
 
       'rc-transfer-list': JSX.HTMLAttributes<RCTransferListRef> & {
+        'prop:messages'?: RCTransferListMessages | undefined;
         multiple?: boolean | string;
         compact?: boolean | string;
         'available-label'?: string;
@@ -1252,6 +1386,7 @@ declare module 'solid-js' {
       };
 
       'rc-splitter': JSX.HTMLAttributes<RCSplitterRef> & {
+        'prop:messages'?: RCSplitterMessages | undefined;
         label?: string;
         orientation?: 'horizontal' | 'vertical';
         mode?: 'length' | 'percent' | 'fixed';
@@ -1271,11 +1406,12 @@ declare module 'solid-js' {
       };
 
       'rc-editor-toolbar': JSX.HTMLAttributes<HTMLElement> & {
-        label?: string;
+        'prop:messages'?: RCEditorToolbarMessages | undefined;
         'on:rc-toolbar-action'?: (e: CustomEvent<{ action: string }>) => void;
       };
 
       'rc-markdown-editor': JSX.HTMLAttributes<RCMarkdownEditorRef> & {
+        'prop:messages'?: RCMarkdownEditorMessages | undefined;
         value?: string;
         defaultValue?: string;
         'default-value'?: string;
@@ -1314,13 +1450,13 @@ declare module 'solid-js' {
       };
 
       'rc-search-bar': JSX.HTMLAttributes<RCSearchBarRef> & {
+        'prop:messages'?: RCSearchBarMessages | undefined;
         variant?: 'bar' | 'view';
         open?: boolean | string;
         defaultOpen?: boolean | string;
         'prop:open'?: boolean | undefined;
         'prop:defaultOpen'?: boolean | undefined;
         debounce?: number | string;
-        'clear-label'?: string;
         'allow-native-clear'?: boolean | string;
         'show-clear-on-focus'?: boolean | string;
         disabled?: boolean | string;

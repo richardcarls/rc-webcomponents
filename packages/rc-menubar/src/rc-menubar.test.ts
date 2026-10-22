@@ -3,6 +3,7 @@ import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 import { userEvent, type Locator } from 'vitest/browser';
 
+import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
@@ -136,6 +137,7 @@ test('RCMenubar maps item styling variables to child menu-button triggers', asyn
   const trigger = screen.getByTestId('trigger-1').element() as HTMLElement;
 
   await menubar.updateComplete;
+
   await vi.waitFor(() => {
     expect(trigger.getAttribute('tabindex')).toBe('0');
   });
@@ -145,11 +147,14 @@ test('RCMenubar maps item styling variables to child menu-button triggers', asyn
   expect(styles.getPropertyValue('--rc-menu-button-trigger-background').trim()).toBe(
     'rgb(1, 2, 3)',
   );
+
   expect(styles.getPropertyValue('--rc-menu-button-trigger-color').trim()).toBe('rgb(4, 5, 6)');
   expect(styles.getPropertyValue('--rc-menu-button-trigger-padding-inline').trim()).toBe('2rem');
+
   expect(styles.getPropertyValue('--rc-menu-button-trigger-open-background').trim()).toBe(
     'rgb(7, 8, 9)',
   );
+
   expect(styles.getPropertyValue('--rc-menu-button-trigger-open-color').trim()).toBe(
     'rgb(10, 11, 12)',
   );
@@ -159,9 +164,11 @@ test('RCMenubar maps item styling variables to child menu-button triggers', asyn
   styles = getComputedStyle(menuButton);
 
   expect(trigger.getAttribute('aria-expanded')).toBe('true');
+
   expect(styles.getPropertyValue('--rc-menu-button-trigger-background').trim()).toBe(
     'rgb(7, 8, 9)',
   );
+
   expect(styles.getPropertyValue('--rc-menu-button-trigger-color').trim()).toBe('rgb(10, 11, 12)');
 });
 
@@ -558,4 +565,28 @@ test('RCMenubar reports and navigates the orientation it renders in vertical tex
   await focusTrigger(first.element());
   await userEvent.keyboard('{ArrowDown}');
   await expect.element(second).toHaveFocus();
+});
+
+test('names itself in its own locale when no label is set', async () => {
+  registerMessages('ar', { 'rc-menubar': { label: 'القائمة' } });
+
+  const screen = render(html`
+    <rc-menubar lang="ar" dir="rtl">
+      <rc-menu-button>
+        <button slot="trigger">ملف</button>
+        <rc-menu label="ملف"><button>جديد</button></rc-menu>
+      </rc-menu-button>
+    </rc-menubar>
+  `);
+  const host = screen.container.querySelector('rc-menubar') as HTMLElement & {
+    updateComplete: Promise<boolean>;
+    label: string | undefined;
+  };
+
+  await host.updateComplete;
+  expect(host.getAttribute('aria-label')).toBe('القائمة');
+
+  host.label = 'Main';
+  await host.updateComplete;
+  expect(host.getAttribute('aria-label')).toBe('Main');
 });
