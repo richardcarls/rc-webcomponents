@@ -105,11 +105,6 @@ export const splitterStyles = css`
       outline-offset: 2px;
     }
 
-    /* The chevron points toward the primary pane, which is on the right in RTL. */
-    :host(:dir(rtl):not([orientation='vertical'])) & svg {
-      transform: scaleX(-1);
-    }
-
     :host([orientation='vertical']) & {
       inset-block: 0;
       margin-block: auto;

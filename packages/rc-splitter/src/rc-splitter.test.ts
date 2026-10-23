@@ -6,6 +6,7 @@ import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
 import type { RCSplitter } from './rc-splitter.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 
 // Helper to get elements from shadow DOM
 function getSeparator(host: RCSplitter): HTMLElement {
@@ -1505,4 +1506,97 @@ describe('localization', () => {
     // The CSS length stays locale-free.
     expect(host.valueText).toBe(`${host.value}%`);
   });
+});
+
+type ChevronSide = 'left' | 'right' | 'up' | 'down';
+
+function chevronSide(host: RCSplitter): string | null | undefined {
+  return host.shadowRoot!.querySelector('#collapse-button svg')?.getAttribute('data-points');
+}
+
+/** The physical side the primary pane is on, measured against the secondary pane. */
+function primarySide(host: RCSplitter): ChevronSide {
+  const primary = getPrimary(host).getBoundingClientRect();
+  const secondary = host.shadowRoot!.querySelector('#secondary')!.getBoundingClientRect();
+  const dx = primary.left + primary.width / 2 - (secondary.left + secondary.width / 2);
+  const dy = primary.top + primary.height / 2 - (secondary.top + secondary.height / 2);
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return dx < 0 ? 'left' : 'right';
+  }
+
+  return dy < 0 ? 'up' : 'down';
+}
+
+const OPPOSITE: Record<ChevronSide, ChevronSide> = {
+  left: 'right',
+  right: 'left',
+  up: 'down',
+  down: 'up',
+};
+
+describe.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
+  'collapse chevron in %s',
+  (_label, flow) => {
+    test.each(['horizontal', 'vertical'] as const)(
+      'points at the %s primary pane to collapse and away to expand',
+      async (orientation) => {
+        const screen = render(
+          inFlow(
+            html`<rc-splitter
+              data-testid="host"
+              collapsible
+              orientation=${orientation}
+              value="120"
+              style="inline-size: 400px; block-size: 300px;"
+            >
+              <div>Primary</div>
+              <div slot="secondary">Secondary</div>
+            </rc-splitter>`,
+            flow,
+          ),
+        );
+        const host = screen.getByTestId('host').element() as RCSplitter;
+
+        await host.updateComplete;
+        await waitForInit(host);
+
+        const side = primarySide(host);
+
+        expect(chevronSide(host)).toBe(side);
+
+        host.shadowRoot!.querySelector<HTMLButtonElement>('#collapse-button')!.click();
+        await host.updateComplete;
+
+        expect(chevronSide(host)).toBe(OPPOSITE[side]);
+      },
+    );
+  },
+);
+
+test('turns the collapse chevron when the direction changes at runtime', async () => {
+  const screen = render(
+    inFlow(
+      html`<rc-splitter
+        data-testid="host"
+        collapsible
+        value="120"
+        style="inline-size: 400px; block-size: 300px;"
+      >
+        <div>Primary</div>
+        <div slot="secondary">Secondary</div>
+      </rc-splitter>`,
+      { dir: 'ltr', writingMode: 'horizontal-tb' },
+    ),
+  );
+  const host = screen.getByTestId('host').element() as RCSplitter;
+
+  await host.updateComplete;
+  await waitForInit(host);
+  expect(chevronSide(host)).toBe('left');
+
+  screen.getByTestId('flow').element().setAttribute('dir', 'rtl');
+
+  await vi.waitFor(() => expect(chevronSide(host)).toBe('right'));
+  expect(primarySide(host)).toBe('right');
 });
