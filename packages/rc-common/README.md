@@ -92,7 +92,10 @@ descriptions, announcements) per key, in this order:
 
 1. The element's `messages` property (`reorderMessages` on `rc-list`).
 2. Text registered with `registerMessages()` for the element's locale: the exact tag, then its
-   base language (`de-CH`, then `de`).
+   base language (`de-CH`, then `de`). A component that extends another can also read the base
+   component's scope, below its own within each locale: `rc-combobox` takes any `rc-select`
+   text it has a key for. Pass `inherit` to `resolveMessages()` or `MessagesController` for the
+   same in your own components.
 3. The English default.
 
 ```ts

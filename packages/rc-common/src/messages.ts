@@ -70,6 +70,16 @@ function localeChain(locale: string): string[] {
   return parts.map((_, index) => parts.slice(0, index + 1).join('-'));
 }
 
+export interface ResolveMessagesOptions {
+  /**
+   * A scope whose registered text this one falls back to, such as
+   * `rc-select` for `rc-combobox`. Only keys the scope's defaults name are
+   * taken from it. Within each locale the scope's own text wins; a more
+   * specific locale wins over a less specific one either way.
+   */
+  inherit?: keyof RcMessageCatalog;
+}
+
 /**
  * Resolves the text for one scope. Each key comes from `overrides`, else
  * the registry for the host's locale (exact tag, then its base language),
@@ -80,11 +90,19 @@ export function resolveMessages<K extends keyof RcMessageCatalog>(
   scope: K,
   defaults: Readonly<RcMessageCatalog[K]>,
   overrides?: Partial<RcMessageCatalog[K]>,
+  options: ResolveMessagesOptions = {},
 ): RcMessageCatalog[K] {
   const resolved = { ...defaults } as RcMessageCatalog[K];
+  const keys = new Set(Object.keys(defaults));
 
   for (const locale of localeChain(messagesLocale(host))) {
-    assignDefined(resolved, registry.get(locale)?.[scope]);
+    const entry = registry.get(locale);
+
+    if (options.inherit) {
+      assignDefined(resolved, entry?.[options.inherit] as Partial<RcMessageCatalog[K]>, keys);
+    }
+
+    assignDefined(resolved, entry?.[scope]);
   }
 
   assignDefined(resolved, overrides);
@@ -92,13 +110,17 @@ export function resolveMessages<K extends keyof RcMessageCatalog>(
   return resolved;
 }
 
-function assignDefined<T extends object>(target: T, source: Partial<T> | undefined): void {
+function assignDefined<T extends object>(
+  target: T,
+  source: Partial<T> | undefined,
+  keys?: ReadonlySet<string>,
+): void {
   if (!source) {
     return;
   }
 
   for (const [key, value] of Object.entries(source)) {
-    if (value !== undefined) {
+    if (value !== undefined && (!keys || keys.has(key))) {
       (target as Record<string, unknown>)[key] = value;
     }
   }
@@ -166,6 +188,8 @@ export interface MessagesControllerOptions<
 > extends LocaleControllerOptions {
   /** Per-element overrides, usually the element's `messages` property. */
   overrides?: () => Partial<RcMessageCatalog[K]> | undefined;
+  /** See {@link ResolveMessagesOptions.inherit}. */
+  inherit?: keyof RcMessageCatalog;
 }
 
 /**
@@ -176,6 +200,7 @@ export class MessagesController<K extends keyof RcMessageCatalog> extends Locale
   private readonly _scope: K;
   private readonly _defaults: Readonly<RcMessageCatalog[K]>;
   private readonly _overrides: (() => Partial<RcMessageCatalog[K]> | undefined) | undefined;
+  private readonly _inherit: keyof RcMessageCatalog | undefined;
 
   constructor(
     host: ReactiveControllerHost & Element,
@@ -187,6 +212,7 @@ export class MessagesController<K extends keyof RcMessageCatalog> extends Locale
     this._scope = scope;
     this._defaults = defaults;
     this._overrides = options.overrides;
+    this._inherit = options.inherit;
   }
 
   /** The resolved text. Read it while rendering. */
@@ -194,7 +220,9 @@ export class MessagesController<K extends keyof RcMessageCatalog> extends Locale
     // Reading the locale marks it current, so only a later change notifies.
     void this.locale;
 
-    return resolveMessages(this._host, this._scope, this._defaults, this._overrides?.());
+    return resolveMessages(this._host, this._scope, this._defaults, this._overrides?.(), {
+      inherit: this._inherit,
+    });
   }
 }
 

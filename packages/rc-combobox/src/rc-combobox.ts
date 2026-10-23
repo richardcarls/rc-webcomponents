@@ -85,9 +85,9 @@ declare module '@rcarls/rc-common' {
  *
  * Built-in text follows the element's own `lang`, else `<html lang>`: per
  * element through `messages`, or for every combobox through
- * `registerMessages()` from `@rcarls/rc-common` under `rc-combobox`, which
- * does not inherit text registered under `rc-select`. The "Create" option
- * reads `rc-listbox`.
+ * `registerMessages()` from `@rcarls/rc-common` under `rc-combobox`. Text
+ * registered under `rc-select` applies too, below the combobox's own. The
+ * "Create" option reads `rc-listbox`.
  *
  * @attr allow-create - When present, shows a "Create 'X'" option for unmatched input.
  * @attr required - Inherited from `rc-select`; mirrors the slotted native `<select>`'s own
@@ -140,7 +140,9 @@ export class RCCombobox extends RCSelect {
   declare messages: Partial<RCComboboxMessages> | undefined;
 
   protected override get _text(): RCComboboxMessages {
-    return resolveMessages(this, 'rc-combobox', DEFAULT_COMBOBOX_MESSAGES, this.messages);
+    return resolveMessages(this, 'rc-combobox', DEFAULT_COMBOBOX_MESSAGES, this.messages, {
+      inherit: 'rc-select',
+    });
   }
 
   /** When set, shows a "Create '{text}'" option for text that has no exact match. */
