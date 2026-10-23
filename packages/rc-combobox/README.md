@@ -81,7 +81,9 @@ the mode for an open interaction, so changing `popupMode` does not replace an ac
 Built-in text follows the element's own `lang`, else `<html lang>`, and never an
 ancestor's `lang`, which usually marks content. Override it per element with the
 `messages` property, or for every instance with `registerMessages()` from
-`@rcarls/rc-common` under `rc-combobox`. Keys: every `rc-select` key plus `search`. Text registered under `rc-select` does not reach a combobox. The "Create" option reads `rc-listbox`, and the combobox passes its `lang` to its listbox. See the
+`@rcarls/rc-common` under `rc-combobox`. Keys: every `rc-select` key plus `search`. Text
+registered under `rc-select` applies too, below text registered under `rc-combobox`. The
+"Create" option reads `rc-listbox`, and the combobox passes its `lang` to its listbox. See the
 [rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).
 
 ### Validation

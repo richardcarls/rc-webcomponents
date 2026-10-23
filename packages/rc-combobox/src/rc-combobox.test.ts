@@ -766,7 +766,7 @@ test.each([
   },
 );
 
-test('resolves its own rc-combobox text, not text registered for rc-select', async () => {
+test('prefers its own rc-combobox text over text registered for rc-select', async () => {
   registerMessages('ar', {
     'rc-select': { selectedItems: 'select scope' },
     'rc-combobox': { selectedItems: 'العناصر المحددة' },
@@ -789,4 +789,24 @@ test('resolves its own rc-combobox text, not text registered for rc-select', asy
   );
 
   expect(host.shadowRoot?.querySelector('rc-listbox')?.getAttribute('lang')).toBe('ar');
+});
+
+test('falls back to text registered for rc-select', async () => {
+  registerMessages('he', { 'rc-select': { selectedItems: 'פריטים שנבחרו' } });
+
+  const screen = render(html`
+    <rc-combobox lang="he" dir="rtl" multiple>
+      <select multiple aria-label="פירות">
+        <option value="a" selected>Apple</option>
+        <option value="b">Banana</option>
+      </select>
+    </rc-combobox>
+  `);
+  const host = screen.container.querySelector('rc-combobox') as RCCombobox;
+
+  await vi.waitFor(() =>
+    expect(host.shadowRoot?.querySelector('[part~="chips"]')?.getAttribute('aria-label')).toBe(
+      'פריטים שנבחרו',
+    ),
+  );
 });

@@ -14,6 +14,15 @@ import { DEFAULT_RESIZE_MESSAGES } from './ResizeController.js';
 // The registry is module state with no reset, so every test registers under
 // its own private-use language subtag (qaa to qtz).
 
+declare module './messages.js' {
+  interface RcMessageCatalog {
+    'test-base': { label: string; extra: string };
+    'test-derived': { label: string; search: string };
+  }
+}
+
+const DERIVED = Object.freeze({ label: 'Label', search: 'Search' });
+
 const cleanups: Array<() => void> = [];
 
 afterEach(() => {
@@ -62,6 +71,37 @@ test('resolves registered text for the exact tag, then its base language', () =>
 
   expect(resolveMessages(region, 'resize', DEFAULT_RESIZE_MESSAGES).grip).toBe('Region');
   expect(resolveMessages(other, 'resize', DEFAULT_RESIZE_MESSAGES).grip).toBe('Base');
+});
+
+test('an inherited scope fills keys below the own scope, locale by locale', () => {
+  registerMessages('qai', {
+    'test-base': { label: 'Base label', extra: 'Base only' },
+    'test-derived': { label: 'Derived label' },
+  });
+
+  registerMessages('qai-CH', { 'test-base': { label: 'Base region label' } });
+
+  const resolve = (lang: string) =>
+    resolveMessages(fixture(`<span data-host lang="${lang}"></span>`), 'test-derived', DERIVED, undefined, {
+      inherit: 'test-base',
+    });
+
+  // Within one locale the own scope wins; keys it has no default for stay out.
+  expect(resolve('qai')).toEqual({ label: 'Derived label', search: 'Search' });
+  // A more specific locale wins, even from the inherited scope.
+  expect(resolve('qai-CH').label).toBe('Base region label');
+});
+
+test('MessagesController passes its inherited scope through', () => {
+  registerMessages('qaj', { 'test-base': { label: 'Base label' } });
+
+  const host = Object.assign(fixture('<span data-host lang="qaj"></span>'), {
+    addController: () => {},
+    requestUpdate: () => {},
+  }) as unknown as ReactiveControllerHost & HTMLElement;
+  const messages = new MessagesController(host, 'test-derived', DERIVED, { inherit: 'test-base' });
+
+  expect(messages.value.label).toBe('Base label');
 });
 
 test('an override wins over registered text, and an undefined one does not', () => {
