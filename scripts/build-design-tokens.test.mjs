@@ -99,7 +99,7 @@ test('Material text styles retain baseline dimensions beside scoped overrides', 
 test('text styles follow variable references to literal font values', () => {
   const body = material.textStyles.find((style) => style.name === 'Material/body-large');
 
-  assert.equal(body.font, 'Roboto');
+  assert.equal(body.font, 'Roboto, system-ui, sans-serif');
   assert.equal(body.weight, 400);
 });
 

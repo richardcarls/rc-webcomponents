@@ -14260,7 +14260,7 @@
       "sizeCssVar": "--md-sys-typescale-body-large-size",
       "weight": 400,
       "weightCssVar": "--md-sys-typescale-body-large-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-body-large-font"
     },
     {
@@ -14274,7 +14274,7 @@
       "sizeCssVar": "--md-sys-typescale-body-medium-size",
       "weight": 400,
       "weightCssVar": "--md-sys-typescale-body-medium-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-body-medium-font"
     },
     {
@@ -14288,7 +14288,7 @@
       "sizeCssVar": "--md-sys-typescale-body-small-size",
       "weight": 400,
       "weightCssVar": "--md-sys-typescale-body-small-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-body-small-font"
     },
     {
@@ -14302,7 +14302,7 @@
       "sizeCssVar": "--md-sys-typescale-display-large-size",
       "weight": 400,
       "weightCssVar": "--md-sys-typescale-display-large-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-display-large-font"
     },
     {
@@ -14316,7 +14316,7 @@
       "sizeCssVar": "--md-sys-typescale-display-medium-size",
       "weight": 400,
       "weightCssVar": "--md-sys-typescale-display-medium-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-display-medium-font"
     },
     {
@@ -14330,7 +14330,7 @@
       "sizeCssVar": "--md-sys-typescale-display-small-size",
       "weight": 400,
       "weightCssVar": "--md-sys-typescale-display-small-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-display-small-font"
     },
     {
@@ -14342,7 +14342,7 @@
       "trackingCssVar": "--md-sys-typescale-headline-large-tracking",
       "size": 32,
       "sizeCssVar": "--md-sys-typescale-headline-large-size",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-headline-large-font",
       "weight": 400,
       "weightCssVar": "--md-sys-typescale-headline-large-weight"
@@ -14358,7 +14358,7 @@
       "sizeCssVar": "--md-sys-typescale-headline-medium-size",
       "weight": 400,
       "weightCssVar": "--md-sys-typescale-headline-medium-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-headline-medium-font"
     },
     {
@@ -14372,7 +14372,7 @@
       "sizeCssVar": "--md-sys-typescale-headline-small-size",
       "weight": 400,
       "weightCssVar": "--md-sys-typescale-headline-small-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-headline-small-font"
     },
     {
@@ -14386,7 +14386,7 @@
       "sizeCssVar": "--md-sys-typescale-label-large-size",
       "weight": 500,
       "weightCssVar": "--md-sys-typescale-label-large-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-label-large-font"
     },
     {
@@ -14400,7 +14400,7 @@
       "sizeCssVar": "--md-sys-typescale-label-medium-size",
       "weight": 500,
       "weightCssVar": "--md-sys-typescale-label-medium-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-label-medium-font"
     },
     {
@@ -14414,7 +14414,7 @@
       "sizeCssVar": "--md-sys-typescale-label-small-size",
       "weight": 500,
       "weightCssVar": "--md-sys-typescale-label-small-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-label-small-font"
     },
     {
@@ -14428,7 +14428,7 @@
       "sizeCssVar": "--md-sys-typescale-title-large-size",
       "weight": 400,
       "weightCssVar": "--md-sys-typescale-title-large-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-title-large-font"
     },
     {
@@ -14442,7 +14442,7 @@
       "sizeCssVar": "--md-sys-typescale-title-medium-size",
       "weight": 500,
       "weightCssVar": "--md-sys-typescale-title-medium-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-title-medium-font"
     },
     {
@@ -14456,7 +14456,7 @@
       "sizeCssVar": "--md-sys-typescale-title-small-size",
       "weight": 500,
       "weightCssVar": "--md-sys-typescale-title-small-weight",
-      "font": "Roboto",
+      "font": "Roboto, system-ui, sans-serif",
       "fontCssVar": "--md-sys-typescale-title-small-font"
     }
   ],
