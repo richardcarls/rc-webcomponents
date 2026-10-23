@@ -59,91 +59,91 @@ colors:
 typography:
   # --md-sys-typescale-<role>-<size>-{font,weight,size,line-height,tracking}
   display-large:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 57px
     fontWeight: 400
     lineHeight: 64px
     letterSpacing: -0.25px
   display-medium:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 45px
     fontWeight: 400
     lineHeight: 52px
     letterSpacing: 0
   display-small:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 36px
     fontWeight: 400
     lineHeight: 44px
     letterSpacing: 0
   headline-large:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 32px
     fontWeight: 400
     lineHeight: 40px
     letterSpacing: 0
   headline-medium:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 28px
     fontWeight: 400
     lineHeight: 36px
     letterSpacing: 0
   headline-small:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 24px
     fontWeight: 400
     lineHeight: 32px
     letterSpacing: 0
   title-large:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 22px
     fontWeight: 400
     lineHeight: 28px
     letterSpacing: 0
   title-medium:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 16px
     fontWeight: 500
     lineHeight: 24px
     letterSpacing: 0.15px
   title-small:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 14px
     fontWeight: 500
     lineHeight: 20px
     letterSpacing: 0.1px
   body-large:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 16px
     fontWeight: 400
     lineHeight: 24px
     letterSpacing: 0.5px
   body-medium:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 14px
     fontWeight: 400
     lineHeight: 20px
     letterSpacing: 0.25px
   body-small:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 12px
     fontWeight: 400
     lineHeight: 16px
     letterSpacing: 0.4px
   label-large:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 14px
     fontWeight: 500
     lineHeight: 20px
     letterSpacing: 0.1px
   label-medium:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 12px
     fontWeight: 500
     lineHeight: 16px
     letterSpacing: 0.5px
   label-small:
-    fontFamily: Roboto
+    fontFamily: Roboto, system-ui, sans-serif
     fontSize: 11px
     fontWeight: 500
     lineHeight: 16px
