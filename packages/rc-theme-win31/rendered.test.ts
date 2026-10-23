@@ -12,10 +12,11 @@ import '@rcarls/rc-toolbar/define';
 import './theme.css';
 import constraints from './constraints/win31.json';
 
-// Linux distributions rasterize the fallback sans differently when the period
-// face is unavailable, which is the expected outcome rather than a defect.
+// The period face is unavailable, so the fallback sans renders. Baselines
+// come from the pinned Docker image, which renders it exactly, so any
+// changed pixel fails.
 const SCREENSHOT_OPTIONS = {
-  comparatorOptions: { allowedMismatchedPixelRatio: 0.01 },
+  comparatorOptions: { allowedMismatchedPixelRatio: 0 },
 } as const;
 
 afterEach(() => {
