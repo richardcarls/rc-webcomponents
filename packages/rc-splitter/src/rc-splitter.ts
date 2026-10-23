@@ -18,6 +18,7 @@ import {
   renderedOrientation,
   resolveFlow,
   type DragGestureDetail,
+  type Flow,
   type KeyboardNavigationAction,
   type LogicalAxis,
 } from '@rcarls/rc-common';
@@ -25,6 +26,33 @@ import {
 import splitterStyles from './rc-splitter.styles.js';
 
 type SplitterOrientation = 'horizontal' | 'vertical';
+
+type ChevronSide = 'left' | 'right' | 'up' | 'down';
+
+const CHEVRON_PATHS: Record<ChevronSide, string> = {
+  left: 'M 7 1 L 3 5 L 7 9',
+  right: 'M 3 1 L 7 5 L 3 9',
+  up: 'M 1 7 L 5 3 L 9 7',
+  down: 'M 1 3 L 5 7 L 9 3',
+};
+
+const OPPOSITE_SIDE: Record<ChevronSide, ChevronSide> = {
+  left: 'right',
+  right: 'left',
+  up: 'down',
+  down: 'up',
+};
+
+/** The physical side the start of `axis` sits on. */
+function paneStartSide(axis: LogicalAxis, flow: Flow): ChevronSide {
+  const reversed = isReversed(axis, flow);
+
+  if (physicalAxis(axis, flow) === 'x') {
+    return reversed ? 'right' : 'left';
+  }
+
+  return reversed ? 'down' : 'up';
+}
 
 type SplitterMode = 'length' | 'percent' | 'fixed';
 
@@ -253,18 +281,15 @@ export class RCSplitter extends LitElement {
   }
 
   protected get _collapseButtonIcon() {
-    const isHorizontal = this.orientation === 'horizontal';
-    // Chevron points LEFT/UP to collapse (separator moves toward primary),
-    // RIGHT/DOWN to expand (separator moves away from primary).
-    const d = isHorizontal
-      ? this._isCollapsed
-        ? 'M 3 1 L 7 5 L 3 9'
-        : 'M 7 1 L 3 5 L 7 9'
-      : this._isCollapsed
-        ? 'M 1 3 L 5 7 L 9 3'
-        : 'M 1 7 L 5 3 L 9 7';
+    // The chevron points toward the primary pane to collapse (the separator
+    // moves toward it) and away from it to expand. The primary pane sits at
+    // the start of the pane axis, which the flow places on a physical side.
+    const startSide = paneStartSide(this._paneAxis, this._flow.flow);
+    const points = this._isCollapsed ? OPPOSITE_SIDE[startSide] : startSide;
+    const d = CHEVRON_PATHS[points];
 
     return html`<svg
+      data-points=${points}
       aria-hidden="true"
       viewBox="0 0 10 10"
       width="10"
