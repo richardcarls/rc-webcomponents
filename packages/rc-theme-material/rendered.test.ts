@@ -17,9 +17,10 @@ import '@rcarls/rc-textarea/define';
 import './theme.css';
 import { logicalInsets, unexpectedOverflow } from '../../test-helpers/rendered-ui';
 
-// Linux distributions rasterize fallback fonts differently when Roboto is unavailable.
+// Baselines come from the pinned Docker image with Roboto mounted (see
+// test-helpers/fonts), which renders exactly, so any changed pixel fails.
 const SCREENSHOT_OPTIONS = {
-  comparatorOptions: { allowedMismatchedPixelRatio: 0.01 },
+  comparatorOptions: { allowedMismatchedPixelRatio: 0 },
 } as const;
 
 afterEach(() => {

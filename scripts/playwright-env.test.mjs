@@ -12,6 +12,7 @@ import {
   imageTag,
   nodeModulesVolume,
   playwrightVersion,
+  TEST_FONTS_TARGET,
   volumePrefix,
   workspaceDirs,
 } from './playwright-env.mjs';
@@ -87,11 +88,12 @@ function envOf(args) {
     }, {});
 }
 
-test('mounts the checkout and gives every node_modules its own volume', () => {
+test('mounts the checkout and test fonts, and gives every node_modules its own volume', () => {
   const args = argsFor();
 
   assert.ok(args.includes('/repo:/work'));
   assert.ok(args.includes('rcwc-test-cache:/cache'));
+  assert.ok(args.includes(`/repo/test-helpers/fonts:${TEST_FONTS_TARGET}:ro`));
   assert.ok(args.includes('rcwc-test-nm-root:/work/node_modules'));
   assert.ok(args.includes('rcwc-test-nm-packages-rc-common:/work/packages/rc-common/node_modules'));
   assert.deepEqual(args.slice(0, 3), ['run', '--rm', '--init']);

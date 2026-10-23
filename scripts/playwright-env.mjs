@@ -24,6 +24,8 @@ import { fileURLToPath } from 'node:url';
 export const IMAGE_REPOSITORY = 'mcr.microsoft.com/playwright';
 export const WORKDIR = '/work';
 export const CACHE_DIR = '/cache';
+/** Where the checkout's test fonts appear in the image, so fontconfig finds them. */
+export const TEST_FONTS_TARGET = '/usr/share/fonts/truetype/rc-test';
 export const DEFAULT_MEMORY = '4g';
 export const SHM_SIZE = '1g';
 
@@ -133,6 +135,8 @@ export function dockerRunArgs({ root, image, prefix, dirs, script, args, user, e
   }
 
   run.push('-v', `${root}:${WORKDIR}`, '-w', WORKDIR, '-v', `${prefix}-cache:${CACHE_DIR}`);
+  // The image has no Roboto, which the Material theme names first.
+  run.push('-v', `${path.join(root, 'test-helpers', 'fonts')}:${TEST_FONTS_TARGET}:ro`);
 
   for (const dir of dirs) {
     const target = dir === '.' ? `${WORKDIR}/node_modules` : `${WORKDIR}/${dir}/node_modules`;
