@@ -1313,3 +1313,424 @@ describe('RCTextarea — paste', () => {
     expect(host.value).toBe('new\nlines\nexisting');
   });
 });
+
+describe('RCTextarea — content language', () => {
+  async function mountPlugin(host: RCTextarea): Promise<RCTextareaPluginAPI> {
+    let api: RCTextareaPluginAPI | undefined;
+
+    host.usePlugin({
+      mount(pluginApi) {
+        api = pluginApi;
+      },
+    });
+
+    await waitRender();
+
+    return api!;
+  }
+
+  function setCursor(host: RCTextarea, offset: number): void {
+    (host as unknown as { _savedSelection: unknown })._savedSelection = {
+      anchorOffset: offset,
+      focusOffset: offset,
+    };
+  }
+
+  /** Whether a line's text sits nearer the editor's left edge than its right. */
+  function textLeansLeft(host: RCTextarea, index: number): boolean {
+    const $editor = getEditor(host);
+    const $line = $editor.querySelectorAll<HTMLElement>('.line').item(index);
+    const range = document.createRange();
+
+    range.selectNodeContents($line);
+
+    const text = range.getBoundingClientRect();
+    const editor = $editor.getBoundingClientRect();
+
+    return text.left - editor.left < editor.right - text.right;
+  }
+
+  test('mirrors lang and spellcheck from the textarea and keeps them current', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" lang="en">
+        <textarea aria-label="Notes" lang="ja" spellcheck="true"></textarea>
+      </rc-textarea>
+    `);
+    const $textarea = getSlottedTextarea(host);
+    const $editor = getEditor(host);
+
+    expect($editor).toHaveAttribute('lang', 'ja');
+    expect($editor.spellcheck).toBe(true);
+
+    $textarea.lang = 'ar';
+    $textarea.spellcheck = false;
+
+    await expect.poll(() => $editor.getAttribute('lang')).toBe('ar');
+    expect($editor.spellcheck).toBe(false);
+
+    $textarea.removeAttribute('lang');
+    $textarea.setAttribute('spellcheck', '');
+
+    await expect.poll(() => $editor.hasAttribute('lang')).toBe(false);
+    expect($editor.spellcheck).toBe(true);
+
+    $textarea.removeAttribute('spellcheck');
+
+    await expect.poll(() => $editor.spellcheck).toBe(false);
+  });
+
+  test('never copies the host lang, which is the interface language', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" lang="de">
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
+    `);
+
+    expect(getEditor(host)).not.toHaveAttribute('lang');
+  });
+
+  test.each([
+    { dir: 'ltr', value: 'مرحبا', page: 'rtl', expected: 'ltr' },
+    { dir: 'rtl', value: 'Hello', page: 'ltr', expected: 'rtl' },
+    { dir: 'auto', value: '12 مرحبا', page: 'ltr', expected: 'rtl' },
+    { dir: 'auto', value: '12 Hello', page: 'rtl', expected: 'ltr' },
+    { dir: 'auto', value: '123', page: 'rtl', expected: 'rtl' },
+    { dir: 'auto', value: '', page: 'ltr', expected: 'ltr' },
+  ] as const)(
+    'resolves textarea dir="$dir" with $value in an $page page to $expected',
+    async ({ dir, value, page, expected }) => {
+      const host = await renderTextarea(html`
+        <div dir=${page}>
+          <rc-textarea data-testid="host">
+            <textarea aria-label="Notes" dir=${dir}>${value}</textarea>
+          </rc-textarea>
+        </div>
+      `);
+
+      await waitRender();
+
+      expect(getEditor(host)).toHaveAttribute('dir', expected);
+      expect(host.shadowRoot!.querySelector('#editor')!.matches(`:dir(${expected})`)).toBe(true);
+    },
+  );
+
+  test('inherits the host direction when the textarea sets no dir', async () => {
+    const host = await renderTextarea(html`
+      <div dir="rtl">
+        <rc-textarea data-testid="host">
+          <textarea aria-label="Notes">Hello</textarea>
+        </rc-textarea>
+      </div>
+    `);
+
+    await waitRender();
+
+    expect(getEditor(host)).not.toHaveAttribute('dir');
+    expect(getComputedStyle(getEditor(host)).direction).toBe('rtl');
+  });
+
+  test('re-resolves an auto direction on value and page direction changes', async () => {
+    const host = await renderTextarea(html`
+      <div data-testid="page" dir="ltr">
+        <rc-textarea data-testid="host">
+          <textarea aria-label="Notes" dir="auto"></textarea>
+        </rc-textarea>
+      </div>
+    `);
+    const $editor = getEditor(host);
+
+    await waitRender();
+    expect($editor).toHaveAttribute('dir', 'ltr');
+
+    host.parentElement!.dir = 'rtl';
+
+    await expect.poll(() => $editor.getAttribute('dir')).toBe('rtl');
+
+    host.value = 'Hello';
+
+    await expect.poll(() => $editor.getAttribute('dir')).toBe('ltr');
+
+    getSlottedTextarea(host).dir = 'rtl';
+
+    await expect.poll(() => $editor.getAttribute('dir')).toBe('rtl');
+
+    getSlottedTextarea(host).removeAttribute('dir');
+
+    await expect.poll(() => $editor.hasAttribute('dir')).toBe(false);
+  });
+
+  test('keeps every line in the base direction by default', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" style="inline-size: 20rem">
+        <textarea aria-label="Notes" dir="rtl"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = 'Hello\nمرحبا';
+
+    await waitRender();
+
+    expect(textLeansLeft(host, 0)).toBe(false);
+    expect(textLeansLeft(host, 1)).toBe(false);
+  });
+
+  test.each(['ltr', 'rtl'] as const)(
+    'line-direction="auto" aligns each line by its own text in a %s base',
+    async (dir) => {
+      const host = await renderTextarea(html`
+        <rc-textarea data-testid="host" style="inline-size: 20rem" line-direction="auto">
+          <textarea aria-label="Notes" dir=${dir}></textarea>
+        </rc-textarea>
+      `);
+
+      host.value = 'Hello\nمرحبا\n\n123\n  ';
+
+      await waitRender();
+
+      const $lines = getEditor(host).querySelectorAll<HTMLElement>('.line');
+
+      expect(textLeansLeft(host, 0)).toBe(true);
+      expect(textLeansLeft(host, 1)).toBe(false);
+      expect(textLeansLeft(host, 3)).toBe(dir === 'ltr');
+
+      // Lines without a strong character keep the base direction, which
+      // `unicode-bidi: plaintext` alone would turn LTR.
+      for (const index of [2, 3, 4]) {
+        expect($lines.item(index).classList.contains('line--neutral')).toBe(true);
+        expect(getComputedStyle($lines.item(index)).unicodeBidi).not.toBe('plaintext');
+      }
+
+      expect(getComputedStyle($lines.item(0)).unicodeBidi).toBe('plaintext');
+    },
+  );
+
+  test('applies a runtime line-direction change and keeps marks across edits', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" style="inline-size: 20rem">
+        <textarea aria-label="Notes" dir="rtl"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = 'Hello\n';
+
+    await waitRender();
+    expect(textLeansLeft(host, 0)).toBe(false);
+
+    host.lineDirection = 'auto';
+
+    await host.updateComplete;
+    await waitRender();
+    expect(host).toHaveAttribute('line-direction', 'auto');
+    expect(textLeansLeft(host, 0)).toBe(true);
+
+    const $lines = (): NodeListOf<HTMLElement> => getEditor(host).querySelectorAll('.line');
+
+    expect($lines().item(1).classList.contains('line--neutral')).toBe(true);
+
+    host.value = 'Hello\nworld';
+
+    await waitRender();
+    expect($lines().item(1).classList.contains('line--neutral')).toBe(false);
+
+    host.lineDirection = 'base';
+
+    await host.updateComplete;
+    await waitRender();
+    expect(textLeansLeft(host, 0)).toBe(false);
+    expect($lines().item(0).classList.contains('line--neutral')).toBe(false);
+  });
+
+  test('holds line marks and direction until composition ends', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" line-direction="auto">
+        <textarea aria-label="Notes" dir="auto"></textarea>
+      </rc-textarea>
+    `);
+    const $editor = getEditor(host);
+
+    await waitRender();
+    expect($editor).toHaveAttribute('dir', 'ltr');
+
+    const $line = $editor.querySelector<HTMLElement>('.line')!;
+
+    expect($line.classList.contains('line--neutral')).toBe(true);
+
+    $editor.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
+    $line.replaceChildren(document.createTextNode('مرحبا'));
+    $editor.dispatchEvent(new InputEvent('input', { bubbles: true, isComposing: true }));
+    host.requestUpdate();
+
+    await waitRender();
+    expect($line.classList.contains('line--neutral')).toBe(true);
+    expect($editor).toHaveAttribute('dir', 'ltr');
+
+    $editor.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: 'مرحبا' }));
+
+    await waitRender();
+    expect(host.value).toBe('مرحبا');
+    expect($editor.querySelector('.line')!.classList.contains('line--neutral')).toBe(false);
+    expect($editor).toHaveAttribute('dir', 'rtl');
+  });
+
+  test.each([
+    { lang: 'en', expected: ['1', '2', '10'] },
+    { lang: 'ar-EG', expected: ['١', '٢', '١٠'] },
+    { lang: 'ar-EG-u-nu-latn', expected: ['1', '2', '10'] },
+  ])('formats line numbers in the interface locale $lang', async ({ lang, expected }) => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" line-numbers lang=${lang}>
+        <textarea aria-label="Notes" lang="ar-EG"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = Array.from({ length: 10 }, (_, i) => `line ${i}`).join('\n');
+
+    await waitRender();
+
+    const $cells = getGutterCells(host).children;
+
+    expect([$cells[0], $cells[1], $cells[9]].map(($cell) => $cell?.textContent)).toEqual(expected);
+  });
+
+  test('re-formats line numbers when the interface locale changes', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" line-numbers>
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = 'a\nb';
+
+    await waitRender();
+    expect(getGutterCells(host).children[1]?.textContent).toBe('2');
+
+    host.lang = 'ar-EG';
+
+    await expect.poll(() => getGutterCells(host).children[1]?.textContent).toBe('٢');
+  });
+
+  test.each([
+    { value: 'une crème brûlée', offset: 6, word: 'crème' },
+    { value: 'une crème brûlée', offset: 9, word: 'crème' },
+    { value: 'une crème brûlée', offset: 10, word: 'brûlée' },
+    { value: "don't stop", offset: 2, word: "don't" },
+    { value: 'snake_case x', offset: 3, word: 'snake_case' },
+    { value: 'قطع البصل', offset: 1, word: 'قطع' },
+    { value: 'first\nsecond line', offset: 8, word: 'second' },
+    { value: 'a, b', offset: 2, word: null },
+  ])('getWordAtCursor finds $word at $offset in $value', async ({ value, offset, word }) => {
+    const host = await renderTextarea();
+    const api = await mountPlugin(host);
+
+    host.value = value;
+    setCursor(host, offset);
+
+    const result = api.getWordAtCursor();
+
+    expect(result?.word ?? null).toBe(word);
+
+    if (result) {
+      expect(value.slice(result.from, result.to)).toBe(word);
+    }
+  });
+
+  test('getWordAtCursor keeps a word the segmenter reports as not word-like', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Notes" lang="ja"></textarea>
+      </rc-textarea>
+    `);
+    const api = await mountPlugin(host);
+    const segment = vi.spyOn(Intl.Segmenter.prototype, 'segment').mockImplementation(
+      (input: string) =>
+        ({
+          containing: () => ({ segment: '玉ねぎ', index: 0, input, isWordLike: false }),
+        }) as unknown as Intl.Segments,
+    );
+
+    try {
+      host.value = '玉ねぎ。';
+      setCursor(host, 1);
+
+      expect(api.getWordAtCursor()).toEqual({ word: '玉ねぎ', from: 0, to: 3 });
+    } finally {
+      segment.mockRestore();
+    }
+  });
+
+  test('getWordAtCursor scans letters and digits where Intl.Segmenter is missing', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Notes" lang="x-no-segmenter"></textarea>
+      </rc-textarea>
+    `);
+    const api = await mountPlugin(host);
+    const intl = Intl as { Segmenter?: typeof Intl.Segmenter };
+    const { Segmenter } = intl;
+
+    intl.Segmenter = undefined;
+
+    try {
+      host.value = 'une crème_brûlée 12';
+      setCursor(host, 6);
+
+      expect(api.getWordAtCursor()).toEqual({ word: 'crème_brûlée', from: 4, to: 16 });
+
+      setCursor(host, 18);
+
+      expect(api.getWordAtCursor()?.word).toBe('12');
+    } finally {
+      intl.Segmenter = Segmenter;
+    }
+  });
+
+  test('exposes content direction, language and line directions to plugins', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Notes" dir="rtl" lang="ar"></textarea>
+      </rc-textarea>
+    `);
+    const api = await mountPlugin(host);
+
+    host.value = 'Hello\nمرحبا\n123';
+
+    await waitRender();
+
+    expect(api.contentDirection).toBe('rtl');
+    expect(api.contentLang).toBe('ar');
+    expect([1, 2, 3].map((line) => api.lineDirection(line))).toEqual(['rtl', 'rtl', 'rtl']);
+
+    host.lineDirection = 'auto';
+
+    expect([1, 2, 3, 4].map((line) => api.lineDirection(line))).toEqual([
+      'ltr',
+      'rtl',
+      'rtl',
+      'rtl',
+    ]);
+
+    getSlottedTextarea(host).removeAttribute('lang');
+    getSlottedTextarea(host).removeAttribute('dir');
+
+    await expect.poll(() => api.contentDirection).toBe('ltr');
+    expect(api.contentLang).toBe('');
+  });
+
+  test('isolates widgets so they cannot reorder the text around them', async () => {
+    const host = await renderTextarea();
+
+    host.decorations = [
+      {
+        type: 'widget',
+        offset: 6,
+        create: () => Object.assign(document.createElement('span'), { textContent: '🔒' }),
+      },
+    ];
+
+    host.value = '1 Tbsp olive oil';
+
+    await waitRender();
+
+    expect(getComputedStyle(getEditor(host).querySelector('.widget')!).unicodeBidi).toBe('isolate');
+  });
+});

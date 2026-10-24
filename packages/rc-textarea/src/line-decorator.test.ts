@@ -10,6 +10,9 @@ function makeApi(overrides: Partial<RCTextareaPluginAPI> = {}): RCTextareaPlugin
     value: '',
     selectionStart: 0,
     selectionEnd: 0,
+    contentDirection: 'ltr',
+    contentLang: '',
+    lineDirection: () => 'ltr',
     getCursorRect: () => null,
     getWordAtCursor: () => null,
     onCursorMove: () => () => {},
@@ -72,6 +75,7 @@ describe('createLineDecoratorPlugin', () => {
     const decorator: LineDecoratorPlugin = {
       decorateLine: (_line, i) => {
         indices.push(i);
+
         return [];
       },
     };
@@ -107,6 +111,7 @@ describe('createLineDecoratorPlugin', () => {
     const api = makeApi({
       adoptStyleSheet: (s) => {
         adopted.push(s);
+
         return new CSSStyleSheet();
       },
     });
@@ -127,6 +132,7 @@ describe('createLineDecoratorPlugin', () => {
     const api = makeApi({
       adoptStyleSheet: (s) => {
         adopted.push(s);
+
         return new CSSStyleSheet();
       },
     });

@@ -11,6 +11,7 @@ import {
   TextareaMarkdownDemo,
   TextareaHljsDemo,
   TextareaDisclosureDemo,
+  TextareaContentLanguageDemo,
 } from '@site/src/components/ComponentDemos';
 
 # rc-textarea
@@ -122,18 +123,36 @@ Expand information below a line without changing the textarea's source text.
 See [Folding actions](#folding-actions) for controller and styling details.
 
 </TabItem>
+<TabItem value="content-language" label="Content language">
+
+An Arabic recipe with an English line in an English interface. The textarea's `lang` and `dir`
+describe the text, and `line-direction="auto"` aligns each line by its own script. The line
+with only a number keeps the Arabic base direction. Line numbers follow the interface.
+
+<TextareaContentLanguageDemo />
+
+```html
+<rc-textarea line-numbers line-direction="auto">
+  <textarea aria-label="Recipe directions" lang="ar" dir="auto"></textarea>
+</rc-textarea>
+```
+
+See [Content language and direction](#content-language-and-direction).
+
+</TabItem>
 </Tabs>
 
 ## Options
 
 ### Attributes
 
-| Attribute      | Property      | Description                                                                         |
-| -------------- | ------------- | ----------------------------------------------------------------------------------- |
-| `line-numbers` | `lineNumbers` | Show sequential line numbers in the gutter.                                         |
-| `gutter`       | `gutter`      | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`. |
-| `word-wrap`    | `wordWrap`    | Wrap long lines instead of scrolling horizontally.                                  |
-| `auto-grow`    | `autoGrow`    | Let the field grow vertically with content.                                         |
+| Attribute        | Property        | Description                                                                               |
+| ---------------- | --------------- | ----------------------------------------------------------------------------------------- |
+| `line-numbers`   | `lineNumbers`   | Show sequential line numbers in the gutter.                                               |
+| `gutter`         | `gutter`        | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`.       |
+| `word-wrap`      | `wordWrap`      | Wrap long lines instead of scrolling horizontally.                                        |
+| `auto-grow`      | `autoGrow`      | Let the field grow vertically with content.                                               |
+| `line-direction` | `lineDirection` | `base` (default) gives every line the editor's direction; `auto` gives each line its own. |
 
 Read-only state comes from the slotted native control: set `readonly` on the `<textarea>`. The
 editor keeps the enabled field appearance, stays focusable and selectable, announces
@@ -143,6 +162,33 @@ reports the state.
 Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
 the slotted textarea with `aria-label` or a real `<label for="...">`.
 
+### Content language and direction
+
+The slotted `<textarea>` describes the content, and the host describes the interface. Put the
+text's language and direction on the textarea, as on any form control:
+
+- **`lang`** is mirrored onto the editor, so the browser picks the right glyphs (Han characters
+  differ between `ja` and `zh`), spelling dictionary and hyphenation. Plugins read it as
+  `contentLang`, and `getWordAtCursor()` segments words for it.
+- **`dir`** sets the editor's base direction. `ltr` and `rtl` are used as written. `auto` takes
+  the direction of the value's first strong character and falls back to the host's direction,
+  as a native textarea does, and updates as the value changes. Without `dir` the editor
+  inherits. `dirname` submits the resolved direction with the form, since the native control
+  always holds the value.
+- **`spellcheck`** is mirrored when the textarea sets it. Without it, spelling checks stay off.
+
+The host's own `lang` is the interface language, as for every `rc-*` component. It formats line
+numbers, so an `ar-EG` interface shows `١ ٢ ٣`, and `ar-EG-u-nu-latn` keeps Latin digits. The
+gutter, fold controls and line-action popover follow the host's direction, not the content's.
+
+`line-direction="auto"` suits prose that mixes scripts, such as an Arabic recipe with an
+English brand name on one line. Each line with a letter orders and aligns by its own first
+strong character (`unicode-bidi: plaintext`). Lines without one, such as an empty line or a
+quantity, keep the base direction, so the caret on a new line in an Arabic recipe starts on the
+right. Type U+200E or U+200F at the start of a line to force its direction. Leave it at `base`
+for code. Widgets are isolated, so they never reorder the text around them or set a line's
+direction.
+
 ### JavaScript properties
 
 | Property                          | Type                       | Description                                                           |
@@ -150,6 +196,7 @@ the slotted textarea with `aria-label` or a real `<label for="...">`.
 | `value`                           | `string`                   | Current plain-text value. Host writes are silent.                     |
 | `defaultValue`                    | `string \| undefined`      | Initial uncontrolled value.                                           |
 | `plugin`                          | `RCTextareaPlugin \| null` | Declarative plugin hook for reactive frameworks.                      |
+| `lineDirection`                   | `'auto' \| 'base'`         | How each line's direction is chosen; reflects `line-direction`.       |
 | `decorations`                     | `DecorationInput[]`        | External decoration layer merged with plugin and pattern decorations. |
 | `selectionStart` / `selectionEnd` | `number`                   | Current plain-text selection offsets (read-only).                     |
 
@@ -534,6 +581,11 @@ interface RCTextareaPluginAPI {
   readonly selectionStart: number;
   readonly selectionEnd: number;
 
+  // Content language and direction
+  readonly contentDirection: 'ltr' | 'rtl';
+  readonly contentLang: string;
+  lineDirection(line: number): 'ltr' | 'rtl';
+
   // Cursor
   getCursorRect(): DOMRect | null;
   getWordAtCursor(): { word: string; from: number; to: number } | null;
@@ -587,7 +639,13 @@ editor.usePlugin({
 ```
 
 `getCursorRect()` returns viewport coordinates, suitable for anchoring autocomplete panels or
-hover tooltips.
+hover tooltips. Place such a panel by `contentDirection`, or by `lineDirection(line)` for the
+caret's 1-based line, rather than by the host's direction.
+
+`getWordAtCursor()` segments the caret's line with `Intl.Segmenter` for `contentLang`. Accented
+words, contractions such as `don't`, `snake_case` names and Japanese words each count as one
+word; a cursor between two words returns the one after it. Without `Intl.Segmenter`, it scans
+letters, digits and `_`.
 
 ### Text mutation
 

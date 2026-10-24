@@ -209,6 +209,22 @@ export interface RCTextareaPluginAPI {
   readonly selectionEnd: number;
 
   /**
+   * The editor's resolved base direction, from the textarea's `dir` or the
+   * host's. Anchor caret-relative popups with this, not the host's flow.
+   */
+  readonly contentDirection: 'ltr' | 'rtl';
+
+  /** The content language: the textarea's `lang`, or `''` when it sets none. */
+  readonly contentLang: string;
+
+  /**
+   * The resolved direction of a 1-based line. Under `line-direction="auto"`
+   * that is the direction of the line's first strong character; otherwise,
+   * and for lines without one, it is `contentDirection`.
+   */
+  lineDirection(line: number): 'ltr' | 'rtl';
+
+  /**
    * Returns the bounding rect of the cursor (caret) in viewport coordinates.
    *
    * Useful for anchoring autocomplete popups or hover tooltips to the cursor.
@@ -221,8 +237,13 @@ export interface RCTextareaPluginAPI {
   /**
    * Returns the word boundaries at the current cursor position.
    *
-   * @returns the word and its `[from, to)` offsets, or `null` if the cursor is
-   *   not on a word character (`\w` — alphanumeric + underscore)
+   * Words come from `Intl.Segmenter` for `contentLang` (UAX #29, with
+   * dictionary segmentation for Japanese and Thai), so `crème`, `don't` and
+   * `snake_case` are each one word. The word starting at the cursor wins over
+   * the one ending there.
+   *
+   * @returns the word and its `[from, to)` offsets, or `null` if the cursor
+   *   touches no letter or digit
    */
   getWordAtCursor(): { word: string; from: number; to: number } | null;
 

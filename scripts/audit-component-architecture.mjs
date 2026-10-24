@@ -279,6 +279,9 @@ export const PHYSICAL_CSS_ALLOWLIST = {
  */
 export const DIRECTION_READ_ALLOWLIST = {
   'packages/rc-common/src/flow.ts': 'owns direction and writing-mode resolution',
+  'packages/rc-textarea/src/rc-textarea.ts':
+    "names the content's bidi direction (textarea `dir`, first strong character); layout uses flow",
+  'packages/rc-textarea/src/types.ts': 'types the plugin API content and line directions',
 };
 
 const PHYSICAL_CSS_DECLARATION =

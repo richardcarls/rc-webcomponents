@@ -2343,6 +2343,28 @@ export function TextareaBasicDemo() {
   );
 }
 
+export function TextareaContentLanguageDemo() {
+  return (
+    <DemoFrame>
+      <rc-textarea auto-grow line-numbers line-direction="auto">
+        <textarea
+          rows={6}
+          aria-label="Recipe directions"
+          lang="ar"
+          dir="auto"
+          defaultValue={
+            'حمّص البصل في زيت الزيتون.\n' +
+            'Add 2 cloves garlic, minced.\n' +
+            '\n' +
+            '350\n' +
+            'اطبخ لمدة ١٠ دقائق.'
+          }
+        />
+      </rc-textarea>
+    </DemoFrame>
+  );
+}
+
 const MARKDOWN_SEED =
   '# Shopping list\n\n- **Carrots** — 1 bunch\n- *Ginger* — 2 cm piece\n- Garlic — 4 cloves\n\n> Buy organic where possible.';
 

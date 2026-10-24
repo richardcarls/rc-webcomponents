@@ -820,6 +820,8 @@ export type RCTextareaRef = HTMLElement & {
   gutter: boolean;
   wordWrap: boolean;
   autoGrow: boolean;
+  /** `auto` gives each line the direction of its first strong character; `base` keeps the editor's. */
+  lineDirection: 'auto' | 'base';
   /** Read-only state of the slotted textarea; set `readonly` on the textarea to change it. */
   readonly readOnly: boolean;
   usePlugin(plugin: RCTextareaPlugin): void;
@@ -1412,6 +1414,7 @@ declare module 'react' {
         gutter?: boolean;
         'word-wrap'?: boolean;
         'auto-grow'?: boolean;
+        'line-direction'?: 'auto' | 'base';
       };
     }
   }

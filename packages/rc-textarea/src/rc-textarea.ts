@@ -5,8 +5,10 @@ import { property, query } from 'lit/decorators.js';
 import {
   cssZoom,
   FlowController,
+  LocaleController,
   logicalRect,
   NativeChildController,
+  numberFormat,
   resolveFlow,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
@@ -81,6 +83,93 @@ function getFoldBounds(value: string, folds: readonly FoldDecoration[]): FoldBou
 }
 
 const MAX_UNDO = 100;
+
+/** A letter, or LRM/RLM: the characters that give a line its own direction. Digits are weak. */
+const STRONG_CHARACTER = /[\p{L}\u200E\u200F]/u;
+
+/** Strong characters of right-to-left scripts (Hebrew through Arabic Extended, presentation forms, RLM). */
+const RTL_CHARACTER =
+  /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF\u200F\u{10800}-\u{10FFF}\u{1E800}-\u{1EFFF}]/u;
+
+/** A letter or digit. A segment with one counts as a word, whatever `isWordLike` says. */
+const WORD_CHARACTER = /[\p{L}\p{N}]/u;
+
+/** Per-character fallback where `Intl.Segmenter` is missing. `_` joins words, as in UAX #29. */
+const WORD_CHARACTER_FALLBACK = /[\p{L}\p{M}\p{N}_]/u;
+
+/** The direction of the first strong character in `text`, as UAX #9 rule P2 finds it. */
+function firstStrongDirection(text: string): 'ltr' | 'rtl' | null {
+  const match = STRONG_CHARACTER.exec(text);
+
+  if (!match) {
+    return null;
+  }
+
+  return RTL_CHARACTER.test(match[0]) ? 'rtl' : 'ltr';
+}
+
+const wordSegmenters = new Map<string, Intl.Segmenter | null>();
+
+/** A shared word segmenter for `lang`, or `null` where `Intl.Segmenter` is missing. */
+function wordSegmenter(lang: string): Intl.Segmenter | null {
+  let segmenter = wordSegmenters.get(lang);
+
+  if (segmenter === undefined) {
+    if (typeof Intl.Segmenter !== 'function') {
+      segmenter = null;
+    } else {
+      try {
+        segmenter = new Intl.Segmenter(lang || undefined, { granularity: 'word' });
+      } catch {
+        segmenter = new Intl.Segmenter(undefined, { granularity: 'word' });
+      }
+    }
+
+    wordSegmenters.set(lang, segmenter);
+  }
+
+  return segmenter;
+}
+
+/**
+ * The word in `line` touching `offset`, preferring the one that starts there.
+ * Gecko reports some final Japanese words as not word-like, so any segment
+ * with a letter or digit counts.
+ */
+function wordAt(line: string, offset: number, lang: string): { from: number; to: number } | null {
+  const segmenter = wordSegmenter(lang);
+
+  if (!segmenter) {
+    let from = offset;
+    let to = offset;
+
+    while (from > 0 && WORD_CHARACTER_FALLBACK.test(line.charAt(from - 1))) {
+      from--;
+    }
+
+    while (to < line.length && WORD_CHARACTER_FALLBACK.test(line.charAt(to))) {
+      to++;
+    }
+
+    return from === to ? null : { from, to };
+  }
+
+  const segments = segmenter.segment(line);
+
+  for (const position of [offset, offset - 1]) {
+    if (position < 0 || position >= line.length) {
+      continue;
+    }
+
+    const segment = segments.containing(position);
+
+    if (segment && WORD_CHARACTER.test(segment.segment)) {
+      return { from: segment.index, to: segment.index + segment.segment.length };
+    }
+  }
+
+  return null;
+}
 
 /**
  * Parse a highlight.js / prism.js -style HTML string (a flat tree of
@@ -159,6 +248,11 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * });
  * ```
  *
+ * The slotted `<textarea>` describes the content: its `lang` and `spellcheck` are
+ * mirrored onto the editor, and its `dir` sets the editor's base direction (`auto`
+ * resolves from the first strong character of the value, else the host's direction).
+ * The host's own `lang` stays the interface language, which formats line numbers.
+ *
  * @slot - Accepts a native `<textarea>` element for form wiring.
  *
  * @fires rc-textarea-change - Fired when the field value changes
@@ -178,6 +272,8 @@ function parseDecorationsFromHtml(html: string): Omit<MarkDecoration, 'id'>[] {
  * @attr gutter - Enable the gutter column without any built-in content.
  * @attr word-wrap - Wrap long lines within the field to prevent horizontal overflow.
  * @attr auto-grow - Allow the field to grow vertically with content to prevent vertical overflow.
+ * @attr line-direction - `base` (default) gives every line the editor's base direction; `auto` gives
+ *   each line the direction of its first strong character, holding lines without one to the base.
  * @attr [data-readonly] - Reflected while the slotted `<textarea>` is `readonly`. The editor stays
  *   focusable and selectable, announces `aria-readonly`, and blocks edits.
  * @attr value - Current field value.
@@ -244,6 +340,15 @@ export class RCTextarea extends LitElement {
   /** Allow the field to grow vertically with content to prevent vertical overflow. */
   @property({ type: Boolean, attribute: 'auto-grow', reflect: true })
   autoGrow = false;
+
+  /**
+   * How each line's direction is chosen. `base` gives every line the editor's
+   * base direction, which suits code. `auto` gives a line with a letter the
+   * direction of its first strong character, for prose that mixes scripts, and
+   * holds lines without one (empty, digits, punctuation) to the base direction.
+   */
+  @property({ attribute: 'line-direction', reflect: true })
+  lineDirection: 'auto' | 'base' = 'base';
 
   /**
    * Whether the slotted `<textarea>` is `readonly`. The native control is the
@@ -341,6 +446,11 @@ export class RCTextarea extends LitElement {
   });
 
   protected readonly _flowController = new FlowController(this);
+
+  /** The interface locale, which formats line numbers. */
+  protected readonly _localeController = new LocaleController(this, {
+    onChange: () => this._scheduleRender(),
+  });
 
   /** Plugin-owned decorations */
   protected _pluginDecorations = new Map<string, Decoration>();
@@ -479,6 +589,7 @@ export class RCTextarea extends LitElement {
     if ($textarea) {
       this._observeTextarea($textarea);
       this._syncReadOnly();
+      this._syncContentAttributes();
     }
   }
 
@@ -524,23 +635,113 @@ export class RCTextarea extends LitElement {
     // present before upgrade; seed the first render here when value or
     // defaultValue was set before upgrade or connection.
     this._syncReadOnly();
+    this._syncContentAttributes();
     this._scheduleRender();
   }
 
   override updated(changed: Map<string, unknown>): void {
-    if (changed.has('lineNumbers') || changed.has('gutter')) {
+    if (changed.has('lineNumbers') || changed.has('gutter') || changed.has('lineDirection')) {
       this._scheduleRender();
     }
+
+    // FlowController requests an update when the host's direction changes,
+    // which an `auto` base direction without a strong character falls back to.
+    this._syncContentDirection();
   }
 
   private _observeTextarea($textarea: HTMLTextAreaElement): void {
-    this._textareaAttributeObserver ??= new MutationObserver(() => this._syncReadOnly());
+    this._textareaAttributeObserver ??= new MutationObserver(() => {
+      this._syncReadOnly();
+      this._syncContentAttributes();
+    });
+
     this._textareaAttributeObserver.disconnect();
 
     this._textareaAttributeObserver.observe($textarea, {
       attributes: true,
-      attributeFilter: ['readonly'],
+      attributeFilter: ['readonly', 'lang', 'dir', 'spellcheck'],
     });
+  }
+
+  /**
+   * Mirror the native textarea's content attributes onto the editor. `lang`
+   * picks glyphs, the spelling dictionary and word boundaries; `spellcheck`
+   * stays off unless the textarea sets it. The host's own `lang` is the
+   * interface language and is never copied.
+   */
+  protected _syncContentAttributes(): void {
+    if (!this._$editor) {
+      return;
+    }
+
+    const $textarea = this._$textareaRef?.deref();
+    const lang = $textarea?.getAttribute('lang') ?? null;
+
+    if (lang === null) {
+      this._$editor.removeAttribute('lang');
+    } else if (this._$editor.getAttribute('lang') !== lang) {
+      this._$editor.setAttribute('lang', lang);
+    }
+
+    this._$editor.spellcheck = $textarea?.hasAttribute('spellcheck') ? $textarea.spellcheck : false;
+
+    this._syncContentDirection();
+  }
+
+  /**
+   * Set the editor's base direction from the textarea's `dir`. `auto` uses the
+   * value's first strong character, else the host's direction, as a native
+   * textarea does; without `dir` the editor inherits. Composition keeps the
+   * current direction so the IME session isn't disturbed.
+   */
+  protected _syncContentDirection(): void {
+    if (!this._$editor || this._composing) {
+      return;
+    }
+
+    const dir = this._$textareaRef?.deref()?.getAttribute('dir')?.toLowerCase();
+    let resolved: 'ltr' | 'rtl' | null = null;
+
+    if (dir === 'ltr' || dir === 'rtl') {
+      resolved = dir;
+    } else if (dir === 'auto') {
+      resolved = firstStrongDirection(this._value) ?? (resolveFlow(this).rtl ? 'rtl' : 'ltr');
+    }
+
+    if (resolved === null) {
+      this._$editor.removeAttribute('dir');
+    } else if (this._$editor.getAttribute('dir') !== resolved) {
+      this._$editor.setAttribute('dir', resolved);
+    }
+  }
+
+  /** The textarea's `lang`, or `''` when it sets none. */
+  protected _contentLang(): string {
+    return this._$textareaRef?.deref()?.getAttribute('lang') ?? '';
+  }
+
+  /** The editor's resolved base direction. */
+  protected _contentDirection(): 'ltr' | 'rtl' {
+    return resolveFlow(this._$editor ?? this).rtl ? 'rtl' : 'ltr';
+  }
+
+  /**
+   * Mark lines with no strong character so `line-direction="auto"` holds them
+   * to the base direction. Reads the model value, which composition text
+   * doesn't reach until `compositionend`, so a composing line keeps its mark.
+   */
+  protected _syncLineDirections(value: string): void {
+    if (!this._$editor) {
+      return;
+    }
+
+    const auto = this.lineDirection === 'auto';
+    const lines = value.split('\n');
+    const $lines = this._$editor.querySelectorAll<HTMLElement>(':scope > .line');
+
+    for (const [i, $line] of $lines.entries()) {
+      $line.classList.toggle('line--neutral', auto && !STRONG_CHARACTER.test(lines[i] ?? ''));
+    }
   }
 
   /**
@@ -667,6 +868,7 @@ export class RCTextarea extends LitElement {
 
     this._observeTextarea($textarea);
     this._syncReadOnly();
+    this._syncContentAttributes();
 
     // Sync typography from textarea's computed style to editor
     this._syncTypography($textarea);
@@ -1333,6 +1535,21 @@ export class RCTextarea extends LitElement {
           return null;
         }
       },
+      get contentDirection() {
+        return component._contentDirection();
+      },
+      get contentLang() {
+        return component._contentLang();
+      },
+      lineDirection(line: number): 'ltr' | 'rtl' {
+        const text = component._value.split('\n')[line - 1];
+        const own =
+          component.lineDirection === 'auto' && text !== undefined
+            ? firstStrongDirection(text)
+            : null;
+
+        return own ?? component._contentDirection();
+      },
       getWordAtCursor(): { word: string; from: number; to: number } | null {
         const offset = component._savedSelection?.focusOffset ?? 0;
         const text = component._value;
@@ -1341,23 +1558,19 @@ export class RCTextarea extends LitElement {
           return null;
         }
 
-        let start = offset;
+        const lineStart = text.lastIndexOf('\n', offset - 1) + 1;
+        const lineEnd = text.indexOf('\n', offset);
+        const line = text.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+        const word = wordAt(line, offset - lineStart, component._contentLang());
 
-        while (start > 0 && /\w/.test(text.charAt(start - 1))) {
-          start--;
-        }
-
-        let end = offset;
-
-        while (end < text.length && /\w/.test(text.charAt(end))) {
-          end++;
-        }
-
-        if (start === end) {
+        if (!word) {
           return null;
         }
 
-        return { word: text.slice(start, end), from: start, to: end };
+        const from = lineStart + word.from;
+        const to = lineStart + word.to;
+
+        return { word: text.slice(from, to), from, to };
       },
       onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void {
         component._cursorCallbacks.add(callback);
@@ -1625,7 +1838,9 @@ export class RCTextarea extends LitElement {
         }
       }
 
+      this._syncContentDirection();
       this._document.build(renderValue, allDecorations);
+      this._syncLineDirections(renderValue);
 
       if (
         $focusedWidget instanceof HTMLElement &&
@@ -1693,20 +1908,22 @@ export class RCTextarea extends LitElement {
 
     this._accessibleGutterLines = accessibleLines;
 
+    const lineNumbers = numberFormat(this._localeController.locale, { useGrouping: false });
+
     return lines.map((_, i) => {
       const lineNum = i + 1;
       const content = overrides.get(lineNum);
 
       if (content !== undefined) {
         if (this.lineNumbers && numberedOverrides.has(lineNum) && content !== null) {
-          return { number: String(lineNum), content };
+          return { number: lineNumbers.format(lineNum), content };
         }
 
         return content;
       }
 
       if (this.lineNumbers) {
-        return String(lineNum);
+        return lineNumbers.format(lineNum);
       }
 
       // `gutter` mode is empty by default, and plugins fill via overrides.
