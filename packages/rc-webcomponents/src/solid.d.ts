@@ -617,6 +617,8 @@ export type RCTextareaRef = HTMLElement & {
   gutter: boolean;
   wordWrap: boolean;
   autoGrow: boolean;
+  /** `auto` gives each line the direction of its first strong character; `base` keeps the editor's. */
+  lineDirection: 'auto' | 'base';
   /** Read-only state of the slotted textarea; set `readonly` on the textarea to change it. */
   readonly readOnly: boolean;
   usePlugin(plugin: RCTextareaPlugin): void;
@@ -1498,6 +1500,7 @@ declare module 'solid-js' {
         gutter?: boolean | string;
         'word-wrap'?: boolean | string;
         'auto-grow'?: boolean | string;
+        'line-direction'?: 'auto' | 'base';
         'on:rc-textarea-change'?: (e: CustomEvent<RCTextareaChangeDetail>) => void;
         'on:rc-textarea-focus'?: (e: CustomEvent) => void;
         'on:rc-textarea-blur'?: (e: CustomEvent) => void;

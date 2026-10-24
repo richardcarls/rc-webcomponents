@@ -85,17 +85,24 @@ When the user edits, the slotted textarea is kept in sync and dispatches a nativ
 
 ## Common Options
 
-| Attribute      | Property      | Description                                                                         |
-| -------------- | ------------- | ----------------------------------------------------------------------------------- |
-| `line-numbers` | `lineNumbers` | Show sequential line numbers in the gutter.                                         |
-| `gutter`       | `gutter`      | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`. |
-| `word-wrap`    | `wordWrap`    | Wrap long lines instead of scrolling horizontally.                                  |
-| `auto-grow`    | `autoGrow`    | Let the field grow vertically with content.                                         |
+| Attribute        | Property        | Description                                                                               |
+| ---------------- | --------------- | ----------------------------------------------------------------------------------------- |
+| `line-numbers`   | `lineNumbers`   | Show sequential line numbers in the gutter.                                               |
+| `gutter`         | `gutter`        | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`.       |
+| `word-wrap`      | `wordWrap`      | Wrap long lines instead of scrolling horizontally.                                        |
+| `auto-grow`      | `autoGrow`      | Let the field grow vertically with content.                                               |
+| `line-direction` | `lineDirection` | `base` (default) gives every line the editor's direction; `auto` gives each line its own. |
 
 Read-only state comes from the slotted native control: set `readonly` on the `<textarea>`. The
 editor keeps the enabled field appearance, stays focusable and selectable, announces
 `aria-readonly`, and rejects edits. The host reflects `data-readonly`, and the `readOnly` getter
 reports the state.
+
+Put the content's `lang`, `dir` and `spellcheck` on the slotted `<textarea>`: the editor mirrors
+`lang` and `spellcheck`, and takes its base direction from `dir` (`auto` resolves from the first
+strong character). The host's own `lang` stays the interface language and formats line numbers.
+Add `line-direction="auto"` for prose that mixes scripts; lines without a letter keep the base
+direction.
 
 Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
 the slotted textarea with `aria-label` or a real `<label for="...">`.

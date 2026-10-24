@@ -264,6 +264,7 @@ export const styles = css`
     content: attr(data-message);
     display: inline;
     margin-inline-start: 4ch;
+    unicode-bidi: isolate;
     white-space: nowrap;
     pointer-events: none;
     font-size: 0.875em;
@@ -271,11 +272,22 @@ export const styles = css`
     font-style: italic;
   }
 
+  /* line-direction="auto": a line orders and aligns by its own first strong
+     character. Lines without one keep the base direction, which plaintext would
+     turn LTR (UAX #9 rule P3). Only the embedding level changes, so padding,
+     trailing widgets and the active-line bleed still follow the editor. */
+  :host([line-direction='auto']) .line:not(.line--neutral) {
+    unicode-bidi: plaintext;
+  }
+
   .mark {
     border-radius: 2px;
   }
 
+  /* Isolated, so a widget can neither reorder the text around it nor give a
+     line its direction. */
   .widget {
+    unicode-bidi: isolate;
     display: inline-block;
     user-select: none;
     cursor: default;

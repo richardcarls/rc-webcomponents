@@ -89,7 +89,10 @@ interface RCTextareaPluginAPI {
   readonly value: string;
   readonly selectionStart: number;
   readonly selectionEnd: number;
+  readonly contentDirection: 'ltr' | 'rtl';
+  readonly contentLang: string;
 
+  lineDirection(line: number): 'ltr' | 'rtl';
   getCursorRect(): DOMRect | null;
   getWordAtCursor(): { word: string; from: number; to: number } | null;
   onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void;
