@@ -163,10 +163,10 @@
       "lazyChunks": 3
     },
     "textarea": {
-      "initialGzip": 32015,
-      "initialBrotli": 28046,
-      "totalGzip": 32015,
-      "totalBrotli": 28046,
+      "initialGzip": 33926,
+      "initialBrotli": 29789,
+      "totalGzip": 33926,
+      "totalBrotli": 29789,
       "largestLazyGzip": 1024,
       "initialChunks": 1,
       "lazyChunks": 0

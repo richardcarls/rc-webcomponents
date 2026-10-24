@@ -4,6 +4,7 @@ import { property } from 'lit/decorators.js';
 import {
   ActiveDescendantController,
   cssText,
+  bidiIsolate,
   type ItemsCollectionActionOption,
   ItemsCollectionController,
   MessagesController,
@@ -162,7 +163,7 @@ export interface RCListboxMessages {
 }
 
 export const DEFAULT_LISTBOX_MESSAGES: Readonly<RCListboxMessages> = Object.freeze({
-  create: (text: string) => `Create "${text}"`,
+  create: (text: string) => `Create "${bidiIsolate(text)}"`,
 });
 
 declare module '@rcarls/rc-common' {

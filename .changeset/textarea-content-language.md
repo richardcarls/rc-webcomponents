@@ -8,7 +8,7 @@ interface. The slotted `<textarea>` describes the text: its `lang` and
 `spellcheck` are mirrored onto the editor, so the browser picks the right
 glyphs and spelling dictionary, and its `dir` sets the editor's base
 direction. `dir="auto"` resolves from the value's first strong character,
-falls back to the host's direction, and updates as the value changes.
+uses LTR when there is none (matching native HTML), and updates as the value changes.
 Without `dir`, the editor inherits as before. The host's own `lang` stays
 the interface language.
 
@@ -20,6 +20,7 @@ without one (empty lines, quantities) to the base direction. Widgets and
 line messages are now bidi-isolated, so they never reorder neighboring
 text.
 
+Changes to the native textarea's `lang` or `dir` rerun plugin rendering.
 The plugin API adds `contentDirection`, `contentLang` and
 `lineDirection(line)`. The React and Solid typings add `lineDirection` and
 `line-direction`.

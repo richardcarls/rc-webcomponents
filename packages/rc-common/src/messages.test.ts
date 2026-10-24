@@ -82,9 +82,15 @@ test('an inherited scope fills keys below the own scope, locale by locale', () =
   registerMessages('qai-CH', { 'test-base': { label: 'Base region label' } });
 
   const resolve = (lang: string) =>
-    resolveMessages(fixture(`<span data-host lang="${lang}"></span>`), 'test-derived', DERIVED, undefined, {
-      inherit: 'test-base',
-    });
+    resolveMessages(
+      fixture(`<span data-host lang="${lang}"></span>`),
+      'test-derived',
+      DERIVED,
+      undefined,
+      {
+        inherit: 'test-base',
+      },
+    );
 
   // Within one locale the own scope wins; keys it has no default for stay out.
   expect(resolve('qai')).toEqual({ label: 'Derived label', search: 'Search' });
@@ -135,6 +141,13 @@ test("reads the element's own lang, then <html lang>, never an ancestor's", () =
 
   el.lang = 'qae';
   expect(resolveMessages(el, 'resize', DEFAULT_RESIZE_MESSAGES).grip).toBe('Content');
+
+  el.lang = '';
+  expect(messagesLocale(el)).toBe('');
+
+  expect(resolveMessages(el, 'resize', DEFAULT_RESIZE_MESSAGES).grip).toBe(
+    DEFAULT_RESIZE_MESSAGES.grip,
+  );
 });
 
 test('later registrations merge key by key', () => {

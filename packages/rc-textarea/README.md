@@ -99,8 +99,10 @@ editor keeps the enabled field appearance, stays focusable and selectable, annou
 reports the state.
 
 Put the content's `lang`, `dir` and `spellcheck` on the slotted `<textarea>`: the editor mirrors
-`lang` and `spellcheck`, and takes its base direction from `dir` (`auto` resolves from the first
-strong character). The host's own `lang` stays the interface language and formats line numbers.
+`lang` and `spellcheck`, and takes its base direction from `dir` (`auto` follows the native
+textarea's first strong character, or LTR when there is none). Changing the textarea's
+`lang` or `dir` reruns plugins. The host's own `lang` stays the interface language and formats
+line numbers.
 Add `line-direction="auto"` for prose that mixes scripts; lines without a letter keep the base
 direction.
 

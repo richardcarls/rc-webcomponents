@@ -204,7 +204,7 @@ export class RCList extends LitElement {
 
     this.addEventListener('change', this._handleChange);
     // Handle hints are written into light DOM, so a new locale or registered text must rewrite them.
-    this._unobserveLocale ??= observeLocale(() => this._queueSync());
+    this._unobserveLocale ??= observeLocale(() => this._queueSync(), this);
 
     const root = this.getRootNode();
 

@@ -370,7 +370,7 @@ export class ResizeController implements ReactiveController {
 
     const effects = new ControllerEffects();
 
-    effects.add(observeLocale(this._onFlowInteraction));
+    effects.add(observeLocale(this._onFlowInteraction, this._target()));
     effects.listen(this._handle() ?? this._target(), 'pointerenter', this._onFlowInteraction);
     this._flowEffects = effects;
   }

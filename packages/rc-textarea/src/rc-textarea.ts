@@ -84,12 +84,12 @@ function getFoldBounds(value: string, folds: readonly FoldDecoration[]): FoldBou
 
 const MAX_UNDO = 100;
 
-/** A letter, or LRM/RLM: the characters that give a line its own direction. Digits are weak. */
-const STRONG_CHARACTER = /[\p{L}\u200E\u200F]/u;
+/** A letter or directional mark. Digits are weak. */
+const STRONG_CHARACTER = /[\p{L}\u061C\u200E\u200F]/u;
 
 /** Strong characters of right-to-left scripts (Hebrew through Arabic Extended, presentation forms, RLM). */
 const RTL_CHARACTER =
-  /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF\u200F\u{10800}-\u{10FFF}\u{1E800}-\u{1EFFF}]/u;
+  /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF\u061C\u200F\u{10800}-\u{10FFF}\u{1E800}-\u{1EFFF}]/u;
 
 /** A letter or digit. A segment with one counts as a word, whatever `isWordLike` says. */
 const WORD_CHARACTER = /[\p{L}\p{N}]/u;
@@ -99,13 +99,27 @@ const WORD_CHARACTER_FALLBACK = /[\p{L}\p{M}\p{N}_]/u;
 
 /** The direction of the first strong character in `text`, as UAX #9 rule P2 finds it. */
 function firstStrongDirection(text: string): 'ltr' | 'rtl' | null {
-  const match = STRONG_CHARACTER.exec(text);
+  let isolateDepth = 0;
 
-  if (!match) {
-    return null;
+  for (const character of text) {
+    if ('\u2066\u2067\u2068'.includes(character)) {
+      isolateDepth += 1;
+
+      continue;
+    }
+
+    if (character === '\u2069') {
+      isolateDepth = Math.max(0, isolateDepth - 1);
+
+      continue;
+    }
+
+    if (isolateDepth === 0 && STRONG_CHARACTER.test(character)) {
+      return RTL_CHARACTER.test(character) ? 'rtl' : 'ltr';
+    }
   }
 
-  return RTL_CHARACTER.test(match[0]) ? 'rtl' : 'ltr';
+  return null;
 }
 
 const wordSegmenters = new Map<string, Intl.Segmenter | null>();
@@ -477,6 +491,7 @@ export class RCTextarea extends LitElement {
   protected _savedSelection: SavedSelection | null = null;
   protected _rafHandle: number | null = null;
   protected _composing = false;
+  private _contentAttributesPendingRender = false;
   /** Set by Escape: the next Tab moves focus instead of inserting `\t`. */
   private _tabMovesFocus = false;
   protected _isRendering = false;
@@ -644,15 +659,24 @@ export class RCTextarea extends LitElement {
       this._scheduleRender();
     }
 
-    // FlowController requests an update when the host's direction changes,
-    // which an `auto` base direction without a strong character falls back to.
+    // FlowController requests an update when the inherited direction changes.
     this._syncContentDirection();
   }
 
   private _observeTextarea($textarea: HTMLTextAreaElement): void {
-    this._textareaAttributeObserver ??= new MutationObserver(() => {
+    this._textareaAttributeObserver ??= new MutationObserver((records) => {
       this._syncReadOnly();
       this._syncContentAttributes();
+
+      if (
+        records.some((record) => record.attributeName === 'lang' || record.attributeName === 'dir')
+      ) {
+        if (this._composing) {
+          this._contentAttributesPendingRender = true;
+        } else {
+          this._scheduleRender();
+        }
+      }
     });
 
     this._textareaAttributeObserver.disconnect();
@@ -689,23 +713,24 @@ export class RCTextarea extends LitElement {
   }
 
   /**
-   * Set the editor's base direction from the textarea's `dir`. `auto` uses the
-   * value's first strong character, else the host's direction, as a native
-   * textarea does; without `dir` the editor inherits. Composition keeps the
-   * current direction so the IME session isn't disturbed.
+   * Set the editor's base direction from the textarea's `dir`. `auto` reads
+   * the native control's directionality, including its LTR neutral fallback;
+   * without `dir` the editor inherits. Composition keeps the current direction
+   * so the IME session isn't disturbed.
    */
   protected _syncContentDirection(): void {
     if (!this._$editor || this._composing) {
       return;
     }
 
-    const dir = this._$textareaRef?.deref()?.getAttribute('dir')?.toLowerCase();
+    const $textarea = this._$textareaRef?.deref();
+    const dir = $textarea?.getAttribute('dir')?.toLowerCase();
     let resolved: 'ltr' | 'rtl' | null = null;
 
     if (dir === 'ltr' || dir === 'rtl') {
       resolved = dir;
-    } else if (dir === 'auto') {
-      resolved = firstStrongDirection(this._value) ?? (resolveFlow(this).rtl ? 'rtl' : 'ltr');
+    } else if (dir === 'auto' && $textarea) {
+      resolved = $textarea.matches(':dir(rtl)') ? 'rtl' : 'ltr';
     }
 
     if (resolved === null) {
@@ -740,7 +765,10 @@ export class RCTextarea extends LitElement {
     const $lines = this._$editor.querySelectorAll<HTMLElement>(':scope > .line');
 
     for (const [i, $line] of $lines.entries()) {
-      $line.classList.toggle('line--neutral', auto && !STRONG_CHARACTER.test(lines[i] ?? ''));
+      $line.classList.toggle(
+        'line--neutral',
+        auto && firstStrongDirection(lines[i] ?? '') === null,
+      );
     }
   }
 
@@ -820,6 +848,8 @@ export class RCTextarea extends LitElement {
     if (!$textarea) {
       this._$textareaRef = null;
       this._syncReadOnly();
+      this._syncContentAttributes();
+      this._scheduleRender();
 
       return;
     }
@@ -890,6 +920,12 @@ export class RCTextarea extends LitElement {
     $editor.addEventListener('compositionend', () => {
       this._composing = false;
       this._onInput();
+
+      if (this._contentAttributesPendingRender) {
+        this._contentAttributesPendingRender = false;
+        this._syncContentDirection();
+        this._scheduleRender();
+      }
     });
 
     $editor.addEventListener('beforeinput', this._onBeforeInput);

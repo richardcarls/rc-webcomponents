@@ -13,6 +13,7 @@ import {
   getScrollOffset,
   keyNavigation,
   logicalDelta,
+  numberFormat,
   physicalAxis,
   resolveFlow,
   setScrollOffset,
@@ -38,23 +39,28 @@ export interface RCCarouselMessages {
   /** `aria-roledescription` of each slide. */
   slide: string;
   /** Default accessible name of each slide. */
-  position: (position: number, count: number) => string;
+  position: (position: number, count: number, locale?: string) => string;
   previous: string;
   next: string;
   /** Accessible name of the slide-picker group. */
   picker: string;
   /** Accessible name of each slide-picker button. */
-  goToSlide: (position: number, count: number) => string;
+  goToSlide: (position: number, count: number, locale?: string) => string;
 }
 
 export const DEFAULT_CAROUSEL_MESSAGES: Readonly<RCCarouselMessages> = Object.freeze({
   carousel: 'carousel',
   slide: 'slide',
-  position: (position: number, count: number) => `${position} of ${count}`,
+  position: (position: number, count: number, locale?: string) => {
+    const format = numberFormat(locale, { useGrouping: false });
+
+    return `${format.format(position)} of ${format.format(count)}`;
+  },
   previous: 'Previous slide',
   next: 'Next slide',
   picker: 'Choose slide to display',
-  goToSlide: (position: number) => `Go to slide ${position}`,
+  goToSlide: (position: number, _count: number, locale?: string) =>
+    `Go to slide ${numberFormat(locale, { useGrouping: false }).format(position)}`,
 });
 
 declare module '@rcarls/rc-common' {
@@ -697,7 +703,7 @@ export class RCCarousel extends LitElement {
     const messages = this._messages.value;
 
     this._items.forEach((item, index) => {
-      item.position = messages.position(index + 1, this._items.length);
+      item.position = messages.position(index + 1, this._items.length, this._messages.locale);
       item.roleDescription = messages.slide;
     });
   }
@@ -1145,7 +1151,11 @@ export class RCCarousel extends LitElement {
                     part="pagination-item${index === this.activeIndex
                       ? ' pagination-item-active'
                       : ''}"
-                    aria-label=${messages.goToSlide(index + 1, this._items.length)}
+                    aria-label=${messages.goToSlide(
+                      index + 1,
+                      this._items.length,
+                      this._messages.locale,
+                    )}
                     aria-current=${index === this.activeIndex ? 'true' : 'false'}
                     aria-disabled=${index === this.activeIndex ? 'true' : 'false'}
                     @click=${() => this._setActiveIndex(index, 'button')}

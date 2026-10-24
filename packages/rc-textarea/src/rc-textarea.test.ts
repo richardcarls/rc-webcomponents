@@ -1389,12 +1389,31 @@ describe('RCTextarea — content language', () => {
     expect(getEditor(host)).not.toHaveAttribute('lang');
   });
 
+  test('reruns plugins after content language or direction changes', async () => {
+    const host = await renderTextarea();
+    const $textarea = getSlottedTextarea(host);
+    const update = vi.fn();
+
+    host.usePlugin({ update });
+    await waitRender();
+
+    const initialCalls = update.mock.calls.length;
+
+    $textarea.lang = 'ar';
+    await expect.poll(() => update.mock.calls.length).toBeGreaterThan(initialCalls);
+
+    const afterLanguage = update.mock.calls.length;
+
+    $textarea.dir = 'rtl';
+    await expect.poll(() => update.mock.calls.length).toBeGreaterThan(afterLanguage);
+  });
+
   test.each([
     { dir: 'ltr', value: 'مرحبا', page: 'rtl', expected: 'ltr' },
     { dir: 'rtl', value: 'Hello', page: 'ltr', expected: 'rtl' },
     { dir: 'auto', value: '12 مرحبا', page: 'ltr', expected: 'rtl' },
     { dir: 'auto', value: '12 Hello', page: 'rtl', expected: 'ltr' },
-    { dir: 'auto', value: '123', page: 'rtl', expected: 'rtl' },
+    { dir: 'auto', value: '123', page: 'rtl', expected: 'ltr' },
     { dir: 'auto', value: '', page: 'ltr', expected: 'ltr' },
   ] as const)(
     'resolves textarea dir="$dir" with $value in an $page page to $expected',
@@ -1444,7 +1463,7 @@ describe('RCTextarea — content language', () => {
 
     host.parentElement!.dir = 'rtl';
 
-    await expect.poll(() => $editor.getAttribute('dir')).toBe('rtl');
+    await expect.poll(() => $editor.getAttribute('dir')).toBe('ltr');
 
     host.value = 'Hello';
 
@@ -1503,6 +1522,22 @@ describe('RCTextarea — content language', () => {
       expect(getComputedStyle($lines.item(0)).unicodeBidi).toBe('plaintext');
     },
   );
+
+  test('recognizes Arabic Letter Mark and ignores isolated text in line direction', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" line-direction="auto">
+        <textarea aria-label="Notes" dir="rtl"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = '\u2067مرحبا\u2069\n\u061C123';
+    await waitRender();
+
+    const lines = getEditor(host).querySelectorAll<HTMLElement>('.line');
+
+    expect(lines.item(0).classList.contains('line--neutral')).toBe(true);
+    expect(lines.item(1).classList.contains('line--neutral')).toBe(false);
+  });
 
   test('applies a runtime line-direction change and keeps marks across edits', async () => {
     const host = await renderTextarea(html`

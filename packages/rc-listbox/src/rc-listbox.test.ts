@@ -328,7 +328,7 @@ test('Create option fires rc-listbox-change as an action detail', async () => {
       kind: 'action',
       action: 'create',
       value: 'create:Foo',
-      label: 'Create "Foo"',
+      label: 'Create "\u2068Foo\u2069"',
       data: { text: 'Foo' },
     },
     selectedValues: [],
@@ -408,5 +408,5 @@ test('writes the create option in its own locale and rewrites it when lang chang
   expect(option()?.textContent?.trim()).toBe('إنشاء «pears»');
 
   host.lang = 'en';
-  await vi.waitFor(() => expect(option()?.textContent?.trim()).toBe('Create "pears"'));
+  await vi.waitFor(() => expect(option()?.textContent?.trim()).toBe('Create "\u2068pears\u2069"'));
 });

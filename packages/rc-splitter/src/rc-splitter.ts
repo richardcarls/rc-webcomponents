@@ -3,6 +3,7 @@ import { property, state, query, queryAssignedElements } from 'lit/decorators.js
 
 import {
   cssZoom,
+  bidiIsolate,
   MessagesController,
   numberFormat,
   DragGestureController,
@@ -76,8 +77,8 @@ export interface RCSplitterMessages {
 
 export const DEFAULT_SPLITTER_MESSAGES: Readonly<RCSplitterMessages> = Object.freeze({
   label: 'Splitter',
-  expand: (label: string) => `Expand ${label}`,
-  collapse: (label: string) => `Collapse ${label}`,
+  expand: (label: string) => `Expand ${bidiIsolate(label)}`,
+  collapse: (label: string) => `Collapse ${bidiIsolate(label)}`,
 });
 
 declare module '@rcarls/rc-common' {

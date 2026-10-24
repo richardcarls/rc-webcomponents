@@ -126,6 +126,7 @@ let _uid = 0;
  * @see https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning
  */
 export class AnchorController implements ReactiveController {
+  private readonly _host: ReactiveControllerHost;
   private _opts: AnchorOptions;
   private readonly _uid: string;
   private _styleEl: HTMLStyleElement | null = null;
@@ -166,6 +167,7 @@ export class AnchorController implements ReactiveController {
   };
 
   constructor(host: ReactiveControllerHost, options: AnchorOptions) {
+    this._host = host;
     this._opts = options;
     this._uid = `rc-anchor-${++_uid}`;
     host.addController(this);
@@ -183,7 +185,12 @@ export class AnchorController implements ReactiveController {
 
   hostConnected(): void {
     this._connected = true;
-    this._unobserveLocale ??= observeLocale(this._handleDirectionChange);
+
+    const host = this._host as ReactiveControllerHost & Partial<Element>;
+    const element = typeof host.getRootNode === 'function' ? (host as Element) : this._anchor();
+
+    this._unobserveLocale ??= observeLocale(this._handleDirectionChange, element ?? undefined);
+
     this._applyAndPosition();
   }
 

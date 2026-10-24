@@ -392,10 +392,10 @@ export type RCListReorderDetail = {
 /** Overridable `rc-list` reorder announcements. */
 export type RCListReorderMessages = {
   instructions?: string;
-  grabbed?: (position: number, count: number) => string;
-  moved?: (position: number, count: number) => string;
-  dropped?: (position: number, count: number) => string;
-  canceled?: (position: number, count: number) => string;
+  grabbed?: (position: number, count: number, locale?: string) => string;
+  moved?: (position: number, count: number, locale?: string) => string;
+  dropped?: (position: number, count: number, locale?: string) => string;
+  canceled?: (position: number, count: number, locale?: string) => string;
 };
 
 /** Public API surface of `<rc-list-item>`. */
@@ -540,7 +540,7 @@ export type RCSelectMessages = {
   options?: string;
   selectedItems?: string;
   remove?: (label: string) => string;
-  summary?: (first: string, more: number) => string;
+  summary?: (first: string, more: number, locale?: string) => string;
   done?: string;
   cancel?: string;
 };
@@ -853,7 +853,7 @@ export type RCEditorToolbarMessages = {
   link?: string;
   headingLevel?: string;
   paragraph?: string;
-  heading?: (level: number) => string;
+  heading?: (level: number, locale?: string) => string;
   blockquote?: string;
   bulletList?: string;
   orderedList?: string;
@@ -964,11 +964,11 @@ export type RCCarouselRef = HTMLElement & {
 export type RCCarouselMessages = {
   carousel?: string;
   slide?: string;
-  position?: (position: number, count: number) => string;
+  position?: (position: number, count: number, locale?: string) => string;
   previous?: string;
   next?: string;
   picker?: string;
-  goToSlide?: (position: number, count: number) => string;
+  goToSlide?: (position: number, count: number, locale?: string) => string;
 };
 
 /** Public API surface of `<rc-carousel-item>`. */

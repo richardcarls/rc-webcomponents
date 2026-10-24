@@ -937,7 +937,7 @@ describe('RCSplitter', () => {
 
       const btn = getCollapseButton(host)!;
 
-      expect(btn.getAttribute('aria-label')).toBe('Collapse Editor');
+      expect(btn.getAttribute('aria-label')).toBe('Collapse \u2068Editor\u2069');
       expect(btn.getAttribute('aria-expanded')).toBe('true');
 
       host.fixed = true;
@@ -972,7 +972,7 @@ describe('RCSplitter', () => {
 
       expect(host.value).toBe(0);
       expect(btn.getAttribute('aria-expanded')).toBe('false');
-      expect(btn.getAttribute('aria-label')).toBe('Expand Splitter');
+      expect(btn.getAttribute('aria-label')).toBe('Expand \u2068Splitter\u2069');
 
       btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await host.updateComplete;

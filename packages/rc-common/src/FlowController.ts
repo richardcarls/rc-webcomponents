@@ -50,7 +50,7 @@ export class FlowController implements ReactiveController {
 
   hostConnected(): void {
     this._scheduleRefresh();
-    this._unobserveLocale ??= observeLocale(() => this._scheduleRefresh());
+    this._unobserveLocale ??= observeLocale(() => this._scheduleRefresh(), this._host);
 
     if (typeof ResizeObserver === 'function') {
       this._observer ??= new ResizeObserver(() => this._scheduleRefresh());

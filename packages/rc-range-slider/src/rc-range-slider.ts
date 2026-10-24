@@ -9,6 +9,7 @@ import {
   arrowKeys,
   getDirectChildren,
   isReversed,
+  numberFormat,
   physicalAxis,
   renderedOrientation,
   resolveFlow,
@@ -554,8 +555,9 @@ export class RCRangeSlider extends LitElement {
       return nothing;
     }
 
-    const lowText = this.lowValueText || String(this._lowValue);
-    const highText = this.highValueText || String(this._highValue);
+    const format = numberFormat(this._messages.locale);
+    const lowText = this.lowValueText || format.format(this._lowValue);
+    const highText = this.highValueText || format.format(this._highValue);
 
     const valuesContainer = html`
       <span class="rc-range-slider-values" aria-hidden="true">

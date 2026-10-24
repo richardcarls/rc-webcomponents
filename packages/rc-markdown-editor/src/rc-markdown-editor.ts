@@ -552,7 +552,7 @@ export class RcMarkdownEditor extends LitElement {
       ${this.toolbar
         ? html`<rc-editor-toolbar
             part="toolbar"
-            lang=${this.getAttribute('lang') || nothing}
+            lang=${this.getAttribute('lang') ?? nothing}
             @rc-toolbar-action=${this._onToolbarAction}
           ></rc-editor-toolbar>`
         : nothing}

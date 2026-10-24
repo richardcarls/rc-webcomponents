@@ -17,7 +17,8 @@ import {
   type LogicalAxis,
 } from './flow.js';
 import { LiveAnnouncer } from './LiveAnnouncer.js';
-import { resolveMessages } from './messages.js';
+import { messagesLocale, resolveMessages } from './messages.js';
+import { numberFormat } from './localeFormat.js';
 
 /** How the active reorder was started. */
 export type ReorderMode = 'pointer' | 'keyboard';
@@ -26,21 +27,27 @@ export type ReorderMode = 'pointer' | 'keyboard';
 export interface ReorderMessages {
   /** Description written to handles that have no authored `aria-description`. */
   instructions: string;
-  grabbed: (position: number, count: number) => string;
-  moved: (position: number, count: number) => string;
-  dropped: (position: number, count: number) => string;
-  canceled: (position: number, count: number) => string;
+  grabbed: (position: number, count: number, locale?: string) => string;
+  moved: (position: number, count: number, locale?: string) => string;
+  dropped: (position: number, count: number, locale?: string) => string;
+  canceled: (position: number, count: number, locale?: string) => string;
+}
+
+function formatPosition(position: number, locale: string | undefined): string {
+  return numberFormat(locale, { useGrouping: false }).format(position);
 }
 
 export const DEFAULT_REORDER_MESSAGES: Readonly<ReorderMessages> = Object.freeze({
   instructions: 'Press Space to reorder.',
-  grabbed: (position: number, count: number) =>
-    `Picked up, position ${position} of ${count}. ` +
+  grabbed: (position: number, count: number, locale?: string) =>
+    `Picked up, position ${formatPosition(position, locale)} of ${formatPosition(count, locale)}. ` +
     'Use the arrow keys to move, Space to drop, Escape to cancel.',
-  moved: (position: number, count: number) => `Moved to position ${position} of ${count}.`,
-  dropped: (position: number, count: number) => `Dropped at position ${position} of ${count}.`,
-  canceled: (position: number, count: number) =>
-    `Reorder canceled. Back at position ${position} of ${count}.`,
+  moved: (position: number, count: number, locale?: string) =>
+    `Moved to position ${formatPosition(position, locale)} of ${formatPosition(count, locale)}.`,
+  dropped: (position: number, count: number, locale?: string) =>
+    `Dropped at position ${formatPosition(position, locale)} of ${formatPosition(count, locale)}.`,
+  canceled: (position: number, count: number, locale?: string) =>
+    `Reorder canceled. Back at position ${formatPosition(position, locale)} of ${formatPosition(count, locale)}.`,
 });
 
 export interface ReorderOptions {
@@ -392,7 +399,7 @@ export class ReorderController implements ReactiveController {
     };
 
     this._options.onActiveChange?.(item, 'pointer');
-    this._announce(this.message('grabbed')(from + 1, items.length));
+    this._announce(this.message('grabbed')(from + 1, items.length, messagesLocale(this._host)));
     this._pointerMove(detail);
   }
 
@@ -442,7 +449,7 @@ export class ReorderController implements ReactiveController {
 
     if (to !== session.to) {
       session.to = to;
-      this._announce(this.message('moved')(to + 1, slots.length));
+      this._announce(this.message('moved')(to + 1, slots.length, messagesLocale(this._host)));
     }
 
     const items = this._items();
@@ -580,7 +587,7 @@ export class ReorderController implements ReactiveController {
       this._commit(item, from, to, 'pointer');
     }
 
-    this._announce(this.message('dropped')(to + 1, count));
+    this._announce(this.message('dropped')(to + 1, count, messagesLocale(this._host)));
   }
 
   // --------------------------------------------------------------- keyboard
@@ -638,7 +645,7 @@ export class ReorderController implements ReactiveController {
 
     this._host.ownerDocument.addEventListener('pointerdown', this._onDocumentPointerDown, true);
     this._options.onActiveChange?.(target.item, 'keyboard');
-    this._announce(this.message('grabbed')(from + 1, items.length));
+    this._announce(this.message('grabbed')(from + 1, items.length, messagesLocale(this._host)));
   };
 
   private _keyboardStep(event: KeyboardEvent, session: KeyboardSession): void {
@@ -678,7 +685,7 @@ export class ReorderController implements ReactiveController {
           this._commit(item, current, from, 'keyboard');
         }
 
-        this._announce(this.message('canceled')(from + 1, count));
+        this._announce(this.message('canceled')(from + 1, count, messagesLocale(this._host)));
 
         return;
       }
@@ -695,7 +702,7 @@ export class ReorderController implements ReactiveController {
 
     this._commit(session.item, session.current, to, 'keyboard');
     session.current = to;
-    this._announce(this.message('moved')(to + 1, count));
+    this._announce(this.message('moved')(to + 1, count, messagesLocale(this._host)));
   }
 
   private readonly _onFocusOut = (event: FocusEvent): void => {
@@ -763,7 +770,7 @@ export class ReorderController implements ReactiveController {
     const position = this._session.current + 1;
 
     this._end();
-    this._announce(this.message('dropped')(position, count));
+    this._announce(this.message('dropped')(position, count, messagesLocale(this._host)));
   }
 
   // ----------------------------------------------------------------- shared
@@ -827,7 +834,7 @@ export class ReorderController implements ReactiveController {
       this._commit(session.item, session.current, session.from, 'keyboard');
     }
 
-    this._announce(this.message('canceled')(session.from + 1, count));
+    this._announce(this.message('canceled')(session.from + 1, count, messagesLocale(this._host)));
   }
 
   private _end(): void {

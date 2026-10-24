@@ -31,9 +31,11 @@ switch needs no reload.
 
 ## Which locale
 
-The locale is the element's own `lang` attribute, else `<html lang>`. An ancestor's `lang`
+The locale is the element's own `lang` attribute, else `<html lang>`. An explicit `lang=""`
+means the language is unknown and does not inherit the page locale. An ancestor's `lang`
 is skipped on purpose: it usually marks content, such as a German recipe on an English page,
-while component chrome stays in the interface language.
+while component chrome stays in the interface language. Changes inside shadow roots and
+other documents are observed when the component is connected there.
 
 ```html
 <html lang="en">
@@ -47,10 +49,17 @@ while component chrome stays in the interface language.
 ## Keys and numbers
 
 Each component page lists its keys under **Localization**. Interpolating entries are
-functions, such as `goToSlide: (position, count) => string`. Numbers arrive unformatted,
-so format them in the translation when the locale needs other digits. Numbers a component
-writes itself, such as `rc-progress`'s percentage and `rc-splitter`'s value text, use
-`Intl.NumberFormat` for the same locale.
+functions, such as `goToSlide: (position, count, locale?) => string`. Numbers arrive as
+numbers so translations can choose their own wording. Built-in messages format the numbers
+with `Intl.NumberFormat` for the interface locale. Translation functions can use the optional
+locale argument with `numberFormat(locale)` from `@rcarls/rc-common`. Numbers a component
+writes itself, such as `rc-progress`'s percentage and `rc-splitter`'s value text, use the
+same locale.
+
+When a message places consumer text of unknown direction inside a sentence, isolate that
+text with `bidiIsolate(text)` from `@rcarls/rc-common`. Built-in messages do this for
+dynamic names and option labels. This keeps the surrounding punctuation and word order
+stable in mixed left-to-right and right-to-left text.
 
 `RcMessageCatalog` types `registerMessages()`: each package adds its scope when you import
 it, so a misspelled scope or key fails to compile.

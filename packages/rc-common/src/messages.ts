@@ -60,7 +60,12 @@ export function registerMessages(locale: string, catalog: RcMessageCatalogInput)
  * stays in the language of the interface around it.
  */
 export function messagesLocale(host: Element): string {
-  return host.getAttribute('lang') || host.ownerDocument.documentElement.lang || '';
+  return host.getAttribute('lang') ?? host.ownerDocument.documentElement.lang ?? '';
+}
+
+/** Isolates an unknown-direction phrase inside a plain-text message. */
+export function bidiIsolate(text: string): string {
+  return `\u2068${text}\u2069`;
 }
 
 /** `de-CH` gives `de`, then `de-ch`: least specific first, so later ones win. */
@@ -170,7 +175,7 @@ export class LocaleController implements ReactiveController {
       } else {
         this._host.requestUpdate();
       }
-    });
+    }, this._host);
   }
 
   hostDisconnected(): void {

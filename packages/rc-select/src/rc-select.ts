@@ -4,10 +4,12 @@ import { property, query, state } from 'lit/decorators.js';
 import {
   ActiveDescendantController,
   AnchorController,
+  bidiIsolate,
   MessagesController,
   PopoverController,
   inlineArrowKeys,
   NativeChildController,
+  numberFormat,
   resolveFlow,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
@@ -67,7 +69,7 @@ export interface RCSelectMessages {
   /** Accessible name of a selected-value chip. */
   remove: (label: string) => string;
   /** Compact trigger text for several selected values. */
-  summary: (first: string, more: number) => string;
+  summary: (first: string, more: number, locale?: string) => string;
   /** Dialog confirmation action. */
   done: string;
   /** Accessible name of the leading dialog cancel action. */
@@ -77,8 +79,9 @@ export interface RCSelectMessages {
 export const DEFAULT_SELECT_MESSAGES: Readonly<RCSelectMessages> = Object.freeze({
   options: 'Options',
   selectedItems: 'Selected items',
-  remove: (label: string) => `Remove ${label}`,
-  summary: (first: string, more: number) => `${first}, +${more} more`,
+  remove: (label: string) => `Remove ${bidiIsolate(label)}`,
+  summary: (first: string, more: number, locale?: string) =>
+    `${bidiIsolate(first)}, +${numberFormat(locale, { useGrouping: false }).format(more)} more`,
   done: 'Done',
   cancel: 'Cancel',
 });
@@ -1225,7 +1228,7 @@ export class RCSelect extends LitElement {
     const values = [...this._selectedValues];
     const first = this._labelFor(values[0]);
 
-    return this._text.summary(first, values.length - 1);
+    return this._text.summary(first, values.length - 1, this._messages.locale);
   }
 
   /**
@@ -1527,7 +1530,7 @@ export class RCSelect extends LitElement {
   protected _renderDialogBody() {
     return html`
       <rc-listbox
-        lang=${this.getAttribute('lang') || nothing}
+        lang=${this.getAttribute('lang') ?? nothing}
         id="dialog-listbox"
         part="listbox dialog-listbox"
         tabindex="0"
@@ -1612,7 +1615,7 @@ export class RCSelect extends LitElement {
       ${this._renderAnchor()}
 
       <rc-listbox
-        lang=${this.getAttribute('lang') || nothing}
+        lang=${this.getAttribute('lang') ?? nothing}
         id="listbox"
         part="listbox"
         popover="manual"

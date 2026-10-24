@@ -78,3 +78,37 @@ test('observes again after every subscriber has left', async () => {
 
   await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
 });
+
+test('observes host ancestors inside nested shadow roots', async () => {
+  const outer = fixture();
+  const outerRoot = outer.attachShadow({ mode: 'open' });
+  const inner = document.createElement('div');
+  const innerRoot = inner.attachShadow({ mode: 'open' });
+  const host = document.createElement('span');
+  const listener = vi.fn();
+
+  outerRoot.append(inner);
+  innerRoot.append(host);
+  cleanups.push(observeLocale(listener, host));
+
+  inner.lang = 'ar';
+  await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+
+  host.dir = 'rtl';
+  await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(2));
+
+  outer.dir = 'rtl';
+  await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(3));
+});
+
+test('observes the host document rather than the global document', async () => {
+  const other = document.implementation.createHTMLDocument('other');
+  const host = other.createElement('div');
+  const listener = vi.fn();
+
+  other.body.append(host);
+  cleanups.push(observeLocale(listener, host));
+
+  other.documentElement.lang = 'ar';
+  await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+});

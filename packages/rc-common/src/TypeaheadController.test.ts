@@ -69,3 +69,26 @@ test('matches with the collation of the given locale', () => {
   swedish.reset();
   expect(swedish.search('å')).toBe('Ångström');
 });
+
+test('matches a decomposed grapheme without slicing its UTF-16 units', () => {
+  const controller = new TypeaheadController<string>({
+    items: () => ['Other', 'e\u0301clair'],
+    text: (item) => item,
+    startIndex: () => 0,
+    onMatch: vi.fn(),
+  });
+
+  expect(controller.search('e')).toBe('e\u0301clair');
+});
+
+test('matches prefixes whose collation expands a character', () => {
+  const controller = new TypeaheadController<string>({
+    items: () => ['Other', 'straße'],
+    text: (item) => item,
+    startIndex: () => 0,
+    onMatch: vi.fn(),
+    locale: () => 'de',
+  });
+
+  expect(controller.search('strass')).toBe('straße');
+});

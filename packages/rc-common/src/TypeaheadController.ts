@@ -1,5 +1,37 @@
 import { collator } from './localeFormat.js';
 
+const graphemeSegmenters = new Map<string, Intl.Segmenter>();
+
+function* prefixes(text: string, locale: string | undefined): Generator<string> {
+  if (typeof Intl.Segmenter === 'function') {
+    const key = locale ?? '';
+    let segmenter = graphemeSegmenters.get(key);
+
+    if (!segmenter) {
+      try {
+        segmenter = new Intl.Segmenter(locale, { granularity: 'grapheme' });
+      } catch {
+        segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+      }
+
+      graphemeSegmenters.set(key, segmenter);
+    }
+
+    for (const segment of segmenter.segment(text)) {
+      yield text.slice(0, segment.index + segment.segment.length);
+    }
+
+    return;
+  }
+
+  let end = 0;
+
+  for (const codePoint of text) {
+    end += codePoint.length;
+    yield text.slice(0, end);
+  }
+}
+
 export interface TypeaheadControllerOptions<T> {
   /** Items searched by typeahead. */
   items: () => readonly T[];
@@ -69,17 +101,20 @@ export class TypeaheadController<T> {
 
     const startIndex = this._options.startIndex?.() ?? 0;
     const count = items.length;
-    const compare = collator(this._options.locale?.(), { sensitivity: 'base', usage: 'search' });
+    const locale = this._options.locale?.();
+    const compare = collator(locale, { sensitivity: 'base', usage: 'search' });
 
     for (let offset = 1; offset <= count; offset += 1) {
       const index = (startIndex + offset) % count;
       const item = items[index];
       const text = this._options.text(item).trim();
 
-      if (compare.compare(text.slice(0, this._buffer.length), this._buffer) === 0) {
-        this._options.onMatch(item, index);
+      for (const prefix of prefixes(text, locale)) {
+        if (compare.compare(prefix, this._buffer) === 0) {
+          this._options.onMatch(item, index);
 
-        return item;
+          return item;
+        }
       }
     }
 

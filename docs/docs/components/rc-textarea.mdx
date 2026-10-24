@@ -171,11 +171,14 @@ text's language and direction on the textarea, as on any form control:
   differ between `ja` and `zh`), spelling dictionary and hyphenation. Plugins read it as
   `contentLang`, and `getWordAtCursor()` segments words for it.
 - **`dir`** sets the editor's base direction. `ltr` and `rtl` are used as written. `auto` takes
-  the direction of the value's first strong character and falls back to the host's direction,
+  the direction of the value's first strong character and uses LTR when there is none,
   as a native textarea does, and updates as the value changes. Without `dir` the editor
   inherits. `dirname` submits the resolved direction with the form, since the native control
   always holds the value.
 - **`spellcheck`** is mirrored when the textarea sets it. Without it, spelling checks stay off.
+
+Changing the textarea's `lang` or `dir` also reruns plugin rendering, so highlighting and
+decorations can follow the new content language or direction.
 
 The host's own `lang` is the interface language, as for every `rc-*` component. It formats line
 numbers, so an `ar-EG` interface shows `١ ٢ ٣`, and `ar-EG-u-nu-latn` keeps Latin digits. The

@@ -91,12 +91,12 @@ Components ship English text only. Each one resolves its built-in strings (butto
 descriptions, announcements) per key, in this order:
 
 1. The element's `messages` property (`reorderMessages` on `rc-list`).
-2. Text registered with `registerMessages()` for the element's locale: the exact tag, then its
+1. Text registered with `registerMessages()` for the element's locale: the exact tag, then its
    base language (`de-CH`, then `de`). A component that extends another can also read the base
    component's scope, below its own within each locale: `rc-combobox` takes any `rc-select`
    text it has a key for. Pass `inherit` to `resolveMessages()` or `MessagesController` for the
    same in your own components.
-3. The English default.
+1. The English default.
 
 ```ts
 import { registerMessages } from '@rcarls/rc-common';
@@ -107,12 +107,13 @@ registerMessages('de', {
 });
 ```
 
-The locale is the element's own `lang` attribute, else `<html lang>`. An ancestor's `lang` is
-skipped on purpose: it usually marks content, such as a German recipe on an English page, while
-component chrome stays in the interface language. Interpolating entries are functions, such as
-`goToSlide: (position, count) => string`; numbers arrive unformatted, so format them in the
-translation when the locale needs other digits. Numbers a component formats itself, such as
-`rc-progress`'s percentage, use `Intl.NumberFormat` for the same locale.
+The locale is the element's own `lang` attribute, else `<html lang>`. An explicit `lang=""`
+means the language is unknown. An ancestor's `lang` usually marks content, such as a German
+recipe on an English page, so component chrome skips it. Interpolating entries are functions,
+such as `goToSlide: (position, count, locale?) => string`. Positions stay numeric for custom
+translations; built-in messages format them with `Intl.NumberFormat` for the interface locale.
+Custom translations can use `numberFormat(locale)` from this package. Use `bidiIsolate(text)`
+when inserting consumer text of unknown direction into a plain-text message.
 
 Each package declares its entry in the `RcMessageCatalog` interface, so `registerMessages()`
 type-checks scope names and keys for the packages you import. Registering text, or changing a

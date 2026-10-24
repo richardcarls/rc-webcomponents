@@ -2,7 +2,7 @@ import { LitElement, html, nothing, type SVGTemplateResult, type TemplateResult 
 import { property, state } from 'lit/decorators.js';
 
 import '@rcarls/rc-button/define';
-import { MessagesController } from '@rcarls/rc-common';
+import { MessagesController, numberFormat } from '@rcarls/rc-common';
 import '@rcarls/rc-toolbar/define';
 import { icons } from './icons.js';
 import type { EditorToolbarAction, EditorToolbarActionDetail, HeadingLevel } from './types.js';
@@ -21,7 +21,7 @@ export interface RCEditorToolbarMessages {
   link: string;
   headingLevel: string;
   paragraph: string;
-  heading: (level: number) => string;
+  heading: (level: number, locale?: string) => string;
   blockquote: string;
   bulletList: string;
   orderedList: string;
@@ -48,7 +48,8 @@ export const DEFAULT_EDITOR_TOOLBAR_MESSAGES: Readonly<RCEditorToolbarMessages> 
   link: 'Link',
   headingLevel: 'Heading level',
   paragraph: 'Paragraph',
-  heading: (level: number) => `Heading ${level}`,
+  heading: (level: number, locale?: string) =>
+    `Heading ${numberFormat(locale, { useGrouping: false }).format(level)}`,
   blockquote: 'Blockquote',
   bulletList: 'Bullet List',
   orderedList: 'Ordered List',
@@ -249,7 +250,10 @@ export class RcEditorToolbar extends LitElement {
     const m = this._messages.value;
     const headingOptions: Array<{ value: HeadingLevel | 'p'; label: string }> = [
       { value: 'p', label: m.paragraph },
-      ...HEADING_LEVELS.map((value, index) => ({ value, label: m.heading(index + 1) })),
+      ...HEADING_LEVELS.map((value, index) => ({
+        value,
+        label: m.heading(index + 1, this._messages.locale),
+      })),
     ];
 
     return html`

@@ -1,7 +1,7 @@
 import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { inlineArrowKeys, resolveFlow, resolveMessages } from '@rcarls/rc-common';
+import { bidiIsolate, inlineArrowKeys, resolveFlow, resolveMessages } from '@rcarls/rc-common';
 import {
   DEFAULT_SELECT_MESSAGES,
   RCSelect,
@@ -36,7 +36,7 @@ export interface RCComboboxMessages extends RCSelectMessages {
 
 export const DEFAULT_COMBOBOX_MESSAGES: Readonly<RCComboboxMessages> = Object.freeze({
   ...DEFAULT_SELECT_MESSAGES,
-  search: (name: string) => `Search ${name}`,
+  search: (name: string) => `Search ${bidiIsolate(name)}`,
 });
 
 declare module '@rcarls/rc-common' {
@@ -650,7 +650,7 @@ export class RCCombobox extends RCSelect {
       </label>
 
       <rc-listbox
-        lang=${this.getAttribute('lang') || nothing}
+        lang=${this.getAttribute('lang') ?? nothing}
         id="dialog-listbox"
         part="listbox dialog-listbox"
         tabindex="-1"
@@ -766,7 +766,7 @@ export class RCCombobox extends RCSelect {
       </div>
 
       <rc-listbox
-        lang=${this.getAttribute('lang') || nothing}
+        lang=${this.getAttribute('lang') ?? nothing}
         id="listbox"
         part="listbox"
         popover="manual"

@@ -273,7 +273,7 @@ export class RCVirtualScroller extends LitElement {
     }
 
     // A direction flip reverses the inline axis without resizing anything.
-    this._unobserveLocale = observeLocale(this._requestResolve);
+    this._unobserveLocale = observeLocale(this._requestResolve, this);
     this.ownerDocument.defaultView?.addEventListener('resize', this._requestResolve);
     this._requestResolve();
   }

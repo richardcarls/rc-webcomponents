@@ -80,6 +80,30 @@ test('renders with APG carousel roles and preserves the authored label', async (
   expect(item.getAttribute('aria-roledescription')).toBe('slide');
 });
 
+test('formats default slide positions in the current interface locale', async () => {
+  const screen = render(html`
+    <rc-carousel data-testid="carousel" lang="fa-IR" aria-label="Photos" pagination>
+      <rc-carousel-item data-testid="item">One</rc-carousel-item>
+      <rc-carousel-item>Two</rc-carousel-item>
+    </rc-carousel>
+  `);
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+  const item = (await screen.getByTestId('item').element()) as HTMLElement;
+
+  await settle(carousel);
+
+  expect(item.getAttribute('aria-label')).toBe('۱ of ۲');
+
+  expect(
+    carousel.renderRoot.querySelector('[data-pagination-item]')?.getAttribute('aria-label'),
+  ).toBe('Go to slide ۱');
+
+  carousel.lang = 'fa-IR-u-nu-latn';
+  await settle(carousel);
+
+  expect(item.getAttribute('aria-label')).toBe('1 of 2');
+});
+
 test('preserves an author-provided label instead of the fallback', async () => {
   const screen = render(html`
     <rc-carousel data-testid="carousel" aria-label="Photos of Beef Stew">

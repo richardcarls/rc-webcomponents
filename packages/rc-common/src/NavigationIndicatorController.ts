@@ -46,7 +46,7 @@ export class NavigationIndicatorController implements ReactiveController {
     // The indicator's offset is measured from the container's logical start,
     // which moves to the other side when the direction flips; the links keep
     // their sizes, so no resize would report it.
-    this._unobserveLocale ??= observeLocale(() => this.update());
+    this._unobserveLocale ??= observeLocale(() => this.update(), this._host);
     this.sync();
   }
 
