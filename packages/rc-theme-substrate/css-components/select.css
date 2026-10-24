@@ -1,0 +1,20 @@
+@layer rc-theme-substrate.css-components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    select.rc-select:not(:where(rc-select > select)) {
+    box-sizing: border-box;
+    min-block-size: var(--rc-select-control-block-size, var(--rc-control-block-size, 2.5rem));
+    padding-block: var(--rc-select-padding-block, var(--rc-control-padding-block, 0.5rem));
+    padding-inline: var(--rc-select-padding-inline, var(--rc-control-padding-inline, 1rem));
+    border: var(--rc-select-border, var(--rc-border, 1px solid ButtonBorder));
+    border-radius: var(--rc-select-radius, var(--rc-control-radius, 0.5rem));
+    background: var(--rc-field, Field);
+    color: var(--rc-field-text, FieldText);
+    font: inherit;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    select.rc-select:not(:where(rc-select > select)):focus-visible {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+}

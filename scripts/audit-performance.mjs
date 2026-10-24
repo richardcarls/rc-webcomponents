@@ -36,8 +36,14 @@ const JAVASCRIPT_SCENARIOS = {
 const CSS_SCENARIOS = {
   baseTheme: 'packages/rc-webcomponents/themes/base.css',
   materialTheme: 'packages/rc-theme-material/theme.css',
+  materialCssComponents: 'packages/rc-theme-material/css-components.css',
+  materialNative: 'packages/rc-theme-material/native.css',
   substrateTheme: 'packages/rc-theme-substrate/theme.css',
+  substrateCssComponents: 'packages/rc-theme-substrate/css-components.css',
+  substrateNative: 'packages/rc-theme-substrate/native.css',
   win31Theme: 'packages/rc-theme-win31/theme.css',
+  win31CssComponents: 'packages/rc-theme-win31/css-components.css',
+  win31Native: 'packages/rc-theme-win31/native.css',
 };
 
 function compressedSize(contents, compressor) {

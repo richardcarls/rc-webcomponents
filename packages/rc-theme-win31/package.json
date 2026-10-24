@@ -22,12 +22,16 @@
     "./defaults.css": "./defaults.css",
     "./components.css": "./components.css",
     "./components/*.css": "./components/*.css",
+    "./css-components.css": "./css-components.css",
+    "./css-components/*.css": "./css-components/*.css",
+    "./native.css": "./native.css",
     "./theme.css": "./theme.css",
     "./DESIGN.md": "./DESIGN.md"
   },
   "files": [
     "*.css",
     "components",
+    "css-components",
     "README.md",
     "DESIGN.md"
   ],

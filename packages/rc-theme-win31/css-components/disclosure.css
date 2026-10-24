@@ -1,0 +1,34 @@
+@layer rc-theme-win31.css-components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    details.rc-disclosure:not(:where(rc-disclosure > details)) {
+    padding-block: var(--rc-control-padding-block, 0.5rem);
+    padding-inline: var(--rc-control-padding-inline, 1rem);
+    border: var(--rc-border, 1px solid ButtonBorder);
+    border-radius: var(--rc-card-radius, var(--rc-control-radius, 0.5rem));
+    background: var(--rc-surface, Canvas);
+    color: var(--rc-field-text, CanvasText);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    details.rc-disclosure:not(:where(rc-disclosure > details))
+    > summary {
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    details.rc-disclosure:not(:where(rc-disclosure > details))
+    > summary:focus-visible {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    details.rc-disclosure:not(:where(rc-disclosure > details)) {
+    color: var(--win31-color-frame);
+    background: var(--win31-color-surface);
+    border-color: var(--win31-color-frame);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+  }
+}

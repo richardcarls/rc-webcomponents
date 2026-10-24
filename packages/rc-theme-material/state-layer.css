@@ -1,3 +1,6 @@
+@layer rc-base, rc-theme-material.defaults, rc-theme-material.bridge, rc-theme-material.native, rc-theme-material.components, rc-theme-material.css-components,
+  rc-theme-material.overrides;
+
 @layer rc-theme-material.components {
   /*
    * Material 3 state layers for interactive elements that already own their

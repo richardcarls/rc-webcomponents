@@ -34,6 +34,27 @@ Selective component styles are also exported:
 @import '@rcarls/rc-theme-material/components/menu.css';
 ```
 
+Native HTML can opt into the same presentation without registering an RC
+element. Import the defaults and bridge when needed, then opt into the native
+layer and the CSS-only recipes independently:
+
+```css
+@import '@rcarls/rc-theme-material/defaults.css';
+@import '@rcarls/rc-theme-material/bridge.css';
+@import '@rcarls/rc-theme-material/native.css';
+@import '@rcarls/rc-theme-material/css-components.css';
+```
+
+`native.css` styles ordinary buttons, text fields, selects, textareas,
+checkboxes, radios, ranges, and progress descendants inside
+`.rc-theme-material`. It excludes native controls owned by RC wrappers. The
+opt-in `css-components.css` recipes cover `.rc-button`, `.rc-chip`,
+`.rc-chip-group`, `.rc-select`, `.rc-textarea`, `.rc-card`, `.rc-list`, and
+`details.rc-disclosure`; each recipe is also available under
+`css-components/<name>.css`. These styles provide appearance and CSS-visible
+states only: they do not add behavior, events, popup replacement, or measured
+overflow.
+
 The state-layer utility is included by `components.css` and `theme.css`, and is
 also exported separately for selective imports:
 
@@ -129,7 +150,11 @@ with a page-wide factor, keep that factor in a separate custom property and
 multiply, since a property can't refer to its own inherited value:
 
 ```html
-<html class="rc-theme-material" data-rc-type-scale style="--app-scale: 0.75; --rc-type-scale: var(--app-scale)">
+<html
+  class="rc-theme-material"
+  data-rc-type-scale
+  style="--app-scale: 0.75; --rc-type-scale: var(--app-scale)"
+>
   …
   <p data-rc-type-scale style="--rc-type-scale: calc(var(--app-scale) * 1.25)">…</p>
 </html>

@@ -1,0 +1,80 @@
+@layer rc-theme-substrate.css-components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-chip, a[href].rc-chip, label.rc-chip):not(:where(rc-chip > button)):not(
+      :where(rc-chip > a)
+    ):not(:where(rc-chip > label)) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--rc-chip-gap, 0.25rem);
+    min-block-size: var(--rc-chip-block-size, 2rem);
+    padding-block: var(--rc-chip-padding-block, 0.25rem);
+    padding-inline: var(--rc-chip-padding-inline, 1rem);
+    border: var(--rc-chip-border, var(--rc-border, 1px solid ButtonBorder));
+    border-radius: var(--rc-chip-radius, 0.5rem);
+    background: var(--rc-chip-bg, ButtonFace);
+    color: var(--rc-chip-color, ButtonText);
+    font: var(--rc-chip-font, inherit);
+    text-decoration: var(--rc-chip-text-decoration, none);
+    cursor: pointer;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    label.rc-chip
+    > :where(input[type='checkbox'], input[type='radio']) {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-chip, a[href].rc-chip, label.rc-chip):not(:where(rc-chip > button)):not(
+      :where(rc-chip > a)
+    ):not(:where(rc-chip > label)):hover:not(:where(:disabled)):not(:has(input:disabled)) {
+    background: color-mix(in srgb, currentColor 8%, var(--rc-chip-bg, ButtonFace));
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-chip, a[href].rc-chip, label.rc-chip):not(:where(rc-chip > button)):not(
+      :where(rc-chip > a)
+    ):not(:where(rc-chip > label)):has(input:checked) {
+    background: var(--rc-chip-selected-bg, Highlight);
+    color: var(--rc-highlight-text, HighlightText);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-chip, a[href].rc-chip, label.rc-chip):not(:where(rc-chip > button)):not(
+      :where(rc-chip > a)
+    ):not(:where(rc-chip > label)):is(:focus-visible, :has(input:focus-visible)) {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-chip, a[href].rc-chip, label.rc-chip):not(:where(rc-chip > button)):not(
+      :where(rc-chip > a)
+    ):not(:where(rc-chip > label)):has(input:disabled) {
+    color: var(--rc-text-disabled, GrayText);
+    cursor: not-allowed;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-chip, a[href].rc-chip):is(:disabled, [aria-disabled='true']) {
+    color: var(--rc-text-disabled, GrayText);
+    cursor: not-allowed;
+  }
+
+  @media (forced-colors: active) {
+    :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+      :where(button.rc-chip, a[href].rc-chip, label.rc-chip):has(input:checked) {
+      border-color: Highlight;
+      outline: 1px solid Highlight;
+      outline-offset: -1px;
+      background: Highlight;
+      color: HighlightText;
+    }
+  }
+}

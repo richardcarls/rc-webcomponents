@@ -1,0 +1,34 @@
+@layer rc-theme-substrate.css-components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list {
+    display: grid;
+    gap: var(--rc-list-item-gap, 0.5rem);
+    margin-block: 0;
+    padding-inline-start: 0;
+    list-style: none;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list > li {
+    display: flex;
+    align-items: center;
+    min-block-size: var(--rc-list-item-min-block-size, 3rem);
+    padding-block: var(--rc-list-item-padding-block, 0.5rem);
+    padding-inline: var(--rc-list-item-padding-inline, 1rem);
+    border-radius: var(--rc-control-radius, 0.5rem);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list > li[aria-selected='true'],
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) .rc-list > li:has(input:checked) {
+    background: var(--rc-list-item-selected-bg, Highlight);
+    color: var(--rc-list-item-selected-color, HighlightText);
+  }
+
+  @media (forced-colors: active) {
+    :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+      .rc-list
+      > li:is([aria-selected='true'], :has(input:checked)) {
+      border-color: Highlight;
+      outline: 1px solid Highlight;
+      outline-offset: -1px;
+    }
+  }
+}

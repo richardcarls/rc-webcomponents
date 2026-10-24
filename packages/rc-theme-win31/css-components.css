@@ -1,0 +1,31 @@
+@layer rc-base, rc-theme-win31.defaults, rc-theme-win31.bridge, rc-theme-win31.native, rc-theme-win31.components, rc-theme-win31.css-components,
+  rc-theme-win31.overrides;
+
+@import './css-components/button.css';
+@import './css-components/chip.css';
+@import './css-components/chip-group.css';
+@import './css-components/select.css';
+@import './css-components/textarea.css';
+@import './css-components/card.css';
+@import './css-components/list.css';
+@import './css-components/disclosure.css';
+
+@layer rc-theme-win31.css-components {
+  @media (forced-colors: active) {
+    :where(.rc-theme-win31, :host(.rc-theme-win31))
+      :where(
+        button.rc-button,
+        a.rc-button,
+        button.rc-chip,
+        a.rc-chip,
+        label.rc-chip,
+        select.rc-select,
+        textarea.rc-textarea,
+        .rc-card,
+        .rc-list,
+        details.rc-disclosure
+      ) {
+      forced-color-adjust: auto;
+    }
+  }
+}

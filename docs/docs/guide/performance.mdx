@@ -68,6 +68,30 @@ scrolling, and other behaviors; Material Web embeds its component styles in
 JavaScript. These full-collection figures are context for the budget, not
 interchangeable per-component costs.
 
+### CSS-only theme options
+
+Each packaged theme also exports opt-in `css-components.css` and `native.css`.
+The CSS audit measures each file as a separate scenario. These styles avoid
+component JavaScript only when the application does not import the matching
+`/define` entry. A CSS-only native `<select>` keeps the browser's native picker
+instead of the enhanced `rc-select` popup.
+
+| Opt-in file                      |    Gzip |  Brotli |
+| -------------------------------- | ------: | ------: |
+| Material `css-components.css`    | 1.64 kB | 1.38 kB |
+| Material `native.css`            | 1.06 kB | 0.88 kB |
+| Substrate `css-components.css`   | 1.65 kB | 1.39 kB |
+| Substrate `native.css`           | 1.06 kB | 0.89 kB |
+| Windows 3.1 `css-components.css` | 1.88 kB | 1.62 kB |
+| Windows 3.1 `native.css`         | 1.20 kB | 1.00 kB |
+
+Run `yarn compare:css-components` to compare Material-themed batches of 100
+buttons and 50 selects with CSS-only markup and registered components. The
+report at `.performance/css-component-comparison.json` records mount time,
+Chromium task time, JavaScript heap use, and DOM nodes. This is a local
+comparison rather than a release budget: the variants offer different
+interaction features, and timing and heap use depend on the browser environment.
+
 ## Browser scenarios
 
 Headless Chromium measures three warmups followed by ten samples and records the

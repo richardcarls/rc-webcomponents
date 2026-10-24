@@ -42,6 +42,26 @@ or supply the `--win31-*` set yourself.
 @import '@rcarls/rc-theme-win31/components/button.css';
 ```
 
+Native HTML can opt into the period presentation without registering an RC
+element. Import the defaults and bridge when needed, then add the independent
+native and CSS-only layers:
+
+```css
+@import '@rcarls/rc-theme-win31/defaults.css';
+@import '@rcarls/rc-theme-win31/bridge.css';
+@import '@rcarls/rc-theme-win31/native.css';
+@import '@rcarls/rc-theme-win31/css-components.css';
+```
+
+`native.css` styles ordinary buttons, text fields, selects, textareas,
+checkboxes, radios, ranges, and progress descendants inside
+`.rc-theme-win31`, excluding native controls owned by RC wrappers. The
+opt-in `css-components.css` recipes cover `.rc-button`, `.rc-chip`,
+`.rc-chip-group`, `.rc-select`, `.rc-textarea`, `.rc-card`, `.rc-list`, and
+`details.rc-disclosure`; each is also exported as
+`css-components/<name>.css`. They provide appearance and CSS-visible states
+only, not behavior, events, popup replacement, or measured overflow.
+
 ## Scaling
 
 Every metric is a multiple of one token, so the whole theme scales without any

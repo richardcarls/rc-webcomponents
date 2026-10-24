@@ -327,6 +327,24 @@ Rules that follow from this:
 @import '@rcarls/rc-theme-material/state-layer.css';
 ```
 
+Native HTML can use the Material presentation without registering an RC
+element. These are independent opt-ins and are not included by `theme.css`:
+
+```css
+@import '@rcarls/rc-theme-material/defaults.css';
+@import '@rcarls/rc-theme-material/bridge.css';
+@import '@rcarls/rc-theme-material/native.css';
+@import '@rcarls/rc-theme-material/css-components.css';
+```
+
+`native.css` styles ordinary buttons, text fields, selects, textareas,
+checkboxes, radios, ranges, and progress descendants in the theme scope while
+excluding native controls owned by RC wrappers. `css-components.css` provides
+appearance and CSS-visible states for `.rc-button`, `.rc-chip`,
+`.rc-chip-group`, `.rc-select`, `.rc-textarea`, `.rc-card`, `.rc-list`, and
+`details.rc-disclosure`; each recipe is also exported selectively. These
+recipes do not add behavior, events, popup replacement, or measured overflow.
+
 To bring a brand scheme, generate one with Material Theme Builder and declare
 its `--md-sys-color-*` values on the theme scope, after the import. Keep the
 roles and their pairings; change only the values.

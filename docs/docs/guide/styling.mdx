@@ -261,10 +261,11 @@ place it in the `rc-base` layer and deduplicate it per document or shadow root.
 Unlayered consumer rules therefore override these structural defaults without
 selector specificity contests.
 
-Each packaged theme declares its four ordered layers after `rc-base`:
+Each packaged theme declares its ordered layers after `rc-base`:
 
 ```css
-@layer rc-base, rc-theme.defaults, rc-theme.bridge, rc-theme.components, rc-theme.overrides;
+@layer rc-base, rc-theme.defaults, rc-theme.bridge, rc-theme.native,
+  rc-theme.components, rc-theme.css-components, rc-theme.overrides;
 ```
 
 Naming `rc-base` first keeps component structural CSS below the theme even though
@@ -275,12 +276,18 @@ also list `rc-base` before the theme layers.
 
 The real names include the theme package, such as
 `rc-theme-material.components`. Defaults own the theme's raw source tokens,
-the bridge maps those tokens to shared and component RC tokens, and components
-hold element-specific recipes, parts, contextual selectors, and visual
-variants. Overrides hold the few contextual rules that must beat every component
+the bridge maps those tokens to shared and component RC tokens. The opt-in
+`native` layer styles ordinary HTML controls inside the theme scope while
+excluding native children owned by RC wrappers. `components` holds element-specific
+recipes, parts, contextual selectors, and visual variants for registered RC elements.
+The separate opt-in `css-components` layer styles native elements carrying documented
+classes such as `.rc-button`, `.rc-chip`, `.rc-select`, `.rc-card`, and `.rc-list`,
+plus `details.rc-disclosure`. These recipes provide appearance and CSS-visible states
+only; they do not add behavior, events, popup replacement, or measured overflow.
+Overrides hold the few contextual rules that must beat every component
 variant, such as `rc-adaptive-menu` overflow rows, which restyle a moved `rc-button`
 or `rc-menu-button` as a menu row whatever its own variant. Normal application rules
-outside a layer outrank all four theme layers, which provides a straightforward
+outside a layer outrank all theme layers, which provides a straightforward
 consumer override path. Avoid routine
 `!important`: important declarations reverse layer precedence.
 
@@ -291,6 +298,52 @@ layer for that same reason. On a container, a theme's own value is a direct
 declaration that beats an inherited one regardless of layer; on `<html>`,
 `:root` and the theme class target the same element, and `:root`'s
 layer-free value wins outright.
+
+### Native and CSS-only recipes
+
+The native entrypoint keeps browser behavior and form semantics intact. The
+CSS-only recipes add appearance and CSS-visible states to ordinary HTML; they
+do not register elements or replace popups. Load a theme's defaults and bridge
+when you want its token values, then opt into the two layers:
+
+```css
+@import '@rcarls/rc-theme-material/defaults.css';
+@import '@rcarls/rc-theme-material/bridge.css';
+@import '@rcarls/rc-theme-material/native.css';
+@import '@rcarls/rc-theme-material/css-components.css';
+```
+
+The same entrypoints exist for the [Substrate theme README](https://github.com/richardcarls/rc-webcomponents/blob/develop/packages/rc-theme-substrate/README.md),
+[Material theme README](https://github.com/richardcarls/rc-webcomponents/blob/develop/packages/rc-theme-material/README.md), and
+[Win31 theme README](https://github.com/richardcarls/rc-webcomponents/blob/develop/packages/rc-theme-win31/README.md). Supported
+class recipes use native elements directly:
+
+```html
+<main class="rc-theme-material">
+  <button class="rc-button" type="button">Save</button>
+  <label class="rc-chip"><input type="checkbox" /> Filter</label>
+  <div class="rc-chip-group"><button class="rc-chip" type="button">One</button></div>
+  <label for="css-choice">Choice</label>
+  <select id="css-choice" class="rc-select">
+    <option>Choose one</option>
+  </select>
+  <textarea class="rc-textarea" aria-label="Notes"></textarea>
+  <article class="rc-card">Card content</article>
+  <ul class="rc-list">
+    <li>
+      <label><input type="checkbox" checked /> Selected item</label>
+    </li>
+  </ul>
+  <details class="rc-disclosure">
+    <summary>More</summary>
+    <p>Details</p>
+  </details>
+</main>
+```
+
+Use `a[href].rc-button` or `a[href].rc-chip` for links. A checkbox or radio
+inside `.rc-chip` remains in the document and is visually concealed only by
+the recipe, so its label, keyboard focus, and form behavior remain native.
 
 ## Substrate reference theme
 
@@ -314,6 +367,15 @@ Or import the token bridge and selected component polish:
 ```css
 @import '@rcarls/rc-theme-substrate/bridge.css';
 @import '@rcarls/rc-theme-substrate/components.css';
+```
+
+Native controls and CSS-only recipes are independent opt-ins:
+
+```css
+@import '@rcarls/rc-theme-substrate/defaults.css';
+@import '@rcarls/rc-theme-substrate/bridge.css';
+@import '@rcarls/rc-theme-substrate/native.css';
+@import '@rcarls/rc-theme-substrate/css-components.css';
 ```
 
 Apply the `rc-theme-substrate` class to a container to scope the theme:
@@ -355,6 +417,17 @@ tokens:
 ```css
 @import '@rcarls/rc-theme-material/bridge.css';
 @import '@rcarls/rc-theme-material/components.css';
+```
+
+Native controls and CSS-only recipes are independent opt-ins. Add `native.css`
+for ordinary controls inside the theme scope and `css-components.css` (or a
+selective `css-components/<name>.css`) for native HTML using the documented
+classes:
+
+```css
+@import '@rcarls/rc-theme-material/bridge.css';
+@import '@rcarls/rc-theme-material/native.css';
+@import '@rcarls/rc-theme-material/css-components.css';
 ```
 
 `components.css` includes the `.rc-state-layer` utility. Apply that class to
@@ -437,6 +510,11 @@ sheets. Import `defaults.css` before any selective import, or supply the
 @import '@rcarls/rc-theme-win31/bridge.css';
 @import '@rcarls/rc-theme-win31/components/button.css';
 ```
+
+Native controls and CSS-only recipes are separate opt-ins. With the defaults
+and bridge loaded, import `native.css` for ordinary controls or
+`css-components.css` (or a selective `css-components/<name>.css`) for the
+documented native classes and `details.rc-disclosure`.
 
 Three properties of the theme are deliberate and worth knowing before you
 adopt it:

@@ -1,0 +1,66 @@
+@layer rc-theme-substrate.css-components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-button, a[href].rc-button):not(:where(rc-button > button)):not(
+      :where(rc-button > a)
+    ) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--rc-button-gap, 0.5rem);
+    min-block-size: var(--rc-button-block-size, 2.5rem);
+    padding-block: var(--rc-button-padding-block, 0.5rem);
+    padding-inline: var(--rc-button-padding-inline, 1.5rem);
+    border: var(--rc-button-border, var(--rc-border, 1px solid ButtonBorder));
+    border-radius: var(--rc-button-radius, var(--rc-control-radius, 999px));
+    background: var(--rc-button-bg, ButtonFace);
+    color: var(--rc-button-color, var(--rc-button-text, ButtonText));
+    font: var(--rc-button-font, inherit);
+    text-decoration: var(--rc-button-text-decoration, none);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-button, a[href].rc-button):not(:where(rc-button > button)):not(
+      :where(rc-button > a)
+    ):hover:not(:where(:disabled)) {
+    background: color-mix(in srgb, currentColor 8%, var(--rc-button-bg, ButtonFace));
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-button, a[href].rc-button):not(:where(rc-button > button)):not(
+      :where(rc-button > a)
+    ):active:not(:where(:disabled)),
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-button, a[href].rc-button)[aria-pressed='true']:not(
+      :where(rc-button > button)
+    ):not(:where(rc-button > a)) {
+    background: var(--rc-highlight, Highlight);
+    color: var(--rc-highlight-text, HighlightText);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-button, a[href].rc-button):not(:where(rc-button > button)):not(
+      :where(rc-button > a)
+    ):focus-visible {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    :where(button.rc-button, a[href].rc-button):is(:disabled, [aria-disabled='true']) {
+    color: var(--rc-text-disabled, GrayText);
+    cursor: not-allowed;
+  }
+
+  @media (forced-colors: active) {
+    :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+      :where(button.rc-button, a[href].rc-button)[aria-pressed='true'] {
+      border-color: Highlight;
+      outline: 1px solid Highlight;
+      outline-offset: -1px;
+      background: Highlight;
+      color: HighlightText;
+    }
+  }
+}

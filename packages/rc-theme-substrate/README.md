@@ -58,6 +58,26 @@ reference layer:
 @import '@rcarls/rc-theme-substrate/components/dialog.css';
 ```
 
+Native HTML can opt into the same presentation without registering an RC
+element. Import the defaults and bridge when needed, then opt into the native
+layer and CSS-only recipes:
+
+```css
+@import '@rcarls/rc-theme-substrate/defaults.css';
+@import '@rcarls/rc-theme-substrate/bridge.css';
+@import '@rcarls/rc-theme-substrate/native.css';
+@import '@rcarls/rc-theme-substrate/css-components.css';
+```
+
+`native.css` styles ordinary buttons, text fields, selects, textareas,
+checkboxes, radios, ranges, and progress descendants inside
+`.rc-theme-substrate`, excluding native controls owned by RC wrappers. The
+opt-in `css-components.css` recipes cover `.rc-button`, `.rc-chip`,
+`.rc-chip-group`, `.rc-select`, `.rc-textarea`, `.rc-card`, `.rc-list`, and
+`details.rc-disclosure`; each is also exported as
+`css-components/<name>.css`. They provide appearance and CSS-visible states
+only, not behavior, events, popup replacement, or measured overflow.
+
 Tag general icon-font markup with `data-rc-icon`; component-specific markers
 such as `data-rc-button-icon` and `data-rc-navigation-icon` opt in
 automatically. The shared `--rc-icon-font-size` and

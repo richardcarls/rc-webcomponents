@@ -1,0 +1,14 @@
+@layer rc-theme-material.css-components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) .rc-card {
+    display: grid;
+    gap: var(--rc-card-actions-gap, 0.5rem);
+    box-sizing: border-box;
+    padding-block: var(--rc-card-padding-block, 1rem);
+    padding-inline: var(--rc-card-padding-inline, 1rem);
+    border: var(--rc-border, 1px solid ButtonBorder);
+    border-radius: var(--rc-card-radius, var(--rc-control-radius, 0.5rem));
+    background: var(--rc-card-bg, var(--rc-surface, Canvas));
+    color: var(--rc-card-color, CanvasText);
+    box-shadow: var(--rc-shadow, none);
+  }
+}

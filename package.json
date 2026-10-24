@@ -35,6 +35,8 @@
     "benchmark:browser:host": "node scripts/benchmark-browser.mjs",
     "benchmark:browser:update": "node scripts/playwright-env.mjs benchmark:browser:update:host",
     "benchmark:browser:update:host": "node scripts/benchmark-browser.mjs --update-baseline",
+    "compare:css-components": "node scripts/playwright-env.mjs compare:css-components:host",
+    "compare:css-components:host": "node scripts/compare-css-components.mjs",
     "tokens:build": "node scripts/build-design-tokens.mjs",
     "codegen:aggregate": "node scripts/generate-aggregate-exports.mjs",
     "codegen:aggregate:check": "node scripts/generate-aggregate-exports.mjs --check",

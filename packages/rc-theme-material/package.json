@@ -22,6 +22,9 @@
     "./defaults.css": "./defaults.css",
     "./components.css": "./components.css",
     "./components/*.css": "./components/*.css",
+    "./css-components.css": "./css-components.css",
+    "./css-components/*.css": "./css-components/*.css",
+    "./native.css": "./native.css",
     "./state-layer.css": "./state-layer.css",
     "./theme.css": "./theme.css",
     "./DESIGN.md": "./DESIGN.md"
@@ -29,6 +32,7 @@
   "files": [
     "*.css",
     "components",
+    "css-components",
     "constraints",
     "DESIGN.md",
     "README.md"

@@ -1,0 +1,31 @@
+@layer rc-base, rc-theme-substrate.defaults, rc-theme-substrate.bridge, rc-theme-substrate.native, rc-theme-substrate.components, rc-theme-substrate.css-components,
+  rc-theme-substrate.overrides;
+
+@import './css-components/button.css';
+@import './css-components/chip.css';
+@import './css-components/chip-group.css';
+@import './css-components/select.css';
+@import './css-components/textarea.css';
+@import './css-components/card.css';
+@import './css-components/list.css';
+@import './css-components/disclosure.css';
+
+@layer rc-theme-substrate.css-components {
+  @media (forced-colors: active) {
+    :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+      :where(
+        button.rc-button,
+        a.rc-button,
+        button.rc-chip,
+        a.rc-chip,
+        label.rc-chip,
+        select.rc-select,
+        textarea.rc-textarea,
+        .rc-card,
+        .rc-list,
+        details.rc-disclosure
+      ) {
+      forced-color-adjust: auto;
+    }
+  }
+}
