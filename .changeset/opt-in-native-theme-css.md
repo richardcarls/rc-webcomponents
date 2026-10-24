@@ -8,3 +8,6 @@ Add independent opt-in `native.css` and CSS-only `css-components.css` entrypoint
 Material, Substrate, and Windows 3.1 themes. Native controls can use the theme presentation
 without registration, while documented class recipes style common HTML controls and static
 card, list, chip-group, and disclosure markup without changing behavior.
+
+Native styles stop at RC controls that own their native children. Add
+`data-rc-native="off"` to an element to keep native styles off it and its subtree.

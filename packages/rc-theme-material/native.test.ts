@@ -55,7 +55,7 @@ test('opt-in native layer styles controls without taking over RC-owned children'
   expect(getComputedStyle(scope.querySelector('input[type="range"]')!).accentColor).not.toBe('');
   expect(getComputedStyle(scope.querySelector('progress')!).accentColor).not.toBe('');
   expect(getComputedStyle(ownedButton).minBlockSize).toBe('0px');
-  expect(getComputedStyle(nestedOwnedButton).minBlockSize).not.toBe('0px');
+  expect(getComputedStyle(nestedOwnedButton).minBlockSize).toBe('0px');
 });
 
 test('CSS component recipes use native states and logical layout', () => {
