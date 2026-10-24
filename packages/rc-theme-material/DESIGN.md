@@ -653,6 +653,37 @@ Layout readiness, not a separate 10-foot mode:
 - Use logical properties (`padding-inline`, `inset-block-end`) in app CSS so
   RTL and vertical writing modes work.
 
+### Directional icons and safe areas
+
+Mirror icons that express movement along the reading direction in RTL: back and
+forward arrows, disclosure chevrons, drawers opening from the inline start,
+and move or import actions. Apply `:dir(rtl)` to the icon itself, where its
+inherited direction is known. Keep clocks, media controls, checkmarks, and
+brand marks in their original orientation. Prefer an icon with a semantic
+back/forward meaning over one whose name promises a physical left/right edge.
+
+Safe-area environment variables name physical edges. An app-owned FAB, app bar,
+or full-screen surface placed at the inline end must map those insets to the
+current inline edges before combining them with logical CSS properties. For
+horizontal writing modes, a root mapping can be:
+
+```css
+:root {
+  --app-safe-area-inline-start: env(safe-area-inset-left, 0px);
+  --app-safe-area-inline-end: env(safe-area-inset-right, 0px);
+}
+
+:root:dir(rtl) {
+  --app-safe-area-inline-start: env(safe-area-inset-right, 0px);
+  --app-safe-area-inline-end: env(safe-area-inset-left, 0px);
+}
+```
+
+For vertical writing modes, inline start and end map to physical top and
+bottom instead; resolve those edges from the writing mode before using the
+variables. The full-screen `rc-dialog` variant already pads its own content
+for safe areas, so do not add the same inset a second time.
+
 ## Elevation & Depth
 
 - Material 3 expresses depth mostly through **tonal surface roles**; shadows
