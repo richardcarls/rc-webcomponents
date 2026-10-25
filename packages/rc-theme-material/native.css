@@ -3,40 +3,65 @@
 
 /* Import defaults.css and bridge.css first when theme tokens are desired. */
 @layer rc-theme-material.native {
-  /* Native controls owned by an RC wrapper remain under that wrapper's recipe. */
+  /*
+   * Native styles stop at RC controls that own their native children, and at
+   * subtrees the consumer opts out with data-rc-native="off". An @scope limit
+   * would read better, but Firefox drops a :host() scope root that has one.
+   */
   :where(.rc-theme-material, :host(.rc-theme-material))
-    :where(button):not(
+    :where(button, input, select, textarea, progress):not(
       :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label
+        [data-rc-native='off'],
+        :where(
+            rc-adaptive-menu,
+            rc-button,
+            rc-chip,
+            rc-combobox,
+            rc-fab,
+            rc-field,
+            rc-listbox,
+            rc-markdown-editor,
+            rc-menu,
+            rc-menu-button,
+            rc-menubar,
+            rc-navigation-bar,
+            rc-navigation-rail,
+            rc-progress,
+            rc-range-slider,
+            rc-search-bar,
+            rc-segmented-button,
+            rc-select,
+            rc-slider,
+            rc-switch,
+            rc-textarea,
+            rc-toolbar,
+            rc-transfer-list,
+            [data-rc-native='off']
+          )
+          *
       )
     ) {
-    box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--rc-button-gap, var(--rc-control-gap, 0.5rem));
-    min-block-size: var(--rc-button-block-size, var(--rc-control-block-size, 2.5rem));
-    padding-block: var(--rc-button-padding-block, var(--rc-control-padding-block, 0.5rem));
-    padding-inline: var(--rc-button-padding-inline, var(--rc-control-padding-inline, 1rem));
-    border: var(--rc-button-border, var(--rc-border, 1px solid ButtonBorder));
-    border-radius: var(--rc-button-radius, var(--rc-control-radius, 999px));
-    background: var(--rc-button-bg, ButtonFace);
-    color: var(--rc-button-color, var(--rc-button-text, ButtonText));
-    font-family: var(--rc-font-family, sans-serif);
-    font-size: var(--rc-font-size, 1rem);
-    font-weight: var(--rc-font-weight, 400);
-    line-height: var(--rc-line-height, normal);
-    cursor: pointer;
-  }
+    &:where(button):not(:where(.rc-button, .rc-chip)) {
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--rc-button-gap, var(--rc-control-gap, 0.5rem));
+      min-block-size: var(--rc-button-block-size, var(--rc-control-block-size, 2.5rem));
+      padding-block: var(--rc-button-padding-block, var(--rc-control-padding-block, 0.5rem));
+      padding-inline: var(--rc-button-padding-inline, var(--rc-control-padding-inline, 1rem));
+      border: var(--rc-button-border, var(--rc-border, 1px solid ButtonBorder));
+      border-radius: var(--rc-button-radius, var(--rc-control-radius, 999px));
+      background: var(--rc-button-bg, ButtonFace);
+      color: var(--rc-button-color, var(--rc-button-text, ButtonText));
+      font-family: var(--rc-font-family, sans-serif);
+      font-size: var(--rc-font-size, 1rem);
+      font-weight: var(--rc-font-weight, 400);
+      line-height: var(--rc-line-height, normal);
+      cursor: pointer;
+    }
 
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    :where(
+    &:where(
       input:is(
         [type='text'],
         [type='search'],
@@ -49,134 +74,47 @@
       ),
       select,
       textarea
-    ):not(
-      :where(
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label,
-        rc-select > select,
-        rc-textarea > textarea,
-        rc-field > input,
-        rc-field > select,
-        rc-field > textarea,
-        rc-search-bar > input,
-        rc-combobox > input,
-        rc-listbox > select,
-        rc-transfer-list > select
-      )
     ) {
-    box-sizing: border-box;
-    min-block-size: var(--rc-control-block-size, 2.5rem);
-    padding-block: var(--rc-control-padding-block, 0.5rem);
-    padding-inline: var(--rc-control-padding-inline, 1rem);
-    border: var(--rc-border, 1px solid ButtonBorder);
-    border-radius: var(--rc-control-radius, 0.5rem);
-    background: var(--rc-field, Field);
-    color: var(--rc-field-text, FieldText);
-    font-family: var(--rc-font-family, sans-serif);
-    font-size: var(--rc-font-size, 1rem);
-    font-weight: var(--rc-font-weight, 400);
-    line-height: var(--rc-line-height, normal);
-  }
+      box-sizing: border-box;
+      min-block-size: var(--rc-control-block-size, 2.5rem);
+      padding-block: var(--rc-control-padding-block, 0.5rem);
+      padding-inline: var(--rc-control-padding-inline, 1rem);
+      border: var(--rc-border, 1px solid ButtonBorder);
+      border-radius: var(--rc-control-radius, 0.5rem);
+      background: var(--rc-field, Field);
+      color: var(--rc-field-text, FieldText);
+      font-family: var(--rc-font-family, sans-serif);
+      font-size: var(--rc-font-size, 1rem);
+      font-weight: var(--rc-font-weight, 400);
+      line-height: var(--rc-line-height, normal);
+    }
 
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    :where(button, select):not(
-      :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label,
-        rc-select > select
-      )
-    ) {
-    cursor: pointer;
-  }
+    &:where(select):not(:where(.rc-select)) {
+      cursor: pointer;
+    }
 
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    :where(button, input, select, textarea):not(
-      :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label,
-        rc-select > select,
-        rc-textarea > textarea,
-        rc-field > input,
-        rc-field > select,
-        rc-field > textarea,
-        rc-switch > input,
-        rc-slider > input,
-        rc-range-slider > input,
-        rc-search-bar > input,
-        rc-combobox > input,
-        rc-listbox > select,
-        rc-transfer-list > select,
-        rc-segmented-button > fieldset input
-      )
-    ):focus-visible {
-    outline: var(--rc-focus-ring, 2px solid Highlight);
-    outline-offset: var(--rc-focus-ring-offset, 2px);
-  }
+    &:not(:where(.rc-button, .rc-chip, .rc-select, .rc-textarea)):focus-visible {
+      outline: var(--rc-focus-ring, 2px solid Highlight);
+      outline-offset: var(--rc-focus-ring-offset, 2px);
+    }
 
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    :where(input[type='checkbox'], input[type='radio'], input[type='range']):not(
-      :where(
-        rc-switch > input,
-        rc-slider > input,
-        rc-range-slider > input,
-        rc-segmented-button > fieldset input
-      )
-    ) {
-    min-block-size: auto;
-    padding: 0;
-    accent-color: var(--rc-accent, AccentColor);
-  }
+    &:where(input[type='checkbox'], input[type='radio'], input[type='range']) {
+      min-block-size: auto;
+      padding: 0;
+      accent-color: var(--rc-accent, AccentColor);
+    }
 
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    :where(input[type='range']):not(:where(rc-slider > input, rc-range-slider > input)) {
-    inline-size: 100%;
-  }
+    &:where(input[type='range'], progress) {
+      inline-size: 100%;
+    }
 
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    :where(progress):not(:where(rc-progress > progress)) {
-    inline-size: 100%;
-    accent-color: var(--rc-accent, AccentColor);
-  }
+    &:where(progress) {
+      accent-color: var(--rc-accent, AccentColor);
+    }
 
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    :where(button, input, select, textarea):not(
-      :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label,
-        rc-select > select,
-        rc-textarea > textarea,
-        rc-field > input,
-        rc-field > select,
-        rc-field > textarea,
-        rc-switch > input,
-        rc-slider > input,
-        rc-range-slider > input,
-        rc-search-bar > input,
-        rc-combobox > input,
-        rc-listbox > select,
-        rc-transfer-list > select,
-        rc-segmented-button > fieldset input
-      )
-    ):where(:disabled) {
-    color: var(--rc-text-disabled, GrayText);
-    cursor: not-allowed;
+    &:not(:where(.rc-button, .rc-chip)):where(:disabled) {
+      color: var(--rc-text-disabled, GrayText);
+      cursor: not-allowed;
+    }
   }
 }
