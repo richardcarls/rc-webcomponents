@@ -659,3 +659,40 @@ test('names the toolbar and overflow trigger in its own locale; an authored labe
     'Recipe actions',
   );
 });
+
+test('accepts actions added while its first render is still pending', async () => {
+  const Menu = customElements.get('rc-adaptive-menu') as unknown as typeof RCAdaptiveMenu;
+
+  // Holds the first render back one task, the state the observer saw when actions
+  // arrived before the shadow tree existed.
+  class DeferredMenu extends Menu {
+    protected override scheduleUpdate(): Promise<unknown> {
+      return new Promise<void>((resolve) => setTimeout(resolve)).then(() => super.scheduleUpdate());
+    }
+  }
+
+  customElements.define('rc-test-deferred-adaptive-menu', DeferredMenu);
+
+  const errors: unknown[] = [];
+  const onError = (event: ErrorEvent) => errors.push(event.error);
+  const host = document.createElement('rc-test-deferred-adaptive-menu') as RCAdaptiveMenu;
+
+  window.addEventListener('error', onError);
+  host.maxShown = 1;
+  document.body.append(host);
+
+  for (const name of ['One', 'Two', 'Three']) {
+    host.append(Object.assign(document.createElement('button'), { textContent: name }));
+  }
+
+  try {
+    await settle(host);
+
+    expect(errors).toEqual([]);
+    expect(host.$overflowedActions).toHaveLength(2);
+    expect(host.$promotedActions[0]).toHaveAttribute('tabindex', '0');
+  } finally {
+    window.removeEventListener('error', onError);
+    host.remove();
+  }
+});
