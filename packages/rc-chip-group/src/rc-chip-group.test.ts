@@ -569,3 +569,66 @@ test('names an assist toolbar in its own locale; an authored label wins', async 
 
   expect(root()?.getAttribute('aria-label')).toBe('Filters');
 });
+
+function collapsingGroup() {
+  return html`
+    <rc-chip-group
+      data-testid="host"
+      style="inline-size: 12rem; --rc-chip-group-column-gap: 0;"
+      max-rows="2"
+    >
+      ${Array.from(
+        { length: 5 },
+        (_, index) => html`<span style="inline-size: 5rem; block-size: 2rem;">${index}</span>`,
+      )}
+    </rc-chip-group>
+  `;
+}
+
+test('measures its rows once when it first lays out', async () => {
+  const prototype = customElements.get('rc-chip-group')!.prototype as unknown as {
+    _measureRows(): void;
+  };
+  const measure = vi.spyOn(prototype, '_measureRows');
+
+  try {
+    const screen = render(collapsingGroup());
+    const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+    await settle(host);
+    await frames(6);
+
+    // The observer's first report of each chip arrives after the first
+    // measurement, which already saw those sizes.
+    expect(host.shadowRoot!.querySelector<HTMLElement>('#root')!.dataset.mode).toBe('scroll');
+    expect(measure).toHaveBeenCalledTimes(1);
+
+    host.style.inlineSize = '9rem';
+    await frames(4);
+
+    expect(measure).toHaveBeenCalledTimes(2);
+  } finally {
+    measure.mockRestore();
+  }
+});
+
+test('leaves a collapsed row at its start without scrolling it while measuring', async () => {
+  const screen = render(collapsingGroup());
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
+  await frames(4);
+
+  const scrollTo = vi.spyOn(root, 'scrollTo');
+
+  host.style.inlineSize = '11rem';
+  await frames(4);
+
+  expect(root.dataset.mode).toBe('scroll');
+  expect(root.scrollLeft).toBe(0);
+  expect(scrollTo).not.toHaveBeenCalled();
+});
