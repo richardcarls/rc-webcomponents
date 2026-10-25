@@ -18,6 +18,7 @@
 
   /* Toolbar buttons are square icon wells at the 3.1 toolbar size. */
   :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-toolbar button {
+    display: block;
     inline-size: var(--win31-toolbar-button-size);
     block-size: var(--win31-toolbar-button-size);
     min-inline-size: var(--win31-toolbar-button-size);

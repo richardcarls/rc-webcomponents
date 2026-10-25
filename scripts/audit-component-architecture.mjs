@@ -38,6 +38,7 @@ export const MARKER_CONTRACTS = {
   'data-rc-navigation-icon': 'authored-structure',
   'data-rc-navigation-indicator': 'authored-behavior',
   'data-rc-navigation-label': 'authored-structure',
+  'data-rc-native': 'authored-theme-hook',
   'data-rc-popover-fallback-open': 'internal-controller',
   'data-rc-range-slider-reflector': 'internal-component',
   'data-rc-reorder-handle': 'authored-behavior',

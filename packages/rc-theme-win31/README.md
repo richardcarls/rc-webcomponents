@@ -53,9 +53,12 @@ native and CSS-only layers:
 @import '@rcarls/rc-theme-win31/css-components.css';
 ```
 
-`native.css` styles ordinary buttons, text fields, selects, textareas,
-checkboxes, radios, ranges, and progress descendants inside
-`.rc-theme-win31`, excluding native controls owned by RC wrappers. The
+`native.css` is an optional convenience layer for styling ordinary buttons,
+text fields, selects, textareas, checkboxes, radios, ranges, and progress
+controls throughout `.rc-theme-win31`. Component recipes style native children
+when their presentation belongs to a themed menu, toolbar, or other component
+context. Add `data-rc-native="off"` to an element to opt it and its descendants
+out of the native layer. The
 opt-in `css-components.css` recipes cover `.rc-button`, `.rc-chip`,
 `.rc-chip-group`, `.rc-select`, `.rc-textarea`, `.rc-card`, `.rc-list`, and
 `details.rc-disclosure`; each is also exported as
