@@ -29,6 +29,9 @@ test('opt-in native layer styles controls without taking over RC-owned children'
     <rc-button><button type="button">Owned action</button></rc-button>
     <rc-button><div><button type="button">Nested owned action</button></div></rc-button>
     <rc-card><button slot="actions" type="button">Card action</button></rc-card>
+    <rc-toolbar><input id="toolbar-input" aria-label="Toolbar input"><select id="toolbar-select"><option>One</option></select></rc-toolbar>
+    <rc-menu><button id="menu-row" role="menuitem" type="button">Menu row</button></rc-menu>
+    <div data-rc-native="off"><button id="opted-out" type="button">Opted out</button></div>
   `;
 
   document.body.append(scope);
@@ -52,6 +55,10 @@ test('opt-in native layer styles controls without taking over RC-owned children'
   expect(getComputedStyle(nativeTextarea).minBlockSize).not.toBe('0px');
   expect(getComputedStyle(omittedInput).minBlockSize).not.toBe('0px');
   expect(getComputedStyle(cardAction).minBlockSize).not.toBe('0px');
+  expect(getComputedStyle(scope.querySelector('#toolbar-input')!).minBlockSize).not.toBe('0px');
+  expect(getComputedStyle(scope.querySelector('#toolbar-select')!).minBlockSize).not.toBe('0px');
+  expect(getComputedStyle(scope.querySelector('#menu-row')!).minBlockSize).toBe('0px');
+  expect(getComputedStyle(scope.querySelector('#opted-out')!).minBlockSize).toBe('0px');
   expect(getComputedStyle(scope.querySelector('input[type="range"]')!).accentColor).not.toBe('');
   expect(getComputedStyle(scope.querySelector('progress')!).accentColor).not.toBe('');
   expect(getComputedStyle(ownedButton).minBlockSize).toBe('0px');

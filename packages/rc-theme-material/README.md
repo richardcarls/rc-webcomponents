@@ -45,9 +45,12 @@ layer and the CSS-only recipes independently:
 @import '@rcarls/rc-theme-material/css-components.css';
 ```
 
-`native.css` styles ordinary buttons, text fields, selects, textareas,
-checkboxes, radios, ranges, and progress descendants inside
-`.rc-theme-material`. It excludes native controls owned by RC wrappers. The
+`native.css` is an optional convenience layer for giving ordinary buttons, text
+fields, selects, textareas, checkboxes, radios, ranges, and progress controls a
+Material treatment throughout `.rc-theme-material`. Component recipes style
+native children when their presentation belongs to a themed menu, toolbar, or
+other component context. Add `data-rc-native="off"` to an element to opt it and
+its descendants out of the native layer. The
 opt-in `css-components.css` recipes cover `.rc-button`, `.rc-chip`,
 `.rc-chip-group`, `.rc-select`, `.rc-textarea`, `.rc-card`, `.rc-list`, and
 `details.rc-disclosure`; each recipe is also available under

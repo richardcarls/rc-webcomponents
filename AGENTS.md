@@ -54,6 +54,13 @@ short and tell the tool to read `AGENTS.md` before project work.
   declarations that must reach a shadow-owned element. Use contextual light-DOM
   selectors only when the consumer-authored structure is itself part of the
   component contract. A theme must not change semantics or interaction behavior.
+- Treat optional theme `native.css` as a site-wide convenience layer. Component
+  theme recipes may style native children when their presentation belongs to a
+  menu, toolbar, or other documented component context; native styles fill in
+  other controls, including consumer content inside RC hosts. Protect specific
+  controls through later theme layers or narrow ownership selectors rather
+  than treating every RC host as a native-styling boundary. Keep
+  `data-rc-native="off"` as a documented subtree opt-out.
 - Treat every styling hook as an owned contract. Author-provided `data-rc-*`
   markers used for structure, behavior, or theme opt-in are public API and must
   be documented. Component-written state should prefer native state, ARIA,

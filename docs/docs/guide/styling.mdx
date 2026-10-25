@@ -163,7 +163,7 @@ consumer-owned ancestor:
 Do not use a CSS custom property as a hidden behavioral input that component
 JavaScript reads with `getComputedStyle()`. CSS changes have no reliable
 property-change notification, and server rendering, accessibility state, and
-interaction logic can become desynchronized.
+interaction logic can fall out of sync.
 
 ### Adapt behavior from application state
 
@@ -258,8 +258,8 @@ an overlapping one.
 Shadow-DOM component styles are scoped by the shadow tree and do not share the
 document's layer order. Components that must install structural light-DOM CSS
 place it in the `rc-base` layer and deduplicate it per document or shadow root.
-Unlayered consumer rules therefore override these structural defaults without
-selector specificity contests.
+Consumer rules outside a layer therefore override these structural defaults
+without selector specificity contests.
 
 Each packaged theme declares its ordered layers after `rc-base`:
 
@@ -277,8 +277,10 @@ also list `rc-base` before the theme layers.
 The real names include the theme package, such as
 `rc-theme-material.components`. Defaults own the theme's raw source tokens,
 the bridge maps those tokens to shared and component RC tokens. The opt-in
-`native` layer styles ordinary HTML controls inside the theme scope while
-excluding native children owned by RC wrappers. `components` holds element-specific
+`native` layer is a convenience for styling ordinary HTML controls throughout
+an application without composing every control from RC elements. Component
+recipes can style native children when their presentation belongs to a themed
+menu, toolbar, or other component context. `components` holds element-specific
 recipes, parts, contextual selectors, and visual variants for registered RC elements.
 The separate opt-in `css-components` layer styles native elements carrying documented
 classes such as `.rc-button`, `.rc-chip`, `.rc-select`, `.rc-card`, and `.rc-list`,
@@ -312,6 +314,14 @@ when you want its token values, then opt into the two layers:
 @import '@rcarls/rc-theme-material/native.css';
 @import '@rcarls/rc-theme-material/css-components.css';
 ```
+
+`native.css` fills in controls that a component recipe does not style, including
+consumer-authored controls inside toolbars, dialogs, cards, and rich popup
+content. A component's themed presentation takes precedence for controls it
+styles itself, such as menu rows and triggers. The boundary follows the
+control's role in that component rather than every descendant of an RC host.
+Add `data-rc-native="off"` to an element to opt it and its descendants out of
+the native layer, for example when embedding a separately styled widget.
 
 The same entrypoints exist for the [Substrate theme README](https://github.com/richardcarls/rc-webcomponents/blob/develop/packages/rc-theme-substrate/README.md),
 [Material theme README](https://github.com/richardcarls/rc-webcomponents/blob/develop/packages/rc-theme-material/README.md), and

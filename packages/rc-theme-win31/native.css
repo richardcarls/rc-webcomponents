@@ -3,40 +3,92 @@
 
 /* Import defaults.css and bridge.css first when theme tokens are desired. */
 @layer rc-theme-win31.native {
-  /* Native controls owned by an RC wrapper remain under that wrapper's recipe. */
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(button):not(
+  /*
+   * Native styles stop at native controls that are part of an RC-owned
+   * presentation, and at subtrees the consumer opts out with
+   * data-rc-native="off". These are element-level ownership contracts rather
+   * than host boundaries, so ordinary controls remain themed in layout
+   * components such as rc-toolbar, rc-card, rc-dialog, and rc-popover.
+   */
+  :where(.rc-theme-win31:not([data-rc-native='off']))
+    :where(button, input, select, textarea, progress):not(
       :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label
+        [data-rc-native='off'],
+        [data-rc-native='off'] *,
+        rc-button > :is(button, a[href]),
+        rc-chip > :is(button, a[href], label),
+        rc-chip > label > input:is([type='checkbox'], [type='radio']),
+        rc-combobox > select,
+        rc-fab > button,
+        rc-fab-menu > [slot='trigger'],
+        rc-field > :is(input, select, textarea),
+        rc-field > [data-rc-field-control] > :is(input, select, textarea),
+        rc-field > fieldset > :is(input, select, textarea),
+        rc-listbox > select,
+        rc-markdown-editor > textarea,
+        rc-navigation-rail > [slot='toggle'],
+        rc-menu-button > [slot='trigger'],
+        rc-progress > progress,
+        rc-range-slider > input[type='range'],
+        rc-search-bar > input[type='search'],
+        rc-segmented-button > fieldset input[type='radio'],
+        rc-select > select,
+        rc-slider > input[type='range'],
+        rc-switch > input[type='checkbox'],
+        rc-textarea > textarea,
+        rc-transfer-list > select
+      )
+    ),
+  :host(:not([data-rc-native='off']).rc-theme-win31)
+    :where(button, input, select, textarea, progress):not(
+      :where(
+        [data-rc-native='off'],
+        [data-rc-native='off'] *,
+        rc-button > :is(button, a[href]),
+        rc-chip > :is(button, a[href], label),
+        rc-chip > label > input:is([type='checkbox'], [type='radio']),
+        rc-combobox > select,
+        rc-fab > button,
+        rc-fab-menu > [slot='trigger'],
+        rc-field > :is(input, select, textarea),
+        rc-field > [data-rc-field-control] > :is(input, select, textarea),
+        rc-field > fieldset > :is(input, select, textarea),
+        rc-listbox > select,
+        rc-markdown-editor > textarea,
+        rc-navigation-rail > [slot='toggle'],
+        rc-menu-button > [slot='trigger'],
+        rc-progress > progress,
+        rc-range-slider > input[type='range'],
+        rc-search-bar > input[type='search'],
+        rc-segmented-button > fieldset input[type='radio'],
+        rc-select > select,
+        rc-slider > input[type='range'],
+        rc-switch > input[type='checkbox'],
+        rc-textarea > textarea,
+        rc-transfer-list > select
       )
     ) {
-    box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--rc-button-gap, var(--rc-control-gap, 0.5rem));
-    min-block-size: var(--rc-button-block-size, var(--rc-control-block-size, 2.5rem));
-    padding-block: var(--rc-button-padding-block, var(--rc-control-padding-block, 0.5rem));
-    padding-inline: var(--rc-button-padding-inline, var(--rc-control-padding-inline, 1rem));
-    border: var(--rc-button-border, var(--rc-border, 1px solid ButtonBorder));
-    border-radius: var(--rc-button-radius, var(--rc-control-radius, 999px));
-    background: var(--rc-button-bg, ButtonFace);
-    color: var(--rc-button-color, var(--rc-button-text, ButtonText));
-    font-family: var(--rc-font-family, sans-serif);
-    font-size: var(--rc-font-size, 1rem);
-    font-weight: var(--rc-font-weight, 400);
-    line-height: var(--rc-line-height, normal);
-    cursor: pointer;
-  }
+    &:where(button):not(:where(.rc-button, .rc-chip)) {
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--rc-button-gap, var(--rc-control-gap, 0.5rem));
+      min-block-size: var(--rc-button-block-size, var(--rc-control-block-size, 2.5rem));
+      padding-block: var(--rc-button-padding-block, var(--rc-control-padding-block, 0.5rem));
+      padding-inline: var(--rc-button-padding-inline, var(--rc-control-padding-inline, 1rem));
+      border: var(--rc-button-border, var(--rc-border, 1px solid ButtonBorder));
+      border-radius: var(--rc-button-radius, var(--rc-control-radius, 999px));
+      background: var(--rc-button-bg, ButtonFace);
+      color: var(--rc-button-color, var(--rc-button-text, ButtonText));
+      font-family: var(--rc-font-family, sans-serif);
+      font-size: var(--rc-font-size, 1rem);
+      font-weight: var(--rc-font-weight, 400);
+      line-height: var(--rc-line-height, normal);
+      cursor: pointer;
+    }
 
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(
+    &:where(
       input:is(
         [type='text'],
         [type='search'],
@@ -49,187 +101,171 @@
       ),
       select,
       textarea
-    ):not(
-      :where(
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label,
-        rc-select > select,
-        rc-textarea > textarea,
-        rc-field > input,
-        rc-field > select,
-        rc-field > textarea,
-        rc-search-bar > input,
-        rc-combobox > input,
-        rc-listbox > select,
-        rc-transfer-list > select
-      )
     ) {
-    box-sizing: border-box;
-    min-block-size: var(--rc-control-block-size, 2.5rem);
-    padding-block: var(--rc-control-padding-block, 0.5rem);
-    padding-inline: var(--rc-control-padding-inline, 1rem);
-    border: var(--rc-border, 1px solid ButtonBorder);
-    border-radius: var(--rc-control-radius, 0.5rem);
-    background: var(--rc-field, Field);
-    color: var(--rc-field-text, FieldText);
-    font-family: var(--rc-font-family, sans-serif);
-    font-size: var(--rc-font-size, 1rem);
-    font-weight: var(--rc-font-weight, 400);
-    line-height: var(--rc-line-height, normal);
-  }
+      box-sizing: border-box;
+      min-block-size: var(--rc-control-block-size, 2.5rem);
+      padding-block: var(--rc-control-padding-block, 0.5rem);
+      padding-inline: var(--rc-control-padding-inline, 1rem);
+      border: var(--rc-border, 1px solid ButtonBorder);
+      border-radius: var(--rc-control-radius, 0.5rem);
+      background: var(--rc-field, Field);
+      color: var(--rc-field-text, FieldText);
+      font-family: var(--rc-font-family, sans-serif);
+      font-size: var(--rc-font-size, 1rem);
+      font-weight: var(--rc-font-weight, 400);
+      line-height: var(--rc-line-height, normal);
+    }
 
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(button, select):not(
-      :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label,
-        rc-select > select
-      )
+    &:where(select):not(:where(.rc-select)) {
+      cursor: pointer;
+    }
+
+    &:not(:where(.rc-button, .rc-chip, .rc-select, .rc-textarea)):focus-visible {
+      outline: var(--rc-focus-ring, 2px solid Highlight);
+      outline-offset: var(--rc-focus-ring-offset, 2px);
+    }
+
+    &:where(input[type='checkbox'], input[type='radio'], input[type='range']) {
+      min-block-size: auto;
+      padding: 0;
+      accent-color: var(--rc-accent, AccentColor);
+    }
+
+    &:where(input[type='range'], progress) {
+      inline-size: 100%;
+    }
+
+    &:where(progress) {
+      accent-color: var(--rc-accent, AccentColor);
+    }
+
+    &:not(:where(.rc-button, .rc-chip)):where(:disabled) {
+      color: var(--rc-text-disabled, GrayText);
+      cursor: not-allowed;
+    }
+
+    &:where(button):not(:where(.rc-button, .rc-chip)) {
+      background: var(--rc-button-bg, var(--win31-color-surface));
+      color: var(--rc-button-color, var(--win31-color-frame));
+      border: var(--rc-button-border, var(--win31-border));
+      border-radius: var(--win31-radius);
+      box-shadow: var(--win31-bevel-outset-1);
+      cursor: default;
+      transition: none;
+    }
+
+    &:where(button):not(:where(.rc-button, .rc-chip)):active:not(:disabled) {
+      box-shadow: var(--win31-bevel-inset-1);
+    }
+
+    &:where(button):not(:where(.rc-button, .rc-chip)):disabled {
+      color: var(--win31-color-disabled-text);
+      text-shadow: var(--win31-unit) var(--win31-unit) 0 var(--win31-color-disabled-emboss);
+      opacity: 1;
+    }
+  }
+}
+
+/* Reassert rc-base light-DOM row geometry after generic native presentation. */
+@layer rc-theme-win31.components {
+  :where(.rc-theme-win31:not([data-rc-native='off']))
+    :where(rc-menu :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])):not(
+      :where([data-rc-native='off'], [data-rc-native='off'] *)
+    ),
+  :host(:not([data-rc-native='off']).rc-theme-win31)
+    :where(rc-menu :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])):not(
+      :where([data-rc-native='off'], [data-rc-native='off'] *)
     ) {
-    cursor: pointer;
-  }
-
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(button, input, select, textarea):not(
-      :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label,
-        rc-select > select,
-        rc-textarea > textarea,
-        rc-field > input,
-        rc-field > select,
-        rc-field > textarea,
-        rc-switch > input,
-        rc-slider > input,
-        rc-range-slider > input,
-        rc-search-bar > input,
-        rc-combobox > input,
-        rc-listbox > select,
-        rc-transfer-list > select,
-        rc-segmented-button > fieldset input
-      )
-    ):focus-visible {
-    outline: var(--rc-focus-ring, 2px solid Highlight);
-    outline-offset: var(--rc-focus-ring-offset, 2px);
-  }
-
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(input[type='checkbox'], input[type='radio'], input[type='range']):not(
-      :where(
-        rc-switch > input,
-        rc-slider > input,
-        rc-range-slider > input,
-        rc-segmented-button > fieldset input
-      )
-    ) {
-    min-block-size: auto;
-    padding: 0;
-    accent-color: var(--rc-accent, AccentColor);
-  }
-
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(input[type='range']):not(:where(rc-slider > input, rc-range-slider > input)) {
-    inline-size: 100%;
-  }
-
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(progress):not(:where(rc-progress > progress)) {
-    inline-size: 100%;
-    accent-color: var(--rc-accent, AccentColor);
-  }
-
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(button, input, select, textarea):not(
-      :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label,
-        rc-select > select,
-        rc-textarea > textarea,
-        rc-field > input,
-        rc-field > select,
-        rc-field > textarea,
-        rc-switch > input,
-        rc-slider > input,
-        rc-range-slider > input,
-        rc-search-bar > input,
-        rc-combobox > input,
-        rc-listbox > select,
-        rc-transfer-list > select,
-        rc-segmented-button > fieldset input
-      )
-    ):where(:disabled) {
-    color: var(--rc-text-disabled, GrayText);
-    cursor: not-allowed;
-  }
-
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(button):not(
-      :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label
-      )
-    ) {
-    background: var(--rc-button-bg, var(--win31-color-surface));
-    color: var(--rc-button-color, var(--win31-color-frame));
-    border: var(--rc-button-border, var(--win31-border));
+    display: flex;
+    gap: var(--rc-menu-item-gap, var(--rc-item-gap, 0.5em));
+    min-block-size: var(--rc-menu-item-min-block-size, 0px);
+    justify-content: normal;
+    padding: var(--rc-menu-item-padding-block, var(--rc-item-padding-block, 0.3em))
+      var(--rc-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
+    border: none;
     border-radius: var(--win31-radius);
-    box-shadow: var(--win31-bevel-outset-1);
+    box-shadow: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
     cursor: default;
-    transition: none;
+    outline: none;
   }
 
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(button):not(
-      :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label
-      )
-    ):active:not(:disabled) {
-    box-shadow: var(--win31-bevel-inset-1);
+  :where(.rc-theme-win31:not([data-rc-native='off']))
+    rc-menu
+    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio']):hover:not(
+      :where([data-rc-native='off'], [data-rc-native='off'] *)
+    ),
+  :host(:not([data-rc-native='off']).rc-theme-win31)
+    rc-menu
+    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio']):hover:not(
+      :where([data-rc-native='off'], [data-rc-native='off'] *)
+    ) {
+    background: var(--rc-menu-hover-bg, color-mix(in srgb, Highlight 8%, transparent));
+    color: var(--rc-menu-hover-color, inherit);
   }
 
-  :where(.rc-theme-win31, :host(.rc-theme-win31))
-    :where(button):not(
-      :where(
-        .rc-button,
-        .rc-chip,
-        rc-button > button,
-        rc-button > a,
-        rc-chip > button,
-        rc-chip > a,
-        rc-chip > label
-      )
-    ):disabled {
-    color: var(--win31-color-disabled-text);
-    text-shadow: var(--win31-unit) var(--win31-unit) 0 var(--win31-color-disabled-emboss);
-    opacity: 1;
+  :where(.rc-theme-win31:not([data-rc-native='off']))
+    rc-menu
+    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])[data-active]:not(
+      :where([data-rc-native='off'], [data-rc-native='off'] *)
+    ),
+  :host(:not([data-rc-native='off']).rc-theme-win31)
+    rc-menu
+    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])[data-active]:not(
+      :where([data-rc-native='off'], [data-rc-native='off'] *)
+    ) {
+    background: var(--rc-menu-active-bg, color-mix(in srgb, Highlight 8%, transparent));
+    color: var(--rc-menu-active-color, inherit);
+  }
+
+  :where(.rc-theme-win31:not([data-rc-native='off']))
+    rc-menu
+    :is(
+      button:disabled,
+      [role='menuitem'][aria-disabled='true'],
+      [role='menuitemcheckbox'][aria-disabled='true'],
+      [role='menuitemradio'][aria-disabled='true']
+    ):not(:where([data-rc-native='off'], [data-rc-native='off'] *)),
+  :host(:not([data-rc-native='off']).rc-theme-win31)
+    rc-menu
+    :is(
+      button:disabled,
+      [role='menuitem'][aria-disabled='true'],
+      [role='menuitemcheckbox'][aria-disabled='true'],
+      [role='menuitemradio'][aria-disabled='true']
+    ):not(:where([data-rc-native='off'], [data-rc-native='off'] *)) {
+    color: var(--rc-menu-disabled-color, var(--rc-text-disabled, GrayText));
+    opacity: var(--rc-menu-disabled-opacity, var(--rc-disabled-opacity, 0.55));
+    pointer-events: none;
+  }
+}
+
+@layer rc-theme-win31.overrides {
+  :where(.rc-theme-win31:not([data-rc-native='off']))
+    :where(
+      rc-adaptive-menu > [data-rc-action-overflowed] > :is(button, a[href]),
+      rc-adaptive-menu > :is(button, a[href])[data-rc-action-overflowed]
+    ):not(:where([data-rc-native='off'], [data-rc-native='off'] *)),
+  :host(:not([data-rc-native='off']).rc-theme-win31)
+    :where(
+      rc-adaptive-menu > [data-rc-action-overflowed] > :is(button, a[href]),
+      rc-adaptive-menu > :is(button, a[href])[data-rc-action-overflowed]
+    ):not(:where([data-rc-native='off'], [data-rc-native='off'] *)) {
+    display: flex;
+    gap: var(--rc-adaptive-menu-item-gap, var(--rc-item-gap, 0.5em));
+    min-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    padding: var(--rc-adaptive-menu-item-padding-block, var(--rc-item-padding-block, 0.3em))
+      var(--rc-adaptive-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    justify-content: normal;
+    text-decoration: none;
   }
 }

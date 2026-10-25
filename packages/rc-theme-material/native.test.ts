@@ -55,7 +55,9 @@ test('opt-in native layer styles controls without taking over RC-owned children'
   expect(getComputedStyle(scope.querySelector('input[type="range"]')!).accentColor).not.toBe('');
   expect(getComputedStyle(scope.querySelector('progress')!).accentColor).not.toBe('');
   expect(getComputedStyle(ownedButton).minBlockSize).toBe('0px');
-  expect(getComputedStyle(nestedOwnedButton).minBlockSize).toBe('0px');
+  // A wrapper only owns its documented direct native child. An arbitrary
+  // nested button remains an ordinary consumer control.
+  expect(getComputedStyle(nestedOwnedButton).minBlockSize).toBe('40px');
 });
 
 test('CSS component recipes use native states and logical layout', () => {

@@ -145,12 +145,12 @@
       "lazyChunks": 0
     },
     "materialNative": {
-      "initialRaw": 5629,
-      "initialGzip": 1062,
-      "initialBrotli": 884,
-      "totalRaw": 5629,
-      "totalGzip": 1062,
-      "totalBrotli": 884,
+      "initialRaw": 10341,
+      "initialGzip": 2002,
+      "initialBrotli": 1642,
+      "totalRaw": 10341,
+      "totalGzip": 2002,
+      "totalBrotli": 1642,
       "largestLazyGzip": 0,
       "initialChunks": 1,
       "lazyChunks": 0
@@ -167,12 +167,12 @@
       "lazyChunks": 0
     },
     "substrateNative": {
-      "initialRaw": 5652,
-      "initialGzip": 1062,
-      "initialBrotli": 887,
-      "totalRaw": 5652,
-      "totalGzip": 1062,
-      "totalBrotli": 887,
+      "initialRaw": 9967,
+      "initialGzip": 1824,
+      "initialBrotli": 1524,
+      "totalRaw": 9967,
+      "totalGzip": 1824,
+      "totalBrotli": 1524,
       "largestLazyGzip": 0,
       "initialChunks": 1,
       "lazyChunks": 0
@@ -189,12 +189,12 @@
       "lazyChunks": 0
     },
     "win31Native": {
-      "initialRaw": 6906,
-      "initialGzip": 1202,
-      "initialBrotli": 1002,
-      "totalRaw": 6906,
-      "totalGzip": 1202,
-      "totalBrotli": 1002,
+      "initialRaw": 10695,
+      "initialGzip": 1962,
+      "initialBrotli": 1637,
+      "totalRaw": 10695,
+      "totalGzip": 1962,
+      "totalBrotli": 1637,
       "largestLazyGzip": 0,
       "initialChunks": 1,
       "lazyChunks": 0
