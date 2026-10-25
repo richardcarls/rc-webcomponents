@@ -156,6 +156,16 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
 
   private _resizeObserver: ResizeObserver | null = null;
 
+  /** Measurements so far, to tell an observer's first report from a resize. */
+  private _measureCount = 0;
+
+  /**
+   * The measurement count when each element was last observed. An observer
+   * always reports an element once after `observe()`; a measurement since
+   * then has already seen that size.
+   */
+  private readonly _observedAt = new WeakMap<Element, number>();
+
   private _mutationObserver: MutationObserver | null = null;
   private readonly _authoredVariants = new Map<RCChip, RCChip['variant']>();
 
@@ -222,8 +232,8 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
     super.connectedCallback();
 
     if (typeof ResizeObserver === 'function') {
-      this._resizeObserver ??= new ResizeObserver(() => this._scheduleMeasure());
-      this._resizeObserver.observe(this);
+      this._resizeObserver ??= new ResizeObserver((entries) => this._handleResize(entries));
+      this._observe(this);
     }
 
     if (typeof MutationObserver === 'function') {
@@ -411,10 +421,33 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
 
   private _observeAssignedItems(): void {
     this._resizeObserver?.disconnect();
-    this._resizeObserver?.observe(this);
+    this._observe(this);
 
     for (const $element of this._assignedElements()) {
-      this._resizeObserver?.observe($element);
+      this._observe($element);
+    }
+  }
+
+  private _observe($element: Element): void {
+    this._resizeObserver?.observe($element);
+    this._observedAt.set($element, this._measureCount);
+  }
+
+  private _handleResize(entries: ResizeObserverEntry[]): void {
+    let resized = false;
+
+    for (const { target } of entries) {
+      const observedAt = this._observedAt.get(target);
+
+      this._observedAt.delete(target);
+
+      if (observedAt === undefined || observedAt === this._measureCount) {
+        resized = true;
+      }
+    }
+
+    if (resized) {
+      this._scheduleMeasure();
     }
   }
 
@@ -524,6 +557,8 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   }
 
   private _measureRows(): void {
+    this._measureCount += 1;
+
     // aria-orientation reports how the chips actually render, like a native
     // range input made vertical by writing-mode: vertical in vertical text.
     const vertical = resolveFlow(this._$root).inline === 'y';
@@ -593,7 +628,12 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
     if (wasScrolling && this._resolvedLayout === 'scroll') {
       const $target = this._pendingScrollTarget ?? this._revealTarget;
 
-      this._setInlineScrollOffset(scrollOffset);
+      // Wrapping to measure can only clamp the offset toward the start, so a
+      // row at its start needs no restore; setting it would force a reflow.
+      if (scrollOffset !== 0) {
+        this._setInlineScrollOffset(scrollOffset);
+      }
+
       this._keepTargetVisible($target);
       this._scheduleTargetVisibility($target);
     }
