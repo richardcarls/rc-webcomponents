@@ -572,7 +572,9 @@ export class RCAdaptiveMenu extends LitElement {
   };
 
   private _onMutation = (records: MutationRecord[]): void => {
-    if (this._applyingSlots) {
+    // Before the first render the shadow trigger doesn't exist yet, and
+    // firstUpdated() syncs every action anyway.
+    if (this._applyingSlots || !this.hasUpdated) {
       return;
     }
 
