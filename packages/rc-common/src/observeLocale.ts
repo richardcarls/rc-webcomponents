@@ -11,20 +11,12 @@ interface RootObservation {
 const listeners = new Set<LocaleListener>();
 const roots = new Map<LocaleRoot, RootObservation>();
 
-/**
- * Whether a `dir` or `lang` change on `target` can change what `host` reads:
- * `target` is the host, one of its ancestors across shadow boundaries, or
- * inside the host's own subtree.
- */
-function affects(target: Node, host: Element): boolean {
-  if (host.contains(target)) {
-    return true;
-  }
-
-  let node: Node = host;
+/** Whether `ancestor` contains `descendant` through shadow hosts. */
+function containsAcrossShadows(ancestor: Node, descendant: Node): boolean {
+  let node: Node = descendant;
 
   for (;;) {
-    if (target.contains(node)) {
+    if (ancestor.contains(node)) {
       return true;
     }
 
@@ -36,6 +28,11 @@ function affects(target: Node, host: Element): boolean {
 
     node = (root as ShadowRoot).host;
   }
+}
+
+/** Whether a locale change on `target` can affect `host` or its subtree. */
+function affects(target: Node, host: Element): boolean {
+  return containsAcrossShadows(host, target) || containsAcrossShadows(target, host);
 }
 
 function inScope(records: MutationRecord[], scope: LocaleScope | undefined): boolean {
@@ -92,8 +89,8 @@ function watchRoot(root: LocaleRoot, listener: LocaleListener, scope?: LocaleSco
  * notifies, for compatibility.
  *
  * `scope` names the elements whose locale matters when it isn't only the
- * host's, such as a popup positioned in its anchor's direction. The host still
- * picks the trees to observe.
+ * host's, such as a popup positioned in its anchor's direction. Observe each
+ * scope element's containing shadow trees as well as the host's own shadow tree.
  *
  * Each tree shares one observer. A stylesheet changing `direction` or
  * `writing-mode` does not create a mutation; geometry owners must also refresh
@@ -117,13 +114,25 @@ export function observeLocale(
     if (ownerDocument) {
       observed.add(ownerDocument);
 
-      let root: Node | null = host?.getRootNode() ?? null;
+      for (const element of [host, ...(scope?.() ?? [])]) {
+        if (!element) {
+          continue;
+        }
 
-      while (root?.nodeType === 11) {
-        const shadowRoot = root as ShadowRoot;
+        observed.add(element.ownerDocument);
 
-        observed.add(shadowRoot);
-        root = shadowRoot.host.getRootNode();
+        if (element.shadowRoot) {
+          observed.add(element.shadowRoot);
+        }
+
+        let root: Node = element.getRootNode();
+
+        while (root.nodeType === 11 && 'host' in root) {
+          const shadowRoot = root as ShadowRoot;
+
+          observed.add(shadowRoot);
+          root = shadowRoot.host.getRootNode();
+        }
       }
 
       for (const localeRoot of observed) {

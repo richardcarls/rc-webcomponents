@@ -150,3 +150,32 @@ test('follows every element in a scope, such as a popup and its anchor', async (
   anchorParent.dir = 'rtl';
   await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
 });
+
+test('follows a scoped anchor inside the host shadow root', async () => {
+  const popup = fixture();
+  const anchorParent = document.createElement('div');
+  const anchor = document.createElement('button');
+  const listener = vi.fn();
+
+  popup.attachShadow({ mode: 'open' }).append(anchorParent);
+  anchorParent.append(anchor);
+  cleanups.push(observeLocale(listener, popup, () => [popup, anchor]));
+
+  anchorParent.dir = 'rtl';
+  await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+});
+
+test('follows a scoped anchor in a separate shadow root', async () => {
+  const popup = fixture();
+  const anchorHost = fixture();
+  const anchorParent = document.createElement('div');
+  const anchor = document.createElement('button');
+  const listener = vi.fn();
+
+  anchorHost.attachShadow({ mode: 'open' }).append(anchorParent);
+  anchorParent.append(anchor);
+  cleanups.push(observeLocale(listener, popup, () => [popup, anchor]));
+
+  anchorParent.dir = 'rtl';
+  await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+});
