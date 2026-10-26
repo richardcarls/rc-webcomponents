@@ -414,6 +414,11 @@ test('setOptions disables and re-enables pointer resizing on an explicit handle'
 
   ctl.setOptions({ direction: 'vertical' });
   $handle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1 }));
+
+  $handle.dispatchEvent(
+    new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientY: 20 }),
+  );
+
   expect(onResizeStart).toHaveBeenCalledOnce();
 
   ctl.dispose();
@@ -467,6 +472,12 @@ test('dispose stops an active resize and releases its pointer', async () => {
   });
 
   $handle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1 }));
+
+  $handle.dispatchEvent(
+    new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientY: 20 }),
+  );
+
+  onResize.mockClear();
   ctl.dispose();
 
   $handle.dispatchEvent(
@@ -475,6 +486,50 @@ test('dispose stops an active resize and releases its pointer', async () => {
 
   expect(onResize).not.toHaveBeenCalled();
   expect(release).toHaveBeenCalledWith(1);
+});
+
+test('a tap on the handle starts no resize until the pointer moves past the slop', async () => {
+  const screen = render(html`
+    <div data-testid="target" style="position: fixed; width: 200px; height: 100px">
+      <span data-testid="handle">Resize</span>
+    </div>
+  `);
+  const $target = (await screen.getByTestId('target').element()) as HTMLElement;
+  const $handle = (await screen.getByTestId('handle').element()) as HTMLElement;
+  const onResizeStart = vi.fn();
+  const onResizeEnd = vi.fn();
+
+  vi.spyOn($handle, 'setPointerCapture').mockImplementation(() => {});
+
+  const host = createHost();
+
+  vi.spyOn(host, 'addController').mockImplementation((controller) => controller.hostConnected?.());
+
+  const ctl = new ResizeController(host, {
+    target: $target,
+    handle: $handle,
+    direction: 'vertical',
+    onResizeStart,
+    onResizeEnd,
+  });
+
+  const tap = { bubbles: true, pointerId: 1, clientY: 10 };
+
+  $handle.dispatchEvent(new PointerEvent('pointerdown', tap));
+  $handle.dispatchEvent(new PointerEvent('pointermove', { ...tap, clientY: 14 }));
+  $handle.dispatchEvent(new PointerEvent('pointerup', { ...tap, clientY: 14 }));
+
+  expect(onResizeStart).not.toHaveBeenCalled();
+  expect(onResizeEnd).not.toHaveBeenCalled();
+
+  $handle.dispatchEvent(new PointerEvent('pointerdown', tap));
+  $handle.dispatchEvent(new PointerEvent('pointermove', { ...tap, clientY: 30 }));
+  $handle.dispatchEvent(new PointerEvent('pointerup', { ...tap, clientY: 30 }));
+
+  expect(onResizeStart).toHaveBeenCalledOnce();
+  expect(onResizeEnd).toHaveBeenCalledOnce();
+
+  ctl.dispose();
 });
 
 test('names the grip in the target locale and renames it when lang changes', async () => {

@@ -237,6 +237,10 @@ export class ResizeController implements ReactiveController {
 
     this._gesture = new DragGestureController(host, {
       target: () => this._handle() ?? this._target(),
+      // A resize starts only after the pointer moves past the activation
+      // distance, like Android's touch slop, so a tap on a handle that is
+      // also a button stays a click and doesn't resize and settle first.
+      activation: 'axis',
       capture: true,
       stopPropagation: true,
       canStart: (event) => this._canStartGesture(event),
