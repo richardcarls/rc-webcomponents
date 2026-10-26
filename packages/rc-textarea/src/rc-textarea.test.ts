@@ -707,6 +707,9 @@ describe('RCTextarea — readOnly', () => {
     const $editor = getEditor(host);
     const changes = vi.fn();
 
+    // Lit's update completes before the editor's frame-scheduled content render.
+    await vi.waitFor(() => expect($editor.textContent).toContain('Keep this'));
+
     host.addEventListener('rc-textarea-change', changes);
 
     expect($editor).toHaveAttribute('role', 'textbox');
