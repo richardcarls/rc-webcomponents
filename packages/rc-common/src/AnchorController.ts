@@ -189,7 +189,13 @@ export class AnchorController implements ReactiveController {
     const host = this._host as ReactiveControllerHost & Partial<Element>;
     const element = typeof host.getRootNode === 'function' ? (host as Element) : this._anchor();
 
-    this._unobserveLocale ??= observeLocale(this._handleDirectionChange, element ?? undefined);
+    // Placement follows the anchor's direction, so a change above either the
+    // popup or its anchor repositions it.
+    this._unobserveLocale ??= observeLocale(
+      this._handleDirectionChange,
+      element ?? undefined,
+      () => [element, this._anchor()],
+    );
 
     this._applyAndPosition();
   }
