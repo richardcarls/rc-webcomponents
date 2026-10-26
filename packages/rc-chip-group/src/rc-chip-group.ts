@@ -162,9 +162,12 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   /**
    * The measurement count when each element was last observed. An observer
    * always reports an element once after `observe()`; a measurement since
-   * then has already seen that size.
+   * then may already have seen the reported size.
    */
   private readonly _observedAt = new WeakMap<Element, number>();
+
+  /** Border-box sizes seen by the latest row measurement, in layout pixels. */
+  private readonly _measuredSizes = new WeakMap<Element, { inline: number; block: number }>();
 
   private _mutationObserver: MutationObserver | null = null;
   private readonly _authoredVariants = new Map<RCChip, RCChip['variant']>();
@@ -431,23 +434,61 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   private _observe($element: Element): void {
     this._resizeObserver?.observe($element);
     this._observedAt.set($element, this._measureCount);
+    this._measuredSizes.delete($element);
   }
 
   private _handleResize(entries: ResizeObserverEntry[]): void {
     let resized = false;
 
-    for (const { target } of entries) {
+    for (const { target, borderBoxSize } of entries) {
       const observedAt = this._observedAt.get(target);
 
       this._observedAt.delete(target);
 
       if (observedAt === undefined || observedAt === this._measureCount) {
         resized = true;
+
+        continue;
+      }
+
+      const measured = this._measuredSizes.get(target);
+      const reported = borderBoxSize[0];
+
+      // Collapsing a group changes its block size after this measurement.
+      // Only its inline size can change how many rows the chips occupy.
+      if (
+        !measured ||
+        !reported ||
+        Math.abs(reported.inlineSize - measured.inline) > 0.5 ||
+        (target !== this && Math.abs(reported.blockSize - measured.block) > 0.5)
+      ) {
+        resized = true;
       }
     }
 
     if (resized) {
       this._scheduleMeasure();
+    }
+  }
+
+  private _rememberMeasuredSizes(): void {
+    if (!this._resizeObserver) {
+      return;
+    }
+
+    for (const $element of [this, ...this._assignedElements()]) {
+      if (!this._observedAt.has($element)) {
+        continue;
+      }
+
+      const rect = $element.getBoundingClientRect();
+      const zoom = cssZoom($element);
+      const inlineHorizontal = resolveFlow($element).inline === 'x';
+
+      this._measuredSizes.set($element, {
+        inline: (inlineHorizontal ? rect.width : rect.height) / zoom,
+        block: (inlineHorizontal ? rect.height : rect.width) / zoom,
+      });
     }
   }
 
@@ -586,6 +627,8 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
         this._overflowing = false;
       }
 
+      this._rememberMeasuredSizes();
+
       return;
     }
 
@@ -640,6 +683,8 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
 
     this._pendingScrollOffset = undefined;
     this._pendingScrollTarget = undefined;
+
+    this._rememberMeasuredSizes();
   }
 
   private _keepTargetVisible($target: HTMLElement | undefined): void {

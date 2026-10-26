@@ -612,6 +612,43 @@ test('measures its rows once when it first lays out', async () => {
   }
 });
 
+test('remeasures when a first resize report differs from the measured size', async () => {
+  const screen = render(collapsingGroup());
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+  await frames(4);
+
+  const internals = host as unknown as {
+    _observeAssignedItems(): void;
+    _measureRows(): void;
+    _handleResize(entries: ResizeObserverEntry[]): void;
+    _scheduleMeasure(): void;
+  };
+  const schedule = vi.spyOn(internals, '_scheduleMeasure').mockImplementation(() => undefined);
+
+  try {
+    const rect = host.getBoundingClientRect();
+    const report = (inlineSize: number): ResizeObserverEntry =>
+      ({
+        target: host,
+        borderBoxSize: [{ inlineSize, blockSize: rect.height }],
+      }) as unknown as ResizeObserverEntry;
+
+    internals._observeAssignedItems();
+    internals._measureRows();
+    internals._handleResize([report(rect.width)]);
+    expect(schedule).not.toHaveBeenCalled();
+
+    internals._observeAssignedItems();
+    internals._measureRows();
+    internals._handleResize([report(rect.width + 20)]);
+    expect(schedule).toHaveBeenCalledTimes(1);
+  } finally {
+    schedule.mockRestore();
+  }
+});
+
 test('leaves a collapsed row at its start without scrolling it while measuring', async () => {
   const screen = render(collapsingGroup());
   const host = (await screen.getByTestId('host').element()) as RCChipGroup;
