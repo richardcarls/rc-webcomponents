@@ -112,3 +112,41 @@ test('observes the host document rather than the global document', async () => {
   other.documentElement.lang = 'ar';
   await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
 });
+
+test('ignores a change outside the host, its ancestors, and its subtree', async () => {
+  const container = fixture();
+  const host = document.createElement('div');
+  const child = document.createElement('span');
+  const unrelated = fixture();
+  const listener = vi.fn();
+  const flush = vi.fn();
+
+  host.append(child);
+  container.append(host);
+  cleanups.push(observeLocale(listener, host), observeLocale(flush));
+
+  // An unrelated element's lang, such as recipe content in another pane,
+  // cannot change the host's locale or flow.
+  unrelated.lang = 'es';
+  await vi.waitFor(() => expect(flush).toHaveBeenCalledTimes(1));
+  expect(listener).not.toHaveBeenCalled();
+
+  child.dir = 'rtl';
+  await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+
+  container.lang = 'ar';
+  await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(2));
+});
+
+test('follows every element in a scope, such as a popup and its anchor', async () => {
+  const popup = fixture();
+  const anchorParent = fixture();
+  const anchor = document.createElement('button');
+  const listener = vi.fn();
+
+  anchorParent.append(anchor);
+  cleanups.push(observeLocale(listener, popup, () => [popup, anchor]));
+
+  anchorParent.dir = 'rtl';
+  await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+});
