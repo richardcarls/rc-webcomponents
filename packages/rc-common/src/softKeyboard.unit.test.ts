@@ -18,7 +18,13 @@ describe('SoftKeyboardViewport following the keyboard', () => {
   test('follows the keyboard opening', () => {
     const viewport = new SoftKeyboardViewport();
 
-    expect(heights(viewport, [[685, false], [442, true]])).toEqual([685, 442]);
+    expect(
+      heights(viewport, [
+        [685, false],
+        [442, true],
+      ]),
+    ).toEqual([685, 442]);
+
     expect(viewport.keyboardOpen).toBe(true);
   });
 
@@ -26,9 +32,14 @@ describe('SoftKeyboardViewport following the keyboard', () => {
     const viewport = new SoftKeyboardViewport();
 
     // Measured on Firefox 158: 685 open, 442 with the keyboard, 413 for ~220ms after blur.
-    expect(heights(viewport, [[685, false], [442, true], [413, false], [685, false]])).toEqual([
-      685, 442, 442, 685,
-    ]);
+    expect(
+      heights(viewport, [
+        [685, false],
+        [442, true],
+        [413, false],
+        [685, false],
+      ]),
+    ).toEqual([685, 442, 442, 685]);
 
     expect(viewport.keyboardOpen).toBe(false);
   });
@@ -37,28 +48,47 @@ describe('SoftKeyboardViewport following the keyboard', () => {
     const viewport = new SoftKeyboardViewport();
 
     expect(
-      heights(viewport, [[819, false], [531, true], [467, true], [531, false], [819, false]]),
+      heights(viewport, [
+        [819, false],
+        [531, true],
+        [467, true],
+        [531, false],
+        [819, false],
+      ]),
     ).toEqual([819, 531, 467, 531, 819]);
   });
 
   test('follows the keyboard again when a text field takes focus mid-close', () => {
     const viewport = new SoftKeyboardViewport();
 
-    expect(heights(viewport, [[685, false], [442, true], [413, false], [400, true]])).toEqual([
-      685, 442, 442, 400,
-    ]);
+    expect(
+      heights(viewport, [
+        [685, false],
+        [442, true],
+        [413, false],
+        [400, true],
+      ]),
+    ).toEqual([685, 442, 442, 400]);
   });
 
   test('applies a shorter viewport while no keyboard is up', () => {
     const viewport = new SoftKeyboardViewport();
 
-    expect(heights(viewport, [[685, false], [600, false]])).toEqual([685, 600]);
+    expect(
+      heights(viewport, [
+        [685, false],
+        [600, false],
+      ]),
+    ).toEqual([685, 600]);
   });
 
   test('starts over when the width changes', () => {
     const viewport = new SoftKeyboardViewport();
 
-    heights(viewport, [[685, false], [442, true]]);
+    heights(viewport, [
+      [685, false],
+      [442, true],
+    ]);
 
     expect(viewport.next(size(300, 800), false)).toEqual(size(300, 800));
     expect(viewport.keyboardOpen).toBe(false);
@@ -70,7 +100,12 @@ describe('SoftKeyboardViewport following the keyboard', () => {
     const onCloseTimeout = vi.fn();
     const viewport = new SoftKeyboardViewport({ closeTimeout: 500, onCloseTimeout });
 
-    heights(viewport, [[685, false], [442, true], [413, false]]);
+    heights(viewport, [
+      [685, false],
+      [442, true],
+      [413, false],
+    ]);
+
     vi.advanceTimersByTime(499);
 
     expect(onCloseTimeout).not.toHaveBeenCalled();
@@ -88,7 +123,13 @@ describe('SoftKeyboardViewport following the keyboard', () => {
     const onCloseTimeout = vi.fn();
     const viewport = new SoftKeyboardViewport({ onCloseTimeout });
 
-    heights(viewport, [[685, false], [442, true], [413, false], [685, false]]);
+    heights(viewport, [
+      [685, false],
+      [442, true],
+      [413, false],
+      [685, false],
+    ]);
+
     vi.runAllTimers();
 
     expect(onCloseTimeout).not.toHaveBeenCalled();
@@ -100,7 +141,12 @@ describe('SoftKeyboardViewport following the keyboard', () => {
     const onCloseTimeout = vi.fn();
     const viewport = new SoftKeyboardViewport({ onCloseTimeout });
 
-    heights(viewport, [[685, false], [442, true], [413, false]]);
+    heights(viewport, [
+      [685, false],
+      [442, true],
+      [413, false],
+    ]);
+
     viewport.reset();
     vi.runAllTimers();
 
@@ -113,22 +159,38 @@ describe('SoftKeyboardViewport keeping the full height', () => {
   test('keeps the full height while the keyboard opens and closes', () => {
     const viewport = new SoftKeyboardViewport({ heightWhileOpen: 'full' });
 
-    expect(heights(viewport, [[685, false], [442, true], [413, false], [685, false]])).toEqual([
-      685, 685, 685, 685,
-    ]);
+    expect(
+      heights(viewport, [
+        [685, false],
+        [442, true],
+        [413, false],
+        [685, false],
+      ]),
+    ).toEqual([685, 685, 685, 685]);
   });
 
   test('keeps the full height through stepped growth', () => {
     const viewport = new SoftKeyboardViewport({ heightWhileOpen: 'full' });
 
     expect(
-      heights(viewport, [[819, false], [467, true], [531, false], [819, false]]),
+      heights(viewport, [
+        [819, false],
+        [467, true],
+        [531, false],
+        [819, false],
+      ]),
     ).toEqual([819, 819, 819, 819]);
   });
 
   test('applies a taller window right away', () => {
     const viewport = new SoftKeyboardViewport({ heightWhileOpen: 'full' });
 
-    expect(heights(viewport, [[685, false], [442, true], [700, true]])).toEqual([685, 685, 700]);
+    expect(
+      heights(viewport, [
+        [685, false],
+        [442, true],
+        [700, true],
+      ]),
+    ).toEqual([685, 685, 700]);
   });
 });

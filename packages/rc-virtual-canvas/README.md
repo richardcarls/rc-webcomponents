@@ -77,21 +77,21 @@ that triggers native scroll events.
 
 ### Read-only properties
 
-| Property       | Type     | Description                                                                                                                  |
-| -------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Property       | Type     | Description                                                                                                                    |
+| -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `canvasScaleX` | `number` | Ratio of canvas backing-store pixels to local CSS pixels along the x-axis; CSS zoom can make it differ from `devicePixelRatio` |
-| `canvasScaleY` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the y-axis                                                          |
+| `canvasScaleY` | `number` | Ratio of canvas backing-store pixels to CSS pixels along the y-axis                                                            |
 
 ### Methods
 
-| Method                              | Description                                                                                      |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `getViewRect()`                     | Returns an immutable snapshot of the current viewport rectangle                                  |
-| `scrollToContent(x, y, options?)`   | Scrolls so the content coordinate is at the viewport origin                                      |
-| `centerOnContent(x, y, options?)`   | Scrolls so the content coordinate is centered in the viewport                                    |
+| Method                              | Description                                                              |
+| ----------------------------------- | ------------------------------------------------------------------------ |
+| `getViewRect()`                     | Returns an immutable snapshot of the current viewport rectangle          |
+| `scrollToContent(x, y, options?)`   | Scrolls so the content coordinate is at the viewport origin              |
+| `centerOnContent(x, y, options?)`   | Scrolls so the content coordinate is centered in the viewport            |
 | `clientToContent(clientX, clientY)` | Converts browser client coordinates to content coordinates in CSS pixels |
-| `contentToClient(x, y)`             | Converts content coordinates back to browser client coordinates                                  |
-| `requestRender(reason?)`            | Queues a render event; required when `renderMode` is `'manual'`                                  |
+| `contentToClient(x, y)`             | Converts content coordinates back to browser client coordinates          |
+| `requestRender(reason?)`            | Queues a render event; required when `renderMode` is `'manual'`          |
 
 ### CSS custom properties
 
