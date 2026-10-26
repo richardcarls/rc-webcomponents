@@ -315,12 +315,7 @@ test('snapTo keeps a fixed sheet docked inside a layout-containing ancestor', as
 
   firePointerEvent($handle, 'pointerdown', { clientY: peek.top });
 
-  expect(resizeStartSpy).toHaveBeenCalledTimes(1);
-
-  expect(resizeStartSpy.mock.calls[0][0].detail).toEqual({
-    height: 132,
-    inputType: 'pointer',
-  });
+  expect(resizeStartSpy).not.toHaveBeenCalled();
 
   expect(Math.round($dialog.getBoundingClientRect().top)).toBe(Math.round(peek.top));
 
@@ -328,9 +323,22 @@ test('snapTo keeps a fixed sheet docked inside a layout-containing ancestor', as
 
   firePointerEvent($handle, 'pointermove', { clientY: peek.top + 1 });
 
+  expect(resizeStartSpy).not.toHaveBeenCalled();
+
   expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(peek.bottom));
 
-  firePointerEvent($handle, 'pointerup', { clientY: peek.top + 1 });
+  firePointerEvent($handle, 'pointermove', { clientY: peek.top - 12 });
+
+  expect(resizeStartSpy).toHaveBeenCalledTimes(1);
+
+  expect(resizeStartSpy.mock.calls[0][0].detail).toEqual({
+    height: 132,
+    inputType: 'pointer',
+  });
+
+  expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(peek.bottom));
+
+  firePointerEvent($handle, 'pointerup', { clientY: peek.top - 12 });
   $host.snapTo(1);
 
   await vi.waitFor(() => {
@@ -351,11 +359,11 @@ test('snapTo keeps a fixed sheet docked inside a layout-containing ancestor', as
 
   expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(expanded.bottom));
 
-  firePointerEvent($handle, 'pointermove', { clientY: expanded.top + 1 });
+  firePointerEvent($handle, 'pointermove', { clientY: expanded.top + 12 });
 
   expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(expanded.bottom));
 
-  firePointerEvent($handle, 'pointerup', { clientY: expanded.top + 1 });
+  firePointerEvent($handle, 'pointerup', { clientY: expanded.top + 12 });
   $host.snapTo(0);
 
   await vi.waitFor(() => {
