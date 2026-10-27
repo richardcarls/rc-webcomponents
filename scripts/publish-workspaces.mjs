@@ -332,7 +332,7 @@ export function assertLiveEnvironment(env, { snapshot = false } = {}) {
   }
 
   if (!snapshot) {
-    const recoveryTag = env.RC_RELEASE_TAG?.trim();
+    const recoveryTag = env.RC_RELEASE_TAG?.trim() || undefined;
 
     if (recoveryTag && env.GITHUB_EVENT_NAME !== 'workflow_dispatch') {
       throw new Error('RC_RELEASE_TAG is restricted to manually dispatched recovery runs');

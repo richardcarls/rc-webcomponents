@@ -307,6 +307,7 @@ test('requires an exact tag, OIDC context, and no token credentials for live pub
   };
 
   assert.equal(assertLiveEnvironment(environment), VERSION);
+  assert.equal(assertLiveEnvironment({ ...environment, RC_RELEASE_TAG: '' }), VERSION);
 
   assert.throws(
     () => assertLiveEnvironment({ ...environment, NODE_AUTH_TOKEN: 'legacy-token' }),
