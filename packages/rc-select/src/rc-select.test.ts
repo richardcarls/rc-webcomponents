@@ -2,13 +2,22 @@ import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
 import type { RCSelect } from './rc-select.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
-function makeSelect(opts?: { multiple?: boolean; disabled?: boolean; placeholder?: string }) {
+function makeSelect(opts?: {
+  multiple?: boolean;
+  disabled?: boolean;
+  placeholder?: string;
+  popupMode?: 'popover' | 'dialog';
+}) {
   return html`
-    <rc-select placeholder=${opts?.placeholder ?? 'Choose...'}>
+    <rc-select
+      placeholder=${opts?.placeholder ?? 'Choose...'}
+      popup-mode=${opts?.popupMode ?? 'popover'}
+    >
       <select
         aria-label="Fruit"
         ?multiple=${opts?.multiple ?? false}
@@ -53,6 +62,44 @@ function getTrigger(host: RCSelect): HTMLElement {
   return host.renderRoot.querySelector<HTMLElement>('#trigger')!;
 }
 
+test('listbox fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const listbox = host.renderRoot.querySelector<HTMLElement>('[part="listbox"]')!;
+
+  expect(getComputedStyle(listbox).opacity).toBe('0');
+  expect(getComputedStyle(listbox).transitionDuration).not.toBe('0s');
+
+  // openPopup()/closePopup() are synchronous; nothing waits on a transition.
+  host.openPopup();
+
+  await Promise.all(
+    listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  await Promise.all(
+    listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
+
+  expect(getComputedStyle(listbox).opacity).toBe('1');
+
+  host.closePopup(false);
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  await Promise.all(
+    listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
+
+  // The exit fade must actually be visible, not skipped by an instant
+  // display: none racing ahead of it: closing relies on allow-discrete
+  // keeping display: block for the fade's duration rather than the
+  // popover's own display toggle winning immediately.
+  expect(getComputedStyle(listbox).opacity).toBe('0');
+});
+
 test('trigger has role="combobox", aria-haspopup="listbox", aria-expanded="false"', async () => {
   const screen = render(makeSelect());
   const host = await getHost(screen);
@@ -62,6 +109,75 @@ test('trigger has role="combobox", aria-haspopup="listbox", aria-expanded="false
   expect($el.getAttribute('aria-haspopup')).toBe('listbox');
   expect($el.getAttribute('aria-expanded')).toBe('false');
   expect($el.getAttribute('aria-controls')).toBe('listbox');
+});
+
+test('dialog mode stages multiple selection until Done', async () => {
+  const screen = render(makeSelect({ multiple: true, popupMode: 'dialog' }));
+  const host = await getHost(screen);
+  const changeSpy = vi.fn();
+  const nativeInputSpy = vi.fn();
+  const nativeChangeSpy = vi.fn();
+  const $select = host.querySelector('select')!;
+
+  host.addEventListener('rc-select-change', changeSpy);
+  $select.addEventListener('input', nativeInputSpy);
+  $select.addEventListener('change', nativeChangeSpy);
+  host.openPopup();
+
+  await vi.waitFor(() => {
+    expect(host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  const $listbox = host.renderRoot.querySelector('#dialog-listbox')!;
+
+  $listbox
+    .querySelector<HTMLElement>('[data-value="apple"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await host.updateComplete;
+
+  expect(host.selectedValues).toEqual([]);
+  expect(Array.from($select.selectedOptions)).toEqual([]);
+  expect(changeSpy).not.toHaveBeenCalled();
+
+  host.renderRoot.querySelector<HTMLButtonElement>('[part~="dialog-confirm"]')!.click();
+  await host.updateComplete;
+
+  expect(host.selectedValues).toEqual(['apple']);
+  expect(Array.from($select.selectedOptions, (option) => option.value)).toEqual(['apple']);
+  expect(nativeInputSpy).toHaveBeenCalledOnce();
+  expect(nativeChangeSpy).toHaveBeenCalledOnce();
+  expect(changeSpy).toHaveBeenCalledOnce();
+});
+
+test('dialog mode keeps single selection open and discards it with the leading cancel action', async () => {
+  const screen = render(makeSelect({ popupMode: 'dialog' }));
+  const host = await getHost(screen);
+  const changeSpy = vi.fn();
+
+  host.addEventListener('rc-select-change', changeSpy);
+  host.openPopup();
+
+  await vi.waitFor(() => {
+    expect(host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  host.renderRoot
+    .querySelector('#dialog-listbox')!
+    .querySelector<HTMLElement>('[data-value="banana"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await host.updateComplete;
+
+  expect(host.open).toBe(true);
+  expect(host.selectedValues).toEqual([]);
+
+  host.renderRoot.querySelector<HTMLButtonElement>('[part~="dialog-cancel"]')!.click();
+  await host.updateComplete;
+
+  expect(host.open).toBe(false);
+  expect(host.selectedValues).toEqual([]);
+  expect(changeSpy).not.toHaveBeenCalled();
 });
 
 test('rc-select has no automated accessibility violations', async () => {
@@ -173,9 +289,11 @@ test('ArrowDown opens popup and sets aria-activedescendant to first option', asy
   const $trigger = getTrigger(host);
 
   $trigger.focus();
+
   $trigger.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
   );
+
   await host.updateComplete;
 
   expect(host.open).toBe(true);
@@ -194,6 +312,7 @@ test('ArrowDown twice moves virtual cursor to second option', async () => {
   $trigger.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
   );
+
   await host.updateComplete;
 
   const firstId = $trigger.getAttribute('aria-activedescendant');
@@ -201,6 +320,7 @@ test('ArrowDown twice moves virtual cursor to second option', async () => {
   $trigger.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
   );
+
   await host.updateComplete;
 
   const secondId = $trigger.getAttribute('aria-activedescendant');
@@ -223,18 +343,21 @@ test('Enter selects active option, closes popup, fires rc-select-change', async 
   $trigger.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
   );
+
   await host.updateComplete;
 
   // Press Enter
   $trigger.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
   );
+
   await host.updateComplete;
 
   expect(host.open).toBe(false);
   expect(changeHandler).toHaveBeenCalledOnce();
   expect(changeHandler.mock.calls[0][0].detail.value).toBe('apple');
   expect(changeHandler.mock.calls[0][0].detail.selectedValues).toEqual(['apple']);
+
   expect(changeHandler.mock.calls[0][0].detail.selectedOptions).toEqual([
     { value: 'apple', label: 'Apple', disabled: false },
   ]);
@@ -251,6 +374,7 @@ test('Escape closes popup without changing selection', async () => {
   document.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
   );
+
   await host.updateComplete;
 
   expect(host.open).toBe(false);
@@ -340,6 +464,7 @@ test('options property populates listbox and native select', async () => {
     { value: 'apple', label: 'Apple' },
     { value: 'banana', label: 'Banana' },
   ];
+
   host.value = ['banana'];
 
   await getHost(screen);
@@ -363,9 +488,77 @@ test('native <select> value syncs after selection', async () => {
   $listbox
     .querySelector<HTMLElement>('[data-value="banana"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
   await host.updateComplete;
 
   expect($nativeSel.value).toBe('banana');
+});
+
+test('user selection dispatches native input and change on the slotted select', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+  const onInput = vi.fn();
+  const onChange = vi.fn();
+
+  $nativeSel.addEventListener('input', onInput);
+  $nativeSel.addEventListener('change', onChange);
+
+  host.openPopup();
+  await host.updateComplete;
+
+  const $listbox = host.renderRoot.querySelector('rc-listbox')!;
+
+  $listbox
+    .querySelector<HTMLElement>('[data-value="banana"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await host.updateComplete;
+
+  expect(onInput).toHaveBeenCalledOnce();
+  expect(onChange).toHaveBeenCalledOnce();
+});
+
+test('host value writes do not dispatch native input or change on the slotted select', async () => {
+  const screen = render(makeSelect({ multiple: true }));
+  const host = await getHost(screen);
+  const $nativeSel = host.querySelector('select')!;
+  const onInput = vi.fn();
+  const onChange = vi.fn();
+
+  $nativeSel.addEventListener('input', onInput);
+  $nativeSel.addEventListener('change', onChange);
+
+  host.value = ['apple'];
+  await host.updateComplete;
+
+  expect(onInput).not.toHaveBeenCalled();
+  expect(onChange).not.toHaveBeenCalled();
+});
+
+test('focus() and blur() forward to the trigger', async () => {
+  const screen = render(makeSelect());
+  const host = await getHost(screen);
+  const $trigger = getTrigger(host);
+
+  host.focus();
+  expect(host.shadowRoot!.activeElement).toBe($trigger);
+
+  host.blur();
+  expect(host.shadowRoot!.activeElement).toBe(null);
+});
+
+test('required on the slotted select reflects as aria-required on the trigger', async () => {
+  const screen = render(html`
+    <rc-select>
+      <select required>
+        <option value="apple">Apple</option>
+      </select>
+    </rc-select>
+  `);
+  const host = await getHost(screen);
+
+  expect(getTrigger(host).getAttribute('aria-required')).toBe('true');
 });
 
 test('disabled option cannot be selected', async () => {
@@ -402,9 +595,11 @@ test('type-ahead: pressing "b" selects Banana in single-select closed mode', asy
 
   host.addEventListener('rc-select-change', changeHandler);
   $trigger.focus();
+
   $trigger.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'b', bubbles: true, cancelable: true }),
   );
+
   await host.updateComplete;
 
   expect(host['_selectedValues'].has('banana')).toBe(true);
@@ -423,6 +618,7 @@ test('multiple: popup stays open after selecting an option', async () => {
   $listbox
     .querySelector<HTMLElement>('[data-value="apple"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
   await host.updateComplete;
 
   expect(host.open).toBe(true);
@@ -442,6 +638,7 @@ test('multiple: rc-select-change detail.value is an array', async () => {
   $listbox
     .querySelector<HTMLElement>('[data-value="apple"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
   await host.updateComplete;
 
   expect(Array.isArray(handler.mock.calls[0][0].detail.value)).toBe(true);
@@ -460,12 +657,44 @@ test('multiple: chips render for selected values', async () => {
   $listbox
     .querySelector<HTMLElement>('[data-value="apple"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
   await host.updateComplete;
 
   const $chips = host.renderRoot.querySelectorAll('[part~="chip"]');
 
   expect($chips).toHaveLength(1);
   expect($chips[0].textContent).toContain('Apple');
+
+  const $chip = $chips[0].closest('rc-chip')!;
+  const $label = $chips[0].querySelector<HTMLElement>('[part~="chip-label"]')!;
+  const $remove = $chip.shadowRoot!.querySelector<HTMLElement>('[part="remove"]')!;
+
+  expect($label.getBoundingClientRect().right).toBeLessThanOrEqual(
+    $remove.getBoundingClientRect().left,
+  );
+});
+
+test('multiple: chip touch-target overlap is returned between wrapped rows', async () => {
+  const screen = render(makeSelectedSelect());
+  const host = screen.container.querySelector('rc-select') as RCSelect;
+
+  host.style.cssText =
+    'inline-size: 9rem; --rc-chip-block-size: 32px; --rc-chip-touch-target-block-size: 48px; ' +
+    '--rc-chip-touch-target-overlap-block-start: 8px; --rc-chip-touch-target-overlap-block-end: 8px; ' +
+    '--rc-select-chip-padding-block: 0;';
+
+  await getHost(screen);
+
+  await vi.waitFor(() =>
+    expect(host.renderRoot.querySelectorAll('[part~="chip"]')).toHaveLength(2),
+  );
+
+  const [first, second] = [...host.renderRoot.querySelectorAll('[part~="chip"]')].map(($chip) =>
+    $chip.getBoundingClientRect(),
+  );
+
+  expect(second.top).toBeGreaterThan(first.top);
+  expect(second.top - first.bottom).toBeCloseTo(16, 0);
 });
 
 test('multiple: chip remove button click removes the value', async () => {
@@ -480,6 +709,7 @@ test('multiple: chip remove button click removes the value', async () => {
   $listbox
     .querySelector<HTMLElement>('[data-value="apple"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
   await host.updateComplete;
 
   const $removeBtn = host.renderRoot.querySelector<HTMLElement>('button[part~="chip"]')!;
@@ -510,9 +740,11 @@ test('display="compact" shows summary text instead of chips', async () => {
   $listbox
     .querySelector<HTMLElement>('[data-value="apple"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
   $listbox
     .querySelector<HTMLElement>('[data-value="banana"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
   await host.updateComplete;
 
   // No chips in compact mode
@@ -582,6 +814,7 @@ function dispatchTouchTap(
       cancelable: true,
     }),
   );
+
   $el.dispatchEvent(
     new PointerEvent('pointerup', {
       pointerType: 'touch',
@@ -630,6 +863,7 @@ test('touch pointerdown alone (no pointerup) does not select, so scrolling is no
       cancelable: true,
     }),
   );
+
   await host.updateComplete;
 
   expect(host['_selectedValues'].has('banana')).toBe(false);
@@ -658,6 +892,7 @@ test('touch drag past the tap threshold cancels the pending activation (scroll, 
       cancelable: true,
     }),
   );
+
   $option.dispatchEvent(
     new PointerEvent('pointermove', {
       pointerType: 'touch',
@@ -668,6 +903,7 @@ test('touch drag past the tap threshold cancels the pending activation (scroll, 
       cancelable: true,
     }),
   );
+
   $option.dispatchEvent(
     new PointerEvent('pointerup', {
       pointerType: 'touch',
@@ -678,6 +914,7 @@ test('touch drag past the tap threshold cancels the pending activation (scroll, 
       cancelable: true,
     }),
   );
+
   await host.updateComplete;
 
   expect(host['_selectedValues'].has('banana')).toBe(false);
@@ -698,9 +935,11 @@ test('touch tap selects multiple options and syncs native <select>', async () =>
   for (const value of ['apple', 'banana']) {
     dispatchTouchTap($listbox.querySelector<HTMLElement>(`[data-value="${value}"]`)!);
   }
+
   await host.updateComplete;
 
   expect(host.selectedValues).toEqual(['apple', 'banana']);
+
   expect(Array.from($nativeSel.selectedOptions).map((opt) => opt.value)).toEqual([
     'apple',
     'banana',
@@ -726,6 +965,7 @@ test('display="auto" resolves to compact on coarse-pointer (touch) devices', asy
         .querySelector<HTMLElement>(`[data-value="${value}"]`)!
         .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
     }
+
     await host.updateComplete;
 
     expect(host.renderRoot.querySelectorAll('[part~="chip"]')).toHaveLength(0);
@@ -755,6 +995,7 @@ test('display="auto" resolves to chips on fine-pointer (mouse) devices', async (
     $listbox
       .querySelector<HTMLElement>('[data-value="apple"]')!
       .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
     await host.updateComplete;
 
     expect(host.renderRoot.querySelectorAll('[part~="chip"]')).toHaveLength(1);
@@ -859,6 +1100,7 @@ test('picker guard: required multiple select blocks form submission when empty',
   let submitPrevented: boolean | null = null;
 
   $nativeSel.addEventListener('invalid', invalidHandler);
+
   $form.addEventListener('submit', (e) => {
     submitPrevented = e.defaultPrevented;
     e.preventDefault();
@@ -946,7 +1188,93 @@ test('native <select> click has its default action suppressed', async () => {
   const $nativeSel = host.querySelector('select')!;
 
   const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+
   $nativeSel.dispatchEvent(clickEvent);
 
   expect(clickEvent.defaultPrevented).toBe(true);
+});
+
+test.each([
+  ['ltr', 'horizontal-tb', 'ArrowLeft'],
+  ['rtl', 'horizontal-tb', 'ArrowRight'],
+  // Not vertical text: there the inline-start arrow is ArrowUp, which popup
+  // navigation keeps, as the APG listbox pattern specifies.
+] as const)(
+  'multiple: the arrow toward the inline start enters chip navigation (%s %s)',
+  async (dir, writingMode, key) => {
+    const screen = render(
+      html`<div dir=${dir} style="writing-mode: ${writingMode}">${makeSelectedSelect()}</div>`,
+    );
+    const host = await getHost(screen);
+    const enterChipNav = vi.spyOn(host as unknown as { _enterChipNav(): void }, '_enterChipNav');
+    const $trigger = host.renderRoot.querySelector<HTMLElement>('#trigger')!;
+
+    $trigger.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+
+    expect(enterChipNav).toHaveBeenCalledTimes(1);
+  },
+);
+
+test('opens the listbox at the block end in vertical text', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl; position: fixed; left: 250px; top: 20px;">
+      <rc-select data-testid="host">
+        <select aria-label="Fruit">
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+        </select>
+      </rc-select>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCSelect;
+
+  await host.updateComplete;
+  host.openPopup();
+
+  const anchor = host.renderRoot.querySelector('#anchor') as HTMLElement;
+  const listbox = host.renderRoot.querySelector('rc-listbox') as HTMLElement;
+
+  // The block end is on the left in vertical-rl.
+  await vi.waitFor(() => {
+    expect(listbox.getBoundingClientRect().right).toBeLessThanOrEqual(
+      anchor.getBoundingClientRect().left,
+    );
+
+    expect(listbox.getBoundingClientRect().top).toBeCloseTo(anchor.getBoundingClientRect().top, 0);
+  });
+
+  host.closePopup();
+});
+
+test('names selected-value chips in its own locale, and an override wins', async () => {
+  registerMessages('ar', {
+    'rc-select': { selectedItems: 'العناصر المحددة', remove: (label: string) => `إزالة ${label}` },
+  });
+
+  const screen = render(html`
+    <rc-select lang="ar" dir="rtl" multiple display="chips">
+      <select multiple aria-label="الفواكه">
+        <option value="a" selected>Apple</option>
+        <option value="b" selected>Banana</option>
+      </select>
+    </rc-select>
+  `);
+  const host = screen.container.querySelector('rc-select') as RCSelect;
+
+  await vi.waitFor(() =>
+    expect(host.shadowRoot?.querySelector('[part~="chips"]')?.getAttribute('aria-label')).toBe(
+      'العناصر المحددة',
+    ),
+  );
+
+  expect(host.shadowRoot?.querySelector('[part~="chip"]')?.getAttribute('aria-label')).toBe(
+    'إزالة Apple',
+  );
+
+  host.messages = { remove: (label: string) => `Remove ${label} now` };
+  await host.updateComplete;
+
+  expect(host.shadowRoot?.querySelector('[part~="chip"]')?.getAttribute('aria-label')).toBe(
+    'Remove Apple now',
+  );
 });

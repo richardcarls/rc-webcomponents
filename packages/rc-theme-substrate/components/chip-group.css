@@ -1,0 +1,21 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-chip-group {
+    --rc-chip-group-column-gap: var(--substrate-control-gap, 0.5rem);
+    --rc-chip-group-row-gap: var(--substrate-control-gap, 0.5rem);
+    --rc-chip-group-padding-block: 0.25rem;
+
+    /*
+     * A scrolling group is padded on the inline axis so a chip snapped to the
+     * start does not sit flush against the edge it scrolled from.
+     */
+    --rc-chip-group-scroll-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+    --rc-chip-group-scrollbar-width: none;
+
+    --rc-chip-group-toggle-gap: var(--substrate-control-gap, 0.5rem);
+    --rc-chip-group-toggle-icon-size: 1.125rem;
+    --rc-chip-group-toggle-separator-color: var(--substrate-border-color, ButtonBorder);
+    --rc-chip-group-toggle-separator-block-size: 1.5rem;
+    --rc-chip-group-toggle-separator-inline-size: 1px;
+    --rc-chip-group-toggle-separator-gap: var(--substrate-control-gap, 0.5rem);
+  }
+}

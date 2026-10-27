@@ -3,7 +3,12 @@ import type { ComplexAttributeConverter, PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { NativeChildController, warnMissingDirectChild } from '@rcarls/rc-common';
+import {
+  LocaleController,
+  NativeChildController,
+  numberFormat,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -78,7 +83,8 @@ const displayConverter: ComplexAttributeConverter<DisplayValue> = {
  * @attr indeterminate - When present, the component removes the native `<progress>`'s
  *   `value` attribute instead of asking the consumer to bind `undefined` to it.
  * @attr display - Controls the live value display: absent (none), `overlay` (centered on
- *   the bar), `inline-start`, or `inline-end`.
+ *   the bar), `inline-start`, or `inline-end`. Without `value-text` it shows the rounded
+ *   percentage, formatted for the element's own `lang`, else `<html lang>`.
  * @attr value-text - Screen-reader value text, forwarded as `aria-valuetext` on the
  *   native `<progress>`. Also used as the default formatted display text when set.
  * @attr orientation - Orientation, forwarded to `aria-orientation`: `horizontal` or
@@ -92,6 +98,8 @@ const displayConverter: ComplexAttributeConverter<DisplayValue> = {
  * @cssprop [--rc-progress-track-opacity=0.25] - Unfilled track opacity.
  * @cssprop [--rc-progress-track-radius=var(--rc-control-radius)] - Track border radius.
  * @cssprop [--rc-progress-fill-background=var(--rc-accent)] - Filled track color.
+ * @cssprop [--rc-progress-fill-transition-duration=150ms] - Determinate fill transition duration.
+ * @cssprop [--rc-progress-fill-transition-easing=ease-out] - Determinate fill transition easing.
  * @cssprop [--rc-progress-value-color=var(--rc-text-disabled)] - Value display text color.
  *
  * @csspart root - Root layout wrapper.
@@ -104,6 +112,18 @@ export class RCProgress extends LitElement {
   static override styles = css`
     :host {
       display: block;
+      /*
+       * translate() percentages resolve against the element's own box, not
+       * the parent's, and its direction is physical, not logical — it does
+       * not flip for RTL the way inset-inline-start does on its own. This
+       * sign flips the indeterminate sweep's direction so it still travels
+       * start-to-end in the document's actual writing direction.
+       */
+      --_rc-progress-indeterminate-direction: 1;
+    }
+
+    :host(:dir(rtl)) {
+      --_rc-progress-indeterminate-direction: -1;
     }
 
     .rc-progress-root {
@@ -171,27 +191,52 @@ export class RCProgress extends LitElement {
       background: var(--rc-progress-fill-background, var(--rc-accent, Highlight));
       border-radius: inherit;
       z-index: 1;
-      transition: inline-size 0.15s ease-out;
+      transition: inline-size var(--rc-progress-fill-transition-duration, 150ms)
+        var(--rc-progress-fill-transition-easing, ease-out);
     }
 
     :host([indeterminate]) .rc-progress-fill {
       inline-size: 40% !important;
-      animation: rc-progress-indeterminate 1.4s ease-in-out infinite;
+      /*
+       * A loop has no beginning or end to decelerate into or accelerate out
+       * of, so it uses a constant, linear pace; an eased loop visibly pulses
+       * at each cycle boundary.
+       */
+      animation: rc-progress-indeterminate 1.4s linear infinite;
     }
 
+    /*
+     * translate() moves on the compositor; inset-inline-start forces layout
+     * on every frame. The fill's own box is 40% of the track (its inline-
+     * size), so a translate of N% moves it N% of that 40%, not of the
+     * track: -100% (of self) lands at -40% of the track, matching where
+     * this keyframe used to start, and 250% (of self) lands at 100%.
+     */
     @keyframes rc-progress-indeterminate {
       0% {
-        inset-inline-start: -40%;
+        translate: calc(var(--_rc-progress-indeterminate-direction) * -100%) 0;
       }
       100% {
-        inset-inline-start: 100%;
+        translate: calc(var(--_rc-progress-indeterminate-direction) * 250%) 0;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
+      /*
+       * The determinate fill's inline-size transition is spatial (a real
+       * width change), so it drops to 0ms. The indeterminate loop is an
+       * unbounded, continuous translate sweeping most of the track, which
+       * has no meaningful "shortened" form, so it stops outright rather
+       * than looping faster; the fill still shows a static bar via its
+       * existing 40% inline-size.
+       */
+      :host(:not([indeterminate])) .rc-progress-fill {
+        transition-duration: 0ms;
+      }
+
       :host([indeterminate]) .rc-progress-fill {
         animation: none;
-        inset-inline-start: 0;
+        translate: none;
       }
     }
 
@@ -310,6 +355,9 @@ export class RCProgress extends LitElement {
    */
   @property({ attribute: 'value-text' }) valueText = '';
 
+  /** Formats the default percentage in the element's own `lang`, else `<html lang>`. */
+  private readonly _locale = new LocaleController(this);
+
   /** Orientation; reflected as an attribute and forwarded to `aria-orientation`. */
   @property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
 
@@ -408,9 +456,11 @@ export class RCProgress extends LitElement {
       return '';
     }
 
-    const percent = this.max > 0 ? (this.value / this.max) * 100 : 0;
+    const ratio = this.max > 0 ? this.value / this.max : 0;
 
-    return `${Math.round(percent)}%`;
+    return numberFormat(this._locale.locale, { style: 'percent', maximumFractionDigits: 0 }).format(
+      ratio,
+    );
   }
 
   private get _nativeProgressValue(): number {

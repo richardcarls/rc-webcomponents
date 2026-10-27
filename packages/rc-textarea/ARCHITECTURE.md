@@ -18,6 +18,13 @@ native textarea synchronization at the same time.
 - Selection is stored as plain-text offsets so it can survive full DOM rebuilds.
 - Plugin, pattern, and external decorations are merged for rendering but keep separate sources.
 - Runtime inline styles are limited to geometry and native textarea hiding/synchronization work.
+- Keyed widget lines retain their DOM when source and decoration metadata are unchanged.
+  Widget keys are content-version promises; plugin factories must change them when content changes.
+- Accessible widgets opt out of the decorative `aria-hidden` wrapper. Keyboard events from
+  widgets bypass text editing; source copy/cut excludes widget content. Gutter cells
+  remain decorative unless a plugin explicitly exposes a control.
+- `FoldingActionController` manages transient expansion for caller-owned panels and
+  source-line ranges. Folded source remains in the plain-text model and hidden DOM lines.
 
 ## DOM Structure
 
@@ -170,8 +177,10 @@ from the restored value. The stack is capped at `MAX_UNDO` entries.
 The gutter is shadow DOM and `aria-hidden`. It can be enabled by `lineNumbers` or `gutter`.
 
 `_computeGutterLabels()` produces one label per logical line, accounting for built-in modes and
-`LineDecoration.gutterContent` overrides. `_syncGutter()` mutates only the cell count and text
-that changed.
+`LineDecoration.gutterContent` overrides. A decoration can opt into retaining the built-in line
+number beside custom content with `gutterLineNumber`; the two occupy separate lanes in one cell.
+`_syncGutter()` preserves unchanged custom content nodes while updating cells and labels.
+Changing `lineNumbers` or `gutter` after mount schedules a render so the cells match the new mode.
 
 `_syncGutterHeights()` mirrors editor padding and line heights. In word-wrap mode it measures
 each `.line` element and assigns explicit cell heights so wrapped lines stay aligned.

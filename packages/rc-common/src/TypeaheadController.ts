@@ -1,3 +1,37 @@
+import { collator } from './localeFormat.js';
+
+const graphemeSegmenters = new Map<string, Intl.Segmenter>();
+
+function* prefixes(text: string, locale: string | undefined): Generator<string> {
+  if (typeof Intl.Segmenter === 'function') {
+    const key = locale ?? '';
+    let segmenter = graphemeSegmenters.get(key);
+
+    if (!segmenter) {
+      try {
+        segmenter = new Intl.Segmenter(locale, { granularity: 'grapheme' });
+      } catch {
+        segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+      }
+
+      graphemeSegmenters.set(key, segmenter);
+    }
+
+    for (const segment of segmenter.segment(text)) {
+      yield text.slice(0, segment.index + segment.segment.length);
+    }
+
+    return;
+  }
+
+  let end = 0;
+
+  for (const codePoint of text) {
+    end += codePoint.length;
+    yield text.slice(0, end);
+  }
+}
+
 export interface TypeaheadControllerOptions<T> {
   /** Items searched by typeahead. */
   items: () => readonly T[];
@@ -9,13 +43,20 @@ export interface TypeaheadControllerOptions<T> {
   startIndex?: () => number;
   /** Buffer clear delay in milliseconds. Defaults to `500`. */
   timeout?: number;
+  /**
+   * Locale whose collation decides a match, such as `messagesLocale(host)`.
+   * Defaults to the runtime locale.
+   */
+  locale?: () => string | undefined;
 }
 
 /**
  * Small APG-style typeahead buffer for composite widgets.
  *
  * It handles printable-key buffering and timeout reset; consumers keep control
- * of focus, active descendant, and selection behavior.
+ * of focus, active descendant, and selection behavior. Prefixes match with an
+ * `Intl.Collator` at base sensitivity, so case and accents are ignored the way
+ * the locale ignores them: typing `e` finds `Éclair`.
  */
 export class TypeaheadController<T> {
   private _buffer = '';
@@ -49,23 +90,31 @@ export class TypeaheadController<T> {
   }
 
   search(char: string): T | null {
-    this._buffer += char.toLocaleLowerCase();
+    this._buffer += char;
     this._scheduleReset();
 
     const items = this._options.items();
-    if (!items.length) return null;
+
+    if (!items.length) {
+      return null;
+    }
 
     const startIndex = this._options.startIndex?.() ?? 0;
     const count = items.length;
+    const locale = this._options.locale?.();
+    const compare = collator(locale, { sensitivity: 'base', usage: 'search' });
 
     for (let offset = 1; offset <= count; offset += 1) {
       const index = (startIndex + offset) % count;
       const item = items[index];
-      const text = this._options.text(item).trim().toLocaleLowerCase();
+      const text = this._options.text(item).trim();
 
-      if (text.startsWith(this._buffer)) {
-        this._options.onMatch(item, index);
-        return item;
+      for (const prefix of prefixes(text, locale)) {
+        if (compare.compare(prefix, this._buffer) === 0) {
+          this._options.onMatch(item, index);
+
+          return item;
+        }
       }
     }
 
@@ -78,11 +127,11 @@ export class TypeaheadController<T> {
   }
 
   private _clearTimer(): void {
-    if (!this._timer) return;
+    if (!this._timer) {
+      return;
+    }
 
     window.clearTimeout(this._timer);
     this._timer = 0;
   }
 }
-
-export default TypeaheadController;

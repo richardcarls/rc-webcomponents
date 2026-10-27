@@ -1,0 +1,41 @@
+@layer rc-theme-win31.components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-range-slider {
+    --rc-range-slider-accent: var(--win31-color-selection);
+    --rc-range-slider-track-background: var(--win31-color-field);
+    --rc-range-slider-thumb-background: var(--win31-color-surface);
+    --rc-range-slider-thumb-border: var(--win31-color-frame);
+    --rc-thumb-radius: var(--win31-radius);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-range-slider::part(track) {
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-range-slider::part(range) {
+    border-radius: var(--win31-radius);
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-range-slider::part(thumb),
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-range-slider::part(low-thumb),
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-range-slider::part(high-thumb) {
+    inline-size: calc(11 * var(--win31-unit));
+    block-size: var(--win31-control-height);
+    background: var(--win31-color-surface);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-range-slider::part(value-display),
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-range-slider::part(low-value-display),
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-range-slider::part(high-value-display) {
+    color: var(--win31-color-frame);
+    font-size: var(--win31-font-size);
+  }
+}

@@ -20,6 +20,11 @@ const packages = [
     'Native scroll region with optional content and fullbleed layout',
     '/components/rc-scroller',
   ],
+  [
+    'rc-virtual-scroller',
+    'Headless virtualization wrapper reporting the visible index range for a consumer-owned list or grid',
+    '/components/rc-virtual-scroller',
+  ],
   ['rc-list', 'Shared-column list rows with native-backed selection', '/components/rc-list'],
   ['rc-chip', 'Chip wrapper for native actions, links, filters, and inputs', '/components/rc-chip'],
   [
@@ -48,6 +53,11 @@ const packages = [
     'rc-search-bar',
     'Search field/view wrapper for native <input type="search">',
     '/components/rc-search-bar',
+  ],
+  [
+    'rc-field',
+    'Accessible field wrapper for a native input or textarea with labels and supporting text',
+    '/components/rc-field',
   ],
   ['rc-app-bar', 'App bar modeled after Material 3 Top app bar', '/components/rc-app-bar'],
   [
@@ -79,7 +89,7 @@ const packages = [
   ],
   [
     'rc-textarea',
-    'Textarea wrapper with line decorations and plugin hooks',
+    'Textarea wrapper with line decorations, folding actions, and plugin hooks',
     '/components/rc-textarea',
   ],
   [
@@ -109,6 +119,16 @@ const packages = [
   ],
   ['rc-snackbar', 'Snackbar live-region host for brief status messages', '/components/rc-snackbar'],
   [
+    'rc-popover',
+    'Anchored non-modal surface around a native trigger and consumer-owned content',
+    '/components/rc-popover',
+  ],
+  [
+    'rc-tooltip',
+    'Tooltip wrapper for a consumer-owned trigger and descriptive content',
+    '/components/rc-tooltip',
+  ],
+  [
     'rc-disclosure',
     'Disclosure wrapper for native <details>/<summary>',
     '/components/rc-disclosure',
@@ -130,6 +150,7 @@ const packages = [
     'Lightweight CSS reference theme for app layouts',
     '/guide/theme-previews',
   ],
+  ['rc-theme-win31', 'Windows 3.1 era CSS theme and token bridge', '/guide/theme-previews'],
 ];
 
 export default function Home() {

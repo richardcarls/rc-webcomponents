@@ -1,7 +1,5 @@
 import { nothing } from 'lit';
-
 import { PartType, type PartInfo, type ElementPart } from 'lit/directive.js';
-
 import { directive, AsyncDirective } from 'lit/async-directive.js';
 
 /**
@@ -91,5 +89,3 @@ class KeyboardInteractionDirective extends AsyncDirective {
 
 export const keyInteraction = directive(KeyboardInteractionDirective);
 export type { KeyboardInteractionDirective };
-
-export default keyInteraction;

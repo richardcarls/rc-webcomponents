@@ -1,20 +1,31 @@
 import { html } from 'lit';
-
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
-import type { RCCombobox } from './rc-combobox.js';
+import type { RCCombobox, RCComboboxPopupMode } from './rc-combobox.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 
-function makeCombobox(opts?: { multiple?: boolean; allowCreate?: boolean; placeholder?: string }) {
+function makeCombobox(opts?: {
+  multiple?: boolean;
+  allowCreate?: boolean;
+  placeholder?: string;
+  popupMode?: RCComboboxPopupMode;
+  required?: boolean;
+}) {
   return html`
     <rc-combobox
       ?multiple=${opts?.multiple ?? false}
       ?allow-create=${opts?.allowCreate ?? false}
       placeholder=${opts?.placeholder ?? 'Search...'}
+      popup-mode=${opts?.popupMode ?? 'popover'}
     >
-      <select aria-label="Fruit" ?multiple=${opts?.multiple ?? false}>
+      <select
+        aria-label="Fruit"
+        ?multiple=${opts?.multiple ?? false}
+        ?required=${opts?.required ?? false}
+      >
         <option value="apple">Apple</option>
         <option value="banana">Banana</option>
         <option value="cherry" disabled>Cherry</option>
@@ -37,6 +48,38 @@ async function getHost(screen: ReturnType<typeof render>): Promise<RCCombobox> {
   return $host;
 }
 
+test('listbox fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = render(makeCombobox());
+  const host = await getHost(screen);
+  const listbox = host.renderRoot.querySelector<HTMLElement>('[part="listbox"]')!;
+
+  expect(getComputedStyle(listbox).opacity).toBe('0');
+  expect(getComputedStyle(listbox).transitionDuration).not.toBe('0s');
+
+  // openPopup()/closePopup() are synchronous; nothing waits on a transition.
+  host.openPopup();
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  await Promise.all(
+    listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
+
+  // WebKit can expose the transition after the first animation snapshot and
+  // resolve its finished promise just before computed style reaches rest.
+  await vi.waitFor(() => expect(getComputedStyle(listbox).opacity).toBe('1'));
+
+  host.closePopup(false);
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  await Promise.all(
+    listbox.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
+
+  expect(getComputedStyle(listbox).opacity).toBe('0');
+});
+
 test('input has role="combobox", aria-haspopup="listbox", aria-autocomplete="list"', async () => {
   const screen = render(makeCombobox());
   const $host = await getHost(screen);
@@ -48,6 +91,205 @@ test('input has role="combobox", aria-haspopup="listbox", aria-autocomplete="lis
   expect($input.getAttribute('aria-autocomplete')).toBe('list');
   expect($input.getAttribute('aria-controls')).toBe('listbox');
   expect($input.getAttribute('aria-expanded')).toBe('false');
+  expect($input.parentElement).toHaveClass('value');
+  expect($host.renderRoot.querySelector('#toggle')?.parentElement?.id).toBe('anchor');
+});
+
+test('dialog mode stages selection until Done and restores trigger focus', async () => {
+  const screen = render(makeCombobox({ multiple: true, popupMode: 'dialog' }));
+  const $host = await getHost(screen);
+  const $trigger = $host.renderRoot.querySelector<HTMLElement>('#trigger')!;
+  const changeHandler = vi.fn();
+
+  // Axe must sample the resting colors, not the transparent first frame of
+  // rc-dialog's entrance fade. Zeroing the shared effect duration preserves
+  // the open-state accessibility audit without making it refresh-driver bound.
+  $host.style.setProperty('--rc-motion-effects-duration-default', '0ms');
+  $host.addEventListener('rc-select-change', changeHandler);
+  $trigger.focus();
+  $trigger.click();
+
+  await vi.waitFor(() => {
+    expect($host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  await expectNoA11yViolations($host);
+
+  const $dialogInput = $host.renderRoot.querySelector<HTMLInputElement>('#dialog-input')!;
+  const $listbox = $host.renderRoot.querySelector('#dialog-listbox')!;
+
+  expect($trigger.getAttribute('aria-haspopup')).toBe('dialog');
+  expect($host.shadowRoot!.activeElement).toBe($dialogInput);
+
+  $listbox
+    .querySelector<HTMLElement>('[data-value="apple"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await $host.updateComplete;
+
+  expect($host.open).toBe(true);
+  expect($host.selectedValues).toEqual([]);
+  expect(changeHandler).not.toHaveBeenCalled();
+
+  expect($host.renderRoot.querySelector('[part~="dialog-selected"]')?.textContent).toContain(
+    'Apple',
+  );
+
+  $host.renderRoot.querySelector<HTMLButtonElement>('[part~="dialog-confirm"]')!.click();
+
+  await $host.updateComplete;
+
+  expect($host.open).toBe(false);
+  expect($host.selectedValues).toEqual(['apple']);
+  expect(changeHandler).toHaveBeenCalledOnce();
+
+  expect($host.shadowRoot!.activeElement).toBe($trigger);
+});
+
+test('dialog mode follows a native close request such as Android Back', async () => {
+  const screen = render(makeCombobox({ popupMode: 'dialog' }));
+  const $host = await getHost(screen);
+  const closeHandler = vi.fn();
+
+  $host.addEventListener('rc-select-close', closeHandler);
+  $host.openPopup();
+
+  await vi.waitFor(() => {
+    expect($host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  $host.renderRoot
+    .querySelector('#dialog-listbox')!
+    .querySelector<HTMLElement>('[data-value="apple"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  $host.renderRoot.querySelector<HTMLDialogElement>('#dialog')!.close();
+
+  await vi.waitFor(() => {
+    expect($host.open).toBe(false);
+  });
+
+  expect(closeHandler).toHaveBeenCalledOnce();
+  expect($host.selectedValues).toEqual([]);
+});
+
+test('dialog mode defers unmatched value creation and selection until Done', async () => {
+  const screen = render(makeCombobox({ allowCreate: true, multiple: true, popupMode: 'dialog' }));
+  const $host = await getHost(screen);
+  const createHandler = vi.fn();
+  const changeHandler = vi.fn();
+
+  $host.addEventListener('rc-combobox-create', createHandler);
+  $host.addEventListener('rc-select-change', changeHandler);
+
+  $host.openPopup();
+
+  await vi.waitFor(() => {
+    expect($host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#dialog-input')!;
+
+  $input.value = 'Mango';
+  $input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  await $host.updateComplete;
+
+  $host.renderRoot
+    .querySelector('#dialog-listbox')!
+    .querySelector<HTMLElement>('[data-action="create"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await $host.updateComplete;
+
+  expect($host.open).toBe(true);
+  expect($host.selectedValues).toEqual([]);
+  expect(createHandler).not.toHaveBeenCalled();
+  expect(changeHandler).not.toHaveBeenCalled();
+
+  expect(
+    Array.from($host.querySelector('select')!.options, (option) => option.value),
+  ).not.toContain('Mango');
+
+  $host.renderRoot.querySelector<HTMLButtonElement>('[part~="dialog-confirm"]')!.click();
+  await $host.updateComplete;
+
+  expect($host.selectedValues).toEqual(['Mango']);
+  expect(createHandler).toHaveBeenCalledOnce();
+  expect(changeHandler).toHaveBeenCalledOnce();
+
+  expect(Array.from($host.querySelector('select')!.options, (option) => option.value)).toContain(
+    'Mango',
+  );
+});
+
+test('dialog mode discards provisional creations when it closes without Done', async () => {
+  const screen = render(makeCombobox({ allowCreate: true, multiple: true, popupMode: 'dialog' }));
+  const $host = await getHost(screen);
+  const createHandler = vi.fn();
+
+  $host.addEventListener('rc-combobox-create', createHandler);
+  $host.openPopup();
+
+  await vi.waitFor(() => {
+    expect($host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#dialog-input')!;
+
+  $input.value = 'Mango';
+  $input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  await $host.updateComplete;
+
+  $host.renderRoot
+    .querySelector('#dialog-listbox')!
+    .querySelector<HTMLElement>('[data-action="create"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await $host.updateComplete;
+  $host.closePopup();
+
+  expect(createHandler).not.toHaveBeenCalled();
+  expect($host.selectedValues).toEqual([]);
+
+  expect(
+    Array.from($host.querySelector('select')!.options, (option) => option.value),
+  ).not.toContain('Mango');
+});
+
+test('dialog mode omits a provisional selection when creation is prevented on Done', async () => {
+  const screen = render(makeCombobox({ allowCreate: true, multiple: true, popupMode: 'dialog' }));
+  const $host = await getHost(screen);
+  const changeHandler = vi.fn();
+
+  $host.addEventListener('rc-combobox-create', (event) => event.preventDefault());
+  $host.addEventListener('rc-select-change', changeHandler);
+  $host.openPopup();
+
+  await vi.waitFor(() => {
+    expect($host.renderRoot.querySelector<HTMLDialogElement>('#dialog')?.open).toBe(true);
+  });
+
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#dialog-input')!;
+
+  $input.value = 'Mango';
+  $input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  await $host.updateComplete;
+
+  $host.renderRoot
+    .querySelector('#dialog-listbox')!
+    .querySelector<HTMLElement>('[data-action="create"]')!
+    .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+  await $host.updateComplete;
+  $host.renderRoot.querySelector<HTMLButtonElement>('[part~="dialog-confirm"]')!.click();
+  await $host.updateComplete;
+
+  expect(changeHandler).not.toHaveBeenCalled();
+  expect($host.selectedValues).toEqual([]);
+
+  expect(
+    Array.from($host.querySelector('select')!.options, (option) => option.value),
+  ).not.toContain('Mango');
 });
 
 test('rc-combobox has no automated accessibility violations', async () => {
@@ -126,6 +368,7 @@ test('ArrowDown opens to the first option and Enter selects it', async () => {
   $input.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
   );
+
   await $host.updateComplete;
 
   expect($host.open).toBe(true);
@@ -134,15 +377,67 @@ test('ArrowDown opens to the first option and Enter selects it', async () => {
   $input.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
   );
+
   await $host.updateComplete;
 
   expect(changeHandler).toHaveBeenCalledOnce();
   expect($host.open).toBe(false);
   expect($input.value).toBe('Apple');
   expect(changeHandler.mock.calls[0][0].detail.selectedValues).toEqual(['apple']);
+
   expect(changeHandler.mock.calls[0][0].detail.selectedOptions).toEqual([
     { value: 'apple', label: 'Apple', disabled: false },
   ]);
+});
+
+test('selecting an option dispatches native input and change on the slotted select', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+  const $nativeSel = $host.querySelector('select')!;
+  const onInput = vi.fn();
+  const onChange = vi.fn();
+
+  $nativeSel.addEventListener('input', onInput);
+  $nativeSel.addEventListener('change', onChange);
+
+  $input.focus();
+  await $host.updateComplete;
+
+  $input.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+  );
+
+  await $host.updateComplete;
+
+  $input.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+  );
+
+  await $host.updateComplete;
+
+  expect(onInput).toHaveBeenCalledOnce();
+  expect(onChange).toHaveBeenCalledOnce();
+});
+
+test('focus() and blur() forward to the input trigger, inherited from rc-select', async () => {
+  const screen = render(makeCombobox());
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+
+  $host.focus();
+  expect($host.shadowRoot!.activeElement).toBe($input);
+
+  $host.blur();
+  expect($host.shadowRoot!.activeElement).toBe(null);
+});
+
+test('required on the slotted select reflects as aria-required on the input trigger', async () => {
+  const screen = render(makeCombobox({ required: true }));
+  const $host = await getHost(screen);
+  const $input = $host.renderRoot.querySelector<HTMLInputElement>('#trigger')!;
+
+  expect($input.getAttribute('aria-required')).toBe('true');
 });
 
 test('Escape clears filter and closes popup', async () => {
@@ -157,6 +452,7 @@ test('Escape clears filter and closes popup', async () => {
   $input.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
   );
+
   await $host.updateComplete;
 
   expect($host.open).toBe(false);
@@ -228,9 +524,11 @@ test('allowcreate: preventDefault on rc-combobox-create cancels insertion', asyn
   const $createEl = $host.renderRoot.querySelector<HTMLElement>('[data-action="create"]')!;
 
   $createEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
   await $host.updateComplete;
 
   expect($host.selectedValues).not.toContain('mango');
+
   expect(
     Array.from($host.querySelector('select')!.options, (option) => option.value),
   ).not.toContain('mango');
@@ -252,6 +550,7 @@ test('multiple: selection stays open, renders chips, clears input, and emits arr
     .querySelector('rc-listbox')!
     .querySelector<HTMLElement>('[data-value="apple"]')!
     .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
   await $host.updateComplete;
 
   expect($host.open).toBe(true);
@@ -279,6 +578,35 @@ test('multiple: chips render from value property', async () => {
 
   expect($host.selectedValues).toEqual(['apple', 'banana']);
   expect($chips).toHaveLength(2);
+
+  const $chip = $chips[0].closest('rc-chip')!;
+  const $label = $chips[0].querySelector<HTMLElement>('[part~="chip-label"]')!;
+  const $remove = $chip.shadowRoot!.querySelector<HTMLElement>('[part="remove"]')!;
+
+  expect($label.getBoundingClientRect().right).toBeLessThanOrEqual(
+    $remove.getBoundingClientRect().left,
+  );
+});
+
+test('multiple: chip touch-target overlap is returned between wrapped rows', async () => {
+  const screen = render(makeCombobox({ multiple: true }));
+  const $host = screen.container.querySelector('rc-combobox') as RCCombobox;
+
+  $host.style.cssText =
+    'inline-size: 9rem; --rc-chip-block-size: 32px; --rc-chip-touch-target-block-size: 48px; ' +
+    '--rc-chip-touch-target-overlap-block-start: 8px; --rc-chip-touch-target-overlap-block-end: 8px; ' +
+    '--rc-combobox-chip-padding-block: 0;';
+
+  $host.value = ['apple', 'banana'];
+
+  await getHost(screen);
+
+  const [first, second] = [...$host.renderRoot.querySelectorAll('[part~="chip"]')].map(($chip) =>
+    $chip.getBoundingClientRect(),
+  );
+
+  expect(second.top).toBeGreaterThan(first.top);
+  expect(second.top - first.bottom).toBeCloseTo(16, 0);
 });
 
 test('--rc-combobox-toggle-size controls the toggle button inline size', async () => {
@@ -328,6 +656,7 @@ test('touch tap (pointerdown + pointerup) selects active option, closes popup, s
       cancelable: true,
     }),
   );
+
   $option.dispatchEvent(
     new PointerEvent('pointerup', {
       pointerType: 'touch',
@@ -336,6 +665,7 @@ test('touch tap (pointerdown + pointerup) selects active option, closes popup, s
       cancelable: true,
     }),
   );
+
   await $host.updateComplete;
 
   expect($host.open).toBe(false);
@@ -361,6 +691,7 @@ test('touch pointerdown alone (no pointerup) does not select, so scrolling is no
       cancelable: true,
     }),
   );
+
   await $host.updateComplete;
 
   expect($host.open).toBe(true);
@@ -396,9 +727,11 @@ test('autofill-style input event (inputType: insertReplacementText) is handled w
   // Mobile autofill/contact-suggestion services can replace the whole field
   // value in one InputEvent instead of a typed sequence.
   $input.value = '123 Autofilled Ave';
+
   $input.dispatchEvent(
     new InputEvent('input', { bubbles: true, inputType: 'insertReplacementText' }),
   );
+
   await $host.updateComplete;
 
   const $listbox = $host.renderRoot.querySelector('rc-listbox')!;
@@ -406,4 +739,74 @@ test('autofill-style input event (inputType: insertReplacementText) is handled w
 
   expect($host.open).toBe(true);
   expect($options.every(($opt) => $opt.hidden)).toBe(true);
+});
+
+test.each([
+  ['ltr', 'ArrowLeft'],
+  ['rtl', 'ArrowRight'],
+] as const)(
+  'multiple: the arrow toward the inline start moves from an empty input to the chips (%s)',
+  async (dir, key) => {
+    const screen = render(html`<div dir=${dir}>${makeCombobox({ multiple: true })}</div>`);
+    const $host = screen.container.querySelector('rc-combobox') as RCCombobox;
+
+    $host.value = ['apple'];
+    await getHost(screen);
+
+    const focusLastChip = vi.spyOn(
+      $host as unknown as { _focusLastChipRemove(): void },
+      '_focusLastChipRemove',
+    );
+    const $input = $host.renderRoot.querySelector<HTMLInputElement>('input')!;
+
+    $input.setSelectionRange(0, 0);
+    $input.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+
+    expect(focusLastChip).toHaveBeenCalledTimes(1);
+  },
+);
+
+test('prefers its own rc-combobox text over text registered for rc-select', async () => {
+  registerMessages('ar', {
+    'rc-select': { selectedItems: 'select scope' },
+    'rc-combobox': { selectedItems: 'العناصر المحددة' },
+  });
+
+  const screen = render(html`
+    <rc-combobox lang="ar" dir="rtl" multiple>
+      <select multiple aria-label="الفواكه">
+        <option value="a" selected>Apple</option>
+        <option value="b">Banana</option>
+      </select>
+    </rc-combobox>
+  `);
+  const host = screen.container.querySelector('rc-combobox') as RCCombobox;
+
+  await vi.waitFor(() =>
+    expect(host.shadowRoot?.querySelector('[part~="chips"]')?.getAttribute('aria-label')).toBe(
+      'العناصر المحددة',
+    ),
+  );
+
+  expect(host.shadowRoot?.querySelector('rc-listbox')?.getAttribute('lang')).toBe('ar');
+});
+
+test('falls back to text registered for rc-select', async () => {
+  registerMessages('he', { 'rc-select': { selectedItems: 'פריטים שנבחרו' } });
+
+  const screen = render(html`
+    <rc-combobox lang="he" dir="rtl" multiple>
+      <select multiple aria-label="פירות">
+        <option value="a" selected>Apple</option>
+        <option value="b">Banana</option>
+      </select>
+    </rc-combobox>
+  `);
+  const host = screen.container.querySelector('rc-combobox') as RCCombobox;
+
+  await vi.waitFor(() =>
+    expect(host.shadowRoot?.querySelector('[part~="chips"]')?.getAttribute('aria-label')).toBe(
+      'פריטים שנבחרו',
+    ),
+  );
 });

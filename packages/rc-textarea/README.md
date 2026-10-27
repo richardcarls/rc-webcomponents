@@ -1,6 +1,6 @@
 # rc-textarea
 
-Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.
+Textarea wrapper with line decorations, gutter rendering, folding actions, and plugin hooks.
 
 Docs: [https://richardcarls.github.io/rc-webcomponents/components/rc-textarea](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea).
 
@@ -85,16 +85,31 @@ When the user edits, the slotted textarea is kept in sync and dispatches a nativ
 
 ## Common Options
 
-| Attribute      | Property      | Description                                                                         |
-| -------------- | ------------- | ----------------------------------------------------------------------------------- |
-| `line-numbers` | `lineNumbers` | Show sequential line numbers in the gutter.                                         |
-| `gutter`       | `gutter`      | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`. |
-| `word-wrap`    | `wordWrap`    | Wrap long lines instead of scrolling horizontally.                                  |
-| `auto-grow`    | `autoGrow`    | Let the field grow vertically with content.                                         |
-| `read-only`    | `readOnly`    | Render selectable, non-editable content.                                            |
+| Attribute        | Property        | Description                                                                               |
+| ---------------- | --------------- | ----------------------------------------------------------------------------------------- |
+| `line-numbers`   | `lineNumbers`   | Show sequential line numbers in the gutter.                                               |
+| `gutter`         | `gutter`        | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`.       |
+| `word-wrap`      | `wordWrap`      | Wrap long lines instead of scrolling horizontally.                                        |
+| `auto-grow`      | `autoGrow`      | Let the field grow vertically with content.                                               |
+| `line-direction` | `lineDirection` | `base` (default) gives every line the editor's direction; `auto` gives each line its own. |
+
+Read-only state comes from the slotted native control: set `readonly` on the `<textarea>`. The
+editor keeps the enabled field appearance, stays focusable and selectable, announces
+`aria-readonly`, and rejects edits. The host reflects `data-readonly`, and the `readOnly` getter
+reports the state.
+
+Put the content's `lang`, `dir` and `spellcheck` on the slotted `<textarea>`: the editor mirrors
+`lang` and `spellcheck`, and takes its base direction from `dir` (`auto` follows the native
+textarea's first strong character, or LTR when there is none). Changing the textarea's
+`lang` or `dir` reruns plugins. The host's own `lang` stays the interface language and formats
+line numbers.
+Add `line-direction="auto"` for prose that mixes scripts; lines without a letter keep the base
+direction.
 
 Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
 the slotted textarea with `aria-label` or a real `<label for="...">`.
+Use `gutterLineNumber: true` with custom content to display the built-in number
+and a plugin control together when `line-numbers` is enabled.
 
 The main JavaScript-only properties are:
 
@@ -234,31 +249,42 @@ for the field, then add component tokens for editor-specific surfaces.
 
 The component reads inherited tokens where possible:
 
-| Token          | Use                                                          |
-| -------------- | ------------------------------------------------------------ |
-| `--rc-text`    | Fallback text color before `--rc-textarea-color`.            |
-| `color-scheme` | Inherited by the host so system colors match the page theme. |
+| Token             | Use                                                          |
+| ----------------- | ------------------------------------------------------------ |
+| `--rc-field-text` | Fallback text color before `--rc-textarea-color`.            |
+| `color-scheme`    | Inherited by the host so system colors match the page theme. |
 
 ### Component Tokens
 
-| Token                                     | Default                                     | Use                                   |
-| ----------------------------------------- | ------------------------------------------- | ------------------------------------- |
-| `--rc-textarea-font-family`               | `monospace`                                 | Editor font family.                   |
-| `--rc-textarea-font-size`                 | `1em`                                       | Editor and gutter font size.          |
-| `--rc-textarea-line-height`               | `1.5`                                       | Editor and gutter line height.        |
-| `--rc-textarea-padding`                   | `0.5em`                                     | Editor and gutter padding.            |
-| `--rc-textarea-background`                | `Field`                                     | Field background.                     |
-| `--rc-textarea-color`                     | `var(--rc-text, FieldText)`                 | Field text color.                     |
-| `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)`       | Caret color.                          |
-| `--rc-textarea-border`                    | `1px solid ButtonBorder`                    | Field border.                         |
-| `--rc-textarea-border-radius`             | `2px`                                       | Field corner radius.                  |
-| `--rc-textarea-focus-outline`             | `2px solid Highlight`                       | Focus ring.                           |
-| `--rc-textarea-active-line-bg`            | `transparent`                               | Active line background.               |
-| `--rc-textarea-gutter-bg`                 | `Canvas`                                    | Gutter background.                    |
-| `--rc-textarea-gutter-color`              | `GrayText`                                  | Gutter text color.                    |
-| `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`                    | Gutter separator.                     |
-| `--rc-textarea-gutter-font-family`        | `var(--rc-textarea-font-family, monospace)` | Gutter font family.                   |
-| `--rc-textarea-gutter-padding-inline-end` | `0.75em`                                    | Space between gutter labels and text. |
+| Token                                     | Default                                     | Use                                                                                                                      |
+| ----------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `--rc-textarea-font-family`               | `monospace`                                 | Editor font family.                                                                                                      |
+| `--rc-textarea-font-size`                 | `1em`                                       | Editor and gutter font size.                                                                                             |
+| `--rc-textarea-line-height`               | `1.5`                                       | Editor and gutter line height.                                                                                           |
+| `--rc-textarea-padding-block`             | `0.5em`                                     | Editor and gutter block padding; any `padding-block` value.                                                              |
+| `--rc-textarea-padding-inline`            | `0.5em`                                     | Editor inline padding (both sides) and gutter start padding; one length, which the active line highlight bleeds through. |
+| `--rc-textarea-gutter-min-inline-size`    | `24px`                                      | Minimum gutter width including padding; Material uses `48px`.                                                            |
+| `--rc-textarea-background`                | `Field`                                     | Field background.                                                                                                        |
+| `--rc-textarea-color`                     | `var(--rc-field-text, FieldText)`           | Field text color.                                                                                                        |
+| `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)`       | Caret color.                                                                                                             |
+| `--rc-textarea-border`                    | `1px solid ButtonBorder`                    | Field border.                                                                                                            |
+| `--rc-textarea-border-radius`             | `2px`                                       | Field corner radius.                                                                                                     |
+| `--rc-textarea-focus-outline`             | `2px solid Highlight`                       | Focus ring.                                                                                                              |
+| `--rc-textarea-active-line-bg`            | `transparent`                               | Full-width active line highlight.                                                                                        |
+| `--rc-textarea-gutter-bg`                 | `Canvas`                                    | Gutter background.                                                                                                       |
+| `--rc-textarea-gutter-color`              | `GrayText`                                  | Gutter text color.                                                                                                       |
+| `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`                    | Gutter separator.                                                                                                        |
+| `--rc-textarea-gutter-font-family`        | `var(--rc-textarea-font-family, monospace)` | Gutter font family.                                                                                                      |
+| `--rc-textarea-gutter-padding-inline-end` | `0.75em`                                    | Space between gutter labels and text.                                                                                    |
+
+Line actions added by plugins use the `--rc-line-action-*` family. Inline actions default to
+compact, inherited styling; popover actions use `Canvas`, `ButtonText`, and `ButtonFace` system
+colors where their surface needs an independent default. The public hooks are
+`--rc-line-actions-gap`, `--rc-line-actions-margin-start`, `--rc-line-action-padding`,
+`--rc-line-action-border`, `--rc-line-action-border-radius`, `--rc-line-action-bg`,
+`--rc-line-action-color`, `--rc-line-action-font-size`, `--rc-line-action-opacity`,
+`--rc-line-action-hover-opacity`, `--rc-line-action-hover-bg`,
+`--rc-line-action-hover-color`, and `--rc-line-action-shadow`.
 
 ```css
 rc-textarea {
@@ -274,7 +300,8 @@ rc-textarea {
 
 ### Parts And Decoration Styles
 
-The exposed CSS parts are `root`, `gutter`, `gutter-cells`, `editor-area`, and `editor`.
+The exposed CSS parts are `root`, `gutter`, `gutter-cells`, `editor-area`, `editor`,
+`fold-trigger`, and `fold-icon` (when a plugin supplies an icon).
 
 ```css
 rc-textarea::part(editor) {
@@ -291,12 +318,21 @@ syntax highlighter.
 | Key                               | Behavior                                                     |
 | --------------------------------- | ------------------------------------------------------------ |
 | `Tab`                             | Inserts `\t`.                                                |
+| `Escape`, then `Tab`              | Moves focus to the next control instead of inserting `\t`.   |
+| `Shift+Tab`                       | Moves focus to the previous control.                         |
 | `Ctrl/Cmd+Z`                      | Undo.                                                        |
 | `Ctrl/Cmd+Y` / `Ctrl/Cmd+Shift+Z` | Redo.                                                        |
 | `Paste`                           | Inserts plain text only and normalizes line endings to `\n`. |
 | `Enter`                           | Inserts a line break.                                        |
 
 ## More Detail
+
+`FoldingActionController` provides independent accessible buttons for caller-owned panels
+or source-line ranges. It retains expansion by key and leaves content creation to the plugin.
+Source folds hide complete editor and gutter lines while preserving the submitted text.
+Buttons can sit in the gutter or trailing lane. See the
+[interactive folding examples](https://richardcarls.github.io/rc-webcomponents/components/rc-textarea#folding-actions)
+for setup and lifecycle details.
 
 - [PLUGIN_AUTHORING.md](PLUGIN_AUTHORING.md) covers custom plugins, decoration types,
   selection APIs, stylesheet injection, and parser/highlighter recipes.

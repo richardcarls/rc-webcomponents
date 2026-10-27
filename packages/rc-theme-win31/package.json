@@ -1,0 +1,58 @@
+{
+  "name": "@rcarls/rc-theme-win31",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.7.0",
+  "description": "Windows 3.1 era CSS theme and token bridge for rc-webcomponents.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-theme-win31"
+  },
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/guide/theme-previews",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": "./bridge.css",
+    "./bridge.css": "./bridge.css",
+    "./defaults.css": "./defaults.css",
+    "./components.css": "./components.css",
+    "./components/*.css": "./components/*.css",
+    "./css-components.css": "./css-components.css",
+    "./css-components/*.css": "./css-components/*.css",
+    "./native.css": "./native.css",
+    "./theme.css": "./theme.css",
+    "./DESIGN.md": "./DESIGN.md"
+  },
+  "files": [
+    "*.css",
+    "components",
+    "css-components",
+    "README.md",
+    "DESIGN.md"
+  ],
+  "scripts": {
+    "build": "echo 'CSS-only package, no build step'",
+    "test:browser": "vitest --run",
+    "test:browser:chrome": "vitest --run --project=chromium",
+    "test:browser:firefox": "vitest --run --project=firefox"
+  },
+  "devDependencies": {
+    "@rcarls/rc-button": "workspace:*",
+    "@rcarls/rc-dialog": "workspace:*",
+    "@rcarls/rc-disclosure": "workspace:*",
+    "@rcarls/rc-listbox": "workspace:*",
+    "@rcarls/rc-progress": "workspace:*",
+    "@rcarls/rc-segmented-button": "workspace:*",
+    "@rcarls/rc-toolbar": "workspace:*",
+    "@vitest/browser-playwright": "4.1.5",
+    "lit": "^3.0.0",
+    "playwright": "^1.56.0",
+    "vite": "^7.1.7",
+    "vitest": "^4.0.6"
+  }
+}

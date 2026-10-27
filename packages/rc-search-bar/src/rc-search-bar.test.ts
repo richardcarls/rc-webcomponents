@@ -1,7 +1,9 @@
 import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCSearchBar } from './rc-search-bar.js';
@@ -52,7 +54,7 @@ test('progressive enhancement: the native input keeps its author attributes', as
   expect($input?.getAttribute('placeholder')).toBe('Author placeholder');
 });
 
-test('host-scoped light DOM reset keeps native input chrome inside the search surface', async () => {
+test('unlayered author styles override the layered light DOM base', async () => {
   const screen = render(html`
     <style>
       input[type='search'] {
@@ -81,11 +83,11 @@ test('host-scoped light DOM reset keeps native input chrome inside the search su
 
   const style = getComputedStyle(input);
 
-  expect(style.borderTopWidth).toBe('0px');
-  expect(style.paddingTop).toBe('0px');
-  expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
-  expect(style.outlineStyle).toBe('none');
-  expect(style.boxShadow).toBe('none');
+  expect(style.borderTopWidth).toBe('3px');
+  expect(style.paddingTop).toBe('12px');
+  expect(style.backgroundColor).toBe('rgb(255, 0, 0)');
+  expect(style.outlineWidth).toBe('4px');
+  expect(style.boxShadow).not.toBe('none');
 });
 
 test('label association resolves through the native label registry', async () => {
@@ -394,6 +396,36 @@ test('show-clear-on-focus: clear button shows on focus with no value, hides on b
   expect(clearButton($host).inert).toBe(true);
 });
 
+test('show-clear-on-focus: Tab from the input reaches the clear button and keeps focus', async () => {
+  const screen = render(html`
+    <rc-search-bar data-testid="host" show-clear-on-focus>
+      <input type="search" aria-label="Search" />
+    </rc-search-bar>
+    <button type="button">After</button>
+  `);
+
+  const $host = (await screen.getByTestId('host').element()) as RCSearchBar;
+
+  await tick();
+  await $host.updateComplete;
+
+  const $input = $host.querySelector<HTMLInputElement>('input')!;
+
+  $input.focus();
+  await $host.updateComplete;
+  await userEvent.keyboard('{Tab}');
+  await $host.updateComplete;
+
+  expect($host.shadowRoot?.activeElement).toBe(clearButton($host));
+  expect(clearButton($host).inert).toBe(false);
+
+  await userEvent.keyboard('{Tab}');
+  await $host.updateComplete;
+
+  expect(document.activeElement?.textContent).toBe('After');
+  expect(clearButton($host).inert).toBe(true);
+});
+
 test('show-clear-on-focus: clear while empty dispatches both events and stays focused', async () => {
   const screen = render(html`
     <rc-search-bar data-testid="host" debounce="0" show-clear-on-focus>
@@ -631,4 +663,26 @@ test('slotted search view suggestions take precedence over datalist suggestions'
   );
 
   expect($host.shadowRoot!.querySelectorAll('button[part="suggestion"]')).toHaveLength(0);
+});
+
+test('names the clear button in its own locale, and an override wins', async () => {
+  registerMessages('ar', { 'rc-search-bar': { clear: 'مسح البحث' } });
+
+  const screen = render(html`
+    <rc-search-bar lang="ar" dir="rtl">
+      <input type="search" aria-label="بحث" />
+    </rc-search-bar>
+  `);
+  const host = screen.container.querySelector('rc-search-bar') as RCSearchBar;
+
+  await host.updateComplete;
+
+  const clear = () => host.shadowRoot?.querySelector('#clear')?.getAttribute('aria-label');
+
+  expect(clear()).toBe('مسح البحث');
+
+  host.messages = { clear: 'إلغاء' };
+  await host.updateComplete;
+
+  expect(clear()).toBe('إلغاء');
 });

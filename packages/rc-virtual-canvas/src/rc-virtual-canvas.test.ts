@@ -192,43 +192,54 @@ test('RCVirtualCanvas scrolls and centers on content coordinates', async () => {
   });
 });
 
-test('RCVirtualCanvas maps client and content coordinates through the backing store scale', async () => {
-  const screen = render(html`
-    <rc-virtual-canvas
-      data-testid="virtual-canvas"
-      content-width="1000"
-      content-height="800"
-      .autoResizeCanvas=${false}
-      render-mode="viewport-change"
-      style="display: block; width: 200px; height: 100px;"
-    >
-      <canvas
-        width="400"
-        height="200"
-        style="display: block; width: 200px; height: 100px;"
-      ></canvas>
-    </rc-virtual-canvas>
-  `);
+test.each([1, 0.8])(
+  'RCVirtualCanvas maps client and content CSS pixels under zoom %s',
+  async (zoom) => {
+    const screen = render(html`
+      <div style=${`zoom: ${zoom}`}>
+        <rc-virtual-canvas
+          data-testid="virtual-canvas"
+          content-width="1000"
+          content-height="800"
+          .autoResizeCanvas=${false}
+          render-mode="viewport-change"
+          style="display: block; width: 200px; height: 100px;"
+        >
+          <canvas
+            data-testid="canvas"
+            width="400"
+            height="200"
+            style="display: block; width: 200px; height: 100px;"
+          ></canvas>
+        </rc-virtual-canvas>
+      </div>
+    `);
 
-  const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
+    const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
+    const $canvas = screen.getByTestId('canvas').element() as HTMLCanvasElement;
 
-  await $host.updateComplete;
-  $host.scrollToContent(40, 30);
+    await $host.updateComplete;
+    $host.scrollToContent(40, 30);
 
-  await vi.waitFor(() => {
-    expect($host.getViewRect().x).toBeCloseTo(40, 0);
-  });
+    await vi.waitFor(() => {
+      expect($host.getViewRect().x).toBeCloseTo(40, 0);
+    });
 
-  const $root = getScrollRoot($host);
-  const rect = $root.getBoundingClientRect();
-  const contentPoint = $host.clientToContent(rect.left + 50, rect.top + 25);
-  const clientPoint = $host.contentToClient(contentPoint.x, contentPoint.y);
+    const canvasViewportRect = $canvas.getBoundingClientRect();
+    const contentPoint = $host.clientToContent(
+      canvasViewportRect.left + 50 * zoom,
+      canvasViewportRect.top + 25 * zoom,
+    );
+    const clientPoint = $host.contentToClient(contentPoint.x, contentPoint.y);
 
-  expect(contentPoint.x).toBeCloseTo(140, 0);
-  expect(contentPoint.y).toBeCloseTo(80, 0);
-  expect(Math.round(clientPoint.x)).toBe(Math.round(rect.left + 50));
-  expect(Math.round(clientPoint.y)).toBe(Math.round(rect.top + 25));
-});
+    expect(contentPoint.x).toBeCloseTo(90, 0);
+    expect(contentPoint.y).toBeCloseTo(55, 0);
+    expect(clientPoint.x).toBeCloseTo(canvasViewportRect.left + 50 * zoom, 1);
+    expect(clientPoint.y).toBeCloseTo(canvasViewportRect.top + 25 * zoom, 1);
+    expect($host.canvasScaleX).toBeCloseTo(2, 5);
+    expect($host.canvasScaleY).toBeCloseTo(2, 5);
+  },
+);
 
 test('RCVirtualCanvas dispatches pointer events with content coordinates and modifiers', async () => {
   const pointerSpy = vi.fn();
@@ -282,8 +293,8 @@ test('RCVirtualCanvas dispatches pointer events with content coordinates and mod
     | undefined;
 
   expect(event?.detail.type).toBe('pointerdown');
-  expect(event?.detail.contentX).toBeCloseTo(140, 0);
-  expect(event?.detail.contentY).toBeCloseTo(80, 0);
+  expect(event?.detail.contentX).toBeCloseTo(90, 0);
+  expect(event?.detail.contentY).toBeCloseTo(55, 0);
   expect(event?.detail.button).toBe(1);
   expect(event?.detail.buttons).toBe(4);
   expect(event?.detail.altKey).toBe(true);
@@ -551,22 +562,30 @@ test('RCVirtualCanvas schedules a fresh animation frame when reconnected with a 
   }
 });
 
-test('RCVirtualCanvas exposes canvas backing store scale as canvasScaleX and canvasScaleY', async () => {
+test.each([1, 0.8])('RCVirtualCanvas exposes backing-store scale under zoom %s', async (zoom) => {
   const screen = render(html`
-    <rc-virtual-canvas
-      data-testid="virtual-canvas"
-      render-mode="viewport-change"
-      style="display: block; width: 320px; height: 240px;"
-    >
-      <canvas data-testid="canvas" style="display: block; width: 320px; height: 240px;"></canvas>
-    </rc-virtual-canvas>
+    <div style=${`zoom: ${zoom}`}>
+      <rc-virtual-canvas
+        data-testid="virtual-canvas"
+        render-mode="viewport-change"
+        style="display: block; width: 320px; height: 240px;"
+      >
+        <canvas data-testid="canvas" style="display: block; width: 320px; height: 240px;"></canvas>
+      </rc-virtual-canvas>
+    </div>
   `);
 
   const $host = screen.getByTestId('virtual-canvas').element() as RCVirtualCanvas;
   const $canvas = screen.getByTestId('canvas').element() as HTMLCanvasElement;
 
   await vi.waitFor(() => {
-    expect($canvas.width).toBeGreaterThanOrEqual(320);
+    const zoomedBackingWidth = Math.round(
+      $canvas.getBoundingClientRect().width * window.devicePixelRatio,
+    );
+    const localBackingWidth = Math.round($canvas.clientWidth * window.devicePixelRatio);
+
+    // WebKit reports the local CSS size for devicePixelContentBoxSize under zoom.
+    expect([zoomedBackingWidth, localBackingWidth]).toContain($canvas.width);
   });
 
   expect($host.canvasScaleX).toBeCloseTo($canvas.width / $canvas.clientWidth, 5);

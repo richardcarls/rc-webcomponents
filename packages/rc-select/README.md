@@ -40,6 +40,25 @@ import '@rcarls/rc-select/define';
 </label>
 ```
 
+## Dialog popup
+
+Set `popup-mode="dialog"` when an anchored listbox would leave too little usable viewport. The
+component manages a fullscreen native dialog with a leading close action, title, current chips,
+option list, and trailing Done action.
+
+Dialog selection is transactional: option and chip changes are staged until Done is activated.
+Done updates the native `<select>` and fires one `rc-select-change`; the leading close action,
+Escape, and imperative close discard the staged changes.
+
+```html
+<rc-select popup-mode="dialog" placeholder="Choose categories" multiple>
+  <select name="categories" multiple>
+    <option value="quick">Quick meal</option>
+    <option value="vegetarian">Vegetarian</option>
+  </select>
+</rc-select>
+```
+
 ## API
 
 | Property / method          | Type                             | Description                                               |
@@ -49,9 +68,20 @@ import '@rcarls/rc-select/define';
 | `disabled`                 | `boolean`                        | Mirrors the slotted `<select disabled>` state.            |
 | `placeholder`              | `string`                         | Text shown when no value is selected.                     |
 | `display`                  | `'auto' \| 'chips' \| 'compact'` | Controls multi-select display.                            |
+| `popupMode`                | `'popover' \| 'dialog'`          | Chooses anchored or transactional dialog presentation.    |
+| `messages`                 | `Partial<RCSelectMessages>`      | Built-in text overrides; see Localization.                |
+| `dialogCancelButton`       | `'visible' \| 'hidden'`          | Shows or hides the leading close action.                  |
 | `value`                    | `string \| string[]`             | Controlled selection. Programmatic writes apply silently. |
 | `openPopup()`              | `void`                           | Opens the listbox popover.                                |
 | `closePopup(returnFocus?)` | `void`                           | Closes the listbox and optionally restores focus.         |
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`, and never an
+ancestor's `lang`, which usually marks content. Override it per element with the
+`messages` property, or for every instance with `registerMessages()` from
+`@rcarls/rc-common` under `rc-select`. Keys: `options`, `selectedItems`, `remove`, `summary`, `done`, `cancel`. See the
+[rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).
 
 ## Events
 

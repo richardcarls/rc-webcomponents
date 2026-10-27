@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Shared controllers, directives, and DOM utilities for rc-webcomponents.",
   "repository": {
     "type": "git",
@@ -38,9 +38,6 @@
     "test:browser": "vitest --run",
     "test:browser:chrome": "vitest --run --project=chromium",
     "test:browser:firefox": "vitest --run --project=firefox"
-  },
-  "dependencies": {
-    "@oddbird/css-anchor-positioning": "^0.7.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

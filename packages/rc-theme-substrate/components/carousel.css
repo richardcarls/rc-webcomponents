@@ -1,0 +1,31 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-carousel {
+    --rc-carousel-color: var(--substrate-on-surface, CanvasText);
+    --rc-carousel-gap: var(--substrate-control-gap, 0.5rem);
+
+    /*
+     * A slide is a raised card on the page surface, which is what separates it
+     * from the track behind it without needing a border.
+     */
+    --rc-carousel-item-background: var(--substrate-surface-raised, Canvas);
+    --rc-carousel-item-color: var(--substrate-on-surface, CanvasText);
+    --rc-carousel-item-border-radius: var(--substrate-radius-lg, 0.75rem);
+
+    --rc-carousel-navigation-button-background: color-mix(
+      in srgb,
+      var(--substrate-surface, Canvas) 88%,
+      transparent
+    );
+    --rc-carousel-navigation-button-color: var(--substrate-on-surface, CanvasText);
+    --rc-carousel-navigation-button-size: 2.25rem;
+    --rc-carousel-navigation-inset: 0.5rem;
+
+    --rc-carousel-pagination-item-active-color: var(--rc-accent, Highlight);
+    --rc-carousel-pagination-item-color: color-mix(
+      in srgb,
+      var(--substrate-on-surface-muted, GrayText) 40%,
+      transparent
+    );
+    --rc-carousel-pagination-item-size: 0.5rem;
+  }
+}

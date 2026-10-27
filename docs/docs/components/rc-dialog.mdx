@@ -33,21 +33,57 @@ Draggable, resizable wrapper for a native `<dialog>`, following the [WAI-ARIA Di
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-dialog
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-dialog
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-dialog/define';
+import '@rcarls/rc-webcomponents/rc-dialog/define';
+```
+
+## Fullscreen variant
+
+Use `variant="fullscreen"` for a surface that follows the current visual viewport, including
+browser zoom offsets and software-keyboard resizing. Move and resize behavior is disabled for
+this variant. The consumer continues to author the native dialog content and accessible close
+action.
+
+```html
+<rc-dialog variant="fullscreen">
+  <dialog aria-labelledby="picker-title">
+    <header>
+      <button aria-label="Close">✕</button>
+      <h2 id="picker-title">Choose categories</h2>
+      <button>Done</button>
+    </header>
+  </dialog>
+</rc-dialog>
+```
+
+## Side sheet variant
+
+Use `variant="side"` for a modal side sheet: the surface docks to the inline end at full block
+size, pads every edge for the physical safe-area insets, and rounds only its start corners. Move
+and resize behavior is disabled for this variant, as for fullscreen. A theme sets its inline
+size, background, start-corner radius, and shadow through `--rc-dialog-side-inline-size`,
+`--rc-dialog-side-background`, `--rc-dialog-side-radius`, and `--rc-dialog-side-shadow`.
+
+```html
+<rc-dialog variant="side" closed-by="any">
+  <dialog aria-labelledby="filters-title">
+    <h2 id="filters-title">Filters</h2>
+    <form method="dialog"><button value="apply">Apply</button></form>
+  </dialog>
+</rc-dialog>
 ```
 
 ## Live demo
@@ -58,8 +94,13 @@ import '@rcarls/rc-dialog/define';
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
 
-Set `--rc-dialog-scrim` on `<rc-dialog>` or a theme scope to customize the modal
-backdrop color used by theme `::backdrop` styles.
+Set `--rc-dialog-min-inline-size`, `--rc-dialog-max-inline-size`, and
+`--rc-dialog-max-block-size` on `<rc-dialog>` or a theme scope to bound the
+standard surface. The Material theme supplies its viewport-clamped 280px to
+560px dialog width. The surface fits its content inside those bounds; set
+`--rc-dialog-inline-size: 100%` for a dialog whose fluid content would
+otherwise shrink it to its minimum. `--rc-dialog-scrim` customizes the modal
+backdrop.
 
 ## API
 

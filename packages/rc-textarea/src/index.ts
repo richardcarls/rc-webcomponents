@@ -6,6 +6,7 @@ export type {
   MarkDecorationStyle,
   LineDecoration,
   WidgetDecoration,
+  FoldDecoration,
   RCTextareaPlugin,
   RCTextareaPluginAPI,
   TextPattern,

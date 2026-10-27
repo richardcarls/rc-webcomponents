@@ -1,4 +1,5 @@
-@layer rc-theme-substrate.defaults, rc-theme-substrate.bridge, rc-theme-substrate.components;
+@layer rc-base, rc-theme-substrate.defaults, rc-theme-substrate.bridge, rc-theme-substrate.native, rc-theme-substrate.components, rc-theme-substrate.css-components,
+  rc-theme-substrate.overrides;
 
 @layer rc-theme-substrate.bridge {
   /*
@@ -12,6 +13,7 @@
     --rc-field: var(--substrate-field, Field);
     --rc-button-bg: var(--substrate-surface-raised, ButtonFace);
     --rc-field-text: var(--substrate-on-surface, FieldText);
+    --rc-field-error-color: var(--substrate-error, red);
     --rc-button-text: var(--substrate-on-surface, ButtonText);
     --rc-highlight: var(--substrate-primary-container, Highlight);
     --rc-highlight-text: var(--substrate-on-primary-container, HighlightText);
@@ -22,6 +24,12 @@
     --rc-border-style: solid;
     --rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
     --rc-shadow: var(--substrate-shadow-md, 0 2px 8px rgb(0 0 0 / 15%));
+    --rc-popup-background: var(--substrate-surface, Canvas);
+    --rc-popup-color: var(--rc-field-text, CanvasText);
+    --rc-popup-border: var(--rc-border);
+    --rc-popup-radius: var(--substrate-radius-lg, 0.75rem);
+    --rc-popup-shadow: var(--substrate-shadow-lg, none);
+    --rc-popup-padding-block: 0.375rem;
     --rc-font-family: var(--substrate-font-family, inherit);
     --rc-font-size: var(--substrate-font-size, 1em);
     --rc-font-weight: var(--substrate-font-weight, 400);
@@ -101,8 +109,35 @@
     --rc-focus-ring: var(--substrate-focus-ring, 2px solid Highlight);
     --rc-focus-ring-offset: var(--substrate-focus-ring-offset, 2px);
     --rc-disabled-opacity: var(--substrate-disabled-opacity, 0.52);
-    --rc-motion-duration: var(--substrate-motion-duration, 160ms);
-    --rc-dialog-scrim: color-mix(in srgb, CanvasText 32%, transparent);
+    --rc-motion-effects-duration-fast: var(--substrate-motion-effects-duration-fast, 100ms);
+    --rc-motion-effects-easing-fast: ease-out;
+    --rc-motion-effects-duration-default: var(--substrate-motion-effects-duration-default, 160ms);
+    --rc-motion-effects-easing-default: var(--rc-motion-effects-easing-fast);
+    --rc-motion-effects-duration-slow: var(--substrate-motion-effects-duration-slow, 240ms);
+    --rc-motion-effects-easing-slow: var(--rc-motion-effects-easing-fast);
+    --rc-motion-spatial-duration-fast: var(--substrate-motion-spatial-duration-fast, 160ms);
+    --rc-motion-spatial-easing-fast: var(--substrate-motion-easing, cubic-bezier(0.2, 0, 0, 1));
+    --rc-motion-spatial-duration-default: var(--substrate-motion-spatial-duration-default, 240ms);
+    --rc-motion-spatial-easing-default: var(--rc-motion-spatial-easing-fast);
+    --rc-motion-spatial-duration-slow: var(--substrate-motion-spatial-duration-slow, 320ms);
+    --rc-motion-spatial-easing-slow: var(--rc-motion-spatial-easing-fast);
+    /* Substrate's one curve is decelerate-shaped, so it is the enter curve. */
+    --rc-motion-effects-easing-enter: ease-out;
+    --rc-motion-effects-easing-exit: ease-in;
+    --rc-motion-spatial-easing-enter: var(--rc-motion-spatial-easing-fast);
+    --rc-motion-spatial-easing-exit: cubic-bezier(0.3, 0, 1, 1);
+    /* Matches base.css: the compatibility token follows the effects default. */
+    --rc-motion-duration: var(--rc-motion-effects-duration-default);
+    /*
+     * Mixed against the theme's own inverse surface rather than `CanvasText`,
+     * so the scrim carries the palette's warmth and resolves to a real color
+     * rather than to a system one that cannot leave CSS.
+     */
+    --rc-dialog-scrim: color-mix(
+      in srgb,
+      var(--substrate-inverse-surface, CanvasText) 42%,
+      transparent
+    );
   }
 
   .rc-theme-substrate rc-listbox,
@@ -127,15 +162,9 @@
   :host(.rc-theme-substrate) rc-combobox {
     --rc-select-control-block-size: var(--rc-control-block-size);
     --rc-select-radius: var(--rc-control-radius);
-    --rc-select-shadow: var(--rc-shadow);
-    --rc-select-listbox-radius: var(--substrate-radius-lg, 0.75rem);
-    --rc-select-listbox-border: var(--rc-border);
     --rc-select-chip-radius: var(--substrate-radius-sm, 0.25rem);
     --rc-combobox-control-block-size: var(--rc-control-block-size);
     --rc-combobox-radius: var(--rc-control-radius);
-    --rc-combobox-shadow: var(--rc-shadow);
-    --rc-combobox-listbox-radius: var(--substrate-radius-lg, 0.75rem);
-    --rc-combobox-listbox-border: var(--rc-border);
     --rc-combobox-chip-radius: var(--substrate-radius-sm, 0.25rem);
   }
 
@@ -172,13 +201,5 @@
     --rc-bottom-sheet-scrim: var(--rc-dialog-scrim);
     --rc-bottom-sheet-handle-color: var(--rc-border-color, GrayText);
     --rc-bottom-sheet-handle-radius: var(--substrate-radius-pill, 999px);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .rc-theme-substrate,
-    :host(.rc-theme-substrate) {
-      --substrate-motion-duration: 0ms;
-      --substrate-motion-duration-slow: 0ms;
-      --rc-motion-duration: 0ms;
-    }
   }
 }

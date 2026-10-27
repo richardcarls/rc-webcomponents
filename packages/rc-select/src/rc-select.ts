@@ -4,7 +4,13 @@ import { property, query, state } from 'lit/decorators.js';
 import {
   ActiveDescendantController,
   AnchorController,
+  bidiIsolate,
+  MessagesController,
+  PopoverController,
+  inlineArrowKeys,
   NativeChildController,
+  numberFormat,
+  resolveFlow,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
 import type {
@@ -13,10 +19,29 @@ import type {
   ListboxOption,
   ListboxSelectableOption,
 } from '@rcarls/rc-listbox';
+import type { RCDialog, RCDialogCloseEvent } from '@rcarls/rc-dialog';
 
 import { selectStyles } from './rc-select.styles.js';
 
+// The dialog popup and the selected-value chips register on first use, so a
+// popover single select ships neither.
+let dialogDefined: Promise<unknown> | undefined;
+let chipsDefined: Promise<unknown> | undefined;
+
+function defineDialog(): Promise<unknown> {
+  dialogDefined ??= import('@rcarls/rc-dialog/define');
+
+  return dialogDefined;
+}
+
+function defineChips(): Promise<unknown> {
+  chipsDefined ??= import('@rcarls/rc-chip-group/define');
+
+  return chipsDefined;
+}
+
 export type RCSelectValue = string | string[];
+export type RCSelectPopupMode = 'popover' | 'dialog';
 
 export interface RCSelectChangeEvent {
   /** Updated value after the change. */
@@ -35,6 +60,38 @@ declare global {
   }
 }
 
+/** Built-in text of `rc-select`. */
+export interface RCSelectMessages {
+  /** Name of the popup and dialog when the select has no accessible name. */
+  options: string;
+  /** Accessible name of the selected-value chips. */
+  selectedItems: string;
+  /** Accessible name of a selected-value chip. */
+  remove: (label: string) => string;
+  /** Compact trigger text for several selected values. */
+  summary: (first: string, more: number, locale?: string) => string;
+  /** Dialog confirmation action. */
+  done: string;
+  /** Accessible name of the leading dialog cancel action. */
+  cancel: string;
+}
+
+export const DEFAULT_SELECT_MESSAGES: Readonly<RCSelectMessages> = Object.freeze({
+  options: 'Options',
+  selectedItems: 'Selected items',
+  remove: (label: string) => `Remove ${bidiIsolate(label)}`,
+  summary: (first: string, more: number, locale?: string) =>
+    `${bidiIsolate(first)}, +${numberFormat(locale, { useGrouping: false }).format(more)} more`,
+  done: 'Done',
+  cancel: 'Cancel',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-select': RCSelectMessages;
+  }
+}
+
 /**
  * Select-only combobox backed by a native <select>, following the WAI-ARIA Combobox
  * pattern.
@@ -42,6 +99,11 @@ declare global {
  * Wraps a native `<select>` (default slot) as the form value reflector while
  * rendering a custom button trigger and popup listbox. Popup placement
  * and `aria-activedescendant` virtual keyboard navigation are supported.
+ *
+ * The fullscreen dialog popup (`popup-mode="dialog"`) and the selected-value
+ * chips of a `multiple` select load on first use, so a popover single select
+ * ships neither. Importing `@rcarls/rc-select/define` therefore no longer
+ * registers `rc-dialog` or `rc-chip-group` by itself.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-select rc-select docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/combobox/ WAI-ARIA Combobox pattern}
@@ -51,6 +113,11 @@ declare global {
  * @slot display - Optional. Replaces the default value label in the trigger.
  * @slot toggle-indicator - Optional. Replaces the default chevron indicator. Accepts any
  *   element(s); the container shifts to inline-start in RTL via flex direction.
+ *
+ * Built-in text (chip names, the dialog actions, the compact summary) follows
+ * the element's own `lang`, else `<html lang>`: per element through
+ * `messages`, or for every select through `registerMessages()` from
+ * `@rcarls/rc-common` under `rc-select`.
  *
  * @fires rc-select-change - When user interaction changes selection.
  *   `detail: { value, selectedValues, selectedOptions }`
@@ -66,13 +133,27 @@ declare global {
  * @csspart value-display - The text label showing selected value(s).
  * @csspart toggle-indicator - The open/close indicator container.
  * @csspart listbox - The `<rc-listbox>` popup element.
+ * @csspart dialog - Dialog popup surface.
+ * @csspart dialog-header - Managed leading/title/trailing header.
+ * @csspart dialog-cancel - Leading button that discards pending changes.
+ * @csspart dialog-cancel-icon - Decorative close icon inside the cancel button.
+ * @csspart dialog-title - Visible dialog title.
+ * @csspart dialog-selected - Scrollable pending-selection chip region.
+ * @csspart dialog-actions - Dialog confirmation action group.
+ * @csspart dialog-confirm - Commits pending changes and closes the dialog.
+ * @csspart dialog-listbox - Dialog option list.
  *
  * @attr open - Reflects whether the popup listbox is open.
  * @attr multiple - Enables selection of multiple options simultaneously.
  * @attr disabled - Disables the trigger and prevents the popup from opening.
+ * @attr required - Reflects the slotted native `<select>`'s own `required`, for `aria-required`
+ *   on the trigger. Set `required` on the slotted `<select>` itself, not here.
  * @attr placeholder - Text shown in the trigger when no value is selected.
  * @attr display - Controls how selected values appear in the trigger: `'auto'`,
  *   `'chips'`, or `'compact'`.
+ * @attr popup-mode - Presents options in an anchored `popover` (default) or transactional
+ *   modal `dialog`.
+ * @attr dialog-cancel-button - Shows or hides the leading cancel action.
  * @attr [has-value] - Present when one or more options are selected. Use with CSS
  *   selectors (e.g. `rc-select[has-value]`) for floating-label wrappers.
  *
@@ -83,20 +164,45 @@ declare global {
  * @cssprop [--rc-select-gap=var(--rc-control-gap)] - Gap between trigger content, chips, and icon.
  * @cssprop [--rc-select-radius=var(--rc-control-radius)] - Trigger border radius.
  * @cssprop [--rc-select-border=var(--rc-border)] - Trigger border.
- * @cssprop [--rc-select-listbox-radius=var(--rc-control-radius)] - Popup listbox border radius.
- * @cssprop [--rc-select-listbox-border=var(--rc-border)] - Popup listbox border.
- * @cssprop [--rc-select-shadow=var(--rc-shadow)] - Popup listbox box shadow.
- * @cssprop [--rc-select-listbox-padding-block=var(--rc-control-padding-block)] - Popup listbox block padding.
+ * @cssprop [--rc-select-listbox-radius=var(--rc-popup-radius)] - Popup listbox border radius.
+ * @cssprop [--rc-select-listbox-duration=150ms] - Popup listbox open/close fade transition duration.
+ * @cssprop [--rc-select-listbox-border=var(--rc-popup-border)] - Popup listbox border.
+ * @cssprop [--rc-select-listbox-background=var(--rc-popup-background)] - Popup listbox background.
+ * @cssprop [--rc-select-listbox-color=var(--rc-popup-color)] - Popup listbox text color.
+ * @cssprop [--rc-select-shadow=var(--rc-popup-shadow)] - Popup listbox box shadow.
+ * @cssprop [--rc-select-listbox-padding-block=var(--rc-popup-padding-block)] - Popup listbox block padding.
  * @cssprop [--rc-select-chip-radius=var(--rc-radius-md)] - Multi-select chip border radius.
  * @cssprop [--rc-select-chip-padding-block=0.1em] - Multi-select chip block-axis padding.
- * @cssprop [--rc-select-chip-padding-inline=0.3em] - Multi-select chip inline-axis padding.
+ * @cssprop [--rc-select-chip-padding-inline-start=0.3em] - Multi-select chip leading padding.
+ * @cssprop [--rc-select-chip-padding-inline-end=calc(var(--rc-chip-remove-target-size, 1.5rem) + var(--rc-chip-remove-offset-inline, 0.125rem))] - Multi-select chip trailing padding, including the remove affordance.
  * @cssprop [--rc-select-chip-gap=calc(var(--rc-control-gap, 0.25em) * 0.8)] - Gap between chip
- *   label and remove icon.
+ *   content items.
  * @cssprop [--rc-select-chip-border=var(--rc-border)] - Multi-select chip border.
+ * @cssprop [--rc-chip-remove-target-size=1.5rem] - Inherited remove-target width reserved by
+ *   generated multi-select chips.
+ * @cssprop [--rc-chip-remove-offset-inline=0.125rem] - Inherited edge offset reserved by
+ *   generated multi-select chips.
+ * @cssprop [--rc-chip-touch-target-overlap-block-start=0px] - Space returned between wrapped chip rows after a touch target overlaps the field's leading padding.
+ * @cssprop [--rc-chip-touch-target-overlap-block-end=0px] - Space returned between wrapped chip rows after a touch target overlaps the field's trailing padding.
  * @cssprop [--rc-select-toggle-indicator-size=1.1em] - Inline size of the toggle indicator container.
+ * @cssprop [--rc-select-dialog-gap=1rem] - Gap between fullscreen dialog regions.
+ * @cssprop [--rc-select-dialog-header-gap=0.5rem] - Gap between fullscreen dialog header slots.
  */
 export class RCSelect extends LitElement {
   static override styles = selectStyles;
+
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCSelectMessages> | undefined;
+
+  private readonly _messages = new MessagesController(this, 'rc-select', DEFAULT_SELECT_MESSAGES, {
+    overrides: () => this.messages,
+  });
+
+  /** The resolved built-in text. Subclasses with more text resolve their own scope. */
+  protected get _text(): RCSelectMessages {
+    return this._messages.value;
+  }
 
   /** Reflects whether the popup listbox is open. */
   @property({ type: Boolean, reflect: true })
@@ -109,6 +215,14 @@ export class RCSelect extends LitElement {
   /** Disables the trigger and prevents the popup from opening. */
   @property({ type: Boolean, reflect: true })
   disabled = false;
+
+  /**
+   * Mirrors the slotted native `<select>`'s own `required`, for `aria-required` on the trigger.
+   * Read-only in practice: set `required` on the slotted `<select>` itself, the source of truth
+   * for form participation and constraint validation.
+   */
+  @property({ type: Boolean, reflect: true })
+  required = false;
 
   /** Text shown in the trigger when no value is selected. */
   @property()
@@ -124,6 +238,14 @@ export class RCSelect extends LitElement {
   @property()
   display: 'auto' | 'chips' | 'compact' = 'auto';
 
+  /** Presents options in an anchored popover or transactional modal dialog. */
+  @property({ attribute: 'popup-mode', reflect: true })
+  popupMode: RCSelectPopupMode = 'popover';
+
+  /** Whether the leading dialog cancel action is visible. */
+  @property({ attribute: 'dialog-cancel-button', reflect: true })
+  dialogCancelButton: 'visible' | 'hidden' = 'visible';
+
   /** Flex container used by `_anchorCtrl` as the positioning reference for the popup. */
   @query('#anchor')
   protected _$anchor!: HTMLElement;
@@ -138,8 +260,11 @@ export class RCSelect extends LitElement {
   protected _$trigger!: HTMLElement;
 
   /** The `<rc-listbox>` popup. Receives option lists and selected-value updates from the host. */
-  @query('#listbox')
+  @query('rc-listbox')
   protected _$listbox!: RCListbox;
+
+  @query('#dialog-host')
+  protected _$dialogHost?: RCDialog;
 
   /**
    * Reactive set of currently selected option values.
@@ -149,6 +274,15 @@ export class RCSelect extends LitElement {
    */
   @state()
   protected _selectedValues: Set<string> = new Set();
+
+  /** Transaction-local selection while a dialog popup is open. */
+  @state()
+  protected _pendingSelectedValues: Set<string> | null = null;
+
+  @state()
+  protected _accessibleName = '';
+
+  protected _activePopupMode: RCSelectPopupMode = 'popover';
 
   /**
    * Index into the chip button array for roving-tabindex chip navigation.
@@ -218,7 +352,7 @@ export class RCSelect extends LitElement {
    * within `_$listbox.navigableItems`.
    */
   protected _activeDescendantCtrl = new ActiveDescendantController(this, {
-    host: () => this._$trigger ?? null,
+    host: () => this._$activeDescendantHost,
     items: () => this._$listbox?.navigableItems ?? [],
   });
 
@@ -227,9 +361,17 @@ export class RCSelect extends LitElement {
     anchor: () => this._$anchor ?? null,
     floating: () => this._$listbox ?? null,
     shadowHost: () => this,
-    placement: 'bottom-start',
+    placement: 'block-end-start',
     offset: 2,
+    disabled: () => !this.open || this._activePopupMode === 'dialog',
   });
+
+  protected _popoverCtrl = new PopoverController(this, { element: () => this._$listbox ?? null });
+
+  /** Element that owns `aria-activedescendant` for the currently rendered popup. */
+  protected get _$activeDescendantHost(): HTMLElement | null {
+    return this._$trigger ?? null;
+  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -262,6 +404,29 @@ export class RCSelect extends LitElement {
   override updated(changed: PropertyValues) {
     super.updated(changed);
     this.toggleAttribute('has-value', this._selectedValues.size > 0);
+
+    // Start loading before the first dialog open or chip render needs it.
+    if (this.popupMode === 'dialog') {
+      void defineDialog();
+    }
+
+    if (this.multiple) {
+      void defineChips();
+    }
+  }
+
+  /**
+   * Forwards focus to the trigger. The host itself is never in the tab order, so without this
+   * override, calling `.focus()` on `<rc-select>` (as `rc-field` does when treating it as a
+   * control provider) would be a no-op.
+   */
+  override focus(options?: FocusOptions): void {
+    this._$trigger?.focus(options);
+  }
+
+  /** Forwards blur to the trigger; see `focus()`. */
+  override blur(): void {
+    this._$trigger?.blur();
   }
 
   /** Opens the popup listbox if not already open or disabled. */
@@ -270,8 +435,39 @@ export class RCSelect extends LitElement {
       return;
     }
 
+    this._activePopupMode = this.popupMode;
+
+    if (this._activePopupMode === 'dialog') {
+      this._pendingSelectedValues = new Set(this._selectedValues);
+      this.open = true;
+      this.requestUpdate();
+
+      void this.updateComplete.then(async () => {
+        await defineDialog();
+
+        const $dialogHost = this._$dialogHost;
+
+        if (!this.open || this._activePopupMode !== 'dialog' || !$dialogHost) {
+          return;
+        }
+
+        await $dialogHost.updateComplete;
+
+        if (!this.open || this._activePopupMode !== 'dialog') {
+          return;
+        }
+
+        this._$listbox?.setSelectedValues(this._dialogSelectedValues);
+        $dialogHost.showModal();
+        this._focusDialogContent();
+        this.dispatchEvent(new CustomEvent('rc-select-open', { bubbles: true, composed: true }));
+      });
+
+      return;
+    }
+
     this.open = true;
-    this._$listbox.showPopover();
+    this._popoverCtrl.sync(true);
     this._anchorCtrl.update();
 
     this.dispatchEvent(new CustomEvent('rc-select-open', { bubbles: true, composed: true }));
@@ -281,15 +477,24 @@ export class RCSelect extends LitElement {
   /**
    * Closes the popup listbox.
    *
-   * @param returnFocus - When `true` (default), returns focus to the trigger.
+   * @param returnFocus - when `true` (default), returns focus to the trigger
    */
   closePopup(returnFocus = true) {
     if (!this.open) {
       return;
     }
 
+    if (this._activePopupMode === 'dialog') {
+      this._discardDialogSelection();
+      // The dialog may not have upgraded yet when closed during its first load.
+      this._$dialogHost?.close?.('cancel');
+      this._finishDialogClose(returnFocus);
+
+      return;
+    }
+
     this.open = false;
-    this._$listbox.hidePopover();
+    this._popoverCtrl.sync(false);
     this._activeDescendantCtrl.clear();
 
     if (returnFocus) {
@@ -369,13 +574,23 @@ export class RCSelect extends LitElement {
    *
    * In single-select mode only the first value is kept. Syncs `_$listbox` and the
    * native `<select>` but does NOT dispatch `rc-select-change`.
+   *
+   * @param fromUser - pass `true` only for a selection driven by real user interaction, so
+   *   `_syncNativeSelect` dispatches native `input`/`change` on the underlying `<select>` (a
+   *   programmatic `value`/`defaultValue` write is not a native interaction and relies on an
+   *   external `sync()` call instead, the same as `rc-textarea`'s controlled-value contract)
    */
-  protected _applySelection(values: string[]): void {
+  protected _applySelection(values: string[], fromUser = false): void {
     const selectedValues = this.multiple ? values : values.slice(0, 1);
 
     this._selectedValues = new Set(selectedValues);
     this._$listbox?.setSelectedValues(selectedValues);
-    this._syncNativeSelect();
+    this._syncNativeSelect(fromUser);
+
+    if (this.open && this._activePopupMode === 'dialog' && this._pendingSelectedValues) {
+      this._pendingSelectedValues = new Set(selectedValues);
+    }
+
     this.requestUpdate();
   }
 
@@ -578,6 +793,7 @@ export class RCSelect extends LitElement {
 
       this.multiple = $select.multiple;
       this.disabled = $select.disabled;
+      this.required = $select.required;
       this._syncOptionsFromSelect($select);
       this._applyPickerGuard($select);
 
@@ -589,6 +805,7 @@ export class RCSelect extends LitElement {
         }
 
         this.multiple = $current.multiple;
+        this.required = $current.required;
 
         // While the picker guard holds the select disabled, its `disabled`
         // attribute reflects the guard, not author intent — don't echo it.
@@ -820,6 +1037,8 @@ export class RCSelect extends LitElement {
 
     const name = $sel.getAttribute('aria-label') ?? $sel.labels?.[0]?.textContent?.trim() ?? null;
 
+    this._accessibleName = name ?? '';
+
     if (name) {
       this._$trigger.setAttribute('aria-label', name);
     } else {
@@ -851,6 +1070,26 @@ export class RCSelect extends LitElement {
 
     e.stopPropagation();
 
+    if (this.open && this._activePopupMode === 'dialog') {
+      const next = new Set(this._pendingSelectedValues ?? this._selectedValues);
+
+      if (this.multiple) {
+        selected ? next.add(activatedValue) : next.delete(activatedValue);
+      } else {
+        next.clear();
+
+        if (selected) {
+          next.add(activatedValue);
+        }
+      }
+
+      this._pendingSelectedValues = next;
+      this._$listbox.setSelectedValues([...next]);
+      this.requestUpdate();
+
+      return;
+    }
+
     if (this.multiple) {
       const next = new Set(this._selectedValues);
 
@@ -870,7 +1109,7 @@ export class RCSelect extends LitElement {
     }
 
     this._selectionInitialized = true;
-    this._syncNativeSelect();
+    this._syncNativeSelect(true);
     this._$listbox.setSelectedValues(this.selectedValues);
     this._dispatchChange();
   }
@@ -885,12 +1124,19 @@ export class RCSelect extends LitElement {
     this._$listbox.setSelectedValues([...next]);
     this._selectionInitialized = true;
 
-    this._syncNativeSelect();
+    this._syncNativeSelect(true);
     this._dispatchChange();
   }
 
-  /** Flips `selected` on each `<option>` in the native `<select>` to match `_selectedValues`; no-op when no native select is present. */
-  protected _syncNativeSelect() {
+  /**
+   * Flips `selected` on each `<option>` in the native `<select>` to match `_selectedValues`;
+   * no-op when no native select is present.
+   *
+   * @param fromUser - when `true`, also dispatches native `input` and `change` on `$select`
+   *   (in that order, matching a real `<select>`) so outside listeners, including an
+   *   `rc-field` ancestor treating this component as its control provider, observe the change
+   */
+  protected _syncNativeSelect(fromUser = false) {
     const $select = this._$selectRef?.deref();
 
     if (!$select) {
@@ -899,6 +1145,11 @@ export class RCSelect extends LitElement {
 
     for (const $option of $select.options) {
       $option.selected = this._selectedValues.has($option.value);
+    }
+
+    if (fromUser) {
+      $select.dispatchEvent(new Event('input', { bubbles: true }));
+      $select.dispatchEvent(new Event('change', { bubbles: true }));
     }
   }
 
@@ -977,7 +1228,7 @@ export class RCSelect extends LitElement {
     const values = [...this._selectedValues];
     const first = this._labelFor(values[0]);
 
-    return `${first}, +${values.length - 1} more`;
+    return this._text.summary(first, values.length - 1, this._messages.locale);
   }
 
   /**
@@ -1042,14 +1293,23 @@ export class RCSelect extends LitElement {
         }
         break;
 
-      case 'ArrowLeft':
-        if (!this.open && this.multiple && this._selectedValues.size > 0) {
+      default:
+        // Chips sit before the trigger along the inline axis, so the arrow
+        // toward the inline start enters them: ArrowRight in RTL. In vertical
+        // text that arrow is ArrowUp, which the popup navigation above keeps,
+        // so this path does not apply there.
+        if (
+          e.key === inlineArrowKeys(resolveFlow(this)).prev &&
+          !this.open &&
+          this.multiple &&
+          this._selectedValues.size > 0
+        ) {
           e.preventDefault();
           this._enterChipNav();
-        }
-        break;
 
-      default:
+          break;
+        }
+
         if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
           this._handleTypeAhead(e.key);
         }
@@ -1096,7 +1356,7 @@ export class RCSelect extends LitElement {
       // Select-only type-ahead: immediately select the match
       if (!this.multiple) {
         this._selectionInitialized = true;
-        this._applySelection([match.value]);
+        this._applySelection([match.value], true);
         this._dispatchChange();
       }
     } else {
@@ -1138,9 +1398,10 @@ export class RCSelect extends LitElement {
    */
   protected _handleChipKeyDown(e: KeyboardEvent, value: string) {
     const $buttons = this._$chipButtons();
+    const keys = inlineArrowKeys(resolveFlow(this));
 
     switch (e.key) {
-      case 'ArrowLeft':
+      case keys.prev:
         e.preventDefault();
 
         if (this._chipNavIndex > 0) {
@@ -1149,7 +1410,7 @@ export class RCSelect extends LitElement {
         }
         break;
 
-      case 'ArrowRight':
+      case keys.next:
         e.preventDefault();
 
         if (this._chipNavIndex < $buttons.length - 1) {
@@ -1188,9 +1449,189 @@ export class RCSelect extends LitElement {
     }
   }
 
+  protected get _dialogSelectedValues(): string[] {
+    return [...(this._pendingSelectedValues ?? this._selectedValues)];
+  }
+
+  protected _focusDialogContent(): void {
+    this._$listbox?.focus();
+  }
+
+  /** Hook for subclasses to finalize provisional options before dialog selection commits. */
+  protected _prepareDialogCommit(): void {}
+
+  protected _commitDialogSelection(): void {
+    if (!this.open || this._activePopupMode !== 'dialog') {
+      return;
+    }
+
+    this._prepareDialogCommit();
+
+    const pending = this._dialogSelectedValues;
+    const committed = this.selectedValues;
+    const changed =
+      pending.length !== committed.length || pending.some((value) => !committed.includes(value));
+
+    this._pendingSelectedValues = null;
+
+    if (changed) {
+      this._selectionInitialized = true;
+      this._applySelection(pending, true);
+      this._dispatchChange();
+    }
+
+    this._$dialogHost?.close('done');
+    this._finishDialogClose(true);
+  }
+
+  protected _discardDialogSelection(): void {
+    this._pendingSelectedValues = null;
+    this._$listbox?.setSelectedValues(this.selectedValues);
+  }
+
+  protected _finishDialogClose(returnFocus: boolean): void {
+    if (!this.open) {
+      return;
+    }
+
+    this.open = false;
+    this._activeDescendantCtrl.clear();
+
+    if (returnFocus) {
+      this._$trigger?.focus();
+    }
+
+    this.dispatchEvent(new CustomEvent('rc-select-close', { bubbles: true, composed: true }));
+    this.requestUpdate();
+  }
+
+  protected _handleDialogClose(e: CustomEvent<RCDialogCloseEvent>): void {
+    e.stopPropagation();
+
+    if (this.open) {
+      this._discardDialogSelection();
+      this._finishDialogClose(true);
+    }
+  }
+
+  protected _stopDialogEvent(e: Event): void {
+    e.stopPropagation();
+  }
+
+  protected _removePendingValue(value: string): void {
+    const next = new Set(this._pendingSelectedValues ?? this._selectedValues);
+
+    next.delete(value);
+    this._pendingSelectedValues = next;
+    this._$listbox?.setSelectedValues([...next]);
+    this.requestUpdate();
+  }
+
+  protected _renderDialogBody() {
+    return html`
+      <rc-listbox
+        lang=${this.getAttribute('lang') ?? nothing}
+        id="dialog-listbox"
+        part="listbox dialog-listbox"
+        tabindex="0"
+        aria-label=${this._accessibleName || this._text.options}
+        ?multiple=${this.multiple}
+        checkmark
+        .options=${this._options}
+        @rc-listbox-change=${this._handleListboxChange}
+      ></rc-listbox>
+    `;
+  }
+
+  protected _renderDialogPopup() {
+    const title = this._accessibleName || this._text.options;
+    const showSelected = this.multiple && this._dialogSelectedValues.length > 0;
+
+    return html`
+      <rc-dialog
+        id="dialog-host"
+        variant="fullscreen"
+        closed-by="closerequest"
+        @rc-dialog-open=${this._stopDialogEvent}
+        @rc-dialog-toggle=${this._stopDialogEvent}
+        @rc-dialog-request-close=${this._stopDialogEvent}
+        @rc-dialog-cancel=${this._stopDialogEvent}
+        @rc-dialog-close=${this._handleDialogClose}
+      >
+        <dialog id="dialog" part="dialog" aria-labelledby="dialog-title">
+          <header part="dialog-header">
+            ${this.dialogCancelButton === 'visible'
+              ? html`
+                  <button
+                    part="dialog-cancel"
+                    type="button"
+                    aria-label=${this._text.cancel}
+                    @click=${() => this.closePopup()}
+                  >
+                    <svg
+                      part="dialog-cancel-icon"
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      height="24"
+                    >
+                      <path
+                        d="M6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6Z"
+                      />
+                    </svg>
+                  </button>
+                `
+              : nothing}
+
+            <h2 id="dialog-title" part="dialog-title">${title}</h2>
+
+            <div part="dialog-actions">
+              <button part="dialog-confirm" type="button" @click=${this._commitDialogSelection}>
+                ${this._text.done}
+              </button>
+            </div>
+          </header>
+
+          ${showSelected
+            ? html`<div part="dialog-selected">
+                ${this._renderChips(this._dialogSelectedValues, true)}
+              </div>`
+            : nothing}
+          ${this._renderDialogBody()}
+        </dialog>
+      </rc-dialog>
+    `;
+  }
+
   protected override render() {
+    if ((this.open ? this._activePopupMode : this.popupMode) === 'dialog') {
+      return html`
+        ${this._renderAnchor()} ${this.open ? this._renderDialogPopup() : nothing}
+        <slot @slotchange=${this._handleSelectSlotChange}></slot>
+      `;
+    }
+
+    return html`
+      ${this._renderAnchor()}
+
+      <rc-listbox
+        lang=${this.getAttribute('lang') ?? nothing}
+        id="listbox"
+        part="listbox"
+        popover="manual"
+        ?multiple=${this.multiple}
+        checkmark
+        @rc-listbox-change=${this._handleListboxChange}
+      ></rc-listbox>
+
+      <slot @slotchange=${this._handleSelectSlotChange}></slot>
+    `;
+  }
+
+  protected _renderAnchor() {
     const showChips =
       this.multiple && this._effectiveDisplay === 'chips' && this._selectedValues.size > 0;
+    const dialogMode = (this.open ? this._activePopupMode : this.popupMode) === 'dialog';
 
     return html`
       <div id="anchor" part="anchor">
@@ -1199,10 +1640,11 @@ export class RCSelect extends LitElement {
           part="trigger"
           role="combobox"
           tabindex=${this.disabled ? '-1' : '0'}
-          aria-haspopup="listbox"
+          aria-haspopup=${dialogMode ? 'dialog' : 'listbox'}
           aria-expanded=${this.open ? 'true' : 'false'}
-          aria-controls="listbox"
+          aria-controls=${dialogMode ? 'dialog' : 'listbox'}
           aria-disabled=${this.disabled ? 'true' : 'false'}
+          aria-required=${this.required ? 'true' : 'false'}
           aria-label=${this.placeholder || nothing}
           @click=${this._handleTriggerClick}
           @keydown=${this._handleTriggerKeyDown}
@@ -1229,25 +1671,16 @@ export class RCSelect extends LitElement {
           </span>
         </div>
       </div>
-
-      <rc-listbox
-        id="listbox"
-        part="listbox"
-        popover="manual"
-        ?multiple=${this.multiple}
-        checkmark
-        @rc-listbox-change=${this._handleListboxChange}
-      ></rc-listbox>
-
-      <slot @slotchange=${this._handleSelectSlotChange}></slot>
     `;
   }
 
   /** Renders selected values as removable input chips inside the shared chip-group layout. */
-  protected _renderChips() {
+  protected _renderChips(values: Iterable<string> = this._selectedValues, pending = false) {
+    const text = this._text;
+
     return html`
-      <rc-chip-group part="chips" kind="generic" layout="wrap" aria-label="Selected items">
-        ${[...this._selectedValues].map((value) => {
+      <rc-chip-group part="chips" kind="generic" layout="wrap" aria-label=${text.selectedItems}>
+        ${[...values].map((value) => {
           const label = this._labelFor(value);
 
           return html`
@@ -1257,14 +1690,14 @@ export class RCSelect extends LitElement {
               data-value=${value}
               @rc-chip-remove=${(event: Event) => {
                 event.stopPropagation();
-                this._removeValue(value);
+                pending ? this._removePendingValue(value) : this._removeValue(value);
               }}
             >
               <button
                 type="button"
                 part="chip"
                 tabindex="-1"
-                aria-label=${`Remove ${label}`}
+                aria-label=${text.remove(label)}
                 @click=${(event: MouseEvent) => event.stopPropagation()}
                 @keydown=${(event: KeyboardEvent) => this._handleChipKeyDown(event, value)}
               >

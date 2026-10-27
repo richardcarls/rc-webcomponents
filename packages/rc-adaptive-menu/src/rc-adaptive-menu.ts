@@ -3,9 +3,14 @@ import { property, query } from 'lit/decorators.js';
 
 import {
   AnchorController,
+  MessagesController,
+  cssText,
+  FlowController,
   isFocusable,
-  keyNavigation,
   type KeyboardNavigationAction,
+  keyNavigation,
+  PopoverController,
+  renderedOrientation,
 } from '@rcarls/rc-common';
 
 import adaptiveMenuStyles from './rc-adaptive-menu.styles.js';
@@ -37,7 +42,7 @@ type AuthoredState = {
 
 const ACTION_WRAPPERS = 'rc-button, rc-chip, rc-menu-button';
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   rc-adaptive-menu > [data-rc-action-promoted],
   rc-adaptive-menu > [data-rc-action-overflowed] {
@@ -69,6 +74,54 @@ const LIGHT_DOM_CSS = `
     text-decoration: none;
   }
 
+  /*
+   * Overflowed rc-button and rc-menu-button wrappers render as menu rows.
+   * Their own tokens map onto the item tokens so a theme sizes every row
+   * from one place.
+   */
+  rc-adaptive-menu > rc-button[data-rc-action-overflowed] {
+    display: block;
+    min-inline-size: 100%;
+    min-block-size: 0;
+    --rc-button-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-button-icon-size: 100%;
+    --rc-button-touch-target-inline-size: 100%;
+    --rc-button-touch-target-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-button-padding-inline: var(--rc-adaptive-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
+    --rc-button-padding-block: var(--rc-adaptive-menu-item-padding-block, var(--rc-item-padding-block, 0.3em));
+    --rc-button-radius: 0;
+    --rc-button-bg: transparent;
+    --rc-button-color: currentColor;
+    --rc-button-border: 0;
+    --rc-button-state-layer-bg: currentColor;
+    --rc-button-progress-color: currentColor;
+  }
+
+  rc-adaptive-menu > rc-menu-button[data-rc-action-overflowed] {
+    display: block;
+    min-inline-size: 100%;
+    min-block-size: 0;
+    --rc-menu-button-trigger-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-menu-button-icon-size: 100%;
+    --rc-menu-button-touch-target-inline-size: 100%;
+    --rc-menu-button-touch-target-block-size: var(--rc-adaptive-menu-item-min-block-size, 2.5em);
+    --rc-menu-button-trigger-padding-block: var(--rc-adaptive-menu-item-padding-block, var(--rc-item-padding-block, 0.3em));
+    --rc-menu-button-trigger-padding-inline: var(--rc-adaptive-menu-item-padding-inline, var(--rc-item-padding-inline, 0.75em));
+    --rc-menu-button-trigger-gap: var(--rc-adaptive-menu-item-gap, var(--rc-item-gap, 0.5em));
+    --rc-menu-button-trigger-radius: 0;
+    --rc-menu-button-trigger-border: 0;
+    --rc-menu-button-trigger-background: transparent;
+    --rc-menu-button-trigger-color: currentColor;
+    --rc-menu-button-trigger-hover-color: currentColor;
+    --rc-menu-button-trigger-open-color: currentColor;
+  }
+
+  rc-adaptive-menu > rc-menu-button[data-rc-action-overflowed] > [slot='trigger'] {
+    justify-content: flex-start;
+    inline-size: 100%;
+    min-inline-size: 100%;
+  }
+
   rc-adaptive-menu [data-rc-menu-leading],
   rc-adaptive-menu [data-rc-menu-trailing] {
     flex: none;
@@ -77,9 +130,22 @@ const LIGHT_DOM_CSS = `
     justify-content: center;
   }
 
+  rc-adaptive-menu > [data-rc-action-overflowed] [data-rc-menu-leading] {
+    font-size: var(--rc-item-icon-size, inherit);
+    line-height: var(--rc-item-icon-size, inherit);
+  }
+
   rc-adaptive-menu [data-rc-menu-label] {
     flex: 1 1 auto;
     min-inline-size: 0;
+  }
+
+  rc-adaptive-menu > [data-rc-action-overflowed] [data-rc-menu-label] {
+    font-family: var(--rc-item-font-family, inherit);
+    font-size: var(--rc-item-font-size, inherit);
+    font-weight: var(--rc-item-font-weight, inherit);
+    line-height: var(--rc-item-line-height, inherit);
+    letter-spacing: var(--rc-item-letter-spacing, inherit);
   }
 
   rc-adaptive-menu [data-rc-menu-trailing],
@@ -89,6 +155,25 @@ const LIGHT_DOM_CSS = `
   }
 }
 `;
+
+/** Built-in text of `rc-adaptive-menu`. */
+export interface RCAdaptiveMenuMessages {
+  /** Default accessible name of the toolbar, when `label` is unset. */
+  label: string;
+  /** Accessible name of the overflow trigger and popup. */
+  overflow: string;
+}
+
+export const DEFAULT_ADAPTIVE_MENU_MESSAGES: Readonly<RCAdaptiveMenuMessages> = Object.freeze({
+  label: 'Actions',
+  overflow: 'More actions',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-adaptive-menu': RCAdaptiveMenuMessages;
+  }
+}
 
 /**
  * Priority-aware action toolbar that preserves authored light-DOM controls while moving
@@ -117,6 +202,10 @@ const LIGHT_DOM_CSS = `
  * space — a responsive breakpoint, a container query, a window size class —
  * owns that decision itself and writes the resulting `max-shown` value down.
  *
+ * Built-in text (the toolbar and overflow names) follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every instance
+ * through `registerMessages()` from `@rcarls/rc-common` under `rc-adaptive-menu`.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-adaptive-menu rc-adaptive-menu docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/ WAI-ARIA Toolbar pattern}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/ WAI-ARIA Menu Button pattern}
@@ -127,14 +216,15 @@ const LIGHT_DOM_CSS = `
  *
  * @fires rc-adaptive-menu-toggle - Fired when user interaction requests a change to `open`.
  *
- * @attr label - Accessible label for the toolbar. Defaults to `Actions`.
+ * @attr label - Accessible label for the toolbar. Defaults to the `label` message, `Actions`.
  * @attr max-shown - Maximum number of authored actions promoted ahead of the overflow trigger.
  *   A static declarative cap, not a measurement of available space — actions beyond it move to
  *   the overflow menu regardless of whether they'd visually fit. Defaults to 3.
  * @attr open - Whether the overflow menu is visible. Host writes are silent.
  * @attr default-open - Initial open state for uncontrolled usage.
- * @attr orientation - Toolbar layout and arrow-key axis: `horizontal` or `vertical`.
- * @attr overflow-label - Accessible label for the overflow trigger and popup. Defaults to `More actions`.
+ * @attr orientation - Toolbar layout along the inline (`horizontal`) or block (`vertical`) axis.
+ *   `aria-orientation` and the arrow keys follow the orientation actually rendered, which turns
+ *   over in vertical writing modes.
  *
  * @csspart root - Toolbar container.
  * @csspart overflow-trigger - Button that opens the overflow menu.
@@ -157,16 +247,25 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-adaptive-menu-trigger-radius=var(--rc-control-radius)] - Overflow trigger radius.
  * @cssprop [--rc-adaptive-menu-trigger-background=ButtonFace] - Overflow trigger background.
  * @cssprop [--rc-adaptive-menu-trigger-color=ButtonText] - Overflow trigger color.
+ * @cssprop [--rc-adaptive-menu-trigger-hover-background=var(--rc-adaptive-menu-trigger-background)] - Overflow trigger background under the pointer.
+ * @cssprop [--rc-adaptive-menu-trigger-shadow=none] - Overflow trigger box shadow.
+ * @cssprop [--rc-adaptive-menu-trigger-active-shadow=var(--rc-adaptive-menu-trigger-shadow)] - Overflow trigger box shadow while pressed.
+ * @cssprop [--rc-item-font-family=inherit] - Overflow action label font family; shared with menu and listbox items.
+ * @cssprop [--rc-item-font-size=inherit] - Overflow action label font size; shared with menu and listbox items.
+ * @cssprop [--rc-item-font-weight=inherit] - Overflow action label font weight; shared with menu and listbox items.
+ * @cssprop [--rc-item-line-height=inherit] - Overflow action label line height; shared with menu and listbox items.
+ * @cssprop [--rc-item-letter-spacing=inherit] - Overflow action label letter spacing; shared with menu and listbox items.
+ * @cssprop [--rc-item-icon-size=inherit] - Overflow action leading icon size; shared with menu items.
  * @cssprop [--rc-adaptive-menu-icon-size=1.5em] - Default overflow icon size.
  * @cssprop [--rc-adaptive-menu-popup-min-inline-size=10em] - Overflow popup minimum inline size.
  * @cssprop [--rc-adaptive-menu-popup-max-inline-size=calc(100dvi - 0.5rem)] - Overflow popup viewport-aware inline limit.
  * @cssprop [--rc-adaptive-menu-popup-max-block-size=calc(100dvb - 0.5rem)] - Overflow popup viewport-aware block limit.
- * @cssprop [--rc-adaptive-menu-popup-padding-block=0.25em] - Overflow popup block padding.
- * @cssprop [--rc-adaptive-menu-popup-border=var(--rc-border)] - Overflow popup border.
- * @cssprop [--rc-adaptive-menu-popup-radius=var(--rc-control-radius)] - Overflow popup radius.
- * @cssprop [--rc-adaptive-menu-popup-background=var(--rc-surface)] - Overflow popup background.
- * @cssprop [--rc-adaptive-menu-popup-shadow=var(--rc-shadow)] - Overflow popup shadow.
- * @cssprop [--rc-adaptive-menu-popup-color=var(--rc-field-text)] - Overflow popup foreground.
+ * @cssprop [--rc-adaptive-menu-popup-padding-block=var(--rc-popup-padding-block)] - Overflow popup block padding.
+ * @cssprop [--rc-adaptive-menu-popup-border=var(--rc-popup-border)] - Overflow popup border.
+ * @cssprop [--rc-adaptive-menu-popup-radius=var(--rc-popup-radius)] - Overflow popup radius.
+ * @cssprop [--rc-adaptive-menu-popup-background=var(--rc-popup-background)] - Overflow popup background.
+ * @cssprop [--rc-adaptive-menu-popup-shadow=var(--rc-popup-shadow)] - Overflow popup shadow.
+ * @cssprop [--rc-adaptive-menu-popup-color=var(--rc-popup-color)] - Overflow popup foreground.
  * @cssprop [--rc-adaptive-menu-item-min-block-size=2.5em] - Overflow action minimum block size.
  * @cssprop [--rc-adaptive-menu-item-padding-block=var(--rc-item-padding-block)] - Overflow action block padding.
  * @cssprop [--rc-adaptive-menu-item-padding-inline=var(--rc-item-padding-inline)] - Overflow action inline padding.
@@ -175,11 +274,24 @@ const LIGHT_DOM_CSS = `
 export class RCAdaptiveMenu extends LitElement {
   static override styles = adaptiveMenuStyles;
 
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCAdaptiveMenuMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-adaptive-menu',
+    DEFAULT_ADAPTIVE_MENU_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
   private static readonly _styledRoots = new WeakSet<Document | ShadowRoot>();
 
-  /** Accessible label for the toolbar. */
+  /** Accessible label for the toolbar. Defaults to the `label` message. */
   @property({ type: String })
-  label = 'Actions';
+  label: string | undefined;
 
   /**
    * Maximum authored actions promoted ahead of the overflow trigger. A
@@ -234,9 +346,8 @@ export class RCAdaptiveMenu extends LitElement {
   @property({ type: String, reflect: true })
   orientation: 'horizontal' | 'vertical' = 'horizontal';
 
-  /** Accessible name for the overflow trigger and popup. */
-  @property({ type: String, attribute: 'overflow-label' })
-  overflowLabel = 'More actions';
+  /** Keeps the exposed aria-orientation on the orientation actually rendered. */
+  protected readonly _flow = new FlowController(this);
 
   @query('#overflow-trigger')
   private _$trigger!: HTMLButtonElement;
@@ -253,10 +364,13 @@ export class RCAdaptiveMenu extends LitElement {
   private readonly _anchor = new AnchorController(this, {
     anchor: () => this._$trigger,
     floating: () => this._$popup,
-    placement: 'bottom-end',
+    placement: 'block-end-end',
     offset: 4,
     shadowHost: () => this,
+    disabled: () => !this.open || !this.hasAttribute('data-overflow'),
   });
+
+  private readonly _popover = new PopoverController(this, { element: () => this._$popup });
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -317,7 +431,7 @@ export class RCAdaptiveMenu extends LitElement {
   protected override updated(changed: Map<PropertyKey, unknown>): void {
     if (changed.has('orientation')) {
       this._anchor.setOptions({
-        placement: this.orientation === 'vertical' ? 'right-start' : 'bottom-end',
+        placement: this.orientation === 'vertical' ? 'inline-end-start' : 'block-end-end',
       });
     }
 
@@ -374,8 +488,8 @@ export class RCAdaptiveMenu extends LitElement {
         id="root"
         part="root"
         role="toolbar"
-        aria-label=${this.label}
-        aria-orientation=${this.orientation}
+        aria-label=${this.label ?? this._messages.value.label}
+        aria-orientation=${renderedOrientation(this.orientation, this._flow.flow)}
         ${keyNavigation(this._onToolbarNavigate, {
           navigationAxis: this.orientation,
         })}
@@ -389,8 +503,8 @@ export class RCAdaptiveMenu extends LitElement {
             aria-haspopup="menu"
             aria-expanded="false"
             aria-controls="popup"
-            aria-label=${this.overflowLabel}
-            title=${this.overflowLabel}
+            aria-label=${this._messages.value.overflow}
+            title=${this._messages.value.overflow}
             ${keyNavigation(this._onTriggerNavigate, {
               navigationAxis: this.orientation,
               handleNavAxis: false,
@@ -414,7 +528,7 @@ export class RCAdaptiveMenu extends LitElement {
         part="popup"
         popover="manual"
         role="menu"
-        aria-label=${this.overflowLabel}
+        aria-label=${this._messages.value.overflow}
         ${keyNavigation(this._onOverflowNavigate, {
           navigationAxis: 'vertical',
           handleEscape: true,
@@ -458,7 +572,9 @@ export class RCAdaptiveMenu extends LitElement {
   };
 
   private _onMutation = (records: MutationRecord[]): void => {
-    if (this._applyingSlots) {
+    // Before the first render the shadow trigger doesn't exist yet, and
+    // firstUpdated() syncs every action anyway.
+    if (this._applyingSlots || !this.hasUpdated) {
       return;
     }
 
@@ -825,29 +941,14 @@ export class RCAdaptiveMenu extends LitElement {
   }
 
   private _syncOpenState(): void {
-    const $popup = this._$popup as HTMLDivElement & {
-      hidePopover?: () => void;
-      showPopover?: () => void;
-    };
+    const $popup = this._$popup;
 
     if (!$popup?.isConnected) {
       return;
     }
 
     if (this.open && this.hasAttribute('data-overflow')) {
-      let shown = false;
-
-      if (typeof $popup.showPopover === 'function') {
-        try {
-          $popup.showPopover();
-          shown = true;
-        } catch {
-          // The fallback attribute provides the same visible state when the
-          // Popover API exists only partially or rejects this element.
-        }
-      }
-
-      $popup.toggleAttribute('data-fallback-open', !shown);
+      this._popover.sync(true);
       this._$trigger.setAttribute('aria-expanded', 'true');
       this._anchor.update();
 
@@ -861,15 +962,7 @@ export class RCAdaptiveMenu extends LitElement {
       return;
     }
 
-    if (typeof $popup.hidePopover === 'function') {
-      try {
-        $popup.hidePopover();
-      } catch {
-        // A closed or unsupported popover needs no additional native cleanup.
-      }
-    }
-
-    $popup.removeAttribute('data-fallback-open');
+    this._popover.sync(false);
     this._$trigger.setAttribute('aria-expanded', 'false');
 
     if (this._restoreFocusWhenClosed) {

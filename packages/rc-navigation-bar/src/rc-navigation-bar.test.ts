@@ -3,6 +3,7 @@ import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import './define.js';
 import type { RCNavigationBar } from './rc-navigation-bar.js';
 
@@ -97,6 +98,39 @@ test('positions the indicator on the aria-current link target', async () => {
   expect(indicator?.hasAttribute('hidden')).toBe(false);
   expect(indicator?.style.inlineSize).toBe('48px');
   expect(indicator?.style.blockSize).toBe('32px');
+});
+
+test('positions the indicator over its target under CSS zoom', async () => {
+  const screen = render(html`
+    <rc-navigation-bar data-testid="host" style="display: block; inline-size: 240px; zoom: 0.8;">
+      <a href="/recipes">Recipes</a>
+      <a href="/settings" aria-current="page">
+        <span
+          data-testid="target"
+          data-rc-navigation-icon
+          style="display: inline-block; inline-size: 48px; block-size: 32px;"
+          >S</span
+        >
+      </a>
+    </rc-navigation-bar>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCNavigationBar;
+  const target = await screen.getByTestId('target').element();
+
+  await host.updateComplete;
+  await nextFrame();
+
+  const indicator = host.shadowRoot?.querySelector<HTMLElement>('#indicator');
+
+  await vi.waitFor(() => expect(indicator?.style.inlineSize).not.toBe(''));
+
+  const indicatorRect = indicator?.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+
+  expect(indicatorRect?.left).toBeCloseTo(targetRect.left, 0);
+  expect(indicatorRect?.top).toBeCloseTo(targetRect.top, 0);
+  expect(indicatorRect?.width).toBeCloseTo(targetRect.width, 0);
+  expect(indicatorRect?.height).toBeCloseTo(targetRect.height, 0);
 });
 
 test('updates the indicator when aria-current moves between links', async () => {
@@ -216,4 +250,111 @@ test('hides the indicator when no link is current', async () => {
 test('snaps indicator animation under reduced motion', () => {
   expect(navigationBarStyles.cssText).toContain('@media (prefers-reduced-motion: reduce)');
   expect(navigationBarStyles.cssText).toContain('transition-duration: 0s');
+});
+
+test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
+  'lands the indicator on the current link target in %s',
+  async (_label, flow) => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-navigation-bar data-testid="host" style="display: block;">
+            <a href="/recipes">
+              <span
+                data-rc-navigation-icon
+                style="display: inline-block; inline-size: 48px; block-size: 32px;"
+                >R</span
+              >
+            </a>
+            <a href="/settings" aria-current="page">
+              <span
+                data-testid="target"
+                data-rc-navigation-icon
+                style="display: inline-block; inline-size: 48px; block-size: 32px;"
+                >S</span
+              >
+            </a>
+          </rc-navigation-bar>
+        `,
+        flow,
+      ),
+    );
+    const host = (await screen.getByTestId('host').element()) as RCNavigationBar;
+    const target = await screen.getByTestId('target').element();
+
+    await host.updateComplete;
+    await nextFrame();
+
+    const indicator = host.shadowRoot?.querySelector<HTMLElement>('#indicator');
+
+    // Where it actually renders, not what was written to its style: a
+    // physical offset against a logical anchor passes a style check and
+    // still lands on the wrong link. The bar settles its own width after the
+    // first frame, so wait for the indicator to follow.
+    await vi.waitFor(() => {
+      const placed = indicator?.getBoundingClientRect();
+      const expected = target.getBoundingClientRect();
+
+      expect(placed?.left).toBeCloseTo(expected.left, 0);
+      expect(placed?.top).toBeCloseTo(expected.top, 0);
+      expect(placed?.width).toBeCloseTo(expected.width, 0);
+      expect(placed?.height).toBeCloseTo(expected.height, 0);
+    });
+  },
+);
+
+test('follows the current link when the direction flips at runtime', async () => {
+  const screen = render(html`
+    <div data-testid="flow" dir="ltr">
+      <rc-navigation-bar data-testid="host" style="display: block; inline-size: 240px;">
+        <a href="/recipes">
+          <span
+            data-rc-navigation-icon
+            style="display: inline-block; inline-size: 48px; block-size: 32px;"
+            >R</span
+          >
+        </a>
+        <a href="/settings" aria-current="page">
+          <span
+            data-testid="target"
+            data-rc-navigation-icon
+            style="display: inline-block; inline-size: 48px; block-size: 32px;"
+            >S</span
+          >
+        </a>
+      </rc-navigation-bar>
+    </div>
+  `);
+  const flow = (await screen.getByTestId('flow').element()) as HTMLElement;
+  const host = (await screen.getByTestId('host').element()) as RCNavigationBar;
+  const target = await screen.getByTestId('target').element();
+
+  await host.updateComplete;
+  await nextFrame();
+
+  const indicator = host.shadowRoot?.querySelector<HTMLElement>('#indicator');
+
+  const landed = () => {
+    expect(indicator?.getBoundingClientRect().left).toBeCloseTo(
+      target.getBoundingClientRect().left,
+      0,
+    );
+  };
+
+  await vi.waitFor(landed);
+  // The bar settles its own width after the first frame; flipping before
+  // that resize is delivered would let it re-measure and hide the bug.
+  await nextFrame();
+  await nextFrame();
+
+  // Every box keeps its size, so no resize reports the flip. The target's
+  // logical offset is unchanged too, but the physical translate written for
+  // it now points the wrong way; a link at offset 0 would hide that.
+  const before = target.getBoundingClientRect().left;
+
+  flow.dir = 'rtl';
+
+  expect(target.getBoundingClientRect().left).not.toBeCloseTo(before, 0);
+
+  await vi.waitFor(landed);
 });

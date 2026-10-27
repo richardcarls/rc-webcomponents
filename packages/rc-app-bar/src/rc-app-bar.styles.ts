@@ -6,6 +6,7 @@ export const appBarStyles = css`
     container-type: inline-size;
     background: var(--rc-app-bar-bg, Canvas);
     color: var(--rc-app-bar-color, CanvasText);
+    box-shadow: var(--rc-app-bar-shadow, none);
     --_rc-app-bar-collapse-distance: 0px;
     --_rc-app-bar-collapse-offset: 0px;
     --rc-app-bar-collapse-progress: 0;
@@ -163,11 +164,20 @@ export const appBarStyles = css`
     }
   }
 
+  /*
+   * Split by what actually moves: the host's own transition is translate
+   * (the bar hiding/showing on scroll), which is spatial and goes fully to
+   * zero. The title's animation is an opacity fade-in, which is effects
+   * motion and is kept, just shortened, rather than zeroed along with it
+   * the way one shared transition-duration/animation-duration sweep would.
+   */
   @media (prefers-reduced-motion: reduce) {
-    :host,
-    :host([variant='expanded'][data-collapsed]) #title {
+    :host {
       transition-duration: 0s;
-      animation-duration: 0s;
+    }
+
+    :host([variant='expanded'][data-collapsed]) #title {
+      animation-duration: 70ms;
     }
   }
 

@@ -6,9 +6,47 @@ apply.
 
 Components are fully typed and developed primarily with [Lit](https://lit.dev).
 
-**[Documentation and component demos](https://richardcarls.github.io/rc-webcomponents/)**
+**[Stable documentation and demos](https://richardcarls.github.io/rc-webcomponents/)** ·
+**[`@next` preview documentation and demos](https://richardcarls.github.io/rc-webcomponents/next/)**
+
+> The npm `next` channel contains in-development snapshots. Install it with
+> `npm install @rcarls/rc-webcomponents@next` and use the preview documentation, which may cover
+> APIs that are not available in the latest stable release.
+
+Runtime support covers the current and previous stable Chromium, Firefox, and Safari releases,
+plus current Chrome on Android and Safari on iOS. Packages are browser modules: render native
+fallback markup on the server and register components from a client-only entry point. See the
+[compatibility](https://richardcarls.github.io/rc-webcomponents/guide/compatibility),
+[accessibility testing](https://richardcarls.github.io/rc-webcomponents/guide/accessibility-testing),
+and [performance](https://richardcarls.github.io/rc-webcomponents/guide/performance) guides for
+the complete contracts and current baselines.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E4P62596QR)
+
+## Quick start
+
+Install the aggregate package:
+
+```sh
+npm install @rcarls/rc-webcomponents
+```
+
+Register only the components your application uses through their aggregate-package subpaths:
+
+```js
+import '@rcarls/rc-webcomponents/rc-button/define';
+import '@rcarls/rc-webcomponents/rc-select/define';
+```
+
+The matching class-only subpaths omit registration:
+
+```js
+import { RCButton } from '@rcarls/rc-webcomponents/rc-button';
+```
+
+Use `@rcarls/rc-webcomponents/define` only when you want to register the entire collection.
+See the [installation guide](https://richardcarls.github.io/rc-webcomponents/guide/installation)
+for standalone-package and CDN alternatives.
 
 ## Design principles
 
@@ -40,6 +78,21 @@ Every component implements the corresponding
 - Keyboard navigation is fully managed
 - Focus management behaves as defined / expected
 - A11y testing is part of acceptance, not an afterthought
+
+### Direction and writing-mode aware
+
+Components work in right-to-left languages and in vertical writing modes, not only in
+left-to-right horizontal text.
+
+- Styles use logical CSS properties (`inset-inline-start`, `margin-block-end`), so layout
+  follows the page's `dir` and `writing-mode`
+- Scrolling, pointer dragging, and anchored popups measure in logical terms: a menu aligned to
+  its trigger's start edge aligns to the right edge in RTL
+- Arrow keys follow reading direction, as the APG describes for RTL: in a horizontal toolbar,
+  ArrowLeft moves to the next item in RTL
+- `orientation="horizontal|vertical"` names inline- and block-axis layouts; components expose the
+  physical orientation they actually render through `aria-orientation`, while scrolling regions
+  take a logical `axis="block|inline"`
 
 ### Design-system neutral
 
@@ -86,8 +139,8 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-common`](packages/rc-common/)                                     | Shared controllers, directives, mixins, and utilities: drag, resize, anchor positioning, scroll observation, keyboard interaction/navigation, active descendant, roving tabindex, focusability, and slider math | None                                            |
 | [`rc-listbox`](packages/rc-listbox/)                                   | Listbox that keeps option DOM in light DOM for `aria-activedescendant` navigation                                                                                                                               | rc-common                                       |
 | [`rc-menu`](packages/rc-menu/)                                         | Menu popup for command surfaces with keyboard navigation and typed activation events                                                                                                                            | rc-common                                       |
-| [`rc-select`](packages/rc-select/)                                     | Select-only combobox backed by a native `<select>`                                                                                                                                                              | rc-common, rc-listbox                           |
-| [`rc-combobox`](packages/rc-combobox/)                                 | Editable combobox with filtering and optional allow-create behavior                                                                                                                                             | rc-chip-group, rc-common, rc-listbox, rc-select |
+| [`rc-select`](packages/rc-select/)                                     | Select-only combobox backed by a native `<select>`, with popover or transactional dialog presentation                                                                                                           | rc-common, rc-dialog, rc-listbox                |
+| [`rc-combobox`](packages/rc-combobox/)                                 | Editable combobox with filtering, allow-create, and popover or transactional dialog presentation                                                                                                                | rc-chip-group, rc-common, rc-listbox, rc-select |
 | [`rc-menu-button`](packages/rc-menu-button/)                           | Trigger button that opens an `rc-menu` popup                                                                                                                                                                    | rc-common, rc-menu                              |
 | [`rc-menubar`](packages/rc-menubar/)                                   | Menubar coordinator for `rc-menu-button` children with roving tabindex and submenu handoff                                                                                                                      | rc-common, rc-menu, rc-menu-button              |
 | [`rc-toolbar`](packages/rc-toolbar/)                                   | Toolbar that groups consumer-supplied controls into one tab stop with arrow-key navigation                                                                                                                      | rc-common                                       |
@@ -95,15 +148,16 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-app-bar`](packages/rc-app-bar/)                                   | App bar modeled after Material 3 Top app bar, with slots and optional scroll behavior                                                                                                                           | rc-common                                       |
 | [`rc-button`](packages/rc-button/)                                     | Progressive-enhancement action wrapper for a direct native `<button>` or `<a href>`, with structural state affordances for buttons                                                                              | None                                            |
 | [`rc-card`](packages/rc-card/)                                         | Design-system-neutral vertical and horizontal card shell with slots, parts, grid coordination, and optional action-target click forwarding                                                                      | rc-common                                       |
-| [`rc-scroller`](packages/rc-scroller/)                                 | Native scroll region with optional centered content and fullbleed layout tracks                                                                                                                                 | None                                            |
+| [`rc-scroller`](packages/rc-scroller/)                                 | Native scroll region with optional centered content and fullbleed layout tracks                                                                                                                                 | rc-common                                       |
+| [`rc-virtual-scroller`](packages/rc-virtual-scroller/)                 | Headless virtualization wrapper reporting the visible index range for a consumer-owned list or grid                                                                                                             | rc-common                                       |
 | [`rc-carousel`](packages/rc-carousel/)                                 | WAI-ARIA APG carousel pattern built on native CSS scroll-snap and consumer-controlled slide sizing                                                                                                              | rc-common                                       |
 | [`rc-list`](packages/rc-list/)                                         | Shared-column list rows with standard/segmented appearances and native-backed selection                                                                                                                         | None                                            |
 | [`rc-chip`](packages/rc-chip/)                                         | Chip wrapper for native actions, links, filters, and inputs                                                                                                                                                     | None                                            |
 | [`rc-chip-group`](packages/rc-chip-group/)                             | Adaptive wrapping and scrolling layout for native-backed chips and arbitrary elements                                                                                                                           | rc-chip, rc-common                              |
 | [`rc-splitter`](packages/rc-splitter/)                                 | Resizable pane splitter with pointer, keyboard, and collapse/restore controls                                                                                                                                   | rc-common                                       |
-| [`rc-textarea`](packages/rc-textarea/)                                 | Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks                                                                                                                      | rc-common                                       |
+| [`rc-textarea`](packages/rc-textarea/)                                 | Textarea wrapper with line decorations, gutter rendering, folding actions, and plugin hooks                                                                                                                     | rc-common                                       |
 | [`rc-textarea-adapters`](packages/rc-textarea-adapters/)               | Adapter factories that connect Lezer, unified, and Shiki tokenizers to `rc-textarea`                                                                                                                            | rc-textarea                                     |
-| [`rc-textarea-plugin-markdown`](packages/rc-textarea-plugin-markdown/) | Markdown decoration plugin for `rc-textarea`                                                                                                                                                                    | rc-textarea                                     |
+| [`rc-textarea-plugin-markdown`](packages/rc-textarea-plugin-markdown/) | Markdown decoration and folding plugin for `rc-textarea`                                                                                                                                                        | rc-textarea                                     |
 | [`rc-markdown-editor`](packages/rc-markdown-editor/)                   | Rich/source Markdown editor with a formatting toolbar, backed by `rc-textarea`                                                                                                                                  | rc-textarea                                     |
 | [`rc-disclosure`](packages/rc-disclosure/)                             | Disclosure wrapper for a native `<details>`/`<summary>` pair with controlled or uncontrolled open state                                                                                                         | None                                            |
 | [`rc-accordion`](packages/rc-accordion/)                               | Accordion coordinator for child native `<details>` panels with single- or multiple-open behavior                                                                                                                | rc-disclosure                                   |
@@ -111,10 +165,13 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-bottom-sheet`](packages/rc-bottom-sheet/)                         | Modal bottom-sheet wrapper for a native `<dialog>`                                                                                                                                                              | rc-dialog                                       |
 | [`rc-fab`](packages/rc-fab/)                                           | Sticky floating action button modeled after Material 3 Floating action button                                                                                                                                   | rc-common                                       |
 | [`rc-fab-menu`](packages/rc-fab-menu/)                                 | Floating action button menu wrapper for an `rc-menu` action surface                                                                                                                                             | rc-common, rc-menu, rc-menu-button              |
+| [`rc-field`](packages/rc-field/)                                       | Accessible field wrapper for a native input or textarea with labels and supporting text                                                                                                                         | rc-common                                       |
 | [`rc-navigation-bar`](packages/rc-navigation-bar/)                     | Bottom navigation layout that styles consumer-authored links                                                                                                                                                    | rc-common                                       |
 | [`rc-navigation-rail`](packages/rc-navigation-rail/)                   | Navigation rail layout that styles consumer-authored links                                                                                                                                                      | rc-common                                       |
 | [`rc-segmented-button`](packages/rc-segmented-button/)                 | Segmented button group backed by native radio inputs                                                                                                                                                            | None                                            |
 | [`rc-snackbar`](packages/rc-snackbar/)                                 | Live-region host for brief status messages and optional actions                                                                                                                                                 | None                                            |
+| [`rc-popover`](packages/rc-popover/)                                   | Anchored non-modal surface around a native trigger and consumer-owned content                                                                                                                                   | rc-common                                       |
+| [`rc-tooltip`](packages/rc-tooltip/)                                   | Tooltip wrapper for a consumer-owned trigger and descriptive content                                                                                                                                            | rc-common                                       |
 | [`rc-switch`](packages/rc-switch/)                                     | Switch wrapper that enhances a native `<input type="checkbox">`                                                                                                                                                 | None                                            |
 | [`rc-slider`](packages/rc-slider/)                                     | Single-thumb slider backed by a native `<input type="range">`                                                                                                                                                   | rc-common                                       |
 | [`rc-progress`](packages/rc-progress/)                                 | Native `<progress>` enhancer with a formatted value display and indeterminate handling                                                                                                                          | rc-common                                       |
@@ -123,17 +180,24 @@ so they behave well with React, Vue, Solid, Angular, or no framework at all.
 | [`rc-virtual-canvas`](packages/rc-virtual-canvas/)                     | Scrollable virtual canvas for rendering large coordinate-space content                                                                                                                                          | None                                            |
 | [`rc-theme-material`](packages/rc-theme-material/)                     | Material 3 CSS theme and token bridge for rc-webcomponents                                                                                                                                                      | None                                            |
 | [`rc-theme-substrate`](packages/rc-theme-substrate/)                   | Lightweight CSS reference theme for app-oriented rc-webcomponents layouts                                                                                                                                       | None                                            |
+| [`rc-theme-win31`](packages/rc-theme-win31/)                           | Windows 3.1 era CSS theme and token bridge for rc-webcomponents                                                                                                                                                 | None                                            |
 | [`rc-webcomponents`](packages/rc-webcomponents/)                       | Aggregate package that re-exports and defines the rc-webcomponents collection                                                                                                                                   | all component packages                          |
 | [`rc-search-bar`](packages/rc-search-bar/)                             | Search field/view wrapper for a native `<input type="search">` with clear, suggestions, and debounced events                                                                                                    | rc-common                                       |
 
 ## Development
 
-This project uses Yarn 4.x (Berry) workspaces and plug-and-play (PnP).
+This project uses Yarn 4.x (Berry) workspaces with the `node-modules` linker.
 
 Vite builds ESM and UMD output plus type declarations. Tests run with Vitest Browser Mode and
-Playwright. The default local suite uses Chromium; `yarn test:full` runs Chromium, Firefox, and
-WebKit sequentially to bound browser-session resource use. CI always runs the full browser matrix.
+Playwright inside the Playwright Docker image matching the locked Playwright version, locally and
+in CI, so screenshots and benchmarks render the same everywhere; Docker is required. The default
+local suite uses Chromium; `yarn test:full` runs Chromium, Firefox, and WebKit sequentially to
+bound browser-session resource use. CI always runs the full browser matrix.
 The documentation site uses Docusaurus.
+
+After `yarn build`, `yarn audit:performance` checks package and theme size budgets and
+`yarn benchmark:browser` checks representative Chromium runtime budgets. Reports are written to
+the ignored `.performance/` directory.
 
 Maintainers should follow the [tag-driven npm release guide](RELEASING.md) when versioning or
 publishing the synchronized workspace packages.

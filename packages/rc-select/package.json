@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Select-only combobox backed by a native <select>.",
   "repository": {
     "type": "git",
@@ -47,6 +47,7 @@
   "dependencies": {
     "@rcarls/rc-chip-group": "workspace:*",
     "@rcarls/rc-common": "workspace:*",
+    "@rcarls/rc-dialog": "workspace:*",
     "@rcarls/rc-listbox": "workspace:*"
   },
   "devDependencies": {

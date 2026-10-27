@@ -1,0 +1,15 @@
+@layer rc-theme-substrate.components {
+  /*
+   * Tooltips use the inverse surface, like snackbars. Declared on the theme
+   * root so tooltips inside other shadow roots inherit the same values.
+   */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) {
+    --rc-tooltip-padding-block: 0.375rem;
+    --rc-tooltip-padding-inline: 0.625rem;
+    --rc-tooltip-border: 0;
+    --rc-tooltip-radius: var(--substrate-radius-sm, 0.25rem);
+    --rc-tooltip-background: var(--substrate-inverse-surface, CanvasText);
+    --rc-tooltip-color: var(--substrate-inverse-on-surface, Canvas);
+    --rc-tooltip-shadow: var(--substrate-shadow-sm, none);
+  }
+}

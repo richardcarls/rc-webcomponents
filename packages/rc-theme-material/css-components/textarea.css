@@ -1,0 +1,22 @@
+@layer rc-theme-material.css-components {
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    textarea.rc-textarea:not(:where(rc-textarea > textarea)) {
+    box-sizing: border-box;
+    min-block-size: var(--rc-control-block-size, 2.5rem);
+    padding-block: var(--rc-control-padding-block, 0.5rem);
+    padding-inline: var(--rc-control-padding-inline, 1rem);
+    border: var(--rc-textarea-border, var(--rc-border, 1px solid ButtonBorder));
+    border-radius: var(--rc-textarea-border-radius, var(--rc-control-radius, 0.5rem));
+    background: var(--rc-textarea-background, var(--rc-field, Field));
+    color: var(--rc-textarea-color, var(--rc-field-text, FieldText));
+    caret-color: var(--rc-textarea-caret-color, var(--rc-accent, AccentColor));
+    font: inherit;
+    resize: block;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    textarea.rc-textarea:not(:where(rc-textarea > textarea)):focus-visible {
+    outline: var(--rc-textarea-focus-outline, var(--rc-focus-ring, 2px solid Highlight));
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+}

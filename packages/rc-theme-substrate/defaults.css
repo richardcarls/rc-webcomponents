@@ -1,4 +1,5 @@
-@layer rc-theme-substrate.defaults, rc-theme-substrate.bridge, rc-theme-substrate.components;
+@layer rc-base, rc-theme-substrate.defaults, rc-theme-substrate.bridge, rc-theme-substrate.native, rc-theme-substrate.components, rc-theme-substrate.css-components,
+  rc-theme-substrate.overrides;
 
 @layer rc-theme-substrate.defaults {
   /*
@@ -24,6 +25,17 @@
     --substrate-border-color: light-dark(oklch(83% 0.018 75), oklch(39% 0.018 72));
     --substrate-shadow-color: light-dark(oklch(16% 0.03 60 / 18%), oklch(0% 0 0 / 42%));
 
+    /* Flipped against the surface pair, for the snackbar and anything else
+     * that has to read as a layer above the page rather than part of it. */
+    --substrate-inverse-surface: light-dark(oklch(27% 0.018 72), oklch(93% 0.01 80));
+    --substrate-inverse-on-surface: light-dark(oklch(96% 0.01 80), oklch(21% 0.018 72));
+
+    /*
+     * Held at hue 25 so it reads as red rather than as a darker shade of the
+     * primary, which sits at hue 48. Clears 7:1 against the field in both modes.
+     */
+    --substrate-error: light-dark(oklch(47% 0.19 25), oklch(74% 0.15 25));
+
     --substrate-font-family:
       system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, Cantarell,
       'Noto Sans', sans-serif;
@@ -35,6 +47,7 @@
     --substrate-radius-md: 0.5rem;
     --substrate-radius-lg: 0.75rem;
     --substrate-radius-xl: 1rem;
+    --substrate-radius-pill: 999px;
 
     --substrate-control-block-size: 2.5rem;
     --substrate-control-padding-block: 0.5rem;
@@ -57,6 +70,19 @@
     --substrate-motion-duration: 160ms;
     --substrate-motion-duration-slow: 240ms;
     --substrate-motion-easing: cubic-bezier(0.2, 0, 0, 1);
+    /*
+     * The shared spatial/effects scale (see the styling guide), kept as its
+     * own small set of primitives rather than derived from the two above:
+     * Substrate favors few named tokens over a layered primitive/semantic
+     * split, and the values only partly overlap (160/240ms already meant
+     * something as the flat scale; here they mean the spatial tier).
+     */
+    --substrate-motion-effects-duration-fast: 100ms;
+    --substrate-motion-effects-duration-default: 160ms;
+    --substrate-motion-effects-duration-slow: 240ms;
+    --substrate-motion-spatial-duration-fast: 160ms;
+    --substrate-motion-spatial-duration-default: 240ms;
+    --substrate-motion-spatial-duration-slow: 320ms;
     --substrate-disabled-opacity: 0.52;
   }
 
@@ -72,6 +98,9 @@
       --substrate-field: Field;
       --substrate-on-surface: CanvasText;
       --substrate-on-surface-muted: GrayText;
+      --substrate-inverse-surface: CanvasText;
+      --substrate-inverse-on-surface: Canvas;
+      --substrate-error: Mark;
       --substrate-border-color: ButtonBorder;
       --substrate-shadow-color: transparent;
       --substrate-focus-ring: 2px solid Highlight;

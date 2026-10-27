@@ -46,6 +46,27 @@ function renderPart(scope: HTMLElement, tagName: string, partName: string): HTML
   return part;
 }
 
+test('dialog entrance motion leaves surface geometry untransformed', () => {
+  const $scope = renderScope();
+  const $host = document.createElement('rc-dialog');
+  const $dialog = document.createElement('dialog');
+
+  $dialog.setAttribute('open', '');
+  $host.append($dialog);
+  $scope.append($host);
+
+  const openStyle = getComputedStyle($dialog);
+  const transitionProperties = openStyle.transitionProperty.split(',').map((value) => value.trim());
+
+  expect(transitionProperties).toContain('opacity');
+  expect(transitionProperties).not.toContain('transform');
+  expect(openStyle.transform).toBe('none');
+
+  $dialog.removeAttribute('open');
+
+  expect(getComputedStyle($dialog).transform).toBe('none');
+});
+
 test('aggregate component styles cover the reference styling surface', () => {
   const scope = renderScope();
   const expectations = new Map<string, [string, string]>([
@@ -61,8 +82,8 @@ test('aggregate component styles cover the reference styling surface', () => {
     ['rc-combobox', ['display', 'inline-block']],
     ['rc-bottom-sheet', ['--rc-bottom-sheet-bg', '']],
     ['rc-search-bar', ['display', 'inline-block']],
-    ['rc-textarea', ['--rc-textarea-padding', '0.75rem']],
-    ['rc-markdown-editor', ['--rme-padding', '0.75rem']],
+    ['rc-textarea', ['--rc-textarea-padding-inline', '0.75rem']],
+    ['rc-markdown-editor', ['--rc-markdown-editor-padding', '0.75rem']],
     ['rc-transfer-list', ['--rc-transfer-list-gap', '1rem']],
     ['rc-app-bar', ['font-family', '']],
     ['rc-fab', ['--rc-fab-bg', '']],
@@ -79,6 +100,8 @@ test('aggregate component styles cover the reference styling surface', () => {
     ['rc-disclosure', ['display', 'block']],
     ['rc-accordion', ['display', 'grid']],
     ['rc-virtual-canvas', ['overflow', 'hidden']],
+    ['rc-popover', ['--rc-popover-padding-inline', '0.75rem']],
+    ['rc-tooltip', ['--rc-tooltip-border', '0']],
   ]);
 
   for (const [tagName, [property, expected]] of expectations) {
@@ -94,6 +117,50 @@ test('aggregate component styles cover the reference styling surface', () => {
       expect(value).toBe(expected);
     }
   }
+});
+
+test('popover and tooltip tokens reach surfaces inside nested shadow roots', () => {
+  const scope = renderScope();
+  const host = document.createElement('div');
+  const shadowRoot = host.attachShadow({ mode: 'open' });
+  const popover = document.createElement('rc-popover');
+  const tooltip = document.createElement('rc-tooltip');
+
+  shadowRoot.append(popover, tooltip);
+  scope.append(host);
+
+  expect(getComputedStyle(popover).getPropertyValue('--rc-popover-background')).not.toBe('');
+  expect(getComputedStyle(tooltip).getPropertyValue('--rc-tooltip-background')).not.toBe('');
+});
+
+test('canonical 0.7 component tokens replace removed theme-only names', () => {
+  const scope = renderScope();
+  const appBar = document.createElement('rc-app-bar');
+  const markdownEditor = document.createElement('rc-markdown-editor');
+  const textarea = document.createElement('rc-textarea');
+  const transferList = document.createElement('rc-transfer-list');
+
+  scope.append(appBar, markdownEditor, textarea, transferList);
+
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-bg')).not.toBe('');
+
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-background')).toBe('');
+
+  expect(
+    getComputedStyle(markdownEditor).getPropertyValue('--rc-markdown-editor-border-radius'),
+  ).not.toBe('');
+
+  expect(getComputedStyle(textarea).getPropertyValue('--rc-textarea-border-radius')).toBe(
+    '0.75rem',
+  );
+
+  expect(getComputedStyle(transferList).getPropertyValue('--rc-transfer-list-listbox-radius')).toBe(
+    '0.75rem',
+  );
+
+  appBar.setAttribute('data-scrolled', '');
+
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-shadow')).not.toBe('');
 });
 
 test('contextual styles do not style unrelated native buttons', () => {
@@ -113,9 +180,9 @@ test('segmented buttons flatten native fieldset chrome for themed segments', () 
 
   const styles = getComputedStyle(segmentedButton);
 
-  expect(styles.getPropertyValue('--_rc-segmented-button-fieldset-border')).toBe('0');
-  expect(styles.getPropertyValue('--_rc-segmented-button-legend-position')).toBe('absolute');
-  expect(styles.getPropertyValue('--_rc-segmented-button-radio-opacity')).toBe('0');
+  // The structural recipe moved into the component, which now owns the
+  // visually hidden legend and the focusable hidden radio. The theme opts in.
+  expect(styles.getPropertyValue('--rc-segmented-button-appearance').trim()).toBe('segmented');
 });
 
 test('app bars stack above adjacent themed content for anchored popups', () => {
@@ -349,7 +416,7 @@ test('list elements receive the shared Substrate token contract', () => {
   expect(listStyles.getPropertyValue('--rc-list-item-selected-background')).not.toBe('');
 });
 
-test('disclosure and accordion styles keep native details as the styled surface', () => {
+test('disclosure and accordion map their tokens onto the shared panel properties', () => {
   const scope = renderScope();
   const disclosure = document.createElement('rc-disclosure');
   const accordion = document.createElement('rc-accordion');
@@ -370,19 +437,146 @@ test('disclosure and accordion styles keep native details as the styled surface'
 
   scope.append(disclosure, accordion);
 
-  const disclosureDetails = disclosure.querySelector('details');
-  const disclosureContent = disclosure.querySelector('details > div');
+  // The panel boxes are drawn by the component's own light-DOM base layer, so
+  // what a theme owes is the mapping. Both child forms read the same names.
+  for (const element of [disclosure, accordion]) {
+    const styles = getComputedStyle(element);
+
+    for (const token of [
+      '--rc-disclosure-radius',
+      '--rc-disclosure-background',
+      '--rc-disclosure-summary-min-block-size',
+      '--rc-disclosure-summary-hover-background',
+      '--rc-disclosure-content-padding-inline',
+      '--rc-disclosure-duration',
+    ]) {
+      expect(styles.getPropertyValue(token).trim(), `${element.tagName} ${token}`).not.toBe('');
+    }
+  }
+
+  expect(getComputedStyle(accordion).getPropertyValue('--rc-accordion-gap').trim()).toBe('0.5rem');
+
+  // Decoration a bounded property cannot express stays with the theme: the
+  // chevron that replaces the native marker, and the content's block box.
   const accordionSummary = accordion.querySelector('summary');
   const accordionContent = accordion.querySelector('details > div');
 
-  expect(disclosureDetails).not.toBeNull();
-  expect(disclosureContent).not.toBeNull();
   expect(accordionSummary).not.toBeNull();
   expect(accordionContent).not.toBeNull();
-  expect(getComputedStyle(disclosureDetails!).borderRadius).not.toBe('0px');
-  expect(getComputedStyle(accordionSummary!).minBlockSize).toBe('44px');
   expect(getComputedStyle(accordionSummary!, '::after').borderBlockStartWidth).toBe('2px');
   expect(getComputedStyle(accordionContent!).display).toBe('flow-root');
-  expect(getComputedStyle(accordionContent!).paddingInlineStart).toBe('14px');
-  expect(getComputedStyle(accordionContent!).paddingBlockEnd).toBe('0px');
+});
+
+test('components that previously had no contract now expose themed tokens', () => {
+  const scope = renderScope();
+  const cases: Array<[string, string[]]> = [
+    [
+      'rc-adaptive-menu',
+      [
+        '--rc-adaptive-menu-popup-min-inline-size',
+        '--rc-adaptive-menu-trigger-color',
+        '--rc-adaptive-menu-item-min-block-size',
+      ],
+    ],
+    [
+      'rc-carousel',
+      [
+        '--rc-carousel-item-background',
+        '--rc-carousel-navigation-button-color',
+        '--rc-carousel-pagination-item-active-color',
+      ],
+    ],
+    ['rc-chip-group', ['--rc-chip-group-column-gap', '--rc-chip-group-toggle-separator-color']],
+    ['rc-scroller', ['--rc-scroller-content-max-inline-size', '--rc-scroller-scrollbar-color']],
+    ['rc-toolbar', ['--rc-toolbar-radius', '--rc-toolbar-padding-inline']],
+    [
+      'rc-virtual-canvas',
+      ['--rc-virtual-canvas-scrollbar-size', '--rc-virtual-canvas-scrollbar-thumb-background'],
+    ],
+  ];
+
+  for (const [tag, tokens] of cases) {
+    const element = document.createElement(tag);
+
+    scope.append(element);
+
+    const styles = getComputedStyle(element);
+
+    for (const token of tokens) {
+      expect(styles.getPropertyValue(token).trim(), `${tag} ${token}`).not.toBe('');
+    }
+  }
+});
+
+test('no themed color mixes against a bare system color', () => {
+  const scope = renderScope();
+  const splitter = document.createElement('rc-splitter');
+
+  // components.css alone has no brand values, so supply the ones these mixes
+  // reach for; the point is that the *other* operand is a theme token.
+  scope.style.setProperty('--rc-accent', 'rgb(1, 2, 3)');
+  scope.style.setProperty('--substrate-surface', 'rgb(4, 5, 6)');
+  scope.style.setProperty('--substrate-border-color', 'rgb(7, 8, 9)');
+  scope.append(splitter);
+
+  // A mix whose other operand is a system color has no value outside a browser,
+  // so it cannot reach the token export at all.
+  for (const [element, token] of [
+    [splitter, '--rc-splitter-separator-color'],
+    [splitter, '--rc-splitter-handle-color'],
+  ] as const) {
+    const value = getComputedStyle(element).getPropertyValue(token);
+
+    expect(value, token).not.toMatch(/\b(Canvas|CanvasText|ButtonBorder|ButtonFace)\b/);
+  }
+});
+
+test('fields take the Substrate palette and its shared control chrome', () => {
+  const scope = renderScope();
+  const field = document.createElement('rc-field');
+
+  scope.append(field);
+
+  const styles = getComputedStyle(field);
+
+  expect(styles.getPropertyValue('--rc-field-background')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-field-label-color')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-field-error-color')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-field-radius')).not.toBe('');
+
+  // rc-field owns its own focus outline; Substrate only supplies the values.
+  expect(styles.getPropertyValue('--rc-field-focus-outline')).not.toBe('');
+
+  const surface = renderPart(scope, 'rc-field', 'field');
+
+  expect(getComputedStyle(surface).transitionDuration).not.toBe('0s');
+});
+
+test('a control provider inside a field stops drawing its own chrome', () => {
+  const scope = renderScope();
+
+  // rc-field's own surface draws the border and background; without these
+  // resets the nested control's chrome nests visibly inside the field's.
+  for (const [tagName, partName] of [
+    ['rc-select', 'trigger'],
+    ['rc-combobox', 'anchor'],
+  ] as const) {
+    const field = document.createElement('rc-field');
+    const provider = document.createElement(tagName);
+    const shadowRoot = provider.shadowRoot ?? provider.attachShadow({ mode: 'open' });
+    const part = document.createElement('div');
+
+    provider.setAttribute('data-rc-field-control', '');
+    part.setAttribute('part', partName);
+    shadowRoot.append(part);
+    field.append(provider);
+    scope.append(field);
+
+    const styles = getComputedStyle(part);
+
+    expect(styles.borderTopWidth, tagName).toBe('0px');
+    expect(styles.borderRadius, tagName).toBe('0px');
+    expect(styles.minBlockSize, tagName).toBe('0px');
+    expect(styles.backgroundColor, tagName).toBe('rgba(0, 0, 0, 0)');
+  }
 });

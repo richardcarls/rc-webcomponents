@@ -39,21 +39,21 @@ automatically at viewport breakpoints.
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-transfer-list
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-transfer-list
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-transfer-list/define';
+import '@rcarls/rc-webcomponents/rc-transfer-list/define';
 ```
 
 ## Live demo
@@ -63,6 +63,12 @@ import '@rcarls/rc-transfer-list/define';
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`. Override it with
+`messages`, or register it for every instance under `rc-transfer-list`: `available`, `selected`, `actions`, `add`, `addAll`, `remove`, `clear`, `moveUp`, `moveDown`. See
+[Localization](../guide/localization).
 
 ## API
 

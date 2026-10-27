@@ -1,0 +1,41 @@
+@layer rc-theme-win31.components {
+  /*
+   * 3.1 had no bottom sheet. The nearest real thing is a non-modal tool
+   * palette parked against an edge of the workspace, so that is what this
+   * renders: a framed panel with a caption-height grab strip and no rounding,
+   * no elevation, and no scrim.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-bottom-sheet {
+    --rc-bottom-sheet-bg: var(--win31-color-surface);
+    --rc-bottom-sheet-color: var(--win31-color-frame);
+    --rc-bottom-sheet-radius: var(--win31-radius);
+    --rc-bottom-sheet-shadow: var(--win31-window-frame);
+    --rc-bottom-sheet-scrim: transparent;
+    --rc-bottom-sheet-padding: var(--win31-gap-panel);
+    --rc-bottom-sheet-handle-color: var(--win31-color-title-active);
+    --rc-bottom-sheet-handle-radius: var(--win31-radius);
+    --rc-bottom-sheet-handle-inline-size: calc(32 * var(--win31-unit));
+    --rc-bottom-sheet-handle-block-size: calc(4 * var(--win31-unit));
+    --rc-bottom-sheet-snap-duration: 0ms;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-bottom-sheet > dialog {
+    color: var(--win31-color-frame);
+    background: var(--win31-color-surface);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-bottom-sheet > dialog::backdrop {
+    background: transparent;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-bottom-sheet [data-rc-bottom-sheet-handle] {
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-outset-border-color);
+    border-radius: var(--win31-radius);
+  }
+}

@@ -23,6 +23,19 @@ function scrollTo(el: HTMLElement, top: number): void {
   el.dispatchEvent(new Event('scroll'));
 }
 
+test('applies the public elevation token to the host surface', async () => {
+  const screen = render(html`
+    <rc-app-bar data-testid="host" style="--rc-app-bar-shadow: rgb(1 2 3) 0 4px 8px">
+      <span>Title</span>
+    </rc-app-bar>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+
+  await host.updateComplete;
+
+  expect(getComputedStyle(host).boxShadow).toBe('rgb(1, 2, 3) 0px 4px 8px 0px');
+});
+
 test('renders one connected title with no implicit landmark role', async () => {
   const screen = render(html`
     <rc-app-bar data-testid="host">
@@ -355,6 +368,50 @@ test('continuous collapse maps expanded-row scroll distance to progress', async 
   expect(host.hasAttribute('data-collapsed')).toBe(true);
 });
 
+test('continuous collapse converts a zoomed scroll target into host CSS pixels', async () => {
+  const screen = render(html`
+    <div
+      data-testid="sc"
+      style="height: 100px; overflow-y: auto; overflow-anchor: none; zoom: 0.8;"
+    >
+      <rc-app-bar
+        data-testid="host"
+        variant="expanded"
+        scroll-behavior="collapse"
+        style="zoom: 0.8;"
+      >
+        <div style="height: 80px">Recipe</div>
+      </rc-app-bar>
+      <div style="height: 1000px;"></div>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+
+  host.scrollTarget = sc;
+  await host.updateComplete;
+
+  let distanceHostCssPx = 0;
+
+  await vi.waitFor(() => {
+    distanceHostCssPx = Number.parseFloat(
+      host.style.getPropertyValue('--_rc-app-bar-collapse-distance'),
+    );
+
+    expect(distanceHostCssPx).toBeGreaterThan(0);
+  });
+
+  // The host has 0.64 effective zoom; the scroller has 0.8.
+  scrollTo(sc, (distanceHostCssPx * 0.64) / 0.8 / 2);
+
+  expect(
+    Number.parseFloat(host.style.getPropertyValue('--rc-app-bar-collapse-progress')),
+  ).toBeCloseTo(0.5, 1);
+
+  scrollTo(sc, (distanceHostCssPx * 0.64) / 0.8 + 2);
+  expect(host.hasAttribute('data-collapsed')).toBe(true);
+});
+
 test('hide behavior hides downward and reveals upward or near the top', async () => {
   const screen = render(html`
     <div data-testid="sc" style="height: 100px; overflow-y: auto;">
@@ -370,6 +427,7 @@ test('hide behavior hides downward and reveals upward or near the top', async ()
 
   host.scrollTarget = sc;
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   scrollTo(sc, 50);
   expect(host.hasAttribute('data-hidden')).toBe(true);
@@ -378,7 +436,7 @@ test('hide behavior hides downward and reveals upward or near the top', async ()
     expect(host.matches(':state(hidden)')).toBe(true);
   }
 
-  scrollTo(sc, 40);
+  scrollTo(sc, 10);
   expect(host.hasAttribute('data-hidden')).toBe(false);
 
   scrollTo(sc, 60);
@@ -386,6 +444,166 @@ test('hide behavior hides downward and reveals upward or near the top', async ()
 
   scrollTo(sc, 0);
   expect(host.hasAttribute('data-hidden')).toBe(false);
+});
+
+test('hide behavior waits for the hide distance in one direction before toggling', async () => {
+  const screen = render(html`
+    <div data-testid="sc" style="height: 100px; overflow-y: auto;">
+      <div style="height: 1000px;"></div>
+    </div>
+    <rc-app-bar data-testid="host" scroll-behavior="hide" hide-distance="32">
+      <span>Title</span>
+    </rc-app-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+
+  host.scrollTarget = sc;
+  await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  // Short downward steps add up until they cover the distance.
+  scrollTo(sc, 20);
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+  scrollTo(sc, 40);
+  expect(host.hasAttribute('data-hidden')).toBe(true);
+
+  // Small reversals, as when a fling settles, leave it hidden.
+  scrollTo(sc, 300);
+  scrollTo(sc, 299);
+  scrollTo(sc, 301);
+  scrollTo(sc, 280);
+  expect(host.hasAttribute('data-hidden')).toBe(true);
+
+  scrollTo(sc, 268);
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+
+  // Each change of direction starts the count again.
+  scrollTo(sc, 290);
+  scrollTo(sc, 280);
+  scrollTo(sc, 300);
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+});
+
+test('hide behavior publishes its geometry onto the scroll target', async () => {
+  const screen = render(html`
+    <div data-testid="sc" style="height: 100px; overflow-y: auto;">
+      <div style="height: 1000px;"></div>
+    </div>
+    <rc-app-bar data-testid="host" scroll-behavior="hide" style="display: block; height: 64px;">
+      <span>Title</span>
+    </rc-app-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+
+  host.scrollTarget = sc;
+  await host.updateComplete;
+
+  await vi.waitFor(() => {
+    expect(sc.style.getPropertyValue('--rc-app-bar-block-size')).toBe('64px');
+  });
+
+  expect(sc.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('64px');
+
+  scrollTo(sc, 50);
+  expect(sc.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('0px');
+  expect(sc.style.getPropertyValue('--rc-app-bar-block-size')).toBe('64px');
+
+  scrollTo(sc, 10);
+  expect(sc.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('64px');
+
+  host.style.height = '80px';
+
+  await vi.waitFor(() => {
+    expect(sc.style.getPropertyValue('--rc-app-bar-block-size')).toBe('80px');
+  });
+});
+
+test('a hidden bar remains visible while focused and counts a fresh hide distance afterward', async () => {
+  const screen = render(html`
+    <div data-testid="sc" style="height: 100px; overflow-y: auto;">
+      <div style="height: 1000px;"></div>
+    </div>
+    <rc-app-bar data-testid="host" scroll-behavior="hide">
+      <button slot="leading" data-testid="back">Back</button>
+      <span>Title</span>
+    </rc-app-bar>
+    <button data-testid="outside">Outside</button>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const sc = (await screen.getByTestId('sc').element()) as HTMLElement;
+
+  host.scrollTarget = sc;
+  await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  scrollTo(sc, 50);
+  expect(host.hasAttribute('data-hidden')).toBe(true);
+
+  ((await screen.getByTestId('back').element()) as HTMLButtonElement).focus();
+
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+
+  scrollTo(sc, 120);
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+
+  ((await screen.getByTestId('outside').element()) as HTMLButtonElement).focus();
+
+  scrollTo(sc, 140);
+  expect(host.hasAttribute('data-hidden')).toBe(false);
+
+  scrollTo(sc, 160);
+  expect(host.hasAttribute('data-hidden')).toBe(true);
+});
+
+test('geometry outputs follow the hide behavior, the target, and the connection', async () => {
+  const screen = render(html`
+    <div data-testid="first" style="height: 100px; overflow-y: auto;"></div>
+    <div data-testid="second" style="height: 100px; overflow-y: auto;"></div>
+    <rc-app-bar data-testid="host" style="display: block; height: 56px;">
+      <span>Title</span>
+    </rc-app-bar>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCAppBar;
+  const first = (await screen.getByTestId('first').element()) as HTMLElement;
+  const second = (await screen.getByTestId('second').element()) as HTMLElement;
+
+  host.scrollTarget = first;
+  await host.updateComplete;
+
+  // A pinned bar keeps its own space, so it publishes nothing.
+  expect(first.style.getPropertyValue('--rc-app-bar-block-size')).toBe('');
+
+  host.scrollBehavior = 'hide';
+  await host.updateComplete;
+
+  await vi.waitFor(() => {
+    expect(first.style.getPropertyValue('--rc-app-bar-block-size')).toBe('56px');
+  });
+
+  host.scrollTarget = second;
+  await host.updateComplete;
+
+  expect(first.style.getPropertyValue('--rc-app-bar-block-size')).toBe('');
+  expect(first.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('');
+  expect(second.style.getPropertyValue('--rc-app-bar-block-size')).toBe('56px');
+
+  host.scrollBehavior = 'pinned';
+  await host.updateComplete;
+
+  expect(second.style.getPropertyValue('--rc-app-bar-block-size')).toBe('');
+
+  host.scrollBehavior = 'hide';
+  await host.updateComplete;
+  host.remove();
+
+  expect(second.style.getPropertyValue('--rc-app-bar-block-size')).toBe('');
+  expect(second.style.getPropertyValue('--rc-app-bar-visible-block-size')).toBe('');
 });
 
 test('controlled mode applies endpoints silently and ignores the observer', async () => {
@@ -407,6 +625,7 @@ test('controlled mode applies endpoints silently and ignores the observer', asyn
   host.scrolled = true;
   host.scrollTarget = sc;
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   expect(host.hasAttribute('data-scrolled')).toBe(true);
   expect(host.hasAttribute('data-collapsed')).toBe(true);
@@ -434,6 +653,7 @@ test('uncontrolled threshold state and event behavior is preserved', async () =>
   host.addEventListener('rc-app-bar-scroll', onScroll);
   host.scrollTarget = sc;
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   scrollTo(sc, 50);
   expect(host.hasAttribute('data-scrolled')).toBe(false);
@@ -458,11 +678,15 @@ test('releasing controlled mode hands state back to the observer', async () => {
   host.scrolled = false;
   host.scrollTarget = sc;
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   scrollTo(sc, 50);
   expect(host.hasAttribute('data-scrolled')).toBe(false);
 
   host.scrolled = undefined;
   await host.updateComplete;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await host.updateComplete;
+
   expect(host.hasAttribute('data-scrolled')).toBe(true);
 });
 
@@ -504,4 +728,22 @@ test('has no automated accessibility violations in active layouts', async () => 
   host.scrolled = true;
   await host.updateComplete;
   await expectNoA11yViolations(host);
+});
+
+test('reduced motion zeros the spatial hide/show transition but only shortens the title effects fade', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test proves the split by construction: the host's own
+  // translate transition (spatial) drops to 0s, while the title's opacity
+  // fade-in animation (effects) is shortened rather than zeroed.
+  const { appBarStyles } = await import('./rc-app-bar.styles.js');
+  const css = appBarStyles.cssText;
+
+  expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+
+  const motionBlock = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+
+  expect(motionBlock).toMatch(/:host\s*{\s*transition-duration:\s*0s;/);
+  expect(motionBlock).toContain('animation-duration: 70ms;');
+  expect(motionBlock).not.toContain('animation-duration: 0s');
 });

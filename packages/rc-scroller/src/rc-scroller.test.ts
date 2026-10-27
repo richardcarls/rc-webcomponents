@@ -1,10 +1,17 @@
 import { html } from 'lit';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCScroller } from './rc-scroller.js';
+
+async function settleBoundaries(host: RCScroller): Promise<void> {
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await Promise.resolve();
+  await host.updateComplete;
+}
 
 test('uses the custom element host as the native block scrollport', async () => {
   const screen = render(html`
@@ -15,6 +22,7 @@ test('uses the custom element host as the native block scrollport', async () => 
   const host = (await screen.getByTestId('host').element()) as RCScroller;
 
   await host.updateComplete;
+  await settleBoundaries(host);
 
   expect(getComputedStyle(host).overflowY).toBe('auto');
   expect(host.scrollHeight).toBeGreaterThan(host.clientHeight);
@@ -106,8 +114,11 @@ test('has no automated accessibility violations with an author-provided landmark
   await expectNoA11yViolations(host);
 });
 
-/** Sets scrollLeft/scrollTop and dispatches scroll synchronously, for deterministic tests. */
-function scrollTo(el: RCScroller, { top, left }: { top?: number; left?: number }) {
+/**
+ * Sets scrollLeft/scrollTop, dispatches scroll, and waits for the frame the
+ * boundary evaluation is coalesced into.
+ */
+async function scrollTo(el: RCScroller, { top, left }: { top?: number; left?: number }) {
   if (top !== undefined) {
     el.scrollTop = top;
   }
@@ -117,6 +128,8 @@ function scrollTo(el: RCScroller, { top, left }: { top?: number; left?: number }
   }
 
   el.dispatchEvent(new Event('scroll'));
+
+  await settleBoundaries(el);
 }
 
 test('reflects at-inline-start/at-inline-end on an inline scroller', async () => {
@@ -128,6 +141,7 @@ test('reflects at-inline-start/at-inline-end on an inline scroller', async () =>
   const host = (await screen.getByTestId('host').element()) as RCScroller;
 
   await host.updateComplete;
+  await settleBoundaries(host);
 
   // Freshly connected, scrolled to the start: at-inline-start, not at-inline-end.
   expect(host.hasAttribute('at-inline-start')).toBe(true);
@@ -135,12 +149,12 @@ test('reflects at-inline-start/at-inline-end on an inline scroller', async () =>
 
   const maxScrollLeft = host.scrollWidth - host.clientWidth;
 
-  scrollTo(host, { left: maxScrollLeft });
+  await scrollTo(host, { left: maxScrollLeft });
   await host.updateComplete;
   expect(host.hasAttribute('at-inline-start')).toBe(false);
   expect(host.hasAttribute('at-inline-end')).toBe(true);
 
-  scrollTo(host, { left: maxScrollLeft / 2 });
+  await scrollTo(host, { left: maxScrollLeft / 2 });
   await host.updateComplete;
   expect(host.hasAttribute('at-inline-start')).toBe(false);
   expect(host.hasAttribute('at-inline-end')).toBe(false);
@@ -160,10 +174,11 @@ test('maps negative RTL scroll offsets to logical inline boundaries', async () =
   const $host = (await screen.getByTestId('host').element()) as RCScroller;
 
   await $host.updateComplete;
+  await settleBoundaries($host);
 
   const maxScrollLeft = $host.scrollWidth - $host.clientWidth;
 
-  scrollTo($host, { left: -maxScrollLeft });
+  await scrollTo($host, { left: -maxScrollLeft });
   await $host.updateComplete;
 
   expect($host.hasAttribute('at-inline-start')).toBe(false);
@@ -179,13 +194,14 @@ test('reflects at-block-start/at-block-end on a block scroller', async () => {
   const host = (await screen.getByTestId('host').element()) as RCScroller;
 
   await host.updateComplete;
+  await settleBoundaries(host);
 
   expect(host.hasAttribute('at-block-start')).toBe(true);
   expect(host.hasAttribute('at-block-end')).toBe(false);
 
   const maxScrollTop = host.scrollHeight - host.clientHeight;
 
-  scrollTo(host, { top: maxScrollTop });
+  await scrollTo(host, { top: maxScrollTop });
   await host.updateComplete;
   expect(host.hasAttribute('at-block-start')).toBe(false);
   expect(host.hasAttribute('at-block-end')).toBe(true);
@@ -200,6 +216,7 @@ test('reports both edges reached on the non-scrollable axis', async () => {
   const host = (await screen.getByTestId('host').element()) as RCScroller;
 
   await host.updateComplete;
+  await settleBoundaries(host);
 
   // axis="inline" forces overflow-block: hidden — the block axis can't
   // scroll at all, so both of its boundaries count as already reached.
@@ -216,7 +233,84 @@ test('reports both edges reached when content does not overflow', async () => {
   const host = (await screen.getByTestId('host').element()) as RCScroller;
 
   await host.updateComplete;
+  await settleBoundaries(host);
 
   expect(host.hasAttribute('at-inline-start')).toBe(true);
   expect(host.hasAttribute('at-inline-end')).toBe(true);
+});
+
+test('maps boundaries through a vertical-rl writing mode', async () => {
+  const screen = render(html`
+    <rc-scroller
+      data-testid="host"
+      style="writing-mode: vertical-rl; block-size: 4rem; inline-size: 8rem;"
+    >
+      <div style="block-size: 24rem;">Content stacked right to left</div>
+    </rc-scroller>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCScroller;
+
+  await host.updateComplete;
+  await settleBoundaries(host);
+
+  // The block axis runs horizontally, starting at the right edge.
+  expect(host.hasAttribute('at-block-start')).toBe(true);
+  expect(host.hasAttribute('at-block-end')).toBe(false);
+
+  const maxScrollLeft = host.scrollWidth - host.clientWidth;
+
+  await scrollTo(host, { left: -maxScrollLeft });
+  await host.updateComplete;
+
+  expect(host.hasAttribute('at-block-start')).toBe(false);
+  expect(host.hasAttribute('at-block-end')).toBe(true);
+});
+
+test('evaluates boundaries once per frame however many scroll events arrive', async () => {
+  const screen = render(html`
+    <rc-scroller data-testid="host" style="block-size: 4rem; inline-size: 8rem;">
+      <div style="block-size: 24rem;">Tall content</div>
+    </rc-scroller>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCScroller;
+
+  await host.updateComplete;
+  await settleBoundaries(host);
+
+  const reads = vi.spyOn(host, 'scrollHeight', 'get');
+
+  for (let i = 0; i < 10; i += 1) {
+    host.dispatchEvent(new Event('scroll'));
+  }
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  expect(reads).toHaveBeenCalledTimes(1);
+});
+
+test('mounting a batch performs no synchronous flow reads', async () => {
+  const styleReads = vi.spyOn(window, 'getComputedStyle');
+  const mounted = Array.from({ length: 8 }, () => {
+    const host = document.createElement('rc-scroller') as RCScroller;
+    const scrollReads = vi.spyOn(host, 'scrollTop', 'get');
+
+    host.innerHTML = '<div style="block-size: 24rem">Content</div>';
+    host.style.blockSize = '4rem';
+    document.body.append(host);
+
+    return { host, scrollReads };
+  });
+
+  const hosts = mounted.map(({ host }) => host);
+
+  await Promise.all(hosts.map((host) => host.updateComplete));
+  expect(styleReads).not.toHaveBeenCalled();
+  mounted.forEach(({ scrollReads }) => expect(scrollReads).not.toHaveBeenCalled());
+
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  expect(styleReads).toHaveBeenCalledTimes(hosts.length);
+  mounted.forEach(({ scrollReads }) => expect(scrollReads).toHaveBeenCalledTimes(1));
+
+  hosts.forEach((host) => host.remove());
+  styleReads.mockRestore();
 });

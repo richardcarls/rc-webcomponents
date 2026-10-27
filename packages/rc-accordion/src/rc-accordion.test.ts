@@ -19,10 +19,12 @@ function getElement<T>($items: T[], index: number): T {
   return $item;
 }
 
-test('rc-accordion closes sibling disclosures', async () => {
+test('rc-accordion asks a controlled sibling disclosure to close', async () => {
+  const toggleSpy = vi.fn();
+
   const screen = render(html`
     <rc-accordion>
-      <rc-disclosure data-testid="one" open>
+      <rc-disclosure data-testid="one" open @rc-disclosure-toggle=${toggleSpy as EventListener}>
         <details open>
           <summary>One</summary>
           <p>One body</p>
@@ -38,19 +40,50 @@ test('rc-accordion closes sibling disclosures', async () => {
   `);
 
   const $one = screen.getByTestId('one').element() as RCDisclosure;
+
+  await screen.getByText('Two', { exact: true }).click();
+
+  await vi.waitFor(() =>
+    expect(toggleSpy).toHaveBeenCalledWith(expect.objectContaining({ detail: { open: false } })),
+  );
+
+  expect($one.open).toBe(true);
+});
+
+test('rc-accordion leaves closed disclosures free to reopen', async () => {
+  const screen = render(html`
+    <rc-accordion>
+      <rc-disclosure data-testid="one">
+        <details>
+          <summary>One</summary>
+          <p>One body</p>
+        </details>
+      </rc-disclosure>
+      <rc-disclosure data-testid="two">
+        <details>
+          <summary>Two</summary>
+          <p>Two body</p>
+        </details>
+      </rc-disclosure>
+    </rc-accordion>
+  `);
+
+  const $one = screen.getByTestId('one').element() as RCDisclosure;
   const $two = screen.getByTestId('two').element() as RCDisclosure;
-  const $twoDetails = $two.querySelector('details');
 
-  if (!$twoDetails) {
-    throw new Error('Expected second disclosure details.');
+  for (const [summary, $opened, $closed] of [
+    ['One', $one, $two],
+    ['Two', $two, $one],
+    ['One', $one, $two],
+    ['Two', $two, $one],
+  ] as const) {
+    await screen.getByText(summary, { exact: true }).click();
+
+    await vi.waitFor(() => {
+      expect($opened.open).toBe(true);
+      expect($closed.open).toBe(false);
+    });
   }
-
-  $two.open = true;
-
-  $twoDetails.dispatchEvent(new Event('toggle'));
-
-  expect($one.open).toBe(false);
-  expect($two.open).toBe(true);
 });
 
 test('rc-accordion closes sibling native details', async () => {
@@ -547,4 +580,34 @@ test('rc-accordion has no automated accessibility violations', async () => {
   `);
 
   await expectNoA11yViolations(screen.getByTestId('accordion').element());
+});
+
+test('rc-accordion styles both child forms from the one disclosure recipe', async () => {
+  const screen = render(html`
+    <rc-accordion style="--rc-disclosure-radius: 10px; --rc-accordion-gap: 6px">
+      <details>
+        <summary>Direct</summary>
+        <p>One</p>
+      </details>
+      <rc-disclosure>
+        <details>
+          <summary>Wrapped</summary>
+          <p>Two</p>
+        </details>
+      </rc-disclosure>
+    </rc-accordion>
+  `);
+
+  await expect.element(screen.getByText('Direct')).toBeInTheDocument();
+
+  const $accordion = document.querySelector('rc-accordion')!;
+  const [$direct, $wrapped] = [...document.querySelectorAll('details')];
+
+  expect(getComputedStyle($accordion).display).toBe('grid');
+  expect(getComputedStyle($accordion).rowGap).toBe('6px');
+
+  // A bare <details> child and one wrapped in rc-disclosure resolve the same
+  // panel recipe, so neither form needs its own vocabulary.
+  expect(getComputedStyle($direct!).borderRadius).toBe('10px');
+  expect(getComputedStyle($wrapped!).borderRadius).toBe('10px');
 });

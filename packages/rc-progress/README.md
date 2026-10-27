@@ -33,3 +33,8 @@ you, avoiding the well-known `<progress>.value = undefined` throw:
   <progress aria-label="Preparing…"></progress>
 </rc-progress>
 ```
+
+## Localization
+
+Without `value-text`, the value display shows the rounded percentage formatted with
+`Intl.NumberFormat` for the element's own `lang`, else `<html lang>`.

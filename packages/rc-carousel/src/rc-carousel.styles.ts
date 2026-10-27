@@ -15,10 +15,18 @@ export const carouselStyles = css`
     column-gap: var(--rc-carousel-gap, 8px);
     inline-size: 100%;
     block-size: 100%;
+    /*
+     * Slides run along the inline axis, so the track scrolls and snaps along
+     * it: horizontally in horizontal text, vertically in vertical text. The
+     * physical declarations are a fallback for engines without the logical
+     * overflow properties.
+     */
     overflow-x: auto;
     overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
+    overflow-inline: auto;
+    overflow-block: hidden;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline mandatory;
     /*
      * Deliberately no \`scroll-behavior: smooth\` here — _scrollToIndex in
      * rc-carousel.ts passes \`behavior: 'smooth'\` explicitly per
@@ -114,6 +122,15 @@ export const carouselStyles = css`
   [part~='pagination-item-active'] {
     background: var(--rc-carousel-pagination-item-active-color, Highlight);
     cursor: default;
+  }
+
+  /*
+   * The built-in chevrons point toward the previous and next slide, which
+   * swap sides in RTL. Slotted replacement icons are the consumer's to mirror
+   * or not, since not every icon is directional.
+   */
+  :host(:dir(rtl)) [part~='navigation-button'] svg {
+    transform: scaleX(-1);
   }
 `;
 

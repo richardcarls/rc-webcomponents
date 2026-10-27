@@ -192,3 +192,25 @@ test('RCToolbar RTL horizontal navigation inverts arrow keys', async () => {
   await userEvent.keyboard('{ArrowRight}');
   await expect.element(item1).toHaveFocus();
 });
+
+test('RCToolbar reports and navigates the orientation it renders in vertical text', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl;">
+      <rc-toolbar data-testid="host">
+        <button data-testid="first">One</button>
+        <button data-testid="second">Two</button>
+      </rc-toolbar>
+    </div>
+  `);
+  const root = screen.getByRole('toolbar');
+  const first = screen.getByTestId('first');
+  const second = screen.getByTestId('second');
+
+  // A horizontal layout runs along the inline axis, which is vertical here,
+  // exactly as a native range input would turn over.
+  await expect.element(root).toHaveAttribute('aria-orientation', 'vertical');
+
+  first.element().focus();
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.element(second).toHaveFocus();
+});

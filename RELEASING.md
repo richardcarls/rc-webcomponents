@@ -76,11 +76,20 @@ git commit -m "chore(release): version packages to 0.4.1"
 ```
 
 Inspect the diff immediately after `version:packages`. Every public package must have the same
-stable version, internal source ranges must remain `workspace:*`, and all pending intent files
-must be consumed. Stop if Changesets computes an unexpected version.
+stable version, internal source ranges must retain their `workspace:` protocol, and all pending
+intent files must be consumed. Stop if Changesets computes an unexpected version.
 
-The publishing dry run creates and inspects every package tarball. It must report the dependency
-order and show no remaining `workspace:` range; it never reads or writes the npm registry.
+Use `workspace:*` only when a published internal peer must match the synchronized package version
+exactly. Changesets normalizes that peer range to the current exact version before calculating the
+release plan, so a fixed-group minor bump outside it escalates the group to a major release. When
+the peer supports multiple pre-1 releases, declare that compatibility explicitly, such as
+`workspace:>=0.2.0 <1.0.0`, and verify the expected version with `yarn changeset status` before
+cutting the release branch.
+
+The publishing dry run creates and inspects every package tarball, then performs read-only npm
+lookups to confirm every public package name already exists. It must report the dependency order,
+show no remaining `workspace:` range, and stop the release if any package still needs its initial
+manual bootstrap publish. It never writes to the npm registry.
 
 ## Merge, tag, and publish
 
@@ -131,6 +140,9 @@ tag. Leave the provenance exception empty. The publisher verifies and skips corr
 then publishes only missing versions.
 
 Registry, authentication, parsing, or invalid immutable-version errors stop the run immediately.
+After a successful publish, provenance verification retries with exponentially increasing delays
+for roughly 12.5 minutes before treating a still-missing attestation as a transient failure. The
+workflow logs each scheduled retry; let that bounded wait finish before manually rerunning it.
 If an existing version contains incorrect metadata, it cannot be overwritten; correct the issue
 in a new patch release.
 
@@ -146,6 +158,39 @@ between the release tag and the selected `main` commit. Normal tag-triggered run
 provenance exceptions. The exception records an unavoidable provenance gap for that immutable
 version; the package's next release must publish through Trusted Publishing normally.
 
+## Publish a @next snapshot release
+
+A snapshot release publishes every public package under the npm `next` dist-tag from whatever
+`develop` currently looks like, without a git tag, a commit, or a coherent version bump. It exists
+so in-development work is reachable (`yarn up '@rcarls/*@next'` in a consuming project) without
+waiting for a stable release, and without documenting unpublished components on the stable docs
+site in the meantime.
+
+To trigger one: open the `Publish to npm` workflow, choose **Run workflow**, pick the ref to
+publish from (usually `develop`), check **snapshot**, and leave `release_tag` and
+`provenance_exception` empty. `snapshot_tag` defaults to `next`; change it only for a deliberately
+different dist-tag.
+
+This publishes all public packages at a fresh, unique `X.Y.Z-<tag>-<datecode>`-shaped version
+(Changesets' snapshot format) under the chosen npm dist-tag, in dependency order, through the same
+OIDC Trusted Publishing and tarball-packing path a stable release uses. It reuses `release.yml`'s
+own file and `npm` environment specifically so no per-package Trusted Publisher re-registration is
+needed: the tuple registered on npmjs.com is keyed on repository, workflow filename, and
+environment name only.
+
+It explicitly does **not**: create a git tag, commit, or push anything, or leave a retained
+CHANGELOG entry. `changeset version --snapshot` computes the version and consumes pending
+`.changeset/*.md` files the same way a real `changeset version` would, but only inside the
+workflow run's own ephemeral checkout; nothing is ever pushed back (the job's `permissions` stay
+`contents: read`), so `develop`'s committed state and its pending changesets are untouched. This
+is what makes running a snapshot publish repeatedly, including right before cutting a real
+release, safe.
+
+To build and deploy the matching in-development docs, run the `Deploy docs to GitHub Pages`
+workflow's **Run workflow** with `next_ref` set to the same ref (defaults to `develop`). It
+publishes to `https://richardcarls.github.io/rc-webcomponents/next/`, alongside the stable site,
+which continues to deploy automatically on a `v*` tag push.
+
 ## Disable automation-token publishing
 
 Only after one complete OIDC release is verified, enforce package-level 2FA and disallow token
@@ -159,51 +204,48 @@ granular automation token on npm.
 
 ## Bootstrap Trusted Publishing for a new package
 
-npm requires a package name to exist before it can have a trusted publisher. Its
-staged-publishing feature has the same prerequisite, so `npm stage publish` cannot create a
-brand-new package. If the package name already exists on npm at any version, do not publish a
-bootstrap version; configure or verify its trusted publisher and continue with the normal release.
+npm requires a package name to exist before it can have a trusted publisher, and its staged
+publishing feature has the same prerequisite, so nothing in npm itself can create a brand-new
+package's Trusted Publisher ahead of a real publish. This is a confirmed, still-open npm platform
+gap ([npm/cli#8544](https://github.com/npm/cli/issues/8544)), not something this repository's
+tooling works around; PyPI supports registering a "pending" publisher for a name that doesn't
+exist yet, npm does not. If the package name already exists on npm at any version, do not
+bootstrap it again; configure or verify its trusted publisher and continue with the normal
+release.
 
-For a brand-new package name, perform one initial publish manually before running
-`version:packages`. Use the package's current, unreleased version so the next synchronized version
-remains available for the OIDC workflow and its provenance attestation.
+For a brand-new package name, publish a minimal placeholder, not the real package. The placeholder
+contains no code, no dependencies, and is never installed by anything; its only purpose is to
+claim the name so a Trusted Publisher can be configured, the same approach the community tool
+[`setup-npm-trusted-publish`](https://github.com/azu/setup-npm-trusted-publish) takes for the same
+reason. Publishing the package's own real, unreleased content manually was considered and
+rejected: npm versions are immutable, so a manually published version can never later gain SLSA
+provenance, permanently leaving the package's actual first release without it. A throwaway
+placeholder avoids that entirely, and it needs no build output, so it can be prepared before the
+real package's source even exists in the repository.
 
-Important: Never bootstrap at the intended synchronized release version. npm versions are
-immutable, so the workflow cannot replace a manual publish with an OIDC-provenance publish of the
-same version. Never use a bypass-2FA token for the bootstrap publish.
-
-From a clean `develop` branch, build and validate the repository, then prepare an inspected
-tarball in a temporary directory. Pass more than one explicit package name when bootstrapping
-several new packages together.
-
-On Linux or macOS:
+Never use a bypass-2FA token for the bootstrap publish.
 
 ```bash
-bootstrap_dir=$(mktemp -d)
-yarn build
-yarn validate:packages
-yarn bootstrap:packages --out "$bootstrap_dir" @rcarls/<package-name>
+yarn bootstrap:trusted-publisher @rcarls/<package-name>
 ```
-
-On Windows:
 
 ```powershell
-$bootstrapDir = Join-Path ([System.IO.Path]::GetTempPath()) "rc-npm-bootstrap-$([guid]::NewGuid())"
-yarn.cmd build
-yarn.cmd validate:packages
-yarn.cmd bootstrap:packages --out $bootstrapDir @rcarls/<package-name>
+yarn.cmd bootstrap:trusted-publisher @rcarls/<package-name>
 ```
 
-The helper accepts only explicit public workspace names, orders selected packages by their runtime
-dependencies, packs them with Yarn so `workspace:*` ranges are rewritten, validates each packed
-manifest, refuses to overwrite an existing tarball, and prints the exact `npm publish` commands.
-It never authenticates to npm or publishes anything.
+This writes a placeholder `package.json` (version `0.0.0` by default; override with
+`--version <version>` only if `0.0.0` is somehow already taken) and README into a temporary
+directory and prints the exact `npm publish` command. It never authenticates to npm or publishes
+anything itself.
 
-Run each printed command interactively and complete its 2FA prompt. Then:
+Run the printed command interactively and complete its 2FA prompt. Then:
 
-1. Confirm its current version is visible on npmjs.com.
+1. Confirm the placeholder version is visible on npmjs.com.
 1. Configure the trusted publisher with GitHub Actions, `richardcarls/rc-webcomponents`,
    `release.yml`, the `npm` environment, and permission to run `npm publish`.
-1. Continue with the normal release steps above. `version:packages` will move the fixed group to
-   its next synchronized version, and the tag workflow will publish it directly with OIDC and
-   provenance.
+1. Leave the placeholder version published; do not `npm unpublish` it. Its `package.json` and README
+   make its purpose clear to anyone who finds it, and it never satisfies the fixed group's version
+   pattern, so it can never be mistaken for a real release by the tooling.
+1. Continue with the normal release steps above (or a `@next` snapshot release). Nothing further
+   is needed: the real package's first content publishes automatically the next time this
+   repository releases, through the same OIDC path as every other package, with full provenance.

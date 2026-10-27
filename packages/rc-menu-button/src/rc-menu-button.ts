@@ -3,10 +3,14 @@ import { property, query, state } from 'lit/decorators.js';
 
 import {
   AnchorController,
+  type AnchorPlacement,
+  cssText,
+  type KeyboardNavigationAction,
   keyInteraction,
   keyNavigation,
-  type AnchorPlacement,
-  type KeyboardNavigationAction,
+  layoutOrientation,
+  PopoverController,
+  resolveFlow,
 } from '@rcarls/rc-common';
 import type { RCMenu } from '@rcarls/rc-menu';
 
@@ -18,7 +22,7 @@ declare global {
   }
 }
 
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
   /*
    * Expands an icon-only trigger's clickable region beyond its visible box
@@ -107,6 +111,7 @@ export interface RCMenuButtonToggleEvent {
  *   space there.
  * @cssprop [--rc-menu-button-touch-target-overlap-inline-end=0px] - The trailing-edge
  *   counterpart to `--rc-menu-button-touch-target-overlap-inline-start`.
+ * @cssprop [--rc-menu-button-popup-duration=150ms] - Popup open/close fade transition duration.
  *
  * @csspart root - The root container element
  * @csspart popup - The popup container element
@@ -114,9 +119,15 @@ export interface RCMenuButtonToggleEvent {
  * @attr open - Whether the menu popup is visible. Controlled mode: host writes silently.
  * @attr default-open - Initial open state for uncontrolled mode. Ignored after the first
  *   controlled write to `open`.
- * @attr orientation - Arrow-key axis for opening the menu. Inherits from a parent
- *   `rc-menubar` or `[role="menubar"]` when unset.
- * @attr placement - Preferred placement of the popup relative to the trigger.
+ * @attr orientation - The layout the trigger sits in: `horizontal` along the inline axis,
+ *   like a menubar row, or `vertical` along the block axis. It picks the arrow key that opens
+ *   the menu, following how that layout renders, so the keys turn with RTL and vertical text.
+ *   Inherits from a parent `rc-menubar` or `[role="menubar"]` when unset.
+ * @attr placement - Preferred placement of the popup relative to the trigger, in logical terms:
+ *   `block-start`/`block-end` (above or below in horizontal text, beside it in vertical text) or
+ *   `inline-start`/`inline-end` (beside it along the reading direction), each with an optional
+ *   `-start`/`-end` edge alignment. Defaults to `block-end-start`, or `inline-end-start` under
+ *   vertical orientation when unset.
  * @attr icon-only - Hints that the slotted trigger has no visible label, so themes can size
  *   it and its touch target as an icon button (see `--rc-menu-button-icon-size` and
  *   `--rc-menu-button-touch-target-*` above). Purely a styling hook; RCMenuButton does not read
@@ -211,29 +222,54 @@ export class RCMenuButton extends LitElement {
   }
 
   /**
-   * Orientation of this menu button, affects which arrow keys open/close the menu.
+   * The layout this menu button sits in, which picks the arrow keys that open
+   * and close the menu. `horizontal` runs along the inline axis and `vertical`
+   * along the block axis; the keys follow how that layout renders.
    *
    * If not set, inherits from a parent rc-menubar or element with role="menubar".
    */
   @property({ type: String, reflect: true })
   orientation: 'horizontal' | 'vertical' | undefined;
 
-  /** Preferred placement of the popup relative to the trigger button. */
+  private _placement: AnchorPlacement | undefined;
+
+  /**
+   * Preferred placement of the popup relative to the trigger button. Reads the
+   * default until the author sets one.
+   *
+   * @default 'block-end-start'
+   */
   @property({ reflect: true })
-  placement: AnchorPlacement = 'bottom-start';
+  get placement(): AnchorPlacement {
+    return this._placement ?? this._defaultPlacement;
+  }
+
+  set placement(value: AnchorPlacement | null | undefined) {
+    const oldValue = this.placement;
+
+    this._placement = value ?? undefined;
+    this.requestUpdate('placement', oldValue);
+  }
+
+  /** The placement used when the author sets none. Subclasses override it. */
+  protected get _defaultPlacement(): AnchorPlacement {
+    return 'block-end-start';
+  }
 
   /**
    * Popup placement adjusted for orientation.
    *
-   * Switches from `bottom-start` to `right-start` when the resolved orientation
-   * is `vertical`, so vertical menubars open submenus to the side.
+   * Without an author placement, a menu button whose resolved orientation is
+   * `vertical` opens at `inline-end-start`, so vertical menubars open
+   * submenus to the side, toward the inline end.
    */
   protected get _effectivePlacement(): AnchorPlacement {
-    if (this.placement !== 'bottom-start') {
-      return this.placement;
+    if (this._placement) {
+      return this._placement;
     }
 
-    return this._resolvedOrientation === 'vertical' ? 'right-start' : this.placement;
+    // Opens toward the inline end, which is the left in RTL.
+    return this._resolvedOrientation === 'vertical' ? 'inline-end-start' : this._defaultPlacement;
   }
 
   /**
@@ -248,15 +284,19 @@ export class RCMenuButton extends LitElement {
     const $menubar = this.closest('rc-menubar, [role="menubar"]');
 
     if ($menubar) {
-      const orientation =
-        $menubar.getAttribute('orientation') ?? $menubar.getAttribute('aria-orientation');
+      const orientation = $menubar.getAttribute('orientation');
 
-      if (orientation === 'vertical') {
-        return 'vertical';
+      if (orientation === 'vertical' || orientation === 'horizontal') {
+        return orientation;
       }
 
-      if (orientation === 'horizontal') {
-        return 'horizontal';
+      // Without a layout attribute, only aria-orientation is left, and it
+      // reports how the menubar renders; in vertical text that is the other
+      // orientation from its layout.
+      const rendered = $menubar.getAttribute('aria-orientation');
+
+      if (rendered === 'vertical' || rendered === 'horizontal') {
+        return layoutOrientation(rendered, resolveFlow($menubar));
       }
     }
 
@@ -282,9 +322,12 @@ export class RCMenuButton extends LitElement {
     anchor: () => this._$root ?? null,
     floating: () => this._$popup ?? null,
     shadowHost: () => this,
-    placement: 'bottom-start',
+    placement: 'block-end-start',
     offset: 2,
+    disabled: () => !this.open,
   });
+
+  protected _popoverCtrl = new PopoverController(this, { element: () => this._$popup });
 
   /** Bound handler for document click (light dismiss). Stored for `removeEventListener` pairing. */
   protected _boundHandleDocumentClick = this._handleDocumentClick.bind(this);
@@ -524,17 +567,10 @@ export class RCMenuButton extends LitElement {
     if (changedProperties.has('open')) {
       this._syncTriggerAria();
 
-      // A pending update can flush after the host (and its shadow tree) has
-      // already been disconnected — e.g. a framework unmounting this element
-      // in the same tick as an `open` change. togglePopover() throws
-      // InvalidStateError on a disconnected popover, so guard on connectivity
-      // rather than letting that reach the caller.
-      if (this._$popup?.isConnected) {
-        this._$popup.togglePopover(this.open);
+      this._popoverCtrl.sync(this.open);
 
-        if (this.open) {
-          this._anchorCtrl.update();
-        }
+      if (this.open && this._$popup?.isConnected) {
+        this._anchorCtrl.update();
       }
     }
 

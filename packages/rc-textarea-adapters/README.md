@@ -13,7 +13,8 @@ Full API, usage examples, and keyboard/accessibility notes are on the
 
 ## Peer dependencies
 
-All adapters are optional. Install only the peer(s) you use:
+Install `@rcarls/rc-textarea` alongside this package. The tokenizer integrations
+are optional, so install only the additional peer used by your chosen adapter:
 
 | Adapter | Peer dependency |
 | ------- | --------------- |

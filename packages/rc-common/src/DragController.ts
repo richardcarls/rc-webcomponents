@@ -1,5 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { ControllerEffects } from './ControllerEffects.js';
+import { cssZoom } from './cssZoom.js';
 import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
 
 export interface DragOptions {
@@ -33,11 +35,19 @@ export class DragController implements ReactiveController {
   private _dragging = false;
   private _startLeft = 0;
   private _startTop = 0;
+  /** The target's effective CSS zoom for the current drag. */
+  private _zoom = 1;
 
   private readonly _gesture: DragGestureController;
   private readonly _onKeyDown: (e: KeyboardEvent) => void;
+  private readonly _host: ReactiveControllerHost;
+  private readonly _handleEffects = new Map<Element, ControllerEffects>();
+  private _connected = false;
+  private _disposed = false;
 
   constructor(host: ReactiveControllerHost, options: DragOptions) {
+    this._host = host;
+
     this._opts = {
       axis: 'both',
       step: 4,
@@ -63,7 +73,12 @@ export class DragController implements ReactiveController {
     host.addController(this);
   }
 
+  /** Reconfigures drag behavior and rebinds the handle when it changes. */
   setOptions(next: Partial<DragOptions>): void {
+    if (this._disposed) {
+      return;
+    }
+
     const prevHandle = this._handle();
 
     Object.assign(this._opts, next);
@@ -71,18 +86,40 @@ export class DragController implements ReactiveController {
 
     const nextHandle = this._handle();
 
-    if (prevHandle !== nextHandle) {
+    if (this._connected && prevHandle !== nextHandle) {
       this._detachFrom(prevHandle);
       this._attachTo(nextHandle);
     }
   }
 
   hostConnected(): void {
+    if (this._disposed || this._connected) {
+      return;
+    }
+
+    this._connected = true;
     this._attachTo(this._handle());
   }
 
   hostDisconnected(): void {
+    this._connected = false;
     this._detachFrom(this._handle());
+  }
+
+  /**
+   * Detaches the handle (undoing the `tabindex` it added) and removes the
+   * controller and its gesture from the host for good. Use it to replace a
+   * controller when move options change after setup.
+   */
+  dispose(): void {
+    if (this._disposed) {
+      return;
+    }
+
+    this._disposed = true;
+    this._gesture.dispose();
+    this.hostDisconnected();
+    this._host.removeController(this);
   }
 
   private _handle(): Element {
@@ -94,15 +131,24 @@ export class DragController implements ReactiveController {
   }
 
   private _attachTo(handle: Element): void {
-    handle.addEventListener('keydown', this._onKeyDown as EventListener);
+    if (this._handleEffects.has(handle)) {
+      return;
+    }
+
+    const effects = new ControllerEffects();
+
+    effects.listen(handle, 'keydown', this._onKeyDown as EventListener);
 
     if (!handle.hasAttribute('tabindex')) {
-      (handle as HTMLElement).setAttribute('tabindex', '0');
+      effects.setAttribute(handle, 'tabindex', '0');
     }
+
+    this._handleEffects.set(handle, effects);
   }
 
   private _detachFrom(handle: Element): void {
-    handle.removeEventListener('keydown', this._onKeyDown as EventListener);
+    this._handleEffects.get(handle)?.dispose();
+    this._handleEffects.delete(handle);
   }
 
   private _canStartGesture(event: PointerEvent): boolean {
@@ -118,6 +164,10 @@ export class DragController implements ReactiveController {
     const target = this._target();
     const rect = target.getBoundingClientRect();
 
+    // Measurements and pointer deltas are viewport pixels; the target's own
+    // lengths are scaled by its effective zoom (an ancestor's CSS zoom).
+    this._zoom = cssZoom(target);
+
     if (getComputedStyle(target).position === 'static') {
       target.style.position = 'fixed';
     }
@@ -128,11 +178,10 @@ export class DragController implements ReactiveController {
     target.style.translate = 'none';
     target.style.inset = 'auto';
     target.style.margin = '0';
-    target.style.left = `${rect.left}px`;
-    target.style.top = `${rect.top}px`;
-
-    this._startLeft = rect.left;
-    this._startTop = rect.top;
+    this._startLeft = rect.left / this._zoom;
+    this._startTop = rect.top / this._zoom;
+    target.style.left = `${this._startLeft}px`;
+    target.style.top = `${this._startTop}px`;
     this._dragging = true;
   }
 
@@ -143,16 +192,18 @@ export class DragController implements ReactiveController {
 
     const target = this._target();
     const { axis } = this._opts;
-    const [minL, minT, maxR, maxB] = this._boundsRect();
+    const zoom = this._zoom;
+    const [minL, minT, maxR, maxB] = this._boundsRect().map((value) => value / zoom);
+    const { width, height } = target.getBoundingClientRect();
 
     const newLeft =
       axis !== 'y'
-        ? Math.min(Math.max(this._startLeft + detail.deltaX, minL), maxR - target.offsetWidth)
+        ? Math.min(Math.max(this._startLeft + detail.deltaX / zoom, minL), maxR - width / zoom)
         : parseFloat(target.style.left) || 0;
 
     const newTop =
       axis !== 'x'
-        ? Math.min(Math.max(this._startTop + detail.deltaY, minT), maxB - target.offsetHeight)
+        ? Math.min(Math.max(this._startTop + detail.deltaY / zoom, minT), maxB - height / zoom)
         : parseFloat(target.style.top) || 0;
 
     target.style.left = `${newLeft}px`;
@@ -216,22 +267,26 @@ export class DragController implements ReactiveController {
     }
 
     const target = this._target();
+    const zoom = cssZoom(target);
+    const rect = target.getBoundingClientRect();
 
     if (getComputedStyle(target).position === 'static') {
-      const rect = target.getBoundingClientRect();
-
       target.style.position = 'fixed';
       target.style.translate = 'none';
-      target.style.left = `${rect.left}px`;
-      target.style.top = `${rect.top}px`;
+      target.style.left = `${rect.left / zoom}px`;
+      target.style.top = `${rect.top / zoom}px`;
     }
 
-    const [minL, minT, maxR, maxB] = this._boundsRect();
+    // Steps are in the target's own pixels; the bounds and box are measured
+    // in viewport pixels.
+    const [minL, minT, maxR, maxB] = this._boundsRect().map((value) => value / zoom);
     const curLeft = parseFloat(target.style.left) || 0;
     const curTop = parseFloat(target.style.top) || 0;
+    const maxLeft = maxR - rect.width / zoom;
+    const maxTop = maxB - rect.height / zoom;
 
-    target.style.left = `${Math.min(Math.max(curLeft + dx, minL), maxR - target.offsetWidth)}px`;
-    target.style.top = `${Math.min(Math.max(curTop + dy, minT), maxB - target.offsetHeight)}px`;
+    target.style.left = `${Math.min(Math.max(curLeft + dx, minL), maxLeft)}px`;
+    target.style.top = `${Math.min(Math.max(curTop + dy, minT), maxTop)}px`;
 
     e.preventDefault();
     e.stopPropagation();

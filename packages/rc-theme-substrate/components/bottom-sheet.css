@@ -55,7 +55,7 @@
     [data-rc-bottom-sheet-handle]::before {
     content: '';
     position: absolute;
-    inset-block-start: 50%;
+    inset-block-start: var(--rc-bottom-sheet-handle-offset, 50%);
     inset-inline-start: 50%;
     inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
     block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);

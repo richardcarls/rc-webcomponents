@@ -33,21 +33,21 @@ directly when an application or component controls option data and selection sta
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-listbox
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-listbox
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-listbox/define';
+import '@rcarls/rc-webcomponents/rc-listbox/define';
 ```
 
 ## Live demo
@@ -122,6 +122,12 @@ schemes, or to apply the optional Material theme inside the demo frame.
 Base styles (layout, system-color selection, disabled state) are injected once
 per root node with a `style[data-rc-light-dom-base="rc-listbox"]` element in
 an `rc-base` cascade layer.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`. Override it with
+`messages`, or register it for every instance under `rc-listbox`: `create`. See
+[Localization](../guide/localization).
 
 ## API
 

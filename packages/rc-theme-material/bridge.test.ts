@@ -1,5 +1,15 @@
 import { afterEach, expect, test } from 'vitest';
 
+/*
+ * Both layers, matching how theme.css actually bundles them for a consumer.
+ * bridge.css's own literal fallbacks (for an app supplying its own Material
+ * environment) mean most of this file's assertions would pass even without
+ * defaults.css, since many fallbacks happen to equal the real vendored
+ * value — that coincidence stops holding once a bridge mapping's fallback
+ * is deliberately different from its target (see the directional easing
+ * test below), which is exactly when this import starts to matter.
+ */
+import './defaults.css';
 import './bridge.css';
 
 afterEach(() => {
@@ -41,6 +51,20 @@ test('system token overrides resolve through shared RC tokens', () => {
   expect(getComputedStyle(probe).color).toBe('rgb(1, 2, 3)');
 });
 
+test('button text sits on the button fill rather than on a system color', () => {
+  const scope = renderMaterialScope();
+
+  scope.style.setProperty('--md-sys-color-on-primary', 'rgb(7, 8, 9)');
+
+  const styles = getComputedStyle(scope);
+
+  // rc-select, rc-combobox, and rc-menu-button read --rc-button-text directly
+  // for text drawn over --rc-button-bg, so it has to follow the same on-color
+  // as --rc-button-color rather than falling through to ButtonText.
+  expect(styles.getPropertyValue('--rc-button-text').trim()).toBe('rgb(7, 8, 9)');
+  expect(styles.getPropertyValue('--rc-button-color').trim()).toBe('rgb(7, 8, 9)');
+});
+
 test('component tokens override Material system tokens', () => {
   const scope = renderMaterialScope();
   const slider = document.createElement('rc-slider');
@@ -79,10 +103,39 @@ test('maps theme-neutral effects and spatial motion pairs', () => {
   expect(styles.getPropertyValue('--rc-motion-effects-duration-default').trim()).toBe('200ms');
   expect(styles.getPropertyValue('--rc-motion-effects-duration-slow').trim()).toBe('300ms');
   expect(styles.getPropertyValue('--rc-motion-effects-easing-default').trim()).not.toBe('');
-  expect(styles.getPropertyValue('--rc-motion-spatial-duration-fast').trim()).toBe('350ms');
-  expect(styles.getPropertyValue('--rc-motion-spatial-duration-default').trim()).toBe('500ms');
-  expect(styles.getPropertyValue('--rc-motion-spatial-duration-slow').trim()).toBe('700ms');
+  // Compressed from the spec's 350/500/700ms; see bridge.css for why.
+  expect(styles.getPropertyValue('--rc-motion-spatial-duration-fast').trim()).toBe('300ms');
+  expect(styles.getPropertyValue('--rc-motion-spatial-duration-default').trim()).toBe('400ms');
+  expect(styles.getPropertyValue('--rc-motion-spatial-duration-slow').trim()).toBe('500ms');
   expect(styles.getPropertyValue('--rc-motion-spatial-easing-default').trim()).not.toBe('');
+});
+
+test('directional easing pairs decelerate-shaped curves with entering and accelerate-shaped with exiting', () => {
+  const scope = renderMaterialScope();
+  const probe = document.createElement('div');
+
+  scope.append(probe);
+
+  const resolvedTimingFunction = (token: string): string => {
+    probe.style.transitionTimingFunction = `var(${token})`;
+
+    return getComputedStyle(probe).transitionTimingFunction;
+  };
+
+  expect(resolvedTimingFunction('--rc-motion-effects-easing-enter')).toBe(
+    'cubic-bezier(0, 0, 0, 1)',
+  );
+  expect(resolvedTimingFunction('--rc-motion-effects-easing-exit')).toBe(
+    'cubic-bezier(0.3, 0, 1, 1)',
+  );
+
+  expect(resolvedTimingFunction('--rc-motion-spatial-easing-enter')).toBe(
+    'cubic-bezier(0.05, 0.7, 0.1, 1)',
+  );
+
+  expect(resolvedTimingFunction('--rc-motion-spatial-easing-exit')).toBe(
+    'cubic-bezier(0.3, 0, 0.8, 0.15)',
+  );
 });
 
 test('maps listbox selection to the selected container color role', () => {
@@ -110,7 +163,8 @@ test('maps open menu surfaces without choosing a consumer button variant', () =>
   menuButton.append(menu);
   scope.append(menuButton);
 
-  expect(getComputedStyle(menu).getPropertyValue('--rc-menu-background')).not.toBe('');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-popup-background')).not.toBe('');
+  expect(getComputedStyle(menu).getPropertyValue('--rc-popup-border')).toBe('0');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-min-block-size')).toBe('3rem');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-item-padding-block')).toBe('0');
   expect(getComputedStyle(menu).getPropertyValue('--rc-menu-hover-bg')).not.toBe('');
@@ -173,7 +227,7 @@ test('maps the supported core component set', () => {
     ['rc-search-bar', '--rc-search-bar-bg'],
     ['rc-bottom-sheet', '--rc-bottom-sheet-bg'],
     ['rc-app-bar', '--rc-app-bar-bg'],
-    ['rc-menu', '--rc-menu-background'],
+    ['rc-menu', '--rc-menu-item-min-block-size'],
     ['rc-menu-button', '--rc-menu-button-trigger-radius'],
     ['rc-menubar', '--rc-menubar-background'],
     ['rc-toolbar', '--rc-toolbar-radius'],

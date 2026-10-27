@@ -34,6 +34,30 @@ Selective component styles are also exported:
 @import '@rcarls/rc-theme-material/components/menu.css';
 ```
 
+Native HTML can opt into the same presentation without registering an RC
+element. Import the defaults and bridge when needed, then opt into the native
+layer and the CSS-only recipes independently:
+
+```css
+@import '@rcarls/rc-theme-material/defaults.css';
+@import '@rcarls/rc-theme-material/bridge.css';
+@import '@rcarls/rc-theme-material/native.css';
+@import '@rcarls/rc-theme-material/css-components.css';
+```
+
+`native.css` is an optional convenience layer for giving ordinary buttons, text
+fields, selects, textareas, checkboxes, radios, ranges, and progress controls a
+Material treatment throughout `.rc-theme-material`. Component recipes style
+native children when their presentation belongs to a themed menu, toolbar, or
+other component context. Add `data-rc-native="off"` to an element to opt it and
+its descendants out of the native layer. The
+opt-in `css-components.css` recipes cover `.rc-button`, `.rc-chip`,
+`.rc-chip-group`, `.rc-select`, `.rc-textarea`, `.rc-card`, `.rc-list`, and
+`details.rc-disclosure`; each recipe is also available under
+`css-components/<name>.css`. These styles provide appearance and CSS-visible
+states only: they do not add behavior, events, popup replacement, or measured
+overflow.
+
 The state-layer utility is included by `components.css` and `theme.css`, and is
 also exported separately for selective imports:
 
@@ -59,6 +83,9 @@ The default `rc-button` treatment is filled. Use `rc-button--tonal`,
 levels. Icon-only buttons use `rc-icon-button--standard`,
 `rc-icon-button--tonal`, or `rc-icon-button--outlined`.
 
+`rc-field` uses the Material 3 filled text-field treatment by default. Add
+`rc-field--outlined` for the outlined variant.
+
 Add `data-tone="danger"` to any of those variants for the corresponding error
 or error-container color roles. These classes and data attributes are theme
 hooks; they do not change the component's native-button behavior or public API.
@@ -82,6 +109,23 @@ bridge and component style layers:
 @import '@rcarls/rc-theme-material/theme.css';
 ```
 
+## Designing with the theme
+
+[`DESIGN.md`](./DESIGN.md) is a Material 3 composition guide written for AI
+coding agents. It covers which component fills which Material role, adaptive
+layouts by window size class, dialogs, sheets, lists, navigation and
+feedback, with the baseline token values in machine-readable front matter. It
+ships in the package and is exported as `@rcarls/rc-theme-material/DESIGN.md`,
+so agents in a consuming app can read it from `node_modules`, or under Yarn
+Plug'n'Play with:
+
+```sh
+yarn node -e "process.stdout.write(require('fs').readFileSync(require.resolve('@rcarls/rc-theme-material/DESIGN.md'), 'utf8'))"
+```
+
+App design documents should reference it for Material 3 composition and keep
+only their own overrides, branding and product patterns.
+
 ## Theming scope
 
 The full style layer styles native controls when their intent is established by
@@ -91,11 +135,50 @@ unrelated application controls and follows design-token conventions.
 Fonts and icons are not bundled; websites and applications may provide
 [Roboto](https://fonts.google.com/specimen/Roboto) and
 [Material Symbols](https://fonts.google.com/icons) through other means.
-Tag general icon-font markup with `data-rc-icon`; component-specific markers
-such as `data-rc-button-icon` and `data-rc-navigation-icon` opt in
-automatically. The shared `--rc-icon-font-size` and
-`--rc-icon-font-line-height` tokens keep glyph geometry consistent and can be
-overridden at the theme boundary or on one component.
+
+### Scoped type scale
+
+Mark a region with `data-rc-type-scale` and set `--rc-type-scale` to enlarge or
+shrink its text, such as a reading view used at arm's length. Every Material type
+size and line height beneath the marked element, and the RC text tokens built on
+them, are multiplied by the factor. Text outside the region is unchanged.
+
+```html
+<main data-rc-type-scale style="--rc-type-scale: 1.25">…</main>
+```
+
+Marking the theme root itself scales the whole page, for an app-wide text size
+setting. A nested marked region uses its own `--rc-type-scale`; to compound it
+with a page-wide factor, keep that factor in a separate custom property and
+multiply, since a property can't refer to its own inherited value:
+
+```html
+<html
+  class="rc-theme-material"
+  data-rc-type-scale
+  style="--app-scale: 0.75; --rc-type-scale: var(--app-scale)"
+>
+  …
+  <p data-rc-type-scale style="--rc-type-scale: calc(var(--app-scale) * 1.25)">…</p>
+</html>
+```
+
+With `theme.css`, the Material type tokens and RC text tokens scale from the
+bundled `defaults.css` values. With `bridge.css` alone, RC text tokens scale from
+the application's Material type tokens; the application's own
+`--md-sys-typescale-*` tokens remain unchanged. Supply both size and line-height
+tokens for the roles used by RC components when customizing the bridge. If your
+Material token environment also defines matching `*-size-value` or
+`*-line-height-value` source tokens, those are the scale baseline; update them
+alongside branded final values.
+
+### Icon font wiring
+
+The theme sizes and centers icon markers but never sets `font-family` on them,
+because no font ships with it. Until the application supplies one, a marker
+renders its literal text, so a navigation toggle shows the word `menu`. See
+[Fonts and icons](./DESIGN.md#fonts-and-icons) in the design guide for the
+one rule that wires every marker.
 
 ### Icon-button modifiers
 

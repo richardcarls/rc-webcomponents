@@ -1,6 +1,16 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
+import {
+  RafScheduler,
+  clientSize,
+  getScrollOffset,
+  resolveFlow,
+  scrollSize,
+  type Flow,
+  type LogicalAxis,
+} from '@rcarls/rc-common';
+
 import scrollerStyles from './rc-scroller.styles.js';
 
 export type RCScrollerAxis = 'block' | 'inline' | 'both';
@@ -8,6 +18,13 @@ export type RCScrollerLayout = 'none' | 'content';
 
 /** Pixels of remaining scroll distance below which an edge counts as reached. */
 const BOUNDARY_THRESHOLD = 4;
+
+interface BoundaryState {
+  blockStart: boolean;
+  blockEnd: boolean;
+  inlineStart: boolean;
+  inlineEnd: boolean;
+}
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -37,10 +54,14 @@ declare global {
  * @attr [at-block-start] - Reflected, computed. Present when scrolled to (within a few
  *   pixels of) the block-start edge, or when the block axis isn't scrollable
  *   (`axis="inline"`) — nothing more to reveal counts as already at both edges.
+ *   Edges are logical: in RTL the inline start is the right edge, and in
+ *   vertical writing modes the block axis runs horizontally.
  * @attr [at-block-end] - Reflected, computed. The block-end equivalent of `at-block-start`.
  * @attr [at-inline-start] - Reflected, computed. The inline-start equivalent, always
  *   present when the inline axis isn't scrollable (`axis="block"`).
  * @attr [at-inline-end] - Reflected, computed. The inline-end equivalent of `at-inline-start`.
+ *   Initial boundary attributes settle in the first animation frame after
+ *   mount so multiple scrollers can share one layout sampling phase.
  *
  * @cssprop [--rc-scroller-overscroll-behavior=contain] - Overscroll behavior on enabled axes.
  * @cssprop [--rc-scroller-overflow-anchor=auto] - Browser scroll anchoring behavior.
@@ -85,6 +106,8 @@ export class RCScroller extends LitElement {
 
   private _resizeObserver: ResizeObserver | null = null;
 
+  private readonly _frame = new RafScheduler(this);
+
   override connectedCallback(): void {
     super.connectedCallback();
 
@@ -102,7 +125,7 @@ export class RCScroller extends LitElement {
     // scrollWidth/clientHeight etc. don't yet reflect real layout. Also
     // covers connecting already scrolled (bfcache restore, fragment nav)
     // rather than waiting for the first scroll/resize event.
-    this._evaluateBoundaries();
+    this._queueBoundaryEvaluation();
   }
 
   override disconnectedCallback(): void {
@@ -119,36 +142,48 @@ export class RCScroller extends LitElement {
 
   protected override updated(changed: Map<PropertyKey, unknown>): void {
     if (changed.has('axis') || changed.has('layout')) {
-      this._evaluateBoundaries();
+      this._queueBoundaryEvaluation();
     }
   }
 
-  private readonly _onScroll = (): void => this._evaluateBoundaries();
+  /**
+   * Scroll and resize can fire several times per frame, and every evaluation
+   * reads layout, so boundary state is recomputed at most once per frame.
+   */
+  private readonly _onScroll = (): void => {
+    this._queueBoundaryEvaluation();
+  };
 
-  private _evaluateBoundaries(): void {
-    const blockScrollable = this.axis !== 'inline';
-    const inlineScrollable = this.axis !== 'block';
+  private _edges(axis: LogicalAxis, flow: Flow): [start: boolean, end: boolean] {
+    const offset = getScrollOffset(this, axis, flow);
+    const max = scrollSize(this, axis, flow) - clientSize(this, axis, flow);
 
-    if (blockScrollable) {
-      const maxScrollTop = this.scrollHeight - this.clientHeight;
+    return [offset <= BOUNDARY_THRESHOLD, offset >= max - BOUNDARY_THRESHOLD];
+  }
 
-      this.atBlockStart = this.scrollTop <= BOUNDARY_THRESHOLD;
-      this.atBlockEnd = this.scrollTop >= maxScrollTop - BOUNDARY_THRESHOLD;
-    } else {
-      this.atBlockStart = true;
-      this.atBlockEnd = true;
-    }
+  private _queueBoundaryEvaluation(): void {
+    this._frame.schedulePhased(
+      () => this._sampleBoundaries(),
+      (state) => this._applyBoundaries(state),
+    );
+  }
 
-    if (inlineScrollable) {
-      const maxScrollLeft = this.scrollWidth - this.clientWidth;
-      const inlineOffset =
-        getComputedStyle(this).direction === 'rtl' ? Math.abs(this.scrollLeft) : this.scrollLeft;
+  private _sampleBoundaries(): BoundaryState {
+    // Read at measure time: a dir or writing-mode change on an ancestor fires
+    // no event of its own.
+    const flow = resolveFlow(this);
+    const [blockStart, blockEnd] =
+      this.axis !== 'inline' ? this._edges('block', flow) : [true, true];
+    const [inlineStart, inlineEnd] =
+      this.axis !== 'block' ? this._edges('inline', flow) : [true, true];
 
-      this.atInlineStart = inlineOffset <= BOUNDARY_THRESHOLD;
-      this.atInlineEnd = inlineOffset >= maxScrollLeft - BOUNDARY_THRESHOLD;
-    } else {
-      this.atInlineStart = true;
-      this.atInlineEnd = true;
-    }
+    return { blockStart, blockEnd, inlineStart, inlineEnd };
+  }
+
+  private _applyBoundaries(state: BoundaryState): void {
+    this.atBlockStart = state.blockStart;
+    this.atBlockEnd = state.blockEnd;
+    this.atInlineStart = state.inlineStart;
+    this.atInlineEnd = state.inlineEnd;
   }
 }

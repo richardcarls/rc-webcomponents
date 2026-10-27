@@ -1,0 +1,23 @@
+@layer rc-theme-win31.components {
+  /*
+   * A deliberate deviation, stated rather than hidden.
+   *
+   * 3.1 had no tooltips; they arrived with later toolbars. Its nearest
+   * equivalent is the WinHelp definition popup: a plain window-colored box
+   * with a hard one-pixel frame and a hard drop shadow, opened to explain a
+   * term. Tooltips borrow that look rather than the yellow balloon of later
+   * releases. Tokens are declared on the theme root so tooltips inside other
+   * shadow roots inherit them.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) {
+    --rc-tooltip-padding-block: calc(2 * var(--win31-unit));
+    --rc-tooltip-padding-inline: var(--win31-padding-inline);
+    --rc-tooltip-border: var(--win31-border);
+    --rc-tooltip-radius: var(--win31-radius);
+    --rc-tooltip-background: var(--win31-color-field);
+    --rc-tooltip-color: var(--win31-color-field-text);
+    --rc-tooltip-shadow: var(--win31-drop-shadow);
+    --rc-tooltip-font: var(--win31-font-weight) var(--win31-font-size) / var(--win31-line-height)
+      var(--win31-font-family);
+  }
+}

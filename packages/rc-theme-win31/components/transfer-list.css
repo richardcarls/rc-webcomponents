@@ -1,0 +1,74 @@
+@layer rc-theme-win31.components {
+  /*
+   * The closest thing in this library to a verbatim 3.1 control. The period
+   * form is two sunken lists with a column of beveled movers between them, and
+   * the movers include ordering as well as transfer.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-transfer-list {
+    --rc-transfer-list-gap: var(--win31-gap-panel);
+    --rc-transfer-list-panel-gap: var(--win31-gap-tight);
+    --rc-transfer-list-listbox-border: var(--win31-hairline) solid;
+    --rc-transfer-list-listbox-radius: var(--win31-radius);
+    --rc-transfer-list-listbox-bg: var(--win31-color-field);
+    --rc-transfer-list-listbox-color: var(--win31-color-field-text);
+    --rc-transfer-list-option-gap: var(--win31-gap-tight);
+    --rc-transfer-list-option-padding-block: var(--win31-padding-block);
+    --rc-transfer-list-option-padding-inline: var(--win31-padding-inline);
+    --rc-transfer-list-option-hover-bg: transparent;
+    --rc-transfer-list-option-hover-color: var(--win31-color-field-text);
+    --rc-transfer-list-option-selected-bg: var(--win31-color-selection);
+    --rc-transfer-list-option-selected-color: var(--win31-color-selection-text);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-transfer-list::part(listbox) {
+    border-color: var(--win31-inset-border-color);
+    box-shadow: none;
+    --rc-listbox-option-min-block-size: var(--win31-listbox-row-height);
+    --rc-listbox-option-transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-transfer-list::part(panel) {
+    box-shadow: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-transfer-list::part(label) {
+    color: var(--win31-color-frame);
+    font-size: var(--win31-font-size);
+    font-weight: 700;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-transfer-list::part(actions) {
+    gap: var(--win31-gap-panel);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-transfer-list::part(button) {
+    min-block-size: var(--win31-control-height);
+    padding-inline: calc(8 * var(--win31-unit));
+    color: var(--win31-color-frame);
+    background: var(--win31-color-surface);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+    cursor: default;
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-transfer-list::part(button):active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  /*
+   * A disabled mover was embossed rather than hidden, so the set of available
+   * moves stayed readable at rest. Without state attributes on the root this
+   * relies on the native disabled state the component already sets.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-transfer-list::part(button):disabled {
+    color: var(--win31-color-disabled-text);
+    text-shadow: var(--win31-unit) var(--win31-unit) 0 var(--win31-color-disabled-emboss);
+    opacity: 1;
+  }
+}

@@ -2,14 +2,34 @@ import { LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import {
-  DragController,
+  cssZoom,
+  getVisualViewportBounds,
+  isTextEntryFocused,
   NativeChildController,
-  ResizeController,
-  type ResizeDirection,
   type ResizeLifecycleDetail,
   type ResizeOrigin,
+  SoftKeyboardViewport,
   warnMissingDirectChild,
 } from '@rcarls/rc-common';
+import { ensureDialogBaseStyles } from './dialogBaseStyles.js';
+import type { DialogGeometry } from './geometry.js';
+
+export type RCDialogVariant = 'standard' | 'fullscreen' | 'side';
+
+// Shared by every dialog once loaded, so move and resize code ships only to
+// pages that use it.
+let loadedGeometry: typeof DialogGeometry | undefined;
+let geometryLoading: Promise<typeof DialogGeometry> | undefined;
+
+function loadGeometry(): Promise<typeof DialogGeometry> {
+  geometryLoading ??= import('./geometry.js').then(({ DialogGeometry }) => {
+    loadedGeometry = DialogGeometry;
+
+    return DialogGeometry;
+  });
+
+  return geometryLoading;
+}
 
 /** Detail shape for `rc-dialog-close` and `rc-dialog-request-close`. */
 export interface RCDialogCloseEvent {
@@ -40,6 +60,18 @@ declare global {
  * Draggable, resizable wrapper for a native <dialog>, following the WAI-ARIA Dialog Modal
  * pattern.
  *
+ * Move and resize code loads on demand the first time `movable`, `move-handle`, or `resize`
+ * enables it, so dialogs that never move or resize do not ship it. Until it loads, an enabled
+ * dialog behaves as a static one.
+ *
+ * The surface and its backdrop fade in and out through CSS alone (`@starting-style` plus
+ * a discrete `display`/`overlay` transition), using the shared `--rc-motion-effects-*`
+ * tokens. `showModal()`/`close()` stay synchronous and nothing waits on the transition
+ * finishing; a zero-duration theme or a browser without support both degrade to an
+ * instant, fully correct open and close. The surface only animates opacity, not scale,
+ * because `movable`/resizable geometry reads `getBoundingClientRect()`, which reports the
+ * transformed box for as long as a scale transition is still running.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-dialog rc-dialog docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/ WAI-ARIA Dialog Modal pattern}
  *
@@ -65,14 +97,57 @@ declare global {
  *   resize handles.
  * @attr resize-threshold - Edge hit-test thickness in px for resize detection.
  * @attr resize-step - Keyboard arrow-key step in px for resizing.
- * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute.
- * @attr light-dismiss - When present and the dialog is modal, a click on the backdrop area calls
- *   `requestClose()`.
+ * @attr closed-by - Proxied to the inner `<dialog closedby="...">` attribute. `any` also closes
+ *   on a backdrop click in browsers without native `closedby` support.
+ * @attr variant - Surface presentation: `standard` (default), visual-viewport-filling
+ *   `fullscreen`, or `side`, a modal side sheet docked to the inline end.
  * @prop modal - Whether controlled open state uses `showModal()` instead of `show()`.
  *   JavaScript property only; no attribute is observed.
  *
+ * @cssprop [--rc-dialog-inline-size=fit-content] - Standard surface preferred inline size. Set
+ *   `100%` for a task dialog whose fluid content would otherwise shrink it to its minimum.
+ * @cssprop [--rc-dialog-min-inline-size=auto] - Standard surface minimum inline size.
+ * @cssprop [--rc-dialog-max-inline-size=none] - Standard surface maximum inline size.
+ * @cssprop [--rc-dialog-max-block-size=calc(100dvb - 2rem)] - Standard surface block bound. The
+ *   surface never scrolls itself, so a scrollable dialog should scroll a dedicated inner region.
+ * @cssprop [--rc-dialog-padding=1em] - Standard surface padding.
+ * @cssprop [--rc-dialog-border=0] - Surface border.
+ * @cssprop [--rc-dialog-radius=0] - Surface corner radius.
+ * @cssprop [--rc-dialog-background=Canvas] - Surface background.
+ * @cssprop [--rc-dialog-color=CanvasText] - Surface foreground.
+ * @cssprop [--rc-dialog-shadow=none] - Surface shadow.
  * @cssprop [--rc-dialog-scrim=color-mix(in srgb, CanvasText 32%, transparent)] - Modal backdrop color.
+ * @cssprop [--rc-dialog-fullscreen-padding-block] - Fullscreen block padding. Defaults to a
+ *   safe-area-aware inset, which is the one value the fullscreen variant genuinely needs of its own.
+ * @cssprop [--rc-dialog-fullscreen-padding-inline] - Fullscreen inline padding, safe-area aware.
+ * @cssprop [--rc-dialog-fullscreen-background] - Fullscreen background. Defers to
+ *   `--rc-dialog-background` when unset.
+ * @cssprop [--rc-dialog-side-inline-size=min(100%, 25rem)] - Side sheet inline size.
+ * @cssprop [--rc-dialog-side-background] - Side sheet background. Defers to
+ *   `--rc-dialog-background` when unset.
+ * @cssprop [--rc-dialog-side-radius] - Side sheet start-corner radius. Defers to
+ *   `--rc-dialog-radius` when unset.
+ * @cssprop [--rc-dialog-side-shadow] - Side sheet shadow. Defers to `--rc-dialog-shadow` when
+ *   unset.
+ * @cssprop --rc-dialog-visual-viewport-left - Read-only fullscreen visual viewport left edge.
+ * @cssprop --rc-dialog-visual-viewport-top - Read-only fullscreen visual viewport top edge.
+ * @cssprop --rc-dialog-visual-viewport-width - Read-only fullscreen visual viewport width.
+ * @cssprop --rc-dialog-visual-viewport-height - Read-only fullscreen visual viewport height.
  *
+ * Fullscreen geometry, meaning position, size, margin, radius, and shadow, is structural rather
+ * than themable: filling the visual viewport is what keeps the surface correct under browser zoom
+ * and a software keyboard. While a keyboard closes, the surface takes only growth, so the shorter
+ * transitional sizes some mobile browsers report do not flash through. Side sheet placement is
+ * structural too: the surface docks to the inline end at full block size, with physical safe-area
+ * padding on every edge; only its inline size, background, start-corner radius, and shadow are
+ * themable. Neither docked variant moves or resizes, so `movable` and `resize` apply to the
+ * standard variant only.
+ *
+ * This element also writes `--rc-dialog-visual-viewport-left`, `-top`, `-width`, and `-height`
+ * onto itself while a fullscreen dialog is open. Those are geometry outputs, not theme inputs:
+ * read them if something inside the dialog needs the same measurements, but setting them does not
+ * move the dialog, and the component overwrites them on the next viewport change. They are
+ * candidates for private `--_rc-dialog-*` names in the next compatible API revision.
  */
 export class RCDialog extends LitElement {
   override createRenderRoot() {
@@ -84,6 +159,9 @@ export class RCDialog extends LitElement {
    *
    * Use `move-handle` to restrict dragging to a specific child
    * element (e.g. a titlebar).
+   *
+   * Reactive: changing this or any other `move-*` option after setup
+   * rebuilds the move behavior and re-queries `move-handle`.
    */
   @property({ type: Boolean, reflect: true })
   movable = false;
@@ -100,7 +178,13 @@ export class RCDialog extends LitElement {
   @property({ type: Number, attribute: 'move-step' })
   moveStep = 4;
 
-  /** Enable resizing, mirroring the CSS `resize` property values. */
+  /**
+   * Enable resizing, mirroring the CSS `resize` property values.
+   *
+   * Reactive: changing this or any other `resize-*` option after setup
+   * rebuilds the resize behavior and re-queries `resize-handle` matches, so
+   * `'none'` turns resizing off and restores the handles' focusability.
+   */
   @property({ type: String, reflect: true })
   resize: 'none' | 'both' | 'horizontal' | 'vertical' = 'none';
 
@@ -134,22 +218,21 @@ export class RCDialog extends LitElement {
   /**
    * Proxied to the inner `<dialog closedby="...">` attribute.
    *
-   * Progressive enhancement, no-op in older browsers.
-   *
-   * - `'any'`          — Escape OR backdrop click closes the dialog.
+   * - `'any'`          — Escape OR backdrop click closes the dialog. Where the
+   *   browser lacks native `closedby`, a backdrop click calls `requestClose()`.
    * - `'closerequest'` — Escape only (browser default for modal dialogs).
    * - `'none'`         — Only programmatic `close()` / `requestClose()`.
-   * - `''`             — Attribute absent; use `light-dismiss` for JS fallback.
+   * - `''`             — Attribute absent; the browser default applies.
    */
   @property({ type: String, attribute: 'closed-by', reflect: true })
   closedBy: 'any' | 'closerequest' | 'none' | '' = '';
 
   /**
-   * When true and the dialog is modal, a click on the backdrop area calls
-   * `requestClose()`.
+   * Surface presentation. Fullscreen geometry follows the visual viewport while open; a side
+   * sheet docks to the inline end at full block size.
    */
-  @property({ type: Boolean, attribute: 'light-dismiss' })
-  lightDismiss = false;
+  @property({ type: String, reflect: true })
+  variant: RCDialogVariant = 'standard';
 
   /**
    * Whether to open as modal with controlled open. Default: `true`.
@@ -183,6 +266,22 @@ export class RCDialog extends LitElement {
   // remove listeners even after the element is removed from the DOM.
   protected _$wired: WeakRef<HTMLDialogElement> | null = null;
   protected _suppressNextCloseToggle = false;
+
+  private _trackingVisualViewport = false;
+
+  // Keeps a closing software keyboard's transitional sizes off the fullscreen surface.
+  private readonly _keyboardViewport = new SoftKeyboardViewport({
+    onCloseTimeout: () => this._handleVisualViewportChange(),
+  });
+
+  /**
+   * Move and resize implementation to use without loading it on demand. A
+   * subclass that always resizes imports `@rcarls/rc-dialog/geometry` and
+   * assigns its `DialogGeometry` here.
+   */
+  protected static _geometryClass: typeof DialogGeometry | undefined;
+
+  private _geometry: DialogGeometry | null = null;
 
   /** The element that had focus when the dialog was opened; restored on close. */
   protected _$opener: Element | null = null;
@@ -334,69 +433,19 @@ export class RCDialog extends LitElement {
     $dialog.addEventListener('close', this._onClose);
     $dialog.addEventListener('cancel', this._onCancel);
 
-    if (this.lightDismiss && 'closedBy' in HTMLDialogElement.prototype) {
-      $dialog.setAttribute('closedby', 'any');
-    } else if (this.lightDismiss) {
-      $dialog.addEventListener('click', this._onBackdropClick);
-    } else {
-      if (this.closedBy) {
-        $dialog.setAttribute('closedby', this.closedBy);
-      }
-    }
+    this._syncClosedBy($dialog);
+    this._syncGeometry($dialog, true);
 
-    if (this.movable || this.moveHandle) {
-      const $handle = this.moveHandle
-        ? ($dialog.querySelector<Element>(this.moveHandle) ?? $dialog)
-        : $dialog;
-
-      new DragController(this, {
-        target: $dialog,
-        handle: $handle,
-        bounds: this.moveBounds,
-        step: this.moveStep,
-      });
-    }
-
-    if (this.resize !== 'none') {
-      const $handles = this._resizeHandles($dialog);
-
-      if ($handles.length > 0) {
-        for (const $handle of $handles) {
-          // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
-          new ResizeController(this, {
-            target: $dialog,
-            direction: this._resizeDirectionForHandle($handle),
-            handle: $handle,
-            origin: this._resizeOriginForHandle($handle),
-            threshold: this.resizeThreshold,
-            step: this.resizeStep,
-            bounds: this.moveBounds,
-            onResizeStart: (detail) => this._onResizeStart(detail),
-            onResize: (detail) => this._onResize(detail),
-            onResizeEnd: (detail) => this._onResizeEnd(detail),
-          });
-        }
-      } else {
-        // TODO: add a separate resize-bounds attribute; moveBounds is a proxy for now.
-        new ResizeController(this, {
-          target: $dialog,
-          direction: this.resize,
-          origin: this.resizeOrigin,
-          threshold: this.resizeThreshold,
-          step: this.resizeStep,
-          bounds: this.moveBounds,
-          onResizeStart: (detail) => this._onResizeStart(detail),
-          onResize: (detail) => this._onResize(detail),
-          onResizeEnd: (detail) => this._onResizeEnd(detail),
-        });
-      }
-    }
-
+    // A dialog that is already open when it connects is part of the page as
+    // it loads, not a response to the user, so a non-modal one leaves focus
+    // where it is.
     if (this._controlledOpen !== undefined) {
-      this._applyOpen(this._controlledOpen, true, this.modal);
+      this._applyOpen(this._controlledOpen, true, this.modal, this.modal);
     } else if (this.defaultOpen) {
-      this._applyOpen(true, true, this.modal);
+      this._applyOpen(true, true, this.modal, this.modal);
     }
+
+    this._syncVisualViewportTracking();
   }
 
   override updated(changed: PropertyValues) {
@@ -406,34 +455,26 @@ export class RCDialog extends LitElement {
       return;
     }
 
-    if (changed.has('closedBy')) {
-      if (this.closedBy) {
-        $dialog.setAttribute('closedby', this.closedBy);
-      } else {
-        $dialog.removeAttribute('closedby');
-      }
+    if (changed.has('variant')) {
+      this._syncVisualViewportTracking();
     }
 
-    if (changed.has('lightDismiss')) {
-      if (this.lightDismiss && 'closedBy' in HTMLDialogElement.prototype) {
-        // Native support available — delegate to closedby="any" instead of JS handler.
-        $dialog.setAttribute('closedby', 'any');
-        $dialog.removeEventListener('click', this._onBackdropClick);
-      } else if (this.lightDismiss) {
-        $dialog.addEventListener('click', this._onBackdropClick);
-      } else {
-        $dialog.removeEventListener('click', this._onBackdropClick);
+    if (this._$wired?.deref() === $dialog) {
+      this._syncGeometry($dialog);
 
-        if (this.closedBy) {
-          $dialog.setAttribute('closedby', this.closedBy);
-        } else {
-          $dialog.removeAttribute('closedby');
-        }
+      if (changed.has('closedBy')) {
+        this._syncClosedBy($dialog);
       }
     }
   }
 
+  override connectedCallback() {
+    super.connectedCallback();
+    ensureDialogBaseStyles(this.getRootNode() as Document | ShadowRoot);
+  }
+
   override disconnectedCallback() {
+    this._stopVisualViewportTracking();
     this._teardownDialog();
 
     super.disconnectedCallback();
@@ -450,12 +491,15 @@ export class RCDialog extends LitElement {
     $dialog.removeEventListener('close', this._onClose);
     $dialog.removeEventListener('cancel', this._onCancel);
     $dialog.removeEventListener('click', this._onBackdropClick);
+    this._syncGeometry(null, true);
 
     this._$wired = null;
     this._$opener = null;
   }
 
   protected _onClose = () => {
+    this._stopVisualViewportTracking();
+
     // Restore focus to the element that triggered the open, per APG focus management.
     if (this._$opener instanceof HTMLElement) {
       if (this._$opener.isConnected) {
@@ -522,41 +566,81 @@ export class RCDialog extends LitElement {
   /** Hook for subclasses to respond after a resize gesture has settled. */
   protected _onResizeEnd(_detail: ResizeLifecycleDetail): void {}
 
-  protected _resizeHandles($dialog: HTMLDialogElement): Element[] {
-    if (!this.resizeHandle) {
-      return [];
+  /** Whether the variant docks the surface, which rules out moving and resizing it. */
+  private get _isDocked(): boolean {
+    return this.variant !== 'standard';
+  }
+
+  /**
+   * Proxies `closed-by` to the inner `<dialog>`, and stands in for `any` with a
+   * backdrop click listener where the browser has no native `closedby`.
+   */
+  private _syncClosedBy($dialog: HTMLDialogElement): void {
+    if (this.closedBy) {
+      $dialog.setAttribute('closedby', this.closedBy);
+    } else {
+      $dialog.removeAttribute('closedby');
     }
 
-    try {
-      return [...$dialog.querySelectorAll(this.resizeHandle)];
-    } catch {
-      if (import.meta.env.DEV) {
-        console.warn('[rc-dialog] Invalid resize-handle selector.', this.resizeHandle);
-      }
-
-      return [];
+    if (this.closedBy === 'any' && !('closedBy' in HTMLDialogElement.prototype)) {
+      $dialog.addEventListener('click', this._onBackdropClick);
+    } else {
+      $dialog.removeEventListener('click', this._onBackdropClick);
     }
   }
 
-  protected _resizeDirectionForHandle($handle: Element): ResizeDirection {
-    const axis = $handle.getAttribute('data-rc-dialog-resize-axis');
+  /**
+   * Builds, updates, or disposes the move and resize behavior. The first
+   * dialog that needs it loads the geometry module and syncs again once it
+   * arrives.
+   */
+  private _syncGeometry($dialog: HTMLDialogElement | null, force = false): void {
+    const wanted =
+      !!$dialog && !this._isDocked && (this.movable || !!this.moveHandle || this.resize !== 'none');
 
-    switch (axis) {
-      case 'x':
-        return 'horizontal';
-      case 'y':
-        return 'vertical';
-      case 'both':
-        return 'both';
-      default:
-        return this.resize;
+    if (!wanted) {
+      this._geometry?.dispose();
+      this._geometry = null;
+
+      return;
     }
-  }
 
-  protected _resizeOriginForHandle($handle: Element): ResizeOrigin {
-    return (
-      ($handle.getAttribute('data-rc-dialog-resize-origin') as ResizeOrigin | null) ??
-      this.resizeOrigin
+    const Geometry = (this.constructor as typeof RCDialog)._geometryClass ?? loadedGeometry;
+
+    if (!Geometry) {
+      void loadGeometry().then(() => {
+        const $current = this._$wired?.deref() ?? null;
+
+        if ($current) {
+          this._syncGeometry($current, true);
+        }
+      });
+
+      return;
+    }
+
+    if (!this._geometry) {
+      this._geometry = new Geometry(this);
+      force = true;
+    }
+
+    this._geometry.sync(
+      $dialog,
+      {
+        movable: this.movable,
+        moveHandle: this.moveHandle,
+        moveBounds: this.moveBounds,
+        moveStep: this.moveStep,
+        resize: this.resize,
+        resizeOrigin: this.resizeOrigin,
+        resizeHandle: this.resizeHandle,
+        resizeThreshold: this.resizeThreshold,
+        resizeStep: this.resizeStep,
+        onResizeStart: (detail) => this._onResizeStart(detail),
+        onResize: (detail) => this._onResize(detail),
+        onResizeEnd: (detail) => this._onResizeEnd(detail),
+      },
+      force,
     );
   }
 
@@ -566,8 +650,10 @@ export class RCDialog extends LitElement {
    * @param open - whether to open (`true`) or close (`false`)
    * @param silent - when `true`, suppresses the outgoing `rc-dialog-toggle` event
    * @param modal - whether to call `showModal()` (`true`) or `show()` (`false`)
+   * @param moveFocus - whether a non-modal open moves focus into the dialog, as
+   *   `show()` does natively. A modal open always does
    */
-  protected _applyOpen(open: boolean, silent: boolean, modal = true): boolean {
+  protected _applyOpen(open: boolean, silent: boolean, modal = true, moveFocus = true): boolean {
     const $dialog = this._$dialog;
 
     if (!$dialog) {
@@ -581,7 +667,25 @@ export class RCDialog extends LitElement {
 
       // Capture focus owner before the dialog steals it, so we can restore on close.
       this._$opener = document.activeElement;
-      modal ? $dialog.showModal() : $dialog.show();
+
+      if (modal) {
+        $dialog.showModal();
+      } else {
+        $dialog.show();
+
+        // show() always moves focus in; hand it back to where it was.
+        if (!moveFocus && $dialog.contains(document.activeElement)) {
+          const $opener = this._$opener;
+
+          if ($opener instanceof HTMLElement && $opener !== document.body && $opener.isConnected) {
+            $opener.focus({ preventScroll: true });
+          } else if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
+        }
+      }
+
+      this._syncVisualViewportTracking();
       this.requestUpdate('open');
 
       return true;
@@ -607,6 +711,74 @@ export class RCDialog extends LitElement {
         detail: { open, returnValue: this.returnValue },
       }),
     );
+  }
+
+  private _handleVisualViewportChange = (): void => {
+    const $window = this.ownerDocument.defaultView;
+
+    if (!$window) {
+      return;
+    }
+
+    const bounds = getVisualViewportBounds($window);
+    const { height } = this._keyboardViewport.next(bounds, isTextEntryFocused(this.ownerDocument));
+    // The bounds are viewport pixels, but lengths set here are zoomed again
+    // when an ancestor such as the root has a CSS zoom (an app-wide interface
+    // size), so convert them to the dialog's own pixels. Read the zoom from
+    // the inner <dialog>: a host styled `display: contents` has no box, and
+    // `currentCSSZoom` reports 1 for it.
+    const $zoomSource: Element = this._$dialog ?? this;
+    const dialogZoom = cssZoom($zoomSource);
+    const px = (viewportPx: number) => `${viewportPx / dialogZoom}px`;
+
+    this.style.setProperty('--rc-dialog-visual-viewport-left', px(bounds.left));
+    this.style.setProperty('--rc-dialog-visual-viewport-top', px(bounds.top));
+    this.style.setProperty('--rc-dialog-visual-viewport-width', px(bounds.width));
+    this.style.setProperty('--rc-dialog-visual-viewport-height', px(height));
+  };
+
+  private _syncVisualViewportTracking(): void {
+    if (this.variant === 'fullscreen' && this.open) {
+      this._startVisualViewportTracking();
+    } else {
+      this._stopVisualViewportTracking();
+    }
+  }
+
+  private _startVisualViewportTracking(): void {
+    const $window = this.ownerDocument.defaultView;
+
+    if (!$window) {
+      return;
+    }
+
+    this._handleVisualViewportChange();
+
+    if (this._trackingVisualViewport) {
+      return;
+    }
+
+    this._trackingVisualViewport = true;
+    $window.addEventListener('resize', this._handleVisualViewportChange);
+    $window.visualViewport?.addEventListener('resize', this._handleVisualViewportChange);
+    $window.visualViewport?.addEventListener('scroll', this._handleVisualViewportChange);
+  }
+
+  private _stopVisualViewportTracking(): void {
+    const $window = this.ownerDocument.defaultView;
+
+    if ($window && this._trackingVisualViewport) {
+      $window.removeEventListener('resize', this._handleVisualViewportChange);
+      $window.visualViewport?.removeEventListener('resize', this._handleVisualViewportChange);
+      $window.visualViewport?.removeEventListener('scroll', this._handleVisualViewportChange);
+    }
+
+    this._trackingVisualViewport = false;
+    this._keyboardViewport.reset();
+    this.style.removeProperty('--rc-dialog-visual-viewport-left');
+    this.style.removeProperty('--rc-dialog-visual-viewport-top');
+    this.style.removeProperty('--rc-dialog-visual-viewport-width');
+    this.style.removeProperty('--rc-dialog-visual-viewport-height');
   }
 }
 

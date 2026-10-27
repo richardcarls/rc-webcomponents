@@ -1,0 +1,167 @@
+# @rcarls/rc-virtual-scroller
+
+Headless virtualization wrapper that reports the visible index range for a
+consumer-owned list or grid and reserves the off-range scroll space.
+
+```html
+<rc-scroller>
+  <rc-virtual-scroller count="4000" item-size="288">
+    <ul class="cards">
+      <!-- only the items in the current range -->
+    </ul>
+  </rc-virtual-scroller>
+</rc-scroller>
+```
+
+```js
+const scroller = document.querySelector('rc-virtual-scroller');
+
+const render = ({ start, end }) => renderItems(recipes.slice(start, end), start);
+
+// The element may have measured before this listener existed.
+if (scroller.range) render(scroller.range);
+
+scroller.addEventListener('rc-virtual-scroller-range', (event) => render(event.detail));
+```
+
+The element measures on its own schedule, which can be before your listener is
+attached, and it never re-sends an unchanged range. Render once from the
+read-only `range` property when you subscribe, then follow the event.
+
+The element never creates, recycles, or positions item DOM. It measures
+geometry, dispatches `rc-virtual-scroller-range`, and sizes two spacer parts
+around the default slot. You slot one container element and render the reported
+slice into it with whatever you already use.
+
+That split is the whole point. The markup, the CSS layout, and the
+accessibility semantics stay with the code that owns them, so a native
+`grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr))` keeps working
+untouched, `<ul>` still contains `<li>`, and a framework's keyed list still
+reuses the nodes that stayed in range.
+
+## Why not `content-visibility: auto`
+
+CSS containment skips layout and paint for offscreen content, but a custom
+element upgrades when it is parsed or inserted, before style is resolved.
+Containment cannot prevent element construction, so a collection of a few
+thousand custom elements still pays for all of them up front. Virtualization is
+the only thing that avoids that cost.
+
+## Axis, direction, and writing mode
+
+`axis` is logical. `block`, the default, windows lines that stack the way
+paragraphs do: top to bottom in horizontal text, right to left in
+`vertical-rl`. `inline` windows items running the way text runs, such as a
+horizontal shelf. For the inline axis, lay the container's items along it with
+`display: flex` or a grid with `grid-auto-flow: column`.
+
+```html
+<rc-virtual-scroller axis="inline" count="500" item-size="160">
+  <ul class="shelf">
+    <!-- display: flex -->
+  </ul>
+</rc-virtual-scroller>
+```
+
+Direction and writing mode come from the element's computed style, so RTL
+pages and vertical text need no configuration. The visible range is measured
+from where the scroll container's visible box sits relative to the element, in
+the element's own flow, so it never depends on the sign conventions of
+`scrollLeft` in RTL.
+
+## Geometry
+
+Virtualization supports sequential DOM-order collections with **uniform line
+pitch and capacity**; the final line may be partial. Use ordinary lists,
+shelves without wrapping, regular grids, or uniform numeric grid spans. Masonry,
+variable-height lines, dense placement, and reordered collections are outside
+this contract. When a sampled layout is demonstrably unsupported, the component
+reports the whole collection, removes its spacers, and warns in development.
+
+Automatic grid measurement reads resolved tracks and their gaps, so differently
+aligned items in the same track do not become separate lines. Uniform spans,
+including `1 / -1`, count as items rather than individual tracks. Container
+queries and `auto-fill` remain authoritative.
+
+For ambiguous uniform grid placement, set `items-per-line` to the number of
+items in each line. The override controls capacity, not pitch or CSS placement;
+it does not enable virtualization of variable-height layouts. Remove the attribute,
+or assign `itemsPerLine = 0`, to restore automatic inference.
+
+```html
+<rc-virtual-scroller axis="inline" count="500" item-size="160" items-per-line="1">
+  <ul class="shelf">
+    <!-- One card per column, spanning named row tracks. -->
+  </ul>
+</rc-virtual-scroller>
+```
+
+`count` is the true total. `item-size` estimates line pitch until it can be
+measured; it never overrides measured geometry. `overscan` defaults to two
+extra lines at each viewport edge. A one-line slice retains its established
+geometry instead of reverting to a contradictory track-count estimate.
+
+Numeric inputs are normalized: `count` and `items-per-line` are floored
+nonnegative integers with a fallback of zero; `overscan` is floored with a
+fallback of two for negative values, infinity, or NaN. Zero, negative, or invalid
+`item-size` becomes zero. Without a usable pitch the full collection is
+reported so it can be measured.
+
+`rc-virtual-scroller-range` reports the effective `itemsPerLine`, `lineSize`,
+and `measured` (whether pitch comes from real layout). `first`, `last`, and
+`range` are read-only outputs. The `first` and `last` attributes report the
+computed state; author writes do not control the window.
+
+The nearest scrolling ancestor is found through slots and shadow hosts.
+Document scrolling and viewport resizing are supported. Set `scrollTarget`
+when the intended scrollport differs from the automatically resolved ancestor.
+Resizing the scrollport fills newly visible space even when the host itself
+does not resize. A pane hidden with `display: none` retains its mounted slice
+and geometry until layout becomes available again.
+
+Call `measure()` after changes that observers cannot see, such as a stylesheet
+writing-mode change that preserves logical size, a font/theme change that only
+affects item internals, or repositioning the collection without resizing it.
+Consumers should commit the requested slice promptly; after an asynchronous
+render commit, call `measure()` if the container's children and size did not
+change.
+
+`scrollToIndex(index, { align, behavior })` uses the current line pitch.
+Alignment is `start` (default), `center`, `end`, or `nearest`. Finite
+indices are floored and clamped; infinity and NaN are ignored.
+`disabled` reports the full collection with zero spacers.
+
+To migrate code that assigned `first` or `last`, use `scrollToIndex()`
+for navigation and read `range` for rendering. Supply `items-per-line`
+when a uniform grid's placement cannot be inferred.
+
+## Accessibility
+
+A virtualized set must still tell assistive technology how big it really is,
+because the DOM no longer says so. The element does not write these for you:
+the roles belong to your markup, and guessing at them would fight a container
+that manages its own rows.
+
+- For a list, put `aria-setsize` (the true `count`) and `aria-posinset` (the
+  item's real index, not its position in the rendered slice) on each item.
+- For a grid, use `aria-rowcount` / `aria-rowindex`, and
+  `aria-colcount` / `aria-colindex` where columns are also virtualized.
+- Set `aria-busy="true"` on the container while a batch is being swapped in, as
+  the [WAI-ARIA APG feed pattern](https://www.w3.org/WAI/ARIA/apg/patterns/feed/)
+  describes.
+
+The one thing the element does handle is focus. Unmounting the focused element
+moves focus to `<body>` with no error and no visible cause, which is how a
+keyboard user silently loses their place. The reported range is always widened
+to include the focused item, contiguously, so your render stays a plain slice;
+it collapses again as soon as focus moves. Scrolling a long way while holding
+focus therefore renders a larger range on purpose.
+
+The element sets `overflow-anchor: none` on itself. Browser scroll anchoring
+exists to hold the reading position when content above the viewport changes
+size, which is what this element does every frame, so leaving it on makes the
+two fight and the scroll position drift.
+
+Import `@rcarls/rc-virtual-scroller` to use the class without registering it, or
+import `@rcarls/rc-virtual-scroller/define` to register
+`<rc-virtual-scroller>`.

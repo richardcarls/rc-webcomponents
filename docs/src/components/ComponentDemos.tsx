@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import hljs from 'highlight.js/lib/core';
 import rust from 'highlight.js/lib/languages/rust';
 
+import type { RCVirtualScrollerRef } from '@rcarls/rc-webcomponents/react';
 import type {
   RCAppBarRef,
   RCBottomSheetRef,
@@ -12,6 +13,7 @@ import type {
   RCButtonToggleDetail,
   RCDialogRef,
   RCDisclosureRef,
+  RCFieldRef,
   RCListboxRef,
   RCMenuActivateDetail,
   RCMenuRef,
@@ -32,8 +34,10 @@ import type {
   RCVirtualCanvasRef,
   RCVirtualCanvasRenderDetail,
   RCVirtualCanvasPointerDetail,
+  RCVirtualScrollerRangeDetail,
 } from '@rcarls/rc-webcomponents/react';
 import type { RCTextareaPluginAPI } from '@rcarls/rc-textarea';
+import { FoldingActionController } from '@rcarls/rc-textarea/folding';
 
 hljs.registerLanguage('rust', rust);
 
@@ -375,6 +379,132 @@ export function ScrollerDemo() {
   );
 }
 
+const VIRTUAL_SCROLLER_DEMO_CSS = `
+.virtual-scroller-demo-port {
+  block-size: 16rem;
+  overflow: auto;
+  border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
+  border-radius: 0.5rem;
+}
+
+.virtual-scroller-demo-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.virtual-scroller-demo-list li {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  block-size: 3rem;
+  padding-inline: 1rem;
+  border-block-end: 1px solid color-mix(in srgb, CanvasText 10%, transparent);
+}
+
+.virtual-scroller-demo-status {
+  margin-block-start: 0.5rem;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, CanvasText 65%, transparent);
+}
+`;
+
+const VIRTUAL_SCROLLER_DEMO_COUNT = 2000;
+
+export function VirtualScrollerDemo() {
+  const [$host, setHost] = useState<RCVirtualScrollerRef | null>(null);
+  const [range, setRange] = useState({ start: 0, end: 0 });
+  const [layout, setLayout] = useState('list');
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!$host) {
+      return;
+    }
+
+    const onRange = (event: Event) => {
+      setRange((event as CustomEvent<RCVirtualScrollerRangeDetail>).detail);
+    };
+
+    $host.addEventListener('rc-virtual-scroller-range', onRange);
+
+    if ($host.range) {
+      setRange($host.range);
+    }
+
+    return () => $host.removeEventListener('rc-virtual-scroller-range', onRange);
+  }, [$host]);
+
+  useEffect(() => {
+    $host?.measure();
+  }, [$host, layout]);
+
+  return (
+    <DemoFrame defaultTheme="material">
+      <style>{VIRTUAL_SCROLLER_DEMO_CSS}</style>
+      <label>
+        Layout{' '}
+        <select value={layout} onChange={(event) => setLayout(event.target.value)}>
+          <option value="list">List</option>
+          <option value="grid">Auto-fill grid</option>
+          <option value="span">Named spans (explicit capacity)</option>
+        </select>
+      </label>{' '}
+      <label>
+        <input
+          type="checkbox"
+          checked={expanded}
+          onChange={(event) => setExpanded(event.target.checked)}
+        />{' '}
+        Taller scroll container
+      </label>
+      <div
+        className="virtual-scroller-demo-port"
+        style={{ blockSize: expanded ? '24rem' : '16rem' }}
+      >
+        <rc-virtual-scroller
+          ref={setHost}
+          count={VIRTUAL_SCROLLER_DEMO_COUNT}
+          item-size={48}
+          items-per-line={layout === 'span' ? 1 : undefined}
+        >
+          <ul
+            className="virtual-scroller-demo-list"
+            aria-label="Recipes"
+            style={{
+              gridTemplateColumns:
+                layout === 'grid'
+                  ? 'repeat(auto-fill, minmax(10rem, 1fr))'
+                  : layout === 'span'
+                    ? '[card-start] 1fr 1fr [card-end]'
+                    : '1fr',
+            }}
+          >
+            {Array.from({ length: range.end - range.start }, (_, offset) => {
+              const index = range.start + offset;
+
+              return (
+                <li
+                  key={index}
+                  aria-setsize={VIRTUAL_SCROLLER_DEMO_COUNT}
+                  aria-posinset={index + 1}
+                  style={{ gridColumn: layout === 'span' ? 'card-start / card-end' : undefined }}
+                >
+                  Recipe #{index + 1}
+                </li>
+              );
+            })}
+          </ul>
+        </rc-virtual-scroller>
+      </div>
+      <p className="virtual-scroller-demo-status" aria-live="polite">
+        Rendering items {range.start + 1}–{range.end} of {VIRTUAL_SCROLLER_DEMO_COUNT}.
+      </p>
+    </DemoFrame>
+  );
+}
+
 const LIST_DEMO_CSS = `
 .list-demo-grid {
   display: grid;
@@ -435,6 +565,26 @@ export function ListDemo() {
               </span>
               <span slot="trailing">35 min</span>
             </rc-list-item>
+          </rc-list>
+        </section>
+        <section>
+          <h3>Reorderable</h3>
+          <rc-list reorderable aria-label="Course order">
+            {['Starter', 'Main', 'Dessert'].map((course) => (
+              <rc-list-item key={course}>
+                {course}
+                <button
+                  slot="trailing"
+                  type="button"
+                  data-rc-reorder-handle=""
+                  aria-label={`Reorder ${course}`}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    drag_indicator
+                  </span>
+                </button>
+              </rc-list-item>
+            ))}
           </rc-list>
         </section>
         <section>
@@ -948,7 +1098,7 @@ export function AdaptiveNavigationDemo() {
             <rc-navigation-rail style={{ viewTransitionName: 'adaptive-navigation' }}>
               <rc-fab
                 slot="header"
-                position="top-start"
+                position="block-start-inline-start"
                 style={{ '--rc-fab-position': 'static' } as CSSProperties}
               >
                 <button type="button" aria-label="New note">
@@ -989,7 +1139,7 @@ export function AdaptiveNavigationDemo() {
           </p>
           {!showRail ? (
             <rc-fab
-              position="block-end"
+              position="block-end-inline-end"
               style={
                 {
                   '--rc-fab-position': 'absolute',
@@ -1517,7 +1667,7 @@ export function FabDemo() {
 
           {/* Extended FAB — always visible */}
           <rc-fab
-            position="bottom-start"
+            position="block-end-inline-start"
             style={{ '--rc-fab-position': 'absolute' } as CSSProperties}
           >
             <button type="button">
@@ -1542,7 +1692,7 @@ export function ListboxDemo() {
       return;
     }
 
-    async function applyOptions() {
+    const applyOptions = async () => {
       if (typeof customElements !== 'undefined') {
         await customElements.whenDefined('rc-listbox');
       }
@@ -1562,7 +1712,7 @@ export function ListboxDemo() {
       ];
 
       listbox.setSelectedValues(['berries']);
-    }
+    };
 
     void applyOptions();
   }, []);
@@ -1738,6 +1888,49 @@ export function MenuButtonDemo() {
   );
 }
 
+export function TooltipDemo() {
+  return (
+    <DemoFrame>
+      <rc-tooltip placement="block-end">
+        <button slot="trigger" type="button">
+          Hover or focus me
+        </button>
+        <span slot="content">This text describes the trigger.</span>
+      </rc-tooltip>
+    </DemoFrame>
+  );
+}
+
+export function PopoverDemo() {
+  return (
+    <DemoFrame>
+      <rc-popover data-rc-material-rich-tooltip open-on-hover open-on-focus>
+        <button
+          slot="trigger"
+          type="button"
+          popoverTarget="rc-popover-demo-content"
+          aria-haspopup="dialog"
+        >
+          About presets
+        </button>
+        <section
+          slot="content"
+          id="rc-popover-demo-content"
+          popover="auto"
+          role="dialog"
+          aria-labelledby="rc-popover-demo-title"
+        >
+          <h2 id="rc-popover-demo-title">Export presets</h2>
+          <p>Save your export settings for next time.</p>
+          <footer>
+            <a href="/guide/styling">Learn more</a>
+          </footer>
+        </section>
+      </rc-popover>
+    </DemoFrame>
+  );
+}
+
 export function MenubarDemo() {
   const [menubarEl, setMenubarEl] = useState<HTMLElement | null>(null);
   const setMenubarRef = useCallback((element: HTMLElement | null) => {
@@ -1902,6 +2095,61 @@ export function SearchBarDemo() {
   );
 }
 
+export function FieldDemo() {
+  const [titleField, setTitleField] = useState<RCFieldRef | null>(null);
+
+  return (
+    <DemoFrame>
+      <form
+        style={{ display: 'grid', gap: '1.5rem', maxInlineSize: '28rem' }}
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <rc-field ref={setTitleField} counter>
+          <span slot="leading" aria-hidden="true">
+            ✎
+          </span>
+          <label slot="label" htmlFor="field-demo-title">
+            Recipe title
+          </label>
+          <input
+            id="field-demo-title"
+            name="title"
+            maxLength={80}
+            placeholder="Tomato soup"
+            required
+          />
+          <small slot="hint">Use the title printed on the recipe.</small>
+          <small slot="error">Enter a recipe title.</small>
+        </rc-field>
+
+        <rc-field className="rc-field--outlined">
+          <label slot="label" htmlFor="field-demo-notes">
+            Preparation notes
+          </label>
+          <textarea id="field-demo-notes" name="notes" rows={3} placeholder="Optional notes" />
+          <span slot="suffix">min</span>
+        </rc-field>
+
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button type="submit">Validate</button>
+          <button
+            type="button"
+            onClick={() => {
+              if (titleField?.control) {
+                titleField.control.value = 'Tomato soup';
+                titleField.sync();
+              }
+            }}
+          >
+            Set title with JavaScript
+          </button>
+          <button type="reset">Reset</button>
+        </div>
+      </form>
+    </DemoFrame>
+  );
+}
+
 export function SliderDemo() {
   const [sliderEl, setSliderEl] = useState<RCSliderRef | null>(null);
   const log = useEventLog<{ value: number }>(
@@ -1980,6 +2228,100 @@ export function TextareaDemo() {
   );
 }
 
+export function TextareaDisclosureDemo() {
+  const [editor, setEditor] = useState<RCTextareaRef | null>(null);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+
+    let folding: FoldingActionController;
+    let source: string | undefined;
+    const $panel = document.createElement('div');
+    const $message = document.createElement('p');
+
+    $message.textContent =
+      'This block is presentation only. Editing and copying preserve the source text.';
+
+    $panel.append($message);
+
+    editor.usePlugin({
+      mount(api) {
+        api.adoptStyleSheet(`
+          .fold-action-trigger .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 1.5em;
+            line-height: 1;
+            white-space: nowrap;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+          }
+        `);
+
+        folding = new FoldingActionController(api, {
+          createTriggerIcon(expanded) {
+            const $icon = document.createElement('span');
+
+            $icon.className = 'material-symbols-outlined';
+            $icon.textContent = expanded ? 'expand_less' : 'expand_more';
+
+            return $icon;
+          },
+        });
+      },
+      update(value, api) {
+        if (source !== value) {
+          folding.clear();
+          source = value;
+        }
+
+        const offset = value.split('\n')[0].length;
+
+        api.setDecorations([
+          ...folding.getDecorations([
+            {
+              key: 'explanation',
+              gutterLine: 1,
+              label: 'First-line information',
+              target: $panel,
+              initiallyExpanded: false,
+            },
+          ]),
+          {
+            type: 'widget',
+            offset,
+            side: 'after',
+            layout: 'block',
+            accessible: true,
+            key: 'explanation-panel',
+            create: () => $panel,
+          },
+        ]);
+      },
+      destroy() {
+        folding.clear();
+      },
+    });
+
+    return () => editor.removePlugin();
+  }, [editor]);
+
+  return (
+    <DemoFrame>
+      <rc-textarea ref={setEditor} gutter auto-grow word-wrap>
+        <textarea
+          aria-label="Disclosure example"
+          defaultValue={
+            'A line with more information\nThe following line moves down when expanded.'
+          }
+        />
+      </rc-textarea>
+    </DemoFrame>
+  );
+}
+
 // ── rc-textarea feature demos ─────────────────────────────────────────────────
 
 export function TextareaBasicDemo() {
@@ -1994,6 +2336,28 @@ export function TextareaBasicDemo() {
             'But I have promises to keep,\n' +
             'And miles to go before I sleep.\n\n' +
             '— Robert Frost'
+          }
+        />
+      </rc-textarea>
+    </DemoFrame>
+  );
+}
+
+export function TextareaContentLanguageDemo() {
+  return (
+    <DemoFrame>
+      <rc-textarea auto-grow line-numbers line-direction="auto">
+        <textarea
+          rows={6}
+          aria-label="Recipe directions"
+          lang="ar"
+          dir="auto"
+          defaultValue={
+            'حمّص البصل في زيت الزيتون.\n' +
+            'Add 2 cloves garlic, minced.\n' +
+            '\n' +
+            '350\n' +
+            'اطبخ لمدة ١٠ دقائق.'
           }
         />
       </rc-textarea>
@@ -2212,7 +2576,7 @@ export function AdaptiveMenuDemo() {
         </select>
       </label>
       <div style={{ inlineSize: '160px' }}>
-        <rc-adaptive-menu label="Recipe actions" max-shown={maxShown} overflow-label="More actions">
+        <rc-adaptive-menu label="Recipe actions" max-shown={maxShown}>
           {action('Favorite', 'favorite', 30)}
           {action('Edit', 'edit', 20)}
           {action('Share', 'share', 10)}

@@ -5,6 +5,8 @@ export const chipGroupStyles = css`
     display: block;
     min-inline-size: 0;
     color-scheme: inherit;
+    /* Match readonly row pitch to the disclosure toggle without enlarging chip chrome. */
+    --_rc-chip-group-readonly-min-block-size: var(--rc-chip-touch-target-block-size, 3rem);
   }
 
   :host([hidden]) {
@@ -22,8 +24,11 @@ export const chipGroupStyles = css`
 
   #root[data-mode='scroll'] {
     flex-wrap: nowrap;
+    /* Physical fallback first, for engines without logical overflow. */
     overflow-x: auto;
     overflow-y: hidden;
+    overflow-inline: auto;
+    overflow-block: hidden;
     overscroll-behavior-inline: contain;
     scroll-padding-inline: var(--rc-chip-group-scroll-padding-inline, 0);
     scrollbar-width: var(--rc-chip-group-scrollbar-width, none);
@@ -31,7 +36,7 @@ export const chipGroupStyles = css`
   }
 
   #root[data-mode='scroll']::-webkit-scrollbar {
-    display: var(--rc-chip-group-webkit-scrollbar-display, none);
+    display: var(--rc-chip-group-scrollbar-display, none);
   }
 
   #root[data-measuring] {

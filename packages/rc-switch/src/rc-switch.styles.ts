@@ -108,9 +108,28 @@ export const switchStyles = css`
     opacity: var(--rc-switch-disabled-opacity, 0.5);
   }
 
+  /*
+   * track only ever transitions background-color/border-color (effects), so
+   * it shortens rather than zeroes. thumb mixes effects (background-color)
+   * with spatial movement (inline-size, block-size, transform) under one
+   * shared --rc-switch-duration, so its reduced-motion override restates
+   * the transition list instead: background-color shortens, the spatial
+   * trio drops to 0ms. The icons only ever transition transform (spatial),
+   * so they stay fully zeroed.
+   */
   @media (prefers-reduced-motion: reduce) {
-    [part='track'],
-    [part='thumb'],
+    [part='track'] {
+      transition-duration: 50ms;
+    }
+
+    [part='thumb'] {
+      transition:
+        background-color 50ms var(--rc-switch-easing, ease),
+        inline-size 0ms var(--rc-switch-easing, ease),
+        block-size 0ms var(--rc-switch-easing, ease),
+        transform 0ms var(--rc-switch-easing, ease);
+    }
+
     [part='selected-icon'],
     [part='deselected-icon'] {
       transition-duration: 0ms;

@@ -1,9 +1,11 @@
 import { html, type TemplateResult } from 'lit';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
+import { logicalRect, resolveFlow } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import type { RCTextarea } from './rc-textarea.js';
 import type { RCTextareaPluginAPI } from './types.js';
 import {
@@ -62,6 +64,380 @@ describe('RCTextarea — basic rendering', () => {
     const host = await renderTextarea();
 
     await expectNoA11yViolations(host);
+  });
+
+  test('highlights the line containing the browser caret', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $lines = $editor.querySelectorAll<HTMLElement>('.line');
+    const $secondLine = $lines.item(1);
+
+    if (!$secondLine) {
+      throw new Error('Expected a second editor line');
+    }
+
+    await userEvent.click($secondLine);
+
+    await expect.poll(() => $editor.querySelector('.line--active')).toBe($secondLine);
+  });
+
+  test('extends the active line highlight edge to edge through the gutter', async () => {
+    const host = await renderTextarea();
+
+    host.lineNumbers = true;
+    host.style.setProperty('--rc-textarea-active-line-bg', 'rgb(1, 2, 3)');
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $secondLine = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+
+    if (!$secondLine) {
+      throw new Error('Expected a second editor line');
+    }
+
+    await userEvent.click($secondLine);
+
+    await expect
+      .poll(() => getGutterCells(host).children[1]?.classList.contains('gutter-cell--active'))
+      .toBe(true);
+
+    const $gutterCell = getGutterCells(host).children[1]!;
+    const editorPadding = getComputedStyle($editor).paddingInlineStart;
+    const gutterPadding = getComputedStyle(getGutterCells(host)).paddingInlineStart;
+
+    for (const [$row, padding] of [
+      [$secondLine, editorPadding],
+      [$gutterCell, gutterPadding],
+    ] as const) {
+      const style = getComputedStyle($row);
+      const highlight = getComputedStyle($row, '::before');
+
+      // The row itself stays clear so a translucent color is not doubled.
+      expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+      expect(style.clipPath).toBe('none');
+      expect(highlight.backgroundColor).toBe('rgb(1, 2, 3)');
+      expect(parseFloat(highlight.insetInlineStart)).toBe(-parseFloat(padding));
+      expect(highlight.insetBlockStart).toBe('0px');
+      expect(highlight.insetBlockEnd).toBe('0px');
+    }
+  });
+
+  test.each(FLOW_FIXTURES)('keeps the highlight within its row in %s', async (flow) => {
+    const host = await renderTextarea(
+      inFlow(
+        html`
+          <rc-textarea data-testid="host" line-numbers style="inline-size: 16rem; block-size: 8rem">
+            <textarea aria-label="Notes"></textarea>
+          </rc-textarea>
+        `,
+        flow,
+      ),
+    );
+
+    host.style.setProperty('--rc-textarea-active-line-bg', 'rgb(1, 2, 3)');
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $secondLine = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+
+    await userEvent.click($secondLine);
+
+    await expect.poll(() => $secondLine.classList.contains('line--active')).toBe(true);
+
+    await expect
+      .poll(() => getGutterCells(host).children[1]?.classList.contains('gutter-cell--active'))
+      .toBe(true);
+
+    const highlight = getComputedStyle($secondLine, '::before');
+    const padding = getComputedStyle($editor).paddingInlineStart;
+    const $gutterCells = getGutterCells(host);
+    const $gutterCell = $gutterCells.children[1] as HTMLElement;
+    const resolvedFlow = resolveFlow($editor);
+    const lineRect = logicalRect(
+      $secondLine.getBoundingClientRect(),
+      $editor.getBoundingClientRect(),
+      resolvedFlow,
+    );
+    const gutterRect = logicalRect(
+      $gutterCell.getBoundingClientRect(),
+      $gutterCells.getBoundingClientRect(),
+      resolvedFlow,
+    );
+
+    expect(highlight.insetBlockStart, flowLabel(flow)).toBe('0px');
+    expect(highlight.insetBlockEnd, flowLabel(flow)).toBe('0px');
+    expect(parseFloat(highlight.insetInlineStart), flowLabel(flow)).toBe(-parseFloat(padding));
+    expect(getComputedStyle($secondLine).clipPath, flowLabel(flow)).toBe('none');
+    expect(Math.abs(gutterRect.blockStart - lineRect.blockStart), flowLabel(flow)).toBeLessThan(1);
+    expect(Math.abs(gutterRect.blockSize - lineRect.blockSize), flowLabel(flow)).toBeLessThan(1);
+
+    host.parentElement!.dir = flow.dir === 'ltr' ? 'rtl' : 'ltr';
+
+    await new Promise(requestAnimationFrame);
+
+    const flippedFlow = resolveFlow($editor);
+    const flippedLine = logicalRect(
+      $secondLine.getBoundingClientRect(),
+      $editor.getBoundingClientRect(),
+      flippedFlow,
+    );
+    const flippedGutter = logicalRect(
+      $gutterCell.getBoundingClientRect(),
+      $gutterCells.getBoundingClientRect(),
+      flippedFlow,
+    );
+
+    expect(
+      Math.abs(flippedGutter.blockStart - flippedLine.blockStart),
+      flowLabel(flow),
+    ).toBeLessThan(1);
+
+    expect(Math.abs(flippedGutter.blockSize - flippedLine.blockSize), flowLabel(flow)).toBeLessThan(
+      1,
+    );
+  });
+
+  test('aligns wrapped gutter cells in vertical writing', async () => {
+    const host = await renderTextarea(
+      inFlow(
+        html`
+          <rc-textarea
+            data-testid="host"
+            line-numbers
+            word-wrap
+            style="inline-size: 6rem; block-size: 12rem"
+          >
+            <textarea aria-label="Notes"></textarea>
+          </rc-textarea>
+        `,
+        { dir: 'ltr', writingMode: 'vertical-rl' },
+      ),
+    );
+
+    host.value = 'A long sentence that wraps across multiple columns\nShort';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $gutterCells = getGutterCells(host);
+    const flow = resolveFlow($editor);
+    const lineRect = logicalRect(
+      $editor.querySelector<HTMLElement>('.line')!.getBoundingClientRect(),
+      $editor.getBoundingClientRect(),
+      flow,
+    );
+    const gutterRect = logicalRect(
+      ($gutterCells.children[0] as HTMLElement).getBoundingClientRect(),
+      $gutterCells.getBoundingClientRect(),
+      flow,
+    );
+
+    expect(lineRect.blockSize).toBeGreaterThan(20);
+    expect(Math.abs(gutterRect.blockSize - lineRect.blockSize)).toBeLessThan(1);
+  });
+
+  test.each([false, true])('aligns gutter rows under CSS zoom with word wrap %s', async (wrap) => {
+    const host = await renderTextarea(html`
+      <rc-textarea
+        data-testid="host"
+        line-numbers
+        ?word-wrap=${wrap}
+        style="inline-size: 8rem; block-size: 10rem; zoom: 0.8;"
+      >
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = 'A long sentence that wraps across multiple rows\nShort';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+    const gutter = getGutterCells(host);
+    const flow = resolveFlow(editor);
+
+    await vi.waitFor(() => {
+      const lines = editor.querySelectorAll<HTMLElement>('.line');
+      const cells = gutter.querySelectorAll<HTMLElement>('.gutter-cell');
+
+      expect(cells.length).toBe(2);
+
+      for (let index = 0; index < lines.length; index += 1) {
+        const line = logicalRect(
+          lines[index].getBoundingClientRect(),
+          editor.getBoundingClientRect(),
+          flow,
+        );
+        const cell = logicalRect(
+          cells[index].getBoundingClientRect(),
+          gutter.getBoundingClientRect(),
+          flow,
+        );
+
+        expect(Math.abs(cell.blockSize - line.blockSize)).toBeLessThan(1);
+        expect(Math.abs(cell.blockStart - line.blockStart)).toBeLessThan(1);
+      }
+    });
+  });
+
+  test('realigns gutter cells after an ancestor writing-mode change', async () => {
+    const host = await renderTextarea(
+      inFlow(
+        html`
+          <rc-textarea data-testid="host" line-numbers style="inline-size: 16rem; block-size: 8rem">
+            <textarea aria-label="Notes"></textarea>
+          </rc-textarea>
+        `,
+        { dir: 'ltr', writingMode: 'horizontal-tb' },
+      ),
+    );
+
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    host.parentElement!.style.writingMode = 'vertical-rl';
+
+    await vi.waitFor(() => {
+      const $editor = getEditor(host);
+      const $gutterCells = getGutterCells(host);
+      const flow = resolveFlow($editor);
+      const lineRect = logicalRect(
+        $editor.querySelector<HTMLElement>('.line')!.getBoundingClientRect(),
+        $editor.getBoundingClientRect(),
+        flow,
+      );
+      const gutterRect = logicalRect(
+        ($gutterCells.children[0] as HTMLElement).getBoundingClientRect(),
+        $gutterCells.getBoundingClientRect(),
+        flow,
+      );
+
+      expect(flow.block).toBe('x');
+      expect(Math.abs(gutterRect.blockStart - lineRect.blockStart)).toBeLessThan(1);
+      expect(Math.abs(gutterRect.blockSize - lineRect.blockSize)).toBeLessThan(1);
+    });
+  });
+
+  test.each(FLOW_FIXTURES)(
+    'bleeds the highlight through inline padding when block padding is asymmetric in %s',
+    async (flow) => {
+      // A field-composed editor: no block-start padding under the floating label.
+      const host = await renderTextarea(
+        inFlow(
+          html`
+            <rc-textarea
+              data-testid="host"
+              gutter
+              style="inline-size: 16rem; block-size: 8rem; --rc-textarea-padding-block: 0 8px; --rc-textarea-padding-inline: 16px"
+            >
+              <textarea aria-label="Notes"></textarea>
+            </rc-textarea>
+          `,
+          flow,
+        ),
+      );
+
+      host.style.setProperty('--rc-textarea-active-line-bg', 'rgb(1, 2, 3)');
+      host.value = 'First line\nSecond line';
+
+      await waitRender();
+
+      const $editor = getEditor(host);
+      const $secondLine = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+
+      await userEvent.click($secondLine);
+
+      await expect.poll(() => $secondLine.classList.contains('line--active')).toBe(true);
+
+      await expect
+        .poll(() => getGutterCells(host).children[1]?.classList.contains('gutter-cell--active'))
+        .toBe(true);
+
+      const line = getComputedStyle($secondLine, '::before');
+      const gutter = getComputedStyle(getGutterCells(host).children[1]!, '::before');
+
+      expect(getComputedStyle($editor).paddingBlockStart, flowLabel(flow)).toBe('0px');
+      expect(line.insetInlineStart, flowLabel(flow)).toBe('-16px');
+      expect(line.insetInlineEnd, flowLabel(flow)).toBe('-16px');
+      expect(gutter.insetInlineStart, flowLabel(flow)).toBe('-16px');
+    },
+  );
+
+  test('keeps a long active line hittable after horizontal scrolling', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" style="inline-size: 16rem">
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = `First line\n${'Long line '.repeat(300)}`;
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $line = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+
+    await userEvent.click($line, { position: { x: 10, y: 10 } });
+
+    await expect.poll(() => $line.classList.contains('line--active')).toBe(true);
+
+    $editor.scrollLeft = $editor.scrollWidth;
+
+    const editorRect = $editor.getBoundingClientRect();
+    const lineRect = $line.getBoundingClientRect();
+    const $hit = host.shadowRoot!.elementFromPoint(
+      editorRect.right - 16,
+      lineRect.top + lineRect.height / 2,
+    );
+
+    expect($editor.scrollLeft).toBeGreaterThan(window.innerWidth);
+    expect($line.contains($hit) || $hit === $line).toBe(true);
+  });
+
+  test('falls back when shadow selection access has no local range', async () => {
+    const host = await renderTextarea();
+
+    host.value = 'First line\nSecond line';
+
+    await waitRender();
+
+    const $editor = getEditor(host);
+    const $secondLine = $editor.querySelectorAll<HTMLElement>('.line').item(1);
+    const $root = host.shadowRoot as ShadowRoot & {
+      getSelection?: () => Selection | null;
+    };
+    const ownGetSelection = Object.getOwnPropertyDescriptor($root, 'getSelection');
+
+    if (!$secondLine) {
+      throw new Error('Expected a second editor line');
+    }
+
+    Object.defineProperty($root, 'getSelection', {
+      configurable: true,
+      value: () => null,
+    });
+
+    try {
+      await userEvent.click($secondLine);
+
+      await expect.poll(() => $editor.querySelector('.line--active')).toBe($secondLine);
+    } finally {
+      if (ownGetSelection) {
+        Object.defineProperty($root, 'getSelection', ownGetSelection);
+      } else {
+        delete $root.getSelection;
+      }
+    }
   });
 
   test('word-wrap lets the host shrink inside a narrow grid', async () => {
@@ -159,6 +535,45 @@ describe('RCTextarea — value', () => {
     expect(multiline[2].textContent).toBe('line three');
   });
 
+  test('Tab inserts a tab, while Escape then Tab and Shift+Tab move focus', async () => {
+    const screen = render(html`
+      <button type="button">Before</button>
+      <rc-textarea data-testid="host">
+        <textarea name="notes" aria-label="Notes"></textarea>
+      </rc-textarea>
+      <button type="button">After</button>
+    `);
+    const host = screen.getByTestId('host').element() as RCTextarea;
+
+    await host.updateComplete;
+
+    host.value = 'Mix';
+
+    await waitRender();
+
+    const editor = getEditor(host);
+
+    placeCaretAtEnd(editor);
+
+    await userEvent.keyboard('{Tab}');
+
+    await waitRender();
+
+    expect(host.value).toBe('Mix\t');
+
+    await userEvent.keyboard('{Escape}{Tab}');
+
+    expect(document.activeElement?.textContent).toBe('After');
+    expect(host.value).toBe('Mix\t');
+
+    placeCaretAtEnd(editor);
+
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+
+    expect(document.activeElement?.textContent).toBe('Before');
+    expect(host.value).toBe('Mix\t');
+  });
+
   test('Enter at the end of a line immediately renders a trailing empty line', async () => {
     const host = await renderTextarea();
 
@@ -235,26 +650,101 @@ describe('RCTextarea — value', () => {
 });
 
 describe('RCTextarea — readOnly', () => {
-  test('readOnly controls contentEditable in both directions', async () => {
+  test('does not add inline overflow for a highlighted short line', async () => {
     const host = await renderTextarea(html`
-      <rc-textarea data-testid="host" read-only>
-        <textarea aria-label="Notes"></textarea>
+      <rc-textarea data-testid="host" style="inline-size: 16rem; --rc-textarea-active-line-bg: red">
+        <textarea aria-label="Notes" readonly></textarea>
       </rc-textarea>
     `);
 
-    expect(getEditor(host).contentEditable).toBe('false');
+    host.value = 'First line\nSecond line';
 
-    host.readOnly = false;
+    await waitRender();
 
-    await host.updateComplete;
+    const $editor = getEditor(host);
+    const $secondLine = $editor.querySelectorAll<HTMLElement>('.line').item(1);
 
-    expect(getEditor(host).contentEditable).toBe('true');
+    expect($editor.scrollWidth).toBe($editor.clientWidth);
 
-    host.readOnly = true;
+    $secondLine.classList.add('line--active');
 
-    await host.updateComplete;
+    expect($editor.scrollWidth).toBe($editor.clientWidth);
+  });
 
-    expect(getEditor(host).contentEditable).toBe('false');
+  test('follows the native textarea readonly attribute in both directions', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Notes" readonly>First line</textarea>
+      </rc-textarea>
+    `);
+    const $textarea = host.querySelector('textarea')!;
+    const $editor = getEditor(host);
+
+    expect(host.readOnly).toBe(true);
+    expect(host).toHaveAttribute('data-readonly');
+    expect($editor.contentEditable).toBe('false');
+    expect($editor).toHaveAttribute('aria-readonly', 'true');
+
+    $textarea.readOnly = false;
+
+    await expect.poll(() => $editor.contentEditable).toBe('true');
+    expect(host.readOnly).toBe(false);
+    expect(host).not.toHaveAttribute('data-readonly');
+    expect($editor).not.toHaveAttribute('aria-readonly');
+
+    $textarea.readOnly = true;
+
+    await expect.poll(() => $editor.contentEditable).toBe('false');
+    expect($editor).toHaveAttribute('aria-readonly', 'true');
+  });
+
+  test('stays a named, focusable, selectable textbox that rejects edits', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Notes" readonly>Keep this</textarea>
+      </rc-textarea>
+    `);
+    const $editor = getEditor(host);
+    const changes = vi.fn();
+
+    // Lit's update completes before the editor's frame-scheduled content render.
+    await vi.waitFor(() => expect($editor.textContent).toContain('Keep this'));
+
+    host.addEventListener('rc-textarea-change', changes);
+
+    expect($editor).toHaveAttribute('role', 'textbox');
+    expect($editor).toHaveAccessibleName('Notes');
+    expect($editor.tabIndex).toBe(0);
+
+    $editor.focus();
+    expect(host.shadowRoot!.activeElement).toBe($editor);
+
+    await userEvent.keyboard('typed');
+
+    expect(host.value).toBe('Keep this');
+    expect(changes).not.toHaveBeenCalled();
+
+    const selection =
+      (host.shadowRoot as ShadowRoot & { getSelection?: () => Selection }).getSelection?.() ??
+      document.getSelection()!;
+
+    selection.selectAllChildren($editor);
+    expect(selection.toString()).toContain('Keep this');
+    await expectNoA11yViolations(host);
+  });
+
+  test('keeps the enabled field appearance', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" style="--rc-textarea-padding-inline: 16px">
+        <textarea aria-label="Notes" readonly>Text</textarea>
+      </rc-textarea>
+    `);
+
+    expect(getComputedStyle(getEditor(host)).paddingInlineStart).toBe('16px');
+
+    expect(getComputedStyle(host.shadowRoot!.querySelector('#root')!).borderTopStyle).not.toBe(
+      'none',
+    );
   });
 });
 
@@ -824,5 +1314,461 @@ describe('RCTextarea — paste', () => {
     await waitRender();
 
     expect(host.value).toBe('new\nlines\nexisting');
+  });
+});
+
+describe('RCTextarea — content language', () => {
+  async function mountPlugin(host: RCTextarea): Promise<RCTextareaPluginAPI> {
+    let api: RCTextareaPluginAPI | undefined;
+
+    host.usePlugin({
+      mount(pluginApi) {
+        api = pluginApi;
+      },
+    });
+
+    await waitRender();
+
+    return api!;
+  }
+
+  function setCursor(host: RCTextarea, offset: number): void {
+    (host as unknown as { _savedSelection: unknown })._savedSelection = {
+      anchorOffset: offset,
+      focusOffset: offset,
+    };
+  }
+
+  /** Whether a line's text sits nearer the editor's left edge than its right. */
+  function textLeansLeft(host: RCTextarea, index: number): boolean {
+    const $editor = getEditor(host);
+    const $line = $editor.querySelectorAll<HTMLElement>('.line').item(index);
+    const range = document.createRange();
+
+    range.selectNodeContents($line);
+
+    const text = range.getBoundingClientRect();
+    const editor = $editor.getBoundingClientRect();
+
+    return text.left - editor.left < editor.right - text.right;
+  }
+
+  test('mirrors lang and spellcheck from the textarea and keeps them current', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" lang="en">
+        <textarea aria-label="Notes" lang="ja" spellcheck="true"></textarea>
+      </rc-textarea>
+    `);
+    const $textarea = getSlottedTextarea(host);
+    const $editor = getEditor(host);
+
+    expect($editor).toHaveAttribute('lang', 'ja');
+    expect($editor.spellcheck).toBe(true);
+
+    $textarea.lang = 'ar';
+    $textarea.spellcheck = false;
+
+    await expect.poll(() => $editor.getAttribute('lang')).toBe('ar');
+    expect($editor.spellcheck).toBe(false);
+
+    $textarea.removeAttribute('lang');
+    $textarea.setAttribute('spellcheck', '');
+
+    await expect.poll(() => $editor.hasAttribute('lang')).toBe(false);
+    expect($editor.spellcheck).toBe(true);
+
+    $textarea.removeAttribute('spellcheck');
+
+    await expect.poll(() => $editor.spellcheck).toBe(false);
+  });
+
+  test('never copies the host lang, which is the interface language', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" lang="de">
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
+    `);
+
+    expect(getEditor(host)).not.toHaveAttribute('lang');
+  });
+
+  test('reruns plugins after content language or direction changes', async () => {
+    const host = await renderTextarea();
+    const $textarea = getSlottedTextarea(host);
+    const update = vi.fn();
+
+    host.usePlugin({ update });
+    await waitRender();
+
+    const initialCalls = update.mock.calls.length;
+
+    $textarea.lang = 'ar';
+    await expect.poll(() => update.mock.calls.length).toBeGreaterThan(initialCalls);
+
+    const afterLanguage = update.mock.calls.length;
+
+    $textarea.dir = 'rtl';
+    await expect.poll(() => update.mock.calls.length).toBeGreaterThan(afterLanguage);
+  });
+
+  test.each([
+    { dir: 'ltr', value: 'مرحبا', page: 'rtl', expected: 'ltr' },
+    { dir: 'rtl', value: 'Hello', page: 'ltr', expected: 'rtl' },
+    { dir: 'auto', value: '12 مرحبا', page: 'ltr', expected: 'rtl' },
+    { dir: 'auto', value: '12 Hello', page: 'rtl', expected: 'ltr' },
+    { dir: 'auto', value: '123', page: 'rtl', expected: 'ltr' },
+    { dir: 'auto', value: '', page: 'ltr', expected: 'ltr' },
+  ] as const)(
+    'resolves textarea dir="$dir" with $value in an $page page to $expected',
+    async ({ dir, value, page, expected }) => {
+      const host = await renderTextarea(html`
+        <div dir=${page}>
+          <rc-textarea data-testid="host">
+            <textarea aria-label="Notes" dir=${dir}>${value}</textarea>
+          </rc-textarea>
+        </div>
+      `);
+
+      await waitRender();
+
+      expect(getEditor(host)).toHaveAttribute('dir', expected);
+      expect(host.shadowRoot!.querySelector('#editor')!.matches(`:dir(${expected})`)).toBe(true);
+    },
+  );
+
+  test('inherits the host direction when the textarea sets no dir', async () => {
+    const host = await renderTextarea(html`
+      <div dir="rtl">
+        <rc-textarea data-testid="host">
+          <textarea aria-label="Notes">Hello</textarea>
+        </rc-textarea>
+      </div>
+    `);
+
+    await waitRender();
+
+    expect(getEditor(host)).not.toHaveAttribute('dir');
+    expect(getComputedStyle(getEditor(host)).direction).toBe('rtl');
+  });
+
+  test('re-resolves an auto direction on value and page direction changes', async () => {
+    const host = await renderTextarea(html`
+      <div data-testid="page" dir="ltr">
+        <rc-textarea data-testid="host">
+          <textarea aria-label="Notes" dir="auto"></textarea>
+        </rc-textarea>
+      </div>
+    `);
+    const $editor = getEditor(host);
+
+    await waitRender();
+    expect($editor).toHaveAttribute('dir', 'ltr');
+
+    host.parentElement!.dir = 'rtl';
+
+    await expect.poll(() => $editor.getAttribute('dir')).toBe('ltr');
+
+    host.value = 'Hello';
+
+    await expect.poll(() => $editor.getAttribute('dir')).toBe('ltr');
+
+    getSlottedTextarea(host).dir = 'rtl';
+
+    await expect.poll(() => $editor.getAttribute('dir')).toBe('rtl');
+
+    getSlottedTextarea(host).removeAttribute('dir');
+
+    await expect.poll(() => $editor.hasAttribute('dir')).toBe(false);
+  });
+
+  test('keeps every line in the base direction by default', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" style="inline-size: 20rem">
+        <textarea aria-label="Notes" dir="rtl"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = 'Hello\nمرحبا';
+
+    await waitRender();
+
+    expect(textLeansLeft(host, 0)).toBe(false);
+    expect(textLeansLeft(host, 1)).toBe(false);
+  });
+
+  test.each(['ltr', 'rtl'] as const)(
+    'line-direction="auto" aligns each line by its own text in a %s base',
+    async (dir) => {
+      const host = await renderTextarea(html`
+        <rc-textarea data-testid="host" style="inline-size: 20rem" line-direction="auto">
+          <textarea aria-label="Notes" dir=${dir}></textarea>
+        </rc-textarea>
+      `);
+
+      host.value = 'Hello\nمرحبا\n\n123\n  ';
+
+      await waitRender();
+
+      const $lines = getEditor(host).querySelectorAll<HTMLElement>('.line');
+
+      expect(textLeansLeft(host, 0)).toBe(true);
+      expect(textLeansLeft(host, 1)).toBe(false);
+      expect(textLeansLeft(host, 3)).toBe(dir === 'ltr');
+
+      // Lines without a strong character keep the base direction, which
+      // `unicode-bidi: plaintext` alone would turn LTR.
+      for (const index of [2, 3, 4]) {
+        expect($lines.item(index).classList.contains('line--neutral')).toBe(true);
+        expect(getComputedStyle($lines.item(index)).unicodeBidi).not.toBe('plaintext');
+      }
+
+      expect(getComputedStyle($lines.item(0)).unicodeBidi).toBe('plaintext');
+    },
+  );
+
+  test('recognizes Arabic Letter Mark and ignores isolated text in line direction', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" line-direction="auto">
+        <textarea aria-label="Notes" dir="rtl"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = '\u2067مرحبا\u2069\n\u061C123';
+    await waitRender();
+
+    const lines = getEditor(host).querySelectorAll<HTMLElement>('.line');
+
+    expect(lines.item(0).classList.contains('line--neutral')).toBe(true);
+    expect(lines.item(1).classList.contains('line--neutral')).toBe(false);
+  });
+
+  test('applies a runtime line-direction change and keeps marks across edits', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" style="inline-size: 20rem">
+        <textarea aria-label="Notes" dir="rtl"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = 'Hello\n';
+
+    await waitRender();
+    expect(textLeansLeft(host, 0)).toBe(false);
+
+    host.lineDirection = 'auto';
+
+    await host.updateComplete;
+    await waitRender();
+    expect(host).toHaveAttribute('line-direction', 'auto');
+    expect(textLeansLeft(host, 0)).toBe(true);
+
+    const $lines = (): NodeListOf<HTMLElement> => getEditor(host).querySelectorAll('.line');
+
+    expect($lines().item(1).classList.contains('line--neutral')).toBe(true);
+
+    host.value = 'Hello\nworld';
+
+    await waitRender();
+    expect($lines().item(1).classList.contains('line--neutral')).toBe(false);
+
+    host.lineDirection = 'base';
+
+    await host.updateComplete;
+    await waitRender();
+    expect(textLeansLeft(host, 0)).toBe(false);
+    expect($lines().item(0).classList.contains('line--neutral')).toBe(false);
+  });
+
+  test('holds line marks and direction until composition ends', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" line-direction="auto">
+        <textarea aria-label="Notes" dir="auto"></textarea>
+      </rc-textarea>
+    `);
+    const $editor = getEditor(host);
+
+    await waitRender();
+    expect($editor).toHaveAttribute('dir', 'ltr');
+
+    const $line = $editor.querySelector<HTMLElement>('.line')!;
+
+    expect($line.classList.contains('line--neutral')).toBe(true);
+
+    $editor.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
+    $line.replaceChildren(document.createTextNode('مرحبا'));
+    $editor.dispatchEvent(new InputEvent('input', { bubbles: true, isComposing: true }));
+    host.requestUpdate();
+
+    await waitRender();
+    expect($line.classList.contains('line--neutral')).toBe(true);
+    expect($editor).toHaveAttribute('dir', 'ltr');
+
+    $editor.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: 'مرحبا' }));
+
+    await waitRender();
+    expect(host.value).toBe('مرحبا');
+    expect($editor.querySelector('.line')!.classList.contains('line--neutral')).toBe(false);
+    expect($editor).toHaveAttribute('dir', 'rtl');
+  });
+
+  test.each([
+    { lang: 'en', expected: ['1', '2', '10'] },
+    { lang: 'ar-EG', expected: ['١', '٢', '١٠'] },
+    { lang: 'ar-EG-u-nu-latn', expected: ['1', '2', '10'] },
+  ])('formats line numbers in the interface locale $lang', async ({ lang, expected }) => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" line-numbers lang=${lang}>
+        <textarea aria-label="Notes" lang="ar-EG"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = Array.from({ length: 10 }, (_, i) => `line ${i}`).join('\n');
+
+    await waitRender();
+
+    const $cells = getGutterCells(host).children;
+
+    expect([$cells[0], $cells[1], $cells[9]].map(($cell) => $cell?.textContent)).toEqual(expected);
+  });
+
+  test('re-formats line numbers when the interface locale changes', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host" line-numbers>
+        <textarea aria-label="Notes"></textarea>
+      </rc-textarea>
+    `);
+
+    host.value = 'a\nb';
+
+    await waitRender();
+    expect(getGutterCells(host).children[1]?.textContent).toBe('2');
+
+    host.lang = 'ar-EG';
+
+    await expect.poll(() => getGutterCells(host).children[1]?.textContent).toBe('٢');
+  });
+
+  test.each([
+    { value: 'une crème brûlée', offset: 6, word: 'crème' },
+    { value: 'une crème brûlée', offset: 9, word: 'crème' },
+    { value: 'une crème brûlée', offset: 10, word: 'brûlée' },
+    { value: "don't stop", offset: 2, word: "don't" },
+    { value: 'snake_case x', offset: 3, word: 'snake_case' },
+    { value: 'قطع البصل', offset: 1, word: 'قطع' },
+    { value: 'first\nsecond line', offset: 8, word: 'second' },
+    { value: 'a, b', offset: 2, word: null },
+  ])('getWordAtCursor finds $word at $offset in $value', async ({ value, offset, word }) => {
+    const host = await renderTextarea();
+    const api = await mountPlugin(host);
+
+    host.value = value;
+    setCursor(host, offset);
+
+    const result = api.getWordAtCursor();
+
+    expect(result?.word ?? null).toBe(word);
+
+    if (result) {
+      expect(value.slice(result.from, result.to)).toBe(word);
+    }
+  });
+
+  test('getWordAtCursor keeps a word the segmenter reports as not word-like', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Notes" lang="ja"></textarea>
+      </rc-textarea>
+    `);
+    const api = await mountPlugin(host);
+    const segment = vi.spyOn(Intl.Segmenter.prototype, 'segment').mockImplementation(
+      (input: string) =>
+        ({
+          containing: () => ({ segment: '玉ねぎ', index: 0, input, isWordLike: false }),
+        }) as unknown as Intl.Segments,
+    );
+
+    try {
+      host.value = '玉ねぎ。';
+      setCursor(host, 1);
+
+      expect(api.getWordAtCursor()).toEqual({ word: '玉ねぎ', from: 0, to: 3 });
+    } finally {
+      segment.mockRestore();
+    }
+  });
+
+  test('getWordAtCursor scans letters and digits where Intl.Segmenter is missing', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Notes" lang="x-no-segmenter"></textarea>
+      </rc-textarea>
+    `);
+    const api = await mountPlugin(host);
+    const intl = Intl as { Segmenter?: typeof Intl.Segmenter };
+    const { Segmenter } = intl;
+
+    intl.Segmenter = undefined;
+
+    try {
+      host.value = 'une crème_brûlée 12';
+      setCursor(host, 6);
+
+      expect(api.getWordAtCursor()).toEqual({ word: 'crème_brûlée', from: 4, to: 16 });
+
+      setCursor(host, 18);
+
+      expect(api.getWordAtCursor()?.word).toBe('12');
+    } finally {
+      intl.Segmenter = Segmenter;
+    }
+  });
+
+  test('exposes content direction, language and line directions to plugins', async () => {
+    const host = await renderTextarea(html`
+      <rc-textarea data-testid="host">
+        <textarea aria-label="Notes" dir="rtl" lang="ar"></textarea>
+      </rc-textarea>
+    `);
+    const api = await mountPlugin(host);
+
+    host.value = 'Hello\nمرحبا\n123';
+
+    await waitRender();
+
+    expect(api.contentDirection).toBe('rtl');
+    expect(api.contentLang).toBe('ar');
+    expect([1, 2, 3].map((line) => api.lineDirection(line))).toEqual(['rtl', 'rtl', 'rtl']);
+
+    host.lineDirection = 'auto';
+
+    expect([1, 2, 3, 4].map((line) => api.lineDirection(line))).toEqual([
+      'ltr',
+      'rtl',
+      'rtl',
+      'rtl',
+    ]);
+
+    getSlottedTextarea(host).removeAttribute('lang');
+    getSlottedTextarea(host).removeAttribute('dir');
+
+    await expect.poll(() => api.contentDirection).toBe('ltr');
+    expect(api.contentLang).toBe('');
+  });
+
+  test('isolates widgets so they cannot reorder the text around them', async () => {
+    const host = await renderTextarea();
+
+    host.decorations = [
+      {
+        type: 'widget',
+        offset: 6,
+        create: () => Object.assign(document.createElement('span'), { textContent: '🔒' }),
+      },
+    ];
+
+    host.value = '1 Tbsp olive oil';
+
+    await waitRender();
+
+    expect(getComputedStyle(getEditor(host).querySelector('.widget')!).unicodeBidi).toBe('isolate');
   });
 });

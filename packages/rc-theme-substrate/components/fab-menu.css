@@ -10,10 +10,10 @@
     --rc-fab-menu-bg-hover: var(--rc-fab-menu-bg);
     --rc-fab-menu-bg-open: var(--rc-fab-menu-bg-hover);
     --rc-fab-menu-color: var(--rc-on-accent, HighlightText);
-    --rc-fab-menu-shadow: var(--substrate-shadow-raised, var(--rc-shadow-level2, none));
-    --rc-fab-menu-shadow-hover: var(--substrate-shadow-overlay, var(--rc-shadow-level3, none));
+    --rc-fab-menu-shadow: var(--substrate-shadow-md, var(--rc-shadow-level2, none));
+    --rc-fab-menu-shadow-hover: var(--substrate-shadow-lg, var(--rc-shadow-level3, none));
     --rc-fab-menu-shadow-open: var(--rc-fab-menu-shadow-hover);
-    --rc-fab-menu-shadow-active: var(--substrate-shadow-raised, var(--rc-shadow-level2, none));
+    --rc-fab-menu-shadow-active: var(--substrate-shadow-md, var(--rc-shadow-level2, none));
     --rc-fab-menu-radius: var(--substrate-radius-lg, 1rem);
     --rc-fab-menu-font: inherit;
     --rc-fab-menu-font-family: inherit;

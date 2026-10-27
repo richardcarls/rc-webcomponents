@@ -3,6 +3,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { FLOW_FIXTURES, flowLabel, type FlowFixture } from '../../../test-helpers/flow.js';
 import {
   keyNavigation,
   type KeyboardNavigationAction,
@@ -172,4 +173,95 @@ test('keyNavigation maps the perpendicular open axis in both orientations', () =
   press($toolbar, 'ArrowUp');
 
   expect(horizontalCB.mock.calls).toEqual([['open-to-first'], ['open-to-last']]);
+});
+
+/**
+ * Keys spelled out per flow, rather than derived from the helpers under test.
+ * [next, prev, open-to-first, open-to-last]. With no explicit
+ * aria-orientation a toolbar lays out along the inline axis and a menu along
+ * the block axis, so each turns over in vertical text, like a native range
+ * input: a toolbar there navigates with ArrowDown.
+ */
+const EXPECTED_KEYS: Record<
+  string,
+  Record<'toolbar' | 'menu', [string, string, string, string]>
+> = {
+  'horizontal-tb ltr': {
+    toolbar: ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'],
+    menu: ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'],
+  },
+  'horizontal-tb rtl': {
+    toolbar: ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp'],
+    menu: ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'],
+  },
+  'vertical-rl ltr': {
+    toolbar: ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'],
+    menu: ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp'],
+  },
+  'vertical-rl rtl': {
+    toolbar: ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'],
+    menu: ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'],
+  },
+  'vertical-lr ltr': {
+    toolbar: ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'],
+    menu: ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'],
+  },
+};
+
+function renderInFlow(
+  role: string,
+  callback: (action: KeyboardNavigationAction) => void,
+  { dir, writingMode }: FlowFixture,
+): HTMLElement {
+  const screen = render(html`
+    <div dir=${dir} style="writing-mode: ${writingMode};">
+      <div role=${role} tabindex="0" ${keyNavigation(callback, { handleOpenAxis: true })}></div>
+    </div>
+  `);
+
+  return screen.container.querySelector<HTMLElement>(`[role="${role}"]`)!;
+}
+
+test.each(
+  FLOW_FIXTURES.flatMap((flow) =>
+    (
+      [
+        ['toolbar', 'horizontal'],
+        ['menu', 'vertical'],
+      ] as const
+    ).map(
+      ([role, orientation]) => [`${role} in ${flowLabel(flow)}`, role, orientation, flow] as const,
+    ),
+  ),
+)('keyNavigation maps navigation and open keys for a %s', (_label, role, _orientation, flow) => {
+  const callback = vi.fn();
+  const $target = renderInFlow(role, callback, flow);
+  const [next, prev, openFirst, openLast] = EXPECTED_KEYS[flowLabel(flow)]![role];
+
+  for (const key of [next, prev, openFirst, openLast]) {
+    press($target, key);
+  }
+
+  expect(callback.mock.calls).toEqual([['next'], ['prev'], ['open-to-first'], ['open-to-last']]);
+});
+
+test('an explicit aria-orientation is physical and wins over the layout default', () => {
+  const callback = vi.fn();
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl;">
+      <div
+        role="toolbar"
+        aria-orientation="horizontal"
+        tabindex="0"
+        ${keyNavigation(callback)}
+      ></div>
+    </div>
+  `);
+  const $toolbar = screen.container.querySelector<HTMLElement>('[role="toolbar"]')!;
+
+  // Physically horizontal in vertical-rl, where lines progress right to left.
+  press($toolbar, 'ArrowLeft');
+  press($toolbar, 'ArrowRight');
+
+  expect(callback.mock.calls).toEqual([['next'], ['prev']]);
 });

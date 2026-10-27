@@ -1,0 +1,9 @@
+@layer rc-theme-material.css-components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) .rc-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--rc-chip-group-row-gap, var(--rc-control-gap, 0.5rem))
+      var(--rc-chip-group-column-gap, var(--rc-control-gap, 0.5rem));
+  }
+}

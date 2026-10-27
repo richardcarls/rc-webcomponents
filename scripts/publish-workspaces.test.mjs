@@ -9,13 +9,16 @@ import { c as createTar } from 'tar';
 
 import {
   assertLiveEnvironment,
+  buildPublishArgs,
   executePublication,
   expectedPublishedRange,
   hasSlsaProvenance,
   inspectPackedManifest,
+  interpretRegistryPackageNameResult,
   interpretRegistryResult,
   normalizeRegistryMetadata,
   parseProvenanceExceptions,
+  provenanceRetryDelay,
   validatePackedManifest,
 } from './publish-workspaces.mjs';
 import {
@@ -24,6 +27,8 @@ import {
   topologicallySortWorkspaces,
   validateWorkspaceConfiguration,
 } from './release-workspaces.mjs';
+
+const SNAPSHOT_VERSION = '0.0.0-next-20260920120000';
 
 const VERSION = '1.2.3';
 const repository = { type: 'git', url: EXPECTED_REPOSITORY_URL };
@@ -170,6 +175,38 @@ test('rejects prerelease and mismatched synchronized workspace versions', (conte
   );
 });
 
+test('validates snapshot-shaped versions only when explicitly in snapshot mode', (context) => {
+  const root = mkdtempSync(join(tmpdir(), 'rc-snapshot-workspaces-'));
+  const workspace = createWorkspace('package');
+
+  context.after(() => rmSync(root, { recursive: true }));
+  mkdirSync(join(root, '.changeset'));
+
+  writeFileSync(
+    join(root, '.changeset', 'config.json'),
+    JSON.stringify({ fixed: [[workspace.name]] }),
+  );
+
+  workspace.manifest.version = SNAPSHOT_VERSION;
+
+  assert.throws(
+    () => validateWorkspaceConfiguration({ root, workspaces: [workspace] }),
+    /version must be a stable X\.Y\.Z release/,
+  );
+
+  assert.equal(
+    validateWorkspaceConfiguration({ root, snapshot: true, workspaces: [workspace] }),
+    SNAPSHOT_VERSION,
+  );
+
+  workspace.manifest.version = VERSION;
+
+  assert.throws(
+    () => validateWorkspaceConfiguration({ root, snapshot: true, workspaces: [workspace] }),
+    /version must be a snapshot X\.Y\.Z-<tag>-<datecode> release/,
+  );
+});
+
 test('inspects the manifest contained in a packed tarball', (context) => {
   const root = mkdtempSync(join(tmpdir(), 'rc-packed-manifest-'));
   const packageDirectory = join(root, 'package');
@@ -228,6 +265,37 @@ test('preserves explicit internal peer ranges while pinning workspace star range
   );
 });
 
+test('builds the npm publish command under the requested dist-tag', () => {
+  assert.deepEqual(buildPublishArgs({ tarballPath: '/tmp/package.tgz' }), [
+    'publish',
+    '/tmp/package.tgz',
+    '--access',
+    'public',
+    '--tag',
+    'latest',
+    '--registry',
+    'https://registry.npmjs.org/',
+  ]);
+
+  assert.deepEqual(buildPublishArgs({ npmTag: 'next', tarballPath: '/tmp/package.tgz' }), [
+    'publish',
+    '/tmp/package.tgz',
+    '--access',
+    'public',
+    '--tag',
+    'next',
+    '--registry',
+    'https://registry.npmjs.org/',
+  ]);
+});
+
+test('backs off provenance checks exponentially up to the configured delay cap', () => {
+  assert.deepEqual(
+    [1, 2, 3, 4, 5].map((retry) => provenanceRetryDelay(retry, 100, 1_000)),
+    [100, 200, 400, 800, 1_000],
+  );
+});
+
 test('requires an exact tag, OIDC context, and no token credentials for live publishing', () => {
   const environment = {
     ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'oidc-request-token',
@@ -273,6 +341,47 @@ test('requires an exact tag, OIDC context, and no token credentials for live pub
   assert.throws(
     () => assertLiveEnvironment({ ...recoveryEnvironment, GITHUB_EVENT_NAME: 'push' }),
     /restricted to manually dispatched recovery runs/,
+  );
+});
+
+test('snapshot mode skips the tag requirement but still enforces credential, repository, and OIDC checks', () => {
+  const environment = {
+    ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'oidc-request-token',
+    ACTIONS_ID_TOKEN_REQUEST_URL: 'https://example.test/oidc',
+    GITHUB_ACTIONS: 'true',
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    GITHUB_REF_NAME: 'develop',
+    GITHUB_REF_TYPE: 'branch',
+    GITHUB_REPOSITORY: 'richardcarls/rc-webcomponents',
+  };
+
+  assert.equal(assertLiveEnvironment(environment, { snapshot: true }), undefined);
+
+  assert.throws(
+    () =>
+      assertLiveEnvironment(
+        { ...environment, NODE_AUTH_TOKEN: 'legacy-token' },
+        { snapshot: true },
+      ),
+    /Refusing token fallback.*NODE_AUTH_TOKEN/,
+  );
+
+  assert.throws(
+    () =>
+      assertLiveEnvironment(
+        { ...environment, GITHUB_REPOSITORY: 'someone/else' },
+        { snapshot: true },
+      ),
+    /GITHUB_REPOSITORY must be richardcarls\/rc-webcomponents/,
+  );
+
+  assert.throws(
+    () =>
+      assertLiveEnvironment(
+        { ...environment, ACTIONS_ID_TOKEN_REQUEST_TOKEN: undefined },
+        { snapshot: true },
+      ),
+    /GitHub OIDC request variables are unavailable/,
   );
 });
 
@@ -335,6 +444,50 @@ test('treats only npm E404 responses as unpublished versions', () => {
   );
 });
 
+test('recognizes existing package names and treats only E404 as unregistered', () => {
+  const packageName = '@example/package';
+
+  assert.deepEqual(
+    interpretRegistryPackageNameResult(
+      {
+        status: 0,
+        stderr: '',
+        stdout: JSON.stringify([packageName]),
+      },
+      ['view', packageName],
+      packageName,
+    ),
+    { state: 'found' },
+  );
+
+  assert.deepEqual(
+    interpretRegistryPackageNameResult(
+      {
+        status: 1,
+        stderr: JSON.stringify({ error: { code: 'E404' } }),
+        stdout: '',
+      },
+      ['view', packageName],
+      packageName,
+    ),
+    { state: 'missing' },
+  );
+
+  assert.throws(
+    () =>
+      interpretRegistryPackageNameResult(
+        {
+          status: 0,
+          stderr: '',
+          stdout: JSON.stringify(['@example/other-package']),
+        },
+        ['view', packageName],
+        packageName,
+      ),
+    /unexpected package name data/,
+  );
+});
+
 test('normalizes npm view arrays and dotted provenance fields', () => {
   const normalized = normalizeRegistryMetadata([
     {
@@ -352,10 +505,11 @@ test('normalizes npm view arrays and dotted provenance fields', () => {
   assert.throws(() => normalizeRegistryMetadata([]), /0 metadata entries/);
 });
 
-test('dry run packs every workspace without registry reads or publish attempts', async () => {
+test('dry run packs every workspace and verifies its package name without publishing', async () => {
   const foundation = createWorkspace('foundation');
   const aggregate = createWorkspace('aggregate', { [foundation.name]: 'workspace:*' });
   const packed = [];
+  const queried = [];
 
   const summary = await executePublication({
     dryRun: true,
@@ -370,14 +524,58 @@ test('dry run packs every workspace without registry reads or publish attempts',
         assert.fail('dry run must not publish');
       },
       query() {
-        assert.fail('dry run must not read the registry');
+        assert.fail('dry run must not query the target release version');
+      },
+      queryPackageName(workspace) {
+        queried.push(workspace.name);
+
+        return { state: 'found' };
       },
     },
     workspaces: [aggregate, foundation],
   });
 
   assert.deepEqual(packed, [foundation.name, aggregate.name]);
+  assert.deepEqual(queried, packed);
+  assert.deepEqual(summary.registered, packed);
+  assert.deepEqual(summary.unregistered, []);
   assert.deepEqual(summary.validated, packed);
+});
+
+test('dry run reports every package name that requires bootstrap', async () => {
+  const foundation = createWorkspace('foundation');
+  const aggregate = createWorkspace('aggregate', { [foundation.name]: 'workspace:*' });
+  const queried = [];
+
+  await assert.rejects(
+    executePublication({
+      dryRun: true,
+      log: quietLog,
+      operations: {
+        async pack(workspace) {
+          return { manifest: packedManifest(workspace), tarballPath: `${workspace.name}.tgz` };
+        },
+        publish() {
+          assert.fail('dry run must not publish');
+        },
+        queryPackageName(workspace) {
+          queried.push(workspace.name);
+
+          return { state: 'missing' };
+        },
+      },
+      workspaces: [aggregate, foundation],
+    }),
+    (error) => {
+      assert.match(error.message, /npm package bootstrap required.*foundation.*aggregate/);
+      assert.deepEqual(error.publicationSummary.unregistered, [foundation.name, aggregate.name]);
+      assert.deepEqual(error.publicationSummary.validated, [foundation.name, aggregate.name]);
+
+      return true;
+    },
+  );
+
+  assert.deepEqual(queried, [foundation.name, aggregate.name]);
 });
 
 test('skips verified versions and publishes only missing packages in dependency order', async () => {
@@ -413,8 +611,9 @@ test('skips verified versions and publishes only missing packages in dependency 
       },
       async sleep() {},
     },
-    pollAttempts: 2,
-    pollDelayMs: 0,
+    provenanceInitialDelayMs: 0,
+    provenanceMaxDelayMs: 0,
+    provenanceMaxRetries: 1,
     workspaces: [aggregate, foundation],
   });
 
@@ -453,8 +652,9 @@ test('recovers when a failed publish raced with another successful publisher', a
       },
       async sleep() {},
     },
-    pollAttempts: 1,
-    pollDelayMs: 0,
+    provenanceInitialDelayMs: 0,
+    provenanceMaxDelayMs: 0,
+    provenanceMaxRetries: 0,
     workspaces: [workspace],
   });
 
@@ -464,7 +664,7 @@ test('recovers when a failed publish raced with another successful publisher', a
 test('polls until registry provenance becomes visible', async () => {
   const workspace = createWorkspace('package');
   let queryCount = 0;
-  let sleepCount = 0;
+  const delays = [];
 
   const summary = await executePublication({
     dryRun: false,
@@ -478,18 +678,19 @@ test('polls until registry provenance becomes visible', async () => {
           state: 'found',
         };
       },
-      async sleep() {
-        sleepCount += 1;
+      async sleep(delayMs) {
+        delays.push(delayMs);
       },
     },
-    pollAttempts: 2,
-    pollDelayMs: 0,
+    provenanceInitialDelayMs: 100,
+    provenanceMaxDelayMs: 1_000,
+    provenanceMaxRetries: 2,
     workspaces: [workspace],
   });
 
   assert.deepEqual(summary.skipped, [workspace.name]);
   assert.equal(queryCount, 2);
-  assert.equal(sleepCount, 1);
+  assert.deepEqual(delays, [100]);
   assert.equal(hasSlsaProvenance(registryManifest(workspace)), true);
 });
 
@@ -514,8 +715,9 @@ test('skips an immutable manual publish only with its exact provenance exception
         assert.fail('an approved immutable manual publish must not poll for provenance');
       },
     },
-    pollAttempts: 2,
-    pollDelayMs: 0,
+    provenanceInitialDelayMs: 0,
+    provenanceMaxDelayMs: 0,
+    provenanceMaxRetries: 1,
     provenanceExceptions: new Set([packageSpec]),
     workspaces: [workspace],
   });
@@ -528,7 +730,7 @@ test('skips an immutable manual publish only with its exact provenance exception
 test('stops provenance polling after the configured attempt bound', async () => {
   const workspace = createWorkspace('package');
   let queryCount = 0;
-  let sleepCount = 0;
+  const delays = [];
 
   await assert.rejects(
     executePublication({
@@ -543,19 +745,20 @@ test('stops provenance polling after the configured attempt bound', async () => 
             state: 'found',
           };
         },
-        async sleep() {
-          sleepCount += 1;
+        async sleep(delayMs) {
+          delays.push(delayMs);
         },
       },
-      pollAttempts: 2,
-      pollDelayMs: 0,
+      provenanceInitialDelayMs: 100,
+      provenanceMaxDelayMs: 150,
+      provenanceMaxRetries: 3,
       workspaces: [workspace],
     }),
-    /did not expose SLSA provenance after 2 checks/,
+    /did not expose SLSA provenance after 3 retries/,
   );
 
-  assert.equal(queryCount, 2);
-  assert.equal(sleepCount, 1);
+  assert.equal(queryCount, 4);
+  assert.deepEqual(delays, [100, 150, 150]);
 });
 
 test('aborts on unknown registry failures and leaves dependents unattempted', async () => {

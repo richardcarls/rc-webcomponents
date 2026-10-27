@@ -38,21 +38,21 @@ Modal bottom-sheet wrapper for a native `<dialog>`, built on `rc-dialog`.
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-bottom-sheet
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-bottom-sheet
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-bottom-sheet/define';
+import '@rcarls/rc-webcomponents/rc-bottom-sheet/define';
 ```
 
 ## Usage
@@ -77,12 +77,22 @@ dialog must have `aria-labelledby` or `aria-label`.
 
 The element inherits `rc-dialog` methods and events, including `showModal()`,
 `close()`, `requestClose()`, `rc-dialog-toggle`, and
-`rc-dialog-request-close`. Bottom sheets default to light dismiss, vertical
+`rc-dialog-request-close`. Bottom sheets default to `closed-by="any"` light dismiss, vertical
 top-origin resize, downward swipe-dismiss, and fixed positioning at the
 viewport's bottom edge. Add an optional
 `[data-rc-bottom-sheet-handle]` element inside the dialog for a themed resize
 handle. Use `snap-points` to snap the sheet to declared CSS heights after
-resize gestures.
+resize gestures. Set `resize="none"` to hold the sheet at its current snap
+point; the option is reactive, so restoring `resize="vertical"` re-enables
+dragging.
+
+The sheet stays docked at its block-end edge: snapping sets only its height,
+and its position is left to CSS. A software keyboard that resizes the viewport
+(`interactive-widget=resizes-content`) re-applies the current snap point above
+the keyboard. When a field inside the sheet takes focus, the sheet scrolls it
+into view within its own scroll containers, and grows past its snap height and
+maximum block size only when scrolling cannot reveal it, returning to its snap
+point once focus leaves the sheet.
 
 Without a theme, the authored handle uses a 32 by 4 pixel pill indicator,
 centered inside a full-width, 48 pixel-high target.
@@ -96,8 +106,11 @@ container, set `--rc-bottom-sheet-position: absolute`, and open it with
 `show()`. The sheet then docks to that container's block-end edge rather than
 the viewport.
 
-Declare snap points as CSS heights in ascending order. Slow releases settle at
-the nearest point. A decisive upward or downward swipe (`500` pixels per second
+Declare snap points as CSS heights in ascending order. Any length works,
+including `calc()` and `var()`. Each point is resolved inside the sheet when a
+snap applies, so a custom property the page sets or animates, for example from
+a scroll timeline, is read at its current value. Percentages are of the viewport
+height. Slow releases settle at the nearest point. A decisive upward or downward swipe (`500` pixels per second
 by default) settles at the last or first point, respectively. When
 `swipe-dismiss` is enabled, dragging downward by at least `96` pixels requests
 close before velocity-based snapping applies.

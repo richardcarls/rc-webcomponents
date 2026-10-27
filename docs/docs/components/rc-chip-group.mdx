@@ -31,21 +31,21 @@ arbitrary direct children.
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-chip-group
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-chip-group
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-chip-group/define';
+import '@rcarls/rc-webcomponents/rc-chip-group/define';
 ```
 
 The define entry also registers `rc-chip`, which the group uses for its
@@ -98,6 +98,12 @@ decision without device-pixel-ratio special cases.
   arrow/Home/End navigation.
 - `kind="filter"` synchronizes native radio/checkbox state to direct
   `rc-chip` children. Put the group inside an author-owned fieldset.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`. Override it with
+`messages`, or register it for every instance under `rc-chip-group`: `label`, `showAll`, `showLess`. See
+[Localization](../guide/localization).
 
 ## API
 

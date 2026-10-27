@@ -1,0 +1,91 @@
+@layer rc-theme-win31.components {
+  /*
+   * Scrollbars.
+   *
+   * Windows 3.1 had exactly one scrollbar design and applied it system-wide,
+   * so this styles every scrollable descendant inside the theme scope rather
+   * than only rc-scroller. A 16-pixel gutter, beveled arrow buttons at each
+   * end, a beveled thumb, and a one-bit dithered track between them.
+   *
+   * The detailed treatment is Chromium and WebKit only: Firefox exposes just
+   * scrollbar-width and scrollbar-color, so it gets the two-color fallback set
+   * on the standard properties below. That is a real portability limit, not an
+   * oversight, and the theme's tests assert the fallback rather than the
+   * pseudo-elements.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) {
+    scrollbar-width: auto;
+    scrollbar-color: var(--win31-color-surface) var(--win31-color-shadow);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-scroller {
+    --rc-scroller-scrollbar-width: auto;
+    --rc-scroller-scrollbar-color: var(--win31-color-surface) var(--win31-color-shadow);
+    --rc-scroller-content-row-gap: var(--win31-gap-tight);
+    --rc-scroller-content-padding-inline: 0;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar,
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-scroller::part(content)::-webkit-scrollbar {
+    inline-size: var(--win31-scrollbar-size);
+    block-size: var(--win31-scrollbar-size);
+    background: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar-thumb,
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar-button,
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-scroller::part(content)::-webkit-scrollbar-thumb,
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-scroller::part(content)::-webkit-scrollbar-button {
+    inline-size: var(--win31-scrollbar-size);
+    block-size: var(--win31-scrollbar-size);
+    background: var(--win31-color-surface);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-color-surface) var(--win31-color-frame) var(--win31-color-frame)
+      var(--win31-color-surface);
+    box-shadow: var(--win31-bevel-outset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar-button:vertical:decrement {
+    background-image: var(--win31-glyph-arrow-up);
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar-button:vertical:increment {
+    background-image: var(--win31-glyph-arrow-down);
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar-button:horizontal:decrement {
+    background-image: var(--win31-glyph-arrow-left);
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar-button:horizontal:increment {
+    background-image: var(--win31-glyph-arrow-right);
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar-button:active,
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar-thumb:active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar-track,
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-scroller::part(content)::-webkit-scrollbar-track {
+    background-image: var(--win31-dither-track);
+    background-repeat: repeat;
+    background-size: var(--win31-dither-size);
+    image-rendering: pixelated;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) *::-webkit-scrollbar-corner {
+    background: var(--win31-color-surface);
+  }
+}

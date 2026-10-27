@@ -4,7 +4,9 @@
     --rc-textarea-border-radius: var(--md-sys-shape-corner-extra-small, 0.25rem);
     --rc-textarea-background: var(--md-sys-color-surface, Field);
     --rc-textarea-color: var(--md-sys-color-on-surface, FieldText);
-    --rc-textarea-padding: 1rem;
+    --rc-textarea-padding-block: 1rem;
+    --rc-textarea-padding-inline: 1rem;
+    --rc-textarea-gutter-min-inline-size: 48px;
     --rc-textarea-focus-outline: 2px solid var(--md-sys-color-primary, Highlight);
     --rc-textarea-caret-color: var(--md-sys-color-primary, FieldText);
     --rc-textarea-active-line-bg: color-mix(
@@ -19,8 +21,10 @@
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-textarea::part(root) {
     transition:
-      border-color 150ms ease,
-      box-shadow 150ms ease;
+      border-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      box-shadow var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-textarea::part(root):hover {

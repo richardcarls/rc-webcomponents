@@ -1,0 +1,367 @@
+{
+  "version": 1,
+  "measurements": {
+    "button": {
+      "initialRaw": 37714,
+      "initialGzip": 10850,
+      "initialBrotli": 9712,
+      "totalRaw": 37714,
+      "totalGzip": 10850,
+      "totalBrotli": 9712,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "dialog": {
+      "initialRaw": 40678,
+      "initialGzip": 11691,
+      "initialBrotli": 10511,
+      "totalRaw": 77117,
+      "totalGzip": 20151,
+      "totalBrotli": 17958,
+      "largestLazyGzip": 8460,
+      "initialChunks": 2,
+      "lazyChunks": 1
+    },
+    "select": {
+      "initialRaw": 111664,
+      "initialGzip": 29129,
+      "initialBrotli": 25538,
+      "totalRaw": 197659,
+      "totalGzip": 49856,
+      "totalBrotli": 43702,
+      "largestLazyGzip": 8158,
+      "initialChunks": 2,
+      "lazyChunks": 3
+    },
+    "textarea": {
+      "initialRaw": 115828,
+      "initialGzip": 30490,
+      "initialBrotli": 26710,
+      "totalRaw": 115828,
+      "totalGzip": 30490,
+      "totalBrotli": 26710,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "markdownEditor": {
+      "initialRaw": 301966,
+      "initialGzip": 76946,
+      "initialBrotli": 65165,
+      "totalRaw": 301966,
+      "totalGzip": 76946,
+      "totalBrotli": 65165,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "aggregateClasses": {
+      "initialRaw": 894758,
+      "initialGzip": 206075,
+      "initialBrotli": 159358,
+      "totalRaw": 895282,
+      "totalGzip": 206406,
+      "totalBrotli": 159624,
+      "largestLazyGzip": 182,
+      "initialChunks": 1,
+      "lazyChunks": 2
+    },
+    "aggregateDefine": {
+      "initialRaw": 898401,
+      "initialGzip": 206109,
+      "initialBrotli": 159678,
+      "totalRaw": 898401,
+      "totalGzip": 206109,
+      "totalBrotli": 159678,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "aggregateSubpathDefine": {
+      "initialRaw": 37714,
+      "initialGzip": 10850,
+      "initialBrotli": 9712,
+      "totalRaw": 37714,
+      "totalGzip": 10850,
+      "totalBrotli": 9712,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "baseTheme": {
+      "initialRaw": 3409,
+      "initialGzip": 1162,
+      "initialBrotli": 952,
+      "totalRaw": 3409,
+      "totalGzip": 1162,
+      "totalBrotli": 952,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "materialTheme": {
+      "initialRaw": 235082,
+      "initialGzip": 34543,
+      "initialBrotli": 26753,
+      "totalRaw": 235082,
+      "totalGzip": 34543,
+      "totalBrotli": 26753,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "substrateTheme": {
+      "initialRaw": 87256,
+      "initialGzip": 13342,
+      "initialBrotli": 11017,
+      "totalRaw": 87256,
+      "totalGzip": 13342,
+      "totalBrotli": 11017,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "win31Theme": {
+      "initialRaw": 120087,
+      "initialGzip": 18478,
+      "initialBrotli": 15162,
+      "totalRaw": 120087,
+      "totalGzip": 18478,
+      "totalBrotli": 15162,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "materialCssComponents": {
+      "initialRaw": 11466,
+      "initialGzip": 1644,
+      "initialBrotli": 1382,
+      "totalRaw": 11466,
+      "totalGzip": 1644,
+      "totalBrotli": 1382,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "materialNative": {
+      "initialRaw": 10341,
+      "initialGzip": 2002,
+      "initialBrotli": 1642,
+      "totalRaw": 10341,
+      "totalGzip": 2002,
+      "totalBrotli": 1642,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "substrateCssComponents": {
+      "initialRaw": 11541,
+      "initialGzip": 1648,
+      "initialBrotli": 1389,
+      "totalRaw": 11541,
+      "totalGzip": 1648,
+      "totalBrotli": 1389,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "substrateNative": {
+      "initialRaw": 9967,
+      "initialGzip": 1824,
+      "initialBrotli": 1524,
+      "totalRaw": 9967,
+      "totalGzip": 1824,
+      "totalBrotli": 1524,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "win31CssComponents": {
+      "initialRaw": 13792,
+      "initialGzip": 1881,
+      "initialBrotli": 1615,
+      "totalRaw": 13792,
+      "totalGzip": 1881,
+      "totalBrotli": 1615,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "win31Native": {
+      "initialRaw": 10695,
+      "initialGzip": 1962,
+      "initialBrotli": 1637,
+      "totalRaw": 10695,
+      "totalGzip": 1962,
+      "totalBrotli": 1637,
+      "largestLazyGzip": 0,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    }
+  },
+  "budgets": {
+    "button": {
+      "initialGzip": 11874,
+      "initialBrotli": 10736,
+      "totalGzip": 11874,
+      "totalBrotli": 10736,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "dialog": {
+      "initialGzip": 12715,
+      "initialBrotli": 11535,
+      "totalGzip": 21175,
+      "totalBrotli": 18982,
+      "largestLazyGzip": 9484,
+      "initialChunks": 2,
+      "lazyChunks": 1
+    },
+    "select": {
+      "initialGzip": 30586,
+      "initialBrotli": 26815,
+      "totalGzip": 52349,
+      "totalBrotli": 45888,
+      "largestLazyGzip": 9182,
+      "initialChunks": 2,
+      "lazyChunks": 3
+    },
+    "textarea": {
+      "initialGzip": 33926,
+      "initialBrotli": 29789,
+      "totalGzip": 33926,
+      "totalBrotli": 29789,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "markdownEditor": {
+      "initialGzip": 80794,
+      "initialBrotli": 68424,
+      "totalGzip": 80794,
+      "totalBrotli": 68424,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "aggregateClasses": {
+      "initialGzip": 216379,
+      "initialBrotli": 167326,
+      "totalGzip": 216727,
+      "totalBrotli": 167606,
+      "largestLazyGzip": 1206,
+      "initialChunks": 1,
+      "lazyChunks": 2
+    },
+    "aggregateDefine": {
+      "initialGzip": 216415,
+      "initialBrotli": 167662,
+      "totalGzip": 216415,
+      "totalBrotli": 167662,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "aggregateSubpathDefine": {
+      "initialGzip": 11874,
+      "initialBrotli": 10736,
+      "totalGzip": 11874,
+      "totalBrotli": 10736,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "baseTheme": {
+      "initialGzip": 2191,
+      "initialBrotli": 1975,
+      "totalGzip": 2191,
+      "totalBrotli": 1975,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "materialTheme": {
+      "initialGzip": 35605,
+      "initialBrotli": 27598,
+      "totalGzip": 35605,
+      "totalBrotli": 27598,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "substrateTheme": {
+      "initialGzip": 14242,
+      "initialBrotli": 11929,
+      "totalGzip": 14242,
+      "totalBrotli": 11929,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "win31Theme": {
+      "initialGzip": 19713,
+      "initialBrotli": 16335,
+      "totalGzip": 19713,
+      "totalBrotli": 16335,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "materialCssComponents": {
+      "initialGzip": 2668,
+      "initialBrotli": 2406,
+      "totalGzip": 2668,
+      "totalBrotli": 2406,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "materialNative": {
+      "initialGzip": 2086,
+      "initialBrotli": 1908,
+      "totalGzip": 2086,
+      "totalBrotli": 1908,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "substrateCssComponents": {
+      "initialGzip": 2672,
+      "initialBrotli": 2413,
+      "totalGzip": 2672,
+      "totalBrotli": 2413,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "substrateNative": {
+      "initialGzip": 2086,
+      "initialBrotli": 1911,
+      "totalGzip": 2086,
+      "totalBrotli": 1911,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "win31CssComponents": {
+      "initialGzip": 2905,
+      "initialBrotli": 2639,
+      "totalGzip": 2905,
+      "totalBrotli": 2639,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    },
+    "win31Native": {
+      "initialGzip": 2226,
+      "initialBrotli": 2026,
+      "totalGzip": 2226,
+      "totalBrotli": 2026,
+      "largestLazyGzip": 1024,
+      "initialChunks": 1,
+      "lazyChunks": 0
+    }
+  }
+}

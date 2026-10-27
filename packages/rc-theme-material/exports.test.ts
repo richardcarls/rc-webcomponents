@@ -36,6 +36,17 @@ const componentEntries = [
   'virtual-canvas',
 ] as const;
 
+const cssComponentEntries = [
+  'button',
+  'card',
+  'chip',
+  'chip-group',
+  'disclosure',
+  'list',
+  'select',
+  'textarea',
+] as const;
+
 test('all selective, utility, and aggregate Material stylesheets can be imported', async () => {
   const imports = import.meta.glob('./components/*.css');
 
@@ -50,4 +61,18 @@ test('all selective, utility, and aggregate Material stylesheets can be imported
   await import('./bridge.css');
   await import('./defaults.css');
   await import('./theme.css');
+});
+
+test('all opt-in native CSS component stylesheets can be imported', async () => {
+  const imports = import.meta.glob('./css-components/*.css');
+
+  for (const entry of cssComponentEntries) {
+    const load = imports[`./css-components/${entry}.css`];
+
+    expect(load, entry).toBeTypeOf('function');
+    await load!();
+  }
+
+  await import('./css-components.css');
+  await import('./native.css');
 });

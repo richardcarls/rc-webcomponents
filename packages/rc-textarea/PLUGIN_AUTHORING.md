@@ -11,7 +11,8 @@ For the internal rendering architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
 - Mark decorations style character ranges.
 - Line decorations add classes, attributes, gutter content, or diagnostic messages to logical
   lines.
-- Widget decorations insert non-editable inline DOM elements at character offsets.
+- Widget decorations insert non-editable inline, block, or trailing DOM elements at character offsets.
+- Fold decorations hide complete source lines without removing them from the plain-text value.
 
 Decorations never change the submitted textarea value. Offsets are always absolute character
 indices into the current plain-text value unless a helper explicitly says otherwise.
@@ -67,8 +68,8 @@ interface RCTextareaPlugin {
 }
 ```
 
-`transform()` runs only in read-only mode and substitutes the display-layer text without
-changing `editor.value` or the slotted textarea value.
+`transform()` runs only while the slotted textarea is `readonly` and substitutes the
+display-layer text without changing `editor.value` or the slotted textarea value.
 
 `update()` is the general-purpose hook. Use it when you already have decoration objects from a
 parser, linter, or tokenizer.
@@ -88,7 +89,10 @@ interface RCTextareaPluginAPI {
   readonly value: string;
   readonly selectionStart: number;
   readonly selectionEnd: number;
+  readonly contentDirection: 'ltr' | 'rtl';
+  readonly contentLang: string;
 
+  lineDirection(line: number): 'ltr' | 'rtl';
   getCursorRect(): DOMRect | null;
   getWordAtCursor(): { word: string; from: number; to: number } | null;
   onCursorMove(callback: (selectionStart: number, selectionEnd: number) => void): () => void;
@@ -210,7 +214,9 @@ interface LineDecoration {
   message?: string;
   messageClassName?: string;
   attributes?: Record<string, string>;
-  gutterContent?: string | null;
+  gutterContent?: string | HTMLElement | null;
+  gutterLineNumber?: boolean;
+  gutterAccessible?: boolean;
 }
 ```
 
@@ -231,6 +237,12 @@ api.setDecorations([
 ```
 
 Use `gutterContent: null` to suppress built-in gutter content for a line.
+An `HTMLElement` supplies a plugin-owned marker or control. Set
+`gutterAccessible: true` when the cell contains a control. Other cells stay
+hidden from assistive technology.
+Set `gutterLineNumber: true` to retain the built-in number before custom
+content when the host also has `line-numbers`. The number and custom content
+share the first-line alignment even when a block widget expands the row.
 
 ### WidgetDecoration
 
@@ -241,10 +253,34 @@ interface WidgetDecoration {
   offset: number;
   create(): HTMLElement;
   side?: 'before' | 'after';
+  key?: string;
+  layout?: 'inline' | 'block' | 'trailing';
+  accessible?: boolean;
 }
 ```
 
-`create()` is called during each render. Return a new element each time.
+Without a key, `create()` is called when the line rebuilds; return a new element.
+With a key, unchanged lines retain their DOM. Change the key when content changes.
+`layout` defaults to inline; block widgets participate in line height and trailing
+widgets reserve space at the logical line end. Set `accessible: true` for controls
+or meaningful content (the default wrapper is decorative). Such controls receive
+normal Tab navigation rather than tab insertion.
+
+Import `FoldingActionController` from `@rcarls/rc-textarea/folding`.
+The controller owns the accessible button and expansion state, not panel
+content or syntax rules. Give each action a stable `key`, `label`, `target`, and
+`gutterLine` or trailing `offset`. A target is either a caller-owned panel element
+or `{ fromLine, toLine }`, the inclusive one-based source lines hidden when collapsed.
+Enable `gutter` or `lineNumbers` on the host before using gutter actions.
+Source ranges start expanded; use `initiallyExpanded: false` for diagnostic panels.
+Render panel content separately as an accessible block widget and change its widget
+key when that content changes. The controller sets `hidden`, `aria-expanded`, and
+`aria-controls` for panel targets; source lines keep their text and offsets.
+`createGutterContent(button)` and `updateGutterContent(wrapper)` support decorative
+status markers. Call `clear()` when document identity changes and in `destroy()`.
+Use `createTriggerIcon(expanded)` in the controller options for a decorative icon.
+Its button and supplied icon expose the `fold-trigger` and `fold-icon` CSS parts;
+consumer styles can target them with `rc-textarea::part(...)`.
 
 ```ts
 api.setDecorations([
@@ -532,8 +568,7 @@ editor.addPattern({
 ### Read-Only Preview Transform
 
 ```ts
-editor.readOnly = true;
-
+// <rc-textarea><textarea aria-label="Preview" readonly></textarea></rc-textarea>
 editor.usePlugin({
   transform(value) {
     return value.trimEnd();

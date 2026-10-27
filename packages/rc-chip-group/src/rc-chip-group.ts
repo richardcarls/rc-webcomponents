@@ -1,7 +1,17 @@
 import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { isFocusable, RovingTabIndexMixin } from '@rcarls/rc-common';
+import {
+  cssZoom,
+  MessagesController,
+  getScrollOffset,
+  inlineArrowKeys,
+  isFocusable,
+  logicalRect,
+  resolveFlow,
+  RovingTabIndexMixin,
+  setScrollOffset,
+} from '@rcarls/rc-common';
 import type { RCChip } from '@rcarls/rc-chip';
 
 import chipGroupStyles from './rc-chip-group.styles.js';
@@ -25,6 +35,28 @@ declare global {
   }
 }
 
+/** Built-in text of `rc-chip-group`. */
+export interface RCChipGroupMessages {
+  /** Default toolbar name for `kind="assist"`, when `label` is unset. */
+  label: string;
+  /** Collapsed overflow action. */
+  showAll: string;
+  /** Expanded overflow action. */
+  showLess: string;
+}
+
+export const DEFAULT_CHIP_GROUP_MESSAGES: Readonly<RCChipGroupMessages> = Object.freeze({
+  label: 'Chip actions',
+  showAll: 'Show all',
+  showLess: 'Show less',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-chip-group': RCChipGroupMessages;
+  }
+}
+
 /**
  * Adaptive chip layout for native controls, `rc-chip`, and arbitrary elements.
  * Natural wrapping is kept while content fits within `max-rows`; overflowing
@@ -35,6 +67,10 @@ declare global {
  * Filter groups preserve native radio/checkbox behavior: author a `<fieldset>`
  * around the group, then place one native input in each direct-child chip label.
  * Generic groups are layout-only and do not coordinate their children.
+ *
+ * Built-in text (the overflow toggle and default toolbar name) follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every instance
+ * through `registerMessages()` from `@rcarls/rc-common` under `rc-chip-group`.
  *
  * @slot - Direct chip or arbitrary-element children.
  *
@@ -51,15 +87,16 @@ declare global {
  * @attr selection - Filter semantics hint: `none`, `single`, or `multiple`.
  * @attr expanded - Current auto-layout disclosure state. Host writes are silent.
  * @attr default-expanded - Initial uncontrolled disclosure state.
- * @attr label - Accessible label for assist-toolbar semantics.
- * @attr show-all-label - Label for the collapsed overflow action.
- * @attr show-less-label - Label for the expanded overflow action.
+ * @attr label - Accessible label for assist-toolbar semantics. Defaults to the `label` message.
  *
  * @cssprop [--rc-chip-group-column-gap=0.5rem] - Inline gap between items.
- * @cssprop [--rc-chip-group-row-gap=0] - Block gap between wrapped rows.
+ * @cssprop [--rc-chip-group-row-gap=0] - Block gap between wrapped rows. Slotted readonly chips
+ *   keep `--rc-chip-touch-target-block-size` so every row shares the disclosure toggle's pitch.
+ * @cssprop [--rc-chip-touch-target-block-size=3rem] - Shared row pitch for readonly chips and the disclosure toggle.
  * @cssprop [--rc-chip-group-padding-block=0] - Group block-axis padding.
  * @cssprop [--rc-chip-group-scroll-padding-inline=0] - Horizontal scroll padding.
  * @cssprop [--rc-chip-group-scrollbar-width=none] - Standards-based scrollbar width.
+ * @cssprop [--rc-chip-group-scrollbar-display=none] - WebKit scrollbar display.
  * @cssprop [--rc-chip-group-toggle-gap=0.5rem] - Gap between the disclosure icon and label.
  * @cssprop [--rc-chip-group-toggle-separator-gap=0.5rem] - Gap before the disclosure separator.
  * @cssprop [--rc-chip-group-toggle-icon-size=1.125rem] - Disclosure icon size.
@@ -70,14 +107,37 @@ declare global {
 export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   static override styles = chipGroupStyles;
 
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCChipGroupMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-chip-group',
+    DEFAULT_CHIP_GROUP_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
   private _expanded: boolean | undefined;
   private _defaultExpanded = false;
   private _uncontrolledExpanded: boolean | undefined;
   private _expandedInitialized = false;
   private _measureFrame: number | undefined;
   private _targetVisibilityFrame: number | undefined;
-  private _pendingScrollLeft: number | undefined;
+  private _pendingScrollOffset: number | undefined;
   private _pendingScrollTarget: HTMLElement | undefined;
+  /**
+   * The chip a selection last changed, kept in view while chips resize after
+   * the change (an app moving a check mark a frame later shortens the row and
+   * clamps the scroll offset) until the user scrolls the row themselves.
+   */
+  private _revealTarget: HTMLElement | undefined;
+
+  /** Chips run vertically (vertical writing mode); drives aria-orientation. */
+  @state()
+  private _inlineVertical = false;
 
   @state()
   private _overflowing = false;
@@ -95,6 +155,19 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   private _$toggleWrap!: HTMLSpanElement;
 
   private _resizeObserver: ResizeObserver | null = null;
+
+  /** Measurements so far, to tell an observer's first report from a resize. */
+  private _measureCount = 0;
+
+  /**
+   * The measurement count when each element was last observed. An observer
+   * always reports an element once after `observe()`; a measurement since
+   * then may already have seen the reported size.
+   */
+  private readonly _observedAt = new WeakMap<Element, number>();
+
+  /** Border-box sizes seen by the latest row measurement, in layout pixels. */
+  private readonly _measuredSizes = new WeakMap<Element, { inline: number; block: number }>();
 
   private _mutationObserver: MutationObserver | null = null;
   private readonly _authoredVariants = new Map<RCChip, RCChip['variant']>();
@@ -115,17 +188,12 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   @property({ reflect: true })
   selection: RCChipGroupSelection = 'none';
 
-  /** Accessible label used when `kind="assist"` exposes toolbar semantics. */
+  /**
+   * Accessible label used when `kind="assist"` exposes toolbar semantics.
+   * Defaults to the `label` message.
+   */
   @property()
-  label = 'Chip actions';
-
-  /** Collapsed overflow action label. */
-  @property({ attribute: 'show-all-label' })
-  showAllLabel = 'Show all';
-
-  /** Expanded overflow action label. */
-  @property({ attribute: 'show-less-label' })
-  showLessLabel = 'Show less';
+  label: string | undefined;
 
   /** Current auto-layout disclosure state. Host writes are silent. */
   @property({ type: Boolean, reflect: true })
@@ -167,8 +235,8 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
     super.connectedCallback();
 
     if (typeof ResizeObserver === 'function') {
-      this._resizeObserver ??= new ResizeObserver(() => this._scheduleMeasure());
-      this._resizeObserver.observe(this);
+      this._resizeObserver ??= new ResizeObserver((entries) => this._handleResize(entries));
+      this._observe(this);
     }
 
     if (typeof MutationObserver === 'function') {
@@ -200,8 +268,9 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
       this._targetVisibilityFrame = undefined;
     }
 
-    this._pendingScrollLeft = undefined;
+    this._pendingScrollOffset = undefined;
     this._pendingScrollTarget = undefined;
+    this._revealTarget = undefined;
     this._restoreAuthoredVariants();
   }
 
@@ -281,14 +350,17 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
       return;
     }
 
-    const rtl = getComputedStyle(this._$root).direction === 'rtl';
+    // Chips run along the inline axis, so the keys follow whichever physical
+    // axis that is and whichever way it runs: ArrowLeft for next in RTL,
+    // ArrowDown in vertical text.
+    const keys = inlineArrowKeys(resolveFlow(this._$root));
 
     switch (event.key) {
-      case rtl ? 'ArrowLeft' : 'ArrowRight':
+      case keys.next:
         event.preventDefault();
         this.focusItem(this.nextItem);
         break;
-      case rtl ? 'ArrowRight' : 'ArrowLeft':
+      case keys.prev:
         event.preventDefault();
         this.focusItem(this.previousItem);
         break;
@@ -352,10 +424,71 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
 
   private _observeAssignedItems(): void {
     this._resizeObserver?.disconnect();
-    this._resizeObserver?.observe(this);
+    this._observe(this);
 
     for (const $element of this._assignedElements()) {
-      this._resizeObserver?.observe($element);
+      this._observe($element);
+    }
+  }
+
+  private _observe($element: Element): void {
+    this._resizeObserver?.observe($element);
+    this._observedAt.set($element, this._measureCount);
+    this._measuredSizes.delete($element);
+  }
+
+  private _handleResize(entries: ResizeObserverEntry[]): void {
+    let resized = false;
+
+    for (const { target, borderBoxSize } of entries) {
+      const observedAt = this._observedAt.get(target);
+
+      this._observedAt.delete(target);
+
+      if (observedAt === undefined || observedAt === this._measureCount) {
+        resized = true;
+
+        continue;
+      }
+
+      const measured = this._measuredSizes.get(target);
+      const reported = borderBoxSize[0];
+
+      // Collapsing a group changes its block size after this measurement.
+      // Only its inline size can change how many rows the chips occupy.
+      if (
+        !measured ||
+        !reported ||
+        Math.abs(reported.inlineSize - measured.inline) > 0.5 ||
+        (target !== this && Math.abs(reported.blockSize - measured.block) > 0.5)
+      ) {
+        resized = true;
+      }
+    }
+
+    if (resized) {
+      this._scheduleMeasure();
+    }
+  }
+
+  private _rememberMeasuredSizes(): void {
+    if (!this._resizeObserver) {
+      return;
+    }
+
+    for (const $element of [this, ...this._assignedElements()]) {
+      if (!this._observedAt.has($element)) {
+        continue;
+      }
+
+      const rect = $element.getBoundingClientRect();
+      const zoom = cssZoom($element);
+      const inlineHorizontal = resolveFlow($element).inline === 'x';
+
+      this._measuredSizes.set($element, {
+        inline: (inlineHorizontal ? rect.width : rect.height) / zoom,
+        block: (inlineHorizontal ? rect.height : rect.width) / zoom,
+      });
     }
   }
 
@@ -410,7 +543,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
         this._targetVisibilityFrame = undefined;
       }
 
-      this._pendingScrollLeft = this._$root.scrollLeft;
+      this._pendingScrollOffset = this._inlineScrollOffset();
 
       const assigned = new Set(this._assignedElements());
 
@@ -420,12 +553,19 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
           ($target): $target is HTMLElement =>
             $target instanceof HTMLElement && assigned.has($target),
         );
+
+      this._revealTarget = this._pendingScrollTarget;
     }
 
     queueMicrotask(() => {
       this._syncNativeSelection();
       this._scheduleMeasure();
     });
+  };
+
+  /** The user taking the row's scroll releases the pinned reveal target. */
+  private readonly _releaseRevealTarget = (): void => {
+    this._revealTarget = undefined;
   };
 
   private readonly _toggleExpanded = (): void => {
@@ -458,39 +598,57 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
   }
 
   private _measureRows(): void {
-    if (this.layout !== 'auto') {
-      if (this.layout === 'scroll' && this._pendingScrollLeft !== undefined) {
-        const $target = this._pendingScrollTarget;
+    this._measureCount += 1;
 
-        this._$root.scrollLeft = this._pendingScrollLeft;
+    // aria-orientation reports how the chips actually render, like a native
+    // range input made vertical by writing-mode: vertical in vertical text.
+    const vertical = resolveFlow(this._$root).inline === 'y';
+
+    if (vertical !== this._inlineVertical) {
+      this._inlineVertical = vertical;
+    }
+
+    if (this.layout !== 'auto') {
+      if (this.layout === 'scroll') {
+        const $target = this._pendingScrollTarget ?? this._revealTarget;
+
+        if (this._pendingScrollOffset !== undefined) {
+          this._setInlineScrollOffset(this._pendingScrollOffset);
+        }
+
         this._keepTargetVisible($target);
         this._scheduleTargetVisibility($target);
       }
 
-      this._pendingScrollLeft = undefined;
+      this._pendingScrollOffset = undefined;
       this._pendingScrollTarget = undefined;
 
       if (this._overflowing) {
         this._overflowing = false;
       }
 
+      this._rememberMeasuredSizes();
+
       return;
     }
 
     const items = this._assignedElements().filter(($element) => !$element.hidden);
     const wasScrolling = this._resolvedLayout === 'scroll';
-    const scrollLeft = this._pendingScrollLeft ?? this._$root.scrollLeft;
+    const scrollOffset = this._pendingScrollOffset ?? this._inlineScrollOffset();
+    const flow = resolveFlow(this._$root);
+    const rootRect = this._$root.getBoundingClientRect();
 
     this._$root.toggleAttribute('data-measuring', true);
     this._$toggleWrap.hidden = true;
 
     const rowStarts: number[] = [];
 
+    // Rows stack along the block axis, which is horizontal in vertical text.
     for (const $item of items) {
-      const top = $item.getBoundingClientRect().top;
+      const start = logicalRect($item.getBoundingClientRect(), rootRect, flow).blockStart;
 
-      if (!rowStarts.some((rowTop) => Math.abs(rowTop - top) < 1)) {
-        rowStarts.push(top);
+      if (!rowStarts.some((rowStart) => Math.abs(rowStart - start) < 1)) {
+        rowStarts.push(start);
       }
     }
 
@@ -511,15 +669,22 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
     }
 
     if (wasScrolling && this._resolvedLayout === 'scroll') {
-      const $target = this._pendingScrollTarget;
+      const $target = this._pendingScrollTarget ?? this._revealTarget;
 
-      this._$root.scrollLeft = scrollLeft;
+      // Wrapping to measure can only clamp the offset toward the start, so a
+      // row at its start needs no restore; setting it would force a reflow.
+      if (scrollOffset !== 0) {
+        this._setInlineScrollOffset(scrollOffset);
+      }
+
       this._keepTargetVisible($target);
       this._scheduleTargetVisibility($target);
     }
 
-    this._pendingScrollLeft = undefined;
+    this._pendingScrollOffset = undefined;
     this._pendingScrollTarget = undefined;
+
+    this._rememberMeasuredSizes();
   }
 
   private _keepTargetVisible($target: HTMLElement | undefined): void {
@@ -527,18 +692,39 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
       return;
     }
 
-    const rootRect = this._$root.getBoundingClientRect();
-    const targetRect = $target.getBoundingClientRect();
-    const delta =
-      targetRect.left < rootRect.left
-        ? targetRect.left - rootRect.left
-        : targetRect.right > rootRect.right
-          ? targetRect.right - rootRect.right
+    const flow = resolveFlow(this._$root);
+    const root = logicalRect(
+      this._$root.getBoundingClientRect(),
+      this._$root.getBoundingClientRect(),
+      flow,
+    );
+    const target = logicalRect(
+      $target.getBoundingClientRect(),
+      this._$root.getBoundingClientRect(),
+      flow,
+    );
+    const targetEnd = target.inlineStart + target.inlineSize;
+    const deltaViewportPx =
+      target.inlineStart < 0
+        ? target.inlineStart
+        : targetEnd > root.inlineSize
+          ? targetEnd - root.inlineSize
           : 0;
 
-    if (delta !== 0) {
-      this._$root.scrollLeft += delta;
+    if (deltaViewportPx !== 0) {
+      this._setInlineScrollOffset(
+        this._inlineScrollOffset() + deltaViewportPx / cssZoom(this._$root),
+      );
     }
+  }
+
+  /** Scroll distance from the root's inline start, never negative. */
+  private _inlineScrollOffset(): number {
+    return getScrollOffset(this._$root, 'inline', resolveFlow(this._$root));
+  }
+
+  private _setInlineScrollOffset(offset: number): void {
+    setScrollOffset(this._$root, 'inline', offset, resolveFlow(this._$root));
   }
 
   private _scheduleTargetVisibility($target: HTMLElement | undefined): void {
@@ -577,9 +763,13 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
         part="root"
         data-mode=${this._resolvedLayout}
         role=${assist ? 'toolbar' : nothing}
-        aria-label=${assist ? this.label : nothing}
+        aria-label=${assist ? (this.label ?? this._messages.value.label) : nothing}
+        aria-orientation=${assist && this._inlineVertical ? 'vertical' : nothing}
         @keydown=${this._handleKeyDown}
         @change=${{ handleEvent: this._handleChange, capture: true }}
+        @pointerdown=${this._releaseRevealTarget}
+        @wheel=${{ handleEvent: this._releaseRevealTarget, passive: true }}
+        @touchstart=${{ handleEvent: this._releaseRevealTarget, passive: true }}
       >
         <span id="toggle-wrap" ?hidden=${!showToggle}>
           <rc-chip id="toggle" part="toggle" variant="assist">
@@ -596,7 +786,7 @@ export class RCChipGroup extends RovingTabIndexMixin(LitElement) {
                   d="M3 17v2h6v-2zM3 5v2h10V5zm10 16v-2h8v-2h-8v-2h-2v6zM7 9v2H3v2h4v2h2V9zm14 4v-2H11v2zm-6-4h2V7h4V5h-4V3h-2z"
                 ></path>
               </svg>
-              ${this.expanded ? this.showLessLabel : this.showAllLabel}
+              ${this.expanded ? this._messages.value.showLess : this._messages.value.showAll}
             </button>
           </rc-chip>
           <span id="toggle-separator" part="toggle-separator" aria-hidden="true"></span>

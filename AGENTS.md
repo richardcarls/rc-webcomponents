@@ -45,6 +45,39 @@ short and tell the tool to read `AGENTS.md` before project work.
 - Components are design-system neutral. Ship only structural styling needed for
   correct layout or behavior; avoid decorative visual opinions. Prefer UA-like
   defaults, CSS system colors, and forced-colors-safe state indicators.
+- Keep styling contracts in distinct layers. Shared `--rc-*` semantic tokens
+  describe system-wide meaning, `--rc-<component>-*` tokens expose intentional
+  component adaptation points, and `--_rc-*` tokens are private implementation
+  details. Theme packages map their design-system tokens into the public RC
+  layers; components must not depend directly on Material or Substrate tokens.
+- Prefer tokens for bounded value substitution and CSS parts for selectors or
+  declarations that must reach a shadow-owned element. Use contextual light-DOM
+  selectors only when the consumer-authored structure is itself part of the
+  component contract. A theme must not change semantics or interaction behavior.
+- Treat optional theme `native.css` as a site-wide convenience layer. Component
+  theme recipes may style native children when their presentation belongs to a
+  menu, toolbar, or other documented component context; native styles fill in
+  other controls, including consumer content inside RC hosts. Protect specific
+  controls through later theme layers or narrow ownership selectors rather
+  than treating every RC host as a native-styling boundary. Keep
+  `data-rc-native="off"` as a documented subtree opt-out.
+- Treat every styling hook as an owned contract. Author-provided `data-rc-*`
+  markers used for structure, behavior, or theme opt-in are public API and must
+  be documented. Component-written state should prefer native state, ARIA,
+  documented host `data-*`, or custom states as appropriate. Controller IDs,
+  measurement reflectors, and injected-style sentinels remain internal even
+  when they use the `data-rc-*` namespace. Classify new markers in
+  `scripts/audit-component-architecture.mjs`; the prefix alone does not make a
+  marker public.
+- Shadow styles rely on shadow-tree scoping rather than document cascade layers.
+  Injected light-DOM structural CSS belongs in the `rc-base` layer and uses one
+  `data-rc-light-dom-base` sentinel per root. Theme styles declare their complete
+  layer order, starting with `rc-base` so injected structural CSS stays below the theme
+  whenever it loads, and keep component rules in the theme's `.components` layer. The
+  `.overrides` layer is only for contextual rules that must beat every component variant,
+  such as `rc-adaptive-menu` overflow rows.
+  Remember that normal author rules outside a layer outrank layered rules, while
+  `!important` reverses layer precedence.
 - Runtime measurement may write inline geometry styles, such as splitter sizes.
   Decorative styles belong in static CSS, CSS custom properties, or CSS parts.
 - Expose CSS custom properties for responsive changes that only alter geometry,
@@ -56,6 +89,31 @@ short and tell the tool to read `AGENTS.md` before project work.
   attribute from their own responsive state.
 - Use Pointer Events for pointer interaction. Avoid mouse-only logic and
   hardcoded responsive breakpoints inside component behavior.
+- Support RTL and vertical writing modes. Use logical CSS properties
+  (`inset-inline-start`, `padding-block-end`) in component and theme styles;
+  physical ones need an allowlist entry in
+  `scripts/audit-component-architecture.mjs` with a reason. Resolve scroll
+  offsets, pointer deltas, element positions, and arrow keys through
+  `rc-common`'s `flow` helpers (`resolveFlow`, `getScrollOffset`,
+  `logicalRect`, `logicalDelta`, `arrowKeys`) rather than reading
+  `direction`, `writing-mode`, `scrollLeft`, or `clientX` directly. Resolve the
+  flow at interaction or measure time, since a `dir` change on an ancestor
+  fires no event. Anything cached from the flow (rendered attributes,
+  measured offsets) must also subscribe through `FlowController` or
+  `observeLocale`, and its test should flip `dir` at runtime after layout
+  settles, not only render in RTL. Test new geometry or keyboard behavior
+  with the `FLOW_FIXTURES`/`inFlow` helpers in `test-helpers/flow.ts`.
+- Never hard-code user-facing text (an `aria-label`, `title`, placeholder,
+  role description, announcement, or visible button text) in a component.
+  Declare a `<Component>Messages` interface with English defaults, add it to
+  `RcMessageCatalog` by module augmentation, expose a `messages` property, and
+  read the text through `MessagesController` so it follows the element's own
+  `lang`, else `<html lang>`, and re-renders when either changes. An ancestor's
+  `lang` marks content and must not change component text. A per-instance name
+  a consumer usually sets (`label`, `low-label`) stays an attribute whose
+  default comes from the messages. Format numbers shown as text with
+  `numberFormat()` for the same locale. See `rc-common/README.md`
+  § Localization.
 - Shared interaction behavior belongs in `rc-common` as Lit directives or
   `ReactiveController` classes.
 - Before adding new interaction, focus, positioning, scrolling, pointer, resize,
@@ -66,6 +124,10 @@ short and tell the tool to read `AGENTS.md` before project work.
   leaving a package-local copy.
 - Each package builds ESM, UMD, and declarations. Keep package exports and
   `sideEffects: false` tree-shaking behavior intact.
+- Runtime packages are browser-only. Server output may contain the native
+  fallback markup, but component registration belongs in a client-only entry;
+  do not claim Node import safety, server-side custom-element rendering, or
+  hydration support without implementing and testing that contract.
 - In `firstUpdated()`, guard required native child checks behind
   `import.meta.env.DEV` and emit a `console.warn` when the expected child is
   absent. Use `:scope > <tagname>` to scope the query to direct children only.
@@ -194,6 +256,35 @@ false` `@property` a matching `@attr` line; use bracket form (`@attr [name]`)
 - Package README, root README package summary, aggregate package exports, and
   aggregate React/Solid typings when public usage changes.
 
+Until 1.0, replace or remove superseded public API outright. Do not keep old
+names or values working as deprecated aliases. Mark the removal as breaking in
+its changeset (a minor bump in the fixed group) and list the migration.
+
+Axis and position vocabulary is shared across the collection:
+
+- `orientation="horizontal|vertical"` is only for widgets that expose
+  `aria-orientation` (toolbar, menubar, segmented button, splitter separator,
+  slider), defaulting as the APG role does. It names a layout, like a native
+  range input's default: `horizontal` runs along the inline axis and
+  `vertical` along the block axis, so both turn over in vertical writing
+  modes. Style from this attribute. `rc-card`'s `orientation` is a layout
+  mode only and is documented as such.
+- `aria-orientation` reports the orientation actually rendered, which is what
+  ARIA defines ("oriented horizontally") and what browsers expose for a native
+  `<input type="range">` made vertical by `writing-mode`. Derive it with
+  `renderedOrientation(orientation, flow)`, keep it current with
+  `FlowController`, and never select styles on it. Arrow keys follow the same
+  rendered orientation through `arrowKeys`, and `keyNavigation` converts an
+  explicit `navigationAxis` or a role default the same way. An explicit
+  `aria-orientation` attribute is already physical and is used as is.
+- `axis="block|inline|both"` is for scrolling and geometry (`rc-scroller`,
+  `rc-virtual-scroller`) and is logical.
+- Position-like values use logical `start`/`end` and `inline-*`/`block-*`
+  sides, including popup placements and pinned corners. Physical
+  `x`/`y`/`top`/`bottom`/`left`/`right` belong to internal pointer and geometry math,
+  and to `DragGestureController` and `ResizeController`, which model raw
+  pointer deltas and CSS `resize` and say so in their docs.
+
 Generated API tables come from `dist/custom-elements.json`; do not hand-edit
 generated output instead of source comments and types.
 
@@ -225,6 +316,12 @@ directly usable public packages.
   the most specific docs page for the public package.
 - The Docusaurus docs workspace is the canonical home for public component docs,
   examples, and live demos.
+- `packages/rc-theme-material/DESIGN.md` is the agent-facing Material 3
+  composition guide and ships with the package. Update it in the same change
+  as any theme class hook, `data-*` hook, variant, token mapping, or component
+  attribute it names, and keep its token-backed front matter values in sync
+  with `defaults.css`. `yarn test:design-guide` checks those values and the
+  documented hooks; spacing values are composition guidance.
 - Package READMEs are npm landing pages and should stay short unless a package
   has usage details that do not fit naturally in the docs site. Do not maintain a
   competing exhaustive API table in a package README when the generated docs API
@@ -241,7 +338,7 @@ directly usable public packages.
   generated API table; the class-level prose is the only durable source.
 - Do not add tracked package-local demo pages or shared demo assets. Files such
   as `packages/<name>/*.html` and `packages/<name>/public/` are ignored scratch
-  space for ad hoc Vite experiments only.
+  space for temporary Vite experiments only.
 - Component examples must preserve project principles: native children remain in
   the DOM, labels/forms work before upgrade, ARIA is demonstrated on the native
   element where applicable, and interactive demos show keyboard and accessibility
@@ -267,6 +364,8 @@ yarn.cmd build
 yarn.cmd test
 yarn.cmd test:full
 yarn.cmd validate:packages
+yarn.cmd audit:performance
+yarn.cmd benchmark:browser
 ```
 
 ```bash
@@ -277,7 +376,27 @@ yarn build
 yarn test
 yarn test:full
 yarn validate:packages
+yarn audit:performance
+yarn benchmark:browser
 ```
+
+`test`, `test:full`, `ci`, `benchmark:browser`, and `test:screenshots:update` run inside the
+Playwright Docker image whose version matches `yarn.lock`, through
+`scripts/playwright-env.mjs`, on every host and in CI. Docker is required. The wrapper bind-mounts
+the checkout and keeps every `node_modules` in its own volume, so it works from Windows and
+macOS too, and it installs dependencies there only when `yarn.lock` changes. Each script has a
+`:host` variant (`test:host`, `test:full:host`, ...) that runs on the host browser, for quick
+single-file iteration only: record screenshot baselines and benchmark budgets only through the
+wrapper (`yarn test:screenshots:update`, `yarn benchmark:browser:update`), since fonts and system
+libraries differ between hosts. Per-package `test:browser` scripts also run on the host.
+
+Agents run every suite, screenshot check, and final result through the wrapper. Host runs
+(`:host` scripts and per-package `test:browser`) are for one file or package while iterating;
+host screenshot comparisons fail by design. The container's memory is capped at
+`TEST_DOCKER_MEMORY` (default `4g`), so an overrun is killed inside it instead of taking down
+desktop apps. Never run two browser suites at once, including this repo's and a consuming
+app's. A "Browser connection was closed" error or a container exit of 137 usually means memory
+ran out: check `journalctl -k | grep -i oom` before treating it as a test failure.
 
 New package `test:browser` scripts must include `--run` (`vitest --run`). Without it
 Vitest defaults to watch mode. The root `test` script runs the shared test projects with
@@ -289,13 +408,19 @@ rebuild changed dependencies before running tests in packages that consume them.
 Vite HMR does not watch dependency `dist/` output through `node_modules`; restart
 the docs dev server after rebuilding a dependency.
 
+Performance audits consume built package exports. Run the root build first.
+Update tracked size or runtime budgets only after reviewing the generated
+`.performance/` report and confirming that a change is intentional.
+
 ## Testing
 
 Tests run live DOM in real browsers via Playwright and Vitest browser mode;
-there is no jsdom. Locally, the root suite and package suites default to Chromium.
-Use `yarn test:full` for Chromium, Firefox, and WebKit; CI always uses that same
-sequential full matrix. Browser settings are shared via `vitest.browser.config.ts`, and
-the root `vitest.config.ts` separates ordinary, geometry-sensitive, theme, and
+there is no jsdom. They run inside the pinned Playwright Docker image (see
+_Commands_). Locally, the root suite and package suites default to Chromium.
+Use `yarn test:full` for Chromium, Firefox, and WebKit, which runs locally too in the
+image; CI always uses that same sequential full matrix. Browser settings are shared via
+`vitest.browser.config.ts`, and the root `vitest.config.ts` separates ordinary,
+geometry-sensitive, theme, and
 browser-independent tests with bounded concurrency.
 
 ```ts

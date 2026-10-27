@@ -27,21 +27,21 @@ App bar modeled after the [Material 3 Top app bar](https://m3.material.io/compon
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-app-bar
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-app-bar
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-app-bar/define';
+import '@rcarls/rc-webcomponents/rc-app-bar/define';
 ```
 
 ## Live demo
@@ -68,6 +68,48 @@ midpoint regardless of asymmetric leading/trailing widths instead:
   <button slot="trailing" aria-label="Account">Account</button>
 </rc-app-bar>
 ```
+
+## Reclaiming space with hide
+
+`scroll-behavior="hide"` only translates the bar. While hiding, the bar
+publishes `--rc-app-bar-block-size` and `--rc-app-bar-visible-block-size`
+(`0px` while hidden) onto its scroll target. Stack the bar over its scroll
+container and reserve that size, so content scrolls behind the bar and fills
+its space while it is hidden:
+
+```css
+.screen {
+  display: grid;
+  grid-template: 'stack' 1fr / 1fr;
+}
+
+.screen > header,
+.screen > .content {
+  grid-area: stack;
+}
+
+.screen > header {
+  z-index: 1;
+  align-self: start;
+}
+
+.content {
+  overflow-y: auto;
+  padding-block-start: var(--rc-app-bar-block-size, 4rem);
+  scroll-padding-block-start: var(--rc-app-bar-block-size, 4rem);
+}
+
+.content .sticky-filters {
+  position: sticky;
+  /* Sticky offsets are measured inside the scroller's padding. */
+  inset-block-start: calc(
+    var(--rc-app-bar-visible-block-size, 4rem) - var(--rc-app-bar-block-size, 4rem)
+  );
+  transition: inset-block-start 200ms ease;
+}
+```
+
+The bar reveals itself when focus enters and remains visible while it contains focus.
 
 ## Theming
 

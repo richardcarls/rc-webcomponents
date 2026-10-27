@@ -136,7 +136,7 @@ test('rc-slider input event updates rendered progress and value display', async 
   await host.updateComplete;
 
   const progress = host.shadowRoot?.querySelector<HTMLElement>('[part="progress"]');
-  expect(progress?.getAttribute('style')).toContain('width:45');
+  expect(progress?.getAttribute('style')).toContain('inline-size:45');
   await expect.element(screen.getByText('45')).toBeInTheDocument();
 });
 
@@ -219,7 +219,7 @@ test('rc-slider progress fill reflects initial value at first render', async () 
   await host.updateComplete;
 
   const progress = host.shadowRoot?.querySelector<HTMLElement>('[part="progress"]');
-  expect(progress?.getAttribute('style')).toContain('width:25');
+  expect(progress?.getAttribute('style')).toContain('inline-size:25');
 });
 
 test('rc-slider disabled syncs to native input', async () => {
@@ -335,3 +335,35 @@ test('rc-slider without defaultValue falls back to 0', async () => {
 
   expect(host.value).toBe(0);
 });
+
+test.each(['ltr', 'rtl'] as const)(
+  'rc-slider fills from the same edge as the native input in %s',
+  async (dir) => {
+    const screen = render(html`
+      <div dir=${dir} style="inline-size: 200px;">
+        <rc-slider data-testid="host">
+          <input type="range" min="0" max="100" value="25" aria-label="Fuel" />
+        </rc-slider>
+      </div>
+    `);
+    const host = screen.getByTestId('host').element() as RCSlider;
+
+    await host.updateComplete;
+
+    const progress = host.shadowRoot?.querySelector<HTMLElement>('[part="progress"]');
+    const track = host.getBoundingClientRect();
+
+    await vi.waitFor(() => {
+      const fill = progress?.getBoundingClientRect();
+
+      expect(fill?.width).toBeGreaterThan(0);
+
+      // The native range input starts from the right edge in RTL.
+      if (dir === 'rtl') {
+        expect(fill?.right).toBeCloseTo(track.right, 0);
+      } else {
+        expect(fill?.left).toBeCloseTo(track.left, 0);
+      }
+    });
+  },
+);

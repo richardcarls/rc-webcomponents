@@ -8,7 +8,7 @@
     );
     --rc-bottom-sheet-handle-radius: var(--md-sys-shape-corner-full, 999px);
     --rc-bottom-sheet-handle-target-block-size: 3rem;
-    --rc-bottom-sheet-snap-duration: var(--rc-motion-spatial-duration-default, 500ms);
+    --rc-bottom-sheet-snap-duration: var(--rc-motion-spatial-duration-fast, 300ms);
     --rc-bottom-sheet-snap-easing: var(
       --rc-motion-spatial-easing-default,
       cubic-bezier(0.2, 0, 0, 1)
@@ -69,7 +69,7 @@
     [data-rc-bottom-sheet-handle]::before {
     content: '';
     position: absolute;
-    inset-block-start: 50%;
+    inset-block-start: var(--rc-bottom-sheet-handle-offset, 50%);
     inset-inline-start: 50%;
     inline-size: var(--rc-bottom-sheet-handle-inline-size, 2rem);
     block-size: var(--rc-bottom-sheet-handle-block-size, 0.25rem);

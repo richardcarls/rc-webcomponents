@@ -1,0 +1,9 @@
+@layer rc-theme-win31.css-components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) .rc-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--rc-chip-group-row-gap, var(--rc-control-gap, 0.5rem))
+      var(--rc-chip-group-column-gap, var(--rc-control-gap, 0.5rem));
+  }
+}

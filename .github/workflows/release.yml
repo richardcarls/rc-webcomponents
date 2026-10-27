@@ -7,13 +7,23 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Immutable release tag to recover, such as v0.6.0
-        required: true
+        description: Immutable release tag to recover, such as v0.6.0. Leave empty for a snapshot run.
+        required: false
         type: string
       provenance_exception:
         description: Comma-separated package@version values manually published without provenance
         required: false
         type: string
+      snapshot:
+        description: Publish an unstable @next-style snapshot build from the current ref instead of a recovery run
+        required: false
+        type: boolean
+        default: false
+      snapshot_tag:
+        description: npm dist-tag to publish the snapshot under
+        required: false
+        type: string
+        default: next
 
 permissions:
   contents: read
@@ -23,8 +33,46 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The full suite runs once, inside the pinned Playwright image, before any
+  # publishing job starts; the publishing jobs only build and pack.
+  verify:
+    name: Build, validate packages, and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Build, validate packages, and test in the Playwright image
+        run: node scripts/playwright-env.mjs ci:host
+
+      - name: Upload performance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: .performance/
+          if-no-files-found: ignore
+          include-hidden-files: true
+
+      - name: Upload visual test diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-test-diffs
+          path: .vitest-attachments/
+          if-no-files-found: ignore
+
   publish:
     name: Publish packages
+    needs: verify
+    if: github.event_name == 'push' || inputs.snapshot != true
     runs-on: ubuntu-latest
     environment: npm
     permissions:
@@ -47,9 +95,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Install Playwright browsers
-        run: yarn playwright install --with-deps chromium firefox webkit
-
       - name: Fetch release refs
         run: git fetch --force origin main:refs/remotes/origin/main --tags
 
@@ -58,8 +103,8 @@ jobs:
         env:
           RC_RELEASE_TAG: ${{ inputs.release_tag }}
 
-      - name: Build, validate packages, and test
-        run: yarn ci
+      - name: Build packages
+        run: yarn build
 
       # Yarn creates each tarball so workspace:* ranges become real versions. npm performs
       # the registry publish itself so Trusted Publishing can exchange this job's OIDC token.
@@ -68,3 +113,53 @@ jobs:
         env:
           RC_ALLOW_MISSING_PROVENANCE: ${{ inputs.provenance_exception }}
           RC_RELEASE_TAG: ${{ inputs.release_tag }}
+
+  publish-snapshot:
+    name: Publish @next snapshot
+    needs: verify
+    if: github.event_name == 'workflow_dispatch' && inputs.snapshot == true
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build packages
+        run: yarn build
+
+      # Ephemeral checkout only; never committed or pushed. develop's own
+      # committed versions and pending .changeset/*.md files stay untouched.
+      - name: Version packages for the snapshot
+        run: yarn version:packages:snapshot "${{ inputs.snapshot_tag }}"
+
+      # Catches a fixed-group package that has never been bootstrapped on
+      # npm before any live publish is attempted. Without this, a snapshot
+      # run publishes every package ahead of the unbootstrapped one, then
+      # hard-fails on it with a raw OIDC permission error, leaving the next
+      # dist-tag inconsistent across packages.
+      - name: Check for packages requiring npm bootstrap
+        run: yarn publish:packages:snapshot:dry-run
+        env:
+          RC_SNAPSHOT_TAG: ${{ inputs.snapshot_tag }}
+
+      # Same tarball packing and OIDC Trusted Publishing flow as a stable
+      # release, published under the snapshot dist-tag instead of latest.
+      - name: Publish and verify snapshot packages
+        run: yarn publish:packages:snapshot
+        env:
+          RC_SNAPSHOT_TAG: ${{ inputs.snapshot_tag }}

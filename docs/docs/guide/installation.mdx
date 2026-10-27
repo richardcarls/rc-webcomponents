@@ -4,9 +4,21 @@ title: Installation
 
 # Installation
 
+:::tip Try the `@next` preview
+
+Install `@rcarls/rc-webcomponents@next` to try the current in-development snapshot, then use the
+[`@next` preview documentation](https://richardcarls.github.io/rc-webcomponents/next/). Preview
+APIs can change before the next stable release.
+
+```sh
+npm install @rcarls/rc-webcomponents@next
+```
+
+:::
+
 ## Install
 
-Install the aggregate package for all components:
+Install the aggregate package. This is the recommended setup for most applications:
 
 ```sh
 npm install @rcarls/rc-webcomponents
@@ -18,21 +30,36 @@ Or install only the packages you need:
 npm install @rcarls/rc-select @rcarls/rc-fab
 ```
 
+Both install styles cost the same bundle bytes. See
+[Choosing an install style](#choosing-an-install-style).
+
 ## Load elements
 
-### Register all elements
+### Register one element at a time
 
-Import the side-effectful `define` entry to register every element at once.
-Do this once at your application root.
+Import the aggregate package's per-component `define` subpath to register just
+that element. Your bundler drops every component you do not import.
 
 ```js
-import '@rcarls/rc-webcomponents/define';
+import '@rcarls/rc-webcomponents/rc-select/define';
 ```
 
-Individual packages expose the same entry:
+Individual packages expose the same entry, and the two spellings are
+interchangeable, because the aggregate subpath re-exports the standalone
+package:
 
 ```js
 import '@rcarls/rc-select/define';
+```
+
+### Register all elements
+
+Import the collection-wide `define` entry to register every element at once.
+Do this once at your application root. This pulls in the whole collection, so
+prefer the per-component entries above unless you use most of it.
+
+```js
+import '@rcarls/rc-webcomponents/define';
 ```
 
 ### Register elements manually
@@ -41,18 +68,38 @@ Import the class and call `customElements.define` yourself when you need
 control over timing or want to extend a class before registering:
 
 ```js
-import { RCSelect } from '@rcarls/rc-webcomponents';
+import { RCSelect } from '@rcarls/rc-webcomponents/rc-select';
 
 customElements.define('rc-select', RCSelect);
 ```
 
-### CDN — no bundler
+### CDN: no bundler
 
-Load directly from a CDN in plain HTML pages:
+Load the same per-component subpath from a CDN in plain HTML pages:
 
 ```html
-<script type="module" src="https://esm.sh/@rcarls/rc-webcomponents/define"></script>
+<script type="module" src="https://esm.sh/@rcarls/rc-webcomponents/rc-select/define"></script>
 ```
+
+## Choosing an install style
+
+Per-component entries cost the same either way. Importing
+`@rcarls/rc-webcomponents/rc-button/define` bundles exactly what
+`@rcarls/rc-button/define` bundles, because the aggregate subpath is a
+re-export of the standalone package. You also write the same number of import
+lines either way, one per component you use.
+
+The difference is dependency management:
+
+- **The aggregate package** gives you one dependency to install and upgrade.
+  Every component moves to the same version together, which is how they are
+  released.
+- **Individual packages** let you install only what you use and pin components
+  separately, at the cost of a manifest entry per component.
+
+Reach for the aggregate unless you have a reason to pin components apart. Only
+the collection-wide entry, `@rcarls/rc-webcomponents/define`, carries the whole
+library.
 
 ## Basic usage
 

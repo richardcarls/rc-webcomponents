@@ -53,15 +53,16 @@ switch layout automatically at viewport breakpoints.
 
 ### Properties
 
-| Property          | Attribute         | Type                           | Default             | Description                                                                   |
-| ----------------- | ----------------- | ------------------------------ | ------------------- | ----------------------------------------------------------------------------- |
-| `multiple`        | `multiple`        | `boolean`                      | `false`             | Allows multiple highlighted rows in each listbox.                             |
-| `compact`         | `compact`         | `boolean`                      | `false`             | Stacks the panels and action toolbar into a compact one-column layout.        |
-| `availableLabel`  | `available-label` | `string`                       | `'Available'`       | Visible label for the available list.                                         |
-| `selectedLabel`   | `selected-label`  | `string`                       | `'Selected'`        | Visible label for the selected list.                                          |
-| `available`       | -                 | `ListboxOption[]`              | native select state | Gets or replaces unselected options.                                          |
-| `selected`        | -                 | `ListboxOption[]`              | native select state | Gets or replaces selected options.                                            |
-| `defaultSelected` | -                 | `ListboxOption[] \| undefined` | `undefined`         | Initial uncontrolled selected options, applied before host `selected` writes. |
+| Property          | Attribute         | Type                              | Default             | Description                                                                   |
+| ----------------- | ----------------- | --------------------------------- | ------------------- | ----------------------------------------------------------------------------- |
+| `multiple`        | `multiple`        | `boolean`                         | `false`             | Allows multiple highlighted rows in each listbox.                             |
+| `compact`         | `compact`         | `boolean`                         | `false`             | Stacks the panels and action toolbar into a compact one-column layout.        |
+| `availableLabel`  | `available-label` | `string \| undefined`             | `available` message | Visible label for the available list.                                         |
+| `selectedLabel`   | `selected-label`  | `string \| undefined`             | `selected` message  | Visible label for the selected list.                                          |
+| `messages`        | -                 | `Partial<RCTransferListMessages>` | `undefined`         | Built-in text overrides; see Localization.                                    |
+| `available`       | -                 | `ListboxOption[]`                 | native select state | Gets or replaces unselected options.                                          |
+| `selected`        | -                 | `ListboxOption[]`                 | native select state | Gets or replaces selected options.                                            |
+| `defaultSelected` | -                 | `ListboxOption[] \| undefined`    | `undefined`         | Initial uncontrolled selected options, applied before host `selected` writes. |
 
 ### Methods
 
@@ -80,6 +81,14 @@ switch layout automatically at viewport breakpoints.
 | `rc-transfer-list-change` | `{ selected: ListboxOption[] }` | Fires after a user action changes the selected/right-hand list. |
 
 Host property writes to `available`, `selected`, or `defaultSelected` are silent.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`, and never an
+ancestor's `lang`, which usually marks content. Override it per element with the
+`messages` property, or for every instance with `registerMessages()` from
+`@rcarls/rc-common` under `rc-transfer-list`. Keys: `available`, `selected`, `actions`, `add`, `addAll`, `remove`, `clear`, `moveUp`, `moveDown`. The arrows on the action buttons are decorative and turn over in RTL. See the
+[rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).
 
 ## Keyboard
 
@@ -102,21 +111,22 @@ Panels expose `data-empty` when their backing list has no options and
 exposes `data-can-move-up` and `data-can-move-down` when the selected panel has
 highlighted rows that can be reordered in that direction.
 
-| CSS custom property                         | Default                                         | Description                                |
-| ------------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
-| `--rc-transfer-list-gap`                    | `var(--rc-control-gap, 0.75rem)`                | Gap between panels and the action toolbar. |
-| `--rc-transfer-list-panel-gap`              | `var(--rc-control-gap, 0.35rem)`                | Gap between a panel label and its listbox. |
-| `--rc-transfer-list-listbox-min-block-size` | `10rem`                                         | Minimum block size for each listbox.       |
-| `--rc-transfer-list-listbox-border`         | `var(--rc-border, 1px solid ButtonBorder)`      | Border around each listbox.                |
-| `--rc-transfer-list-listbox-bg`             | `var(--rc-surface, Canvas)`                     | Background of each listbox.                |
-| `--rc-transfer-list-listbox-color`          | `var(--rc-field-text, FieldText)`               | Text color of each listbox.                |
-| `--rc-transfer-list-option-gap`             | `var(--rc-item-gap, 0.4em)`                     | Gap between option adornments and labels.  |
-| `--rc-transfer-list-option-padding-block`   | `var(--rc-item-padding-block, 0.3em)`           | Block padding for option rows.             |
-| `--rc-transfer-list-option-padding-inline`  | `var(--rc-item-padding-inline, 0.75em)`         | Inline padding for option rows.            |
-| `--rc-transfer-list-option-selected-bg`     | `var(--rc-highlight, Highlight)`                | Selected option background.                |
-| `--rc-transfer-list-option-selected-color`  | `var(--rc-highlight-text, HighlightText)`       | Selected option foreground.                |
-| `--rc-transfer-list-option-hover-bg`        | `var(--rc-transfer-list-option-selected-bg)`    | Hovered/active option background.          |
-| `--rc-transfer-list-option-hover-color`     | `var(--rc-transfer-list-option-selected-color)` | Hovered/active option foreground.          |
+| CSS custom property                         | Default                                                                                  | Description                                |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `--rc-transfer-list-gap`                    | `var(--rc-control-gap, 0.75rem)`                                                         | Gap between panels and the action toolbar. |
+| `--rc-transfer-list-panel-gap`              | `var(--rc-control-gap, 0.35rem)`                                                         | Gap between a panel label and its listbox. |
+| `--rc-transfer-list-listbox-min-block-size` | `10rem`                                                                                  | Minimum block size for each listbox.       |
+| `--rc-transfer-list-listbox-border`         | `var(--rc-border, 1px solid ButtonBorder)`                                               | Border around each listbox.                |
+| `--rc-transfer-list-listbox-radius`         | `var(--rc-control-radius, 0.125rem)`                                                     | Corner radius of each listbox.             |
+| `--rc-transfer-list-listbox-bg`             | `var(--rc-surface, Canvas)`                                                              | Background of each listbox.                |
+| `--rc-transfer-list-listbox-color`          | `var(--rc-field-text, FieldText)`                                                        | Text color of each listbox.                |
+| `--rc-transfer-list-option-gap`             | `var(--rc-item-gap, 0.4em)`                                                              | Gap between option adornments and labels.  |
+| `--rc-transfer-list-option-padding-block`   | `var(--rc-item-padding-block, 0.3em)`                                                    | Block padding for option rows.             |
+| `--rc-transfer-list-option-padding-inline`  | `var(--rc-item-padding-inline, 0.75em)`                                                  | Inline padding for option rows.            |
+| `--rc-transfer-list-option-selected-bg`     | `var(--rc-highlight, Highlight)`                                                         | Selected option background.                |
+| `--rc-transfer-list-option-selected-color`  | `var(--rc-highlight-text, HighlightText)`                                                | Selected option foreground.                |
+| `--rc-transfer-list-option-hover-bg`        | `var(--rc-transfer-list-option-selected-bg, var(--rc-highlight, Highlight))`             | Hovered/active option background.          |
+| `--rc-transfer-list-option-hover-color`     | `var(--rc-transfer-list-option-selected-color, var(--rc-highlight-text, HighlightText))` | Hovered/active option foreground.          |
 
 | Part                | Description                                                    |
 | ------------------- | -------------------------------------------------------------- |

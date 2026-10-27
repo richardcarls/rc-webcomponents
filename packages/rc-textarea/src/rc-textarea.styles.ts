@@ -1,6 +1,69 @@
 import { css } from 'lit';
 
 export const styles = css`
+  .widget.widget--block {
+    display: block;
+    white-space: normal;
+  }
+
+  .line--trailing-widget {
+    position: relative;
+    padding-inline-end: var(--rc-textarea-trailing-size, 2.5em);
+    min-block-size: var(--rc-textarea-trailing-size, 2.5em);
+  }
+
+  .widget--trailing {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: 0;
+    inline-size: var(--rc-textarea-trailing-size, 2.5em);
+    white-space: normal;
+  }
+
+  .fold-action-trigger {
+    box-sizing: border-box;
+    inline-size: 100%;
+    block-size: 1lh;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+  }
+
+  .gutter-cell {
+    position: relative;
+  }
+
+  .gutter-cell > .fold-action-trigger::before,
+  .gutter-cell > :not(.fold-action-group) .fold-action-trigger::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .fold-action-group,
+  .fold-action-single {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: top;
+  }
+
+  .fold-action-group .fold-action-trigger {
+    min-inline-size: 24px;
+  }
+
+  /* The trailing lane gives its trigger a target taller than one line; a gutter
+     trigger sizes to its own row instead. */
+  .widget--trailing .fold-action-trigger {
+    min-block-size: var(--rc-textarea-trailing-size, 2.5em);
+  }
+
+  .widget--block [hidden] {
+    display: none;
+  }
+
   :host {
     display: block;
     box-sizing: border-box;
@@ -18,7 +81,7 @@ export const styles = css`
     border: var(--rc-textarea-border, 1px solid ButtonBorder);
     border-radius: var(--rc-textarea-border-radius, 2px);
     background: var(--rc-textarea-background, Field);
-    color: var(--rc-textarea-color, var(--rc-text, FieldText));
+    color: var(--rc-textarea-color, var(--rc-field-text, FieldText));
     overflow: hidden;
     min-height: var(--_rc-textarea-min-height, auto);
   }
@@ -28,7 +91,7 @@ export const styles = css`
     flex-shrink: 0;
     background: var(--rc-textarea-gutter-bg, Canvas);
     color: var(--rc-textarea-gutter-color, GrayText);
-    border-right: var(--rc-textarea-gutter-border, 1px solid ButtonBorder);
+    border-inline-end: var(--rc-textarea-gutter-border, 1px solid ButtonBorder);
     overflow: hidden;
     user-select: none;
   }
@@ -39,22 +102,58 @@ export const styles = css`
   }
 
   #gutter-cells {
-    padding: var(--rc-textarea-padding, 0.5em);
-    padding-inline-end: var(--rc-textarea-gutter-padding-inline-end, 0.75em);
+    box-sizing: border-box;
+    padding-block: var(--rc-textarea-padding-block, 0.5em);
+    padding-inline: var(--rc-textarea-padding-inline, 0.5em)
+      var(--rc-textarea-gutter-padding-inline-end, 0.75em);
     font-family: var(--rc-textarea-gutter-font-family, var(--rc-textarea-font-family, monospace));
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);
-    text-align: right;
-    min-width: 2.5ch;
+    text-align: end;
+    min-inline-size: var(--rc-textarea-gutter-min-inline-size, 24px);
   }
 
   .gutter-cell {
     display: block;
+    min-inline-size: var(--rc-textarea-gutter-min-inline-size, 24px);
     white-space: pre;
   }
 
+  .gutter-cell[hidden],
+  .line[hidden] {
+    display: none;
+  }
+
+  .gutter-cell-composite {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--rc-textarea-gutter-content-gap, 0.25em);
+  }
+
+  .gutter-cell-number {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gutter-cell-content {
+    display: inline-flex;
+    align-items: center;
+  }
+
   .gutter-cell--active {
-    color: var(--rc-textarea-color, var(--rc-text, FieldText));
+    position: relative;
+    isolation: isolate;
+    color: var(--rc-textarea-color, var(--rc-field-text, FieldText));
+  }
+
+  .gutter-cell--active::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset-block: 0;
+    inset-inline-start: calc(-1 * var(--rc-textarea-padding-inline, 0.5em));
+    inset-inline-end: calc(-1 * var(--rc-textarea-gutter-padding-inline-end, 0.75em));
+    background: var(--rc-textarea-active-line-bg, transparent);
+    pointer-events: none;
   }
 
   #editor-area {
@@ -70,11 +169,12 @@ export const styles = css`
     width: 100%;
     min-height: 100%;
     box-sizing: border-box;
-    padding: var(--rc-textarea-padding, 0.5em);
+    padding-block: var(--rc-textarea-padding-block, 0.5em);
+    padding-inline: var(--rc-textarea-padding-inline, 0.5em);
     font-family: var(--rc-textarea-font-family, monospace);
     font-size: var(--rc-textarea-font-size, 1em);
     line-height: var(--rc-textarea-line-height, 1.5);
-    color: var(--rc-textarea-color, var(--rc-text, FieldText));
+    color: var(--rc-textarea-color, var(--rc-field-text, FieldText));
     caret-color: var(--rc-textarea-caret-color, var(--rc-textarea-color, FieldText));
     background: transparent;
     outline: none;
@@ -104,15 +204,9 @@ export const styles = css`
     height: auto;
   }
 
-  :host([read-only]) #root {
-    border: none;
-    background: transparent;
-    border-radius: 0;
-  }
-
-  :host([read-only]) #editor {
-    cursor: default;
-    padding: 0;
+  /* A read-only field keeps its enabled appearance and focus ring; it only
+     stops accepting edits. */
+  :host([data-readonly]) #editor {
     -webkit-user-modify: read-only;
   }
 
@@ -141,16 +235,36 @@ export const styles = css`
     display: block;
   }
 
-  /* Active line highlight — opt-in via CSS custom property. */
+  :host(:not([word-wrap])) .line {
+    inline-size: max-content;
+    min-inline-size: 100%;
+  }
+
+  /* Paint the active row through the editor's inline padding without clipping
+     its text or overflowing into adjacent rows. The padding is one length, so
+     negating it stays valid, and logical insets follow RTL and vertical text.
+     Only the pseudo-element paints, so a translucent color tints the row and
+     its bleed evenly instead of doubling over the row itself. */
   .line--active {
+    isolation: isolate;
+  }
+
+  .line--active::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset-block: 0;
+    inset-inline: calc(-1 * var(--rc-textarea-padding-inline, 0.5em));
     background: var(--rc-textarea-active-line-bg, transparent);
+    pointer-events: none;
   }
 
   /* Error-lens -style end-of-line diagnostic message */
   .line[data-message]::after {
     content: attr(data-message);
     display: inline;
-    margin-left: 4ch;
+    margin-inline-start: 4ch;
+    unicode-bidi: isolate;
     white-space: nowrap;
     pointer-events: none;
     font-size: 0.875em;
@@ -158,11 +272,22 @@ export const styles = css`
     font-style: italic;
   }
 
+  /* line-direction="auto": a line orders and aligns by its own first strong
+     character. Lines without one keep the base direction, which plaintext would
+     turn LTR (UAX #9 rule P3). Only the embedding level changes, so padding,
+     trailing widgets and the active-line bleed still follow the editor. */
+  :host([line-direction='auto']) .line:not(.line--neutral) {
+    unicode-bidi: plaintext;
+  }
+
   .mark {
     border-radius: 2px;
   }
 
+  /* Isolated, so a widget can neither reorder the text around it nor give a
+     line its direction. */
   .widget {
+    unicode-bidi: isolate;
     display: inline-block;
     user-select: none;
     cursor: default;

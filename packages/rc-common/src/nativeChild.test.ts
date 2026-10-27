@@ -3,12 +3,7 @@ import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
-import {
-  NativeChildController,
-  getDirectChild,
-  getDirectChildren,
-  warnMissingDirectChild,
-} from './nativeChild.js';
+import { NativeChildController, getDirectChildren, warnMissingDirectChild } from './nativeChild.js';
 
 type HostElement = ReactiveControllerHost & HTMLElement;
 
@@ -31,14 +26,6 @@ async function renderHost(): Promise<HostElement> {
 
   return host;
 }
-
-test('getDirectChild scopes selector to direct children', async () => {
-  const host = await renderHost();
-
-  expect(getDirectChild<HTMLButtonElement>(host, ':scope > button')).toBe(
-    await host.querySelector('[data-testid="direct"]'),
-  );
-});
 
 test('getDirectChildren returns matching direct children', async () => {
   const host = await renderHost();

@@ -1,0 +1,86 @@
+import type { ReactiveController, ReactiveControllerHost } from 'lit';
+
+import { HORIZONTAL_LTR_FLOW, resolveFlow, type Flow } from './flow.js';
+import { observeLocale } from './observeLocale.js';
+import { RafScheduler } from './RafScheduler.js';
+
+function sameFlow(a: Flow, b: Flow): boolean {
+  return (
+    a.inline === b.inline &&
+    a.inlineReversed === b.inlineReversed &&
+    a.blockReversed === b.blockReversed &&
+    a.rtl === b.rtl
+  );
+}
+
+/**
+ * Keeps a host's resolved writing mode and direction current for rendering,
+ * such as an `aria-orientation` that must report the rendered orientation.
+ *
+ * Re-resolves in a shared animation-frame sampling phase after connect,
+ * whenever a `dir` attribute changes in the document, and whenever the host
+ * resizes. Requests an update only when the flow actually changed. The public
+ * {@link refresh} method remains synchronous for explicit invalidation. A
+ * writing-mode switch is only caught when it changes the
+ * host's logical size: ResizeObserver compares inline and block sizes, so a
+ * logically sized host that turns keeps both and reports nothing. Call
+ * {@link refresh} after such a switch, or after `direction` set by a
+ * stylesheet. Event handlers should resolve the flow themselves at event time
+ * instead.
+ */
+export class FlowController implements ReactiveController {
+  private readonly _host: ReactiveControllerHost & Element;
+
+  private _flow: Flow = HORIZONTAL_LTR_FLOW;
+
+  private _observer: ResizeObserver | null = null;
+
+  private _unobserveLocale: (() => void) | null = null;
+
+  private readonly _frame = new RafScheduler();
+
+  constructor(host: ReactiveControllerHost & Element) {
+    this._host = host;
+    host.addController(this);
+  }
+
+  get flow(): Flow {
+    return this._flow;
+  }
+
+  hostConnected(): void {
+    this._scheduleRefresh();
+    this._unobserveLocale ??= observeLocale(() => this._scheduleRefresh(), this._host);
+
+    if (typeof ResizeObserver === 'function') {
+      this._observer ??= new ResizeObserver(() => this._scheduleRefresh());
+      this._observer.observe(this._host);
+    }
+  }
+
+  hostDisconnected(): void {
+    this._frame.cancel();
+    this._observer?.disconnect();
+    this._unobserveLocale?.();
+    this._unobserveLocale = null;
+  }
+
+  refresh(): void {
+    this._frame.cancel();
+    this._apply(resolveFlow(this._host));
+  }
+
+  private _scheduleRefresh(): void {
+    this._frame.schedulePhased(
+      () => resolveFlow(this._host),
+      (next) => this._apply(next),
+    );
+  }
+
+  private _apply(next: Flow): void {
+    if (!sameFlow(next, this._flow)) {
+      this._flow = next;
+      this._host.requestUpdate();
+    }
+  }
+}

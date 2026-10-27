@@ -37,21 +37,21 @@ breakpoint policy.
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-navigation-rail
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-navigation-rail
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-navigation-rail/define';
+import '@rcarls/rc-webcomponents/rc-navigation-rail/define';
 ```
 
 ## Usage
@@ -200,7 +200,7 @@ router's active class.
 <!-- expanded: >=840px, app decides whether expansion is offered -->
 <nav aria-label="Main navigation">
   <rc-navigation-rail expanded>
-    <rc-fab slot="header" position="top-start" style="--rc-fab-position: static">
+    <rc-fab slot="header" position="block-start-inline-start" style="--rc-fab-position: static">
       <button type="button" aria-label="New note">
         <span data-rc-button-icon aria-hidden="true">add</span>
       </button>
@@ -258,7 +258,7 @@ the page action position into the rail's generic header slot.
 ## Material theme
 
 `rc-theme-material/components.css` applies Material 3 navigation rail metrics:
-80dp collapsed rail width, expanded row treatment, 56×32 collapsed indicators,
+80 dp collapsed rail width, expanded row treatment, 56×32 dp collapsed indicators,
 state-layer hover treatment, label-medium/label-large typography, and reduced
 motion fallbacks.
 

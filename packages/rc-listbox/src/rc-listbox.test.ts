@@ -1,8 +1,8 @@
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
-
 import { html } from 'lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
 import type { RCListbox } from './rc-listbox.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
@@ -29,6 +29,7 @@ test('renders <li role="option"> elements from options property', async () => {
 
 test('has role=listbox on host element', async () => {
   const screen = render(html`<rc-listbox></rc-listbox>`);
+
   await expect.element(screen.getByRole('listbox')).toBeInTheDocument();
 });
 
@@ -51,6 +52,7 @@ test('options are wrapped in a <ul role="presentation">', async () => {
   $listbox.options = OPTIONS;
 
   const $ul = $listbox.querySelector(':scope > ul');
+
   expect($ul).not.toBeNull();
   expect($ul?.getAttribute('role')).toBe('presentation');
 });
@@ -75,6 +77,7 @@ test('bootstraps from pre-rendered <ul>/<li> children', async () => {
     </rc-listbox>
   `);
   const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
   await $listbox.updateComplete;
 
   const $opts = $listbox.querySelectorAll('li[role="option"]');
@@ -93,6 +96,7 @@ test('options setter replaces pre-rendered DOM', async () => {
     </rc-listbox>
   `);
   const $listbox = (await screen.getByRole('listbox').element()) as RCListbox;
+
   await $listbox.updateComplete;
 
   $listbox.options = [{ value: 'cherry', label: 'Cherry' }];
@@ -165,6 +169,7 @@ test('toggleOption selects in single mode and fires rc-listbox-change', async ()
 
   expect($listbox.selectedValues).toEqual(['banana']);
   expect(handler).toHaveBeenCalledOnce();
+
   expect(handler.mock.calls[0][0].detail).toMatchObject({
     value: 'banana',
     selected: true,
@@ -314,6 +319,7 @@ test('Create option fires rc-listbox-change as an action detail', async () => {
   $createEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
 
   expect(handler).toHaveBeenCalledOnce();
+
   expect(handler.mock.calls[0][0].detail).toMatchObject({
     reason: 'action',
     action: 'create',
@@ -322,7 +328,7 @@ test('Create option fires rc-listbox-change as an action detail', async () => {
       kind: 'action',
       action: 'create',
       value: 'create:Foo',
-      label: 'Create "Foo"',
+      label: 'Create "\u2068Foo\u2069"',
       data: { text: 'Foo' },
     },
     selectedValues: [],
@@ -337,6 +343,7 @@ test('action options dispatch action details without changing selection', async 
     { value: 'apple', label: 'Apple' },
     { kind: 'action', action: 'clear', value: 'clear', label: 'Clear selection' },
   ];
+
   $listbox.setSelectedValues(['apple', 'clear']);
   await $listbox.updateComplete;
 
@@ -350,6 +357,7 @@ test('action options dispatch action details without changing selection', async 
 
   expect($listbox.selectedValues).toEqual(['apple']);
   expect(handler).toHaveBeenCalledOnce();
+
   expect(handler.mock.calls[0][0].detail).toMatchObject({
     reason: 'action',
     action: 'clear',
@@ -384,4 +392,21 @@ test('checkmark=false removes option-checkmark spans', async () => {
   const $opts = $listbox.querySelectorAll('li[role="option"]');
 
   expect($opts[0].querySelector('[part="option-checkmark"]')).toBeNull();
+});
+
+test('writes the create option in its own locale and rewrites it when lang changes', async () => {
+  registerMessages('ar', { 'rc-listbox': { create: (text: string) => `إنشاء «${text}»` } });
+
+  const screen = render(html`<rc-listbox lang="ar" dir="rtl" aria-label="الفواكه"></rc-listbox>`);
+  const host = screen.container.querySelector('rc-listbox') as RCListbox;
+
+  await host.updateComplete;
+  host.setCreateOption(' pears ');
+
+  const option = () => host.querySelector('[part~="create-option"]');
+
+  expect(option()?.textContent?.trim()).toBe('إنشاء «pears»');
+
+  host.lang = 'en';
+  await vi.waitFor(() => expect(option()?.textContent?.trim()).toBe('Create "\u2068pears\u2069"'));
 });

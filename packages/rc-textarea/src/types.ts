@@ -80,13 +80,21 @@ export interface LineDecoration {
   attributes?: Record<string, string>;
 
   /**
-   * Override the built-in gutter cell text for this line.
+   * Override the built-in gutter cell content for this line.
    *
    * - `string`    — custom label (e.g. `"!"`, `"▶"`)
+   * - `HTMLElement` — plugin-owned marker or control; reuse its node between updates.
+   *   Set `gutterAccessible` when it contains an interactive control.
    * - `null`      — force empty cell (suppress built-in content)
    * - `undefined` — use the built-in mode default (`line-numbers`, `gutter`, etc.)
    */
-  gutterContent?: string | null;
+  gutterContent?: string | HTMLElement | null;
+
+  /** Keep the built-in line number before custom gutter content when `line-numbers` is enabled. */
+  gutterLineNumber?: boolean;
+
+  /** Expose this gutter cell to assistive technology when it contains a control. */
+  gutterAccessible?: boolean;
 }
 
 /**
@@ -104,23 +112,47 @@ export interface WidgetDecoration {
   /** Character offset. Widget is placed before (or after) the character at this position. */
   offset: number;
 
-  /** Factory called each render cycle. Must return a new element each time. */
+  /** Create widget content when its line rebuilds. With a stable key, content may be reused. */
   create(): HTMLElement;
 
   /** Whether to place the widget before or after the character at `offset`. Default: 'before'. */
   side?: 'before' | 'after';
+
+  /** Preserve this widget's line DOM while its key and decorations remain unchanged.
+   * Change the key when its content changes. Scope keys to the owning plugin.
+   */
+  key?: string;
+
+  /** Place the widget inline, below its logical line, or in a reserved trailing lane. */
+  layout?: 'inline' | 'block' | 'trailing';
+
+  /** Expose interactive or meaningful widget content to assistive technology. Default: false. */
+  accessible?: boolean;
+}
+
+/** Hide complete source lines while retaining their text and model offsets. */
+export interface FoldDecoration {
+  id: string;
+  type: 'fold';
+  /** First hidden line, one-based and inclusive. */
+  fromLine: number;
+  /** Last hidden line, one-based and inclusive. */
+  toLine: number;
+  /** Reveal this range before a user edit or caret move enters its hidden lines. */
+  reveal(): void;
 }
 
 /** Decorations are visual formatting applied to the field content without affecting
  *  the underlying plain text value.
  */
-export type Decoration = MarkDecoration | LineDecoration | WidgetDecoration;
+export type Decoration = MarkDecoration | LineDecoration | WidgetDecoration | FoldDecoration;
 
 /** Input shape for creating a decoration — id-less variant of each decoration type. */
 export type DecorationInput =
   | Omit<MarkDecoration, 'id'>
   | Omit<LineDecoration, 'id'>
-  | Omit<WidgetDecoration, 'id'>;
+  | Omit<WidgetDecoration, 'id'>
+  | Omit<FoldDecoration, 'id'>;
 
 /**
  * A semantic token produced by an external tokenizer (lezer, tree-sitter, shiki, etc.).
@@ -177,6 +209,22 @@ export interface RCTextareaPluginAPI {
   readonly selectionEnd: number;
 
   /**
+   * The editor's resolved base direction, from the textarea's `dir` or the
+   * host's. Anchor caret-relative popups with this, not the host's flow.
+   */
+  readonly contentDirection: 'ltr' | 'rtl';
+
+  /** The content language: the textarea's `lang`, or `''` when it sets none. */
+  readonly contentLang: string;
+
+  /**
+   * The resolved direction of a 1-based line. Under `line-direction="auto"`
+   * that is the direction of the line's first strong character; otherwise,
+   * and for lines without one, it is `contentDirection`.
+   */
+  lineDirection(line: number): 'ltr' | 'rtl';
+
+  /**
    * Returns the bounding rect of the cursor (caret) in viewport coordinates.
    *
    * Useful for anchoring autocomplete popups or hover tooltips to the cursor.
@@ -189,8 +237,13 @@ export interface RCTextareaPluginAPI {
   /**
    * Returns the word boundaries at the current cursor position.
    *
-   * @returns the word and its `[from, to)` offsets, or `null` if the cursor is
-   *   not on a word character (`\w` — alphanumeric + underscore)
+   * Words come from `Intl.Segmenter` for `contentLang` (UAX #29, with
+   * dictionary segmentation for Japanese and Thai), so `crème`, `don't` and
+   * `snake_case` are each one word. The word starting at the cursor wins over
+   * the one ending there.
+   *
+   * @returns the word and its `[from, to)` offsets, or `null` if the cursor
+   *   touches no letter or digit
    */
   getWordAtCursor(): { word: string; from: number; to: number } | null;
 
@@ -396,8 +449,8 @@ export interface RCTextareaPlugin {
   destroy?(): void;
 
   /**
-   * Display-layer value transform — called before `update`/`highlight` in
-   * read-only mode.
+   * Display-layer value transform — called before `update`/`highlight`
+   * while the slotted textarea is `readonly`.
    *
    * Return a non-null string to substitute it as the rendered
    * text passed to all subsequent hooks and to the document builder.

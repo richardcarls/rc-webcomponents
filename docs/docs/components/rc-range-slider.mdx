@@ -27,21 +27,21 @@ Two-thumb range slider backed by native range inputs for min/max values, followi
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-range-slider
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-range-slider
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-range-slider/define';
+import '@rcarls/rc-webcomponents/rc-range-slider/define';
 ```
 
 ## Live demo
@@ -51,6 +51,12 @@ import '@rcarls/rc-range-slider/define';
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`. Override it with
+`messages`, or register it for every instance under `rc-range-slider`: `low`, `high`. See
+[Localization](../guide/localization).
 
 ## API
 

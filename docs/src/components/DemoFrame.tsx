@@ -9,7 +9,7 @@ import styles from './DemoFrame.module.css';
 
 export type DemoFrameMode = 'auto' | 'light' | 'dark';
 
-export type DemoFrameTheme = 'none' | 'substrate' | 'material';
+export type DemoFrameTheme = 'none' | 'substrate' | 'material' | 'win31';
 
 export type DemoFrameControls = 'mode' | 'theme' | 'all';
 
@@ -139,10 +139,21 @@ const STRUCTURAL_CSS = `
 `;
 
 let structuralSheet: CSSStyleSheet | undefined;
-let materialSheetPromise: Promise<CSSStyleSheet> | undefined;
-let materialCssPromise: Promise<string> | undefined;
-let substrateSheetPromise: Promise<CSSStyleSheet> | undefined;
-let substrateCssPromise: Promise<string> | undefined;
+/*
+ * Packaged themes are all fetched and adopted the same way, so they are keyed
+ * by name rather than given a loader pair each. Adding a theme means adding a
+ * row here and an <option> below.
+ */
+const PACKAGE_THEMES = {
+  substrate: { className: 'rc-theme-substrate', asset: 'rc-theme-substrate/theme.css' },
+  material: { className: 'rc-theme-material', asset: 'rc-theme-material/theme.css' },
+  win31: { className: 'rc-theme-win31', asset: 'rc-theme-win31/theme.css' },
+} as const satisfies Record<string, { className: string; asset: string }>;
+
+type PackageTheme = keyof typeof PACKAGE_THEMES;
+
+const themeCssPromises = new Map<PackageTheme, Promise<string>>();
+const themeSheetPromises = new Map<PackageTheme, Promise<CSSStyleSheet>>();
 let symbolFontInjected = false;
 let robotoFontInjected = false;
 let previewSnapshot: DemoFramePreviewStore = {
@@ -260,76 +271,49 @@ function injectMaterialFonts(): void {
   document.head.append($link);
 }
 
-async function loadMaterialCss(): Promise<string> {
-  materialCssPromise ??= fetch(docsAssetUrl('rc-theme-material/theme.css')).then((response) => {
-    if (!response.ok) {
-      throw new Error(`Unable to load Material theme CSS: ${response.status}`);
-    }
-
-    return response.text();
-  });
-
-  return materialCssPromise;
+function isPackageTheme(theme: DemoFrameTheme): theme is PackageTheme {
+  return theme !== 'none';
 }
 
-async function loadMaterialSheet(): Promise<CSSStyleSheet> {
-  materialSheetPromise ??= loadMaterialCss().then(createStylesheet);
+async function loadThemeCssFor(theme: PackageTheme): Promise<string> {
+  let pending = themeCssPromises.get(theme);
 
-  return materialSheetPromise;
+  if (!pending) {
+    pending = fetch(docsAssetUrl(PACKAGE_THEMES[theme].asset)).then((response) => {
+      if (!response.ok) {
+        throw new Error(`Unable to load ${theme} theme CSS: ${response.status}`);
+      }
+
+      return response.text();
+    });
+
+    themeCssPromises.set(theme, pending);
+  }
+
+  return pending;
 }
 
-async function loadSubstrateCss(): Promise<string> {
-  substrateCssPromise ??= fetch(docsAssetUrl('rc-theme-substrate/theme.css')).then((response) => {
-    if (!response.ok) {
-      throw new Error(`Unable to load Substrate theme CSS: ${response.status}`);
-    }
+async function loadThemeSheetFor(theme: PackageTheme): Promise<CSSStyleSheet> {
+  let pending = themeSheetPromises.get(theme);
 
-    return response.text();
-  });
+  if (!pending) {
+    pending = loadThemeCssFor(theme).then(createStylesheet);
+    themeSheetPromises.set(theme, pending);
+  }
 
-  return substrateCssPromise;
-}
-
-async function loadSubstrateSheet(): Promise<CSSStyleSheet> {
-  substrateSheetPromise ??= loadSubstrateCss().then(createStylesheet);
-
-  return substrateSheetPromise;
+  return pending;
 }
 
 function themeClassName(theme: DemoFrameTheme): string {
-  if (theme === 'material') {
-    return 'rc-theme-material';
-  }
-
-  if (theme === 'substrate') {
-    return 'rc-theme-substrate';
-  }
-
-  return '';
+  return isPackageTheme(theme) ? PACKAGE_THEMES[theme].className : '';
 }
 
 function loadThemeCss(theme: DemoFrameTheme): Promise<string> | undefined {
-  if (theme === 'material') {
-    return loadMaterialCss();
-  }
-
-  if (theme === 'substrate') {
-    return loadSubstrateCss();
-  }
-
-  return undefined;
+  return isPackageTheme(theme) ? loadThemeCssFor(theme) : undefined;
 }
 
 function loadThemeSheet(theme: DemoFrameTheme): Promise<CSSStyleSheet> | undefined {
-  if (theme === 'material') {
-    return loadMaterialSheet();
-  }
-
-  if (theme === 'substrate') {
-    return loadSubstrateSheet();
-  }
-
-  return undefined;
+  return isPackageTheme(theme) ? loadThemeSheetFor(theme) : undefined;
 }
 
 function upsertFallbackStyle(shadowRoot: ShadowRoot, name: string, cssText: string): void {
@@ -496,6 +480,7 @@ export function DemoFrame({
                   <option value="none">None</option>
                   <option value="substrate">Substrate</option>
                   <option value="material">Material</option>
+                  <option value="win31">Windows 3.1</option>
                 </select>
               </label>
             )}

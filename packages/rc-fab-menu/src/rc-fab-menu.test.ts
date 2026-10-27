@@ -7,6 +7,56 @@ import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCFabMenu } from './rc-fab-menu.js';
 
+const isChromium = navigator.userAgent.includes('Chrome');
+
+test.runIf(isChromium)('popup exit fade is not skipped by an instant display change', async () => {
+  const screen = render(html`
+    <rc-fab-menu data-testid="host">
+      <button slot="trigger" type="button" aria-label="Create">
+        <span aria-hidden="true">+</span>
+      </button>
+      <rc-menu label="Create">
+        <button data-value="recipe">Recipe</button>
+      </rc-menu>
+    </rc-fab-menu>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCFabMenu;
+
+  await $host.updateComplete;
+
+  const popup = $host.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  // A long duration makes the mid-transition state easy to sample
+  // deterministically, the way rc-menu-button's identical structure was
+  // verified: this popup's own default is 0ms (motion is opt-in for this
+  // component), so exercising the fade at all requires overriding it.
+  popup.style.setProperty('--rc-fab-menu-popup-duration', '2000ms');
+
+  $host.open = true;
+  await new Promise((resolve) => setTimeout(resolve, 2100));
+
+  $host.open = false;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  const midStyles = getComputedStyle(popup);
+
+  expect(midStyles.display).not.toBe('none');
+  expect(Number(midStyles.opacity)).toBeGreaterThan(0);
+  expect(Number(midStyles.opacity)).toBeLessThan(1);
+});
+
+test('popup exit fade retains display and overlay through discrete transitions', async () => {
+  const { fabMenuStyles } = await import('./rc-fab-menu.styles.js');
+  const css = fabMenuStyles.cssText;
+  const motionBlock = css.slice(0, css.indexOf('@media (prefers-reduced-motion: reduce)'));
+
+  expect(motionBlock).toContain('opacity var(--rc-fab-menu-popup-duration');
+  expect(motionBlock).toContain('overlay var(--rc-fab-menu-popup-duration');
+  expect(motionBlock).toContain('display var(--rc-fab-menu-popup-duration');
+  expect(motionBlock).toContain('allow-discrete');
+});
+
 test('native trigger and rc-menu remain connected with author content intact', async () => {
   const screen = render(html`
     <rc-fab-menu data-testid="host">
@@ -112,8 +162,36 @@ test('default placement opens the menu above the floating action button', async 
 
   await $host.updateComplete;
 
-  expect($host.position).toBe('bottom-end');
-  expect($host.placement).toBe('top-end');
+  expect($host.position).toBe('block-end-inline-end');
+  expect($host.placement).toBe('block-start-end');
+});
+
+test('open popup leaves the surface to rc-menu without UA popover chrome', async () => {
+  const screen = render(html`
+    <rc-fab-menu data-testid="host">
+      <button slot="trigger" type="button" aria-label="Create"></button>
+      <rc-menu label="Create">
+        <button>Recipe</button>
+      </rc-menu>
+    </rc-fab-menu>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCFabMenu;
+
+  await $host.updateComplete;
+  $host.openMenu();
+  await $host.updateComplete;
+
+  const popup = $host.shadowRoot?.querySelector('#popup') as HTMLElement;
+  const styles = getComputedStyle(popup);
+
+  expect(popup.matches(':popover-open')).toBe(true);
+  expect(styles.borderTopWidth).toBe('0px');
+  expect(styles.borderInlineStartWidth).toBe('0px');
+  expect(styles.paddingTop).toBe('0px');
+  expect(styles.paddingInlineStart).toBe('0px');
+  expect(styles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+
+  $host.closeMenu();
 });
 
 test('has no automated accessibility violations while closed and open', async () => {
@@ -140,3 +218,63 @@ test('has no automated accessibility violations while closed and open', async ()
 
   $host.closeMenu();
 });
+
+test('reduced motion zeros the popup scale but only shortens its opacity/overlay/display fade', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test proves the split by construction: scale (spatial)
+  // drops to 0s while opacity and the overlay/display pair that tracks it
+  // (effects) are shortened rather than zeroed.
+  const { fabMenuStyles } = await import('./rc-fab-menu.styles.js');
+  const css = fabMenuStyles.cssText;
+
+  expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+
+  const motionBlock = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+
+  expect(motionBlock).toContain('scale 0s');
+  expect(motionBlock).toContain('opacity 50ms');
+  expect(motionBlock).toContain('overlay 50ms allow-discrete');
+  expect(motionBlock).toContain('display 50ms allow-discrete');
+});
+
+test.each([
+  ['horizontal-tb', 'above'],
+  ['vertical-rl', 'to the right of'],
+])(
+  'keeps its default toward the block start in a vertical layout in %s (%s the trigger)',
+  async (writingMode) => {
+    const screen = render(html`
+      <div style="writing-mode: ${writingMode};">
+        <rc-fab-menu data-testid="host" orientation="vertical">
+          <button slot="trigger" type="button" aria-label="Create">+</button>
+          <rc-menu label="Create">
+            <button>Recipe</button>
+          </rc-menu>
+        </rc-fab-menu>
+      </div>
+    `);
+    const $host = (await screen.getByTestId('host').element()) as RCFabMenu;
+
+    await $host.updateComplete;
+    $host.open = true;
+
+    const trigger = $host.querySelector('[slot="trigger"]') as HTMLElement;
+    const popup = $host.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+    // Pinned to the block-end corner, so the menu opens back toward the block
+    // start: above in horizontal text, to the right in vertical-rl.
+    await vi.waitFor(() => {
+      const menu = popup.getBoundingClientRect();
+      const button = trigger.getBoundingClientRect();
+
+      if (writingMode === 'horizontal-tb') {
+        expect(menu.bottom).toBeLessThanOrEqual(button.top);
+      } else {
+        expect(menu.left).toBeGreaterThanOrEqual(button.right);
+      }
+    });
+
+    $host.open = false;
+  },
+);

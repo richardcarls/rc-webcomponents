@@ -1,7 +1,14 @@
 import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
-import { type KeyboardNavigationAction } from '@rcarls/rc-common';
+import {
+  arrowKeys,
+  MessagesController,
+  FlowController,
+  renderedOrientation,
+  resolveFlow,
+  type KeyboardNavigationAction,
+} from '@rcarls/rc-common';
 import type { RCMenuButton, RCMenuButtonToggleEvent } from '@rcarls/rc-menu-button';
 
 import menubarStyles from './rc-menubar.styles.js';
@@ -19,6 +26,22 @@ const IE_KEY_ALIASES: Record<string, string> = {
   Right: 'ArrowRight',
 };
 
+/** Built-in text of `rc-menubar`. */
+export interface RCMenubarMessages {
+  /** Default accessible name of the menubar, when `label` is unset. */
+  label: string;
+}
+
+export const DEFAULT_MENUBAR_MESSAGES: Readonly<RCMenubarMessages> = Object.freeze({
+  label: 'Menu',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-menubar': RCMenubarMessages;
+  }
+}
+
 /**
  * Menubar coordinator for rc-menu-button children with roving tabindex and submenu
  * handoff, following the WAI-ARIA Menubar pattern.
@@ -27,6 +50,10 @@ const IE_KEY_ALIASES: Record<string, string> = {
  * receive real focus — required for submenu handoff and screen reader announcements.
  *
  *
+ * Built-in text (the default menubar name) follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every instance
+ * through `registerMessages()` from `@rcarls/rc-common` under `rc-menubar`.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-menubar rc-menubar docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/menubar/ WAI-ARIA Menubar pattern}
  *
@@ -34,9 +61,10 @@ const IE_KEY_ALIASES: Record<string, string> = {
  *
  * @csspart root - The root container element
  *
- * @attr label - Accessible label for the `role="menubar"` element.
- * @attr orientation - Layout direction and keyboard navigation axis, propagated to
- *   child `rc-menu-button` elements.
+ * @attr label - Accessible label for the `role="menubar"` element. Defaults to the `label` message.
+ * @attr orientation - Layout along the inline (`horizontal`) or block (`vertical`) axis,
+ *   propagated to child `rc-menu-button` elements. Both turn over in vertical writing
+ *   modes; `aria-orientation` and the arrow keys follow the orientation actually rendered.
  *
  * @cssprop [--rc-menubar-gap=var(--rc-control-gap)] - Gap between menu buttons
  * @cssprop [--rc-menubar-padding-inline=var(--rc-control-padding-inline)] - Inline-axis padding
@@ -64,9 +92,22 @@ const IE_KEY_ALIASES: Record<string, string> = {
 export class RCMenubar extends LitElement {
   static styles = [menubarStyles];
 
-  /** Accessible label for the `role="menubar"` element. */
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCMenubarMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-menubar',
+    DEFAULT_MENUBAR_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
+  /** Accessible label for the `role="menubar"` element. Defaults to the `label` message. */
   @property({ type: String })
-  label = 'Menu';
+  label: string | undefined;
 
   /** Orientation of the menubar, controls which arrow keys move between items. */
   @property({ type: String, reflect: true })
@@ -107,12 +148,20 @@ export class RCMenubar extends LitElement {
     this.removeEventListener('click', this._boundHandleClick);
   }
 
-  /** Syncs host ARIA and child orientation when `label` or `orientation` change. */
+  /** Keeps the exposed aria-orientation on the orientation actually rendered. */
+  protected readonly _flow = new FlowController(this);
+
+  /**
+   * Syncs host ARIA on every update, since a writing-mode change reaches it
+   * through the flow controller rather than a property, and child orientation
+   * when `orientation` changes.
+   */
   protected override updated(changedProperties: Map<PropertyKey, unknown>) {
     super.updated(changedProperties);
 
-    if (changedProperties.has('label') || changedProperties.has('orientation')) {
-      this._syncHostAria();
+    this._syncHostAria();
+
+    if (changedProperties.has('orientation')) {
       this._syncMenuButtonOrientation();
     }
   }
@@ -120,8 +169,8 @@ export class RCMenubar extends LitElement {
   /** Writes `role`, `aria-label`, and `aria-orientation` to the host element. */
   protected _syncHostAria(): void {
     this.setAttribute('role', 'menubar');
-    this.setAttribute('aria-label', this.label);
-    this.setAttribute('aria-orientation', this.orientation);
+    this.setAttribute('aria-label', this.label ?? this._messages.value.label);
+    this.setAttribute('aria-orientation', renderedOrientation(this.orientation, this._flow.flow));
   }
 
   /** Propagates the current `orientation` value to all slotted `rc-menu-button` children. */
@@ -373,8 +422,13 @@ export class RCMenubar extends LitElement {
   /** Translates keyboard events to navigation actions and activates keyboard interaction mode. */
   protected _handleKeydown(e: KeyboardEvent): void {
     const key = IE_KEY_ALIASES[e.key] ?? e.key;
-    const navNext = this.orientation === 'horizontal' ? 'ArrowRight' : 'ArrowDown';
-    const navPrev = this.orientation === 'horizontal' ? 'ArrowLeft' : 'ArrowUp';
+    // The layout orientation turns over in vertical text, and horizontal
+    // keys flip in RTL: a horizontal menubar advances with ArrowLeft there.
+    const flow = resolveFlow(this);
+    const { next: navNext, prev: navPrev } = arrowKeys(
+      renderedOrientation(this.orientation, flow),
+      flow,
+    );
 
     let action: KeyboardNavigationAction | undefined;
 

@@ -1,12 +1,16 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
+
 import {
   ActiveDescendantController,
-  ItemsCollectionController,
+  cssText,
+  bidiIsolate,
   type ItemsCollectionActionOption,
+  ItemsCollectionController,
+  MessagesController,
+  type ItemsCollectionFilterStrategy,
   type ItemsCollectionOption,
   type ItemsCollectionSelectableOption,
-  type ItemsCollectionFilterStrategy,
 } from '@rcarls/rc-common';
 
 declare global {
@@ -84,8 +88,16 @@ export type RCListboxChangeEvent = RCListboxSelectChangeEvent | RCListboxActionC
 let _uid = 0;
 
 /** Structural CSS injected into the root that contains rc-listbox's light-DOM options. */
-const LIGHT_DOM_CSS = `
+const LIGHT_DOM_CSS = cssText`
 @layer rc-base {
+  rc-listbox {
+    font-family: var(--rc-item-font-family, inherit);
+    font-size: var(--rc-item-font-size, inherit);
+    font-weight: var(--rc-item-font-weight, inherit);
+    line-height: var(--rc-item-line-height, inherit);
+    letter-spacing: var(--rc-item-letter-spacing, inherit);
+  }
+
   rc-listbox ul {
     list-style: none;
     margin: 0;
@@ -144,6 +156,22 @@ const LIGHT_DOM_CSS = `
 }
 `;
 
+/** Built-in text of `rc-listbox`. */
+export interface RCListboxMessages {
+  /** Text of the "Create" option for typed text that matches nothing. */
+  create: (text: string) => string;
+}
+
+export const DEFAULT_LISTBOX_MESSAGES: Readonly<RCListboxMessages> = Object.freeze({
+  create: (text: string) => `Create "${bidiIsolate(text)}"`,
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-listbox': RCListboxMessages;
+  }
+}
+
 /**
  * A WAI-ARIA listbox component that renders a `<ul role="presentation">`
  * + `<li role="option">` subtree directly into its own light DOM to facilitate
@@ -160,6 +188,10 @@ const LIGHT_DOM_CSS = `
  *   - Call `toggleOption()` for internal keyboard/pointer activation
  *   - Call `filterOptions()` to filter visible options
  *   - Read `navigableItems` to feed `ActiveDescendantController`
+ *
+ * The "Create" option's text follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every listbox through
+ * `registerMessages()` from `@rcarls/rc-common` under `rc-listbox`.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-listbox rc-listbox docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/listbox/ WAI-ARIA Listbox pattern}
@@ -190,22 +222,32 @@ const LIGHT_DOM_CSS = `
  * @cssprop [--rc-listbox-selected-color=HighlightText] - Text color of a selected option.
  * @cssprop [--rc-listbox-disabled-color=GrayText] - Text color of a disabled option.
  * @cssprop [--rc-listbox-disabled-opacity=1] - Opacity of a disabled option.
+ * @cssprop [--rc-item-font-family=inherit] - Option font family; shared with menu and adaptive-menu items.
+ * @cssprop [--rc-item-font-size=inherit] - Option font size; shared with menu and adaptive-menu items.
+ * @cssprop [--rc-item-font-weight=inherit] - Option font weight; shared with menu and adaptive-menu items.
+ * @cssprop [--rc-item-line-height=inherit] - Option line height; shared with menu and adaptive-menu items.
+ * @cssprop [--rc-item-letter-spacing=inherit] - Option letter spacing; shared with menu and adaptive-menu items.
  */
 export class RCListbox extends LitElement {
   static override styles = css`
     :host {
       display: block;
       overflow-y: auto;
+      overflow-block: auto;
     }
   `;
 
   private static readonly _styledRoots = new Set<Document | ShadowRoot>();
 
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
-    if (RCListbox._styledRoots.has(root)) return;
+    if (RCListbox._styledRoots.has(root)) {
+      return;
+    }
+
     RCListbox._styledRoots.add(root);
 
     const $style = document.createElement('style');
+
     $style.setAttribute('data-rc-light-dom-base', 'rc-listbox');
     $style.textContent = LIGHT_DOM_CSS;
 
@@ -239,6 +281,22 @@ export class RCListbox extends LitElement {
    */
   @property({ attribute: 'filter-strategy', reflect: false })
   filterStrategy: FilterStrategy = 'contains';
+
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCListboxMessages> | undefined;
+
+  private _createText: string | null = null;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-listbox',
+    DEFAULT_LISTBOX_MESSAGES,
+    {
+      overrides: () => this.messages,
+      onChange: () => this.setCreateOption(this._createText),
+    },
+  );
 
   private _defaultValue: string | string[] | undefined;
   private _value: string | string[] | undefined;
@@ -290,6 +348,10 @@ export class RCListbox extends LitElement {
 
     if (changed.has('checkmark')) {
       this._itemsCollectionCtrl.checkmark = this.checkmark;
+    }
+
+    if (changed.has('messages')) {
+      this.setCreateOption(this._createText);
     }
   }
 
@@ -357,7 +419,9 @@ export class RCListbox extends LitElement {
   set value(value: string | string[] | undefined) {
     this._value = value;
 
-    if (value === undefined) return;
+    if (value === undefined) {
+      return;
+    }
 
     this._selectionInitialized = true;
     this._applySelection(this._normalizeValue(value));
@@ -390,7 +454,9 @@ export class RCListbox extends LitElement {
   toggleOption(value: string): void {
     const option = this._itemsCollectionCtrl.allOptions.find((opt) => opt.value === value);
 
-    if (!option || option.kind === 'action' || option.disabled) return;
+    if (!option || option.kind === 'action' || option.disabled) {
+      return;
+    }
 
     const wasSelected = this._itemsCollectionCtrl.isSelected(value);
 
@@ -442,12 +508,18 @@ export class RCListbox extends LitElement {
   /**
    * Show or hide the "Create" option at the end of the list.
    *
-   * Pass `null` to hide it, or a non-empty string to show `Create "{label}"`.
+   * Pass `null` to hide it, or a non-empty string to show `Create "{label}"`
+   * in the listbox's locale.
    * Fires `rc-listbox-change` with `reason: 'action'` and `action: 'create'`
    * when activated.
    */
   setCreateOption(label: string | null): void {
-    this._itemsCollectionCtrl.setCreateOption(label);
+    this._createText = label;
+
+    this._itemsCollectionCtrl.setCreateOption(
+      label,
+      label === null ? undefined : this._messages.value.create(label.trim()),
+    );
   }
 
   /** Clears the active descendant when focus leaves the listbox. */
@@ -523,6 +595,8 @@ export class RCListbox extends LitElement {
       }
 
       case ' ':
+
+      // falls through
       case 'Enter': {
         e.preventDefault();
 
@@ -562,7 +636,9 @@ export class RCListbox extends LitElement {
   protected _selectActiveItem(): void {
     const activeOption = this._activeOption();
 
-    if (!activeOption || activeOption.kind === 'action' || activeOption.disabled) return;
+    if (!activeOption || activeOption.kind === 'action' || activeOption.disabled) {
+      return;
+    }
 
     const value = activeOption.value;
     const current = this._itemsCollectionCtrl.selectedValues;
@@ -581,7 +657,9 @@ export class RCListbox extends LitElement {
    * Returns `true` when `opt` passes the current `_filterText` and `filterStrategy`.
    */
   protected _isVisible(option: ListboxOption): boolean {
-    if (!this._filterText) return true;
+    if (!this._filterText) {
+      return true;
+    }
 
     const label = option.label.toLowerCase();
     const query = this._filterText.toLowerCase();

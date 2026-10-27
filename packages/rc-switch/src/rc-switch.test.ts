@@ -102,3 +102,26 @@ test('has no automated accessibility violations', async () => {
   await flushSwitch(host);
   await expectNoA11yViolations(host);
 });
+
+test('reduced motion shortens effects transitions but zeros spatial ones', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test proves the split by construction: track only
+  // transitions background-color/border-color (effects) and shortens; the
+  // icons only transition transform (spatial) and stay zeroed; the thumb
+  // mixes both under one shared duration, so its background-color shortens
+  // while its inline-size/block-size/transform drop to 0ms.
+  const { switchStyles } = await import('./rc-switch.styles.js');
+  const css = switchStyles.cssText;
+
+  expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+
+  const motionBlock = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+
+  expect(motionBlock).toContain('transition-duration: 50ms;');
+  expect(motionBlock).toContain('background-color 50ms');
+  expect(motionBlock).toContain('inline-size 0ms');
+  expect(motionBlock).toContain('block-size 0ms');
+  expect(motionBlock).toContain('transform 0ms');
+  expect(motionBlock).toContain('transition-duration: 0ms;');
+});

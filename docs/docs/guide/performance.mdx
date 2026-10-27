@@ -1,0 +1,180 @@
+---
+title: Performance
+---
+
+# Performance
+
+The repository tracks both distributable size and representative browser work.
+Budgets are regression guards, not claims that every application will observe
+the same timing. Network delivery, theme choice, option count, fonts, and host
+application work all affect real results.
+
+## Bundle baselines
+
+Consumer-style Vite builds measure minified initial and lazy JavaScript output;
+the CSS audit inlines theme imports and compresses the source. Both use gzip
+and Brotli. Package builds minify the CSS in component template literals (Lit
+`css` styles and `cssText` light-DOM styles) with Lightning CSS, keeping
+source maps that point back to each template; HTML templates ship as written.
+The tracked baseline records these initial sizes in decimal kB:
+
+| Entry                               | Initial gzip | Initial Brotli |
+| ----------------------------------- | -----------: | -------------: |
+| `@rcarls/rc-button/define`          |      10.8 kB |         9.7 kB |
+| `@rcarls/rc-dialog/define`          |      11.7 kB |        10.5 kB |
+| `@rcarls/rc-select/define`          |      29.1 kB |        25.5 kB |
+| `@rcarls/rc-textarea/define`        |      30.5 kB |        26.7 kB |
+| `@rcarls/rc-markdown-editor/define` |      76.9 kB |        65.2 kB |
+| Aggregate class export              |     206.1 kB |       159.4 kB |
+| Aggregate define export             |     206.1 kB |       159.7 kB |
+| Base theme CSS                      |       1.2 kB |         1.0 kB |
+| Material theme CSS                  |      33.9 kB |        26.3 kB |
+| Substrate theme CSS                 |      13.2 kB |        10.9 kB |
+| Windows 3.1 theme CSS               |      18.7 kB |        15.3 kB |
+
+`rc-dialog` loads its move and resize code as a lazy chunk the first time
+`movable`, `move-handle`, or `resize` enables it. `rc-select` loads its dialog
+popup and selected-value chips as lazy chunks the first time
+`popup-mode="dialog"` or `multiple` needs them, and keeps dialog move and resize
+code in a lazy chunk it never loads, since its dialog popup does not move or
+resize. The complete raw, gzip, Brotli, and chunk-count data lives in
+`performance-budgets.json`. Each byte budget allows five percent or 1 kB above
+the recorded measurement, whichever is larger; chunk counts may not grow
+without an intentional baseline update.
+
+Material is the broadest theme and has the largest theme budget: 35.6 kB gzip
+and 27.6 kB Brotli, five percent above its measured CSS. The aggregate define
+entry has a 216.4 kB gzip budget, which covers its whole load since it has no
+lazy chunks. Using both full entries gives a combined initial ceiling of
+252.0 kB gzip; importing one component instead of the aggregate is
+substantially smaller.
+
+For scale, pinned published CSS assets measured without minification using
+the same compressors are
+[Bootstrap 5.3.8](https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.css)
+at 32.9 kB gzip / 24.5 kB Brotli,
+[Material Components Web 14](https://cdn.jsdelivr.net/npm/material-components-web@14.0.0/dist/material-components-web.css)
+at 49.6 / 33.2 kB, and
+[Shoelace 2.20.1 light theme](https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css)
+at 4.2 / 3.2 kB. The RC audit compresses its import-inlined CSS. Shoelace
+also ships component styles inside its JavaScript, so its theme file covers
+less than the RC Material theme.
+
+For a JavaScript comparison, bundling `@material/web@2.5.0/all.js` with the
+same Vite settings and dependencies included yields 92.9 kB gzip / 68.9 kB
+Brotli. The RC aggregate define entry is 216.3 / 166.4 kB at its recorded
+baseline. It includes Lit and the library's Markdown editor, virtual
+scrolling, and other behaviors; Material Web embeds its component styles in
+JavaScript. These full-collection figures are context for the budget, not
+interchangeable per-component costs.
+
+### CSS-only theme options
+
+Each packaged theme also exports opt-in `css-components.css` and `native.css`.
+The CSS audit measures each file as a separate scenario. These styles avoid
+component JavaScript only when the application does not import the matching
+`/define` entry. A CSS-only native `<select>` keeps the browser's native picker
+instead of the enhanced `rc-select` popup.
+
+| Opt-in file                      |    Gzip |  Brotli |
+| -------------------------------- | ------: | ------: |
+| Material `css-components.css`    | 1.64 kB | 1.38 kB |
+| Material `native.css`            | 2.00 kB | 1.64 kB |
+| Substrate `css-components.css`   | 1.65 kB | 1.39 kB |
+| Substrate `native.css`           | 1.82 kB | 1.52 kB |
+| Windows 3.1 `css-components.css` | 1.88 kB | 1.62 kB |
+| Windows 3.1 `native.css`         | 1.96 kB | 1.64 kB |
+
+Run `yarn compare:css-components` to compare Material-themed batches of 100
+buttons and 50 selects with CSS-only markup and registered components. The
+report at `.performance/css-component-comparison.json` records mount time,
+Chromium task time, JavaScript heap use, and DOM nodes. This is a local
+comparison rather than a release budget: the variants offer different
+interaction features, and timing and heap use depend on the browser environment.
+
+## Browser scenarios
+
+Headless Chromium measures three warmups followed by ten samples and records the
+median and p95 for:
+
+- creating 100 native-backed buttons
+- creating 50 selects with 20 options each
+- opening and filtering a combobox with 1,000 options
+- rendering and editing a 1,000-line textarea with a pattern decoration
+- updating an adaptive menu with 50 actions
+- opening, moving, and settling an anchored popup
+
+The CI limit for each of these two metrics is 20 percent or 5 ms above its
+recorded baseline, whichever is larger.
+
+A second group of scenarios profiles motion specifically, sampling
+`requestAnimationFrame` deltas from the moment a transition is triggered until
+every animation it started has settled (WAAPI's `finished` promise, not a
+fixed wait), rather than trusting a single before/after timestamp:
+
+- expanding the Material navigation rail (the worst case theorized: `inline-size`
+  and `padding` both animate, so layout runs every frame)
+- opening and closing a Material menu button
+- toggling a Material switch
+- opening and closing a win31 menu button, as a zero-duration control
+
+Each motion scenario adds three metrics beyond median and p95:
+
+- **`longFrames`**: rAF deltas over 32&nbsp;ms, summed across all ten measured
+  runs. Budgeted with zero headroom; any regression here is itself the
+  signal, not noise to tolerate.
+- **`longestFrameMs`**: the single worst rAF delta observed. Budgeted against
+  a fixed 50&nbsp;ms ceiling rather than a percentage of its own baseline,
+  since a dropped frame moves in ~16.7&nbsp;ms quanta and a proportional
+  budget would be meaningless at that scale.
+- **`animationCount`**: the peak number of concurrent `Animation` objects
+  found across the scenario's whole shadow tree. In this browser,
+  `getAnimations({ subtree: true })` does not cross from a host into its shadow
+  root, so the harness walks every shadow boundary explicitly. Fully
+  deterministic and machine-independent, and the metric most likely to catch
+  a theme change that animates more properties than intended.
+
+Motion scenarios never wait on a `transitionend`/`animationend` listener, and
+filter out any animation whose `getComputedTiming().iterations` is `Infinity`
+(an indeterminate progress bar's loop, for example) before waiting on it,
+racing the whole settle step against a 4-second wall-clock cap regardless. A
+theme with every duration at zero, like win31, resolves through this path
+immediately: `getAnimations()` reports nothing to wait for.
+
+The report, including every sample, is uploaded as a CI artifact. For non-motion
+scenarios, `frameWaitSamples` records the union of time spent awaiting animation
+frames within each timed sample. The report also keeps runner CPU/load context
+and every full-suite attempt. A budget failure triggers one complete retry;
+the gate still fails if the retry exceeds a budget. These diagnostics help
+separate runner contention from a repeatable slowdown without removing frame
+waits from the measured user-facing time. Other browser engines remain
+correctness gates; Chromium is the stable timing gate.
+
+## Running the audits
+
+Build packages before measuring so package exports resolve to current output:
+
+```bash
+yarn build
+yarn audit:performance
+yarn benchmark:browser
+```
+
+An intentional improvement or accepted regression can refresh the baselines:
+
+```bash
+yarn audit:performance:update
+yarn benchmark:browser:update
+```
+
+Review the generated `.performance/` reports and the source change before
+committing either budget file. A baseline update is evidence of a deliberate
+decision, not a way to silence an unexplained regression.
+
+## Runtime behavior
+
+Popup anchoring observes resize, scrolling, relevant mutations, and visibility
+changes. It performs layout reads only during a bounded settling window and
+stops after stable geometry, so an idle open popup does not leave a permanent
+animation-frame polling loop. Components otherwise favor native browser
+behavior, event-driven updates, and individually importable packages.

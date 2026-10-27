@@ -43,9 +43,9 @@ import { RCSearchBar } from '@rcarls/rc-search-bar';
 </script>
 ```
 
-The component's shadow CSS already strips the slotted input's native border,
-background, and outline so it blends into the wrapper chrome without a consumer
-reset.
+The component's `rc-base` light-DOM layer strips the slotted input's native
+border, background, and outline so it blends into the wrapper chrome without a
+consumer reset. Normal author rules outside a layer override that structural base.
 
 The native WebKit cancel button is suppressed automatically. Set
 `allow-native-clear` to restore it.
@@ -56,18 +56,18 @@ The native WebKit cancel button is suppressed automatically. Set
 
 ### Properties / attributes
 
-| Property           | Attribute             | Type                  | Default          | Description                                                                             |
-| ------------------ | --------------------- | --------------------- | ---------------- | --------------------------------------------------------------------------------------- |
-| `variant`          | `variant`             | `'bar' \| 'view'`     | `'bar'`          | Presentation mode: docked field or expandable search view                               |
-| `open`             | `open`                | `boolean`             | `false`          | Controlled search view open state; host writes are silent                               |
-| `defaultOpen`      | `default-open`        | `boolean`             | `false`          | Initial uncontrolled search view open state                                             |
-| `value`            | None                  | `string`              | `''`             | Current search value; reads from the native input, host writes are silent               |
-| `defaultValue`     | `default-value`       | `string \| undefined` | `undefined`      | Initial uncontrolled value hint, applied once                                           |
-| `debounce`         | `debounce`            | `number`              | `200`            | Debounce window in ms for `rc-search-bar-input`; `0` dispatches synchronously           |
-| `clearLabel`       | `clear-label`         | `string`              | `'Clear search'` | Accessible label for the clear button                                                   |
-| `allowNativeClear` | `allow-native-clear`  | `boolean`             | `false`          | When set, restores the browser's native WebKit cancel button                            |
-| `showClearOnFocus` | `show-clear-on-focus` | `boolean`             | `false`          | When set, shows the clear button on focus even with no value (Apple HIG cancel pattern) |
-| `placeholder`      | `placeholder`         | `string \| undefined` | `undefined`      | Mirrored onto the input unless the author already set one                               |
+| Property           | Attribute             | Type                                        | Default     | Description                                                                             |
+| ------------------ | --------------------- | ------------------------------------------- | ----------- | --------------------------------------------------------------------------------------- |
+| `variant`          | `variant`             | `'bar' \| 'view'`                           | `'bar'`     | Presentation mode: docked field or expandable search view                               |
+| `open`             | `open`                | `boolean`                                   | `false`     | Controlled search view open state; host writes are silent                               |
+| `defaultOpen`      | `default-open`        | `boolean`                                   | `false`     | Initial uncontrolled search view open state                                             |
+| `value`            | None                  | `string`                                    | `''`        | Current search value; reads from the native input, host writes are silent               |
+| `defaultValue`     | `default-value`       | `string \| undefined`                       | `undefined` | Initial uncontrolled value hint, applied once                                           |
+| `debounce`         | `debounce`            | `number`                                    | `200`       | Debounce window in ms for `rc-search-bar-input`; `0` dispatches synchronously           |
+| `allowNativeClear` | `allow-native-clear`  | `boolean`                                   | `false`     | When set, restores the browser's native WebKit cancel button                            |
+| `showClearOnFocus` | `show-clear-on-focus` | `boolean`                                   | `false`     | When set, shows the clear button on focus even with no value (Apple HIG cancel pattern) |
+| `placeholder`      | `placeholder`         | `string \| undefined`                       | `undefined` | Mirrored onto the input unless the author already set one                               |
+| `messages`         | None                  | `Partial<RCSearchBarMessages> \| undefined` | `undefined` | Built-in text overrides; see Localization                                               |
 
 ### CSS custom properties
 
@@ -141,6 +141,14 @@ icons, supporting text, actions, or stronger AT/styling control.
 
 ---
 
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`, and never an
+ancestor's `lang`, which usually marks content. Override it per element with the
+`messages` property, or for every instance with `registerMessages()` from
+`@rcarls/rc-common` under `rc-search-bar`. Keys: `clear`. See the
+[rc-common Localization section](https://github.com/richardcarls/rc-webcomponents/tree/develop/packages/rc-common#localization).
+
 ## Accessibility notes
 
 - The component writes no ARIA to the input because `type="search"` already exposes
@@ -148,14 +156,14 @@ icons, supporting text, actions, or stronger AT/styling control.
   input with `label[for]`, a wrapping `<label>`, or `aria-label`.
 - The component adds no `role="search"` landmark; wrap in `<search>` or
   `<form role="search">` when the bar is the page's search landmark.
-- The clear button is a real `<button>` with a configurable `aria-label`
-  (`clear-label`) and a ≥24×24 px hit target. Activating it returns focus to
+- The clear button is a real `<button>` with a localizable `aria-label`
+  (the `clear` message) and a ≥24×24 px hit target. Activating it returns focus to
   the input before the button hides, so focus is never dropped.
 - The native WebKit cancel button is suppressed automatically via an adopted
   document stylesheet. Set `allow-native-clear` to restore it. When restored,
   it clears through the normal input path (a debounced `rc-search-bar-input`
   with an empty value) and never fires `rc-search-bar-clear`.
 - Set `show-clear-on-focus` to show the clear button whenever the input is
-  focused (Apple HIG cancel pattern). Consider `clear-label="Cancel"` in this
-  mode. The `rc-search-bar-clear` event fires even when the value is empty,
+  focused (Apple HIG cancel pattern). Consider setting the `clear` message to
+  `Cancel` in this mode. The `rc-search-bar-clear` event fires even when the value is empty,
   allowing the host to dismiss a search overlay.

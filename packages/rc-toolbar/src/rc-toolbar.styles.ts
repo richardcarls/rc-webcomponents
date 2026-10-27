@@ -23,7 +23,12 @@ export const toolbarStyles = css`
     font-size: var(--rc-font-size, inherit);
     line-height: var(--rc-line-height, normal);
 
-    &[aria-orientation='vertical'] {
+    /*
+     * Layout keys off the author's orientation, not aria-orientation: the
+     * exposed value reports the rendered orientation, which turns over in
+     * vertical writing modes while the layout axis does not.
+     */
+    :host([orientation='vertical']) & {
       flex-direction: column;
       border-radius: var(
         --rc-toolbar-vertical-radius,

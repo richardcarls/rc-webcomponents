@@ -1,0 +1,77 @@
+---
+title: rc-tooltip
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { TooltipDemo } from '@site/src/components/ComponentDemos';
+
+# rc-tooltip
+
+Tooltip wrapper for a consumer-owned trigger and descriptive content, following the [WAI-ARIA Tooltip pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/).
+
+<AtAGlance
+  packageName="@rcarls/rc-tooltip"
+  tag="rc-tooltip"
+  native="Consumer-owned trigger and descriptive content"
+  state="Focus and pointer visibility"
+  related={[{ label: 'Theme previews', href: '/guide/theme-previews' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-webcomponents/rc-tooltip/define';
+```
+
+## Usage
+
+Place the trigger in the `trigger` slot and the descriptive text in the
+`content` slot:
+
+```html
+<rc-tooltip placement="block-end">
+  <button slot="trigger" type="button">Hover or focus me</button>
+  <span slot="content">This text describes the trigger.</span>
+</rc-tooltip>
+```
+
+## Live demo
+
+<TooltipDemo />
+
+## Behavior and accessibility
+
+The component adds a stable `id` and `role="tooltip"` to the content and adds
+that ID to the trigger's `aria-describedby` list. Focus or pointer hover opens
+the tooltip. It stays open while the pointer moves between the trigger and
+content, and Escape dismisses it without moving focus. Tooltip content is
+descriptive text and must not contain interactive controls or receive focus.
+
+The native Popover API provides top-layer rendering where it is available.
+Browsers without a working Popover API use the same interaction behavior with
+the `hidden` attribute and the shared anchor positioning fallback. Placement is
+logical, so `block-*` and `inline-*` follow writing mode and direction.
+
+## API
+
+<ApiTable tag="rc-tooltip" />

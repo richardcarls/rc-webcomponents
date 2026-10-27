@@ -5,8 +5,6 @@
     --rc-list-item-min-block-size: 3rem;
     --rc-list-item-padding-block: 0;
     --rc-list-item-padding-inline: 1rem;
-    --rc-list-item-bg: transparent;
-    --rc-list-item-supporting-color: var(--md-sys-color-on-surface-variant, CanvasText);
     --rc-list-item-hover-bg: color-mix(
       in srgb,
       var(--md-sys-color-on-surface, CanvasText)
@@ -33,6 +31,7 @@
     --rc-list-item-padding-block: 0.5rem;
     --rc-list-item-color: var(--md-sys-color-on-surface, CanvasText);
     --rc-list-item-background: transparent;
+    --rc-list-item-border-radius: 0;
     --rc-list-item-selected-color: var(--md-sys-color-on-secondary-container, HighlightText);
     --rc-list-item-selected-background: var(--md-sys-color-secondary-container, Highlight);
     --rc-list-item-divider: 1px solid var(--md-sys-color-outline-variant, GrayText);
@@ -44,12 +43,75 @@
       0.12
     );
     --rc-list-item-disabled-opacity: var(--md-sys-state-disabled-state-layer-opacity, 0.38);
-    --rc-list-item-transition-duration: var(--md-sys-motion-duration-short3, 150ms);
+    --rc-list-item-transition-duration: var(--rc-motion-effects-duration-fast, 150ms);
     --rc-list-item-transition-easing: var(--md-sys-motion-easing-standard, ease);
+    --rc-list-item-details-color: var(--md-sys-color-on-surface-variant, CanvasText);
+    --rc-list-item-details-duration: var(--md-sys-motion-duration-short2, 100ms);
+    --rc-list-item-dragged-background: var(--md-sys-color-surface-container-high, Canvas);
+    --rc-list-item-dragged-box-shadow: var(--rc-shadow-level4, var(--rc-shadow, none));
+    --rc-list-item-dragged-state-layer-opacity: var(
+      --md-sys-state-dragged-state-layer-opacity,
+      0.16
+    );
+    --rc-list-item-reorder-duration: var(--md-sys-motion-duration-medium1, 250ms);
+    --rc-list-item-reorder-easing: var(--md-sys-motion-easing-standard, ease);
+  }
+
+  /*
+   * A plain native reorder handle reads as a standard icon button: a 48px
+   * target in on-surface-variant. Handles wrapped in rc-button keep that
+   * component's own presentation.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-list[reorderable]
+    :not(rc-button)
+    > button[data-rc-reorder-handle] {
+    display: inline-grid;
+    place-items: center;
+    box-sizing: border-box;
+    min-inline-size: 3rem;
+    min-block-size: 3rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--md-sys-shape-corner-full, 50%);
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant, CanvasText);
+    font: inherit;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-list[reorderable]
+    :not(rc-button)
+    > button[data-rc-reorder-handle]:hover {
+    background: color-mix(
+      in srgb,
+      currentColor calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
+  }
+
+  /* Expanded details read as list supporting text. */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-list-item::part(details) {
+    font-family: var(--md-sys-typescale-body-medium-font, inherit);
+    font-size: var(--md-sys-typescale-body-medium-size, 0.875rem);
+    font-weight: var(--md-sys-typescale-body-medium-weight, 400);
+    line-height: var(--md-sys-typescale-body-medium-line-height, 1.25rem);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-list[variant='segmented'] {
     --rc-list-row-gap: 0.125rem;
+  }
+
+  /* Dividers separate visible rows; they do not trail the final row. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-list
+    > rc-list-item:is([data-rc-list-position='last'], [data-rc-list-position='only']) {
+    --rc-list-item-divider: 0;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-list[variant='segmented']
+    > rc-list-item {
     --rc-list-item-min-block-size: 3.5rem;
     --rc-list-item-padding-block: 0.625rem;
     --rc-list-item-background: var(--md-sys-color-surface-container-low, Canvas);

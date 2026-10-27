@@ -29,14 +29,6 @@ export interface NativeChildControllerOptions<E extends Element> {
   observe?: boolean | MutationObserverInit;
 }
 
-/** Returns the first matching child under `host`, or `null` when absent. */
-export function getDirectChild<E extends Element = Element>(
-  host: ParentNode,
-  selector: string,
-): E | null {
-  return host.querySelector<E>(selector);
-}
-
 /** Returns all matching children under `host`. */
 export function getDirectChildren<E extends Element = Element>(
   host: ParentNode,
@@ -53,7 +45,9 @@ export function warnMissingDirectChild(
   host: Element,
   options: MissingDirectChildWarningOptions,
 ): boolean {
-  if (getDirectChildren(host, options.selector).length >= (options.minimum ?? 1)) return false;
+  if (getDirectChildren(host, options.selector).length >= (options.minimum ?? 1)) {
+    return false;
+  }
 
   const hostName = options.hostName ?? host.localName;
   const childDescription = options.childDescription ?? options.selector.replace(':scope > ', '');
@@ -93,9 +87,12 @@ export class NativeChildController<E extends Element = Element> implements React
   hostConnected(): void {
     this.sync();
 
-    if (!this._options.observe) return;
+    if (!this._options.observe) {
+      return;
+    }
 
     this._observer ??= new MutationObserver(() => this.sync());
+
     const observerOptions =
       this._options.observe === true ? { childList: true } : this._options.observe;
 
@@ -110,15 +107,18 @@ export class NativeChildController<E extends Element = Element> implements React
   /** Re-read the child from the host and invoke `onChange` when it changes. */
   sync(): E | null {
     const previous = this._child;
-    const next = getDirectChild<E>(this._host, this._options.selector);
+    const next = this._host.querySelector<E>(this._options.selector);
 
     this._child = next;
 
-    if (!next) this._options.onMissing?.(this._host);
-    if (next !== previous) this._options.onChange?.(next, previous);
+    if (!next) {
+      this._options.onMissing?.(this._host);
+    }
+
+    if (next !== previous) {
+      this._options.onChange?.(next, previous);
+    }
 
     return next;
   }
 }
-
-export default NativeChildController;

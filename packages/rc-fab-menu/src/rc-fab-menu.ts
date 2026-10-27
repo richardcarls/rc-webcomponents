@@ -18,7 +18,11 @@ declare global {
 /** Detail payload for the `rc-fab-menu-toggle` event. */
 export type RCFabMenuToggleEvent = RCMenuButtonToggleEvent;
 
-export type RCFabMenuPosition = 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+export type RCFabMenuPosition =
+  | 'block-end-inline-end'
+  | 'block-end-inline-start'
+  | 'block-start-inline-end'
+  | 'block-start-inline-start';
 
 /**
  * Floating action button menu wrapper for an `rc-menu` action surface.
@@ -49,8 +53,11 @@ export type RCFabMenuPosition = 'bottom-end' | 'bottom-start' | 'top-end' | 'top
  *
  * @fires rc-fab-menu-toggle - Fired when user interaction opens or closes the action menu.
  *
- * @attr position - Viewport corner where the floating action menu trigger is anchored.
- * @attr placement - Preferred placement of the action menu relative to the trigger button.
+ * @attr position - Logical viewport corner where the trigger is anchored: `block-end-inline-end`
+ *   (default), `block-end-inline-start`, `block-start-inline-end`, or `block-start-inline-start`.
+ * @attr placement - Preferred placement of the action menu relative to the trigger button, in
+ *   logical terms (see `rc-menu-button`). Defaults to `block-start-end`: back toward the block
+ *   start from the corner the trigger is pinned to, aligned to the inline end.
  *
  * @cssprop [--rc-fab-menu-position-css=fixed] - CSS position value for the floating wrapper.
  * @cssprop [--rc-fab-menu-inset-block=1.5rem] - Distance from the block-axis edge; falls back
@@ -59,6 +66,9 @@ export type RCFabMenuPosition = 'bottom-end' | 'bottom-start' | 'top-end' | 'top
  *   through --rc-fab-inset-inline.
  * @cssprop [--rc-fab-menu-z-index=10] - Stacking order for the floating wrapper; falls back
  *   through --rc-fab-z-index.
+ * @cssprop [--rc-fab-inset-block=1.5rem] - Shared FAB-family block-axis inset fallback.
+ * @cssprop [--rc-fab-inset-inline=1.5rem] - Shared FAB-family inline-axis inset fallback.
+ * @cssprop [--rc-fab-z-index=10] - Shared FAB-family stacking-order fallback.
  * @cssprop [--rc-fab-menu-trigger-gap] - Gap between trigger icon and label content. No default.
  * @cssprop [--rc-fab-menu-size] - Trigger minimum inline and block size. No default; set
  *   explicitly or apply a theme.
@@ -115,6 +125,7 @@ export type RCFabMenuPosition = 'bottom-end' | 'bottom-start' | 'top-end' | 'top
  *   native disabled styling when unset).
  * @cssprop [--rc-fab-menu-popup-z-index=1000] - Stacking order of the popup container; falls back
  *   through --rc-menu-button-popup-z-index.
+ * @cssprop [--rc-menu-button-popup-z-index=1000] - Shared menu-button popup stacking-order fallback.
  * @cssprop [--rc-fab-menu-popup-duration=0ms] - Popup reveal transition duration.
  * @cssprop [--rc-fab-menu-popup-transform-origin=bottom right] - Popup reveal transform origin.
  *
@@ -126,11 +137,20 @@ export class RCFabMenu extends RCMenuButton {
 
   /** Viewport corner where the floating action menu trigger is anchored. */
   @property({ type: String, reflect: true })
-  position: RCFabMenuPosition = 'bottom-end';
+  position: RCFabMenuPosition = 'block-end-inline-end';
 
-  /** Preferred placement of the action menu relative to the trigger button. */
-  @property({ reflect: true })
-  override placement: AnchorPlacement = 'top-end';
+  /**
+   * The trigger is pinned to the block-end corner, so the menu opens back
+   * toward the block start, aligned to the inline end.
+   */
+  protected override get _defaultPlacement(): AnchorPlacement {
+    return 'block-start-end';
+  }
+
+  /** Keeps the FAB-specific default independent of inherited menubar orientation. */
+  protected override get _effectivePlacement(): AnchorPlacement {
+    return this.placement;
+  }
 
   /** Dispatches the `rc-fab-menu-toggle` bubbling composed event with the requested open state. */
   protected override _dispatchToggle(open = this.open): void {

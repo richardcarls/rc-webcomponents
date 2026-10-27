@@ -3,6 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import {
+  cssZoom,
   RafScheduler,
   ScrollObserverController,
   type ScrollObserverTarget,
@@ -44,6 +45,24 @@ export interface RCAppBarScrollDetail {
  * ElementInternals custom states. These are computed outputs, not settable
  * attributes.
  *
+ * A hidden bar reveals itself when focus moves into it and stays visible
+ * while it contains focus.
+ *
+ * With `scroll-behavior="hide"`, the bar also publishes its geometry onto its
+ * scroll target, the element it observes (`document.documentElement` for
+ * `window`): `--rc-app-bar-block-size` is its measured block size and
+ * `--rc-app-bar-visible-block-size` is the same value, or `0px` while hidden.
+ * Hiding only translates the bar, so a layout wins the space back by letting
+ * the scroll container run under the bar, reserving
+ * `var(--rc-app-bar-block-size)` as its block-start padding and scroll
+ * padding. Sticky offsets are measured inside that padding, so a sticky
+ * descendant pins at `calc(var(--rc-app-bar-visible-block-size) -
+ * var(--rc-app-bar-block-size))`, while a fixed descendant of a wrapper
+ * without that padding pins at `var(--rc-app-bar-visible-block-size)`. These
+ * are read-only outputs: the
+ * bar overwrites them on every size or visibility change and removes them
+ * when it stops hiding, changes target, or disconnects.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-app-bar rc-app-bar docs}
  * @see {@link https://m3.material.io/components/top-app-bar/overview Material 3 Top app bar}
  *
@@ -60,11 +79,14 @@ export interface RCAppBarScrollDetail {
  * @attr scroll-behavior - Visual response to observed scrolling: `pinned`, `collapse`, or `hide`.
  * @attr scroll-target - CSS selector (or `"window"`) for the scroll container to observe.
  * @attr scroll-threshold - Scroll offset in px past which the bar is scrolled (strict `>`).
+ * @attr hide-distance - With `scroll-behavior="hide"`, how far in px the target must scroll in
+ *   one direction before the bar hides or reveals. Defaults to `32`.
  * @attr center-symmetric - Opt-in: mirrors leading/trailing edge widths so `slot="center"`
  *   content stays exactly viewport-centered. Default: fills the flexible middle column instead,
  *   centered within available space once capped by `--rc-app-bar-center-max-inline-size`.
  * @cssprop [--rc-app-bar-bg=Canvas] - Bar background
  * @cssprop [--rc-app-bar-color=CanvasText] - Bar text color
+ * @cssprop [--rc-app-bar-shadow=none] - Bar box shadow
  * @cssprop [--rc-app-bar-compact-min-height=3rem] - Compact row minimum height
  * @cssprop [--rc-app-bar-expanded-padding-block=0.75em] - Expanded title padding
  * @cssprop [--rc-app-bar-padding-inline=0.75em] - Horizontal padding
@@ -76,6 +98,10 @@ export interface RCAppBarScrollDetail {
  * @cssprop [--rc-app-bar-transition-duration=200ms] - Endpoint and hide duration
  * @cssprop [--rc-app-bar-scroll-divider=1px solid GrayText] - Scrolled divider
  * @cssprop [--rc-app-bar-collapse-progress=0] - Collapse animation progress 0–1; read-only
+ * @cssprop --rc-app-bar-block-size - Read-only output on the scroll target in hide mode: the
+ *   bar's measured block size.
+ * @cssprop --rc-app-bar-visible-block-size - Read-only output on the scroll target in hide mode:
+ *   the bar's block size while shown, `0px` while hidden.
  * @cssprop [--rc-app-bar-title-font-size] - Compact-row title font size (opt-in; inherits when unset)
  * @cssprop [--rc-app-bar-expanded-title-font-size] - Expanded-row title font size (opt-in)
  * @csspart root - The grid container
@@ -118,7 +144,19 @@ export class RCAppBar extends LitElement {
   @property({ type: Number, attribute: 'scroll-threshold' })
   scrollThreshold = 4;
 
+  /**
+   * With `scroll-behavior="hide"`, how far in px the target must scroll in one
+   * direction before the bar hides or reveals, so a small reversal while
+   * reading or a fling settling does not toggle it. Within `scrollThreshold`
+   * of the top the bar always shows.
+   */
+  @property({ type: Number, attribute: 'hide-distance' })
+  hideDistance = 32;
+
   private _scrolled: boolean | undefined = undefined;
+
+  /** Signed scroll travel since the last change of direction, in hide mode. */
+  private _hideTravel = 0;
 
   @state()
   private _observedScrolled = false;
@@ -136,9 +174,9 @@ export class RCAppBar extends LitElement {
 
   private _hidden = false;
 
-  private _collapseDistance = 0;
+  private _collapseDistanceHostCssPx = 0;
 
-  private _collapseOffsetDistance = 0;
+  private _collapseOffsetHostCssPx = 0;
 
   private _collapseProgress = 0;
 
@@ -149,11 +187,18 @@ export class RCAppBar extends LitElement {
 
   private _resizeObserver: ResizeObserver | null = null;
 
+  private _hostResizeObserver: ResizeObserver | null = null;
+
+  private _blockSize = 0;
+
+  private _$geometryTarget: HTMLElement | null = null;
+
   private readonly _layoutMeasure = new RafScheduler(this);
 
   private readonly _scroll = new ScrollObserverController(this, {
     target: () => this._resolveScrollTarget(),
     threshold: this.scrollThreshold,
+    initialEvaluation: 'frame',
     disabled: true,
     onChange: (scrolled) => {
       this._observedScrolled = scrolled;
@@ -195,17 +240,21 @@ export class RCAppBar extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    this.addEventListener('focusin', this._onFocusIn);
     this._connectResizeObserver();
 
     if (this.hasUpdated) {
       this._queueLayoutMeasure();
+      this._syncGeometryOutputs();
     }
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    this.removeEventListener('focusin', this._onFocusIn);
     this._resizeObserver?.disconnect();
     this._cancelQueuedLayoutMeasure();
+    this._syncGeometryOutputs();
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
@@ -227,6 +276,7 @@ export class RCAppBar extends LitElement {
     this._queueLayoutMeasure();
     this._syncScrollObserver();
     this._syncVisualState();
+    this._syncGeometryOutputs();
   }
 
   protected override updated(changed: PropertyValues): void {
@@ -240,6 +290,10 @@ export class RCAppBar extends LitElement {
       changed.has('_hasTrailing')
     ) {
       this._queueLayoutMeasure();
+    }
+
+    if (changed.has('scrollTarget') || changed.has('scrollBehavior')) {
+      this._syncGeometryOutputs();
     }
 
     this._syncStateOutputs();
@@ -300,8 +354,8 @@ export class RCAppBar extends LitElement {
       const contentHeight = Math.max(nextDistance - padding, 0);
       const endpointCompactHeight = Math.max(compactHeight, contentHeight);
 
-      this._collapseDistance = nextDistance;
-      this._collapseOffsetDistance = compactHeight - (endpointCompactHeight - contentHeight) / 2;
+      this._collapseDistanceHostCssPx = nextDistance;
+      this._collapseOffsetHostCssPx = compactHeight - (endpointCompactHeight - contentHeight) / 2;
       this._setGeometryProperty('--_rc-app-bar-collapse-distance', `${nextDistance}px`);
       this._applyCollapseGeometry();
     }
@@ -344,21 +398,26 @@ export class RCAppBar extends LitElement {
     }
   }
 
-  private _onObservedScroll(scrollTop: number, delta: number): void {
+  private _onObservedScroll(scrollTopCssPx: number, deltaCssPx: number): void {
     if (this._scrolled !== undefined) {
       return;
     }
 
     if (this.scrollBehavior === 'collapse' && this.variant === 'expanded') {
-      if (this._collapseDistance <= 0) {
+      if (this._collapseDistanceHostCssPx <= 0) {
         return;
       }
 
-      const distance = this._collapseDistance;
-      let progress = Math.min(Math.max(scrollTop / distance, 0), 1);
+      const target = this._resolveScrollTarget();
+      const targetZoom =
+        target instanceof Element && target !== this.ownerDocument.scrollingElement
+          ? cssZoom(target)
+          : 1;
+      const scrollTopHostCssPx = (scrollTopCssPx * targetZoom) / cssZoom(this);
+      let progress = Math.min(Math.max(scrollTopHostCssPx / this._collapseDistanceHostCssPx, 0), 1);
 
       if (this._reducedMotion?.matches) {
-        progress = scrollTop > this.scrollThreshold ? 1 : 0;
+        progress = scrollTopCssPx > this.scrollThreshold ? 1 : 0;
       } else {
         progress = progress >= 0.999 ? 1 : progress;
       }
@@ -368,14 +427,25 @@ export class RCAppBar extends LitElement {
       this._setCollapseProgress(0);
     }
 
-    if (this.scrollBehavior === 'hide') {
-      if (scrollTop <= this.scrollThreshold || delta < 0) {
-        this._setHidden(false);
-      } else if (delta > 0) {
-        this._setHidden(true);
-      }
-    } else {
+    if (this.scrollBehavior !== 'hide') {
+      this._hideTravel = 0;
       this._setHidden(false);
+    } else if (scrollTopCssPx <= this.scrollThreshold) {
+      this._hideTravel = 0;
+      this._setHidden(false);
+    } else if (this.matches(':focus-within')) {
+      this._hideTravel = 0;
+      this._setHidden(false);
+    } else if (deltaCssPx !== 0) {
+      // A change of direction starts the count again.
+      this._hideTravel =
+        Math.sign(deltaCssPx) === Math.sign(this._hideTravel)
+          ? this._hideTravel + deltaCssPx
+          : deltaCssPx;
+
+      if (Math.abs(this._hideTravel) >= this.hideDistance) {
+        this._setHidden(this._hideTravel > 0);
+      }
     }
   }
 
@@ -416,8 +486,8 @@ export class RCAppBar extends LitElement {
   }
 
   private _applyCollapseGeometry(): void {
-    const offset = this._collapseOffsetDistance * this._collapseProgress;
-    const remainingRow = this._collapseDistance * (1 - this._collapseProgress);
+    const offset = this._collapseOffsetHostCssPx * this._collapseProgress;
+    const remainingRow = this._collapseDistanceHostCssPx * (1 - this._collapseProgress);
 
     this._setGeometryProperty('--_rc-app-bar-collapse-offset', `${-offset}px`);
     this._setGeometryProperty('--_rc-app-bar-expanded-size', `${remainingRow}px`);
@@ -432,6 +502,12 @@ export class RCAppBar extends LitElement {
     this.style.setProperty(name, value);
   }
 
+  /** Reveal the bar and start fresh after focus enters it. */
+  private readonly _onFocusIn = (): void => {
+    this._hideTravel = 0;
+    this._setHidden(false);
+  };
+
   private _setHidden(hidden: boolean): void {
     if (hidden === this._hidden) {
       return;
@@ -440,6 +516,62 @@ export class RCAppBar extends LitElement {
     this._hidden = hidden;
     this.toggleAttribute('data-hidden', hidden);
     this._setCustomState('hidden', hidden);
+    this._writeGeometryOutputs();
+  }
+
+  /**
+   * Publishes geometry onto the scroll target while the bar can hide, and
+   * removes it from a target the bar no longer publishes to.
+   */
+  private _syncGeometryOutputs(): void {
+    const $target =
+      this.isConnected && this.scrollBehavior === 'hide' ? this._resolveGeometryTarget() : null;
+
+    if ($target !== this._$geometryTarget) {
+      this._$geometryTarget?.style.removeProperty('--rc-app-bar-block-size');
+      this._$geometryTarget?.style.removeProperty('--rc-app-bar-visible-block-size');
+      this._$geometryTarget = $target;
+    }
+
+    if (!$target) {
+      this._hostResizeObserver?.disconnect();
+
+      return;
+    }
+
+    if (!this._hostResizeObserver && 'ResizeObserver' in globalThis) {
+      this._hostResizeObserver = new ResizeObserver(([entry]) => {
+        this._blockSize = entry?.borderBoxSize?.[0]?.blockSize ?? this._blockSize;
+        this._writeGeometryOutputs();
+      });
+    }
+
+    this._hostResizeObserver?.observe(this);
+    this._writeGeometryOutputs();
+  }
+
+  private _resolveGeometryTarget(): HTMLElement | null {
+    const target = this._resolveScrollTarget();
+
+    if (target instanceof HTMLElement) {
+      return target;
+    }
+
+    // A window or document target scrolls the root element; another element has no style to write.
+    return target === null || target instanceof Element ? null : this.ownerDocument.documentElement;
+  }
+
+  private _writeGeometryOutputs(): void {
+    const $target = this._$geometryTarget;
+
+    if (!$target) {
+      return;
+    }
+
+    const blockSize = `${this._blockSize}px`;
+
+    $target.style.setProperty('--rc-app-bar-block-size', blockSize);
+    $target.style.setProperty('--rc-app-bar-visible-block-size', this._hidden ? '0px' : blockSize);
   }
 
   private _syncStateOutputs(): void {

@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Material 3 CSS theme and token bridge for rc-webcomponents.",
   "repository": {
     "type": "git",
@@ -22,13 +22,19 @@
     "./defaults.css": "./defaults.css",
     "./components.css": "./components.css",
     "./components/*.css": "./components/*.css",
+    "./css-components.css": "./css-components.css",
+    "./css-components/*.css": "./css-components/*.css",
+    "./native.css": "./native.css",
     "./state-layer.css": "./state-layer.css",
-    "./theme.css": "./theme.css"
+    "./theme.css": "./theme.css",
+    "./DESIGN.md": "./DESIGN.md"
   },
   "files": [
     "*.css",
     "components",
+    "css-components",
     "constraints",
+    "DESIGN.md",
     "README.md"
   ],
   "scripts": {
@@ -38,11 +44,19 @@
     "test:browser:firefox": "vitest --run --project=firefox"
   },
   "devDependencies": {
+    "@rcarls/rc-accordion": "workspace:*",
     "@rcarls/rc-adaptive-menu": "workspace:*",
     "@rcarls/rc-button": "workspace:*",
+    "@rcarls/rc-combobox": "workspace:*",
+    "@rcarls/rc-dialog": "workspace:*",
+    "@rcarls/rc-disclosure": "workspace:*",
+    "@rcarls/rc-field": "workspace:*",
     "@rcarls/rc-list": "workspace:*",
     "@rcarls/rc-menu-button": "workspace:*",
+    "@rcarls/rc-popover": "workspace:*",
+    "@rcarls/rc-select": "workspace:*",
     "@vitest/browser-playwright": "4.1.5",
+    "lit": "^3.0.0",
     "playwright": "^1.56.0",
     "vite": "^7.1.7",
     "vitest": "^4.0.6"

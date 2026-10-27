@@ -1,0 +1,50 @@
+@layer rc-theme-win31.components {
+  /*
+   * A deliberate deviation, stated rather than hidden.
+   *
+   * 3.1 had no transient toast. Its equivalent channel was the status bar: a
+   * sunken strip along the bottom edge that reported what just happened and
+   * what the focused command would do. This renders the snackbar as that
+   * strip rather than as a floating card, so it reads as part of the window
+   * instead of hovering above it.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-snackbar {
+    --rc-snackbar-bg: var(--win31-color-surface);
+    --rc-snackbar-color: var(--win31-color-frame);
+    --rc-snackbar-border: var(--win31-hairline) solid;
+    --rc-snackbar-radius: var(--win31-radius);
+    --rc-snackbar-shadow: none;
+    --rc-snackbar-gap: var(--win31-gap);
+    --rc-snackbar-min-block-size: var(--win31-control-height);
+    --rc-snackbar-padding-block: var(--win31-padding-block);
+    --rc-snackbar-padding-inline: var(--win31-padding-inline);
+    --rc-snackbar-inset-block-end: 0;
+    --rc-snackbar-inset-inline: 0;
+    --rc-snackbar-max-inline-size: none;
+    --rc-snackbar-action-bg: var(--win31-color-surface);
+    --rc-snackbar-action-color: var(--win31-color-frame);
+    --rc-snackbar-action-border: var(--win31-border);
+    --rc-snackbar-action-radius: var(--win31-radius);
+    --rc-snackbar-action-padding-block: var(--win31-padding-block);
+    --rc-snackbar-action-padding-inline: calc(8 * var(--win31-unit));
+    --rc-snackbar-action-font: var(--rc-button-font);
+    --rc-snackbar-focus-ring: var(--win31-focus-ring);
+    --rc-snackbar-focus-ring-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-snackbar::part(surface) {
+    border-color: var(--win31-inset-border-color);
+    box-shadow: none;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-snackbar::part(action) {
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-snackbar::part(action):active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+}

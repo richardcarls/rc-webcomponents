@@ -67,6 +67,35 @@ test('preserves native button appearance without theme tokens', async () => {
   }
 });
 
+test('keeps a labeled button at its label width in a min-content table column', async () => {
+  const screen = render(html`
+    <table style="inline-size: 20rem; border-collapse: collapse">
+      <colgroup>
+        <col />
+        <col style="inline-size: 1px" />
+      </colgroup>
+      <tr>
+        <td>Pattern</td>
+        <td data-testid="cell" style="padding: 0; white-space: nowrap">
+          <rc-button data-testid="host"><button type="button">Cancel changes</button></rc-button>
+        </td>
+      </tr>
+    </table>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCButton;
+  const cell = await screen.getByTestId('cell').element();
+
+  await flushButton(host);
+
+  const button = host.querySelector('button') as HTMLButtonElement;
+
+  expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
+
+  expect(cell.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+    button.getBoundingClientRect().width,
+  );
+});
+
 test('styles a direct native anchor child the same as a button child', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   const screen = render(html`
@@ -937,55 +966,63 @@ test('shows themed hover state through the state-layer overlay', async () => {
   expect(getComputedStyle(stateLayer, '::before').opacity).toBe('0.25');
 });
 
-test('positions and starts an enabled ripple from primary pointer input', async () => {
-  const screen = render(html`
-    <rc-button
-      data-testid="host"
-      style="--_rc-button-ripple-enabled: 1; --_rc-button-ripple-duration: 10s"
-    >
-      <button type="button">Save</button>
-    </rc-button>
-  `);
-  const host = (await screen.getByTestId('host').element()) as RCButton;
+test.each([
+  ['ltr', 1],
+  ['ltr', 0.8],
+  ['rtl', 0.8],
+] as const)(
+  'positions and starts an enabled ripple from primary pointer input in %s at zoom %s',
+  async (direction, zoom) => {
+    const screen = render(html`
+      <rc-button
+        data-testid="host"
+        dir=${direction}
+        style="zoom: ${zoom}; --_rc-button-ripple-enabled: 1; --_rc-button-ripple-duration: 10s"
+      >
+        <button type="button">Save</button>
+      </rc-button>
+    `);
+    const host = (await screen.getByTestId('host').element()) as RCButton;
 
-  await flushButton(host);
+    await flushButton(host);
 
-  const button = host.querySelector('button')!;
-  const bounds = button.getBoundingClientRect();
+    const button = host.querySelector('button')!;
+    const bounds = button.getBoundingClientRect();
 
-  button.dispatchEvent(
-    new PointerEvent('pointerdown', {
-      bubbles: true,
-      button: 0,
-      clientX: bounds.left + bounds.width / 4,
-      clientY: bounds.top + bounds.height / 2,
-      composed: true,
-      isPrimary: true,
-      pointerId: 1,
-      pointerType: 'touch',
-    }),
-  );
+    button.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        button: 0,
+        clientX: bounds.left + bounds.width / 4,
+        clientY: bounds.top + bounds.height / 2,
+        composed: true,
+        isPrimary: true,
+        pointerId: 1,
+        pointerType: 'touch',
+      }),
+    );
 
-  const stateLayer = host.shadowRoot?.querySelector<HTMLElement>('[part="state-layer"]');
+    const stateLayer = host.shadowRoot?.querySelector<HTMLElement>('[part="state-layer"]');
 
-  if (!stateLayer) {
-    throw new Error('Expected the state-layer part to render.');
-  }
+    if (!stateLayer) {
+      throw new Error('Expected the state-layer part to render.');
+    }
 
-  expect(stateLayer.hasAttribute('data-rippling')).toBe(true);
+    expect(stateLayer.hasAttribute('data-rippling')).toBe(true);
 
-  expect(Number.parseFloat(stateLayer.style.getPropertyValue('--_rc-button-ripple-x'))).toBeCloseTo(
-    bounds.width / 4,
-  );
+    expect(
+      Number.parseFloat(stateLayer.style.getPropertyValue('--_rc-button-ripple-x')),
+    ).toBeCloseTo((bounds.width * (direction === 'rtl' ? 0.75 : 0.25)) / zoom);
 
-  expect(Number.parseFloat(stateLayer.style.getPropertyValue('--_rc-button-ripple-y'))).toBeCloseTo(
-    bounds.height / 2,
-  );
+    expect(
+      Number.parseFloat(stateLayer.style.getPropertyValue('--_rc-button-ripple-y')),
+    ).toBeCloseTo(bounds.height / (2 * zoom));
 
-  expect(
-    Number.parseFloat(stateLayer.style.getPropertyValue('--_rc-button-ripple-size')),
-  ).toBeGreaterThan(bounds.width);
-});
+    expect(
+      Number.parseFloat(stateLayer.style.getPropertyValue('--_rc-button-ripple-size')),
+    ).toBeGreaterThan(bounds.width / zoom);
+  },
+);
 
 test('has no automated accessibility violations', async () => {
   const screen = render(html`

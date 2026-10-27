@@ -2,9 +2,11 @@ import { test, expect, describe, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import './define.js';
 import type { RCSplitter } from './rc-splitter.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 
 // Helper to get elements from shadow DOM
 function getSeparator(host: RCSplitter): HTMLElement {
@@ -76,7 +78,9 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
+
       host.value = 100;
 
       expect(host).toBeInstanceOf(HTMLElement);
@@ -135,6 +139,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       expect(separator.getAttribute('aria-orientation')).toBe('horizontal');
@@ -169,6 +174,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       const initialValue = host.value;
@@ -209,6 +215,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       const initialValue = host.value;
@@ -306,6 +313,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       // Set a specific value
@@ -403,6 +411,7 @@ describe('RCSplitter', () => {
 
       host.addEventListener('rc-splitter-change', handleChange);
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       host.value = 120;
@@ -649,6 +658,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       host.value = -100;
@@ -671,6 +681,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       // Set a value that's not a multiple of step
@@ -736,6 +747,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       const primary = getPrimary(host);
@@ -925,7 +937,7 @@ describe('RCSplitter', () => {
 
       const btn = getCollapseButton(host)!;
 
-      expect(btn.getAttribute('aria-label')).toBe('Collapse Editor');
+      expect(btn.getAttribute('aria-label')).toBe('Collapse \u2068Editor\u2069');
       expect(btn.getAttribute('aria-expanded')).toBe('true');
 
       host.fixed = true;
@@ -960,7 +972,7 @@ describe('RCSplitter', () => {
 
       expect(host.value).toBe(0);
       expect(btn.getAttribute('aria-expanded')).toBe('false');
-      expect(btn.getAttribute('aria-label')).toBe('Expand Splitter');
+      expect(btn.getAttribute('aria-label')).toBe('Expand \u2068Splitter\u2069');
 
       btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await host.updateComplete;
@@ -1031,6 +1043,7 @@ describe('RCSplitter', () => {
       const host = screen.getByTestId('host').element() as RCSplitter;
 
       await host.updateComplete;
+
       const separator = await waitForInit(host);
 
       expect(Number(separator.getAttribute('aria-valuemin'))).toBe(50);
@@ -1119,6 +1132,38 @@ describe('RCSplitter', () => {
   });
 
   describe('anchored settling', () => {
+    test('length values and snap keyframes use local CSS pixels under zoom', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          value="100"
+          snap-points="100 240"
+          style="width: 400px; height: 300px; zoom: 0.8;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+
+      await host.updateComplete;
+
+      const separator = await waitForInit(host);
+
+      expect(Number(separator.getAttribute('aria-valuemax'))).toBeCloseTo(400, 0);
+      expect(getPrimary(host).getBoundingClientRect().width).toBeCloseTo(80, 0);
+
+      host.snapTo(1);
+
+      await vi.waitFor(() => {
+        const [animation] = host.shadowRoot?.getAnimations() ?? [];
+        const frames = (animation?.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
+
+        expect(frames[0]?.inlineSize).toBe('100px');
+        expect(frames[1]?.inlineSize).toBe('240px');
+      });
+    });
+
     test('snapTo() clamps finite indices and ignores non-finite indices', async () => {
       const screen = render(html`
         <rc-splitter
@@ -1140,6 +1185,32 @@ describe('RCSplitter', () => {
 
       host.snapTo(Number.NaN, 'instant');
       expect(host.value).toBe(240);
+    });
+
+    test('reads a snap duration expressed in seconds as milliseconds', async () => {
+      const screen = render(html`
+        <rc-splitter
+          data-testid="host"
+          value="100"
+          snap-points="0 100 240"
+          style="width: 400px; height: 300px; --rc-splitter-snap-duration: .25s;"
+        >
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      `);
+      const host = screen.getByTestId('host').element() as RCSplitter;
+
+      await host.updateComplete;
+      await waitForInit(host);
+
+      host.snapTo(2);
+
+      await vi.waitFor(() => {
+        const [animation] = host.shadowRoot?.getAnimations() ?? [];
+
+        expect(animation?.effect?.getTiming().duration).toBe(250);
+      });
     });
 
     test('slow release settles at the nearest authored point', async () => {
@@ -1276,4 +1347,256 @@ describe('RCSplitter', () => {
       await vi.waitFor(() => expect(host.value).toBe(200));
     });
   });
+});
+
+describe('RCSplitter direction and writing mode', () => {
+  test('places the primary pane at the inline start and measures drags from it in RTL', async () => {
+    const screen = render(html`
+      <div dir="rtl">
+        <rc-splitter data-testid="host" style="width: 400px; height: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      </div>
+    `);
+    const host = screen.getByTestId('host').element() as RCSplitter;
+
+    await host.updateComplete;
+
+    const separator = await waitForInit(host);
+
+    host.value = 100;
+    await host.updateComplete;
+
+    const hostRect = host.getBoundingClientRect();
+
+    // The primary pane starts at the right edge in RTL.
+    expect(getPrimary(host).getBoundingClientRect().right).toBeCloseTo(hostRect.right, 0);
+
+    // 300px from the right edge is a primary size of 300, not 100.
+    firePointerEvent(separator, 'pointerdown', {
+      clientX: hostRect.right - 100,
+      clientY: hostRect.top + 150,
+    });
+
+    firePointerEvent(separator, 'pointermove', {
+      clientX: hostRect.right - 300,
+      clientY: hostRect.top + 150,
+    });
+
+    firePointerEvent(separator, 'pointerup', {
+      clientX: hostRect.right - 300,
+      clientY: hostRect.top + 150,
+    });
+
+    expect(host.value).toBe(300);
+  });
+
+  test('reports the separator orientation it renders in vertical text', async () => {
+    const screen = render(html`
+      <div style="writing-mode: vertical-rl;">
+        <rc-splitter data-testid="host" style="inline-size: 400px; block-size: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      </div>
+    `);
+    const host = screen.getByTestId('host').element() as RCSplitter;
+
+    await host.updateComplete;
+
+    const separator = await waitForInit(host);
+
+    // Side-by-side panes run along the inline axis, which is vertical here,
+    // so the bar between them is horizontal.
+    await vi.waitFor(() => expect(separator.getAttribute('aria-orientation')).toBe('horizontal'));
+  });
+
+  test.each([
+    ['horizontal-tb', 'col-resize'],
+    ['vertical-rl', 'row-resize'],
+  ])('turns the grip and cursor with the bar in %s', async (writingMode, cursor) => {
+    const screen = render(html`
+      <div style="writing-mode: ${writingMode};">
+        <rc-splitter data-testid="host" style="inline-size: 400px; block-size: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      </div>
+    `);
+    const host = screen.getByTestId('host').element() as RCSplitter;
+
+    await host.updateComplete;
+
+    const separator = await waitForInit(host);
+
+    // The cursor and dots are physical, so they follow the bar as rendered,
+    // not the orientation attribute, which stays horizontal in both cases.
+    await vi.waitFor(() => expect(getComputedStyle(separator).cursor).toBe(cursor));
+    expect(separator.dataset.bar).toBe(separator.getAttribute('aria-orientation'));
+  });
+
+  test('sizes the primary pane along the inline axis in vertical text', async () => {
+    const screen = render(html`
+      <div style="writing-mode: vertical-rl;">
+        <rc-splitter data-testid="host" style="inline-size: 400px; block-size: 300px;">
+          <div>Primary</div>
+          <div slot="secondary">Secondary</div>
+        </rc-splitter>
+      </div>
+    `);
+    const host = screen.getByTestId('host').element() as RCSplitter;
+
+    await host.updateComplete;
+
+    const separator = await waitForInit(host);
+
+    // The whole inline extent, which is the host's height here, not its width.
+    expect(Number(separator.getAttribute('aria-valuemax'))).toBeCloseTo(400, -1);
+
+    host.value = 100;
+    await host.updateComplete;
+
+    // Side-by-side panes stack vertically on screen, so the value is a height.
+    expect(getPrimary(host).getBoundingClientRect().height).toBeCloseTo(100, 0);
+    expect(getPrimary(host).getBoundingClientRect().width).toBeCloseTo(300, 0);
+  });
+});
+
+describe('localization', () => {
+  test('names the collapse button and formats the value for its own locale', async () => {
+    registerMessages('ar', {
+      'rc-splitter': {
+        label: 'اللوحة',
+        collapse: (label: string) => `طي ${label}`,
+        expand: (label: string) => `توسيع ${label}`,
+      },
+    });
+
+    const screen = render(html`
+      <rc-splitter
+        lang="ar"
+        dir="rtl"
+        collapsible
+        mode="percent"
+        default-value="40"
+        style="width: 400px; height: 300px;"
+      >
+        <div>Primary</div>
+        <div slot="secondary">Secondary</div>
+      </rc-splitter>
+    `);
+    const host = screen.container.querySelector('rc-splitter') as RCSplitter;
+
+    await host.updateComplete;
+
+    const root = host.shadowRoot!;
+    const percent = new Intl.NumberFormat('ar', { style: 'percent', maximumFractionDigits: 2 });
+
+    await vi.waitFor(() =>
+      expect(root.querySelector('#collapse-button')?.getAttribute('aria-label')).toBe('طي اللوحة'),
+    );
+
+    expect(root.querySelector('#primary')?.getAttribute('aria-label')).toBe('اللوحة');
+
+    expect(root.querySelector('#separator-handle')?.getAttribute('aria-valuetext')).toBe(
+      percent.format(host.value / 100),
+    );
+
+    // The CSS length stays locale-free.
+    expect(host.valueText).toBe(`${host.value}%`);
+  });
+});
+
+type ChevronSide = 'left' | 'right' | 'up' | 'down';
+
+function chevronSide(host: RCSplitter): string | null | undefined {
+  return host.shadowRoot!.querySelector('#collapse-button svg')?.getAttribute('data-points');
+}
+
+/** The physical side the primary pane is on, measured against the secondary pane. */
+function primarySide(host: RCSplitter): ChevronSide {
+  const primary = getPrimary(host).getBoundingClientRect();
+  const secondary = host.shadowRoot!.querySelector('#secondary')!.getBoundingClientRect();
+  const dx = primary.left + primary.width / 2 - (secondary.left + secondary.width / 2);
+  const dy = primary.top + primary.height / 2 - (secondary.top + secondary.height / 2);
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return dx < 0 ? 'left' : 'right';
+  }
+
+  return dy < 0 ? 'up' : 'down';
+}
+
+const OPPOSITE: Record<ChevronSide, ChevronSide> = {
+  left: 'right',
+  right: 'left',
+  up: 'down',
+  down: 'up',
+};
+
+describe.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
+  'collapse chevron in %s',
+  (_label, flow) => {
+    test.each(['horizontal', 'vertical'] as const)(
+      'points at the %s primary pane to collapse and away to expand',
+      async (orientation) => {
+        const screen = render(
+          inFlow(
+            html`<rc-splitter
+              data-testid="host"
+              collapsible
+              orientation=${orientation}
+              value="120"
+              style="inline-size: 400px; block-size: 300px;"
+            >
+              <div>Primary</div>
+              <div slot="secondary">Secondary</div>
+            </rc-splitter>`,
+            flow,
+          ),
+        );
+        const host = screen.getByTestId('host').element() as RCSplitter;
+
+        await host.updateComplete;
+        await waitForInit(host);
+
+        const side = primarySide(host);
+
+        expect(chevronSide(host)).toBe(side);
+
+        host.shadowRoot!.querySelector<HTMLButtonElement>('#collapse-button')!.click();
+        await host.updateComplete;
+
+        expect(chevronSide(host)).toBe(OPPOSITE[side]);
+      },
+    );
+  },
+);
+
+test('turns the collapse chevron when the direction changes at runtime', async () => {
+  const screen = render(
+    inFlow(
+      html`<rc-splitter
+        data-testid="host"
+        collapsible
+        value="120"
+        style="inline-size: 400px; block-size: 300px;"
+      >
+        <div>Primary</div>
+        <div slot="secondary">Secondary</div>
+      </rc-splitter>`,
+      { dir: 'ltr', writingMode: 'horizontal-tb' },
+    ),
+  );
+  const host = screen.getByTestId('host').element() as RCSplitter;
+
+  await host.updateComplete;
+  await waitForInit(host);
+  expect(chevronSide(host)).toBe('left');
+
+  screen.getByTestId('flow').element().setAttribute('dir', 'rtl');
+
+  await vi.waitFor(() => expect(chevronSide(host)).toBe('right'));
+  expect(primarySide(host)).toBe('right');
 });

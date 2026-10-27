@@ -1,0 +1,19 @@
+@layer rc-theme-substrate.components {
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-scroller {
+    /*
+     * Capped a little narrower than Material's 1200px: Substrate runs a smaller
+     * base font, so the same pixel width carries more characters per line.
+     */
+    --rc-scroller-content-max-inline-size: 68rem;
+    --rc-scroller-content-padding-inline: var(--substrate-item-padding-inline, 0.75rem);
+    --rc-scroller-content-row-gap: var(--substrate-item-gap, 0.5rem);
+
+    --rc-scroller-scrollbar-width: thin;
+    --rc-scroller-scrollbar-color: color-mix(
+        in srgb,
+        var(--substrate-on-surface-muted, GrayText) 45%,
+        transparent
+      )
+      transparent;
+  }
+}

@@ -26,6 +26,10 @@ function buildLineContent(
     // Empty line needs a <br> so contenteditable allows cursor placement
     $line.appendChild(document.createElement('br'));
 
+    for (const widget of widgetDecorations) {
+      $line.appendChild(createWidget(widget));
+    }
+
     return;
   }
 
@@ -47,9 +51,19 @@ function buildLineContent(
 
   const boundaries = [...boundarySet].sort((a, b) => a - b);
 
-  for (let i = 0; i < boundaries.length - 1; i++) {
-    const segmentStart = boundaries[i]!;
-    const segmentEnd = boundaries[i + 1]!;
+  // A line start has no preceding segment to append 'after' widgets from.
+  for (const widget of widgetDecorations) {
+    if (widget.offset === lineStart && widget.side === 'after') {
+      $line.appendChild(createWidget(widget));
+    }
+  }
+
+  for (const [i, segmentStart] of boundaries.entries()) {
+    const segmentEnd = boundaries[i + 1];
+
+    if (segmentEnd === undefined) {
+      break;
+    }
 
     // Insert widgets whose position falls at segmentStart ('before' side)
     for (const widget of widgetDecorations) {
@@ -124,6 +138,14 @@ function buildLineContent(
 function createWidget(decoration: WidgetDecoration): HTMLSpanElement {
   const $span = RCWidgetBlot.create() as HTMLSpanElement;
 
+  if (decoration.accessible) {
+    $span.removeAttribute('aria-hidden');
+  }
+
+  if (decoration.layout) {
+    $span.classList.add(`widget--${decoration.layout}`);
+  }
+
   $span.appendChild(decoration.create());
 
   return $span;
@@ -131,6 +153,8 @@ function createWidget(decoration: WidgetDecoration): HTMLSpanElement {
 
 export class RCDocument {
   private readonly scroll: RCScrollBlot;
+
+  private readonly lineSignatures = new WeakMap<HTMLElement, string>();
 
   constructor($documentRoot: HTMLDivElement) {
     const registry = createRegistry();
@@ -155,6 +179,7 @@ export class RCDocument {
     const lineDecorationsMap = new Map<number, LineDecoration[]>();
     const markDecorations: MarkDecoration[] = [];
     const widgetDecorations: WidgetDecoration[] = [];
+    const foldedLines = new Set<number>();
 
     for (const decoration of decorations) {
       if (decoration.type === 'line') {
@@ -165,8 +190,16 @@ export class RCDocument {
         lineDecorationsMap.set(decoration.line, lineDecorations);
       } else if (decoration.type === 'mark') {
         markDecorations.push(decoration);
-      } else {
+      } else if (decoration.type === 'widget') {
         widgetDecorations.push(decoration);
+      } else {
+        for (
+          let line = Math.max(2, decoration.fromLine);
+          line <= decoration.toLine && line <= lines.length;
+          line++
+        ) {
+          foldedLines.add(line);
+        }
       }
     }
 
@@ -176,21 +209,50 @@ export class RCDocument {
     // Absolute character offset of the first character on the current line
     let lineStartOffset = 0;
 
-    for (let i = 0; i < lines.length; i++) {
-      const lineText = lines[i]!;
+    for (const [i, lineText] of lines.entries()) {
       const lineNum = i + 1;
       const lineStart = lineStartOffset;
       const lineEnd = lineStart + lineText.length;
+      const lineDecorations = lineDecorationsMap.get(lineNum) ?? [];
+      const marks = markDecorations.filter((d) => d.from < lineEnd && d.to > lineStart);
+      const widgets = widgetDecorations.filter((d) => d.offset >= lineStart && d.offset <= lineEnd);
+      const folded = foldedLines.has(lineNum);
+      // Only opt-in keyed widgets promise stable content between plugin passes.
+      const signature =
+        widgets.length > 0 && widgets.every((widget) => widget.key)
+          ? JSON.stringify([
+              lineText,
+              folded,
+              [...lineDecorations, ...marks, ...widgets].map(({ id: _id, ...decoration }) =>
+                decoration.type === 'line'
+                  ? { ...decoration, gutterContent: undefined }
+                  : decoration,
+              ),
+            ])
+          : undefined;
+
+      const $existing = $lines[i];
+
+      if (
+        $existing &&
+        signature &&
+        this.lineSignatures.get($existing) === signature &&
+        getLineText($existing) === lineText
+      ) {
+        lineStartOffset += lineText.length + 1;
+
+        continue;
+      }
 
       // Reuse an existing line element when available, otherwise create a new one.
       let $block: HTMLElement;
 
-      if (i < $lines.length) {
-        $block = $lines[i]!;
+      if ($existing) {
+        $block = $existing;
 
         // Remove all attributes so stale class names, data-*, and title don't bleed through
-        while ($block.attributes.length > 0) {
-          $block.removeAttribute($block.attributes[0]!.name);
+        for (const name of $block.getAttributeNames()) {
+          $block.removeAttribute(name);
         }
 
         $block.className = 'line';
@@ -206,7 +268,9 @@ export class RCDocument {
       }
 
       // Apply line decorations
-      const lineDecorations = lineDecorationsMap.get(lineNum) ?? [];
+      if (folded) {
+        $block.hidden = true;
+      }
 
       for (const decoration of lineDecorations) {
         if (decoration.className) {
@@ -223,10 +287,17 @@ export class RCDocument {
       }
 
       // Narrow decorations to those overlapping this line
-      const marks = markDecorations.filter((d) => d.from < lineEnd && d.to > lineStart);
-      const widgets = widgetDecorations.filter((d) => d.offset >= lineStart && d.offset <= lineEnd);
-
       buildLineContent($block, lineText, lineStart, marks, widgets);
+
+      if (widgets.some((widget) => widget.layout === 'trailing')) {
+        $block.classList.add('line--trailing-widget');
+      }
+
+      if (signature) {
+        this.lineSignatures.set($block, signature);
+      } else {
+        this.lineSignatures.delete($block);
+      }
 
       // Set diagnostic message via data attribute — rendered by ::after pseudo-element
       // so it is completely outside the DOM selection and clipboard path.
@@ -257,7 +328,7 @@ export class RCDocument {
 
     // Remove trailing line elements left over from a shorter previous value
     while ($documentRoot.children.length > lines.length) {
-      $documentRoot.removeChild($documentRoot.lastChild!);
+      $documentRoot.lastChild?.remove();
     }
   }
 
@@ -335,6 +406,7 @@ function extractRawText($el: HTMLElement): string {
       if (node.tagName === 'BR') {
         result += '\n';
         firstBlock = false;
+
         continue;
       }
 

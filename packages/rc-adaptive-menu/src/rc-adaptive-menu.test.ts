@@ -3,6 +3,7 @@ import { afterEach, expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
 import type { RCAdaptiveMenu } from './rc-adaptive-menu.js';
@@ -520,7 +521,7 @@ test('uses the explicit fallback state when the Popover API is unavailable', asy
   host.openMenu('none');
   await host.updateComplete;
 
-  expect($popup).toHaveAttribute('data-fallback-open');
+  expect($popup).toHaveAttribute('data-rc-popover-fallback-open');
   expect(getComputedStyle($popup!).display).toBe('flex');
 });
 
@@ -539,4 +540,159 @@ test('has no automated accessibility violations in its live open state', async (
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   await expectNoA11yViolations(host);
+});
+
+test('opens the overflow popup at the block end, inline-end aligned, in vertical text', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl; position: fixed; left: 250px; top: 400px;">
+      <rc-adaptive-menu data-testid="host">
+        <button type="button" slot="overflow">Utility</button>
+      </rc-adaptive-menu>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCAdaptiveMenu;
+
+  await settle(host);
+  host.openMenu('none');
+
+  const trigger = host.shadowRoot?.querySelector('#overflow-trigger') as HTMLElement;
+  const popup = host.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  // Left of the trigger (the block end), bottom edges aligned (the inline end).
+  // Placed low enough that the popup has room to extend upward.
+  await vi.waitFor(() => {
+    expect(popup.getBoundingClientRect().right).toBeLessThanOrEqual(
+      trigger.getBoundingClientRect().left,
+    );
+
+    expect(popup.getBoundingClientRect().bottom).toBeCloseTo(
+      trigger.getBoundingClientRect().bottom,
+      0,
+    );
+  });
+});
+
+test('styles overflowed rows from inherited item tokens inside a foreign shadow root', async () => {
+  const outer = document.createElement('div');
+  const shadowRoot = outer.attachShadow({ mode: 'open' });
+  const host = document.createElement('rc-adaptive-menu');
+  const action = document.createElement('button');
+  const leading = document.createElement('span');
+  const label = document.createElement('span');
+  const nested = document.createElement('rc-menu-button');
+  const nestedTrigger = document.createElement('button');
+
+  outer.style.cssText = [
+    '--rc-item-font-size: 17px',
+    '--rc-item-letter-spacing: 0.5px',
+    '--rc-item-icon-size: 22px',
+    '--rc-adaptive-menu-item-min-block-size: 44px',
+    '--rc-adaptive-menu-trigger-background: rgb(1, 2, 3)',
+    '--rc-adaptive-menu-trigger-hover-background: rgb(4, 5, 6)',
+  ].join(';');
+
+  host.setAttribute('max-shown', '0');
+  action.type = 'button';
+  leading.setAttribute('data-rc-menu-leading', '');
+  leading.textContent = '*';
+  label.setAttribute('data-rc-menu-label', '');
+  label.textContent = 'Edit';
+  action.append(leading, label);
+  nestedTrigger.type = 'button';
+  nestedTrigger.slot = 'trigger';
+  nestedTrigger.textContent = 'More';
+  nested.append(nestedTrigger);
+  host.append(action, nested);
+  shadowRoot.append(host);
+  document.body.append(outer);
+
+  try {
+    await settle(host);
+
+    const trigger = host.shadowRoot!.querySelector<HTMLButtonElement>('#overflow-trigger')!;
+
+    expect(action).toHaveAttribute('data-rc-action-overflowed');
+    expect(nested).toHaveAttribute('data-rc-action-overflowed');
+    expect(getComputedStyle(label).fontSize).toBe('17px');
+    expect(getComputedStyle(label).letterSpacing).toBe('0.5px');
+    expect(getComputedStyle(leading).fontSize).toBe('22px');
+
+    expect(
+      getComputedStyle(nested).getPropertyValue('--rc-menu-button-trigger-block-size').trim(),
+    ).toBe('44px');
+
+    expect(getComputedStyle(trigger).backgroundColor).toBe('rgb(1, 2, 3)');
+
+    await userEvent.hover(trigger);
+
+    expect(getComputedStyle(trigger).backgroundColor).toBe('rgb(4, 5, 6)');
+  } finally {
+    outer.remove();
+  }
+});
+
+test('names the toolbar and overflow trigger in its own locale; an authored label wins', async () => {
+  registerMessages('ar', { 'rc-adaptive-menu': { label: 'إجراءات', overflow: 'المزيد' } });
+
+  const screen = render(html`
+    <rc-adaptive-menu lang="ar" dir="rtl" max-shown="1">
+      <button type="button">First</button>
+      <button type="button">Second</button>
+    </rc-adaptive-menu>
+  `);
+  const host = screen.container.querySelector('rc-adaptive-menu') as RCAdaptiveMenu;
+
+  await host.updateComplete;
+
+  expect(host.shadowRoot?.querySelector('#overflow-trigger')?.getAttribute('aria-label')).toBe(
+    'المزيد',
+  );
+
+  expect(host.shadowRoot?.querySelector('[part~="root"]')?.getAttribute('aria-label')).toBe(
+    'إجراءات',
+  );
+
+  host.label = 'Recipe actions';
+  await host.updateComplete;
+
+  expect(host.shadowRoot?.querySelector('[part~="root"]')?.getAttribute('aria-label')).toBe(
+    'Recipe actions',
+  );
+});
+
+test('accepts actions added while its first render is still pending', async () => {
+  const Menu = customElements.get('rc-adaptive-menu') as unknown as typeof RCAdaptiveMenu;
+
+  // Holds the first render back one task, the state the observer saw when actions
+  // arrived before the shadow tree existed.
+  class DeferredMenu extends Menu {
+    protected override scheduleUpdate(): Promise<unknown> {
+      return new Promise<void>((resolve) => setTimeout(resolve)).then(() => super.scheduleUpdate());
+    }
+  }
+
+  customElements.define('rc-test-deferred-adaptive-menu', DeferredMenu);
+
+  const errors: unknown[] = [];
+  const onError = (event: ErrorEvent) => errors.push(event.error);
+  const host = document.createElement('rc-test-deferred-adaptive-menu') as RCAdaptiveMenu;
+
+  window.addEventListener('error', onError);
+  host.maxShown = 1;
+  document.body.append(host);
+
+  for (const name of ['One', 'Two', 'Three']) {
+    host.append(Object.assign(document.createElement('button'), { textContent: name }));
+  }
+
+  try {
+    await settle(host);
+
+    expect(errors).toEqual([]);
+    expect(host.$overflowedActions).toHaveLength(2);
+    expect(host.$promotedActions[0]).toHaveAttribute('tabindex', '0');
+  } finally {
+    window.removeEventListener('error', onError);
+    host.remove();
+  }
 });

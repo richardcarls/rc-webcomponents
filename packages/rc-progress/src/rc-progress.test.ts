@@ -4,7 +4,7 @@ import { html } from 'lit';
 
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
 import './define.js';
-import type { RCProgress } from './rc-progress.js';
+import { RCProgress } from './rc-progress.js';
 
 test('rc-progress renders fill part', async () => {
   const screen = render(html`
@@ -17,6 +17,71 @@ test('rc-progress renders fill part', async () => {
   await host.updateComplete;
 
   expect(host.shadowRoot?.querySelector('[part="fill"]')).toBeTruthy();
+});
+
+test('rc-progress fill transition is themeable rather than hardcoded', async () => {
+  const screen = render(html`
+    <rc-progress
+      data-testid="host"
+      style="--rc-progress-fill-transition-duration: 400ms; --rc-progress-fill-transition-easing: linear"
+    >
+      <progress value="25" max="100" aria-label="Sync"></progress>
+    </rc-progress>
+  `);
+  const host = screen.getByTestId('host').element() as RCProgress;
+
+  await host.updateComplete;
+
+  const fill = host.shadowRoot?.querySelector<HTMLElement>('[part="fill"]');
+
+  expect(fill).toBeTruthy();
+
+  const styles = getComputedStyle(fill!);
+
+  expect(styles.transitionDuration).toBe('0.4s');
+  expect(styles.transitionTimingFunction).toBe('linear');
+});
+
+test('rc-progress indeterminate loop paces at a constant rate, not eased', async () => {
+  const screen = render(html`
+    <rc-progress data-testid="host" indeterminate>
+      <progress aria-label="Sync"></progress>
+    </rc-progress>
+  `);
+  const host = screen.getByTestId('host').element() as RCProgress;
+
+  await host.updateComplete;
+
+  const fill = host.shadowRoot?.querySelector<HTMLElement>('[part="fill"]');
+
+  expect(fill).toBeTruthy();
+  expect(getComputedStyle(fill!).animationTimingFunction).toBe('linear');
+});
+
+test('rc-progress indeterminate sweep travels start-to-end in both writing directions', async () => {
+  const screen = render(html`
+    <rc-progress data-testid="host" indeterminate>
+      <progress aria-label="Sync"></progress>
+    </rc-progress>
+  `);
+  const host = screen.getByTestId('host').element() as RCProgress;
+
+  await host.updateComplete;
+
+  // translate() percentages resolve against the element's own box and its
+  // direction is physical, not logical, so the sign of this internal token
+  // is what keeps the sweep going start-to-end as the writing direction
+  // flips, rather than the animation itself changing per direction.
+  expect(
+    getComputedStyle(host).getPropertyValue('--_rc-progress-indeterminate-direction').trim(),
+  ).toBe('1');
+
+  host.dir = 'rtl';
+  await host.updateComplete;
+
+  expect(
+    getComputedStyle(host).getPropertyValue('--_rc-progress-indeterminate-direction').trim(),
+  ).toBe('-1');
 });
 
 test('rc-progress default value display renders a percentage', async () => {
@@ -326,4 +391,40 @@ test('rc-progress has no automated accessibility violations while indeterminate'
 
   await host.updateComplete;
   await expectNoA11yViolations(host);
+});
+
+test('reduced motion zeros the determinate fill transition but stops the indeterminate loop outright', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test proves the split by construction: the determinate
+  // fill's inline-size transition (spatial) drops to 0ms, while the
+  // indeterminate loop, an unbounded continuous translate with no
+  // meaningful "shortened" form, stops outright instead.
+  const css = RCProgress.styles.cssText;
+
+  expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+
+  const motionBlock = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+
+  expect(motionBlock).toContain('transition-duration: 0ms;');
+  expect(motionBlock).toContain('animation: none;');
+  expect(motionBlock).toContain('translate: none;');
+});
+
+test('formats the default percentage for its own locale', async () => {
+  const screen = render(html`
+    <rc-progress lang="ar" dir="rtl" display="inline-end">
+      <progress max="100" value="25" aria-label="التقدم"></progress>
+    </rc-progress>
+  `);
+  const host = screen.container.querySelector('rc-progress') as RCProgress;
+
+  await host.updateComplete;
+
+  const expected = new Intl.NumberFormat('ar', { style: 'percent' }).format(0.25);
+
+  await vi.waitFor(() => expect(host.shadowRoot?.textContent).toContain(expected));
+
+  host.lang = 'en';
+  await vi.waitFor(() => expect(host.shadowRoot?.textContent).toContain('25%'));
 });

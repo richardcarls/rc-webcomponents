@@ -2,10 +2,9 @@ import { html } from 'lit';
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
-
 import './define.js';
-
 import type { RCTransferList } from './rc-transfer-list.js';
 
 function shadow(host: RCTransferList): ShadowRoot {
@@ -23,6 +22,7 @@ test('rc-transfer-list populates panels from select[multiple] option state', asy
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   expect(host.available.map((o) => o.value)).toEqual(['a', 'c']);
@@ -38,6 +38,7 @@ test('rc-transfer-list renders owned UI in shadow DOM', async () => {
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   expect(host.shadowRoot).toBe(host.renderRoot);
@@ -77,6 +78,25 @@ test('transfer-list option tokens flow into both listbox option rows', async () 
   }
 });
 
+test('listbox surface tokens include the canonical radius hook', async () => {
+  const screen = render(html`
+    <rc-transfer-list data-testid="host" style="--rc-transfer-list-listbox-radius: 11px">
+      <select multiple>
+        <option value="a">Alpha</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+
+  await host.updateComplete;
+
+  const $listbox = shadow(host).querySelector<HTMLElement>('rc-listbox');
+
+  expect($listbox).not.toBeNull();
+
+  expect(getComputedStyle($listbox as HTMLElement).borderRadius).toBe('11px');
+});
+
 test('rc-transfer-list keeps the native select connected and hidden after upgrade', async () => {
   const screen = render(html`
     <rc-transfer-list data-testid="host">
@@ -86,6 +106,7 @@ test('rc-transfer-list keeps the native select connected and hidden after upgrad
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   const $select = host.querySelector('select') as HTMLSelectElement;
@@ -108,6 +129,7 @@ test('rc-transfer-list compact reflects and uses the compact action layout', asy
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   const $actions = shadow(host).querySelector('#actions') as HTMLElement;
@@ -166,6 +188,7 @@ test('rc-transfer-list moves highlighted selected options', async () => {
     { value: 'factory', label: 'Factory' },
     { value: 'mine', label: 'Mine' },
   ];
+
   await host.updateComplete;
 
   shadow(host).querySelectorAll('rc-listbox')[1]?.setSelectedValues(['mine']);
@@ -183,6 +206,7 @@ test('rc-transfer-list reflects empty and selection states', async () => {
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   const availablePanel = shadow(host).querySelector('[part~="available-panel"]');
@@ -200,6 +224,7 @@ test('rc-transfer-list reflects empty and selection states', async () => {
         detail: { value: ['factory'] },
       }),
     );
+
   await host.updateComplete;
 
   expect(availablePanel?.hasAttribute('data-has-selection')).toBe(true);
@@ -214,6 +239,7 @@ test('rc-transfer-list visibly highlights selected listbox options by default', 
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   shadow(host).querySelector('rc-listbox')?.setSelectedValues(['factory']);
@@ -238,6 +264,7 @@ test('rc-transfer-list centers action buttons against listbox height', async () 
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   const $actions = shadow(host).querySelector('[part~="actions"]') as HTMLElement;
@@ -264,6 +291,7 @@ test('rc-transfer-list reflects reorder capability states', async () => {
     { value: 'mine', label: 'Mine' },
     { value: 'terraforming', label: 'Terraforming' },
   ];
+
   await host.updateComplete;
 
   shadow(host)
@@ -275,6 +303,7 @@ test('rc-transfer-list reflects reorder capability states', async () => {
         detail: { value: ['mine'] },
       }),
     );
+
   await host.updateComplete;
 
   const root = shadow(host).querySelector('[part="root"]');
@@ -295,6 +324,7 @@ test('rc-transfer-list addSelected syncs selection back to select[multiple]', as
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   shadow(host).querySelector('rc-listbox')?.setSelectedValues(['a']);
@@ -315,9 +345,11 @@ test('rc-transfer-list rebinds when the native select child is replaced', async 
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   const $nextSelect = document.createElement('select');
+
   $nextSelect.multiple = true;
   $nextSelect.add(new Option('Bravo', 'b', false, true));
 
@@ -335,6 +367,7 @@ test('rc-transfer-list restores the native select when disconnected', async () =
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   const $select = host.querySelector('select') as HTMLSelectElement;
@@ -359,19 +392,25 @@ test('rc-transfer-list Alt+ArrowRight transfers highlighted item', async () => {
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   await host.updateComplete;
 
   const $listbox = shadow(host).querySelector('rc-listbox') as HTMLElement & {
     setSelectedValues(values: string[]): void;
   };
+
   $listbox.setSelectedValues(['x']);
+
   $listbox.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
   );
+
   await host.updateComplete;
 
   expect(host.selected.map((o) => o.value)).toEqual(['x']);
+
   const select = host.querySelector('select') as HTMLSelectElement;
+
   expect(select.options[0].selected).toBe(true);
 });
 
@@ -381,6 +420,7 @@ test('rc-transfer-list has no automated accessibility violations', async () => {
       <select multiple></select>
     </rc-transfer-list>
   `);
+
   await expectNoA11yViolations(screen.getByTestId('host').element());
 });
 
@@ -395,6 +435,7 @@ test('rc-transfer-list defaultSelected populates right panel before user interac
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   host.defaultSelected = [{ value: 'b', label: 'Bravo' }];
   await host.updateComplete;
 
@@ -413,6 +454,7 @@ test('rc-transfer-list explicit selected setter overrides defaultSelected', asyn
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   host.defaultSelected = [{ value: 'a', label: 'Alpha' }];
   host.selected = [{ value: 'b', label: 'Bravo' }];
   await host.updateComplete;
@@ -430,6 +472,7 @@ test('rc-transfer-list defaultSelected does not fire rc-transfer-list-change', a
     </rc-transfer-list>
   `);
   const host = screen.getByTestId('host').element() as RCTransferList;
+
   host.defaultSelected = [{ value: 'a', label: 'Alpha' }];
   await host.updateComplete;
 
@@ -438,11 +481,15 @@ test('rc-transfer-list defaultSelected does not fire rc-transfer-list-change', a
 
 test('rc-transfer-list defaultSelected set before connect is applied on connect', async () => {
   const el = document.createElement('rc-transfer-list') as RCTransferList;
+
   el.defaultSelected = [{ value: 'x', label: 'X' }];
 
   const sel = document.createElement('select');
+
   sel.setAttribute('multiple', '');
+
   const opt = document.createElement('option');
+
   opt.value = 'x';
   opt.text = 'X';
   sel.add(opt);
@@ -453,4 +500,62 @@ test('rc-transfer-list defaultSelected set before connect is applied on connect'
 
   expect(el.selected.map((o) => o.value)).toEqual(['x']);
   document.body.removeChild(el);
+});
+
+test('rc-transfer-list Alt+ArrowLeft transfers toward the selected list in RTL', async () => {
+  const screen = render(html`
+    <div dir="rtl">
+      <rc-transfer-list data-testid="host">
+        <select multiple>
+          <option value="x">Xavier</option>
+        </select>
+      </rc-transfer-list>
+    </div>
+  `);
+  const host = screen.getByTestId('host').element() as RCTransferList;
+
+  await host.updateComplete;
+
+  const $listbox = shadow(host).querySelector('rc-listbox') as HTMLElement & {
+    setSelectedValues(values: string[]): void;
+  };
+
+  $listbox.setSelectedValues(['x']);
+
+  $listbox.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
+  );
+
+  await host.updateComplete;
+
+  expect(host.selected.map((o) => o.value)).toEqual(['x']);
+});
+
+test('renders action and list text in its own locale; authored labels win', async () => {
+  registerMessages('ar', {
+    'rc-transfer-list': { available: 'المتاح', selected: 'المحدد', add: 'إضافة' },
+  });
+
+  const screen = render(html`
+    <rc-transfer-list lang="ar" dir="rtl" selected-label="المسار">
+      <select multiple>
+        <option value="a">Alpha</option>
+      </select>
+    </rc-transfer-list>
+  `);
+  const host = screen.container.querySelector('rc-transfer-list') as RCTransferList;
+
+  await host.updateComplete;
+
+  const root = host.shadowRoot!;
+
+  expect(root.querySelector('#available-label')?.textContent?.trim()).toBe('المتاح');
+  expect(root.querySelector('#selected-label')?.textContent?.trim()).toBe('المسار');
+
+  const add = root.querySelector<HTMLButtonElement>('[part~="add-button"]')!;
+
+  expect(add.textContent?.replace(/\s+/g, ' ').trim()).toBe('إضافة →');
+  // The arrow is decorative, so the button's name is the word alone.
+  expect(add.querySelector('.arrow')?.getAttribute('aria-hidden')).toBe('true');
+  expect(getComputedStyle(add.querySelector('.arrow')!).transform).not.toBe('none');
 });

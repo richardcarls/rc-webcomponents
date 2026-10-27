@@ -50,6 +50,7 @@ export function createShikiPlugin(
       for (const line of result.tokens) {
         for (const token of line) {
           const len = token.content.length;
+
           if (token.color) {
             decorations.push({
               type: 'mark',
@@ -58,8 +59,10 @@ export function createShikiPlugin(
               color: token.color,
             });
           }
+
           offset += len;
         }
+
         offset += 1; // '\n'
       }
 

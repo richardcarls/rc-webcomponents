@@ -1,0 +1,90 @@
+@layer rc-theme-win31.components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) {
+    --rc-list-item-gap: var(--win31-gap-tight);
+    --rc-list-item-min-block-size: var(--win31-listbox-row-height);
+    --rc-list-item-padding-block: var(--win31-padding-block);
+    --rc-list-item-padding-inline: var(--win31-padding-inline);
+    /*
+     * No hover wash. Windows 3.1 highlighted menu items under the pointer and
+     * left list rows alone, so a row's resting and hovered appearance match.
+     */
+    --rc-list-item-hover-bg: transparent;
+    --rc-list-item-active-bg: var(--win31-color-selection);
+    --rc-list-item-selected-bg: var(--win31-color-selection);
+    --rc-list-item-selected-color: var(--win31-color-selection-text);
+    --rc-list-item-disabled-opacity: 1;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-list {
+    --rc-list-padding-inline: 0;
+    --rc-list-leading-gap: var(--win31-gap);
+    --rc-list-trailing-gap: var(--win31-gap);
+    --rc-list-row-gap: 0;
+    --rc-list-item-min-block-size: var(--win31-listbox-row-height);
+    --rc-list-item-padding-block: var(--win31-padding-block);
+    --rc-list-item-color: var(--win31-color-field-text);
+    --rc-list-item-background: transparent;
+    --rc-list-item-selected-color: var(--win31-color-selection-text);
+    --rc-list-item-selected-background: var(--win31-color-selection);
+    --rc-list-item-divider: 0;
+    --rc-list-item-hover-state-layer-opacity: 0;
+    --rc-list-item-focus-state-layer-opacity: 0;
+    --rc-list-item-pressed-state-layer-opacity: 0;
+    --rc-list-item-disabled-opacity: 1;
+    --rc-list-item-transition-duration: 0ms;
+    color: var(--win31-color-field-text);
+    background: var(--win31-color-field);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-list[variant='segmented'] {
+    --rc-list-row-gap: var(--win31-gap-tight);
+    --rc-list-item-background: var(--win31-color-surface);
+    --rc-list-item-border: var(--win31-hairline) solid;
+    --rc-list-item-border-radius: var(--win31-radius);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-list::part(state-layer) {
+    display: none;
+  }
+
+  /*
+   * Focus and selection are two separate marks. A 3.1 list could hold a
+   * selected row that was not the focused row, so the dotted rectangle is drawn
+   * in addition to the inverse-video selection, switching to white inside it so
+   * it stays visible against the navy.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-list-item:focus-visible {
+    outline: var(--win31-focus-ring);
+    outline-offset: calc(-1 * var(--win31-unit));
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-list-item[selected]:focus-visible {
+    outline: var(--win31-focus-ring-selected);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-list-item
+    > :where([data-rc-list-supporting], small) {
+    display: block;
+    color: inherit;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-list-item > img[slot='leading'] {
+    image-rendering: pixelated;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-listbox,
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) [part~='listbox'] {
+    --rc-listbox-option-gap: var(--rc-list-item-gap);
+    --rc-listbox-option-min-block-size: var(--rc-list-item-min-block-size);
+    --rc-listbox-option-padding-block: var(--rc-list-item-padding-block);
+    --rc-listbox-option-padding-inline: var(--rc-list-item-padding-inline);
+    --rc-listbox-hover-bg: var(--rc-list-item-hover-bg);
+    --rc-listbox-active-bg: var(--rc-list-item-active-bg);
+    --rc-listbox-selected-bg: var(--rc-list-item-selected-bg);
+    --rc-listbox-selected-color: var(--rc-list-item-selected-color);
+    --rc-listbox-disabled-opacity: 1;
+  }
+}

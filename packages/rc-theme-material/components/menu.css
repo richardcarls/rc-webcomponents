@@ -1,24 +1,19 @@
 @layer rc-theme-material.components {
-  /* Container + token overrides ------------------------------------------- */
-  :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu {
-    background: var(--md-menu-container-color, var(--md-sys-color-surface-container, Canvas));
-    border: none;
-    border-radius: var(--md-menu-container-shape, 4px);
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.3),
-      0 2px 6px 2px rgba(0, 0, 0, 0.15);
-    padding-block: 0.5rem;
-    color: var(--md-sys-color-on-surface, CanvasText);
-    font-family: var(--md-sys-typescale-body-large-font, inherit);
-    font-size: var(--md-sys-typescale-body-large-size, 1rem);
-    line-height: var(--md-sys-typescale-body-large-line-height, 1.5rem);
-
+  /*
+   * Token overrides. The container comes from the bridge's --rc-popup-* and
+   * --rc-item-* tokens. Declared on the theme root rather than on rc-menu so
+   * menus rendered inside other shadow roots inherit the same values.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) {
     /* Item geometry — M3 menu item: 48dp height, 12dp h-padding, 12dp gap */
     --rc-menu-item-min-block-size: 3rem;
     --rc-menu-item-padding-block: 0;
     --rc-menu-item-padding-inline: 0.75rem;
     --rc-menu-item-gap: 0.75rem;
-    --rc-menu-item-transition: background-color 150ms ease, color 150ms ease;
+    --rc-menu-item-transition:
+      background-color var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      color var(--rc-motion-effects-duration-fast, 150ms) var(--rc-motion-effects-easing-fast, ease);
 
     /* State layers derived from on-surface (M3: 8% hover, 12% keyboard cursor) */
     --rc-menu-hover-bg: color-mix(
@@ -71,26 +66,18 @@
     border-radius: 0;
   }
 
-  /*
-   * Sizes an item's own leading icon to the M3 menu leading-icon size.
-   * Unlike an icon-only rc-button, a menu item routinely combines an icon
-   * *and* a label (they aren't mutually exclusive), so "first child" isn't
-   * a safe stand-in for "the icon" here the way it is there — this only
-   * sizes content the consumer has actually marked as an icon.
-   */
-  :where(.rc-theme-material, :host(.rc-theme-material))
-    rc-menu
-    :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'])
-    :is([data-rc-icon], [data-rc-menu-leading], [data-rc-menu-icon]) {
-    flex: none;
-    font-size: 1.5rem;
-    line-height: 1.5rem;
-  }
-
   /* Current item (navigation active / selected radio row) gets secondary-container */
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-menu [aria-current='true'] {
     background: var(--md-sys-color-secondary-container, Highlight);
     color: var(--md-sys-color-on-secondary-container, HighlightText);
+  }
+
+  /* M3 single-choice menus use the same trailing check affordance as other
+   * selected menu rows; role=menuitemradio continues to carry semantics. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-menu
+    [role='menuitemradio'][aria-checked='true']::after {
+    content: '✓';
   }
 
   /* Section / group labels (optional, for menu segmentation) -------------- */

@@ -2,7 +2,9 @@ import { html } from 'lit';
 import { expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { registerMessages } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import type { RCChip } from '@rcarls/rc-chip';
 import './define.js';
 import type { RCChipGroup } from './rc-chip-group.js';
@@ -116,6 +118,45 @@ test('restores authored chip variants when coordination ends', async () => {
   await settle($host);
 
   expect($chip.variant).toBe('input');
+});
+
+test('expanded readonly chips keep one row pitch with the disclosure toggle', async () => {
+  const screen = render(html`
+    <rc-chip-group
+      data-testid="host"
+      style="inline-size: 12rem; --rc-chip-group-column-gap: 0; --rc-chip-group-row-gap: 0; --rc-chip-block-size: 32px; --rc-chip-touch-target-block-size: 48px;"
+      max-rows="1"
+      default-expanded
+    >
+      ${Array.from(
+        { length: 8 },
+        (_, index) => html`
+          <rc-chip readonly>
+            <span data-rc-chip-label style="inline-size: 5rem;">${index}</span>
+          </rc-chip>
+        `,
+      )}
+    </rc-chip-group>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('wrap'));
+
+  const rowTops = [
+    ...new Set(
+      [...host.querySelectorAll<HTMLElement>('rc-chip > [data-rc-chip-label]')].map((label) =>
+        Math.round(label.getBoundingClientRect().top),
+      ),
+    ),
+  ];
+  const pitches = rowTops.slice(1).map((top, index) => top - rowTops[index]);
+
+  expect(rowTops.length).toBeGreaterThan(2);
+  expect(new Set(pitches)).toEqual(new Set([48]));
 });
 
 test('auto layout collapses after max rows and toggles back to wrapped layout', async () => {
@@ -236,6 +277,136 @@ test('preserves horizontal scroll while selected chip geometry is remeasured', a
   expect(selectedRect.right).toBeLessThanOrEqual(rootRect.right + 0.5);
 });
 
+function lateMarkerGroup(name: string) {
+  return html`
+    <fieldset>
+      <legend>Sort by</legend>
+      <rc-chip-group
+        data-testid="host"
+        kind="filter"
+        selection="single"
+        layout="scroll"
+        style="inline-size: 12rem;"
+      >
+        ${Array.from(
+          { length: 8 },
+          (_, index) => html`
+            <rc-chip>
+              <label>
+                <input type="radio" name=${name} value=${index} ?checked=${index === 0} />
+                ${index === 0 ? html`<span data-selected-marker>✓✓</span>` : ''} Option ${index + 1}
+              </label>
+            </rc-chip>
+          `,
+        )}
+      </rc-chip-group>
+    </fieldset>
+  `;
+}
+
+function frames(count: number): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const step = (remaining: number) =>
+      remaining ? requestAnimationFrame(() => step(remaining - 1)) : resolve();
+
+    step(count);
+  });
+}
+
+/** Moves the check mark like an app re-rendering after its own state change. */
+async function moveMarkerLater(host: RCChipGroup, $to: HTMLInputElement): Promise<void> {
+  // The old mark leaves first, shortening the row so the scroll offset clamps,
+  // and the new one arrives in a later frame.
+  await frames(4);
+  host.querySelector('[data-selected-marker]')?.remove();
+  await frames(4);
+
+  const marker = document.createElement('span');
+
+  marker.dataset.selectedMarker = '';
+  marker.textContent = '✓✓';
+  $to.insertAdjacentElement('afterend', marker);
+  await frames(4);
+}
+
+test('keeps a selected end chip visible when an app moves the check mark later', async () => {
+  const screen = render(lateMarkerGroup('late-marker'));
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+  const radios = host.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+  const last = radios[radios.length - 1];
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
+  root.scrollLeft = root.scrollWidth;
+  expect(root.scrollLeft).toBeGreaterThan(0);
+
+  last.click();
+  await vi.waitFor(() => expect(last.checked).toBe(true));
+  await moveMarkerLater(host, last);
+
+  await vi.waitFor(() => {
+    const rootRect = root.getBoundingClientRect();
+    const selectedRect = last.closest('rc-chip')!.getBoundingClientRect();
+
+    expect(selectedRect.left).toBeGreaterThanOrEqual(rootRect.left - 0.5);
+    expect(selectedRect.right).toBeLessThanOrEqual(rootRect.right + 0.5);
+  });
+});
+
+test('reveals an off-screen chip under CSS zoom', async () => {
+  const screen = render(lateMarkerGroup('zoomed-reveal'));
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  host.style.zoom = '0.5';
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+  const lastChip = host.querySelectorAll<HTMLElement>('rc-chip').item(7)!;
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
+
+  root.scrollLeft = 0;
+
+  (host as unknown as { _keepTargetVisible(target: HTMLElement): void })._keepTargetVisible(
+    lastChip,
+  );
+
+  const rootRect = root.getBoundingClientRect();
+  const selectedRect = lastChip.getBoundingClientRect();
+
+  expect(root.scrollLeft).toBeGreaterThan(0);
+  // WebKit rounds scrollLeft to CSS pixels, allowing a subpixel visual remainder.
+  expect(selectedRect.right).toBeLessThanOrEqual(rootRect.right + 1);
+});
+
+test('a user scroll after selecting releases the chip from later reveals', async () => {
+  const screen = render(lateMarkerGroup('late-marker-released'));
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+  const radios = host.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+  const last = radios[radios.length - 1];
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
+  root.scrollLeft = root.scrollWidth;
+
+  last.click();
+  await vi.waitFor(() => expect(last.checked).toBe(true));
+  await frames(4);
+
+  // The user scrolls back to the start before the app's late re-render.
+  root.dispatchEvent(new WheelEvent('wheel', { deltaX: -1000, bubbles: true }));
+  root.scrollLeft = 0;
+  await moveMarkerLater(host, last);
+
+  expect(root.scrollLeft).toBe(0);
+});
+
 test('host expanded writes are silent', async () => {
   const listener = vi.fn();
   const screen = render(html`<rc-chip-group data-testid="host"></rc-chip-group>`);
@@ -307,4 +478,194 @@ test('has no automated accessibility violations with native filter semantics', a
   const fieldset = (await screen.getByTestId('fieldset').element()) as HTMLFieldSetElement;
 
   await expectNoA11yViolations(fieldset);
+});
+
+/** The arrow that points toward the inline end in each flow, written out rather than derived. */
+const NEXT_KEY: Record<string, string> = {
+  'horizontal-tb ltr': 'ArrowRight',
+  'horizontal-tb rtl': 'ArrowLeft',
+  'vertical-rl ltr': 'ArrowDown',
+  'vertical-rl rtl': 'ArrowUp',
+  'vertical-lr ltr': 'ArrowDown',
+};
+
+test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
+  'assist mode moves to the next chip with the inline-end arrow in %s',
+  async (label, flow) => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-chip-group data-testid="host" kind="assist" layout="wrap" label="Recipe actions">
+            <button type="button">One</button>
+            <button type="button">Two</button>
+          </rc-chip-group>
+        `,
+        flow,
+      ),
+    );
+    const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+    await settle(host);
+    await vi.waitFor(() => expect(host.querySelector('button')?.tabIndex).toBe(0));
+
+    const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+    const buttons = host.querySelectorAll<HTMLButtonElement>('button');
+
+    buttons[0].focus();
+    root.dispatchEvent(new KeyboardEvent('keydown', { key: NEXT_KEY[label], bubbles: true }));
+
+    expect(document.activeElement).toBe(buttons[1]);
+  },
+);
+
+test.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
+  'assist mode reports the orientation its chips render in for %s',
+  async (_label, flow) => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-chip-group data-testid="host" kind="assist" layout="wrap" label="Recipe actions">
+            <button type="button">One</button>
+            <button type="button">Two</button>
+          </rc-chip-group>
+        `,
+        flow,
+      ),
+    );
+    const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+    await settle(host);
+
+    const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+
+    // Like a native range input made vertical by writing-mode: the exposed
+    // orientation is the rendered one. Horizontal is the toolbar default.
+    await vi.waitFor(() =>
+      expect(root.getAttribute('aria-orientation')).toBe(
+        flow.writingMode === 'horizontal-tb' ? null : 'vertical',
+      ),
+    );
+  },
+);
+
+test('names an assist toolbar in its own locale; an authored label wins', async () => {
+  registerMessages('ar', { 'rc-chip-group': { label: 'إجراءات الشرائح' } });
+
+  const screen = render(html`
+    <rc-chip-group lang="ar" dir="rtl" kind="assist" layout="wrap">
+      <button type="button">One</button>
+    </rc-chip-group>
+  `);
+  const host = screen.container.querySelector('rc-chip-group') as RCChipGroup;
+
+  await host.updateComplete;
+
+  const root = () => host.shadowRoot?.querySelector('#root');
+
+  expect(root()?.getAttribute('aria-label')).toBe('إجراءات الشرائح');
+
+  host.label = 'Filters';
+  await host.updateComplete;
+
+  expect(root()?.getAttribute('aria-label')).toBe('Filters');
+});
+
+function collapsingGroup() {
+  return html`
+    <rc-chip-group
+      data-testid="host"
+      style="inline-size: 12rem; --rc-chip-group-column-gap: 0;"
+      max-rows="2"
+    >
+      ${Array.from(
+        { length: 5 },
+        (_, index) => html`<span style="inline-size: 5rem; block-size: 2rem;">${index}</span>`,
+      )}
+    </rc-chip-group>
+  `;
+}
+
+test('measures its rows once when it first lays out', async () => {
+  const prototype = customElements.get('rc-chip-group')!.prototype as unknown as {
+    _measureRows(): void;
+  };
+  const measure = vi.spyOn(prototype, '_measureRows');
+
+  try {
+    const screen = render(collapsingGroup());
+    const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+    await settle(host);
+    await frames(6);
+
+    // The observer's first report of each chip arrives after the first
+    // measurement, which already saw those sizes.
+    expect(host.shadowRoot!.querySelector<HTMLElement>('#root')!.dataset.mode).toBe('scroll');
+    expect(measure).toHaveBeenCalledTimes(1);
+
+    host.style.inlineSize = '9rem';
+    await frames(4);
+
+    expect(measure).toHaveBeenCalledTimes(2);
+  } finally {
+    measure.mockRestore();
+  }
+});
+
+test('remeasures when a first resize report differs from the measured size', async () => {
+  const screen = render(collapsingGroup());
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+  await frames(4);
+
+  const internals = host as unknown as {
+    _observeAssignedItems(): void;
+    _measureRows(): void;
+    _handleResize(entries: ResizeObserverEntry[]): void;
+    _scheduleMeasure(): void;
+  };
+  const schedule = vi.spyOn(internals, '_scheduleMeasure').mockImplementation(() => undefined);
+
+  try {
+    const rect = host.getBoundingClientRect();
+    const report = (inlineSize: number): ResizeObserverEntry =>
+      ({
+        target: host,
+        borderBoxSize: [{ inlineSize, blockSize: rect.height }],
+      }) as unknown as ResizeObserverEntry;
+
+    internals._observeAssignedItems();
+    internals._measureRows();
+    internals._handleResize([report(rect.width)]);
+    expect(schedule).not.toHaveBeenCalled();
+
+    internals._observeAssignedItems();
+    internals._measureRows();
+    internals._handleResize([report(rect.width + 20)]);
+    expect(schedule).toHaveBeenCalledTimes(1);
+  } finally {
+    schedule.mockRestore();
+  }
+});
+
+test('leaves a collapsed row at its start without scrolling it while measuring', async () => {
+  const screen = render(collapsingGroup());
+  const host = (await screen.getByTestId('host').element()) as RCChipGroup;
+
+  await settle(host);
+
+  const root = host.shadowRoot!.querySelector<HTMLElement>('#root')!;
+
+  await vi.waitFor(() => expect(root.dataset.mode).toBe('scroll'));
+  await frames(4);
+
+  const scrollTo = vi.spyOn(root, 'scrollTo');
+
+  host.style.inlineSize = '11rem';
+  await frames(4);
+
+  expect(root.dataset.mode).toBe('scroll');
+  expect(root.scrollLeft).toBe(0);
+  expect(scrollTo).not.toHaveBeenCalled();
 });

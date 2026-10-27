@@ -1,0 +1,65 @@
+@layer rc-theme-win31.components {
+  /*
+   * There was no search bar in 3.1. The nearest real control is the Find
+   * dialog's edit field beside its Find Next button, so that is what this
+   * renders: a sunken well with beveled affordances at its edges.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-search-bar::part(root) {
+    min-block-size: var(--win31-control-height);
+    padding-block: 0;
+    padding-inline: var(--win31-gap-tight);
+    color: var(--win31-color-field-text);
+    background: var(--win31-color-field);
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-search-bar:focus-within::part(root) {
+    outline: var(--win31-focus-ring);
+    outline-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-search-bar > input {
+    color: var(--win31-color-field-text);
+    background: transparent;
+    border: 0;
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-search-bar > input:focus-visible {
+    outline: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-search-bar::part(clear) {
+    min-block-size: calc(18 * var(--win31-unit));
+    min-inline-size: calc(18 * var(--win31-unit));
+    background: var(--win31-color-surface);
+    border: 0;
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-search-bar::part(clear):active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-search-bar::part(suggestions) {
+    color: var(--win31-color-field-text);
+    background: var(--win31-color-field);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-search-bar::part(suggestion) {
+    min-block-size: var(--win31-listbox-row-height);
+    border-radius: var(--win31-radius);
+    transition: none;
+  }
+}

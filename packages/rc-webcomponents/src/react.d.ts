@@ -268,6 +268,39 @@ export type RCSnackbarCloseDetail = {
   message: string;
 };
 
+export type RCTooltipPlacement =
+  | 'block-start'
+  | 'block-start-start'
+  | 'block-start-end'
+  | 'block-end'
+  | 'block-end-start'
+  | 'block-end-end'
+  | 'inline-start'
+  | 'inline-start-start'
+  | 'inline-start-end'
+  | 'inline-end'
+  | 'inline-end-start'
+  | 'inline-end-end';
+
+export type RCPopoverPlacement = RCTooltipPlacement;
+export type RCPopoverTriggerAction = 'toggle' | 'none';
+export type RCPopoverToggleDetail = { open: boolean };
+
+/** Public API surface of `<rc-popover>`. */
+export type RCPopoverRef = HTMLElement & {
+  open: boolean;
+  defaultOpen: boolean;
+  placement: RCPopoverPlacement;
+  triggerAction: RCPopoverTriggerAction;
+  openOnHover: boolean;
+  openOnFocus: boolean;
+};
+
+/** Public API surface of `<rc-tooltip>`. */
+export type RCTooltipRef = HTMLElement & {
+  placement: RCTooltipPlacement;
+};
+
 // ── Ref types ────────────────────────────────────────────────────────────────
 
 /** Public API surface of `<rc-button>`. */
@@ -307,6 +340,35 @@ export type RCScrollerRef = HTMLElement & {
   readonly atInlineEnd: boolean;
 };
 
+export type RCVirtualScrollerAxis = 'block' | 'inline';
+
+export type RCVirtualScrollerRangeDetail = {
+  readonly start: number;
+  readonly end: number;
+  readonly itemsPerLine: number;
+  readonly lineSize: number;
+  readonly measured: boolean;
+};
+
+/** Public API surface of `<rc-virtual-scroller>`. */
+export type RCVirtualScrollerRef = HTMLElement & {
+  axis: RCVirtualScrollerAxis;
+  count: number;
+  itemSize: number;
+  itemsPerLine: number;
+  overscan: number;
+  disabled: boolean;
+  scrollTarget: Element | null;
+  readonly first: number;
+  readonly last: number;
+  readonly range: RCVirtualScrollerRangeDetail | null;
+  scrollToIndex(
+    index: number,
+    options?: { align?: 'start' | 'center' | 'end' | 'nearest'; behavior?: ScrollBehavior },
+  ): void;
+  measure(): void;
+};
+
 export type RCListVariant = 'standard' | 'segmented';
 export type RCListSelection = 'none' | 'single' | 'multiple';
 
@@ -314,6 +376,26 @@ export type RCListSelection = 'none' | 'single' | 'multiple';
 export type RCListRef = HTMLElement & {
   variant: RCListVariant;
   selection: RCListSelection;
+  ordered: boolean;
+  reorderable: boolean;
+  /** Overrides for the reorder announcements and handle hint. Positions are 1-based. */
+  reorderMessages: RCListReorderMessages | undefined;
+};
+
+/** Detail shape for `rc-list-reorder`. Positions are 0-based among visible items. */
+export type RCListReorderDetail = {
+  item: RCListItemRef;
+  from: number;
+  to: number;
+};
+
+/** Overridable `rc-list` reorder announcements. */
+export type RCListReorderMessages = {
+  instructions?: string;
+  grabbed?: (position: number, count: number, locale?: string) => string;
+  moved?: (position: number, count: number, locale?: string) => string;
+  dropped?: (position: number, count: number, locale?: string) => string;
+  canceled?: (position: number, count: number, locale?: string) => string;
 };
 
 /** Public API surface of `<rc-list-item>`. */
@@ -322,6 +404,15 @@ export type RCListItemRef = HTMLElement & {
   disabled: boolean;
   interactive: boolean;
   actionTarget: string;
+  /** Expanded state of the `details` region; host writes take control, `undefined` releases it. */
+  get expanded(): boolean;
+  set expanded(value: boolean | undefined);
+  defaultExpanded: boolean;
+};
+
+/** Detail shape for `rc-list-item-toggle`. */
+export type RCListItemToggleDetail = {
+  expanded: boolean;
 };
 
 /** Public API surface of `<rc-switch>`. */
@@ -358,14 +449,22 @@ export type RCChipGroupRef = HTMLElement & {
   selection: RCChipGroupSelection;
   expanded: boolean;
   defaultExpanded: boolean;
-  label: string;
-  showAllLabel: string;
-  showLessLabel: string;
+  label: string | undefined;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCChipGroupMessages | undefined;
+};
+
+/** Overridable `<rc-chip-group>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCChipGroupMessages = {
+  label?: string;
+  showAll?: string;
+  showLess?: string;
 };
 
 /** Public API surface of `<rc-snackbar>`. */
 export type RCSnackbarRef = HTMLElement & {
   open: boolean;
+  defaultOpen: boolean;
   message: string;
   actionLabel: string;
   duration: number;
@@ -377,7 +476,8 @@ export type RCSnackbarRef = HTMLElement & {
 
 /** Public API surface of `<rc-disclosure>`. */
 export type RCDisclosureRef = HTMLElement & {
-  open: boolean;
+  open: boolean | undefined;
+  defaultOpen: boolean;
 };
 
 /** Public API surface of `<rc-accordion>`. */
@@ -404,6 +504,13 @@ export type RCListboxRef = HTMLElement & {
   setCreateOption(label: string | null): void;
   setSelectedValues(values: string[]): void;
   appendOption(opt: RCListboxOption): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCListboxMessages | undefined;
+};
+
+/** Overridable `<rc-listbox>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCListboxMessages = {
+  create?: (text: string) => string;
 };
 
 /** Public API surface of `<rc-select>`. */
@@ -411,20 +518,43 @@ export type RCSelectRef = HTMLElement & {
   open: boolean;
   multiple: boolean;
   disabled: boolean;
+  required: boolean;
   placeholder: string;
   display: 'auto' | 'chips' | 'compact';
+  popupMode: 'popover' | 'dialog';
+  dialogCancelButton: 'visible' | 'hidden';
   value: RCSelectValue;
   defaultValue: RCSelectValue | undefined;
   options: RCSelectOption[] | undefined;
   readonly selectedValues: string[];
   openPopup(): void;
   closePopup(returnFocus?: boolean): void;
+  focus(options?: FocusOptions): void;
+  blur(): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCSelectMessages | undefined;
+};
+
+/** Overridable `<rc-select>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCSelectMessages = {
+  options?: string;
+  selectedItems?: string;
+  remove?: (label: string) => string;
+  summary?: (first: string, more: number, locale?: string) => string;
+  done?: string;
+  cancel?: string;
 };
 
 /** Public API surface of `<rc-combobox>`. */
 export type RCComboboxRef = RCSelectRef & {
   allowCreate: boolean;
   filterStrategy: 'prefix' | 'contains' | ((label: string, query: string) => boolean);
+  messages: RCComboboxMessages | undefined;
+};
+
+/** Overridable `<rc-combobox>` built-in text: every `rc-select` key plus `search`. */
+export type RCComboboxMessages = RCSelectMessages & {
+  search?: (name: string) => string;
 };
 
 /** Public API surface of `<rc-dialog>`. */
@@ -442,6 +572,7 @@ export type RCDialogResizeOrigin =
 export type RCDialogRef = HTMLElement & {
   open: boolean | undefined;
   defaultOpen: boolean;
+  variant: 'standard' | 'fullscreen' | 'side';
   movable: boolean;
   moveHandle: string;
   moveBounds: 'viewport' | 'parent';
@@ -452,7 +583,7 @@ export type RCDialogRef = HTMLElement & {
   resizeThreshold: number;
   resizeStep: number;
   closedBy: 'any' | 'closerequest' | 'none' | '';
-  lightDismiss: boolean;
+  modal: boolean;
   readonly returnValue: string;
   showModal(): void;
   show(): void;
@@ -475,45 +606,59 @@ export type RCMenuRef = HTMLElement & {
 
 /** Public API surface of `<rc-adaptive-menu>`. */
 export type RCAdaptiveMenuRef = HTMLElement & {
-  label: string;
+  label: string | undefined;
   maxShown: number;
   open: boolean;
   defaultOpen: boolean;
   orientation: 'horizontal' | 'vertical';
-  overflowLabel: string;
   readonly $actions: HTMLElement[];
   readonly $promotedActions: HTMLElement[];
   readonly $overflowedActions: HTMLElement[];
   openMenu(focus?: 'first' | 'last' | 'none'): void;
   closeMenu(returnFocus?: boolean): void;
   toggleMenu(focus?: 'first' | 'last' | 'none'): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCAdaptiveMenuMessages | undefined;
+};
+
+/** Overridable `<rc-adaptive-menu>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCAdaptiveMenuMessages = {
+  label?: string;
+  overflow?: string;
 };
 
 /** Public API surface of `<rc-menu-button>`. */
 export type RCMenuButtonPlacement =
-  | 'top'
-  | 'top-start'
-  | 'top-end'
-  | 'bottom'
-  | 'bottom-start'
-  | 'bottom-end'
-  | 'left'
-  | 'left-start'
-  | 'left-end'
-  | 'right'
-  | 'right-start'
-  | 'right-end';
+  | 'block-start'
+  | 'block-start-start'
+  | 'block-start-end'
+  | 'block-end'
+  | 'block-end-start'
+  | 'block-end-end'
+  | 'inline-start'
+  | 'inline-start-start'
+  | 'inline-start-end'
+  | 'inline-end'
+  | 'inline-end-start'
+  | 'inline-end-end';
 
 export type RCMenuButtonRef = HTMLElement & {
   open: boolean | undefined;
   defaultOpen: boolean;
   orientation: 'horizontal' | 'vertical' | undefined;
   placement: RCMenuButtonPlacement;
+  openMenu(focus?: 'first' | 'last'): void;
+  closeMenu(returnFocus?: boolean): void;
+  toggleMenu(): void;
 };
 
 /** Public API surface of `<rc-fab-menu>`. */
 export type RCFabMenuRef = RCMenuButtonRef & {
-  position: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+  position:
+    | 'block-end-inline-end'
+    | 'block-end-inline-start'
+    | 'block-start-inline-end'
+    | 'block-start-inline-start';
 };
 
 export type RCFabMenuToggleDetail = {
@@ -541,8 +686,15 @@ export type RCNavigationRailToggleDetail = {
 
 /** Public API surface of `<rc-menubar>`. */
 export type RCMenubarRef = HTMLElement & {
-  label: string;
+  label: string | undefined;
   orientation: 'horizontal' | 'vertical';
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCMenubarMessages | undefined;
+};
+
+/** Overridable `<rc-menubar>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCMenubarMessages = {
+  label?: string;
 };
 
 /** Public API surface of `<rc-toolbar>`. */
@@ -553,7 +705,7 @@ export type RCToolbarRef = HTMLElement & {
 
 /** Public API surface of `<rc-splitter>`. */
 export type RCSplitterRef = HTMLElement & {
-  label: string;
+  label: string | undefined;
   orientation: 'horizontal' | 'vertical';
   mode: 'length' | 'percent' | 'fixed';
   step: number;
@@ -566,6 +718,15 @@ export type RCSplitterRef = HTMLElement & {
   snapPoints: string;
   swipeVelocity: number;
   snapTo(index: number, behavior?: 'animated' | 'instant'): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCSplitterMessages | undefined;
+};
+
+/** Overridable `<rc-splitter>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCSplitterMessages = {
+  label?: string;
+  expand?: (label: string) => string;
+  collapse?: (label: string) => string;
 };
 
 /** Public API surface of `<rc-slider>`. */
@@ -603,20 +764,28 @@ export type RCRangeSliderRef = HTMLElement & {
   defaultValue: [number, number] | undefined;
   disabled: boolean;
   readonly: boolean;
-  lowLabel: string;
-  highLabel: string;
+  lowLabel: string | undefined;
+  highLabel: string | undefined;
   lowValueText: string;
   highValueText: string;
   display: 'float' | 'inline-start' | 'inline-end' | null;
   orientation: 'horizontal' | 'vertical';
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCRangeSliderMessages | undefined;
+};
+
+/** Overridable `<rc-range-slider>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCRangeSliderMessages = {
+  low?: string;
+  high?: string;
 };
 
 /** Public API surface of `<rc-transfer-list>`. */
 export type RCTransferListRef = HTMLElement & {
   multiple: boolean;
   compact: boolean;
-  availableLabel: string;
-  selectedLabel: string;
+  availableLabel: string | undefined;
+  selectedLabel: string | undefined;
   available: RCTransferListOption[];
   selected: RCTransferListOption[];
   defaultSelected: RCTransferListOption[] | undefined;
@@ -625,6 +794,21 @@ export type RCTransferListRef = HTMLElement & {
   removeSelected(): void;
   clearSelected(): void;
   moveSelected(delta: number): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCTransferListMessages | undefined;
+};
+
+/** Overridable `<rc-transfer-list>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCTransferListMessages = {
+  available?: string;
+  selected?: string;
+  actions?: string;
+  add?: string;
+  addAll?: string;
+  remove?: string;
+  clear?: string;
+  moveUp?: string;
+  moveDown?: string;
 };
 
 /** Public API surface of `<rc-textarea>`. */
@@ -636,7 +820,10 @@ export type RCTextareaRef = HTMLElement & {
   gutter: boolean;
   wordWrap: boolean;
   autoGrow: boolean;
-  readOnly: boolean;
+  /** `auto` gives each line the direction of its first strong character; `base` keeps the editor's. */
+  lineDirection: 'auto' | 'base';
+  /** Read-only state of the slotted textarea; set `readonly` on the textarea to change it. */
+  readonly readOnly: boolean;
   usePlugin(plugin: RCTextareaPlugin): void;
   removePlugin(): void;
   wrapSelection(prefix: string, suffix: string): void;
@@ -651,6 +838,43 @@ export type RCMarkdownEditorRef = HTMLElement & {
   sourceMode: boolean;
   defaultSourceMode: boolean;
   readOnly: boolean;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCMarkdownEditorMessages | undefined;
+};
+
+/** Overridable `<rc-editor-toolbar>` built-in text. */
+export type RCEditorToolbarMessages = {
+  toolbar?: string;
+  bold?: string;
+  italic?: string;
+  underline?: string;
+  strikethrough?: string;
+  inlineCode?: string;
+  link?: string;
+  headingLevel?: string;
+  paragraph?: string;
+  heading?: (level: number, locale?: string) => string;
+  blockquote?: string;
+  bulletList?: string;
+  orderedList?: string;
+  codeBlock?: string;
+  codeBlockLanguage?: string;
+  languagePlaceholder?: string;
+  languageHint?: string;
+  sourceMode?: string;
+  sourceModeHint?: string;
+  shortcut?: (label: string, keys: string) => string;
+};
+
+/** Overridable `<rc-markdown-editor>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCMarkdownEditorMessages = {
+  source?: string;
+  linkPopover?: string;
+  url?: string;
+  applyLink?: string;
+  openLink?: string;
+  removeLink?: string;
+  shortcut?: (label: string, keys: string) => string;
 };
 
 /** Public API surface of `<rc-virtual-canvas>`. */
@@ -673,10 +897,13 @@ export type RCVirtualCanvasRef = HTMLElement & {
 /** Public API surface of `<rc-app-bar>`. */
 export type RCAppBarRef = HTMLElement & {
   variant: 'compact' | 'expanded';
+  centerSymmetric: boolean;
   scrollBehavior: 'pinned' | 'collapse' | 'hide';
   scrolled: boolean | undefined;
   scrollTarget: Element | Document | Window | string | null;
   scrollThreshold: number;
+  hideDistance: number;
+  readonly collapsed: boolean;
 };
 
 /** Public API surface of `<rc-search-bar>`. */
@@ -687,11 +914,35 @@ export type RCSearchBarRef = HTMLElement & {
   value: string;
   defaultValue: string | undefined;
   debounce: number;
-  clearLabel: string;
+  allowNativeClear: boolean;
+  showClearOnFocus: boolean;
+  disabled: boolean;
   placeholder: string | undefined;
   showView(): void;
   closeView(): void;
   toggleView(): void;
+  clear(): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCSearchBarMessages | undefined;
+};
+
+/** Overridable `<rc-search-bar>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCSearchBarMessages = {
+  clear?: string;
+};
+
+export type RCFieldControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+
+/** Public API surface of `<rc-field>`. */
+export type RCFieldRef = HTMLElement & {
+  counter: boolean;
+  invalid: boolean;
+  readonly control: RCFieldControl | null;
+  readonly group: HTMLFieldSetElement | null;
+  readonly controls: RCFieldControl[];
+  focus(options?: FocusOptions): void;
+  blur(): void;
+  sync(): void;
 };
 
 /** Public API surface of `<rc-carousel>`. */
@@ -705,6 +956,19 @@ export type RCCarouselRef = HTMLElement & {
   next(): void;
   previous(): void;
   goToIndex(index: number, instant?: boolean): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCCarouselMessages | undefined;
+};
+
+/** Overridable `<rc-carousel>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCCarouselMessages = {
+  carousel?: string;
+  slide?: string;
+  position?: (position: number, count: number, locale?: string) => string;
+  previous?: string;
+  next?: string;
+  picker?: string;
+  goToSlide?: (position: number, count: number, locale?: string) => string;
 };
 
 /** Public API surface of `<rc-carousel-item>`. */
@@ -720,6 +984,8 @@ declare module 'react' {
         RCDisclosureRef
       > & {
         open?: boolean;
+        'default-open'?: boolean;
+        'onrc-disclosure-toggle'?: (event: CustomEvent<RCDisclosureToggleDetail>) => void;
       };
 
       'rc-accordion': React.DetailedHTMLProps<
@@ -755,6 +1021,19 @@ declare module 'react' {
         layout?: RCScrollerLayout;
       };
 
+      'rc-virtual-scroller': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCVirtualScrollerRef>,
+        RCVirtualScrollerRef
+      > & {
+        axis?: RCVirtualScrollerAxis;
+        count?: number | string;
+        'item-size'?: number | string;
+        'items-per-line'?: number | string;
+        overscan?: number | string;
+        disabled?: boolean;
+        'onrc-virtual-scroller-range'?: (event: CustomEvent<RCVirtualScrollerRangeDetail>) => void;
+      };
+
       'rc-carousel': React.DetailedHTMLProps<React.HTMLAttributes<RCCarouselRef>, RCCarouselRef> & {
         'active-index'?: number | string;
         'default-active-index'?: number | string;
@@ -773,6 +1052,8 @@ declare module 'react' {
       'rc-list': React.DetailedHTMLProps<React.HTMLAttributes<RCListRef>, RCListRef> & {
         variant?: RCListVariant;
         selection?: RCListSelection;
+        ordered?: boolean;
+        reorderable?: boolean;
       };
 
       'rc-list-item': React.DetailedHTMLProps<
@@ -783,6 +1064,8 @@ declare module 'react' {
         disabled?: boolean;
         interactive?: boolean;
         'action-target'?: string;
+        expanded?: boolean;
+        'default-expanded'?: boolean;
       };
 
       'rc-switch': React.DetailedHTMLProps<React.HTMLAttributes<RCSwitchRef>, RCSwitchRef> & {
@@ -823,8 +1106,6 @@ declare module 'react' {
         expanded?: boolean;
         'default-expanded'?: boolean;
         label?: string;
-        'show-all-label'?: string;
-        'show-less-label'?: string;
       };
 
       'rc-snackbar': React.DetailedHTMLProps<React.HTMLAttributes<RCSnackbarRef>, RCSnackbarRef> & {
@@ -833,6 +1114,19 @@ declare module 'react' {
         'action-label'?: string;
         duration?: number | string;
         'queue-policy'?: RCSnackbarQueuePolicy;
+      };
+
+      'rc-popover': React.DetailedHTMLProps<React.HTMLAttributes<RCPopoverRef>, RCPopoverRef> & {
+        open?: boolean;
+        'default-open'?: boolean;
+        placement?: RCPopoverPlacement;
+        'trigger-action'?: RCPopoverTriggerAction;
+        'open-on-hover'?: boolean;
+        'open-on-focus'?: boolean;
+      };
+
+      'rc-tooltip': React.DetailedHTMLProps<React.HTMLAttributes<RCTooltipRef>, RCTooltipRef> & {
+        placement?: RCTooltipPlacement;
       };
 
       'rc-listbox': React.DetailedHTMLProps<React.HTMLAttributes<RCListboxRef>, RCListboxRef> & {
@@ -848,8 +1142,11 @@ declare module 'react' {
         open?: boolean;
         multiple?: boolean;
         disabled?: boolean;
+        required?: boolean;
         placeholder?: string;
         display?: 'auto' | 'chips' | 'compact';
+        'popup-mode'?: 'popover' | 'dialog';
+        'dialog-cancel-button'?: 'visible' | 'hidden';
         value?: RCSelectValue;
         'default-value'?: RCSelectValue;
         options?: RCSelectOption[];
@@ -859,10 +1156,13 @@ declare module 'react' {
         open?: boolean;
         multiple?: boolean;
         disabled?: boolean;
+        required?: boolean;
         placeholder?: string;
         display?: 'auto' | 'chips' | 'compact';
         'allow-create'?: boolean;
         'filter-strategy'?: 'prefix' | 'contains';
+        'popup-mode'?: 'popover' | 'dialog';
+        'dialog-cancel-button'?: 'visible' | 'hidden';
         value?: RCSelectValue;
         'default-value'?: RCSelectValue;
         options?: RCSelectOption[];
@@ -871,6 +1171,7 @@ declare module 'react' {
       'rc-dialog': React.DetailedHTMLProps<React.HTMLAttributes<RCDialogRef>, RCDialogRef> & {
         open?: boolean;
         'default-open'?: boolean;
+        variant?: 'standard' | 'fullscreen' | 'side';
         movable?: boolean;
         'move-handle'?: string;
         'move-bounds'?: 'viewport' | 'parent';
@@ -881,7 +1182,6 @@ declare module 'react' {
         'resize-threshold'?: number | string;
         'resize-step'?: number | string;
         'closed-by'?: 'any' | 'closerequest' | 'none';
-        'light-dismiss'?: boolean;
       };
 
       'rc-bottom-sheet': React.DetailedHTMLProps<
@@ -890,7 +1190,7 @@ declare module 'react' {
       > & {
         open?: boolean;
         'default-open'?: boolean;
-        'light-dismiss'?: boolean;
+        'closed-by'?: 'any' | 'closerequest' | 'none';
         resize?: 'none' | 'both' | 'horizontal' | 'vertical';
         'resize-origin'?: RCDialogResizeOrigin;
         'resize-handle'?: string;
@@ -917,7 +1217,6 @@ declare module 'react' {
         open?: boolean;
         'default-open'?: boolean;
         orientation?: 'horizontal' | 'vertical';
-        'overflow-label'?: string;
         'onrc-adaptive-menu-toggle'?: (event: CustomEvent<RCAdaptiveMenuToggleDetail>) => void;
       };
 
@@ -935,8 +1234,13 @@ declare module 'react' {
       'rc-fab-menu': React.DetailedHTMLProps<React.HTMLAttributes<RCFabMenuRef>, RCFabMenuRef> & {
         open?: boolean;
         'default-open'?: boolean;
+        orientation?: 'horizontal' | 'vertical';
         placement?: RCMenuButtonPlacement;
-        position?: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+        position?:
+          | 'block-end-inline-end'
+          | 'block-end-inline-start'
+          | 'block-start-inline-end'
+          | 'block-start-inline-start';
       };
 
       'rc-navigation-bar': React.DetailedHTMLProps<
@@ -1037,12 +1341,7 @@ declare module 'react' {
         'swipe-velocity'?: number | string;
       };
 
-      'rc-editor-toolbar': React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
-        HTMLElement
-      > & {
-        label?: string;
-      };
+      'rc-editor-toolbar': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
 
       'rc-markdown-editor': React.DetailedHTMLProps<
         React.HTMLAttributes<RCMarkdownEditorRef>,
@@ -1057,15 +1356,21 @@ declare module 'react' {
       };
 
       'rc-fab': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        position?: 'bottom-end' | 'bottom-start' | 'top-end' | 'top-start';
+        position?:
+          | 'block-end-inline-end'
+          | 'block-end-inline-start'
+          | 'block-start-inline-end'
+          | 'block-start-inline-start';
         'scroll-reveal'?: boolean;
       };
 
       'rc-app-bar': React.DetailedHTMLProps<React.HTMLAttributes<RCAppBarRef>, RCAppBarRef> & {
         variant?: 'compact' | 'expanded';
+        'center-symmetric'?: boolean;
         'scroll-behavior'?: 'pinned' | 'collapse' | 'hide';
         'scroll-target'?: string;
         'scroll-threshold'?: number | string;
+        'hide-distance'?: number | string;
         scrollTarget?: Element | Document | Window | string | null;
       };
 
@@ -1077,10 +1382,17 @@ declare module 'react' {
         open?: boolean;
         'default-open'?: boolean;
         debounce?: number | string;
-        'clear-label'?: string;
+        'allow-native-clear'?: boolean;
+        'show-clear-on-focus'?: boolean;
+        disabled?: boolean;
         placeholder?: string;
         'default-value'?: string;
         value?: string;
+      };
+
+      'rc-field': React.DetailedHTMLProps<React.HTMLAttributes<RCFieldRef>, RCFieldRef> & {
+        counter?: boolean;
+        invalid?: boolean;
       };
 
       'rc-virtual-canvas': React.DetailedHTMLProps<
@@ -1102,7 +1414,7 @@ declare module 'react' {
         gutter?: boolean;
         'word-wrap'?: boolean;
         'auto-grow'?: boolean;
-        'read-only'?: boolean;
+        'line-direction'?: 'auto' | 'base';
       };
     }
   }

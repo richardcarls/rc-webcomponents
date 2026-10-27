@@ -27,6 +27,9 @@
       var(--md-sys-color-primary, Highlight) 8%,
       transparent
     );
-    --rc-splitter-handle-transition: 150ms var(--md-sys-motion-easing-standard, ease);
+    --rc-splitter-handle-transition: var(--rc-motion-effects-duration-fast, 150ms)
+      var(--rc-motion-effects-easing-fast, ease);
+    /* The panel visibly resizes to the snap point, which is spatial motion. */
+    --rc-splitter-snap-duration: var(--rc-motion-spatial-duration-fast, 300ms);
   }
 }

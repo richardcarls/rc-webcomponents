@@ -57,6 +57,51 @@ async function expectActiveMenuItem(item: Locator) {
   await expect.element(item).toHaveAttribute('data-active');
 }
 
+test('popup fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = render(html`
+    <rc-menu-button data-testid="host">
+      <button slot="trigger">Options</button>
+      <rc-menu label="Options">
+        <button>Cut</button>
+        <button>Copy</button>
+      </rc-menu>
+    </rc-menu-button>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCMenuButton;
+
+  await host.updateComplete;
+
+  const popup = host.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  expect(getComputedStyle(popup).opacity).toBe('0');
+  expect(getComputedStyle(popup).transitionDuration).not.toBe('0s');
+
+  // Host writes to open are silent and synchronous; nothing waits on a transition.
+  host.open = true;
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await Promise.all(
+    popup.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
+
+  // WebKit can resolve an Animation.finished promise just before computed
+  // style exposes the transition's resting value.
+  await vi.waitFor(() => expect(getComputedStyle(popup).opacity).toBe('1'));
+
+  host.open = false;
+
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await Promise.all(
+    popup.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+  );
+
+  // The exit fade must actually be visible, not skipped by an instant
+  // display: none racing ahead of it: closing relies on allow-discrete
+  // keeping display visible for the fade's duration rather than the
+  // popover's own native display toggle winning immediately.
+  expect(getComputedStyle(popup).opacity).toBe('0');
+});
+
 test('RCMenuButton renders with correct ARIA attributes', async () => {
   const screen = render(html`
     <rc-menu-button data-testid="host">
@@ -792,4 +837,103 @@ test('RCMenuButton supports two simultaneously-open nested instances', async () 
   await expect.element(outerTrigger).toHaveAttribute('aria-expanded', 'false');
   expect(innerPopup.matches(':popover-open')).toBe(false);
   expect(outerPopup.matches(':popover-open')).toBe(false);
+});
+
+test.each([
+  ['vertical-rl', 'ltr', 'horizontal', 'ArrowLeft'],
+  ['horizontal-tb', 'rtl', 'vertical', 'ArrowLeft'],
+  ['vertical-rl', 'rtl', 'vertical', 'ArrowUp'],
+])(
+  'RCMenuButton opens with the documented key in %s %s (%s layout)',
+  async (writingMode, dir, orientation, key) => {
+    const screen = render(html`
+      <div dir=${dir} style="writing-mode: ${writingMode};">
+        <rc-menu-button data-testid="host" orientation=${orientation}>
+          <button slot="trigger" data-testid="trigger">Options</button>
+          <rc-menu label="Options">
+            <button data-testid="item-one">Cut</button>
+            <button data-testid="item-two">Copy</button>
+          </rc-menu>
+        </rc-menu-button>
+      </div>
+    `);
+
+    const trigger = screen.getByTestId('trigger');
+    const item1 = screen.getByTestId('item-one');
+    const { $host, $trigger } = await prepareKeyboardInteraction(screen, 2);
+
+    pressKey($trigger, key);
+    await $host.updateComplete;
+
+    await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expectActiveMenuItem(item1);
+  },
+);
+
+test.each([
+  // A menubar row in vertical text renders vertically and says so.
+  ['vertical-rl', 'vertical', 'ArrowLeft', 'ArrowDown'],
+  // A vertical menubar in horizontal text: the reading is already a layout.
+  ['horizontal-tb', 'vertical', 'ArrowRight', 'ArrowDown'],
+])(
+  'RCMenuButton reads a plain menubar aria-orientation as rendered in %s (%s)',
+  async (writingMode, ariaOrientation, opens, ignored) => {
+    const screen = render(html`
+      <div style="writing-mode: ${writingMode};">
+        <div role="menubar" aria-orientation=${ariaOrientation}>
+          <rc-menu-button data-testid="host">
+            <button slot="trigger" role="menuitem" data-testid="trigger">Options</button>
+            <rc-menu label="Options">
+              <button data-testid="item-one">Cut</button>
+              <button data-testid="item-two">Copy</button>
+            </rc-menu>
+          </rc-menu-button>
+        </div>
+      </div>
+    `);
+
+    const trigger = screen.getByTestId('trigger');
+    const item1 = screen.getByTestId('item-one');
+    const { $host, $trigger } = await prepareKeyboardInteraction(screen, 2);
+
+    pressKey($trigger, ignored);
+    await $host.updateComplete;
+
+    await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    pressKey($trigger, opens);
+    await $host.updateComplete;
+
+    await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expectActiveMenuItem(item1);
+  },
+);
+
+test('RCMenuButton opens its popup at the block end in vertical text', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl; position: fixed; left: 250px; top: 20px;">
+      <rc-menu-button data-testid="host">
+        <button slot="trigger">Options</button>
+        <rc-menu label="Options">
+          <button>Cut</button>
+          <button>Copy</button>
+        </rc-menu>
+      </rc-menu-button>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCMenuButton;
+
+  await host.updateComplete;
+  host.open = true;
+
+  const root = host.shadowRoot?.querySelector('#root') as HTMLElement;
+  const popup = host.shadowRoot?.querySelector('#popup') as HTMLElement;
+
+  // The block end is on the left in vertical-rl: beside the trigger, not below it.
+  await vi.waitFor(() => {
+    expect(popup.getBoundingClientRect().right).toBeLessThanOrEqual(
+      root.getBoundingClientRect().left,
+    );
+    expect(popup.getBoundingClientRect().top).toBeCloseTo(root.getBoundingClientRect().top, 0);
+  });
 });

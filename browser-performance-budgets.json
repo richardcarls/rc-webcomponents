@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "measurements": {
+    "create100Buttons": {
+      "median": 23.100000023841858,
+      "p95": 32
+    },
+    "create50Selects": {
+      "median": 48.39999997615814,
+      "p95": 91.39999997615814
+    },
+    "mount220RouteComponents": {
+      "median": 49.09999990463257,
+      "p95": 51.10000014305115
+    },
+    "filter1000OptionCombobox": {
+      "median": 144,
+      "p95": 192.39999997615814
+    },
+    "render1000LineTextarea": {
+      "median": 170.79999995231628,
+      "p95": 231
+    },
+    "update50ActionAdaptiveMenu": {
+      "median": 33.300000071525574,
+      "p95": 33.700000047683716
+    },
+    "settleAnchoredPopup": {
+      "median": 233.39999997615814,
+      "p95": 235.59999990463257
+    },
+    "materialNavigationRailExpandMotion": {
+      "median": 300.2999999523163,
+      "p95": 317,
+      "longFrames": 0,
+      "longestFrameMs": 16.800000000000182,
+      "animationCount": 2
+    },
+    "materialMenuOpenCloseMotion": {
+      "median": 166.79999995231628,
+      "p95": 183.70000004768372,
+      "longFrames": 0,
+      "longestFrameMs": 16.800000000000182,
+      "animationCount": 5
+    },
+    "materialSwitchToggleMotion": {
+      "median": 333.2999999523163,
+      "p95": 333.7000000476837,
+      "longFrames": 0,
+      "longestFrameMs": 16.800000000000182,
+      "animationCount": 9
+    },
+    "win31MenuOpenCloseMotion": {
+      "median": 16.600000023841858,
+      "p95": 17.199999928474426,
+      "longFrames": 0,
+      "longestFrameMs": 16.799999999999955,
+      "animationCount": 0
+    }
+  },
+  "budgets": {
+    "create100Buttons": {
+      "median": 28.100000023841858,
+      "p95": 38.4
+    },
+    "create50Selects": {
+      "median": 58.07999997138977,
+      "p95": 109.67999997138976
+    },
+    "mount220RouteComponents": {
+      "median": 58.91999988555908,
+      "p95": 61.32000017166138
+    },
+    "filter1000OptionCombobox": {
+      "median": 172.79999999999998,
+      "p95": 230.87999997138976
+    },
+    "render1000LineTextarea": {
+      "median": 204.95999994277955,
+      "p95": 277.2
+    },
+    "update50ActionAdaptiveMenu": {
+      "median": 39.960000085830686,
+      "p95": 40.44000005722046
+    },
+    "settleAnchoredPopup": {
+      "median": 280.0799999713898,
+      "p95": 282.71999988555905
+    },
+    "materialNavigationRailExpandMotion": {
+      "median": 360.35999994277955,
+      "p95": 380.4,
+      "longFrames": 0,
+      "longestFrameMs": 50,
+      "animationCount": 2
+    },
+    "materialMenuOpenCloseMotion": {
+      "median": 200.15999994277954,
+      "p95": 220.44000005722046,
+      "longFrames": 0,
+      "longestFrameMs": 50,
+      "animationCount": 5
+    },
+    "materialSwitchToggleMotion": {
+      "median": 399.9599999427795,
+      "p95": 400.44000005722046,
+      "longFrames": 0,
+      "longestFrameMs": 50,
+      "animationCount": 9
+    },
+    "win31MenuOpenCloseMotion": {
+      "median": 21.600000023841858,
+      "p95": 22.199999928474426,
+      "longFrames": 0,
+      "longestFrameMs": 50,
+      "animationCount": 0
+    }
+  }
+}

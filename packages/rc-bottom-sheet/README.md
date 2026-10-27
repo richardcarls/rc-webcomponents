@@ -44,7 +44,7 @@ must have `aria-labelledby` or `aria-label`.
 
 `rc-bottom-sheet` inherits `rc-dialog` methods and events, including
 `showModal()`, `show()`, `close()`, `requestClose()`, `rc-dialog-toggle`, and
-`rc-dialog-request-close`. It defaults to light dismiss, vertical top-origin
+`rc-dialog-request-close`. It defaults to `closed-by="any"` light dismiss, vertical top-origin
 resize, downward swipe-dismiss, and fixed positioning at the viewport's bottom
 edge. Add an optional
 `[data-rc-bottom-sheet-handle]` element inside the dialog for an authored
@@ -54,12 +54,32 @@ target. Keep a direct-child handle at the top of the dialog so that target
 starts at the sheet's draggable edge; when authoring custom dialog padding,
 leave its block-start padding at zero.
 
+A handle can also hold the sheet's title, which widens the drag target to the
+whole header. Set `--rc-bottom-sheet-handle-offset` to a length, such as
+`0.75rem`, to keep the indicator in its own row at the top of the handle, and
+pad the title below it.
+
 For an embedded non-modal sheet, place the component in a positioned container,
 set `--rc-bottom-sheet-position: absolute`, and open it with `show()`. The sheet
 then docks to that container's block-end edge instead of the viewport.
 
-List `snap-points` as CSS heights in ascending order. Slow drag releases
-settle at the nearest point; a swipe at `swipe-velocity` or faster settles at
+Set `resize="none"` to hold the sheet at its current snap point, for example
+while it has nothing more to reveal. The option is reactive, so restoring
+`resize="vertical"` re-enables dragging between snap points.
+
+The sheet stays docked at its block-end edge: snapping sets only its height,
+and its position is left to CSS. A software keyboard that resizes the viewport
+(`interactive-widget=resizes-content`) re-applies the current snap point above
+the keyboard. When a field inside the sheet takes focus, the sheet scrolls it
+into view within its own scroll containers, and grows past its snap height and
+maximum block size only when scrolling cannot reveal it, returning to its snap
+point once focus leaves the sheet.
+
+List `snap-points` as CSS heights in ascending order. Any length works,
+including `calc()` and `var()`; each is resolved inside the sheet when a snap
+applies, so a custom property the page animates is read at its current value.
+Percentages are of the viewport height. Slow drag releases settle at the
+nearest point; a swipe at `swipe-velocity` or faster settles at
 the first or last point. Settling animates unless the user prefers reduced
 motion. `rc-bottom-sheet-resize-start` fires as an interactive resize begins,
 before the sheet geometry changes, so consumers can prepare content that the

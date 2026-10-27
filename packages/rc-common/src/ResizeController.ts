@@ -1,6 +1,11 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { ControllerEffects } from './ControllerEffects.js';
+import { cssZoom } from './cssZoom.js';
 import { DragGestureController, type DragGestureDetail } from './DragGestureController.js';
+import { isPhysicalReversed, resolveFlow } from './flow.js';
+import { resolveMessages } from './messages.js';
+import { observeLocale } from './observeLocale.js';
 
 export type ResizeDirection = 'none' | 'both' | 'horizontal' | 'vertical';
 
@@ -55,7 +60,19 @@ export interface ResizeOptions {
   onResizeStart?: (detail: ResizeLifecycleDetail) => void;
   onResize?: (detail: ResizeLifecycleDetail) => void;
   onResizeEnd?: (detail: ResizeLifecycleDetail) => void;
+  /** Text overrides for the injected corner grip. */
+  messages?: Partial<ResizeMessages>;
 }
+
+/** Text of the corner grip injected when no `handle` is given. */
+export interface ResizeMessages {
+  /** Accessible name of the corner grip. */
+  grip: string;
+}
+
+export const DEFAULT_RESIZE_MESSAGES: Readonly<ResizeMessages> = Object.freeze({
+  grip: 'Resize',
+});
 
 /**
  * Pins position and size as explicit border-box pixel values.
@@ -76,18 +93,20 @@ export interface ResizeOptions {
 export function pinElementBox(target: HTMLElement): DOMRect {
   const rect = target.getBoundingClientRect();
   const offsetParent = target.offsetParent as HTMLElement | null;
+  const zoom = cssZoom(target);
+
+  // Viewport coordinates need conversion to local CSS pixels. Client borders
+  // and scroll offsets are already local CSS pixels and must stay unscaled.
   const localLeft = offsetParent
-    ? rect.left -
-      offsetParent.getBoundingClientRect().left -
+    ? (rect.left - offsetParent.getBoundingClientRect().left) / zoom -
       offsetParent.clientLeft +
       offsetParent.scrollLeft
-    : rect.left;
+    : rect.left / zoom;
   const localTop = offsetParent
-    ? rect.top -
-      offsetParent.getBoundingClientRect().top -
+    ? (rect.top - offsetParent.getBoundingClientRect().top) / zoom -
       offsetParent.clientTop +
       offsetParent.scrollTop
-    : rect.top;
+    : rect.top / zoom;
 
   if (getComputedStyle(target).position === 'static') {
     target.style.position = 'fixed';
@@ -99,8 +118,8 @@ export function pinElementBox(target: HTMLElement): DOMRect {
   target.style.boxSizing = 'border-box';
   target.style.left = `${localLeft}px`;
   target.style.top = `${localTop}px`;
-  target.style.width = `${rect.width}px`;
-  target.style.height = `${rect.height}px`;
+  target.style.width = `${rect.width / zoom}px`;
+  target.style.height = `${rect.height / zoom}px`;
 
   return rect;
 }
@@ -121,19 +140,39 @@ export class ResizeController implements ReactiveController {
   private _opts: Required<
     Omit<
       ResizeOptions,
-      'handle' | 'bounds' | 'maxWidth' | 'maxHeight' | 'onResizeStart' | 'onResize' | 'onResizeEnd'
+      | 'handle'
+      | 'bounds'
+      | 'maxWidth'
+      | 'maxHeight'
+      | 'onResizeStart'
+      | 'onResize'
+      | 'onResizeEnd'
+      | 'messages'
     >
   > &
     Pick<
       ResizeOptions,
-      'handle' | 'bounds' | 'maxWidth' | 'maxHeight' | 'onResizeStart' | 'onResize' | 'onResizeEnd'
+      | 'handle'
+      | 'bounds'
+      | 'maxWidth'
+      | 'maxHeight'
+      | 'onResizeStart'
+      | 'onResize'
+      | 'onResizeEnd'
+      | 'messages'
     >;
 
   private _resizing: ResizeEdge | null = null;
+  /**
+   * The gesture's start size and position, in the target's own CSS pixels:
+   * what its style lengths take, before its effective zoom.
+   */
   private _startW = 0;
   private _startH = 0;
   private _startLeft = 0;
   private _startTop = 0;
+  /** The target's effective CSS zoom for the current gesture. */
+  private _zoom = 1;
   private _lastDeltaX = 0;
   private _lastDeltaY = 0;
   private _velocityX = 0;
@@ -156,13 +195,29 @@ export class ResizeController implements ReactiveController {
   private _effectiveMaxH = Infinity;
 
   private _cornerBtn: HTMLButtonElement | null = null;
+  private readonly _handleEffects = new Map<Element, ControllerEffects>();
+  private _targetEffects: ControllerEffects | null = null;
+  private _positionEffects: ControllerEffects | null = null;
+  private _flowEffects: ControllerEffects | null = null;
+  private _connected = false;
+  private _disposed = false;
+
+  // The grip's corner and cursors are physical, derived from the flow. A dir
+  // flip fires no event, so it is observed. A writing-mode change is not
+  // observable at all (ResizeObserver compares logical sizes, which a
+  // logically sized target keeps), so the styles are also re-derived when a
+  // pointer enters or the grip takes focus, before either can be used.
+  private readonly _onFlowInteraction = (): void => this._syncFlowStyles();
 
   private readonly _onPointerMove: (e: PointerEvent) => void;
   private readonly _gesture: DragGestureController;
   private readonly _onPointerLeave: (e: PointerEvent) => void;
   private readonly _onKeyDown: (e: KeyboardEvent) => void;
+  private readonly _host: ReactiveControllerHost;
 
   constructor(host: ReactiveControllerHost, options: ResizeOptions) {
+    this._host = host;
+
     this._opts = {
       direction: 'none',
       threshold: 8,
@@ -182,6 +237,10 @@ export class ResizeController implements ReactiveController {
 
     this._gesture = new DragGestureController(host, {
       target: () => this._handle() ?? this._target(),
+      // A resize starts only after the pointer moves past the activation
+      // distance, like Android's touch slop, so a tap on a handle that is
+      // also a button stays a click and doesn't resize and settle first.
+      activation: 'axis',
       capture: true,
       stopPropagation: true,
       canStart: (event) => this._canStartGesture(event),
@@ -194,22 +253,47 @@ export class ResizeController implements ReactiveController {
     host.addController(this);
   }
 
+  /** Reconfigures resize behavior, replacing bindings when the handle or target changes. */
   setOptions(next: Partial<ResizeOptions>): void {
+    if (this._disposed) {
+      return;
+    }
+
+    const previousTarget = this._opts.target;
     const previousHandle = this._opts.handle;
+    const wasEnabled = this._opts.direction !== 'none';
+    const wasConnected = this._connected;
+    const bindingChanges =
+      (next.target !== undefined && next.target !== previousTarget) ||
+      (next.handle !== undefined && next.handle !== previousHandle) ||
+      (next.direction !== undefined && (next.direction !== 'none') !== wasEnabled);
+
+    if (wasConnected && bindingChanges) {
+      this.hostDisconnected();
+    }
 
     Object.assign(this._opts, next);
     this._gesture.setOptions({ target: () => this._handle() ?? this._target() });
 
-    if (previousHandle !== this._opts.handle) {
-      this._detachFromHandle(previousHandle);
-      this._attachToHandle(this._opts.handle);
+    if (wasConnected && bindingChanges) {
+      this.hostConnected();
+    } else if (wasConnected) {
+      this._syncFlowStyles();
     }
   }
 
   hostConnected(): void {
+    if (this._disposed || this._connected) {
+      return;
+    }
+
+    this._connected = true;
+
     if (this._opts.direction === 'none') {
       return;
     }
+
+    this._observeFlow();
 
     if (this._opts.handle) {
       this._attachToHandle(this._opts.handle);
@@ -219,23 +303,42 @@ export class ResizeController implements ReactiveController {
 
     const target = this._target();
 
-    target.addEventListener('pointermove', this._onPointerMove as EventListener);
-    target.addEventListener('pointerleave', this._onPointerLeave as EventListener);
+    this._targetEffects = new ControllerEffects();
+    this._targetEffects.listen(target, 'pointermove', this._onPointerMove as EventListener);
+    this._targetEffects.listen(target, 'pointerleave', this._onPointerLeave as EventListener);
     this._injectCornerButton();
   }
 
   hostDisconnected(): void {
+    this._connected = false;
+    this._unobserveFlow();
+
     if (this._opts.handle) {
       this._detachFromHandle(this._opts.handle);
+    }
 
+    this._removeCornerButton();
+    this._targetEffects?.dispose();
+    this._targetEffects = null;
+    this._positionEffects?.dispose();
+    this._positionEffects = null;
+  }
+
+  /**
+   * Detaches every listener, injected grip, and handle style, then removes
+   * the controller (and its gesture) from the host for good. Use it to
+   * replace a controller when resize options change after setup.
+   */
+  dispose(): void {
+    if (this._disposed) {
       return;
     }
 
-    const target = this._target();
-
-    target.removeEventListener('pointermove', this._onPointerMove as EventListener);
-    target.removeEventListener('pointerleave', this._onPointerLeave as EventListener);
-    this._removeCornerButton();
+    this._disposed = true;
+    this._gesture.dispose();
+    this._cancelResize();
+    this.hostDisconnected();
+    this._host.removeController(this);
   }
 
   private _target(): HTMLElement {
@@ -247,16 +350,58 @@ export class ResizeController implements ReactiveController {
   }
 
   private _attachToHandle(handle: Element | null | undefined): void {
-    if (!handle || this._opts.direction === 'none') {
+    if (!handle || this._opts.direction === 'none' || this._handleEffects.has(handle)) {
       return;
     }
 
-    handle.addEventListener('keydown', this._onKeyDown as EventListener);
-    (handle as HTMLElement).style.cursor = this._edgeCursor(this._handleEdge());
-    (handle as HTMLElement).style.touchAction = 'none';
+    const effects = new ControllerEffects();
+
+    effects.listen(handle, 'keydown', this._onKeyDown as EventListener);
+    effects.setStyle(handle as HTMLElement, 'cursor', this._edgeCursor(this._handleEdge()));
+    effects.setStyle(handle as HTMLElement, 'touch-action', 'none');
 
     if (!handle.hasAttribute('tabindex')) {
-      (handle as HTMLElement).setAttribute('tabindex', '0');
+      effects.setAttribute(handle, 'tabindex', '0');
+    }
+
+    this._handleEffects.set(handle, effects);
+  }
+
+  private _observeFlow(): void {
+    if (this._flowEffects) {
+      return;
+    }
+
+    const effects = new ControllerEffects();
+
+    effects.add(observeLocale(this._onFlowInteraction, this._target()));
+    effects.listen(this._handle() ?? this._target(), 'pointerenter', this._onFlowInteraction);
+    this._flowEffects = effects;
+  }
+
+  private _unobserveFlow(): void {
+    this._flowEffects?.dispose();
+    this._flowEffects = null;
+  }
+
+  /** Re-places the corner grip and re-derives handle cursors from the current flow. */
+  private _syncFlowStyles(): void {
+    // Mid-gesture the edge is fixed; the next gesture picks the new flow up.
+    if (this._resizing) {
+      return;
+    }
+
+    const handle = this._handle();
+
+    if (handle) {
+      this._handleEffects
+        .get(handle)
+        ?.setStyle(handle, 'cursor', this._edgeCursor(this._handleEdge()));
+    }
+
+    if (this._cornerBtn) {
+      this._placeCornerButton(this._cornerBtn);
+      this._labelCornerButton(this._cornerBtn);
     }
   }
 
@@ -265,7 +410,8 @@ export class ResizeController implements ReactiveController {
       return;
     }
 
-    handle.removeEventListener('keydown', this._onKeyDown as EventListener);
+    this._handleEffects.get(handle)?.dispose();
+    this._handleEffects.delete(handle);
   }
 
   private _injectCornerButton(): void {
@@ -276,31 +422,62 @@ export class ResizeController implements ReactiveController {
     const target = this._target();
 
     if (getComputedStyle(target).position === 'static') {
-      target.style.position = 'relative';
+      this._positionEffects = new ControllerEffects();
+      this._positionEffects.setStyle(target, 'position', 'relative');
     }
 
     const btn = document.createElement('button');
 
     btn.setAttribute('data-rc-resize-corner', '');
-    btn.setAttribute('aria-label', 'Resize');
     btn.type = 'button';
 
     Object.assign(btn.style, {
       position: 'absolute',
-      bottom: '0',
-      right: '0',
       width: '12px',
       height: '12px',
       padding: '0',
       border: 'none',
       background: 'transparent',
-      cursor: this._cornerCursor(),
       zIndex: '1',
     });
 
+    this._placeCornerButton(btn);
+    this._labelCornerButton(btn);
+
     btn.addEventListener('keydown', this._onKeyDown as EventListener);
-    target.appendChild(btn);
+    btn.addEventListener('focus', this._onFlowInteraction);
+    this._targetEffects?.append(target, btn);
     this._cornerBtn = btn;
+  }
+
+  /**
+   * Puts the grip at the end corner, where browsers put the native resize
+   * grip: bottom-left in RTL and in vertical-rl.
+   */
+  private _placeCornerButton(btn: HTMLButtonElement): void {
+    const { x, y } = this._endEdges();
+
+    Object.assign(btn.style, {
+      top: y === 'n' ? '0' : '',
+      bottom: y === 's' ? '0' : '',
+      left: x === 'w' ? '0' : '',
+      right: x === 'e' ? '0' : '',
+      cursor: this._cornerCursor(),
+    });
+  }
+
+  /** Names the grip in the target's locale; the flow observer re-runs it when `lang` changes. */
+  private _labelCornerButton(btn: HTMLButtonElement): void {
+    const { grip } = resolveMessages(
+      this._target(),
+      'resize',
+      DEFAULT_RESIZE_MESSAGES,
+      this._opts.messages,
+    );
+
+    if (btn.getAttribute('aria-label') !== grip) {
+      btn.setAttribute('aria-label', grip);
+    }
   }
 
   private _removeCornerButton(): void {
@@ -309,6 +486,7 @@ export class ResizeController implements ReactiveController {
     }
 
     this._cornerBtn.removeEventListener('keydown', this._onKeyDown as EventListener);
+    this._cornerBtn.removeEventListener('focus', this._onFlowInteraction);
     this._cornerBtn.remove();
     this._cornerBtn = null;
   }
@@ -316,7 +494,7 @@ export class ResizeController implements ReactiveController {
   private _cornerCursor(): string {
     switch (this._opts.direction) {
       case 'both':
-        return 'se-resize';
+        return `${this._defaultHandleEdge()}-resize`;
       case 'horizontal':
         return 'ew-resize';
       case 'vertical':
@@ -345,16 +523,30 @@ export class ResizeController implements ReactiveController {
     return this._edgeForOrigin(this._opts.origin) ?? this._defaultHandleEdge();
   }
 
+  /**
+   * The physical edges at the target's end corner, where a resize grip and
+   * keyboard resizing act by default: right and bottom in LTR, left in RTL
+   * and in vertical-rl, top where the inline axis runs bottom to top.
+   */
+  private _endEdges(): { x: 'e' | 'w'; y: 's' | 'n' } {
+    const flow = resolveFlow(this._target());
+
+    return {
+      x: isPhysicalReversed('x', flow) ? 'w' : 'e',
+      y: isPhysicalReversed('y', flow) ? 'n' : 's',
+    };
+  }
+
   private _defaultHandleEdge(): ResizeEdge {
+    const { x, y } = this._endEdges();
+
     switch (this._opts.direction) {
-      case 'both':
-        return 'se';
       case 'horizontal':
-        return 'e';
+        return x;
       case 'vertical':
-        return 's';
+        return y;
       default:
-        return 'se';
+        return `${y}${x}`;
     }
   }
 
@@ -552,7 +744,7 @@ export class ResizeController implements ReactiveController {
   }
 
   private _canStartGesture(event: PointerEvent): boolean {
-    if (this._opts.disabled) {
+    if (this._opts.disabled || this._opts.direction === 'none') {
       return false;
     }
 
@@ -583,7 +775,7 @@ export class ResizeController implements ReactiveController {
     this._lastDeltaY = detail.deltaY;
     this._velocityX = detail.velocityX;
     this._velocityY = detail.velocityY;
-    this._applyDelta(this._resizing, detail.deltaX, detail.deltaY);
+    this._applyDelta(this._resizing, detail.deltaX / this._zoom, detail.deltaY / this._zoom);
     this._opts.onResize?.(this._lifecycleDetail('pointer'));
   }
 
@@ -594,11 +786,15 @@ export class ResizeController implements ReactiveController {
   }
 
   private _startResize(edge: ResizeEdge): void {
-    const target = this._target();
-    const rect = this._pinPosition(target);
+    this._positionEffects?.abandon();
+    this._positionEffects = null;
 
-    this._startW = rect.width;
-    this._startH = rect.height;
+    const target = this._target();
+
+    this._pinPosition(target);
+    this._zoom = cssZoom(target);
+    this._startW = Number.parseFloat(target.style.width);
+    this._startH = Number.parseFloat(target.style.height);
     // pinElementBox writes coordinates in the target's actual containing
     // block. Keep subsequent pointer deltas in that same coordinate space;
     // DOMRect left/top are viewport-relative and would reintroduce the
@@ -643,8 +839,8 @@ export class ResizeController implements ReactiveController {
     return {
       edge: this._resizing ?? this._handleEdge(),
       inputType,
-      startWidth: this._startW,
-      startHeight: this._startH,
+      startWidth: this._startW * this._zoom,
+      startHeight: this._startH * this._zoom,
       width: target.getBoundingClientRect().width,
       height: target.getBoundingClientRect().height,
       deltaX: this._lastDeltaX,
@@ -667,7 +863,7 @@ export class ResizeController implements ReactiveController {
     const edge = this._detectEdge(e);
     const target = this._target();
 
-    target.style.cursor = edge ? this._edgeCursor(edge) : '';
+    this._targetEffects?.setStyle(target, 'cursor', edge ? this._edgeCursor(edge) : '');
   }
 
   private _finishResize(inputType: 'pointer' | 'keyboard'): void {
@@ -689,12 +885,12 @@ export class ResizeController implements ReactiveController {
 
   private _handlePointerLeave(_e: PointerEvent): void {
     if (!this._resizing) {
-      this._target().style.cursor = '';
+      this._targetEffects?.setStyle(this._target(), 'cursor', '');
     }
   }
 
   private _handleKeyDown(e: KeyboardEvent): void {
-    if (this._opts.disabled) {
+    if (this._opts.disabled || this._opts.direction === 'none') {
       return;
     }
 
@@ -718,8 +914,13 @@ export class ResizeController implements ReactiveController {
     e.stopPropagation();
 
     const target = this._target();
+
     // Pin on first keyboard resize so auto-margins don't fight explicit sizes.
-    const rect = this._pinPosition(target);
+    this._positionEffects?.abandon();
+    this._positionEffects = null;
+
+    this._pinPosition(target);
+
     const edge = this._keyboardEdge(e.key);
 
     if (!edge) {
@@ -727,10 +928,11 @@ export class ResizeController implements ReactiveController {
     }
 
     this._resizing = edge;
-    this._startW = rect.width;
-    this._startH = rect.height;
-    this._startLeft = rect.left;
-    this._startTop = rect.top;
+    this._zoom = cssZoom(target);
+    this._startW = Number.parseFloat(target.style.width);
+    this._startH = Number.parseFloat(target.style.height);
+    this._startLeft = Number.parseFloat(target.style.left);
+    this._startTop = Number.parseFloat(target.style.top);
 
     const step = e.shiftKey ? this._opts.step * 10 : this._opts.step;
 
@@ -753,12 +955,14 @@ export class ResizeController implements ReactiveController {
       return originEdge;
     }
 
+    const { x, y } = this._endEdges();
+
     if (key === 'ArrowRight' || key === 'ArrowLeft') {
-      return this._opts.direction === 'both' || this._opts.direction === 'horizontal' ? 'e' : null;
+      return this._opts.direction === 'both' || this._opts.direction === 'horizontal' ? x : null;
     }
 
     if (key === 'ArrowDown' || key === 'ArrowUp') {
-      return this._opts.direction === 'both' || this._opts.direction === 'vertical' ? 's' : null;
+      return this._opts.direction === 'both' || this._opts.direction === 'vertical' ? y : null;
     }
 
     return null;
@@ -766,7 +970,7 @@ export class ResizeController implements ReactiveController {
 
   private _applyDelta(edge: ResizeEdge, dx: number, dy: number): void {
     const target = this._target();
-    const [minL, minT, maxR, maxB] = this._boundsRect();
+    const [minL, minT, maxR, maxB] = this._boundsRect().map((value) => value / this._zoom);
     const minW = this._effectiveMinW;
     const minH = this._effectiveMinH;
     const maxW = this._effectiveMaxW;

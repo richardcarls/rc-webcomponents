@@ -1,0 +1,80 @@
+@layer rc-theme-win31.components {
+  /*
+   * Write, essentially: a strip of latched toolbar buttons over a sunken text
+   * well, in the one typeface the shell had.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-markdown-editor {
+    --rc-markdown-editor-background: var(--win31-color-field);
+    --rc-markdown-editor-color: var(--win31-color-field-text);
+    --rc-markdown-editor-border: var(--win31-hairline) solid var(--win31-color-shadow);
+    --rc-markdown-editor-border-radius: var(--win31-radius);
+    --rc-markdown-editor-padding: var(--win31-gap-tight);
+    --rc-markdown-editor-font-family: var(--win31-font-family);
+    --rc-markdown-editor-font-size: var(--win31-font-size);
+    --rc-markdown-editor-line-height: var(--win31-line-height);
+    --rc-markdown-editor-src-font-family: var(--win31-font-family);
+    --rc-markdown-editor-src-dim-color: var(--win31-color-shadow);
+    --rc-markdown-editor-src-heading-color: var(--win31-color-frame);
+    --rc-markdown-editor-src-link-color: var(--win31-color-selection);
+    --rc-markdown-editor-src-code-color: var(--win31-color-frame);
+    --rc-markdown-editor-src-list-color: var(--win31-color-frame);
+    --rc-markdown-editor-src-blockquote-color: var(--win31-color-shadow);
+    --rc-markdown-editor-focus-outline: var(--win31-focus-ring);
+    --rc-markdown-editor-toolbar-background: var(--win31-color-surface);
+    --rc-markdown-editor-toolbar-color: var(--win31-color-frame);
+    --rc-markdown-editor-toolbar-border: var(--win31-border);
+    --rc-markdown-editor-toolbar-radius: var(--win31-radius);
+    --rc-markdown-editor-toolbar-padding: var(--win31-gap-tight);
+    --rc-markdown-editor-toolbar-gap: calc(3 * var(--win31-unit));
+    --rc-markdown-editor-toolbar-button-size: var(--win31-toolbar-button-size);
+    --rc-markdown-editor-toolbar-button-background: var(--win31-color-surface);
+    --rc-markdown-editor-toolbar-button-color: var(--win31-color-frame);
+    --rc-markdown-editor-toolbar-button-border: var(--win31-border);
+    --rc-markdown-editor-toolbar-button-radius: var(--win31-radius);
+    --rc-markdown-editor-toolbar-button-active-background: var(--win31-color-surface);
+    --rc-markdown-editor-toolbar-button-active-color: var(--win31-color-frame);
+    --rc-markdown-editor-toolbar-button-active-border: var(--win31-color-frame);
+    --rc-markdown-editor-toolbar-button-hover-opacity: 0;
+    --rc-markdown-editor-toolbar-button-focus-opacity: 0;
+    --rc-markdown-editor-toolbar-button-pressed-opacity: 0;
+    --rc-markdown-editor-toolbar-input-background: var(--win31-color-field);
+    --rc-markdown-editor-toolbar-input-color: var(--win31-color-field-text);
+    --rc-markdown-editor-toolbar-input-border: var(--win31-hairline) solid var(--win31-color-shadow);
+    --rc-markdown-editor-toolbar-input-radius: var(--win31-radius);
+    --rc-markdown-editor-toolbar-select-background: var(--win31-color-field);
+    --rc-markdown-editor-toolbar-select-color: var(--win31-color-field-text);
+    --rc-markdown-editor-toolbar-select-border: var(--win31-hairline) solid
+      var(--win31-color-shadow);
+    --rc-markdown-editor-toolbar-select-radius: var(--win31-radius);
+    --rc-markdown-editor-toolbar-select-active-background: var(--win31-color-field);
+    --rc-markdown-editor-toolbar-select-active-color: var(--win31-color-field-text);
+    --rc-markdown-editor-toolbar-select-active-border-color: var(--win31-color-frame);
+    --rc-markdown-editor-toolbar-focus-outline: var(--win31-focus-ring);
+    --rc-markdown-editor-toolbar-focus-outline-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-markdown-editor::part(toolbar) {
+    min-block-size: var(--win31-toolbar-height);
+    border-block-end: var(--win31-border);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-markdown-editor::part(toolbar) button {
+    box-shadow: var(--win31-bevel-outset-1);
+    cursor: default;
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-markdown-editor::part(toolbar)
+    button[aria-pressed='true'] {
+    background-image: var(--win31-dither-track);
+    background-size: var(--win31-dither-size);
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-markdown-editor::part(rich-view) {
+    border: var(--win31-hairline) solid;
+    border-color: var(--win31-inset-border-color);
+    border-radius: var(--win31-radius);
+  }
+}

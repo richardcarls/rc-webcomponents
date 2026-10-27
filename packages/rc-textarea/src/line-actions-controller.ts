@@ -1,3 +1,4 @@
+import { isPhysicalReversed, resolveFlow } from '@rcarls/rc-common';
 import type { RCTextareaPluginAPI, DecorationInput } from './types.js';
 
 export interface LineAction {
@@ -19,8 +20,9 @@ export interface LineActionsOptions {
   position?: 'append';
 
   /**
-   * Create and return a DOM element for the given icon name (e.g. `'mdi-lock-outline'`).
-   * Called when `action.iconName` is set. Return `null` to fall back to text label.
+   * Create and return a DOM element for the given icon name (e.g. `'mdi-lock-outline'`),
+   * such as an `<svg>` or an icon custom element. Called when `action.iconName` is set.
+   * Return `null` to fall back to text label.
    *
    * @example
    * ```ts
@@ -31,7 +33,7 @@ export interface LineActionsOptions {
    * }
    * ```
    */
-  createIcon?: (iconName: string) => HTMLElement | null;
+  createIcon?: (iconName: string) => Element | null;
 
   /**
    * Full control over button content. Called instead of the default icon/label
@@ -43,12 +45,13 @@ export interface LineActionsOptions {
 
 // Constructed once at module level and shared across all controller instances
 const WIDGET_SHEET = new CSSStyleSheet();
+
 WIDGET_SHEET.replaceSync(`
   .rc-line-actions {
     display: inline-flex;
     align-items: center;
     gap: var(--rc-line-actions-gap, 2px);
-    margin-left: var(--rc-line-actions-margin-start, 6px);
+    margin-inline-start: var(--rc-line-actions-margin-start, 6px);
     vertical-align: middle;
   }
   .rc-line-action-btn {
@@ -264,16 +267,12 @@ export class LineActionsController {
     const lines = value.split('\n');
     let offset = 0;
 
-    for (let i = 0; i < lineIndex && i < lines.length; i++) {
+    for (const line of lines.slice(0, lineIndex)) {
       // +1 for the '\n'
-      offset += lines[i]!.length + 1;
+      offset += line.length + 1;
     }
 
-    if (lineIndex < lines.length) {
-      offset += lines[lineIndex]!.length;
-    }
-
-    return offset;
+    return offset + (lines[lineIndex]?.length ?? 0);
   }
 
   private _showPopover(actions: LineAction[]): void {
@@ -319,6 +318,7 @@ export class LineActionsController {
     const panelHeight = this._popover.offsetHeight || 32;
 
     let top: number;
+
     if (cursorRect) {
       top = cursorRect.bottom + 4;
 
@@ -331,7 +331,11 @@ export class LineActionsController {
 
     const panelWidth = this._popover.offsetWidth || 120;
 
-    let left = hostRect.left;
+    // Aligned to the host's inline start: its right edge in RTL.
+    const startsRight = isPhysicalReversed('x', resolveFlow(this._api.host));
+
+    let left = startsRight ? hostRect.right - panelWidth : hostRect.left;
+
     left = Math.min(left, window.innerWidth - panelWidth - 8);
     left = Math.max(left, 8);
 

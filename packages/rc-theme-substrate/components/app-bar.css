@@ -1,6 +1,6 @@
 @layer rc-theme-substrate.components {
   :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-app-bar {
-    --rc-app-bar-background: color-mix(in srgb, var(--substrate-surface, Canvas) 88%, transparent);
+    --rc-app-bar-bg: color-mix(in srgb, var(--substrate-surface, Canvas) 88%, transparent);
     --rc-app-bar-color: var(--rc-field-text, CanvasText);
     --rc-app-bar-scroll-divider: var(--rc-border, 1px solid ButtonBorder);
     --rc-app-bar-shadow: none;

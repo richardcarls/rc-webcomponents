@@ -32,6 +32,11 @@ scrollable at all (nothing more to reveal counts as already at both of its
 edges). Style an edge affordance (a fade, a shadow, a border) from outside
 the shadow root by targeting the attribute directly:
 
+Initial boundary state settles in the first animation frame after mount.
+This lets component batches complete their layout reads before any instance
+reflect state; read the properties after that frame when coordinating
+imperative startup work.
+
 ```css
 rc-scroller[axis='inline'] {
   mask-image: linear-gradient(

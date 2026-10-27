@@ -1,10 +1,22 @@
-import { test, expect, vi } from 'vitest';
+import { afterAll, beforeAll, test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 import { html } from 'lit';
 
 import './define.js';
-import type { RCDialog } from './rc-dialog.js';
+import { DialogGeometry } from './geometry.js';
+import { RCDialog } from './rc-dialog.js';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { inFlow } from '../../../test-helpers/flow.js';
+
+/*
+ * @starting-style only applies at the first style recalc after an element
+ * begins rendering, so opacity reads its starting-style value (0) at the
+ * instant showModal() returns; the transition to its resting value doesn't
+ * begin until the following frame.
+ */
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
 
 function firePointerEvent(target: Element, type: string, init: PointerEventInit = {}) {
   target.dispatchEvent(
@@ -16,6 +28,18 @@ function firePointerEvent(target: Element, type: string, init: PointerEventInit 
     }),
   );
 }
+
+// Move and resize tests use the geometry synchronously, as rc-bottom-sheet
+// does; the on-demand load has its own tests below.
+type GeometryStatics = { _geometryClass?: typeof DialogGeometry };
+
+beforeAll(() => {
+  (RCDialog as unknown as GeometryStatics)._geometryClass = DialogGeometry;
+});
+
+afterAll(() => {
+  delete (RCDialog as unknown as GeometryStatics)._geometryClass;
+});
 
 // Helper: render an rc-dialog wrapping a <dialog> with a label
 function renderDialog(extraAttrs = '') {
@@ -43,6 +67,77 @@ test('rc-dialog delegates showModal() to inner <dialog>', async () => {
   expect(host.open).toBe(true);
 
   host.close();
+});
+
+test('rc-dialog fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = renderDialog();
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+
+  const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+  // Closed: opacity is 0 and a real transition is declared, not transition: none.
+  expect(getComputedStyle($dialog).opacity).toBe('0');
+  expect(getComputedStyle($dialog).transitionDuration).not.toBe('0s');
+  expect(getComputedStyle($dialog).transitionProperty).toContain('opacity');
+
+  // showModal() is synchronous; open state does not wait on any transition.
+  host.showModal();
+  expect(host.open).toBe(true);
+  expect($dialog.open).toBe(true);
+
+  await nextFrame();
+  await Promise.all($dialog.getAnimations().map((animation) => animation.finished));
+  expect(getComputedStyle($dialog).opacity).toBe('1');
+
+  host.close();
+  expect(host.open).toBe(false);
+
+  await nextFrame();
+  await Promise.all($dialog.getAnimations().map((animation) => animation.finished));
+  expect(getComputedStyle($dialog).opacity).toBe('0');
+});
+
+test('rc-dialog backdrop fades with the surface rather than snapping instantly', async () => {
+  const screen = renderDialog();
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.showModal();
+
+  const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+  await nextFrame();
+
+  await Promise.all(
+    $dialog.getAnimations({ subtree: true }).map((animation) => animation.finished),
+  );
+
+  const backdropStyles = getComputedStyle($dialog, '::backdrop');
+
+  expect(backdropStyles.opacity).toBe('1');
+  expect(backdropStyles.transitionDuration).not.toBe('0s');
+
+  host.close();
+});
+
+test('rc-dialog respects prefers-reduced-motion by declaring no transition at all', async () => {
+  // A real media-emulation test would need Playwright's emulateMedia, which
+  // this harness does not currently expose to component tests. This
+  // test instead proves the CSS itself is unconditionally
+  // gated behind @media (prefers-reduced-motion: no-preference), so a
+  // reduced-motion user gets the plain, un-animated opacity values with no
+  // transition at all, by construction rather than by observation.
+  const { DIALOG_BASE_CSS } = await import('./dialogBaseStyles.js');
+
+  expect(DIALOG_BASE_CSS).toContain('@media (prefers-reduced-motion: no-preference)');
+
+  const motionBlock = DIALOG_BASE_CSS.slice(
+    DIALOG_BASE_CSS.indexOf('@media (prefers-reduced-motion: no-preference)'),
+  );
+
+  expect(motionBlock).toContain('transition:');
 });
 
 test('rc-dialog has no automated accessibility violations', async () => {
@@ -198,6 +293,159 @@ test('rc-dialog open getter reflects inner dialog state', async () => {
   expect(host.open).toBe(false);
 });
 
+test('fullscreen variant tracks the visual viewport only while open', async () => {
+  const screen = render(html`
+    <rc-dialog data-testid="host" variant="fullscreen">
+      <dialog aria-label="Fullscreen test"><button>Close</button></dialog>
+    </rc-dialog>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+
+  expect(host.variant).toBe('fullscreen');
+  expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-width')).toBe('');
+
+  host.showModal();
+
+  expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-width')).toBe(
+    `${window.visualViewport?.width ?? window.innerWidth}px`,
+  );
+
+  expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-height')).toBe(
+    `${window.visualViewport?.height ?? window.innerHeight}px`,
+  );
+
+  host.close();
+
+  await vi.waitFor(() => {
+    expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-width')).toBe('');
+  });
+
+  expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-height')).toBe('');
+});
+
+test('fullscreen variant ignores the shorter size a closing keyboard reports', async () => {
+  const fullHeight = window.innerHeight;
+  const viewport = Object.assign(new EventTarget(), {
+    offsetLeft: 0,
+    offsetTop: 0,
+    width: window.innerWidth,
+    height: fullHeight,
+  });
+
+  Object.defineProperty(window, 'visualViewport', { configurable: true, get: () => viewport });
+
+  try {
+    const screen = render(html`
+      <rc-dialog data-testid="host" variant="fullscreen">
+        <dialog aria-label="Keyboard test">
+          <input aria-label="Servings" />
+          <button>Done</button>
+        </dialog>
+      </rc-dialog>
+    `);
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+    const writtenHeight = () => host.style.getPropertyValue('--rc-dialog-visual-viewport-height');
+
+    const resizeTo = (height: number) => {
+      viewport.height = height;
+      viewport.dispatchEvent(new Event('resize'));
+    };
+
+    await host.updateComplete;
+    host.showModal();
+    host.querySelector('input')?.focus();
+
+    // The keyboard opening, then a Firefox for Android close: shorter first, then full.
+    resizeTo(fullHeight - 240);
+
+    expect(writtenHeight()).toBe(`${fullHeight - 240}px`);
+
+    host.querySelector('button')?.focus();
+    resizeTo(fullHeight - 270);
+
+    expect(writtenHeight()).toBe(`${fullHeight - 240}px`);
+
+    resizeTo(fullHeight);
+
+    expect(writtenHeight()).toBe(`${fullHeight}px`);
+
+    host.close();
+  } finally {
+    delete (window as { visualViewport?: unknown }).visualViewport;
+  }
+});
+
+test('fullscreen variant covers the viewport under an ancestor zoom', async () => {
+  const screen = render(html`
+    <div style="zoom: 0.8">
+      <rc-dialog data-testid="host" variant="fullscreen">
+        <dialog aria-label="Zoomed fullscreen test"><button>Close</button></dialog>
+      </rc-dialog>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.showModal();
+
+  const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
+
+  expect(rect.width).toBeCloseTo(window.visualViewport?.width ?? window.innerWidth, 0);
+  expect(rect.height).toBeCloseTo(window.visualViewport?.height ?? window.innerHeight, 0);
+
+  host.close();
+});
+
+test('fullscreen variant stays inside the viewport while its tracked size is stale', async () => {
+  // A rotation lays out the new orientation before the resize event that
+  // updates the tracked size, so a landscape width briefly meets a portrait
+  // viewport.
+  const screen = render(html`
+    <rc-dialog data-testid="host" variant="fullscreen">
+      <dialog aria-label="Stale size fullscreen test"><button>Close</button></dialog>
+    </rc-dialog>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.showModal();
+
+  host.style.setProperty('--rc-dialog-visual-viewport-width', `${window.innerWidth * 2}px`);
+  host.style.setProperty('--rc-dialog-visual-viewport-height', `${window.innerHeight * 2}px`);
+
+  const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
+
+  expect(rect.width).toBeLessThanOrEqual(document.documentElement.clientWidth);
+  expect(rect.height).toBeLessThanOrEqual(document.documentElement.clientHeight);
+
+  host.close();
+});
+
+test('fullscreen variant covers the viewport under a zoom when the host has no box', async () => {
+  // A host styled display: contents (to stay out of a parent grid) reports
+  // currentCSSZoom as 1, so the zoom must come from the inner dialog.
+  const screen = render(html`
+    <div style="zoom: 0.7">
+      <rc-dialog data-testid="host" variant="fullscreen" style="display: contents">
+        <dialog aria-label="Contents host fullscreen test"><button>Close</button></dialog>
+      </rc-dialog>
+    </div>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.showModal();
+
+  const rect = (host.querySelector('dialog') as HTMLDialogElement).getBoundingClientRect();
+
+  expect(rect.width).toBeCloseTo(window.visualViewport?.width ?? window.innerWidth, 0);
+  expect(rect.height).toBeCloseTo(window.visualViewport?.height ?? window.innerHeight, 0);
+
+  host.close();
+});
+
 test('rc-dialog restores focus to the opener on close', async () => {
   const screen = render(html`
     <div>
@@ -308,6 +556,167 @@ test('explicit resize handle grows top-origin vertical dialogs upward', async ()
 
   expect(Math.round(resized.height)).toBe(Math.round(start.height + 40));
   expect(Math.round(resized.bottom)).toBe(Math.round(start.bottom));
+
+  host.close();
+});
+
+test('resize reacts to changes after setup', async () => {
+  const screen = render(html`
+    <rc-dialog
+      data-testid="host"
+      resize="vertical"
+      resize-origin="top"
+      resize-handle="#resize-handle"
+    >
+      <dialog
+        aria-labelledby="t"
+        style="position: fixed; left: 100px; top: 300px; width: 320px; height: 120px; margin: 0;"
+      >
+        <span id="t">Title</span>
+        <span id="resize-handle" data-rc-dialog-resize-axis="y">Resize</span>
+        <button type="button">Close</button>
+      </dialog>
+    </rc-dialog>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.show();
+
+  const dialog = host.querySelector('dialog') as HTMLDialogElement;
+  const handle = host.querySelector('#resize-handle') as HTMLElement;
+
+  const dragUp = (distance: number) => {
+    const { left, top } = dialog.getBoundingClientRect();
+
+    firePointerEvent(handle, 'pointerdown', { clientX: left + 20, clientY: top });
+    firePointerEvent(handle, 'pointermove', { clientX: left + 20, clientY: top - distance });
+    firePointerEvent(handle, 'pointerup', { clientX: left + 20, clientY: top - distance });
+  };
+
+  expect(handle.getAttribute('tabindex')).toBe('0');
+
+  host.resize = 'none';
+
+  await host.updateComplete;
+
+  const fixed = Math.round(dialog.getBoundingClientRect().height);
+
+  dragUp(40);
+
+  expect(Math.round(dialog.getBoundingClientRect().height)).toBe(fixed);
+  expect(handle.hasAttribute('tabindex')).toBe(false);
+
+  host.resize = 'vertical';
+
+  await host.updateComplete;
+
+  dragUp(40);
+
+  // Exactly one controller is live again: the drag applies once.
+  expect(Math.round(dialog.getBoundingClientRect().height)).toBe(fixed + 40);
+  expect(handle.getAttribute('tabindex')).toBe('0');
+
+  host.close();
+});
+
+test('a plain dialog builds no move or resize behavior', async () => {
+  const screen = renderDialog();
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+
+  expect((host as unknown as { _geometry: unknown })._geometry).toBeNull();
+});
+
+test('movable loads the geometry module on demand', async () => {
+  const statics = RCDialog as unknown as GeometryStatics;
+
+  delete statics._geometryClass;
+
+  try {
+    const screen = render(html`
+      <rc-dialog data-testid="host" movable>
+        <dialog aria-labelledby="t">
+          <span id="t">Title</span>
+          <button type="button">Close</button>
+        </dialog>
+      </rc-dialog>
+    `);
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+    const dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+    await host.updateComplete;
+
+    // The move handle becomes focusable once the loaded controller attaches.
+    await vi.waitFor(() => expect(dialog.getAttribute('tabindex')).toBe('0'));
+  } finally {
+    statics._geometryClass = DialogGeometry;
+  }
+});
+
+test('move options react to changes after setup', async () => {
+  const screen = render(html`
+    <rc-dialog data-testid="host" movable>
+      <dialog
+        aria-labelledby="t"
+        style="position: fixed; left: 100px; top: 100px; width: 320px; height: 120px; margin: 0;"
+      >
+        <span id="t" class="titlebar">Title</span>
+        <button type="button">Close</button>
+      </dialog>
+    </rc-dialog>
+  `);
+
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.show();
+
+  const dialog = host.querySelector('dialog') as HTMLDialogElement;
+  // Moves go left: the test viewport is too narrow to move this dialog right.
+  const titlebar = host.querySelector('.titlebar') as HTMLElement;
+  const left = () => Math.round(dialog.getBoundingClientRect().left);
+
+  const pressArrowLeft = ($el: HTMLElement) => {
+    $el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+  };
+
+  expect(dialog.getAttribute('tabindex')).toBe('0');
+
+  host.movable = false;
+
+  await host.updateComplete;
+
+  const fixed = left();
+
+  pressArrowLeft(dialog);
+
+  expect(left()).toBe(fixed);
+  expect(dialog.hasAttribute('tabindex')).toBe(false);
+
+  host.moveHandle = '.titlebar';
+
+  await host.updateComplete;
+
+  // The handle moved to the titlebar; the dialog itself no longer moves.
+  expect(titlebar.getAttribute('tabindex')).toBe('0');
+  expect(dialog.hasAttribute('tabindex')).toBe(false);
+
+  pressArrowLeft(dialog);
+
+  expect(left()).toBe(fixed);
+
+  // The first move pins the dialog's box; measure the step after it.
+  pressArrowLeft(titlebar);
+
+  const pinned = left();
+
+  pressArrowLeft(titlebar);
+
+  // Exactly one controller is live: the step applies once.
+  expect(left()).toBe(pinned - 4);
 
   host.close();
 });
@@ -524,6 +933,32 @@ test('show() moves initial focus inside the dialog', async () => {
   host.close();
 });
 
+test('a non-modal dialog already open when it connects leaves focus in place', async () => {
+  const screen = render(html`
+    <div>
+      <button data-testid="outside">Outside</button>
+      <div data-testid="slot"></div>
+    </div>
+  `);
+  const outside = (await screen.getByTestId('outside').element()) as HTMLButtonElement;
+  const slot = await screen.getByTestId('slot').element();
+
+  outside.focus();
+
+  const host = document.createElement('rc-dialog') as RCDialog;
+
+  host.modal = false;
+  host.open = true;
+  host.innerHTML = '<dialog aria-label="Docked"><button>Inside</button></dialog>';
+  slot.append(host);
+  await host.updateComplete;
+
+  expect(host.querySelector('dialog')?.open).toBe(true);
+  expect(document.activeElement).toBe(outside);
+
+  host.open = false;
+});
+
 // Group D — focus fallback when opener is removed from DOM
 
 test('focus falls back to document.body when opener is removed before close', async () => {
@@ -557,17 +992,11 @@ test('focus falls back to document.body when opener is removed before close', as
   await vi.waitFor(() => expect(document.activeElement).toBe(document.body));
 });
 
-// Group E — light-dismiss setup and behavior
+// Group E — closed-by dismissal
 
-test('light-dismiss sets closedby="any" on inner dialog when browser supports native closedby', async () => {
-  // When the browser supports the native closedby attribute, rc-dialog delegates
-  // backdrop dismissal to it rather than attaching a JS click handler.
-  if (!('closedBy' in HTMLDialogElement.prototype)) {
-    return;
-  }
-
+test('closed-by is proxied to the inner dialog and follows later changes', async () => {
   const screen = render(html`
-    <rc-dialog data-testid="host" light-dismiss>
+    <rc-dialog data-testid="host" closed-by="any">
       <dialog aria-labelledby="t">
         <span id="t">Title</span>
         <button>Close</button>
@@ -582,53 +1011,75 @@ test('light-dismiss sets closedby="any" on inner dialog when browser supports na
   const $dialog = host.querySelector('dialog') as HTMLDialogElement;
 
   expect($dialog.getAttribute('closedby')).toBe('any');
-});
 
-test('light-dismiss JS fallback: backdrop click calls requestClose() when native closedby not supported', async () => {
-  // Only tests the JS click-handler path used in older browsers. Skip when the
-  // browser supports the native closedby attribute (which takes priority).
-  if ('closedBy' in HTMLDialogElement.prototype) {
-    return;
-  }
-
-  const requestCloseSpy = vi.fn();
-
-  const screen = render(html`
-    <rc-dialog data-testid="host" light-dismiss @rc-dialog-request-close=${requestCloseSpy}>
-      <dialog aria-labelledby="t">
-        <span id="t">Title</span>
-        <button>Close</button>
-      </dialog>
-    </rc-dialog>
-  `);
-
-  const host = (await screen.getByTestId('host').element()) as RCDialog;
-
+  host.closedBy = 'none';
   await host.updateComplete;
+  expect($dialog.getAttribute('closedby')).toBe('none');
 
-  host.showModal();
+  host.closedBy = '';
+  await host.updateComplete;
+  expect($dialog.hasAttribute('closedby')).toBe(false);
+});
 
-  // The JS backdrop handler fires when e.target === <dialog>. Dispatch directly
-  // on the <dialog> element to satisfy that check.
-  const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+test('closed-by="any" falls back to a backdrop click listener without native closedby', async () => {
+  // Hide native support so the fallback runs in every engine.
+  const descriptor = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'closedBy');
 
-  $dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  if (descriptor) {
+    delete (HTMLDialogElement.prototype as { closedBy?: string }).closedBy;
+  }
 
-  expect(requestCloseSpy).toHaveBeenCalledTimes(1);
+  try {
+    const requestCloseSpy = vi.fn();
 
-  if (host.open) {
-    host.close();
+    const screen = render(html`
+      <rc-dialog data-testid="host" closed-by="any" @rc-dialog-request-close=${requestCloseSpy}>
+        <dialog aria-labelledby="t">
+          <span id="t">Title</span>
+          <button>Close</button>
+        </dialog>
+      </rc-dialog>
+    `);
+
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+    await host.updateComplete;
+
+    host.showModal();
+
+    // The fallback fires when the click targets the <dialog> itself, which is
+    // where a backdrop click lands.
+    const $dialog = host.querySelector('dialog') as HTMLDialogElement;
+
+    $dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    expect(requestCloseSpy).toHaveBeenCalledTimes(1);
+
+    host.closedBy = 'closerequest';
+    await host.updateComplete;
+    host.showModal();
+    $dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    expect(requestCloseSpy).toHaveBeenCalledTimes(1);
+
+    if (host.open) {
+      host.close();
+    }
+  } finally {
+    if (descriptor) {
+      Object.defineProperty(HTMLDialogElement.prototype, 'closedBy', descriptor);
+    }
   }
 });
 
-test('light-dismiss keeps dialog open when rc-dialog-request-close is prevented', async () => {
-  // Both the native (closedby="any" → cancel event) and JS fallback paths
-  // go through rc-dialog-request-close. Simulate via the cancel event, which
-  // is what the browser fires on backdrop click with closedby="any".
+test('closed-by="any" keeps the dialog open when rc-dialog-request-close is prevented', async () => {
+  // Both the native (closedby="any" → cancel event) and fallback paths go
+  // through rc-dialog-request-close. Simulate via the cancel event, which is
+  // what the browser fires on backdrop click with closedby="any".
   const screen = render(html`
     <rc-dialog
       data-testid="host"
-      light-dismiss
+      closed-by="any"
       @rc-dialog-request-close=${(e: Event) => e.preventDefault()}
     >
       <dialog aria-labelledby="t">
@@ -791,4 +1242,206 @@ test('rc-dialog-open fires on show()', async () => {
   expect(openSpy).toHaveBeenCalledTimes(1);
 
   host.close();
+});
+
+test('rc-dialog draws its surface from the public properties', async () => {
+  const screen = render(html`
+    <rc-dialog
+      default-open
+      style="--rc-dialog-radius: 14px; --rc-dialog-padding: 18px; --rc-dialog-min-inline-size: 240px; --rc-dialog-max-inline-size: 300px"
+    >
+      <dialog><p>Body</p></dialog>
+    </rc-dialog>
+  `);
+
+  await expect.element(screen.getByText('Body')).toBeInTheDocument();
+
+  const $dialog = document.querySelector('rc-dialog > dialog')!;
+  const styles = getComputedStyle($dialog);
+
+  expect(styles.borderRadius).toBe('14px');
+  expect(styles.padding).toBe('18px');
+  expect(styles.minInlineSize).toBe('240px');
+  expect(styles.maxInlineSize).toBe('300px');
+
+  // The surface never scrolls itself, so its corners always clip; a scrollable
+  // dialog scrolls a dedicated inner region instead.
+  expect(styles.overflow).toBe('hidden');
+});
+
+test('rc-dialog installs its light-DOM base styles once per root', async () => {
+  const screen = render(html`
+    <rc-dialog default-open
+      ><dialog><p>One</p></dialog></rc-dialog
+    >
+    <rc-dialog
+      ><dialog><p>Two</p></dialog></rc-dialog
+    >
+  `);
+
+  await expect.element(screen.getByText('One')).toBeInTheDocument();
+
+  expect(document.querySelectorAll('[data-rc-light-dom-base="rc-dialog"]')).toHaveLength(1);
+});
+
+test('the visual viewport values are outputs, not theme inputs', async () => {
+  const screen = render(html`
+    <rc-dialog
+      variant="fullscreen"
+      default-open
+      style="--rc-dialog-visual-viewport-width: 320px; --rc-dialog-visual-viewport-height: 480px"
+    >
+      <dialog><p>Fullscreen body</p></dialog>
+    </rc-dialog>
+  `);
+
+  await expect.element(screen.getByText('Fullscreen body')).toBeInTheDocument();
+
+  const $host = document.querySelector('rc-dialog')!;
+  const styles = getComputedStyle(document.querySelector('rc-dialog > dialog')!);
+  const written = getComputedStyle($host).getPropertyValue('--rc-dialog-visual-viewport-width');
+
+  // Setting these does not move the dialog: the component measures the visual
+  // viewport and overwrites them, so the surface follows its measurement rather
+  // than the author's value.
+  expect(written.trim()).not.toBe('320px');
+  expect(styles.inlineSize).toBe(written.trim());
+
+  // Fullscreen geometry is structural, so the surface drops the standard radius
+  // and shadow rather than leaving a theme to remember to.
+  expect(styles.borderRadius).toBe('0px');
+  expect(styles.boxShadow).toBe('none');
+});
+
+/** Resolves the native `<dialog>` an rc-dialog wraps, failing the test when it is missing. */
+function innerDialog($host: Element): HTMLDialogElement {
+  const $dialog = $host.querySelector(':scope > dialog');
+
+  if (!($dialog instanceof HTMLDialogElement)) {
+    throw new Error('Expected a direct child <dialog>.');
+  }
+
+  return $dialog;
+}
+
+test('a standard dialog fits its content unless a preferred inline size is set', async () => {
+  const screen = render(html`
+    <rc-dialog
+      data-testid="fit"
+      default-open
+      style="--rc-dialog-min-inline-size: 200px; --rc-dialog-max-inline-size: 500px"
+    >
+      <dialog aria-label="Fit"><div style="inline-size: 100%">Fluid</div></dialog>
+    </rc-dialog>
+    <rc-dialog
+      data-testid="task"
+      default-open
+      style="--rc-dialog-min-inline-size: 200px; --rc-dialog-max-inline-size: 500px; --rc-dialog-inline-size: 100%"
+    >
+      <dialog aria-label="Task"><div style="inline-size: 100%">Fluid</div></dialog>
+    </rc-dialog>
+  `);
+
+  const $fit = innerDialog(await screen.getByTestId('fit').element());
+  const $task = innerDialog(await screen.getByTestId('task').element());
+
+  // Fluid content has no intrinsic width, so a fit-content surface settles on its minimum.
+  expect($fit.getBoundingClientRect().width).toBe(200);
+  expect($task.getBoundingClientRect().width).toBe(Math.min(500, window.innerWidth));
+});
+
+for (const dir of ['ltr', 'rtl'] as const) {
+  test(`side variant docks to the inline end at full block size (${dir})`, async () => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-dialog
+            data-testid="host"
+            variant="side"
+            movable
+            resize="both"
+            default-open
+            style="--rc-dialog-radius: 12px; --rc-dialog-side-inline-size: 300px"
+          >
+            <dialog aria-label="Filters"><button>Apply</button></dialog>
+          </rc-dialog>
+        `,
+        { dir, writingMode: 'horizontal-tb' },
+      ),
+    );
+    const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+    await host.updateComplete;
+
+    const $dialog = innerDialog(host);
+    const rect = $dialog.getBoundingClientRect();
+    const styles = getComputedStyle($dialog);
+
+    expect(rect.width).toBe(300);
+    expect(rect.top).toBe(0);
+    expect(rect.height).toBe(window.innerHeight);
+
+    if (dir === 'ltr') {
+      expect(rect.right).toBe(window.innerWidth);
+      expect(styles.borderTopLeftRadius).toBe('12px');
+      expect(styles.borderTopRightRadius).toBe('0px');
+    } else {
+      expect(rect.left).toBe(0);
+      expect(styles.borderTopRightRadius).toBe('12px');
+      expect(styles.borderTopLeftRadius).toBe('0px');
+    }
+
+    // A docked surface neither moves nor resizes, and only fullscreen tracks the viewport.
+    expect(styles.resize).toBe('none');
+    expect(host.style.getPropertyValue('--rc-dialog-visual-viewport-width')).toBe('');
+  });
+}
+
+for (const dir of ['ltr', 'rtl'] as const) {
+  test(`side variant follows the inline end in vertical writing mode (${dir})`, async () => {
+    const screen = render(
+      inFlow(
+        html`
+          <rc-dialog
+            data-testid="host"
+            variant="side"
+            default-open
+            style="--rc-dialog-side-inline-size: 300px"
+          >
+            <dialog aria-label="Filters"><button>Apply</button></dialog>
+          </rc-dialog>
+        `,
+        { dir, writingMode: 'vertical-rl' },
+      ),
+    );
+    const $host = await screen.getByTestId('host').element();
+
+    await ($host as RCDialog).updateComplete;
+
+    const rect = innerDialog($host).getBoundingClientRect();
+
+    expect(rect.width).toBe(window.innerWidth);
+    expect(rect.height).toBe(300);
+    expect(dir === 'ltr' ? rect.bottom : rect.top).toBe(dir === 'ltr' ? window.innerHeight : 0);
+  });
+}
+
+test('side variant never exceeds the viewport and stays modal', async () => {
+  const screen = render(html`
+    <button data-testid="outside">Outside</button>
+    <rc-dialog data-testid="host" variant="side" style="--rc-dialog-side-inline-size: 200vw">
+      <dialog aria-label="Wide side sheet"><button>Inside</button></dialog>
+    </rc-dialog>
+  `);
+  const host = (await screen.getByTestId('host').element()) as RCDialog;
+
+  await host.updateComplete;
+  host.showModal();
+
+  const $dialog = innerDialog(host);
+
+  expect($dialog.getBoundingClientRect().width).toBe(window.innerWidth);
+  expect($dialog.matches(':modal')).toBe(true);
+
+  await expectNoA11yViolations(host);
 });

@@ -30,21 +30,21 @@ Chip wrapper for native actions, links, filters, suggestions, and inputs.
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-chip
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-chip
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-chip/define';
+import '@rcarls/rc-webcomponents/rc-chip/define';
 ```
 
 ## Markup
@@ -82,6 +82,12 @@ Without a theme, button and link chips retain their browser appearance.
 Packaged themes opt into chip sizing, shape, selection colors, and focus
 treatment.
 
+For asymmetric content such as a leading icon, use
+`--rc-chip-padding-inline-start` and `--rc-chip-padding-inline-end`. Both fall
+back to `--rc-chip-padding-inline`; the Material theme applies its documented
+8px leading-icon inset and icon-label gap automatically when the icon carries
+`data-rc-chip-icon`.
+
 ## Live demo
 
 <ChipDemo />
@@ -109,7 +115,7 @@ chip-group overflow disclosure.
 
 A chip's accessible touch target (`--rc-chip-touch-target-block-size`,
 `3rem` by default) applies unconditionally, unlike `rc-button`'s
-opt-in-via-`icon-only` inflation — reasonable on its own, but a poor fit
+opt-in-via-`icon-only` inflation. This is reasonable on its own, but a poor fit
 inside a field that can't spare that much height, such as a multi-select
 value area in `rc-search-bar` or `rc-combobox`. `--rc-chip-touch-target-overlap-block-start`
 and `-block-end` (zero by default) let a theme or consumer give that

@@ -1,43 +1,42 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
-export type AnchorPlacement =
-  | 'top'
-  | 'top-start'
-  | 'top-end'
-  | 'bottom'
-  | 'bottom-start'
-  | 'bottom-end'
-  | 'left'
-  | 'left-start'
-  | 'left-end'
-  | 'right'
-  | 'right-start'
-  | 'right-end';
+import { cssZoom } from './cssZoom.js';
+import {
+  type AnchorPlacement,
+  type PhysicalAnchorPlacement,
+  resolveAnchorPlacement,
+} from './anchorPlacement.js';
+import { resolveFlow } from './flow.js';
+import { observeLocale } from './observeLocale.js';
+import { RafScheduler } from './RafScheduler.js';
+import { getVisualViewportBounds } from './visualViewport.js';
+
+export type { AnchorPlacement };
 
 export interface AnchorOptions {
   /** The anchor (trigger) element. Accepts an element reference or getter. */
   anchor: Element | (() => Element | null);
   /** The floating element to position. Accepts an element reference or getter. */
   floating: Element | (() => Element | null);
-  /** Preferred placement relative to the anchor. Defaults to `'bottom-start'`. */
+  /** Preferred placement relative to the anchor. Defaults to `'block-end-start'`. */
   placement?: AnchorPlacement;
   /** Gap between anchor and floating in px. Defaults to `4`. */
   offset?: number;
   /** Flip to opposite side when clipped by viewport. Defaults to `true`. */
   flip?: boolean;
-  disabled?: boolean;
+  /** Whether positioning is inactive. Accepts a boolean or a getter for live popup state. */
+  disabled?: boolean | (() => boolean);
   /**
    * The LitElement shadow host. When provided, positioning CSS is injected into
    * the shadow root's adoptedStyleSheets so it reaches shadow-DOM floating elements,
-   * including those promoted to the popover top layer. The polyfill is invoked
-   * with roots: [shadowHost] to scope its traversal to this shadow root.
+   * including those promoted to the popover top layer.
    */
   shadowHost?: HTMLElement | (() => HTMLElement | null);
 }
 
 // ---- CSS placement helpers -----------------------------------------------
 
-function placementCSS(placement: AnchorPlacement, offset: number): string {
+function placementCSS(placement: PhysicalAnchorPlacement, offset: number): string {
   const o = `${offset}px`;
 
   switch (placement) {
@@ -68,7 +67,7 @@ function placementCSS(placement: AnchorPlacement, offset: number): string {
   }
 }
 
-const FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
+const FLIP_PLACEMENT: Record<PhysicalAnchorPlacement, PhysicalAnchorPlacement> = {
   top: 'bottom',
   'top-start': 'bottom-start',
   'top-end': 'bottom-end',
@@ -84,7 +83,7 @@ const FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
 };
 
 // Inline-axis flip: start ↔ end (handles horizontal viewport overflow)
-const INLINE_FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
+const INLINE_FLIP_PLACEMENT: Record<PhysicalAnchorPlacement, PhysicalAnchorPlacement> = {
   top: 'top',
   'top-start': 'top-end',
   'top-end': 'top-start',
@@ -103,40 +102,11 @@ const INLINE_FLIP_PLACEMENT: Record<AnchorPlacement, AnchorPlacement> = {
 
 // Chrome 125+ only — full correct implementation including shadow DOM + popover top layer.
 // Firefox 134+ reports position-try-fallbacks support but lacks anchor-size() and has broken
-// shadow DOM anchor rendering; exclude it so the polyfill/fallback runs instead.
+// shadow DOM anchor rendering; exclude it so the script fallback runs instead.
 const _hasNativeAnchor =
   typeof CSS !== 'undefined' &&
   CSS.supports('position-try-fallbacks: flip-block') &&
   CSS.supports('min-width: anchor-size(width)');
-
-// ---- Polyfill ---------------------------------------------------------------
-
-type PolyfillFn = (opts?: {
-  roots?: (Document | HTMLElement)[];
-  useAnimationFrame?: boolean;
-  [key: string]: unknown;
-}) => Promise<unknown>;
-
-let _polyfillFn: PolyfillFn | null = null;
-let _polyfillPromise: Promise<PolyfillFn | null> | null = null;
-
-function _loadPolyfill(): Promise<PolyfillFn | null> {
-  if (_hasNativeAnchor) {
-    return Promise.resolve(null);
-  }
-
-  if (!_polyfillPromise) {
-    _polyfillPromise = import('@oddbird/css-anchor-positioning/fn')
-      .then((mod) => {
-        _polyfillFn = mod.default as unknown as PolyfillFn;
-
-        return _polyfillFn;
-      })
-      .catch(() => null);
-  }
-
-  return _polyfillPromise;
-}
 
 // ---- Controller -------------------------------------------------------------
 
@@ -144,28 +114,60 @@ let _uid = 0;
 
 /**
  * Positions a floating element relative to an anchor element using CSS
- * Anchor Positioning (native-first, polyfill on unsupported browsers via
- * `@oddbird/css-anchor-positioning`).
+ * Anchor Positioning where the browser supports it fully, and script
+ * positioning with the same placement and flip rules elsewhere. The script
+ * fallback re-runs when the page scrolls or the viewport, anchor, or
+ * floating element resizes.
  *
  * For shadow DOM components (pass `shadowHost`), positioning CSS is injected
  * into the shadow root's `adoptedStyleSheets` so it reaches floating elements
- * including those promoted to the popover top layer. The polyfill is invoked
- * with `roots: [shadowHost]` to scope its stylesheet traversal correctly.
+ * including those promoted to the popover top layer.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning
  */
 export class AnchorController implements ReactiveController {
+  private readonly _host: ReactiveControllerHost;
   private _opts: AnchorOptions;
   private readonly _uid: string;
   private _styleEl: HTMLStyleElement | null = null;
   private _adoptedSheet: CSSStyleSheet | null = null;
   private _connected = false;
+  private readonly _clampScheduler = new RafScheduler();
   private _clampLoopActive = false;
-  private _clampFrame: number | null = null;
-  private _appliedDx = 0;
-  private _appliedDy = 0;
+  private _settleFramesRemaining = 0;
+  private _stableFrames = 0;
+  private _lastNaturalRect = '';
+  private _appliedTranslateXCssPx = 0;
+  private _appliedTranslateYCssPx = 0;
+  private _geometryAbort: AbortController | null = null;
+  private _resizeObserver: ResizeObserver | null = null;
+  private _intersectionObserver: IntersectionObserver | null = null;
+  private _mutationObserver: MutationObserver | null = null;
+  private _unobserveLocale: (() => void) | null = null;
+  private _$observedAnchor: Element | null = null;
+  private _$observedFloating: Element | null = null;
+
+  private readonly _handleGeometryChange = (): void => {
+    this._scheduleClamp();
+  };
+
+  // Scroll, resize, and intersection changes move the anchor, which the
+  // script fallback must follow. Attribute mutations only re-clamp, since the
+  // fallback's own inline style writes would otherwise feed back into it.
+  private readonly _handlePositionChange = (): void => {
+    if (!this._usesNativeAnchor() && this._connected && !this._disabled()) {
+      this._positionFallback();
+    }
+
+    this._scheduleClamp();
+  };
+
+  private readonly _handleDirectionChange = (): void => {
+    this._applyAndPosition();
+  };
 
   constructor(host: ReactiveControllerHost, options: AnchorOptions) {
+    this._host = host;
     this._opts = options;
     this._uid = `rc-anchor-${++_uid}`;
     host.addController(this);
@@ -173,21 +175,35 @@ export class AnchorController implements ReactiveController {
 
   setOptions(next: Partial<AnchorOptions>): void {
     Object.assign(this._opts, next);
-    this._applyAndPolyfill();
+    this._applyAndPosition();
   }
 
   /** Re-apply positioning after the popup becomes visible or the anchor moves. */
   update(): void {
-    this._applyAndPolyfill();
+    this._applyAndPosition();
   }
 
   hostConnected(): void {
     this._connected = true;
-    this._applyAndPolyfill();
+
+    const host = this._host as ReactiveControllerHost & Partial<Element>;
+    const element = typeof host.getRootNode === 'function' ? (host as Element) : this._anchor();
+
+    // Placement follows the anchor's direction, so a change above either the
+    // popup or its anchor repositions it.
+    this._unobserveLocale ??= observeLocale(
+      this._handleDirectionChange,
+      element ?? undefined,
+      () => [element, this._anchor()],
+    );
+
+    this._applyAndPosition();
   }
 
   hostDisconnected(): void {
     this._connected = false;
+    this._unobserveLocale?.();
+    this._unobserveLocale = null;
     this._cleanup();
   }
 
@@ -209,76 +225,184 @@ export class AnchorController implements ReactiveController {
     return typeof shadowHost === 'function' ? shadowHost() : (shadowHost ?? null);
   }
 
-  private _applyAndPolyfill(): void {
+  private _disabled(): boolean {
+    const { disabled } = this._opts;
+
+    return typeof disabled === 'function' ? disabled() : (disabled ?? false);
+  }
+
+  // A method rather than a direct read of the module constant, so tests can
+  // run the script fallback in engines with native support.
+  private _usesNativeAnchor(): boolean {
+    return _hasNativeAnchor;
+  }
+
+  private _applyAndPosition(): void {
     if (!this._connected || !this._apply()) {
       return;
     }
 
-    if (_hasNativeAnchor) {
-      this._scheduleClamp();
-    } else {
-      void this._applyPolyfillOrFallback().then(() => {
-        if (this._connected && !this._opts.disabled) {
-          this._scheduleClamp();
-        }
+    if (!this._usesNativeAnchor()) {
+      this._positionFallback();
+    }
+
+    this._startWatchingGeometry();
+    this._scheduleClamp();
+  }
+
+  /**
+   * Checks viewport overflow during a bounded post-open settling window.
+   * Observers and viewport events restart the window when geometry changes,
+   * avoiding permanent layout polling while a popup is idle.
+   */
+  private _scheduleClamp(): void {
+    if (!this._connected || this._disabled()) {
+      return;
+    }
+
+    if (!this._clampLoopActive) {
+      this._clampLoopActive = true;
+    }
+
+    this._settleFramesRemaining = 10;
+    this._stableFrames = 0;
+    this._lastNaturalRect = '';
+    this._clampScheduler.schedule(() => this._runClampTick());
+  }
+
+  private _runClampTick(): void {
+    if (!this._connected || this._disabled()) {
+      this._stopClampLoop();
+
+      return;
+    }
+
+    const $floating = this._floating() as HTMLElement | null;
+
+    if (!$floating) {
+      this._stopClampLoop();
+
+      return;
+    }
+
+    const rect = $floating.getBoundingClientRect();
+    const floatingZoom = cssZoom($floating);
+    const isVisible = rect.width > 0 || rect.height > 0;
+
+    if (!isVisible) {
+      this._stopClampLoop();
+      this._stopWatchingGeometry();
+
+      return;
+    }
+
+    const naturalRect = [
+      rect.left - this._appliedTranslateXCssPx * floatingZoom,
+      rect.top - this._appliedTranslateYCssPx * floatingZoom,
+      rect.width,
+      rect.height,
+    ]
+      .map((value) => Math.round(value * 4) / 4)
+      .join(':');
+
+    this._stableFrames = naturalRect === this._lastNaturalRect ? this._stableFrames + 1 : 0;
+    this._lastNaturalRect = naturalRect;
+    this._settleFramesRemaining -= 1;
+
+    this._clampToViewport(rect);
+
+    if (this._stableFrames >= 3 || this._settleFramesRemaining <= 0) {
+      this._stopClampLoop();
+
+      return;
+    }
+
+    this._clampScheduler.schedule(() => this._runClampTick());
+  }
+
+  private _stopClampLoop(): void {
+    this._clampScheduler.cancel();
+    this._clampLoopActive = false;
+    this._settleFramesRemaining = 0;
+    this._stableFrames = 0;
+    this._lastNaturalRect = '';
+  }
+
+  private _startWatchingGeometry(): void {
+    const $anchor = this._anchor();
+    const $floating = this._floating();
+
+    if (!$anchor || !$floating) {
+      this._stopWatchingGeometry();
+
+      return;
+    }
+
+    if (
+      this._geometryAbort &&
+      this._$observedAnchor === $anchor &&
+      this._$observedFloating === $floating
+    ) {
+      return;
+    }
+
+    this._stopWatchingGeometry();
+    this._$observedAnchor = $anchor;
+    this._$observedFloating = $floating;
+    this._geometryAbort = new AbortController();
+
+    const $window = $floating.ownerDocument.defaultView;
+    const options = { passive: true, signal: this._geometryAbort.signal };
+
+    $floating.ownerDocument.addEventListener('scroll', this._handlePositionChange, {
+      ...options,
+      capture: true,
+    });
+
+    $window?.addEventListener('resize', this._handlePositionChange, options);
+    $window?.visualViewport?.addEventListener('resize', this._handlePositionChange, options);
+    $window?.visualViewport?.addEventListener('scroll', this._handlePositionChange, options);
+
+    if (typeof ResizeObserver === 'function') {
+      this._resizeObserver = new ResizeObserver(this._handlePositionChange);
+      this._resizeObserver.observe($anchor);
+      this._resizeObserver.observe($floating);
+    }
+
+    if (typeof IntersectionObserver === 'function') {
+      this._intersectionObserver = new IntersectionObserver(this._handlePositionChange, {
+        threshold: [0, 1],
+      });
+
+      this._intersectionObserver.observe($floating);
+    }
+
+    if (typeof MutationObserver === 'function') {
+      this._mutationObserver = new MutationObserver(this._handleGeometryChange);
+
+      this._mutationObserver.observe($anchor, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'hidden', 'open'],
+      });
+
+      this._mutationObserver.observe($floating, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'hidden', 'open'],
       });
     }
   }
 
-  /**
-   * Checks viewport overflow on every frame while the floating element is
-   * visible. Anchor geometry can settle well after the popup opens, so the
-   * loop follows visibility rather than a fixed timeout. A hidden initial
-   * state stops immediately; consumers restart positioning after showing the
-   * popup by calling `update()`.
-   */
-  private _scheduleClamp(): void {
-    if (this._clampLoopActive || !this._connected || this._opts.disabled) {
-      return;
-    }
-
-    this._clampLoopActive = true;
-
-    const tick = (): void => {
-      this._clampFrame = null;
-
-      if (!this._connected || this._opts.disabled) {
-        this._stopClampLoop();
-
-        return;
-      }
-
-      const $floating = this._floating() as HTMLElement | null;
-
-      if (!$floating) {
-        this._stopClampLoop();
-
-        return;
-      }
-
-      const rect = $floating.getBoundingClientRect();
-      const isVisible = rect.width > 0 || rect.height > 0;
-
-      if (!isVisible) {
-        this._stopClampLoop();
-
-        return;
-      }
-
-      this._clampToViewport();
-      this._clampFrame = requestAnimationFrame(tick);
-    };
-
-    this._clampFrame = requestAnimationFrame(tick);
-  }
-
-  private _stopClampLoop(): void {
-    if (this._clampFrame !== null) {
-      cancelAnimationFrame(this._clampFrame);
-      this._clampFrame = null;
-    }
-
-    this._clampLoopActive = false;
+  private _stopWatchingGeometry(): void {
+    this._geometryAbort?.abort();
+    this._geometryAbort = null;
+    this._resizeObserver?.disconnect();
+    this._resizeObserver = null;
+    this._intersectionObserver?.disconnect();
+    this._intersectionObserver = null;
+    this._mutationObserver?.disconnect();
+    this._mutationObserver = null;
+    this._$observedAnchor = null;
+    this._$observedFloating = null;
   }
 
   /**
@@ -300,11 +424,11 @@ export class AnchorController implements ReactiveController {
    * clear the correction as unnecessary, then reapply it next frame once
    * the underlying overflow reappears — an every-frame flicker confirmed
    * by a real click landing on a mid-flicker frame in the browser test
-   * suite. `_appliedDx`/`_appliedDy` track the offset this method itself
+   * suite. `_appliedTranslateXCssPx`/`_appliedTranslateYCssPx` track the offset this method itself
    * last applied so it can subtract it back out and compute against the
    * element's natural, uncorrected position each time.
    */
-  private _clampToViewport(): void {
+  private _clampToViewport(measuredRect?: DOMRect): void {
     const floating = this._floating() as HTMLElement | null;
 
     if (!floating) {
@@ -312,7 +436,7 @@ export class AnchorController implements ReactiveController {
     }
 
     const margin = 4;
-    const rect = floating.getBoundingClientRect();
+    const rect = measuredRect ?? floating.getBoundingClientRect();
 
     if (rect.width === 0 && rect.height === 0) {
       return; // not actually visible/open
@@ -324,57 +448,71 @@ export class AnchorController implements ReactiveController {
       return;
     }
 
-    const vw = $window.innerWidth;
-    const vh = $window.innerHeight;
+    const viewport = getVisualViewportBounds($window);
+    const floatingZoom = cssZoom(floating);
 
     // Undo the previous tick's correction to get the natural rect.
-    const left = rect.left - this._appliedDx;
-    const right = rect.right - this._appliedDx;
-    const top = rect.top - this._appliedDy;
-    const bottom = rect.bottom - this._appliedDy;
+    const appliedXViewportPx = this._appliedTranslateXCssPx * floatingZoom;
+    const appliedYViewportPx = this._appliedTranslateYCssPx * floatingZoom;
+    const left = rect.left - appliedXViewportPx;
+    const right = rect.right - appliedXViewportPx;
+    const top = rect.top - appliedYViewportPx;
+    const bottom = rect.bottom - appliedYViewportPx;
 
-    let dx = 0;
-    let dy = 0;
+    let dxViewportPx = 0;
+    let dyViewportPx = 0;
 
-    if (right > vw - margin) {
-      dx = vw - margin - right;
+    if (right > viewport.right - margin) {
+      dxViewportPx = viewport.right - margin - right;
     }
 
-    if (left + dx < margin) {
-      dx = margin - left;
+    if (left + dxViewportPx < viewport.left + margin) {
+      dxViewportPx = viewport.left + margin - left;
     }
 
-    if (bottom > vh - margin) {
-      dy = vh - margin - bottom;
+    if (bottom > viewport.bottom - margin) {
+      dyViewportPx = viewport.bottom - margin - bottom;
     }
 
-    if (top + dy < margin) {
-      dy = margin - top;
+    if (top + dyViewportPx < viewport.top + margin) {
+      dyViewportPx = viewport.top + margin - top;
     }
 
-    this._appliedDx = dx;
-    this._appliedDy = dy;
-    floating.style.translate = dx || dy ? `${dx}px ${dy}px` : '';
+    this._appliedTranslateXCssPx = dxViewportPx / floatingZoom;
+    this._appliedTranslateYCssPx = dyViewportPx / floatingZoom;
+
+    const translate =
+      dxViewportPx || dyViewportPx
+        ? `${this._appliedTranslateXCssPx}px ${this._appliedTranslateYCssPx}px`
+        : '';
+    const viewportInlineSize = `${Math.max(0, viewport.width - margin * 2) / floatingZoom}px`;
+    const viewportBlockSize = `${Math.max(0, viewport.height - margin * 2) / floatingZoom}px`;
+
+    if (floating.style.translate !== translate) {
+      floating.style.translate = translate;
+    }
+
+    if (
+      floating.style.getPropertyValue('--rc-anchor-viewport-inline-size') !== viewportInlineSize
+    ) {
+      floating.style.setProperty('--rc-anchor-viewport-inline-size', viewportInlineSize);
+    }
+
+    if (floating.style.getPropertyValue('--rc-anchor-viewport-block-size') !== viewportBlockSize) {
+      floating.style.setProperty('--rc-anchor-viewport-block-size', viewportBlockSize);
+    }
   }
 
-  private async _applyPolyfillOrFallback(): Promise<void> {
-    const fn = await _loadPolyfill();
-
-    if (!this._connected || this._opts.disabled) {
-      return;
-    }
-
-    const host = this._shadowHost();
-
-    if (fn) {
-      await fn({ roots: host ? [host] : undefined, useAnimationFrame: false });
-    } else {
-      this._positionFallback();
-    }
+  /**
+   * The configured placement resolved against the anchor's writing mode and
+   * direction. Read at every apply, since a `dir` change fires no event.
+   */
+  private _physicalPlacement(anchor: Element): PhysicalAnchorPlacement {
+    return resolveAnchorPlacement(this._opts.placement ?? 'block-end-start', resolveFlow(anchor));
   }
 
   private _apply(): boolean {
-    if (this._opts.disabled) {
+    if (this._disabled()) {
       this._cleanup();
 
       return false;
@@ -389,7 +527,7 @@ export class AnchorController implements ReactiveController {
       return false;
     }
 
-    const placement = this._opts.placement ?? 'bottom-start';
+    const placement = this._physicalPlacement(anchor);
     const offset = this._opts.offset ?? 4;
     const flip = this._opts.flip ?? true;
     const anchorName = `--${this._uid}`;
@@ -462,8 +600,8 @@ export class AnchorController implements ReactiveController {
   }
 
   /**
-   * Hand-rolled positioning for browsers where neither native anchor
-   * positioning nor the polyfill is usable. Handles all four placement
+   * Hand-rolled positioning for browsers without full native anchor
+   * positioning. Handles all four placement
    * sides (not just top/bottom — a side flyout like a cascading submenu
    * needs its primary axis to be horizontal, offsetting by the anchor's
    * own width/height rather than always stacking below it), with the
@@ -478,7 +616,7 @@ export class AnchorController implements ReactiveController {
       return;
     }
 
-    const placement = this._opts.placement ?? 'bottom-start';
+    const placement = this._physicalPlacement(anchor);
     const offset = this._opts.offset ?? 4;
     const flip = this._opts.flip ?? true;
     const margin = 4;
@@ -489,19 +627,22 @@ export class AnchorController implements ReactiveController {
       return;
     }
 
+    const viewport = getVisualViewportBounds($window);
     const vw = $window.innerWidth;
     const vh = $window.innerHeight;
+    const floatingZoom = cssZoom(floating);
+    const offsetViewportPx = offset * floatingZoom;
 
     floating.style.position = 'fixed';
     floating.style.boxSizing = 'border-box';
-    floating.style.minWidth = `${rect.width}px`;
+    floating.style.minWidth = `${rect.width / floatingZoom}px`;
     floating.style.top = '';
     floating.style.bottom = '';
     floating.style.left = '';
     floating.style.right = '';
 
-    const popupWidth = floating.offsetWidth || rect.width;
-    const popupHeight = floating.offsetHeight || 0;
+    const popupWidthViewportPx = (floating.offsetWidth || rect.width / floatingZoom) * floatingZoom;
+    const popupHeightViewportPx = floating.offsetHeight * floatingZoom;
     const side = placement.split('-')[0] as 'top' | 'bottom' | 'left' | 'right';
     const align: 'start' | 'end' | 'center' = placement.endsWith('-start')
       ? 'start'
@@ -512,66 +653,91 @@ export class AnchorController implements ReactiveController {
     let resolvedSide: typeof side = side;
 
     if (side === 'top' || side === 'bottom') {
-      const spaceBelow = vh - rect.bottom;
-      const spaceAbove = rect.top;
+      const spaceBelow = viewport.bottom - rect.bottom;
+      const spaceAbove = rect.top - viewport.top;
 
       if (flip) {
-        if (side === 'bottom' && spaceBelow < popupHeight + offset && spaceAbove > spaceBelow) {
+        if (
+          side === 'bottom' &&
+          spaceBelow < popupHeightViewportPx + offsetViewportPx &&
+          spaceAbove > spaceBelow
+        ) {
           resolvedSide = 'top';
-        } else if (side === 'top' && spaceAbove < popupHeight + offset && spaceBelow > spaceAbove) {
+        } else if (
+          side === 'top' &&
+          spaceAbove < popupHeightViewportPx + offsetViewportPx &&
+          spaceBelow > spaceAbove
+        ) {
           resolvedSide = 'bottom';
         }
       }
 
       if (resolvedSide === 'top') {
-        floating.style.bottom = `${vh - rect.top + offset}px`;
+        floating.style.bottom = `${(vh - rect.top + offsetViewportPx) / floatingZoom}px`;
       } else {
-        floating.style.top = `${rect.bottom + offset}px`;
+        floating.style.top = `${(rect.bottom + offsetViewportPx) / floatingZoom}px`;
       }
 
-      let left =
+      let leftViewportPx =
         align === 'end'
-          ? rect.right - popupWidth
+          ? rect.right - popupWidthViewportPx
           : align === 'start'
             ? rect.left
-            : rect.left + rect.width / 2 - popupWidth / 2;
+            : rect.left + rect.width / 2 - popupWidthViewportPx / 2;
 
-      left = Math.max(margin, Math.min(left, vw - popupWidth - margin));
-      floating.style.left = `${left}px`;
+      leftViewportPx = Math.max(
+        viewport.left + margin,
+        Math.min(leftViewportPx, viewport.right - popupWidthViewportPx - margin),
+      );
+
+      floating.style.left = `${leftViewportPx / floatingZoom}px`;
     } else {
-      const spaceRight = vw - rect.right;
-      const spaceLeft = rect.left;
+      const spaceRight = viewport.right - rect.right;
+      const spaceLeft = rect.left - viewport.left;
 
       if (flip) {
-        if (side === 'right' && spaceRight < popupWidth + offset && spaceLeft > spaceRight) {
+        if (
+          side === 'right' &&
+          spaceRight < popupWidthViewportPx + offsetViewportPx &&
+          spaceLeft > spaceRight
+        ) {
           resolvedSide = 'left';
-        } else if (side === 'left' && spaceLeft < popupWidth + offset && spaceRight > spaceLeft) {
+        } else if (
+          side === 'left' &&
+          spaceLeft < popupWidthViewportPx + offsetViewportPx &&
+          spaceRight > spaceLeft
+        ) {
           resolvedSide = 'right';
         }
       }
 
       if (resolvedSide === 'left') {
-        floating.style.right = `${vw - rect.left + offset}px`;
+        floating.style.right = `${(vw - rect.left + offsetViewportPx) / floatingZoom}px`;
       } else {
-        floating.style.left = `${rect.right + offset}px`;
+        floating.style.left = `${(rect.right + offsetViewportPx) / floatingZoom}px`;
       }
 
-      let top =
+      let topViewportPx =
         align === 'end'
-          ? rect.bottom - popupHeight
+          ? rect.bottom - popupHeightViewportPx
           : align === 'start'
             ? rect.top
-            : rect.top + rect.height / 2 - popupHeight / 2;
+            : rect.top + rect.height / 2 - popupHeightViewportPx / 2;
 
-      top = Math.max(margin, Math.min(top, vh - popupHeight - margin));
-      floating.style.top = `${top}px`;
+      topViewportPx = Math.max(
+        viewport.top + margin,
+        Math.min(topViewportPx, viewport.bottom - popupHeightViewportPx - margin),
+      );
+
+      floating.style.top = `${topViewportPx / floatingZoom}px`;
     }
   }
 
   private _cleanup(): void {
     this._stopClampLoop();
-    this._appliedDx = 0;
-    this._appliedDy = 0;
+    this._stopWatchingGeometry();
+    this._appliedTranslateXCssPx = 0;
+    this._appliedTranslateYCssPx = 0;
 
     const anchor = this._anchor();
     const floating = this._floating();
@@ -585,6 +751,8 @@ export class AnchorController implements ReactiveController {
       // Clear any overflow-clamp nudge so a reopened popup doesn't inherit
       // a stale offset computed for its previous position/viewport size.
       (floating as HTMLElement).style.translate = '';
+      (floating as HTMLElement).style.removeProperty('--rc-anchor-viewport-inline-size');
+      (floating as HTMLElement).style.removeProperty('--rc-anchor-viewport-block-size');
     }
 
     this._styleEl?.remove();

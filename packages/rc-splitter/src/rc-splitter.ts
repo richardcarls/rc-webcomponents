@@ -2,18 +2,58 @@ import { LitElement, html, nothing } from 'lit';
 import { property, state, query, queryAssignedElements } from 'lit/decorators.js';
 
 import {
+  cssZoom,
+  bidiIsolate,
+  MessagesController,
+  numberFormat,
   DragGestureController,
+  FlowController,
   findNearestSnapIndex,
   findNextSnapIndex,
+  isReversed,
   keyInteraction,
   keyNavigation,
+  logicalDelta,
+  parseCssTime,
+  physicalAxis,
+  renderedOrientation,
+  resolveFlow,
   type DragGestureDetail,
+  type Flow,
   type KeyboardNavigationAction,
+  type LogicalAxis,
 } from '@rcarls/rc-common';
 
 import splitterStyles from './rc-splitter.styles.js';
 
 type SplitterOrientation = 'horizontal' | 'vertical';
+
+type ChevronSide = 'left' | 'right' | 'up' | 'down';
+
+const CHEVRON_PATHS: Record<ChevronSide, string> = {
+  left: 'M 7 1 L 3 5 L 7 9',
+  right: 'M 3 1 L 7 5 L 3 9',
+  up: 'M 1 7 L 5 3 L 9 7',
+  down: 'M 1 3 L 5 7 L 9 3',
+};
+
+const OPPOSITE_SIDE: Record<ChevronSide, ChevronSide> = {
+  left: 'right',
+  right: 'left',
+  up: 'down',
+  down: 'up',
+};
+
+/** The physical side the start of `axis` sits on. */
+function paneStartSide(axis: LogicalAxis, flow: Flow): ChevronSide {
+  const reversed = isReversed(axis, flow);
+
+  if (physicalAxis(axis, flow) === 'x') {
+    return reversed ? 'right' : 'left';
+  }
+
+  return reversed ? 'down' : 'up';
+}
 
 type SplitterMode = 'length' | 'percent' | 'fixed';
 
@@ -27,11 +67,35 @@ declare global {
   }
 }
 
+/** Built-in text of `rc-splitter`. */
+export interface RCSplitterMessages {
+  /** Default name of the primary pane, when `label` is unset. */
+  label: string;
+  expand: (label: string) => string;
+  collapse: (label: string) => string;
+}
+
+export const DEFAULT_SPLITTER_MESSAGES: Readonly<RCSplitterMessages> = Object.freeze({
+  label: 'Splitter',
+  expand: (label: string) => `Expand ${bidiIsolate(label)}`,
+  collapse: (label: string) => `Collapse ${bidiIsolate(label)}`,
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-splitter': RCSplitterMessages;
+  }
+}
+
 /**
  * Resizable pane splitter with pointer, keyboard, anchored settling, and
  * collapse/restore controls, following the WAI-ARIA Window Splitter pattern.
  *
  * Set `orientation="vertical"` for a vertical splitter
+ *
+ * Built-in text (the collapse button name and default pane name; the separator value text is formatted for the same locale) follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every instance
+ * through `registerMessages()` from `@rcarls/rc-common` under `rc-splitter`.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-splitter rc-splitter docs}
  * @see {@link https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/ WAI-ARIA Window Splitter pattern}
@@ -42,8 +106,11 @@ declare global {
  * @fires rc-splitter-change - Fired when the separator position changes; `detail: { value, valueText }`
  *
  * @attr label - Accessible label applied to the primary pane and referenced by the separator
- *   handle's `aria-labelledby`.
- * @attr orientation - Layout direction: `horizontal` (left/right panes) or `vertical` (top/bottom panes).
+ *   handle's `aria-labelledby`. Defaults to the `label` message.
+ * @attr orientation - Layout: `horizontal` places the panes side by side along the inline axis
+ *   (left/right in LTR, right/left in RTL), `vertical` stacks them along the block axis. Both turn
+ *   over in vertical writing modes; the separator's `aria-orientation`, arrow keys, and dragging
+ *   follow the layout actually rendered.
  * @attr mode - Value units and pane sizing behavior: `length`, `percent`, or `fixed`.
  * @attr step - Keyboard resize step size, in the current mode's units.
  * @attr min - Minimum primary pane size, in the current mode's units.
@@ -87,9 +154,22 @@ declare global {
 export class RCSplitter extends LitElement {
   static styles = [splitterStyles];
 
-  /** Accessible label for this splitter. Default label is 'Splitter'. */
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCSplitterMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-splitter',
+    DEFAULT_SPLITTER_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
+  /** Accessible label for this splitter. Defaults to the `label` message. */
   @property({ type: String })
-  label = 'Splitter';
+  label: string | undefined;
 
   /** Splitter orientation, for keyboard navigation and initial sizing. */
   @property({ type: String, reflect: true })
@@ -190,7 +270,7 @@ export class RCSplitter extends LitElement {
     }
 
     const isRelevantKey =
-      this.orientation === 'horizontal'
+      renderedOrientation(this.orientation, resolveFlow(this)) === 'horizontal'
         ? e.key === 'ArrowLeft' || e.key === 'ArrowRight'
         : e.key === 'ArrowUp' || e.key === 'ArrowDown';
 
@@ -202,18 +282,15 @@ export class RCSplitter extends LitElement {
   }
 
   protected get _collapseButtonIcon() {
-    const isHorizontal = this.orientation === 'horizontal';
-    // Chevron points LEFT/UP to collapse (separator moves toward primary),
-    // RIGHT/DOWN to expand (separator moves away from primary).
-    const d = isHorizontal
-      ? this._isCollapsed
-        ? 'M 3 1 L 7 5 L 3 9'
-        : 'M 7 1 L 3 5 L 7 9'
-      : this._isCollapsed
-        ? 'M 1 3 L 5 7 L 9 3'
-        : 'M 1 7 L 5 3 L 9 7';
+    // The chevron points toward the primary pane to collapse (the separator
+    // moves toward it) and away from it to expand. The primary pane sits at
+    // the start of the pane axis, which the flow places on a physical side.
+    const startSide = paneStartSide(this._paneAxis, this._flow.flow);
+    const points = this._isCollapsed ? OPPOSITE_SIDE[startSide] : startSide;
+    const d = CHEVRON_PATHS[points];
 
     return html`<svg
+      data-points=${points}
       aria-hidden="true"
       viewBox="0 0 10 10"
       width="10"
@@ -283,9 +360,20 @@ export class RCSplitter extends LitElement {
   @property({ type: Number, attribute: 'swipe-velocity' })
   swipeVelocity = 500;
 
-  /** A human-readable string representation of the value. */
+  /** The value as a CSS length, such as `40%` or `240px`. */
   get valueText() {
     return `${this.value}${this.mode === 'percent' ? '%' : 'px'}`;
+  }
+
+  /** The value for `aria-valuetext`, with digits in the splitter's locale. */
+  protected get _accessibleValueText(): string {
+    const locale = this._messages.locale;
+
+    return this.mode === 'percent'
+      ? numberFormat(locale, { style: 'percent', maximumFractionDigits: 2 }).format(
+          this.value / 100,
+        )
+      : `${numberFormat(locale, { maximumFractionDigits: 2 }).format(this.value)}px`;
   }
 
   @state()
@@ -330,6 +418,17 @@ export class RCSplitter extends LitElement {
 
   protected _resizeObserver = new ResizeObserver(() => this._onResize());
 
+  /** Keeps the separator's aria-orientation and drag axis on the rendered layout. */
+  protected readonly _flow = new FlowController(this);
+
+  /**
+   * The logical axis the panes sit along: `horizontal` places them side by
+   * side along the inline axis, `vertical` stacks them along the block axis.
+   */
+  protected get _paneAxis(): LogicalAxis {
+    return this.orientation === 'horizontal' ? 'inline' : 'block';
+  }
+
   protected _onKeyboardResize(action: KeyboardNavigationAction) {
     if (this.fixed) {
       return;
@@ -367,13 +466,17 @@ export class RCSplitter extends LitElement {
       return;
     }
 
+    // Measured from the primary pane's logical start edge, which is the
+    // right edge in RTL and the top or right edge in vertical text.
+    const flow = resolveFlow(this);
+    const axis = this._paneAxis;
     const clientRect = this.getBoundingClientRect();
+    const alongX = physicalAxis(axis, flow) === 'x';
+    const size = alongX ? clientRect.width : clientRect.height;
+    const fromPhysicalStart = alongX ? e.clientX - clientRect.left : e.clientY - clientRect.top;
+    const offset = isReversed(axis, flow) ? size - fromPhysicalStart : fromPhysicalStart;
 
-    if (this.orientation === 'vertical') {
-      this._setUserValue(((e.clientY - clientRect.top) / clientRect.height) * this._maxValue);
-    } else {
-      this._setUserValue(((e.clientX - clientRect.left) / clientRect.width) * this._maxValue);
-    }
+    this._setUserValue((offset / size) * this._maxValue);
   }
 
   /**
@@ -409,8 +512,14 @@ export class RCSplitter extends LitElement {
   }
 
   protected _onGestureEnd(detail: DragGestureDetail): void {
-    const delta = this.orientation === 'horizontal' ? detail.deltaX : detail.deltaY;
-    const velocity = this.orientation === 'horizontal' ? detail.velocityX : detail.velocityY;
+    // Positive toward the pane axis's logical end, i.e. away from the primary pane.
+    const flow = resolveFlow(this);
+    const delta = logicalDelta({ dx: detail.deltaX, dy: detail.deltaY }, this._paneAxis, flow);
+    const velocity = logicalDelta(
+      { dx: detail.velocityX, dy: detail.velocityY },
+      this._paneAxis,
+      flow,
+    );
     const decisive =
       Math.abs(delta) >= MIN_SWIPE_DISTANCE && Math.abs(velocity) >= this.swipeVelocity;
 
@@ -473,10 +582,8 @@ export class RCSplitter extends LitElement {
 
   protected async _settleToValue(value: number, behavior: 'animated' | 'instant'): Promise<void> {
     const $primary = this._$primary;
-    const fromSize =
-      this.orientation === 'horizontal'
-        ? $primary.getBoundingClientRect().width
-        : $primary.getBoundingClientRect().height;
+    const fromSizeCssPx =
+      this._sizeAlong($primary.getBoundingClientRect(), this._paneAxis) / cssZoom($primary);
 
     this._activeSnapAnimation?.cancel();
     this._activeSnapAnimation = null;
@@ -487,18 +594,16 @@ export class RCSplitter extends LitElement {
       return;
     }
 
-    const toSize =
-      this.orientation === 'horizontal'
-        ? $primary.getBoundingClientRect().width
-        : $primary.getBoundingClientRect().height;
+    const toSizeCssPx =
+      this._sizeAlong($primary.getBoundingClientRect(), this._paneAxis) / cssZoom($primary);
 
-    if (fromSize === toSize) {
+    if (fromSizeCssPx === toSizeCssPx) {
       return;
     }
 
-    const property = this.orientation === 'horizontal' ? 'width' : 'height';
+    const property = this._paneAxis === 'inline' ? 'inlineSize' : 'blockSize';
     const animation = $primary.animate(
-      [{ [property]: `${fromSize}px` }, { [property]: `${toSize}px` }],
+      [{ [property]: `${fromSizeCssPx}px` }, { [property]: `${toSizeCssPx}px` }],
       {
         duration: this._snapDuration(),
         easing: SNAP_EASING,
@@ -519,10 +624,11 @@ export class RCSplitter extends LitElement {
   }
 
   protected _snapDuration(): number {
-    const raw = getComputedStyle(this).getPropertyValue('--rc-splitter-snap-duration').trim();
-    const parsed = Number.parseFloat(raw);
+    const raw = getComputedStyle(this).getPropertyValue('--rc-splitter-snap-duration');
 
-    return Number.isFinite(parsed) ? parsed : DEFAULT_SNAP_DURATION_MS;
+    // Themes may resolve motion tokens in seconds (`.3s`); Web Animations
+    // durations are milliseconds.
+    return parseCssTime(raw) ?? DEFAULT_SNAP_DURATION_MS;
   }
 
   protected _onPrimaryChange(_e: Event) {
@@ -545,16 +651,23 @@ export class RCSplitter extends LitElement {
     });
   }
 
+  /**
+   * The extent of `rect` along a logical axis. The pane axis is vertical on
+   * screen in vertical text, so a physical width would measure the wrong one.
+   */
+  protected _sizeAlong(rect: DOMRect, axis: LogicalAxis): number {
+    return physicalAxis(axis, resolveFlow(this)) === 'x' ? rect.width : rect.height;
+  }
+
   protected _measureHostSize(axis: 'inline' | 'block'): number {
-    const clientRect = this.getBoundingClientRect();
-    const measuredSize = axis === 'inline' ? clientRect.width : clientRect.height;
+    const measuredSize = this._sizeAlong(this.getBoundingClientRect(), axis) / cssZoom(this);
 
     if (measuredSize > 0) {
       return Math.ceil(measuredSize);
     }
 
     const computedStyle = getComputedStyle(this);
-    const fallbackSize = axis === 'inline' ? computedStyle.width : computedStyle.height;
+    const fallbackSize = axis === 'inline' ? computedStyle.inlineSize : computedStyle.blockSize;
     const parsedFallbackSize = Number.parseFloat(fallbackSize);
 
     return Number.isFinite(parsedFallbackSize) ? Math.ceil(parsedFallbackSize) : 0;
@@ -577,7 +690,9 @@ export class RCSplitter extends LitElement {
             ? // For horizontal splitters, just take the host width...
               this._measureHostSize('inline')
             : // ...otherwise try to use the first lightDOM element's auto height, and cache it
-              this._initialMax || Math.ceil(clientRect.height) || this._measureHostSize('block');
+              this._initialMax ||
+              Math.ceil(this._sizeAlong(clientRect, 'block') / cssZoom(this)) ||
+              this._measureHostSize('block');
 
         // After initialization, ignore spurious zero measurements (e.g. during
         // Chromium's layout recalculation triggered by a secondary ResizeObserver
@@ -630,20 +745,29 @@ export class RCSplitter extends LitElement {
 
   protected updated(): void {
     this._gesture.setOptions({
-      axis: this.orientation === 'horizontal' ? 'x' : 'y',
+      axis: physicalAxis(this._paneAxis, this._flow.flow),
       target: () => this._$separatorHandle,
     });
   }
 
   render() {
+    // The separator bar's rendered direction, which turns with the text. The
+    // grip dots and resize cursor are physical, so they key off this rather
+    // than the orientation attribute, which names a layout.
+    const bar = renderedOrientation(
+      this.orientation === 'horizontal' ? 'vertical' : 'horizontal',
+      this._flow.flow,
+    );
+
+    const m = this._messages.value;
+    const label = this.label ?? m.label;
+
     return html`
       <div
         id="primary"
         part="primary"
-        aria-label=${this.label}
-        style=${this.orientation === 'horizontal'
-          ? `width: ${this.valueText}`
-          : `height: ${this.valueText}`}
+        aria-label=${label}
+        style=${`${this._paneAxis === 'inline' ? 'inline' : 'block'}-size: ${this.valueText}`}
         ?hidden=${this.value === this._minValue}
       >
         <slot @slotchange=${this._onPrimaryChange}></slot>
@@ -654,7 +778,7 @@ export class RCSplitter extends LitElement {
           ? html`<button
               id="collapse-button"
               part="collapse-button"
-              aria-label=${this._isCollapsed ? `Expand ${this.label}` : `Collapse ${this.label}`}
+              aria-label=${this._isCollapsed ? m.expand(label) : m.collapse(label)}
               aria-expanded=${String(!this._isCollapsed)}
               aria-controls="primary"
               @click=${this._onCollapseButtonClick}
@@ -669,9 +793,10 @@ export class RCSplitter extends LitElement {
           part="separator-handle"
           aria-labelledby="primary"
           aria-controls="primary"
-          aria-orientation=${this.orientation === 'horizontal' ? 'vertical' : 'horizontal'}
+          aria-orientation=${bar}
+          data-bar=${bar}
           aria-valuenow=${this.value}
-          aria-valuetext=${this.valueText}
+          aria-valuetext=${this._accessibleValueText}
           aria-valuemin=${this._effectiveMin}
           aria-valuemax=${this._effectiveMax}
           @keydown=${this._onCollapseKeydown}

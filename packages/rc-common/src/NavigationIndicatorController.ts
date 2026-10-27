@@ -1,5 +1,9 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
+import { cssZoom } from './cssZoom.js';
+import { logicalRect, physicalOffset, resolveFlow } from './flow.js';
+import { observeLocale } from './observeLocale.js';
+
 export interface NavigationIndicatorControllerOptions {
   slot: () => HTMLSlotElement | null;
   container: () => HTMLElement | null;
@@ -23,6 +27,8 @@ export class NavigationIndicatorController implements ReactiveController {
 
   private _resizeObserver?: ResizeObserver;
 
+  private _unobserveLocale?: () => void;
+
   private _frame = 0;
 
   private _links: HTMLAnchorElement[] = [];
@@ -37,14 +43,20 @@ export class NavigationIndicatorController implements ReactiveController {
   }
 
   hostConnected(): void {
+    // The indicator's offset is measured from the container's logical start,
+    // which moves to the other side when the direction flips; the links keep
+    // their sizes, so no resize would report it.
+    this._unobserveLocale ??= observeLocale(() => this.update(), this._host);
     this.sync();
   }
 
   hostDisconnected(): void {
     this._mutationObserver?.disconnect();
     this._resizeObserver?.disconnect();
+    this._unobserveLocale?.();
     this._mutationObserver = undefined;
     this._resizeObserver = undefined;
+    this._unobserveLocale = undefined;
 
     if (this._frame) {
       cancelAnimationFrame(this._frame);
@@ -178,14 +190,18 @@ export class NavigationIndicatorController implements ReactiveController {
       return;
     }
 
-    indicator.toggleAttribute('hidden', false);
-    indicator.style.inlineSize = `${targetRect.width}px`;
-    indicator.style.blockSize = `${targetRect.height}px`;
+    // The indicator is anchored at the container's logical start corner
+    // (inset-inline-start / inset-block-start), so its size and offset are
+    // measured in the same logical terms. Physical left/width would put it on
+    // the wrong side in RTL and swap its sizes in vertical writing modes.
+    const flow = resolveFlow(container);
+    const box = logicalRect(targetRect, containerRect, flow);
+    const { x, y } = physicalOffset({ inline: box.inlineStart, block: box.blockStart }, flow);
+    const indicatorZoom = cssZoom(indicator);
 
-    indicator.style.transform = `translate(${targetRect.left - containerRect.left}px, ${
-      targetRect.top - containerRect.top
-    }px)`;
+    indicator.toggleAttribute('hidden', false);
+    indicator.style.inlineSize = `${box.inlineSize / indicatorZoom}px`;
+    indicator.style.blockSize = `${box.blockSize / indicatorZoom}px`;
+    indicator.style.transform = `translate(${x / indicatorZoom}px, ${y / indicatorZoom}px)`;
   }
 }
-
-export default NavigationIndicatorController;

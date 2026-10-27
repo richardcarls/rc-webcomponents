@@ -6,6 +6,8 @@ export const listItemStyles = css`
     grid-column: 1 / -1;
     grid-template-columns: subgrid;
     min-inline-size: 0;
+    /* Keep internal z-index layers below a different item when it is lifted. */
+    isolation: isolate;
     color: var(--rc-list-item-color, CanvasText);
     color-scheme: inherit;
   }
@@ -77,12 +79,36 @@ export const listItemStyles = css`
   }
 
   [part='leading'][hidden],
-  [part='trailing'][hidden] {
+  [part='trailing'][hidden],
+  [part='details'][hidden] {
     display: none;
+  }
+
+  /* The supporting region spans the text and trailing columns on its own row,
+     outside the content cell's single-line clipping. */
+  [part='details'] {
+    position: relative;
+    z-index: 1;
+    grid-column: var(--rc-list-item-details-grid-column, content-start / trailing-end);
+    min-inline-size: 0;
+    padding-block-end: var(--rc-list-item-details-padding-block-end, 0);
+    color: var(--rc-list-item-details-color, inherit);
+    animation: rc-list-item-details-reveal var(--rc-list-item-details-duration, 0ms)
+      var(--rc-list-item-transition-easing, ease);
+  }
+
+  @keyframes rc-list-item-details-reveal {
+    from {
+      opacity: 0;
+    }
   }
 
   ::slotted(*) {
     min-inline-size: 0;
+  }
+
+  ::slotted([slot='trailing'][aria-hidden='true']) {
+    pointer-events: none;
   }
 
   [part='content'] ::slotted(*) {
@@ -120,6 +146,21 @@ export const listItemStyles = css`
     background: var(--rc-list-item-selected-background, transparent);
   }
 
+  /* The lifted item paints above the items it passes over. */
+  :host([data-dragging]) {
+    position: relative;
+    z-index: 1;
+  }
+
+  :host([data-dragging]) [part='row'] {
+    background: var(--rc-list-item-dragged-background, var(--rc-list-item-background, Canvas));
+    box-shadow: var(--rc-list-item-dragged-box-shadow, var(--rc-list-item-box-shadow, none));
+  }
+
+  :host([data-dragging]) [part='state-layer'] {
+    opacity: var(--rc-list-item-dragged-state-layer-opacity, 0.16);
+  }
+
   :host([disabled]) {
     cursor: default;
     opacity: var(--rc-list-item-disabled-opacity, 0.38);
@@ -130,16 +171,26 @@ export const listItemStyles = css`
       border-color: CanvasText;
     }
 
-    :host([selected]) [part='row'] {
+    :host([selected]) [part='row'],
+    :host([data-dragging]) [part='row'] {
       outline: 2px solid Highlight;
       outline-offset: -2px;
     }
   }
 
+  /*
+   * background-color, box-shadow, and opacity are all effects motion (no
+   * translate, scale, or layout property here), so reduced motion shortens
+   * the shared duration instead of zeroing it.
+   */
   @media (prefers-reduced-motion: reduce) {
     [part='row'],
     [part='state-layer'] {
-      transition-duration: 0ms;
+      transition-duration: 50ms;
+    }
+
+    [part='details'] {
+      animation-duration: min(var(--rc-list-item-details-duration, 0ms), 50ms);
     }
   }
 `;

@@ -36,21 +36,21 @@ and reveal styling.
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-fab-menu
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-fab-menu
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-fab-menu/define';
+import '@rcarls/rc-webcomponents/rc-fab-menu/define';
 ```
 
 ## Usage
@@ -73,8 +73,9 @@ chosen action.
 ```
 
 The trigger receives `aria-haspopup="menu"` and `aria-expanded` from the
-inherited menu-button behavior. The popup opens above the trigger by default
-with `placement="top-end"`.
+inherited menu-button behavior. The popup opens back toward the block start by
+default (`placement="block-start-end"`): above the trigger in horizontal text,
+and beside it in vertical text.
 
 Without a theme, the trigger remains a native-looking button. Apply a packaged
 theme to opt into FAB dimensions, shape, elevation, typography, and motion.

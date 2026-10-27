@@ -32,6 +32,50 @@ function renderSheet() {
   `);
 }
 
+test('rc-bottom-sheet fades in and out through CSS alone, with no JavaScript gating the timing', async () => {
+  const screen = renderSheet();
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  expect(getComputedStyle($dialog).opacity).toBe('0');
+  expect(getComputedStyle($dialog).transitionDuration).not.toBe('0s');
+
+  $host.showModal();
+  expect($host.open).toBe(true);
+
+  await vi.waitFor(() => expect(getComputedStyle($dialog).opacity).toBe('1'));
+
+  $host.close();
+  expect($host.open).toBe(false);
+
+  await vi.waitFor(() => expect(getComputedStyle($dialog).opacity).toBe('0'));
+});
+
+test('rc-bottom-sheet entrance does not shift measured geometry, unlike a slide transform would', async () => {
+  const screen = renderSheet();
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $host.showModal();
+
+  const immediately = $dialog.getBoundingClientRect();
+
+  await wait(250);
+
+  const settled = $dialog.getBoundingClientRect();
+
+  expect(Math.round(immediately.top)).toBe(Math.round(settled.top));
+  expect(Math.round(immediately.height)).toBe(Math.round(settled.height));
+
+  $host.close();
+});
+
 test('rc-bottom-sheet defaults and inherited dialog lifecycle integrate through the native child', async () => {
   const screen = renderSheet();
   const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
@@ -40,7 +84,8 @@ test('rc-bottom-sheet defaults and inherited dialog lifecycle integrate through 
   await $host.updateComplete;
   $host.addEventListener('rc-dialog-toggle', toggleSpy);
 
-  expect($host.lightDismiss).toBe(true);
+  expect($host.closedBy).toBe('any');
+  expect($host.querySelector('dialog')?.getAttribute('closedby')).toBe('any');
   expect($host.resize).toBe('vertical');
   expect($host.resizeOrigin).toBe('top');
   expect($host.resizeHandle).toBe('[data-rc-bottom-sheet-handle]');
@@ -106,6 +151,123 @@ test('absolute non-modal sheets can dock to a positioned parent', async () => {
   $host.close();
 });
 
+test('resolves var() and calc() snap points in the sheet context at snap time', async () => {
+  const screen = render(html`
+    <div data-testid="context" style="--peek: 90px;">
+      <rc-bottom-sheet
+        data-testid="host"
+        snap-points="var(--peek, 40px) calc(100px + 2rem) nonsense 300px"
+      >
+        <dialog aria-label="Details">Details</dialog>
+      </rc-bottom-sheet>
+    </div>
+  `);
+  const $context = (await screen.getByTestId('context').element()) as HTMLElement;
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+  const $dialog = $host.querySelector('dialog');
+
+  if (!$dialog) {
+    throw new Error('Expected the sheet dialog to render.');
+  }
+
+  const height = () => Math.round($dialog.getBoundingClientRect().height);
+
+  await $host.updateComplete;
+  $host.show();
+
+  $host.snapTo(0, 'instant');
+  expect(height()).toBe(90);
+
+  $host.snapTo(1, 'instant');
+  expect(height()).toBe(132);
+
+  // The invalid entry is dropped, so the last point is index 2.
+  $host.snapTo(2, 'instant');
+  expect(height()).toBe(300);
+
+  // The inherited custom property is read again at its current value.
+  $context.style.setProperty('--peek', '110px');
+  $host.snapTo(0, 'instant');
+  expect(height()).toBe(110);
+
+  expect([...$host.children]).toEqual([$dialog]);
+
+  $host.close();
+});
+
+test('resolves functional snap-point heights in vertical writing modes', async () => {
+  const screen = render(html`
+    <div style="writing-mode: vertical-rl; --peek: 90px;">
+      <rc-bottom-sheet data-testid="host" snap-points="var(--peek) calc(100px + 2rem)">
+        <dialog aria-label="Details">Details</dialog>
+      </rc-bottom-sheet>
+    </div>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  await $host.updateComplete;
+  $host.show();
+
+  $host.snapTo(0, 'instant');
+  expect(Math.round($dialog.getBoundingClientRect().height)).toBe(90);
+
+  $host.snapTo(1, 'instant');
+  expect(Math.round($dialog.getBoundingClientRect().height)).toBe(132);
+
+  $host.close();
+});
+
+test('keeps percentages inside calc() viewport-relative under transformed ancestors', async () => {
+  const screen = render(html`
+    <div style="width: 400px; height: 300px; transform: translateZ(0);">
+      <rc-bottom-sheet data-testid="host" snap-points="calc(50% - 10px)">
+        <dialog aria-label="Details">Details</dialog>
+      </rc-bottom-sheet>
+    </div>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  await $host.updateComplete;
+  $host.show();
+  $host.snapTo(0, 'instant');
+
+  expect(Math.round($dialog.getBoundingClientRect().height)).toBe(
+    Math.round(window.innerHeight / 2 - 10),
+  );
+
+  $host.close();
+});
+
+test('reads a snap duration expressed in seconds as milliseconds', async () => {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="120px 320px">
+      <dialog aria-label="Details" style="--rc-bottom-sheet-snap-duration: .25s;">Details</dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+  $host.snapTo(0, 'instant');
+  $host.snapTo(1);
+
+  // The snap animation, not rc-dialog's own entrance animation.
+  const animation = $host
+    .querySelector('dialog')
+    ?.getAnimations()
+    .find((candidate) =>
+      (candidate.effect as KeyframeEffect | null)
+        ?.getKeyframes()
+        .some((keyframe) => 'height' in keyframe),
+    );
+
+  expect(animation?.effect?.getTiming().duration).toBe(250);
+
+  $host.close();
+});
+
 test('snapTo keeps a fixed sheet docked inside a layout-containing ancestor', async () => {
   const resizeStartSpy = vi.fn();
   const screen = render(html`
@@ -153,12 +315,7 @@ test('snapTo keeps a fixed sheet docked inside a layout-containing ancestor', as
 
   firePointerEvent($handle, 'pointerdown', { clientY: peek.top });
 
-  expect(resizeStartSpy).toHaveBeenCalledTimes(1);
-
-  expect(resizeStartSpy.mock.calls[0][0].detail).toEqual({
-    height: 132,
-    inputType: 'pointer',
-  });
+  expect(resizeStartSpy).not.toHaveBeenCalled();
 
   expect(Math.round($dialog.getBoundingClientRect().top)).toBe(Math.round(peek.top));
 
@@ -166,9 +323,22 @@ test('snapTo keeps a fixed sheet docked inside a layout-containing ancestor', as
 
   firePointerEvent($handle, 'pointermove', { clientY: peek.top + 1 });
 
+  expect(resizeStartSpy).not.toHaveBeenCalled();
+
   expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(peek.bottom));
 
-  firePointerEvent($handle, 'pointerup', { clientY: peek.top + 1 });
+  firePointerEvent($handle, 'pointermove', { clientY: peek.top - 12 });
+
+  expect(resizeStartSpy).toHaveBeenCalledTimes(1);
+
+  expect(resizeStartSpy.mock.calls[0][0].detail).toEqual({
+    height: 132,
+    inputType: 'pointer',
+  });
+
+  expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(peek.bottom));
+
+  firePointerEvent($handle, 'pointerup', { clientY: peek.top - 12 });
   $host.snapTo(1);
 
   await vi.waitFor(() => {
@@ -189,11 +359,11 @@ test('snapTo keeps a fixed sheet docked inside a layout-containing ancestor', as
 
   expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(expanded.bottom));
 
-  firePointerEvent($handle, 'pointermove', { clientY: expanded.top + 1 });
+  firePointerEvent($handle, 'pointermove', { clientY: expanded.top + 12 });
 
   expect(Math.round($dialog.getBoundingClientRect().bottom)).toBe(Math.round(expanded.bottom));
 
-  firePointerEvent($handle, 'pointerup', { clientY: expanded.top + 1 });
+  firePointerEvent($handle, 'pointerup', { clientY: expanded.top + 12 });
   $host.snapTo(0);
 
   await vi.waitFor(() => {
@@ -298,9 +468,9 @@ test('authored bottom-sheet handle resizes vertically from the top edge', async 
   $host.close();
 });
 
-test('snap-points snaps to the nearest declared height on resize release', async () => {
+test('snap-points resolves once and snaps to the nearest height on resize release', async () => {
   const screen = render(html`
-    <rc-bottom-sheet data-testid="host" snap-points="200px 320px 460px">
+    <rc-bottom-sheet data-testid="host" snap-points="calc(200px) calc(320px) calc(460px)">
       <dialog
         aria-labelledby="sheet-title"
         style="position: fixed; left: 100px; top: 240px; width: 360px; height: 280px; margin: 0;"
@@ -318,11 +488,14 @@ test('snap-points snaps to the nearest declared height on resize release', async
 
   const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
   const $handle = $host.querySelector('[data-rc-bottom-sheet-handle]') as HTMLButtonElement;
+  const appendSpy = vi.spyOn($host, 'append');
   const start = $dialog.getBoundingClientRect();
 
   firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
   firePointerEvent($handle, 'pointermove', { clientX: start.left + 20, clientY: start.top - 52 });
   firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 52 });
+
+  expect(appendSpy).toHaveBeenCalledTimes(1);
 
   // The settle now animates rather than applying instantly.
   await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(320));
@@ -510,6 +683,60 @@ test('a fast downward swipe collapses to the lowest snap point regardless of rel
   expect(snapSpy.mock.calls[0][0].detail).toEqual({ index: 0, height: 200, trigger: 'drag' });
 
   $host.close();
+});
+
+test.runIf('currentCSSZoom' in Element.prototype)(
+  'percentage snap points resolve under a zoom when the host has no box',
+  async () => {
+    const screen = render(html`
+      <div style="zoom: 0.7">
+        <rc-bottom-sheet data-testid="host" snap-points="40%" style="display: contents">
+          <dialog aria-label="Zoomed sheet"><button>Done</button></dialog>
+        </rc-bottom-sheet>
+      </div>
+    `);
+    const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+    await $host.updateComplete;
+    $host.show();
+    $host.snapTo(0, 'instant');
+
+    const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+    // A percentage is of the viewport on screen, whatever the ancestor zoom;
+    // a display: contents host reports no zoom, so it is read from the dialog.
+    // (40% stays under the default 70dvh cap, which the zoom scales.)
+    expect($dialog.getBoundingClientRect().height).toBeCloseTo(window.innerHeight * 0.4, 0);
+
+    $host.close();
+  },
+);
+
+test('snapTo() before the inner dialog is attached applies when the sheet opens', async () => {
+  const snapSpy = vi.fn();
+  const $host = document.createElement('rc-bottom-sheet') as RCBottomSheet;
+
+  // A framework ref runs once the host exists, before its children are added.
+  $host.setAttribute('snap-points', '120px 320px');
+  $host.addEventListener('rc-bottom-sheet-snap', snapSpy);
+  document.body.append($host);
+  $host.snapTo(0, 'instant');
+
+  const $dialog = document.createElement('dialog');
+
+  $dialog.setAttribute('aria-label', 'Ingredients');
+  $dialog.innerHTML = '<button>Done</button><p style="block-size: 480px">Long content</p>';
+  $host.append($dialog);
+  $host.modal = false;
+  $host.open = true;
+
+  try {
+    await vi.waitFor(() => expect($dialog.open).toBe(true));
+    await vi.waitFor(() => expect(Math.round($dialog.getBoundingClientRect().height)).toBe(120));
+    expect(snapSpy.mock.calls.at(-1)?.[0].detail).toMatchObject({ index: 0, trigger: 'api' });
+  } finally {
+    $host.remove();
+  }
 });
 
 test('snapTo() settles to a specific index and fires rc-bottom-sheet-snap with an api trigger', async () => {
@@ -717,3 +944,210 @@ test('snapTo() clamps finite indices and ignores non-finite indices', async () =
 
   $host.close();
 });
+
+test('window resize re-docks a sheet a drag gesture left pinned away from its edge', async () => {
+  const screen = render(html`
+    <rc-bottom-sheet data-testid="host" snap-points="132px 400px">
+      <dialog aria-label="Nutrition"><button>Done</button></dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $host.snapTo(1, 'instant');
+
+  // What ResizeController's pinElementBox leaves behind after a drag: every
+  // edge pinned, including `bottom: auto`, against the pre-resize viewport.
+  Object.assign($dialog.style, {
+    inset: 'auto',
+    top: `${window.innerHeight + 400}px`,
+    left: '0px',
+    width: '300px',
+    margin: '0px',
+  });
+
+  window.dispatchEvent(new Event('resize'));
+
+  const docked = $dialog.getBoundingClientRect();
+
+  expect(Math.round(docked.bottom)).toBe(Math.round(window.innerHeight));
+  expect(Math.round(docked.height)).toBe(400);
+  expect($dialog.style.top).toBe('');
+  expect($dialog.style.width).toBe('');
+
+  $host.close();
+});
+
+test('snaps stay docked when the containing block moves afterward', async () => {
+  const screen = render(html`
+    <div data-testid="frame" style="position: fixed; inset: 100px 0 0; contain: layout;">
+      <rc-bottom-sheet data-testid="host" snap-points="132px 300px">
+        <dialog aria-label="Nutrition"><button>Done</button></dialog>
+      </rc-bottom-sheet>
+    </div>
+  `);
+  const $frame = (await screen.getByTestId('frame').element()) as HTMLElement;
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+  await $host.updateComplete;
+  $host.show();
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $host.snapTo(1, 'instant');
+
+  // A collapsing app bar moves the containing block's top edge, not its
+  // bottom edge.
+  $frame.style.top = '40px';
+
+  const after = $dialog.getBoundingClientRect();
+
+  expect(Math.round(after.bottom)).toBe(Math.round(window.innerHeight));
+  expect(Math.round(after.height)).toBe(300);
+
+  $host.close();
+});
+
+test.each([1, 0.8])(
+  'a focused field scrolls into view within the sheet at zoom %s',
+  async (zoom) => {
+    const screen = render(html`
+      <div style="zoom: ${zoom}">
+        <rc-bottom-sheet data-testid="host" snap-points="200px">
+          <dialog aria-label="Nutrition" style="display: flex; flex-direction: column; padding: 0;">
+            <button>Done</button>
+            <div data-testid="body" style="flex: 1; min-block-size: 0; overflow: auto;">
+              <div style="block-size: 600px;"></div>
+              <input data-testid="field" aria-label="Quantity" />
+            </div>
+          </dialog>
+        </rc-bottom-sheet>
+      </div>
+    `);
+    const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+    const $field = (await screen.getByTestId('field').element()) as HTMLInputElement;
+
+    await $host.updateComplete;
+    $host.show();
+    $host.snapTo(0, 'instant');
+
+    const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+    $field.focus({ preventScroll: true });
+    // A software keyboard resizing the viewport re-runs the reveal as well.
+    window.dispatchEvent(new Event('resize'));
+
+    const sheet = $dialog.getBoundingClientRect();
+    const field = $field.getBoundingClientRect();
+
+    expect(field.top).toBeGreaterThanOrEqual(sheet.top);
+    expect(field.bottom).toBeLessThanOrEqual(sheet.bottom);
+    // Scrolling sufficed, so the sheet keeps its snap height.
+    expect(Math.round(sheet.height)).toBe(Math.round(200 * zoom));
+
+    $host.close();
+  },
+);
+
+test('a focused field the sheet cannot scroll to grows the sheet past its maximum until focus leaves', async () => {
+  const screen = render(html`
+    <button data-testid="outside">Outside</button>
+    <rc-bottom-sheet data-testid="host" snap-points="132px">
+      <dialog aria-label="Nutrition" style="max-block-size: 150px; overflow: hidden; padding: 0;">
+        <button>Done</button>
+        <div style="block-size: 220px;"></div>
+        <input data-testid="field" aria-label="Quantity" />
+      </dialog>
+    </rc-bottom-sheet>
+  `);
+  const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+  const $field = (await screen.getByTestId('field').element()) as HTMLInputElement;
+  const $outside = (await screen.getByTestId('outside').element()) as HTMLButtonElement;
+
+  await $host.updateComplete;
+  $host.show();
+  $host.snapTo(0, 'instant');
+
+  const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+
+  $field.focus({ preventScroll: true });
+
+  const sheet = $dialog.getBoundingClientRect();
+  const field = $field.getBoundingClientRect();
+
+  expect(field.bottom).toBeLessThanOrEqual(sheet.bottom);
+  expect(sheet.height).toBeGreaterThan(150);
+  expect(Math.round(sheet.bottom)).toBe(Math.round(window.innerHeight));
+
+  $outside.focus();
+
+  await vi.waitFor(() => {
+    expect(Math.round($dialog.getBoundingClientRect().height)).toBe(132);
+  });
+
+  expect($dialog.style.maxBlockSize).toBe('');
+
+  $host.close();
+});
+
+test.runIf('currentCSSZoom' in Element.prototype)(
+  'snaps and drags in the sheet’s own pixels under an ancestor zoom',
+  async () => {
+    const snapSpy = vi.fn();
+    const screen = render(html`
+      <div style="zoom: 0.8">
+        <rc-bottom-sheet
+          data-testid="host"
+          snap-points="100px 300px"
+          @rc-bottom-sheet-snap=${snapSpy}
+        >
+          <dialog aria-labelledby="sheet-title">
+            <h2 id="sheet-title">Filter recipes</h2>
+            <button type="button" data-rc-bottom-sheet-handle>Resize sheet</button>
+          </dialog>
+        </rc-bottom-sheet>
+      </div>
+    `);
+    const $host = (await screen.getByTestId('host').element()) as RCBottomSheet;
+
+    await $host.updateComplete;
+    $host.show();
+
+    const $dialog = $host.querySelector('dialog') as HTMLDialogElement;
+    const $handle = $host.querySelector('[data-rc-bottom-sheet-handle]') as HTMLButtonElement;
+
+    // Snapping again to the same point keeps its height rather than zooming
+    // the measured height a second time.
+    $host.snapTo(0, 'instant');
+    $host.snapTo(0, 'instant');
+
+    expect($dialog.getBoundingClientRect().height).toBeCloseTo(80, 0);
+    expect(snapSpy.mock.calls.at(-1)?.[0].detail.height).toBeCloseTo(100, 0);
+
+    const start = $dialog.getBoundingClientRect();
+
+    firePointerEvent($handle, 'pointerdown', { clientX: start.left + 20, clientY: start.top });
+
+    firePointerEvent($handle, 'pointermove', {
+      clientX: start.left + 20,
+      clientY: start.top - 120,
+    });
+
+    // The dragged edge follows the pointer and the sheet stays docked.
+    const dragged = $dialog.getBoundingClientRect();
+
+    expect(dragged.top).toBeCloseTo(start.top - 120, 0);
+    expect(dragged.bottom).toBeCloseTo(window.innerHeight, 0);
+
+    firePointerEvent($handle, 'pointerup', { clientX: start.left + 20, clientY: start.top - 120 });
+
+    await vi.waitFor(() => expect($dialog.getBoundingClientRect().height).toBeCloseTo(240, 0));
+    expect($dialog.getBoundingClientRect().bottom).toBeCloseTo(window.innerHeight, 0);
+
+    $host.close();
+  },
+);

@@ -6,9 +6,21 @@ import {
   findExtremeSnapIndex,
   findNearestSnapIndex,
   findNextSnapIndex,
+  HORIZONTAL_LTR_FLOW,
+  MessagesController,
+  RafScheduler,
+  clientSize,
+  getScrollOffset,
   keyNavigation,
+  logicalDelta,
+  numberFormat,
+  physicalAxis,
+  resolveFlow,
+  setScrollOffset,
+  syncDefaultAttribute,
   warnMissingDirectChild,
   type DragGestureDetail,
+  type Flow,
   type KeyboardNavigationAction,
 } from '@rcarls/rc-common';
 import type { RCCarouselItem } from './rc-carousel-item.js';
@@ -20,11 +32,58 @@ import carouselStyles from './rc-carousel.styles.js';
  * nearest snap point. */
 const DECISIVE_DRAG_VELOCITY = 300;
 
+/** Built-in text of `rc-carousel` and its slides. Positions are 1-based. */
+export interface RCCarouselMessages {
+  /** `aria-roledescription` of the carousel. */
+  carousel: string;
+  /** `aria-roledescription` of each slide. */
+  slide: string;
+  /** Default accessible name of each slide. */
+  position: (position: number, count: number, locale?: string) => string;
+  previous: string;
+  next: string;
+  /** Accessible name of the slide-picker group. */
+  picker: string;
+  /** Accessible name of each slide-picker button. */
+  goToSlide: (position: number, count: number, locale?: string) => string;
+}
+
+export const DEFAULT_CAROUSEL_MESSAGES: Readonly<RCCarouselMessages> = Object.freeze({
+  carousel: 'carousel',
+  slide: 'slide',
+  position: (position: number, count: number, locale?: string) => {
+    const format = numberFormat(locale, { useGrouping: false });
+
+    return `${format.format(position)} of ${format.format(count)}`;
+  },
+  previous: 'Previous slide',
+  next: 'Next slide',
+  picker: 'Choose slide to display',
+  goToSlide: (position: number, _count: number, locale?: string) =>
+    `Go to slide ${numberFormat(locale, { useGrouping: false }).format(position)}`,
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-carousel': RCCarouselMessages;
+  }
+}
+
 export type RCCarouselChangeTrigger = 'api' | 'button' | 'keyboard' | 'swipe';
 
 export interface RCCarouselChangeDetail {
   index: number;
   trigger: RCCarouselChangeTrigger;
+}
+
+interface TrackMeasurement {
+  track: HTMLDivElement;
+  flow: Flow;
+  step: number;
+}
+
+interface InitialPositionSample extends TrackMeasurement {
+  offset: number;
 }
 
 declare global {
@@ -85,6 +144,11 @@ const SETTLE_DEBOUNCE_MS = 120;
  * @attr mouse-dragging - Enables click-and-drag scrolling with a mouse.
  *   Touch/pen already get native scroll-snap physics; off by default.
  *
+ * Built-in text (button names, role descriptions, slide positions) follows
+ * the element's own `lang`, else `<html lang>`: per element through
+ * `messages`, or for every carousel through `registerMessages()` from
+ * `@rcarls/rc-common` under `rc-carousel`.
+ *
  * @cssprop [--rc-carousel-color=CanvasText] - Carousel foreground color.
  * @cssprop [--rc-carousel-gap=8px] - Space between slides.
  * @cssprop [--rc-carousel-slide-size=calc(100% - 4rem)] - Rendered size of
@@ -133,6 +197,21 @@ export class RCCarousel extends LitElement {
   private _suppressSync = false;
   private _pendingInstant = false;
   private _settleTimer: ReturnType<typeof setTimeout> | undefined;
+  private readonly _initialPosition = new RafScheduler(this);
+  private _writtenRoleDescription: string | null = null;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-carousel',
+    DEFAULT_CAROUSEL_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCCarouselMessages> | undefined;
 
   /** Wraps past the first/last slide back to the other end, seamlessly. */
   @property({ type: Boolean, reflect: true })
@@ -156,11 +235,17 @@ export class RCCarousel extends LitElement {
 
   @state() private _dragging = false;
 
-  private _dragStartLeft = 0;
+  /** Logical inline scroll offset of the track when the current drag began. */
+  private _dragStartOffset = 0;
+
+  /** Track flow, re-resolved at the start of each drag or scroll operation. */
+  private _flow: Flow = HORIZONTAL_LTR_FLOW;
+
+  private _dragAxis: 'x' | 'y' = 'x';
   private _suppressNextClick = false;
 
   /**
-   * Drives `scrollLeft` directly from pointer deltas while `mouseDragging`
+   * Drives the track's scroll offset directly from pointer deltas while `mouseDragging`
    * is on. `activation: 'axis'` (not `'immediate'`) means a plain click
    * never activates a drag at all — it requires clearing
    * `activationDistance` (8px) of movement first — but a *real* drag still
@@ -173,17 +258,27 @@ export class RCCarousel extends LitElement {
     target: () => this._trackEl ?? null,
     axis: 'x',
     activation: 'axis',
-    canStart: (event) => this.mouseDragging && event.pointerType === 'mouse',
+    canStart: (event) => {
+      if (!this.mouseDragging || event.pointerType !== 'mouse') {
+        return false;
+      }
+
+      // Resolve on pointerdown, before the controller picks the drag axis
+      // from the first moves; the flow then holds for the whole gesture.
+      this._resolveFlow();
+
+      return true;
+    },
     onStart: () => {
       this._dragging = true;
-      this._dragStartLeft = this._trackEl?.scrollLeft ?? 0;
+      this._dragStartOffset = this._trackOffset();
       this._suppressNextClick = true;
 
       // Imperative, not reactive-class-driven: this must land before
-      // onMove's very first scrollLeft write below, and a Lit re-render
+      // onMove's very first scroll offset write below, and a Lit re-render
       // (triggered by _dragging above) is a whole render pass too late for
       // that — with scroll-snap-type still active, the browser eagerly
-      // resnaps a plain scrollLeft assignment straight back to the
+      // resnaps a plain scroll offset assignment straight back to the
       // nearest snap point, same as it would any other programmatic
       // scroll with no notion this is "mid-gesture".
       if (this._trackEl) {
@@ -191,9 +286,13 @@ export class RCCarousel extends LitElement {
       }
     },
     onMove: (detail) => {
-      if (this._trackEl) {
-        this._trackEl.scrollLeft = this._dragStartLeft - detail.deltaX;
-      }
+      // Dragging toward the inline end drags content with it, which scrolls
+      // back toward the start, hence the subtraction. Projecting through the
+      // flow makes that hold in RTL and in vertical writing modes.
+      this._setTrackOffset(
+        this._dragStartOffset -
+          logicalDelta({ dx: detail.deltaX, dy: detail.deltaY }, 'inline', this._flow),
+      );
     },
     onEnd: (detail) => this._endDrag(detail),
     onCancel: (detail) => this._endDrag(detail),
@@ -270,8 +369,10 @@ export class RCCarousel extends LitElement {
       this.setAttribute('role', 'group');
     }
 
-    if (!this.hasAttribute('aria-roledescription')) {
-      this.setAttribute('aria-roledescription', 'carousel');
+    this._syncText();
+
+    if (this.hasUpdated && !this._mounted) {
+      this._queueInitialPosition();
     }
   }
 
@@ -297,12 +398,13 @@ export class RCCarousel extends LitElement {
       }
     }
 
-    this._scrollToIndex(this.activeIndex, true);
-    this._mounted = true;
+    this._syncActiveItemAccessibility(this.activeIndex);
+    this._queueInitialPosition();
   }
 
   protected override updated(changed: Map<string, unknown>): void {
     super.updated(changed);
+    this._syncText();
 
     this._initPaginationTabIndex();
 
@@ -314,6 +416,14 @@ export class RCCarousel extends LitElement {
     }
 
     if (!changed.has('activeIndex')) {
+      return;
+    }
+
+    this._syncActiveItemAccessibility(this.activeIndex);
+
+    if (!this._mounted) {
+      this._queueInitialPosition();
+
       return;
     }
 
@@ -400,8 +510,9 @@ export class RCCarousel extends LitElement {
    * an index and reading back a settled scroll position can stay in terms
    * of real indices while the clones do the seamless-wrap work.
    */
-  private _trackSlots(): { point: number; index: number; isClone: boolean }[] {
-    const step = this._itemStep();
+  private _trackSlots(
+    step = this._itemStep(),
+  ): { point: number; index: number; isClone: boolean }[] {
     const count = this._items.length;
 
     if (!this.loop || count < 2) {
@@ -416,19 +527,73 @@ export class RCCarousel extends LitElement {
   }
 
   private _itemStep(): number {
-    if (!this._trackEl) {
+    const measurement = this._measureTrack();
+
+    if (!measurement) {
       return 1;
     }
 
-    const first = this._items[0];
+    this._applyFlow(measurement.flow);
 
-    if (!(first instanceof HTMLElement)) {
-      return this._trackEl.clientWidth;
+    return measurement.step;
+  }
+
+  private _measureTrack(): TrackMeasurement | null {
+    const track = this._trackEl;
+
+    if (!track) {
+      return null;
     }
 
-    const gap = Number.parseFloat(getComputedStyle(this._trackEl).columnGap || '0') || 0;
+    const first = this._items[0];
+    const flow = resolveFlow(track);
+    const step =
+      first instanceof HTMLElement
+        ? (flow.inline === 'x' ? first.offsetWidth : first.offsetHeight) +
+          (Number.parseFloat(getComputedStyle(track).columnGap || '0') || 0)
+        : clientSize(track, 'inline', flow);
 
-    return first.offsetWidth + gap;
+    return { track, flow, step };
+  }
+
+  private _applyFlow(flow: Flow): void {
+    this._flow = flow;
+
+    const axis = physicalAxis('inline', flow);
+
+    // Never rebind mid-gesture; the next drag picks the new axis up.
+    if (!this._dragging && axis !== this._dragAxis) {
+      this._dragAxis = axis;
+      this._dragController.setOptions({ axis });
+    }
+  }
+
+  /**
+   * Re-reads the track's writing mode and direction. Called at the start of
+   * each scroll operation and on each drag's pointerdown rather than cached
+   * for the element's life, since neither a `dir` nor a writing-mode change
+   * on an ancestor fires an event. The drag gesture's physical axis follows,
+   * so a carousel in vertical text drags vertically.
+   */
+  private _resolveFlow(): Flow {
+    if (!this._trackEl) {
+      return this._flow;
+    }
+
+    this._applyFlow(resolveFlow(this._trackEl));
+
+    return this._flow;
+  }
+
+  /** Scroll distance from the track's logical start, never negative. */
+  private _trackOffset(): number {
+    return this._trackEl ? getScrollOffset(this._trackEl, 'inline', this._flow) : 0;
+  }
+
+  private _setTrackOffset(offset: number, behavior: ScrollBehavior = 'auto'): void {
+    if (this._trackEl) {
+      setScrollOffset(this._trackEl, 'inline', offset, this._flow, behavior);
+    }
   }
 
   private _setActiveIndex(index: number, trigger: RCCarouselChangeTrigger): void {
@@ -463,18 +628,64 @@ export class RCCarousel extends LitElement {
     }
 
     const slot = this._trackSlots().find((s) => !s.isClone && s.index === index);
-    const left = slot ? slot.point : index * this._itemStep();
+    const offset = slot ? slot.point : index * this._itemStep();
     const reducedMotion =
       this.ownerDocument.defaultView?.matchMedia('(prefers-reduced-motion: reduce)').matches ??
       false;
 
-    if (instant || reducedMotion) {
-      this._trackEl.scrollLeft = left;
-    } else {
-      // Explicit per call, not an ambient CSS default — see the comment on
-      // #track in rc-carousel.styles.ts.
-      this._trackEl.scrollTo({ left, behavior: 'smooth' });
+    // Explicit per call, not an ambient CSS default — see the comment on
+    // #track in rc-carousel.styles.ts.
+    this._setTrackOffset(offset, instant || reducedMotion ? 'auto' : 'smooth');
+  }
+
+  private _queueInitialPosition(): void {
+    this._initialPosition.schedulePhased(
+      () => this._sampleInitialPosition(),
+      (sample) => this._applyInitialPosition(sample),
+    );
+  }
+
+  private _sampleInitialPosition(): InitialPositionSample | null {
+    const measurement = this._measureTrack();
+
+    if (!measurement) {
+      return null;
     }
+
+    const slot = this._trackSlots(measurement.step).find(
+      (candidate) => !candidate.isClone && candidate.index === this.activeIndex,
+    );
+
+    return {
+      ...measurement,
+      offset: slot ? slot.point : this.activeIndex * measurement.step,
+    };
+  }
+
+  private _applyInitialPosition(sample: InitialPositionSample | null): void {
+    if (!sample || !this.isConnected || this._trackEl !== sample.track) {
+      return;
+    }
+
+    this._applyFlow(sample.flow);
+    setScrollOffset(sample.track, 'inline', sample.offset, sample.flow, 'auto');
+    this._mounted = true;
+  }
+
+  /**
+   * Keep the authored active slide available to assistive technology even
+   * before a programmatic scroll produces its next intersection callback.
+   * IntersectionObserver still takes over during direct manipulation, where
+   * the visually dominant slide can change before scroll settling updates the
+   * public active index.
+   */
+  private _syncActiveItemAccessibility(index: number): void {
+    this._directItems().forEach((item, itemIndex) => {
+      const hidden = itemIndex !== index;
+
+      item.toggleAttribute('aria-hidden', hidden);
+      item.toggleAttribute('inert', hidden);
+    });
   }
 
   private _onSlotChange = (): void => {
@@ -489,9 +700,24 @@ export class RCCarousel extends LitElement {
   }
 
   private _setItemPositions(): void {
+    const messages = this._messages.value;
+
     this._items.forEach((item, index) => {
-      item.position = `${index + 1} of ${this._items.length}`;
+      item.position = messages.position(index + 1, this._items.length, this._messages.locale);
+      item.roleDescription = messages.slide;
     });
+  }
+
+  /** Re-applies text written outside the template, for a new locale or `messages`. */
+  private _syncText(): void {
+    this._writtenRoleDescription = syncDefaultAttribute(
+      this,
+      'aria-roledescription',
+      this._messages.value.carousel,
+      this._writtenRoleDescription,
+    );
+
+    this._setItemPositions();
   }
 
   /**
@@ -585,13 +811,13 @@ export class RCCarousel extends LitElement {
   }
 
   /**
-   * On release, a fast enough flick pre-nudges `scrollLeft` to the next
+   * On release, a fast enough flick pre-nudges the scroll offset to the next
    * snap point in the drag direction (a "decisive swipe" — mirroring
    * `rc-bottom-sheet`'s own velocity-vs-nearest-point settle heuristic,
    * adapted from "jump to the extreme end" for a 2-point sheet to "advance
    * one further point" for a carousel that can have many). Either way,
    * this hands off to the same debounced settle path a native swipe
-   * already goes through — our own `scrollLeft` writes during the drag
+   * already goes through — our own scroll offset writes during the drag
    * already fired real `scroll` events, so `_onScroll` just needs to run
    * its usual timer to pick up wherever things ended.
    */
@@ -602,20 +828,26 @@ export class RCCarousel extends LitElement {
       this._trackEl.style.scrollSnapType = '';
     }
 
-    if (this._trackEl && Math.abs(detail.velocityX) > DECISIVE_DRAG_VELOCITY) {
+    const velocity = logicalDelta(
+      { dx: detail.velocityX, dy: detail.velocityY },
+      'inline',
+      this._flow,
+    );
+
+    if (this._trackEl && Math.abs(velocity) > DECISIVE_DRAG_VELOCITY) {
       const slots = this._trackSlots();
-      // Dragging left (negative velocityX) moves content right-to-left,
+      // Flicking toward the inline start moves content toward the start,
       // i.e. advances forward — toward higher track points.
-      const direction = detail.velocityX < 0 ? 1 : -1;
+      const direction = velocity < 0 ? 1 : -1;
       const targetSlotIndex = findNextSnapIndex(
         slots.map((slot) => slot.point),
-        this._trackEl.scrollLeft,
+        this._trackOffset(),
         direction,
       );
       const targetSlot = slots[targetSlotIndex];
 
       if (targetSlot) {
-        this._trackEl.scrollLeft = targetSlot.point;
+        this._setTrackOffset(targetSlot.point);
       }
     }
 
@@ -648,7 +880,7 @@ export class RCCarousel extends LitElement {
     const slots = this._trackSlots();
     const settledSlotIndex = findNearestSnapIndex(
       slots.map((slot) => slot.point),
-      this._trackEl.scrollLeft,
+      this._trackOffset(),
     );
     const settledSlot = settledSlotIndex >= 0 ? slots[settledSlotIndex] : undefined;
 
@@ -664,7 +896,7 @@ export class RCCarousel extends LitElement {
       const realSlot = slots.find((slot) => !slot.isClone && slot.index === settledSlot.index);
 
       if (realSlot) {
-        this._trackEl.scrollLeft = realSlot.point;
+        this._setTrackOffset(realSlot.point);
       }
     }
 
@@ -822,6 +1054,7 @@ export class RCCarousel extends LitElement {
   protected override render() {
     const canPrev = this._canStep(-1);
     const canNext = this._canStep(1);
+    const messages = this._messages.value;
 
     return html`
       <div
@@ -844,7 +1077,7 @@ export class RCCarousel extends LitElement {
               <button
                 type="button"
                 part="navigation-button navigation-button-previous"
-                aria-label="Previous slide"
+                aria-label=${messages.previous}
                 aria-disabled=${canPrev ? 'false' : 'true'}
                 @click=${() => {
                   if (canPrev) {
@@ -872,7 +1105,7 @@ export class RCCarousel extends LitElement {
               <button
                 type="button"
                 part="navigation-button navigation-button-next"
-                aria-label="Next slide"
+                aria-label=${messages.next}
                 aria-disabled=${canNext ? 'false' : 'true'}
                 @click=${() => {
                   if (canNext) {
@@ -906,7 +1139,7 @@ export class RCCarousel extends LitElement {
               id="pagination"
               part="pagination"
               role="group"
-              aria-label="Choose slide to display"
+              aria-label=${messages.picker}
               @focusin=${this._onPaginationFocus}
               ${keyNavigation(this._onPaginationNavigate, { navigationAxis: 'horizontal' })}
             >
@@ -918,7 +1151,11 @@ export class RCCarousel extends LitElement {
                     part="pagination-item${index === this.activeIndex
                       ? ' pagination-item-active'
                       : ''}"
-                    aria-label="Go to slide ${index + 1}"
+                    aria-label=${messages.goToSlide(
+                      index + 1,
+                      this._items.length,
+                      this._messages.locale,
+                    )}
                     aria-current=${index === this.activeIndex ? 'true' : 'false'}
                     aria-disabled=${index === this.activeIndex ? 'true' : 'false'}
                     @click=${() => this._setActiveIndex(index, 'button')}

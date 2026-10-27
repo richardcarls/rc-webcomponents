@@ -33,21 +33,21 @@ lower-priority actions into an overflow menu.
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-adaptive-menu
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-adaptive-menu
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-adaptive-menu/define';
+import '@rcarls/rc-webcomponents/rc-adaptive-menu/define';
 ```
 
 ## Live demo
@@ -122,8 +122,14 @@ The overflow trigger's own accessible touch target is conventionally the
 trailing-most control in a toolbar, so it commonly leaves dead space before
 the container's own edge padding. `--rc-adaptive-menu-touch-target-overlap-inline-end`
 (zero by default) lets a theme or consumer give that space back so the
-trigger sits flush with the edge instead — the same pattern as
+trigger sits flush with the edge instead, following the same pattern as
 [`rc-button`'s own touch-target overlap tokens](/components/rc-button#states).
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`. Override it with
+`messages`, or register it for every instance under `rc-adaptive-menu`: `label`, `overflow`. See
+[Localization](../guide/localization).
 
 ## API
 

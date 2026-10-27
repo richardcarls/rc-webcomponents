@@ -59,9 +59,53 @@ Scroll behaviors are exclusive:
 - `collapse` continuously shrinks an expanded title row over its measured
   height, then keeps the compact row visible.
 - `hide` hides the complete bar while scrolling down past `scroll-threshold`
-  and reveals it when scrolling up or returning near the top.
+  and reveals it when scrolling up, returning near the top, or when focus
+  moves into the bar, so keyboard focus never lands off screen. The bar stays
+  visible while it contains focus. It hides or reveals only after the target
+  scrolls `hide-distance` (32px by default) in
+  one direction, so small reversals while reading or as a fling settles leave
+  it as it is.
 
 The component never consumes, stops, or rewrites the document's scroll.
+
+`hide` only translates the bar, so on its own it frees no layout space. While
+hiding, the bar publishes read-only geometry onto its scroll target:
+`--rc-app-bar-block-size` (its measured block size) and
+`--rc-app-bar-visible-block-size` (the same, or `0px` while hidden). Let the
+scroll container run under the bar and reserve that size, so content scrolls
+behind the bar and fills its space while it is hidden:
+
+```css
+.screen {
+  display: grid;
+  grid-template: 'stack' 1fr / 1fr;
+}
+
+.screen > header,
+.screen > .content {
+  grid-area: stack;
+}
+
+.screen > header {
+  z-index: 1;
+  align-self: start;
+}
+
+.content {
+  overflow-y: auto;
+  padding-block-start: var(--rc-app-bar-block-size, 4rem);
+  scroll-padding-block-start: var(--rc-app-bar-block-size, 4rem);
+}
+
+.content .sticky-filters {
+  position: sticky;
+  /* Sticky offsets are measured inside the scroller's padding. */
+  inset-block-start: calc(
+    var(--rc-app-bar-visible-block-size, 4rem) - var(--rc-app-bar-block-size, 4rem)
+  );
+  transition: inset-block-start 200ms ease;
+}
+```
 
 ## Center-slot composition
 
@@ -210,6 +254,7 @@ rc-app-bar.glass::part(root) {
 | --------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--rc-app-bar-bg`                       | `Canvas`             | Bar background                                                                                                                                     |
 | `--rc-app-bar-color`                    | `CanvasText`         | Bar text color                                                                                                                                     |
+| `--rc-app-bar-shadow`                   | `none`               | Bar box shadow                                                                                                                                     |
 | `--rc-app-bar-compact-min-height`       | `3rem`               | Compact row minimum height                                                                                                                         |
 | `--rc-app-bar-expanded-padding-block`   | `0.75em`             | Expanded title block padding                                                                                                                       |
 | `--rc-app-bar-padding-inline`           | `0.75em`             | Horizontal padding                                                                                                                                 |

@@ -2,10 +2,12 @@ import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
 import {
+  FlowController,
   isFocusable,
   keyInteraction,
   keyNavigation,
   type KeyboardNavigationAction,
+  renderedOrientation,
   RovingTabIndexMixin,
 } from '@rcarls/rc-common';
 
@@ -28,7 +30,9 @@ declare global {
  *   to display in the toolbar. Direct native controls and the native buttons
  *   inside supported wrappers are navigable.
  * @attr label - Accessible label for this toolbar. Default label is 'Toolbar'.
- * @attr orientation - Toolbar orientation, for keyboard navigation.
+ * @attr orientation - Toolbar layout: `horizontal` lays items along the inline axis,
+ *   `vertical` along the block axis. Both turn over in vertical writing modes, and
+ *   `aria-orientation` and the arrow keys follow the orientation actually rendered.
  * @cssprop [--rc-toolbar-gap-inline=0.25em] - Gap between toolbar items
  * @cssprop [--rc-toolbar-padding-inline=calc(var(--rc-control-padding-inline) / 2)] - Horizontal padding on the toolbar container
  * @cssprop [--rc-toolbar-padding-block=calc(var(--rc-control-padding-block) / 2)] - Vertical padding on the toolbar container
@@ -44,9 +48,12 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   @property({ type: String })
   label = 'Toolbar';
 
-  /** Toolbar orientation, for keyboard navigation. */
-  @property({ type: String })
+  /** Toolbar layout along the inline (`horizontal`) or block (`vertical`) axis. */
+  @property({ type: String, reflect: true })
   orientation: 'horizontal' | 'vertical' = 'horizontal';
+
+  /** Keeps the exposed aria-orientation on the orientation actually rendered. */
+  protected readonly _flow = new FlowController(this);
 
   @query('#root', true)
   protected _$root!: HTMLDivElement;
@@ -160,7 +167,7 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
         ${keyNavigation(this._onNavigate)}
         ${keyInteraction()}
         role="toolbar"
-        aria-orientation=${this.orientation}
+        aria-orientation=${renderedOrientation(this.orientation, this._flow.flow)}
         aria-label=${this.label}
       >
         <div id="slot-wrap" @focusin=${this._handleItemFocus}>

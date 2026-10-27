@@ -7,6 +7,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
 import { visit } from 'unist-util-visit';
 
+import { MessagesController, cssZoom, isPhysicalReversed, resolveFlow } from '@rcarls/rc-common';
 import type { RCTextarea, RCTextareaPluginAPI, DecorationInput } from '@rcarls/rc-textarea';
 import type {
   ActiveFormats,
@@ -31,30 +32,30 @@ _sourceHighlightSheet.replaceSync(`
   .rme-heading-h4,
   .rme-heading-h5,
   .rme-heading-h6 {
-    color: var(--rme-src-heading-color, light-dark(#1d6fc4, #82b4f5));
+    color: var(--rc-markdown-editor-src-heading-color, light-dark(#1d6fc4, #82b4f5));
   }
 
   .rme-code,
   .rme-code-block {
-    color: var(--rme-src-code-color, light-dark(#c94a1a, #f09060));
+    color: var(--rc-markdown-editor-src-code-color, light-dark(#c94a1a, #f09060));
   }
 
   .rme-link {
-    color: var(--rme-src-link-color, light-dark(#0370b0, #60b8e8));
+    color: var(--rc-markdown-editor-src-link-color, light-dark(#0370b0, #60b8e8));
   }
 
   .rme-blockquote {
-    color: var(--rme-src-blockquote-color, light-dark(#2d7a42, #70b880));
+    color: var(--rc-markdown-editor-src-blockquote-color, light-dark(#2d7a42, #70b880));
   }
 
   .rme-list-bullet,
   .rme-list-ordered {
-    color: var(--rme-src-list-color, light-dark(#7a5c0a, #d4ac48));
+    color: var(--rc-markdown-editor-src-list-color, light-dark(#7a5c0a, #d4ac48));
   }
 
   .rme-strikethrough {
     text-decoration: line-through;
-    color: var(--rme-src-dim-color, GrayText);
+    color: var(--rc-markdown-editor-src-dim-color, GrayText);
   }
 
   .rme-underline {
@@ -72,6 +73,10 @@ const MDAST_OPTIONS = {
   extensions: [gfmStrikethrough()],
   mdastExtensions: [gfmStrikethroughFromMarkdown()],
 };
+
+interface MarkdownTree {
+  type: string;
+}
 
 const SAFE_RICH_ELEMENTS = new Set([
   'A',
@@ -196,6 +201,37 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
   // list and html (underline) nodes are handled dynamically in _setupSourcePlugin
 };
 
+/** Built-in text of `rc-markdown-editor`, apart from its toolbar's. */
+export interface RCMarkdownEditorMessages {
+  /** Accessible name of the source-mode textarea. */
+  source: string;
+  /** Accessible name of the link popover. */
+  linkPopover: string;
+  /** Accessible name of the link URL input. */
+  url: string;
+  applyLink: string;
+  openLink: string;
+  removeLink: string;
+  /** A tooltip with its keyboard shortcut, such as `Apply (Enter)`. */
+  shortcut: (label: string, keys: string) => string;
+}
+
+export const DEFAULT_MARKDOWN_EDITOR_MESSAGES: Readonly<RCMarkdownEditorMessages> = Object.freeze({
+  source: 'Markdown source',
+  linkPopover: 'Link',
+  url: 'URL',
+  applyLink: 'Apply',
+  openLink: 'Open link',
+  removeLink: 'Remove link',
+  shortcut: (label: string, keys: string) => `${label} (${keys})`,
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-markdown-editor': RCMarkdownEditorMessages;
+  }
+}
+
 /**
  * Rich/source Markdown editor with a formatting toolbar, backed by rc-textarea.
  *
@@ -215,6 +251,12 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
  * </rc-markdown-editor>
  * ```
  *
+ * Built-in text follows the element's own `lang`, else `<html lang>`: per
+ * element through `messages`, or for every editor through
+ * `registerMessages()` from `@rcarls/rc-common` under `rc-markdown-editor`
+ * and, for the toolbar, `rc-editor-toolbar`. The toolbar takes the editor's
+ * `lang`.
+ *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-markdown-editor rc-markdown-editor docs}
  *
  * @slot - Accepts a native `<textarea>` element (and optional `<label>`) for form wiring.
@@ -233,27 +275,66 @@ const DECORATION_MAP: Record<string, PartialDecoration> = {
  * @attr value - Current Markdown value.
  * @attr default-value - Initial uncontrolled Markdown value.
  *
- * @cssprop [--rme-font-family=inherit] - Font family of the rich-text view
- * @cssprop [--rme-font-size=inherit] - Font size of the rich-text view
- * @cssprop [--rme-line-height=1.6] - Line height of the rich-text view
- * @cssprop [--rme-padding=0.75em 1em] - Padding inside the rich-text view
- * @cssprop [--rme-background=Canvas] - Background color of the rich-text view
- * @cssprop [--rme-color=CanvasText] - Text color of the rich-text view
- * @cssprop [--rme-border=1px solid ButtonBorder] - Border around the rich-text view
- * @cssprop [--rme-border-radius=0 0 4px 4px] - Border radius of the rich-text view
- * @cssprop [--rme-focus-outline=2px solid Highlight] - Focus ring outline on the rich-text view
- * @cssprop [--rme-src-font-family='Cascadia Code', 'Fira Code', ui-monospace, monospace] - Font family of the source editor
- * @cssprop [--rme-toolbar-gap=1px] - Gap between toolbar buttons
- * @cssprop [--rme-toolbar-button-size=2rem] - Minimum inline and block size of toolbar buttons
- * @cssprop [--rme-src-heading-color=light-dark(#1d6fc4, #82b4f5)] - Source-mode heading token color
- * @cssprop [--rme-src-code-color=light-dark(#c94a1a, #f09060)] - Source-mode inline/fenced code token color
- * @cssprop [--rme-src-link-color=light-dark(#0370b0, #60b8e8)] - Source-mode link token color
- * @cssprop [--rme-src-blockquote-color=light-dark(#2d7a42, #70b880)] - Source-mode blockquote token color
- * @cssprop [--rme-src-list-color=light-dark(#7a5c0a, #d4ac48)] - Source-mode list marker token color
- * @cssprop [--rme-src-dim-color=GrayText] - Source-mode strikethrough token color
+ * @cssprop [--rc-markdown-editor-font-family=inherit] - Font family of the rich-text view
+ * @cssprop [--rc-markdown-editor-font-size=inherit] - Font size of the rich-text view
+ * @cssprop [--rc-markdown-editor-line-height=1.6] - Line height of the rich-text view
+ * @cssprop [--rc-markdown-editor-padding=0.75em 1em] - Padding inside the rich-text view
+ * @cssprop [--rc-markdown-editor-background=Canvas] - Background color of the rich-text view
+ * @cssprop [--rc-markdown-editor-color=CanvasText] - Text color of the rich-text view
+ * @cssprop [--rc-markdown-editor-border=1px solid ButtonBorder] - Border around the rich-text view
+ * @cssprop [--rc-markdown-editor-border-radius=0 0 4px 4px] - Border radius of the rich-text view
+ * @cssprop [--rc-markdown-editor-focus-outline=2px solid Highlight] - Focus ring outline on the rich-text view
+ * @cssprop [--rc-markdown-editor-src-font-family='Cascadia Code', 'Fira Code', ui-monospace, monospace] - Font family of the source editor
+ * @cssprop [--rc-markdown-editor-toolbar-gap=1px] - Gap between toolbar buttons
+ * @cssprop [--rc-markdown-editor-toolbar-padding=4px] - Padding inside the toolbar
+ * @cssprop [--rc-markdown-editor-toolbar-radius=4px 4px 0 0] - Toolbar border radius
+ * @cssprop [--rc-markdown-editor-toolbar-border=1px solid ButtonBorder] - Toolbar border
+ * @cssprop [--rc-markdown-editor-toolbar-background=Canvas] - Toolbar background
+ * @cssprop [--rc-markdown-editor-toolbar-color=CanvasText] - Toolbar text color
+ * @cssprop [--rc-markdown-editor-toolbar-button-size=2rem] - Minimum inline and block size of toolbar buttons
+ * @cssprop [--rc-markdown-editor-toolbar-button-background=transparent] - Toolbar button background
+ * @cssprop [--rc-markdown-editor-toolbar-button-color=ButtonText] - Toolbar button text color
+ * @cssprop [--rc-markdown-editor-toolbar-button-border=1px solid transparent] - Toolbar button border
+ * @cssprop [--rc-markdown-editor-toolbar-button-radius=3px] - Toolbar button border radius
+ * @cssprop [--rc-markdown-editor-toolbar-button-hover-opacity=0.08] - Toolbar button hover state-layer opacity
+ * @cssprop [--rc-markdown-editor-toolbar-button-focus-opacity=0.12] - Toolbar button focus state-layer opacity
+ * @cssprop [--rc-markdown-editor-toolbar-button-pressed-opacity=0.12] - Toolbar button pressed state-layer opacity
+ * @cssprop [--rc-markdown-editor-toolbar-button-active-background=Highlight] - Active toolbar button background
+ * @cssprop [--rc-markdown-editor-toolbar-button-active-color=HighlightText] - Active toolbar button text color
+ * @cssprop [--rc-markdown-editor-toolbar-button-active-border=1px solid Highlight] - Active toolbar button border
+ * @cssprop [--rc-markdown-editor-toolbar-focus-outline=2px solid Highlight] - Toolbar control focus outline
+ * @cssprop [--rc-markdown-editor-toolbar-focus-outline-offset=1px] - Toolbar control focus outline offset
+ * @cssprop [--rc-markdown-editor-toolbar-select-border=1px solid ButtonBorder] - Toolbar select border
+ * @cssprop [--rc-markdown-editor-toolbar-select-radius=3px] - Toolbar select border radius
+ * @cssprop [--rc-markdown-editor-toolbar-select-background=ButtonFace] - Toolbar select background
+ * @cssprop [--rc-markdown-editor-toolbar-select-color=ButtonText] - Toolbar select text color
+ * @cssprop [--rc-markdown-editor-toolbar-select-active-background=Highlight] - Active toolbar select background
+ * @cssprop [--rc-markdown-editor-toolbar-select-active-color=HighlightText] - Active toolbar select text color
+ * @cssprop [--rc-markdown-editor-toolbar-select-active-border-color=Highlight] - Active toolbar select border color
+ * @cssprop [--rc-markdown-editor-toolbar-input-border=1px solid ButtonBorder] - Toolbar input border
+ * @cssprop [--rc-markdown-editor-toolbar-input-radius=3px] - Toolbar input border radius
+ * @cssprop [--rc-markdown-editor-toolbar-input-background=Field] - Toolbar input background
+ * @cssprop [--rc-markdown-editor-toolbar-input-color=FieldText] - Toolbar input text color
+ * @cssprop [--rc-markdown-editor-src-heading-color=light-dark(#1d6fc4, #82b4f5)] - Source-mode heading token color
+ * @cssprop [--rc-markdown-editor-src-code-color=light-dark(#c94a1a, #f09060)] - Source-mode inline/fenced code token color
+ * @cssprop [--rc-markdown-editor-src-link-color=light-dark(#0370b0, #60b8e8)] - Source-mode link token color
+ * @cssprop [--rc-markdown-editor-src-blockquote-color=light-dark(#2d7a42, #70b880)] - Source-mode blockquote token color
+ * @cssprop [--rc-markdown-editor-src-list-color=light-dark(#7a5c0a, #d4ac48)] - Source-mode list marker token color
+ * @cssprop [--rc-markdown-editor-src-dim-color=GrayText] - Source-mode strikethrough token color
  */
 export class RcMarkdownEditor extends LitElement {
   static override styles = rmeStyles;
+
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCMarkdownEditorMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-markdown-editor',
+    DEFAULT_MARKDOWN_EDITOR_MESSAGES,
+    { overrides: () => this.messages },
+  );
 
   private _value: string | undefined;
   private _defaultValue = '';
@@ -350,7 +431,7 @@ export class RcMarkdownEditor extends LitElement {
   protected _pluginApi: RCTextareaPluginAPI | null = null;
   protected _ignoreRichMutations = false;
   protected _richViewRendered = false;
-  protected _cachedTree: ReturnType<typeof fromMarkdown> | null = null;
+  protected _cachedTree: MarkdownTree | null = null;
   protected _renderedMode: EditorMode | null = null;
 
   // Lit calls updated() before firstUpdated() on the first cycle — guard
@@ -463,12 +544,15 @@ export class RcMarkdownEditor extends LitElement {
   }
 
   override render() {
+    const m = this._messages.value;
+
     return html`
       <slot></slot>
 
       ${this.toolbar
         ? html`<rc-editor-toolbar
             part="toolbar"
+            lang=${this.getAttribute('lang') ?? nothing}
             @rc-toolbar-action=${this._onToolbarAction}
           ></rc-editor-toolbar>`
         : nothing}
@@ -484,23 +568,20 @@ export class RcMarkdownEditor extends LitElement {
       ></div>
 
       <div id="source-wrapper" ?hidden=${!this.sourceMode}>
-        <rc-textarea
-          id="source-editor"
-          word-wrap
-          ?read-only=${this.readOnly}
-          @rc-change=${this._onSourceChange}
-        ></rc-textarea>
+        <rc-textarea id="source-editor" word-wrap @rc-change=${this._onSourceChange}>
+          <textarea aria-label=${m.source} ?readonly=${this.readOnly}></textarea>
+        </rc-textarea>
       </div>
 
       ${this._linkPopoverOpen
         ? html`
-            <div class="link-popover" role="dialog" aria-label="Link">
+            <div class="link-popover" role="dialog" aria-label=${m.linkPopover}>
               <input
                 type="url"
                 class="link-popover-input"
                 .value=${this._linkPopoverHref}
                 placeholder="https://"
-                aria-label="URL"
+                aria-label=${m.url}
                 @input=${(e: Event) => {
                   this._linkPopoverHref = (e.target as HTMLInputElement).value;
                 }}
@@ -509,7 +590,8 @@ export class RcMarkdownEditor extends LitElement {
               <button
                 type="button"
                 class="link-popover-btn"
-                title="Apply (Enter)"
+                aria-label=${m.applyLink}
+                title=${m.shortcut(m.applyLink, 'Enter')}
                 @click=${this._applyLink}
               >
                 ↵
@@ -517,7 +599,8 @@ export class RcMarkdownEditor extends LitElement {
               <button
                 type="button"
                 class="link-popover-btn"
-                title="Open link"
+                aria-label=${m.openLink}
+                title=${m.openLink}
                 ?disabled=${!this._linkPopoverHref}
                 @click=${this._openLinkHref}
               >
@@ -526,7 +609,8 @@ export class RcMarkdownEditor extends LitElement {
               <button
                 type="button"
                 class="link-popover-btn"
-                title="Remove link"
+                aria-label=${m.removeLink}
+                title=${m.removeLink}
                 @click=${this._removeLink}
               >
                 ✕
@@ -721,14 +805,11 @@ export class RcMarkdownEditor extends LitElement {
     });
   }
 
-  protected _getCodeBlockLanguage(
-    tree: ReturnType<typeof fromMarkdown>,
-    offset: number,
-  ): string | null {
+  protected _getCodeBlockLanguage(tree: MarkdownTree, offset: number): string | null {
     let lang: string | null = null;
 
     visit(
-      tree,
+      tree as ReturnType<typeof fromMarkdown>,
       'code',
       (node: {
         lang?: string | null;
@@ -972,7 +1053,7 @@ export class RcMarkdownEditor extends LitElement {
     const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
 
     const stripped = value.slice(lineStart).replace(/^#{1,6} /, '');
-    const prefix = level ? '#'.repeat(parseInt(level[1]!)) + ' ' : '';
+    const prefix = level ? '#'.repeat(Number(level.slice(1))) + ' ' : '';
 
     editor.value =
       value.slice(0, lineStart) +
@@ -1398,9 +1479,16 @@ export class RcMarkdownEditor extends LitElement {
 
     const rangeRect = this._$savedRange.getBoundingClientRect();
     const hostRect = this.getBoundingClientRect();
+    const popoverZoom = cssZoom(this._$linkPopover);
 
-    this._$linkPopover.style.top = `${rangeRect.bottom - hostRect.top + 4}px`;
-    this._$linkPopover.style.left = `${Math.max(0, rangeRect.left - hostRect.left)}px`;
+    // Aligned to the selection's inline start: its right edge in RTL.
+    const startsRight = isPhysicalReversed('x', resolveFlow(this));
+    const leftViewportPx = startsRight
+      ? rangeRect.right - hostRect.left - this._$linkPopover.offsetWidth * popoverZoom
+      : rangeRect.left - hostRect.left;
+
+    this._$linkPopover.style.top = `${(rangeRect.bottom - hostRect.top) / popoverZoom + 4}px`;
+    this._$linkPopover.style.left = `${Math.max(0, leftViewportPx / popoverZoom)}px`;
   }
 
   protected _applyLink = () => {

@@ -10,11 +10,13 @@ import {
   TextareaBasicDemo,
   TextareaMarkdownDemo,
   TextareaHljsDemo,
+  TextareaDisclosureDemo,
+  TextareaContentLanguageDemo,
 } from '@site/src/components/ComponentDemos';
 
 # rc-textarea
 
-Textarea wrapper with line decorations, gutter rendering, inline widgets, and plugin hooks.
+Textarea wrapper with line decorations, gutter rendering, folding actions, and plugin hooks.
 
 <AtAGlance
   packageName="@rcarls/rc-textarea"
@@ -34,21 +36,21 @@ Textarea wrapper with line decorations, gutter rendering, inline widgets, and pl
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-textarea
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-textarea
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-textarea/define';
+import '@rcarls/rc-webcomponents/rc-textarea/define';
 ```
 
 ## Demos
@@ -56,7 +58,7 @@ import '@rcarls/rc-textarea/define';
 <Tabs>
 <TabItem value="basic" label="Basic" default>
 
-Plain textarea with `auto-grow` and no gutter — the minimal starting point.
+Plain textarea with `auto-grow` and no gutter. This is the minimal starting point.
 
 <TextareaBasicDemo />
 
@@ -69,7 +71,7 @@ Plain textarea with `auto-grow` and no gutter — the minimal starting point.
 </TabItem>
 <TabItem value="markdown" label="Markdown">
 
-Uses `@rcarls/rc-textarea-plugin-markdown` for live Markdown decoration and an HTML preview panel below the editor.
+Uses `@rcarls/rc-textarea-plugin-markdown` for live Markdown decoration, gutter folding of heading sections and multiline blocks, and an HTML preview panel below the editor. Folded source remains in the form value.
 
 <TextareaMarkdownDemo />
 
@@ -112,22 +114,83 @@ editor.usePlugin({
 ```
 
 </TabItem>
+<TabItem value="disclosures" label="Expandable lines">
+
+Expand information below a line without changing the textarea's source text.
+
+<TextareaDisclosureDemo />
+
+See [Folding actions](#folding-actions) for controller and styling details.
+
+</TabItem>
+<TabItem value="content-language" label="Content language">
+
+An Arabic recipe with an English line in an English interface. The textarea's `lang` and `dir`
+describe the text, and `line-direction="auto"` aligns each line by its own script. The line
+with only a number keeps the Arabic base direction. Line numbers follow the interface.
+
+<TextareaContentLanguageDemo />
+
+```html
+<rc-textarea line-numbers line-direction="auto">
+  <textarea aria-label="Recipe directions" lang="ar" dir="auto"></textarea>
+</rc-textarea>
+```
+
+See [Content language and direction](#content-language-and-direction).
+
+</TabItem>
 </Tabs>
 
 ## Options
 
 ### Attributes
 
-| Attribute      | Property      | Description                                                                         |
-| -------------- | ------------- | ----------------------------------------------------------------------------------- |
-| `line-numbers` | `lineNumbers` | Show sequential line numbers in the gutter.                                         |
-| `gutter`       | `gutter`      | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`. |
-| `word-wrap`    | `wordWrap`    | Wrap long lines instead of scrolling horizontally.                                  |
-| `auto-grow`    | `autoGrow`    | Let the field grow vertically with content.                                         |
-| `read-only`    | `readOnly`    | Render selectable, non-editable content.                                            |
+| Attribute        | Property        | Description                                                                               |
+| ---------------- | --------------- | ----------------------------------------------------------------------------------------- |
+| `line-numbers`   | `lineNumbers`   | Show sequential line numbers in the gutter.                                               |
+| `gutter`         | `gutter`        | Show an empty gutter that plugins can populate with `LineDecoration.gutterContent`.       |
+| `word-wrap`      | `wordWrap`      | Wrap long lines instead of scrolling horizontally.                                        |
+| `auto-grow`      | `autoGrow`      | Let the field grow vertically with content.                                               |
+| `line-direction` | `lineDirection` | `base` (default) gives every line the editor's direction; `auto` gives each line its own. |
+
+Read-only state comes from the slotted native control: set `readonly` on the `<textarea>`. The
+editor keeps the enabled field appearance, stays focusable and selectable, announces
+`aria-readonly`, and rejects edits. The host reflects `data-readonly`, and the `readOnly` getter
+reports the state.
 
 Use a plugin with `LineDecoration.gutterContent` for sparse numbering. Put accessible names on
 the slotted textarea with `aria-label` or a real `<label for="...">`.
+
+### Content language and direction
+
+The slotted `<textarea>` describes the content, and the host describes the interface. Put the
+text's language and direction on the textarea, as on any form control:
+
+- **`lang`** is mirrored onto the editor, so the browser picks the right glyphs (Han characters
+  differ between `ja` and `zh`), spelling dictionary and hyphenation. Plugins read it as
+  `contentLang`, and `getWordAtCursor()` segments words for it.
+- **`dir`** sets the editor's base direction. `ltr` and `rtl` are used as written. `auto` takes
+  the direction of the value's first strong character and uses LTR when there is none,
+  as a native textarea does, and updates as the value changes. Without `dir` the editor
+  inherits. `dirname` submits the resolved direction with the form, since the native control
+  always holds the value.
+- **`spellcheck`** is mirrored when the textarea sets it. Without it, spelling checks stay off.
+
+Changing the textarea's `lang` or `dir` also reruns plugin rendering, so highlighting and
+decorations can follow the new content language or direction.
+
+The host's own `lang` is the interface language, as for every `rc-*` component. It formats line
+numbers, so an `ar-EG` interface shows `١ ٢ ٣`, and `ar-EG-u-nu-latn` keeps Latin digits. The
+gutter, fold controls and line-action popover follow the host's direction, not the content's.
+
+`line-direction="auto"` suits prose that mixes scripts, such as an Arabic recipe with an
+English brand name on one line. Each line with a letter orders and aligns by its own first
+strong character (`unicode-bidi: plaintext`). Lines without one, such as an empty line or a
+quantity, keep the base direction, so the caret on a new line in an Arabic recipe starts on the
+right. Type U+200E or U+200F at the start of a line to force its direction. Leave it at `base`
+for code. Widgets are isolated, so they never reorder the text around them or set a line's
+direction.
 
 ### JavaScript properties
 
@@ -136,6 +199,7 @@ the slotted textarea with `aria-label` or a real `<label for="...">`.
 | `value`                           | `string`                   | Current plain-text value. Host writes are silent.                     |
 | `defaultValue`                    | `string \| undefined`      | Initial uncontrolled value.                                           |
 | `plugin`                          | `RCTextareaPlugin \| null` | Declarative plugin hook for reactive frameworks.                      |
+| `lineDirection`                   | `'auto' \| 'base'`         | How each line's direction is chosen; reflects `line-direction`.       |
 | `decorations`                     | `DecorationInput[]`        | External decoration layer merged with plugin and pattern decorations. |
 | `selectionStart` / `selectionEnd` | `number`                   | Current plain-text selection offsets (read-only).                     |
 
@@ -172,23 +236,30 @@ editor.addEventListener('rc-textarea-change', (e) => {
 
 ### Component tokens
 
-| Token                                     | Default                               | Use                                   |
-| ----------------------------------------- | ------------------------------------- | ------------------------------------- |
-| `--rc-textarea-font-family`               | `monospace`                           | Editor and gutter font family.        |
-| `--rc-textarea-font-size`                 | `1em`                                 | Editor and gutter font size.          |
-| `--rc-textarea-line-height`               | `1.5`                                 | Editor and gutter line height.        |
-| `--rc-textarea-padding`                   | `0.5em`                               | Editor and gutter padding.            |
-| `--rc-textarea-background`                | `Field`                               | Field background.                     |
-| `--rc-textarea-color`                     | `var(--rc-text, FieldText)`           | Field text color.                     |
-| `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)` | Caret color.                          |
-| `--rc-textarea-border`                    | `1px solid ButtonBorder`              | Field border.                         |
-| `--rc-textarea-border-radius`             | `2px`                                 | Field corner radius.                  |
-| `--rc-textarea-focus-outline`             | `2px solid Highlight`                 | Focus ring.                           |
-| `--rc-textarea-active-line-bg`            | `transparent`                         | Active line background.               |
-| `--rc-textarea-gutter-bg`                 | `Canvas`                              | Gutter background.                    |
-| `--rc-textarea-gutter-color`              | `GrayText`                            | Gutter text color.                    |
-| `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`              | Gutter separator.                     |
-| `--rc-textarea-gutter-padding-inline-end` | `0.75em`                              | Space between gutter labels and text. |
+| Token                                     | Default                               | Use                                                                                                                      |
+| ----------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `--rc-textarea-font-family`               | `monospace`                           | Editor and gutter font family.                                                                                           |
+| `--rc-textarea-font-size`                 | `1em`                                 | Editor and gutter font size.                                                                                             |
+| `--rc-textarea-line-height`               | `1.5`                                 | Editor and gutter line height.                                                                                           |
+| `--rc-textarea-padding-block`             | `0.5em`                               | Editor and gutter block padding; any `padding-block` value.                                                              |
+| `--rc-textarea-padding-inline`            | `0.5em`                               | Editor inline padding (both sides) and gutter start padding; one length, which the active line highlight bleeds through. |
+| `--rc-textarea-gutter-min-inline-size`    | `24px`                                | Minimum gutter width including padding; Material uses `48px`.                                                            |
+| `--rc-textarea-background`                | `Field`                               | Field background.                                                                                                        |
+| `--rc-textarea-color`                     | `var(--rc-field-text, FieldText)`     | Field text color.                                                                                                        |
+| `--rc-textarea-caret-color`               | `var(--rc-textarea-color, FieldText)` | Caret color.                                                                                                             |
+| `--rc-textarea-border`                    | `1px solid ButtonBorder`              | Field border.                                                                                                            |
+| `--rc-textarea-border-radius`             | `2px`                                 | Field corner radius.                                                                                                     |
+| `--rc-textarea-focus-outline`             | `2px solid Highlight`                 | Focus ring.                                                                                                              |
+| `--rc-textarea-active-line-bg`            | `transparent`                         | Full-width active line highlight.                                                                                        |
+| `--rc-textarea-gutter-bg`                 | `Canvas`                              | Gutter background.                                                                                                       |
+| `--rc-textarea-gutter-color`              | `GrayText`                            | Gutter text color.                                                                                                       |
+| `--rc-textarea-gutter-border`             | `1px solid ButtonBorder`              | Gutter separator.                                                                                                        |
+| `--rc-textarea-gutter-padding-inline-end` | `0.75em`                              | Space between gutter labels and text.                                                                                    |
+
+Plugin-provided line actions expose the `--rc-line-actions-*` and
+`--rc-line-action-*` hooks listed in the generated API table. Inline actions
+inherit the editor surface by default; popover actions use system-color
+surface defaults where they need independent chrome.
 
 ```css
 rc-textarea {
@@ -203,18 +274,25 @@ rc-textarea {
 
 ### CSS parts
 
-The exposed CSS parts are `root`, `gutter`, `gutter-cells`, `editor-area`, and `editor`.
+The exposed CSS parts are `root`, `gutter`, `gutter-cells`, `editor-area`, `editor`,
+`fold-trigger`, and `fold-icon`. The last two exist when a folding action is rendered;
+`fold-icon` exists only when its plugin supplies an icon.
 
 ```css
 rc-textarea::part(editor) {
   tab-size: 2;
+}
+
+rc-textarea::part(fold-trigger) {
+  border-radius: 0.25em;
+  color: CanvasText;
 }
 ```
 
 ### Decoration styles
 
 Decoration elements (`.mark`, `.line`, `.widget`) live inside the shadow root. Use
-`api.adoptStyleSheet()` from a plugin to reach them — document stylesheets cannot pierce the
+`api.adoptStyleSheet()` from a plugin to reach them; document stylesheets cannot pierce the
 shadow boundary.
 
 ## Pattern Highlights
@@ -244,6 +322,50 @@ editor.addPattern({
   createLineDecoration: () => ({ className: 'config-line' }),
 });
 ```
+
+## Folding actions
+
+Import `FoldingActionController` from `@rcarls/rc-textarea/folding` or
+`@rcarls/rc-webcomponents/rc-textarea/folding` when using the aggregate package.
+
+`FoldingActionController` creates independent native buttons with `aria-expanded`.
+Give each action a stable key, a contextual label, and a target: an app-owned panel
+element or `{ fromLine, toLine }` for inclusive, one-based source lines after its
+anchor. Source folds start expanded; set `initiallyExpanded: false` for diagnostic
+panels. The controller manages panel visibility and focus return; plugins create
+panel content as an accessible block widget and version its widget key when content
+changes. `clear()` resets folding state when document identity changes or the plugin
+is destroyed. A Markdown plugin can supply parser-backed ranges without teaching
+the editor Markdown grammar.
+
+Supply an icon with the controller's `createTriggerIcon(expanded)` option. The
+icon is decorative and receives the `fold-icon` CSS part. The built-in Markdown
+plugin forwards the same option through its factory:
+
+```ts
+const plugin = createMarkdownPlugin({
+  folding: {
+    createTriggerIcon(expanded) {
+      const icon = document.createElement('span');
+      icon.textContent = expanded ? '▾' : '▸';
+      return icon;
+    },
+  },
+});
+```
+
+Use `::part(fold-trigger)` and `::part(fold-icon)` from consumer CSS to style the
+control and icon. Keep focus visibility and the button's hit area intact.
+
+`gutterLine` places a control in the gutter; a trailing `offset` uses the reserved
+lane sized by `--rc-textarea-trailing-size`. `createGutterContent(button)` and
+`updateGutterContent(wrapper)` add and refresh a decorative status marker. The
+gutter has a 24px minimum width in the base component and 48px in Material.
+Each row follows its text line height, so an inline folding control can be shorter
+than 24px under [WCAG 2.5.8's line-height exception](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum).
+The full gutter cell is the hit area for a single action; multiple actions share
+the cell without overlapping targets. Enter and Space activate the native button.
+Folding never changes the field value or undo history.
 
 ## Plugin API
 
@@ -292,14 +414,14 @@ interface RCTextareaPlugin {
   mount?(api: RCTextareaPluginAPI): void;
   destroy?(): void;
 
-  /** Display-layer transform — read-only mode only. */
+  /** Display-layer transform; only while the textarea is readonly. */
   transform?(value: string, api: RCTextareaPluginAPI): string | null | void;
 
   /** Imperative decoration hook. May be async. */
   update?(value: string, api: RCTextareaPluginAPI): void | Promise<void>;
 
   /**
-   * HTML compat hook — return HTML token spans from hljs/prism.
+   * HTML compat hook; return HTML token spans from hljs/prism.
    * The returned string is parsed via api.parseDecorationsFromHtml().
    */
   highlight?(
@@ -309,11 +431,11 @@ interface RCTextareaPlugin {
 }
 ```
 
-At least one of `update` or `highlight` must be provided. Async hooks are allowed — if a
+At least one of `update` or `highlight` must be provided. Async hooks are allowed. If a
 newer render starts while a hook is pending, stale results are discarded.
 
-`transform()` runs only in read-only mode and substitutes the display-layer text without
-changing `editor.value` or the slotted textarea value.
+`transform()` runs only while the slotted textarea is `readonly` and substitutes the
+display-layer text without changing `editor.value` or the slotted textarea value.
 
 ### External updates
 
@@ -340,7 +462,7 @@ editor.usePlugin({
 </TabItem>
 <TabItem value="decorations" label="Decorations">
 
-When passing decorations to the API, omit `id` — the component assigns IDs.
+When passing decorations to the API, omit `id`; the component assigns IDs.
 
 ```ts
 type DecorationInput =
@@ -384,10 +506,11 @@ interface LineDecoration {
   type: 'line';
   line: number; // 1-based
   className?: string;
-  message?: string; // rendered via ::after — not in selection or clipboard
+  message?: string; // rendered via ::after; not in selection or clipboard
   messageClassName?: string;
   attributes?: Record<string, string>;
-  gutterContent?: string | null; // string: custom label; null: suppress; undefined: use default
+  gutterContent?: string | HTMLElement | null; // null: suppress; undefined: use default
+  gutterAccessible?: boolean; // expose this cell when it contains a control
 }
 ```
 
@@ -427,7 +550,7 @@ interface WidgetDecoration {
   id: string;
   type: 'widget';
   offset: number;
-  create(): HTMLElement; // called on every render — return a new element each time
+  create(): HTMLElement; // called on every render; return a new element each time
   side?: 'before' | 'after';
 }
 ```
@@ -460,6 +583,11 @@ interface RCTextareaPluginAPI {
   readonly value: string;
   readonly selectionStart: number;
   readonly selectionEnd: number;
+
+  // Content language and direction
+  readonly contentDirection: 'ltr' | 'rtl';
+  readonly contentLang: string;
+  lineDirection(line: number): 'ltr' | 'rtl';
 
   // Cursor
   getCursorRect(): DOMRect | null;
@@ -513,8 +641,14 @@ editor.usePlugin({
 });
 ```
 
-`getCursorRect()` returns viewport coordinates — suitable for anchoring autocomplete panels or
-hover tooltips.
+`getCursorRect()` returns viewport coordinates, suitable for anchoring autocomplete panels or
+hover tooltips. Place such a panel by `contentDirection`, or by `lineDirection(line)` for the
+caret's 1-based line, rather than by the host's direction.
+
+`getWordAtCursor()` segments the caret's line with `Intl.Segmenter` for `contentLang`. Accented
+words, contractions such as `don't`, `snake_case` names and Japanese words each count as one
+word; a cursor between two words returns the one after it. Without `Intl.Segmenter`, it scans
+letters, digits and `_`.
 
 ### Text mutation
 
@@ -732,8 +866,7 @@ editor.usePlugin({
 ### Read-only preview transform
 
 ```ts
-editor.readOnly = true;
-
+// <rc-textarea><textarea aria-label="Preview" readonly></textarea></rc-textarea>
 editor.usePlugin({
   transform(value) {
     return value.trimEnd();
@@ -938,7 +1071,7 @@ each `.line` element and assigns explicit cell heights so wrapped lines stay ali
 | `src/line-decorator.ts`          | `createLineDecoratorPlugin()` helper for line-relative decoration logic.                                                              |
 | `src/line-actions-controller.ts` | Controller for action UI anchored to editor lines.                                                                                    |
 | `src/types.ts`                   | Public interfaces and utility types.                                                                                                  |
-| `src/rc-textarea.styles.ts`      | Shadow DOM layout, parts, tokens, and internal decoration selectors.                                                                  |
+| `src/rc-textarea.styles.ts`      | shadow DOM layout, parts, tokens, and internal decoration selectors.                                                                  |
 
 ### Styling contract
 

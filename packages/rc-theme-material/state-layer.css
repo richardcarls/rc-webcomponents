@@ -1,3 +1,6 @@
+@layer rc-base, rc-theme-material.defaults, rc-theme-material.bridge, rc-theme-material.native, rc-theme-material.components, rc-theme-material.css-components,
+  rc-theme-material.overrides;
+
 @layer rc-theme-material.components {
   /*
    * Material 3 state layers for interactive elements that already own their
@@ -16,7 +19,8 @@
     background: currentColor;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 150ms var(--md-sys-motion-easing-standard, cubic-bezier(0.4, 0, 0.2, 1));
+    transition: opacity var(--rc-motion-effects-duration-fast, 150ms)
+      var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
   }
 
   .rc-state-layer:hover::after {

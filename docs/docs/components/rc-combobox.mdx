@@ -32,21 +32,21 @@ Editable combobox with filtering and optional allow-create behavior, configured 
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-combobox
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-combobox
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-combobox/define';
+import '@rcarls/rc-webcomponents/rc-combobox/define';
 ```
 
 ## Live demo
@@ -56,6 +56,23 @@ import '@rcarls/rc-combobox/define';
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+Inside a Material `rc-field`, a row of selected chips grows the field below its floated label, so
+the label keeps the same offset as every other field. Add `rc-combobox--dense` to render 1.5rem chips that
+fit on the field's single input line and keep a populated field at the standard 56px height. The
+chips keep their full touch target.
+
+```html
+<rc-field>
+  <label slot="label" for="categories">Categories</label>
+  <rc-combobox class="rc-combobox--dense" data-rc-field-control multiple>
+    <select id="categories" multiple>
+      <option selected>Beef</option>
+      <option selected>Cheap</option>
+    </select>
+  </rc-combobox>
+</rc-field>
+```
 
 ## Allow Create
 
@@ -67,14 +84,35 @@ Add the `allow-create` attribute to show a **"Create 'X'"** option when typed te
 </rc-combobox>
 ```
 
+## Dialog popup
+
+Set `popup-mode="dialog"` when the available viewport is too constrained for an anchored
+listbox. This presents the current chips, search field, options, and a Done action in a native
+modal dialog. Selection and allow-create changes are staged until Done; close or Escape discards
+the draft. Done produces one committed selection change.
+
+```html
+<rc-combobox popup-mode="dialog" allow-create placeholder="Add categories…">
+  <select name="categories" multiple>
+    <option value="quick">Quick meal</option>
+    <option value="vegetarian">Vegetarian</option>
+  </select>
+</rc-combobox>
+```
+
+Applications can switch `popupMode` from viewport state. The mode is latched while a popup is
+open so a resize does not replace an active interaction.
+
 ### Validation
 
 `rc-combobox-create` is **cancelable**. Call `event.preventDefault()` to block the default insertion. The event `detail` contains the raw typed text:
 
+In dialog mode, create events are deferred until Done and run before the selection commit.
+
 ```js
 combobox.addEventListener('rc-combobox-create', (event) => {
   if (event.detail.text.trim().length < 2) {
-    event.preventDefault(); // too short — block insertion
+    event.preventDefault(); // too short; block insertion
     showError('Tag must be at least 2 characters.');
   }
   // Otherwise the default runs: option is inserted and selected.
@@ -97,7 +135,7 @@ useEffect(() => {
   if (!el) return;
 
   const handleCreate = (e: Event) => {
-    e.preventDefault(); // React manages options — block component insertion.
+    e.preventDefault(); // React manages options; block component insertion.
     const { text } = (e as CustomEvent<{ text: string }>).detail;
     const value = text.trim().toLowerCase().replace(/\s+/g, '-');
     setOptions((prev) => [...prev, { value, label: text.trim() }]);
@@ -137,7 +175,7 @@ return (
 
 <ComboboxCreateReactDemo />
 
-### Form usage — ephemeral options until committed
+### Form usage: ephemeral options until committed
 
 Keep `options` (permanent) and `pendingOptions` (session-only) as separate state. Render both into the `<select>` so React controls all `<option>` elements. On submit, move the newly created selections into `options` with `setOptions`:
 
@@ -147,12 +185,12 @@ const [pendingOptions, setPendingOptions] = useState([]); // session-only
 const pendingValue = useRef(null);
 
 const handleCreate = (e) => {
-  e.preventDefault(); // React renders all <option> elements — block component insertion.
+  e.preventDefault(); // React renders all <option> elements; block component insertion.
   const { text } = e.detail;
   const newOpt = { value: text.toLowerCase(), label: text };
   setPendingOptions((prev) => [...prev, newOpt]);
   pendingValue.current = newOpt.value;
-  // (post-render useEffect selects pendingValue — same pattern as the React demo above)
+  // (post-render useEffect selects pendingValue; same pattern as the React demo above)
 };
 
 const handleSubmit = (e) => {
@@ -196,7 +234,7 @@ const handleReset = () => {
 
 ### Selection
 
-**Uncontrolled** (default): the component owns selection after mount. Use `<option selected>` or the `defaultValue` property for the initial value — `defaultValue` accepts `string | string[]` and has no HTML attribute form. Listen to `rc-select-change` to observe changes.
+**Uncontrolled** (default): the component owns selection after mount. Use `<option selected>` or the `defaultValue` property for the initial value. `defaultValue` accepts `string | string[]` and has no HTML attribute form. Listen to `rc-select-change` to observe changes.
 
 ```html
 <!-- initial selection via native attribute -->
@@ -208,7 +246,7 @@ const handleReset = () => {
 </rc-combobox>
 ```
 
-**Controlled**: write `el.value` (the property) to drive selection from outside the component. Programmatic writes apply selection silently — no `rc-select-change` is dispatched. Keep your state in sync by updating `el.value` in response to `rc-select-change`:
+**Controlled**: write `el.value` (the property) to drive selection from outside the component. Programmatic writes apply selection silently. No `rc-select-change` is dispatched. Keep your state in sync by updating `el.value` in response to `rc-select-change`:
 
 ```js
 // Drive selection from outside:
@@ -241,6 +279,12 @@ On Firefox for Android (GeckoView), tapping anywhere within an ancestor `<label>
 To workaround this bug, `rc-select` force-disables the slotted `<select multiple>` and hooks into the associated form's `submit` and `formdata` events to preserve constraint validation and form data participation.
 
 See the [rc-select Known Issues](./rc-select.mdx#known-issues) entry for consumer implications (pre-upgrade behavior, form submission, constraint validation).
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`. Override it with
+`messages`, or register it for every instance under `rc-combobox`: every `rc-select` key plus `search`. Text registered under `rc-select` applies too, below the combobox's own; the "Create" option reads `rc-listbox` (`create`). See
+[Localization](../guide/localization).
 
 ## API
 

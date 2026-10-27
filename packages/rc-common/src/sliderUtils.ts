@@ -6,7 +6,9 @@
 export function snapToStep(value: number, min: number, max: number, step: number): number {
   const clamped = Math.min(Math.max(value, min), max);
 
-  if (step <= 0) return clamped;
+  if (step <= 0) {
+    return clamped;
+  }
 
   const snapped = Math.round((clamped - min) / step) * step + min;
 
@@ -19,7 +21,9 @@ export function snapToStep(value: number, min: number, max: number, step: number
  * Returns 0 when min === max to avoid division by zero.
  */
 export function valueToPercent(value: number, min: number, max: number): number {
-  if (max === min) return 0;
+  if (max === min) {
+    return 0;
+  }
 
   return Math.min(Math.max((value - min) / (max - min), 0), 1);
 }

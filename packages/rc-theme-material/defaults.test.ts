@@ -143,3 +143,68 @@ test('bundled defaults preserve scoped Material shape aliases used by the bridge
 
   expect(getComputedStyle(probe).borderRadius).toBe('4px');
 });
+
+/*
+ * The seven named easing curves and sixteen named duration bands are
+ * repo-authored composites over material-tokens' vendored control points and
+ * raw millisecond primitives (see the comment in defaults.css). Resolving
+ * each through a real `transition-timing-function`/`transition-duration`
+ * forces the browser to actually substitute and serialize the var() chain,
+ * rather than trusting a textual read of the custom property. A primitive
+ * dropped or renamed by a future re-vendor breaks one of these instead of
+ * silently leaving the alias empty.
+ */
+const MATERIAL_MOTION_EASINGS: Record<string, string> = {
+  '--md-sys-motion-easing-standard': 'cubic-bezier(0.2, 0, 0, 1)',
+  '--md-sys-motion-easing-standard-decelerate': 'cubic-bezier(0, 0, 0, 1)',
+  '--md-sys-motion-easing-standard-accelerate': 'cubic-bezier(0.3, 0, 1, 1)',
+  '--md-sys-motion-easing-emphasized': 'cubic-bezier(0.2, 0, 0, 1)',
+  '--md-sys-motion-easing-emphasized-decelerate': 'cubic-bezier(0.05, 0.7, 0.1, 1)',
+  '--md-sys-motion-easing-emphasized-accelerate': 'cubic-bezier(0.3, 0, 0.8, 0.15)',
+  '--md-sys-motion-easing-linear': 'cubic-bezier(0, 0, 1, 1)',
+};
+
+const MATERIAL_MOTION_DURATIONS: Record<string, string> = {
+  '--md-sys-motion-duration-short1': '0.05s',
+  '--md-sys-motion-duration-short2': '0.1s',
+  '--md-sys-motion-duration-short3': '0.15s',
+  '--md-sys-motion-duration-short4': '0.2s',
+  '--md-sys-motion-duration-medium1': '0.25s',
+  '--md-sys-motion-duration-medium2': '0.3s',
+  '--md-sys-motion-duration-medium3': '0.35s',
+  '--md-sys-motion-duration-medium4': '0.4s',
+  '--md-sys-motion-duration-long1': '0.45s',
+  '--md-sys-motion-duration-long2': '0.5s',
+  '--md-sys-motion-duration-long3': '0.55s',
+  '--md-sys-motion-duration-long4': '0.6s',
+  '--md-sys-motion-duration-extra-long1': '0.7s',
+  '--md-sys-motion-duration-extra-long2': '0.8s',
+  '--md-sys-motion-duration-extra-long3': '0.9s',
+  '--md-sys-motion-duration-extra-long4': '1s',
+};
+
+test('bundled defaults compose all seven named Material motion easings', () => {
+  const scope = renderMaterialScope();
+
+  for (const [token, expected] of Object.entries(MATERIAL_MOTION_EASINGS)) {
+    const probe = document.createElement('div');
+
+    probe.style.transitionTimingFunction = `var(${token})`;
+    scope.append(probe);
+
+    expect(getComputedStyle(probe).transitionTimingFunction, token).toBe(expected);
+  }
+});
+
+test('bundled defaults compose all sixteen named Material motion duration bands', () => {
+  const scope = renderMaterialScope();
+
+  for (const [token, expected] of Object.entries(MATERIAL_MOTION_DURATIONS)) {
+    const probe = document.createElement('div');
+
+    probe.style.transitionDuration = `var(${token})`;
+    scope.append(probe);
+
+    expect(getComputedStyle(probe).transitionDuration, token).toBe(expected);
+  }
+});

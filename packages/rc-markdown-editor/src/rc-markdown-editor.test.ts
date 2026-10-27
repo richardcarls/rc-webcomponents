@@ -5,6 +5,57 @@ import { render } from 'vitest-browser-lit';
 import './define.js';
 import type { RcMarkdownEditor } from './rc-markdown-editor.js';
 
+test.each(['ltr', 'rtl'] as const)(
+  'positions the link popover at a selection under CSS zoom in %s',
+  async (direction) => {
+    const screen = render(html`
+      <rc-markdown-editor
+        data-testid="host"
+        dir=${direction}
+        style="display: block; inline-size: 400px; zoom: 0.8;"
+      ></rc-markdown-editor>
+    `);
+    const host = screen.getByTestId('host').element() as RcMarkdownEditor;
+
+    await host.updateComplete;
+
+    const richView = host.shadowRoot!.querySelector<HTMLElement>('#rich-view')!;
+    const selectionText = document.createElement('span');
+
+    selectionText.textContent = 'Selected words';
+    richView.append(selectionText);
+
+    const range = document.createRange();
+
+    range.selectNodeContents(selectionText);
+
+    const popover = document.createElement('div');
+
+    popover.className = 'link-popover';
+    popover.style.cssText = 'position: absolute; width: 100px; height: 20px;';
+    host.shadowRoot!.append(popover);
+
+    const geometry = host as unknown as {
+      _$savedRange: Range;
+      _positionLinkPopover(): void;
+    };
+
+    geometry._$savedRange = range;
+    geometry._positionLinkPopover();
+
+    const selectionRect = range.getBoundingClientRect();
+    const popoverRect = popover.getBoundingClientRect();
+
+    expect(popoverRect.top).toBeCloseTo(selectionRect.bottom + 4 * 0.8, 0);
+
+    if (direction === 'rtl') {
+      expect(popoverRect.right).toBeCloseTo(selectionRect.right, 0);
+    } else {
+      expect(popoverRect.left).toBeCloseTo(selectionRect.left, 0);
+    }
+  },
+);
+
 describe('RcMarkdownEditor value ownership', () => {
   test('value attribute seeds the initial value declaratively', async () => {
     const screen = render(html`
@@ -90,7 +141,8 @@ describe('RcMarkdownEditor value ownership', () => {
     host.readOnly = true;
     await host.updateComplete;
 
-    expect(source).toHaveAttribute('read-only');
+    expect(source.querySelector('textarea')).toHaveAttribute('readonly');
+    await expect.poll(() => source.hasAttribute('data-readonly')).toBe(true);
   });
 });
 

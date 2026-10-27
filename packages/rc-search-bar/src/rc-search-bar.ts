@@ -2,37 +2,45 @@ import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { NativeChildController, keyInteraction, warnMissingDirectChild } from '@rcarls/rc-common';
+import {
+  cssText,
+  keyInteraction,
+  MessagesController,
+  NativeChildController,
+  warnMissingDirectChild,
+} from '@rcarls/rc-common';
 
 import searchBarStyles from './rc-search-bar.styles.js';
 
-const LIGHT_DOM_CSS = `
-rc-search-bar > input[type='search'] {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  min-block-size: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--rc-search-bar-input-color, inherit);
-  font-family: var(--rc-search-bar-input-font-family, inherit);
-  font-size: var(--rc-search-bar-input-font-size, inherit);
-  outline: 0;
-  box-shadow: none;
-  appearance: textfield;
-}
+const LIGHT_DOM_CSS = cssText`
+@layer rc-base {
+  rc-search-bar > input[type='search'] {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    min-block-size: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--rc-search-bar-input-color, inherit);
+    font-family: var(--rc-search-bar-input-font-family, inherit);
+    font-size: var(--rc-search-bar-input-font-size, inherit);
+    outline: 0;
+    box-shadow: none;
+    appearance: textfield;
+  }
 
-rc-search-bar > input[type='search']:focus-visible {
-  border: 0;
-  outline: 0;
-  box-shadow: none;
-}
+  rc-search-bar > input[type='search']:focus-visible {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+  }
 
-rc-search-bar:not([allow-native-clear])
-  > input[type='search']::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-  display: none;
+  rc-search-bar:not([allow-native-clear])
+    > input[type='search']::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    display: none;
+  }
 }
 `;
 
@@ -74,6 +82,22 @@ interface RCSearchBarSuggestion {
   label: string;
 }
 
+/** Built-in text of `rc-search-bar`. */
+export interface RCSearchBarMessages {
+  /** Accessible name of the clear button, such as `Cancel` with `show-clear-on-focus`. */
+  clear: string;
+}
+
+export const DEFAULT_SEARCH_BAR_MESSAGES: Readonly<RCSearchBarMessages> = Object.freeze({
+  clear: 'Clear search',
+});
+
+declare module '@rcarls/rc-common' {
+  interface RcMessageCatalog {
+    'rc-search-bar': RCSearchBarMessages;
+  }
+}
+
 /**
  * Search field wrapper for a native <input type="search"> with icon chrome, clear button,
  * and debounced events.
@@ -88,6 +112,10 @@ interface RCSearchBarSuggestion {
  * When restored, the native button clears through the normal input path
  * (a debounced `rc-search-bar-input` with an empty value) and never fires
  * `rc-search-bar-clear`.
+ *
+ * Built-in text (the clear button name) follows the element's own `lang`, else
+ * `<html lang>`: per element through `messages`, or for every instance
+ * through `registerMessages()` from `@rcarls/rc-common` under `rc-search-bar`.
  *
  * @see {@link https://richardcarls.github.io/rc-webcomponents/components/rc-search-bar rc-search-bar docs}
  *
@@ -108,7 +136,6 @@ interface RCSearchBarSuggestion {
  *
  * @attr variant - Presentation mode: docked search bar or expandable search view.
  * @attr debounce - Debounce window in ms for `rc-search-bar-input`; `0` dispatches synchronously.
- * @attr clear-label - Accessible label for the clear button.
  * @attr allow-native-clear - When set, leaves the browser's native WebKit cancel button visible.
  * @attr show-clear-on-focus - When set, the clear button is visible whenever the input is focused.
  * @attr disabled - Disables the component and mirrors the state to the slotted input.
@@ -152,6 +179,19 @@ interface RCSearchBarSuggestion {
 export class RCSearchBar extends LitElement {
   static styles = [searchBarStyles];
 
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  @property({ attribute: false })
+  messages: Partial<RCSearchBarMessages> | undefined;
+
+  private readonly _messages = new MessagesController(
+    this,
+    'rc-search-bar',
+    DEFAULT_SEARCH_BAR_MESSAGES,
+    {
+      overrides: () => this.messages,
+    },
+  );
+
   private static readonly _styledRoots = new Set<Document | ShadowRoot>();
 
   private static _ensureBaseStyles(root: Document | ShadowRoot): void {
@@ -181,10 +221,6 @@ export class RCSearchBar extends LitElement {
   @property({ type: Number })
   debounce = 200;
 
-  /** Accessible label for the clear button. */
-  @property({ type: String, attribute: 'clear-label' })
-  clearLabel = 'Clear search';
-
   /** When set, leaves the browser's native WebKit cancel button visible. */
   @property({ type: Boolean, attribute: 'allow-native-clear', reflect: true })
   allowNativeClear = false;
@@ -193,7 +229,7 @@ export class RCSearchBar extends LitElement {
    * When set, the clear button is visible whenever the input is focused.
    *
    * Matching the Apple HIG "cancel" pattern.
-   * Consider setting `clear-label="Cancel"` in this mode.
+   * Consider setting `messages.clear` to `Cancel` in this mode.
    */
   @property({ type: Boolean, attribute: 'show-clear-on-focus' })
   showClearOnFocus = false;
@@ -287,9 +323,28 @@ export class RCSearchBar extends LitElement {
     }
   };
 
-  private readonly _onInputBlur = (): void => {
-    this._focused = false;
+  // Focus moving from the input to the component's own controls (the clear
+  // button shown on focus, suggestions) keeps it focused; otherwise the clear
+  // button would turn inert while it receives Tab focus and drop focus to
+  // <body>. Event retargeting reports a move into the shadow root as the host.
+  private readonly _onInputBlur = (e: FocusEvent): void => {
+    if (!this._containsFocusTarget(e.relatedTarget)) {
+      this._focused = false;
+    }
   };
+
+  private readonly _onHostFocusOut = (e: FocusEvent): void => {
+    if (!this._containsFocusTarget(e.relatedTarget)) {
+      this._focused = false;
+    }
+  };
+
+  private _containsFocusTarget(target: EventTarget | null): boolean {
+    return (
+      target instanceof Node &&
+      (target === this || this.contains(target) || Boolean(this.shadowRoot?.contains(target)))
+    );
+  }
 
   private readonly _disabledObserver = new MutationObserver(() => {
     const $input = this._$input();
@@ -405,10 +460,12 @@ export class RCSearchBar extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     RCSearchBar._ensureBaseStyles(this.getRootNode() as Document | ShadowRoot);
+    this.addEventListener('focusout', this._onHostFocusOut);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    this.removeEventListener('focusout', this._onHostFocusOut);
 
     this._focused = false;
     this._open = false;
@@ -728,7 +785,7 @@ export class RCSearchBar extends LitElement {
           id="clear"
           part="clear"
           type="button"
-          aria-label=${this.clearLabel}
+          aria-label=${this._messages.value.clear}
           ?hidden=${!this._hasInput}
           ?inert=${this._hasInput && !this._hasValue && !(this.showClearOnFocus && this._focused)}
           ?disabled=${this._inputDisabled}

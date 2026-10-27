@@ -1,4 +1,5 @@
-@layer rc-theme-material.defaults, rc-theme-material.bridge, rc-theme-material.components;
+@layer rc-base, rc-theme-material.defaults, rc-theme-material.bridge, rc-theme-material.native, rc-theme-material.components, rc-theme-material.css-components,
+  rc-theme-material.overrides;
 
 @layer rc-theme-material.defaults {
   /*
@@ -518,9 +519,9 @@
     /* Display Large font name */
     --md-sys-typescale-display-large-font: var(--md-ref-typeface-brand);
     /* Plain typeface */
-    --md-ref-typeface-plain: Roboto;
+    --md-ref-typeface-plain: Roboto, system-ui, sans-serif;
     /* Brand typeface */
-    --md-ref-typeface-brand: Roboto;
+    --md-ref-typeface-brand: Roboto, system-ui, sans-serif;
     /* Bold weight */
     --md-ref-typeface-weight-bold: 700;
     /* Medium weight */
@@ -667,6 +668,77 @@
     /* Motion path */
     --md-sys-motion-path-standard-path: 1;
 
+    /*
+     * Repo-authored composites, not vendored. The tokens above are the raw
+     * control points and millisecond primitives material-tokens ships;
+     * nothing composes them into a usable `cubic-bezier()` or names the
+     * duration bands the Material 3 motion spec actually refers to, so any
+     * component or bridge rule reaching for one directly resolved to
+     * nothing. Each alias below is assembled from those primitives; see
+     * defaults.test.ts for the full set this asserts, so a future re-vendor
+     * that drops or renames a primitive fails a test instead of silently
+     * breaking every alias that composes it.
+     */
+    --md-sys-motion-easing-standard: cubic-bezier(
+      var(--md-sys-motion-easing-standard-x0),
+      var(--md-sys-motion-easing-standard-y0),
+      var(--md-sys-motion-easing-standard-x1),
+      var(--md-sys-motion-easing-standard-y1)
+    );
+    --md-sys-motion-easing-standard-decelerate: cubic-bezier(
+      var(--md-sys-motion-easing-standard-decelerate-x0),
+      var(--md-sys-motion-easing-standard-decelerate-y0),
+      var(--md-sys-motion-easing-standard-decelerate-x1),
+      var(--md-sys-motion-easing-standard-decelerate-y1)
+    );
+    --md-sys-motion-easing-standard-accelerate: cubic-bezier(
+      var(--md-sys-motion-easing-standard-accelerate-x0),
+      var(--md-sys-motion-easing-standard-accelerate-y0),
+      var(--md-sys-motion-easing-standard-accelerate-x1),
+      var(--md-sys-motion-easing-standard-accelerate-y1)
+    );
+    --md-sys-motion-easing-emphasized: cubic-bezier(
+      var(--md-sys-motion-easing-emphasized-x0),
+      var(--md-sys-motion-easing-emphasized-y0),
+      var(--md-sys-motion-easing-emphasized-x1),
+      var(--md-sys-motion-easing-emphasized-y1)
+    );
+    --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(
+      var(--md-sys-motion-easing-emphasized-decelerate-x0),
+      var(--md-sys-motion-easing-emphasized-decelerate-y0),
+      var(--md-sys-motion-easing-emphasized-decelerate-x1),
+      var(--md-sys-motion-easing-emphasized-decelerate-y1)
+    );
+    --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(
+      var(--md-sys-motion-easing-emphasized-accelerate-x0),
+      var(--md-sys-motion-easing-emphasized-accelerate-y0),
+      var(--md-sys-motion-easing-emphasized-accelerate-x1),
+      var(--md-sys-motion-easing-emphasized-accelerate-y1)
+    );
+    --md-sys-motion-easing-linear: cubic-bezier(
+      var(--md-sys-motion-easing-linear-x0),
+      var(--md-sys-motion-easing-linear-y0),
+      var(--md-sys-motion-easing-linear-x1),
+      var(--md-sys-motion-easing-linear-y1)
+    );
+    /* Duration bands, named per the Material 3 motion spec. */
+    --md-sys-motion-duration-short1: var(--md-sys-motion-duration-50);
+    --md-sys-motion-duration-short2: var(--md-sys-motion-duration-100);
+    --md-sys-motion-duration-short3: var(--md-sys-motion-duration-150);
+    --md-sys-motion-duration-short4: var(--md-sys-motion-duration-200);
+    --md-sys-motion-duration-medium1: var(--md-sys-motion-duration-250);
+    --md-sys-motion-duration-medium2: var(--md-sys-motion-duration-300);
+    --md-sys-motion-duration-medium3: var(--md-sys-motion-duration-350);
+    --md-sys-motion-duration-medium4: var(--md-sys-motion-duration-400);
+    --md-sys-motion-duration-long1: var(--md-sys-motion-duration-450);
+    --md-sys-motion-duration-long2: var(--md-sys-motion-duration-500);
+    --md-sys-motion-duration-long3: var(--md-sys-motion-duration-550);
+    --md-sys-motion-duration-long4: var(--md-sys-motion-duration-600);
+    --md-sys-motion-duration-extra-long1: var(--md-sys-motion-duration-700);
+    --md-sys-motion-duration-extra-long2: var(--md-sys-motion-duration-800);
+    --md-sys-motion-duration-extra-long3: var(--md-sys-motion-duration-900);
+    --md-sys-motion-duration-extra-long4: var(--md-sys-motion-duration-1000);
+
     /* State tokens */
     /* Dragged state layer opacity */
     --md-sys-state-dragged-state-layer-opacity: 0.1599999964237213;
@@ -676,6 +748,15 @@
     --md-sys-state-focus-state-layer-opacity: 0.11999999731779099;
     /* Hover state layer opacity */
     --md-sys-state-hover-state-layer-opacity: 0.07999999821186066;
+    /*
+     * Disabled state layer and container opacity were missing from this
+     * vendored snapshot even though a dozen component recipes already
+     * referenced them with an inline `0.38` fallback; every reference
+     * silently used that literal instead of these tokens. 0.38 is the
+     * published Material 3 constant for both.
+     */
+    --md-sys-state-disabled-state-layer-opacity: 0.38;
+    --md-sys-state-disabled-container-opacity: 0.38;
 
     /* Elevation tokens */
     /* Surface tint color */
@@ -932,6 +1013,111 @@
    * Elevation shadows are zeroed throughout, since tonal/shadow elevation
    * isn't part of the forced-colors palette either.
    */
+
+  /*
+   * Scoped type scale. An element marked data-rc-type-scale multiplies every
+   * Material type size and line height beneath it by --rc-type-scale
+   * (default 1), for a region such as a hands-busy reading view that needs
+   * larger text than the rest of the page. Tokens set on the theme root are
+   * resolved there, so the scaled values are derived again on the marked
+   * element; bridge.css does the same for the RC text tokens built on them.
+   */
+  /* A marked theme root itself must outrank its own token rule above. */
+  :where(.rc-theme-material [data-rc-type-scale], :host(.rc-theme-material) [data-rc-type-scale]),
+  .rc-theme-material[data-rc-type-scale],
+  :host(.rc-theme-material[data-rc-type-scale]) {
+    --md-sys-typescale-display-large-size: calc(
+      var(--md-sys-typescale-display-large-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-display-large-line-height: calc(
+      var(--md-sys-typescale-display-large-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-display-medium-size: calc(
+      var(--md-sys-typescale-display-medium-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-display-medium-line-height: calc(
+      var(--md-sys-typescale-display-medium-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-display-small-size: calc(
+      var(--md-sys-typescale-display-small-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-display-small-line-height: calc(
+      var(--md-sys-typescale-display-small-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-large-size: calc(
+      var(--md-sys-typescale-headline-large-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-large-line-height: calc(
+      var(--md-sys-typescale-headline-large-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-medium-size: calc(
+      var(--md-sys-typescale-headline-medium-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-medium-line-height: calc(
+      var(--md-sys-typescale-headline-medium-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-small-size: calc(
+      var(--md-sys-typescale-headline-small-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-headline-small-line-height: calc(
+      var(--md-sys-typescale-headline-small-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-large-size: calc(
+      var(--md-sys-typescale-title-large-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-large-line-height: calc(
+      var(--md-sys-typescale-title-large-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-medium-size: calc(
+      var(--md-sys-typescale-title-medium-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-medium-line-height: calc(
+      var(--md-sys-typescale-title-medium-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-small-size: calc(
+      var(--md-sys-typescale-title-small-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-title-small-line-height: calc(
+      var(--md-sys-typescale-title-small-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-large-size: calc(
+      var(--md-sys-typescale-body-large-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-large-line-height: calc(
+      var(--md-sys-typescale-body-large-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-medium-size: calc(
+      var(--md-sys-typescale-body-medium-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-medium-line-height: calc(
+      var(--md-sys-typescale-body-medium-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-small-size: calc(
+      var(--md-sys-typescale-body-small-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-body-small-line-height: calc(
+      var(--md-sys-typescale-body-small-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-large-size: calc(
+      var(--md-sys-typescale-label-large-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-large-line-height: calc(
+      var(--md-sys-typescale-label-large-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-medium-size: calc(
+      var(--md-sys-typescale-label-medium-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-medium-line-height: calc(
+      var(--md-sys-typescale-label-medium-line-height-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-small-size: calc(
+      var(--md-sys-typescale-label-small-size-value) * var(--rc-type-scale, 1)
+    );
+    --md-sys-typescale-label-small-line-height: calc(
+      var(--md-sys-typescale-label-small-line-height-value) * var(--rc-type-scale, 1)
+    );
+  }
+
   @media (forced-colors: active) {
     .rc-theme-material,
     :host(.rc-theme-material) {

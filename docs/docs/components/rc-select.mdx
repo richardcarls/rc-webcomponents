@@ -32,21 +32,21 @@ Select-only combobox backed by a native `<select>`, following the [WAI-ARIA Comb
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-select
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-select
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-select/define';
+import '@rcarls/rc-webcomponents/rc-select/define';
 ```
 
 ## Live demo
@@ -59,9 +59,42 @@ import '@rcarls/rc-select/define';
 
 <DynamicOptionsDemo />
 
+## Dialog popup
+
+Set `popup-mode="dialog"` for constrained viewports. The component-managed fullscreen dialog
+provides a leading close action, title, selected chips, option list, and Done action. Selection
+is staged: Done updates the native select and fires one change event, while close, Escape, or an
+imperative close discards the draft.
+
+```html
+<rc-select popup-mode="dialog" multiple placeholder="Choose categories">
+  <select name="categories" multiple>
+    <option value="quick">Quick meal</option>
+    <option value="vegetarian">Vegetarian</option>
+  </select>
+</rc-select>
+```
+
 ## Theming
 
 The default demo mode shows the component without a package theme. Use the shared preview controls on this page to compare inherited, light, and dark color schemes or to apply the optional Material theme only inside the demo frames.
+
+Inside a Material `rc-field`, a row of selected chips grows the field below its floated label, so
+the label keeps the same offset as every other field. Add `rc-select--dense` to render 1.5rem chips that
+fit on the field's single input line and keep a populated field at the standard 56px height. The
+chips keep their full touch target.
+
+```html
+<rc-field>
+  <label slot="label" for="categories">Categories</label>
+  <rc-select class="rc-select--dense" data-rc-field-control multiple>
+    <select id="categories" multiple>
+      <option selected>Beef</option>
+      <option selected>Cheap</option>
+    </select>
+  </rc-select>
+</rc-field>
+```
 
 ## Known Issues
 
@@ -71,12 +104,18 @@ The default demo mode shows the component without a package theme. Use the share
 
 To workaround this bug, `rc-select` force-disables the slotted `<select multiple>` and hooks into the associated form's `submit` and `formdata` events to preserve constraint validation and form data participation.
 
-Label activation on a disabled control is a spec-defined no-op, mitigating the issue while maintaining progressive enhancement with minimal lightdom meddling.
+Label activation on a disabled control is a spec-defined no-op, mitigating the issue while maintaining progressive enhancement with minimal light DOM meddling.
 
 However, there are two important caveats to this workaround:
 
-1. **No native validation bubble.** The browser cannot render its validation UI on a hidden control, so when submit-time enforcement finds the select invalid (e.g. `required` with nothing selected, or `setCustomValidity()`), the component cancels the submission, fires a cancelable `invalid` event on the select, and moves focus to the trigger. Call `preventDefault()` on the `invalid` event to supply your own error UI instead. `novalidate` forms, `formnovalidate` submitters, and `form.submit()` bypass enforcement, matching native scoping.
-2. **Disabling through the select is one-way after upgrade.** _Enabling_ by removing the select's `disabled` (attribute or property) is captured: the component mirrors the intent and keeps the guard in place. But _disabling_ through the select is not captured — the guard already holds the `disabled` attribute present, so re-setting it is indistinguishable from the guard's own writes. Set `disabled` on `<rc-select>` itself to disable the control after upgrade.
+1. **No native validation bubble.** The browser cannot render its validation UI on a hidden control, so when submit-time enforcement finds the select invalid (for example, `required` with nothing selected, or `setCustomValidity()`), the component cancels the submission, fires a cancelable `invalid` event on the select, and moves focus to the trigger. Call `preventDefault()` on the `invalid` event to supply your own error UI instead. `novalidate` forms, `formnovalidate` submitters, and `form.submit()` bypass enforcement, matching native scoping.
+2. **Disabling through the select is one-way after upgrade.** _Enabling_ by removing the select's `disabled` (attribute or property) is captured: the component mirrors the intent and keeps the guard in place. But _disabling_ through the select is not captured; the guard already holds the `disabled` attribute present, so re-setting it is indistinguishable from the guard's own writes. Set `disabled` on `<rc-select>` itself to disable the control after upgrade.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`. Override it with
+`messages`, or register it for every instance under `rc-select`: `options`, `selectedItems`, `remove`, `summary`, `done`, `cancel`. See
+[Localization](../guide/localization).
 
 ## API
 

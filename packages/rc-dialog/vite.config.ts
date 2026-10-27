@@ -3,8 +3,11 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
+import { rcCssLiteralMinify } from '../../vite.shared.ts';
+
 export default defineConfig({
   plugins: [
+    ...rcCssLiteralMinify(),
     dts({
       outDir: 'dist/types',
       entryRoot: resolve(__dirname, '../..'),
@@ -18,6 +21,7 @@ export default defineConfig({
       entry: {
         'rc-dialog': resolve(__dirname, 'src/index.ts'),
         'rc-dialog-define': resolve(__dirname, 'src/define.ts'),
+        'rc-dialog-geometry': resolve(__dirname, 'src/geometry.ts'),
       },
       formats: ['es'],
     },

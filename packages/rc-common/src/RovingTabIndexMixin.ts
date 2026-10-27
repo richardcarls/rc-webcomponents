@@ -3,7 +3,7 @@ import { state } from 'lit/decorators.js';
 
 import { isFocusable, type FocusableElement } from './isFocusable.js';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- TypeScript mixins require an any[] constructor
 type Constructor<T = object> = new (...args: any[]) => T;
 
 /**
@@ -140,7 +140,9 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
         | FocusableElement
         | undefined;
 
-      if ($self == null) return; // focus landed outside registered items
+      if ($self == null) {
+        return;
+      } // focus landed outside registered items
 
       this._lastFocused = $self;
 
@@ -159,7 +161,10 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
       // fires synchronously inside a framework reactive update pass (e.g.
       // SolidJS runUpdates on second+ mount, when the shadow DOM already exists).
       queueMicrotask(() => {
-        if (!this.isConnected) return;
+        if (!this.isConnected) {
+          return;
+        }
+
         prevItems.forEach((ref) => ref.deref()?.removeAttribute('tabindex'));
         this._initItems();
       });
@@ -180,7 +185,10 @@ export function RovingTabIndexMixin<T extends Constructor<LitElement>>(
 
       // Restore the single tab stop on the first currently-focusable item.
       const first = this.items[0];
-      if (first) first.setAttribute('tabindex', '0');
+
+      if (first) {
+        first.setAttribute('tabindex', '0');
+      }
     }
   }
 

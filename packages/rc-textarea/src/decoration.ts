@@ -115,6 +115,7 @@ function countNewlinesBefore(text: string, offset: number): number {
  * - `LineDecoration`: dropped if its line falls within the deleted region;
  *   otherwise shifted by the line delta.
  * - `WidgetDecoration`: treated like a zero-width mark at its offset.
+ * - `FoldDecoration`: dropped; the owning plugin recalculates source ranges.
  *
  * Returns a new array. The input array and its elements are not mutated.
  */
@@ -155,13 +156,15 @@ export function mapDecorationsThroughChange(
         // after edit — shift by line delta
         mapped.push({ ...docoration, line: docoration.line + lineDelta });
       }
-    } else {
+    } else if (docoration.type === 'widget') {
       // WidgetDecoration: treat the offset like a mark's 'from'
       const result = remapMarkRange(docoration.offset, docoration.offset + 1, edit);
 
       if (result) {
         mapped.push({ ...docoration, offset: result.from });
       }
+    } else {
+      // Fold ranges are recalculated by their owning plugin after a text edit.
     }
   }
 
@@ -230,6 +233,7 @@ export function setDecorations(map: Map<string, Decoration>, inputs: DecorationI
 
   for (const input of inputs) {
     const id = crypto.randomUUID();
+
     map.set(id, { ...input, id } as Decoration);
   }
 }

@@ -31,17 +31,13 @@ import {
   ScrollObserverController,
   TypeaheadController,
 } from '@rcarls/rc-common';
-import { RovingTabIndexMixin, keyInteraction, keyNavigation, mouseMove } from '@rcarls/rc-common';
+import { RovingTabIndexMixin, keyInteraction, keyNavigation } from '@rcarls/rc-common';
 import {
-  delegateClickTo,
-  DEFAULT_INTERACTIVE_SELECTOR,
   findExtremeSnapIndex,
   findNearestScrollAncestor,
   findNearestSnapIndex,
   findNextSnapIndex,
-  getDirectChild,
   getDirectChildren,
-  isEventFromInteractiveDescendant,
   isFocusable,
   pinElementBox,
   snapToStep,
@@ -56,34 +52,74 @@ All exports are tree-shakeable (`sideEffects: false`).
 
 Check this inventory before adding package-local interaction or DOM utility code.
 
-| Export                                                                                   | Use for                                                                                                |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `ActiveDescendantController`                                                             | Managing `aria-activedescendant` virtual focus in listbox / combobox patterns                          |
-| `AnchorController`                                                                       | Positioning floating UI relative to an anchor with native CSS anchor positioning and polyfill fallback |
-| `ClickDelegateController` / `delegateClickTo`                                            | Extending plain pointer clicks on a host to a same-root native anchor or button target                 |
-| `DragController`                                                                         | Pointer and keyboard drag-to-move behavior                                                             |
-| `DragGestureController`                                                                  | Single-pointer activation, capture, deltas, duration, and recent velocity                              |
-| `ItemsCollectionController`                                                              | Filtering selectable and action items while preserving their distinct option kinds                     |
-| `KeyboardInteractionDirective` / `keyInteraction`                                        | Tracking pointer vs keyboard interaction mode on a rendered element                                    |
-| `KeyboardNavigationDirective` / `keyNavigation`                                          | Mapping APG arrow-key models to navigation actions                                                     |
-| `MutationObserverController`                                                             | Lifecycle-safe `MutationObserver` wiring for light-DOM or shadow-DOM changes                           |
-| `MouseMoveDirective` / `mouseMove`                                                       | Pointermove callbacks while a pointer drag is active                                                   |
-| `NavigationIndicatorController`                                                          | Positioning a shared visual indicator against the current navigation item                              |
-| `NativeChildController`, `getDirectChild`, `getDirectChildren`, `warnMissingDirectChild` | Finding, validating, and tracking consumer-provided native light-DOM children                          |
-| `RafScheduler`                                                                           | Coalescing repeated work into one animation frame and canceling on disconnect                          |
-| `ResizeController`                                                                       | Pointer and keyboard resize behavior                                                                   |
-| `RovingTabIndexMixin`                                                                    | Roving tabindex for components whose child controls receive real DOM focus                             |
-| `ScrollObserverController`                                                               | Scroll threshold and delta observation for scroll-driven component state                               |
-| `TypeaheadController`                                                                    | Printable-key buffering for composite widget typeahead                                                 |
-| `findNearestScrollAncestor`                                                              | Locating the nearest scrollable ancestor for scroll-driven behavior                                    |
-| `findNearestSnapIndex`, `findNextSnapIndex`, `findExtremeSnapIndex`                      | Choosing numeric anchor indices without assigning component meaning                                    |
-| `isFocusable`                                                                            | Filtering focusable items for keyboard navigation                                                      |
-| `isEventFromInteractiveDescendant`                                                       | Detecting composed clicks already owned by a nested interactive control                                |
-| `DEFAULT_INTERACTIVE_SELECTOR`                                                           | Reusing the default selector used to identify nested interactive descendants                           |
-| `pinElementBox`                                                                          | Converting an element's rendered box into explicit inline geometry for resize interactions             |
-| `snapToStep`, `valueToPercent`                                                           | Slider and range-slider numeric helpers                                                                |
+| Export                                                                 | Use for                                                                                                                     |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `ActiveDescendantController`                                           | Managing `aria-activedescendant` virtual focus in listbox / combobox patterns                                               |
+| `AnchorController`                                                     | Positioning floating UI relative to an anchor with native CSS anchor positioning and a script fallback                      |
+| `ClickDelegateController`                                              | Extending plain pointer clicks on a host to a same-root native anchor or button target                                      |
+| `DragController`                                                       | Pointer and keyboard drag-to-move behavior                                                                                  |
+| `DragGestureController`                                                | Single-pointer activation, capture, deltas, duration, and recent velocity                                                   |
+| `ItemsCollectionController`                                            | Filtering selectable and action items while preserving their distinct option kinds                                          |
+| `KeyboardInteractionDirective` / `keyInteraction`                      | Tracking pointer vs keyboard interaction mode on a rendered element                                                         |
+| `KeyboardNavigationDirective` / `keyNavigation`                        | Mapping APG arrow-key models to navigation actions                                                                          |
+| `LocaleController`                                                     | Re-rendering on a host's UI locale change, for `Intl` formatting in render                                                  |
+| `MessagesController`, `registerMessages`, `resolveMessages`            | Built-in component text: per-element overrides, registered translations, English defaults                                   |
+| `messagesLocale`, `observeLocale`                                      | Resolving a host's UI locale and reacting to any `dir` or `lang` change in the document                                     |
+| `numberFormat`, `collator`                                             | Shared, cached `Intl.NumberFormat` and `Intl.Collator` instances that tolerate an invalid locale                            |
+| `syncDefaultAttribute`                                                 | Writing a localized default attribute without overwriting an authored one                                                   |
+| `MutationObserverController`                                           | Lifecycle-safe `MutationObserver` wiring for light-DOM or shadow-DOM changes                                                |
+| `NavigationIndicatorController`                                        | Positioning a shared visual indicator against the current navigation item                                                   |
+| `NativeChildController`, `getDirectChildren`, `warnMissingDirectChild` | Finding, validating, and tracking consumer-provided native light-DOM children                                               |
+| `RafScheduler`                                                         | Coalescing repeated work into one animation frame and canceling on disconnect                                               |
+| `ResizeController`                                                     | Pointer and keyboard resize behavior                                                                                        |
+| `RovingTabIndexMixin`                                                  | Roving tabindex for components whose child controls receive real DOM focus                                                  |
+| `ScrollObserverController`                                             | Scroll threshold and delta observation for scroll-driven component state                                                    |
+| `TypeaheadController`                                                  | Printable-key buffering for composite widget typeahead                                                                      |
+| `findNearestScrollAncestor`                                            | Locating the nearest scrolling ancestor through assigned slots and shadow hosts; falls back to the element's owner document |
+| `findNearestSnapIndex`, `findNextSnapIndex`, `findExtremeSnapIndex`    | Choosing numeric anchor indices without assigning component meaning                                                         |
+| `parseCssTime`                                                         | Reading a CSS `<time>` custom property (`300ms`, `.3s`) as milliseconds for Web Animations                                  |
+| `cssText`                                                              | Tagging light-DOM structural CSS strings so package builds minify them                                                      |
+| `isFocusable`                                                          | Filtering focusable items for keyboard navigation                                                                           |
+| `pinElementBox`                                                        | Converting an element's rendered box into explicit inline geometry for resize interactions                                  |
+| `snapToStep`, `valueToPercent`                                         | Slider and range-slider numeric helpers                                                                                     |
 
 ---
+
+## Localization
+
+Components ship English text only. Each one resolves its built-in strings (button names, role
+descriptions, announcements) per key, in this order:
+
+1. The element's `messages` property (`reorderMessages` on `rc-list`).
+1. Text registered with `registerMessages()` for the element's locale: the exact tag, then its
+   base language (`de-CH`, then `de`). A component that extends another can also read the base
+   component's scope, below its own within each locale: `rc-combobox` takes any `rc-select`
+   text it has a key for. Pass `inherit` to `resolveMessages()` or `MessagesController` for the
+   same in your own components.
+1. The English default.
+
+```ts
+import { registerMessages } from '@rcarls/rc-common';
+
+registerMessages('de', {
+  'rc-carousel': { previous: 'Vorherige Folie', next: 'Nächste Folie' },
+  'rc-search-bar': { clear: 'Suche löschen' },
+});
+```
+
+The locale is the element's own `lang` attribute, else `<html lang>`. An explicit `lang=""`
+means the language is unknown. An ancestor's `lang` usually marks content, such as a German
+recipe on an English page, so component chrome skips it. Interpolating entries are functions,
+such as `goToSlide: (position, count, locale?) => string`. Positions stay numeric for custom
+translations; built-in messages format them with `Intl.NumberFormat` for the interface locale.
+Custom translations can use `numberFormat(locale)` from this package. Use `bidiIsolate(text)`
+when inserting consumer text of unknown direction into a plain-text message.
+
+Each package declares its entry in the `RcMessageCatalog` interface, so `registerMessages()`
+type-checks scope names and keys for the packages you import. Registering text, or changing a
+`lang` or `dir` attribute, re-renders the affected components through `observeLocale()`, so a
+language switch needs no reload. Register before components connect to avoid a flash of
+English.
 
 ## API
 
@@ -98,6 +134,10 @@ coordinates, cumulative deltas, duration, pointer metadata, and velocity from a
 The controller owns pointer capture and cleanup, but leaves state changes,
 thresholds, logical direction, snapping, and action confirmation to its
 consumer.
+
+Changing options or detaching the host cancels an active gesture. Call
+`dispose()` when removing the controller permanently; it releases pointer
+capture and reports cancellation before removing itself from the host.
 
 ### `DragController`
 
@@ -121,6 +161,10 @@ class MyPanel extends LitElement {
 The controller pins explicit `top` and `left` values on the host the first time the user drags,
 clearing centering transforms that would fight manual positioning. Pointer capture provides
 reliable drag-end detection across shadow boundaries.
+
+Use `setOptions()` to reconfigure an attached controller. Call `dispose()`
+when removing it permanently; owned handle focusability is restored without
+overwriting later author changes.
 
 **Keyboard:** Arrow keys move by `step` px; Shift multiplies by 10.
 
@@ -155,6 +199,10 @@ class MyPanel extends LitElement {
 It works alongside `DragController`: `ResizeController` registers a capture-phase listener that
 intercepts pointer events before the drag handler.
 
+`dispose()` removes the injected grip, listeners, and temporary handle styles.
+Author styles and later author changes are preserved. Completed resize geometry
+remains on the target.
+
 **Options:**
 
 | Option      | Type     | Default | Description               |
@@ -167,9 +215,9 @@ intercepts pointer events before the drag handler.
 ### `AnchorController`
 
 A `ReactiveController` that positions a floating element relative to an anchor using
-[CSS Anchor Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning),
-with automatic fallback through
-[`@oddbird/css-anchor-positioning`](https://github.com/oddbird/css-anchor-positioning).
+[CSS Anchor Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning)
+where the browser supports it fully, and script positioning with the same placement and flip
+rules elsewhere.
 
 ```ts
 import { LitElement } from 'lit';
@@ -179,21 +227,73 @@ class MyTooltip extends LitElement {
   private _anchor = new AnchorController(this, {
     anchor: () => document.querySelector('#trigger')!,
     floating: () => this.shadowRoot!.querySelector('#popup')!,
+    disabled: () => !this.hasAttribute('open'),
   });
 }
 ```
 
 It injects a `<style>` block into `<head>` for the `anchor-name` and `position-anchor`
 declarations. It supports `@position-try` fallback blocks for automatic flip behavior in native
-browsers; the polyfill does not support `position-try`.
+browsers. The script fallback flips on its own and re-positions when the page scrolls or the
+viewport, anchor, or floating element resizes.
 
 **Options:**
 
-| Option         | Type                    | Description                                                        |
-| -------------- | ----------------------- | ------------------------------------------------------------------ |
-| `anchor`       | `() => Element \| null` | The anchor element getter                                          |
-| `floating`     | `() => Element \| null` | The floating element getter                                        |
-| `positionArea` | `string`                | CSS `position-area` value (for example, `'block-end span-inline'`) |
+| Option       | Type                                       | Default             | Description                                   |
+| ------------ | ------------------------------------------ | ------------------- | --------------------------------------------- |
+| `anchor`     | `Element \| () => Element \| null`         | required            | Anchor element or live getter                 |
+| `floating`   | `Element \| () => Element \| null`         | required            | Floating element or live getter               |
+| `placement`  | `AnchorPlacement`                          | `block-end-start`   | Logical side and cross-axis alignment         |
+| `offset`     | `number`                                   | `4`                 | Gap from the anchor in pixels                 |
+| `flip`       | `boolean`                                  | `true`              | Allow viewport fallback placements            |
+| `disabled`   | `boolean \| () => boolean`                 | `false`             | Skip all positioning while inactive or closed |
+| `shadowHost` | `HTMLElement \| () => HTMLElement \| null` | document stylesheet | Shadow host that owns the floating element    |
+
+Use a live `disabled` getter for popups that stay mounted while closed. The
+controller checks it before resolving writing mode or reading geometry, so a
+closed popup does not pay placement cost during route mount.
+
+---
+
+### `RafScheduler`
+
+`schedule(callback)` coalesces ordinary work to one animation frame.
+`schedulePhased(sample, apply)` additionally coordinates every scheduler
+instance in the module: all `sample` callbacks run before any `apply`
+callback. Repeated schedules keep only the latest task, and disconnecting a
+host cancels pending work.
+
+Use `schedulePhased` when a component must read layout and then write reactive
+state or inline geometry. Return a compact snapshot from `sample`; keep
+calculation that does not need the DOM pure; perform mutations in `apply`.
+
+---
+
+### `FlowController`
+
+Lifecycle-driven flow resolution is frame-settled. Connection, ancestor
+direction changes, and resize signals sample writing mode and direction
+in the shared frame read phase, then request the host update before paint. The
+controller starts with horizontal left-to-right flow, so await the next frame
+before reading derived rendered orientation or other flow-dependent state.
+
+Call `refresh()` when an explicit operation requires the current flow
+synchronously, including after a stylesheet-only writing-mode change. Pointer,
+keyboard, and geometry interactions should continue to resolve flow at the
+time of the interaction rather than relying on cached lifecycle state.
+
+---
+
+### `ScrollObserverController`
+
+Scroll events are evaluated synchronously. Initial attachment is synchronous
+by default so restored scroll state is immediately observable. Set
+`initialEvaluation: 'frame'` when mounting many scroll-driven components: the
+controller resolves the target and samples its initial offset in the shared
+frame read phase, then attaches and applies state before paint.
+
+Call `dispose()` when removing the observer permanently; it also cancels a
+pending frame evaluation.
 
 ---
 
@@ -273,33 +373,9 @@ class ActionRow extends LitElement {
 }
 ```
 
-Use `delegateClickTo()` directly for a non-Lit host. The target remains its own
-keyboard tab stop; delegation extends pointer reach only.
-
----
-
-### `mouseMove` directive
-
-An `AsyncDirective` that fires a callback on pointer movement while a pointer drag is active. It
-supports drag-to-resize handles that need continuous delta tracking while preserving the
-historical `mouseMove` export name.
-
-```ts
-import { mouseMove } from '@rcarls/rc-common';
-
-// Inside a Lit render() method:
-html`
-  <div id="handle" ${mouseMove(this._onDrag)}></div>
-`;
-
-private _onDrag(e: MouseEvent) {
-  this._resize(e.movementX, e.movementY);
-}
-```
-
-It attaches `pointerdown` to the element, captures that pointer, then listens for `pointermove`,
-`pointerup`, `pointercancel`, and `lostpointercapture` on the same element for the active drag
-cycle. It focuses the handle on pointerdown.
+The target remains its own keyboard tab stop; delegation extends pointer reach
+only. Pass `interactiveSelector` to change which descendants count as already
+interactive.
 
 ---
 
@@ -322,8 +398,8 @@ tabindex values during roving-tabindex management. Any `tabindex` attribute is t
 
 ## Browser support
 
-| Feature                         | Requirement                                            |
-| ------------------------------- | ------------------------------------------------------ |
-| Controllers and directives      | Any browser supporting Web Components + Pointer Events |
-| `AnchorController` (native)     | Chrome 125+, Safari 18+, Firefox (in development)      |
-| `AnchorController` (polyfilled) | Chrome 80+, Firefox 85+, Safari 14+                    |
+| Feature                     | Requirement                                            |
+| --------------------------- | ------------------------------------------------------ |
+| Controllers and directives  | Any browser supporting Web Components + Pointer Events |
+| `AnchorController` (native) | Chrome 125+, Safari 18+, Firefox (in development)      |
+| `AnchorController` (script) | Any browser supporting Web Components                  |

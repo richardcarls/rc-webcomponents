@@ -2,6 +2,7 @@
   "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
     "baseUrl": ".",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "strict": true
   },
   "include": ["src", "docs", "docusaurus.config.ts", "sidebars.ts"]

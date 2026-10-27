@@ -4,8 +4,9 @@
     border-radius: var(--md-sys-shape-corner-full, 999px);
     box-shadow: 0 0 0 0 transparent;
     transition:
-      box-shadow 150ms ease,
-      scale 150ms ease;
+      box-shadow var(--rc-motion-effects-duration-fast, 150ms)
+        var(--rc-motion-effects-easing-fast, ease),
+      scale var(--rc-motion-spatial-duration-fast, 300ms) var(--rc-motion-spatial-easing-fast, ease);
   }
 
   :where(.rc-theme-material, :host(.rc-theme-material)) rc-range-slider::part(thumb):hover {

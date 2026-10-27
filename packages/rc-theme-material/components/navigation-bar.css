@@ -15,11 +15,9 @@
     --rc-navigation-bar-indicator-bg: var(--md-sys-color-secondary-container, Highlight);
     --rc-navigation-bar-indicator-border: 0;
     --rc-navigation-bar-indicator-radius: var(--md-sys-shape-corner-full, 9999px);
-    --rc-navigation-bar-indicator-duration: var(--md-sys-motion-duration-short3, 150ms);
-    --rc-navigation-bar-indicator-easing: var(
-      --md-sys-motion-easing-standard,
-      cubic-bezier(0.2, 0, 0, 1)
-    );
+    /* The indicator resizes to the selected item's box, which is spatial motion. */
+    --rc-navigation-bar-indicator-duration: var(--rc-motion-spatial-duration-fast, 300ms);
+    --rc-navigation-bar-indicator-easing: var(--rc-motion-spatial-easing-fast, ease);
     --rc-icon-font-line-height: 2rem;
     --rc-navigation-bar-focus-ring: 2px solid var(--md-sys-color-primary, Highlight);
     --rc-navigation-bar-focus-ring-offset: 2px;

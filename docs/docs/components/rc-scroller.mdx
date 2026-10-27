@@ -29,21 +29,21 @@ events, restoration, and observers work without reaching into shadow DOM.
   <TabItem value="npm" label="npm">
 
 ```sh
-npm install @rcarls/rc-scroller
+npm install @rcarls/rc-webcomponents
 ```
 
   </TabItem>
   <TabItem value="yarn" label="Yarn">
 
 ```sh
-yarn add @rcarls/rc-scroller
+yarn add @rcarls/rc-webcomponents
 ```
 
   </TabItem>
 </Tabs>
 
 ```js
-import '@rcarls/rc-scroller/define';
+import '@rcarls/rc-webcomponents/rc-scroller/define';
 ```
 
 ## Markup
@@ -83,6 +83,10 @@ pixels of) that edge on an enabled axis, or when that axis isn't scrollable
 at all (nothing more to reveal counts as already at both of its edges).
 Style an edge affordance from outside the shadow root by targeting the
 attribute directly, for example an edge-fade mask on an inline scroller:
+
+Initial boundary state settles in the first animation frame after mount. This
+keeps a batch of scrollers from alternating layout reads with reflected-state
+writes while the route is still being inserted.
 
 ```css
 rc-scroller[axis='inline'] {

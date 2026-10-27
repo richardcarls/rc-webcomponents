@@ -1,9 +1,11 @@
 import { html } from 'lit';
 import type { ReactiveControllerHost } from 'lit';
-import { test, expect } from 'vitest';
+import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
 import { AnchorController } from './AnchorController.js';
+import { resolveAnchorPlacement } from './anchorPlacement.js';
+import { HORIZONTAL_LTR_FLOW, type Flow } from './flow.js';
 
 type FakeHost = ReactiveControllerHost;
 
@@ -35,13 +37,14 @@ async function renderAnchorAndFloating(
 
 // _positionFallback and _clampToViewport are private: they're pure DOM-rect
 // math with no public surface of their own, and both are specifically the
-// paths that only naturally run in browsers lacking full native/polyfill
+// paths that only naturally run in browsers lacking full native
 // anchor-positioning support (or, for the clamp, ones whose native support
 // resolves the base placement but doesn't correctly flip it) — conditions
 // this project's own browser test matrix can't reliably reproduce. Reaching
 // into them directly is the only way to exercise this logic in isolation.
 interface PrivateAnchorController {
   _clampLoopActive: boolean;
+  _usesNativeAnchor(): boolean;
   _positionFallback(): void;
   _clampToViewport(): void;
   _scheduleClamp(): void;
@@ -54,7 +57,7 @@ function asPrivate(ctl: AnchorController): PrivateAnchorController {
   return ctl as unknown as PrivateAnchorController;
 }
 
-test('_positionFallback positions a right-start placement beside the anchor, not below it', async () => {
+test('_positionFallback positions an inline-end-start placement beside the anchor, not below it', async () => {
   const { anchor, floating } = await renderAnchorAndFloating(
     'left: 100px; top: 200px; width: 50px; height: 40px;',
   );
@@ -62,7 +65,7 @@ test('_positionFallback positions a right-start placement beside the anchor, not
     new AnchorController(createHost(), {
       anchor,
       floating,
-      placement: 'right-start',
+      placement: 'inline-end-start',
       offset: 8,
     }),
   );
@@ -76,7 +79,7 @@ test('_positionFallback positions a right-start placement beside the anchor, not
   expect(rect.top).toBeCloseTo(200, 0);
 });
 
-test('_positionFallback flips right-start to the left when the right side has no room', async () => {
+test('_positionFallback flips inline-end-start to the left when the right side has no room', async () => {
   const { anchor, floating } = await renderAnchorAndFloating(
     `left: ${window.innerWidth - 60}px; top: 200px; width: 50px; height: 40px;`,
   );
@@ -84,7 +87,7 @@ test('_positionFallback flips right-start to the left when the right side has no
     new AnchorController(createHost(), {
       anchor,
       floating,
-      placement: 'right-start',
+      placement: 'inline-end-start',
       offset: 8,
     }),
   );
@@ -97,7 +100,7 @@ test('_positionFallback flips right-start to the left when the right side has no
   expect(rect.top).toBeCloseTo(200, 0);
 });
 
-test('_positionFallback keeps top/bottom placements working as before', async () => {
+test('_positionFallback places a block-end-start popup below the anchor', async () => {
   const { anchor, floating } = await renderAnchorAndFloating(
     'left: 100px; top: 200px; width: 50px; height: 40px;',
   );
@@ -105,7 +108,7 @@ test('_positionFallback keeps top/bottom placements working as before', async ()
     new AnchorController(createHost(), {
       anchor,
       floating,
-      placement: 'bottom-start',
+      placement: 'block-end-start',
       offset: 8,
     }),
   );
@@ -117,6 +120,67 @@ test('_positionFallback keeps top/bottom placements working as before', async ()
 
   expect(rect.left).toBeCloseTo(anchorRect.left, 0);
   expect(rect.top).toBeCloseTo(anchorRect.bottom + 8, 0);
+});
+
+test('_positionFallback aligns a floating element under CSS zoom', async () => {
+  const screen = render(html`
+    <div style="zoom: 0.8">
+      <div
+        data-testid="anchor"
+        style="position: fixed; left: 100px; top: 200px; width: 50px; height: 40px;"
+      ></div>
+      <div data-testid="floating" style="width: 200px; height: 160px;"></div>
+    </div>
+  `);
+  const anchor = (await screen.getByTestId('anchor').element()) as HTMLElement;
+  const floating = (await screen.getByTestId('floating').element()) as HTMLElement;
+  const ctl = asPrivate(
+    new AnchorController(createHost(), {
+      anchor,
+      floating,
+      placement: 'block-end-start',
+      offset: 8,
+    }),
+  );
+
+  ctl._positionFallback();
+
+  const anchorRect = anchor.getBoundingClientRect();
+  const floatingRect = floating.getBoundingClientRect();
+
+  expect(floatingRect.left).toBeCloseTo(anchorRect.left, 0);
+  expect(floatingRect.top).toBeCloseTo(anchorRect.bottom + 8 * 0.8, 0);
+  expect(floatingRect.width).toBeGreaterThanOrEqual(anchorRect.width);
+});
+
+test('_positionFallback places a side popup under CSS zoom', async () => {
+  const screen = render(html`
+    <div style="zoom: 0.8">
+      <div
+        data-testid="anchor"
+        style="position: fixed; left: 100px; top: 200px; width: 50px; height: 40px;"
+      ></div>
+      <div data-testid="floating" style="width: 200px; height: 160px;"></div>
+    </div>
+  `);
+  const anchor = (await screen.getByTestId('anchor').element()) as HTMLElement;
+  const floating = (await screen.getByTestId('floating').element()) as HTMLElement;
+  const ctl = asPrivate(
+    new AnchorController(createHost(), {
+      anchor,
+      floating,
+      placement: 'inline-end-start',
+      offset: 8,
+    }),
+  );
+
+  ctl._positionFallback();
+
+  const anchorRect = anchor.getBoundingClientRect();
+  const floatingRect = floating.getBoundingClientRect();
+
+  expect(floatingRect.left).toBeCloseTo(anchorRect.right + 8 * 0.8, 0);
+  expect(floatingRect.top).toBeCloseTo(anchorRect.top, 0);
 });
 
 test('_clampToViewport nudges an off-screen floating element back within bounds', async () => {
@@ -136,6 +200,33 @@ test('_clampToViewport nudges an off-screen floating element back within bounds'
   expect(rect.left).toBeGreaterThanOrEqual(0);
 });
 
+test('_clampToViewport stabilizes a zoomed floating element in one correction', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
+
+  floating.style.position = 'fixed';
+  floating.style.zoom = '0.8';
+  floating.style.left = `${window.innerWidth - 50}px`;
+  floating.style.top = '0px';
+
+  const ctl = asPrivate(new AnchorController(createHost(), { anchor, floating }));
+
+  ctl._clampToViewport();
+
+  const firstRight = floating.getBoundingClientRect().right;
+  const firstTranslate = floating.style.translate;
+
+  expect(firstRight).toBeCloseTo(window.innerWidth - 4, 0);
+
+  ctl._clampToViewport();
+
+  expect(floating.getBoundingClientRect().right).toBeCloseTo(firstRight, 1);
+  expect(floating.style.translate).toBe(firstTranslate);
+
+  expect(
+    Number.parseFloat(floating.style.getPropertyValue('--rc-anchor-viewport-inline-size')),
+  ).toBeCloseTo(((window.visualViewport?.width ?? window.innerWidth) - 8) / 0.8, 1);
+});
+
 test('_clampToViewport leaves an on-screen floating element untouched', async () => {
   const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
 
@@ -148,6 +239,21 @@ test('_clampToViewport leaves an on-screen floating element untouched', async ()
   ctl._clampToViewport();
 
   expect(floating.style.translate).toBe('');
+});
+
+test('_clampToViewport publishes the available visual viewport size', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
+  const ctl = asPrivate(new AnchorController(createHost(), { anchor, floating }));
+
+  ctl._clampToViewport();
+
+  expect(floating.style.getPropertyValue('--rc-anchor-viewport-inline-size')).toBe(
+    `${(window.visualViewport?.width ?? window.innerWidth) - 8}px`,
+  );
+
+  expect(floating.style.getPropertyValue('--rc-anchor-viewport-block-size')).toBe(
+    `${(window.visualViewport?.height ?? window.innerHeight) - 8}px`,
+  );
 });
 
 // Regression test for a real Android Firefox failure: a single post-open
@@ -222,4 +328,299 @@ test('_scheduleClamp cancels a visible loop on disconnect', async () => {
   controller.hostDisconnected();
 
   expect(ctl._clampLoopActive).toBe(false);
+});
+
+test('_scheduleClamp stops polling after visible geometry stabilizes', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating('left: 0px; top: 0px;');
+  const controller = new AnchorController(createHost(), { anchor, floating });
+  const ctl = asPrivate(controller);
+  const rectSpy = vi.spyOn(floating, 'getBoundingClientRect');
+
+  controller.hostConnected();
+  ctl._scheduleClamp();
+
+  for (let i = 0; i < 12; i += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+
+  expect(ctl._clampLoopActive).toBe(false);
+
+  const settledCalls = rectSpy.mock.calls.length;
+
+  for (let i = 0; i < 5; i += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+
+  expect(rectSpy).toHaveBeenCalledTimes(settledCalls);
+
+  controller.hostDisconnected();
+});
+
+const RTL: Flow = {
+  inline: 'x',
+  block: 'y',
+  inlineReversed: true,
+  blockReversed: false,
+  rtl: true,
+};
+const VERTICAL_RL: Flow = {
+  inline: 'y',
+  block: 'x',
+  inlineReversed: false,
+  blockReversed: true,
+  rtl: false,
+};
+const VERTICAL_RL_RTL: Flow = { ...VERTICAL_RL, inlineReversed: true, rtl: true };
+const VERTICAL_LR: Flow = { ...VERTICAL_RL, blockReversed: false };
+
+test.each([
+  // Horizontal LTR: block sides are top/bottom, inline sides left/right.
+  [HORIZONTAL_LTR_FLOW, 'block-end-start', 'bottom-start'],
+  [HORIZONTAL_LTR_FLOW, 'block-start-end', 'top-end'],
+  [HORIZONTAL_LTR_FLOW, 'block-end', 'bottom'],
+  [HORIZONTAL_LTR_FLOW, 'inline-end-start', 'right-start'],
+  [HORIZONTAL_LTR_FLOW, 'inline-start', 'left'],
+  // RTL: inline sides and alignment suffixes follow the reading direction.
+  [RTL, 'block-end-start', 'bottom-end'],
+  [RTL, 'block-start-end', 'top-start'],
+  [RTL, 'block-end', 'bottom'],
+  [RTL, 'inline-end-start', 'left-start'],
+  [RTL, 'inline-start-end', 'right-end'],
+  // vertical-rl: the inline axis runs top to bottom, lines right to left.
+  [VERTICAL_RL, 'block-end-start', 'left-start'],
+  [VERTICAL_RL, 'block-start', 'right'],
+  [VERTICAL_RL, 'inline-end-start', 'bottom-end'],
+  [VERTICAL_RL_RTL, 'block-end-start', 'left-end'],
+  [VERTICAL_RL_RTL, 'inline-end', 'top'],
+  // vertical-lr: lines run left to right.
+  [VERTICAL_LR, 'block-end-start', 'right-start'],
+  [VERTICAL_LR, 'block-start-end', 'left-end'],
+] as const)('resolveAnchorPlacement(%#): %s resolves %s to %s', (flow, placement, expected) => {
+  expect(resolveAnchorPlacement(placement, flow)).toBe(expected);
+});
+
+test("_positionFallback aligns a block-end-start popup to the anchor's right edge in RTL", async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    // Well inside the narrow test viewport so the viewport clamp stays out of it.
+    'direction: rtl; left: 150px; top: 100px; width: 120px; height: 40px;',
+    'width: 200px; height: 80px;',
+  );
+  const ctl = asPrivate(
+    new AnchorController(createHost(), {
+      anchor,
+      floating,
+      placement: 'block-end-start',
+      offset: 0,
+    }),
+  );
+
+  ctl._positionFallback();
+
+  const popup = floating.getBoundingClientRect();
+  const trigger = anchor.getBoundingClientRect();
+
+  expect(popup.right).toBeCloseTo(trigger.right, 0);
+  expect(popup.top).toBeCloseTo(trigger.bottom, 0);
+});
+
+test('_positionFallback opens an inline-end submenu to the left in RTL', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    'direction: rtl; left: 400px; top: 100px; width: 120px; height: 40px;',
+    'width: 200px; height: 80px;',
+  );
+  const ctl = asPrivate(
+    new AnchorController(createHost(), {
+      anchor,
+      floating,
+      placement: 'inline-end-start',
+      offset: 8,
+    }),
+  );
+
+  ctl._positionFallback();
+
+  const popup = floating.getBoundingClientRect();
+  const trigger = anchor.getBoundingClientRect();
+
+  expect(popup.right).toBeCloseTo(trigger.left - 8, 0);
+  expect(popup.top).toBeCloseTo(trigger.top, 0);
+});
+
+test('the applied positioning aligns a block-end-start popup to the right edge in RTL', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    'direction: rtl; left: 150px; top: 100px; width: 120px; height: 40px;',
+    'width: 200px; height: 80px;',
+  );
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    placement: 'block-end-start',
+    offset: 0,
+  });
+
+  // Whichever path this engine takes (native or fallback), the
+  // rendered result must line up with the anchor's logical start edge.
+  ctl.hostConnected();
+
+  await vi.waitFor(() => {
+    const popup = floating.getBoundingClientRect();
+    const trigger = anchor.getBoundingClientRect();
+
+    expect(popup.right).toBeCloseTo(trigger.right, 0);
+    expect(popup.top).toBeCloseTo(trigger.bottom, 0);
+  });
+
+  ctl.hostDisconnected();
+});
+
+test('the script fallback follows its anchor when the viewport changes', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    'left: 100px; top: 100px; width: 120px; height: 40px;',
+    'width: 200px; height: 80px;',
+  );
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    placement: 'block-end-start',
+    offset: 0,
+  });
+
+  // Run the fallback even where this engine supports anchor positioning.
+  asPrivate(ctl)._usesNativeAnchor = () => false;
+  ctl.hostConnected();
+
+  await vi.waitFor(() => {
+    expect(floating.getBoundingClientRect().left).toBeCloseTo(100, 0);
+  });
+
+  anchor.style.left = '160px';
+  window.dispatchEvent(new Event('resize'));
+
+  await vi.waitFor(() => {
+    const popup = floating.getBoundingClientRect();
+    const trigger = anchor.getBoundingClientRect();
+
+    expect(popup.left).toBeCloseTo(trigger.left, 0);
+    expect(popup.top).toBeCloseTo(trigger.bottom, 0);
+  });
+
+  ctl.hostDisconnected();
+});
+
+test('a live disabled getter skips placement reads until the popup opens', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    'left: 100px; top: 100px; width: 100px; height: 40px;',
+  );
+  let disabled = true;
+  const styleReads = vi.spyOn(window, 'getComputedStyle');
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    disabled: () => disabled,
+  });
+
+  ctl.hostConnected();
+  expect(styleReads).not.toHaveBeenCalled();
+
+  disabled = false;
+  ctl.update();
+
+  expect(styleReads).toHaveBeenCalled();
+
+  ctl.hostDisconnected();
+  styleReads.mockRestore();
+});
+
+test('the applied positioning follows an ancestor direction change while open', async () => {
+  const screen = render(html`
+    <div data-testid="flow" dir="ltr">
+      <div
+        data-testid="anchor"
+        style="position: fixed; left: 150px; top: 100px; width: 120px; height: 40px;"
+      >
+        Anchor
+      </div>
+      <div data-testid="floating" style="width: 80px; height: 60px;">Floating</div>
+    </div>
+  `);
+  const flow = (await screen.getByTestId('flow').element()) as HTMLElement;
+  const anchor = (await screen.getByTestId('anchor').element()) as HTMLElement;
+  const floating = (await screen.getByTestId('floating').element()) as HTMLElement;
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    placement: 'block-end-start',
+    offset: 0,
+  });
+
+  ctl.hostConnected();
+
+  await vi.waitFor(() => {
+    const popup = floating.getBoundingClientRect();
+    const trigger = anchor.getBoundingClientRect();
+
+    expect(popup.left).toBeCloseTo(trigger.left, 0);
+  });
+
+  flow.dir = 'rtl';
+
+  await vi.waitFor(() => {
+    const popup = floating.getBoundingClientRect();
+    const trigger = anchor.getBoundingClientRect();
+
+    expect(popup.right).toBeCloseTo(trigger.right, 0);
+  });
+
+  ctl.hostDisconnected();
+});
+
+test('the applied positioning opens a block-end popup to the left in vertical-rl', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    // A vertical row: the block end is on the left.
+    'writing-mode: vertical-rl; left: 250px; top: 100px; width: 40px; height: 120px;',
+    'width: 80px; height: 160px;',
+  );
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    placement: 'block-end-start',
+    offset: 0,
+  });
+
+  ctl.hostConnected();
+
+  await vi.waitFor(() => {
+    const popup = floating.getBoundingClientRect();
+    const trigger = anchor.getBoundingClientRect();
+
+    expect(popup.right).toBeCloseTo(trigger.left, 0);
+    expect(popup.top).toBeCloseTo(trigger.top, 0);
+  });
+
+  ctl.hostDisconnected();
+});
+
+test('the applied positioning flips a block-end popup to the block start without room', async () => {
+  const { anchor, floating } = await renderAnchorAndFloating(
+    // No room on the left, the block end in vertical-rl.
+    'writing-mode: vertical-rl; left: 10px; top: 100px; width: 40px; height: 120px;',
+    'width: 80px; height: 160px;',
+  );
+  const ctl = new AnchorController(createHost(), {
+    anchor,
+    floating,
+    placement: 'block-end-start',
+    offset: 0,
+  });
+
+  ctl.hostConnected();
+
+  await vi.waitFor(() => {
+    expect(floating.getBoundingClientRect().left).toBeCloseTo(
+      anchor.getBoundingClientRect().right,
+      0,
+    );
+  });
+
+  ctl.hostDisconnected();
 });

@@ -1,0 +1,33 @@
+@layer rc-theme-win31.components {
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip-group::part(root) {
+    gap: var(--win31-gap-tight);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip-group::part(toggle) {
+    min-block-size: var(--win31-control-height);
+    padding-inline: calc(8 * var(--win31-unit));
+    color: var(--win31-color-frame);
+    background: var(--win31-color-surface);
+    border: var(--win31-border);
+    border-radius: var(--win31-radius);
+    box-shadow: var(--win31-bevel-outset-1);
+    font-family: var(--win31-font-family);
+    font-size: var(--win31-font-size);
+    transition: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip-group::part(toggle):active {
+    box-shadow: var(--win31-bevel-inset-1);
+  }
+
+  /* A separator in a 3.1 strip is a two-pixel ridge, not a hairline. */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-chip-group::part(toggle-separator) {
+    inline-size: calc(2 * var(--win31-unit));
+    background: linear-gradient(
+      to right,
+      var(--win31-color-shadow) 0 var(--win31-unit),
+      var(--win31-color-highlight) var(--win31-unit) 100%
+    );
+    border: 0;
+  }
+}

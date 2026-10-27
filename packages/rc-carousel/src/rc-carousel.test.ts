@@ -1,8 +1,10 @@
 import { html } from 'lit';
-import { expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { render } from 'vitest-browser-lit';
 
+import { logicalRect, registerMessages, resolveFlow, setScrollOffset } from '@rcarls/rc-common';
 import { expectNoA11yViolations } from '../../../test-helpers/a11y.js';
+import { FLOW_FIXTURES, flowLabel, inFlow } from '../../../test-helpers/flow.js';
 import { unexpectedOverflow } from '../../../test-helpers/rendered-ui.js';
 import './define.js';
 import type { RCCarousel } from './rc-carousel.js';
@@ -22,6 +24,18 @@ function wait(ms: number): Promise<void> {
 // writes trigger.
 const SETTLE_WAIT_MS = 300;
 
+/**
+ * The physical direction toward the inline start in each flow, written out
+ * rather than derived so the drag test cannot share a bug with the helpers.
+ */
+const TOWARD_INLINE_START: Record<string, [number, number]> = {
+  'horizontal-tb ltr': [-1, 0],
+  'horizontal-tb rtl': [1, 0],
+  'vertical-rl ltr': [0, -1],
+  'vertical-rl rtl': [0, 1],
+  'vertical-lr ltr': [0, -1],
+};
+
 function firePointerEvent(target: Element, type: string, init: PointerEventInit = {}) {
   target.dispatchEvent(
     new PointerEvent(type, {
@@ -35,11 +49,12 @@ function firePointerEvent(target: Element, type: string, init: PointerEventInit 
   );
 }
 
-function threeItems() {
+function threeItems({ mouseDragging = false } = {}) {
   return html`
     <rc-carousel
       data-testid="carousel"
       aria-label="Featured recipes"
+      ?mouse-dragging=${mouseDragging}
       style="inline-size: 20rem; block-size: 10rem"
     >
       <rc-carousel-item data-testid="item-0">One</rc-carousel-item>
@@ -63,6 +78,30 @@ test('renders with APG carousel roles and preserves the authored label', async (
 
   expect(item.getAttribute('role')).toBe('group');
   expect(item.getAttribute('aria-roledescription')).toBe('slide');
+});
+
+test('formats default slide positions in the current interface locale', async () => {
+  const screen = render(html`
+    <rc-carousel data-testid="carousel" lang="fa-IR" aria-label="Photos" pagination>
+      <rc-carousel-item data-testid="item">One</rc-carousel-item>
+      <rc-carousel-item>Two</rc-carousel-item>
+    </rc-carousel>
+  `);
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+  const item = (await screen.getByTestId('item').element()) as HTMLElement;
+
+  await settle(carousel);
+
+  expect(item.getAttribute('aria-label')).toBe('۱ of ۲');
+
+  expect(
+    carousel.renderRoot.querySelector('[data-pagination-item]')?.getAttribute('aria-label'),
+  ).toBe('Go to slide ۱');
+
+  carousel.lang = 'fa-IR-u-nu-latn';
+  await settle(carousel);
+
+  expect(item.getAttribute('aria-label')).toBe('1 of 2');
 });
 
 test('preserves an author-provided label instead of the fallback', async () => {
@@ -121,6 +160,33 @@ test('defaultActiveIndex seeds uncontrolled activeIndex, and stops applying once
   expect(carousel.activeIndex).toBe(2);
 });
 
+test('mounting a batch performs no synchronous flow or item geometry reads', async () => {
+  const styleReads = vi.spyOn(window, 'getComputedStyle');
+  const carousels = Array.from({ length: 6 }, () => {
+    const carousel = document.createElement('rc-carousel') as RCCarousel;
+
+    carousel.setAttribute('aria-label', 'Batch carousel');
+
+    carousel.innerHTML = `
+      <rc-carousel-item>One</rc-carousel-item>
+      <rc-carousel-item>Two</rc-carousel-item>
+    `;
+
+    document.body.append(carousel);
+
+    return carousel;
+  });
+
+  await Promise.all(carousels.map((carousel) => carousel.updateComplete));
+  expect(styleReads).not.toHaveBeenCalled();
+
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  expect(styleReads).toHaveBeenCalled();
+
+  carousels.forEach((carousel) => carousel.remove());
+  styleReads.mockRestore();
+});
+
 test('a controlled activeIndex overrides uncontrolled state and does not self-advance', async () => {
   const screen = render(threeItems());
   const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
@@ -130,6 +196,19 @@ test('a controlled activeIndex overrides uncontrolled state and does not self-ad
   carousel.activeIndex = 0;
   await settle(carousel);
   expect(carousel.activeIndex).toBe(0);
+
+  const items = Array.from(carousel.querySelectorAll('rc-carousel-item'));
+
+  expect(items[0]?.hasAttribute('aria-hidden')).toBe(false);
+  expect(items[1]?.hasAttribute('aria-hidden')).toBe(true);
+
+  carousel.activeIndex = 2;
+  await settle(carousel);
+  expect(items[0]?.hasAttribute('aria-hidden')).toBe(true);
+  expect(items[2]?.hasAttribute('aria-hidden')).toBe(false);
+
+  carousel.activeIndex = 0;
+  await settle(carousel);
 
   const changed = vi.fn();
 
@@ -650,4 +729,235 @@ test('has no accessibility violations with navigation and pagination active mid-
   await settle(carousel);
 
   await expectNoA11yViolations(carousel);
+});
+
+function centerInside(inner: DOMRect, outer: DOMRect): boolean {
+  const x = inner.left + inner.width / 2;
+  const y = inner.top + inner.height / 2;
+
+  return x > outer.left && x < outer.right && y > outer.top && y < outer.bottom;
+}
+
+describe.each(FLOW_FIXTURES.map((flow) => [flowLabel(flow), flow] as const))(
+  'in %s',
+  (_label, flow) => {
+    async function mountInFlow({ mouseDragging = false } = {}) {
+      const screen = render(inFlow(threeItems({ mouseDragging }), flow));
+      const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+
+      await settle(carousel);
+
+      const track = carousel.renderRoot.querySelector<HTMLElement>('#track');
+      const items = await Promise.all(
+        [0, 1, 2].map(async (i) => screen.getByTestId(`item-${i}`).element()),
+      );
+
+      if (!track) {
+        throw new Error('rc-carousel rendered no #track');
+      }
+
+      return { carousel, track, items };
+    }
+
+    test('scrolls the requested slide into view', async () => {
+      const { carousel, track, items } = await mountInFlow();
+
+      carousel.goToIndex(2, true);
+      await wait(SETTLE_WAIT_MS);
+      await settle(carousel);
+
+      const view = track.getBoundingClientRect();
+
+      expect(centerInside(items[2]!.getBoundingClientRect(), view)).toBe(true);
+      expect(centerInside(items[0]!.getBoundingClientRect(), view)).toBe(false);
+    });
+
+    test('settles to the slide a native scroll stopped on', async () => {
+      const { carousel, track, items } = await mountInFlow();
+      const changed = vi.fn<(event: CustomEvent<RCCarouselChangeDetail>) => void>();
+
+      carousel.addEventListener('rc-carousel-change', changed);
+
+      const trackFlow = resolveFlow(track);
+      const step = logicalRect(
+        items[1]!.getBoundingClientRect(),
+        items[0]!.getBoundingClientRect(),
+        trackFlow,
+      ).inlineStart;
+
+      setScrollOffset(track, 'inline', step, trackFlow);
+      track.dispatchEvent(new Event('scroll'));
+      await wait(SETTLE_WAIT_MS);
+      await settle(carousel);
+
+      expect(carousel.activeIndex).toBe(1);
+      expect(changed.mock.calls.at(-1)?.[0]?.detail).toEqual({ index: 1, trigger: 'swipe' });
+    });
+
+    test('drags along the inline axis toward the inline end', async () => {
+      const { carousel, track } = await mountInFlow({ mouseDragging: true });
+      const box = track.getBoundingClientRect();
+      const x = box.left + box.width / 2;
+      const y = box.top + box.height / 2;
+      // Pulling the content toward the inline start reveals the inline end.
+      const [dx, dy] = TOWARD_INLINE_START[flowLabel(flow)];
+
+      firePointerEvent(track, 'pointerdown', { clientX: x, clientY: y });
+      firePointerEvent(track, 'pointermove', { clientX: x + dx * 40, clientY: y + dy * 40 });
+      await carousel.updateComplete;
+
+      expect(track.classList.contains('dragging')).toBe(true);
+
+      firePointerEvent(track, 'pointermove', { clientX: x + dx * 2000, clientY: y + dy * 2000 });
+      firePointerEvent(track, 'pointerup', { clientX: x + dx * 2000, clientY: y + dy * 2000 });
+      await wait(SETTLE_WAIT_MS);
+      await settle(carousel);
+
+      expect(carousel.activeIndex).toBe(2);
+    });
+  },
+);
+
+test('drags along the new inline axis after a writing-mode change', async () => {
+  const screen = render(
+    inFlow(threeItems({ mouseDragging: true }), { dir: 'ltr', writingMode: 'horizontal-tb' }),
+  );
+  const carousel = (await screen.getByTestId('carousel').element()) as RCCarousel;
+  const wrapper = (await screen.getByTestId('flow').element()) as HTMLElement;
+
+  await settle(carousel);
+
+  // Nothing reports this change; the next gesture has to pick it up.
+  wrapper.style.writingMode = 'vertical-rl';
+  await wait(SETTLE_WAIT_MS);
+  await settle(carousel);
+
+  const track = carousel.renderRoot.querySelector<HTMLElement>('#track')!;
+  const box = track.getBoundingClientRect();
+  const x = box.left + box.width / 2;
+  const y = box.top + box.height / 2;
+
+  // The inline axis now runs top to bottom, so dragging up moves forward.
+  firePointerEvent(track, 'pointerdown', { clientX: x, clientY: y });
+  firePointerEvent(track, 'pointermove', { clientX: x, clientY: y - 40 });
+  await carousel.updateComplete;
+
+  expect(track.classList.contains('dragging')).toBe(true);
+
+  firePointerEvent(track, 'pointerup', { clientX: x, clientY: y - 40 });
+});
+
+describe('localization', () => {
+  registerMessages('ar', {
+    'rc-carousel': {
+      carousel: 'عرض دوّار',
+      slide: 'شريحة',
+      position: (position: number, count: number) => `${position} من ${count}`,
+      previous: 'الشريحة السابقة',
+      next: 'الشريحة التالية',
+      picker: 'اختر شريحة',
+      goToSlide: (position: number) => `انتقل إلى الشريحة ${position}`,
+    },
+  });
+
+  function arabic(attrs = 'lang="ar" dir="rtl"') {
+    return `
+      <rc-carousel data-testid="carousel" ${attrs} aria-label="صور" navigation pagination>
+        <rc-carousel-item data-testid="item-0">One</rc-carousel-item>
+        <rc-carousel-item data-testid="item-1">Two</rc-carousel-item>
+      </rc-carousel>
+    `;
+  }
+
+  async function mount(markup: string) {
+    const wrapper = document.createElement('div');
+
+    wrapper.innerHTML = markup;
+    document.body.append(wrapper);
+
+    const carousel = wrapper.querySelector<RCCarousel>('rc-carousel')!;
+
+    await settle(carousel);
+
+    return { wrapper, carousel, root: carousel.shadowRoot! };
+  }
+
+  test('renders registered text for its own lang', async () => {
+    const { wrapper, carousel, root } = await mount(arabic());
+
+    expect(carousel.getAttribute('aria-roledescription')).toBe('عرض دوّار');
+
+    const item = carousel.querySelector('rc-carousel-item')!;
+
+    expect(item.getAttribute('aria-roledescription')).toBe('شريحة');
+    expect(item.getAttribute('aria-label')).toBe('1 من 2');
+
+    expect(
+      root.querySelector('[part~="navigation-button-previous"]')?.getAttribute('aria-label'),
+    ).toBe('الشريحة السابقة');
+
+    expect(root.querySelector('#pagination')?.getAttribute('aria-label')).toBe('اختر شريحة');
+
+    expect(root.querySelector('[data-pagination-item]')?.getAttribute('aria-label')).toBe(
+      'انتقل إلى الشريحة 1',
+    );
+
+    wrapper.remove();
+  });
+
+  test("ignores an ancestor's content lang", async () => {
+    const { wrapper, carousel, root } = await mount(`<div lang="ar">${arabic('')}</div>`);
+
+    expect(carousel.getAttribute('aria-roledescription')).toBe('carousel');
+
+    expect(root.querySelector('[part~="navigation-button-next"]')?.getAttribute('aria-label')).toBe(
+      'Next slide',
+    );
+
+    wrapper.remove();
+  });
+
+  test('a messages override wins over registered text', async () => {
+    const { wrapper, carousel, root } = await mount(arabic());
+
+    carousel.messages = { next: 'Weiter' };
+    await settle(carousel);
+
+    expect(root.querySelector('[part~="navigation-button-next"]')?.getAttribute('aria-label')).toBe(
+      'Weiter',
+    );
+
+    expect(
+      root.querySelector('[part~="navigation-button-previous"]')?.getAttribute('aria-label'),
+    ).toBe('الشريحة السابقة');
+
+    wrapper.remove();
+  });
+
+  test('re-renders its text when its lang changes at runtime', async () => {
+    const { wrapper, carousel, root } = await mount(arabic());
+    const item = carousel.querySelector('rc-carousel-item')!;
+
+    carousel.lang = 'en';
+
+    await vi.waitFor(() => {
+      expect(carousel.getAttribute('aria-roledescription')).toBe('carousel');
+      expect(item.getAttribute('aria-roledescription')).toBe('slide');
+      expect(item.getAttribute('aria-label')).toBe('1 of 2');
+
+      expect(root.querySelector('#pagination')?.getAttribute('aria-label')).toBe(
+        'Choose slide to display',
+      );
+    });
+
+    wrapper.remove();
+  });
+
+  test('keeps an authored aria-roledescription', async () => {
+    const { wrapper, carousel } = await mount(arabic('lang="ar" aria-roledescription="gallery"'));
+
+    expect(carousel.getAttribute('aria-roledescription')).toBe('gallery');
+
+    wrapper.remove();
+  });
 });

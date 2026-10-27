@@ -33,17 +33,21 @@ const REGISTRY_FIELDS = [
 ];
 // npm sometimes prints "Your package is being processed and may take a few
 // minutes to become available" right after a successful publish; the SLSA
-// provenance attestation can lag the package itself by more than a minute.
-// A confirmed instance: @rcarls/rc-bottom-sheet@0.5.0 published fine but its
-// provenance didn't index for several minutes, well past the previous 60s
-// budget (12 x 5s), which failed the whole release run even though nothing
-// was actually wrong. 30 x 10s gives ~5 minutes, matching npm's own estimate.
-const DEFAULT_POLL_ATTEMPTS = 30;
-const DEFAULT_POLL_DELAY_MS = 10_000;
+// provenance attestation can lag the package itself by several minutes. Use a
+// bounded exponential backoff so a delayed attestation gets about 12.5 minutes
+// to propagate without querying the registry every few seconds for that whole
+// window.
+const DEFAULT_PROVENANCE_MAX_RETRIES = 10;
+const DEFAULT_PROVENANCE_INITIAL_DELAY_MS = 5_000;
+const DEFAULT_PROVENANCE_MAX_DELAY_MS = 120_000;
 const PUBLISHED_DEPENDENCY_FIELDS = ['dependencies', 'optionalDependencies', 'peerDependencies'];
 
 function sleep(milliseconds) {
   return new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
+}
+
+export function provenanceRetryDelay(retry, initialDelayMs, maxDelayMs) {
+  return Math.min(initialDelayMs * 2 ** (retry - 1), maxDelayMs);
 }
 
 function parseJsonObject(output) {
@@ -122,6 +126,41 @@ export function queryRegistryPackage({ cwd, env, name, version }) {
   }
 
   return interpretRegistryResult(result, args);
+}
+
+export function queryRegistryPackageName({ cwd, env, name }) {
+  const args = ['view', name, 'name', '--json', '--registry', NPM_REGISTRY];
+  const result = spawnCommand('npm', args, {
+    cwd,
+    encoding: 'utf8',
+    env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  return interpretRegistryPackageNameResult(result, args, name);
+}
+
+export function interpretRegistryPackageNameResult(result, args = ['view'], name) {
+  if (result.status === 0) {
+    const payload = parseJsonObject(result.stdout);
+    const names = Array.isArray(payload) ? payload : [payload];
+
+    if (names.length !== 1 || names[0] !== name) {
+      throw new Error(`npm view returned unexpected package name data for ${name}`);
+    }
+
+    return { state: 'found' };
+  }
+
+  if (npmErrorCode(result) === 'E404') {
+    return { state: 'missing' };
+  }
+
+  throw commandFailure('npm', args, result);
 }
 
 export function interpretRegistryResult(result, args = ['view']) {
@@ -259,7 +298,7 @@ export function inspectPackedManifest({ extractDirectory, packageName, tarballPa
   return JSON.parse(readFileSync(manifestPath, 'utf8'));
 }
 
-export function assertLiveEnvironment(env) {
+export function assertLiveEnvironment(env, { snapshot = false } = {}) {
   const credentialVariables = Object.entries(env)
     .filter(([, value]) => Boolean(value))
     .map(([name]) => name)
@@ -292,27 +331,35 @@ export function assertLiveEnvironment(env) {
     throw new Error(`GITHUB_REPOSITORY must be ${EXPECTED_GITHUB_REPOSITORY}`);
   }
 
-  const recoveryTag = env.RC_RELEASE_TAG?.trim();
+  if (!snapshot) {
+    const recoveryTag = env.RC_RELEASE_TAG?.trim();
 
-  if (recoveryTag && env.GITHUB_EVENT_NAME !== 'workflow_dispatch') {
-    throw new Error('RC_RELEASE_TAG is restricted to manually dispatched recovery runs');
-  }
+    if (recoveryTag && env.GITHUB_EVENT_NAME !== 'workflow_dispatch') {
+      throw new Error('RC_RELEASE_TAG is restricted to manually dispatched recovery runs');
+    }
 
-  const tag = recoveryTag ?? env.GITHUB_REF_NAME ?? env.GITHUB_REF?.replace(/^refs\/tags\//, '');
-  const isTag =
-    Boolean(recoveryTag) ||
-    env.GITHUB_REF_TYPE === 'tag' ||
-    env.GITHUB_REF?.startsWith('refs/tags/');
+    const tag = recoveryTag ?? env.GITHUB_REF_NAME ?? env.GITHUB_REF?.replace(/^refs\/tags\//, '');
+    const isTag =
+      Boolean(recoveryTag) ||
+      env.GITHUB_REF_TYPE === 'tag' ||
+      env.GITHUB_REF?.startsWith('refs/tags/');
 
-  if (!isTag || !STABLE_TAG_PATTERN.test(tag ?? '')) {
-    throw new Error('Live publication requires a stable vX.Y.Z GitHub tag ref');
+    if (!isTag || !STABLE_TAG_PATTERN.test(tag ?? '')) {
+      throw new Error('Live publication requires a stable vX.Y.Z GitHub tag ref');
+    }
+
+    if (!env.ACTIONS_ID_TOKEN_REQUEST_URL || !env.ACTIONS_ID_TOKEN_REQUEST_TOKEN) {
+      throw new Error('GitHub OIDC request variables are unavailable; grant id-token: write');
+    }
+
+    return tag.slice(1);
   }
 
   if (!env.ACTIONS_ID_TOKEN_REQUEST_URL || !env.ACTIONS_ID_TOKEN_REQUEST_TOKEN) {
     throw new Error('GitHub OIDC request variables are unavailable; grant id-token: write');
   }
 
-  return tag.slice(1);
+  return undefined;
 }
 
 export function parseProvenanceExceptions({ env, expectedVersion, workspaces }) {
@@ -375,7 +422,20 @@ function safePackageSlug(packageName) {
   return packageName.replaceAll(/[^0-9A-Za-z._-]/g, '-').replace(/^-+/, '');
 }
 
-export function createPublisherOperations({ env, runtimeDirectory }) {
+export function buildPublishArgs({ npmTag = 'latest', tarballPath }) {
+  return [
+    'publish',
+    tarballPath,
+    '--access',
+    'public',
+    '--tag',
+    npmTag,
+    '--registry',
+    NPM_REGISTRY,
+  ];
+}
+
+export function createPublisherOperations({ env, npmTag = 'latest', runtimeDirectory }) {
   const npmEnvironment = createNpmEnvironment(runtimeDirectory, env);
 
   return {
@@ -400,16 +460,7 @@ export function createPublisherOperations({ env, runtimeDirectory }) {
     },
 
     publish(tarballPath) {
-      const args = [
-        'publish',
-        tarballPath,
-        '--access',
-        'public',
-        '--tag',
-        'latest',
-        '--registry',
-        NPM_REGISTRY,
-      ];
+      const args = buildPublishArgs({ npmTag, tarballPath });
       const result = spawnCommand('npm', args, {
         cwd: runtimeDirectory,
         env: npmEnvironment,
@@ -434,6 +485,14 @@ export function createPublisherOperations({ env, runtimeDirectory }) {
       });
     },
 
+    queryPackageName(workspace) {
+      return queryRegistryPackageName({
+        cwd: runtimeDirectory,
+        env: npmEnvironment,
+        name: workspace.name,
+      });
+    },
+
     sleep,
   };
 }
@@ -442,14 +501,16 @@ async function waitForVerifiedPackage({
   allowMissingProvenance = false,
   initialMetadata,
   internalNames,
+  log,
   operations,
-  pollAttempts,
-  pollDelayMs,
+  provenanceInitialDelayMs,
+  provenanceMaxDelayMs,
+  provenanceMaxRetries,
   workspace,
 }) {
   let metadata = initialMetadata;
 
-  for (let attempt = 1; attempt <= pollAttempts; attempt += 1) {
+  for (let retry = 0; retry <= provenanceMaxRetries; retry += 1) {
     if (metadata) {
       validatePublishedManifest({
         internalNames,
@@ -468,11 +529,19 @@ async function waitForVerifiedPackage({
       }
     }
 
-    if (attempt === pollAttempts) {
+    if (retry === provenanceMaxRetries) {
       break;
     }
 
-    await operations.sleep(pollDelayMs);
+    const nextRetry = retry + 1;
+    const delayMs = provenanceRetryDelay(nextRetry, provenanceInitialDelayMs, provenanceMaxDelayMs);
+
+    log.log(
+      `waiting for npm provenance: ${workspace.name}@${workspace.manifest.version} ` +
+        `(retry ${nextRetry}/${provenanceMaxRetries} in ${delayMs / 1_000}s)`,
+    );
+
+    await operations.sleep(delayMs);
 
     const result = await operations.query(workspace);
 
@@ -480,7 +549,7 @@ async function waitForVerifiedPackage({
   }
 
   throw new Error(
-    `${workspace.name}@${workspace.manifest.version} did not expose SLSA provenance after ${pollAttempts} checks`,
+    `${workspace.name}@${workspace.manifest.version} did not expose SLSA provenance after ${provenanceMaxRetries} retries`,
   );
 }
 
@@ -492,8 +561,9 @@ export async function executePublication({
   dryRun,
   log = console,
   operations,
-  pollAttempts = DEFAULT_POLL_ATTEMPTS,
-  pollDelayMs = DEFAULT_POLL_DELAY_MS,
+  provenanceInitialDelayMs = DEFAULT_PROVENANCE_INITIAL_DELAY_MS,
+  provenanceMaxDelayMs = DEFAULT_PROVENANCE_MAX_DELAY_MS,
+  provenanceMaxRetries = DEFAULT_PROVENANCE_MAX_RETRIES,
   provenanceExceptions = new Set(),
   workspaces,
 }) {
@@ -504,8 +574,10 @@ export async function executePublication({
     provenanceExceptions: [],
     published: [],
     raceRecovered: [],
+    registered: [],
     skipped: [],
     unattempted: [],
+    unregistered: [],
     validated: [],
   };
 
@@ -518,6 +590,16 @@ export async function executePublication({
         summary.validated.push(workspace.name);
         log.log(`validated packed artifact: ${workspace.name}@${workspace.manifest.version}`);
 
+        const registration = await operations.queryPackageName(workspace);
+
+        if (registration.state === 'found') {
+          summary.registered.push(workspace.name);
+          log.log(`npm package exists: ${workspace.name}`);
+        } else {
+          summary.unregistered.push(workspace.name);
+          log.log(`npm package requires bootstrap: ${workspace.name}`);
+        }
+
         continue;
       }
 
@@ -529,9 +611,11 @@ export async function executePublication({
           allowMissingProvenance: provenanceExceptions.has(packageSpec),
           initialMetadata: existing.metadata,
           internalNames,
+          log,
           operations,
-          pollAttempts,
-          pollDelayMs,
+          provenanceInitialDelayMs,
+          provenanceMaxDelayMs,
+          provenanceMaxRetries,
           workspace,
         });
 
@@ -564,9 +648,11 @@ export async function executePublication({
         await waitForVerifiedPackage({
           initialMetadata: raced.metadata,
           internalNames,
+          log,
           operations,
-          pollAttempts,
-          pollDelayMs,
+          provenanceInitialDelayMs,
+          provenanceMaxDelayMs,
+          provenanceMaxRetries,
           workspace,
         });
 
@@ -578,9 +664,11 @@ export async function executePublication({
 
       await waitForVerifiedPackage({
         internalNames,
+        log,
         operations,
-        pollAttempts,
-        pollDelayMs,
+        provenanceInitialDelayMs,
+        provenanceMaxDelayMs,
+        provenanceMaxRetries,
         workspace,
       });
 
@@ -594,6 +682,16 @@ export async function executePublication({
     }
   }
 
+  if (summary.unregistered.length > 0) {
+    const error = new Error(
+      `npm package bootstrap required: ${summary.unregistered.join(', ')}. Run yarn bootstrap:trusted-publisher before versioning the release.`,
+    );
+
+    error.publicationSummary = summary;
+
+    throw error;
+  }
+
   return summary;
 }
 
@@ -602,6 +700,8 @@ export function printPublicationSummary(summary, log = console) {
 
   for (const [label, names] of [
     ['packed and validated', summary.validated],
+    ['registered package names', summary.registered],
+    ['bootstrap required', summary.unregistered],
     ['published', summary.published],
     ['already published', summary.skipped],
     ['provenance exceptions', summary.provenanceExceptions],
@@ -628,7 +728,7 @@ function removeRuntimeDirectory(runtimeDirectory, parentDirectory) {
 }
 
 function usage() {
-  console.log('Usage: node scripts/publish-workspaces.mjs [--dry-run]');
+  console.log('Usage: node scripts/publish-workspaces.mjs [--dry-run] [--snapshot]');
 }
 
 export async function main(args = process.argv.slice(2), env = process.env) {
@@ -638,18 +738,27 @@ export async function main(args = process.argv.slice(2), env = process.env) {
     return;
   }
 
-  const unknownArgs = args.filter((argument) => argument !== '--dry-run');
+  const unknownArgs = args.filter(
+    (argument) => argument !== '--dry-run' && argument !== '--snapshot',
+  );
 
   if (unknownArgs.length > 0) {
     throw new Error(`Unknown argument(s): ${unknownArgs.join(', ')}`);
   }
 
   const dryRun = args.includes('--dry-run');
+  const snapshot = args.includes('--snapshot');
+  const snapshotTag = env.RC_SNAPSHOT_TAG?.trim();
+
+  if (snapshot && !snapshotTag) {
+    throw new Error('RC_SNAPSHOT_TAG must be set when publishing with --snapshot');
+  }
+
   const root = process.cwd();
   const workspaces = loadPublicWorkspaces({ root });
-  const expectedVersion = dryRun ? undefined : assertLiveEnvironment(env);
+  const expectedVersion = dryRun ? undefined : assertLiveEnvironment(env, { snapshot });
 
-  validateWorkspaceConfiguration({ expectedVersion, root, workspaces });
+  validateWorkspaceConfiguration({ expectedVersion, root, snapshot, workspaces });
 
   const provenanceExceptions = dryRun
     ? new Set()
@@ -659,7 +768,11 @@ export async function main(args = process.argv.slice(2), env = process.env) {
   const runtimeDirectory = mkdtempSync(join(runtimeParent, 'rc-npm-publish-'));
 
   try {
-    const operations = createPublisherOperations({ env, runtimeDirectory });
+    const operations = createPublisherOperations({
+      env,
+      npmTag: snapshot ? snapshotTag : 'latest',
+      runtimeDirectory,
+    });
 
     if (!dryRun) {
       const npmVersion = execCommand('npm', ['--version'], { encoding: 'utf8' }).trim();
