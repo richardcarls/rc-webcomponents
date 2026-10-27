@@ -1,5 +1,90 @@
 # @rcarls/rc-chip
 
+## 0.7.0
+
+### Minor Changes
+
+- 079e025: Standardize component styling contracts for the breaking 0.7 release.
+
+  BREAKING CHANGE: Rename the Markdown editor's `--rme-*` properties to
+  `--rc-markdown-editor-*`, `--rc-app-bar-background` to `--rc-app-bar-bg`,
+  `--rc-textarea-radius` to `--rc-textarea-border-radius`, the transfer-list
+  `--rc-transfer-list-panel-*` properties to `--rc-transfer-list-listbox-*`,
+  `--rc-chip-group-webkit-scrollbar-display` to
+  `--rc-chip-group-scrollbar-display`, and `--rc-text` to `--rc-field-text`.
+  Compatibility aliases are intentionally not provided.
+
+  BREAKING CHANGE: Replace `--rc-select-chip-padding-inline` and
+  `--rc-combobox-chip-padding-inline` with explicit `*-padding-inline-start` and
+  `*-padding-inline-end` tokens. Generated removable chips now reserve the full
+  remove target and its edge offset, so their indicator cannot overlap label text.
+
+  Add canonical app-bar elevation, transfer-list listbox radius, and textarea
+  line-action tokens. Add logical `rc-chip` inline-padding properties so themes
+  can implement Material's icon-aware spacing without overriding authored child
+  styles. Make `rc-field` consume the shared semantic token layer,
+  and place the `rc-chip` and `rc-search-bar` light-DOM structural styles in the
+  `rc-base` cascade layer so normal consumer rules override them.
+
+  Prevent decorative, `aria-hidden` trailing list content from intercepting a
+  whole-row action target, and keep segmented-list item geometry from leaking
+  into nested standard lists.
+
+  Remove unused Material navigation-rail toggle tokens and obsolete list-item
+  theme tokens. Register the segmented-button private theme seam and enforce
+  token ownership, documentation, removed-name, selector-budget, and cascade
+  layer contracts through the component architecture audit.
+
+### Patch Changes
+
+- 3d050f1: Keep wrapped chip rows evenly spaced. Readonly chips in an `rc-chip-group`
+  keep the touch-target block size, so expanded rows share the disclosure
+  toggle's pitch. `rc-combobox` and `rc-select` return the chip touch-target
+  overlap tokens as row gap, so interior chip rows no longer collapse onto each
+  other inside a field. Material combobox and select input chips drop their
+  extra block padding to render at the 2rem chip height.
+- 5c006de: Ship component CSS minified. Package builds now run the CSS in Lit `css` styles
+  and light-DOM structural styles through Lightning CSS, removing comments and
+  whitespace while keeping source maps that resolve to each template. Rendered
+  styles are unchanged.
+
+  `@rcarls/rc-common` adds `cssText`, an identity tag that marks a plain CSS
+  string for minification. `rc-chip`, `rc-disclosure`, and `rc-accordion` now
+  depend on `@rcarls/rc-common` for it.
+
+- Updated dependencies [e3dfa59]
+- Updated dependencies [50d5610]
+- Updated dependencies [9ee769c]
+- Updated dependencies [1179f24]
+- Updated dependencies [595fe37]
+- Updated dependencies [38cd00c]
+- Updated dependencies [5c006de]
+- Updated dependencies [a6553ff]
+- Updated dependencies [2205478]
+- Updated dependencies [4341311]
+- Updated dependencies [899bb5e]
+- Updated dependencies [25fcfe0]
+- Updated dependencies [51f6403]
+- Updated dependencies [9caca6b]
+- Updated dependencies [b764a3c]
+- Updated dependencies [54d9ead]
+- Updated dependencies [b9175e9]
+- Updated dependencies [c8b762b]
+- Updated dependencies [55e1e7f]
+- Updated dependencies [f1ca82d]
+- Updated dependencies [b87f27b]
+- Updated dependencies [32ebead]
+- Updated dependencies [bfefedd]
+- Updated dependencies [c130173]
+- Updated dependencies [11680b6]
+- Updated dependencies [223d36c]
+- Updated dependencies [7b91a44]
+- Updated dependencies [aa04ead]
+- Updated dependencies [ac65b5b]
+- Updated dependencies [afcfef8]
+- Updated dependencies [11ef1ad]
+  - @rcarls/rc-common@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes

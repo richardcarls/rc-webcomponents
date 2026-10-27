@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Accessible field wrapper for a native input or textarea with labels and supporting text.",
   "repository": {
     "type": "git",
