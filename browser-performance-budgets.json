@@ -56,6 +56,17 @@
       "longFrames": 0,
       "longestFrameMs": 16.799999999999955,
       "animationCount": 0
+    },
+    "mount30PagePageTurner": {
+      "median": 16.700000047683716,
+      "p95": 16.90000009536743
+    },
+    "pageTurnerTurnMotion": {
+      "median": 333.2000000476837,
+      "p95": 333.90000009536743,
+      "longFrames": 0,
+      "longestFrameMs": 16.800000000000182,
+      "animationCount": 1
     }
   },
   "budgets": {
@@ -114,6 +125,17 @@
       "longFrames": 0,
       "longestFrameMs": 50,
       "animationCount": 0
+    },
+    "mount30PagePageTurner": {
+      "median": 21.700000047683716,
+      "p95": 21.90000009536743
+    },
+    "pageTurnerTurnMotion": {
+      "median": 399.84000005722044,
+      "p95": 400.68000011444093,
+      "longFrames": 0,
+      "longestFrameMs": 50,
+      "animationCount": 1
     }
   }
 }

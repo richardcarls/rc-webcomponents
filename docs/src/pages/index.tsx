@@ -16,6 +16,11 @@ const packages = [
     '/components/rc-carousel',
   ],
   [
+    'rc-page-turner',
+    'One page at a time from a stack of light-DOM pages, turned with a compositor-only page flip',
+    '/components/rc-page-turner',
+  ],
+  [
     'rc-scroller',
     'Native scroll region with optional content and fullbleed layout',
     '/components/rc-scroller',

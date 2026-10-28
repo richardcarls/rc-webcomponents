@@ -1196,6 +1196,10 @@ rc-card.card-outlined {
 - `selected` shows a selection outline for multi-select collections.
 - Use `rc-carousel` for a scrollable row of media, not for primary content
   the user must see.
+- Use `rc-page-turner` for content read one page at a time, such as recipe
+  steps. Pages sit on `surface-container`, and turns use the theme's default
+  spatial motion. Keep pages opaque: a turning page has to hide the page
+  beneath it.
 - Media needs a failure state. A missing or broken image renders a
   placeholder surface, never the browser's broken-image icon or the alt text
   as the visual. Card media is decorative (`alt=""`) when the title names the

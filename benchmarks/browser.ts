@@ -6,6 +6,7 @@ import type { RCCarousel } from '@rcarls/rc-carousel';
 import type { RCCombobox } from '@rcarls/rc-combobox';
 import type { RCMenuButton } from '@rcarls/rc-menu-button';
 import type { RCNavigationRail } from '@rcarls/rc-navigation-rail';
+import type { RCPageTurner } from '@rcarls/rc-page-turner';
 import type { RCSelect } from '@rcarls/rc-select';
 import type { RCScroller } from '@rcarls/rc-scroller';
 import type { RCSwitch } from '@rcarls/rc-switch';
@@ -18,6 +19,7 @@ import '@rcarls/rc-combobox/define';
 import '@rcarls/rc-menu-button/define';
 import '@rcarls/rc-menu/define';
 import '@rcarls/rc-navigation-rail/define';
+import '@rcarls/rc-page-turner/define';
 import '@rcarls/rc-select/define';
 import '@rcarls/rc-scroller/define';
 import '@rcarls/rc-switch/define';
@@ -421,6 +423,37 @@ async function settleAnchoredPopup(): Promise<void> {
   host.closePopup(false);
 }
 
+/** A page turner of `count` recipe-step pages, each with text and controls. */
+function createPageTurner(count: number): RCPageTurner {
+  const turner = document.createElement('rc-page-turner') as RCPageTurner;
+
+  turner.setAttribute('aria-label', 'Steps');
+  turner.style.cssText = 'display: block; inline-size: 24rem; block-size: 20rem;';
+
+  turner.innerHTML = Array.from(
+    { length: count },
+    (_, index) => `
+      <rc-page-turner-page>
+        <h2>Step ${index + 1}</h2>
+        <p>Whisk the eggs with the sugar until pale, then fold in the flour in three additions.</p>
+        <label><input type="checkbox" /> Done</label>
+        <button type="button">Start 5 minute timer</button>
+      </rc-page-turner-page>
+    `,
+  ).join('');
+
+  return turner;
+}
+
+async function mountPageTurner(): Promise<void> {
+  resetRoot();
+
+  const turner = createPageTurner(30);
+
+  $root.append(turner);
+  await settle(turner);
+}
+
 const scenarios: Record<string, () => Promise<void>> = {
   create100Buttons: createButtons,
   create50Selects: createSelects,
@@ -429,6 +462,7 @@ const scenarios: Record<string, () => Promise<void>> = {
   render1000LineTextarea: renderLargeTextarea,
   update50ActionAdaptiveMenu: updateAdaptiveMenu,
   settleAnchoredPopup,
+  mount30PagePageTurner: mountPageTurner,
 };
 
 /*
@@ -554,6 +588,36 @@ async function setupWin31MenuOpenClose(): Promise<{
   };
 }
 
+/*
+ * Turns between the first two pages of a 30-page turner, alternating forward
+ * and back, so both the swing-away and swing-in paths are measured. No theme:
+ * the turn is the component's own structural motion.
+ */
+async function setupPageTurnerTurn(): Promise<{
+  root: Element;
+  toggle: () => Promise<void>;
+}> {
+  resetRoot();
+
+  const turner = createPageTurner(30);
+
+  $root.append(turner);
+  await settle(turner);
+
+  return {
+    root: turner,
+    toggle: async () => {
+      if (turner.activeIndex === 0) {
+        turner.next();
+      } else {
+        turner.previous();
+      }
+
+      await settle(turner);
+    },
+  };
+}
+
 async function runMotionScenario(
   setup: () => Promise<{ root: Element; toggle: () => Promise<void> }>,
 ): Promise<MotionBenchmarkResult> {
@@ -567,6 +631,7 @@ const motionScenarios: Record<string, () => Promise<MotionBenchmarkResult>> = {
   materialMenuOpenCloseMotion: () => runMotionScenario(setupMaterialMenuOpenClose),
   materialSwitchToggleMotion: () => runMotionScenario(setupMaterialSwitchToggle),
   win31MenuOpenCloseMotion: () => runMotionScenario(setupWin31MenuOpenClose),
+  pageTurnerTurnMotion: () => runMotionScenario(setupPageTurnerTurn),
 };
 
 async function measureScenario(run: () => Promise<void>): Promise<BenchmarkResult> {

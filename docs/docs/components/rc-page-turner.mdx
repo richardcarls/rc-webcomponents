@@ -1,0 +1,163 @@
+---
+title: rc-page-turner
+---
+
+<!-- markdownlint-disable MD033 -->
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { PageTurnerDemo } from '@site/src/components/ComponentDemos';
+
+# rc-page-turner
+
+Shows one page at a time from a stack of pages and turns between them like the
+pages of a book, following the [WAI-ARIA APG Carousel
+pattern](https://www.w3.org/WAI/ARIA/apg/patterns/carousel/) without automatic
+rotation. `rc-page-turner` is the stack and its optional previous/next buttons;
+`rc-page-turner-page` wraps each page's authored light-DOM content.
+
+<AtAGlance
+  packageName="@rcarls/rc-page-turner"
+  tag="rc-page-turner"
+  native="rc-page-turner-page children are slotted light DOM"
+  state="Controlled or uncontrolled active-index"
+  events={['rc-page-turner-change']}
+  related={[{ label: 'rc-carousel', href: '/components/rc-carousel' }]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-webcomponents/rc-page-turner/define';
+```
+
+## Markup
+
+```html
+<rc-page-turner navigation aria-label="Recipe steps">
+  <rc-page-turner-page><h2>Heat the oven to 350°F.</h2></rc-page-turner-page>
+  <rc-page-turner-page><h2>Cream the butter and sugar.</h2></rc-page-turner-page>
+  <rc-page-turner-page><h2>Fold in the flour.</h2></rc-page-turner-page>
+</rc-page-turner>
+```
+
+Give the host a definite `block-size`, or place it in a layout that provides
+one. Pages share one grid cell, and a page that isn't shown takes no space, so
+an unsized turner follows the current page's height. Pages are opaque by
+default (`--rc-page-turner-page-background: Canvas`): a turning page has to
+hide the page beneath it.
+
+## Live demo
+
+<PageTurnerDemo />
+
+## Current page
+
+`active-index`/`default-active-index` follow this monorepo's controlled/
+uncontrolled property convention. Host writes are silent. The buttons, keys,
+`next()`, `previous()`, and `goToIndex(index, instant?)` report through
+`rc-page-turner-change` (`detail: { index, trigger }`, `trigger` one of
+`'api' | 'button' | 'keyboard'`). In controlled usage the turner doesn't move
+until the host writes the new index:
+
+```html
+<rc-page-turner id="steps" active-index="0" aria-label="Recipe steps">…</rc-page-turner>
+
+<script>
+  const steps = document.querySelector('#steps');
+
+  steps.addEventListener('rc-page-turner-change', (event) => {
+    steps.activeIndex = event.detail.index;
+  });
+</script>
+```
+
+There is no `loop`: the first and last pages are boundaries, and the previous
+and next buttons show `aria-disabled="true"` there.
+
+## Turning and performance
+
+Every page stays connected for the turner's whole life, so turning never
+rebuilds page content: form state, focusable controls, and `id` references
+survive. A page that isn't shown skips its own style, layout, and paint
+through `content-visibility: hidden`, and is `inert` and `aria-hidden`.
+
+A turn animates only the one moving page's `transform`, through the Web
+Animations API, so it runs on the compositor:
+
+- **Forward**, the current page swings away around the spine and uncovers the
+  next page.
+- **Back**, the previous page swings in over the current one.
+- The spine is the inline-start edge: the left edge in left-to-right text, the
+  right edge in right-to-left text, and the top in vertical text.
+
+`--rc-page-turner-duration` and `--rc-page-turner-easing` set the turn's
+timing, and `--rc-page-turner-perspective` its depth. The turner reads them
+when a turn starts. A back turn uses the easing as written; a forward turn
+plays it in reverse, so with a decelerating curve the departing page lifts
+slowly and stays in view as long as an arriving page takes to settle. Under `prefers-reduced-motion: reduce` or forced colors the
+turn becomes a fade of at most 150ms. `goToIndex(index, true)` and engines
+without `Element.animate()` swap pages with no motion. A turn requested during
+a turn lands the first one immediately, so two turns never overlap.
+
+Pages expose custom states for styling a turn, such as a shadow on the moving
+page: `:state(active)` for the current page, `:state(turning)` for the page in
+motion, and `:state(revealed)` for the page shown beneath it.
+
+```css
+rc-page-turner-page:state(turning) {
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
+}
+```
+
+## Keyboard
+
+With the page viewport focused, the arrow keys along the inline axis turn to
+the previous and next page, following `dir` and the writing mode, and
+Home/End go to the first and last page. Keys pressed inside page content,
+such as arrow keys in a text field, are left to that content.
+
+## Accessibility
+
+The host defaults to `role="group"` with `aria-roledescription="pages"`; give
+it an `aria-label`. Each page gets `role="group"`,
+`aria-roledescription="page"`, and an "N of M" `aria-label` unless it has its
+own label. The pages sit in a polite live region, so a turn announces the
+arriving page.
+
+Accessibility state changes when a turn starts, not when it ends. The departing
+page becomes `inert` and `aria-hidden` at once. If focus was inside it, for
+example on a "done" checkbox that advances the turner, focus moves to the
+arriving page. Focus anywhere else, such as on the previous/next buttons,
+stays where it is.
+
+## Localization
+
+Built-in text follows the element's own `lang`, else `<html lang>`. Override it
+with `messages`, or register it for every instance under `rc-page-turner`:
+`pageTurner`, `page`, `position`, `previous`, `next`. See
+[Localization](../guide/localization).
+
+## API
+
+<ApiTable tag="rc-page-turner" />
+<ApiTable tag="rc-page-turner-page" />

@@ -211,6 +211,14 @@ export type RCCarouselChangeDetail = {
   trigger: RCCarouselChangeTrigger;
 };
 
+export type RCPageTurnerChangeTrigger = 'api' | 'button' | 'keyboard';
+
+/** Detail shape for `rc-page-turner-change`. */
+export type RCPageTurnerChangeDetail = {
+  index: number;
+  trigger: RCPageTurnerChangeTrigger;
+};
+
 export type RCTextareaChangeDetail = {
   value: string;
 };
@@ -974,6 +982,30 @@ export type RCCarouselMessages = {
 /** Public API surface of `<rc-carousel-item>`. */
 export type RCCarouselItemRef = HTMLElement;
 
+/** Public API surface of `<rc-page-turner>`. */
+export type RCPageTurnerRef = HTMLElement & {
+  activeIndex: number | undefined;
+  defaultActiveIndex: number;
+  navigation: boolean;
+  next(): void;
+  previous(): void;
+  goToIndex(index: number, instant?: boolean): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCPageTurnerMessages | undefined;
+};
+
+/** Overridable `<rc-page-turner>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCPageTurnerMessages = {
+  pageTurner?: string;
+  page?: string;
+  position?: (position: number, count: number, locale?: string) => string;
+  previous?: string;
+  next?: string;
+};
+
+/** Public API surface of `<rc-page-turner-page>`. */
+export type RCPageTurnerPageRef = HTMLElement;
+
 // ── React JSX declarations ───────────────────────────────────────────────────
 
 declare module 'react' {
@@ -1047,6 +1079,21 @@ declare module 'react' {
       'rc-carousel-item': React.DetailedHTMLProps<
         React.HTMLAttributes<RCCarouselItemRef>,
         RCCarouselItemRef
+      >;
+
+      'rc-page-turner': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCPageTurnerRef>,
+        RCPageTurnerRef
+      > & {
+        'active-index'?: number | string;
+        'default-active-index'?: number | string;
+        navigation?: boolean;
+        'onrc-page-turner-change'?: (event: CustomEvent<RCPageTurnerChangeDetail>) => void;
+      };
+
+      'rc-page-turner-page': React.DetailedHTMLProps<
+        React.HTMLAttributes<RCPageTurnerPageRef>,
+        RCPageTurnerPageRef
       >;
 
       'rc-list': React.DetailedHTMLProps<React.HTMLAttributes<RCListRef>, RCListRef> & {

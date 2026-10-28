@@ -1,0 +1,65 @@
+{
+  "name": "@rcarls/rc-page-turner",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.6.0",
+  "description": "Page-turn view for a stack of light-DOM pages: one page at a time, turned with a compositor-only 3D flip, following the WAI-ARIA APG carousel pattern.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-page-turner"
+  },
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/components/rc-page-turner",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/rc-page-turner.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/packages/rc-page-turner/src/index.d.ts",
+        "default": "./dist/rc-page-turner.js"
+      }
+    },
+    "./define": {
+      "import": {
+        "types": "./dist/types/packages/rc-page-turner/src/define.d.ts",
+        "default": "./dist/rc-page-turner-define.js"
+      }
+    }
+  },
+  "types": "./dist/types/packages/rc-page-turner/src/index.d.ts",
+  "sideEffects": [
+    "./dist/rc-page-turner-define.js"
+  ],
+  "customElements": "dist/custom-elements.json",
+  "scripts": {
+    "build": "tsc && vite build && cem analyze",
+    "cem:analyze": "cem analyze",
+    "preview": "vite preview",
+    "test:browser": "vitest --run",
+    "test:browser:chrome": "vitest --run --project=chromium",
+    "test:browser:firefox": "vitest --run --project=firefox"
+  },
+  "devDependencies": {
+    "@custom-elements-manifest/analyzer": "0.11.0",
+    "@vitest/browser-playwright": "4.1.5",
+    "lit": "^3.0.0",
+    "playwright": "^1.56.0",
+    "rollup": "^4.60.2",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.6",
+    "vitest-browser-lit": "^1.0.1"
+  },
+  "dependencies": {
+    "@rcarls/rc-common": "workspace:*"
+  },
+  "peerDependencies": {
+    "lit": "^3.0.0"
+  }
+}

@@ -946,6 +946,38 @@ export type RCCarouselMessages = {
 /** Public API surface of `<rc-carousel-item>`. */
 export type RCCarouselItemRef = HTMLElement;
 
+export type RCPageTurnerChangeTrigger = 'api' | 'button' | 'keyboard';
+
+/** Detail shape for `rc-page-turner-change`. */
+export type RCPageTurnerChangeDetail = {
+  index: number;
+  trigger: RCPageTurnerChangeTrigger;
+};
+
+/** Public API surface of `<rc-page-turner>`. */
+export type RCPageTurnerRef = HTMLElement & {
+  activeIndex: number | undefined;
+  defaultActiveIndex: number;
+  navigation: boolean;
+  next(): void;
+  previous(): void;
+  goToIndex(index: number, instant?: boolean): void;
+  /** Built-in text overrides; unset keys fall back to registered text, then English. */
+  messages: RCPageTurnerMessages | undefined;
+};
+
+/** Overridable `<rc-page-turner>` built-in text. Register defaults with `registerMessages()` from `@rcarls/rc-common`. */
+export type RCPageTurnerMessages = {
+  pageTurner?: string;
+  page?: string;
+  position?: (position: number, count: number, locale?: string) => string;
+  previous?: string;
+  next?: string;
+};
+
+/** Public API surface of `<rc-page-turner-page>`. */
+export type RCPageTurnerPageRef = HTMLElement;
+
 export type RCTextareaChangeDetail = {
   value: string;
 };
@@ -1031,6 +1063,19 @@ declare module 'solid-js' {
       };
 
       'rc-carousel-item': JSX.HTMLAttributes<RCCarouselItemRef>;
+
+      'rc-page-turner': JSX.HTMLAttributes<RCPageTurnerRef> & {
+        'prop:messages'?: RCPageTurnerMessages | undefined;
+        'active-index'?: number | string;
+        defaultActiveIndex?: number | string;
+        'default-active-index'?: number | string;
+        navigation?: boolean | string;
+        'prop:activeIndex'?: number | undefined;
+        'prop:defaultActiveIndex'?: number | undefined;
+        'on:rc-page-turner-change'?: (e: CustomEvent<RCPageTurnerChangeDetail>) => void;
+      };
+
+      'rc-page-turner-page': JSX.HTMLAttributes<RCPageTurnerPageRef>;
 
       'rc-list': JSX.HTMLAttributes<RCListRef> & {
         variant?: RCListVariant;

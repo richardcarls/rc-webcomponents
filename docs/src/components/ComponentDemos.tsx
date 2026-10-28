@@ -772,6 +772,72 @@ export function CarouselDemo() {
   );
 }
 
+const PAGE_TURNER_DEMO_CSS = `
+.page-turner-demo {
+  inline-size: 100%;
+  max-inline-size: 24rem;
+  block-size: 14rem;
+  margin-inline: auto;
+}
+
+.page-turner-demo-page {
+  display: grid;
+  align-content: center;
+  gap: 0.75rem;
+  block-size: 100%;
+  box-sizing: border-box;
+  padding: 1.5rem 3.5rem;
+  font: 1rem/1.4 sans-serif;
+}
+
+.page-turner-demo-page h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.page-turner-demo-page p {
+  margin: 0;
+}
+`;
+
+const PAGE_TURNER_DEMO_STEPS = [
+  'Heat the oven to 350°F and butter a loaf pan.',
+  'Mash the bananas, then stir in the melted butter.',
+  'Fold in the flour, sugar, and baking soda until just combined.',
+  'Bake for 55 minutes, until a skewer comes out clean.',
+];
+
+export function PageTurnerDemo() {
+  const [status, setStatus] = useState('Step 1 of 4.');
+
+  return (
+    <DemoFrame defaultTheme="material">
+      <style>{PAGE_TURNER_DEMO_CSS}</style>
+      <rc-page-turner
+        className="page-turner-demo"
+        navigation
+        aria-label="Banana bread steps"
+        onrc-page-turner-change={(event: CustomEvent<{ index: number; trigger: string }>) => {
+          setStatus(`Step ${event.detail.index + 1} of ${PAGE_TURNER_DEMO_STEPS.length}.`);
+        }}
+      >
+        {PAGE_TURNER_DEMO_STEPS.map((step, index) => (
+          <rc-page-turner-page key={step}>
+            <div className="page-turner-demo-page">
+              <h3>Step {index + 1}</h3>
+              <p>{step}</p>
+              <label>
+                <input type="checkbox" /> Done
+              </label>
+            </div>
+          </rc-page-turner-page>
+        ))}
+      </rc-page-turner>
+      <p aria-hidden="true">{status}</p>
+    </DemoFrame>
+  );
+}
+
 export function ChipDemo() {
   const [toolbarEl, setToolbarEl] = useState<HTMLElement | null>(null);
   const [log, setLog] = useState<string[]>([]);

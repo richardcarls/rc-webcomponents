@@ -1,0 +1,18 @@
+@layer rc-theme-material.components {
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-page-turner {
+    --rc-page-turner-color: var(--md-sys-color-on-surface, CanvasText);
+    --rc-page-turner-duration: var(--rc-motion-spatial-duration-default, 400ms);
+    --rc-page-turner-easing: var(--rc-motion-spatial-easing-default, cubic-bezier(0.2, 0, 0, 1));
+    --rc-page-turner-navigation-button-background: color-mix(
+      in srgb,
+      var(--md-sys-color-surface, Canvas) 75%,
+      transparent
+    );
+    --rc-page-turner-navigation-button-color: var(--md-sys-color-on-surface, CanvasText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-page-turner-page {
+    --rc-page-turner-page-background: var(--md-sys-color-surface-container, Canvas);
+    --rc-page-turner-page-color: var(--md-sys-color-on-surface, CanvasText);
+  }
+}
