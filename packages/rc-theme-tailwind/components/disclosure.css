@@ -1,0 +1,112 @@
+@layer rc-theme-tailwind.components {
+  /*
+   * Maps Tailwind tokens onto the public rc-disclosure properties, for both
+   * `rc-disclosure` and `rc-accordion`, since a panel reads the same properties
+   * either way. The boxes themselves are drawn by the component's own light-DOM
+   * base layer.
+   */
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-disclosure {
+    /*
+     * Layout stays in theme CSS so a disclosure is laid out before the element
+     * upgrades; only the property-driven drawing lives in the component's base
+     * layer, which needs JS to install.
+     */
+    display: block;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) :is(rc-disclosure, rc-accordion) {
+    --rc-disclosure-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-disclosure-radius: var(--tailwind-radius-lg, 0.75rem);
+    --rc-disclosure-background: var(--tailwind-surface-raised, Canvas);
+    --rc-disclosure-color: var(--tailwind-on-surface, CanvasText);
+    --rc-disclosure-open-shadow: var(--tailwind-shadow-sm, none);
+
+    --rc-disclosure-summary-min-block-size: 2.75rem;
+    --rc-disclosure-summary-padding-block: 0.75rem;
+    --rc-disclosure-summary-padding-inline: 0.875rem;
+    --rc-disclosure-summary-gap: 0.75rem;
+    --rc-disclosure-summary-font: 650 var(--tailwind-font-size, 0.95rem) /
+      var(--tailwind-line-height, 1.45) var(--tailwind-font-family, sans-serif);
+    --rc-disclosure-summary-hover-background: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 8%,
+      transparent
+    );
+
+    --rc-disclosure-content-padding-block: 0 0.875rem;
+    --rc-disclosure-content-padding-inline: 0.875rem;
+    --rc-disclosure-content-color: var(--tailwind-on-surface-muted, CanvasText);
+
+    --rc-disclosure-duration: var(--tailwind-motion-spatial-duration-default, 240ms);
+    --rc-disclosure-easing: var(--tailwind-motion-easing, ease);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) :is(rc-disclosure, rc-accordion) > details {
+    overflow: clip;
+    transition:
+      border-color var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease),
+      box-shadow var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease);
+  }
+
+  /*
+   * Tailwind replaces the native marker with its own chevron, so it owns both
+   * halves of that swap: hiding `::marker` and drawing the affordance. Changing
+   * `display` here is safe precisely because this rule also supplies the
+   * replacement the lost `list-item` box would have drawn.
+   */
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    transition:
+      background-color var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease),
+      color var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > summary::marker {
+    content: '';
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > summary::after {
+    content: '';
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-block-start: 2px solid currentColor;
+    border-inline-end: 2px solid currentColor;
+    rotate: 45deg;
+    transition:
+      rotate var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease),
+      translate var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    :is(rc-disclosure, rc-accordion)
+    > details[open]
+    > summary::after {
+    rotate: 135deg;
+    translate: 0 -0.125rem;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    :is(rc-disclosure, rc-accordion)
+    > details
+    > :not(summary) {
+    display: flow-root;
+  }
+}

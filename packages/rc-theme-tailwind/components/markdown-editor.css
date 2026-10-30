@@ -1,0 +1,53 @@
+@layer rc-theme-tailwind.components {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-markdown-editor {
+    --rc-markdown-editor-padding: 0.75rem;
+    --rc-markdown-editor-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-markdown-editor-border-radius: 0 0 var(--tailwind-radius-lg, 0.75rem)
+      var(--tailwind-radius-lg, 0.75rem);
+    --rc-markdown-editor-background: var(--rc-field, Field);
+    --rc-markdown-editor-color: var(--rc-field-text, FieldText);
+    --rc-markdown-editor-toolbar-background: var(--tailwind-surface-raised, Canvas);
+    --rc-markdown-editor-toolbar-color: var(--tailwind-on-surface, CanvasText);
+    --rc-markdown-editor-toolbar-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-markdown-editor-toolbar-gap: 0.125rem;
+    --rc-markdown-editor-toolbar-padding: 0.25rem;
+    --rc-markdown-editor-toolbar-radius: var(--tailwind-radius-lg, 0.75rem)
+      var(--tailwind-radius-lg, 0.75rem) 0 0;
+    --rc-markdown-editor-toolbar-button-size: var(--rc-control-block-size, 2.5rem);
+    --rc-markdown-editor-toolbar-button-color: var(--tailwind-on-surface, ButtonText);
+    --rc-markdown-editor-toolbar-button-border: 1px solid transparent;
+    --rc-markdown-editor-toolbar-button-radius: var(--tailwind-radius-md, 0.5rem);
+    --rc-markdown-editor-toolbar-button-active-background: var(
+      --tailwind-primary-container,
+      Highlight
+    );
+    --rc-markdown-editor-toolbar-button-active-color: var(
+      --tailwind-on-primary-container,
+      HighlightText
+    );
+    --rc-markdown-editor-toolbar-button-active-border: 1px solid var(--tailwind-primary, Highlight);
+    --rc-markdown-editor-toolbar-focus-outline: var(--rc-focus-ring, 2px solid Highlight);
+    --rc-markdown-editor-toolbar-focus-outline-offset: var(--rc-focus-ring-offset, 2px);
+    --rc-markdown-editor-toolbar-select-background: var(--tailwind-field, Field);
+    --rc-markdown-editor-toolbar-select-color: var(--tailwind-on-surface, FieldText);
+    --rc-markdown-editor-toolbar-select-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-markdown-editor-toolbar-select-radius: var(--tailwind-radius-sm, 0.25rem);
+    --rc-markdown-editor-toolbar-select-active-background: var(
+      --tailwind-primary-container,
+      Highlight
+    );
+    --rc-markdown-editor-toolbar-select-active-color: var(
+      --tailwind-on-primary-container,
+      HighlightText
+    );
+    --rc-markdown-editor-toolbar-select-active-border-color: var(--tailwind-primary, Highlight);
+    --rc-markdown-editor-toolbar-input-background: var(--tailwind-field, Field);
+    --rc-markdown-editor-toolbar-input-color: var(--tailwind-on-surface, FieldText);
+    --rc-markdown-editor-toolbar-input-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-markdown-editor-toolbar-input-radius: var(--tailwind-radius-sm, 0.25rem);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-markdown-editor::part(rich-view) {
+    line-height: var(--rc-line-height, normal);
+  }
+}

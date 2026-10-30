@@ -9,7 +9,7 @@ import styles from './DemoFrame.module.css';
 
 export type DemoFrameMode = 'auto' | 'light' | 'dark';
 
-export type DemoFrameTheme = 'none' | 'substrate' | 'material' | 'win31';
+export type DemoFrameTheme = 'none' | 'substrate' | 'material' | 'tailwind' | 'win31';
 
 export type DemoFrameControls = 'mode' | 'theme' | 'all';
 
@@ -147,6 +147,7 @@ let structuralSheet: CSSStyleSheet | undefined;
 const PACKAGE_THEMES = {
   substrate: { className: 'rc-theme-substrate', asset: 'rc-theme-substrate/theme.css' },
   material: { className: 'rc-theme-material', asset: 'rc-theme-material/theme.css' },
+  tailwind: { className: 'rc-theme-tailwind', asset: 'rc-theme-tailwind/theme.css' },
   win31: { className: 'rc-theme-win31', asset: 'rc-theme-win31/theme.css' },
 } as const satisfies Record<string, { className: string; asset: string }>;
 
@@ -480,6 +481,7 @@ export function DemoFrame({
                   <option value="none">None</option>
                   <option value="substrate">Substrate</option>
                   <option value="material">Material</option>
+                  <option value="tailwind">Tailwind CSS v4</option>
                   <option value="win31">Windows 3.1</option>
                 </select>
               </label>

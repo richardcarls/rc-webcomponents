@@ -1,0 +1,48 @@
+{
+  "name": "@rcarls/rc-theme-tailwind",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.6.0",
+  "description": "CSS-only Tailwind CSS v4 token bridge and calm SaaS theme for rc-webcomponents.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-theme-tailwind"
+  },
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/guide/theme-previews",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": "./bridge.css",
+    "./bridge.css": "./bridge.css",
+    "./defaults.css": "./defaults.css",
+    "./components.css": "./components.css",
+    "./components/*.css": "./components/*.css",
+    "./css-components.css": "./css-components.css",
+    "./css-components/*.css": "./css-components/*.css",
+    "./native.css": "./native.css",
+    "./theme.css": "./theme.css"
+  },
+  "files": [
+    "*.css",
+    "components",
+    "css-components",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "echo 'CSS-only package, no build step'",
+    "test:browser": "vitest --run",
+    "test:browser:chrome": "vitest --run --project=chromium",
+    "test:browser:firefox": "vitest --run --project=firefox"
+  },
+  "devDependencies": {
+    "@vitest/browser-playwright": "4.1.5",
+    "playwright": "^1.56.0",
+    "vite": "^7.1.7",
+    "vitest": "^4.0.6"
+  }
+}

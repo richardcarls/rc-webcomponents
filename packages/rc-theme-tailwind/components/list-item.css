@@ -1,0 +1,70 @@
+@layer rc-theme-tailwind.components {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) {
+    /* Compatibility tokens retained for rc-listbox and embedded selectors. */
+    --rc-list-item-gap: var(--tailwind-item-gap, 0.5rem);
+    --rc-list-item-min-block-size: 2.25rem;
+    --rc-list-item-padding-block: var(--tailwind-item-padding-block, 0.55rem);
+    --rc-list-item-padding-inline: var(--tailwind-item-padding-inline, 0.75rem);
+    --rc-list-item-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
+    --rc-list-item-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+    --rc-list-item-selected-bg: var(--rc-highlight, Highlight);
+    --rc-list-item-selected-color: var(--rc-highlight-text, HighlightText);
+    --rc-list-item-disabled-opacity: var(--rc-disabled-opacity, 0.52);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-list {
+    --rc-list-padding-inline: var(--tailwind-item-padding-inline, 0.75rem);
+    --rc-list-leading-gap: var(--tailwind-item-gap, 0.5rem);
+    --rc-list-trailing-gap: var(--tailwind-item-gap, 0.5rem);
+    --rc-list-row-gap: 0;
+    --rc-list-item-min-block-size: 2.25rem;
+    --rc-list-item-padding-block: var(--tailwind-item-padding-block, 0.55rem);
+    --rc-list-item-color: var(--rc-field-text, FieldText);
+    --rc-list-item-background: transparent;
+    --rc-list-item-selected-color: var(--rc-highlight-text, HighlightText);
+    --rc-list-item-selected-background: var(--rc-highlight, Highlight);
+    --rc-list-item-divider: 1px solid var(--tailwind-border-color, GrayText);
+    --rc-list-item-state-layer-color: var(--rc-accent, Highlight);
+    --rc-list-item-hover-state-layer-opacity: 0.1;
+    --rc-list-item-focus-state-layer-opacity: 0.12;
+    --rc-list-item-pressed-state-layer-opacity: 0.16;
+    --rc-list-item-disabled-opacity: var(--rc-disabled-opacity, 0.52);
+    --rc-list-item-transition-duration: var(--rc-motion-effects-duration-fast, 100ms);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-list[variant='segmented'] {
+    --rc-list-padding-inline: 0;
+    --rc-list-row-gap: 0.25rem;
+    --rc-list-item-background: var(--tailwind-surface-raised, Field);
+    --rc-list-item-divider: 0;
+    --rc-list-item-border: 1px solid var(--tailwind-border-color, GrayText);
+    --rc-list-item-border-radius: var(--tailwind-radius-md, 0.375rem);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    rc-list-item
+    > :where([data-rc-list-supporting], small) {
+    display: block;
+    color: var(--tailwind-on-surface-muted, GrayText);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    rc-list-item
+    > :is(input[type='checkbox'], input[type='radio'])[slot='leading'] {
+    margin: 0;
+    accent-color: var(--rc-accent, Highlight);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-listbox,
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) [part~='listbox'] {
+    --rc-listbox-option-gap: var(--rc-list-item-gap);
+    --rc-listbox-option-min-block-size: var(--rc-list-item-min-block-size);
+    --rc-listbox-option-padding-block: var(--rc-list-item-padding-block);
+    --rc-listbox-option-padding-inline: var(--rc-list-item-padding-inline);
+    --rc-listbox-hover-bg: var(--rc-list-item-hover-bg);
+    --rc-listbox-active-bg: var(--rc-list-item-active-bg);
+    --rc-listbox-selected-bg: var(--rc-list-item-selected-bg);
+    --rc-listbox-selected-color: var(--rc-list-item-selected-color);
+    --rc-listbox-disabled-opacity: var(--rc-list-item-disabled-opacity);
+  }
+}

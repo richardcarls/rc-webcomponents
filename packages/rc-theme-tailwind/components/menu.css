@@ -1,0 +1,28 @@
+@layer rc-theme-tailwind.components {
+  /*
+   * Declared on the theme root rather than on rc-menu so menus rendered
+   * inside other shadow roots inherit the same values.
+   */
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) {
+    --rc-menu-item-gap: var(--tailwind-item-gap, 0.5rem);
+    --rc-menu-item-min-block-size: 2.25rem;
+    --rc-menu-item-padding-block: var(--tailwind-item-padding-block, 0.55rem);
+    --rc-menu-item-padding-inline: var(--tailwind-item-padding-inline, 0.75rem);
+    --rc-menu-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
+    --rc-menu-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+    --rc-menu-check-size: 1.25rem;
+    --rc-menu-background: var(--tailwind-surface-raised, Canvas);
+    --rc-menu-shadow: var(--rc-shadow, none);
+    --rc-menu-padding-block: 0.25rem;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-menu {
+    display: inline-block;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-menu [data-group-label] {
+    color: var(--tailwind-on-surface-muted, GrayText);
+    font-size: 0.8em;
+    font-weight: 650;
+  }
+}

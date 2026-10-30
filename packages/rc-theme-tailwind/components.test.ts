@@ -1,0 +1,582 @@
+import { afterEach, expect, test } from 'vitest';
+
+import './components.css';
+
+class BlockHostElement extends HTMLElement {
+  constructor() {
+    super();
+
+    const shadowRoot = this.attachShadow({ mode: 'open' });
+    const style = document.createElement('style');
+
+    style.textContent = ':host { display: block; }';
+    shadowRoot.append(style);
+  }
+}
+
+class BlockHostElementAlt extends BlockHostElement {}
+
+customElements.get('rc-slider') || customElements.define('rc-slider', BlockHostElement);
+
+customElements.get('rc-range-slider') ||
+  customElements.define('rc-range-slider', BlockHostElementAlt);
+
+afterEach(() => {
+  document.body.replaceChildren();
+});
+
+function renderScope(): HTMLElement {
+  const scope = document.createElement('div');
+
+  scope.className = 'rc-theme-tailwind';
+  document.body.append(scope);
+
+  return scope;
+}
+
+function renderPart(scope: HTMLElement, tagName: string, partName: string): HTMLElement {
+  const host = document.createElement(tagName);
+  const shadowRoot = host.shadowRoot ?? host.attachShadow({ mode: 'open' });
+  const part = document.createElement('div');
+
+  part.setAttribute('part', partName);
+  shadowRoot.append(part);
+  scope.append(host);
+
+  return part;
+}
+
+test('dialog entrance motion leaves surface geometry untransformed', () => {
+  const $scope = renderScope();
+  const $host = document.createElement('rc-dialog');
+  const $dialog = document.createElement('dialog');
+
+  $dialog.setAttribute('open', '');
+  $host.append($dialog);
+  $scope.append($host);
+
+  const openStyle = getComputedStyle($dialog);
+  const transitionProperties = openStyle.transitionProperty.split(',').map((value) => value.trim());
+
+  expect(transitionProperties).toContain('opacity');
+  expect(transitionProperties).not.toContain('transform');
+  expect(openStyle.transform).toBe('none');
+
+  $dialog.removeAttribute('open');
+
+  expect(getComputedStyle($dialog).transform).toBe('none');
+});
+
+test('aggregate component styles cover the reference styling surface', () => {
+  const scope = renderScope();
+  const expectations = new Map<string, [string, string]>([
+    ['rc-listbox', ['display', 'block']],
+    ['rc-button', ['--rc-button-bg', '']],
+    ['rc-card', ['--rc-card-bg', '']],
+    ['rc-list', ['--rc-list-padding-inline', '0.75rem']],
+    ['rc-chip', ['--rc-chip-block-size', '2rem']],
+    ['rc-select', ['display', 'inline-block']],
+    ['rc-segmented-button', ['--rc-segmented-button-segment-min-block-size', '2.5rem']],
+    ['rc-switch', ['--rc-switch-track-inline-size', '3.25rem']],
+    ['rc-snackbar', ['--rc-snackbar-bg', '']],
+    ['rc-combobox', ['display', 'inline-block']],
+    ['rc-bottom-sheet', ['--rc-bottom-sheet-bg', '']],
+    ['rc-search-bar', ['display', 'inline-block']],
+    ['rc-textarea', ['--rc-textarea-padding-inline', '0.75rem']],
+    ['rc-markdown-editor', ['--rc-markdown-editor-padding', '0.75rem']],
+    ['rc-transfer-list', ['--rc-transfer-list-gap', '1rem']],
+    ['rc-app-bar', ['font-family', '']],
+    ['rc-fab', ['--rc-fab-bg', '']],
+    ['rc-fab-menu', ['--rc-fab-menu-bg', '']],
+    ['rc-menu', ['display', 'inline-block']],
+    ['rc-menu-button', ['display', 'inline-block']],
+    ['rc-menubar', ['display', 'inline-block']],
+    ['rc-navigation-bar', ['--rc-navigation-bar-bg', '']],
+    ['rc-navigation-rail', ['--rc-navigation-rail-bg', '']],
+    ['rc-toolbar', ['display', 'inline-block']],
+    ['rc-slider', ['display', 'block']],
+    ['rc-range-slider', ['display', 'block']],
+    ['rc-splitter', ['--rc-splitter-separator-color', '']],
+    ['rc-disclosure', ['display', 'block']],
+    ['rc-accordion', ['display', 'grid']],
+    ['rc-virtual-canvas', ['overflow', 'hidden']],
+    ['rc-popover', ['--rc-popover-padding-inline', '0.75rem']],
+    ['rc-tooltip', ['--rc-tooltip-border', '0']],
+  ]);
+
+  for (const [tagName, [property, expected]] of expectations) {
+    const element = document.createElement(tagName);
+
+    scope.append(element);
+
+    const value = getComputedStyle(element).getPropertyValue(property);
+
+    expect(value, `${tagName} ${property}`).not.toBe('');
+
+    if (expected) {
+      expect(value).toBe(expected);
+    }
+  }
+});
+
+test('popover and tooltip tokens reach surfaces inside nested shadow roots', () => {
+  const scope = renderScope();
+  const host = document.createElement('div');
+  const shadowRoot = host.attachShadow({ mode: 'open' });
+  const popover = document.createElement('rc-popover');
+  const tooltip = document.createElement('rc-tooltip');
+
+  shadowRoot.append(popover, tooltip);
+  scope.append(host);
+
+  expect(getComputedStyle(popover).getPropertyValue('--rc-popover-background')).not.toBe('');
+  expect(getComputedStyle(tooltip).getPropertyValue('--rc-tooltip-background')).not.toBe('');
+});
+
+test('canonical 0.7 component tokens replace removed theme-only names', () => {
+  const scope = renderScope();
+  const appBar = document.createElement('rc-app-bar');
+  const markdownEditor = document.createElement('rc-markdown-editor');
+  const textarea = document.createElement('rc-textarea');
+  const transferList = document.createElement('rc-transfer-list');
+
+  scope.append(appBar, markdownEditor, textarea, transferList);
+
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-bg')).not.toBe('');
+
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-background')).toBe('');
+
+  expect(
+    getComputedStyle(markdownEditor).getPropertyValue('--rc-markdown-editor-border-radius'),
+  ).not.toBe('');
+
+  expect(getComputedStyle(textarea).getPropertyValue('--rc-textarea-border-radius')).toBe(
+    '0.75rem',
+  );
+
+  expect(getComputedStyle(transferList).getPropertyValue('--rc-transfer-list-listbox-radius')).toBe(
+    '0.75rem',
+  );
+
+  appBar.setAttribute('data-scrolled', '');
+
+  expect(getComputedStyle(appBar).getPropertyValue('--rc-app-bar-shadow')).not.toBe('');
+});
+
+test('contextual styles do not style unrelated native buttons', () => {
+  const scope = renderScope();
+  const button = document.createElement('button');
+
+  scope.append(button);
+
+  expect(getComputedStyle(button).borderRadius).toBe('0px');
+});
+
+test('segmented buttons flatten native fieldset chrome for themed segments', () => {
+  const scope = renderScope();
+  const segmentedButton = document.createElement('rc-segmented-button');
+
+  scope.append(segmentedButton);
+
+  const styles = getComputedStyle(segmentedButton);
+
+  // The structural recipe moved into the component, which now owns the
+  // visually hidden legend and the focusable hidden radio. The theme opts in.
+  expect(styles.getPropertyValue('--rc-segmented-button-appearance').trim()).toBe('segmented');
+});
+
+test('app bars stack above adjacent themed content for anchored popups', () => {
+  const scope = renderScope();
+  const appBar = document.createElement('rc-app-bar');
+
+  scope.append(appBar);
+
+  expect(getComputedStyle(appBar).position).toBe('relative');
+  expect(getComputedStyle(appBar).zIndex).toBe('1');
+});
+
+test('card heading slots use compact article-title typography', () => {
+  const scope = renderScope();
+  const card = document.createElement('rc-card');
+  const heading2 = document.createElement('h2');
+  const heading3 = document.createElement('h3');
+
+  heading2.slot = 'title';
+  heading3.slot = 'title';
+  card.append(heading2, heading3);
+  scope.append(card);
+
+  expect(getComputedStyle(heading2).fontSize).toBe('20px');
+  expect(getComputedStyle(heading3).fontSize).toBe('16px');
+});
+
+test('navigation surfaces expose the full reference token contract', () => {
+  const scope = renderScope();
+  const bar = document.createElement('rc-navigation-bar');
+  const rail = document.createElement('rc-navigation-rail');
+  const barLink = document.createElement('a');
+  const railLink = document.createElement('a');
+
+  barLink.setAttribute('aria-current', 'page');
+  railLink.setAttribute('aria-current', 'page');
+  bar.append(barLink);
+  rail.append(railLink);
+  scope.append(bar, rail);
+
+  const barStyles = getComputedStyle(bar);
+  const railStyles = getComputedStyle(rail);
+
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-block-size')).toBe('4rem');
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-item-padding-inline')).not.toBe('');
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-indicator-duration')).toBe('0ms');
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-indicator-bg')).toBe('transparent');
+  expect(barStyles.getPropertyValue('--rc-navigation-bar-focus-ring')).not.toBe('');
+  expect(getComputedStyle(barLink).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-inline-size')).toBe('6rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-expanded-inline-size')).toBe('15rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-toggle-size')).toBe('3rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-toggle-inline-offset')).toBe('0.5rem');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-indicator-duration')).toBe('0ms');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-indicator-bg')).toBe('transparent');
+  expect(railStyles.getPropertyValue('--rc-navigation-rail-focus-ring')).not.toBe('');
+  expect(getComputedStyle(railLink).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+});
+
+test('icon consumers share the theme icon-font convention', () => {
+  const scope = renderScope();
+  const bar = document.createElement('rc-navigation-bar');
+  const rail = document.createElement('rc-navigation-rail');
+  const button = document.createElement('rc-button');
+  const listIcon = document.createElement('span');
+  const barIcon = document.createElement('span');
+  const railIcon = document.createElement('span');
+  const buttonIcon = document.createElement('span');
+
+  button.setAttribute('icon-only', '');
+  barIcon.dataset.rcNavigationIcon = '';
+  railIcon.dataset.rcNavigationIcon = '';
+  buttonIcon.dataset.rcButtonIcon = '';
+  listIcon.dataset.rcIcon = '';
+  bar.append(barIcon);
+  rail.append(railIcon);
+  button.append(buttonIcon);
+  scope.append(bar, rail, button, listIcon);
+
+  expect(getComputedStyle(buttonIcon).fontSize).toBe('24px');
+  expect(getComputedStyle(buttonIcon).lineHeight).toBe('40px');
+  expect(getComputedStyle(listIcon).lineHeight).toBe('24px');
+  expect(getComputedStyle(barIcon).lineHeight).toBe('40px');
+  expect(getComputedStyle(railIcon).lineHeight).toBe('40px');
+
+  bar.style.setProperty('--rc-icon-font-line-height', '1');
+  expect(getComputedStyle(barIcon).lineHeight).toBe('24px');
+});
+
+test('menu button trigger keeps a default button background token', () => {
+  const scope = renderScope();
+  const menuButton = document.createElement('rc-menu-button');
+
+  scope.append(menuButton);
+
+  const styles = getComputedStyle(menuButton);
+
+  expect(styles.getPropertyValue('--rc-menu-button-trigger-background').trim()).toBe('ButtonFace');
+});
+
+test('splitter keeps default geometry and only adds themed color tokens', () => {
+  const scope = renderScope();
+  const splitter = document.createElement('rc-splitter');
+
+  scope.append(splitter);
+
+  const styles = getComputedStyle(splitter);
+
+  expect(styles.getPropertyValue('--rc-splitter-separator-size')).toBe('');
+  expect(styles.getPropertyValue('--rc-splitter-separator-color')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-splitter-handle-color')).not.toBe('');
+});
+
+test('bottom sheet uses the splitter-style three-dot drag handle', () => {
+  const scope = renderScope();
+  const sheet = document.createElement('rc-bottom-sheet');
+  const dialog = document.createElement('dialog');
+  const handle = document.createElement('button');
+
+  handle.dataset.rcBottomSheetHandle = '';
+  dialog.append(handle);
+  sheet.append(dialog);
+  scope.append(sheet);
+
+  const handleStyles = getComputedStyle(handle);
+  const indicatorStyles = getComputedStyle(handle, '::before');
+
+  expect(handleStyles.inlineSize).toBe('100%');
+  expect(handleStyles.minBlockSize).toBe('48px');
+  expect(handleStyles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(indicatorStyles.backgroundImage).toContain('radial-gradient');
+  expect(indicatorStyles.borderRadius).toBe('0px');
+});
+
+test('snackbar action inherits the inverse-surface text color', () => {
+  const scope = renderScope();
+  const snackbar = document.createElement('rc-snackbar');
+
+  scope.append(snackbar);
+
+  const styles = getComputedStyle(snackbar);
+
+  expect(styles.getPropertyValue('--rc-snackbar-action-color')).toBe(
+    styles.getPropertyValue('--rc-snackbar-color'),
+  );
+
+  expect(styles.getPropertyValue('--rc-snackbar-action-font')).toContain('650');
+});
+
+test('contextual toolbar controls receive Tailwind state styling', () => {
+  const scope = renderScope();
+  const toolbar = document.createElement('rc-toolbar');
+  const button = document.createElement('button');
+
+  button.setAttribute('aria-pressed', 'true');
+  toolbar.append(button);
+  scope.append(toolbar);
+
+  expect(getComputedStyle(button).borderRadius).not.toBe('0px');
+  expect(getComputedStyle(button).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+  expect(getComputedStyle(button).display).toBe('inline-flex');
+  expect(getComputedStyle(button).alignItems).toBe('center');
+  expect(getComputedStyle(button).justifyContent).toBe('center');
+});
+
+test('search bar keeps the field focus ring off the nested native input', () => {
+  const scope = renderScope();
+  const searchBar = document.createElement('rc-search-bar');
+  const input = document.createElement('input');
+
+  input.type = 'search';
+  searchBar.append(input);
+  scope.append(searchBar);
+  input.focus();
+
+  expect(getComputedStyle(input).outlineStyle).toBe('none');
+});
+
+test('horizontal sliders keep their block layout so tracks do not collapse', () => {
+  const scope = renderScope();
+  const slider = document.createElement('rc-slider');
+  const rangeSlider = document.createElement('rc-range-slider');
+
+  scope.style.inlineSize = '360px';
+  scope.append(slider, rangeSlider);
+
+  expect(getComputedStyle(slider).display).toBe('block');
+  expect(getComputedStyle(rangeSlider).display).toBe('block');
+  expect(slider.getBoundingClientRect().width).toBeGreaterThan(300);
+  expect(rangeSlider.getBoundingClientRect().width).toBeGreaterThan(300);
+});
+
+test('range slider thumb effects do not override component positioning transforms', () => {
+  const scope = renderScope();
+  const thumb = renderPart(scope, 'rc-range-slider', 'thumb');
+
+  expect(getComputedStyle(thumb).transform).toBe('none');
+  expect(getComputedStyle(thumb).scale).toBe('none');
+});
+
+test('embedded listbox parts receive Tailwind listbox option tokens', () => {
+  const scope = renderScope();
+  const parts = [
+    renderPart(scope, 'rc-select', 'listbox'),
+    renderPart(scope, 'rc-combobox', 'listbox'),
+    renderPart(scope, 'rc-transfer-list', 'listbox'),
+  ];
+
+  for (const part of parts) {
+    const styles = getComputedStyle(part);
+
+    expect(styles.getPropertyValue('--rc-listbox-option-gap')).not.toBe('');
+    expect(styles.getPropertyValue('--rc-listbox-selected-bg')).not.toBe('');
+  }
+});
+
+test('list elements receive the shared Tailwind token contract', () => {
+  const scope = renderScope();
+  const list = document.createElement('rc-list');
+  const item = document.createElement('rc-list-item');
+
+  item.textContent = 'Headline';
+  list.append(item);
+  scope.append(list);
+
+  const listStyles = getComputedStyle(list);
+
+  expect(listStyles.getPropertyValue('--rc-list-padding-inline')).toBe('0.75rem');
+  expect(listStyles.getPropertyValue('--rc-list-item-min-block-size')).toBe('2.25rem');
+  expect(listStyles.getPropertyValue('--rc-list-item-selected-background')).not.toBe('');
+});
+
+test('disclosure and accordion map their tokens onto the shared panel properties', () => {
+  const scope = renderScope();
+  const disclosure = document.createElement('rc-disclosure');
+  const accordion = document.createElement('rc-accordion');
+
+  disclosure.innerHTML = `
+    <details open>
+      <summary>Details</summary>
+      <div><p>Expanded content</p></div>
+    </details>
+  `;
+
+  accordion.innerHTML = `
+    <details>
+      <summary>Direct item</summary>
+      <div><p>Direct content</p></div>
+    </details>
+  `;
+
+  scope.append(disclosure, accordion);
+
+  // The panel boxes are drawn by the component's own light-DOM base layer, so
+  // what a theme owes is the mapping. Both child forms read the same names.
+  for (const element of [disclosure, accordion]) {
+    const styles = getComputedStyle(element);
+
+    for (const token of [
+      '--rc-disclosure-radius',
+      '--rc-disclosure-background',
+      '--rc-disclosure-summary-min-block-size',
+      '--rc-disclosure-summary-hover-background',
+      '--rc-disclosure-content-padding-inline',
+      '--rc-disclosure-duration',
+    ]) {
+      expect(styles.getPropertyValue(token).trim(), `${element.tagName} ${token}`).not.toBe('');
+    }
+  }
+
+  expect(getComputedStyle(accordion).getPropertyValue('--rc-accordion-gap').trim()).toBe('0.5rem');
+
+  // Decoration a bounded property cannot express stays with the theme: the
+  // chevron that replaces the native marker, and the content's block box.
+  const accordionSummary = accordion.querySelector('summary');
+  const accordionContent = accordion.querySelector('details > div');
+
+  expect(accordionSummary).not.toBeNull();
+  expect(accordionContent).not.toBeNull();
+  expect(getComputedStyle(accordionSummary!, '::after').borderBlockStartWidth).toBe('2px');
+  expect(getComputedStyle(accordionContent!).display).toBe('flow-root');
+});
+
+test('components that previously had no contract now expose themed tokens', () => {
+  const scope = renderScope();
+  const cases: Array<[string, string[]]> = [
+    [
+      'rc-adaptive-menu',
+      [
+        '--rc-adaptive-menu-popup-min-inline-size',
+        '--rc-adaptive-menu-trigger-color',
+        '--rc-adaptive-menu-item-min-block-size',
+      ],
+    ],
+    [
+      'rc-carousel',
+      [
+        '--rc-carousel-item-background',
+        '--rc-carousel-navigation-button-color',
+        '--rc-carousel-pagination-item-active-color',
+      ],
+    ],
+    ['rc-chip-group', ['--rc-chip-group-column-gap', '--rc-chip-group-toggle-separator-color']],
+    ['rc-scroller', ['--rc-scroller-content-max-inline-size', '--rc-scroller-scrollbar-color']],
+    ['rc-toolbar', ['--rc-toolbar-radius', '--rc-toolbar-padding-inline']],
+    [
+      'rc-virtual-canvas',
+      ['--rc-virtual-canvas-scrollbar-size', '--rc-virtual-canvas-scrollbar-thumb-background'],
+    ],
+  ];
+
+  for (const [tag, tokens] of cases) {
+    const element = document.createElement(tag);
+
+    scope.append(element);
+
+    const styles = getComputedStyle(element);
+
+    for (const token of tokens) {
+      expect(styles.getPropertyValue(token).trim(), `${tag} ${token}`).not.toBe('');
+    }
+  }
+});
+
+test('no themed color mixes against a bare system color', () => {
+  const scope = renderScope();
+  const splitter = document.createElement('rc-splitter');
+
+  // components.css alone has no brand values, so supply the ones these mixes
+  // reach for; the point is that the *other* operand is a theme token.
+  scope.style.setProperty('--rc-accent', 'rgb(1, 2, 3)');
+  scope.style.setProperty('--tailwind-surface', 'rgb(4, 5, 6)');
+  scope.style.setProperty('--tailwind-border-color', 'rgb(7, 8, 9)');
+  scope.append(splitter);
+
+  // A mix whose other operand is a system color has no value outside a browser,
+  // so it cannot reach the token export at all.
+  for (const [element, token] of [
+    [splitter, '--rc-splitter-separator-color'],
+    [splitter, '--rc-splitter-handle-color'],
+  ] as const) {
+    const value = getComputedStyle(element).getPropertyValue(token);
+
+    expect(value, token).not.toMatch(/\b(Canvas|CanvasText|ButtonBorder|ButtonFace)\b/);
+  }
+});
+
+test('fields take the Tailwind palette and its shared control chrome', () => {
+  const scope = renderScope();
+  const field = document.createElement('rc-field');
+
+  scope.append(field);
+
+  const styles = getComputedStyle(field);
+
+  expect(styles.getPropertyValue('--rc-field-background')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-field-label-color')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-field-error-color')).not.toBe('');
+  expect(styles.getPropertyValue('--rc-field-radius')).not.toBe('');
+
+  // rc-field owns its own focus outline; Tailwind only supplies the values.
+  expect(styles.getPropertyValue('--rc-field-focus-outline')).not.toBe('');
+
+  const surface = renderPart(scope, 'rc-field', 'field');
+
+  expect(getComputedStyle(surface).transitionDuration).not.toBe('0s');
+});
+
+test('a control provider inside a field stops drawing its own chrome', () => {
+  const scope = renderScope();
+
+  // rc-field's own surface draws the border and background; without these
+  // resets the nested control's chrome nests visibly inside the field's.
+  for (const [tagName, partName] of [
+    ['rc-select', 'trigger'],
+    ['rc-combobox', 'anchor'],
+  ] as const) {
+    const field = document.createElement('rc-field');
+    const provider = document.createElement(tagName);
+    const shadowRoot = provider.shadowRoot ?? provider.attachShadow({ mode: 'open' });
+    const part = document.createElement('div');
+
+    provider.setAttribute('data-rc-field-control', '');
+    part.setAttribute('part', partName);
+    shadowRoot.append(part);
+    field.append(provider);
+    scope.append(field);
+
+    const styles = getComputedStyle(part);
+
+    expect(styles.borderTopWidth, tagName).toBe('0px');
+    expect(styles.borderRadius, tagName).toBe('0px');
+    expect(styles.minBlockSize, tagName).toBe('0px');
+    expect(styles.backgroundColor, tagName).toBe('rgba(0, 0, 0, 0)');
+  }
+});

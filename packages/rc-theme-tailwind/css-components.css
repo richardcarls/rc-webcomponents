@@ -1,0 +1,31 @@
+@layer rc-base, rc-theme-tailwind.defaults, rc-theme-tailwind.bridge, rc-theme-tailwind.native, rc-theme-tailwind.components, rc-theme-tailwind.css-components,
+  rc-theme-tailwind.overrides;
+
+@import './css-components/button.css';
+@import './css-components/chip.css';
+@import './css-components/chip-group.css';
+@import './css-components/select.css';
+@import './css-components/textarea.css';
+@import './css-components/card.css';
+@import './css-components/list.css';
+@import './css-components/disclosure.css';
+
+@layer rc-theme-tailwind.css-components {
+  @media (forced-colors: active) {
+    :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+      :where(
+        button.rc-button,
+        a.rc-button,
+        button.rc-chip,
+        a.rc-chip,
+        label.rc-chip,
+        select.rc-select,
+        textarea.rc-textarea,
+        .rc-card,
+        .rc-list,
+        details.rc-disclosure
+      ) {
+      forced-color-adjust: auto;
+    }
+  }
+}

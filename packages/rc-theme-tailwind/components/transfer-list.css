@@ -1,0 +1,30 @@
+@layer rc-theme-tailwind.components {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-transfer-list {
+    --rc-transfer-list-gap: 1rem;
+    --rc-transfer-list-listbox-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-transfer-list-listbox-radius: var(--tailwind-radius-lg, 0.75rem);
+    --rc-transfer-list-listbox-bg: var(--tailwind-surface-raised, Canvas);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-transfer-list::part(panel),
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-transfer-list::part(listbox) {
+    box-shadow: var(--tailwind-shadow-sm, none);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-transfer-list::part(listbox) {
+    --rc-listbox-option-gap: var(--rc-list-item-gap, var(--tailwind-item-gap, 0.5rem));
+    --rc-listbox-option-min-block-size: 2.25rem;
+    --rc-listbox-option-padding-block: var(--tailwind-item-padding-block, 0.55rem);
+    --rc-listbox-option-padding-inline: var(--tailwind-item-padding-inline, 0.75rem);
+    --rc-listbox-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
+    --rc-listbox-hover-color: var(--rc-field-text, FieldText);
+    --rc-listbox-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+    --rc-listbox-active-color: var(--rc-field-text, FieldText);
+    --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-transfer-list::part(button) {
+    border-radius: var(--rc-control-radius, 0.5rem);
+  }
+}

@@ -1,0 +1,39 @@
+@layer rc-theme-tailwind.components {
+  /*
+   * Maps Tailwind tokens onto the public rc-dialog properties. The surface and
+   * the fullscreen geometry are drawn by the component's own light-DOM base
+   * layer; what is left here is the mapping plus the open and close motion,
+   * which depends on state selectors a bounded property cannot express.
+   */
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-dialog {
+    --rc-dialog-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-dialog-radius: var(--tailwind-radius-xl, 1rem);
+    --rc-dialog-background: var(--tailwind-surface-raised, Canvas);
+    --rc-dialog-color: var(--rc-field-text, CanvasText);
+    --rc-dialog-shadow: var(--tailwind-shadow-lg, none);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-dialog > dialog {
+    opacity: 1;
+    transition:
+      display var(--tailwind-motion-duration-slow, 240ms) allow-discrete,
+      overlay var(--tailwind-motion-duration-slow, 240ms) allow-discrete,
+      opacity var(--tailwind-motion-duration-slow, 240ms) var(--tailwind-motion-easing, ease);
+    transition-behavior: allow-discrete;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-dialog > dialog::backdrop {
+    transition: opacity var(--tailwind-motion-duration-slow, 240ms)
+      var(--tailwind-motion-easing, ease);
+  }
+
+  @starting-style {
+    :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-dialog > dialog[open] {
+      opacity: 0;
+    }
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-dialog > dialog:not([open]) {
+    opacity: 0;
+  }
+}

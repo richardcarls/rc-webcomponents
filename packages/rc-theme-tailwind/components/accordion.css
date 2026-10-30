@@ -1,0 +1,18 @@
+@layer rc-theme-tailwind.components {
+  /*
+   * Only the group box. Panels inside an accordion take the same
+   * `--rc-disclosure-*` mapping as a standalone disclosure, which disclosure.css
+   * sets for `rc-accordion` as well, so the panel recipe is not repeated here.
+   */
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-accordion {
+    --rc-accordion-gap: 0.5rem;
+
+    /* Laid out before the element upgrades; see disclosure.css. */
+    display: grid;
+    gap: var(--rc-accordion-gap, 0.5rem);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-accordion > rc-disclosure {
+    display: block;
+  }
+}

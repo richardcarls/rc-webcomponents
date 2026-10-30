@@ -155,6 +155,11 @@ const packages = [
     'Lightweight CSS reference theme for app layouts',
     '/guide/theme-previews',
   ],
+  [
+    'rc-theme-tailwind',
+    'Tailwind CSS v4 token bridge and calm SaaS theme',
+    '/guide/theme-previews',
+  ],
   ['rc-theme-win31', 'Windows 3.1 era CSS theme and token bridge', '/guide/theme-previews'],
 ];
 

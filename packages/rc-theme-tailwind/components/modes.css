@@ -1,0 +1,60 @@
+@layer rc-theme-tailwind.components {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) {
+    background: var(--tailwind-surface, Canvas);
+    color: var(--tailwind-on-surface, CanvasText);
+    font-family: var(--rc-font-family, inherit);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) *,
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) *::before,
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) *::after {
+    box-sizing: border-box;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) :focus-visible {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  @supports (view-transition-name: none) {
+    :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) [data-rc-view-transition] {
+      view-transition-name: var(--rc-view-transition-name, none);
+    }
+  }
+
+  /*
+   * The vestibular harm reduced motion guards against is movement across the
+   * visual field, which a color or opacity change does not trigger; removing
+   * every transition over-corrected. Spatial motion still goes fully to
+   * zero. Effects motion is kept but shortened, scaled down from
+   * Tailwind's own already-quick 100/160/240ms scale. The two legacy
+   * primitives (--tailwind-motion-duration and its -slow companion,
+   * predating the effects/spatial split) and the cross-theme compatibility
+   * token stay at zero: dialog.css is their one remaining direct consumer,
+   * animating opacity, display, and transform together in one declaration
+   * that mixes spatial and effects properties and can't be cleanly
+   * classified into one bucket. (That file's own transform-based entrance
+   * is a separate, pre-existing conflict with rc-dialog's pointer-resize
+   * geometry reads and remains outside this theme-level override.)
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .rc-theme-tailwind,
+    :host(.rc-theme-tailwind) {
+      --tailwind-motion-duration: 0ms;
+      --tailwind-motion-duration-slow: 0ms;
+      --tailwind-motion-effects-duration-fast: 40ms;
+      --tailwind-motion-effects-duration-default: 55ms;
+      --tailwind-motion-effects-duration-slow: 70ms;
+      --tailwind-motion-spatial-duration-fast: 0ms;
+      --tailwind-motion-spatial-duration-default: 0ms;
+      --tailwind-motion-spatial-duration-slow: 0ms;
+      --rc-motion-duration: 0ms;
+      --rc-motion-effects-duration-fast: 40ms;
+      --rc-motion-effects-duration-default: 55ms;
+      --rc-motion-effects-duration-slow: 70ms;
+      --rc-motion-spatial-duration-fast: 0ms;
+      --rc-motion-spatial-duration-default: 0ms;
+      --rc-motion-spatial-duration-slow: 0ms;
+    }
+  }
+}

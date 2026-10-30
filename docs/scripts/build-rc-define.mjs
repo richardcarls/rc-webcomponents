@@ -1,14 +1,18 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
 import { build } from 'vite';
 
 const docsRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = resolve(docsRoot, '..');
 const entry = join(repoRoot, 'packages', 'rc-webcomponents', 'src', 'define.ts');
 const outDir = join(docsRoot, 'static', 'rc-webcomponents-dist');
-const themePackages = ['rc-theme-material', 'rc-theme-substrate', 'rc-theme-win31'].map((name) => ({
+const themePackages = [
+  'rc-theme-material',
+  'rc-theme-substrate',
+  'rc-theme-tailwind',
+  'rc-theme-win31',
+].map((name) => ({
   name,
   entry: join(repoRoot, 'packages', name, 'theme.css'),
   outDir: join(docsRoot, 'static', name),
@@ -27,6 +31,7 @@ for (const theme of themePackages) {
 
 function inlineCssImports(filePath, seen = new Set()) {
   const resolvedPath = resolve(filePath);
+
   if (seen.has(resolvedPath)) {
     return '';
   }

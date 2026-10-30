@@ -1,0 +1,245 @@
+@layer rc-base, rc-theme-tailwind.defaults, rc-theme-tailwind.bridge, rc-theme-tailwind.native, rc-theme-tailwind.components, rc-theme-tailwind.css-components,
+  rc-theme-tailwind.overrides;
+
+@layer rc-theme-tailwind.bridge {
+  /*
+   * Maps Tailwind CSS v4 theme variables to the rc-webcomponents public
+   * styling contract. Import this file after the application's @theme block.
+   */
+  .rc-theme-tailwind,
+  :host(.rc-theme-tailwind) {
+    /* Internal recipe aliases keep every component stylesheet on the same
+     * Tailwind v4 source tokens, including bridge-only imports. */
+    --tailwind-primary: var(--color-cyan-600, #0891b2);
+    --tailwind-on-primary: var(--color-white, #fff);
+    --tailwind-primary-container: var(--color-cyan-100, #cffafe);
+    --tailwind-on-primary-container: var(--color-cyan-950, #083344);
+    --tailwind-surface: var(--color-slate-50, #f8fafc);
+    --tailwind-surface-raised: var(--color-white, #fff);
+    --tailwind-field: var(--color-white, #fff);
+    --tailwind-on-surface: var(--color-slate-950, #020617);
+    --tailwind-on-surface-muted: var(--color-slate-600, #475569);
+    --tailwind-border-color: var(--color-slate-200, #e2e8f0);
+    --tailwind-inverse-surface: var(--color-slate-900, #0f172a);
+    --tailwind-inverse-on-surface: var(--color-white, #fff);
+    --tailwind-error: var(--color-red-600, #dc2626);
+    --tailwind-font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+    --tailwind-font-size: var(--text-sm, 0.875rem);
+    --tailwind-font-weight: var(--font-weight-normal, 400);
+    --tailwind-line-height: var(--leading-normal, 1.5);
+    --tailwind-radius-sm: var(--radius-sm, 0.25rem);
+    --tailwind-radius-md: var(--radius-md, 0.375rem);
+    --tailwind-radius-lg: var(--radius-lg, 0.5rem);
+    --tailwind-radius-xl: var(--radius-xl, 0.75rem);
+    --tailwind-radius-pill: var(--radius-full, 999px);
+    --tailwind-control-block-size: calc(var(--spacing, 0.25rem) * 10);
+    --tailwind-control-padding-block: calc(var(--spacing, 0.25rem) * 2);
+    --tailwind-control-padding-inline: calc(var(--spacing, 0.25rem) * 3);
+    --tailwind-control-gap: calc(var(--spacing, 0.25rem) * 2);
+    --tailwind-item-padding-block: calc(var(--spacing, 0.25rem) * 2.5);
+    --tailwind-item-padding-inline: calc(var(--spacing, 0.25rem) * 3);
+    --tailwind-item-gap: calc(var(--spacing, 0.25rem) * 2);
+    --tailwind-shadow-md: var(--shadow-md, 0 4px 6px -1px rgb(2 6 23 / 12%));
+    --tailwind-shadow-lg: var(--shadow-lg, 0 10px 15px -3px rgb(2 6 23 / 14%));
+    --tailwind-shadow-sm: var(--shadow-sm, 0 1px 2px 0 rgb(2 6 23 / 10%));
+    --tailwind-motion-easing: var(--ease-out, cubic-bezier(0.2, 0, 0, 1));
+    --tailwind-motion-duration-slow: 240ms;
+    --tailwind-motion-effects-duration-fast: 100ms;
+    --tailwind-motion-effects-duration-default: 160ms;
+    --tailwind-motion-effects-duration-slow: 240ms;
+    --tailwind-motion-spatial-duration-fast: 160ms;
+    --tailwind-motion-spatial-duration-default: 240ms;
+    --tailwind-motion-spatial-duration-slow: 320ms;
+    --tailwind-focus-ring: 2px solid var(--color-cyan-600, Highlight);
+    --tailwind-focus-ring-offset: 2px;
+    --tailwind-disabled-opacity: 0.5;
+    --rc-surface: var(--color-slate-50, Canvas);
+    --rc-field: var(--color-white, Field);
+    --rc-button-bg: var(--color-white, ButtonFace);
+    --rc-field-text: var(--color-slate-950, FieldText);
+    --rc-field-error-color: var(--color-red-600, red);
+    --rc-button-text: var(--color-slate-950, ButtonText);
+    --rc-highlight: var(--color-cyan-100, Highlight);
+    --rc-highlight-text: var(--color-cyan-950, HighlightText);
+    --rc-text-disabled: var(--color-slate-600, GrayText);
+    --rc-accent: var(--color-cyan-600, Highlight);
+    --rc-border-color: var(--color-slate-200, ButtonBorder);
+    --rc-border-width: 1px;
+    --rc-border-style: solid;
+    --rc-border: var(--rc-border-width) var(--rc-border-style) var(--rc-border-color);
+    --rc-shadow: var(--shadow-md, 0 2px 8px rgb(0 0 0 / 15%));
+    --rc-popup-background: var(--color-slate-50, Canvas);
+    --rc-popup-color: var(--rc-field-text, CanvasText);
+    --rc-popup-border: var(--rc-border);
+    --rc-popup-radius: var(--radius-lg, 0.75rem);
+    --rc-popup-shadow: var(--shadow-lg, none);
+    --rc-popup-padding-block: 0.375rem;
+    --rc-font-family: var(--font-sans, inherit);
+    --rc-font-size: var(--text-sm, 1em);
+    --rc-font-weight: var(--font-weight-normal, 400);
+    --rc-line-height: var(--leading-normal, normal);
+    --rc-icon-font-size: 1.5rem;
+    --rc-icon-font-line-height: var(--rc-icon-font-size);
+    --rc-control-block-size: calc(var(--spacing, 0.25rem) * 10);
+    --rc-control-padding-block: calc(var(--spacing, 0.25rem) * 2);
+    --rc-control-padding-inline: calc(var(--spacing, 0.25rem) * 3);
+    --rc-control-gap: calc(var(--spacing, 0.25rem) * 2);
+    --rc-button-color: var(--rc-button-text, ButtonText);
+    --rc-button-block-size: var(--rc-control-block-size);
+    --rc-button-radius: var(--rc-control-radius);
+    --rc-button-border: var(--rc-border);
+    --rc-button-padding-block: var(--rc-control-padding-block);
+    --rc-button-padding-inline: var(--rc-control-padding-inline);
+    --rc-button-gap: var(--rc-control-gap);
+    --rc-button-font: var(--rc-font-weight) var(--rc-font-size) / var(--rc-line-height)
+      var(--rc-font-family);
+    --rc-button-hover-state-layer-opacity: 0.08;
+    --rc-button-focus-state-layer-opacity: 0.12;
+    --rc-button-pressed-state-layer-opacity: 0.12;
+    --rc-card-bg: var(--color-white, Canvas);
+    --rc-card-color: var(--color-slate-950, CanvasText);
+    --rc-card-radius: var(--radius-lg, 0.75rem);
+    --rc-card-padding-block: 0.75rem;
+    --rc-card-padding-inline: 0.75rem;
+    --rc-card-actions-gap: 0.5rem;
+    --rc-card-subtitle-color: color-mix(in srgb, currentColor 72%, transparent);
+    --rc-card-hover-state-layer-opacity: 0.08;
+    --rc-card-pressed-state-layer-opacity: 0.12;
+    --rc-chip-block-size: 2rem;
+    --rc-chip-gap: 0px;
+    --rc-chip-padding-inline: 0.75rem;
+    --rc-chip-border: var(--rc-border);
+    --rc-chip-radius: var(--radius-md, 0.5rem);
+    --rc-chip-bg: var(--color-white, ButtonFace);
+    --rc-chip-color: var(--color-slate-950, ButtonText);
+    --rc-chip-font: inherit;
+    --rc-chip-text-decoration: none;
+    --rc-chip-selected-bg: var(--rc-highlight, Highlight);
+    --rc-switch-native-appearance: none;
+    --rc-switch-native-inline-size: 100%;
+    --rc-switch-native-block-size: 100%;
+    --rc-switch-native-margin: 0;
+    --rc-switch-native-opacity: 0;
+    --rc-switch-decoration-display: block;
+    --rc-switch-icon-display: grid;
+    --rc-switch-track-inline-size: 3.25rem;
+    --rc-switch-track-block-size: 2rem;
+    --rc-switch-selected-track-bg: var(--rc-accent);
+    --rc-switch-thumb-translate: 1.125rem;
+    --rc-segmented-button-segment-min-block-size: var(--rc-control-block-size);
+    --rc-segmented-button-selected-bg: var(--rc-highlight, Highlight);
+    --rc-snackbar-bg: var(--color-slate-900, CanvasText);
+    --rc-snackbar-color: var(--color-white, Canvas);
+    --rc-snackbar-border: 0;
+    --rc-snackbar-action-color: var(--color-white, Canvas);
+    --rc-snackbar-action-border: 0;
+    --rc-snackbar-action-radius: 9999px;
+    --rc-snackbar-action-padding-block: 0.5rem;
+    --rc-snackbar-action-padding-inline: 0.75rem;
+    --rc-snackbar-action-bg: transparent;
+    --rc-snackbar-action-font: 650 0.875rem / 1.25 var(--rc-font-family, inherit);
+    --rc-item-padding-block: calc(var(--spacing, 0.25rem) * 2.5);
+    --rc-item-padding-inline: calc(var(--spacing, 0.25rem) * 3);
+    --rc-item-gap: calc(var(--spacing, 0.25rem) * 2);
+    --rc-list-item-gap: var(--rc-item-gap);
+    --rc-list-item-min-block-size: 2.25rem;
+    --rc-list-item-padding-block: var(--rc-item-padding-block);
+    --rc-list-item-padding-inline: var(--rc-item-padding-inline);
+    --rc-list-item-selected-bg: var(--rc-highlight, Highlight);
+    --rc-list-item-selected-color: var(--rc-highlight-text, HighlightText);
+    --rc-radius-sm: var(--radius-sm, 0.25rem);
+    --rc-radius-md: var(--radius-md, 0.5rem);
+    --rc-control-radius: var(--radius-md, 0.5rem);
+    --rc-focus-ring: 2px solid var(--color-cyan-600, Highlight);
+    --rc-focus-ring-offset: 2px;
+    --rc-disabled-opacity: 0.5;
+    --rc-motion-effects-duration-fast: 100ms;
+    --rc-motion-effects-easing-fast: ease-out;
+    --rc-motion-effects-duration-default: 160ms;
+    --rc-motion-effects-easing-default: var(--rc-motion-effects-easing-fast);
+    --rc-motion-effects-duration-slow: 240ms;
+    --rc-motion-effects-easing-slow: var(--rc-motion-effects-easing-fast);
+    --rc-motion-spatial-duration-fast: 160ms;
+    --rc-motion-spatial-easing-fast: var(--ease-out, cubic-bezier(0.2, 0, 0, 1));
+    --rc-motion-spatial-duration-default: 240ms;
+    --rc-motion-spatial-easing-default: var(--rc-motion-spatial-easing-fast);
+    --rc-motion-spatial-duration-slow: 320ms;
+    --rc-motion-spatial-easing-slow: var(--rc-motion-spatial-easing-fast);
+    /* Tailwind's one curve is decelerate-shaped, so it is the enter curve. */
+    --rc-motion-effects-easing-enter: ease-out;
+    --rc-motion-effects-easing-exit: ease-in;
+    --rc-motion-spatial-easing-enter: var(--rc-motion-spatial-easing-fast);
+    --rc-motion-spatial-easing-exit: cubic-bezier(0.3, 0, 1, 1);
+    /* Matches base.css: the compatibility token follows the effects default. */
+    --rc-motion-duration: var(--rc-motion-effects-duration-default);
+    /*
+     * Mixed against the theme's own inverse surface rather than `CanvasText`,
+     * so the scrim carries the palette's warmth and resolves to a real color
+     * rather than to a system one that cannot leave CSS.
+     */
+    --rc-dialog-scrim: color-mix(in srgb, var(--color-slate-900, CanvasText) 42%, transparent);
+  }
+
+  .rc-theme-tailwind rc-listbox,
+  :host(.rc-theme-tailwind) rc-listbox,
+  .rc-theme-tailwind rc-menu,
+  :host(.rc-theme-tailwind) rc-menu {
+    --rc-listbox-option-gap: var(--rc-list-item-gap, 0.5rem);
+    --rc-listbox-option-min-block-size: var(--rc-list-item-min-block-size, 2.25rem);
+    --rc-listbox-option-padding-block: var(--rc-list-item-padding-block, 0.55rem);
+    --rc-listbox-option-padding-inline: var(--rc-list-item-padding-inline, 0.75rem);
+    --rc-listbox-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
+    --rc-listbox-hover-color: var(--rc-field-text, FieldText);
+    --rc-listbox-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+    --rc-listbox-active-color: var(--rc-field-text, FieldText);
+    --rc-listbox-selected-bg: var(--rc-list-item-selected-bg, Highlight);
+    --rc-listbox-selected-color: var(--rc-list-item-selected-color, HighlightText);
+  }
+
+  .rc-theme-tailwind rc-select,
+  :host(.rc-theme-tailwind) rc-select,
+  .rc-theme-tailwind rc-combobox,
+  :host(.rc-theme-tailwind) rc-combobox {
+    --rc-select-control-block-size: var(--rc-control-block-size);
+    --rc-select-radius: var(--rc-control-radius);
+    --rc-select-chip-radius: var(--radius-sm, 0.25rem);
+    --rc-combobox-control-block-size: var(--rc-control-block-size);
+    --rc-combobox-radius: var(--rc-control-radius);
+    --rc-combobox-chip-radius: var(--radius-sm, 0.25rem);
+  }
+
+  .rc-theme-tailwind rc-slider,
+  :host(.rc-theme-tailwind) rc-slider,
+  .rc-theme-tailwind rc-range-slider,
+  :host(.rc-theme-tailwind) rc-range-slider {
+    --rc-slider-track-size: 0.375rem;
+    --rc-slider-track-background: color-mix(in srgb, var(--rc-border-color) 70%, transparent);
+    --rc-slider-progress-background: var(--rc-accent);
+    --rc-slider-track-radius: 999px;
+    --rc-range-slider-accent: var(--rc-accent);
+    --rc-range-slider-track-background: color-mix(in srgb, var(--rc-border-color) 70%, transparent);
+    --rc-range-slider-thumb-background: var(--color-slate-50, Canvas);
+    --rc-range-slider-thumb-border: var(--rc-accent);
+    --rc-thumb-radius: 0.5625rem;
+  }
+
+  .rc-theme-tailwind rc-progress,
+  :host(.rc-theme-tailwind) rc-progress {
+    --rc-progress-track-background: color-mix(in srgb, var(--rc-border-color) 70%, transparent);
+    --rc-progress-track-opacity: 1;
+    --rc-progress-track-radius: 999px;
+    --rc-progress-fill-background: var(--rc-accent);
+    --rc-progress-value-color: var(--color-slate-600, GrayText);
+  }
+
+  .rc-theme-tailwind rc-bottom-sheet,
+  :host(.rc-theme-tailwind) rc-bottom-sheet {
+    --rc-bottom-sheet-bg: var(--color-white, Canvas);
+    --rc-bottom-sheet-color: var(--rc-field-text, CanvasText);
+    --rc-bottom-sheet-radius: var(--radius-xl, 1rem) var(--radius-xl, 1rem) 0 0;
+    --rc-bottom-sheet-shadow: var(--shadow-lg, none);
+    --rc-bottom-sheet-scrim: var(--rc-dialog-scrim);
+    --rc-bottom-sheet-handle-color: var(--rc-border-color, GrayText);
+    --rc-bottom-sheet-handle-radius: var(--radius-full, 999px);
+  }
+}

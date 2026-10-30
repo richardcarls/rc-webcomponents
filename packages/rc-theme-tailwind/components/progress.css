@@ -1,0 +1,11 @@
+@layer rc-theme-tailwind.components {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-progress::part(value-display) {
+    color: var(--tailwind-on-surface-muted, GrayText);
+    font-variant-numeric: tabular-nums;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-progress {
+    --rc-progress-fill-transition-duration: var(--rc-motion-effects-duration-fast, 100ms);
+    --rc-progress-fill-transition-easing: var(--rc-motion-effects-easing-fast, ease-out);
+  }
+}

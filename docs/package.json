@@ -16,6 +16,7 @@
     "@rcarls/rc-textarea-plugin-markdown": "workspace:^",
     "@rcarls/rc-theme-material": "workspace:^",
     "@rcarls/rc-theme-substrate": "workspace:^",
+    "@rcarls/rc-theme-tailwind": "workspace:^",
     "@rcarls/rc-theme-win31": "workspace:^",
     "@rcarls/rc-webcomponents": "workspace:^",
     "highlight.js": "^11.11.1",

@@ -1,0 +1,30 @@
+@layer rc-theme-tailwind.components {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-search-bar {
+    display: inline-block;
+    --rc-search-bar-radius: var(--tailwind-radius-lg, 0.75rem);
+    --rc-search-bar-border: var(--rc-border, 1px solid ButtonBorder);
+    --rc-search-bar-shadow: var(--tailwind-shadow-sm, none);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-search-bar::part(root) {
+    background: var(--rc-field, Field);
+    transition:
+      border-color var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease),
+      box-shadow var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-search-bar:hover::part(root) {
+    border-color: color-mix(in srgb, var(--rc-accent, Highlight) 55%, var(--rc-border-color));
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-search-bar:focus-within::part(root) {
+    outline: var(--rc-focus-ring, 2px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    rc-search-bar
+    > input[type='search']:focus-visible {
+    outline: none;
+  }
+}

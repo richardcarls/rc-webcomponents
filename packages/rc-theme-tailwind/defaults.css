@@ -1,0 +1,137 @@
+@layer rc-base, rc-theme-tailwind.defaults, rc-theme-tailwind.bridge, rc-theme-tailwind.native, rc-theme-tailwind.components, rc-theme-tailwind.css-components,
+  rc-theme-tailwind.overrides;
+
+@layer rc-theme-tailwind.defaults {
+  /*
+   * Tailwind CSS v4 reference tokens.
+   *
+   * These defaults are scoped so applications can place the theme at any app
+   * boundary. Import bridge.css alone when providing your own Tailwind theme.
+   */
+  .rc-theme-tailwind,
+  :host(.rc-theme-tailwind) {
+    color-scheme: light dark;
+
+    --color-cyan-600: light-dark(oklch(60.9% 0.126 221.723), oklch(71.5% 0.143 215.221));
+    --color-cyan-100: light-dark(oklch(95.6% 0.045 203.388), oklch(30.2% 0.056 229.695));
+    --color-cyan-950: light-dark(oklch(30.2% 0.056 229.695), oklch(95.6% 0.045 203.388));
+    --color-white: light-dark(oklch(100% 0 0), oklch(20.8% 0.042 265.755));
+    --color-slate-50: light-dark(oklch(98.4% 0.003 247.858), oklch(20.8% 0.042 265.755));
+    --color-slate-200: oklch(92.9% 0.013 255.508);
+    --color-slate-600: light-dark(oklch(44.6% 0.043 257.281), oklch(70.4% 0.04 256.788));
+    --color-slate-950: light-dark(oklch(12.9% 0.042 264.695), oklch(98.4% 0.003 247.858));
+    --color-slate-900: light-dark(oklch(20.8% 0.042 265.755), oklch(98.4% 0.003 247.858));
+    --color-red-600: light-dark(oklch(57.7% 0.245 27.325), oklch(70.4% 0.191 22.216));
+    --spacing: 0.25rem;
+    --font-sans: ui-sans-serif, system-ui, sans-serif;
+    --text-sm: 0.875rem;
+    --leading-normal: 1.5;
+    --font-weight-normal: 400;
+    --radius-sm: 0.25rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-full: 999px;
+    --shadow-sm: 0 1px 2px 0 rgb(2 6 23 / 10%);
+    --shadow-md: 0 4px 6px -1px rgb(2 6 23 / 12%);
+    --shadow-lg: 0 10px 15px -3px rgb(2 6 23 / 14%);
+    --ease-out: cubic-bezier(0.2, 0, 0, 1);
+
+    --tailwind-primary: var(--color-cyan-600);
+    --tailwind-on-primary: var(--color-white);
+    --tailwind-primary-container: var(--color-cyan-100);
+    --tailwind-on-primary-container: var(--color-cyan-950);
+    --tailwind-surface: var(--color-slate-50);
+    --tailwind-surface-raised: var(--color-white);
+    --tailwind-field: var(--color-white);
+    --tailwind-on-surface: var(--color-slate-950);
+    --tailwind-on-surface-muted: var(--color-slate-600);
+    --tailwind-border-color: var(--color-slate-200);
+    --tailwind-shadow-color: color-mix(in oklch, var(--color-slate-950) 18%, transparent);
+
+    /* Flipped against the surface pair, for the snackbar and anything else
+     * that has to read as a layer above the page rather than part of it. */
+    --tailwind-inverse-surface: var(--color-slate-900);
+    --tailwind-inverse-on-surface: var(--color-white);
+
+    /*
+     * Held in the red range so it reads as an error rather than a darker shade
+     * of the cyan primary. Clears 7:1 against the field in both modes.
+     */
+    --tailwind-error: var(--color-red-600);
+
+    --tailwind-font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+    --tailwind-font-size: var(--text-sm, 0.875rem);
+    --tailwind-line-height: var(--leading-normal, 1.5);
+    --tailwind-font-weight: var(--font-weight-normal, 400);
+
+    --tailwind-radius-sm: var(--radius-sm, 0.25rem);
+    --tailwind-radius-md: var(--radius-md, 0.375rem);
+    --tailwind-radius-lg: var(--radius-lg, 0.5rem);
+    --tailwind-radius-xl: var(--radius-xl, 0.75rem);
+    --tailwind-radius-pill: var(--radius-full, 999px);
+
+    --tailwind-control-block-size: calc(var(--spacing, 0.25rem) * 10);
+    --tailwind-control-padding-block: calc(var(--spacing, 0.25rem) * 2);
+    --tailwind-control-padding-inline: calc(var(--spacing, 0.25rem) * 3);
+    --tailwind-control-gap: calc(var(--spacing, 0.25rem) * 2);
+    --tailwind-item-padding-block: calc(var(--spacing, 0.25rem) * 2.5);
+    --tailwind-item-padding-inline: calc(var(--spacing, 0.25rem) * 3);
+    --tailwind-item-gap: calc(var(--spacing, 0.25rem) * 2);
+
+    --tailwind-shadow-sm: var(--shadow-sm, 0 1px 2px 0 var(--tailwind-shadow-color));
+    --tailwind-shadow-md: var(--shadow-md, 0 4px 6px -1px var(--tailwind-shadow-color));
+    --tailwind-shadow-lg: var(--shadow-lg, 0 10px 15px -3px var(--tailwind-shadow-color));
+
+    --tailwind-focus-ring: 2px solid var(--color-cyan-600);
+    --tailwind-focus-ring-offset: 2px;
+    --tailwind-motion-duration: 160ms;
+    --tailwind-motion-duration-slow: 240ms;
+    --tailwind-motion-easing: var(--ease-out, cubic-bezier(0.2, 0, 0, 1));
+    /*
+     * The shared spatial/effects scale (see the styling guide), kept as its
+     * own small set of primitives rather than derived from the two above:
+     * Tailwind favors few named tokens over a layered primitive/semantic
+     * split, and the values only partly overlap (160/240ms already meant
+     * something as the flat scale; here they mean the spatial tier).
+     */
+    --tailwind-motion-effects-duration-fast: 100ms;
+    --tailwind-motion-effects-duration-default: 160ms;
+    --tailwind-motion-effects-duration-slow: 240ms;
+    --tailwind-motion-spatial-duration-fast: 160ms;
+    --tailwind-motion-spatial-duration-default: 240ms;
+    --tailwind-motion-spatial-duration-slow: 320ms;
+    --tailwind-disabled-opacity: 0.52;
+  }
+
+  @media (forced-colors: active) {
+    .rc-theme-tailwind,
+    :host(.rc-theme-tailwind) {
+      --color-cyan-600: Highlight;
+      --color-cyan-100: Highlight;
+      --color-cyan-950: HighlightText;
+      --color-white: Canvas;
+      --color-slate-50: Canvas;
+      --color-slate-200: ButtonBorder;
+      --color-slate-600: GrayText;
+      --color-slate-950: CanvasText;
+      --color-slate-900: CanvasText;
+      --color-red-600: Mark;
+      --tailwind-primary: Highlight;
+      --tailwind-on-primary: HighlightText;
+      --tailwind-primary-container: Highlight;
+      --tailwind-on-primary-container: HighlightText;
+      --tailwind-surface: Canvas;
+      --tailwind-surface-raised: Canvas;
+      --tailwind-field: Field;
+      --tailwind-on-surface: CanvasText;
+      --tailwind-on-surface-muted: GrayText;
+      --tailwind-inverse-surface: CanvasText;
+      --tailwind-inverse-on-surface: Canvas;
+      --tailwind-error: Mark;
+      --tailwind-border-color: ButtonBorder;
+      --tailwind-shadow-color: transparent;
+      --tailwind-focus-ring: 2px solid Highlight;
+    }
+  }
+}

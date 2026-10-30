@@ -1,0 +1,29 @@
+@layer rc-theme-tailwind.components {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-listbox {
+    --rc-listbox-option-gap: var(--rc-list-item-gap, var(--tailwind-item-gap, 0.5rem));
+    --rc-listbox-option-min-block-size: 2.25rem;
+    --rc-listbox-option-padding-block: var(--tailwind-item-padding-block, 0.55rem);
+    --rc-listbox-option-padding-inline: var(--tailwind-item-padding-inline, 0.75rem);
+    --rc-listbox-option-transition:
+      background-color var(--tailwind-motion-effects-duration-default, 160ms)
+        var(--tailwind-motion-easing, ease),
+      color var(--tailwind-motion-effects-duration-default, 160ms)
+        var(--tailwind-motion-easing, ease);
+    --rc-listbox-hover-bg: color-mix(in srgb, var(--rc-accent, Highlight) 10%, transparent);
+    --rc-listbox-hover-color: var(--rc-field-text, FieldText);
+    --rc-listbox-active-bg: color-mix(in srgb, var(--rc-accent, Highlight) 16%, transparent);
+    --rc-listbox-active-color: var(--rc-field-text, FieldText);
+    --rc-listbox-selected-bg: var(--rc-highlight, Highlight);
+    --rc-listbox-selected-color: var(--rc-highlight-text, HighlightText);
+    display: block;
+    border-radius: var(--tailwind-radius-lg, 0.75rem);
+    font: var(--rc-font-weight, 400) var(--rc-font-size, 1em) / var(--rc-line-height, normal)
+      var(--rc-font-family, inherit);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    rc-listbox[checkmark]
+    [part~='option-checkmark'] {
+    color: var(--rc-accent, Highlight);
+  }
+}

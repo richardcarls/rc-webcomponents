@@ -1,0 +1,18 @@
+@layer rc-theme-tailwind.components {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-range-slider::part(thumb) {
+    box-shadow: var(--tailwind-shadow-sm, none);
+    transition:
+      border-color var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease),
+      box-shadow var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease),
+      scale var(--rc-motion-duration, 160ms) var(--tailwind-motion-easing, ease);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-range-slider::part(thumb):hover {
+    scale: 1.04;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-range-slider::part(value-display) {
+    color: var(--tailwind-on-surface-muted, GrayText);
+    font-variant-numeric: tabular-nums;
+  }
+}

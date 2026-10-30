@@ -1,0 +1,18 @@
+@layer rc-theme-tailwind.components {
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-menu-button {
+    --rc-menu-button-trigger-background: var(--rc-button-bg, ButtonFace);
+    --rc-menu-button-trigger-color: var(--rc-button-text, ButtonText);
+    --rc-menu-button-trigger-hover-background: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 10%,
+      var(--rc-button-bg, ButtonFace)
+    );
+    --rc-menu-button-trigger-open-background: color-mix(
+      in srgb,
+      var(--rc-accent, Highlight) 16%,
+      var(--rc-button-bg, ButtonFace)
+    );
+    --rc-menu-button-indicator-color: var(--rc-accent, Highlight);
+    display: inline-block;
+  }
+}
