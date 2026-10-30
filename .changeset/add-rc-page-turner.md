@@ -20,7 +20,9 @@ engine without `Element.animate()` gets none.
 `next()`, `previous()`, `goToIndex(index, instant)`, an `rc-page-turner-change`
 event, optional previous/next buttons (`navigation`), and inline-axis arrow
 keys plus Home/End on the focused viewport. Keys pressed inside page content
-are left to the content. Accessibility state changes when a turn starts: the
+are left to the content. Touch and pen drags turn pages with the page
+following the pointer, completing past halfway or on a swipe; mouse drags
+join in with `mouse-dragging`. Accessibility state changes when a turn starts: the
 departing page becomes `inert` and `aria-hidden`, and focus inside it moves to
 the arriving page. Built-in text goes through the messages API under
 `rc-page-turner`.

@@ -74,9 +74,9 @@ hide the page beneath it.
 
 `active-index`/`default-active-index` follow this monorepo's controlled/
 uncontrolled property convention. Host writes are silent. The buttons, keys,
-`next()`, `previous()`, and `goToIndex(index, instant?)` report through
+`next()`, `previous()`, `goToIndex(index, instant?)`, and drags report through
 `rc-page-turner-change` (`detail: { index, trigger }`, `trigger` one of
-`'api' | 'button' | 'keyboard'`). In controlled usage the turner doesn't move
+`'api' | 'button' | 'keyboard' | 'swipe'`). In controlled usage the turner doesn't move
 until the host writes the new index:
 
 ```html
@@ -119,6 +119,14 @@ turn becomes a fade of at most 150ms. `goToIndex(index, true)` and engines
 without `Element.animate()` swap pages with no motion. A turn requested during
 a turn lands the first one immediately, so two turns never overlap.
 
+Past 90° a turning page shows a blank back as it falls beyond the
+inline-start edge: a layer the turner draws in step with the page, mirrored
+across its center, so it faces the viewer exactly when the page's front turns
+away. Color it with `--rc-page-turner-page-back-background` or style the
+`page-back` part. The viewport clips across the inline axis only, so the back
+can draw past the turner's inline-start edge; leave room there, or clip an
+ancestor, if nothing should show beyond it.
+
 Pages expose custom states for styling a turn, such as a shadow on the moving
 page: `:state(active)` for the current page, `:state(turning)` for the page in
 motion, and `:state(revealed)` for the page shown beneath it.
@@ -135,6 +143,25 @@ With the page viewport focused, the arrow keys along the inline axis turn to
 the previous and next page, following `dir` and the writing mode, and
 Home/End go to the first and last page. Keys pressed inside page content,
 such as arrow keys in a text field, are left to that content.
+
+## Dragging and swiping
+
+Touch and pen drags along the inline axis turn pages; set `mouse-dragging` to
+let mouse drags turn them too (off by default, so a mouse can still select
+page text). A drag toward the inline start lifts the current page, and a drag
+toward the inline end brings the previous page in over it, edge-on at the
+spine from the first move. The page's free edge follows the pointer. On release
+the turn completes once that edge has crossed the middle of the page, or on a
+fast swipe toward it, and otherwise settles back. A completed drag reports
+`rc-page-turner-change` with `trigger: 'swipe'`, and the click that ends a
+drag never reaches page content.
+
+Drags across the inline axis stay with the browser, so a page's content still
+scrolls. `touch-action` stops at the nearest scroll container, though, so give
+a scrollable element inside a page its own `touch-action: pan-y pinch-zoom`
+(`pan-x` in vertical text), or the browser takes horizontal drags that start
+on it. Under reduced motion or forced colors a drag doesn't move the page: a
+long or fast enough one turns it with the usual fade.
 
 ## Accessibility
 

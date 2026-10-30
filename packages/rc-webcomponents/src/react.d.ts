@@ -211,7 +211,7 @@ export type RCCarouselChangeDetail = {
   trigger: RCCarouselChangeTrigger;
 };
 
-export type RCPageTurnerChangeTrigger = 'api' | 'button' | 'keyboard';
+export type RCPageTurnerChangeTrigger = 'api' | 'button' | 'keyboard' | 'swipe';
 
 /** Detail shape for `rc-page-turner-change`. */
 export type RCPageTurnerChangeDetail = {
@@ -987,6 +987,8 @@ export type RCPageTurnerRef = HTMLElement & {
   activeIndex: number | undefined;
   defaultActiveIndex: number;
   navigation: boolean;
+  /** Lets mouse drags turn pages, as touch and pen drags always do. */
+  mouseDragging: boolean;
   next(): void;
   previous(): void;
   goToIndex(index: number, instant?: boolean): void;
@@ -1088,6 +1090,7 @@ declare module 'react' {
         'active-index'?: number | string;
         'default-active-index'?: number | string;
         navigation?: boolean;
+        'mouse-dragging'?: boolean;
         'onrc-page-turner-change'?: (event: CustomEvent<RCPageTurnerChangeDetail>) => void;
       };
 

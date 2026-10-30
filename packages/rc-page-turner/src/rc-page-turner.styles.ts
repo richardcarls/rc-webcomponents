@@ -10,8 +10,9 @@ export const pageTurnerStyles = css`
 
   /*
    * One grid cell that every page shares (see rc-page-turner-page.styles.ts),
-   * with the perspective a turning page rotates in. Clipped so the near edge
-   * of a turning page doesn't overflow the turner while it swings.
+   * with the perspective a turning page rotates in. Clipped until the turner
+   * resolves its flow; from then on only across the inline axis, so a page
+   * folded past 90° can fall beyond the inline-start edge.
    */
   [part~='viewport'] {
     display: grid;
@@ -20,6 +21,33 @@ export const pageTurnerStyles = css`
     block-size: 100%;
     overflow: clip;
     perspective: var(--rc-page-turner-perspective, 75rem);
+  }
+
+  /*
+   * The blank back of the turning page: the page mirrored across its own
+   * center, facing the viewer only once the page has folded past 90°. Shown
+   * only during a turn.
+   */
+  [part~='page-back'] {
+    grid-area: 1 / 1;
+    z-index: 1;
+    visibility: hidden;
+    pointer-events: none;
+    background: var(--rc-page-turner-page-back-background, Canvas);
+    backface-visibility: hidden;
+    transform-origin: var(--_rc-page-turner-origin, center);
+  }
+
+  :host(:state(turning)) [part~='page-back'] {
+    visibility: visible;
+    will-change: transform;
+  }
+
+  /* A drag owns the pointer: no text selection or callout while it turns. */
+  :host(:state(dragging)) [part~='viewport'] {
+    -webkit-touch-callout: none;
+    user-select: none;
+    cursor: grabbing;
   }
 
   [part~='navigation'] {

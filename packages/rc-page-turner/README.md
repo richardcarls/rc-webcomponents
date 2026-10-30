@@ -18,5 +18,9 @@ turn animates only the moving page's `transform` through the Web Animations
 API. Reduced motion and forced colors get a short fade instead.
 
 `active-index`/`default-active-index` work controlled or uncontrolled, and
-`rc-page-turner-change` reports requests from the buttons, the keyboard, and
-`next()`, `previous()`, and `goToIndex(index, instant?)`.
+`rc-page-turner-change` reports requests from the buttons, the keyboard,
+touch and pen swipes, and `next()`, `previous()`, and
+`goToIndex(index, instant?)`. Set `mouse-dragging` to turn pages with a mouse
+drag too. A turning page shows a blank back after it folds past 90°; set
+`--rc-page-turner-page-back-background` or style the `page-back` part to
+adapt it to your design.

@@ -946,7 +946,7 @@ export type RCCarouselMessages = {
 /** Public API surface of `<rc-carousel-item>`. */
 export type RCCarouselItemRef = HTMLElement;
 
-export type RCPageTurnerChangeTrigger = 'api' | 'button' | 'keyboard';
+export type RCPageTurnerChangeTrigger = 'api' | 'button' | 'keyboard' | 'swipe';
 
 /** Detail shape for `rc-page-turner-change`. */
 export type RCPageTurnerChangeDetail = {
@@ -959,6 +959,8 @@ export type RCPageTurnerRef = HTMLElement & {
   activeIndex: number | undefined;
   defaultActiveIndex: number;
   navigation: boolean;
+  /** Lets mouse drags turn pages, as touch and pen drags always do. */
+  mouseDragging: boolean;
   next(): void;
   previous(): void;
   goToIndex(index: number, instant?: boolean): void;
@@ -1070,6 +1072,8 @@ declare module 'solid-js' {
         defaultActiveIndex?: number | string;
         'default-active-index'?: number | string;
         navigation?: boolean | string;
+        mouseDragging?: boolean | string;
+        'mouse-dragging'?: boolean | string;
         'prop:activeIndex'?: number | undefined;
         'prop:defaultActiveIndex'?: number | undefined;
         'on:rc-page-turner-change'?: (e: CustomEvent<RCPageTurnerChangeDetail>) => void;

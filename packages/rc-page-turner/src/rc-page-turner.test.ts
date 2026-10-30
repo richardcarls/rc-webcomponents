@@ -422,24 +422,58 @@ test('keys follow a dir change made after layout settles', async () => {
   expect(turner.activeIndex).toBe(1);
 });
 
+test('viewport gesture and clipping axes follow an ancestor writing-mode change', async () => {
+  const screen = render(inFlow(threePages(), { dir: 'ltr', writingMode: 'horizontal-tb' }));
+  const turner = (await screen.getByTestId('turner').element()) as RCPageTurner;
+  const wrapper = (await screen.getByTestId('flow').element()) as HTMLElement;
+  const target = viewport(turner);
+
+  await turner.updateComplete;
+  expect(getComputedStyle(target).touchAction).toBe('pan-y pinch-zoom');
+
+  wrapper.style.writingMode = 'vertical-rl';
+
+  await vi.waitFor(() => {
+    expect(getComputedStyle(target).touchAction).toBe('pan-x pinch-zoom');
+    expect(getComputedStyle(target).overflowX).toBe('clip');
+    expect(getComputedStyle(target).overflowY).toBe('visible');
+  });
+
+  turner.next();
+  await turner.updateComplete;
+
+  expect(
+    turner.querySelector('rc-page-turner-page')?.style.getPropertyValue('--_rc-page-turner-origin'),
+  ).toBe('center top');
+});
+
 test('turn geometry puts the spine on the inline-start edge in every flow', () => {
   const flow = (overrides: Partial<Flow>): Flow => ({ ...HORIZONTAL_LTR_FLOW, ...overrides });
 
-  expect(turnGeometry(flow({}))).toEqual({ origin: 'left center', folded: 'rotateY(-180deg)' });
+  // The flip mirrors the back layer across the page's own center, which sits
+  // half a page from the spine.
+  expect(turnGeometry(flow({}))).toEqual({
+    origin: 'left center',
+    folded: 'rotateY(-180deg)',
+    flip: 'translateX(50%) rotateY(180deg) translateX(-50%)',
+  });
 
   expect(turnGeometry(flow({ inlineReversed: true, rtl: true }))).toEqual({
     origin: 'right center',
     folded: 'rotateY(180deg)',
+    flip: 'translateX(-50%) rotateY(180deg) translateX(50%)',
   });
 
   expect(turnGeometry(flow({ inline: 'y', block: 'x' }))).toEqual({
     origin: 'center top',
     folded: 'rotateX(180deg)',
+    flip: 'translateY(50%) rotateX(180deg) translateY(-50%)',
   });
 
   expect(turnGeometry(flow({ inline: 'y', block: 'x', inlineReversed: true }))).toEqual({
     origin: 'center bottom',
     folded: 'rotateX(-180deg)',
+    flip: 'translateY(-50%) rotateX(180deg) translateY(50%)',
   });
 });
 
@@ -450,6 +484,374 @@ test('page positions follow per-element message overrides', async () => {
   await turner.updateComplete;
 
   expect(pages[1].getAttribute('aria-label')).toBe('Paso 2 de 3');
+});
+
+describe('dragging', () => {
+  function pointer(target: Element, type: string, init: PointerEventInit = {}) {
+    target.dispatchEvent(
+      new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        pointerId: 1,
+        pointerType: 'touch',
+        isPrimary: true,
+        ...init,
+      }),
+    );
+  }
+
+  /**
+   * Drags across the viewport by `share` of its width (negative toward the
+   * left), in `steps` moves `gap` ms apart. Synthetic moves with no gap
+   * carry no velocity.
+   */
+  async function drag(
+    turner: RCPageTurner,
+    share: number,
+    { steps = 4, gap = 0, release = true, init = {} as PointerEventInit } = {},
+  ) {
+    const target = viewport(turner);
+    const rect = target.getBoundingClientRect();
+    const startX = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+
+    pointer(target, 'pointerdown', { clientX: startX, clientY: y, ...init });
+
+    for (let step = 1; step <= steps; step++) {
+      if (gap) {
+        await new Promise((resolve) => setTimeout(resolve, gap));
+      }
+
+      pointer(target, 'pointermove', {
+        clientX: startX + (rect.width * share * step) / steps,
+        clientY: y,
+        ...init,
+      });
+    }
+
+    if (release) {
+      pointer(target, 'pointerup', { clientX: startX + rect.width * share, clientY: y, ...init });
+    }
+
+    return target;
+  }
+
+  function changes(turner: RCPageTurner) {
+    const details: RCPageTurnerChangeDetail[] = [];
+
+    turner.addEventListener('rc-page-turner-change', (event) => details.push(event.detail));
+
+    return details;
+  }
+
+  async function settled(pages: RCPageTurnerPage[]) {
+    await Promise.all(runningAnimations(pages).map((animation) => animation.finished));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+
+  test('the current page follows a forward drag without changing the current page', async () => {
+    const { turner, pages } = await setup();
+
+    await drag(turner, -0.25, { release: false });
+
+    const [animation] = pages[0].getAnimations();
+
+    expect(animation.playState).toBe('paused');
+    // The free edge sits where the pointer is, three quarters of the way out.
+    expect(Number(animation.currentTime)).toBeCloseTo((Math.acos(0.75) / Math.PI) * 1000, 0);
+    expect(pages[0].matches(':state(turning)')).toBe(true);
+    expect(pages[1].matches(':state(revealed)')).toBe(true);
+    expect(pages[0].hasAttribute('inert')).toBe(false);
+    expect(pages[1].hasAttribute('inert')).toBe(true);
+    expect(turner.matches(':state(dragging)')).toBe(true);
+  });
+
+  test('the blank back layer turns with the page and faces the viewer past 90°', async () => {
+    const { turner, pages } = await setup();
+    const pageBack = turner.shadowRoot!.querySelector<HTMLElement>('[part~="page-back"]')!;
+
+    expect(getComputedStyle(pageBack).visibility).toBe('hidden');
+
+    await drag(turner, -0.25, { release: false });
+
+    const [page] = pages[0].getAnimations();
+    const [back] = pageBack.getAnimations();
+    const frames = (back.effect as KeyframeEffect).getKeyframes();
+
+    expect(turner.matches(':state(turning)')).toBe(true);
+    expect(getComputedStyle(pageBack).visibility).toBe('visible');
+    expect(back.currentTime).toBe(page.currentTime);
+
+    expect(frames.map((frame) => frame.transform)).toEqual([
+      'rotateY(0deg) translateX(50%) rotateY(180deg) translateX(-50%)',
+      'rotateY(-180deg) translateX(50%) rotateY(180deg) translateX(-50%)',
+    ]);
+
+    // Folded past 90°, the page's front turns away and the back faces out.
+    back.currentTime = 700;
+    page.currentTime = 700;
+    expect(new DOMMatrix(getComputedStyle(pageBack).transform).m33).toBeGreaterThan(0);
+    expect(new DOMMatrix(getComputedStyle(pages[0]).transform).m33).toBeLessThan(0);
+
+    pointer(viewport(turner), 'pointerup', { clientX: 0, clientY: 0 });
+    await settled([...pages]);
+    await Promise.all(pageBack.getAnimations().map((animation) => animation.finished));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    expect(turner.matches(':state(turning)')).toBe(false);
+    expect(pageBack.getAnimations()).toHaveLength(0);
+  });
+
+  test('a button turn draws the back layer too, and clears it when the page lands', async () => {
+    const { turner, pages } = await setup();
+    const pageBack = turner.shadowRoot!.querySelector<HTMLElement>('[part~="page-back"]')!;
+
+    turner.next();
+    await turner.updateComplete;
+
+    const [back] = pageBack.getAnimations();
+
+    expect(back.effect?.getTiming().direction).toBe('reverse');
+    expect(turner.matches(':state(turning)')).toBe(true);
+
+    await back.finished;
+    await settled(pages);
+
+    expect(turner.matches(':state(turning)')).toBe(false);
+  });
+
+  test('the viewport clips only across the inline axis, so a falling page can show', async () => {
+    const { turner } = await setup();
+
+    expect(getComputedStyle(viewport(turner)).overflowX).toBe('visible');
+    expect(getComputedStyle(viewport(turner)).overflowY).toBe('clip');
+  });
+
+  test('the free edge follows the pointer under CSS zoom', async () => {
+    const { turner, pages } = await setup();
+
+    // Pointer coordinates are zoomed, but clientWidth is not.
+    turner.style.zoom = '0.8';
+    await drag(turner, -0.25, { release: false });
+
+    const [animation] = pages[0].getAnimations();
+
+    expect(Number(animation.currentTime)).toBeCloseTo((Math.acos(0.75) / Math.PI) * 1000, 0);
+  });
+
+  test('a release whose edge has not crossed the middle settles back', async () => {
+    const { turner, pages } = await setup();
+    const reported = changes(turner);
+
+    // The page looks over half turned (about 66°), but its edge has only
+    // travelled 40% of the page.
+    await drag(turner, -0.4);
+    await settled(pages);
+
+    expect(reported).toEqual([]);
+    expect(pages[0].matches(':state(active)')).toBe(true);
+  });
+
+  test('a release past halfway completes the turn and reports a swipe', async () => {
+    const { turner, pages } = await setup();
+    const reported = changes(turner);
+
+    await drag(turner, -0.6);
+
+    expect(reported).toEqual([{ index: 1, trigger: 'swipe' }]);
+    expect(pages[1].hasAttribute('inert')).toBe(false);
+    expect(pages[0].hasAttribute('inert')).toBe(true);
+    expect(runningAnimations(pages)).toHaveLength(1);
+
+    await settled(pages);
+
+    expect(turner.activeIndex).toBe(1);
+    expect(pages[1].matches(':state(active)')).toBe(true);
+    expect(pages[0].matches(':state(turning)')).toBe(false);
+    expect(getComputedStyle(pages[0]).visibility).toBe('hidden');
+  });
+
+  test('a short slow release settles back to the same page', async () => {
+    const { turner, pages } = await setup();
+    const reported = changes(turner);
+
+    await drag(turner, -0.2);
+    await settled(pages);
+
+    expect(reported).toEqual([]);
+    expect(turner.activeIndex).toBe(0);
+    expect(pages[0].matches(':state(active)')).toBe(true);
+    expect(getComputedStyle(pages[1]).visibility).toBe('hidden');
+  });
+
+  test('a fast short swipe turns the page', async () => {
+    const { turner, pages } = await setup();
+    const reported = changes(turner);
+
+    await drag(turner, -0.2, { steps: 3, gap: 16 });
+
+    expect(reported).toEqual([{ index: 1, trigger: 'swipe' }]);
+    await settled(pages);
+    expect(pages[1].matches(':state(active)')).toBe(true);
+  });
+
+  test('a drag toward the inline end turns back, the previous page coming in on top', async () => {
+    const { turner, pages } = await setup();
+
+    turner.goToIndex(1, true);
+    await turner.updateComplete;
+
+    const reported = changes(turner);
+
+    await drag(turner, 0.3, { release: false });
+    expect(pages[0].matches(':state(turning)')).toBe(true);
+    expect(pages[1].matches(':state(active)')).toBe(true);
+
+    // Edge-on at the spine from the first move, then opening with the
+    // pointer: under 90°, so its front already shows.
+    expect(Number(pages[0].getAnimations()[0].currentTime)).toBeCloseTo(
+      (Math.acos(0.3) / Math.PI) * 1000,
+      0,
+    );
+
+    pointer(viewport(turner), 'pointermove', { clientX: 10_000, clientY: 0 });
+    pointer(viewport(turner), 'pointerup', { clientX: 10_000, clientY: 0 });
+
+    expect(reported).toEqual([{ index: 0, trigger: 'swipe' }]);
+    await settled(pages);
+    expect(pages[0].matches(':state(active)')).toBe(true);
+  });
+
+  test('in RTL a drag toward the right turns forward', async () => {
+    const { turner, pages } = await setup();
+
+    turner.dir = 'rtl';
+
+    const reported = changes(turner);
+
+    await drag(turner, 0.6);
+
+    expect(reported).toEqual([{ index: 1, trigger: 'swipe' }]);
+    expect(pages[0].style.getPropertyValue('--_rc-page-turner-origin')).toBe('right center');
+  });
+
+  test('a vertical drag follows the updated inline axis', async () => {
+    const screen = render(inFlow(threePages(), { dir: 'ltr', writingMode: 'horizontal-tb' }));
+    const turner = (await screen.getByTestId('turner').element()) as RCPageTurner;
+    const wrapper = (await screen.getByTestId('flow').element()) as HTMLElement;
+
+    await turner.updateComplete;
+    wrapper.style.writingMode = 'vertical-rl';
+
+    await vi.waitFor(() =>
+      expect(getComputedStyle(viewport(turner)).touchAction).toBe('pan-x pinch-zoom'),
+    );
+
+    const target = viewport(turner);
+    const rect = target.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const reported = changes(turner);
+
+    pointer(target, 'pointerdown', { clientX: x, clientY: y });
+    pointer(target, 'pointermove', { clientX: x, clientY: y - rect.height * 0.6 });
+    pointer(target, 'pointerup', { clientX: x, clientY: y - rect.height * 0.6 });
+
+    expect(reported).toEqual([{ index: 1, trigger: 'swipe' }]);
+  });
+
+  test('a drag past the first or last page moves nothing', async () => {
+    const { turner, pages } = await setup();
+    const reported = changes(turner);
+
+    await drag(turner, 0.6);
+
+    expect(reported).toEqual([]);
+    expect(runningAnimations(pages)).toHaveLength(0);
+    expect(pages[0].matches(':state(active)')).toBe(true);
+  });
+
+  test('mouse drags turn pages only with mouse-dragging', async () => {
+    const { turner } = await setup();
+    const reported = changes(turner);
+    const mouse = { pointerType: 'mouse', button: 0 };
+
+    await drag(turner, -0.6, { init: mouse });
+    expect(reported).toEqual([]);
+
+    turner.mouseDragging = true;
+    await turner.updateComplete;
+    await drag(turner, -0.6, { init: mouse });
+    expect(reported).toEqual([{ index: 1, trigger: 'swipe' }]);
+  });
+
+  test('the click that ends a drag never reaches page content', async () => {
+    const { turner, pages } = await setup();
+    const clicked = vi.fn();
+
+    pages[0].addEventListener('click', clicked);
+    await drag(turner, -0.2);
+    pages[0].querySelector('p')!.click();
+
+    expect(clicked).not.toHaveBeenCalled();
+
+    await new Promise((resolve) => setTimeout(resolve));
+    pages[0].querySelector('p')!.click();
+
+    expect(clicked).toHaveBeenCalledTimes(1);
+  });
+
+  test('under reduced motion a drag only decides: a long one fades to the next page', async () => {
+    stubMatchMedia(['(prefers-reduced-motion: reduce)']);
+
+    const { turner, pages } = await setup();
+    const reported = changes(turner);
+
+    await drag(turner, -0.6, { release: false });
+    expect(runningAnimations(pages)).toHaveLength(0);
+
+    pointer(viewport(turner), 'pointerup', { clientX: 0, clientY: 0 });
+    await turner.updateComplete;
+
+    expect(reported).toEqual([{ index: 1, trigger: 'swipe' }]);
+
+    const [animation] = runningAnimations(pages);
+
+    expect(
+      (animation.effect as KeyframeEffect).getKeyframes().map((frame) => Number(frame.opacity)),
+    ).toEqual([0, 1]);
+  });
+
+  test('a turn requested mid-drag drops the drag', async () => {
+    const { turner, pages } = await setup();
+    const reported = changes(turner);
+
+    await drag(turner, -0.3, { release: false });
+    turner.goToIndex(2, true);
+    await turner.updateComplete;
+
+    expect(reported).toEqual([{ index: 2, trigger: 'api' }]);
+    expect(runningAnimations(pages)).toHaveLength(0);
+    expect(pages[2].matches(':state(active)')).toBe(true);
+    expect(pages[0].style.getPropertyValue('--_rc-page-turner-origin')).toBe('');
+
+    pointer(viewport(turner), 'pointerup', { clientX: 0, clientY: 0 });
+
+    expect(reported).toHaveLength(1);
+  });
+
+  test('a controlled host that ignores the swipe keeps its page', async () => {
+    const { turner, pages } = await setup(threePages({ activeIndex: 0 }));
+
+    await drag(turner, -0.6);
+    await Promise.resolve();
+    await turner.updateComplete;
+
+    expect(turner.activeIndex).toBe(0);
+    expect(pages[0].matches(':state(active)')).toBe(true);
+    expect(pages[0].hasAttribute('inert')).toBe(false);
+  });
 });
 
 test('has no accessibility violations at rest or mid-turn', async () => {
