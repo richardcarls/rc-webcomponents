@@ -17,6 +17,7 @@ npm install @rcarls/rc-common
 ```js
 import {
   AnchorController,
+  ControlledIndexController,
   DragController,
   DragGestureController,
   ItemsCollectionController,
@@ -57,6 +58,7 @@ Check this inventory before adding package-local interaction or DOM utility code
 | `ActiveDescendantController`                                           | Managing `aria-activedescendant` virtual focus in listbox / combobox patterns                                               |
 | `AnchorController`                                                     | Positioning floating UI relative to an anchor with native CSS anchor positioning and a script fallback                      |
 | `ClickDelegateController`                                              | Extending plain pointer clicks on a host to a same-root native anchor or button target                                      |
+| `ControlledIndexController`                                            | Managing silent controlled writes and user-request events for an `activeIndex`/`defaultActiveIndex` pair                    |
 | `DragController`                                                       | Pointer and keyboard drag-to-move behavior                                                                                  |
 | `DragGestureController`                                                | Single-pointer activation, capture, deltas, duration, and recent velocity                                                   |
 | `ItemsCollectionController`                                            | Filtering selectable and action items while preserving their distinct option kinds                                          |
@@ -122,6 +124,15 @@ language switch needs no reload. Register before components connect to avoid a f
 English.
 
 ## API
+
+### `ControlledIndexController`
+
+Keeps an `activeIndex`/`defaultActiveIndex` pair controlled or uncontrolled.
+The component supplies its own index normalization and change-event name,
+and retains its decorated public accessors. Host writes are silent;
+`request(index, trigger)` updates uncontrolled state and emits a composed,
+bubbling event, or only reports the request when the host controls the index.
+The controller does not move or render items.
 
 ### `DragGestureController`
 

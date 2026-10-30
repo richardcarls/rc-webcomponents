@@ -2,6 +2,7 @@ import { LitElement, html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
 import {
+  ControlledIndexController,
   DragGestureController,
   findExtremeSnapIndex,
   findNearestSnapIndex,
@@ -300,47 +301,29 @@ export class RCCarousel extends LitElement {
 
   @state() private _busy = false;
 
-  private _activeIndex: number | undefined;
-  private _defaultActiveIndex = 0;
-  private _uncontrolledActiveIndex: number | undefined;
-  private _activeIndexInitialized = false;
+  private readonly _index = new ControlledIndexController<RCCarouselChangeTrigger>(this, {
+    normalize: (index) => this._clampIndex(index),
+    eventName: 'rc-carousel-change',
+  });
 
   /** Controls the active slide. Host writes are silent. */
   @property({ type: Number, attribute: 'active-index' })
   get activeIndex(): number {
-    return this._clampIndex(
-      this._activeIndex ?? this._uncontrolledActiveIndex ?? this._defaultActiveIndex,
-    );
+    return this._index.value;
   }
 
   set activeIndex(value: number | undefined) {
-    const oldValue = this.activeIndex;
-
-    this._activeIndex = value;
-    this._activeIndexInitialized = true;
-    this.requestUpdate('activeIndex', oldValue);
+    this._index.setControlled(value);
   }
 
   /** Initial active slide for uncontrolled usage. */
   @property({ type: Number, attribute: 'default-active-index' })
   get defaultActiveIndex(): number {
-    return this._defaultActiveIndex;
+    return this._index.defaultValue;
   }
 
   set defaultActiveIndex(value: number) {
-    const oldValue = this._defaultActiveIndex;
-
-    this._defaultActiveIndex = value;
-
-    if (
-      !this._activeIndexInitialized &&
-      this._activeIndex === undefined &&
-      this._uncontrolledActiveIndex === undefined
-    ) {
-      this.requestUpdate('activeIndex', oldValue);
-    }
-
-    this.requestUpdate('defaultActiveIndex', oldValue);
+    this._index.setDefault(value);
   }
 
   /**
@@ -597,29 +580,7 @@ export class RCCarousel extends LitElement {
   }
 
   private _setActiveIndex(index: number, trigger: RCCarouselChangeTrigger): void {
-    const clamped = this._clampIndex(index);
-    const oldValue = this.activeIndex;
-
-    if (oldValue === clamped) {
-      return;
-    }
-
-    // Controlled usage (activeIndex currently has a host-owned value)
-    // never self-writes here — only the consumer's own activeIndex setter
-    // may change it, in response to the event dispatched below. Only
-    // genuinely uncontrolled usage updates its own backing state directly.
-    if (this._activeIndex === undefined) {
-      this._uncontrolledActiveIndex = clamped;
-      this.requestUpdate('activeIndex', oldValue);
-    }
-
-    this.dispatchEvent(
-      new CustomEvent<RCCarouselChangeDetail>('rc-carousel-change', {
-        bubbles: true,
-        composed: true,
-        detail: { index: clamped, trigger },
-      }),
-    );
+    this._index.request(index, trigger);
   }
 
   private _scrollToIndex(index: number, instant: boolean): void {
@@ -913,7 +874,7 @@ export class RCCarousel extends LitElement {
     // `scrollTo`, not a no-op — if a genuine next swipe starts during that
     // echoed animation, it fights the swipe and can swallow it.
     // `_suppressSync` skips `updated()`'s scroll for exactly that one echo.
-    const controlled = this._activeIndex !== undefined;
+    const controlled = this._index.isControlled;
 
     if (!controlled) {
       this._suppressSync = true;
