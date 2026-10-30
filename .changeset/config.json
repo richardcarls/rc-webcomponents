@@ -29,6 +29,7 @@
       "@rcarls/rc-navigation-bar",
       "@rcarls/rc-navigation-rail",
       "@rcarls/rc-popover",
+      "@rcarls/rc-page-turner",
       "@rcarls/rc-progress",
       "@rcarls/rc-range-slider",
       "@rcarls/rc-search-bar",
