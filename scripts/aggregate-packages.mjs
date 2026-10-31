@@ -12,6 +12,7 @@ export const infrastructurePackages = new Set([
   '@rcarls/rc-textarea-plugin-markdown',
   '@rcarls/rc-theme-material',
   '@rcarls/rc-theme-substrate',
+  '@rcarls/rc-theme-tailwind',
   '@rcarls/rc-theme-win31',
   '@rcarls/rc-webcomponents',
 ]);

@@ -114,6 +114,7 @@ export const PRIVATE_THEME_TOKEN_CONTRACTS = {
     '--_rc-field-legend-y',
   ]),
   'rc-theme-substrate': new Set(),
+  'rc-theme-tailwind': new Set(),
   'rc-theme-win31': new Set(),
 };
 
@@ -133,9 +134,17 @@ export const PRIVATE_THEME_TOKEN_CONTRACTS = {
  * external-hook tier: every reference in their own namespace is meant to be
  * locally defined.
  */
+export const THEME_PACKAGES = [
+  'rc-theme-material',
+  'rc-theme-substrate',
+  'rc-theme-tailwind',
+  'rc-theme-win31',
+];
+
 export const THEME_OWNED_TOKEN_PREFIXES = {
   'rc-theme-material': '--md-sys-',
   'rc-theme-substrate': '--substrate-',
+  'rc-theme-tailwind': '--tailwind-',
   'rc-theme-win31': '--win31-',
 };
 
@@ -152,7 +161,8 @@ export const THEME_SELECTOR_BUDGETS = {
     // The audit's own comment-stripping fix also corrected a false count
     // (raw text included 3 !important mentions inside a prose comment).
     importantDeclarations: 9,
-    idSelectors: 3,
+    // Was 3 before hex color fallbacks stopped counting as ID selectors.
+    idSelectors: 0,
     // Grouped and provider-backed field variants add fifteen modifier selectors.
     modifierHooks: 74,
   },
@@ -162,6 +172,15 @@ export const THEME_SELECTOR_BUDGETS = {
     parts: 45,
     // +1: the overrides layer keeps rc-adaptive-menu overflow rows on the
     // menu's item tokens ([data-rc-action-overflowed]).
+    markerHooks: 23,
+    importantDeclarations: 1,
+    idSelectors: 0,
+    modifierHooks: 0,
+  },
+  'rc-theme-tailwind': {
+    // Mirrors substrate's coverage, including the rc-field control-provider
+    // resets and the rc-adaptive-menu overflow overrides.
+    parts: 44,
     markerHooks: 23,
     importantDeclarations: 1,
     idSelectors: 0,
@@ -265,6 +284,7 @@ export const PHYSICAL_CSS_ALLOWLIST = {
     'visual-viewport offsets and viewport safe-area insets are physical',
   'packages/rc-theme-material/components/select.css': 'visual-viewport offsets are physical',
   'packages/rc-theme-substrate/components/select.css': 'visual-viewport offsets are physical',
+  'packages/rc-theme-tailwind/components/select.css': 'visual-viewport offsets are physical',
   'packages/rc-virtual-canvas/src/rc-virtual-canvas.styles.ts': 'canvas pixel space is physical',
   'packages/rc-common/src/AnchorController.ts':
     'emits physical CSS only after resolving the placement against the flow',
@@ -361,6 +381,7 @@ const NON_COMPONENT_PACKAGES = new Set([
   'rc-textarea-plugin-markdown',
   'rc-theme-material',
   'rc-theme-substrate',
+  'rc-theme-tailwind',
   'rc-theme-win31',
   'rc-webcomponents',
 ]);
@@ -656,7 +677,8 @@ export function extractThemeSelectorMetrics(css) {
     parts: (withoutComments.match(/::part\(/g) ?? []).length,
     markerHooks: (withoutComments.match(/\[data-rc-/g) ?? []).length,
     importantDeclarations: (withoutComments.match(/!important/g) ?? []).length,
-    idSelectors: (withoutComments.match(/(^|[\s>,+~])#[a-zA-Z_-]/gm) ?? []).length,
+    idSelectors: (withoutComments.match(/(^|[\s>,+~])#(?![0-9a-fA-F]{3,8}\b)[a-zA-Z_-]/gm) ?? [])
+      .length,
     modifierHooks: (withoutComments.match(/\.rc-[a-z0-9-]+--[a-z0-9-]+/g) ?? []).length,
   };
 }
@@ -868,19 +890,14 @@ export function runAudit(root = DEFAULT_ROOT) {
       join(root, 'packages/rc-common/src'),
       (path) => extname(path) === '.ts' && !path.endsWith('.test.ts'),
     ),
-    ...listFiles(join(root, 'packages/rc-theme-material/components'), (path) =>
-      path.endsWith('.css'),
+    ...THEME_PACKAGES.flatMap((theme) =>
+      listFiles(join(root, 'packages', theme, 'components'), (path) => path.endsWith('.css')),
     ),
-    ...listFiles(join(root, 'packages/rc-theme-substrate/components'), (path) =>
-      path.endsWith('.css'),
-    ),
-    ...listFiles(join(root, 'packages/rc-theme-win31/components'), (path) => path.endsWith('.css')),
   ];
-  const themeEntryFiles = ['rc-theme-material', 'rc-theme-substrate', 'rc-theme-win31'].flatMap(
-    (theme) =>
-      readdirSync(join(root, 'packages', theme), { withFileTypes: true })
-        .filter((entry) => entry.isFile() && entry.name.endsWith('.css'))
-        .map((entry) => join(root, 'packages', theme, entry.name)),
+  const themeEntryFiles = THEME_PACKAGES.flatMap((theme) =>
+    readdirSync(join(root, 'packages', theme), { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.css'))
+      .map((entry) => join(root, 'packages', theme, entry.name)),
   );
   const discoveredMarkers = new Set(
     [...markerFiles, ...themeEntryFiles].flatMap((path) => [...extractMarkers(read(path))]),
@@ -920,9 +937,7 @@ export function runAudit(root = DEFAULT_ROOT) {
     errors.push(`${pkg.package}: injected light-DOM base CSS is not in @layer rc-base.`);
   }
 
-  const themes = ['rc-theme-material', 'rc-theme-substrate', 'rc-theme-win31'].map((theme) =>
-    inspectTheme(root, theme),
-  );
+  const themes = THEME_PACKAGES.map((theme) => inspectTheme(root, theme));
   const tokenConsumers = new Map();
 
   for (const pkg of packages) {

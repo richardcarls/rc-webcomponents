@@ -6,6 +6,7 @@ import {
   CROSS_COMPONENT_TOKEN_CONTRACTS,
   PRIVATE_THEME_TOKEN_CONTRACTS,
   REMOVED_TOKEN_CONTRACTS,
+  THEME_PACKAGES,
   extractMarkers,
   extractThemeSelectorMetrics,
   extractTokenDefinitions,
@@ -42,10 +43,12 @@ test('finds physical scrolling axes unless a logical fallback sits beside them',
     [...extractPhysicalCss('a { overflow-x: auto; scroll-snap-type: x mandatory; }', true)].sort(),
     ['overflow-x', 'scroll-snap-type:x'],
   );
+
   assert.deepEqual(
     [...extractPhysicalCss('a { overflow-x: auto; overflow-inline: auto; }', true)],
     [],
   );
+
   assert.deepEqual(
     [
       ...extractPhysicalCss('a { border-top-left-radius: 4px; scroll-padding-left: 1rem; }', true),
@@ -127,7 +130,7 @@ test('recognizes only the canonical 0.7 token namespace', () => {
 
   // The segmented button stopped parameterizing its structure through private
   // tokens, so no theme overrides any of them now.
-  for (const theme of ['rc-theme-material', 'rc-theme-substrate', 'rc-theme-win31']) {
+  for (const theme of THEME_PACKAGES) {
     assert.ok(
       ![...PRIVATE_THEME_TOKEN_CONTRACTS[theme]].some((token) =>
         token.startsWith('--_rc-segmented-button-'),
@@ -203,6 +206,15 @@ test('selector metrics ignore prose mentioning !important, ::part(), or a marker
   });
 });
 
+test('selector metrics count ID selectors but not hex color fallbacks', () => {
+  const css = `
+    .theme { --surface: var(--color-white, #fff); --line: var(--slate, #e2e8f0); }
+    #main, .shell > #nav { color: red; }
+  `;
+
+  assert.equal(extractThemeSelectorMetrics(css).idSelectors, 2);
+});
+
 test('theme entrypoints import and layer every component stylesheet', () => {
   for (const themeName of ['rc-theme-material', 'rc-theme-substrate']) {
     const theme = inspectTheme(process.cwd(), themeName);
@@ -216,9 +228,10 @@ test('the current component architecture satisfies hard guardrails', () => {
   const result = runAudit(process.cwd());
 
   assert.deepEqual(result.errors, []);
-  assert.equal(result.summary.componentPackages, 40);
-  assert.equal(result.summary.customElements, 43);
-  assert.deepEqual(result.themeCoverage['rc-theme-substrate'].missing, []);
+  assert.equal(result.summary.componentPackages, 41);
+  assert.equal(result.summary.customElements, 45);
+  // Substrate coverage is selective; rc-page-turner has no recipe there yet.
+  assert.deepEqual(result.themeCoverage['rc-theme-substrate'].missing, ['rc-page-turner']);
 
   assert.deepEqual(result.familyTokens['--rc-thumb-radius'], ['rc-range-slider', 'rc-slider']);
 
