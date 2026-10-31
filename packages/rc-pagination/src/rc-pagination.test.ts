@@ -201,7 +201,9 @@ test('announces the new page when announce is set', async () => {
   $host.querySelector<HTMLButtonElement>('[data-rc-page="2"]')!.click();
 
   await vi.waitFor(() =>
-    expect($host.querySelector('[data-rc-live-announcer]')?.textContent).toBe('Page 2 of 3'),
+    expect(
+      [...document.querySelectorAll('[data-rc-live-announcer]')].map(($el) => $el.textContent),
+    ).toContain('Page 2 of 3'),
   );
 });
 

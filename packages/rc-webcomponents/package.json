@@ -180,6 +180,18 @@
         "default": "./dist/rc-combobox/define.js"
       }
     },
+    "./rc-data-table": {
+      "import": {
+        "types": "./dist/types/rc-data-table/index.d.ts",
+        "default": "./dist/rc-data-table/index.js"
+      }
+    },
+    "./rc-data-table/define": {
+      "import": {
+        "types": "./dist/types/rc-data-table/define.d.ts",
+        "default": "./dist/rc-data-table/define.js"
+      }
+    },
     "./rc-dialog": {
       "import": {
         "types": "./dist/types/rc-dialog/index.d.ts",
@@ -587,6 +599,7 @@
     "@rcarls/rc-chip": "workspace:*",
     "@rcarls/rc-chip-group": "workspace:*",
     "@rcarls/rc-combobox": "workspace:*",
+    "@rcarls/rc-data-table": "workspace:*",
     "@rcarls/rc-dialog": "workspace:*",
     "@rcarls/rc-disclosure": "workspace:*",
     "@rcarls/rc-fab": "workspace:*",

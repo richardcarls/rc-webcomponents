@@ -16,6 +16,7 @@
       "@rcarls/rc-chip-group",
       "@rcarls/rc-combobox",
       "@rcarls/rc-common",
+      "@rcarls/rc-data-table",
       "@rcarls/rc-dialog",
       "@rcarls/rc-disclosure",
       "@rcarls/rc-fab",

@@ -65,6 +65,7 @@ test('aggregate component styles cover every visual RC component', () => {
     ['rc-disclosure', ['display', 'block']],
     ['rc-accordion', ['display', 'grid']],
     ['rc-breadcrumbs', ['--rc-breadcrumbs-current-color', '']],
+    ['rc-data-table', ['--rc-data-table-cell-padding-inline', '']],
     ['rc-pagination', ['--rc-pagination-gap', '0.25rem']],
     ['rc-virtual-canvas', ['overflow', 'hidden']],
   ]);
@@ -1091,4 +1092,23 @@ test('pagination items keep a 48px target and mark the current page with the ind
   expect(getComputedStyle(current!).backgroundColor).not.toBe(
     getComputedStyle(other!).backgroundColor,
   );
+});
+
+test('data tables keep the M2 metrics in M3 roles', () => {
+  const scope = renderScope();
+  const host = document.createElement('rc-data-table');
+
+  host.innerHTML =
+    '<table><thead><tr><th data-rc-sort-key="name"><button>Name</button></th></tr></thead>' +
+    '<tbody><tr><td>Alpha</td></tr></tbody></table>';
+
+  scope.append(host);
+
+  const header = host.querySelector('th')!;
+  const cell = host.querySelector('td')!;
+
+  expect(getComputedStyle(header).blockSize).toBe('56px');
+  expect(getComputedStyle(cell).blockSize).toBe('52px');
+  expect(getComputedStyle(cell).borderBlockEndWidth).toBe('1px');
+  expect(getComputedStyle(host.querySelector('button')!).minBlockSize).toBe('48px');
 });

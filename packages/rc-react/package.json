@@ -91,6 +91,12 @@
         "default": "./dist/components/rc-combobox.js"
       }
     },
+    "./rc-data-table": {
+      "import": {
+        "types": "./dist/types/components/rc-data-table.d.ts",
+        "default": "./dist/components/rc-data-table.js"
+      }
+    },
     "./rc-dialog": {
       "import": {
         "types": "./dist/types/components/rc-dialog.d.ts",

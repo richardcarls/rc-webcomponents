@@ -9,6 +9,7 @@ import '@rcarls/rc-carousel/define';
 import '@rcarls/rc-chip/define';
 import '@rcarls/rc-chip-group/define';
 import '@rcarls/rc-combobox/define';
+import '@rcarls/rc-data-table/define';
 import '@rcarls/rc-dialog/define';
 import '@rcarls/rc-disclosure/define';
 import '@rcarls/rc-fab/define';

@@ -1,0 +1,126 @@
+---
+title: rc-data-table
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { DataTableDemo } from '@site/src/components/DataTableDemos';
+
+# rc-data-table
+
+Sortable-header enhancer for a native `<table>`, following the
+[WAI-ARIA sortable table example](https://www.w3.org/WAI/ARIA/apg/patterns/table/examples/sortable-table/).
+
+<AtAGlance
+  packageName="@rcarls/rc-data-table"
+  tag="rc-data-table"
+  native="Requires a native table child; each sortable th holds a native button or link"
+  state="Controlled or uncontrolled sort key and direction"
+  events={['rc-data-table-sort']}
+  related={[
+    { label: 'rc-pagination', href: '/components/rc-pagination' },
+    { label: 'rc-virtual-scroller', href: '/components/rc-virtual-scroller' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-webcomponents/rc-data-table/define';
+```
+
+## Live demo
+
+<DataTableDemo />
+
+## Markup
+
+Author the table, and put each sortable column's header text in a native `<button>` inside a
+`<th data-rc-sort-key="...">`:
+
+```html
+<rc-data-table sort-key="name" sort-direction="ascending">
+  <table>
+    <caption>
+      Plants. Column headers with buttons are sortable.
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col" data-rc-sort-key="name"><button type="button">Name</button></th>
+        <th scope="col" data-rc-sort-key="price" data-rc-sort-first="descending">
+          <button type="button">Price</button>
+        </th>
+        <th scope="col">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- rows, in the current sort order -->
+    </tbody>
+  </table>
+</rc-data-table>
+```
+
+The button is part of the markup, not added at upgrade, so a framework that renders the
+table keeps owning every node. A header can be a link to a server-sorted URL instead, such
+as `<a href="?sort=name&dir=descending">`, which sorts the table with no JavaScript at all.
+
+`data-rc-sort-first="descending"` makes a column, such as a price or date, sort descending
+the first time it is chosen.
+
+## The element never sorts rows
+
+`rc-data-table` reflects the sort state and reports requests; the consumer sorts the data
+and re-renders `<tbody>`. Activating a header fires `rc-data-table-sort` with
+`{ key, direction, previousKey, previousDirection }`. Activating the sorted column again
+flips its direction.
+
+- **Uncontrolled:** the element moves `aria-sort` itself; set the initial state with
+  `default-sort-key` and `default-sort-direction`.
+- **Controlled:** set `sort-key` and `sort-direction`, and write them from the event when the
+  new order is rendered.
+
+The event is cancelable. Canceling it also cancels the click, so a header link does not
+navigate.
+
+## Accessibility
+
+- `aria-sort` is set only on the sorted column's header and removed from the others, rather
+  than set to `none`.
+- Each sortable column shows a CSS indicator with a distinct shape for unsorted, ascending,
+  and descending. The indicators are generated content with empty alternative text, so they
+  are not part of the button's name.
+- Say in the `<caption>` that column headers with buttons sort the table. The element warns
+  in development when a sortable table has no caption.
+- Screen readers announce sort changes inconsistently. Set `announce` to have the element
+  announce "Sorted by Name, ascending" through a polite live region.
+- While the table is wider than its container, the element becomes a focusable group named
+  by the caption, so keyboard users can scroll it.
+
+## Theming
+
+The default demo mode shows the component without a package theme. The Material theme keeps
+the Material 2 data table metrics in Material 3 color and type roles. Use the shared preview
+controls to compare themes.
+
+## API
+
+<ApiTable tag="rc-data-table" />

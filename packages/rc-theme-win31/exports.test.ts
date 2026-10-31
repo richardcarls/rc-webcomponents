@@ -12,6 +12,7 @@ const componentEntries = [
   'chip',
   'chip-group',
   'combobox',
+  'data-table',
   'dialog',
   'disclosure',
   'fab',
