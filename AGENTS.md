@@ -262,8 +262,13 @@ false` `@property` a matching `@attr` line; use bracket form (`@attr [name]`)
   Windows `yarn.cmd cem:analyze`; Linux/macOS `yarn cem:analyze`.
 - Docusaurus docs in `docs/docs/components/<component>.mdx`, including demos,
   snippets, accessibility notes, events, and at-a-glance summaries.
-- Package README, root README package summary, aggregate package exports, and
-  aggregate React/Solid typings when public usage changes.
+- Package README, root README package summary, and aggregate package exports
+  when public usage changes.
+- The aggregate React and Solid typings and the `@rcarls/rc-react` wrappers are
+  generated from the manifest: run `yarn codegen:typings` and
+  `yarn codegen:react`, never edit them by hand. They read element classes and
+  `HTMLElementEventMap`, so every dispatched event needs an event map entry with
+  an exported detail type, or `yarn test:typings` fails.
 
 Until 1.0, replace or remove superseded public API outright. Do not keep old
 names or values working as deprecated aliases. Mark the removal as breaking in
@@ -301,7 +306,8 @@ Use this public API sync walk before finishing any API-facing change:
 
 ```text
 source/JSDoc -> event/detail/exported types -> tests -> CEM -> package README
--> docs page/demos -> root README/package catalog -> aggregate React/Solid typings
+-> docs page/demos -> root README/package catalog -> yarn codegen:typings
+-> yarn codegen:react
 ```
 
 When adding a new component package, add it to the `## Packages` table in
