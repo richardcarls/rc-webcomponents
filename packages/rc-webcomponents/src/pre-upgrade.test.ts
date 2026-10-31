@@ -53,6 +53,7 @@ test('undefined hosts take their upgraded display from the pre-upgrade styles', 
 
   await import('@rcarls/rc-progress/define');
   await vi.waitFor(() => expect($first.matches(':defined')).toBe(true));
+  await ($first as Element & { updateComplete: Promise<unknown> }).updateComplete;
 
   expect(getComputedStyle($first).display).toBe('block');
   expect(stacked($first, $second)).toBe(true);

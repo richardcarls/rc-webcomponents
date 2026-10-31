@@ -130,8 +130,12 @@ short and tell the tool to read `AGENTS.md` before project work.
   applies. Keep `document`, `window`, `CSSStyleSheet`, and observers out of
   module scope and constructors; create them on connect or first use. Server
   output contains the native fallback markup and registration belongs in a
-  client entry; do not claim server-side custom-element rendering or
-  hydration support without implementing and testing that contract.
+  client entry. Every element must also render under `@lit-labs/ssr`
+  (`yarn test:ssr`): guard render-path DOM reads, such as `closest()`, inline
+  styles, or native-child state, with `isServer` from `lit`. Do not claim
+  hydration support beyond the elements `ssr-hydration.test.ts` verifies; an
+  element that reads its light DOM while rendering hydrates through
+  `rc-common`'s `HydrationController`.
 - Register light-DOM base styles through `rc-common`'s
   `defineLightDomBaseStyles(tag, css)` at module scope. The package build
   emits the registered CSS as `dist/base.css`, exported as `./base.css`, so

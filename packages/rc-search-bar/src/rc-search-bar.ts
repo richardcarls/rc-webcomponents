@@ -332,16 +332,30 @@ export class RCSearchBar extends LitElement {
     );
   }
 
-  private readonly _disabledObserver = new MutationObserver(() => {
-    const $input = this._$input();
+  private _disabledObserverInstance: MutationObserver | undefined;
 
-    if ($input) {
-      this._inputDisabled = $input.disabled;
-      this._syncDataListSuggestions($input);
-    }
-  });
+  // Created on first use, so constructing the element without a DOM (a
+  // server render) cannot throw.
+  private get _disabledObserver(): MutationObserver {
+    return (this._disabledObserverInstance ??= new MutationObserver(() => {
+      const $input = this._$input();
 
-  private readonly _dataListObserver = new MutationObserver(() => this._syncDataListSuggestions());
+      if ($input) {
+        this._inputDisabled = $input.disabled;
+        this._syncDataListSuggestions($input);
+      }
+    }));
+  }
+
+  private _dataListObserverInstance: MutationObserver | undefined;
+
+  // Created on first use, so constructing the element without a DOM (a
+  // server render) cannot throw.
+  private get _dataListObserver(): MutationObserver {
+    return (this._dataListObserverInstance ??= new MutationObserver(() =>
+      this._syncDataListSuggestions(),
+    ));
+  }
 
   private readonly _inputController = new NativeChildController<HTMLInputElement>(this, {
     selector: ':scope > input[type="search"]',

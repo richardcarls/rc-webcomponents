@@ -1,4 +1,4 @@
-import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import { isServer, type ReactiveController, type ReactiveControllerHost } from 'lit';
 
 export interface ItemsCollectionBaseOption {
   value: string;
@@ -173,6 +173,13 @@ export class ItemsCollectionController implements ReactiveController {
   setOptions(options: ItemsCollectionOption[]): void {
     this._optionsInitialized = true;
     this._options = [...options];
+
+    // A server render has no light DOM to build; the client builds it when the
+    // element hydrates and the options are set again.
+    if (isServer) {
+      return;
+    }
+
     this._ensureContainer();
     this._syncOptionsToDom();
   }

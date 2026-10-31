@@ -60,7 +60,22 @@ export function registerMessages(locale: string, catalog: RcMessageCatalogInput)
  * stays in the language of the interface around it.
  */
 export function messagesLocale(host: Element): string {
-  return host.getAttribute('lang') ?? host.ownerDocument.documentElement.lang ?? '';
+  // A server render has no document: the host's own lang, else the server default.
+  return host.getAttribute('lang') ?? host.ownerDocument?.documentElement?.lang ?? serverLocale;
+}
+
+let serverLocale = '';
+
+/**
+ * Sets the UI language elements use while rendering on a server, where there
+ * is no `<html lang>` to read. An element's own `lang` attribute still wins.
+ * Set it to the page's `<html lang>` before rendering, so the text rendered on
+ * the server matches what the browser resolves when the elements hydrate.
+ * It is process-wide: a server that renders several languages at once should
+ * set `lang` on the elements instead.
+ */
+export function setServerLocale(locale: string): void {
+  serverLocale = locale;
 }
 
 /** Isolates an unknown-direction phrase inside a plain-text message. */

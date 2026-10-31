@@ -2,6 +2,8 @@ import { fileURLToPath } from 'node:url';
 import { playwright } from '@vitest/browser-playwright';
 import type { BrowserConfigOptions, InlineConfig } from 'vitest/node';
 
+import { renderOnServer } from './test-helpers/ssr-command';
+
 const BROWSER_SETUP_FILE = fileURLToPath(
   new URL('./test-helpers/browser-setup.ts', import.meta.url),
 );
@@ -60,6 +62,7 @@ export function createBrowserTestConfig(
       provider: playwright({ launchOptions: { headless: true } }),
       headless: true,
       screenshotFailures: false,
+      commands: { renderOnServer },
       instances: getBrowserInstances(groupOrder),
     },
   };

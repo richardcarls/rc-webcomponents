@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, isServer } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
 import {
@@ -269,6 +269,11 @@ export class RCMenuButton extends LitElement {
   protected get _resolvedOrientation(): 'horizontal' | 'vertical' {
     if (this.orientation) {
       return this.orientation;
+    }
+
+    // A server render cannot see ancestors; the client resolves the menubar on connect.
+    if (isServer) {
+      return 'horizontal';
     }
 
     const $menubar = this.closest('rc-menubar, [role="menubar"]');

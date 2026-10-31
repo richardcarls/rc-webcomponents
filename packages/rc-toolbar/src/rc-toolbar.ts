@@ -58,7 +58,13 @@ export class RCToolbar extends RovingTabIndexMixin(LitElement) {
   @query('#root', true)
   protected _$root!: HTMLDivElement;
 
-  protected readonly _disabledObserver = new MutationObserver(() => this._syncTabStop());
+  protected _disabledObserverInstance: MutationObserver | undefined;
+
+  // Created on first use, so constructing the element without a DOM (a
+  // server render) cannot throw.
+  protected get _disabledObserver(): MutationObserver {
+    return (this._disabledObserverInstance ??= new MutationObserver(() => this._syncTabStop()));
+  }
 
   override connectedCallback(): void {
     super.connectedCallback();

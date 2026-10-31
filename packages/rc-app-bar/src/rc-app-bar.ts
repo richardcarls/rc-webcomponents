@@ -1,4 +1,4 @@
-import { LitElement, html, nothing, type PropertyValues } from 'lit';
+import { LitElement, html, isServer, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
@@ -454,6 +454,12 @@ export class RCAppBar extends LitElement {
   }
 
   private _syncVisualState(): void {
+    // Collapse and hide state live in inline styles and custom states, which a
+    // server render has neither; the first client update applies them.
+    if (isServer) {
+      return;
+    }
+
     if (this._scrolled === undefined) {
       if (this.scrollBehavior !== 'collapse' || this.variant !== 'expanded') {
         this._setCollapseProgress(0);
