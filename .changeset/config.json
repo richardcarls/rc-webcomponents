@@ -8,6 +8,7 @@
       "@rcarls/rc-adaptive-menu",
       "@rcarls/rc-app-bar",
       "@rcarls/rc-bottom-sheet",
+      "@rcarls/rc-breadcrumbs",
       "@rcarls/rc-button",
       "@rcarls/rc-card",
       "@rcarls/rc-carousel",

@@ -6,6 +6,7 @@ export const elementLoaders = {
   'rc-adaptive-menu': () => import('@rcarls/rc-webcomponents/rc-adaptive-menu/define'),
   'rc-app-bar': () => import('@rcarls/rc-webcomponents/rc-app-bar/define'),
   'rc-bottom-sheet': () => import('@rcarls/rc-webcomponents/rc-bottom-sheet/define'),
+  'rc-breadcrumbs': () => import('@rcarls/rc-webcomponents/rc-breadcrumbs/define'),
   'rc-button': () => import('@rcarls/rc-webcomponents/rc-button/define'),
   'rc-card': () => import('@rcarls/rc-webcomponents/rc-card/define'),
   'rc-carousel': () => import('@rcarls/rc-webcomponents/rc-carousel/define'),

@@ -4,6 +4,7 @@ const componentEntries = [
   'accordion',
   'app-bar',
   'bottom-sheet',
+  'breadcrumbs',
   'button',
   'card',
   'chip',

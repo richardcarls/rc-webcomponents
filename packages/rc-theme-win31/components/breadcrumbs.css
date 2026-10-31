@@ -1,0 +1,29 @@
+@layer rc-theme-win31.components {
+  /*
+   * A File Manager style path: plain system text with backslash separators
+   * and the current folder in bold, the way 3.1 shells showed a location.
+   */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-breadcrumbs {
+    --rc-breadcrumbs-gap: var(--win31-gap-tight);
+    --rc-breadcrumbs-separator: '\\';
+    --rc-breadcrumbs-separator-color: var(--win31-color-frame);
+    --rc-breadcrumbs-current-color: var(--win31-color-frame);
+
+    color: var(--win31-color-frame);
+    font: var(--win31-font-weight) var(--win31-font-size) / var(--win31-line-height)
+      var(--win31-font-family);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-breadcrumbs > nav > ol > li > a {
+    color: inherit;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-breadcrumbs > nav > ol > li > a:focus-visible {
+    outline: var(--win31-focus-ring);
+    outline-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-breadcrumbs [aria-current='page'] {
+    font-weight: bold;
+  }
+}

@@ -64,6 +64,7 @@ test('aggregate component styles cover every visual RC component', () => {
     ['rc-splitter', ['--rc-splitter-separator-size', '1.5rem']],
     ['rc-disclosure', ['display', 'block']],
     ['rc-accordion', ['display', 'grid']],
+    ['rc-breadcrumbs', ['--rc-breadcrumbs-current-color', '']],
     ['rc-virtual-canvas', ['overflow', 'hidden']],
   ]);
 
@@ -1053,4 +1054,19 @@ test('a standalone disclosure keeps its outlined, uniformly rounded panel', () =
 
   expect(styles.getPropertyValue('--rc-disclosure-border')).toContain('1px solid');
   expect(styles.getPropertyValue('--rc-disclosure-radius').trim()).toBe('1rem');
+});
+
+test('breadcrumbs point their chevron along the reading direction and keep a 48px target', () => {
+  const scope = renderScope();
+  const ltr = document.createElement('rc-breadcrumbs');
+  const rtl = document.createElement('rc-breadcrumbs');
+
+  ltr.innerHTML = '<nav><ol><li><a href="/">Home</a></li></ol></nav>';
+  rtl.dir = 'rtl';
+  scope.append(ltr, rtl);
+
+  // U+203A and U+2039: single right- and left-pointing angle quotation marks.
+  expect(getComputedStyle(ltr).getPropertyValue('--rc-breadcrumbs-separator')).toContain('203A');
+  expect(getComputedStyle(rtl).getPropertyValue('--rc-breadcrumbs-separator')).toContain('2039');
+  expect(getComputedStyle(ltr.querySelector('a')!).minBlockSize).toBe('48px');
 });

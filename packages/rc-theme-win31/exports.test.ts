@@ -5,6 +5,7 @@ const componentEntries = [
   'adaptive-menu',
   'app-bar',
   'bottom-sheet',
+  'breadcrumbs',
   'button',
   'card',
   'carousel',

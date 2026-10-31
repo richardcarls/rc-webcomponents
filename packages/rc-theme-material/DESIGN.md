@@ -858,6 +858,12 @@ var(--rc-app-bar-block-size))`; both values are published on the bar's
 - **Floating layer.** The FAB and other floating controls clear whatever is
   docked at the bottom: the navigation bar, and a persistent sheet's peek by
   16px plus the safe-area inset.
+- **Breadcrumbs.** Material 3 has no breadcrumb, so use `rc-breadcrumbs` only
+  where the hierarchy is deeper than the navigation suite shows, such as
+  settings or file trees, and only on medium and wider windows. On compact
+  windows, the app bar's back action replaces the trail. The theme draws Body
+  Medium links in `on-surface-variant` with a 48px target and the current page
+  in `on-surface`; the chevron separator follows the reading direction.
 
 ### Actions and emphasis
 

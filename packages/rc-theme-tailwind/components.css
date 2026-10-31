@@ -34,6 +34,7 @@
 @import './components/dialog.css';
 @import './components/disclosure.css';
 @import './components/accordion.css';
+@import './components/breadcrumbs.css';
 @import './components/virtual-canvas.css';
 @import './components/adaptive-menu.css';
 @import './components/carousel.css';

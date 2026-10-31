@@ -2,6 +2,7 @@ import '@rcarls/rc-accordion/define';
 import '@rcarls/rc-adaptive-menu/define';
 import '@rcarls/rc-app-bar/define';
 import '@rcarls/rc-bottom-sheet/define';
+import '@rcarls/rc-breadcrumbs/define';
 import '@rcarls/rc-button/define';
 import '@rcarls/rc-card/define';
 import '@rcarls/rc-carousel/define';

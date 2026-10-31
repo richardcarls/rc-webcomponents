@@ -67,6 +67,7 @@ const sidebars: SidebarsConfig = {
         'components/rc-app-bar',
         'components/rc-carousel',
         'components/rc-page-turner',
+        'components/rc-breadcrumbs',
         'components/rc-navigation-bar',
         'components/rc-navigation-rail',
         'components/rc-scroller',

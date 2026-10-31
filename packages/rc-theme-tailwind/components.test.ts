@@ -99,6 +99,7 @@ test('aggregate component styles cover the reference styling surface', () => {
     ['rc-splitter', ['--rc-splitter-separator-color', '']],
     ['rc-disclosure', ['display', 'block']],
     ['rc-accordion', ['display', 'grid']],
+    ['rc-breadcrumbs', ['--rc-breadcrumbs-current-color', '']],
     ['rc-virtual-canvas', ['overflow', 'hidden']],
     ['rc-popover', ['--rc-popover-padding-inline', '0.75rem']],
     ['rc-tooltip', ['--rc-tooltip-border', '0']],

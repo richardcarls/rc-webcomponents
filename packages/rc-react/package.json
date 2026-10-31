@@ -49,6 +49,12 @@
         "default": "./dist/components/rc-bottom-sheet.js"
       }
     },
+    "./rc-breadcrumbs": {
+      "import": {
+        "types": "./dist/types/components/rc-breadcrumbs.d.ts",
+        "default": "./dist/components/rc-breadcrumbs.js"
+      }
+    },
     "./rc-button": {
       "import": {
         "types": "./dist/types/components/rc-button.d.ts",
