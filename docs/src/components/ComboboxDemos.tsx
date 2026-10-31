@@ -1,11 +1,7 @@
+import type { RCCombobox, RCComboboxCreateEvent } from '@rcarls/rc-webcomponents/rc-combobox';
+import type { RCSelectChangeEvent } from '@rcarls/rc-webcomponents/rc-select';
 import type * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-
-import type {
-  RCComboboxCreateDetail,
-  RCComboboxRef,
-  RCSelectChangeDetail,
-} from '@rcarls/rc-webcomponents/react';
 
 import { DemoFrame } from './DemoFrame';
 
@@ -38,7 +34,7 @@ function StateView({ rows }: { rows: [label: string, value: string][] }) {
  * The default behavior (insert + select) runs for valid entries.
  */
 export function ComboboxAllowCreateValidationDemo() {
-  const [comboEl, setComboEl] = useState<RCComboboxRef | null>(null);
+  const [comboEl, setComboEl] = useState<RCCombobox | null>(null);
   const [error, setError] = useState('');
   const [log, setLog] = useState<string[]>([]);
 
@@ -46,7 +42,7 @@ export function ComboboxAllowCreateValidationDemo() {
     if (!comboEl) return;
 
     const handleCreate = (e: Event) => {
-      const { text } = (e as CustomEvent<RCComboboxCreateDetail>).detail;
+      const { text } = (e as CustomEvent<RCComboboxCreateEvent>).detail;
 
       if (text.trim().length < 2) {
         e.preventDefault();
@@ -67,7 +63,7 @@ export function ComboboxAllowCreateValidationDemo() {
       <label className="demo-col">
         <span>Tags</span>
         <rc-combobox
-          ref={(el) => setComboEl(el as RCComboboxRef | null)}
+          ref={(el) => setComboEl(el as RCCombobox | null)}
           allow-create
           placeholder="Add a tag…"
         >
@@ -104,7 +100,7 @@ const INITIAL_FRAMEWORKS = [
  * the new <option>, a useEffect sets the selection programmatically.
  */
 export function ComboboxCreateReactDemo() {
-  const [comboEl, setComboEl] = useState<RCComboboxRef | null>(null);
+  const [comboEl, setComboEl] = useState<RCCombobox | null>(null);
   const [options, setOptions] = useState(INITIAL_FRAMEWORKS);
   const [selection, setSelection] = useState<string[]>([]);
   // Holds the value to select after the next render; cleared in the post-render effect.
@@ -115,14 +111,14 @@ export function ComboboxCreateReactDemo() {
 
     const handleCreate = (e: Event) => {
       e.preventDefault(); // React manages options — block component insertion.
-      const { text } = (e as CustomEvent<RCComboboxCreateDetail>).detail;
+      const { text } = (e as CustomEvent<RCComboboxCreateEvent>).detail;
       const value = text.trim().toLowerCase().replace(/\s+/g, '-');
       setOptions((prev) => [...prev, { value, label: text.trim() }]);
       pendingValue.current = value;
     };
 
     const handleChange = (e: Event) => {
-      const { value } = (e as CustomEvent<RCSelectChangeDetail>).detail;
+      const { value } = (e as CustomEvent<RCSelectChangeEvent>).detail;
       setSelection(Array.isArray(value) ? value : value ? [value] : []);
     };
 
@@ -158,7 +154,7 @@ export function ComboboxCreateReactDemo() {
       <label className="demo-col">
         <span>Frameworks</span>
         <rc-combobox
-          ref={(el) => setComboEl(el as RCComboboxRef | null)}
+          ref={(el) => setComboEl(el as RCCombobox | null)}
           allow-create
           placeholder="Add a framework…"
         >
@@ -197,7 +193,7 @@ type LabelOption = { value: string; label: string };
  * Reset discards pending options without committing them.
  */
 export function ComboboxCreateFormDemo() {
-  const [comboEl, setComboEl] = useState<RCComboboxRef | null>(null);
+  const [comboEl, setComboEl] = useState<RCCombobox | null>(null);
   const [options, setOptions] = useState<LabelOption[]>(INITIAL_LABELS); // permanent
   const [pendingOptions, setPendingOptions] = useState<LabelOption[]>([]); // session-only
   const [output, setOutput] = useState('');
@@ -208,7 +204,7 @@ export function ComboboxCreateFormDemo() {
 
     const handleCreate = (e: Event) => {
       e.preventDefault(); // React renders all <option> elements — block component insertion.
-      const { text } = (e as CustomEvent<RCComboboxCreateDetail>).detail;
+      const { text } = (e as CustomEvent<RCComboboxCreateEvent>).detail;
       const value = text.trim().toLowerCase().replace(/\s+/g, '-');
       setPendingOptions((prev) => [...prev, { value, label: text.trim() }]);
       pendingValue.current = value;
@@ -260,7 +256,7 @@ export function ComboboxCreateFormDemo() {
         <label className="demo-col">
           <span>Labels</span>
           <rc-combobox
-            ref={(el) => setComboEl(el as RCComboboxRef | null)}
+            ref={(el) => setComboEl(el as RCCombobox | null)}
             allow-create
             placeholder="Choose or create…"
           >
