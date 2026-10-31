@@ -1,0 +1,50 @@
+@layer rc-theme-tailwind.components {
+  /* Compact square page buttons with the current page on the primary container. */
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-pagination {
+    --rc-pagination-gap: 0.25rem;
+    --rc-pagination-item-min-inline-size: var(--tailwind-control-block-size, 2.25rem);
+
+    color: var(--tailwind-on-surface, CanvasText);
+    font-size: var(--tailwind-font-size, 0.95rem);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-pagination [data-rc-page] {
+    box-sizing: border-box;
+    min-block-size: var(--tailwind-control-block-size, 2.25rem);
+    padding-inline: 0.625rem;
+    border: 1px solid var(--tailwind-border-color, ButtonBorder);
+    border-radius: var(--tailwind-radius-md, 0.5rem);
+    background: var(--tailwind-surface-raised, ButtonFace);
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-pagination [data-rc-page]:hover {
+    background: color-mix(
+      in srgb,
+      var(--tailwind-primary, Highlight) 8%,
+      var(--tailwind-surface-raised, ButtonFace)
+    );
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-pagination [data-rc-page]:focus-visible {
+    outline: var(--tailwind-focus-ring, 2px solid Highlight);
+    outline-offset: var(--tailwind-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind)) rc-pagination [aria-current='page'] {
+    border-color: var(--tailwind-primary, Highlight);
+    background: var(--tailwind-primary-container, Highlight);
+    color: var(--tailwind-on-primary-container, HighlightText);
+    font-weight: 600;
+  }
+
+  :where(.rc-theme-tailwind, :host(.rc-theme-tailwind))
+    rc-pagination
+    :is([data-rc-page]:disabled, [data-rc-page][aria-disabled='true']) {
+    opacity: var(--tailwind-disabled-opacity, 0.5);
+    cursor: default;
+  }
+}

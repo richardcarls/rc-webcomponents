@@ -93,6 +93,11 @@ const packages = [
     '/components/rc-breadcrumbs',
   ],
   [
+    'rc-pagination',
+    'Pagination enhancer for a native <nav> holding page links or buttons',
+    '/components/rc-pagination',
+  ],
+  [
     'rc-progress',
     'Native <progress> enhancement with formatted and indeterminate states',
     '/components/rc-progress',

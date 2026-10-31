@@ -31,6 +31,7 @@ export const elementLoaders = {
   'rc-navigation-rail': () => import('@rcarls/rc-webcomponents/rc-navigation-rail/define'),
   'rc-page-turner': () => import('@rcarls/rc-webcomponents/rc-page-turner/define'),
   'rc-page-turner-page': () => import('@rcarls/rc-webcomponents/rc-page-turner/define'),
+  'rc-pagination': () => import('@rcarls/rc-webcomponents/rc-pagination/define'),
   'rc-popover': () => import('@rcarls/rc-webcomponents/rc-popover/define'),
   'rc-progress': () => import('@rcarls/rc-webcomponents/rc-progress/define'),
   'rc-range-slider': () => import('@rcarls/rc-webcomponents/rc-range-slider/define'),

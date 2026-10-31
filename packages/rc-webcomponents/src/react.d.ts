@@ -39,6 +39,7 @@ import type { RCMenubar } from '@rcarls/rc-menubar';
 import type { RCNavigationBar } from '@rcarls/rc-navigation-bar';
 import type { RCNavigationRail } from '@rcarls/rc-navigation-rail';
 import type { RCPageTurner, RCPageTurnerPage } from '@rcarls/rc-page-turner';
+import type { RCPagination } from '@rcarls/rc-pagination';
 import type { RCPopover } from '@rcarls/rc-popover';
 import type { RCProgress } from '@rcarls/rc-progress';
 import type { RCRangeSlider } from '@rcarls/rc-range-slider';
@@ -568,6 +569,19 @@ declare module 'react' {
           role?: RCPageTurnerPage['role'];
         },
         never
+      >;
+
+      'rc-pagination': RCElementProps<
+        RCPagination,
+        {
+          'default-page'?: RCAttribute<RCPagination['defaultPage']>;
+          announce?: RCPagination['announce'];
+          defaultPage?: RCPagination['defaultPage'];
+          messages?: RCPagination['messages'];
+          page?: RCPagination['page'];
+          total?: RCPagination['total'];
+        },
+        'rc-pagination-change'
       >;
 
       'rc-popover': RCElementProps<
@@ -1496,6 +1510,8 @@ declare module 'react' {
     '--rc-page-turner-page-background'?: string | number;
     '--rc-page-turner-page-color'?: string | number;
     '--rc-page-turner-perspective'?: string | number;
+    '--rc-pagination-gap'?: string | number;
+    '--rc-pagination-item-min-inline-size'?: string | number;
     '--rc-popover-background'?: string | number;
     '--rc-popover-border'?: string | number;
     '--rc-popover-color'?: string | number;

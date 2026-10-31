@@ -1,0 +1,52 @@
+@layer rc-theme-substrate.components {
+  /* Compact square page buttons with the current page on the primary container. */
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-pagination {
+    --rc-pagination-gap: 0.25rem;
+    --rc-pagination-item-min-inline-size: var(--substrate-control-block-size, 2.25rem);
+
+    color: var(--substrate-on-surface, CanvasText);
+    font-size: var(--substrate-font-size, 0.95rem);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-pagination [data-rc-page] {
+    box-sizing: border-box;
+    min-block-size: var(--substrate-control-block-size, 2.25rem);
+    padding-inline: 0.625rem;
+    border: 1px solid var(--substrate-border-color, ButtonBorder);
+    border-radius: var(--substrate-radius-md, 0.5rem);
+    background: var(--substrate-surface-raised, ButtonFace);
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-pagination [data-rc-page]:hover {
+    background: color-mix(
+      in srgb,
+      var(--substrate-primary, Highlight) 8%,
+      var(--substrate-surface-raised, ButtonFace)
+    );
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-pagination
+    [data-rc-page]:focus-visible {
+    outline: var(--substrate-focus-ring, 2px solid Highlight);
+    outline-offset: var(--substrate-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate)) rc-pagination [aria-current='page'] {
+    border-color: var(--substrate-primary, Highlight);
+    background: var(--substrate-primary-container, Highlight);
+    color: var(--substrate-on-primary-container, HighlightText);
+    font-weight: 600;
+  }
+
+  :where(.rc-theme-substrate, :host(.rc-theme-substrate))
+    rc-pagination
+    :is([data-rc-page]:disabled, [data-rc-page][aria-disabled='true']) {
+    opacity: var(--substrate-disabled-opacity, 0.5);
+    cursor: default;
+  }
+}

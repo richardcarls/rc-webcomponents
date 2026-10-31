@@ -1,0 +1,105 @@
+@layer rc-theme-material.components {
+  /*
+   * Material 3 and Compose have no pagination component. The list composes
+   * M3 primitives: 40dp page items with a 48dp target in Label Large, the
+   * current page on secondary-container like a navigation indicator, standard
+   * icon buttons for the steps, and the shared state layers.
+   */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-pagination {
+    --rc-pagination-gap: 0.25rem;
+    --rc-pagination-item-min-inline-size: 2.5rem;
+
+    color: var(--md-sys-color-on-surface-variant, CanvasText);
+    font: var(--md-sys-typescale-label-large-weight, 500)
+      var(--md-sys-typescale-label-large-size, 0.875rem) /
+      var(--md-sys-typescale-label-large-line-height, 1.25rem)
+      var(--md-sys-typescale-label-large-font, inherit);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-pagination [data-rc-page] {
+    position: relative;
+    box-sizing: border-box;
+    min-block-size: 2.5rem;
+    padding-inline: 0.75rem;
+    border: 0;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--rc-motion-effects-duration-fast, 150ms)
+      var(--md-sys-motion-easing-standard, ease);
+  }
+
+  /* A 48dp target around the 40dp item. */
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-pagination [data-rc-page]::before {
+    content: '';
+    position: absolute;
+    inset: -0.25rem;
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-pagination [data-rc-page]:hover {
+    background-color: color-mix(
+      in srgb,
+      currentColor calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-pagination [data-rc-page]:focus-visible {
+    background-color: color-mix(
+      in srgb,
+      currentColor calc(var(--md-sys-state-focus-state-layer-opacity, 0.1) * 100%),
+      transparent
+    );
+    outline: var(--rc-focus-ring, 3px solid Highlight);
+    outline-offset: var(--rc-focus-ring-offset, 2px);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-pagination [data-rc-page]:active {
+    background-color: color-mix(
+      in srgb,
+      currentColor calc(var(--md-sys-state-pressed-state-layer-opacity, 0.1) * 100%),
+      transparent
+    );
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material)) rc-pagination [aria-current='page'] {
+    background-color: var(--md-sys-color-secondary-container, Highlight);
+    color: var(--md-sys-color-on-secondary-container, HighlightText);
+  }
+
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-pagination
+    :is([data-rc-page]:disabled, [data-rc-page][aria-disabled='true']) {
+    background: transparent;
+    color: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, GrayText)
+        calc(var(--md-sys-state-disabled-state-layer-opacity, 0.38) * 100%),
+      transparent
+    );
+    cursor: default;
+  }
+
+  /* Step icons point along the reading direction. */
+  :where(.rc-theme-material, :host(.rc-theme-material))
+    rc-pagination:dir(rtl)
+    :is(
+      [data-rc-page='previous'],
+      [data-rc-page='next'],
+      [data-rc-page='first'],
+      [data-rc-page='last']
+    )
+    [data-rc-icon] {
+    transform: scaleX(-1);
+  }
+
+  @media (forced-colors: active) {
+    :where(.rc-theme-material, :host(.rc-theme-material)) rc-pagination [aria-current='page'] {
+      outline: 2px solid CanvasText;
+      outline-offset: -2px;
+    }
+  }
+}

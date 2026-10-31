@@ -1,0 +1,39 @@
+@layer rc-theme-win31.components {
+  /* A row of beveled push buttons; the current page stays pressed in. */
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-pagination {
+    --rc-pagination-gap: var(--win31-gap-tight);
+    --rc-pagination-item-min-inline-size: var(--win31-control-height);
+
+    font: var(--win31-font-weight) var(--win31-font-size) / var(--win31-line-height)
+      var(--win31-font-family);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-pagination [data-rc-page] {
+    box-sizing: border-box;
+    min-block-size: var(--win31-control-height);
+    padding-inline: var(--win31-padding-inline);
+    border: var(--win31-border);
+    border-color: var(--win31-outset-border-color);
+    border-radius: var(--win31-radius);
+    background: var(--win31-color-surface);
+    color: var(--win31-color-frame);
+    font: inherit;
+    text-decoration: none;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-pagination [data-rc-page]:focus-visible {
+    outline: var(--win31-focus-ring);
+    outline-offset: var(--win31-focus-ring-offset);
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31)) rc-pagination [aria-current='page'] {
+    border-color: var(--win31-inset-border-color);
+    font-weight: bold;
+  }
+
+  :where(.rc-theme-win31, :host(.rc-theme-win31))
+    rc-pagination
+    :is([data-rc-page]:disabled, [data-rc-page][aria-disabled='true']) {
+    color: var(--win31-color-disabled-text);
+  }
+}

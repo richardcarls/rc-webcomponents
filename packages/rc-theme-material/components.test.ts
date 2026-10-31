@@ -65,6 +65,7 @@ test('aggregate component styles cover every visual RC component', () => {
     ['rc-disclosure', ['display', 'block']],
     ['rc-accordion', ['display', 'grid']],
     ['rc-breadcrumbs', ['--rc-breadcrumbs-current-color', '']],
+    ['rc-pagination', ['--rc-pagination-gap', '0.25rem']],
     ['rc-virtual-canvas', ['overflow', 'hidden']],
   ]);
 
@@ -1069,4 +1070,25 @@ test('breadcrumbs point their chevron along the reading direction and keep a 48p
   expect(getComputedStyle(ltr).getPropertyValue('--rc-breadcrumbs-separator')).toContain('203A');
   expect(getComputedStyle(rtl).getPropertyValue('--rc-breadcrumbs-separator')).toContain('2039');
   expect(getComputedStyle(ltr.querySelector('a')!).minBlockSize).toBe('48px');
+});
+
+test('pagination items keep a 48px target and mark the current page with the indicator color', () => {
+  const scope = renderScope();
+  const host = document.createElement('rc-pagination');
+
+  host.innerHTML =
+    '<nav><ul><li><button data-rc-page="1" aria-current="page">1</button></li>' +
+    '<li><button data-rc-page="2">2</button></li></ul></nav>';
+
+  scope.append(host);
+
+  const [current, other] = host.querySelectorAll('button');
+  const target = getComputedStyle(current!, '::before');
+
+  expect(getComputedStyle(current!).minBlockSize).toBe('40px');
+  expect(target.insetBlockStart).toBe('-4px');
+
+  expect(getComputedStyle(current!).backgroundColor).not.toBe(
+    getComputedStyle(other!).backgroundColor,
+  );
 });

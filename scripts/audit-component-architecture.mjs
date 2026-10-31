@@ -38,6 +38,7 @@ export const MARKER_CONTRACTS = {
   'data-rc-navigation-icon': 'authored-structure',
   'data-rc-navigation-indicator': 'authored-behavior',
   'data-rc-navigation-label': 'authored-structure',
+  'data-rc-page': 'authored-behavior',
   'data-rc-native': 'authored-theme-hook',
   'data-rc-popover-fallback-open': 'internal-controller',
   'data-rc-range-slider-reflector': 'internal-component',
@@ -155,7 +156,8 @@ export const THEME_SELECTOR_BUDGETS = {
     // Dialog surfaces add no marker coupling; the retained growth comes from
     // documented chip-icon and visible-list-position contracts.
     // Four selectors opt the authored rich-tooltip structure into Material styling.
-    markerHooks: 75,
+    // rc-pagination styles its authored [data-rc-page] controls.
+    markerHooks: 87,
     // Dropped from 13: the reduced-motion refinement replaced a blunt
     // *, !important sweep (2 declarations) with token-level overrides.
     // The audit's own comment-stripping fix also corrected a false count
@@ -172,7 +174,8 @@ export const THEME_SELECTOR_BUDGETS = {
     parts: 45,
     // +1: the overrides layer keeps rc-adaptive-menu overflow rows on the
     // menu's item tokens ([data-rc-action-overflowed]).
-    markerHooks: 23,
+    // rc-pagination styles its authored [data-rc-page] controls.
+    markerHooks: 28,
     importantDeclarations: 1,
     idSelectors: 0,
     modifierHooks: 0,
@@ -181,7 +184,8 @@ export const THEME_SELECTOR_BUDGETS = {
     // Mirrors substrate's coverage, including the rc-field control-provider
     // resets and the rc-adaptive-menu overflow overrides.
     parts: 44,
-    markerHooks: 23,
+    // rc-pagination styles its authored [data-rc-page] controls.
+    markerHooks: 28,
     importantDeclarations: 1,
     idSelectors: 0,
     modifierHooks: 0,
@@ -194,7 +198,8 @@ export const THEME_SELECTOR_BUDGETS = {
     // +3: the overrides layer keeps rc-adaptive-menu overflow rows on the
     // menu's item tokens, including the native-control reset Win31 needs
     // because it draws buttons on the control rather than through tokens.
-    markerHooks: 22,
+    // rc-pagination styles its authored [data-rc-page] controls.
+    markerHooks: 26,
     importantDeclarations: 8,
     idSelectors: 0,
     modifierHooks: 0,

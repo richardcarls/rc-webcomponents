@@ -1,0 +1,127 @@
+---
+title: rc-pagination
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { ApiTable } from '@site/src/components/ApiTable';
+import { AtAGlance } from '@site/src/components/AtAGlance';
+import { PaginationDemo } from '@site/src/components/PaginationDemos';
+
+# rc-pagination
+
+Pagination enhancer for a native `<nav>` holding page links or buttons, with a server-safe
+page range helper.
+
+<AtAGlance
+  packageName="@rcarls/rc-pagination"
+  tag="rc-pagination"
+  native="Requires a native nav child with data-rc-page links or buttons"
+  state="Controlled or uncontrolled page"
+  events={['rc-pagination-change']}
+  related={[
+    { label: 'rc-breadcrumbs', href: '/components/rc-breadcrumbs' },
+  ]}
+/>
+
+## Installation
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="npm">
+
+```sh
+npm install @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+
+```sh
+yarn add @rcarls/rc-webcomponents
+```
+
+  </TabItem>
+</Tabs>
+
+```js
+import '@rcarls/rc-webcomponents/rc-pagination/define';
+```
+
+## Live demo
+
+<PaginationDemo />
+
+## Markup
+
+There is no WAI-ARIA pattern for pagination. The markup follows the
+[GOV.UK](https://design-system.service.gov.uk/components/pagination/) and
+[USWDS](https://designsystem.digital.gov/components/pagination/) models: a `<nav>` landmark
+holding a list, so screen readers announce how many items it has. Tag each control with
+`data-rc-page`, a page number or `previous`, `next`, `first`, or `last`:
+
+```html
+<rc-pagination total="12" page="6">
+  <nav>
+    <ul>
+      <li><a href="?page=5" data-rc-page="previous" rel="prev">Previous</a></li>
+      <li><a href="?page=1" data-rc-page="1">1</a></li>
+      <li aria-hidden="true">…</li>
+      <li><a href="?page=5" data-rc-page="5">5</a></li>
+      <li><a href="?page=6" data-rc-page="6" aria-current="page">6</a></li>
+      <li><a href="?page=7" data-rc-page="7">7</a></li>
+      <li aria-hidden="true">…</li>
+      <li><a href="?page=12" data-rc-page="12">12</a></li>
+      <li><a href="?page=7" data-rc-page="next" rel="next">Next</a></li>
+    </ul>
+  </nav>
+</rc-pagination>
+```
+
+Links make the markup work with no JavaScript at all. Use buttons for paging that only
+happens on the client.
+
+### Building the list
+
+`paginationRange()` returns the page numbers to render, with `'ellipsis'` where a run of
+pages is hidden. It has no DOM dependency, so a server component or route can import it
+from `@rcarls/rc-pagination/range` without loading the element:
+
+```js
+import { paginationRange } from '@rcarls/rc-pagination/range';
+
+paginationRange({ page: 6, total: 12 }); // [1, 'ellipsis', 5, 6, 7, 'ellipsis', 12]
+paginationRange({ page: 6, total: 12, siblings: 2, boundaries: 2 });
+```
+
+## Behavior
+
+- The element keeps `aria-current="page"` on the control for the current page.
+- It names the `<nav>` "Pagination" when it has no name, and gives numbered controls the
+  name "Page 3", which keeps the visible number in the name. Previous, next, first, and last
+  controls keep their visible text; icon-only ones are named "Previous page" and so on. An
+  authored `aria-label` always wins.
+- Steps past either end are disabled: buttons natively, links with `aria-disabled="true"`
+  and a guard that ignores their clicks.
+- Activating a control fires `rc-pagination-change` with `{ page, previousPage }`. In
+  uncontrolled use the element moves to the requested page; with `page` set, the host
+  decides by writing `page`.
+- `rc-pagination-change` is cancelable. Canceling it also cancels the click, so a link does
+  not navigate: use this to hand the change to a client-side router.
+
+## Accessibility
+
+- Give each pagination landmark a distinct name when a page has more than one, such as
+  `aria-label="Search results pages"`.
+- After a client-side page change, move focus to the start of the new results, or set
+  `announce` to have the element announce "Page 6 of 12" through a polite live region.
+- Hide the ellipsis items from assistive technology with `aria-hidden="true"`; the page
+  names already convey the position.
+
+## Theming
+
+The default demo mode shows the component without a package theme. Use the shared preview
+controls to compare themes.
+
+## API
+
+<ApiTable tag="rc-pagination" />
