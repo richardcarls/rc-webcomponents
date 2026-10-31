@@ -3859,6 +3859,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lit/react@npm:^1.0.8":
+  version: 1.0.8
+  resolution: "@lit/react@npm:1.0.8"
+  peerDependencies:
+    "@types/react": 17 || 18 || 19
+  checksum: 10c0/18bf3eb6584fa989e0ad40988b349a4401da1cecd5bf1c6edfc1c5caed80037852a4ebe5685b04941e5b28ccf93e740676dae32773d7ae44b1479b96538392b1
+  languageName: node
+  linkType: hard
+
 "@lit/reactive-element@npm:^2.1.0":
   version: 2.1.2
   resolution: "@lit/reactive-element@npm:2.1.2"
@@ -4994,6 +5003,29 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@rcarls/rc-react@workspace:packages/rc-react":
+  version: 0.0.0-use.local
+  resolution: "@rcarls/rc-react@workspace:packages/rc-react"
+  dependencies:
+    "@lit/react": "npm:^1.0.8"
+    "@rcarls/rc-webcomponents": "workspace:*"
+    "@types/react": "npm:^19.2.0"
+    "@types/react-dom": "npm:^19.2.0"
+    "@vitest/browser-playwright": "npm:4.1.5"
+    lit: "npm:^3.0.0"
+    playwright: "npm:^1.56.0"
+    react: "npm:^19.2.0"
+    react-dom: "npm:^19.2.0"
+    typescript: "npm:~5.9.3"
+    vite: "npm:^7.1.7"
+    vite-plugin-dts: "npm:^4.5.4"
+    vitest: "npm:^4.0.6"
+  peerDependencies:
+    lit: ^3.0.0
+    react: ">=18"
+  languageName: unknown
+  linkType: soft
+
 "@rcarls/rc-scroller@workspace:*, @rcarls/rc-scroller@workspace:packages/rc-scroller":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-scroller@workspace:packages/rc-scroller"
@@ -5395,7 +5427,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@rcarls/rc-webcomponents@workspace:^, @rcarls/rc-webcomponents@workspace:packages/rc-webcomponents":
+"@rcarls/rc-webcomponents@workspace:*, @rcarls/rc-webcomponents@workspace:^, @rcarls/rc-webcomponents@workspace:packages/rc-webcomponents":
   version: 0.0.0-use.local
   resolution: "@rcarls/rc-webcomponents@workspace:packages/rc-webcomponents"
   dependencies:

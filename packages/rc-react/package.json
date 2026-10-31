@@ -1,0 +1,303 @@
+{
+  "name": "@rcarls/rc-react",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.6.0",
+  "description": "React wrappers for rc-webcomponents elements, with typed props, events, and refs.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardcarls/rc-webcomponents.git",
+    "directory": "packages/rc-react"
+  },
+  "homepage": "https://richardcarls.github.io/rc-webcomponents/guide/react",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./rc-accordion": {
+      "import": {
+        "types": "./dist/types/components/rc-accordion.d.ts",
+        "default": "./dist/components/rc-accordion.js"
+      }
+    },
+    "./rc-adaptive-menu": {
+      "import": {
+        "types": "./dist/types/components/rc-adaptive-menu.d.ts",
+        "default": "./dist/components/rc-adaptive-menu.js"
+      }
+    },
+    "./rc-app-bar": {
+      "import": {
+        "types": "./dist/types/components/rc-app-bar.d.ts",
+        "default": "./dist/components/rc-app-bar.js"
+      }
+    },
+    "./rc-bottom-sheet": {
+      "import": {
+        "types": "./dist/types/components/rc-bottom-sheet.d.ts",
+        "default": "./dist/components/rc-bottom-sheet.js"
+      }
+    },
+    "./rc-button": {
+      "import": {
+        "types": "./dist/types/components/rc-button.d.ts",
+        "default": "./dist/components/rc-button.js"
+      }
+    },
+    "./rc-card": {
+      "import": {
+        "types": "./dist/types/components/rc-card.d.ts",
+        "default": "./dist/components/rc-card.js"
+      }
+    },
+    "./rc-carousel": {
+      "import": {
+        "types": "./dist/types/components/rc-carousel.d.ts",
+        "default": "./dist/components/rc-carousel.js"
+      }
+    },
+    "./rc-chip": {
+      "import": {
+        "types": "./dist/types/components/rc-chip.d.ts",
+        "default": "./dist/components/rc-chip.js"
+      }
+    },
+    "./rc-chip-group": {
+      "import": {
+        "types": "./dist/types/components/rc-chip-group.d.ts",
+        "default": "./dist/components/rc-chip-group.js"
+      }
+    },
+    "./rc-combobox": {
+      "import": {
+        "types": "./dist/types/components/rc-combobox.d.ts",
+        "default": "./dist/components/rc-combobox.js"
+      }
+    },
+    "./rc-dialog": {
+      "import": {
+        "types": "./dist/types/components/rc-dialog.d.ts",
+        "default": "./dist/components/rc-dialog.js"
+      }
+    },
+    "./rc-disclosure": {
+      "import": {
+        "types": "./dist/types/components/rc-disclosure.d.ts",
+        "default": "./dist/components/rc-disclosure.js"
+      }
+    },
+    "./rc-fab": {
+      "import": {
+        "types": "./dist/types/components/rc-fab.d.ts",
+        "default": "./dist/components/rc-fab.js"
+      }
+    },
+    "./rc-fab-menu": {
+      "import": {
+        "types": "./dist/types/components/rc-fab-menu.d.ts",
+        "default": "./dist/components/rc-fab-menu.js"
+      }
+    },
+    "./rc-field": {
+      "import": {
+        "types": "./dist/types/components/rc-field.d.ts",
+        "default": "./dist/components/rc-field.js"
+      }
+    },
+    "./rc-list": {
+      "import": {
+        "types": "./dist/types/components/rc-list.d.ts",
+        "default": "./dist/components/rc-list.js"
+      }
+    },
+    "./rc-listbox": {
+      "import": {
+        "types": "./dist/types/components/rc-listbox.d.ts",
+        "default": "./dist/components/rc-listbox.js"
+      }
+    },
+    "./rc-markdown-editor": {
+      "import": {
+        "types": "./dist/types/components/rc-markdown-editor.d.ts",
+        "default": "./dist/components/rc-markdown-editor.js"
+      }
+    },
+    "./rc-menu": {
+      "import": {
+        "types": "./dist/types/components/rc-menu.d.ts",
+        "default": "./dist/components/rc-menu.js"
+      }
+    },
+    "./rc-menu-button": {
+      "import": {
+        "types": "./dist/types/components/rc-menu-button.d.ts",
+        "default": "./dist/components/rc-menu-button.js"
+      }
+    },
+    "./rc-menubar": {
+      "import": {
+        "types": "./dist/types/components/rc-menubar.d.ts",
+        "default": "./dist/components/rc-menubar.js"
+      }
+    },
+    "./rc-navigation-bar": {
+      "import": {
+        "types": "./dist/types/components/rc-navigation-bar.d.ts",
+        "default": "./dist/components/rc-navigation-bar.js"
+      }
+    },
+    "./rc-navigation-rail": {
+      "import": {
+        "types": "./dist/types/components/rc-navigation-rail.d.ts",
+        "default": "./dist/components/rc-navigation-rail.js"
+      }
+    },
+    "./rc-page-turner": {
+      "import": {
+        "types": "./dist/types/components/rc-page-turner.d.ts",
+        "default": "./dist/components/rc-page-turner.js"
+      }
+    },
+    "./rc-popover": {
+      "import": {
+        "types": "./dist/types/components/rc-popover.d.ts",
+        "default": "./dist/components/rc-popover.js"
+      }
+    },
+    "./rc-progress": {
+      "import": {
+        "types": "./dist/types/components/rc-progress.d.ts",
+        "default": "./dist/components/rc-progress.js"
+      }
+    },
+    "./rc-range-slider": {
+      "import": {
+        "types": "./dist/types/components/rc-range-slider.d.ts",
+        "default": "./dist/components/rc-range-slider.js"
+      }
+    },
+    "./rc-scroller": {
+      "import": {
+        "types": "./dist/types/components/rc-scroller.d.ts",
+        "default": "./dist/components/rc-scroller.js"
+      }
+    },
+    "./rc-search-bar": {
+      "import": {
+        "types": "./dist/types/components/rc-search-bar.d.ts",
+        "default": "./dist/components/rc-search-bar.js"
+      }
+    },
+    "./rc-segmented-button": {
+      "import": {
+        "types": "./dist/types/components/rc-segmented-button.d.ts",
+        "default": "./dist/components/rc-segmented-button.js"
+      }
+    },
+    "./rc-select": {
+      "import": {
+        "types": "./dist/types/components/rc-select.d.ts",
+        "default": "./dist/components/rc-select.js"
+      }
+    },
+    "./rc-slider": {
+      "import": {
+        "types": "./dist/types/components/rc-slider.d.ts",
+        "default": "./dist/components/rc-slider.js"
+      }
+    },
+    "./rc-snackbar": {
+      "import": {
+        "types": "./dist/types/components/rc-snackbar.d.ts",
+        "default": "./dist/components/rc-snackbar.js"
+      }
+    },
+    "./rc-splitter": {
+      "import": {
+        "types": "./dist/types/components/rc-splitter.d.ts",
+        "default": "./dist/components/rc-splitter.js"
+      }
+    },
+    "./rc-switch": {
+      "import": {
+        "types": "./dist/types/components/rc-switch.d.ts",
+        "default": "./dist/components/rc-switch.js"
+      }
+    },
+    "./rc-textarea": {
+      "import": {
+        "types": "./dist/types/components/rc-textarea.d.ts",
+        "default": "./dist/components/rc-textarea.js"
+      }
+    },
+    "./rc-toolbar": {
+      "import": {
+        "types": "./dist/types/components/rc-toolbar.d.ts",
+        "default": "./dist/components/rc-toolbar.js"
+      }
+    },
+    "./rc-tooltip": {
+      "import": {
+        "types": "./dist/types/components/rc-tooltip.d.ts",
+        "default": "./dist/components/rc-tooltip.js"
+      }
+    },
+    "./rc-transfer-list": {
+      "import": {
+        "types": "./dist/types/components/rc-transfer-list.d.ts",
+        "default": "./dist/components/rc-transfer-list.js"
+      }
+    },
+    "./rc-virtual-canvas": {
+      "import": {
+        "types": "./dist/types/components/rc-virtual-canvas.d.ts",
+        "default": "./dist/components/rc-virtual-canvas.js"
+      }
+    },
+    "./rc-virtual-scroller": {
+      "import": {
+        "types": "./dist/types/components/rc-virtual-scroller.d.ts",
+        "default": "./dist/components/rc-virtual-scroller.js"
+      }
+    }
+  },
+  "sideEffects": [
+    "./dist/components/*.js"
+  ],
+  "scripts": {
+    "build": "tsc && vite build",
+    "test:browser": "vitest --run"
+  },
+  "dependencies": {
+    "@lit/react": "^1.0.8",
+    "@rcarls/rc-webcomponents": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitest/browser-playwright": "4.1.5",
+    "lit": "^3.0.0",
+    "playwright": "^1.56.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.6"
+  },
+  "peerDependencies": {
+    "lit": "^3.0.0",
+    "react": ">=18"
+  }
+}
